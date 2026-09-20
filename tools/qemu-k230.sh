@@ -53,26 +53,36 @@ if [ "$MACHINE" = "k230" ] && [ -z "$DTB" ]; then
 fi
 
 KIMG="$KERNEL/Image"
-[ -f "$KIMG" ] || KIMG=$(find "$KERNEL" -maxdepth 2 -name 'Image*' -o -maxdepth 2 -name 'vmlinu*' | head -1)
+if [ ! -f "$KIMG" ]; then
+  KIMG=$(find "$KERNEL" -maxdepth 2 \( -name 'Image*' -o -name 'vmlinu*' \) | head -1)
+fi
 IIMG="$INITRD/initrd"
-[ -f "$IIMG" ] || IIMG=$(find "$INITRD" -maxdepth 2 -type f | head -1)
+if [ ! -f "$IIMG" ]; then
+  IIMG=$(find "$INITRD" -maxdepth 2 -type f | head -1)
+fi
+if [ -z "$KIMG" ] || [ ! -f "$KIMG" ]; then
+  echo "ERROR: no kernel image found under $KERNEL" >&2; exit 1
+fi
+if [ -z "$IIMG" ] || [ ! -f "$IIMG" ]; then
+  echo "ERROR: no initrd found under $INITRD" >&2; exit 1
+fi
 
 echo "machine:  $MACHINE" >&2
 echo "kernel:   $KIMG" >&2
-[ -n "$DTB" ] && echo "dtb:      $DTB" >&2
+if [ -n "$DTB" ]; then echo "dtb:      $DTB" >&2; fi
 echo "initrd:   $IIMG" >&2
 echo "toplevel: $TOPLEVEL" >&2
 echo >&2
 
-QEMU=(qemu-system-riscv64 \
-  -machine "$MACHINE" \
-  -m "$MEM" \
-  -nographic \
-  -kernel "$KIMG" \
-  ${DTB:+-dtb "$DTB"} \
-  -initrd "$IIMG" \
-  -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7" \
-  "$@")
+QEMU=(qemu-system-riscv64
+  -machine "$MACHINE"
+  -m "$MEM"
+  -nographic
+  -kernel "$KIMG"
+  -initrd "$IIMG"
+  -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7")
+if [ -n "$DTB" ]; then QEMU+=(-dtb "$DTB"); fi
+QEMU+=("$@")
 
 if [ -n "$CAPTURE" ]; then
   # 124 from `timeout` means it ran for the whole window, which for a boot
