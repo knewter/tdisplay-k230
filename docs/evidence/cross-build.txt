@@ -79,3 +79,26 @@ only after a one-line change:
 That change has NOT been made, because nothing has needed it. Recorded here
 so the fallback is understood as one config line away rather than as
 something already in place.
+
+A minimal NixOS closure needs TWO cross toolchains
+---------------------------------------------------
+Unexpected, and the largest single cost in the first build.
+
+The glibc cross toolchain (riscv64-unknown-linux-gnu-gcc 15.3.0) substitutes
+from cache.nixos.org in seconds. But NixOS's initrd wants a statically linked
+busybox, which is built against musl -- and no musl riscv64 toolchain is
+cached, so the whole bootstrap is compiled locally:
+
+  riscv64-unknown-linux-musl-nolibc-gcc-15.3.0
+  musl-static-riscv64-unknown-linux-musl-1.2.6
+  riscv64-unknown-linux-musl-gcc-15.3.0
+  riscv64-unknown-linux-musl-binutils-wrapper-2.46
+
+That is a second GCC bootstrap, compiled in parallel with the kernel, and it
+is why "minimal NixOS" is not a short build here even with good cache
+coverage on the glibc side.
+
+It is a one-time cost per nixpkgs pin -- the results land in the local store
+and subsequent builds reuse them. Recorded so the first build's duration is
+not mistaken for the steady-state cost, and so anyone trimming the closure
+knows the initrd is where the expensive part hides.

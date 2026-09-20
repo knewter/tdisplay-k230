@@ -1,0 +1,166 @@
+{
+ "generated": "2026-09-20 20:44 UTC",
+ "tally": {
+  "grounded": 5,
+  "unverified": 0,
+  "undeclared": 0
+ },
+ "total": 5,
+ "groups": [
+  {
+   "name": "docs",
+   "blurb": "how these specs reach a reader",
+   "slugs": [
+    "docs-spec-site"
+   ]
+  }
+ ],
+ "capabilities": [
+  {
+   "group": "docs",
+   "name": "spec-site",
+   "slug": "docs-spec-site",
+   "ident": "docs/spec-site",
+   "source": "openspec/specs/docs/spec-site/spec.md",
+   "blurb": "how these specs reach a reader",
+   "purposeHtml": "<p>Defines how this project&#x27;s specifications are published for reading, and what the rendered site is obliged to tell a reader about how much of it is proven.</p>",
+   "purposeFirst": "Defines how this project's specifications are published for reading, and what the rendered site is obliged to tell a reader about how much of it is proven.",
+   "tally": {
+    "grounded": 5,
+    "unverified": 0,
+    "undeclared": 0
+   },
+   "requirements": [
+    {
+     "name": "The site is rendered from the specs, and only from the specs",
+     "slug": "the-site-is-rendered-from-the-specs-and-only-from-the-specs",
+     "status": "grounded",
+     "reason": "",
+     "proseHtml": "<p>The site SHALL be generated from <code>openspec/specs/</code>, and SHALL NOT be hand-maintained. It SHALL NOT publish in-flight proposals: a proposal is a draft, and a published draft is read as a decision.</p><p>Rendering SHALL be a single command that needs no network and no CI, so that reading the specs never waits on a pipeline.</p><div class=\"grounding\"><span class=\"grounding-tag\">grounding</span><p><code>scripts/render_specs.py</code> walks <code>openspec/specs/**/spec.md</code> and reads nothing else, on the Python standard library alone — no third-party package, so no network. <a class=\"cite\" href=\"@@BASE@@evidence/docs-evidence-spec-site-build-txt/\"><code>docs/evidence/spec-site-build.txt</code></a> records the command and its output. A test renders the real repository and asserts that no in-flight change identifier appears anywhere in the generated tree.</p></div>",
+     "evidence": [
+      {
+       "path": "docs/evidence/spec-site-build.txt",
+       "slug": "docs-evidence-spec-site-build-txt",
+       "href": "@@BASE@@evidence/docs-evidence-spec-site-build-txt/"
+      }
+     ],
+     "scenarios": [
+      {
+       "title": "A capability's spec is edited",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> a spec file changes and the site is rebuilt</li><li><strong>THEN</strong> the change appears, with no other file edited by hand</li></ul>"
+      },
+      {
+       "title": "An in-flight change exists",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> the site is built while proposals are open</li><li><strong>THEN</strong> nothing from those proposals appears in the output</li></ul>"
+      }
+     ]
+    },
+    {
+     "name": "The site leads with what is unproven",
+     "slug": "the-site-leads-with-what-is-unproven",
+     "status": "grounded",
+     "reason": "",
+     "proseHtml": "<p>Every requirement SHALL be shown as either grounded or unverified. The landing page SHALL state how many requirements are unverified before it presents anything else.</p><p>This is the site&#x27;s reason to exist. On this board the documentation and the hardware disagree routinely — a datasheet described a working radio whose enable line is never driven, and a vendor page described the Wi-Fi as an ESP32-S3 that the schematic contradicts. A reader&#x27;s first question is which claims have been observed, and the site SHALL answer it without being asked.</p><div class=\"grounding\"><span class=\"grounding-tag\">grounding</span><p>the landing page&#x27;s <code>&lt;h1&gt;</code> is the count itself, emitted before any capability is named; a test asserts that the count&#x27;s position in the generated HTML precedes the first capability heading and the first line of capability prose. Status is carried as a colour on every requirement and as one proportional bar summarising the whole tree.</p></div>",
+     "evidence": [],
+     "scenarios": [
+      {
+       "title": "A reader opens the site",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> the landing page is loaded</li><li><strong>THEN</strong> the number of unverified requirements is visible before any capability&#x27;s prose</li></ul>"
+      },
+      {
+       "title": "A requirement carries an UNVERIFIED marker",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> a requirement is marked unverified</li><li><strong>THEN</strong> it is rendered as unverified wherever it appears, and its stated reason is shown alongside it</li></ul>"
+      }
+     ]
+    },
+    {
+     "name": "Evidence is reachable from the requirement it grounds",
+     "slug": "evidence-is-reachable-from-the-requirement-it-grounds",
+     "status": "grounded",
+     "reason": "",
+     "proseHtml": "<p>Where a requirement cites a path under <code>docs/</code>, the site SHALL link to that file. A boot log or photograph that grounds a requirement SHALL be one click from it.</p><p>A path named only inside an <code>&lt;!-- UNVERIFIED --&gt;</code> marker is not a citation. Those markers routinely name the evidence that <em>would</em> ground a requirement, which has not been captured yet, and treating that as a citation would report a missing file for every requirement honestly waiting on one.</p><div class=\"grounding\"><span class=\"grounding-tag\">grounding</span><p>cited files are copied into the site as their own pages, so a link resolves wherever the site is served from rather than only inside a checkout. A test renders a requirement citing <a class=\"cite\" href=\"@@BASE@@evidence/docs-rtsmart-boot-log-txt/\"><code>docs/rtsmart-boot-log.txt</code></a>, asserts every non-external link in the generated page resolves to a file that exists, and asserts the boot log&#x27;s text is present on the page it resolves to.</p></div>",
+     "evidence": [
+      {
+       "path": "docs/rtsmart-boot-log.txt",
+       "slug": "docs-rtsmart-boot-log-txt",
+       "href": "@@BASE@@evidence/docs-rtsmart-boot-log-txt/"
+      }
+     ],
+     "scenarios": [
+      {
+       "title": "A requirement cites a committed boot log",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> that requirement is rendered</li><li><strong>THEN</strong> the cited path is a working link to the committed file</li></ul>"
+      },
+      {
+       "title": "A requirement cites evidence that does not exist",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> a cited evidence path is missing from the repository</li><li><strong>THEN</strong> the build fails and names the requirement and the missing path</li></ul>"
+      }
+     ]
+    },
+    {
+     "name": "The renderer fails rather than guessing",
+     "slug": "the-renderer-fails-rather-than-guessing",
+     "status": "grounded",
+     "reason": "",
+     "proseHtml": "<p>The site depends on conventions carried in prose — the <code>&lt;!-- UNVERIFIED --&gt;</code> marker and the citation of a read path as grounding. Where the renderer cannot determine a requirement&#x27;s verification status, it SHALL fail and name the file and the requirement, rather than rendering it as grounded.</p><p>A silent default would make the count of unverified requirements untrustworthy, and that count is the only reason to build this.</p><p>Failing SHALL mean a non-zero exit that names every such requirement. It SHALL NOT mean withholding the site: the output is still written, and a requirement that declared no status is shown on it as a defect, in its own colour, with the capability it came from. A front door that reports &quot;three requirements never said&quot; is more useful than no front door, and a defect nobody can see is one nobody fixes.</p><div class=\"grounding\"><span class=\"grounding-tag\">grounding</span><p><a class=\"cite\" href=\"@@BASE@@evidence/docs-evidence-spec-site-build-txt/\"><code>docs/evidence/spec-site-build.txt</code></a> records a run over a staged tree in which three requirements declare neither a marker nor a citation: the command names each one and exits 2, and the landing page it wrote carries them under &quot;Build defects&quot;. A unit test asserts that the classifier raises on a requirement carrying neither, rather than returning grounded.</p></div>",
+     "evidence": [
+      {
+       "path": "docs/evidence/spec-site-build.txt",
+       "slug": "docs-evidence-spec-site-build-txt",
+       "href": "@@BASE@@evidence/docs-evidence-spec-site-build-txt/"
+      }
+     ],
+     "scenarios": [
+      {
+       "title": "A requirement's status cannot be determined",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> the renderer meets a requirement it cannot classify</li><li><strong>THEN</strong> the build fails and names the file and the requirement</li></ul>"
+      },
+      {
+       "title": "The build has failed on an unclassifiable requirement",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> a reader opens the site that build wrote</li><li><strong>THEN</strong> the requirement is shown as a defect rather than as grounded, and the capability it belongs to is named</li></ul>"
+      }
+     ]
+    },
+    {
+     "name": "The build stays fast and small",
+     "slug": "the-build-stays-fast-and-small",
+     "status": "grounded",
+     "reason": "",
+     "proseHtml": "<p>Generation SHALL complete within a recorded time budget and the output SHALL stay within a recorded size budget, both enforced by the build. The budgets SHALL be set above what the tree currently produces, so that a breach means something changed rather than that the numbers were always tight.</p><div class=\"grounding\"><span class=\"grounding-tag\">grounding</span><p><a class=\"cite\" href=\"@@BASE@@evidence/docs-evidence-spec-site-build-txt/\"><code>docs/evidence/spec-site-build.txt</code></a> records the date, the machine and the Python version, and two measured runs — 0.017 s and 78 KiB over a tree staging every capability the open proposals will add. The budgets in <code>scripts/render_specs.py</code> are 5.0 s and 4 MiB, roughly 290x and 54x above those. A test forces a breach and asserts the failure names the measured value and the budget.</p></div>",
+     "evidence": [
+      {
+       "path": "docs/evidence/spec-site-build.txt",
+       "slug": "docs-evidence-spec-site-build-txt",
+       "href": "@@BASE@@evidence/docs-evidence-spec-site-build-txt/"
+      }
+     ],
+     "scenarios": [
+      {
+       "title": "The site grows past its budget",
+       "bodyHtml": "<ul><li><strong>WHEN</strong> generation exceeds its time or size budget</li><li><strong>THEN</strong> the build fails and reports the measured value against the budget</li></ul>"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "evidence": [
+  {
+   "path": "docs/evidence/spec-site-build.txt",
+   "slug": "docs-evidence-spec-site-build-txt",
+   "name": "spec-site-build.txt",
+   "bytes": 3617,
+   "kind": "text",
+   "text": "spec-site: measured generation time and output size\n===================================================\n\nCaptured 2026-09-20 20:15 UTC on `solomon`:\n  Linux 7.1.9-1-MANJARO x86_64, AMD Ryzen 9 5950X 16-Core Processor, 32 threads\n  Python 3.14.7, stdlib only -- no third-party packages, no network\n\nThe renderer writes into a scratch directory and prints pages, bytes and\nwall-clock seconds. Budgets live at the top of scripts/render_specs.py.\n\n--- run 1: the published capability tree as it stands ------------------\n\n$ ./scripts/render_specs.py --out $SCRATCH/measure-1\n$SCRATCH/measure-1: 1 pages, 13939 bytes, 0.001 s\n0 of 0 requirements unverified\n(exit 0)\n\n--- run 2: the same renderer over every capability the open proposals ---\n---         will add, staged into a scratch tree ------------------------\n\nThis is the number the budget is set against: it is what the site will\nmeasure once the work in flight is archived, rather than what an almost\nempty tree happens to produce today.\n\n$ ./scripts/render_specs.py --repo $SCRATCH/preview --out $SCRATCH/measure-2\n\nerror: openspec/specs/image/boot-chain/spec.md: requirement 'The hardware boot path differs from the emulated one, and that difference is recorded' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation\nerror: openspec/specs/image/sd-layout/spec.md: requirement 'Flashing names the target by a stable identifier' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation\nerror: openspec/specs/system/nixos-config/spec.md: requirement 'The system boots to a console prompt' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation\nerror: 3 requirement defect(s); the site was written but the build failed\n  display/panel                  2 requirements  1 grounded  1 unverified\n  display/touch                  2 requirements  1 grounded  1 unverified\n  docs/spec-site                 5 requirements  0 grounded  5 unverified\n  image/boot-chain               3 requirements  1 grounded  1 unverified  1 undeclared\n  image/cross-build              2 requirements  0 grounded  2 unverified\n  image/sd-layout                2 requirements  0 grounded  1 unverified  1 undeclared\n  system/console                 2 requirements  2 grounded  0 unverified\n  system/kernel                  1 requirements  1 grounded  0 unverified\n  system/nixos-config            4 requirements  1 grounded  2 unverified  1 undeclared\n$SCRATCH/measure-2: 12 pages, 78306 bytes, 0.017 s\n13 of 23 requirements unverified\n(exit 2; non-zero because three staged requirements declare no\n verification status -- see 'Build defects' on the rendered landing page)\n\n--- budgets ------------------------------------------------------------\n\n  MAX_GENERATION_SECONDS = 5.0      measured 0.017 s   ~290x headroom\n  MAX_OUTPUT_BYTES       = 4 MiB    measured 78 KiB    ~54x headroom\n\nSet deliberately high. The capability taxonomy in\n.skills/k230-spec-change/SKILL.md allows fifteen capabilities and the\ntree above has nine, so ordinary growth must not turn the budget red.\nA breach should mean something changed -- an evidence file the size of a\nvideo, or a renderer that started doing real work -- not that the numbers\nwere always tight. A budget raised reflexively means nothing.\n\n--- test suite ---------------------------------------------------------\n\n$ python3 -m unittest discover -s tests\nRan 17 tests in 0.024s\n\nOK\n$TMP/public: 2 pages, 16970 bytes, 0.005 s\n1 of 1 requirements unverified\n"
+  },
+  {
+   "path": "docs/rtsmart-boot-log.txt",
+   "slug": "docs-rtsmart-boot-log-txt",
+   "name": "rtsmart-boot-log.txt",
+   "bytes": 4742,
+   "kind": "text",
+   "text": ">>> sending reboot\nreboot\nU-Boot SPL 2022.10 (Feb 10 2026 - 09:22:02 +0000)\n00000000: PMU Major Msg: End of CA training                                            \n00000000: PMU Major Msg: End of initialization                                         \n00000000: PMU Major Msg: End of read enable training                                   \n00000000: PMU Major Msg: End of fine write leveling                                    \n00000000: PMU Major Msg: End of read dq deskew training                                \n00000000: PMU Major Msg: End of MPR read delay center optimization                     \n00000000: PMU Major Msg: End of Write leveling coarse delay                            \n00000000: PMU Major Msg: End of write delay center optimization                        \n00000000: PMU Major Msg: End of read delay center optimization                         \n00000000: PMU Major Msg: End of max read latency training                              \n00000000: PMU Major Msg: Firmware run has completed                                    \nimage: uboot load to 20000000 compress =1 src 2aaaacff len=49446 \n\n\nU-Boot 2022.10 (Feb 10 2026 - 09:22:02 +0000)\n\nCPU:   rv64imafdcvsu\nModel: kendryte k230 canmv v3.0\nDRAM:  1 GiB\nCore:  26 devices, 13 uclasses, devicetree: embed\nMMC:   mmc0@91580000: 0, mmc1@91581000: 1\nLoading Environment from MMC... OK\nIn:    serial@91400000\nOut:   serial@91400000\nErr:   serial@91400000\nNet:   No ethernet found.\nHit any key to stop autoboot:  0 \nimage: rtt load to 0 compress =1 src 2aaaad07 len=18b75d \nJump to big hart\n\nOpenSBI v0.9\nheap: [0x00514a80 - 0x04514a80], size 65536 KB\npage: [0x04514a88 - 0x1fffec00], size 453544 KB\nlwIP-2.1.2 initialized!\ncanaan lora0 driver register OK\nov5647 read chip id high ,ret:1\nov5647 read chip id low ,ret:1\nov5647 read chip id failed, 0x0000\nCan't find sensor on csi0\n[I/SDIO] SD card capacity 62586880 KB.\nov5647 read chip id high ,ret:1\nov5647 read chip id low ,ret:1\nov5647 read chip id failed, 0x0000\nCan't find sensor on csi1\nfound partfind sensor(gc2093_csi2) on csi2\nvicap_mcm_init[nit␀093_csi2) on csi2\n␀ze: 30.0MB\nfound part[1], begin: 83886080, size: 500.0MB\nfound part[2], begin: 1073741824, size: 58.704GB\n[I/sal.skt] Socket Abstraction Layer initialize success.\nmsh />Interface Descriptor:\n\n\tbLength: 0x09            \n\n\tbDescriptorType: 0x04    \n\n\tbInterfaceNumber: 0x00   \n\n\tbAlternateSetting: 0x00  \n\n\tbNumEndpoints: 0x03      \n\n\tbInterfaceClass: 0xff    \n\n\tbInterfaceSubClass: 0xff \n\n\tbInterfaceProtocol: 0x00 \n\n\tiInterface: 0x00         \n\n[I/WLAN.dev] wlan init success\n[I/WLAN.lwip] eth device init ok name:w0\n[I/WLAN.dev] wlan init success\n[I/WLAN.lwip] eth device init ok name:w1\nhello world ,lvgl version:8.4.1\nrm69a10_power_on \nrm69a10_power_reset \nrm69a10 rst_gpio is 22 \nrm69a10_power_reset \nrm69a10 rst_gpio is 22 \nrm69a10_power_reset \nrm69a10 rst_gpio is 22 \nrm69a10_set_backlight \nrm69a10_init \nrm69a10_set_phy_freq \nrm69a10_dsi_resolution_init \nrm69a10_568x1232_init \nrm69a10_vo_resolution_init \nvb block size is 2ac600 \nvo_config_manage,virt_addr is 0x100001000 \nphys_addr is 28494000 \ndisp_init,pic_addr is 0x100001000 \npool_id:2\ntca8418_write_reg 0x23,ret:0\ntca8418_read_reg 0x01 ret=-1\nkeyboard is not exist\nuser_gui_init\n[INFO] [esp_brookesia_core.cpp:204](beginCore): Library version: 0.4.1\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n-----0x0414\nbq27220_write_cmd_params,ret=0\n-----0x3672\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n-----reset\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n-----start full access\nbq27220_write_cmd_params,ret=0\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n-----start cfg_update\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\nbq27220_write_cmd_params,ret=0\nbq27220_write_cmd_params,ret=0\ncheck_sum_fcc:201\nbq27220_write_cmd_params,ret=0\nbq27220_write_cmd_params,ret=0\nbq27220_write_cmd_params,ret=0\ncheck_sum_dc:45\nbq27220_write_cmd_params,ret=0\n-----exit cfg_update\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n-----exit seal\nbq27220_write_cmd_params,ret=0\n-----get operation status\nbq27220 operation status:00 00,flag_seal:0,init_comp:0,cfg_update:0\n++++++++++++++++++++++++++++++++++++++++++++++++\nuser_gui_init after\n"
+  }
+ ],
+ "defects": []
+}
