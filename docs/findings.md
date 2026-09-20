@@ -127,7 +127,14 @@ a new one and copy it onto part 2, no reflash needed.
 - `riscv64-linux` is community-tier in nixpkgs with **no binary cache**; cross
   compile from `x86_64-linux` rather than emulating.
 - Closest precedent is `nixos-licheepi4a` (T-Head Xuantie C910, vendor kernel).
-- **Compose Desktop is not viable on riscv64**: Skiko publishes 32 Maven
-  artifacts and none are riscv64 (Linux natives are arm64/x64 only), and
-  Kotlin/Native has no riscv64 target. Running Compose would require building
-  Skia + Skiko for riscv64 first.
+- **Compose Desktop on riscv64 is unproven but not ruled out.** Skiko
+  publishes 32 Maven artifacts and none are riscv64 (Linux natives are
+  arm64/x64 only). However **Skia itself supports riscv64** — SkiaSharp added
+  riscv64 builds (PR #3192) and skia-python ships riscv64 wheels — so the gap
+  is Skiko's build matrix and JNI glue, not a Skia port. Needs a riscv64
+  OpenJDK (upstream since ~JDK 19) and `SKIKO_RENDER_API=SOFTWARE`, since the
+  K230's 2.5D GPU has no Mesa/Vulkan driver. The open question is whether
+  software Skia + a JVM performs acceptably at 568x1232 in 1 GiB of RAM.
+  Measure it on hardware before committing either way.
+- Kotlin/Native has no riscv64 target at all, so a KMP-native shell is out
+  regardless; any Kotlin path is Kotlin/JVM.
