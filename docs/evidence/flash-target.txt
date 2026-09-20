@@ -27,3 +27,29 @@ the four 8 TB members of this host's RAID10 array, and device letters were
 seen to move across a replug during this session. But it is not a guarantee
 about WHICH card, which is why image/sd-layout also requires the procedure
 to print the target's current contents and wait for confirmation.
+
+tools/flash.sh guardrails, exercised (task 2.2)
+------------------------------------------------
+Each refusal was run, not assumed:
+
+  bare device node
+    $ ./tools/flash.sh <img> /dev/sdf
+    error: refusing a bare device node.
+    ...lists the by-id candidates, whole disks only
+
+  a partition rather than a disk
+    $ ./tools/flash.sh <img> /dev/disk/by-id/...-0:1-part1
+    error: ... resolves to a PARTITION (/dev/sdf1). Flash the whole disk.
+
+  the empty reader slot
+    $ ./tools/flash.sh <img> /dev/disk/by-id/...-0:0
+    error: ... reports zero size -- is a card actually in that slot?
+
+  the real target
+    $ ./tools/flash.sh <img> /dev/disk/by-id/...-0:1
+    prints size, model, partition table and the mounted contents --
+    RetroidPocketGames among them -- then requires the last 12 characters
+    of the by-id path typed back before writing anything.
+
+The confirmation deliberately is not y/N. Typing 12 characters of the path
+means the target has been looked at, which a reflexive "y" does not.

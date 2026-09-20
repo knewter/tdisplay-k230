@@ -13,7 +13,7 @@ vendored boot chain nor the SD card.
 ## 2. An SD image
 
 - [ ] 2.1 Build an image placing stage 1 and our kernel, DTB and initrd where task 1.3 says U-Boot will look. Verify with `nix build .#sdImage` and `fdisk -l` on the result showing the documented layout
-- [ ] 2.2 Write `tools/flash.sh` taking only a `/dev/disk/by-id` path, refusing bare device nodes, and printing the card's current contents before writing. Verify by running it against a bare `/dev/sdX` and confirming it refuses, and against a by-id path with the write declined
+- [x] 2.2 Write `tools/flash.sh` taking only a `/dev/disk/by-id` path, refusing bare device nodes, and printing the card's current contents before writing. Verify by running it against a bare `/dev/sdX` and confirming it refuses, and against a by-id path with the write declined
 
 ## 3. The board boots it
 
