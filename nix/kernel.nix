@@ -28,7 +28,7 @@ buildLinux (args // {
     owner = "ruyisdk";
     repo = "linux-xuantie-kernel";
     inherit rev;
-    hash = lib.fakeHash;
+    hash = "sha256-ITlci/1nGcE46kglR7i1AG3MZH6RBfpcGLWPakyXMTk=";
   };
 
   defconfig = "k230_defconfig";

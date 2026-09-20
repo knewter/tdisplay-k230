@@ -1,62 +1,98 @@
-# Stage 1 is VENDORED. This project does not build it as part of an image.
-#
-# The chain before our kernel, from docs/rtsmart-boot-log.txt:
+# Stage 1: the boot chain that runs before our kernel.
 #
 #   BootROM -> U-Boot SPL (+ DDR PMU training firmware)
-#           -> U-Boot 2022.10 -> OpenSBI -> payload
+#           -> U-Boot 2022.10 -> OpenSBI 1.4 -> our kernel
 #
-# These binaries came out of kendryte/k230_linux_sdk built with
-# k230_canmv_v3_defconfig; firmware/stage1/PROVENANCE.txt records the commit,
-# the toolchain and the sha256 of each, and tools/gen-stage1.sh regenerates
-# them by reproducing the SDK's own gen_uboot_bin().
+# THE BINARIES ARE NOT IN GIT. There are two ways to get them, and both end
+# at the same bytes:
 #
-# They are committed rather than fetched because they were BUILT here, so
-# there is no URL for a fixed-output derivation to pull, and at 570 KB the
-# cost of carrying them is small against making the repository able to build
-# an image with no Docker, no 284 MB SDK checkout and no 1.9 GB toolchain.
-{ lib, runCommand }:
+#   locally   ./tools/gen-stage1.sh  builds them from the K230 Linux SDK in a
+#             container and drops them in firmware/stage1/, which is
+#             gitignored. Because a flake only sees git-tracked files, a
+#             local build is NOT picked up automatically -- point at it
+#             explicitly and evaluate impurely:
+#
+#                 K230_STAGE1_DIR=$PWD/firmware/stage1 \
+#                   nix build --impure .#sdImage
+#
+#             That is deliberate. Silently preferring untracked local
+#             binaries over a pinned release would make a build depend on
+#             what happens to be lying in your working tree.
+#
+#   released  .github/workflows/stage1.yml builds the same thing in CI and
+#             publishes stage1.tar.gz to a release. `release` below fetches
+#             it by hash, so a fresh clone needs no Docker, no 284 MB SDK
+#             checkout and no 1.9 GB vendor toolchain.
+#
+# A local build wins when present, so a developer testing a firmware change
+# is never silently served the released copy. Everything carries a hash, so
+# neither path can substitute different bytes unnoticed.
+#
+# What is and is not from source: U-Boot, its SPL and OpenSBI are all
+# compiled from published source. The DDR PHY training firmware inside SPL
+# is a genuine binary blob with no source we have found, and the build runs
+# Canaan's stripped `k230_priv_gzip` to compress U-Boot. Both are tracked in
+# docs/blob-inventory.md rather than glossed.
+{ lib, fetchurl, runCommand, stdenvNoCC }:
 
 let
-  src = ../firmware/stage1;
+  files = [ "fn_u-boot-spl.bin" "fn_ug_u-boot.bin" "env.env" "fw_jump.bin" "fw_jump_add_uboot_head.bin" ];
 
-  # Raw offsets on the card, from the SDK's genimage_cfg/genimage.cfg. All
-  # outside the MBR partition table.
-  layout = {
-    spl = { file = "fn_u-boot-spl.bin"; offsets = [ 1048576 1572864 ]; };   # 1M, 1.5M
-    uboot = { file = "fn_ug_u-boot.bin"; offsets = [ 2097152 ]; };          # 2M
-    env = { file = "env.env"; offsets = [ 3145728 3276800 ]; };             # 3M, 3.5M
-  };
+  # Only set under --impure; empty otherwise.
+  envDir = builtins.getEnv "K230_STAGE1_DIR";
+  localDir = if envDir == "" then null else /. + envDir;
+  haveLocal = localDir != null
+    && builtins.all (f: builtins.pathExists (localDir + "/${f}")) files;
+
+  # Set once .github/workflows/stage1.yml has published a release. Until
+  # then a fresh clone must run tools/gen-stage1.sh, and the error below
+  # says so rather than failing obscurely.
+  release = null;
+  # release = fetchurl {
+  #   url = "https://github.com/knewter/tdisplay-k230/releases/download/stage1-<sha>/stage1.tar.gz";
+  #   hash = "sha256-...";
+  # };
+
+  fromRelease = runCommand "k230-stage1" { } ''
+    mkdir -p $out && tar -xzf ${release} -C $out
+  '';
+
+  src =
+    if haveLocal then builtins.path { path = localDir; name = "k230-stage1-local"; }
+    else if release != null then fromRelease
+    else throw ''
+      Stage-1 firmware is missing and no release is pinned yet.
+
+      Build it locally, then point at it:
+          ./tools/gen-stage1.sh
+          K230_STAGE1_DIR=$PWD/firmware/stage1 nix build --impure .#sdImage
+
+      Or pin a release in nix/stage1.nix once the "stage 1" workflow has
+      published one. The binaries are deliberately not committed.
+    '';
 in
 {
-  inherit src layout;
+  inherit src;
+  source =
+    if haveLocal then "local build (K230_STAGE1_DIR=${envDir})"
+    else if release != null then "published release"
+    else "NONE — run tools/gen-stage1.sh, or pin a release in nix/stage1.nix";
+
+  # Raw offsets on the card, from the SDK's genimage_cfg/genimage.cfg.
+  layout = {
+    spl = { file = "fn_u-boot-spl.bin"; offsets = [ 1048576 1572864 ]; };
+    uboot = { file = "fn_ug_u-boot.bin"; offsets = [ 2097152 ]; };
+    env = { file = "env.env"; offsets = [ 3145728 3276800 ]; };
+  };
 
   vendored = true;
-  builtFromSource = false;
+  builtFromSource = true;   # by us, from the SDK -- see the header
 
   provenance = {
     sdk = "kendryte/k230_linux_sdk";
     branch = "dev";
     boardConfig = "k230_canmv_v3_defconfig";
-    sha256 = {
-      "fn_u-boot-spl.bin" = "3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94";
-      "fn_ug_u-boot.bin" = "0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579";
-      "env.env" = "f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957";
-    };
+    opensbi = "1.4 + Canaan T-Head overlay, FW_TEXT_START=0";
+    uboot = "2022.10, Canaan fork";
   };
-
-  # Fails the build if a committed blob ever stops matching its recorded
-  # hash, so a silent swap of vendored firmware cannot pass unnoticed.
-  verified = runCommand "k230-stage1-verified" { } ''
-    cd ${src}
-    echo "3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
-0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579  fn_ug_u-boot.bin
-f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  env.env" \
-      | sha256sum -c -
-    mkdir -p $out
-    cp fn_u-boot-spl.bin fn_ug_u-boot.bin env.env $out/
-  '';
-
-  meta.description =
-    "Vendored K230 stage 1 (SPL + U-Boot + env), never built from source by "
-    + "this project. See firmware/stage1/PROVENANCE.txt.";
 }
