@@ -308,7 +308,7 @@ def section(text: str, title: str) -> str:
 
 
 def parse_capability(repo_root: Path, path: Path, specs_dir: Path) -> tuple[Capability, list[Defect]]:
-    text = path.read_text(encoding="utf-8")
+    text = printable(path.read_text(encoding="utf-8"))
     rel = path.relative_to(repo_root).as_posix()
     parts = path.relative_to(specs_dir).parts
     group = parts[0] if len(parts) > 1 else "ungrouped"
@@ -384,6 +384,18 @@ def load_capabilities(repo_root: Path) -> tuple[list[Capability], list[Defect]]:
 # --------------------------------------------------------------------------
 
 SENTINEL = "\x00%d\x00"
+
+
+# A serial capture carries the bytes the line carried. docs/rtsmart-boot-log.txt
+# holds two NULs. Dropping them would edit the evidence, so they are shown as
+# the Unicode control pictures instead -- visible, and safe to serve.
+CONTROL_PICTURES = {
+    c: chr(0x2400 + c) for c in range(0x20) if c not in (0x09, 0x0A)
+} | {0x7F: "\u2421"}
+
+
+def printable(text: str) -> str:
+    return text.translate(CONTROL_PICTURES)
 
 
 def esc(value: object) -> str:
@@ -750,7 +762,7 @@ def evidence_page(repo_root: Path, path: str, report: Report) -> tuple[str, byte
         asset = "asset-" + re.sub(r"[^A-Za-z0-9.]+", "-", path).strip("-").lower()
         body = f'<div class="ev-image"><img src="{esc(asset)}" alt="{esc(path)}"></div>'
         return page(f"{source.name} — evidence", head + body + footer(report)), source.read_bytes()
-    text = source.read_text(encoding="utf-8", errors="replace")
+    text = printable(source.read_text(encoding="utf-8", errors="replace"))
     body = f'<pre class="ev-text">{esc(text)}</pre>'
     return page(f"{source.name} — evidence", head + body + footer(report)), None
 
