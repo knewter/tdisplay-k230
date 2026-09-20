@@ -74,7 +74,21 @@ at a Linux console, not replacing.
 
 ## Open Questions
 
-- Whether U-Boot needs a `boot.scr`, an extlinux config, or a fixed filename to
-  find our kernel. This is a property of the vendored artifact, discovered by
-  reading its environment once it is in hand. It changes a task's contents but
-  not the approach or the specs.
+~~Whether U-Boot needs a `boot.scr`, an extlinux config, or a fixed
+filename.~~ **Resolved 20 September 2026: fixed filenames, and it is none of
+the three options as posed.** The SDK's `default.env` runs a hardcoded
+`blinux` command that `ext4load`s exactly `/fw_jump_add_uboot_head.bin`,
+`/Image` and `/force.dtb` from the first partition of mmc 1, then `bootm`s
+the OpenSBI payload. It never calls `sysboot`, so extlinux is not read at
+all. Full text in `docs/evidence/uboot-env.txt`.
+
+This invalidated `nix/hardware.nix` as written in the previous change, which
+had enabled `generic-extlinux-compatible`. Rewritten to configure no
+bootloader: the image derivation places the three files stage 1 expects.
+
+The cost, recorded rather than hidden: one kernel on the card, so NixOS
+generations cannot be chosen at boot. Recoverable later by rewriting the
+U-Boot environment — which is plain data at 3M and 3.5M, separate from the
+SPL and U-Boot binaries — to run `sysboot`. Deferred until something boots,
+because a bringup failure and a bootloader misconfiguration are
+indistinguishable from a dark screen.
