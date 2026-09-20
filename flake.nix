@@ -20,8 +20,16 @@
       stage1 = import ./nix/stage1.nix { inherit (pkgs) lib; };
     in
     {
-      nixosConfigurations.k230 = nixpkgs.lib.nixosSystem {
-        modules = [ ./nix/k230.nix ];
+      # Two systems on one base, because the boot paths genuinely differ.
+      # k230      the board: vendored U-Boot reads extlinux, root on SD
+      # k230-qemu QEMU: kernel loaded directly, whole system in an initrd
+      nixosConfigurations = {
+        k230 = nixpkgs.lib.nixosSystem {
+          modules = [ ./nix/k230.nix ./nix/hardware.nix ];
+        };
+        k230-qemu = nixpkgs.lib.nixosSystem {
+          modules = [ ./nix/k230.nix ./nix/qemu.nix ];
+        };
       };
 
       checks.${buildSystem} = {
@@ -34,6 +42,11 @@
         cross-hello = pkgsCross.hello;
         toplevel = self.nixosConfigurations.k230.config.system.build.toplevel;
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
+
+        # What tools/qemu-k230.sh boots: a kernel with standard RISC-V PTE
+        # bits, and the whole system as a ramdisk.
+        qemu-kernel = self.nixosConfigurations.k230-qemu.config.system.build.kernel;
+        qemu-initrd = self.nixosConfigurations.k230-qemu.config.system.build.netbootRamdisk;
       };
 
       # The vendored stage-1 boundary, exposed so it can be inspected without
