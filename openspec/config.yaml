@@ -1,0 +1,85 @@
+schema: spec-driven
+
+context: |
+  A LILYGO T-Display-K230: a Kendryte K230D (two RISC-V C908 cores at 1.6 GHz
+  and 800 MHz, plus a KPU NPU) with 1 GiB LPDDR, a 4.1" 568x1232 RM69A10
+  AMOLED, GT9895 touch, an RTL8189FTV SDIO radio and an SX1262/LR2021 LoRa
+  radio. It arrived running LilyGO's RT-Smart firmware.
+
+  The goal is to replace that firmware with NixOS on riscv64, and then run
+  AtomVM and the Dozer core on it. Dozer is a Crux application: a
+  shell-neutral Rust core behind a serialized FFI boundary, with swappable
+  shells. Which shell this board gets is deliberately undecided.
+
+  Terms specs should use:
+    - stage 1        BootROM, U-Boot SPL with its DDR PMU training blob,
+                     U-Boot 2022.10 and OpenSBI. Vendored as a binary, not
+                     built by us.
+    - the system     the NixOS closure: kernel, initrd, rootfs
+    - the console    the CH342 bridge on the charging USB-C, two CDC-ACM
+                     ports at 115200 8N1
+    - the panel      the RM69A10 AMOLED, driven through the kernel's
+                     device-tree-configured panel-canaan-universal
+    - a shell        whatever draws Dozer on this screen; not yet chosen
+
+  Say "vendored" for anything we take as a prebuilt binary from Canaan or
+  LilyGO, and say who owns a boundary when a requirement crosses one.
+
+  Toolchain: a pinned Nix flake. The system cross-compiles from x86_64-linux
+  to riscv64-linux; riscv64 is community-tier in nixpkgs with no binary
+  cache, so cross-compiling is the default and emulation is the fallback.
+  QEMU's `k230` machine runs an image without hardware.
+
+  Specs live under openspec/specs/ on the taxonomy in
+  .skills/k230-spec-change/SKILL.md. Do not add a top-level group without
+  proposing one.
+
+rules:
+  proposal:
+    - State what stops working, or what a person cannot do, before naming any
+      chip or register. Hardware writing slides into mechanism-first; invert
+      it.
+    - Name the non-goals. Scope creep is expensive here because one change
+      can reach from a device tree to a Nix derivation to a running app.
+    - Say whether the change needs the physical board. Work that runs under
+      QEMU is worth separating from work that does not, because it can
+      proceed while the board is in pieces.
+  specs:
+    - Ground every requirement in something observed on hardware, in a boot
+      log, or in vendor source that has been read. Where none of those exist,
+      mark it `<!-- UNVERIFIED -->` rather than writing a confident sentence.
+      Datasheet prose is not grounding; a boot log is.
+    - Write scenarios from the outside in. Say what a person at the board or
+      at a console observes, not which driver probes.
+    - Say which side owns it. A requirement met by vendored stage 1 is not a
+      requirement on the system, and conflating them is how boot bugs hide.
+  design:
+    - Name the layer: stage 1, kernel, device tree, Nix, or userspace. A
+      design that names only "the image" has not said where the work lands.
+    - Record what was rejected and why. Several dead ends here were expensive
+      to find and cheap to re-enter.
+  tasks:
+    - Every task group ends with the command that proves it, and it is the
+      narrowest real invocation -- a `nix build` of one derivation, a QEMU
+      boot, or a named `tools/msh.py` invocation against the board.
+    - Distinguish proof under QEMU from proof on hardware. Say which one a
+      task claims; they are not interchangeable.
+    - Keep a task to something completable in one sitting. A cross-compile
+      without a binary cache is long; split by derivation, not by hope.
+
+operations:
+  apply:
+    guidance:
+      - Run the task group's own command before ticking its box, and never
+        claim a hardware task passes from a QEMU run.
+      - Capture the console output that proves a hardware task into
+        docs/ rather than pasting it into a commit message. Boot logs are
+        the evidence this project runs on.
+      - Push after each change lands. Work here is easy to lose to a
+        reflash.
+  archive:
+    guidance:
+      - Say which capability files the delta touched.
+      - If a requirement was grounded by a boot log, make sure that log is
+        committed before the change is archived. A requirement whose evidence
+        lives only in a terminal scrollback is unverified.
