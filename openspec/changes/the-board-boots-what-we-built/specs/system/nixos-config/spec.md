@@ -26,3 +26,8 @@ from.
 
 - **WHEN** the board is powered on with a flashed card and a data cable attached
 - **THEN** a console prompt is reached on `/dev/ttyACM0`, and that transcript is committed as evidence
+
+#### Scenario: Someone reads an emulated boot as a claim about the board
+
+- **WHEN** an emulated boot succeeds
+- **THEN** the evidence records which machine was emulated and what it does not model, so the claim cannot be over-read

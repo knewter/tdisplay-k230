@@ -32,7 +32,7 @@ carries `pinctrl-k230.c` and `reset-k230.c` but ships no K230 device tree
 only `SOC_CANAAN_K210`, which is `depends on !MMU`. A `k230`-machine boot
 additionally needs the Xuantie kernel built with `CONFIG_ERRATA_THEAD_PBMT=n`,
 that errata being the T-Head MAEE page-table extension QEMU does not
-implement. That kernel belongs to `the-screen-comes-up-under-linux`.*
+implement. That kernel is the panel bring-up's to package.*
 
 #### Scenario: The system boots under emulation
 
