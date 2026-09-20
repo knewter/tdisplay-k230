@@ -37,6 +37,14 @@ KERNEL=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-kern
 INITRD=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-initrd)
 TOPLEVEL=$(nix build --no-link --print-out-paths .#nixosConfigurations.k230-qemu.config.system.build.toplevel)
 
+# -append REPLACES the whole kernel command line, so take the params the
+# configuration actually declares rather than hand-writing a subset. The
+# netboot profile contributes ones that are easy to miss (root=fstab,
+# nohibernate, the lsm list); dropping them silently changes how the guest
+# boots. console=ttyS0,115200n8 is already among them.
+PARAMS=$(nix eval --raw --apply 'ps: builtins.concatStringsSep " " ps' \
+  .#nixosConfigurations.k230-qemu.config.boot.kernelParams)
+
 # The k230 machine generates no FDT of its own -- dumpdtb answers "This
 # machine doesn't have an FDT" -- so it needs one supplied. `virt` builds
 # its own, so no -dtb is required there.
@@ -72,6 +80,7 @@ echo "kernel:   $KIMG" >&2
 if [ -n "$DTB" ]; then echo "dtb:      $DTB" >&2; fi
 echo "initrd:   $IIMG" >&2
 echo "toplevel: $TOPLEVEL" >&2
+echo "cmdline:  $PARAMS earlycon=sbi init=$TOPLEVEL/init" >&2
 echo >&2
 
 QEMU=(qemu-system-riscv64
@@ -80,7 +89,7 @@ QEMU=(qemu-system-riscv64
   -nographic
   -kernel "$KIMG"
   -initrd "$IIMG"
-  -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7")
+  -append "$PARAMS earlycon=sbi init=$TOPLEVEL/init")
 if [ -n "$DTB" ]; then QEMU+=(-dtb "$DTB"); fi
 QEMU+=("$@")
 
