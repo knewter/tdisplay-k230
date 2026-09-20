@@ -125,3 +125,40 @@ product is bounded:
 Recorded because "the build is slow" and "the build is oversubscribed" look
 identical from outside, and the next person timing this should not inherit
 a bad number as the baseline.
+
+TASK 2.2 — the closure built
+-----------------------------
+$ nix build .#nixosConfigurations.k230.config.system.build.toplevel
+/nix/store/lzg30bab6kqkgsa54jaql1ixfxgizxv3-nixos-system-nixos-26.11.20260919.20b1ddd
+
+  EXIT=0   ELAPSED=4413s (73m33s)   2026-09-20
+
+Final tallies for the hardware closure:
+
+  derivations built locally : 353
+  paths substituted         : ~970
+  closure size              : 1.2 GiB
+  store paths in closure    : 474
+
+Remember the timing is from an oversubscribed run (-j 32, load 101). It is
+an upper bound, not a clean baseline.
+
+TASK 2.3 — nothing needed emulation
+------------------------------------
+The list is empty, and stated explicitly as the task requires: no derivation
+refused to cross-compile, and none could have been emulated anyway, because
+nix's extra-platforms does not include riscv64-linux on this host. Every one
+of the 353 local builds was a cross build or a native host tool.
+
+Minimality (system/nixos-config)
+---------------------------------
+Checked against the built closure rather than asserted:
+
+  NetworkManager  0 paths       xserver  0 paths
+  ModemManager    0 paths       mesa     0 paths
+
+The QEMU variant IS heavier -- netboot-minimal imports installation-device,
+which brings NetworkManager, ModemManager and a python3 environment. That is
+the test harness, not the product, and it never reaches the board. It is also
+why tools/qemu-k230.sh gives the guest 6G: a 1.2 GiB closure has to be
+resident in a ramdisk there, where on hardware it is an ext4 root on the card.

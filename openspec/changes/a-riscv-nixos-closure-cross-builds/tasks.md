@@ -12,8 +12,8 @@ radio and no SD layout.
 ## 2. A minimal riscv64 NixOS closure
 
 - [x] 2.1 Declare a `nixosConfigurations.k230` with `buildPlatform = x86_64-linux` and `hostPlatform = riscv64-linux`, a serial console at 115200 8N1, and no graphical stack. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`
-- [ ] 2.2 Build the closure. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
-- [ ] 2.3 Record every derivation that refused to cross-compile and had to be emulated, with what it cost. Verify by committing that list to `docs/evidence/cross-build.txt`; if the list is empty, say so explicitly
+- [x] 2.2 Build the closure. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
+- [x] 2.3 Record every derivation that refused to cross-compile and had to be emulated, with what it cost. Verify by committing that list to `docs/evidence/cross-build.txt`; if the list is empty, say so explicitly
 
 ## 3. It boots under QEMU
 
