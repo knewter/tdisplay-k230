@@ -57,3 +57,25 @@ $ nix eval --json .#stage1
 $ grep -rniE 'u-?boot|opensbi' flake.nix nix/
   no matches outside explanatory comments
 Nothing in the flake compiles U-Boot or OpenSBI.
+
+Emulation fallback — available in principle, not enabled in practice
+---------------------------------------------------------------------
+Nothing in this build needed emulation, and nothing COULD have been emulated:
+
+  $ nix config show extra-platforms
+  i686-linux x86_64-v1-linux x86_64-v2-linux x86_64-v3-linux
+
+riscv64-linux is absent, so Nix will not build riscv64-linux derivations
+natively on this host regardless of binfmt. The OS-level binfmt handler IS
+registered -- the cross-built hello runs directly on the build host -- but
+that is a property of the OS, not of Nix.
+
+So image/cross-build's "emulation remains available as a fallback" is true
+only after a one-line change:
+
+  nix.settings.extra-platforms = [ "riscv64-linux" ];   # NixOS
+  extra-platforms = riscv64-linux                       # /etc/nix/nix.conf
+
+That change has NOT been made, because nothing has needed it. Recorded here
+so the fallback is understood as one config line away rather than as
+something already in place.
