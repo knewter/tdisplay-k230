@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import argparse
 import html
-import os
 import re
 import shutil
 import sys
@@ -819,12 +818,16 @@ def build_site(
     )
     report.seconds = time.monotonic() - started
 
-    # Rewrite the pages whose footer quotes the final measurements.
+    # Every page footer quotes the build's own measurements, which are only
+    # known once the pages exist. Write them again with the real numbers.
     (out / "index.html").write_text(index_page(report, link), encoding="utf-8")
     for cap in caps:
         (out / f"{cap.slug}.html").write_text(
             capability_page(cap, report, link), encoding="utf-8"
         )
+    for path, page_name in sorted(link.wanted.items()):
+        markup, _ = evidence_page(repo_root, path, report)
+        (out / page_name).write_text(markup, encoding="utf-8")
     report.output_bytes = sum(
         p.stat().st_size for p in out.rglob("*") if p.is_file()
     )
