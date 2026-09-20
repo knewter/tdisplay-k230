@@ -49,3 +49,32 @@ there is no URL. Committing them makes the repository self-contained: an
 image can be built without Docker, without the 284 MB SDK checkout and
 without the 1.9 GB toolchain. The provenance above and tools/gen-stage1.sh
 are what make that honest rather than mysterious.
+
+OpenSBI (added 2026-09-20)
+--------------------------
+  fw_jump.bin                  built from source, OpenSBI 1.4
+  fw_jump_add_uboot_head.bin   the same with a U-Boot image header
+
+Built in the same container from the SDK's own OpenSBI package:
+  version   1.4  (BR2_TARGET_OPENSBI_CUSTOM_VERSION_VALUE="1.4")
+  platform  generic, with Canaan's T-Head overlay at
+            buildroot-overlay/boot/opensbi/opensbi-1.4-overlay/platform/generic/thead
+  extra     FW_TEXT_START=0
+
+The header is applied exactly as post-image.sh does:
+  mkimage -A riscv -O linux -T kernel -C none -a 0 -e 0 -n linux \
+          -d fw_jump.bin fw_jump_add_uboot_head.bin
+
+This one goes INSIDE the boot ext4 at the root, not into the raw region --
+vendored U-Boot ext4loads /fw_jump_add_uboot_head.bin to 0x3000000 and
+bootm's it. See docs/evidence/uboot-env.txt.
+
+sha256
+023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  fw_jump.bin
+d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  fw_jump_add_uboot_head.bin
+
+Note for the blob inventory: unlike the DDR training firmware, this is
+compiled from published source (riscv/opensbi 1.4 plus Canaan's overlay,
+both readable). It is committed for the same build-convenience reason as
+U-Boot, not because source is unavailable, and building it inside the flake
+would remove it from the tree entirely.

@@ -23,6 +23,12 @@
       # Two systems on one base, because the boot paths genuinely differ.
       # k230      the board: vendored U-Boot reads extlinux, root on SD
       # k230-qemu QEMU: kernel loaded directly, whole system in an initrd
+      # The Xuantie kernel, built from source. Mainline cannot boot this SoC;
+      # see nix/kernel.nix.
+      k230Kernel = pkgsCross.linuxPackagesFor (pkgsCross.callPackage ./nix/kernel.nix {
+        inherit (pkgsCross) buildLinux;
+      });
+
       nixosConfigurations = {
         k230 = nixpkgs.lib.nixosSystem {
           modules = [ ./nix/k230.nix ./nix/hardware.nix ];
@@ -47,6 +53,8 @@
         # bits, and the whole system as a ramdisk.
         qemu-kernel = self.nixosConfigurations.k230-qemu.config.system.build.kernel;
         qemu-initrd = self.nixosConfigurations.k230-qemu.config.system.build.netbootRamdisk;
+
+        xuantie-kernel = self.k230Kernel.kernel;
       };
 
       # The vendored stage-1 boundary, exposed so it can be inspected without
