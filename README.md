@@ -89,4 +89,25 @@ See [docs/findings.md](docs/findings.md).
 - Serial console working
 - Shipped RT-Smart firmware boots; display and touch work
 - **Wi-Fi is broken in the shipped firmware** — a LilyGO defect, see findings
-- NixOS port not started
+- NixOS port under way — the cross toolchain works and the closure builds;
+  see `docs/evidence/cross-build.txt`
+
+## Building
+
+```sh
+nix build .#checks.x86_64-linux.cross-hello     # smoke-test the cross toolchain
+nix build .#nixosConfigurations.k230.config.system.build.toplevel
+./tools/qemu-k230.sh                            # boot it under QEMU
+CAPTURE=120 ./tools/qemu-k230.sh > boot.txt     # ...and record the boot
+```
+
+Everything cross-compiles from `x86_64-linux`; you do not need riscv64
+hardware to build. Budget real time for a first build: the glibc cross
+toolchain substitutes from the cache, but NixOS's initrd wants a static
+busybox, so a **second, musl** GCC bootstrap compiles locally alongside the
+kernel. That cost is one-time per nixpkgs pin.
+
+`tools/qemu-k230.sh` defaults to `-machine virt`, not `k230`. Mainline Linux
+ships no K230 device tree and no `SOC_CANAAN_K230`, so a stock kernel cannot
+boot QEMU's `k230` machine at all; that needs the Xuantie kernel built with
+`CONFIG_ERRATA_THEAD_PBMT=n`. See `docs/evidence/boot-path-differences.md`.
