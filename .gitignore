@@ -1,0 +1,13 @@
+# Upstream LilyGO SDK clone (2.5 GB) — fetch with tools/fetch-sdk.sh
+/repo/
+
+# Firmware images and build output
+*.img
+*.zip
+fw/
+build/
+result
+result-*
+
+# Local scratch
+*.pdf

@@ -1,0 +1,50 @@
+# T-Display-K230
+
+Bring-up work for the LILYGO T-Display-K230 — a Kendryte K230D (dual RISC-V
+C908 + KPU NPU) board with a 4.1" 568x1232 AMOLED, GT9895 touch, RTL8189FTV
+Wi-Fi, and an SX1262/LR2021 LoRa radio.
+
+Goal: replace the shipped RT-Smart firmware with **NixOS** on riscv64, then run
+[AtomVM](https://www.atomvm.net/) and the Dozer core on top.
+
+## Connecting to the board
+
+The board has two USB-C ports. The one that also charges (`J2` on the
+schematic) carries a **CH342 dual USB-UART bridge**, giving two CDC-ACM
+consoles. No driver is needed — the in-kernel `cdc-acm` handles it.
+
+| Device | CH342 ch | K230 UART | Purpose |
+| --- | --- | --- | --- |
+| `/dev/ttyACM0` | 0 | UART0 | RT-Thread `msh` console |
+| `/dev/ttyACM1` | 1 | UART3 | Second console |
+
+115200 8N1, no flow control. Enumerates as `1a86:55d2` "USB Dual_Serial".
+
+**Use a known-good USB-C data cable.** A charge-only cable produces complete
+silence (no kernel events at all); a marginal one produces `error -71`
+enumeration failures. Both look identical from the board's side — the red
+charge LED lights either way.
+
+## Tools
+
+| Script | Purpose |
+| --- | --- |
+| `tools/msh.py` | Run commands on the RT-Thread `msh` console and capture output |
+| `tools/probe.py` | Passively sniff a serial port, optionally poke it with CR/LF |
+| `tools/bootcap.py` | Send `reboot` and capture the full boot log |
+| `tools/snap.sh` | Snapshot USB/serial/block state for diffing |
+| `tools/watch.sh` | Poll for USB device changes (misses failed enumerations) |
+| `tools/kwatch.sh` | Follow the kernel log for USB events **including** failures |
+
+```sh
+./tools/msh.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
+```
+
+## Status
+
+See [docs/findings.md](docs/findings.md).
+
+- Serial console working
+- Shipped RT-Smart firmware boots; display and touch work
+- **Wi-Fi is broken in the shipped firmware** — a LilyGO defect, see findings
+- NixOS port not started
