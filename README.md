@@ -55,31 +55,38 @@ openspec validate --all                       check them
 
 ### Reading the specs
 
-`openspec/specs/` renders to a static site whose first statement is how many
-requirements are still unverified:
+**<https://knewter.github.io/tdisplay-k230/>** — rebuilt from
+`openspec/specs/` on every push to `main`, and its first line is how many
+requirements are still unverified.
+
+Locally:
 
 ```sh
-./scripts/render_specs.py          # writes public/, then open public/index.html
+npm install --prefix site      # once
+./scripts/build_site.py        # site/dist/, with the budgets enforced
+npm run dev --prefix site      # or preview it at http://localhost:4321/
 ```
-
-Python 3 and nothing else — no packages, no network, no CI. `public/` is
-gitignored.
 
 Every requirement is shown as **grounded** (something was observed on the
 board, or vendor source was read and cited by path) or **unverified**, with
 the reason. Citations under `docs/` become links to the committed boot log or
 photograph, so the evidence behind a requirement is one click from it.
 
-The renderer refuses to guess. A requirement carrying neither an
+The build refuses to guess. A requirement carrying neither an
 `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation, or one citing
 evidence that is not committed, is reported as a build defect: the site is
-still written and shows the defect, and the command exits non-zero naming the
-file and the requirement. Generation time and output size are budgeted at the
-top of `scripts/render_specs.py`, with the measurements behind those numbers in
+still written and shows the defect in its own colour, and the command exits
+non-zero naming the file and the requirement. Generation time and output size
+are budgeted in `scripts/build_site.py`, with the measurements behind those
+numbers in
 [`docs/evidence/spec-site-build.txt`](docs/evidence/spec-site-build.txt).
 
+`scripts/render_specs.py` is the half that reads the specs — standard library
+only, no npm needed — and `site/` is the Astro project that draws them.
+
 ```sh
-python3 -m unittest discover -s tests   # the renderer's own tests
+python3 -m unittest discover -s tests -p 'test_render_specs.py'   # the data pass
+./scripts/build_site.py                                           # + the built site
 ```
 
 ## Status

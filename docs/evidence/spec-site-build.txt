@@ -1,64 +1,117 @@
-spec-site: measured generation time and output size
-===================================================
+spec-site: what the build measures, and what it refuses
+=======================================================
 
-Captured 2026-09-20 20:15 UTC on `solomon`:
+Captured 2026-09-20 20:57 UTC on `solomon`:
   Linux 7.1.9-1-MANJARO x86_64, AMD Ryzen 9 5950X 16-Core Processor, 32 threads
-  Python 3.14.7, stdlib only -- no third-party packages, no network
+  Python 3.14.7 -- the data pass, standard library only
+  node v26.7.0, npm 12.0.2, astro 5.18.2
 
-The renderer writes into a scratch directory and prints pages, bytes and
-wall-clock seconds. Budgets live at the top of scripts/render_specs.py.
+One command runs the lot: the data pass, Astro, the budgets, and the
+assertions against what was built. Budgets live at the top of
+scripts/build_site.py.
 
---- run 1: the published capability tree as it stands ------------------
+--- the measured build --------------------------------------------------
 
-$ ./scripts/render_specs.py --out $SCRATCH/measure-1
-$SCRATCH/measure-1: 1 pages, 13939 bytes, 0.001 s
-0 of 0 requirements unverified
+$ ./scripts/build_site.py
+15:57:16 [content] Syncing content
+15:57:16 [content] Synced content
+15:57:16 [types] Generated 110ms
+15:57:16 [build] output: "static"
+15:57:16 [build] mode: "static"
+15:57:16 [build] directory: <repo>/site/dist/
+15:57:16 [build] Collecting build info...
+15:57:16 [build] ✓ Completed in 143ms.
+15:57:16 [build] Building static entrypoints...
+15:57:19 [vite] ✓ built in 2.31s
+15:57:19 [build] ✓ Completed in 2.46s.
+ generating static routes 
+15:57:19 ▶ src/pages/c/[slug].astro
+15:57:19   └─ /c/docs-spec-site/index.html (+27ms) 
+15:57:19 ▶ src/pages/evidence/[slug].astro
+15:57:19   ├─ /evidence/docs-evidence-spec-site-build-txt/index.html (+11ms) 
+15:57:19   └─ /evidence/docs-rtsmart-boot-log-txt/index.html (+10ms) 
+15:57:19 ▶ src/pages/index.astro
+15:57:19   └─ /index.html (+15ms) 
+15:57:19 ✓ Completed in 89ms.
+15:57:19 [build] 4 page(s) built in 2.75s
+15:57:19 [build] Complete!
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.025s
+OK
+  docs/spec-site                 6 requirements  5 grounded  1 unverified
+1 of 6 requirements unverified
+wrote <repo>/site/src/data/specs.json
+$ npm run build --prefix site
+<repo>/site/dist: 4 pages, 47711 bytes, 6.48 s  (budgets: 8388608 bytes, 120.0 s)
+ok
 (exit 0)
 
---- run 2: the same renderer over every capability the open proposals ---
----         will add, staged into a scratch tree ------------------------
+--- budgets -------------------------------------------------------------
 
-This is the number the budget is set against: it is what the site will
-measure once the work in flight is archived, rather than what an almost
-empty tree happens to produce today.
+  MAX_BUILD_SECONDS = 120.0     measured  6.5 s    ~18x headroom
+  MAX_OUTPUT_BYTES  = 8 MiB     measured 47 KiB   ~176x headroom
 
-$ ./scripts/render_specs.py --repo $SCRATCH/preview --out $SCRATCH/measure-2
+Set high on purpose. A cold GitHub runner pays Node start-up and a Vite
+build that a warm 5950X does not, and the capability taxonomy in
+.skills/k230-spec-change/SKILL.md allows fifteen capabilities where this
+tree has one. A breach should mean something changed -- an evidence file
+the size of a video, or a build that started doing real work -- not that
+the numbers were always tight. A budget raised reflexively means nothing.
+
+A forced breach names both numbers:
+
+$ ./scripts/build_site.py --max-bytes 1
+error: output is 44891 bytes against a budget of 1 bytes
+
+--- the build refuses to guess ------------------------------------------
+
+Run over a scratch tree staging every capability the open proposals will
+add. Three of their requirements declare neither an UNVERIFIED marker nor
+a Grounding citation. The build will not call them grounded:
+
+$ ./scripts/render_specs.py --repo $SCRATCH/preview
 
 error: openspec/specs/image/boot-chain/spec.md: requirement 'The hardware boot path differs from the emulated one, and that difference is recorded' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
 error: openspec/specs/image/sd-layout/spec.md: requirement 'Flashing names the target by a stable identifier' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
 error: openspec/specs/system/nixos-config/spec.md: requirement 'The system boots to a console prompt' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
-error: 3 requirement defect(s); the site was written but the build failed
-  display/panel                  2 requirements  1 grounded  1 unverified
-  display/touch                  2 requirements  1 grounded  1 unverified
-  docs/spec-site                 5 requirements  0 grounded  5 unverified
+error: 3 requirement defect(s); the data was written so the site can show them, but the build failed
   image/boot-chain               3 requirements  1 grounded  1 unverified  1 undeclared
-  image/cross-build              2 requirements  0 grounded  2 unverified
+  image/cross-build              2 requirements  1 grounded  1 unverified
   image/sd-layout                2 requirements  0 grounded  1 unverified  1 undeclared
   system/console                 2 requirements  2 grounded  0 unverified
   system/kernel                  1 requirements  1 grounded  0 unverified
   system/nixos-config            4 requirements  1 grounded  2 unverified  1 undeclared
-$SCRATCH/measure-2: 12 pages, 78306 bytes, 0.017 s
-13 of 23 requirements unverified
-(exit 2; non-zero because three staged requirements declare no
- verification status -- see 'Build defects' on the rendered landing page)
+  display/panel                  2 requirements  1 grounded  1 unverified
+  display/touch                  2 requirements  1 grounded  1 unverified
+  docs/spec-site                 6 requirements  5 grounded  1 unverified
+8 of 24 requirements unverified, 3 undeclared
+wrote $SCRATCH/preview/specs.json
+(exit 2 -- the data is still written, so the site can show the defects)
 
---- budgets ------------------------------------------------------------
+--- tests ---------------------------------------------------------------
 
-  MAX_GENERATION_SECONDS = 5.0      measured 0.017 s   ~290x headroom
-  MAX_OUTPUT_BYTES       = 4 MiB    measured 78 KiB    ~54x headroom
-
-Set deliberately high. The capability taxonomy in
-.skills/k230-spec-change/SKILL.md allows fifteen capabilities and the
-tree above has nine, so ordinary growth must not turn the budget red.
-A breach should mean something changed -- an evidence file the size of a
-video, or a renderer that started doing real work -- not that the numbers
-were always tight. A budget raised reflexively means nothing.
-
---- test suite ---------------------------------------------------------
-
-$ python3 -m unittest discover -s tests
-Ran 17 tests in 0.024s
-
+$ python3 -m unittest discover -s tests -p 'test_render_specs.py'
+Ran 18 tests in 0.044s
 OK
-$TMP/public: 2 pages, 16970 bytes, 0.005 s
-1 of 1 requirements unverified
+
+$ python3 -m unittest discover -s tests -p 'test_site_output.py'
+Ran 7 tests in 0.037s
+OK
+
+--- deployment ----------------------------------------------------------
+
+.github/workflows/spec-site.yml runs the same command on every push to
+main and publishes site/dist to GitHub Pages at
+https://knewter.github.io/tdisplay-k230/.
+
+Run 35536825120 installed the dependencies, ran the data-pass tests and
+built the site successfully on ubuntu-latest -- and then failed at
+actions/configure-pages. GitHub Pages has never been enabled on the
+repository, and the workflow's attempt to enable it (enablement: true)
+was refused: the Actions token is not permitted to create a Pages site.
+That is a repository setting, not something CI can do.
+
+Until a deployment completes, the requirement 'The published site is
+current without anyone maintaining it' stays UNVERIFIED. That is the
+correct output, and it is what the site itself says on its own page.
