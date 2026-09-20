@@ -1,0 +1,29 @@
+Flash target for the-board-boots-what-we-built
+===============================================
+Identified 2026-09-20 on solomon, with Josh confirming the contents are
+expendable.
+
+  device      /dev/sdf  (reader slot 1)
+  by-id       /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1
+  size        249872384 sectors = 119.1 GiB / 127 GB
+  filesystem  one exFAT partition, mounted at /run/media/jadams/0123-4567
+
+Contents observed before anything was written:
+
+  47G	/run/media/jadams/0123-4567/RetroidPocketGames
+  18M	/run/media/jadams/0123-4567/Android
+
+A Retroid Pocket card -- Android handheld, now broken -- holding 47 GB of
+ROMs that Josh has backed up elsewhere. Confirmed expendable.
+
+This is NOT the EverDrive 64 card examined earlier in the session. That one
+is 59.7 GiB labelled EVERDRIVE 6 and is not in the reader.
+
+The by-id path names the reader SLOT, not the card
+---------------------------------------------------
+It resolves to whatever sits in slot 1. That is still the right identifier
+to flash by -- it can never wander onto /dev/sda through /dev/sdd, which are
+the four 8 TB members of this host's RAID10 array, and device letters were
+seen to move across a replug during this session. But it is not a guarantee
+about WHICH card, which is why image/sd-layout also requires the procedure
+to print the target's current contents and wait for confirmation.
