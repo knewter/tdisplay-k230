@@ -40,9 +40,41 @@ end is the machine-readable form.
 
 ## A. What we ship or execute today
 
-Four blobs are on the live path: three committed into this repository, one
-executed during the build that produced them. A fifth and sixth sit *inside*
-the first, and a seventh produced all of them.
+Five blobs are on the live path, plus the one executed during the build that
+produced them, two that sit *inside* one of them, and the toolchain that
+compiled all five.
+
+**Where they live changed on 2026-09-20, twice, while this was being
+written** — see A0 immediately below. The paths in the table are still the
+right names for the artifacts; they are just no longer git-tracked.
+
+### A0 — a note on relocating a blob, which is not the same as excising one
+
+At commit `5ee0a7a` the five stage-1 binaries were committed to
+`firmware/stage1/`. At `e7f4e6b` they were removed from git: `.gitignore`
+now covers `/firmware/stage1/*.bin` and `*.env`, `tools/gen-stage1.sh`
+produces them locally, `.github/workflows/stage1.yml` builds the same bytes
+in CI and publishes `stage1.tar.gz` to a release, and `nix/stage1.nix`
+fetches that release by hash — preferring a local build when
+`K230_STAGE1_DIR` points at one under `--impure`.
+
+That is a genuine improvement: the repository stops carrying opaque bytes,
+the provenance is explicit, and neither path can substitute different bytes
+unnoticed. It changes **nothing** in this inventory's classification. The
+same five artifacts, built the same way, by the same Docker container using
+the same 1.9 GB vendor toolchain and the same stripped vendor `gzip`, still
+end up on the card. A hash on a release tarball records that the blob has
+not changed; it does not record what is in it, and it does not let anyone
+change it.
+
+Arguably the release is the *harder* thing to audit, because the bytes now
+arrive from a URL rather than sitting in the tree where a scan trips over
+them. `tools/blob-scan.py` must therefore check the pinned release hash in
+`nix/stage1.nix` against this document, not only the files on disk.
+
+This is the distinction the whole document turns on. Vendored, committed,
+gitignored and fetched-by-hash are four places to keep a blob. Built from
+source is the only one that removes it.
 
 | # | Blob | Bytes | Class | Scope | sha256 |
 | --- | --- | --- | --- | --- | --- |
@@ -564,7 +596,11 @@ Two mechanisms are proposed in the change that accompanies this document
 
 ### MANIFEST
 
-Verified 2026-09-20: all 20 file-backed rows below reproduce. Extract the
+Verified 2026-09-20 at commit `5ee0a7a`: all 20 file-backed rows below
+reproduce. The five `firmware/stage1/` rows became untracked at `e7f4e6b`
+(A0); they still verify against a local `tools/gen-stage1.sh` build, and
+`tools/blob-scan.py` must additionally check the release hash pinned in
+`nix/stage1.nix`. Extract the
 `sha256  path` pairs — expanding `(sdk)` to `.build/k230_linux_sdk/` and
 `(lilygo)` to `repo/canmv_k230/`, and skipping `embedded:`, `dl:` and
 `group:` rows — and pipe them to `sha256sum -c`. `tools/blob-scan.py` (see
@@ -623,7 +659,9 @@ member appearing or vanishing visible. Individual hashes are recorded for
 every blob that is on, or one flag away from, a path we might actually take.
 
 **Totals.** 35 inventory rows covering roughly 332 individual binary files:
-5 committed here, 2 embedded inside one of those, 121 in the Linux SDK
+5 on this project's own boot path (committed at `5ee0a7a`, gitignored and
+fetched-by-hash from `e7f4e6b` — see A0; same bytes either way), 2 embedded
+inside one of those, 121 in the Linux SDK
 (120 git-tracked plus `k230_priv_gzip`), ~203 in the LilyGO RT-Smart clone,
 1 downloaded toolchain, and 1 in silicon.
 
