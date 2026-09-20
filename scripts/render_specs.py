@@ -74,6 +74,26 @@ TEXT_SUFFIXES = {
 }
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 
+# The taxonomy in .skills/k230-spec-change/SKILL.md, in the order the board
+# comes up: what produces an image, what boots, what a person sees, what talks,
+# what runs on top, and how any of it is written down. Alphabetical would put
+# `display` before `image`, which is backwards for a bring-up.
+GROUP_ORDER = ("image", "system", "display", "radio", "runtime", "docs")
+GROUP_BLURB = {
+    "image": "how an image is produced and what the board loads",
+    "system": "the NixOS closure, and getting a prompt",
+    "display": "anything a person looks at or presses",
+    "radio": "getting packets off the board",
+    "runtime": "what we run on top once it boots",
+    "docs": "how these specs reach a reader",
+}
+
+
+def group_rank(group: str) -> tuple[int, str]:
+    if group in GROUP_ORDER:
+        return (GROUP_ORDER.index(group), "")
+    return (len(GROUP_ORDER), group)
+
 
 class UnclassifiedRequirement(Exception):
     """A requirement whose verification status the renderer cannot determine.
@@ -373,7 +393,7 @@ def load_capabilities(repo_root: Path) -> tuple[list[Capability], list[Defect]]:
         cap, cap_defects = parse_capability(repo_root, path, specs_dir)
         caps.append(cap)
         defects.extend(cap_defects)
-    caps.sort(key=lambda c: (c.group, c.name))
+    caps.sort(key=lambda c: (group_rank(c.group), c.name))
     return caps, defects
 
 
@@ -646,7 +666,7 @@ def legend(counts: dict[str, int]) -> str:
     return f'<ul class="legend">{"".join(items)}</ul>'
 
 
-def index_page(report: Report, link: Linker) -> str:
+def index_page(report: Report, link: Linker, repo_root: Path) -> str:
     counts = report.tally()
     total = report.total_requirements
     unverified = counts[UNVERIFIED]
@@ -700,7 +720,12 @@ def index_page(report: Report, link: Linker) -> str:
         for cap in report.capabilities:
             if cap.group != current:
                 current = cap.group
-                body.append(f'<h3 class="group">{esc(cap.group)}<span class="rule"></span></h3>')
+                blurb = GROUP_BLURB.get(cap.group, "")
+                body.append(
+                    f'<h3 class="group">{esc(cap.group)}'
+                    + (f'<span class="group-blurb">{esc(blurb)}</span>' if blurb else "")
+                    + '<span class="rule"></span></h3>'
+                )
             c = cap.tally()
             n = sum(c.values())
             unproven = c[UNVERIFIED] + c[UNDECLARED]
@@ -730,6 +755,23 @@ def index_page(report: Report, link: Linker) -> str:
                 f'<li><span class="defect-kind">{esc(defect.kind)}</span>'
                 f'<span class="mono">{esc(defect.source)}</span>'
                 f"<span>{esc(defect.requirement)}</span></li>"
+            )
+        body.append("</ul></section>")
+
+    if link.wanted:
+        body.append('<section class="evidence-index">')
+        body.append('<h2 class="section-title">Evidence on file</h2>')
+        body.append(
+            '<p class="defect-lede">Committed in the repository, and what the '
+            "grounded requirements above point at. An observation on the board "
+            "outranks vendor source; a datasheet grounds nothing.</p>"
+        )
+        body.append("<ul>")
+        for path, page_name in sorted(link.wanted.items()):
+            size = (repo_root / path).stat().st_size if (repo_root / path).is_file() else 0
+            body.append(
+                f'<li><a href="{esc(page_name)}"><code>{esc(path)}</code></a>'
+                f'<span class="ev-size">{size / 1024:.1f} KiB</span></li>'
             )
         body.append("</ul></section>")
 
@@ -802,7 +844,7 @@ def build_site(
         if blob is not None:
             asset = "asset-" + re.sub(r"[^A-Za-z0-9.]+", "-", path).strip("-").lower()
             written[asset] = blob
-    written["index.html"] = index_page(report, link)
+    written["index.html"] = index_page(report, link, repo_root)
     written["styles.css"] = STYLES
 
     for name, payload in written.items():
@@ -820,7 +862,7 @@ def build_site(
 
     # Every page footer quotes the build's own measurements, which are only
     # known once the pages exist. Write them again with the real numbers.
-    (out / "index.html").write_text(index_page(report, link), encoding="utf-8")
+    (out / "index.html").write_text(index_page(report, link, repo_root), encoding="utf-8")
     for cap in caps:
         (out / f"{cap.slug}.html").write_text(
             capability_page(cap, report, link), encoding="utf-8"
@@ -1133,6 +1175,34 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
   margin: 30px 0 8px;
 }
 .group .rule { flex: 1; height: 1px; background: var(--rule); }
+.group-blurb {
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.evidence-index { margin-top: 44px; }
+.evidence-index ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.evidence-index li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 14px;
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+}
+.evidence-index a { text-decoration: none; }
+.ev-size {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
 
 .row {
   display: grid;
