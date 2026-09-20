@@ -1,0 +1,21 @@
+---
+import { STATUS_ORDER, STATUS_LABEL, type Tally } from "../lib/specs";
+
+interface Props {
+  tally: Tally;
+}
+const { tally } = Astro.props;
+const shown = STATUS_ORDER.filter((s) => s !== "undeclared" || tally[s] > 0);
+---
+
+<ul class="legend">
+  {
+    shown.map((s) => (
+      <li class={`legend-${s}`}>
+        <span class="swatch" />
+        <span class="legend-n">{tally[s]}</span>
+        <span class="legend-l">{STATUS_LABEL[s]}</span>
+      </li>
+    ))
+  }
+</ul>

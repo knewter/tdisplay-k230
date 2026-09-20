@@ -1,0 +1,75 @@
+---
+import "../styles/global.css";
+import { specs, url } from "../lib/specs";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+const desc =
+  description ??
+  "What the T-Display-K230 port has proven, and what it has only claimed.";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href={url("favicon.svg")} type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap"
+    />
+    <script is:inline>
+      // Set before first paint so the page never flashes the other theme.
+      try {
+        const saved = localStorage.getItem("k230-theme");
+        if (saved === "dark" || saved === "light") {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="Switch between light and dark"
+      title="Switch between light and dark"
+    >
+      <span class="theme-toggle-mark" aria-hidden="true"></span>
+    </button>
+    <slot />
+    <footer class="footer">
+      <p class="mono">
+        generated {specs.generated} &middot; {specs.capabilities.length} capability{specs.capabilities.length === 1 ? "" : "s"}
+        &middot; {specs.total} requirement{specs.total === 1 ? "" : "s"} &middot; built by <code>scripts/build_site.py</code>
+      </p>
+      <p class="mono dim">
+        Rendered from <code>openspec/specs/</code>. In-flight proposals are not
+        published.
+      </p>
+    </footer>
+    <script is:inline>
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        const root = document.documentElement;
+        const dark =
+          root.dataset.theme === "dark" ||
+          (!root.dataset.theme &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.theme = dark ? "light" : "dark";
+        try {
+          localStorage.setItem("k230-theme", root.dataset.theme);
+        } catch {}
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+---
+import Base from "../../layouts/Base.astro";
+import { specs, url, kib } from "../../lib/specs";
+
+export function getStaticPaths() {
+  return specs.evidence.map((file) => ({
+    params: { slug: file.slug },
+    props: { file },
+  }));
+}
+
+const { file } = Astro.props;
+---
+
+<Base title={`${file.name} — evidence`} description={`Committed evidence at ${file.path}.`}>
+  <nav class="crumbs">
+    <a href={url("")}>&larr; all capabilities</a>
+    <span class="mono dim">{file.path}</span>
+  </nav>
+
+  <header class="cap-head">
+    <p class="eyebrow">evidence &middot; {kib(file.bytes)}</p>
+    <h1>{file.name}</h1>
+    <p class="purpose mono dim">
+      Committed at <code>{file.path}</code>. This is what grounds the requirements
+      that cite it.
+    </p>
+  </header>
+
+  {
+    file.kind === "image" ? (
+      <div class="ev-image">
+        <img src={url(file.asset!)} alt={file.path} />
+      </div>
+    ) : (
+      <pre class="ev-text">{file.text}</pre>
+    )
+  }
+</Base>

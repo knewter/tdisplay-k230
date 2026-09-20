@@ -1,0 +1,29 @@
+---
+import { STATUS_ORDER, STATUS_LABEL, total, type Tally } from "../lib/specs";
+
+interface Props {
+  tally: Tally;
+  small?: boolean;
+}
+const { tally, small = false } = Astro.props;
+const n = total(tally);
+const label = STATUS_ORDER.filter((s) => tally[s])
+  .map((s) => `${tally[s]} ${STATUS_LABEL[s]}`)
+  .join(", ");
+---
+
+{
+  n === 0 ? (
+    <div class:list={["tape", "tape-empty", { "tape-small": small }]} aria-hidden="true" />
+  ) : (
+    <div class:list={["tape", { "tape-small": small }]} role="img" aria-label={label}>
+      {STATUS_ORDER.filter((s) => tally[s]).map((s) => (
+        <span
+          class={`seg seg-${s}`}
+          style={`flex:${tally[s]} 1 0`}
+          title={`${tally[s]} ${STATUS_LABEL[s]} (${Math.round((100 * tally[s]) / n)}%)`}
+        />
+      ))}
+    </div>
+  )
+}

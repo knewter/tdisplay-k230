@@ -13,8 +13,12 @@ result-*
 *.pdf
 .build/
 
-# Rendered spec site (scripts/render_specs.py)
-/public/
+# Spec site: everything under site/ that the build regenerates
+/site/node_modules/
+/site/dist/
+/site/.astro/
+/site/src/data/specs.json
+/site/public/evidence/
 
 # Python bytecode
 __pycache__/

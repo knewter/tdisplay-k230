@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import Tape from "../../components/Tape.astro";
+import Legend from "../../components/Legend.astro";
+import RequirementCard from "../../components/RequirementCard.astro";
+import { specs, url, resolveBase, unproven, total } from "../../lib/specs";
+
+export function getStaticPaths() {
+  return specs.capabilities.map((cap) => ({
+    params: { slug: cap.slug },
+    props: { cap },
+  }));
+}
+
+const { cap } = Astro.props;
+const n = total(cap.tally);
+const bad = unproven(cap.tally);
+---
+
+<Base title={`${cap.name} — K230 Verification Ledger`} description={cap.purposeFirst}>
+  <nav class="crumbs">
+    <a href={url("")}>&larr; all capabilities</a>
+    <span class="mono dim">{cap.source}</span>
+  </nav>
+
+  <header class="cap-head">
+    <p class="eyebrow">{cap.group}{cap.blurb ? ` · ${cap.blurb}` : ""}</p>
+    <h1>{cap.name}</h1>
+    {cap.purposeHtml && <div class="purpose" set:html={resolveBase(cap.purposeHtml)} />}
+  </header>
+
+  <section class="cap-verdict">
+    <p class="verdict-small">
+      {
+        n === 0 ? (
+          "No requirements."
+        ) : (
+          <>
+            <strong>{bad}</strong> of {n} requirement{n === 1 ? "" : "s"} here{" "}
+            {bad === 1 ? "is" : "are"} not proven.
+          </>
+        )
+      }
+    </p>
+    <Tape tally={cap.tally} />
+    <Legend tally={cap.tally} />
+  </section>
+
+  <section class="reqs">
+    {cap.requirements.map((req) => <RequirementCard req={req} />)}
+  </section>
+</Base>

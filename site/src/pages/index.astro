@@ -1,0 +1,147 @@
+---
+import Base from "../layouts/Base.astro";
+import Tape from "../components/Tape.astro";
+import Legend from "../components/Legend.astro";
+import { specs, url, kib, unproven, total } from "../lib/specs";
+
+const t = specs.tally;
+const n = specs.total;
+const { unverified, undeclared } = t;
+---
+
+<Base title="K230 Verification Ledger">
+  <!--
+    The count comes first. Everything else on this page is downstream of it:
+    the site exists to answer "which of these claims has been observed?"
+    before a reader has to ask.
+  -->
+  <section class="verdict">
+    <p class="eyebrow">LILYGO T-Display-K230 &middot; specification ledger</p>
+
+    {
+      n === 0 ? (
+        <>
+          <h1 class="count count-empty">
+            <span class="n">0</span>
+            <span class="of">requirements published yet</span>
+          </h1>
+          <p class="lede">
+            Nothing has been archived into <code>openspec/specs/</code> yet.
+            Capabilities appear here as changes are archived, and each requirement
+            arrives either grounded in something observed or marked unverified.
+          </p>
+        </>
+      ) : (
+        <>
+          <h1
+            class:list={[
+              "count",
+              { "count-clear": unverified === 0 && undeclared === 0 },
+            ]}
+          >
+            <span class="n">{unverified}</span>
+            <span class="of">
+              of {n} requirement{n === 1 ? "" : "s"}{" "}
+              {unverified === 1 ? "is" : "are"} unverified
+            </span>
+          </h1>
+          {undeclared > 0 && (
+            <p class="alarm">
+              <strong>{undeclared}</strong> more declare{undeclared === 1 ? "s" : ""} no
+              status at all &mdash; neither grounded nor marked. The build that
+              produced this page failed and named them.
+            </p>
+          )}
+          <p class="lede">
+            On this board the documentation and the hardware disagree routinely. A
+            datasheet described a working radio whose enable line is never driven. So
+            a requirement counts as grounded only when something was observed on the
+            board, or vendor source was read and cited by path &mdash; never because a
+            datasheet says so.
+          </p>
+        </>
+      )
+    }
+
+    <Tape tally={t} />
+    <Legend tally={t} />
+  </section>
+
+  {
+    specs.capabilities.length > 0 && (
+      <section class="ledger">
+        <h2 class="section-title">Capabilities</h2>
+        {specs.groups.map((g) => (
+          <>
+            <h3 class="group">
+              {g.name}
+              {g.blurb && <span class="group-blurb">{g.blurb}</span>}
+              <span class="rule" />
+            </h3>
+            {g.slugs.map((slug) => {
+              const cap = specs.capabilities.find((c) => c.slug === slug)!;
+              return (
+                <a class="row" href={url(`c/${cap.slug}/`)}>
+                  <div class="row-name">{cap.name}</div>
+                  <div class="row-purpose">{cap.purposeFirst}</div>
+                  <div class="row-tape">
+                    <Tape tally={cap.tally} small />
+                  </div>
+                  <div class="row-count">
+                    <strong>{unproven(cap.tally)}</strong>/{total(cap.tally)}
+                    <span class="row-count-l">unproven</span>
+                  </div>
+                </a>
+              );
+            })}
+          </>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    specs.defects.length > 0 && (
+      <section class="defects">
+        <h2 class="section-title">Build defects</h2>
+        <p class="defect-lede">
+          These stopped the build from succeeding. A requirement with no declared
+          status, or one citing evidence that is not committed, is a defect in the
+          requirement.
+        </p>
+        <ul>
+          {specs.defects.map((d) => (
+            <li>
+              <span class="defect-kind">{d.kind}</span>
+              <span class="mono">{d.source}</span>
+              <span>{d.requirement}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    specs.evidence.length > 0 && (
+      <section class="evidence-index">
+        <h2 class="section-title">Evidence on file</h2>
+        <p class="defect-lede">
+          Committed in the repository, and what the grounded requirements above
+          point at. An observation on the board outranks vendor source; a datasheet
+          grounds nothing.
+        </p>
+        <ul>
+          {specs.evidence.map((e) => (
+            <li>
+              <a href={url(`evidence/${e.slug}/`)}>
+                <code>{e.path}</code>
+              </a>
+              <span class="ev-size">{kib(e.bytes)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</Base>

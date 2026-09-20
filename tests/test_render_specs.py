@@ -9,6 +9,7 @@ Stdlib only, so it runs in any shell with python3 and no network.
 from __future__ import annotations
 
 import importlib.util
+import json
 import shutil
 import sys
 import tempfile
@@ -136,11 +137,10 @@ class TestClassification(unittest.TestCase):
     def test_a_real_marker_is_stripped_from_the_rendered_prose(self) -> None:
         with TempRepo() as root:
             write_spec(root, "display/panel", "### Requirement: A\n" + UNVERIFIED_BODY)
-            out = root / "public"
-            render_specs.build_site(root, out)
-            markup = (out / "display-panel.html").read_text()
-            self.assertNotIn("UNVERIFIED", markup)
-            self.assertIn("nothing has been drawn on this panel", markup)
+            data, _ = render_specs.build_data(root)
+            req = data["capabilities"][0]["requirements"][0]
+            self.assertNotIn("UNVERIFIED", req["proseHtml"])
+            self.assertIn("nothing has been drawn on this panel", req["reason"])
 
     def test_an_undeclared_requirement_becomes_a_build_defect_not_grounded(self) -> None:
         with TempRepo() as root:
@@ -203,104 +203,84 @@ class TestEvidenceCitations(unittest.TestCase):
             self.assertIn("docs/evidence/never-captured.txt", defects[0].detail)
 
 
-# -- task 2.1, 2.2, 2.3, 2.4 ------------------------------------------------
+# -- what the data pass hands Astro -----------------------------------------
 
 
-class TestRendering(unittest.TestCase):
-    def build(self, root: Path) -> tuple[Path, object]:
-        out = root / "public"
-        report = render_specs.build_site(root, out)
-        return out, report
-
-    def test_one_page_per_capability(self) -> None:
+class TestData(unittest.TestCase):
+    def test_every_capability_and_requirement_reaches_the_json(self) -> None:
         with TempRepo() as root:
+            (root / "docs").mkdir()
+            (root / "docs" / "rtsmart-boot-log.txt").write_text("U-Boot SPL 2022.10\n")
             write_spec(root, "display/panel", "### Requirement: A\n" + UNVERIFIED_BODY)
             write_spec(root, "system/console", "### Requirement: B\n" + GROUNDED_BODY)
-            (root / "docs").mkdir(exist_ok=True)
-            (root / "docs" / "rtsmart-boot-log.txt").write_text("U-Boot SPL 2022.10\n")
-            out, _ = self.build(root)
-            self.assertTrue((out / "display-panel.html").is_file())
-            self.assertTrue((out / "system-console.html").is_file())
-
-    def test_the_real_tree_gets_a_page_for_every_spec_file(self) -> None:
-        out = Path(tempfile.mkdtemp(prefix="spec-site-pages-")) / "public"
-        try:
-            report = render_specs.build_site(REPO, out)
-            specs = sorted((REPO / "openspec" / "specs").rglob("spec.md"))
-            self.assertEqual(len(report.capabilities), len(specs))
-            for cap in report.capabilities:
-                self.assertTrue(
-                    (out / f"{cap.slug}.html").is_file(),
-                    f"no page for {cap.ident}",
-                )
-            self.assertTrue((out / "index.html").is_file())
-        finally:
-            shutil.rmtree(out.parent, ignore_errors=True)
-
-    def test_landing_page_states_the_count_before_any_capability_prose(self) -> None:
-        with TempRepo() as root:
-            write_spec(
-                root,
-                "display/panel",
-                "### Requirement: A\n" + UNVERIFIED_BODY,
-                purpose="Defines what appears on this board's AMOLED.",
+            data, report = render_specs.build_data(root)
+            self.assertEqual(data["total"], 2)
+            self.assertEqual(data["tally"], {"grounded": 1, "unverified": 1, "undeclared": 0})
+            self.assertEqual(
+                [c["slug"] for c in data["capabilities"]],
+                ["system-console", "display-panel"],
+                "groups follow the taxonomy order, not the alphabet",
             )
-            out, _ = self.build(root)
-            markup = (out / "index.html").read_text()
-            count_at = markup.index("requirement is unverified")
-            heading_at = markup.index("Capabilities")
-            self.assertLess(count_at, heading_at)
-            self.assertLess(count_at, markup.index("panel"))
-            self.assertLess(count_at, markup.index("AMOLED"))
+            panel = next(c for c in data["capabilities"] if c["slug"] == "display-panel")
+            req = panel["requirements"][0]
+            self.assertEqual(req["status"], UNVERIFIED)
+            self.assertIn("nothing has been drawn", req["reason"])
+            self.assertNotIn("UNVERIFIED", req["proseHtml"])
+            self.assertEqual([s["title"] for s in req["scenarios"]], ["Something is drawn"])
 
-    def test_evidence_citations_become_working_links(self) -> None:
+    def test_evidence_becomes_a_link_and_a_page_of_its_own(self) -> None:
         with TempRepo() as root:
             (root / "docs").mkdir()
             (root / "docs" / "rtsmart-boot-log.txt").write_text("U-Boot SPL 2022.10\n")
             write_spec(root, "system/console", "### Requirement: B\n" + GROUNDED_BODY)
-            out, _ = self.build(root)
-            markup = (out / "system-console.html").read_text()
-            hrefs = set(
-                m for m in __import__("re").findall(r'href="([^"]+)"', markup)
-                if not m.startswith("http")
+            data, _ = render_specs.build_data(root)
+            req = data["capabilities"][0]["requirements"][0]
+            self.assertEqual(
+                req["evidence"],
+                [
+                    {
+                        "path": "docs/rtsmart-boot-log.txt",
+                        "slug": "docs-rtsmart-boot-log-txt",
+                        "href": "@@BASE@@evidence/docs-rtsmart-boot-log-txt/",
+                    }
+                ],
             )
-            self.assertIn("evidence-docs-rtsmart-boot-log-txt.html", hrefs)
-            for href in hrefs:
-                self.assertTrue((out / href).is_file(), f"dead link: {href}")
-            self.assertIn(
-                "U-Boot SPL 2022.10",
-                (out / "evidence-docs-rtsmart-boot-log-txt.html").read_text(),
-            )
+            self.assertIn("@@BASE@@evidence/docs-rtsmart-boot-log-txt/", req["proseHtml"])
+            self.assertEqual(data["evidence"][0]["kind"], "text")
+            self.assertIn("U-Boot SPL 2022.10", data["evidence"][0]["text"])
 
-    def test_nothing_from_openspec_changes_reaches_the_output(self) -> None:
-        """Against the real repository, so the in-flight change ids are real."""
-        out = Path(tempfile.mkdtemp(prefix="spec-site-nochanges-")) / "public"
-        try:
-            render_specs.build_site(REPO, out)
-            changes_dir = REPO / "openspec" / "changes"
-            ids = sorted(
-                p.name
-                for p in changes_dir.iterdir()
-                if p.is_dir() and p.name != "archive"
+    def test_the_data_pass_reads_openspec_specs_and_nothing_else(self) -> None:
+        with TempRepo() as root:
+            (root / "openspec" / "changes" / "a-change" / "specs" / "x" / "y").mkdir(
+                parents=True
             )
-            self.assertTrue(ids, "expected at least one in-flight change to test against")
-            # Evidence pages reproduce files committed elsewhere in the repo
-            # verbatim; what must stay out of the site is the spec content of
-            # an open proposal, which lives on the index and capability pages.
-            blob = "\n".join(
-                p.read_text(encoding="utf-8", errors="replace")
-                for p in out.rglob("*")
-                if p.is_file()
-                and p.suffix in {".html", ".css"}
-                and not p.name.startswith("evidence-")
+            (
+                root / "openspec" / "changes" / "a-change" / "specs" / "x" / "y" / "spec.md"
+            ).write_text("## ADDED Requirements\n\n### Requirement: Draft\n" + GROUNDED_BODY)
+            data, _ = render_specs.build_data(root)
+            self.assertEqual(data["capabilities"], [])
+            self.assertNotIn("a-change", json.dumps(data))
+
+    def test_a_defect_reaches_the_json_so_the_site_can_show_it(self) -> None:
+        with TempRepo() as root:
+            write_spec(root, "image/boot-chain", "### Requirement: Paths differ\n" + UNDECLARED_BODY)
+            data, _ = render_specs.build_data(root)
+            self.assertEqual(data["tally"]["undeclared"], 1)
+            self.assertEqual(len(data["defects"]), 1)
+            self.assertEqual(data["defects"][0]["kind"], "undeclared")
+
+    def test_the_command_exits_non_zero_on_a_defect_but_still_writes(self) -> None:
+        with TempRepo() as root:
+            write_spec(root, "image/boot-chain", "### Requirement: Paths differ\n" + UNDECLARED_BODY)
+            out = root / "specs.json"
+            status = render_specs.main(
+                ["--repo", str(root), "--json", str(out), "--assets", str(root / "a"), "--quiet"]
             )
-            leaked = [change_id for change_id in ids if change_id in blob]
-            self.assertEqual(leaked, [], f"in-flight change ids leaked: {leaked}")
-        finally:
-            shutil.rmtree(out.parent, ignore_errors=True)
+            self.assertEqual(status, 2)
+            self.assertTrue(out.is_file())
 
 
-# -- task 3.2 ---------------------------------------------------------------
+# -- budgets ----------------------------------------------------------------
 
 
 class TestBudgets(unittest.TestCase):
@@ -328,23 +308,6 @@ class TestBudgets(unittest.TestCase):
         message = str(caught.exception)
         self.assertIn("99999", message)
         self.assertIn("1024", message)
-
-    def test_a_forced_breach_fails_the_command(self) -> None:
-        with TempRepo() as root:
-            write_spec(root, "display/panel", "### Requirement: A\n" + UNVERIFIED_BODY)
-            status = render_specs.main(
-                ["--repo", str(root), "--out", str(root / "public"),
-                 "--max-bytes", "1", "--quiet"]
-            )
-            self.assertNotEqual(status, 0)
-
-    def test_the_real_tree_is_inside_its_budgets(self) -> None:
-        out = Path(tempfile.mkdtemp(prefix="spec-site-budget-")) / "public"
-        try:
-            report = render_specs.build_site(REPO, out)
-            render_specs.check_budgets(report)
-        finally:
-            shutil.rmtree(out.parent, ignore_errors=True)
 
 
 if __name__ == "__main__":

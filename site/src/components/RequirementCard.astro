@@ -1,0 +1,69 @@
+---
+import { STATUS_LABEL, resolveBase, type Requirement } from "../lib/specs";
+
+interface Props {
+  req: Requirement;
+}
+const { req } = Astro.props;
+---
+
+<article class={`req req-${req.status}`} id={req.slug}>
+  <div class="req-head">
+    <span class={`chip chip-${req.status}`}>{STATUS_LABEL[req.status]}</span>
+    <h3>{req.name}</h3>
+  </div>
+
+  {
+    req.status === "unverified" && (
+      <div class="why">
+        <span class="why-tag">why it is unverified</span>
+        <p>{req.reason}</p>
+      </div>
+    )
+  }
+  {
+    req.status === "undeclared" && (
+      <div class="why why-defect">
+        <span class="why-tag">build defect</span>
+        <p>
+          This requirement declares neither an <code>UNVERIFIED</code> marker nor a
+          grounding citation. The renderer will not call it grounded, and the build
+          that produced this page exited non-zero naming it.
+        </p>
+      </div>
+    )
+  }
+
+  {req.proseHtml && <div class="prose" set:html={resolveBase(req.proseHtml)} />}
+
+  {
+    req.evidence.length > 0 && (
+      <div class="evidence">
+        <span class="evidence-tag">evidence in this repository</span>
+        <ul>
+          {req.evidence.map((e) => (
+            <li>
+              <a class="cite" href={resolveBase(e.href)}>
+                <code>{e.path}</code>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  {
+    req.scenarios.length > 0 && (
+      <div class="scenarios">
+        <span class="scenarios-tag">scenarios</span>
+        {req.scenarios.map((s) => (
+          <div class="scenario">
+            <h4>{s.title}</h4>
+            <Fragment set:html={resolveBase(s.bodyHtml)} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+</article>
