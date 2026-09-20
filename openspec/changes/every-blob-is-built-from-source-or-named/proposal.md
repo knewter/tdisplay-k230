@@ -31,7 +31,9 @@ because a blob nobody remembers is indistinguishable from a blob nobody chose.
   in, with its sha256, what would make it go away, and whether it is a property
   of this chip, this vendor, this board, or of the industry.
 - **A blob that is not in the inventory fails the build.** Flagging that
-  depends on someone remembering is not flagging.
+  depends on someone remembering is not flagging — and the count went from
+  three committed binaries to five *during this draft*, when OpenSBI's
+  `fw_jump` pair was committed for the same good reason as the others.
 - **The DDR PMU training firmware is named as permanent.** It is 32 KiB of
   Synopsys PHY microcode living inside the SPL at offset `0x1fc74`, and
   building U-Boot from source does not remove it — it only means we compile it
@@ -70,7 +72,9 @@ proven any other way because the DDR training runs before there is a console.
 ## Impact
 
 Adds a U-Boot derivation and an OpenSBI derivation to the flake and removes
-`firmware/stage1/*.bin` and `firmware/stage1/env.env` from the repository.
+all five committed binaries under `firmware/stage1/` — the SPL, the compressed
+U-Boot, the environment, and the `fw_jump` pair that landed on 2026-09-20
+while this was being drafted.
 Rewrites `nix/stage1.nix`, whose `vendored = true` / `builtFromSource = false`
 contract is exactly what this change inverts, and retires `tools/gen-stage1.sh`
 and its Docker dependency. Adds `tools/blob-scan.py` and wires it into

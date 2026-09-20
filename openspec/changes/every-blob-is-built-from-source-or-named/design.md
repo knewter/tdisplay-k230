@@ -2,6 +2,10 @@
 
 See proposal.md — Why. What constrains the approach:
 
+- **The tree is still gaining blobs.** `firmware/stage1/fw_jump.bin` and
+  `fw_jump_add_uboot_head.bin` were committed on 2026-09-20 while this change
+  was being drafted, taking the committed count from three to five. Each
+  addition is individually well reasoned; that is how the count grows.
 - **The sources are already on disk.** `.build/k230_linux_sdk` is a checkout
   of `kendryte/k230_linux_sdk` at `1104236`, BSD-2-Clause. Canaan's U-Boot
   changes are not a patch series but a directory rsynced over vanilla
@@ -95,14 +99,28 @@ a patch series against Canaan's overlay is not. Rejected: packaging the
 Xuantie toolchain. 1.9 GB, MD5-only provenance, and the ISA evidence says it
 is unnecessary. Layer: **Nix**.
 
-**Build OpenSBI from nixpkgs, and never extract it from the SDK.** OpenSBI is
-not a blob today in either tree — the SDK builds 1.4 from source, nixpkgs has
-1.8.1 cross-buildable. The risk is not that it is opaque but that someone
-shortcuts by copying `fw_jump.bin` out of the SDK's `images/`, which would
-create a new blob on a path that currently has none. Build it, with
-`FW_TEXT_START=0` and the generic platform, to match what
-`k230_canmv_v3_defconfig` sets. The v0.9 in `docs/rtsmart-boot-log.txt` is
-LilyGO's shipped RT-Smart firmware and is not in our chain. Layer: **Nix**.
+**Build Canaan's OpenSBI 1.4 in the flake, not nixpkgs' 1.8.1 — and this is
+the one place a newer upstream is the wrong answer.** OpenSBI was not a blob
+when this change was drafted; `fw_jump.bin` and `fw_jump_add_uboot_head.bin`
+were committed to `firmware/stage1/` on 2026-09-20, mid-draft, for the same
+build-convenience reason as U-Boot, and `PROVENANCE.txt` says as much. They
+are E1: the whole Canaan delta is nine readable C files over
+`riscv-software-src/opensbi` 1.4.
+
+The tempting shortcut is `pkgs.opensbi`. It is wrong here, and not for the
+usual version-skew reason. Upstream v1.8 *does* match
+`canaan,kendryte-k230` in `platform/generic/thead/thead-generic.c` — but with
+`thead_pmu_quirks` only. Canaan's overlay matches the same compatible with
+`THEAD_QUIRK_DISABLE_MAEE` and calls `thead_disable_maee()` to clear
+`MXSTATUS.MAEE`, and upstream's `c9xx_errata.h` has no such bit. MAEE left on
+is a page-attribute fault: the kind that boots fine and corrupts memory later.
+So: fetch opensbi 1.4, apply the overlay, generic platform,
+`FW_TEXT_START=0`, header it with `mkimage` exactly as `post-image.sh` does.
+Rejected: `pkgs.opensbi` with a patch, and `pkgs.opensbi` unchanged — the
+first is the same work with a worse diff, the second is a bet on a quirk we
+can see is absent. Revisit if upstream gains a K230 MAEE quirk. The v0.9 in
+`docs/rtsmart-boot-log.txt` is LilyGO's shipped RT-Smart firmware and is in
+neither chain. Layer: **Nix**.
 
 **Keep the committed binaries until a compiled stage 1 has booted, then
 delete them in the same commit as the evidence.** A bringup failure with no

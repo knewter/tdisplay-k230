@@ -25,16 +25,17 @@ loads a kernel directly and models neither the SPL nor the SD card.
 - [ ] 3.3 Wire the proven packaging from task 2.2 onto the compiled output — gzip, `mkimage` with `SOURCE_DATE_EPOCH`, the CM byte, `firmware_gen_no_securiy.py` — to produce `fn_u-boot-spl.bin` and `fn_ug_u-boot.bin`. Verify with `nix build .#stage1` and `file`/`xxd` on the result showing the `K230` magic and a CM byte of `0x09`
 - [ ] 3.4 Build the environment from `default.env` rather than carrying `env.env`. Verify with `nix build .#stage1` and `sha256sum` on the produced `env.env` matching `f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957` — this one step stays bit-identical, so it is checkable without the board
 
-## 4. OpenSBI, before someone shortcuts it
+## 4. OpenSBI, which became a committed blob mid-draft
 
-- [ ] 4.1 Build `fw_jump.bin` from nixpkgs OpenSBI with the generic platform and `FW_TEXT_START=0`, wrap it with `mkimage -A riscv -O linux -T kernel -C none -a 0 -e 0 -n linux` into `fw_jump_add_uboot_head.bin` as `docs/evidence/uboot-env.txt` says stage 1 expects. Verify with `nix build .#fwJump` and `mkimage -l` on the result showing a RISC-V Linux kernel image at load 0
-- [ ] 4.2 Confirm nothing in the flake copies a binary out of `.build/`. Verify with `./tools/blob-scan.py` exiting 0 and `grep -rn '\.build/' flake.nix nix/` returning nothing
+- [ ] 4.1 Add an `opensbi-k230` derivation: fetch `riscv-software-src/opensbi` 1.4, apply the SDK's nine-file `opensbi-1.4-overlay`, generic platform, `FW_TEXT_START=0`. Do **not** substitute nixpkgs OpenSBI 1.8.1 — upstream matches `canaan,kendryte-k230` but without `THEAD_QUIRK_DISABLE_MAEE`, and that quirk clears `MXSTATUS.MAEE` so standard page-attribute bits behave. Verify with `nix build .#opensbi-k230` producing `fw_jump.bin` and `strings` on it finding `canaan,kendryte-k230`
+- [ ] 4.2 Header it as `docs/evidence/uboot-env.txt` says stage 1 expects: `mkimage -A riscv -O linux -T kernel -C none -a 0 -e 0 -n linux`. Verify with `nix build .#fwJump` and `mkimage -l` on the result showing a RISC-V Linux kernel image at load 0 and entry 0
+- [ ] 4.3 Delete `firmware/stage1/fw_jump.bin` and `fw_jump_add_uboot_head.bin` once 4.2 produces a working equivalent, and confirm nothing in the flake copies a binary out of `.build/`. Verify with `./tools/blob-scan.py` exiting 0 and `grep -rn '\.build/' flake.nix nix/` returning nothing
 
 ## 5. Boot what we compiled — **hardware claim**
 
 - [ ] 5.1 Flash a second card with the stage 1 from task 3.3 alongside the existing system, keeping the known-good card untouched. Verify with `./tools/flash.sh` against a `/dev/disk/by-id` path and `fdisk -l` on the result showing the documented offsets
 - [ ] 5.2 Power the board with a known-good data cable and capture the console. Verify by committing `docs/evidence/stage1-from-source.txt` containing the `PMU Major Msg:` training sequence and `U-Boot 2022.10` from a binary this project built, and confirming it reaches the same prompt the vendored chain reaches
-- [ ] 5.3 Delete `firmware/stage1/fn_u-boot-spl.bin`, `fn_ug_u-boot.bin` and `env.env`, and rewrite `nix/stage1.nix` and `firmware/stage1/PROVENANCE.txt` around the derivation. Verify with `nix build .#stage1` succeeding and `git ls-files firmware/` listing no binary
+- [ ] 5.3 Delete `firmware/stage1/fn_u-boot-spl.bin`, `fn_ug_u-boot.bin` and `env.env`, and rewrite `nix/stage1.nix` and `firmware/stage1/PROVENANCE.txt` around the derivations. Verify with `nix build .#stage1` succeeding and `git ls-files firmware/` listing no binary at all — the OpenSBI pair went in task 4.3, so this is the commit where `firmware/` becomes text
 
 ## 6. Ground the specs
 

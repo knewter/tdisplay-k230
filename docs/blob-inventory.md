@@ -54,6 +54,8 @@ the first, and a seventh produced all of them.
 | A6 | DDR PMU training firmware, dmem — *inside A1* | 1 660 | **IO** | `INDUSTRY` | `1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313` |
 | A7 | `Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410.tar.gz` | ~1.9 GiB unpacked | **E2** | `CANAAN` | not recorded upstream — **md5 only**: `8cefc7e94f760eaecc3620ffb238bf4a` |
 | A8 | K230 BootROM | unknown | **IO** | `SILICON` | unreadable |
+| A9 | `firmware/stage1/fw_jump.bin` | 270 728 | **E1** | `CANAAN` | `023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10` |
+| A10 | `firmware/stage1/fw_jump_add_uboot_head.bin` | 270 792 | **E1** | `CANAAN` | `d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544` |
 
 ### A1, A2 — the SPL and the compressed U-Boot
 
@@ -336,6 +338,49 @@ Listed for completeness so the chain in `openspec/specs` has no unnamed link.
 
 ---
 
+### A9, A10 — OpenSBI, committed 2026-09-20 after this inventory was first compiled
+
+**What it is.** OpenSBI 1.4, built from source in the same Docker container
+as A1/A2, from `riscv-software-src/opensbi` plus Canaan's nine-file overlay at
+`buildroot-overlay/boot/opensbi/opensbi-1.4-overlay/`, generic platform,
+`FW_TEXT_START=0`. A10 is A9 with a U-Boot legacy image header
+(`mkimage -A riscv -O linux -T kernel -C none -a 0 -e 0 -n linux`), because
+`docs/evidence/uboot-env.txt` records that stage 1 `ext4load`s
+`/fw_jump_add_uboot_head.bin` from the boot partition and `bootm`s it.
+
+**These arrived while this document was being written, which is the argument
+for the document.** `firmware/stage1/PROVENANCE.txt` says so itself: "Note for
+the blob inventory: unlike the DDR training firmware, this is compiled from
+published source ... It is committed for the same build-convenience reason as
+U-Boot, not because source is unavailable, and building it inside the flake
+would remove it from the tree entirely." That is exactly right, and it is also
+exactly how a tree accumulates blobs — one well-reasoned convenience at a
+time, each individually defensible. Class **E1**: nothing has to be waited
+for, and the whole overlay is 9 files of readable C.
+
+**A real difference to check before swapping in nixpkgs OpenSBI.** The
+tempting move is `pkgs.opensbi` (1.8.1 at the flake's pin). Upstream v1.8
+*does* carry `canaan,kendryte-k230` in
+`platform/generic/thead/thead-generic.c`'s match table — but with
+`thead_pmu_quirks` only. Canaan's 1.4 overlay matches the same compatible with
+`THEAD_QUIRK_DISABLE_MAEE` and calls `thead_disable_maee()`, clearing
+`MXSTATUS.MAEE` so that standard RISC-V page-table attribute bits behave;
+upstream's `c9xx_errata.h` has no such quirk bit at all. So the two are not
+equivalent, and MAEE left enabled is the kind of fault that shows up as a
+kernel that boots and then corrupts memory under load.
+
+**Unblocking event.** None for the *blob* — build it in the flake. For the
+*version*: upstream OpenSBI gaining a MAEE quirk for the K230, or evidence
+that our kernel does not need it. Until one of those, build Canaan's 1.4 plus
+its overlay from source rather than substituting a newer upstream.
+
+**Next device.** `CANAAN`, shading into `INDUSTRY`. OpenSBI itself is the good
+news story in RISC-V: BSD-2-Clause, upstream, and it already knows this chip's
+compatible string. That a vendor still ships a nine-file overlay against a
+four-release-old version is a process choice. Ask, before buying: **how far
+behind upstream is the vendor's OpenSBI, and what is in their delta?** Nine
+readable files is fine. A fork is not.
+
 ## B. Blobs the Linux path would pull in
 
 None of these is on our path *today*. Each is one defconfig line away, and
@@ -519,7 +564,7 @@ Two mechanisms are proposed in the change that accompanies this document
 
 ### MANIFEST
 
-Verified 2026-09-20: all 18 file-backed rows below reproduce. Extract the
+Verified 2026-09-20: all 20 file-backed rows below reproduce. Extract the
 `sha256  path` pairs — expanding `(sdk)` to `.build/k230_linux_sdk/` and
 `(lilygo)` to `repo/canmv_k230/`, and skipping `embedded:`, `dl:` and
 `group:` rows — and pipe them to `sha256sum -c`. `tools/blob-scan.py` (see
@@ -540,6 +585,8 @@ E1  f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  firmware/s
 E1  c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  (sdk)tools/k230_priv_gzip
 IO  517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
 IO  1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
+E1  023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/stage1/fw_jump.bin
+E1  d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
 IO  -  (silicon) K230 BootROM
 E2  md5:8cefc7e94f760eaecc3620ffb238bf4a  Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410.tar.gz
 IO  28680932ac879d8591fbaaaab7b8c1ee2d305c2a82471fb2f38c449316cfb91f  dl:nncase_k230_v2.11.0_runtime_linux.tgz
@@ -575,15 +622,19 @@ IO  group:2-files    repo/firmware/CanMV-K230-V3P0_rtsmart_release{V1.2,V1.3}.zi
 member appearing or vanishing visible. Individual hashes are recorded for
 every blob that is on, or one flag away from, a path we might actually take.
 
-**Totals.** 33 inventory rows covering roughly 330 individual binary files:
-3 committed here, 2 embedded inside one of those, 121 in the Linux SDK
+**Totals.** 35 inventory rows covering roughly 332 individual binary files:
+5 committed here, 2 embedded inside one of those, 121 in the Linux SDK
 (120 git-tracked plus `k230_priv_gzip`), ~203 in the LilyGO RT-Smart clone,
 1 downloaded toolchain, and 1 in silicon.
 
-By class: **6 excisable now** (A3, A4, B8, C5, C8 — and A1/A2's *packaging*,
-proven in §D), **5 excisable with effort** (A1, A2, A7, B9, and OpenSBI, which
-is not yet a blob but will be one if we take a shortcut), **the rest either
-irreducibly opaque or not on our path**.
+By class: **8 excisable now** (A3, A4, A9, A10, B8, C5, C8 — and A1/A2's
+*packaging*, proven in §D), **4 excisable with effort** (A1, A2, A7, B9),
+**the rest either irreducibly opaque or not on our path**.
+
+The count moved while this was being written. A9 and A10 were committed on
+2026-09-20 after §A was first compiled, which is the plainest possible
+argument for §E: a document maintained by memory describes the tree as it was
+the last time someone remembered.
 
 ---
 
