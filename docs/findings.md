@@ -12,11 +12,11 @@ Read out of `schematic/T-Display K230_V1.0_NEW.pdf` in the upstream repo.
 | SoC | Kendryte K230D, 2x RISC-V C908 (1.6 GHz + 800 MHz), KPU NPU, 1 GiB LPDDR |
 | Panel | RM69A10 MIPI-DSI, 568x1232 AMOLED, reset on **GPIO22** |
 | Touch | GT9895 (Goodix Berlin family) on I2C — RST GPIO24, SCL GPIO36, SDA GPIO37, INT GPIO23 |
-| Wi-Fi | RTL8189FTV on SDIO (**MMC1**, GPIO26-31); enable line `IO45_WIFI_EN` on **GPIO45** |
+| Wi-Fi | RTL8189FTV on SDIO (**MMC0** — see correction below); enable line `IO45_WIFI_EN` on **GPIO45** |
 | Serial | CH342 dual UART bridge on the charge USB-C (`J2`); ch0<->UART0, ch1<->UART3 |
 | Power | BQ25896 charger + BQ27220 fuel gauge |
 | LoRa | SX1262 (V1.1+) / LR2021 (V1.3) |
-| SD | TF card on GPIO54-59 |
+| SD | TF card on GPIO54-59, muxed as **MMC1** |
 
 U-Boot identifies the board as `Model: kendryte k230 canmv v3.0`.
 
@@ -138,3 +138,59 @@ a new one and copy it onto part 2, no reflash needed.
   Measure it on hardware before committing either way.
 - Kotlin/Native has no riscv64 target at all, so a KMP-native shell is out
   regardless; any Kotlin path is Kotlin/JVM.
+
+
+## Corrections
+
+Two claims above were wrong when first written. Recording the correction
+rather than quietly editing, because both were used to reason about other
+things.
+
+### Wi-Fi is on MMC0, not MMC1
+
+Originally recorded as "RTL8189FTV on SDIO (MMC1, GPIO26-31)". The two
+controllers were swapped. Three independent sources agree:
+
+- The schematic ties `WIFI_CLK/CMD/D0–D3` to the SoC's dedicated **MMC0**
+  balls, not to IO26–31.
+- `k230_canmv_v3p0_defconfig` sets `CONFIG_REALTEK_SDIO_DEV0=y` and
+  `CONFIG_SDCARD_ON_SDIO_DEV=1`.
+- U-Boot's pinmux muxes IO54–59 as MMC1 with the comment
+  `// MMC1 -> TFCARD`, and leaves IO26–31 as plain GPIO to the expansion
+  header.
+
+So Wi-Fi is `&mmc_sd0` and the TF card is `&mmc_sd1`. This matters directly:
+the U-Boot environment loads the kernel from `mmc ${mmc_boot_dev_num}:1`
+with `mmc_boot_dev_num=1`, which is consistent with the card being MMC1 and
+would have been confusing under the old, wrong mapping.
+
+### The Realtek driver IS compiled in
+
+Originally recorded that `RT_USING_REALTEK` "defaults to n and the board
+defconfig does not enable it, so it is likely not compiled into the shipped
+image at all". The Kconfig default is indeed `n` — but
+`k230_canmv_v3p0_defconfig` sets `CONFIG_RT_USING_REALTEK=y`. The driver is
+built.
+
+That strengthens rather than weakens the diagnosis: the radio is silent with
+the driver present, so the empty `Set_WLAN_Power_On()` stub is the whole
+cause, not one of two.
+
+### Other device-tree findings
+
+From `docs/dts-evidence.md`:
+
+- **There is no pinctrl in the Linux device tree at all.** FPIOA muxing
+  lives in U-Boot's `k230_canmv_v3p0.dts` and is inherited. A board `.dts`
+  cannot set pin functions.
+- **The upstream LT9611 HDMI node collides with our touch controller.**
+  `k230-canmv-v3.dts` gives it `reset-gpios = <&gpio0_ports 24>` and
+  `interrupts = <23 …>` — GT9895's RST and INT. The I2C addresses do not
+  collide (0x3b vs 0x5d); the GPIOs do.
+- **`panel-canaan-universal` only pulses reset in `probe()`.** The reset
+  block in `prepare()` is commented out while `unprepare()` drives reset and
+  enable low, so any modeset or suspend cycle leaves the panel held in
+  reset. Likely a prerequisite patch rather than polish.
+- **The RM69A10 runs at ~39.6 Hz**, not the 60 its enum name suggests —
+  39.6 MHz over 788×1268, consistent with the vendor's own 475.2 Mbps/lane
+  figure.
