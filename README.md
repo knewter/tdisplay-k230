@@ -53,6 +53,35 @@ openspec/changes/<id>/                        one in-flight change
 openspec validate --all                       check them
 ```
 
+### Reading the specs
+
+`openspec/specs/` renders to a static site whose first statement is how many
+requirements are still unverified:
+
+```sh
+./scripts/render_specs.py          # writes public/, then open public/index.html
+```
+
+Python 3 and nothing else — no packages, no network, no CI. `public/` is
+gitignored.
+
+Every requirement is shown as **grounded** (something was observed on the
+board, or vendor source was read and cited by path) or **unverified**, with
+the reason. Citations under `docs/` become links to the committed boot log or
+photograph, so the evidence behind a requirement is one click from it.
+
+The renderer refuses to guess. A requirement carrying neither an
+`<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation, or one citing
+evidence that is not committed, is reported as a build defect: the site is
+still written and shows the defect, and the command exits non-zero naming the
+file and the requirement. Generation time and output size are budgeted at the
+top of `scripts/render_specs.py`, with the measurements behind those numbers in
+[`docs/evidence/spec-site-build.txt`](docs/evidence/spec-site-build.txt).
+
+```sh
+python3 -m unittest discover -s tests   # the renderer's own tests
+```
+
 ## Status
 
 See [docs/findings.md](docs/findings.md).

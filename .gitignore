@@ -15,3 +15,7 @@ result-*
 
 # Rendered spec site (scripts/render_specs.py)
 /public/
+
+# Python bytecode
+__pycache__/
+*.pyc
