@@ -1,0 +1,180 @@
+## Purpose
+
+Defines what owns this board's screen and touch panel once the system is up:
+the compositor that draws, how it draws with no GPU driver, how a person types
+with no cable, and what a touch actually does.
+
+## ADDED Requirements
+
+### Requirement: The shell renders on the CPU, with no GPU driver and no software GL
+
+The compositor SHALL composite in software into DRM dumb buffers. It SHALL NOT
+require OpenGL, OpenGL ES, Vulkan, GBM, or a DRM render node, and the system
+SHALL NOT carry Mesa in order to run it.
+
+*Grounding: `wlroots-0.20.2/render/wlr_renderer.c:220-228` lists `pixman` among
+the values of `WLR_RENDERER`, alongside `gles2` and `vulkan`, so the software
+renderer is a supported selection rather than a debug path; line 268 selects it
+automatically when `has_render_node()` is false, which is the case for a
+display-only KMS driver. The Pixman renderer
+advertises `WLR_BUFFER_CAP_DATA_PTR` and not `WLR_BUFFER_CAP_DMABUF`
+(`render/pixman/renderer.c:196-204`), so `wlr_allocator_autocreate()` skips its
+GBM branch and reaches the dumb-buffer branch at
+`render/allocator/allocator.c:140-152`, whose only conditions are a DRM fd and
+`drmIsMaster()` on it. `include/render/allocator/drm_dumb.h` declares
+`wlr_drm_dumb_allocator_create(int fd)` returning buffers with a `void *data`
+the CPU writes into. The trade-offs of every alternative are recorded in
+`docs/display-environment-options.md`.*
+
+#### Scenario: The rendering path is inspected
+
+- **WHEN** someone asks how pixels reach this panel
+- **THEN** the answer is a CPU rasteriser writing into a DRM dumb buffer, with no GL, no Vulkan, no GBM and no render node anywhere in the path
+
+#### Scenario: The closure is inspected for a GPU stack
+
+- **WHEN** the built system closure is searched for Mesa
+- **THEN** it is absent, as it is in the closure this change starts from
+
+### Requirement: Hyprland is a recorded rejection, not an open question
+
+Hyprland SHALL NOT be the compositor, and the reason SHALL stay written down so
+the decision is not re-litigated from the name alone.
+
+*Grounding: `hyprland-0.56.2/CMakeLists.txt:129-130` reads `set(GLES_VERSION
+"GLES3")` then `find_package(OpenGL REQUIRED COMPONENTS ${GLES_VERSION})` — a
+hard build requirement — and line 529 links `OpenGL::EGL OpenGL::GLES3`. Its
+only renderer is `src/render/OpenGL.cpp`; Pixman appears in the tree solely as
+region arithmetic (`pixman_box32` at `src/render/OpenGL.cpp:1020`). Since 0.41
+it does not use wlroots but its own backend, aquamarine, whose
+`CMakeLists.txt:22` also reads `find_package(OpenGL REQUIRED COMPONENTS
+"GLES3")`. There is therefore no `WLR_RENDERER=pixman` to set. Measured on the
+pinned nixpkgs, `hyprland` + `foot` adds 184 riscv64 derivations and 2.2 GiB of
+substituted paths, including Qt 6 and a second GCC cross-bootstrap
+(`riscv64-unknown-linux-gnu-gcc-16.2.0`); see
+`docs/display-environment-options.md`.*
+
+#### Scenario: Someone proposes Hyprland again
+
+- **WHEN** Hyprland is suggested for this board
+- **THEN** the repository states that it requires OpenGL ES 3 at build time, has no software renderer, and costs a second cross toolchain — with the file and line for each claim
+
+### Requirement: The shell's build cost is measured and recorded
+
+Every package this change adds is compiled for riscv64 without a native binary
+cache, so the cost of the shell SHALL be measured on the build host and
+committed, and SHALL be the smallest of the candidates that meets the other
+requirements here.
+
+*Grounding: `docs/evidence/cross-build.txt` records the baseline — 353 local
+derivations, 73 minutes, a 1.2 GiB closure — and records that a second cross
+toolchain was the largest single cost in that build.
+`docs/display-environment-options.md` measures each candidate as a delta on
+that closure with `nix build --dry-run`: 68 derivations for a `cage` smoke
+test, 89 for `sway` with `foot` and `wvkbd`, 184 for Hyprland, 288 for
+nixpkgs' default Weston.*
+
+The compositor SHALL be built with Xwayland disabled.
+
+*Grounding: measured against the same pin, `wlroots` needs 85 local
+derivations and 500 MiB of fetches by default and 30 derivations and 210 MiB
+with `enableXWayland = false`; Xwayland drags in GTK 3, CUPS, Avahi,
+at-spi2-core and dconf. Recorded in `docs/display-environment-options.md`.*
+
+#### Scenario: The wall-clock cost of the shell is asked for
+
+- **WHEN** someone asks what adding the shell costs to build
+- **THEN** a measured derivation count and wall-clock time are committed under `docs/`, alongside the numbers for the options that were not chosen
+
+#### Scenario: An X11 application is wanted
+
+- **WHEN** someone needs an X11 application on this board
+- **THEN** the repository states that Xwayland was deliberately disabled and what re-enabling it costs, rather than the application silently failing to start
+
+### Requirement: The shell starts at boot and owns the panel
+
+<!-- UNVERIFIED: no compositor has been started on this board. Grounded by a
+photograph of the running shell and by the compositor's own log showing which
+renderer and allocator it selected. -->
+
+The system SHALL start the compositor without a serial cable, a login prompt or
+a display manager, and the compositor SHALL take the panel at its native
+568x1232 in portrait, with no rotation and no scaling.
+
+**A compositor that starts is not a shell that works.** The evidence SHALL be a
+photograph of the physical screen together with the compositor's log, because a
+Wayland session can report a successful mode set and present nothing — the same
+failure this board already produced once, when the Wi-Fi driver reported
+`start ap successs!` and transmitted nothing.
+
+#### Scenario: The board is powered on with nothing attached
+
+- **WHEN** the board boots with no cable connected
+- **THEN** the compositor is running with a terminal visible on the panel, photographed
+
+#### Scenario: The compositor log is read
+
+- **WHEN** the compositor's startup log is examined
+- **THEN** it names the software renderer and the dumb-buffer allocator it selected, and reports no failed attempt to open a render node as an error
+
+### Requirement: A person can type on the board with no cable attached
+
+<!-- UNVERIFIED: no on-screen keyboard has run on this panel. Grounded by a
+photograph of a command typed on the panel and its output on the panel. -->
+
+The shell SHALL present an on-screen keyboard that a person can summon and
+dismiss by touch, and characters typed on it SHALL reach the focused
+application.
+
+#### Scenario: Someone types a command with no cable attached
+
+- **WHEN** a person summons the keyboard and types a command into the terminal on the panel
+- **THEN** the command runs and its output appears on the panel, photographed
+
+#### Scenario: The keyboard is dismissed
+
+- **WHEN** the keyboard is dismissed
+- **THEN** the application underneath is fully visible again and usable
+
+### Requirement: A touch activates what is under the finger
+
+<!-- UNVERIFIED: nothing interactive has been touched on this panel. Grounded
+by a photograph or recording of a deliberate press activating a specific
+target. -->
+
+Touches SHALL be routed to the surface drawn at the touched location, in the
+panel's own 568x1232 coordinate space, with the axes neither swapped nor
+mirrored.
+
+**Input events with coordinates are not the same claim as touch that works.**
+`display/touch` proves the controller reports movement; this proves the shell
+acts on it. Where the two disagree the fix SHALL be recorded as a compositor
+input mapping or a libinput calibration matrix, and which one it is SHALL be
+stated, because the two live in different files and a later kernel change can
+invalidate only one of them.
+
+#### Scenario: A person presses a key on the on-screen keyboard
+
+- **WHEN** a person presses a specific key drawn on the panel
+- **THEN** that key's character is what arrives, not a neighbouring one and not one from the mirrored position
+
+#### Scenario: A drag is performed across the panel
+
+- **WHEN** a finger is dragged from one end of the panel to the other
+- **THEN** the shell follows the finger in the same direction, and this is shown rather than asserted
+
+### Requirement: The shell hosts Dozer's shell; it is not Dozer's shell
+
+The compositor chosen here SHALL NOT be treated as a decision about which shell
+draws Dozer. It provides a surface, an input path and a way to type; what runs
+on it stays open.
+
+*Grounding: `openspec/config.yaml` defines "a shell" as "whatever draws Dozer on
+this screen; not yet chosen", and `the-screen-comes-up-under-linux` names
+choosing a UI toolkit as an explicit non-goal. `docs/findings.md` records the
+Compose Desktop and Kotlin/Native assessments as still open.*
+
+#### Scenario: A Dozer shell is proposed later
+
+- **WHEN** someone proposes a way to draw Dozer on this board
+- **THEN** nothing in this capability forbids it, whether it is a Wayland client, a direct DRM/KMS renderer that replaces the compositor, or something else

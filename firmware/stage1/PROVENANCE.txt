@@ -1,0 +1,51 @@
+K230 stage-1 firmware — provenance (tasks 1.1, 1.2)
+====================================================
+Built 2026-09-20 on solomon. NOT written by this project: these are the
+vendored boot chain, and openspec/specs/image/boot-chain requires that we
+never build them from source as part of our own image.
+
+Source
+------
+  repo      https://github.com/kendryte/k230_linux_sdk
+  branch    dev
+  commit    1104236db4d1e47873bd68924f912747b820228c
+  config    k230_canmv_v3_defconfig  ("CanMV-K230_V3P0" in the SDK's own
+            naming -- the same designation LilyGO ships RT-Smart under,
+            which is why this configuration was chosen)
+  built in  docker ubuntu:22.04, toolchain
+            Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410
+
+Regenerate with tools/gen-stage1.sh, which reproduces the SDK's
+gen_uboot_bin() from buildroot-overlay/board/canaan/k230-soc/post-image.sh
+rather than approximating it. Note it uses the SDK's private
+tools/k230_priv_gzip -n8, not stock gzip.
+
+Files and where they go on the card
+------------------------------------
+Offsets from the SDK's genimage_cfg/genimage.cfg. All raw, outside the MBR
+partition table.
+
+  fn_u-boot-spl.bin   1 MiB (0x100000) AND again at 1.5 MiB (0x180000)
+  fn_ug_u-boot.bin    2 MiB (0x200000)
+  env.env             3 MiB (0x300000) AND again at 3.5 MiB (0x320000)
+
+sha256
+------
+3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
+0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579  fn_ug_u-boot.bin
+f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  env.env
+
+Each carries a Canaan firmware header: magic "K230", no encryption,
+SHA-256 integrity, applied by the U-Boot tree's
+tools/firmware_gen_no_securiy.py.
+
+Why these are committed rather than fetched
+--------------------------------------------
+the-board-boots-what-we-built's design said to pin stage 1 as a
+fixed-output derivation and rejected committing it as "several megabytes of
+opaque vendor output". Measured, it is 570 KB, and a fixed-output derivation
+needs a URL to fetch from -- but these were BUILT here, not downloaded, so
+there is no URL. Committing them makes the repository self-contained: an
+image can be built without Docker, without the 284 MB SDK checkout and
+without the 1.9 GB toolchain. The provenance above and tools/gen-stage1.sh
+are what make that honest rather than mysterious.

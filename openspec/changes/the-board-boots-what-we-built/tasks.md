@@ -6,8 +6,8 @@ vendored boot chain nor the SD card.
 
 ## 1. Obtain and pin stage 1
 
-- [ ] 1.1 Build `k230_linux_sdk` with `k230_canmv_v3_defconfig` in Docker on Ubuntu 20.04, and keep the firmware stage. Verify by recording the SDK commit, the defconfig, and the sha256 of the artifact in `docs/evidence/stage1-provenance.txt`
-- [ ] 1.2 Pin that artifact as a fixed-output derivation in the flake. Verify with `nix build .#stage1` and confirm the hash matches what was recorded
+- [x] 1.1 Build `k230_linux_sdk` with `k230_canmv_v3_defconfig` in Docker on Ubuntu 20.04, and keep the firmware stage. Verify by recording the SDK commit, the defconfig, and the sha256 of the artifact in `docs/evidence/stage1-provenance.txt`
+- [x] 1.2 Pin that artifact as a fixed-output derivation in the flake. Verify with `nix build .#stage1` and confirm the hash matches what was recorded
 - [x] 1.3 Read the vendored U-Boot's environment and record how it expects to find a kernel — filename, filesystem, and any script it sources. Verify by committing the extracted environment to `docs/evidence/uboot-env.txt`
 
 ## 2. An SD image

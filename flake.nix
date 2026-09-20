@@ -17,7 +17,7 @@
 
       # Stage 1 is vendored, never built. See nix/stage1.nix and
       # openspec/specs/image/boot-chain.
-      stage1 = import ./nix/stage1.nix { inherit (pkgs) lib; };
+      stage1 = import ./nix/stage1.nix { inherit (pkgs) lib runCommand; };
     in
     {
       # Two systems on one base, because the boot paths genuinely differ.
@@ -53,6 +53,9 @@
       # reading the source. `vendored = true` and `builtFromSource = false`
       # are the contract: nothing in this flake compiles U-Boot or OpenSBI.
       inherit stage1;
+
+      # Proves the committed vendor blobs still match their recorded hashes.
+      checks.${buildSystem}.stage1-hashes = stage1.verified;
 
       devShells.${buildSystem}.default = pkgs.mkShell {
         packages = [ pkgs.qemu ];

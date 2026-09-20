@@ -48,18 +48,27 @@ and no GL API surface. No Mesa, no LLVM.
 **(b) Mesa's software GL.** `llvmpipe` (LLVM-JIT'd) or `softpipe`
 (interpreted), reached through EGL with the `kms_swrast` DRI driver. This
 produces a real GLES context over dumb buffers, so a GL-only compositor can be
-made to start. The pinned nixpkgs does build these for riscv64 — the mesa
-derivation's meson flags include `-Dgallium-drivers=…,llvmpipe,…,softpipe,…`
-and `-Dclang-libdir=/nix/store/…-clang-riscv64-unknown-linux-gnu-21.1.8-lib/lib`.
+made to start.
 
-Path (b) is not a free escape hatch. It drags a riscv64 LLVM 21 and the whole
-of Mesa into the closure — `nix build --dry-run` for `pkgsCross.riscv64.mesa`
-reports 4 derivations to build and **575.2 MiB to download, 2.4 GiB unpacked**.
-And it puts a JIT compiler and a full GL implementation between a 1.6 GHz
-in-order core and 700,000 pixels. Nobody has measured llvmpipe on a C908 and
-this document is not going to pretend otherwise; what can be said with
-confidence is that it costs more than every other option combined, to produce
-the slowest result.
+This *does* work on riscv64, and the folklore that it does not is out of date.
+Mesa's `meson.build` excludes riscv64 from the MCJIT architecture list and so
+forces `llvm_with_orcjit`, requiring LLVM >= 15; riscv64's default
+`gallium-drivers` list includes both `llvmpipe` and `softpipe`. That landed in
+Mesa 24.2.0 ("llvmpipe: add an implementation with llvm orcjit", "gallivm: add
+riscv support to the mattrs setting code"). Before 24.2 it genuinely was broken
+— Debian bug #1058759 asked for llvmpipe to be disabled on riscv64 for exactly
+this reason. The pinned nixpkgs is well past that: the mesa derivation's meson
+flags include `-Dgallium-drivers=…,llvmpipe,…,softpipe,…` and
+`-Dclang-libdir=/nix/store/…-clang-riscv64-unknown-linux-gnu-21.1.8-lib/lib`.
+
+So path (b) is available. It is still not a free escape hatch. It drags a
+riscv64 LLVM 21 and the whole of Mesa into the closure — `nix build --dry-run`
+for `pkgsCross.riscv64.mesa` reports 4 derivations to build and **575.2 MiB to
+download, 2.4 GiB unpacked**. And it puts a JIT compiler and a full GL
+implementation between a 1.6 GHz in-order core and 700,000 pixels. Nobody has
+published a benchmark of llvmpipe on a C908 and this document is not going to
+invent one; what can be said with confidence is that it costs more than every
+other option combined, to produce the slowest result.
 
 Path (a) is what everything below is judged against.
 
@@ -79,17 +88,30 @@ From `hyprland-0.56.2/CMakeLists.txt`:
 ```
 
 `REQUIRED` — the build fails without it. Hyprland's only renderer is
-`src/render/OpenGL.cpp` (`CHyprOpenGLImpl`). Pixman appears in the Hyprland
+`src/render/OpenGL.cpp` (`CHyprOpenGLImpl`), which asks EGL for a GLES 3.2
+context and retries at 3.0 before asserting. Pixman appears in the Hyprland
 tree, but only as region arithmetic (`pixman_box32` in `scissor()` at
 `src/render/OpenGL.cpp:1020`), never as a rasteriser. There is no
 `WLR_RENDERER=pixman` to set, because since 0.41 Hyprland does not use wlroots
 at all: it uses its own backend library, **aquamarine**, whose
 `CMakeLists.txt:22` reads `find_package(OpenGL REQUIRED COMPONENTS "GLES3")`
-and whose `src/backend/drm/Renderer.cpp` is a GLES shader pipeline. Aquamarine
-does carry `src/allocator/DRMDumb.cpp`, so it can *allocate* dumb buffers — but
-it still renders into them with GL.
+and whose `src/backend/drm/Renderer.cpp` is a GLES shader pipeline.
 
-So Hyprland could only run on Mesa's llvmpipe, i.e. path (b) above.
+Aquamarine does carry `src/allocator/DRMDumb.cpp`, which looks like an escape
+hatch and is not one. Its `Backend.cpp` unconditionally builds
+`CGBMAllocator::create(fd, self)` as the primary allocator and logs
+`"Cannot open backend: no allocator available"` if that fails; the dumb
+allocator was added as a *cursor-plane* fallback for when GBM cursor allocation
+fails, gated behind `cursor:allow_dumb_copy`. There is no rendering path
+through it.
+
+So Hyprland could only run on Mesa's llvmpipe, i.e. path (b) above. That is not
+purely theoretical — aquamarine issue #370 describes Hyprland running on `qxl`,
+"a display-only KMS driver: it provides a card node and no render node", with
+"rendering falls back to llvmpipe, and the desktop otherwise works fine". It
+also describes the resulting 425 MB log from uncached EGL retries. That is the
+best case for Hyprland here: it works, on llvmpipe, with a known bug in the
+exact code path this board would take.
 
 **And the build cost is the worst of any candidate by a wide margin.** Measured:
 
@@ -142,6 +164,23 @@ render node.
 ```
 
 `WLR_RENDERER=pixman` is a supported, first-class selection, not a debug hook.
+`docs/env_vars.md:11-12` in the same tree documents it.
+
+**Better: on a card with no render node, wlroots picks Pixman by itself.**
+`render/wlr_renderer.c:268`:
+
+```c
+	if ((is_auto && !has_render_node(backend)) || strcmp(renderer_name, "pixman") == 0) {
+		renderer = wlr_pixman_renderer_create();
+```
+
+and `has_render_node()` (lines 202-217) is simply
+`drmGetRenderDeviceNameFromFd(backend_drm_fd) != NULL`. A display-only KMS
+driver — which is what the K230's is — offers no `renderD*` node, so the
+default path lands on Pixman with nothing set. Setting `WLR_RENDERER=pixman`
+explicitly is still worth doing, as a declaration rather than a workaround: it
+turns a silent fallback into a stated intention, and it fails loudly if someone
+later adds a GPU driver and changes the answer.
 
 **Allocator selection**, `wlroots-0.20.2/render/allocator/allocator.c:98-152`.
 `wlr_allocator_autocreate()` tries GBM first, but only when
@@ -166,10 +205,26 @@ a `void *data` pointer for the CPU to write into.
 That is exactly the shape of the device the K230 will expose. It is the single
 most important finding in this document.
 
-One caveat, and it is the main technical risk: this needs the kernel's DRM
-driver to support `CREATE_DUMB` and to give us a modesetting node. A driver
-that only registers an fbdev, or a KMS driver without dumb-buffer support,
-breaks the whole approach. **Unverified** — the panel does not come up yet.
+Two caveats, and they are the main technical risks.
+
+**The DRM device has to support `CREATE_DUMB`.** A driver that only registers
+an fbdev, or a KMS driver without dumb-buffer support, breaks the whole
+approach. **Unverified** — the panel does not come up yet. Canaan's own
+`K230_DRM_API_Reference.md` describes `/dev/dri/card0`,
+`DRM_IOCTL_MODE_CREATE_DUMB`, a DSI connector, one video plane and four OSD
+planes, which is encouraging; but vendor documentation grounds nothing here and
+the K230's Wi-Fi already demonstrated what vendor documentation is worth on
+this board. It gets checked with `drm_info` on the real hardware.
+
+**The plane's pixel formats have to intersect with Pixman's.** wlroots' Pixman
+renderer supports ARGB8888, XRGB8888, ABGR8888, XBGR8888, the RGBA/RGBX/BGRA/
+BGRX permutations, RGB565/BGR565 and the 2101010 formats
+(`render/pixman/pixel_format.c:8-100`), and wlroots' DRM backend prefers
+XRGB8888 for the primary plane. Canaan's DRM reference lists the OSD plane
+formats as `AR24, AR12, AR15, RG24, RG16` — ARGB8888 and RGB565 are in that
+list, `XR24` is not. If the driver really does refuse XRGB8888, wlroots will
+need to be pointed at ARGB8888, and that is a small fix that is very confusing
+to hit blind. **Unverified**, and worth one `drm_info` before anything else.
 
 wlroots can also be built with the GL renderer compiled out entirely
 (`meson.options`: `option('renderers', type: 'array', choices: ['auto','gles2','vulkan'], value: ['auto'])`
@@ -223,7 +278,12 @@ renderer — `libweston/pixman-renderer.c` is compiled into libweston core
 (`libweston/meson.build:41`), `WESTON_RENDERER_PIXMAN = 2` is in the public
 header at `include/libweston/libweston.h:2565`, and `man/weston.ini.man:198-215`
 documents `renderer=pixman` with `use-pixman=true` as its deprecated spelling.
-So Weston would work. But nixpkgs builds it with `-Dbackend-rdp=true`,
+Its DRM backend allocates dumb buffers for that path — `drm_fb_create_dumb()`
+in `libweston/backend-drm/fb.c` issues `DRM_IOCTL_MODE_CREATE_DUMB` and tags
+the result `BUFFER_PIXMAN_DUMB` — and all its GBM code sits behind
+`#ifdef BUILD_DRM_GBM`, so GBM is compile-time optional. Weston's `kiosk-shell`
+is also a genuinely good fit for a handheld. So Weston is technically a fine
+answer. But nixpkgs builds it with `-Dbackend-rdp=true`,
 `-Dbackend-vnc=true`, `-Drenderer-vulkan=true`, `-Dshell-lua=true`,
 `-Dxwayland=true`, which pulls FreeRDP, GStreamer, FFmpeg, PipeWire, GTK 4 and
 libcamera: 288 derivations. Getting Weston down to size means carrying a
@@ -263,20 +323,29 @@ state. It ships **two variants**:
 
 - **sxmo-dwm** — X11, with a patched `dwm` as the window manager and `svkbd`
   as the keyboard.
-- **sxmo-sway** — Wayland, with a patched **sway** as the compositor,
-  `wvkbd` as the keyboard, plus `bemenu`, `wob` and friends.
+- **sxmo-sway**, also called **swmo** — Wayland, with **sway** as the
+  compositor, `wvkbd` as the keyboard, plus `foot`, `wofi`, `wob`, `grim`,
+  `slurp`, `swaybg`, `swayidle`, `wlr-randr`, `wlopm`, `wtype`, `wl-clipboard`,
+  `seatd` and the `lisgd` gesture daemon.
 
-The Wayland variant is the one SXMO points people at. **So SXMO's fallback
-position is sway.** Choosing sway does not close the SXMO door; it opens it.
+sxmo.org's install documentation says the Wayland one "is recommended and
+likely the default if your device supports it". **So SXMO's fallback position
+is sway.** Choosing sway does not close the SXMO door; it opens it. Alpine,
+which is where SXMO is packaged upstream, even builds `sxmo-utils-sway` for
+riscv64 — so the architecture is not the obstacle.
 
 What makes SXMO unusable as a drop-in here:
 
 - **It is not in nixpkgs.** Measured against the pin: every attribute name
   matching `.*[sS]xmo.*` — the empty list. There is no `sxmo-utils`, no NixOS
-  module, nothing. Adopting SXMO means packaging a shell-script distribution
-  and writing the module from scratch, and SXMO's scripts assume a
-  PostmarketOS-shaped system (specific service names, specific paths,
-  `/etc/profile.d` hooks) rather than a Nix store.
+  module, nothing. (The pieces are there — `lisgd`, `svkbd`, `wvkbd`, `superd`,
+  sway, foot, mako, wob, grim, slurp all exist — but not the glue.) Two
+  third-party attempts exist, `chuangzhu/nixpkgs-sxmo` and `wentam/sxmo-nix`,
+  both unmaintained since 2024 and 2022 respectively, and neither under
+  nix-community. Adopting SXMO means packaging a shell-script distribution and
+  writing the module from scratch, and SXMO's scripts assume a
+  PostmarketOS-shaped system (specific service names, `superd` as the
+  supervisor, specific paths, `/etc/profile.d` hooks) rather than a Nix store.
 - **Its X11 variant is out on the same grounds as Hyprland, differently.**
   X11 on this board means `xf86-video-modesetting` doing software composition
   through the shadow framebuffer — possible, but it is strictly more machinery
@@ -288,7 +357,16 @@ What makes SXMO unusable as a drop-in here:
 SXMO is worth keeping as a **source of designs** — its gesture vocabulary and
 its menu-driven interaction model are exactly right for a screen this shape —
 without taking the distribution. The parts we would actually use (`wvkbd`,
-`bemenu`, sway) are in nixpkgs already and are in the sway row of the table.
+`wofi`/`bemenu`, `lisgd`, sway) are in nixpkgs already, and sway is the row in
+the table above.
+
+One concrete thing worth stealing: SXMO does not hardcode a resolution, it sets
+`SXMO_SWAY_SCALE` per device profile (58 of them in
+`scripts/deviceprofiles/`). PinePhone-class devices at 720x1440 use scale 2, so
+a 360x720 logical surface. This panel at 568x1232 and scale 1 gives a logical
+surface *larger* than SXMO's usual target, so scale 1 is probably right and
+1.25 is the first thing to try if everything is too small. That is an
+inference from their numbers, not a statement of theirs.
 
 ---
 
@@ -305,6 +383,16 @@ the table that puts a touch-driven UI on the screen, and it is an existence
 proof that LVGL-on-DRM works as a shipping configuration. Note that LVGL itself
 is not packaged in nixpkgs — `.*lvgl.*` matches nothing at the pin — so using
 LVGL directly means vendoring it.
+
+LVGL's own documentation confirms the shape: its DRM driver wants "a kernel
+with DRM/KMS support" and "a DRM device node, typically `/dev/dri/card0`", and
+offers three buffer strategies of which dumb buffers involve no GPU at all; it
+recommends the DRM path for production embedded targets precisely because no
+windowing system is involved. Two things to know before choosing it: the
+dumb-buffer and GBM backends support **no rotation** (only the EGL backend
+does), and Canaan themselves publish an LVGL porting tutorial for the K230,
+which makes this the lowest-risk option on the board if a compositor turns out
+not to work at all.
 
 **A direct DRM/KMS Dozer shell.** Dozer is a Crux application: a Rust core
 behind a serialised FFI boundary with swappable shells. The lightest possible
@@ -333,27 +421,50 @@ coordinate space. So in the simplest configuration — one output, no rotation �
 **no transform is needed at all**, and a touch lands where it is seen. This is
 the configuration to aim for, and it is a reason not to rotate the output.
 
-The mechanisms, when something is wrong:
+**sway probably does the right thing with no configuration at all**, and the
+reason is worth knowing. `sway/input/seat.c:723-730` auto-maps a touch device
+to an output when the device is "built-in", and `get_builtin_output_name()`
+(lines 654-668) decides which output that is by prefix: `eDP-`, `LVDS-`, or
+**`DSI-`**, provided there is exactly one. A MIPI-DSI panel gets named `DSI-1`,
+and `sway_libinput_device_is_builtin()` (`sway/input/libinput.c:407`) checks
+the udev `ID_PATH` for a `platform-` prefix, which an I2C-attached GT9895
+should have. So this board is precisely the case sway's heuristic was written
+for. Whether it actually fires is **unverified** and is one `swaymsg -t
+get_inputs` away.
 
-- **Output transform.** `sway-output(5)` (`sway/sway-output.5.scd:107`):
-  `output <name> transform <transform> [clockwise|anticlockwise]`, with `90`,
-  `180`, `270` and the `flipped-*` variants. wlroots applies the transform to
-  touch input as well as to output, so rotating the output *should* keep touch
-  aligned. With the Pixman renderer the rotation is done on the CPU for every
-  frame, which on a C908 is a cost we would be paying for nothing.
+The mechanisms, when it does not:
+
 - **Mapping an input device to an output.** `sway-input(5)`
   (`sway/sway-input.5.scd:110`): `input <identifier> map_to_output <identifier>`
   — "Only meaningful if the device is a pointer, touch, or drawing tablet
   device." Underneath this is wlroots' `wlr_cursor_map_input_to_output()`
-  (`include/wlr/types/wlr_cursor.h:202`). With a single output it is a no-op,
-  but writing it explicitly means a second output — an HDMI dongle, a nested
-  session — does not silently steal the touches.
+  (`include/wlr/types/wlr_cursor.h:202`). Writing it explicitly costs one line
+  and removes the dependency on a heuristic. SXMO does exactly this rather than
+  trusting the auto-detection.
+- **Output transform.** `sway-output(5)` (`sway/sway-output.5.scd:107`):
+  `output <name> transform <transform> [clockwise|anticlockwise]`, with `90`,
+  `180`, `270` and the `flipped-*` variants. wlroots applies the output
+  transform to absolute touch coordinates — **but only for a device that is
+  mapped to an output.** If `get_mapped_output()` returns NULL, no transform is
+  applied and touch lands rotated. That is the mechanism behind the classic
+  "I rotated the screen and now touch is 90 degrees off" bug, and it is the
+  second reason to write `map_to_output` explicitly.
 - **Calibration.** `sway-input(5):140`: `input <identifier> calibration_matrix
   <6 space-separated floating point values>`, a libinput calibration matrix.
-  This is the fix for axes that are swapped or mirrored — the classic
-  "touch works but is upside down" failure. It can also be set at the udev
-  level via `LIBINPUT_CALIBRATION_MATRIX`, which is the right place if the
-  fix belongs to the hardware rather than to one compositor's config.
+  This is the fix for axes that are swapped or mirrored. It can also be set at
+  the udev level via `LIBINPUT_CALIBRATION_MATRIX` (`"0 -1 1 1 0 0"` for 90
+  degrees clockwise, `"-1 0 1 0 -1 1"` for 180), which is the right place if
+  the fix belongs to the hardware rather than to one compositor's config — and
+  the kernel side, via the device tree's `touchscreen-swapped-x-y` and
+  `touchscreen-inverted-x/-y`, is righter still.
+
+**Do not set two of these at once.** An output transform and a calibration
+matrix compose, and the result is a double rotation that looks like a hardware
+fault.
+
+**And do not rotate the output.** With the Pixman renderer a non-`normal`
+transform means the CPU rotates every pixel on every composite. On two C908s at
+568x1232 that is a cost paid forever to avoid a one-line device tree property.
 
 The failure mode to design the evidence around: touch that reports coordinates
 but reports them rotated or mirrored looks like working touch in a log and like
@@ -379,8 +490,14 @@ inject the keystrokes. sway supports both. cage supports neither.
   recommendation: **89 riscv64 derivations and 875 MiB of substituted paths** on
   top of the existing closure, for sway, `foot` and `wvkbd`. It has layer-shell
   (so an on-screen keyboard), `map_to_output` and `calibration_matrix` for
-  touch, a NixOS module, and it is the compositor SXMO would want if we ever go
-  there.
+  touch, an auto-mapping heuristic that already looks for a `DSI-` output, a
+  NixOS module, and it is the compositor SXMO would want if we ever go there.
+- **Weston with `renderer=pixman` is the fallback if sway disappoints.** It is
+  technically sound — the dumb-buffer path is right there in
+  `backend-drm/fb.c` — and rejected only because nixpkgs' default build is
+  288 derivations of RDP, VNC, GStreamer and GTK 4. If sway fails for a reason
+  that is sway's fault rather than the hardware's, a trimmed Weston is the next
+  thing to try, not Hyprland.
 - **cage is the smoke test**, at 68 derivations, to answer "does a Pixman
   wlroots compositor start on this DRM device" before spending the rest.
 - **The direct-to-DRM Dozer shell stays on the table** as the endgame, once
