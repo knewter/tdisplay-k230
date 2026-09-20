@@ -17,10 +17,10 @@ radio and no SD layout.
 
 ## 3. It boots under QEMU
 
-- [ ] 3.1 Add `tools/qemu-k230.sh` that boots the built system under `qemu-system-riscv64` with the console on stdio, defaulting to `-machine virt` and explaining why `k230` is not yet reachable. Verify by running it and reaching a prompt
-- [ ] 3.2 Capture the full boot to a committed transcript. Verify with `CAPTURE=120 ./tools/qemu-k230.sh | tee docs/evidence/qemu-boot.txt` and confirm the transcript ends at an interactive prompt
+- [x] 3.1 Add `tools/qemu-k230.sh` that boots the built system under `qemu-system-riscv64` with the console on stdio, defaulting to `-machine virt` and explaining why `k230` is not yet reachable. Verify by running it and reaching a prompt
+- [x] 3.2 Capture the full boot to a committed transcript. Verify with `CAPTURE=120 ./tools/qemu-k230.sh | tee docs/evidence/qemu-boot.txt` and confirm the transcript ends at an interactive prompt
 
 ## 4. The stage-1 seam is real
 
 - [x] 4.1 Declare stage 1 as a vendored input in the flake with nothing building U-Boot or OpenSBI, and comment why. Verify with `nix eval` showing the vendored attribute exists, and `grep -riE 'u-?boot|opensbi' nix/ flake.nix` showing no derivation compiles either
-- [ ] 4.2 Ground `system/nixos-config`'s stage-1 requirement against the committed QEMU transcript and the flake, and resolve or restate the `UNVERIFIED` markers in both delta specs. Verify with `openspec validate a-riscv-nixos-closure-cross-builds`
+- [x] 4.2 Ground `system/nixos-config`'s stage-1 requirement against the committed QEMU transcript and the flake, and resolve or restate the `UNVERIFIED` markers in both delta specs. Verify with `openspec validate a-riscv-nixos-closure-cross-builds`

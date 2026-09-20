@@ -8,8 +8,12 @@ vendored from Canaan.
 
 ### Requirement: The system boots to a console prompt
 
-<!-- UNVERIFIED: no image has been booted yet. Grounded once
-docs/evidence/qemu-boot.txt records the transcript. -->
+*Grounding: `docs/evidence/qemu-boot.txt`. Booted under
+`qemu-system-riscv64 -machine virt` on 2026-09-20, reaching
+`<<< Welcome to NixOS kexec-26.11.20260919.20b1ddd (riscv64) - ttyS0 >>>`
+and an interactive shell on `ttyS0` at 115200 8N1, with no display, no
+keyboard and no network configured. OpenSBI v1.8.1 handed off to S-mode and
+systemd reached `Login Prompts`.*
 
 The system SHALL boot to an interactive console prompt on the serial console
 without a display, a keyboard, or a network. Everything this project does next
@@ -63,7 +67,13 @@ building stage 1 without saying so.
 
 ### Requirement: The system is minimal and says what it is for
 
-<!-- UNVERIFIED: no closure exists yet. -->
+*Grounding: measured against the built closure rather than asserted —
+`/nix/store/lzg30bab6kqkgsa54jaql1ixfxgizxv3-nixos-system-nixos-...` is
+1.2 GiB over 474 store paths and contains zero NetworkManager, ModemManager,
+xserver or mesa paths. Recorded in `docs/evidence/cross-build.txt`. The QEMU
+variant is deliberately heavier — `netboot-minimal` imports
+`installation-device` — but that is the test harness and never reaches the
+board.*
 
 The system SHALL contain what is needed to reach a prompt and inspect the
 machine, and SHALL NOT carry a desktop, a display manager, or a graphical

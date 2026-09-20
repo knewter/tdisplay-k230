@@ -7,8 +7,11 @@ and what is recorded when a package will not cross-compile.
 
 ### Requirement: The system is produced by cross-compilation, not emulation
 
-<!-- UNVERIFIED: nothing has been cross-built yet. Grounded once
-docs/evidence/cross-build.txt records a completed closure. -->
+*Grounding: `docs/evidence/cross-build.txt`. The full system closure was
+cross-compiled on an x86_64 host with no riscv64 hardware — 353 derivations
+built locally, ~970 substituted, producing 1.2 GiB across 474 store paths in
+4413s. The resulting kernel booted under QEMU to a shell prompt
+(`docs/evidence/qemu-boot.txt`).*
 
 Building the system SHALL NOT require a riscv64 machine. The build SHALL
 declare an `x86_64-linux` build platform and a `riscv64-linux` host platform,
