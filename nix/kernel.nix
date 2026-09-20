@@ -33,6 +33,32 @@ buildLinux (args // {
 
   defconfig = "k230_defconfig";
 
+  # arch/riscv/boot/dts/canaan/Makefile lists k230-canmv, k230d-canmv and
+  # k230-evb, but NOT the v3 board -- even though k230-canmv-v3.dts and
+  # k230-canmv-v3-lcd.dts are both in the tree. Canaan's buildroot sidesteps
+  # this by naming the DTBs explicitly
+  # (BR2_LINUX_KERNEL_INTREE_DTS_NAME="canaan/k230-canmv-v3-lcd canaan/k230-canmv-v3"),
+  # so `make dtbs` alone never produces them. Add them to the Makefile
+  # instead, so a plain kernel build emits what this board needs.
+  postPatch = ''
+    echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
+    echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3-lcd.dtb' >> arch/riscv/boot/dts/canaan/Makefile
+  '';
+
+  # Build what the vendor builds, and little else.
+  #
+  # nixpkgs defaults autoModules to true, which turns on every module it
+  # can on top of the defconfig. Against a vendor tree that is actively
+  # harmful: it enables drivers the vendor never compiles, so their bugs
+  # have never been hit. The first build died on drivers/rpmsg/th1520_rpmsg.c
+  # -- "redefinition of init_module" -- a TH1520 driver, for a different
+  # SoC, that CONFIG_RPMSG_TH1520 does not enable in k230_defconfig and
+  # that nobody upstream builds as a module. Greybus was compiling too.
+  #
+  # Turning this off keeps us near the configuration Canaan actually tests,
+  # and makes the build dramatically shorter.
+  autoModules = false;
+
   # NixOS needs things a vendor defconfig does not bother with. systemd
   # refuses to boot without most of these, and the board would stop at an
   # initrd panic that says nothing about the real cause.
@@ -59,6 +85,10 @@ buildLinux (args // {
     RD_GZIP = yes;
     RD_ZSTD = yes;
     BLK_DEV_INITRD = yes;
+
+    # Belt and braces: never build the TH1520 rpmsg driver. It is for
+    # another SoC and does not compile in this tree.
+    RPMSG_TH1520 = lib.mkForce no;
   };
 
   extraMeta = {
