@@ -29,7 +29,7 @@ charge LED lights either way.
 
 | Script | Purpose |
 | --- | --- |
-| `tools/msh.py` | Run commands on the RT-Thread `msh` console and capture output |
+| `tools/console.py` | Run commands on the RT-Thread `msh` console and capture output |
 | `tools/probe.py` | Passively sniff a serial port, optionally poke it with CR/LF |
 | `tools/bootcap.py` | Send `reboot` and capture the full boot log |
 | `tools/snap.sh` | Snapshot USB/serial/block state for diffing |
@@ -37,7 +37,7 @@ charge LED lights either way.
 | `tools/kwatch.sh` | Follow the kernel log for USB events **including** failures |
 
 ```sh
-./tools/msh.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
+./tools/console.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
 ```
 
 ## Planning

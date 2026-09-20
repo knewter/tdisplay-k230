@@ -77,7 +77,7 @@ Write the real invocation into `tasks.md`, and say which claim it makes.
 | The system closure cross-builds | `nix build .#nixosConfigurations.k230.config.system.build.toplevel` |
 | The image boots at all | `qemu-system-riscv64 -machine k230 ...` — **QEMU proof** |
 | The image boots on the board | a console transcript from `/dev/ttyACM0` — **hardware proof** |
-| A running board's state | `./tools/msh.py /dev/ttyACM0 --wait=3 "<cmd>"` |
+| A running board's state | `./tools/console.py /dev/ttyACM0 --wait=3 "<cmd>"` |
 | The panel or touch | a photograph, plus the console log of the probe |
 | OpenSpec documents | `openspec validate --all` |
 

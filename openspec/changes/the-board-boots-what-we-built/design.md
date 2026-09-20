@@ -53,7 +53,7 @@ array. Refusing the form outright is worth the small inconvenience.
 `--force` flag. The card in hand was an EverDrive 64 cartridge card holding
 306 ROMs, and "the blank one" is exactly the assumption that loses data.
 
-**Reuse the existing console tooling rather than writing new.** `tools/msh.py`
+**Reuse the existing console tooling rather than writing new.** `tools/console.py`
 and `tools/probe.py` already speak to this board; the boot capture pattern in
 `tools/bootcap.py` produced `docs/rtsmart-boot-log.txt`. They need retargeting
 at a Linux console, not replacing.

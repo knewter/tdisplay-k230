@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Send command(s) over the board's serial console and print the reply.
 
-Named for RT-Thread's `msh`, which is what answers while the board runs
-LilyGO's shipped firmware. The tool itself is generic -- it writes a line
-and reads what comes back -- so it works against a Linux console too, once
-the board runs one. Only the prompt differs.
+Generic on purpose: it writes a line and reads what comes back, so it works
+against RT-Thread's `msh` (what answers while the board runs LilyGO's
+shipped firmware) and against a Linux shell once the board runs one. Only
+the prompt differs.
 
-The console itself is hardware either way: the CH342 bridge on the charging
-USB-C port, /dev/ttyACM0 at 115200 8N1.
+The console is hardware either way: the CH342 bridge on the charging USB-C
+port, /dev/ttyACM0 at 115200 8N1.
 """
 import sys, time, serial
 
@@ -43,7 +43,7 @@ def show(b):
 s.write(b'\r\n'); s.flush(); read(0.6)   # settle prompt
 
 for c in cmds:
-    print(f"\n===== msh> {c} =====")
+    print(f"\n===== > {c} =====")
     s.write(c.encode() + b'\r\n'); s.flush()
     show(read(wait))
 s.close()
