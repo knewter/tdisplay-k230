@@ -1,12 +1,28 @@
 #!/usr/bin/env bash
-# Boot the k230-qemu system under QEMU's `k230` machine.
+# Boot the k230-qemu system under QEMU.
 #
-# This proves the closure builds and starts. It is NOT evidence about the
-# board: QEMU's k230 machine models no panel, no touch controller, no radio,
-# no SD card and no vendored boot chain. See .skills/k230-spec-change/SKILL.md.
+# This proves the closure builds and STARTS. It is NOT evidence about the
+# board. See .skills/k230-spec-change/SKILL.md.
+#
+# MACHINE=virt (the default) is used deliberately, not as a shortcut:
+#
+#   Mainline Linux has no bootable K230 platform yet. 6.18.52 carries
+#   pinctrl-k230.c and reset-k230.c, but there is NO K230 device tree
+#   (arch/riscv/boot/dts/canaan/ is K210-only) and no SOC_CANAAN_K230 --
+#   only SOC_CANAAN_K210, which is `depends on !MMU`. So a stock nixpkgs
+#   kernel cannot boot QEMU's k230 machine at all.
+#
+#   What this change needs to prove is that the closure builds and reaches
+#   a prompt, which is machine-independent. `virt` answers that today.
+#
+#   MACHINE=k230 additionally needs the Xuantie kernel built with
+#   CONFIG_ERRATA_THEAD_PBMT=n (that errata IS the T-Head MAEE page-table
+#   extension QEMU does not implement). That kernel arrives with
+#   the-screen-comes-up-under-linux, and this script will work with it then.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+MACHINE="${MACHINE:-virt}"
 MEM="${MEM:-2G}"   # more than the board's 1 GiB: the whole system is in the
                    # initrd here, which hardware does not do.
 
@@ -21,20 +37,19 @@ KERNEL=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-kern
 INITRD=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-initrd)
 TOPLEVEL=$(nix build --no-link --print-out-paths .#nixosConfigurations.k230-qemu.config.system.build.toplevel)
 
-# The k230 machine generates no FDT of its own -- "This machine doesn't have
-# an FDT" -- so a device tree must be supplied. Mainline carries initial K230
-# support under arch/riscv/boot/dts/canaan/, so the kernel build should ship
-# one.
+# The k230 machine generates no FDT of its own -- dumpdtb answers "This
+# machine doesn't have an FDT" -- so it needs one supplied. `virt` builds
+# its own, so no -dtb is required there.
 DTB="${DTB:-}"
-if [ -z "$DTB" ]; then
+if [ "$MACHINE" = "k230" ] && [ -z "$DTB" ]; then
   DTB=$(find "$KERNEL/dtbs" -name 'k230*.dtb' 2>/dev/null | sort | head -1 || true)
-fi
-if [ -z "$DTB" ] || [ ! -f "$DTB" ]; then
-  echo "ERROR: no K230 device tree found under $KERNEL/dtbs" >&2
-  echo "QEMU's k230 machine generates no FDT, so one must be supplied." >&2
-  echo "Either enable Canaan DTBs in the kernel, or pass DTB=/path/to.dtb" >&2
-  find "$KERNEL/dtbs" -maxdepth 2 -type d 2>/dev/null | head -10 >&2
-  exit 1
+  if [ -z "$DTB" ] || [ ! -f "$DTB" ]; then
+    echo "ERROR: MACHINE=k230 needs a K230 device tree and none was found." >&2
+    echo "Mainline 6.x ships no K230 DTS (canaan/ is K210-only), so a stock" >&2
+    echo "kernel cannot boot this machine. Use the Xuantie kernel with" >&2
+    echo "CONFIG_ERRATA_THEAD_PBMT=n, or pass DTB=/path/to.dtb." >&2
+    exit 1
+  fi
 fi
 
 KIMG="$KERNEL/Image"
@@ -42,18 +57,19 @@ KIMG="$KERNEL/Image"
 IIMG="$INITRD/initrd"
 [ -f "$IIMG" ] || IIMG=$(find "$INITRD" -maxdepth 2 -type f | head -1)
 
+echo "machine:  $MACHINE" >&2
 echo "kernel:   $KIMG" >&2
-echo "dtb:      $DTB" >&2
+[ -n "$DTB" ] && echo "dtb:      $DTB" >&2
 echo "initrd:   $IIMG" >&2
 echo "toplevel: $TOPLEVEL" >&2
 echo >&2
 
 QEMU=(qemu-system-riscv64 \
-  -machine k230 \
+  -machine "$MACHINE" \
   -m "$MEM" \
   -nographic \
   -kernel "$KIMG" \
-  -dtb "$DTB" \
+  ${DTB:+-dtb "$DTB"} \
   -initrd "$IIMG" \
   -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7" \
   "$@")

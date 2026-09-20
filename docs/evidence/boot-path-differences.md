@@ -55,3 +55,31 @@ device tree comes from the SD card via extlinux instead.
 device, so `nix/qemu.nix` uses the `netboot-minimal` profile. On hardware
 `nix/hardware.nix` mounts an ext4 root from the card. These produce different
 closures, and only the hardware one is what eventually ships.
+
+## Why the QEMU boot uses `virt` and not `k230`
+
+Found while implementing, and it is a fact about mainline rather than a
+convenience.
+
+Linux 6.18.52 has **partial** K230 support: `drivers/pinctrl/pinctrl-k230.c`,
+`drivers/reset/reset-k230.c`, and DT bindings for both. It has **no bootable
+K230 platform**:
+
+- `arch/riscv/boot/dts/canaan/` contains only K210 device trees
+  (`k210.dtsi`, `canaan_kd233.dts`, `sipeed_maix_*`). There is no K230 DTS.
+- `arch/riscv/Kconfig.socs` has `SOC_CANAAN_K210` and no `SOC_CANAAN_K230`,
+  and the K210 entry is `depends on !MMU`.
+
+So a stock nixpkgs kernel cannot boot QEMU's `k230` machine, which is also
+why supplying a `-dtb` would not have rescued it.
+
+A `k230`-machine boot needs the Xuantie kernel, built with
+`CONFIG_ERRATA_THEAD_PBMT=n` — that errata is the T-Head memory-type
+page-table extension ("non-standard memory type bits in page-table-entries on
+T-Head SoCs") that QEMU does not implement. Packaging that kernel belongs to
+`the-screen-comes-up-under-linux`, which needs it anyway.
+
+`a-riscv-nixos-closure-cross-builds` is asking whether the closure builds and
+starts, which is machine-independent, so `virt` answers it today and
+`tools/qemu-k230.sh` grows a `MACHINE=k230` path for when the Xuantie kernel
+lands.

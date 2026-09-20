@@ -18,10 +18,27 @@ is done through that prompt, so it is the first thing that must hold.
 The console SHALL be the serial console at 115200 8N1, matching the board's
 CH342 bridge, so that one transcript format serves both QEMU and hardware.
 
+What this proves is machine-independent: that the closure is coherent and
+that userspace starts. It SHALL NOT be read as evidence about the board.
+
+*The emulated machine is `virt`, not `k230`, and that is a finding rather
+than a shortcut. Mainline Linux has no bootable K230 platform: 6.18.52
+carries `pinctrl-k230.c` and `reset-k230.c` but ships no K230 device tree
+(`arch/riscv/boot/dts/canaan/` is K210-only) and has no `SOC_CANAAN_K230` —
+only `SOC_CANAAN_K210`, which is `depends on !MMU`. A `k230`-machine boot
+additionally needs the Xuantie kernel built with `CONFIG_ERRATA_THEAD_PBMT=n`,
+that errata being the T-Head MAEE page-table extension QEMU does not
+implement. That kernel belongs to `the-screen-comes-up-under-linux`.*
+
 #### Scenario: The system boots under emulation
 
-- **WHEN** the system is booted under QEMU's `k230` machine
+- **WHEN** the system is booted under QEMU on a riscv64 machine
 - **THEN** a console prompt is reached, and the transcript is committed as evidence
+
+#### Scenario: Someone reads an emulated boot as a claim about the board
+
+- **WHEN** an emulated boot succeeds
+- **THEN** the evidence records which machine was emulated and what it does not model, so the claim cannot be over-read
 
 ### Requirement: Stage 1 is vendored, and the system does not build it
 
