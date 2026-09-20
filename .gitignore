@@ -12,3 +12,6 @@ result-*
 # Local scratch
 *.pdf
 .build/
+
+# Rendered spec site (scripts/render_specs.py)
+/public/

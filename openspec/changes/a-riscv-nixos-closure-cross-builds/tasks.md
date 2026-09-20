@@ -22,5 +22,5 @@ radio and no SD layout.
 
 ## 4. The stage-1 seam is real
 
-- [ ] 4.1 Declare stage 1 as a vendored input in the flake with nothing building U-Boot or OpenSBI, and comment why. Verify with `nix eval` showing the vendored attribute exists, and `grep -riE 'u-?boot|opensbi' nix/ flake.nix` showing no derivation compiles either
+- [x] 4.1 Declare stage 1 as a vendored input in the flake with nothing building U-Boot or OpenSBI, and comment why. Verify with `nix eval` showing the vendored attribute exists, and `grep -riE 'u-?boot|opensbi' nix/ flake.nix` showing no derivation compiles either
 - [ ] 4.2 Ground `system/nixos-config`'s stage-1 requirement against the committed QEMU transcript and the flake, and resolve or restate the `UNVERIFIED` markers in both delta specs. Verify with `openspec validate a-riscv-nixos-closure-cross-builds`

@@ -26,3 +26,34 @@ Warm rebuild (everything substituted or already built): 19s wall.
 Derivations that would not cross-compile
 -----------------------------------------
 (filled in by task 2.3)
+
+Cache coverage — measured, and it corrects an assumption
+---------------------------------------------------------
+The proposal assumed riscv64 has no binary cache at all. That is true of
+NATIVE riscv64-linux builds and false of CROSS-compiled ones, because a
+pkgsCross.riscv64 derivation is built on x86_64 and upstream Hydra builds many
+of them.
+
+Measured on the k230 closure build, 2026-09-20:
+
+  substituted from cache.nixos.org : 636 paths
+    of which riscv64 outputs       : 174
+  built locally                    : 164
+
+So the cross path gets substantial cache coverage. Examples of riscv64 paths
+that were substituted, not compiled:
+
+  acl-riscv64-unknown-linux-gnu-2.4.0-man
+  attr-riscv64-unknown-linux-gnu-2.6.0-man
+  bash-interactive-riscv64-unknown-linux-gnu-5.3p15-man
+
+image/cross-build's cache requirement was rewritten to say this rather than
+the thing we guessed.
+
+Stage-1 seam (task 4.1)
+-----------------------
+$ nix eval --json .#stage1
+  vendored = true, builtFromSource = false
+$ grep -rniE 'u-?boot|opensbi' flake.nix nix/
+  no matches outside explanatory comments
+Nothing in the flake compiles U-Boot or OpenSBI.

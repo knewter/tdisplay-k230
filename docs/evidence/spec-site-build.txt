@@ -1,0 +1,64 @@
+spec-site: measured generation time and output size
+===================================================
+
+Captured 2026-09-20 20:15 UTC on `solomon`:
+  Linux 7.1.9-1-MANJARO x86_64, AMD Ryzen 9 5950X 16-Core Processor, 32 threads
+  Python 3.14.7, stdlib only -- no third-party packages, no network
+
+The renderer writes into a scratch directory and prints pages, bytes and
+wall-clock seconds. Budgets live at the top of scripts/render_specs.py.
+
+--- run 1: the published capability tree as it stands ------------------
+
+$ ./scripts/render_specs.py --out $SCRATCH/measure-1
+$SCRATCH/measure-1: 1 pages, 13939 bytes, 0.001 s
+0 of 0 requirements unverified
+(exit 0)
+
+--- run 2: the same renderer over every capability the open proposals ---
+---         will add, staged into a scratch tree ------------------------
+
+This is the number the budget is set against: it is what the site will
+measure once the work in flight is archived, rather than what an almost
+empty tree happens to produce today.
+
+$ ./scripts/render_specs.py --repo $SCRATCH/preview --out $SCRATCH/measure-2
+
+error: openspec/specs/image/boot-chain/spec.md: requirement 'The hardware boot path differs from the emulated one, and that difference is recorded' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
+error: openspec/specs/image/sd-layout/spec.md: requirement 'Flashing names the target by a stable identifier' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
+error: openspec/specs/system/nixos-config/spec.md: requirement 'The system boots to a console prompt' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
+error: 3 requirement defect(s); the site was written but the build failed
+  display/panel                  2 requirements  1 grounded  1 unverified
+  display/touch                  2 requirements  1 grounded  1 unverified
+  docs/spec-site                 5 requirements  0 grounded  5 unverified
+  image/boot-chain               3 requirements  1 grounded  1 unverified  1 undeclared
+  image/cross-build              2 requirements  0 grounded  2 unverified
+  image/sd-layout                2 requirements  0 grounded  1 unverified  1 undeclared
+  system/console                 2 requirements  2 grounded  0 unverified
+  system/kernel                  1 requirements  1 grounded  0 unverified
+  system/nixos-config            4 requirements  1 grounded  2 unverified  1 undeclared
+$SCRATCH/measure-2: 12 pages, 78306 bytes, 0.017 s
+13 of 23 requirements unverified
+(exit 2; non-zero because three staged requirements declare no
+ verification status -- see 'Build defects' on the rendered landing page)
+
+--- budgets ------------------------------------------------------------
+
+  MAX_GENERATION_SECONDS = 5.0      measured 0.017 s   ~290x headroom
+  MAX_OUTPUT_BYTES       = 4 MiB    measured 78 KiB    ~54x headroom
+
+Set deliberately high. The capability taxonomy in
+.skills/k230-spec-change/SKILL.md allows fifteen capabilities and the
+tree above has nine, so ordinary growth must not turn the budget red.
+A breach should mean something changed -- an evidence file the size of a
+video, or a renderer that started doing real work -- not that the numbers
+were always tight. A budget raised reflexively means nothing.
+
+--- test suite ---------------------------------------------------------
+
+$ python3 -m unittest discover -s tests
+Ran 17 tests in 0.024s
+
+OK
+$TMP/public: 2 pages, 16970 bytes, 0.005 s
+1 of 1 requirements unverified

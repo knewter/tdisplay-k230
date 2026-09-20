@@ -243,18 +243,20 @@ class TestRendering(unittest.TestCase):
         try:
             render_specs.build_site(REPO, out)
             changes_dir = REPO / "openspec" / "changes"
-            ids = sorted(p.name for p in changes_dir.iterdir() if p.is_dir())
+            ids = sorted(
+                p.name
+                for p in changes_dir.iterdir()
+                if p.is_dir() and p.name != "archive"
+            )
             self.assertTrue(ids, "expected at least one in-flight change to test against")
             blob = "\n".join(
                 p.read_text(encoding="utf-8", errors="replace")
                 for p in out.rglob("*")
                 if p.is_file() and p.suffix in {".html", ".css"}
             )
-            for change_id in ids:
-                self.assertNotIn(change_id, blob, f"{change_id} leaked into the site")
-            self.assertNotIn("openspec/changes/", blob.replace(
-                "In-flight proposals are not published.", ""
-            ))
+            leaked = [change_id for change_id in ids if change_id in blob]
+            self.assertEqual(leaked, [], f"in-flight change ids leaked: {leaked}")
+            self.assertNotIn("openspec/changes", blob)
         finally:
             shutil.rmtree(out.parent, ignore_errors=True)
 

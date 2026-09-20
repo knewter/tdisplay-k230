@@ -29,17 +29,31 @@ emulated builds are slow enough to change what is worth attempting.
 - **WHEN** a derivation fails to cross-compile and is built under emulation instead
 - **THEN** it is listed in the repository as one that needs emulation, with what it cost
 
-### Requirement: There is no binary cache, and the build says so
+### Requirement: Cache coverage is partial, and the build says which part
 
-<!-- UNVERIFIED: asserted from nixpkgs' stated support tier for
-riscv64-linux, not yet observed on this host. -->
+Two things are easily conflated, and the difference decides whether a build
+takes minutes or hours:
 
-`riscv64-linux` is community-tier in nixpkgs and is not built by the upstream
-cache. The project SHALL NOT assume cached substitutes for riscv64 artifacts,
-and documentation of the build SHALL state the expected first-build cost so
+- **Native `riscv64-linux`** is community-tier in nixpkgs and is *not* built by
+  the upstream cache.
+- **Cross-compiled `pkgsCross.riscv64`** derivations are built *on* x86_64, so
+  upstream does build many of them and they *are* substitutable.
+
+Because this project cross-compiles, it benefits from that second case. The
+project SHALL NOT assume full cache coverage, and documentation of the build
+SHALL state the measured split between substituted and locally built paths, so
 that a long compile is recognised as normal rather than as a fault.
+
+*Grounding: measured on this host building the k230 closure — 636 paths
+substituted from cache.nixos.org, of which 174 were riscv64 outputs, against
+164 built locally. Recorded in `docs/evidence/cross-build.txt`.*
 
 #### Scenario: A first build is attempted
 
 - **WHEN** someone builds the system for the first time
-- **THEN** they have been told beforehand that it compiles from source, and roughly how long that takes on a known machine
+- **THEN** they have been told which parts substitute and which compile, with a measured figure from a known machine
+
+#### Scenario: Someone assumes riscv64 is entirely uncached
+
+- **WHEN** the build's cost is estimated
+- **THEN** the estimate distinguishes cross-compiled outputs, which largely substitute, from anything built natively on riscv64, which does not
