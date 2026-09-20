@@ -26,9 +26,14 @@
 # `sysboot`. That is deferred until something boots at all, because a
 # bringup failure and a bootloader-configuration failure look identical from
 # a dark screen.
-{ pkgs, ... }:
+{ pkgs, lib, k230Kernel, ... }:
 
 {
+  # Mainline cannot boot this SoC -- no K230 device tree, no
+  # SOC_CANAAN_K230 -- so the board runs the Xuantie kernel, built from
+  # source. See nix/kernel.nix.
+  boot.kernelPackages = lib.mkForce k230Kernel;
+
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = false;
 

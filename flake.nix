@@ -31,6 +31,7 @@
 
       nixosConfigurations = {
         k230 = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit (self) k230Kernel; };
           modules = [ ./nix/k230.nix ./nix/hardware.nix ];
         };
         k230-qemu = nixpkgs.lib.nixosSystem {
@@ -55,6 +56,27 @@
         qemu-initrd = self.nixosConfigurations.k230-qemu.config.system.build.netbootRamdisk;
 
         xuantie-kernel = self.k230Kernel.kernel;
+
+        # The bootable card image: vendored stage 1 at its raw offsets, a
+        # boot ext4 holding the three filenames U-Boot loads by name, and
+        # our root filesystem.
+        sdImage =
+          let
+            cfg = self.nixosConfigurations.k230.config;
+            rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
+              storePaths = [ cfg.system.build.toplevel ];
+              volumeLabel = "NIXOS_SD";
+              populateImageCommands = ''
+                mkdir -p ./files/nix/var/nix/profiles
+                ln -sf ${cfg.system.build.toplevel} ./files/nix/var/nix/profiles/system-1-link
+                ln -sf system-1-link ./files/nix/var/nix/profiles/system
+              '';
+            };
+          in
+          pkgs.callPackage ./nix/sd-image.nix {
+            inherit stage1 rootfsImage;
+            kernel = self.k230Kernel.kernel;
+          };
       };
 
       # The vendored stage-1 boundary, exposed so it can be inspected without
