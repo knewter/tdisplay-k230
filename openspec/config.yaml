@@ -54,8 +54,13 @@ rules:
     - Say which side owns it. A requirement met by vendored stage 1 is not a
       requirement on the system, and conflating them is how boot bugs hide.
   design:
-    - Name the layer: stage 1, kernel, device tree, Nix, or userspace. A
-      design that names only "the image" has not said where the work lands.
+    # Quoted because a colon-space in a plain scalar makes YAML read the
+    # item as a map key, and an unparseable config is ignored in full rather
+    # than complained about -- every rule in this file goes missing for one
+    # line. ../truck carries the same comment for the same reason.
+    - "Name the layer: stage 1, kernel, device tree, Nix, or userspace. A
+      design that names only 'the image' has not said where the work lands."
+
     - Record what was rejected and why. Several dead ends here were expensive
       to find and cheap to re-enter.
   tasks:
