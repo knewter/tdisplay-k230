@@ -57,7 +57,9 @@ openspec validate --all                       check them
 
 **<https://knewter.github.io/tdisplay-k230/>** — rebuilt from
 `openspec/specs/` on every push to `main`, and its first line is how many
-requirements are still unverified.
+requirements are still unverified. *(Not live yet: GitHub Pages has to be
+switched on once, at Settings → Pages → Source: GitHub Actions. The build
+runs and passes on every push regardless.)*
 
 Locally:
 

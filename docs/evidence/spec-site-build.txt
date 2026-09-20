@@ -105,12 +105,22 @@ OK
 main and publishes site/dist to GitHub Pages at
 https://knewter.github.io/tdisplay-k230/.
 
-Run 35536825120 installed the dependencies, ran the data-pass tests and
-built the site successfully on ubuntu-latest -- and then failed at
-actions/configure-pages. GitHub Pages has never been enabled on the
-repository, and the workflow's attempt to enable it (enablement: true)
-was refused: the Actions token is not permitted to create a Pages site.
-That is a repository setting, not something CI can do.
+Run 35537228320: every step of the build job green on ubuntu-latest --
+dependencies, the data-pass tests, the build with its budgets and
+assertions, and the Pages artifact uploaded. The deploy job then failed at
+actions/deploy-pages, because GitHub Pages has never been enabled on the
+repository. An earlier run tried to enable it from the workflow
+(actions/configure-pages with enablement: true) and was refused: the Actions
+token is not permitted to create a Pages site. That is a repository setting,
+not something CI can do, and the step was removed so that a setting cannot
+fail the build itself.
+
+To finish it, once:
+  1. github.com/knewter/tdisplay-k230/settings/pages
+     Build and deployment -> Source: GitHub Actions
+  2. if that is not selectable, settings/actions -> Workflow permissions ->
+     Read and write permissions
+  3. re-run the Spec site workflow, or push anything to main
 
 Until a deployment completes, the requirement 'The published site is
 current without anyone maintaining it' stays UNVERIFIED. That is the

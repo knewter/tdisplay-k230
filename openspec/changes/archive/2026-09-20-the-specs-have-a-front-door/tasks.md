@@ -110,17 +110,20 @@ are `tests/test_render_specs.py` (the data pass, stdlib only) and
 - [x] 5.1 Build and deploy from GitHub Actions to GitHub Pages on every push to the default branch. Verify by pushing and confirming the workflow builds the site
 
   `.github/workflows/spec-site.yml`. Run
-  [35536825120](https://github.com/knewter/tdisplay-k230/actions/runs/35536825120)
-  installed the dependencies, ran the data-pass tests and built the site
-  successfully on `ubuntu-latest`.
+  [35537228320](https://github.com/knewter/tdisplay-k230/actions/runs/35537228320)
+  installed the dependencies, ran the data-pass tests, built the site with its
+  budgets and assertions, and uploaded the Pages artifact — every step of the
+  `build` job green on `ubuntu-latest`.
 
 - [ ] 5.2 Confirm the URL serves the site. Verify by fetching `https://knewter.github.io/tdisplay-k230/` and finding the unverified count in it
 
-  **Blocked on one manual step, which cannot be done from CI.** Both runs so
-  far failed at `actions/configure-pages`: GitHub Pages has never been enabled
-  on the repository, and the workflow's attempt to enable it
-  (`enablement: true`) was refused — the repository's Actions token does not
-  have permission to create a Pages site.
+  **Blocked on one manual step, which cannot be done from CI.** The `build`
+  job passes and uploads the artifact; the `deploy` job fails at
+  `actions/deploy-pages`. GitHub Pages has never been enabled on the
+  repository, and an earlier attempt to enable it from the workflow
+  (`actions/configure-pages` with `enablement: true`) was refused — the
+  Actions token is not permitted to create a Pages site. That step was then
+  removed, so a repository setting no longer fails the build itself.
 
   What has to be clicked, once:
 
