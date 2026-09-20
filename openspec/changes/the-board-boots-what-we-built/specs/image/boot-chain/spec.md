@@ -39,6 +39,12 @@ again each time.
 
 ### Requirement: The hardware boot path differs from the emulated one, and that difference is recorded
 
+*Grounding: `docs/evidence/boot-path-differences.md` records the comparison,
+started during `a-riscv-nixos-closure-cross-builds`. Two differences are
+already observed rather than anticipated: QEMU's `k230` machine models no
+block device, and it generates no FDT at all (`dumpdtb` answers "This machine
+doesn't have an FDT").*
+
 Under QEMU the kernel is loaded directly; on hardware it is loaded by vendored
 U-Boot. The project SHALL record what differs between the two paths, so that a
 failure on hardware after a success under emulation is diagnosed against a

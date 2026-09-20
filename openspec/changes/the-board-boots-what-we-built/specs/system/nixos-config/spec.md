@@ -2,6 +2,10 @@
 
 ### Requirement: The system boots to a console prompt
 
+<!-- UNVERIFIED: the emulated half is grounded by
+docs/evidence/qemu-boot.txt, but nothing of ours has booted on the board
+yet. Grounded once docs/evidence/hardware-boot.txt exists. -->
+
 The system SHALL boot to an interactive console prompt on the serial console
 without a display, a keyboard, or a network.
 

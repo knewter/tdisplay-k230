@@ -26,6 +26,12 @@ is 500 MB of FAT32 labelled `SDCARD`.*
 
 ### Requirement: Flashing names the target by a stable identifier
 
+*Grounding: observed on this host. The card reader presents two slots as
+`/dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:0` and `-0:1`,
+while `/dev/sda` through `/dev/sdd` are the four 8 TB members of the RAID10
+array. Device letters were seen to move across a replug of the reader during
+this session.*
+
 The flashing procedure SHALL identify the target by a `/dev/disk/by-id` path,
 not by a kernel device node.
 
