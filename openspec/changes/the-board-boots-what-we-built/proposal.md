@@ -26,6 +26,12 @@ speculative. This is the change where the project stops being a build exercise.
 - **The difference between the QEMU boot and the hardware boot is written
   down**, because that gap is where the next failure will live.
 
+- **A kernel that can boot this SoC.** Added after proposing, because the
+  plan assumed one already existed. It does not: mainline Linux ships no
+  K230 device tree and no `SOC_CANAAN_K230`, so the kernel from the previous
+  change has nothing to boot with on this board. We build the Xuantie tree
+  Canaan's own Linux SDK pins, from source — not as a vendored binary.
+
 **Non-goals.** The panel, touch, or backlight — the board can boot headless and
 the screen is `the-screen-comes-up-under-linux`. Either radio. Building stage 1
 from source; it stays vendored. Booting from anything but an SD card.
