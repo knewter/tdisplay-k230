@@ -11,3 +11,4 @@ result-*
 
 # Local scratch
 *.pdf
+.build/

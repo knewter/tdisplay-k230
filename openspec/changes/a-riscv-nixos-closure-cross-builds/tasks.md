@@ -6,12 +6,12 @@ radio and no SD layout.
 
 ## 1. The host can cross-compile riscv64 at all
 
-- [ ] 1.1 Pin nixpkgs in a `flake.nix` and cross-build one trivial package to prove the toolchain resolves. Verify with `nix build --no-link .#checks.x86_64-linux.cross-hello` and record the store path
-- [ ] 1.2 Measure and record what a cross-build costs on this host, so a long first build is recognisable as normal. Verify by committing the measured wall-clock time to `docs/evidence/cross-build.txt`
+- [x] 1.1 Pin nixpkgs in a `flake.nix` and cross-build one trivial package to prove the toolchain resolves. Verify with `nix build --no-link .#checks.x86_64-linux.cross-hello` and record the store path
+- [x] 1.2 Measure and record what a cross-build costs on this host, so a long first build is recognisable as normal. Verify by committing the measured wall-clock time to `docs/evidence/cross-build.txt`
 
 ## 2. A minimal riscv64 NixOS closure
 
-- [ ] 2.1 Declare a `nixosConfigurations.k230` with `buildPlatform = x86_64-linux` and `hostPlatform = riscv64-linux`, a serial console at 115200 8N1, and no graphical stack. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`
+- [x] 2.1 Declare a `nixosConfigurations.k230` with `buildPlatform = x86_64-linux` and `hostPlatform = riscv64-linux`, a serial console at 115200 8N1, and no graphical stack. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`
 - [ ] 2.2 Build the closure. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
 - [ ] 2.3 Record every derivation that refused to cross-compile and had to be emulated, with what it cost. Verify by committing that list to `docs/evidence/cross-build.txt`; if the list is empty, say so explicitly
 

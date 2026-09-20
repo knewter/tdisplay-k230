@@ -1,0 +1,28 @@
+Cross-build evidence — image/cross-build
+========================================
+
+Host:     solomon, x86_64-linux, 32 cores, 125 GiB RAM
+Nix:      nix (Nix) 2.35.2
+Date:     2026-09-20
+nixpkgs:  github:NixOS/nixpkgs/nixos-unstable (see flake.lock for the pin)
+
+Task 1.1 — the cross toolchain resolves
+---------------------------------------
+$ nix build --no-link --print-out-paths .#checks.x86_64-linux.cross-hello
+/nix/store/8dlbjqlyh82xc1h02klzrgfbi9pw2sv4-hello-riscv64-unknown-linux-gnu-2.12.3
+
+$ file /nix/store/8dlbjqlyh82xc1h02klzrgfbi9pw2sv4-hello-riscv64-unknown-linux-gnu-2.12.3/bin/hello
+ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1, for GNU/Linux 4.15.0, not stripped
+
+Task 1.2 — what a cross-build costs on this host
+------------------------------------------------
+cross-hello, cold (toolchain fetched from cache.nixos.org): 1m15s wall.
+Almost all of that was substituting the riscv64 cross toolchain, which is
+itself an x86_64 package and therefore IS cached. What is not cached is
+anything built FOR riscv64.
+
+Warm rebuild (everything substituted or already built): 19s wall.
+
+Derivations that would not cross-compile
+-----------------------------------------
+(filled in by task 2.3)
