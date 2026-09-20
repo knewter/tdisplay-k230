@@ -23,8 +23,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MACHINE="${MACHINE:-virt}"
-MEM="${MEM:-2G}"   # more than the board's 1 GiB: the whole system is in the
-                   # initrd here, which hardware does not do.
+# Deliberately far above the board's 1 GiB. Under QEMU the entire system
+# lives in a ramdisk, so the guest needs room for the kernel plus the
+# decompressed closure -- a constraint hardware does not have, since there
+# the root is an ext4 filesystem on the SD card. Generous because the host
+# has 125 GiB and an OOM here would look like a boot bug.
+MEM="${MEM:-6G}"
 
 # CAPTURE=<seconds> runs non-interactively and stops after that long, so a
 # boot can be recorded into docs/evidence/ without hanging a terminal. With
