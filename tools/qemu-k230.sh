@@ -10,6 +10,12 @@ cd "$(dirname "$0")/.."
 MEM="${MEM:-2G}"   # more than the board's 1 GiB: the whole system is in the
                    # initrd here, which hardware does not do.
 
+# CAPTURE=<seconds> runs non-interactively and stops after that long, so a
+# boot can be recorded into docs/evidence/ without hanging a terminal. With
+# -nographic and no block device there is nothing to shut the guest down
+# from, so the timeout is the exit path.
+CAPTURE="${CAPTURE:-}"
+
 echo "Building kernel and ramdisk..." >&2
 KERNEL=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-kernel)
 INITRD=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-initrd)
@@ -42,7 +48,7 @@ echo "initrd:   $IIMG" >&2
 echo "toplevel: $TOPLEVEL" >&2
 echo >&2
 
-exec qemu-system-riscv64 \
+QEMU=(qemu-system-riscv64 \
   -machine k230 \
   -m "$MEM" \
   -nographic \
@@ -50,4 +56,15 @@ exec qemu-system-riscv64 \
   -dtb "$DTB" \
   -initrd "$IIMG" \
   -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7" \
-  "$@"
+  "$@")
+
+if [ -n "$CAPTURE" ]; then
+  # 124 from `timeout` means it ran for the whole window, which for a boot
+  # capture is success, not failure.
+  timeout --foreground "$CAPTURE" "${QEMU[@]}" < /dev/null
+  rc=$?
+  [ "$rc" -eq 124 ] && exit 0
+  exit "$rc"
+fi
+
+exec "${QEMU[@]}"

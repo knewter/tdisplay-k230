@@ -18,7 +18,7 @@ radio and no SD layout.
 ## 3. It boots under QEMU
 
 - [ ] 3.1 Add `tools/qemu-k230.sh` that boots the built system under `qemu-system-riscv64 -machine k230` with the console on stdio. Verify by running it and reaching a prompt
-- [ ] 3.2 Capture the full boot to a committed transcript. Verify with `./tools/qemu-k230.sh | tee docs/evidence/qemu-boot.txt` and confirm the transcript ends at an interactive prompt
+- [ ] 3.2 Capture the full boot to a committed transcript. Verify with `CAPTURE=120 ./tools/qemu-k230.sh | tee docs/evidence/qemu-boot.txt` and confirm the transcript ends at an interactive prompt
 
 ## 4. The stage-1 seam is real
 
