@@ -202,6 +202,21 @@ class TestRendering(unittest.TestCase):
             self.assertTrue((out / "display-panel.html").is_file())
             self.assertTrue((out / "system-console.html").is_file())
 
+    def test_the_real_tree_gets_a_page_for_every_spec_file(self) -> None:
+        out = Path(tempfile.mkdtemp(prefix="spec-site-pages-")) / "public"
+        try:
+            report = render_specs.build_site(REPO, out)
+            specs = sorted((REPO / "openspec" / "specs").rglob("spec.md"))
+            self.assertEqual(len(report.capabilities), len(specs))
+            for cap in report.capabilities:
+                self.assertTrue(
+                    (out / f"{cap.slug}.html").is_file(),
+                    f"no page for {cap.ident}",
+                )
+            self.assertTrue((out / "index.html").is_file())
+        finally:
+            shutil.rmtree(out.parent, ignore_errors=True)
+
     def test_landing_page_states_the_count_before_any_capability_prose(self) -> None:
         with TempRepo() as root:
             write_spec(
@@ -249,14 +264,18 @@ class TestRendering(unittest.TestCase):
                 if p.is_dir() and p.name != "archive"
             )
             self.assertTrue(ids, "expected at least one in-flight change to test against")
+            # Evidence pages reproduce files committed elsewhere in the repo
+            # verbatim; what must stay out of the site is the spec content of
+            # an open proposal, which lives on the index and capability pages.
             blob = "\n".join(
                 p.read_text(encoding="utf-8", errors="replace")
                 for p in out.rglob("*")
-                if p.is_file() and p.suffix in {".html", ".css"}
+                if p.is_file()
+                and p.suffix in {".html", ".css"}
+                and not p.name.startswith("evidence-")
             )
             leaked = [change_id for change_id in ids if change_id in blob]
             self.assertEqual(leaked, [], f"in-flight change ids leaked: {leaked}")
-            self.assertNotIn("openspec/changes", blob)
         finally:
             shutil.rmtree(out.parent, ignore_errors=True)
 

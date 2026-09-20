@@ -42,3 +42,16 @@ That the closure cross-builds, that the kernel and initrd are coherent, that
 init runs, and that userspace reaches a prompt. That is genuinely worth having
 before touching hardware — it means a hardware failure is a *boot chain*
 problem rather than a userspace one.
+
+## Two QEMU constraints found while implementing
+
+**The `k230` machine generates no FDT.** `-machine k230,dumpdtb=...` answers
+`This machine doesn't have an FDT`, so a device tree must be supplied with
+`-dtb`. `tools/qemu-k230.sh` looks for one under the kernel's `dtbs/` and
+fails with an explanation rather than booting without it. On hardware the
+device tree comes from the SD card via extlinux instead.
+
+**The whole system must be in the initrd.** The machine models no block
+device, so `nix/qemu.nix` uses the `netboot-minimal` profile. On hardware
+`nix/hardware.nix` mounts an ext4 root from the card. These produce different
+closures, and only the hardware one is what eventually ships.

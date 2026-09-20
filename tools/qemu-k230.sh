@@ -15,12 +15,29 @@ KERNEL=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-kern
 INITRD=$(nix build --no-link --print-out-paths .#packages.x86_64-linux.qemu-initrd)
 TOPLEVEL=$(nix build --no-link --print-out-paths .#nixosConfigurations.k230-qemu.config.system.build.toplevel)
 
+# The k230 machine generates no FDT of its own -- "This machine doesn't have
+# an FDT" -- so a device tree must be supplied. Mainline carries initial K230
+# support under arch/riscv/boot/dts/canaan/, so the kernel build should ship
+# one.
+DTB="${DTB:-}"
+if [ -z "$DTB" ]; then
+  DTB=$(find "$KERNEL/dtbs" -name 'k230*.dtb' 2>/dev/null | sort | head -1 || true)
+fi
+if [ -z "$DTB" ] || [ ! -f "$DTB" ]; then
+  echo "ERROR: no K230 device tree found under $KERNEL/dtbs" >&2
+  echo "QEMU's k230 machine generates no FDT, so one must be supplied." >&2
+  echo "Either enable Canaan DTBs in the kernel, or pass DTB=/path/to.dtb" >&2
+  find "$KERNEL/dtbs" -maxdepth 2 -type d 2>/dev/null | head -10 >&2
+  exit 1
+fi
+
 KIMG="$KERNEL/Image"
 [ -f "$KIMG" ] || KIMG=$(find "$KERNEL" -maxdepth 2 -name 'Image*' -o -maxdepth 2 -name 'vmlinu*' | head -1)
 IIMG="$INITRD/initrd"
 [ -f "$IIMG" ] || IIMG=$(find "$INITRD" -maxdepth 2 -type f | head -1)
 
 echo "kernel:   $KIMG" >&2
+echo "dtb:      $DTB" >&2
 echo "initrd:   $IIMG" >&2
 echo "toplevel: $TOPLEVEL" >&2
 echo >&2
@@ -30,6 +47,7 @@ exec qemu-system-riscv64 \
   -m "$MEM" \
   -nographic \
   -kernel "$KIMG" \
+  -dtb "$DTB" \
   -initrd "$IIMG" \
   -append "console=ttyS0,115200n8 earlycon=sbi init=$TOPLEVEL/init loglevel=7" \
   "$@"
