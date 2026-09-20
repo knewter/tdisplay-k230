@@ -102,3 +102,26 @@ It is a one-time cost per nixpkgs pin -- the results land in the local store
 and subsequent builds reuse them. Recorded so the first build's duration is
 not mistaken for the steady-state cost, and so anyone trimming the closure
 knows the initrd is where the expensive part hides.
+
+A note on parallelism: -j 32 was the wrong flag
+------------------------------------------------
+The closure build was launched with `nix build -j 32`. That is max-jobs --
+up to 32 concurrent DERIVATIONS -- and each derivation separately defaults
+to using every core. Measured during the build:
+
+  load average : 101
+  compiler processes : 156
+  cores : 32
+
+So the machine was roughly 3x oversubscribed. Work still completes and it
+was left running rather than restarted (45 minutes of GCC bootstrap already
+invested), but it is not the fast configuration.
+
+For a rebuild, prefer letting nix pick, or set both explicitly so the
+product is bounded:
+
+  nix build -j 8 --cores 4     # 8 derivations x 4 cores = 32
+
+Recorded because "the build is slow" and "the build is oversubscribed" look
+identical from outside, and the next person timing this should not inherit
+a bad number as the baseline.
