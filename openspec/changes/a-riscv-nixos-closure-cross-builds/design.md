@@ -46,6 +46,11 @@ for now: it is a project in itself, it is not on the path to answering this
 change's question, and it can be revisited once anything boots at all. The
 seam is declared now so the later work has somewhere to land.
 
+**Boot proof on `virt`, not `k230`.** See Open Questions — mainline has no
+bootable K230 platform, so this is forced rather than chosen. The consequence
+worth carrying forward: nothing in this change exercises K230-specific kernel
+support, so `the-screen-comes-up-under-linux` is where that first gets tested.
+
 **QEMU is a boot check, not a hardware simulator.**
 The runner is a script under `tools/`, not a Nix app, so it stays obviously a
 development convenience rather than something later changes might mistake for
@@ -76,8 +81,20 @@ known-good QEMU boot in the fewest possible ways.
 
 - Which nixpkgs revision to pin. Deferrable: it changes what fails to
   cross-compile but not the approach, the specs, or the task breakdown.
-- Whether the kernel this change boots under QEMU is a stock nixpkgs riscv64
-  kernel or already the Xuantie one. The stock kernel is the cheaper way to
-  answer this change's question; the Xuantie kernel is required for hardware
-  and belongs to `the-board-boots-what-we-built`. Starting stock and switching
-  later costs nothing here.
+~~Whether the kernel this change boots under QEMU is a stock nixpkgs riscv64
+kernel or already the Xuantie one.~~ **Resolved 20 September 2026, and the
+premise was wrong.** The choice was framed as stock-now-switch-later, which
+assumed a stock kernel could boot QEMU's `k230` machine. It cannot: mainline
+6.18.52 ships no K230 device tree (`arch/riscv/boot/dts/canaan/` is K210-only)
+and no `SOC_CANAAN_K230`, so there is no bootable K230 platform upstream at
+all.
+
+The resolution keeps this change's scope rather than pulling kernel packaging
+forward. What this change asks — does the closure build and start — is
+machine-independent, so it is answered on `-machine virt` with the stock
+kernel. A `k230`-machine boot needs the Xuantie kernel with
+`CONFIG_ERRATA_THEAD_PBMT=n` (that errata being the T-Head MAEE page-table
+extension QEMU does not implement), and that belongs to
+`the-screen-comes-up-under-linux`, which needs that kernel anyway.
+
+Recorded in full in `docs/evidence/boot-path-differences.md`.
