@@ -32,7 +32,7 @@ partition table.
 sha256
 ------
 3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
-0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579  fn_ug_u-boot.bin
+0ff124df3571acaeb88b78d236c3c2c8b947bc9b2c80eb2361fc34285bc2ecf7  fn_ug_u-boot.bin
 f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  env.env
 
 Each carries a Canaan firmware header: magic "K230", no encryption,
@@ -78,3 +78,21 @@ compiled from published source (riscv/opensbi 1.4 plus Canaan's overlay,
 both readable). It is committed for the same build-convenience reason as
 U-Boot, not because source is unavailable, and building it inside the flake
 would remove it from the tree entirely.
+
+
+Correction, 2026-09-20: the gzip CM byte
+---------------------------------------------
+The first build of these omitted post-image.sh line 96, inside k230_gzip():
+
+    sed -i -e "1s/\x08/\x09/" ${filename}.gz
+
+That flips the gzip CM byte from 0x08 (deflate) to 0x09, which is how SPL
+is told to use the SoC's hardware decompressor rather than software
+inflate. fn_ug_u-boot.bin was therefore built with 0x08 and would have
+taken a code path the vendor neither ships nor tests -- SPL links both
+zunzip and k230_priv_unzip, so it would most likely have booted, and the
+difference would have been invisible until something behaved oddly.
+
+Found by the blob audit reading post-image.sh line by line, not by me.
+tools/gen-stage1.sh now carries the sed and these blobs are rebuilt with
+it; fn_ug_u-boot.bin's hash changed accordingly.

@@ -24,8 +24,14 @@ rm -rf "$OUT"; mkdir -p "$OUT"; cd "$OUT"
 cp $UB/u-boot.bin .
 cp $UB/spl/u-boot-spl.bin .
 
-echo "--- u-boot: k230_priv_gzip -> mkimage(uboot head) -> firmware head"
+echo "--- u-boot: gzip -> CM byte -> mkimage(uboot head) -> firmware head"
 $SDK/tools/k230_priv_gzip -n8 -f -k u-boot.bin
+# post-image.sh line 96, inside k230_gzip(). Flips the gzip CM byte from
+# 0x08 (deflate, software) to 0x09, which is how SPL is told to use the
+# SoC hardware decompressor. Omitting it still boots -- SPL links both
+# zunzip and k230_priv_unzip -- but takes a path the vendor does not ship
+# or test.
+sed -i -e "1s/\x08/\x09/" u-boot.bin.gz
 $UB/tools/mkimage -A riscv -C gzip -O u-boot -T firmware -a $BASE -e $BASE -n uboot \
     -d u-boot.bin.gz ug_u-boot.bin
 cp ug_u-boot.bin ug_u-boot.bin.t
