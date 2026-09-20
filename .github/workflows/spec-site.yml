@@ -49,13 +49,10 @@ jobs:
       - name: Build the site
         run: python3 scripts/build_site.py
 
-      # enablement turns Pages on the first time this runs, so the only
-      # manual step is none. It is a no-op once Pages exists.
-      - uses: actions/configure-pages@v5
-        if: github.event_name == 'push'
-        with:
-          enablement: true
-
+      # No actions/configure-pages: the base path is fixed in
+      # site/astro.config.mjs, so there is nothing to read from the Pages
+      # configuration, and letting it run would fail this whole job -- budgets
+      # and assertions included -- over a repository setting.
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name == 'push'
         with:
