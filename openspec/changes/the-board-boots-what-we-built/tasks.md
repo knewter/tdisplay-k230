@@ -22,7 +22,7 @@ touch remain that change's job.
 
 - [ ] 2.1 Package `ruyisdk/linux-xuantie-kernel` at the revision `k230_canmv_v3_defconfig` pins, built from source with `k230_defconfig` plus the options NixOS requires. Verify with `nix build .#packages.x86_64-linux.kernel` and confirm `Image` is produced
 - [ ] 2.2 Confirm it emits a K230 device tree, which the stock kernel does not. Verify with `ls $(nix build --no-link --print-out-paths .#packages.x86_64-linux.kernel)/dtbs/canaan/` showing `k230-canmv-v3.dtb`
-- [ ] 2.3 Record why mainline could not be used, so this pin is understood as forced rather than preferred. Verify by committing the Kconfig and device-tree evidence to `docs/evidence/why-xuantie-kernel.txt`
+- [x] 2.3 Record why mainline could not be used, so this pin is understood as forced rather than preferred. Verify by committing the Kconfig and device-tree evidence to `docs/evidence/why-xuantie-kernel.txt`
 
 ## 3. An SD image
 

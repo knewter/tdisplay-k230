@@ -1,0 +1,77 @@
+Why this board runs the Xuantie kernel and not mainline (task 2.3)
+===================================================================
+Recorded so the pin is understood as forced rather than preferred, and so a
+future reader can tell when it stops being necessary.
+
+The claim
+---------
+Mainline Linux cannot boot the K230. Not "boots with reduced function" --
+there is no bootable platform at all.
+
+Evidence, from linux-6.18.52 as packaged by nixpkgs
+----------------------------------------------------
+1. No K230 device tree exists.
+
+   $ tar tf linux-6.18.52.tar.xz | grep 'arch/riscv/boot/dts/canaan/.*\.dts'
+     canaan_kd233.dts
+     k210.dtsi
+     k210_generic.dts
+     sipeed_maix_bit.dts
+     sipeed_maix_dock.dts
+     sipeed_maix_go.dts
+     sipeed_maixduino.dts
+
+   Every one is K210, the previous-generation SoC. And in the built kernel:
+
+   $ ls $(nix path .#packages.x86_64-linux.kernel)/dtbs/canaan/
+     canaan_kd233.dtb  k210_generic.dtb  sipeed_maix_bit.dtb
+     sipeed_maix_dock.dtb  sipeed_maix_go.dtb  sipeed_maixduino.dtb
+
+2. There is no SoC Kconfig entry to enable.
+
+   arch/riscv/Kconfig.socs offers SOC_CANAAN_K210 and nothing for the K230.
+   The K210 entry is `depends on !MMU`, so it is not even the right shape.
+
+3. Some K230 support HAS landed, which is what makes this easy to misread:
+
+     drivers/pinctrl/pinctrl-k230.c
+     drivers/reset/reset-k230.c
+     Documentation/devicetree/bindings/pinctrl/canaan,k230-pinctrl.yaml
+     Documentation/devicetree/bindings/reset/canaan,k230-rst.yaml
+
+   Drivers without a platform or a device tree boot nothing.
+
+What we use instead
+-------------------
+  ruyisdk/linux-xuantie-kernel @ 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529
+  6.6.36, defconfig k230_defconfig
+
+Pinned by Canaan's own Linux SDK: k230_canmv_v3_defconfig sets
+BR2_LINUX_KERNEL_CUSTOM_REPO_URL and ..._VERSION to exactly that repo and
+revision. It carries arch/riscv/boot/dts/canaan/k230.dtsi and
+k230-canmv-v3.dts, and its defconfig enables ARCH_CANAAN, ARCH_THEAD,
+GPIO_K230, PWM_K230, the Kendryte SDHCI variant and the NPU drivers.
+
+It is built FROM SOURCE by nix/kernel.nix -- fetchFromGitHub at that
+revision, hash-pinned -- not vendored as a binary.
+
+This also explains the QEMU choice
+-----------------------------------
+a-riscv-nixos-closure-cross-builds boots on `-machine virt`, not `-machine
+k230`, for the same reason: the stock kernel it uses has nothing to boot a
+K230 with. Running the Xuantie kernel under QEMU's k230 machine
+additionally needs CONFIG_ERRATA_THEAD_PBMT=n, since that errata is the
+T-Head MAEE page-table extension QEMU does not implement.
+
+When this stops being necessary
+--------------------------------
+When mainline gains a K230 device tree and a SoC platform entry. The
+drivers arriving suggest that work is underway. Check
+arch/riscv/boot/dts/canaan/ for a k230*.dts and Kconfig.socs for
+SOC_CANAAN_K230; when both exist, this pin can be revisited.
+
+A caution for whoever does: do not assume upstream OpenSBI can come along.
+Upstream v1.8 matches canaan,kendryte-k230 with thead_pmu_quirks only,
+while Canaan's 1.4 overlay also sets THEAD_QUIRK_DISABLE_MAEE and clears
+MXSTATUS.MAEE. Leaving MAEE enabled boots and then corrupts memory under
+load. See docs/blob-inventory.md.
