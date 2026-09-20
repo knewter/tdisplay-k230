@@ -40,6 +40,19 @@ charge LED lights either way.
 ./tools/msh.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
 ```
 
+## Planning
+
+All planning goes through [OpenSpec](https://openspec.dev). Read
+`.skills/k230-spec-change/SKILL.md` before proposing a change — it holds the
+capability taxonomy, what may ground a requirement on this hardware, and why
+a QEMU run and a hardware run are different claims.
+
+```
+openspec/specs/<group>/<capability>/spec.md   what this board does today
+openspec/changes/<id>/                        one in-flight change
+openspec validate --all                       check them
+```
+
 ## Status
 
 See [docs/findings.md](docs/findings.md).
