@@ -122,6 +122,26 @@ class TestClassification(unittest.TestCase):
         status, _ = render_specs.classify("f.md", "R", body)
         self.assertEqual(status, UNVERIFIED)
 
+    def test_a_marker_quoted_in_a_code_span_is_not_a_marker(self) -> None:
+        """docs/spec-site discusses the convention, and quoting one must not
+        be mistaken for using one."""
+        body = (
+            "A path named only inside an `<!-- UNVERIFIED -->` marker is not a "
+            "citation.\n\n"
+            "*Grounding: `docs/rtsmart-boot-log.txt` records it.*\n"
+        )
+        status, _ = render_specs.classify("f.md", "R", body)
+        self.assertEqual(status, GROUNDED)
+
+    def test_a_real_marker_is_stripped_from_the_rendered_prose(self) -> None:
+        with TempRepo() as root:
+            write_spec(root, "display/panel", "### Requirement: A\n" + UNVERIFIED_BODY)
+            out = root / "public"
+            render_specs.build_site(root, out)
+            markup = (out / "display-panel.html").read_text()
+            self.assertNotIn("UNVERIFIED", markup)
+            self.assertIn("nothing has been drawn on this panel", markup)
+
     def test_an_undeclared_requirement_becomes_a_build_defect_not_grounded(self) -> None:
         with TempRepo() as root:
             write_spec(root, "image/boot-chain", "### Requirement: Paths differ\n" + UNDECLARED_BODY)

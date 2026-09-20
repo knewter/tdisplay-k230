@@ -192,12 +192,37 @@ class Report:
 # --------------------------------------------------------------------------
 
 
+def mask_code(text: str) -> str:
+    """Blank out `code spans`, preserving offsets.
+
+    A requirement may *talk about* the conventions -- "a path named only inside
+    an `<!-- UNVERIFIED -->` marker is not a citation" -- and quoting one must
+    not be mistaken for using one. Offsets are preserved so a match found in
+    the masked text can be sliced out of the original.
+    """
+    return re.sub(r"`[^`\n]*`", lambda m: " " * len(m.group(0)), text)
+
+
+def find_marker(text: str) -> re.Match[str] | None:
+    hit = UNVERIFIED_MARKER.search(mask_code(text))
+    if not hit:
+        return None
+    return UNVERIFIED_MARKER.match(text, hit.start())
+
+
 def strip_markers(text: str) -> str:
     """Remove UNVERIFIED comments. Their prose often names evidence that is
     intended rather than committed ("Grounded once docs/evidence/x.txt ..."),
     and treating that as a citation would report a missing file for every
     requirement that is honestly waiting on one."""
-    return UNVERIFIED_MARKER.sub(" ", text)
+    out: list[str] = []
+    last = 0
+    for hit in UNVERIFIED_MARKER.finditer(mask_code(text)):
+        out.append(text[last : hit.start()])
+        out.append(" ")
+        last = hit.end()
+    out.append(text[last:])
+    return "".join(out)
 
 
 def classify(source: str, name: str, body: str) -> tuple[str, str]:
@@ -206,11 +231,11 @@ def classify(source: str, name: str, body: str) -> tuple[str, str]:
     Never returns GROUNDED by default: a body with no marker and no grounding
     citation raises UnclassifiedRequirement.
     """
-    marker = UNVERIFIED_MARKER.search(body)
+    marker = find_marker(body)
     if marker:
         reason = " ".join(marker.group(1).split())
         return UNVERIFIED, reason or "no reason given"
-    if GROUNDING_LINE.search(strip_markers(body)):
+    if GROUNDING_LINE.search(mask_code(strip_markers(body))):
         return GROUNDED, ""
     raise UnclassifiedRequirement(source, name)
 
@@ -411,12 +436,14 @@ def md_block(text: str, link: "Linker") -> str:
             parts.append(f"<ul>{items}</ul>")
             continue
         joined = " ".join(lines)
-        if re.match(r"^\*{0,2}Grounding\b", joined):
-            inner = joined
-            if inner.startswith("*") and inner.endswith("*"):
-                inner = inner[1:-1].strip()
+        grounding = re.match(r"^\*{0,2}(Grounding\b[^:]*):\s*(.*)$", joined, re.S)
+        if grounding:
+            tag = " ".join(grounding.group(1).split()).lower()
+            inner = grounding.group(2).strip()
+            if inner.endswith("*"):
+                inner = inner.rstrip("*").strip()
             parts.append(
-                '<div class="grounding"><span class="grounding-tag">grounding</span>'
+                f'<div class="grounding"><span class="grounding-tag">{esc(tag)}</span>'
                 f"<p>{md_inline(inner, link)}</p></div>"
             )
             continue
@@ -527,8 +554,11 @@ def requirement_block(req: Requirement, link: Linker) -> str:
             "the build that produced this page exited non-zero naming it.</p></div>"
         )
 
-    if req.prose:
-        out.append(f'<div class="prose">{md_block(req.prose, link)}</div>')
+    # The marker's reason is already shown above; the comment itself is
+    # machinery and does not belong in the reader's prose.
+    prose = strip_markers(req.prose).strip()
+    if prose:
+        out.append(f'<div class="prose">{md_block(prose, link)}</div>')
 
     if req.evidence:
         items = "".join(
@@ -628,8 +658,9 @@ def index_page(report: Report, link: Linker) -> str:
             "something observed or marked unverified.</p>"
         )
     else:
+        clear = " count-clear" if not unverified and not undeclared else ""
         body.append(
-            f'<h1 class="count"><span class="n">{unverified}</span>'
+            f'<h1 class="count{clear}"><span class="n">{unverified}</span>'
             f'<span class="of">of {total} requirement{"s" if total != 1 else ""} '
             f"{'are' if unverified != 1 else 'is'} unverified</span></h1>"
         )
@@ -665,11 +696,11 @@ def index_page(report: Report, link: Linker) -> str:
             first = first_sentence(cap.purpose)
             body.append(
                 f'<a class="row" href="{esc(cap.slug)}.html">'
-                f'<span class="row-name">{esc(cap.name)}</span>'
-                f'<span class="row-purpose">{esc(first)}</span>'
-                f'<span class="row-tape">{tape(c, small=True)}</span>'
-                f'<span class="row-count"><strong>{unproven}</strong>/{n}'
-                f'<span class="row-count-l">unproven</span></span>'
+                f'<div class="row-name">{esc(cap.name)}</div>'
+                f'<div class="row-purpose">{esc(first)}</div>'
+                f'<div class="row-tape">{tape(c, small=True)}</div>'
+                f'<div class="row-count"><strong>{unproven}</strong>/{n}'
+                f'<span class="row-count-l">unproven</span></div>'
                 "</a>"
             )
         body.append("</section>")
@@ -1007,6 +1038,7 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
   max-width: 14ch;
 }
 .count-empty .n { color: var(--muted); }
+.count-clear .n { color: var(--grounded); }
 .count-empty .of { max-width: 18ch; }
 
 .lede {
