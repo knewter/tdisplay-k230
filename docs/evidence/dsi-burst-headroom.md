@@ -76,3 +76,27 @@ The flicker that motivated the patch is real and unfixed: stripe jitter
 -9..+1 px with no monotonic drift over 30 s, and 19 irregular brightness
 dips in 30 s, one to 53% of mean. Whatever addresses it has to move the
 VO timing and the DSI byte clock **together**.
+
+## Postscript: it also moved the VCO bucket
+
+Reading the source the corrected kernel was actually built from
+(`30kiycz38bv840qdzdzzjyvniyh5camf-linux-xuantie-k230-src`,
+`canaan_dsi.c:366`), `phy_clk_freq` is in **kHz** and immediately feeds a
+ladder of range comparisons that select `voc`:
+
+```c
+phy_clk_freq = dsi->clk_freq * 3 * 8 / device->lanes / 2;
+if (phy_clk_freq > 1250000 || phy_clk_freq < 40000) ...
+else if (phy_clk_freq < 55000)  ...
+...
+else if (phy_clk_freq < 330000) ...
+else if (phy_clk_freq < 440000) ...
+```
+
+297 000 kHz lands in the `< 330000` bucket. 371 250 kHz lands in the
+`< 440000` bucket. So the patch did not merely raise the bit clock, it
+silently reprogrammed the PHY's VCO range as well. The original commit
+message called that out as "intended -- the bucket is chosen from the PHY
+frequency, so it should follow it." It follows the PHY frequency
+correctly and still breaks, because nothing moved the VO's pixel timing
+to match.
