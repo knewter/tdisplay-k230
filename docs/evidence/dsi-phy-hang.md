@@ -225,3 +225,61 @@ Implementing DCS read is therefore the highest-value next step. It converts
 "the panel is silent" from an inference into a measurement, and would
 distinguish a panel that is not responding at all from one that is
 responding but not lighting.
+
+### Also ruled out: vth_line
+
+Set to 10, matching every Canaan board dts in the vendor tree, replacing an
+ungrounded 9. Boot is clean — `Attached device universal`,
+`canaan_panel_prepare: entered, init_set_v1_flag=1`, no PHY error, no DCS
+error, reaches a login prompt — and a webcam frame taken with 1400832
+bytes of urandom in `/dev/fb0` is still dark. The change is kept because 9
+had no source, but it is not the fix.
+
+## Everything cheap is now exhausted
+
+Verified correct, each on hardware or by mechanical comparison:
+
+| | |
+| --- | --- |
+| Display power domain | on (pinned at probe) |
+| DSI PHY | locks, `PHY_STATUS` reaches `0x1fbd` |
+| DCS writes | all 20 accepted, no `-110` |
+| Init sequence bytes | byte-identical to vendor, 20 cmds / 297 bytes |
+| Init sequence delays | ours 1 ms vs vendor 300 us / 100 us |
+| Send ordering | LP (`lpdt_init`) before HS (`set_dsi_enable`) |
+| Pixel format | dark at both RG16 and AR24 |
+| Panel power GPIO | asserted at probe, reads `out hi` |
+| Reset pulses | restored in `prepare`, before the sequence |
+| CRTC | `enable=1 active=1`, plane bound, real dma_addr |
+| `vth_line` | 9 and 10 both dark |
+| Clock config | no `MIPI clock not support` |
+
+Every stage that can be observed from the SoC side reports success, and
+the panel emits nothing.
+
+## The one instrument still missing
+
+`canaan_dsi_dcs_read()` is a stub:
+
+```c
+static int canaan_dsi_dcs_read(struct canaan_dsi *dsi,
+			       const struct mipi_dsi_msg *msg)
+{
+	// TODO
+	return 1;
+}
+```
+
+So the panel cannot be asked anything. Reading DCS `0x04` (RDDID) or `0x0A`
+(RDDPM, power mode) would distinguish, for the first time, between:
+
+- the panel is not receiving the sequence at all, and
+- the panel is receiving it, acknowledging it, and still not lighting.
+
+Every remaining hypothesis — wrong panel variant, a missing supply the
+board provides elsewhere, a DSI timing parameter the controller accepts but
+the panel rejects — is untestable without that. Six theories have now died
+here, and the pattern is consistent: the ones that died cheaply were the
+ones where an instrument existed.
+
+Implementing DCS read is the next step, not another guess.
