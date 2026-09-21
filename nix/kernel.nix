@@ -193,6 +193,27 @@ EOM
     # The backported Berlin touch driver. Built in, not a module, so a
     # failure to probe shows up in the boot log rather than in whether
     # something got modprobed.
+    # Make the soft lockup actually name its culprit.
+    #
+    # k230_defconfig sets CONFIG_SOFTLOCKUP_DETECTOR=y and nothing else:
+    # no FRAME_POINTER, no STACKTRACE. On RISC-V the default unwinder walks
+    # frame pointers, so dump_stack() emits nothing and every lockup we have
+    # seen prints its header and then an EMPTY stack dump:
+    #
+    #   watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [kworker/0:5:45]
+    #   rcu: Stack dump where RCU GP kthread last ran:
+    #   <nothing>
+    #
+    # Three hypotheses were formed and discarded against that silence --
+    # a spinning DSI write, fbcon holding console_lock, and an unbounded
+    # thermal read -- because the one piece of evidence that would have
+    # settled it in one boot was configured out. Turn it on and read the
+    # trace instead of guessing again.
+    FRAME_POINTER = yes;
+    STACKTRACE = yes;
+    KALLSYMS = yes;
+    KALLSYMS_ALL = yes;
+
     # fb0 yes, fbcon no -- for now.
     #
     # Creating fb0 (the 16 bpp fix above) is what started hanging the boot:
