@@ -20,4 +20,10 @@
 # including strict. Tag the usb_device, not the tty, so both ports are
 # covered at once.
 
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d2", ENV{ID_MM_DEVICE_IGNORE}="1"
+# Must match SUBSYSTEM=="tty", not "usb". ModemManager tags the tty node
+# itself (/usr/lib/udev/rules.d/80-mm-candidate.rules:21 is
+# SUBSYSTEM=="tty", ENV{ID_MM_CANDIDATE}="1"), and an ENV{} set on the
+# parent usb device does NOT propagate to its tty children. Tagging the
+# usb_device left ID_MM_CANDIDATE=1 on ttyACM0 and MM kept probing.
+# ATTRS{} walks up the parent chain, so the VID/PID still matches here.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d2", ENV{ID_MM_DEVICE_IGNORE}="1"
