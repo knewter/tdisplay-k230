@@ -64,3 +64,48 @@ something bind. The panel is unaffected either way.
 
 UNVERIFIED throughout: no touch controller has been probed under Linux on
 this board.
+
+## The backported driver has no per-chip table, which changes task 4.1b
+
+Established by reading `nix/patches/goodix-berlin/`, without hardware.
+
+`goodix_berlin_core.c` contains **no chip data structure and no match data**.
+There is no `goodix_berlin_chip_data`, and no call to
+`of_device_get_match_data()`, `device_get_match_data()` or
+`i2c_get_match_data()` anywhere in the three files. The only chip-specific
+thing in the whole driver is the match string itself:
+
+```c
+static const struct of_device_id goodix_berlin_i2c_of_match[] = {
+	{ .compatible = "goodix,gt9916", },
+	{ }
+};
+```
+
+Everything else is discovered from the part at runtime.
+`goodix_berlin_get_ic_info()` reads a blob from `GOODIX_BERLIN_IC_INFO_ADDR`
+(`0x10070`) and takes `touch_data_addr`, `cmd_addr`, `fw_state_addr` and the
+rest out of it; `goodix_berlin_read_version()` reads and checksums a firmware
+version struct.
+
+**Consequence.** Task 4.1b is written as "either add a `gt9895_data` chip entry
+to the backported driver or port LilyGO's RT-Smart `gt9895.c`". The first
+branch does not exist — there are no chip entries to add one to. The real
+choice is:
+
+1. **The GT9895 is a Berlin-family part.** Then the runtime IC-info read
+   succeeds, every address is learned from the chip, and the
+   `"goodix,gt9895", "goodix,gt9916"` fallback added to the device tree is
+   sufficient on its own. **No driver patch at all.**
+2. **It is not.** Then nothing in a chip table would have rescued it, and the
+   remaining option is the second branch already named: port LilyGO's
+   RT-Smart `gt9895.c`.
+
+Which one holds is decided by two specific log lines, so the next boot should
+be read for them rather than for "did touch work":
+
+- `goodix_berlin_read_version()` failing its checksum, or
+- `goodix_berlin_get_ic_info()` failing the read at `0x10070`
+
+Either means case 2. A clean probe means case 1 and the work is already done.
+Task 4.1b's first branch should be restated accordingly.

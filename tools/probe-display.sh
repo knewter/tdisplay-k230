@@ -38,6 +38,12 @@ echo "done. Next, by hand, because they need a person:" >&2
 echo "  3.2  write a test pattern and PHOTOGRAPH the panel:" >&2
 echo "         cat /dev/urandom > /dev/fb0     # or a solid fill" >&2
 echo "       a framebuffer node is explicitly NOT sufficient evidence" >&2
+echo "  3.3  console on the panel -- NOT configured yet, on purpose." >&2
+echo "       Add console=tty0 to boot.kernelParams, but note the LAST" >&2
+echo "       console= on the line becomes /dev/console. Put tty0 BEFORE" >&2
+echo "       ttyS0 or the serial console stops being primary and you can" >&2
+echo "       lose the only way to debug a panel that did not come up." >&2
+echo "       Do this only after 2.3 and 3.1 above have passed." >&2
 echo "  4.3  evtest, then drag a finger across the panel:" >&2
 echo "         evtest /dev/input/eventN | tee $OUT/touch-evtest.txt" >&2
 echo "       needs a drag, not a tap, to show axes are not swapped/mirrored" >&2
