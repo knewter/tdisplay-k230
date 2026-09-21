@@ -300,6 +300,21 @@ the ladder gives 0x07 — the same +2 offset as RM69A10. *I could not find
 documentation for what the low nibble of `vco_cntrl` selects on this PHY, so I
 cannot say whether 0x17 is actually wrong or merely different.*
 
+### Nothing, anywhere, ever tells an RM69A10 its lane count
+
+Worth stating plainly, because it closes the lane question from the panel's
+side as well as the SoC's. The RM69A10 has a `0xB2` PAD_CONTROL command with
+defined constants `RM69A10_DSI_2_LANE (0x10)` and `RM69A10_DSI_4_LANE (0x00)`.
+**That write is commented out in every ESP-IDF variant of the driver** —
+LILYGO's, Espressif's, xiaozhi's, jstockdale's — and it does not appear in any
+K230 init sequence either, ours included (our dtsi sends `3a 77` and no `b2`).
+Every working implementation relies on the panel's power-on 2-lane default.
+
+So the panel is never configured for a lane count, and the K230 D-PHY is never
+configured for one either. The only place the number is honoured is the DSI
+host's `PHY_IF_CFG`, which our tree already programs correctly from
+`panel-dsi-lane = <2>`.
+
 ### On the `0x1fbd` wait
 
 Decoding `PHY_STATUS` = 0x1fbd against the DWC MIPI-DSI host register gives
@@ -323,13 +338,22 @@ Canaan's generic `compatible = "canaan,universal"` panel driver
 `panel-init-sequence` device tree property — exactly what our
 `display-rm69a10-568x1232.dtsi` already does.
 
-There is no `panel-raydium-rm69a10.c` in mainline or in any tree I searched.
-The nearest mainline relatives are `panel-raydium-rm68200.c`,
-`panel-raydium-rm67191.c` and `panel-visionox-rm69299.c`; none is this
-controller. Outside Linux, the RM69A10 appears in ESP-IDF land — the same
-568x1232 AMOLED is a runtime-detected variant in
-[`jstockdale/T-Display-P4`](https://github.com/jstockdale/T-Display-P4/tree/adsb)
-for the ESP32-P4 — but that is `esp_lcd`, not DRM.
+There is no `panel-raydium-rm69a10.c` in mainline or in any tree searched
+(this includes an exhaustive enumeration of all branches, tags and 13 forks of
+`ruyisdk/linux-xuantie-kernel`). The nearest mainline relatives are
+`panel-raydium-rm68200.c`, `panel-raydium-rm67191.c` and
+`panel-visionox-rm69299.c`; none is this controller.
+
+Outside Linux the controller is well served, all on ESP32-P4 via `esp_lcd`,
+driving the same 568x1232 AMOLED:
+
+- [`espressif/esp-claw`](https://github.com/espressif/esp-claw/blob/74b18700a1d6c40de472bfc71c19e49356ca1cc0/application/edge_agent/boards/lilygo/lilygo_t_display_p4_v1/esp_lcd_rm69a10.c) — `esp_lcd_rm69a10.c`, Apache-2.0, 2026. Lane count comes from `board_peripherals.yaml` (`data_lanes: 2`, `lane_bit_rate_mbps: 1000`), not the driver. Adds a chip-ID check (DCS `0xA1` must return `0x01`) — **a cheap liveness probe we could borrow**, given our RDDPM read times out. Not published to the ESP Component Registry.
+- [`jstockdale/T-Display-P4`](https://github.com/jstockdale/T-Display-P4/tree/adsb) — runtime-detects RM69A10 vs HI8561.
+- Arduino_GFX hardcodes `.num_data_lanes = 2` in `Arduino_ESP32DSIPanel.cpp` and leaves the default 750 Mbps/lane, where LILYGO and Espressif both use 1000.
+
+One porting hazard if borrowing an init table across platforms: ESP-IDF
+defaults to RGB565 (`3a 75`), whereas both K230 paths — RT-Smart and the Linux
+DT — use RGB888 (`3a 77`). Ours already sends `3a 77`, which is correct.
 
 Our RM69A10 dtsi and `k230-tdisplay.dts` are **our own additions**: I verified
 against pristine `ruyisdk/linux-xuantie-kernel@7d4e1f4` that
@@ -406,3 +430,21 @@ cost/benefit:
 
 A general caution: the LILYGO series is AI-authored and several of its commit
 messages misdescribe their own diffs (§3). Read every hunk before adopting it.
+
+## 6. Method and confidence
+
+Strongest claims here rest on primary sources I fetched or ran myself: the
+pristine kernel tree at our pinned revision, the `libvo.a` disassembly, and
+the LILYGO and caveman99 patch bodies. Those are solid.
+
+Weaker, and flagged as such where they appear: I have **not** booted any of
+these images, so "works" means "the author says so and their diff is
+coherent", not "verified on our hardware". GitHub's code search needs auth and
+was unavailable throughout, and the unauthenticated REST API rate-limited us
+partway, so negatives came from directory enumeration rather than a global
+grep. Sourcegraph's index proved to be partial (it missed the entire
+Xinyuan-LilyGO org on an `rm69a10` query), so it was used only as
+corroboration. The load-bearing negative — that no 2-lane PHY function exists
+anywhere in the vendor kernel lineage — comes from exhaustively enumerating
+every branch, tag and fork of `ruyisdk/linux-xuantie-kernel`, plus the
+`libvo.a` symbol table.
