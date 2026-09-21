@@ -11,8 +11,14 @@ TARGET="${1:-/dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1}"
 # rebuild ~950 derivations from source because riscv64 has no binary cache.
 # result-sd-image is gitignored and keeps the image and its closure alive.
 echo "building the image from the current tree..." >&2
+# --max-jobs matters more than it looks. The default is 1: one derivation
+# at a time, each handed the whole machine. The kernel is "big-parallel"
+# and does use every core, but the riscv64 closure is a long tail of small
+# packages that each use about one core, so the tail runs effectively
+# single-threaded. 8 jobs x 4 cores fills 32 cores properly.
 K230_STAGE1_DIR="$PWD/firmware/stage1" \
-  nix build --impure --out-link result-sd-image .#packages.x86_64-linux.sdImage
+  nix build --impure --max-jobs 8 --cores 4 \
+    --out-link result-sd-image .#packages.x86_64-linux.sdImage
 IMG=$(readlink -f result-sd-image)
 echo "image: $IMG" >&2
 
