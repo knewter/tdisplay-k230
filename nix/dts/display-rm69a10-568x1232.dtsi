@@ -14,7 +14,14 @@
 
 &vo {
 	// intr_line from connector_info_list[] for this panel.
-	vth_line = <9>;
+	// 10, matching every Canaan board dts in the vendor tree
+	// (k230-canmv-01studio*.dts, -dongshanpi.dts, ...). This was 9,
+	// which docs/evidence/dts-divergence.md recorded as a divergence
+	// without a reason -- and there is no vth_line anywhere in
+	// LilyGO's RT-Smart tree to have taken 9 from. An ungrounded
+	// divergence in a video timing parameter, on a panel that does not
+	// light, is not worth keeping.
+	vth_line = <10>;
 };
 
 &dsi {

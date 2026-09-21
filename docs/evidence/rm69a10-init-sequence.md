@@ -157,3 +157,40 @@ listed "whether IO25 gates a rail" as unestablished.
 After the rewrite the only structural difference from the reference is the
 label names (st7701 -> rm69a10), and the DTB round-trips with 357 bytes of
 init sequence, 39.6 MHz, 568x1232, 2 lanes, vth_line 9, endpoint linked.
+
+
+=====================================================================
+2026-09-21: the transcription is verified correct, mechanically
+=====================================================================
+
+The sequence in nix/dts/display-rm69a10-568x1232.dtsi was diffed byte for
+byte against the vendor source it was transcribed from
+(repo/canmv_k230/src/rtsmart/mpp/kernel/connector/src/rm69a10.c), by
+parsing the k_u8 param arrays and their connecter_dsi_send_pkg() call
+order and decoding the DTB property's {type, delay, length, payload}
+records:
+
+    vendor commands: 20   total payload bytes: 297
+    ours commands:   20   total payload bytes: 297
+    IDENTICAL: every command and byte matches the vendor source
+
+This matters because the panel does not light, and "the init sequence is
+wrong" was the leading remaining hypothesis. It is not wrong. The DSI
+controller also reports no error writing any of the 20 commands once the
+display power domain is up (docs/evidence/dsi-phy-hang.md), so the bytes
+are both correct and delivered.
+
+Delays also check out. The vendor does:
+
+    connecter_dsi_send_pkg(param23, 1);   // 0x11 sleep out
+    connector_delay_us(300);
+    connecter_dsi_send_pkg(param24, 1);   // 0x29 display on
+    connector_delay_us(100);
+
+300 us and 100 us. Our records carry delay=1 for both, i.e. 1 ms — longer
+than the vendor, so not a timing shortfall.
+
+Send ordering checks out too. canaan_dsi_encoder_enable() runs
+canaan_dsi_lpdt_init() (low-power mode) before drm_panel_prepare(), and
+only calls canaan_mipi_dsi_set_dsi_enable() afterwards, so the sequence
+goes out in LP before the link switches to HS video.
