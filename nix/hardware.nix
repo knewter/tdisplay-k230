@@ -73,4 +73,27 @@
     device = "/dev/disk/by-label/K230_BOOT";
     fsType = "ext4";
   };
+
+  # Four tools that exist only so the display and touch tasks can be verified
+  # ON the board rather than asserted from the build host. system/nixos-config
+  # asks for a recorded reason per package, so:
+  #
+  #   fbset      the-screen-comes-up-under-linux 3.1 -- `fbset -i` is the
+  #              named evidence that a 568x1232 framebuffer exists
+  #   libdrm     modetest, to tell "the panel bound" apart from "a framebuffer
+  #              node appeared", which task 3.2 explicitly refuses to accept
+  #   evtest     task 4.3 -- the committed drag transcript, and the only way
+  #              to see whether the axes are swapped or mirrored
+  #   i2c-tools  task 4.1 -- probe the GT9895 at 0x5d to separate "the driver
+  #              did not bind" from "the part is not answering at all"
+  #
+  # riscv64 has no binary cache, so each of these is compile time on every
+  # clean build. They are here because the tasks name them, and they should
+  # leave with the change that needed them.
+  environment.systemPackages = with pkgs; [
+    fbset
+    libdrm
+    evtest
+    i2c-tools
+  ];
 }
