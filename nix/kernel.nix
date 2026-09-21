@@ -179,6 +179,44 @@ EOM
       sed -i 's|^\twhile (readl(dsi->base + PHY_STATUS) != 0x1fbd)$|\t{ int _w = 0; u32 _s = 0; while ((_s = readl(dsi->base + PHY_STATUS)) != 0x1fbd \&\& _w++ < 2000) usleep_range(100, 200); if (_s != 0x1fbd) dev_err(dsi->dev, "PHY_STATUS 0x%x != 0x1fbd after %d tries, continuing\\n", _s, _w); }|' \
         drivers/gpu/drm/canaan/canaan_phy.c
       test "$(grep -c 'PHY_STATUS 0x%x != 0x1fbd' drivers/gpu/drm/canaan/canaan_phy.c)" = 2
+
+      # Take a runtime-PM reference on the display block at probe.
+      #
+      # With the PHY wait bounded the boot survives, and shows the real
+      # problem: the whole 0x90850000 region reads back all-ones and every
+      # DCS write times out.
+      #
+      #   PHY_STATUS 0xffffffff != 0x1fbd after 2001 tries, continuing
+      #   failed to get available write payload FIFO
+      #   canaan-panel-dsi 90850000.dsi.0: failed to write dcs cmd: -110
+      #
+      # All-ones reads with write timeouts is an unpowered block. The SoC
+      # has K230_PM_DOMAIN_DISP and k230.dtsi assigns it to the
+      # canaan,display-subsystem node, so the domain exists and is wired up.
+      #
+      # What is missing is a reference. canaan_drv.c calls
+      # pm_runtime_enable() at probe but pm_runtime_get_sync() only in
+      # canaan_drm_open(), i.e. when userspace opens /dev/dri/card0. The
+      # modeset that has to work here comes from the in-kernel fbdev helper
+      # (drm_fb_helper_hotplug_event, see dsi-phy-hang.md), which never goes
+      # through drm_open -- so nothing holds the domain up at the moment the
+      # display pipeline is actually driven.
+      #
+      # Take the reference at probe and never drop it, pinning DISP on.
+      #
+      # SOURCE PROVENANCE, learned the hard way: check this against the
+      # pristine tree nix unpacks, NOT .build/k230_linux_sdk/output/*/build/
+      # linux-*/. They differ -- the SDK's built tree has these pm_runtime
+      # calls commented out, and a patch written against that copy matched
+      # nothing and failed its guard. Every other patch here was compared
+      # against both trees and is identical in each.
+      #
+      # A hypothesis with a cheap test attached, not an established fix: if
+      # the block still reads 0xffffffff with the domain pinned, the cause
+      # lies elsewhere.
+      sed -i 's|^\tpm_runtime_enable(disp_dev);$|\tpm_runtime_enable(disp_dev);\n\tpm_runtime_get_sync(disp_dev); /* pin DISP on; see kernel-patches.md */|' \
+        drivers/gpu/drm/canaan/canaan_drv.c
+      grep -q 'pm_runtime_get_sync(disp_dev); /\* pin DISP on' drivers/gpu/drm/canaan/canaan_drv.c
     '';
   };
 

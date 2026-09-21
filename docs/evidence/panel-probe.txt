@@ -132,3 +132,53 @@ B: ABS=261800000000003
 [1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
 [?2004l[?2004h
 [1;31m[]0;root@nixos: ~root@nixos:~]#[0m [ 120.058] --- capture end ---
+
+
+=====================================================================
+2026-09-21: /dev/fb0 exists at 568x1232 (display/panel task 3.1)
+=====================================================================
+
+Captured on hardware over the CH342 console, after three fixes landed:
+the 16 bpp fbdev format fix, the bounded DSI PHY wait, and the
+ModemManager udev rule that stopped a host daemon corrupting the console.
+
+    [root@nixos:~]# fbset -i
+    mode "568x1232"
+        geometry 568 1232 568 1232 16
+        timings 0 0 0 0 0 0 0
+        rgba 5/11,6/5,5/0,0/0
+    endmode
+
+    Frame buffer device information:
+        Name        : canaan-drmdrmfb
+        Size        : 1400832
+        Type        : PACKED PIXELS
+        Visual      : TRUECOLOR
+
+    [root@nixos:~]# cat /sys/class/graphics/fb0/virtual_size
+    568,1232
+    [root@nixos:~]# cat /sys/class/graphics/fb0/bits_per_pixel
+    16
+
+    [root@nixos:~]# ls -l /dev/fb* /dev/dri/
+    crw-rw---- 1 root video  29, 0 /dev/fb0
+    crw-rw---- 1 root video 226, 0 /dev/dri/card0
+
+rgba 5/11,6/5,5/0 is RGB565, which is the point of the fbdev change:
+canaan_drv.c asked drm_fbdev_generic_setup() for 32 bpp (XRGB8888) and the
+driver's RGB planes advertise AR24 AR12 AR15 RG24 RG16 BG24 -- no XR24 --
+so format negotiation failed and no framebuffer was created at all.
+
+WHAT THIS DOES NOT SHOW
+
+The framebuffer exists; the glass is still dark. The DSI block reads back
+as 0xffffffff and every DCS write to the panel times out:
+
+    canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0xffffffff != 0x1fbd after 2001 tries, continuing
+    canaan-mipi-dsi 90850000.dsi: failed to get available write payload FIFO
+    canaan-panel-dsi 90850000.dsi.0: failed to write dcs cmd: -110
+
+All-ones reads plus write timeouts are an unpowered block, not a
+misconfigured one. See docs/evidence/dsi-phy-hang.md. Task 3.2 asks for a
+photograph precisely because a framebuffer node is not evidence that
+anything is visible, and this is exactly that case.
