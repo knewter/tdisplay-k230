@@ -233,6 +233,31 @@ EOM
         drivers/gpu/drm/canaan/canaan_drv.c
       grep -q 'pm_runtime_get_sync(disp_dev); /\* pin DISP on' drivers/gpu/drm/canaan/canaan_drv.c
 
+      # Give the DSI link burst headroom.
+      #
+      # canaan_dsi_clk_cfg() derives the PHY bit clock as exactly
+      #   pclk * 3 * 8 / lanes / 2
+      # i.e. precisely the pixel bandwidth, with ZERO slack, at every
+      # pixel clock. In burst mode -- and VID_MODE_CFG is hardcoded
+      # 0xbf02, whose bits[1:0] already select burst -- the link is
+      # supposed to run FASTER than the pixel rate and idle in the
+      # blanking. With no headroom there is nothing to absorb jitter.
+      #
+      # Measured on hardware with the panel showing static stripes:
+      #   - vertical position jitters -9..+1 px with NO monotonic drift
+      #     over 30s, so this is not a refresh-rate beat
+      #   - 19 irregular brightness dips in 30s, one to 53% of mean
+      # Both are unstable frame delivery, which is what an exactly
+      # saturated link produces. Espressif run ~39% headroom on this
+      # panel; 25% is the conservative end of that.
+      #
+      # Scaling the PHY clock also moves which voc bucket we land in,
+      # which is intended -- the bucket is chosen from the PHY frequency,
+      # so it should follow it.
+      sed -i 's|^\tphy_clk_freq = dsi->clk_freq \* 3 \* 8 / device->lanes / 2;$|\tphy_clk_freq = dsi->clk_freq * 3 * 8 / device->lanes / 2;\n\tphy_clk_freq = phy_clk_freq * 5 / 4; /* 25% burst headroom */|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q '25% burst headroom' drivers/gpu/drm/canaan/canaan_dsi.c
+
     '';
   };
 
