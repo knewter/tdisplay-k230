@@ -6,7 +6,21 @@ Defines what the board does when a person touches the screen.
 
 ### Requirement: Touches are reported as input events
 
-<!-- UNVERIFIED: the GT9895 has not been probed under Linux on this board. -->
+<!-- STILL UNVERIFIED, restated. The GT9895 HAS now been probed under
+Linux on this board, and that much is grounded: the backported
+goodix_berlin driver binds at i2c 1-005d, registers an input device with
+INPUT_PROP_DIRECT, and the controller answers direct 32-bit-addressed i2c
+reads with real data (docs/evidence/touch-probe.txt).
+
+But this requirement is about touches being REPORTED, and that is not
+demonstrated. No evtest session exists. The interrupt line is wired,
+claimed, and now level-triggered rather than edge-triggered
+(docs/evidence/gt9895-port.md), but whether touches produce events is
+untested -- the measurements attempted so far were run without confirming
+a finger was on the panel, so they establish nothing either way.
+
+Binding is not reporting. This marker stays until an evtest transcript of
+a deliberate drag exists. -->
 
 The GT9895 controller SHALL be probed and SHALL report touches as standard
 Linux input events, with coordinates in the panel's own 568x1232 space so that

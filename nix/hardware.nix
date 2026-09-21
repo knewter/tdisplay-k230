@@ -85,7 +85,10 @@
   # and the kernel honours whichever comes last.
   boot.kernelParams =
     lib.mkMerge [
-      (lib.mkBefore [ "console=tty0" ])
+      # consoleblank=0: Linux blanks the console after 10 minutes idle,
+      # and nothing writes to tty0 once boot finishes, so the panel goes
+      # dark and looks broken. It is not.
+      (lib.mkBefore [ "console=tty0" "consoleblank=0" ])
       (lib.mkAfter [ "loglevel=7" ])
     ];
 
