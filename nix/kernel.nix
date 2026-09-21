@@ -233,30 +233,25 @@ EOM
         drivers/gpu/drm/canaan/canaan_drv.c
       grep -q 'pm_runtime_get_sync(disp_dev); /\* pin DISP on' drivers/gpu/drm/canaan/canaan_drv.c
 
-      # Give the DSI link burst headroom.
+      # NOT DONE: burst headroom on the DSI link.
       #
       # canaan_dsi_clk_cfg() derives the PHY bit clock as exactly
       #   pclk * 3 * 8 / lanes / 2
-      # i.e. precisely the pixel bandwidth, with ZERO slack, at every
-      # pixel clock. In burst mode -- and VID_MODE_CFG is hardcoded
-      # 0xbf02, whose bits[1:0] already select burst -- the link is
-      # supposed to run FASTER than the pixel rate and idle in the
-      # blanking. With no headroom there is nothing to absorb jitter.
+      # i.e. precisely the pixel bandwidth, with ZERO slack, and
+      # VID_MODE_CFG is hardcoded 0xbf02, whose bits[1:0] select burst.
+      # A burst link is supposed to run faster than the pixel rate and
+      # idle in the blanking, so multiplying that expression by 5/4 to
+      # buy 25% headroom looks obviously right.
       #
-      # Measured on hardware with the panel showing static stripes:
-      #   - vertical position jitters -9..+1 px with NO monotonic drift
-      #     over 30s, so this is not a refresh-rate beat
-      #   - 19 irregular brightness dips in 30s, one to 53% of mean
-      # Both are unstable frame delivery, which is what an exactly
-      # saturated link produces. Espressif run ~39% headroom on this
-      # panel; 25% is the conservative end of that.
+      # It is not. It blanks the panel outright. See
+      # docs/evidence/dsi-burst-headroom.md: the VO's pixel timing and
+      # the DSI byte clock are not independent in this driver, and
+      # scaling one without the other shears every scanline. Measured
+      # both ways on hardware.
       #
-      # Scaling the PHY clock also moves which voc bucket we land in,
-      # which is intended -- the bucket is chosen from the PHY frequency,
-      # so it should follow it.
-      sed -i 's|^\tphy_clk_freq = dsi->clk_freq \* 3 \* 8 / device->lanes / 2;$|\tphy_clk_freq = dsi->clk_freq * 3 * 8 / device->lanes / 2;\n\tphy_clk_freq = phy_clk_freq * 5 / 4; /* 25% burst headroom */|' \
-        drivers/gpu/drm/canaan/canaan_dsi.c
-      grep -q '25% burst headroom' drivers/gpu/drm/canaan/canaan_dsi.c
+      # The flicker this was meant to fix (jitter -9..+1 px, 19
+      # brightness dips in 30 s) is real and still unfixed. Whatever
+      # fixes it has to keep the two clocks locked.
 
     '';
   };
