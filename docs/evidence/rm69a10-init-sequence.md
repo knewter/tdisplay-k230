@@ -129,3 +129,31 @@ STILL UNVERIFIED: that this lights the panel. Compiling proves the
 description is well-formed, not that it is correct. The init sequence is
 transcribed from working vendor code, but the timings, the reset polarity
 and the burst-mode mismatch are all untested on hardware.
+
+A structural correction (task 2.1, second pass)
+------------------------------------------------
+The first dtsi compiled and was wrong. Compiling in isolation proved only
+that the syntax parsed; it said nothing about whether the driver would ever
+see it. Reading display-st7701-480x800.dtsi properly showed four errors:
+
+  wrong    a node at the root, `/ { panel-rm69a10 { ... } }`
+  right    a DSI child, `&dsi { lcd: panel@0 { reg = <0>; ... } }`
+
+  wrong    `lan-num = <2>`
+  right    `panel-dsi-lane = <2>`
+
+  wrong    `reset-gpios` on the panel node
+  right    nothing -- reset and backlight are attached by the BOARD dts as
+           `&lcd { dsi_reset-gpios = ...; backlight_gpio-gpios = ...; }`,
+           which is why the panel node carries the `lcd:` label
+
+  missing  the ports/endpoint graph binding panel port@0 to &dsi port@1,
+           and `&vo { vth_line = <9>; }`
+
+Also learned from the reference board dts: reset on GPIO22 is
+GPIO_ACTIVE_HIGH, and GPIO25 is the backlight -- docs/dts-evidence.md
+listed "whether IO25 gates a rail" as unestablished.
+
+After the rewrite the only structural difference from the reference is the
+label names (st7701 -> rm69a10), and the DTB round-trips with 357 bytes of
+init sequence, 39.6 MHz, 568x1232, 2 lanes, vth_line 9, endpoint linked.

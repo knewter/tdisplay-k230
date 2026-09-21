@@ -1,86 +1,100 @@
+// SPDX-License-Identifier: GPL-2.0
 // RM69A10 4.1" 568x1232 AMOLED, as fitted to the LILYGO T-Display-K230.
 //
-// Written for drivers/gpu/drm/panel/panel-canaan-universal.c, which takes
-// the whole panel description from the device tree. Modelled on the
-// reference display-st7701-480x800.dtsi.
+// Structure follows display-st7701-480x800.dtsi exactly: the panel is a
+// DSI device inside &dsi, labelled `lcd` so a board .dts can attach its
+// reset and backlight GPIOs, with an endpoint graph back to &dsi.
 //
 // The init sequence is transcribed from the vendor's working RT-Smart
-// driver, rm69a10.c -- see docs/evidence/rm69a10-init-sequence.md, which
-// cites the source line for every command. It is 20 commands and 297
-// payload bytes. A design artifact published during this work said 13
-// commands and 75 bytes; that was wrong, and a panel initialised from the
-// short version would fail in ways that look like a DSI fault.
+// driver -- all 20 commands, 297 payload bytes. See
+// docs/evidence/rm69a10-init-sequence.md, which cites a source line per
+// command.
 //
-// UNVERIFIED: nothing here has been run on hardware.
+// UNVERIFIED: none of this has been run on hardware.
 
-/ {
-	panel_rm69a10: panel-rm69a10 {
+&vo {
+	// intr_line from connector_info_list[] for this panel.
+	vth_line = <9>;
+};
+
+&dsi {
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi_out_rm69a10: endpoint {
+				remote-endpoint = <&rm69a10_in>;
+			};
+		};
+	};
+
+	lcd: panel@0 {
 		compatible = "canaan,universal";
-		status = "okay";
+		reg = <0>;
 
-		// Pulsed three times before init by the vendor; see
-		// docs/rtsmart-boot-log.txt.
-		reset-gpios = <&gpio0_ports 22 GPIO_ACTIVE_LOW>;
-
-		lan-num = <2>;
-
-		// Real millimetres. NOTE: the reference dtsi puts PIXEL COUNTS in
-		// these properties (480/800 for the ST7701). 44 x 95 mm is computed
-		// from the stated 4.1" diagonal at 568x1232, not measured.
+		// DIVERGENCE: the reference puts PIXEL COUNTS in these (480/800 for
+		// a 480x800 panel). These are real millimetres, computed from the
+		// stated 4.1" diagonal at 568x1232 -- not measured. Only affects the
+		// DPI the connector reports.
 		panel-width-mm = <44>;
 		panel-height-mm = <95>;
 
-		// From connector_info_list[] in mpi_connector.c:
-		//   pclk 39600 kHz, phyclk 475200 kHz, 2 lanes
-		//   h: 788 total, 568 active, 40 sync, 140 bp, 40 fp
-		//   v: 1268 total, 1232 active, 4 sync, 16 bp, 16 fp
-		// 39.6 MHz / (788 x 1268) = 39.63 Hz. The vendor enum is named
-		// 60FPS and is wrong; the numbers are self-consistent.
+		panel-dsi-lane = <2>;
+
 		// framing: data_type, delay_ms, payload_length, payload...
 		// delay is u8 MILLIseconds. The vendor waits 300us after 0x11 and
 		// 100us after 0x29; neither is expressible, so both become 1 ms,
-		// which is longer. Watch this if init misbehaves.
+		// which is longer than the vendor waits.
 		panel-init-sequence = [
-        39 00 04 b9 ff 83 99
-        15 00 02 d2 aa
-        39 00 10 b1 02 04 71 91 01 32 33 11 11 ab 4d 56 73 02 02
-        39 00 10 b2 00 80 80 ae 05 07 5a 11 00 00 10 1e 70 03 d4
-        39 00 2d b4 00 ff 02 c0 02 c0 00 00 08 00 04 06 00 32 04 0a 08 21 03 01 00 0f b8 8b 02 c0 02 c0 00 00 08 00 04 06 00 32 04 0a 08 01 00 0f b8 01
-        39 00 22 d3 00 00 00 00 00 00 06 00 00 10 04 00 04 00 00 00 00 00 00 00 00 00 00 01 00 05 05 07 00 00 00 05 40
-        39 00 21 d5 18 18 19 19 18 18 21 20 01 00 07 06 05 04 03 02 18 18 18 18 18 18 2f 2f 30 30 31 31 18 18 18 18
-        39 00 21 d6 18 18 19 19 40 40 20 21 02 03 04 05 06 07 00 01 40 40 40 40 40 40 2f 2f 30 30 31 31 40 40 40 40
-        39 00 11 d8 a2 aa 02 a0 a2 a8 02 a0 b0 00 00 00 b0 00 00 00
-        15 00 02 bd 01
-        39 00 11 d8 b0 00 00 00 b0 00 00 00 e2 aa 03 f0 e2 aa 03 f0
-        15 00 02 bd 02
-        39 00 09 d8 e2 aa 03 f0 e2 aa 03 f0
-        15 00 02 bd 00
-        39 00 03 b6 8d 8d
-        15 00 02 cc 04
-        39 00 03 c6 ff f9
-        39 00 37 e0 00 12 1f 1a 40 4a 59 55 5e 67 6f 75 7a 82 8b 90 95 9f a3 ad a2 b2 b6 5e 5a 65 77 00 12 1f 1a 40 4a 59 55 5e 67 6f 75 7a 82 8b 90 95 9f a3 ad a2 b2 b6 5e 5a 65 77
-        05 01 01 11
-        05 01 01 29
+			39 00 04 b9 ff 83 99
+			15 00 02 d2 aa
+			39 00 10 b1 02 04 71 91 01 32 33 11 11 ab 4d 56 73 02 02
+			39 00 10 b2 00 80 80 ae 05 07 5a 11 00 00 10 1e 70 03 d4
+			39 00 2d b4 00 ff 02 c0 02 c0 00 00 08 00 04 06 00 32 04 0a 08 21 03 01 00 0f b8 8b 02 c0 02 c0 00 00 08 00 04 06 00 32 04 0a 08 01 00 0f b8 01
+			39 00 22 d3 00 00 00 00 00 00 06 00 00 10 04 00 04 00 00 00 00 00 00 00 00 00 00 01 00 05 05 07 00 00 00 05 40
+			39 00 21 d5 18 18 19 19 18 18 21 20 01 00 07 06 05 04 03 02 18 18 18 18 18 18 2f 2f 30 30 31 31 18 18 18 18
+			39 00 21 d6 18 18 19 19 40 40 20 21 02 03 04 05 06 07 00 01 40 40 40 40 40 40 2f 2f 30 30 31 31 40 40 40 40
+			39 00 11 d8 a2 aa 02 a0 a2 a8 02 a0 b0 00 00 00 b0 00 00 00
+			15 00 02 bd 01
+			39 00 11 d8 b0 00 00 00 b0 00 00 00 e2 aa 03 f0 e2 aa 03 f0
+			15 00 02 bd 02
+			39 00 09 d8 e2 aa 03 f0 e2 aa 03 f0
+			15 00 02 bd 00
+			39 00 03 b6 8d 8d
+			15 00 02 cc 04
+			39 00 03 c6 ff f9
+			39 00 37 e0 00 12 1f 1a 40 4a 59 55 5e 67 6f 75 7a 82 8b 90 95 9f a3 ad a2 b2 b6 5e 5a 65 77 00 12 1f 1a 40 4a 59 55 5e 67 6f 75 7a 82 8b 90 95 9f a3 ad a2 b2 b6 5e 5a 65 77
+			05 01 01 11
+			05 01 01 29
 		];
 
+		// From connector_info_list[] in mpi_connector.c:
+		//   pclk 39600 kHz, phyclk 475200 kHz, 2 lanes, burst mode
+		// 39.6 MHz / (788 x 1268) = 39.63 Hz. The vendor enum is named
+		// 60FPS and is wrong; the numbers are self-consistent.
 		display-timings {
-			native-mode = <&timing0>;
-			timing0: timing0 {
+			timing-0 {
 				clock-frequency = <39600000>;
 				hactive = <568>;
 				vactive = <1232>;
-				hsync-len = <40>;
-				hback-porch = <140>;
 				hfront-porch = <40>;
-				vsync-len = <4>;
-				vback-porch = <16>;
+				hback-porch = <140>;
+				hsync-len = <40>;
 				vfront-porch = <16>;
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
+				vback-porch = <16>;
+				vsync-len = <4>;
 			};
 		};
 
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				rm69a10_in: endpoint {
+					remote-endpoint = <&dsi_out_rm69a10>;
+				};
+			};
+		};
 	};
 };
