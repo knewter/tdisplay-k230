@@ -43,6 +43,43 @@ buildLinux (args // {
     postPatch = ''
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3-lcd.dtb' >> arch/riscv/boot/dts/canaan/Makefile
+
+      # This board's own device tree and panel.
+      cp ${../nix/dts/display-rm69a10-568x1232.dtsi} \
+         arch/riscv/boot/dts/canaan/display-rm69a10-568x1232.dtsi
+      cp ${../nix/dts/k230-tdisplay.dts} \
+         arch/riscv/boot/dts/canaan/k230-tdisplay.dts
+      echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-tdisplay.dtb' >> arch/riscv/boot/dts/canaan/Makefile
+
+      # goodix_berlin, backported from v6.12. The pinned 6.6 tree has only
+      # the older GT9xx goodix.c. See docs/evidence/gt9895-touch.md -- note
+      # this driver does NOT match the GT9895 upstream, so whether it can
+      # drive this panel's controller is an open experiment.
+      cp ${../nix/patches/goodix-berlin}/goodix_berlin*.{c,h} \
+         drivers/input/touchscreen/
+      # 6.12 moved asm/unaligned.h to linux/unaligned.h; 6.6 predates that.
+      sed -i 's|#include <linux/unaligned.h>|#include <asm/unaligned.h>|' \
+        drivers/input/touchscreen/goodix_berlin_core.c \
+        drivers/input/touchscreen/goodix_berlin_i2c.c \
+        drivers/input/touchscreen/goodix_berlin_spi.c
+      cat >> drivers/input/touchscreen/Kconfig <<'EOK'
+
+config TOUCHSCREEN_GOODIX_BERLIN_CORE
+	tristate
+	select REGMAP
+
+config TOUCHSCREEN_GOODIX_BERLIN_I2C
+	tristate "Goodix Berlin I2C touchscreen"
+	depends on I2C
+	select REGMAP_I2C
+	select TOUCHSCREEN_GOODIX_BERLIN_CORE
+	help
+	  Backported from v6.12 for the T-Display-K230's GT9895.
+EOK
+      cat >> drivers/input/touchscreen/Makefile <<'EOM'
+obj-$(CONFIG_TOUCHSCREEN_GOODIX_BERLIN_CORE) += goodix_berlin_core.o
+obj-$(CONFIG_TOUCHSCREEN_GOODIX_BERLIN_I2C)  += goodix_berlin_i2c.o
+EOM
     '';
   };
 
@@ -86,6 +123,12 @@ buildLinux (args // {
     RD_ZSTD = yes;
     # For another SoC, and does not compile in this tree.
     RPMSG_TH1520 = lib.mkForce no;
+
+    # The backported Berlin touch driver. Built in, not a module, so a
+    # failure to probe shows up in the boot log rather than in whether
+    # something got modprobed.
+    TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
+    TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
   };
 
   extraMeta = {
