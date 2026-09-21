@@ -23,7 +23,12 @@ display pipeline, so nothing in this change can be proven under emulation.
 ## 4. Touch
 
 - [x] 4.1 Determine which driver can drive this part, by experiment rather than assumption: mainline has no GT9895 support at any version (`docs/evidence/gt9895-touch.md`). Verify by booting with `compatible = "goodix,gt9916"` against a backported `goodix_berlin` and recording in `docs/evidence/touch-probe.txt` whether it binds
-- [x] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`. Verify with `nix build .#packages.x86_64-linux.xuantie-kernel` and by recording the choice and its reason in `docs/evidence/kernel-patches.md`
+- [ ] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`.
+      - REOPENED. Closed earlier as "neither branch needed, the Berlin
+        backport works". It binds, but two evtest runs with a finger on
+        the panel produced zero events and /proc/interrupts shows only 4
+        interrupts since boot on the goodix-berlin line. Binding is not
+        working. See docs/evidence/touch-probe.txt. Verify with `nix build .#packages.x86_64-linux.xuantie-kernel` and by recording the choice and its reason in `docs/evidence/kernel-patches.md`
       - Resolved to NEITHER branch. The GT9895 answers the Berlin protocol,
         so the existing v6.12 backport binds it through the
         `"goodix,gt9895", "goodix,gt9916"` fallback and no driver change is

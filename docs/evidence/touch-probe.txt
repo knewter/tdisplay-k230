@@ -61,3 +61,55 @@ are neither swapped nor mirrored on a portrait panel. Not yet captured.
 The two "dummy regulator" lines mean avdd and iovdd are not described in the
 device tree. The panel works, so they are evidently supplied in hardware,
 but the device tree does not model them.
+
+
+=====================================================================
+2026-09-21 UPDATE: it binds, but it does not report
+=====================================================================
+
+Two evtest runs, 22s and 40s, with a finger dragged across the panel:
+39 lines of output each time, all of it evtest's capability dump, and
+ZERO "Event:" lines. No touch events at all.
+
+The interrupt is wired and requested:
+
+    $ cat /proc/interrupts
+    87:     4   gpio-k230  23 Edge      goodix-berlin
+
+Four interrupts since boot. A 40-second drag would produce thousands.
+So the line is correct, the driver claimed it, and the controller is not
+asserting it when the panel is touched.
+
+WHAT THIS CORRECTS
+
+Task 4.1 was marked done on the evidence that the backported
+goodix_berlin driver binds at 0x5d and registers an input device with
+INPUT_PROP_DIRECT. That is still true and is literally what 4.1 asked for
+("record whether it binds"). But it was reported here as "the GT9895
+answers the Berlin protocol", and that claim is not supported: binding
+proves the driver matched a compatible string and created a device node,
+not that the controller is talking.
+
+This is the same error made twice elsewhere in this project on the same
+day -- treating a successful DSI write as proof the panel received it
+(it only proves the controller's FIFO drained), and treating a faithful
+transcription as proof it came from live code (it was dead code). The
+pattern is accepting a proxy for the thing itself.
+
+WHAT IS ACTUALLY UNKNOWN
+
+- Whether the GT9895 needs a firmware or configuration upload that the
+  backported driver does not perform for this part. goodix_berlin reads
+  its register layout from the IC-info blob at 0x10070 at runtime; if
+  that read is returning something plausible-but-wrong the driver would
+  initialise without error and then never see data.
+- Whether the IRQ polarity is right. Ours is IRQ_TYPE_EDGE_FALLING from
+  the reference board's touch controller, not from any GT9895 source.
+- Whether the four interrupts seen are init-time or spurious.
+
+NEXT STEP
+
+Read back the controller over i2c directly -- i2cget on bus 1 address
+0x5d -- and compare against what goodix_berlin expects. i2c-tools is in
+the image. That distinguishes "the part is not responding" from "the
+driver is misreading a part that is".
