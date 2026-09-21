@@ -96,6 +96,18 @@ EOM
       sed -i 's|drm_fbdev_generic_setup(drm_dev, 32);|drm_fbdev_generic_setup(drm_dev, 16);|' \
         drivers/gpu/drm/canaan/canaan_drv.c
       grep -q 'drm_fbdev_generic_setup(drm_dev, 16);' drivers/gpu/drm/canaan/canaan_drv.c
+
+      # Instrument the panel bring-up path.
+      #
+      # The panel probes and a modeset succeeds, but the glass stays dark and
+      # the DCS init sequence appears never to be written -- inferred from the
+      # ABSENCE of log lines, which is weak evidence. This one line turns
+      # that into a positive statement either way on the next boot, so a
+      # wrong hypothesis costs a boot rather than a card swap and a rebuild.
+      # See docs/evidence/panel-dark.md. Remove once the panel is up.
+      sed -i 's|\tif (p->init_set_v1_flag) {|\tdev_info(panel->dev, "canaan_panel_prepare: entered, init_set_v1_flag=%u\\n", p->init_set_v1_flag);\n\tif (p->init_set_v1_flag) {|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan_panel_prepare: entered' drivers/gpu/drm/panel/panel-canaan-universal.c
     '';
   };
 
