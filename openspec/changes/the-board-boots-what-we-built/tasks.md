@@ -20,13 +20,13 @@ touch remain that change's job.
 
 ## 2. A kernel that can boot this SoC
 
-- [ ] 2.1 Package `ruyisdk/linux-xuantie-kernel` at the revision `k230_canmv_v3_defconfig` pins, built from source with `k230_defconfig` plus the options NixOS requires. Verify with `nix build .#packages.x86_64-linux.kernel` and confirm `Image` is produced
-- [ ] 2.2 Confirm it emits a K230 device tree, which the stock kernel does not. Verify with `ls $(nix build --no-link --print-out-paths .#packages.x86_64-linux.kernel)/dtbs/canaan/` showing `k230-canmv-v3.dtb`
+- [x] 2.1 Package `ruyisdk/linux-xuantie-kernel` at the revision `k230_canmv_v3_defconfig` pins, built from source with `k230_defconfig` plus the options NixOS requires. Verify with `nix build .#packages.x86_64-linux.kernel` and confirm `Image` is produced
+- [x] 2.2 Confirm it emits a K230 device tree, which the stock kernel does not. Verify with `ls $(nix build --no-link --print-out-paths .#packages.x86_64-linux.kernel)/dtbs/canaan/` showing `k230-canmv-v3.dtb`
 - [x] 2.3 Record why mainline could not be used, so this pin is understood as forced rather than preferred. Verify by committing the Kconfig and device-tree evidence to `docs/evidence/why-xuantie-kernel.txt`
 
 ## 3. An SD image
 
-- [ ] 3.1 Build an image placing stage 1 at the raw offsets from the SDK's `genimage.cfg`, and a boot ext4 carrying the three filenames task 1.3 found U-Boot loads. Verify with `nix build .#sdImage` and `fdisk -l` on the result showing the documented layout
+- [x] 3.1 Build an image placing stage 1 at the raw offsets from the SDK's `genimage.cfg`, and a boot ext4 carrying the three filenames task 1.3 found U-Boot loads. Verify with `nix build .#sdImage` and `fdisk -l` on the result showing the documented layout
 - [x] 3.2 Write `tools/flash.sh` taking only a `/dev/disk/by-id` path, refusing bare device nodes, and printing the card's current contents before writing. Verify by running it against a bare `/dev/sdX` and confirming it refuses, and against a by-id path with the write declined
 
 ## 4. The board boots it

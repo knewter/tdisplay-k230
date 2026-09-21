@@ -1,0 +1,65 @@
+SD image, verified against the layout stage 1 expects (tasks 2.1, 2.2, 3.1)
+=============================================================================
+Built 2026-09-20 with:
+
+  K230_STAGE1_DIR=$PWD/firmware/stage1 nix build --impure .#sdImage
+  -> /nix/store/zcp4s33zwlm053sp69y0wcipvm2f2fk6-k230-sd-image.img
+  2210545664 bytes (2108 MiB), built in 59s
+
+Partition table (MBR)
+---------------------
+  img1   start 8192      163840 sectors    80M   type 83
+  img2   start 262144   4053280 sectors   1.9G   type 83
+
+8192 sectors = 4 MiB and 262144 = 128 MiB, matching the SDK's genimage.cfg.
+Stage 1 is deliberately absent from the table; it lives in the gap before
+partition 1.
+
+Stage 1, raw, verified by its firmware magic
+---------------------------------------------
+  0x100000  (1 MiB)    4b323330 = "K230"
+  0x180000  (1.5 MiB)  4b323330 = "K230"
+  0x200000  (2 MiB)    4b323330 = "K230"
+  0x300000  (3 MiB)    env, non-zero
+  0x320000  (3.5 MiB)  env, non-zero
+
+Boot partition — the three filenames U-Boot ext4loads by name
+---------------------------------------------------------------
+  Image                        60348416
+  force.dtb                       70760
+  fw_jump_add_uboot_head.bin     270792
+
+No extlinux directory, deliberately: this U-Boot never calls sysboot. See
+docs/evidence/uboot-env.txt.
+
+force.dtb is k230-canmv-v3.dtb from our own kernel build, renamed to the
+filename the environment expects (`dtb=force.dtb`).
+
+Root partition
+--------------
+  Filesystem volume name:  NIXOS_SD
+  Filesystem state:        clean
+
+Matches fileSystems."/" = "/dev/disk/by-label/NIXOS_SD" in nix/hardware.nix.
+
+Two fixes this needed
+---------------------
+1. The kernel emitted no k230-canmv-v3.dtb. arch/riscv/boot/dts/canaan/
+   Makefile does not list it, even though the .dts is in the tree; Canaan
+   names DTBs explicitly in buildroot instead. Patched into the source via
+   applyPatches -- buildLinux ignores a plain postPatch, which cost one
+   confused round trip when the derivation hash did not move.
+
+2. The initrd build failed on `modprobe: FATAL: Module ata_piix not found`.
+   NixOS's default initrd module list is PC hardware, and with
+   autoModules = false the kernel does not build any of it. Cleared the
+   defaults: k230_defconfig builds MMC, SDHCI and ext4 in, so the initrd
+   needs no modules to find the root filesystem.
+
+NOT YET PROVEN
+--------------
+That this boots. Everything above is the image being structurally correct,
+which is a different claim. The console UART is the known open risk: the
+SDK's environment says console=ttyS1,115200 while our kernel command line
+says ttyS0, and a console on the wrong UART is indistinguishable from a
+board that did not boot.

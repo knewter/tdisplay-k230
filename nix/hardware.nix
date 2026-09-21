@@ -34,6 +34,20 @@
   # source. See nix/kernel.nix.
   boot.kernelPackages = lib.mkForce k230Kernel;
 
+  # NixOS's default initrd module list is PC hardware -- ahci, ata_piix,
+  # sd_mod, usbhid and friends. None of it exists on this board, and with
+  # autoModules off the kernel does not build it either, so the initrd
+  # build fails outright:
+  #
+  #   modprobe: FATAL: Module ata_piix not found
+  #
+  # Turn the defaults off and name what this board actually needs. The
+  # k230_defconfig builds MMC, SDHCI and ext4 in, so the initrd needs no
+  # modules at all to find the root filesystem.
+  boot.initrd.includeDefaultModules = false;
+  boot.initrd.availableKernelModules = lib.mkForce [ ];
+  boot.initrd.kernelModules = lib.mkForce [ ];
+
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = false;
 
