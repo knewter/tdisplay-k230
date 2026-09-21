@@ -79,9 +79,9 @@ source is the only one that removes it.
 | # | Blob | Bytes | Class | Scope | sha256 |
 | --- | --- | --- | --- | --- | --- |
 | A1 | `firmware/stage1/fn_u-boot-spl.bin` | 206 596 | **E2** | `CANAAN` | `3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94` |
-| A2 | `firmware/stage1/fn_ug_u-boot.bin` | 353 794 | **E2** | `CANAAN` | `0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579` |
-| A3 | `firmware/stage1/env.env` | 8 192 | **E1** | `CANAAN` | `f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957` |
-| A4 | `tools/k230_priv_gzip` (in both SDKs) | 109 896 | **E1** | `CANAAN` | `c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e` |
+| A2 | `firmware/stage1/fn_ug_u-boot.bin` | 353 794 | **E2** | `CANAAN` | `c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4` |
+| A3 | `firmware/stage1/env.env` | 8 192 | **E1** | `CANAAN` | `3a9664f43f8d1b50299155cbc8014d69cdb0ed7d12193187e56d9e3c5707e1af` |
+| A4 | ~~`tools/k230_priv_gzip`~~ **EXCISED 2026-09-20** | 109 896 | **GONE** | `CANAAN` | `c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e` |
 | A5 | DDR PMU training firmware, imem — *inside A1* | 32 768 | **IO** | `INDUSTRY` | `517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b` |
 | A6 | DDR PMU training firmware, dmem — *inside A1* | 1 660 | **IO** | `INDUSTRY` | `1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313` |
 | A7 | `Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410.tar.gz` | ~1.9 GiB unpacked | **E2** | `CANAAN` | not recorded upstream — **md5 only**: `8cefc7e94f760eaecc3620ffb238bf4a` |
@@ -699,3 +699,47 @@ In descending order of how much pain each one caused here.
    Mesa-supported GPU.
 6. **Check `Tag_RISCV_arch` on a vendor prebuilt.** Thirty seconds, and it
    tells you whether the vendor toolchain is a requirement or a habit.
+
+
+---
+
+## Excised: A4, `k230_priv_gzip` — 2026-09-20
+
+The inventory called this "the one we should be angriest about" and put the
+cost of replacing it at zero. Done, and verified rather than assumed.
+
+`tools/gen-stage1.sh` now calls stock `gzip -n -8`. Compared against the
+vendor binary on this exact `u-boot.bin`, at every level the SDK falls back
+through — 8, 9, 7, 6, 5, 4 — the compressed streams are byte-identical, and
+so is the finished `fn_ug_u-boot.bin`:
+
+    vendor k230_priv_gzip : c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4
+    stock nixpkgs gzip    : c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4
+
+**No vendor binary is executed to produce our firmware any more.**
+
+### What that took first: reproducibility
+
+The comparison initially said the two differed, and the difference was not
+gzip. `mkimage` stamps the uImage header with the current time, and the
+K230 firmware header carries a SHA-256 over the payload, so two builds of
+identical inputs differed in 32 bytes at offset 12. A real change was
+indistinguishable from a rebuild.
+
+`gen-stage1.sh` now pins `SOURCE_DATE_EPOCH=1700000000`, and two consecutive
+builds produce identical bytes. That is worth more than the excision: from
+here, a hash that moves means something.
+
+### Hashes that moved, and why
+
+| row | now | why |
+| --- | --- | --- |
+| A2 `fn_ug_u-boot.bin` | `c0fb8d95a983c33f…` | the gzip CM byte fix, then `SOURCE_DATE_EPOCH` |
+| A3 `env.env` | `3a9664f43f8d1b50…` | load addresses moved above the kernel |
+
+A3 is also no longer byte-identical to the SDK default: `blinux` loads the
+device tree and OpenSBI at `0x8400000` and `0x8000000` instead of
+`0x2200000` and `0x3000000`, because a 60 MB NixOS kernel at `0x200000`
+overwrote both. Observed on hardware; see `docs/evidence/hardware-boot.txt`.
+That changes the ENVIRONMENT, which is data we generate with `mkenvimage`,
+not the SPL or U-Boot binaries.
