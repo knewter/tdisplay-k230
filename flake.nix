@@ -76,6 +76,8 @@
           pkgs.callPackage ./nix/sd-image.nix {
             inherit stage1 rootfsImage;
             kernel = self.k230Kernel.kernel;
+            # Our own board, not the CanMV reference.
+            dtbName = "canaan/k230-tdisplay.dtb";
           };
       };
 

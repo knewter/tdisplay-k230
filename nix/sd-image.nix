@@ -67,11 +67,27 @@ stdenvNoCC.mkDerivation {
     total=$(( ${toString rootPartOffset} + rootSize + 1024 * 1024 ))
     truncate -s "$total" $img
 
-    echo "--- boot partition: the three files stage 1 loads by name"
+    echo "--- boot partition"
     mkdir -p boot
     cp ${kernel}/Image boot/Image
-    cp ${kernel}/dtbs/${dtbName} boot/force.dtb
+    cp ${kernel}/dtbs/${dtbName} boot/$(basename ${dtbName})
     cp ${stage1.src}/fw_jump_add_uboot_head.bin boot/
+
+    # U-Boot's bootcmd runs k230_set_dtb before loading anything, and that
+    # command does NOT read a device tree -- it reads a TEXT file naming
+    # one, then sets ${"\${dtb}"} to its contents and saves the environment.
+    #
+    # Observed on hardware: with these files absent it tries hdmi_dtb, then
+    # lcd_dtb twice, fails all three, prints its usage message and returns
+    # non-zero. bootcmd is an && chain, so nothing is loaded and U-Boot
+    # drops to a prompt. The card was otherwise perfect.
+    #
+    # force_dtb is checked first and short-circuits display detection, so
+    # one file is enough. lcd_dtb and hdmi_dtb are written too, pointing at
+    # the same tree, so a board that takes the detection path still works.
+    echo -n "$(basename ${dtbName})" > boot/force_dtb
+    echo -n "$(basename ${dtbName})" > boot/lcd_dtb
+    echo -n "$(basename ${dtbName})" > boot/hdmi_dtb
 
     # Deliberately no extlinux: the vendored U-Boot never calls sysboot.
     faketime_unused=1

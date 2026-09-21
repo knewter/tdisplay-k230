@@ -1,0 +1,85 @@
+First hardware boot attempt — stage 1 works, bootcmd does not
+===============================================================
+2026-09-20 19:30, board powered with our image on the 128 GB card.
+
+WHAT WORKED
+-----------
+Everything up to and including U-Boot. The console came up on
+/dev/ttyACM0 at 115200 and presented a U-Boot prompt:
+
+    K230# version
+    U-Boot 2022.10 (Sep 20 2026 - 21:56:02 +0000)
+    riscv64-unknown-linux-gnu-gcc (Xuantie-900 linux-6.6.0 glibc gcc
+      Toolchain V3.0.2 B-20250410) 14.1.1 20240710
+
+That build timestamp is ours, from this afternoon. So BootROM found our
+SPL at 1 MiB, the SPL brought up DDR and loaded our U-Boot at 2 MiB, and
+the environment we wrote at 3 MiB was read. The whole vendored stage-1
+chain, assembled by tools/gen-stage1.sh and placed by nix/sd-image.nix at
+raw offsets, works on hardware.
+
+The card is also fine, checked from U-Boot itself:
+
+    K230# mmc list
+    mmc0@91580000: 0
+    mmc1@91581000: 1 (SD)
+
+    K230# mmc part
+    Part  Start Sector  Num Sectors   Type
+      1   8192          163840        83
+      2   262144        4053280       83
+
+    K230# ext4ls mmc 1:1 /
+        60348416 Image
+           70760 force.dtb
+          270792 fw_jump_add_uboot_head.bin
+
+Sectors 8192 and 262144 are exactly 4 MiB and 128 MiB. `mmc1 … (SD)`
+independently confirms the corrected controller mapping: the card is
+mmc1, the Wi-Fi radio is mmc0.
+
+WHAT FAILED, AND WHY
+--------------------
+U-Boot dropped to its prompt instead of booting. Running the boot command
+by hand shows the first step failing:
+
+    K230# run blinux
+    ext4load mmc ${mmc_boot_dev_num}:1 0x15000000 hdmi_dtb
+    Failed to load 'hdmi_dtb'
+    ext4load mmc ${mmc_boot_dev_num}:1 0x15000000 lcd_dtb
+    Failed to load 'lcd_dtb'
+    ext4load mmc ${mmc_boot_dev_num}:1 0x15000000 lcd_dtb
+    Failed to load 'lcd_dtb'
+    k230_set_dtb - set dtb by display
+    Usage: k230_set_dtb set dtb by display
+
+`blinux` begins `k230_set_dtb && ext4load …`. That command does NOT read a
+device tree — it reads a TEXT FILE whose contents NAME one. From
+board/canaan/common/k230_board_common.c, do_k230_set_dtb():
+
+    ext4size mmc ${mmc_boot_dev_num}:1 force_dtb
+    if present  -> k230_set_dtb_env("dtb", "force_dtb")
+    else          display detection -> "lcd_dtb" or "hdmi_dtb"
+    default     -> "lcd_dtb"
+
+and k230_set_dtb_env() ext4loads that file, strips the newline, and does
+env_set("dtb", contents) + env_save().
+
+We never created force_dtb, lcd_dtb or hdmi_dtb, so all three branches
+failed, the command returned non-zero, and since bootcmd is an `&&` chain
+nothing further ran.
+
+Note the misdirection: the environment's default is `dtb=force.dtb` and we
+dutifully named our device tree force.dtb. The file U-Boot actually looks
+for first is `force_dtb` — underscore, no extension, containing the name
+of the real .dtb. Two files one character apart with completely different
+jobs.
+
+THE FIX
+-------
+nix/sd-image.nix now writes the real device tree under its own name and
+adds the three selector files pointing at it. force_dtb alone would do,
+since it short-circuits detection, but lcd_dtb and hdmi_dtb are written
+too so the detection path also works.
+
+Not yet retried on hardware.
