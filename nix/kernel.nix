@@ -232,6 +232,7 @@ EOM
       sed -i 's|^\tpm_runtime_enable(disp_dev);$|\tpm_runtime_enable(disp_dev);\n\tpm_runtime_get_sync(disp_dev); /* pin DISP on; see kernel-patches.md */|' \
         drivers/gpu/drm/canaan/canaan_drv.c
       grep -q 'pm_runtime_get_sync(disp_dev); /\* pin DISP on' drivers/gpu/drm/canaan/canaan_drv.c
+
     '';
   };
 
@@ -327,7 +328,12 @@ EOM
     # and dmesg can be read -- which is the only way to see the panel
     # messages at all. Task 3.3 (console on the panel) needs this back on,
     # and should only be attempted once the panel actually lights.
-    FRAMEBUFFER_CONSOLE = lib.mkForce no;
+    # fbcon back ON. It was turned off to test whether its console
+    # take-over was holding console_lock across the boot hang; it was not
+    # (the board hung identically without it), and the real cause was the
+    # unbounded DSI PHY wait. Now that the panel displays, display/panel
+    # task 3.3 wants the kernel console on it, which needs fbcon.
+    FRAMEBUFFER_CONSOLE = yes;
 
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;

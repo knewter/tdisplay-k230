@@ -72,7 +72,22 @@
   # and nixpkgs' own "loglevel=4" is already there. Without mkAfter this
   # lands before it and is silently overridden -- caught by reading
   # bootargs.txt out of the built image rather than trusting the option.
-  boot.kernelParams = lib.mkAfter [ "loglevel=7" ];
+  # Two orderings in one definition, because Nix will not let the same
+  # attribute be declared twice in one attrset.
+  #
+  # console=tty0 FIRST, via mkBefore: it puts the kernel console on the
+  # panel for display/panel task 3.3. It must not be last, because the
+  # LAST console= on the command line becomes /dev/console, and ttyS0 has
+  # to stay primary -- losing the serial console on a board whose panel is
+  # still being brought up would be a bad trade.
+  #
+  # loglevel=7 LAST, via mkAfter: nixpkgs contributes its own loglevel=4
+  # and the kernel honours whichever comes last.
+  boot.kernelParams =
+    lib.mkMerge [
+      (lib.mkBefore [ "console=tty0" ])
+      (lib.mkAfter [ "loglevel=7" ])
+    ];
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD";

@@ -80,15 +80,29 @@
 		// 60FPS and is wrong; the numbers are self-consistent.
 		display-timings {
 			timing-0 {
-				clock-frequency = <39600000>;
+				/* LILYGO's own Linux kernel queue for this board,
+				 * patch 0031: 49.5 MHz, htotal 748, vtotal 1268
+				 * = 52.19 Hz. We had RT-Smart's 39.6 MHz / 39.63 Hz,
+				 * which is the lowest refresh any implementation of
+				 * this panel uses -- and its enum is named _60FPS,
+				 * so even the vendor table looks mislabelled.
+				 *
+				 * An AMOLED emits in per-frame pulses, so sub-45 Hz
+				 * shows as flicker on a completely static image,
+				 * which is exactly the symptom. LILYGO's 0042 says
+				 * they moved off the original timing for "the
+				 * low-refresh stutter seen at the original timing" --
+				 * the only first-hand artifact report on this board.
+				 */
+				clock-frequency = <49500000>;
 				hactive = <568>;
 				vactive = <1232>;
-				hfront-porch = <40>;
-				hback-porch = <140>;
+				hfront-porch = <100>;
+				hback-porch = <40>;
 				hsync-len = <40>;
-				vfront-porch = <16>;
+				vfront-porch = <4>;
 				vback-porch = <16>;
-				vsync-len = <4>;
+				vsync-len = <16>;
 			};
 		};
 
