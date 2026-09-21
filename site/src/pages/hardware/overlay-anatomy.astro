@@ -1,0 +1,651 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// Code samples live here rather than in the template so that DTS braces do
+// not have to fight Astro's expression syntax. <b> is ours, <u> comes from
+// the SoC file, <i> is a comment, <em> is something deliberately not written.
+const kind1 = `&amp;uart0 {
+    <b>status = "okay";</b>
+};`;
+
+const kind2 = `&amp;mmc_sd0 {
+    <b>status = "okay";</b>
+    <b>no-1-8-v;</b>
+    <b>rx_delay_line = &lt;0x0d&gt;;</b>
+    <b>tx_delay_line = &lt;0xc0&gt;;</b>
+};`;
+
+const kind3 = `&amp;i2c3 {
+    <b>status = "okay";</b>
+    <b>touchscreen@5d {</b>
+        <b>compatible = "goodix,gt9895";</b>
+        <b>reg = &lt;0x5d&gt;;</b>
+        <b>reset-gpios = &lt;&amp;gpio0_ports 24 GPIO_ACTIVE_LOW&gt;;</b>
+        <b>interrupt-parent = &lt;&amp;gpio0_ports&gt;;</b>
+        <b>interrupts = &lt;23 IRQ_TYPE_EDGE_FALLING&gt;;</b>
+    <b>};</b>
+};`;
+
+const kind4 = `&amp;mipi0 {
+    <i>// set to csi2</i>
+    <b>id = &lt;2&gt;;</b>
+    <b>reg = &lt;0x0 0x9000a800 0x0 0x800&gt;;</b>
+    <b>interrupts = &lt;121 IRQ_TYPE_LEVEL_HIGH&gt;;</b>
+    <b>resets = &lt;&amp;sysctl_reset K230_RESET_CSI2_…&gt;,</b>
+             <b>&lt;&amp;sysctl_reset K230_RESET_M2_…&gt;;</b>
+};`;
+
+const kind5 = `&amp;dsi {
+    ports {
+        <b>port@1 {</b>
+            <b>reg = &lt;1&gt;;</b>
+            <b>dsi_out_rm69a10: endpoint {</b>
+                <b>remote-endpoint = &lt;&amp;rm69a10_in&gt;;</b>
+            <b>};</b>
+        <b>};</b>
+    };
+};`;
+
+const kind6 = `/ {
+    <b>model = "LILYGO T-Display-K230";</b>
+    <b>compatible = "lilygo,t-display-k230",</b>
+                 <b>"canaan,canmv-k230",</b>
+                 <b>"canaan,kendryte-k230";</b>
+    <b>aliases { serial3 = &amp;uart3; mmc0 = &amp;mmc_sd0;</b>
+              <b>mmc1 = &amp;mmc_sd1; i2c0 = &amp;i2c4; i2c1 = &amp;i2c3; };</b>
+    <b>chosen { stdout-path = "serial0:115200n8"; };</b>
+    <b>ddr: memory@0 {</b>
+        <b>device_type = "memory";</b>
+        <b>reg = &lt;0x0 0x0 0x0 0x40000000&gt;;   </b><i>// 1 GiB</i>
+    <b>};</b>
+    <b>sound { compatible = "canaan,k230-audio-inno"; … };</b>
+};`;
+
+const kind7 = `#include "k230.dtsi"
+<b>#include "display-rm69a10-568x1232.dtsi"</b>
+
+<i>// …and later, supply the pins the fragment</i>
+<i>// declared but deliberately left off the panel node:</i>
+&amp;lcd {
+    <b>dsi_reset-gpios      = &lt;&amp;gpio0_ports 22 GPIO_ACTIVE_HIGH&gt;;</b>
+    <b>backlight_gpio-gpios = &lt;&amp;gpio0_ports 25 GPIO_ACTIVE_HIGH&gt;;</b>
+};`;
+
+// The committed board file, abridged only by eliding the reference's own
+// &mipi0 override and the sound node's inner properties.
+const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles; has never booted Linux.</i>
+
+/dts-v1/;
+
+#include "k230.dtsi"
+<b>#include "display-rm69a10-568x1232.dtsi"</b>          <i>// ours</i>
+
+/ {
+    <b>model = "LILYGO T-Display-K230";</b>
+    <b>compatible = "lilygo,t-display-k230", "canaan,canmv-k230",
+                 "canaan,kendryte-k230";</b>
+
+    aliases {
+        serial3 = &amp;uart3;
+        mmc0 = &amp;mmc_sd0;   <i>// the RTL8189FTV, over SDIO</i>
+        mmc1 = &amp;mmc_sd1;   <i>// the TF card, and the boot device</i>
+        i2c0 = &amp;i2c4; i2c1 = &amp;i2c3;
+    };
+
+    chosen { stdout-path = "serial0:115200n8"; };   <i>// ttyS0, not ttyS1</i>
+    ddr: memory@0 { device_type = "memory"; reg = &lt;0x0 0x0 0x0 0x40000000&gt;; };
+    sound { compatible = "canaan,k230-audio-inno"; … };
+};
+
+&amp;uart0 { status = "okay"; };                        <i>// CH342 ch0 — console</i>
+&amp;uart3 { status = "okay"; };                        <i>// CH342 ch1</i>
+&amp;usb0  { status = "okay"; };
+&amp;usb1  { status = "okay"; };
+
+&amp;mmc_sd1 { status = "okay"; no-1-8-v; cap-sd-highspeed; mshc_ctrl_r = &lt;0x00&gt;; };
+
+&amp;mmc_sd0 {                                          <i>// carried over verbatim</i>
+    status = "okay"; no-1-8-v;
+    rx_delay_line = &lt;0x0d&gt;; tx_delay_line = &lt;0xc0&gt;;
+};
+<em>// NOT WRITTEN — no mmc-pwrseq and no regulator, so nothing asserts IO45
+//   and the radio stays unpowered under Linux exactly as it does under
+//   RT-Smart. A known gap, left visible rather than guessed at.</em>
+
+&amp;i2c3 {
+    status = "okay";
+    <b>touchscreen@5d {</b>                              <i>// the reference has ft5306@38</i>
+        <b>compatible = "goodix,gt9895";</b>              <i>// no driver matches this, anywhere</i>
+        <b>reg = &lt;0x5d&gt;;</b>
+        reset-gpios = &lt;&amp;gpio0_ports 24 GPIO_ACTIVE_LOW&gt;;
+        interrupt-parent = &lt;&amp;gpio0_ports&gt;;
+        interrupts = &lt;23 IRQ_TYPE_EDGE_FALLING&gt;;
+    <b>};</b>
+};
+&amp;i2c4 { status = "okay"; };
+
+&amp;mipi0 { <i>/* re-pointed to CSI-2, exactly as the reference does */</i> };
+
+<em>// NOT WRITTEN — no LT9611 node. The non-LCD reference gives it
+//   gpio0_ports 24 and 23, which on this board are the touch controller's.
+// NOT WRITTEN — BQ25896, BQ27220, SX1262/LR2021: bus and chip-select unread.</em>
+
+&amp;lcd {                                              <i>// the label on our panel node</i>
+    dsi_reset-gpios      = &lt;&amp;gpio0_ports 22 GPIO_ACTIVE_HIGH&gt;;
+    backlight_gpio-gpios = &lt;&amp;gpio0_ports 25 GPIO_ACTIVE_HIGH&gt;;
+};`;
+---
+
+<HardwareNote
+  slug="overlay-anatomy"
+  title="One SoC file, one board file, and what happens where they meet"
+  eyebrow="Kendryte K230 · hardware note"
+  dek="<code>k230.dtsi</code> describes the silicon and switches almost all of it off. A board <code>.dts</code> reaches back into it by label and turns things on. That seam is the whole of a board port, so it is worth knowing exactly what it lets you do."
+  description="How k230.dtsi and a board .dts compose: the include graph, a census of the SoC file by status, how an ampersand-label override resolves, and the seven kinds of edit a board file can make."
+  source="nix/dts/k230-tdisplay.dts"
+  meta={[
+    { label: "SoC file", value: "k230.dtsi<br>857 lines · 56 nodes" },
+    { label: "Clock tree", value: "k230_clock_provider.dtsi<br>3,354 lines · 150 nodes" },
+    { label: "Our board file", value: "k230-tdisplay.dts<br>129 lines" },
+    { label: "Flattened", value: "234 nodes<br>184 okay · 11 disabled" },
+    { label: "Compiled size", value: "55,156 bytes<br>16 more than the reference" },
+  ]}
+>
+  <HwSection kind="composition" title="Who includes whom">
+    <p class="hw-lede">
+      Four source files, one flattened tree, and a second device tree entirely
+      &mdash; U-Boot&rsquo;s &mdash; that runs first and leaves the pin multiplexer
+      in a state the kernel simply inherits. Our board file is a third sibling of
+      the two reference boards, not a modification of either.
+    </p>
+
+    <HwFigure
+      caption="Node counts are measured, not estimated: both board files were run through <code>cpp</code> and <code>dtc</code> at the pinned commit and compile clean. <strong>The two flattened trees differ by sixteen bytes.</strong> Structurally they are the same device tree; what differs is a model string, two compatible strings, a panel and a touch controller. That is what a board port of this kind actually is. Neither v3 file is listed in the canaan <code>Makefile</code>, so all three are built by name rather than by the <code>dtb-y</code> list."
+    >
+      <svg
+        viewBox="0 0 920 462"
+        role="img"
+        aria-label="k230.dtsi and a panel dtsi are included by a board dts and flattened by dtc into one dtb. The reference board uses the ST7701 fragment and our board file uses the RM69A10 fragment; the two resulting device trees are sixteen bytes apart. Separately, U-Boot's own device tree sets the pin multiplexer before Linux starts."
+      >
+        <defs>
+          <marker id="ia-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"></path>
+          </marker>
+          <marker id="ia-ours" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ours)"></path>
+          </marker>
+        </defs>
+
+        <text x="8" y="16" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--muted)" font-family="var(--sans)">LINUX DEVICE TREE — arch/riscv/boot/dts/canaan/</text>
+
+        {/* the SoC file and its clock tree */}
+        <rect x="8" y="28" width="230" height="70" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.5"></rect>
+        <text x="20" y="48" font-size="12.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">k230.dtsi</text>
+        <text x="20" y="65" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">857 lines · 56 nodes</text>
+        <text x="20" y="79" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">19 disabled · 25 okay · 12 unset</text>
+        <text x="20" y="92" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">no pinctrl · no regulators</text>
+        <line x1="16" y1="98" x2="16" y2="128" stroke="var(--soc)" stroke-width="1"></line>
+        <rect x="24" y="106" width="214" height="48" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1" stroke-dasharray="4 3"></rect>
+        <text x="34" y="124" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">k230_clock_provider.dtsi</text>
+        <text x="34" y="139" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">3,354 lines · 150 clock nodes</text>
+        <text x="34" y="150" font-size="10" fill="var(--muted)" font-family="var(--mono)">included on k230.dtsi's last line</text>
+
+        {/* the two panel fragments */}
+        <rect x="8" y="180" width="230" height="56" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.3"></rect>
+        <text x="20" y="199" font-size="11.5" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">display-st7701-480x800.dtsi</text>
+        <text x="20" y="215" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">97 lines · 44 init commands</text>
+        <text x="20" y="229" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">grafts panel@0 onto the DSI host</text>
+
+        <rect x="8" y="248" width="230" height="56" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.5"></rect>
+        <text x="20" y="267" font-size="11.5" font-weight="600" fill="var(--ours)" font-family="var(--mono)">display-rm69a10-568x1232.dtsi</text>
+        <text x="20" y="283" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">ours · 20 init commands</text>
+        <text x="20" y="297" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">same shape, different numbers</text>
+
+        {/* the two board files */}
+        <rect x="312" y="36" width="248" height="96" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"></rect>
+        <text x="324" y="56" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">k230-canmv-v3-lcd.dts</text>
+        <text x="324" y="73" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">96 lines · the reference board</text>
+        <line x1="324" y1="82" x2="548" y2="82" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="324" y="99" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">8 × status = "okay"</text>
+        <text x="324" y="114" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">ST7701 panel · FT5306 touch</text>
+        <text x="324" y="127" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">memory@0 · aliases · chosen</text>
+
+        <rect x="312" y="188" width="248" height="118" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.6"></rect>
+        <text x="324" y="208" font-size="12" font-weight="600" fill="var(--ours)" font-family="var(--mono)">k230-tdisplay.dts</text>
+        <text x="324" y="225" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">129 lines · ours, in nix/dts/</text>
+        <line x1="324" y1="234" x2="548" y2="234" stroke="var(--ours)" stroke-width="1" opacity="0.4"></line>
+        <text x="324" y="251" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">the same 8 × status = "okay"</text>
+        <text x="324" y="266" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">RM69A10 panel · GT9895 touch</text>
+        <text x="324" y="281" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">model = LILYGO T-Display-K230</text>
+        <text x="324" y="296" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">every divergence marked in-file</text>
+
+        {/* includes */}
+        <line x1="238" y1="60" x2="308" y2="70" stroke="var(--ink-2)" stroke-width="1.4" marker-end="url(#ia-ink)"></line>
+        <line x1="238" y1="86" x2="308" y2="216" stroke="var(--ours)" stroke-width="1.4" marker-end="url(#ia-ours)"></line>
+        <line x1="238" y1="204" x2="308" y2="108" stroke="var(--ink-2)" stroke-width="1.4" marker-end="url(#ia-ink)"></line>
+        <line x1="238" y1="276" x2="308" y2="256" stroke="var(--ours)" stroke-width="1.6" marker-end="url(#ia-ours)"></line>
+
+        {/* the flattened trees */}
+        <rect x="634" y="36" width="278" height="96" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"></rect>
+        <text x="646" y="56" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">reference .dtb</text>
+        <text x="646" y="73" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">55,140 bytes</text>
+        <line x1="646" y1="82" x2="900" y2="82" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="646" y="99" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">234 nodes, one flat tree</text>
+        <text x="646" y="114" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">184 okay · 11 still disabled</text>
+        <text x="646" y="127" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">last assignment to a property wins</text>
+
+        <rect x="634" y="188" width="278" height="118" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6"></rect>
+        <text x="646" y="208" font-size="12.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">our .dtb</text>
+        <text x="646" y="225" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">55,156 bytes</text>
+        <line x1="646" y1="234" x2="900" y2="234" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="646" y="251" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">234 nodes · 184 okay · 11 disabled</text>
+        <text x="646" y="266" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">every node verified present, not</text>
+        <text x="646" y="278" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">assumed, by re-reading the output</text>
+        <text x="646" y="296" font-size="10.5" font-weight="600" fill="var(--ours)" font-family="var(--mono)">16 bytes apart from the reference</text>
+
+        <line x1="560" y1="84" x2="630" y2="84" stroke="var(--ink-2)" stroke-width="1.6" marker-end="url(#ia-ink)"></line>
+        <text x="595" y="76" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">dtc</text>
+        <line x1="560" y1="247" x2="630" y2="247" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ia-ink)"></line>
+        <text x="595" y="239" text-anchor="middle" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">dtc</text>
+
+        {/* the other device tree */}
+        <line x1="8" y1="342" x2="912" y2="342" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 4"></line>
+        <text x="8" y="364" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--muted)" font-family="var(--sans)">SEPARATE FIRMWARE, RUNS FIRST — u-boot/arch/riscv/dts/</text>
+        <rect x="8" y="374" width="330" height="52" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.3"></rect>
+        <text x="20" y="395" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">k230_canmv_v3p0.dts</text>
+        <text x="20" y="413" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">pinctrl-single,pins — all 64 pads</text>
+        <line x1="338" y1="400" x2="630" y2="400" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ia-ink)"></line>
+        <text x="470" y="392" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">sets the FPIOA registers; Linux inherits them</text>
+        <rect x="634" y="374" width="278" height="52" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="4 4"></rect>
+        <text x="646" y="395" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">pad muxing at kernel entry</text>
+        <text x="646" y="413" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">inherited, never described</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="unverified" label="The .dtb exists; getting U-Boot to load it is a separate problem">
+      <p>
+        On the first hardware boot U-Boot found our device tree on the card
+        &mdash; <code>ext4ls</code> listed <code>force.dtb</code> next to the kernel
+        and the OpenSBI payload &mdash; and then refused to boot, because its
+        <code>k230_set_dtb</code> command does not read a device tree. It reads a
+        text file named <code>force_dtb</code> whose <em>contents</em> name one.
+        Two filenames a single character apart, with completely different jobs.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="census" title="What the SoC file declares, by status">
+    <p class="hw-lede">
+      Fifty-six hand-written nodes: forty-seven at the top level plus the nine
+      children of <code>sysctl</code> and <code>security</code>. The interesting
+      split is by <code>status</code> &mdash; nineteen sit disabled waiting for a
+      board to claim them, twenty-five are switched on unconditionally, and twelve
+      carry no <code>status</code> at all, which in device-tree semantics means
+      enabled.
+    </p>
+
+    <p class="hw-p">
+      After a board file has had its say the flattened tree is
+      <strong>234 nodes: 184 okay, 11 still disabled</strong>. Those eleven are
+      <code>uart1</code>, <code>uart2</code>, <code>uart4</code>,
+      <code>i2c0</code>&ndash;<code>i2c2</code>, all three SPI controllers and
+      <code>mipi1</code>/<code>mipi2</code>: everything nobody claimed. Anything
+      this board needs from that list is a node we would have to enable ourselves,
+      and the charger, the fuel gauge and the LoRa radio are all in it.
+    </p>
+
+    <ul class="hw-key">
+      <li><i class="k-soc"></i>status = "okay" in k230.dtsi</li>
+      <li><i class="st-implicit" style="width:9px;height:9px;border-radius:50%"></i>no status property — enabled by default</li>
+      <li><i class="k-open"></i>status = "disabled" — a board must opt in</li>
+      <li><i class="k-ref"></i>opted in by the board file</li>
+    </ul>
+
+    <div class="hw-band">
+      <header>
+        <h3>Core — always live</h3>
+        <span class="tag">no board involvement possible</span>
+        <span class="cnt" style="color:var(--soc)">12 nodes</span>
+      </header>
+      <div class="hw-tiles">
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>cpu@0</b><span>thead,c908 · sv39 · the only CPU in the tree</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>l2-cache</b><span>256 KiB unified</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>plic</b><span>interrupt-controller@f00000000<br />canaan,k230-plic / thead,c900-plic</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>clint</b><span>timer@f04000000</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>gpio0_ports</b><span>gpio@9140b000 · pins 0–31<br />gpio- and interrupt-controller</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>gpio1_ports</b><span>gpio@9140c000 · pins 32–63</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>watchdog1</b><span>wdt1@91106800 · snps,dw-wdt</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>adc</b><span>adc@9140d000</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>pwm0 · pwm1</b><span>9140a000 · 9140a040</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>rtc</b><span>rtc@0x91000c00 — note the literal "0x"</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>sysctl</b><span>clock@91100000 · reset@91101000<br />boot@91102000 · power@91103000</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>sysctl_clock children</b><span>150 nodes from k230_clock_provider.dtsi<br />PLLs, dividers, gates, muxes</span></div></div>
+        <div class="hw-tile"><i class="st-implicit"></i><div><b>apb_clk · dummy_sd · clk_dummy</b><span>fixed-clock · 50 / 100 / 0 MHz<br />the three that bypass the clock tree</span></div></div>
+      </div>
+    </div>
+
+    <div class="hw-band">
+      <header>
+        <h3>Buses and controllers — off until a board says otherwise</h3>
+        <span class="tag">status = "disabled"</span>
+        <span class="cnt" style="color:var(--muted)">19 nodes · 8 claimed</span>
+      </header>
+      <div class="hw-tiles">
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>uart0</b><span>serial@91400000 · alias serial0<br />the console on this board</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>uart1</b><span>serial@91401000</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>uart2</b><span>serial@91402000</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>uart3</b><span>serial@91403000 · alias serial3</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>uart4</b><span>serial@91404000</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>i2c3</b><span>i2c@91408000 · alias i2c1<br />the touch bus</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>i2c4</b><span>i2c@91409000 · alias i2c0<br />enabled, no children</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>i2c0 · i2c1 · i2c2</b><span>91405000 · 91406000 · 91407000</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>mmc_sd0</b><span>sdhci0@91580000 · 8-bit<br />Wi-Fi SDIO on this board</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>mmc_sd1</b><span>sdhci1@91581000 · 4-bit<br />the card, and the boot device</span></div></div>
+        <div class="hw-tile"><i class="st-claimed"></i><div><b>usb0 · usb1</b><span>91500000 · 91540000 · canaan,k230-otg</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>spi0 · spi1 · spi2</b><span>91584000 · 91582000 · 91583000<br />the LoRa radio presumably wants one</span></div></div>
+        <div class="hw-tile"><i class="st-off"></i><div><b>mipi1 · mipi2</b><span>verisilicon,mipi — extra camera inputs</span></div></div>
+      </div>
+    </div>
+
+    <div class="hw-band">
+      <header>
+        <h3>Media and accelerators — already on</h3>
+        <span class="tag">status = "okay" in the SoC file</span>
+        <span class="cnt" style="color:var(--soc)">16 nodes</span>
+      </header>
+      <div class="hw-tiles">
+        <div class="hw-tile"><i class="st-on"></i><div><b>display</b><span>display-subsystem · ports = &lt;&amp;vo_out&gt;</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>vo</b><span>vo@90840000 · canaan,k230-vo<br />vth_line = 10 by default</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>dsi</b><span>dsi@90850000 · canaan,k230-mipi-dsi<br />port@0 wired to vo; port@1 free</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>mipi0</b><span>verisilicon,mipi<br />re-pointed to CSI-2 by the board</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>isp</b><span>isp.0 · verisilicon,isp</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>gpu</b><span>gpu@90800000 · verisilicon,gc8000ul<br />no Mesa or Vulkan driver exists</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>vpu</b><span>vpu@0x90400000 · canaan,vpu</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>gnne</b><span>gnne@80400000 — the KPU</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>ai2d</b><span>ai2d@80400c00</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>pdma</b><span>pdma@0x80804000</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>i2s · audio</b><span>i2s@0x9140f000 · audio@0x9140f400</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>inno_codec</b><span>inno_codec@0x9140e000</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>tsensor</b><span>tsensor@91107000</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>security</b><span>a simple-bus holding five blocks</span></div></div>
+        <div class="hw-tile"><i class="st-on"></i><div><b>aes · hash · rsa · trng · otp</b><span>91210200 · 91210800 · 91211000<br />91213000 · 91213500</span></div></div>
+      </div>
+    </div>
+
+    <HwNote label="Three things in that census that will bite">
+      <p>
+        <strong>The display chain is already on.</strong> <code>display</code>,
+        <code>vo</code> and <code>dsi</code> are <code>okay</code> before any board
+        file runs, and <code>vo</code> is already wired to <code>dsi</code> port 0 by
+        an endpoint pair. A board never enables the display; it only hangs a panel off
+        <code>&amp;dsi</code> port 1. That is why a panel fragment contains no
+        <code>status</code> at all.
+      </p>
+      <p>
+        <strong>The SD and USB controllers sit outside the clock tree.</strong> There
+        is a real clock provider &mdash; 150 nodes of PLLs, dividers and gates hanging
+        off <code>sysctl_clock</code>, which the I²C, SPI, audio and display blocks all
+        draw from. But both MMC controllers take
+        <code>clocks = &lt;&amp;dummy_sd&gt;</code>, a <code>fixed-clock</code>
+        asserting a flat 100 MHz, and the USB controllers take
+        <code>clk_dummy</code> at 0 Hz. For those four the rate in the tree is an
+        assertion, not a control &mdash; which is presumably why
+        <code>mshc_ctrl_r</code> and the delay-line trims exist.
+      </p>
+      <p>
+        <strong><code>compatible = "canaan, k230-sysctl-power"</code> has a space in
+        it.</strong> That looks like a typo, and it is, but
+        <code>drivers/soc/canaan/k230-power-domains.c</code> carries exactly the same
+        string in its match table. Correcting it would break the match.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="mechanism" title="How an override actually resolves">
+    <p class="hw-lede">
+      A board file does not copy a node. It writes <code>&amp;label &#123; … &#125;</code>,
+      which the compiler resolves to whichever node carries that label anywhere in
+      the included tree, then merges the properties in: later assignment wins,
+      everything unmentioned survives.
+    </p>
+
+    <HwFigure
+      caption="<strong>Rule 2 is the one that surprises people.</strong> The board file re-points <code>&amp;mipi0</code> by re-assigning <code>reg</code>, <code>interrupts</code> and <code>resets</code> &mdash; a node that was already <code>okay</code> in the SoC file quietly moves to a different address and a different interrupt. Nothing flags it, and our board file inherits that edit unchanged because the reference does it."
+    >
+      <svg
+        viewBox="0 0 920 400"
+        role="img"
+        aria-label="The SoC node for uart0 with status disabled, plus a board fragment ampersand-uart0 setting status okay, merge into one effective node in which only status has changed."
+      >
+        <defs>
+          <marker id="ov-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"></path>
+          </marker>
+        </defs>
+
+        <text x="8" y="18" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--soc)" font-family="var(--sans)">DECLARED — k230.dtsi</text>
+        <rect x="8" y="28" width="292" height="174" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.4"></rect>
+        <text x="22" y="50" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">uart0: serial@91400000 {"{"}</text>
+        <text x="34" y="68" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">compatible = "snps,dw-apb-uart";</text>
+        <text x="34" y="86" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">reg = &lt;0x0 0x91400000 …&gt;;</text>
+        <text x="34" y="104" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">interrupts = &lt;16 LEVEL_HIGH&gt;;</text>
+        <text x="34" y="122" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">clocks = &lt;&amp;apb_clk&gt;;</text>
+        <text x="34" y="140" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">reg-shift = &lt;2&gt;;</text>
+        <text x="34" y="158" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">reg-io-width = &lt;4&gt;;</text>
+        <rect x="28" y="164" width="194" height="21" rx="2" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.1"></rect>
+        <text x="34" y="179" font-size="11.5" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">status = "disabled";</text>
+        <text x="22" y="197" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">{"}"};</text>
+
+        <text x="8" y="244" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--ink-2)" font-family="var(--sans)">OVERRIDDEN — the board .dts</text>
+        <rect x="8" y="254" width="292" height="78" rx="3" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.4"></rect>
+        <text x="22" y="277" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">&amp;uart0 {"{"}</text>
+        <rect x="28" y="285" width="178" height="21" rx="2" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.1"></rect>
+        <text x="34" y="300" font-size="11.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">status = "okay";</text>
+        <text x="22" y="325" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">{"}"};</text>
+        <text x="22" y="354" font-size="11.5" fill="var(--muted)" font-family="var(--sans)">no reg, no compatible, no re-declaration —</text>
+        <text x="22" y="371" font-size="11.5" fill="var(--muted)" font-family="var(--sans)">the label is a pointer into the SoC tree.</text>
+
+        <line x1="304" y1="114" x2="378" y2="146" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#ov-a)"></line>
+        <line x1="304" y1="292" x2="378" y2="210" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#ov-a)"></line>
+        <text x="341" y="188" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)" font-family="var(--sans)">merge</text>
+
+        <text x="390" y="18" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--ink)" font-family="var(--sans)">EFFECTIVE — what lands in the .dtb</text>
+        <rect x="390" y="28" width="330" height="174" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"></rect>
+        <text x="404" y="50" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">serial@91400000 {"{"}</text>
+        <text x="416" y="68" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">compatible = "snps,dw-apb-uart";</text>
+        <text x="416" y="86" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">reg = &lt;0x0 0x91400000 …&gt;;</text>
+        <text x="416" y="104" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">interrupts = &lt;16 LEVEL_HIGH&gt;;</text>
+        <text x="416" y="122" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">clocks = &lt;&amp;apb_clk&gt;;</text>
+        <text x="416" y="140" font-size="11.5" fill="var(--muted)" font-family="var(--mono)">reg-shift = &lt;2&gt;; reg-io-width = &lt;4&gt;;</text>
+        <rect x="410" y="146" width="164" height="21" rx="2" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2"></rect>
+        <text x="416" y="161" font-size="11.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">status = "okay";</text>
+        <text x="404" y="192" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">{"}"};</text>
+
+        <rect x="390" y="224" width="522" height="108" rx="3" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1"></rect>
+        <text x="404" y="246" font-size="11" font-weight="700" letter-spacing="0.8" fill="var(--ink)" font-family="var(--sans)">THE THREE RULES THAT FOLLOW FROM THIS</text>
+        <text x="404" y="268" font-size="12.5" fill="var(--ink-2)" font-family="var(--sans)">1 · A label must already exist. You cannot reference a node the SoC file never named.</text>
+        <text x="404" y="289" font-size="12.5" fill="var(--ink-2)" font-family="var(--sans)">2 · Re-assigning a property replaces it whole. There is no partial edit of a list.</text>
+        <text x="404" y="310" font-size="12.5" fill="var(--ink-2)" font-family="var(--sans)">3 · Include order decides. The last file to touch a property is the one that wins.</text>
+      </svg>
+    </HwFigure>
+  </HwSection>
+
+  <HwSection kind="taxonomy" title="Seven things a board file does">
+    <p class="hw-lede">
+      Read against the two reference boards and our own, every edit falls into one
+      of these seven. There is no eighth kind, which is a useful thing to know
+      before writing a board file.
+    </p>
+
+    <div class="hw-recipes">
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 1 — flip a switch</p>
+          <h3>Enable a controller, change nothing else</h3>
+          <p>
+            The commonest edit and the least interesting. <code>uart0</code>,
+            <code>uart3</code>, <code>usb0</code>, <code>usb1</code> and
+            <code>i2c4</code> get exactly this on our board.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind1} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 2 — flip and tune</p>
+          <h3>Enable, then add board-electrical properties</h3>
+          <p>
+            Signal-integrity and voltage facts only the board knows.
+            <code>rx_delay_line</code> and <code>tx_delay_line</code> are
+            Canaan-specific delay-chain trims; <code>no-1-8-v</code> says the level
+            shifters cannot do 1.8&nbsp;V signalling.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind2} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 3 — attach a device</p>
+          <h3>Enable a bus and declare what hangs off it</h3>
+          <p>
+            The child node&rsquo;s unit address is the I²C address. GPIOs are
+            referenced through the bank controller&rsquo;s label and a per-bank index.
+            This is the shape of our GT9895 node, shown as we actually wrote it.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind3} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 4 — re-point</p>
+          <h3>Rewrite reg, interrupts and resets on a live node</h3>
+          <p>
+            The board tells <code>mipi0</code> it is a CSI-2 receiver and hands it a
+            different register window and interrupt. Note there is no
+            <code>status</code> here &mdash; the node was already <code>okay</code>.
+          </p>
+          <p>
+            An unconditional rewrite of a hardware address from a board file is a
+            strong smell. It is also what upstream does, and we carry it over rather
+            than diverge on something we have not tested.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind4} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 5 — graft an endpoint</p>
+          <h3>Extend an existing port graph</h3>
+          <p>
+            The SoC file leaves <code>&amp;dsi</code> with only <code>port@0</code>
+            filled. A board adds <code>port@1</code> and the endpoint naming its
+            downstream sink &mdash; a bridge chip on one board, a panel on ours.
+            Endpoints are declared in pairs and both halves must name each other or
+            the bridge chain never forms.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind5} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 6 — new root nodes</p>
+          <h3>Facts that have no SoC counterpart</h3>
+          <p>
+            How much DRAM, which UART is the console, what the board is called, the
+            machine-level sound card. These are written into <code>/</code> directly
+            because there is nothing upstream to reference.
+          </p>
+          <p>
+            <code>aliases</code> matters more than it looks: it fixes the
+            <code>ttySn</code> and <code>mmcblkn</code> numbering the rest of the
+            system will see.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind6} />
+      </div>
+
+      <div class="hw-rec">
+        <div>
+          <p class="k">Kind 7 — include a fragment</p>
+          <h3>Pull in a whole subsystem description</h3>
+          <p>
+            One <code>#include</code> is the entire difference between the plain
+            CanMV v3 board and the LCD variant. The fragment is not a node &mdash; it
+            is a bundle of <code>&amp;</code>-overrides that happens to live in its own
+            file, which is why it can be reused across boards.
+          </p>
+          <p>
+            This is the mechanism our port uses: write the panel fragment, include it
+            instead, and attach the pins by label afterwards.
+          </p>
+        </div>
+        <pre class="hw-code" set:html={kind7} />
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="the real thing" title="The board file we actually wrote">
+    <p class="hw-lede">
+      An earlier version of this note carried a sketch of what a T-Display board
+      file might look like, with a Wi-Fi power sequence and a
+      <code>bus-width</code> override in it, and a footnote saying it had never been
+      compiled. The file below is the one in the repository. It compiles against the
+      real <code>k230.dtsi</code>, every node was verified present in the output
+      rather than assumed, and the two guessed-at Wi-Fi edits are not in it.
+    </p>
+
+    <pre class="hw-code" set:html={boardFile} />
+
+    <HwNote kind="ours" label="What the sketch proposed and the real file does not do">
+      <p>
+        The sketch added <code>mmc-pwrseq-simple</code> with
+        <code>reset-gpios = &lt;&amp;gpio1_ports 13&gt;</code>, plus
+        <code>bus-width = &lt;4&gt;</code>, <code>non-removable</code> and
+        <code>cap-sdio-irq</code> on <code>&amp;mmc_sd0</code>. None of that is in the
+        committed file. IO45 drives an LDO enable, not a card reset, and the polarity
+        was never confirmed against the RT9080 footprint; a fixed regulator plus
+        <code>vmmc-supply</code> may be the more honest model. Leaving the gap visible
+        beats encoding a guess in a file that compiles.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="What compiling does and does not prove">
+      <p>
+        It proves the description is well-formed and that every label it reaches for
+        exists. It says nothing about whether the panel lights, whether the timings are
+        right, or whether the reset polarity is correct. Linux has not booted on this
+        board; U-Boot has.
+      </p>
+      <p>
+        Two syntax mistakes cost time and are worth recording, because both produce
+        misleading errors. A DTS bytestring takes <em>bare</em> hex pairs, so
+        <code>[0x39 0x00 …]</code> fails with a plain &ldquo;syntax error&rdquo;
+        pointing at the opening bracket. And all properties must precede any subnode
+        &mdash; a <code>panel-init-sequence</code> sitting after
+        <code>display-timings</code> gets &ldquo;Properties must precede
+        subnodes&rdquo;, naming the whole node rather than the property.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Census taken by walking arch/riscv/boot/dts/canaan/k230.dtsi at
+      ruyisdk/linux-xuantie-kernel 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529. Byte
+      counts and node counts are from running cpp and dtc over each board file at that
+      commit and re-reading the output.
+    </p>
+    <p>
+      Board evidence: the vendored U-Boot device tree k230_canmv_v3p0.dts, the RT-Smart
+      k230_canmv_v3p0_defconfig, and the V1.0_NEW schematic.
+    </p>
+  </div>
+</HardwareNote>

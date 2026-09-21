@@ -1,0 +1,662 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// The committed init sequence, command by command, in order. `bytes` is the
+// payload length including the DCS command byte -- the third header byte.
+// Transcribed from rm69a10_568x1232_dsi_send() and cross-checked against
+// nix/dts/display-rm69a10-568x1232.dtsi.
+const initSeq = [
+  { cmd: "b9", bytes: 4, what: "extension command set" },
+  { cmd: "d2", bytes: 2, what: "page select" },
+  { cmd: "b1", bytes: 16, what: "power control" },
+  { cmd: "b2", bytes: 16, what: "display resolution and porches" },
+  { cmd: "b4", bytes: 45, what: "timing / blanking block" },
+  { cmd: "d3", bytes: 34, what: "gate timing" },
+  { cmd: "d5", bytes: 33, what: "forward gate mapping" },
+  { cmd: "d6", bytes: 33, what: "reverse gate mapping" },
+  { cmd: "d8", bytes: 17, what: "gate-on/off waveform" },
+  { cmd: "bd", bytes: 2, what: "bank 1" },
+  { cmd: "d8", bytes: 17, what: "gate-on/off waveform, bank 1" },
+  { cmd: "bd", bytes: 2, what: "bank 2" },
+  { cmd: "d8", bytes: 9, what: "gate-on/off waveform, bank 2" },
+  { cmd: "bd", bytes: 2, what: "back to bank 0" },
+  { cmd: "b6", bytes: 3, what: "VCOM" },
+  { cmd: "cc", bytes: 2, what: "panel orientation — 0x04 is unmirrored" },
+  { cmd: "c6", bytes: 3, what: "abnormal-power detection" },
+  { cmd: "e0", bytes: 55, what: "gamma table" },
+  { cmd: "11", bytes: 1, what: "exit sleep mode" },
+  { cmd: "29", bytes: 1, what: "set display on" },
+];
+const payloadTotal = initSeq.reduce((n, c) => n + c.bytes, 0);
+const propertyBytes = payloadTotal + initSeq.length * 3;
+
+const dtsi = `<i>// nix/dts/display-rm69a10-568x1232.dtsi (abridged: the 20-command blob
+// is shown with its four largest payloads elided for width)</i>
+
+&amp;vo {
+    <b>vth_line = &lt;9&gt;;</b>            <i>// intr_line from the vendor connector table; ST7701 uses 10</i>
+};
+
+&amp;dsi {
+    ports {
+        <b>port@1 {</b>
+            <b>reg = &lt;1&gt;;</b>
+            <b>dsi_out_rm69a10: endpoint { remote-endpoint = &lt;&amp;rm69a10_in&gt;; };</b>
+        <b>};</b>
+    };
+
+    <b>lcd: panel@0 {</b>                <i>// a DSI child, and labelled so the board can reach it</i>
+        <b>compatible = "canaan,universal";</b>
+        <b>reg = &lt;0&gt;;</b>
+
+        <i>// DIVERGENCE: the reference puts PIXEL COUNTS in these. These are real
+        // millimetres, computed from the stated 4.1" diagonal — not measured.</i>
+        <b>panel-width-mm  = &lt;44&gt;;</b>
+        <b>panel-height-mm = &lt;95&gt;;</b>
+
+        <b>panel-dsi-lane  = &lt;2&gt;;</b>
+
+        <i>// framing: data_type, delay_ms, payload_length, payload…
+        // delay is a u8 of MILLIseconds. The vendor waits 300 us after 0x11
+        // and 100 us after 0x29; neither is expressible, so both become 1 ms,
+        // which is longer than the vendor waits.</i>
+        <b>panel-init-sequence = [</b>
+            <b>39 00 04 b9 ff 83 99</b>
+            <b>15 00 02 d2 aa</b>
+            <b>39 00 10 b1 02 04 71 91 01 32 33 11 11 ab 4d 56 73 02 02</b>
+            <b>39 00 10 b2 00 80 80 ae 05 07 5a 11 00 00 10 1e 70 03 d4</b>
+            <b>39 00 2d b4 00 ff 02 c0 02 c0 …</b>          <i>45 bytes</i>
+            <b>39 00 22 d3 00 00 00 00 00 00 …</b>          <i>34 bytes</i>
+            <b>39 00 21 d5 18 18 19 19 18 18 …</b>          <i>33 bytes</i>
+            <b>39 00 21 d6 18 18 19 19 40 40 …</b>          <i>33 bytes</i>
+            <b>39 00 11 d8 a2 aa 02 a0 a2 a8 02 a0 b0 00 00 00 b0 00 00 00</b>
+            <b>15 00 02 bd 01</b>
+            <b>39 00 11 d8 b0 00 00 00 b0 00 00 00 e2 aa 03 f0 e2 aa 03 f0</b>
+            <b>15 00 02 bd 02</b>
+            <b>39 00 09 d8 e2 aa 03 f0 e2 aa 03 f0</b>
+            <b>15 00 02 bd 00</b>
+            <b>39 00 03 b6 8d 8d</b>
+            <b>15 00 02 cc 04</b>
+            <b>39 00 03 c6 ff f9</b>
+            <b>39 00 37 e0 00 12 1f 1a 40 4a …</b>          <i>55 bytes — the gamma table</i>
+            <b>05 01 01 11</b>                              <i>exit sleep, then 1 ms</i>
+            <b>05 01 01 29</b>                              <i>display on, then 1 ms</i>
+        <b>];</b>
+
+        display-timings {
+            timing-0 {
+                <b>clock-frequency = &lt;39600000&gt;;</b>
+                <b>hactive = &lt;568&gt;;   vactive = &lt;1232&gt;;</b>
+                <b>hfront-porch = &lt;40&gt;;  hback-porch = &lt;140&gt;;  hsync-len = &lt;40&gt;;</b>
+                <b>vfront-porch = &lt;16&gt;;  vback-porch = &lt;16&gt;;   vsync-len = &lt;4&gt;;</b>
+            };
+        };
+
+        <b>ports {</b>                     <i>// the other half of the endpoint pair</i>
+            <b>#address-cells = &lt;1&gt;;  #size-cells = &lt;0&gt;;</b>
+            <b>port@0 {</b>
+                <b>reg = &lt;0&gt;;</b>
+                <b>rm69a10_in: endpoint { remote-endpoint = &lt;&amp;dsi_out_rm69a10&gt;; };</b>
+            <b>};</b>
+        <b>};</b>
+    <b>};</b>
+};
+
+<em>// NOT HERE, deliberately: no reset-gpios and no backlight GPIO on the panel
+//   node. The board .dts attaches both to the 'lcd' label, which is how the
+//   reference splits panel from board.</em>`;
+---
+
+<HardwareNote
+  slug="panel-contract"
+  title="A panel is a byte string and eleven numbers"
+  eyebrow="panel-canaan-universal.c · hardware note"
+  dek="The Canaan DRM panel driver has no knowledge of any display. Everything that makes an ST7701 an ST7701 lives in a 97-line <code>.dtsi</code>, so the RM69A10 is a new file rather than a new driver &mdash; provided its numbers fit the same slots. Two of them do not."
+  description="Property by property, what the canaan,universal panel driver reads out of a device tree, how its panel-init-sequence blob is framed, and the 20-command sequence the RM69A10 actually needs."
+  source="nix/dts/display-rm69a10-568x1232.dtsi"
+  meta={[
+    { label: "Driver", value: "panel-canaan-universal.c<br>395 lines, no panel-specific code" },
+    { label: "Init sequence", value: `${initSeq.length} commands<br>${payloadTotal} payload bytes` },
+    { label: "As a property", value: `${propertyBytes} bytes<br>${payloadTotal} payload + ${initSeq.length}×3 framing` },
+    { label: "Timing", value: "39.6 MHz over 788×1268<br>≈ 39.6 Hz, 2 lanes" },
+    { label: "Status", value: "compiles and round-trips<br>never lit a panel" },
+  ]}
+>
+  <HwSection kind="the contract" title="Every property the driver reads">
+    <p class="hw-lede">
+      Where it reads each one, and what it becomes. The two rows at the bottom are
+      the interesting ones: the settings the driver does <em>not</em> read, because
+      it hardcodes them.
+    </p>
+
+    <div class="hw-contract">
+      <div class="hw-crow hw-crow-head">
+        <span>Device-tree property</span><span>Read at</span><span>Becomes</span>
+      </div>
+
+      <div class="hw-crow">
+        <span class="a">compatible = "canaan,universal"</span>
+        <span class="b">canaan_panel_of_match[]</span>
+        <span class="c">
+          The only string this driver matches. Panel identity is not encoded
+          anywhere &mdash; every Canaan panel is &ldquo;universal&rdquo;.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">reg = &lt;0&gt;</span>
+        <span class="b">the MIPI DSI core</span>
+        <span class="c">The DSI virtual channel. Always 0 for a single panel.</span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">panel-dsi-lane</span>
+        <span class="b">parse_dt → ctx-&gt;lan_num<br />probe → dsi-&gt;lanes</span>
+        <span class="c">
+          How many DSI data lanes the host is told to use: 2 for the ST7701, and 2
+          for the RM69A10. Note the property name &mdash; the driver&rsquo;s internal
+          field is <code>lan_num</code>, but the binding is
+          <code>panel-dsi-lane</code>, and a fragment that writes the field name
+          instead compiles and is silently ignored.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">panel-width-mm<br />panel-height-mm</span>
+        <span class="b">parse_dt → ctx-&gt;width_mm<br />get_modes → display_info</span>
+        <span class="c">
+          Physical size in millimetres, which is what DRM and every userspace DPI
+          calculation assume. The reference file puts <strong>480 and 800</strong> in
+          these fields &mdash; the pixel counts. Ours puts 44 and 95.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">display-timings &#123; timing-0 &#125;</span>
+        <span class="b">of_get_videomode(np, &amp;ctx-&gt;vm, 0)</span>
+        <span class="c">
+          The standard <code>videomode</code> binding: clock-frequency, hactive,
+          vactive and the six porch and sync values, converted straight into a
+          <code>drm_display_mode</code> and flagged PREFERRED.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">panel-init-sequence = [ … ]</span>
+        <span class="b">of_get_property +<br />panel_simple_parse_cmd_seq</span>
+        <span class="c">
+          A raw blob of length-prefixed DCS commands. This is the entire panel
+          personality, and for this panel it is 297 bytes of it.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">dsi_reset-gpios</span>
+        <span class="b">devm_gpiod_get(dev, "dsi_reset")</span>
+        <span class="c">
+          Note the consumer string: <code>dsi_reset</code>, not the conventional
+          <code>reset</code>. Supplied by the <em>board</em> file, not the panel
+          fragment. On this board it is GPIO22, active high.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">backlight_gpio-gpios</span>
+        <span class="b">devm_gpiod_get(dev, "backlight_gpio")</span>
+        <span class="c">
+          Stored in a field called <code>power_on</code> and driven high once at
+          probe. A panel-enable line, not a brightness control &mdash; there is no PWM
+          and no backlight node. GPIO25, active high, also from the board file.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">ports/port@0/endpoint</span>
+        <span class="b">DRM of_graph</span>
+        <span class="c">
+          Pairs with <code>&amp;dsi</code> port@1. Both halves must name each other or
+          the bridge chain never forms and nothing probes.
+        </span>
+      </div>
+      <div class="hw-crow">
+        <span class="a">&amp;vo &#123; vth_line = &lt;9&gt;; &#125;</span>
+        <span class="b">canaan,k230-vo — not the panel driver</span>
+        <span class="c">
+          The scanline at which the video output raises its tearing interrupt. It
+          lives in the panel fragment because it is a per-panel number, but it
+          overrides a property on a different node.
+        </span>
+      </div>
+
+      <div class="hw-crow hw-crow-hard">
+        <span class="a">— not from the device tree —</span>
+        <span class="b">probe: dsi-&gt;mode_flags =<br />MIPI_DSI_MODE_VIDEO_SYNC_PULSE</span>
+        <span class="c">
+          <strong>Hardcoded</strong>, for every panel. The vendor&rsquo;s own RT-Smart
+          driver runs the RM69A10 in <code>K_BURST_MODE</code>. No device-tree property
+          can change this.
+        </span>
+      </div>
+      <div class="hw-crow hw-crow-hard">
+        <span class="a">— not from the device tree —</span>
+        <span class="b">probe: dsi-&gt;format =<br />MIPI_DSI_FMT_RGB888</span>
+        <span class="c">
+          <strong>Hardcoded.</strong> 24 bits per pixel on the wire, regardless of what
+          the init sequence sets on the panel side.
+        </span>
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="the blob" title="Reading the init sequence">
+    <p class="hw-lede">
+      The blob is a flat stream of three-byte headers, each followed by its payload.
+      No terminator and no count: the parser walks it twice, once to count commands
+      and once to build them, and rejects the whole property if the lengths do not
+      land exactly on the end.
+    </p>
+
+    <HwFigure
+      caption="Wire-level detail the parser hides: <code>panel_simple_xfer_dsi_cmd_seq</code> calls <code>mipi_dsi_dcs_write_buffer</code> for all three accepted <code>data_type</code> values, and that helper picks the real DSI packet type from the buffer length itself. <strong>The type byte is therefore decorative.</strong> The reference blob uses <code>0x39</code> even for single-byte commands, where <code>0x05</code> would be correct, and it works; ours uses the correct type for each length anyway, because a file that is right for the right reason is cheaper to read later."
+    >
+      <svg
+        viewBox="0 0 920 330"
+        role="img"
+        aria-label="One command in panel-init-sequence: a three-byte header of data type, delay in milliseconds and payload length, followed by exactly payload-length bytes. The example is 39 00 04 b9 ff 83 99."
+      >
+        <defs>
+          <marker id="pb-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"></path>
+          </marker>
+        </defs>
+
+        <text x="8" y="16" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--muted)" font-family="var(--sans)">ONE COMMAND — HEADER, THEN PAYLOAD</text>
+
+        <rect x="8" y="30" width="52" height="40" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.3"></rect>
+        <text x="34" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--soc)" font-family="var(--mono)">39</text>
+        <rect x="64" y="30" width="52" height="40" rx="3" fill="var(--unverified-f)" stroke="var(--unverified)" stroke-width="1.3"></rect>
+        <text x="90" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--unverified)" font-family="var(--mono)">00</text>
+        <rect x="120" y="30" width="52" height="40" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.3"></rect>
+        <text x="146" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ours)" font-family="var(--mono)">04</text>
+        <rect x="176" y="30" width="52" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="202" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">b9</text>
+        <rect x="232" y="30" width="52" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="258" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">ff</text>
+        <rect x="288" y="30" width="52" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="314" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">83</text>
+        <rect x="344" y="30" width="52" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="370" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">99</text>
+
+        <line x1="400" y1="50" x2="418" y2="50" stroke="var(--ink-2)" stroke-width="1.3" marker-end="url(#pb-a)"></line>
+        <text x="424" y="46" font-size="12.5" fill="var(--muted)" font-family="var(--sans)">the next header starts here — there is no</text>
+        <text x="424" y="62" font-size="12.5" fill="var(--muted)" font-family="var(--sans)">separator and no total count anywhere.</text>
+
+        <path d="M8,76 L8,86 L172,86 L172,76" fill="none" stroke="var(--ink-2)" stroke-width="1.1"></path>
+        <text x="90" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--sans)">header — 3 bytes</text>
+        <path d="M176,76 L176,86 L396,86 L396,76" fill="none" stroke="var(--ink-2)" stroke-width="1.1"></path>
+        <text x="286" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--sans)">payload — exactly payload_length bytes</text>
+
+        <line x1="34" y1="118" x2="34" y2="132" stroke="var(--soc)" stroke-width="1.2"></line>
+        <text x="8" y="150" font-size="12" font-weight="600" fill="var(--soc)" font-family="var(--mono)">data_type</text>
+        <text x="8" y="168" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">0x05, 0x15 or 0x39. All</text>
+        <text x="8" y="184" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">three are handled the same</text>
+        <text x="8" y="200" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">way; anything else aborts</text>
+        <text x="8" y="216" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">the probe.</text>
+
+        <line x1="330" y1="118" x2="330" y2="132" stroke="var(--unverified)" stroke-width="1.2"></line>
+        <text x="304" y="150" font-size="12" font-weight="600" fill="var(--unverified)" font-family="var(--mono)">delay</text>
+        <text x="304" y="168" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">Milliseconds to sleep AFTER</text>
+        <text x="304" y="184" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">the command. A u8, so 255 ms</text>
+        <text x="304" y="200" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">is the longest wait, and 1 ms</text>
+        <text x="304" y="216" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">the shortest non-zero one.</text>
+
+        <line x1="640" y1="118" x2="640" y2="132" stroke="var(--ours)" stroke-width="1.2"></line>
+        <text x="614" y="150" font-size="12" font-weight="600" fill="var(--ours)" font-family="var(--mono)">payload_length</text>
+        <text x="614" y="168" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">Includes the DCS command byte</text>
+        <text x="614" y="184" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">itself, so a bare command with</text>
+        <text x="614" y="200" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">no parameters is length 1,</text>
+        <text x="614" y="216" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">not 0.</text>
+
+        <line x1="8" y1="240" x2="912" y2="240" stroke="var(--rule)" stroke-width="1"></line>
+
+        <rect x="8" y="258" width="52" height="40" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.3"></rect>
+        <text x="34" y="284" text-anchor="middle" font-size="15" font-weight="600" fill="var(--soc)" font-family="var(--mono)">05</text>
+        <rect x="64" y="258" width="52" height="40" rx="3" fill="var(--unverified-f)" stroke="var(--unverified)" stroke-width="1.3"></rect>
+        <text x="90" y="284" text-anchor="middle" font-size="15" font-weight="600" fill="var(--unverified)" font-family="var(--mono)">01</text>
+        <rect x="120" y="258" width="52" height="40" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.3"></rect>
+        <text x="146" y="284" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ours)" font-family="var(--mono)">01</text>
+        <rect x="176" y="258" width="52" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="202" y="284" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">11</text>
+        <text x="242" y="276" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">DCS 0x11 — exit_sleep_mode, then wait 1 ms</text>
+        <text x="242" y="294" font-size="12.5" fill="var(--muted)" font-family="var(--sans)">the vendor waits 300 microseconds here, which this field cannot express</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="undeclared" label="A correction: this sequence is 20 commands, not 13">
+      <p>
+        An earlier transcription of this note recorded the RM69A10 init sequence as
+        &ldquo;13 commands, 75 bytes&rdquo;, and listed a page-select and
+        window-setting sequence that does not appear in
+        <code>rm69a10_568x1232_dsi_send()</code> at all. The real sequence is
+        <strong>20 commands and 297 payload bytes</strong>, 357 bytes as a device-tree
+        property once the framing is counted. Seven commands were missing, including
+        the two largest.
+      </p>
+      <p>
+        The authoritative transcription is in the repository, with a source line
+        recorded per command, and the committed <code>.dtsi</code> matches it byte for
+        byte. The earlier claim that &ldquo;the AMOLED is far simpler&rdquo; than the
+        ST7701 followed from the wrong number and is also wrong: it has fewer
+        commands, and more payload.
+      </p>
+    </HwNote>
+
+    <div class="hw-strip" role="img" aria-label={`The twenty commands of the RM69A10 init sequence drawn in proportion to payload length, totalling ${payloadTotal} bytes; the 45-byte 0xB4 block and the 55-byte 0xE0 gamma table together are a third of it.`}>
+      {
+        initSeq.map((c) => (
+          <span
+            class:list={[c.bytes >= 40 && "heavy"]}
+            style={`flex:${c.bytes} 1 0`}
+            title={`0x${c.cmd} — ${c.what} — ${c.bytes} bytes`}
+          />
+        ))
+      }
+    </div>
+    <p class="hw-strip-scale">
+      <span>20 commands, in order, drawn in proportion to payload</span>
+      <span>0xB4 · 45 B and 0xE0 · 55 B in violet — a third of the blob</span>
+    </p>
+
+    <p class="hw-p">
+      The vendor also issues two DCS <em>reads</em> after the sequence, of the error
+      register and the pixel format, apparently for debugging. The
+      <code>panel-init-sequence</code> binding is write-only, so there is nowhere to
+      put them. One further command, a solid blue test pattern, is sent only when the
+      vendor&rsquo;s <code>test_mode_en</code> is set, and is not part of normal
+      initialisation.
+    </p>
+  </HwSection>
+
+  <HwSection kind="lifecycle" title="When the reset line actually moves">
+    <p class="hw-lede">
+      This is the part that will cost someone an afternoon. The reset pulse happens
+      in <code>probe</code>, once. The reset code inside <code>prepare</code> &mdash;
+      the callback DRM invokes every time the panel comes back &mdash; is present in
+      the source and entirely commented out.
+    </p>
+
+    <HwFigure
+      caption="Source: <code>drivers/gpu/drm/panel/panel-canaan-universal.c</code> at 7d4e1f4, read against <code>mpp/kernel/connector/src/rm69a10.c</code> in LilyGO&rsquo;s BSP. <strong>If the display works on first boot and dies after a blank, this is why.</strong> The fix is in the driver, not the device tree, which means the panel work may need a patch as well as a <code>.dtsi</code>."
+    >
+      <svg
+        viewBox="0 0 920 430"
+        role="img"
+        aria-label="probe pulses the reset line and drives the enable line high; prepare only replays the init sequence, with its own reset code commented out; unprepare drops both lines and nothing ever raises them again."
+      >
+        <defs>
+          <marker id="lc-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"></path>
+          </marker>
+          <marker id="lc-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--undeclared)"></path>
+          </marker>
+        </defs>
+
+        <rect x="8" y="30" width="278" height="188" rx="3" fill="var(--surface)" stroke="var(--soc)" stroke-width="1.5"></rect>
+        <text x="20" y="20" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--soc)" font-family="var(--sans)">ONCE, AT PROBE</text>
+        <text x="22" y="54" font-size="12.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">canaan_panel_dsi_probe()</text>
+        <text x="22" y="78" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">gpiod_direction_output(rst, 1)</text>
+        <text x="22" y="96" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">sleep 200 ms</text>
+        <text x="22" y="114" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">set rst = 0</text>
+        <text x="22" y="132" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">sleep 200 ms</text>
+        <text x="22" y="150" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">set rst = 1</text>
+        <line x1="22" y1="160" x2="272" y2="160" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="22" y="178" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">power_on = 1   (the enable pin)</text>
+        <text x="22" y="196" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">parse_dt(); mipi_dsi_attach()</text>
+        <text x="22" y="212" font-size="11" fill="var(--muted)" font-family="var(--sans)">no delay after the final rising edge</text>
+
+        <rect x="320" y="30" width="278" height="188" rx="3" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5"></rect>
+        <text x="332" y="20" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--ink-2)" font-family="var(--sans)">EVERY TIME DRM ENABLES IT</text>
+        <text x="334" y="54" font-size="12.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">canaan_panel_prepare()</text>
+        <rect x="330" y="66" width="258" height="88" rx="3" fill="var(--undeclared-f)" stroke="var(--undeclared)" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+        <text x="340" y="84" font-size="11" fill="var(--undeclared)" font-family="var(--mono)">// gpiod_set_value(power_on, 1);</text>
+        <text x="340" y="100" font-size="11" fill="var(--undeclared)" font-family="var(--mono)">// gpiod_set_value(reset, 1);</text>
+        <text x="340" y="116" font-size="11" fill="var(--undeclared)" font-family="var(--mono)">// sleep 200; set 0; sleep 200;</text>
+        <text x="340" y="132" font-size="11" fill="var(--undeclared)" font-family="var(--mono)">// set 1; sleep 200;</text>
+        <text x="340" y="148" font-size="10.5" font-weight="600" fill="var(--undeclared)" font-family="var(--sans)">commented out in the source</text>
+        <text x="334" y="176" font-size="11.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">xfer_dsi_cmd_seq(init_seq)</text>
+        <text x="334" y="194" font-size="11.5" fill="var(--muted)" font-family="var(--sans)">the only thing prepare actually does</text>
+
+        <rect x="632" y="30" width="280" height="188" rx="3" fill="var(--undeclared-f)" stroke="var(--undeclared)" stroke-width="1.5"></rect>
+        <text x="644" y="20" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--undeclared)" font-family="var(--sans)">EVERY TIME DRM DISABLES IT</text>
+        <text x="646" y="54" font-size="12.5" font-weight="600" fill="var(--ink)" font-family="var(--mono)">canaan_panel_unprepare()</text>
+        <text x="646" y="82" font-size="11.5" font-weight="600" fill="var(--undeclared)" font-family="var(--mono)">power_on = 0</text>
+        <text x="646" y="100" font-size="11.5" font-weight="600" fill="var(--undeclared)" font-family="var(--mono)">reset = 0</text>
+        <text x="646" y="118" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">sleep 500 ms</text>
+        <line x1="646" y1="130" x2="898" y2="130" stroke="var(--undeclared)" stroke-width="1" stroke-dasharray="3 3"></line>
+        <text x="646" y="150" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">Both lines are now low, and</text>
+        <text x="646" y="167" font-size="12" fill="var(--ink-2)" font-family="var(--sans)">nothing in prepare raises them.</text>
+        <text x="646" y="192" font-size="12" font-weight="600" fill="var(--undeclared)" font-family="var(--sans)">The next prepare talks DCS to a</text>
+        <text x="646" y="208" font-size="12" font-weight="600" fill="var(--undeclared)" font-family="var(--sans)">panel that is held in reset.</text>
+
+        <line x1="286" y1="124" x2="316" y2="124" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lc-a)"></line>
+        <line x1="598" y1="124" x2="628" y2="124" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lc-a)"></line>
+        <path d="M772,222 C772,258 320,246 320,254" fill="none" stroke="var(--undeclared)" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#lc-w)"></path>
+        <text x="540" y="246" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--undeclared)" font-family="var(--sans)">suspend / resume, or any modeset cycle</text>
+
+        <rect x="8" y="292" width="904" height="126" rx="3" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1"></rect>
+        <text x="24" y="314" font-size="10.5" font-weight="700" letter-spacing="1.1" fill="var(--ink)" font-family="var(--sans)">FOR COMPARISON — WHAT THE VENDOR'S OWN RM69A10 CODE DOES ON EVERY POWER-ON</text>
+        <text x="24" y="338" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">k230_display_rst();</text>
+        <text x="300" y="338" font-size="12" fill="var(--muted)" font-family="var(--sans)">reset the VO block first</text>
+        <text x="24" y="356" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">rst = 1;  delay 1 ms  (200 ms on later calls)</text>
+        <text x="24" y="374" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">rst = 0;  delay 10 ms</text>
+        <text x="24" y="392" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">rst = 1;  delay 20 ms</text>
+        <text x="300" y="392" font-size="12" fill="var(--muted)" font-family="var(--sans)">then backlight = 1, then the DCS sequence</text>
+        <text x="500" y="356" font-size="12" fill="var(--muted)" font-family="var(--sans)">Low for 10 ms, not 200. Settles for 20 ms after</text>
+        <text x="500" y="374" font-size="12" fill="var(--muted)" font-family="var(--sans)">release, where the Linux driver waits none at all</text>
+        <text x="500" y="392" font-size="12" fill="var(--muted)" font-family="var(--sans)">before its first DCS write.</text>
+      </svg>
+    </HwFigure>
+  </HwSection>
+
+  <HwSection kind="comparison" title="The two panels, number for number">
+    <p class="hw-lede">
+      Left column is what the reference <code>.dtsi</code> contains. Right column is
+      what the vendor&rsquo;s connector table says about the RM69A10 &mdash; the same
+      numbers the shipped RT-Smart firmware runs on, which makes them observations of
+      working firmware rather than datasheet claims.
+    </p>
+
+    <div class="hw-table">
+      <table>
+        <thead>
+          <tr><th>Property</th><th>ST7701 — the reference</th><th>RM69A10 — ours</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>Active pixels</th><td>480 × 800</td><td class="ours">568 × 1232</td><td class="remark">portrait either way</td></tr>
+          <tr><th>Panel type</th><td>RGB LCD</td><td class="ours">AMOLED</td><td class="remark">no backlight to dim</td></tr>
+          <tr><th>clock-frequency</th><td>39 600 000</td><td class="ours">39 600 000</td><td class="remark">identical, coincidentally</td></tr>
+          <tr><th>hsync / hbp / hfp</th><td>20 / 20 / 80</td><td class="ours">40 / 140 / 40</td><td class="remark">htotal 600 against 788</td></tr>
+          <tr><th>vsync / vbp / vfp</th><td>10 / 70 / 220</td><td class="ours">4 / 16 / 16</td><td class="remark">vtotal 1100 against 1268</td></tr>
+          <tr><th>Refresh, computed</th><td>60.0 Hz</td><td class="ours">39.6 Hz</td><td class="remark">pclk ÷ (htotal × vtotal)</td></tr>
+          <tr><th>DSI lanes</th><td>2</td><td class="ours">2</td><td class="remark">—</td></tr>
+          <tr><th>Per-lane rate</th><td>475.2 Mbps</td><td class="ours">475.2 Mbps</td><td class="remark">matches the vendor phyclk exactly</td></tr>
+          <tr><th>DSI video mode</th><td>sync-pulse, from the driver</td><td class="ours">K_BURST_MODE, per the vendor</td><td class="remark">the driver cannot express burst</td></tr>
+          <tr><th>vth_line</th><td>10</td><td class="ours">9</td><td class="remark">from the connector table</td></tr>
+          <tr><th>Init commands</th><td>44</td><td class="ours">20</td><td class="remark">fewer commands</td></tr>
+          <tr><th>Init payload</th><td>237 bytes</td><td class="ours">297 bytes</td><td class="remark">and more payload — the AMOLED is not simpler</td></tr>
+          <tr><th>As a property</th><td>369 bytes</td><td class="ours">357 bytes</td><td class="remark">payload plus three framing bytes per command</td></tr>
+          <tr><th>Pixel format sent</th><td>0x3A 0x50 → 16 bpp</td><td class="ours">not sent</td><td class="remark">the driver forces RGB888 regardless</td></tr>
+          <tr><th>panel-width-mm</th><td>480 — a pixel count</td><td class="ours">44</td><td class="remark">we diverged; see below</td></tr>
+          <tr><th>Reset GPIO</th><td>IO22, active high</td><td class="ours">IO22, active high</td><td class="remark">same pin, same polarity</td></tr>
+          <tr><th>Backlight GPIO</th><td>IO25, active high</td><td class="ours">IO25, active high</td><td class="remark">same pin, same polarity</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <HwNote kind="unverified" label="39.6 Hz, despite the name">
+      <p>
+        The vendor&rsquo;s enum is <code>RM69A10_MIPI_2LAN_568X1232_60FPS</code>, and
+        the timing row next to it is
+        <code>&#123; 39600, 475200, 788, 568, 40, 140, 40, 1268, 1232, 4, 16, 16 &#125;</code>.
+        39.6 MHz over a 788 × 1268 total frame is 39.63 Hz. The numbers are internally
+        consistent &mdash; 39.6 MHz × 24 bpp ÷ 2 lanes is exactly the 475 200 kHz PHY
+        clock in the same row &mdash; so the pixel clock is real and the name is wrong.
+      </p>
+      <p>
+        60 Hz would need roughly 60 MHz and a 720 Mbps lane rate. Whether the panel or
+        the K230&rsquo;s DSI PHY will take that is an open question; the shipped
+        firmware does not try.
+      </p>
+    </HwNote>
+
+    <HwNote kind="ours" label="We put real millimetres in, and the reference does not">
+      <p>
+        The reference writes <code>panel-width-mm = &lt;480&gt;</code> and
+        <code>panel-height-mm = &lt;800&gt;</code> for a panel whose pixel count is
+        480 × 800. A 480 mm display is half a metre across. The driver hands these
+        straight to <code>connector-&gt;display_info.width_mm</code>, so anything
+        computing DPI gets 25.4 dpi.
+      </p>
+      <p>
+        Our fragment writes 44 and 95, computed from the stated 4.1&Prime; diagonal at
+        this aspect ratio. That is arithmetic, not a measurement, and it is a
+        deliberate divergence from the reference rather than an oversight: being
+        bug-compatible with the vendor buys nothing that a correct number does not.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="the real thing" title="The fragment we wrote">
+    <p class="hw-lede">
+      An earlier draft of this note carried a fragment that compiled and was
+      structurally wrong: the panel sat at the root of the tree rather than inside
+      <code>&amp;dsi</code>, the lane count used the driver&rsquo;s internal field name
+      instead of the binding, the panel node carried its own
+      <code>reset-gpios</code>, and both the endpoint graph and
+      <code>&amp;vo &#123; vth_line &#125;</code> were missing. Compiling in isolation proved
+      the syntax parsed; it said nothing about whether the driver would ever see the
+      node. This is the corrected file.
+    </p>
+
+    <pre class="hw-code" set:html={dtsi} />
+
+    <HwNote kind="ours" label="Four structural corrections, spelled out">
+      <p>
+        The panel is a DSI child &mdash;
+        <code>&amp;dsi &#123; lcd: panel@0 &#123; reg = &lt;0&gt;; … &#125; &#125;</code>
+        &mdash; not a root node. The lane property is <code>panel-dsi-lane</code>, not
+        <code>lan-num</code>. The panel node carries no GPIOs at all: reset and
+        backlight are attached by the board <code>.dts</code> to the <code>lcd</code>
+        label, which is the whole reason that label exists. And the fragment needs both
+        the ports/endpoint graph back to <code>&amp;dsi</code> port@1 and
+        <code>&amp;vo &#123; vth_line = &lt;9&gt;; &#125;</code>.
+      </p>
+      <p>
+        After the rewrite the only structural difference from the reference fragment is
+        the label names. The device tree round-trips: 357 bytes of init sequence,
+        39.6 MHz, 568×1232, two lanes, <code>vth_line</code> 9, endpoint linked.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="Still unverified: that any of this lights the panel">
+      <p>
+        Compiling proves the description is well-formed, not that it is correct. The
+        init sequence is transcribed from working vendor code, but the timings, the
+        reset polarity and the burst-mode mismatch are all untested on hardware, and
+        Linux has not booted on this board.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="open" title="What still has to be settled">
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>Sync-pulse video mode against burst</h3>
+          <p>
+            The driver hardcodes <code>MIPI_DSI_MODE_VIDEO_SYNC_PULSE</code>; the vendor
+            runs this panel in burst mode, and the porches in the timing row were chosen
+            for burst. Either the RM69A10 tolerates sync-pulse at these timings, or
+            <code>panel-canaan-universal.c</code> needs a <code>mode_flags</code>
+            property adding. There is no way to find out except to try it.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3>Whether prepare needs fixing before anything works at all</h3>
+          <p>
+            A first boot might well come up, because <code>probe</code> does pulse reset.
+            The question is whether DRM calls <code>unprepare</code> at any point during
+            normal bring-up &mdash; a mode negotiation, a console switch &mdash; before
+            the first frame. If it does, the panel is in reset by the time
+            <code>prepare</code> runs and nothing will appear. Uncommenting the reset
+            block is a four-line patch; it may be a prerequisite rather than a polish
+            item.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>What IO25 actually gates</h3>
+          <p>
+            The reference board file settles the easy half: GPIO25, active high,
+            consumed as <code>backlight_gpio</code>. The U-Boot pinmux calls it
+            <code>LCD_EN</code> and the RT-Smart config calls it
+            <code>MPP_DSI_LCD_BACKLIGHT_PIN</code>. An AMOLED has no backlight, so it is
+            presumably a panel power enable &mdash; and if it gates a rail, the
+            driver&rsquo;s habit of dropping it in <code>unprepare</code> and never
+            raising it again matters more, not less. The schematic around that net has
+            not been read.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">4</span>
+        <div>
+          <h3>Brightness, and the delays the binding cannot express</h3>
+          <p>
+            An AMOLED&rsquo;s brightness is a DCS write, which this binding can only do
+            at init, so a real control means either a backlight device in the driver or a
+            userspace path that writes DCS directly. Separately, the vendor&rsquo;s two
+            post-command delays are 300 and 100 <em>micro</em>seconds and the binding&rsquo;s
+            field is a u8 of milliseconds; both become 1 ms, which is longer than the
+            vendor waits. Worth watching if the panel misbehaves at init.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">5</span>
+        <div>
+          <h3>Rotation and mirroring</h3>
+          <p>
+            568 × 1232 is a phone-shaped portrait panel. Nothing in this binding carries a
+            <code>rotation</code> property, and the vendor&rsquo;s mirror control is a
+            runtime patch of the <code>0xCC</code> parameter that a static byte string
+            cannot express &mdash; ours carries <code>0x04</code>, the unmirrored default.
+            Whatever orientation the panel comes up in is what DRM will report.
+          </p>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Driver: drivers/gpu/drm/panel/panel-canaan-universal.c. Reference fragment:
+      arch/riscv/boot/dts/canaan/display-st7701-480x800.dtsi. Both at
+      ruyisdk/linux-xuantie-kernel 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529; the byte
+      and command counts for both panels are from parsing the two blobs, not from the
+      files' own comments.
+    </p>
+    <p>
+      RM69A10 values: mpp/kernel/connector/src/rm69a10.c and connector_info_list[] in
+      mpp/userapps/src/connector/mpi_connector.c, plus MPP_DSI_LCD_RESET_PIN=22 and
+      BACKLIGHT_PIN=25 from the vendor's auto.conf. The per-command transcription with
+      a source line each is committed in this repository.
+    </p>
+    <p>
+      Refresh rates, lane rates and physical dimensions here are arithmetic on those
+      values, not measurements. Nothing on this page has lit a panel.
+    </p>
+  </div>
+</HardwareNote>

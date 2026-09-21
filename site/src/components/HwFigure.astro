@@ -1,0 +1,24 @@
+---
+interface Props {
+  /** The one claim the drawing makes; also the SVG's accessible name. */
+  caption: string;
+  /** Diagrams get a min-width and scroll; a photo does not. */
+  wide?: boolean;
+  /** A figure that frames itself (the board photo) skips the card. */
+  bare?: boolean;
+}
+const { caption, wide = true, bare = false } = Astro.props;
+---
+
+<figure class="hw-fig">
+  {
+    bare ? (
+      <slot />
+    ) : (
+      <div class:list={["hw-frame", { wide }]}>
+        <slot />
+      </div>
+    )
+  }
+  <figcaption set:html={caption} />
+</figure>

@@ -5,8 +5,14 @@ import { specs, url } from "../lib/specs";
 interface Props {
   title: string;
   description?: string;
+  /**
+   * Where the page came from. "specs" is rendered out of `openspec/specs/`;
+   * "hand" is written and maintained by hand in this repository. The footer
+   * says which, because the two carry different guarantees.
+   */
+  source?: "specs" | "hand";
 }
-const { title, description } = Astro.props;
+const { title, description, source = "specs" } = Astro.props;
 const desc =
   description ??
   "What the T-Display-K230 port has proven, and what it has only claimed.";
@@ -53,10 +59,19 @@ const desc =
         generated {specs.generated} &middot; {specs.capabilities.length} capability{specs.capabilities.length === 1 ? "" : "s"}
         &middot; {specs.total} requirement{specs.total === 1 ? "" : "s"} &middot; built by <code>scripts/build_site.py</code>
       </p>
-      <p class="mono dim">
-        Rendered from <code>openspec/specs/</code>. In-flight proposals are not
-        published.
-      </p>
+      {
+        source === "specs" ? (
+          <p class="mono dim">
+            Rendered from <code>openspec/specs/</code>. In-flight proposals are not
+            published.
+          </p>
+        ) : (
+          <p class="mono dim">
+            Hand-authored in <code>site/src/pages/hardware/</code> and maintained
+            there. Not rendered from <code>openspec/specs/</code>.
+          </p>
+        )
+      }
     </footer>
     <script is:inline>
       document.getElementById("theme-toggle")?.addEventListener("click", () => {

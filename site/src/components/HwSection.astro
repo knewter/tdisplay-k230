@@ -1,0 +1,15 @@
+---
+interface Props {
+  /** Mono eyebrow above the heading. Says what kind of thing follows. */
+  kind: string;
+  title: string;
+  id?: string;
+}
+const { kind, title, id } = Astro.props;
+---
+
+<section class="hw-sec" id={id}>
+  <p class="section-title">{kind}</p>
+  <h2>{title}</h2>
+  <slot />
+</section>

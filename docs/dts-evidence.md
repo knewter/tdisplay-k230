@@ -3,11 +3,38 @@
 Investigated 2026-09-20 against `ruyisdk/linux-xuantie-kernel` @
 `7d4e1f444f461dbe3833bd99a4640e7b6c2cd529` and the vendored sources in `repo/`.
 
-Published artifacts built from this:
+This was first written up as three published Claude artifacts. Those are
+**superseded** and are not maintained: several of their facts were wrong, and
+they cannot be corrected in place from here. The notes now live in the site,
+are hand-authored under `site/src/pages/hardware/`, and are corrected whenever
+the repository learns something newer:
 
-- Board → DTS map: <https://claude.ai/artifact/82HR7t9NSQq15Y4M6k1QA5>
-- SoC dtsi vs board dts overlay mechanics: <https://claude.ai/artifact/PTKTHepqyiYZGRYRCyfY76>
-- Panel dtsi anatomy + RM69A10 draft: <https://claude.ai/artifact/FYjeGutLuowSXecVch2zYQ>
+- Board → DTS map:
+  <https://knewter.github.io/tdisplay-k230/hardware/silicon-map/>
+- SoC dtsi vs board dts overlay mechanics:
+  <https://knewter.github.io/tdisplay-k230/hardware/overlay-anatomy/>
+- Panel dtsi anatomy and the RM69A10 fragment:
+  <https://knewter.github.io/tdisplay-k230/hardware/panel-contract/>
+
+What the ported pages corrected, relative to the artifacts:
+
+- the RM69A10 init sequence is 20 commands and 297 payload bytes (357 as a
+  device-tree property), not "13 commands, 75 bytes" — see
+  `docs/evidence/rm69a10-init-sequence.md`;
+- the ST7701's "369 bytes" was its property length, not its payload, so the
+  claim that the AMOLED sequence is "far simpler" was comparing two different
+  measurements. It has fewer commands and more payload;
+- the draft panel dtsi in the third artifact was structurally wrong in four
+  ways. `nix/dts/display-rm69a10-568x1232.dtsi` is the corrected file;
+- GPIO22 reset is `GPIO_ACTIVE_HIGH` and GPIO25 is the backlight, both from
+  `k230-canmv-v3-lcd.dts`; the artifacts listed IO25 as unestablished;
+- the GT9895 is not supported by mainline at any version — see
+  `docs/evidence/gt9895-touch.md`;
+- the LT9611 GPIO collision does not arise in the tree we ship, because our
+  board file derives from the `-lcd` variant, which has no LT9611;
+- the board file and the panel fragment both exist and compile now, so the
+  artifacts' sketches have been replaced by the committed files;
+- the board has had a first hardware boot: U-Boot runs, Linux has not.
 
 ## Corrections to `docs/findings.md`
 

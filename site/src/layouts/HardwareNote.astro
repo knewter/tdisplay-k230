@@ -1,0 +1,79 @@
+---
+// The frame every hardware note shares: the ledger crumb, the masthead, a
+// measured-facts strip, and the cross-links to its two siblings. Everything
+// inside comes from `site/src/styles/global.css`, so a note looks like the
+// rest of the site rather than like something pasted into it.
+import Base from "./Base.astro";
+import { url } from "../lib/specs";
+import { HARDWARE_NOTES } from "../lib/hardware";
+
+interface Props {
+  /** Matches a slug in HARDWARE_NOTES; picks the current entry out of the set. */
+  slug: string;
+  title: string;
+  eyebrow: string;
+  dek: string;
+  /** Plain-text version of the dek, for <meta name="description">. */
+  description: string;
+  /** Source it was read out of, shown top right next to the crumb. */
+  source: string;
+  /** Short label/value pairs: the numbers this note is pinned to. */
+  meta: { label: string; value: string }[];
+}
+const { slug, title, eyebrow, dek, description, source, meta } = Astro.props;
+const others = HARDWARE_NOTES.filter((n) => n.slug !== slug);
+const here = HARDWARE_NOTES.find((n) => n.slug === slug);
+---
+
+<Base title={`${title} — T-Display-K230 hardware notes`} description={description} source="hand">
+  <nav class="crumbs">
+    <a href={url("")}>&larr; verification ledger</a>
+    <span class="mono dim">{source}</span>
+  </nav>
+
+  <header class="hw-mast">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1>{title}</h1>
+    <p class="hw-dek" set:html={dek} />
+    {
+      meta.length > 0 && (
+        <dl class="hw-meta">
+          {meta.map((m) => (
+            <div>
+              <dt>{m.label}</dt>
+              <dd set:html={m.value} />
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </header>
+
+  <slot />
+
+  <nav class="hw-links">
+    <h2 class="section-title">The rest of the set</h2>
+    <ul>
+      {
+        others.map((n) => (
+          <li>
+            <a href={url(`hardware/${n.slug}/`)}>
+              <b>{n.title}</b>
+              <span>{n.blurb}</span>
+            </a>
+          </li>
+        ))
+      }
+      {
+        here && (
+          <li>
+            <span class="here">
+              <b>{here.title}</b>
+              <span>you are here</span>
+            </span>
+          </li>
+        )
+      }
+    </ul>
+  </nav>
+</Base>

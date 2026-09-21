@@ -1,0 +1,13 @@
+---
+interface Props {
+  /** Provenance (soc, ours) or status (grounded, unverified, undeclared). */
+  kind?: "plain" | "soc" | "ours" | "grounded" | "unverified" | "undeclared";
+  label: string;
+}
+const { kind = "plain", label } = Astro.props;
+---
+
+<aside class:list={["hw-note", kind !== "plain" && `hw-note-${kind}`]}>
+  <h4>{label}</h4>
+  <slot />
+</aside>

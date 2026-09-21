@@ -1,0 +1,616 @@
+---
+import { Image } from "astro:assets";
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+import board from "../../assets/t-display-k230-board.png";
+
+// The U-Boot pinmux, quoted rather than paraphrased. <u> is a SEL value,
+// <i> a comment carried over from the vendor file, <em> a comment that is
+// wrong about this board.
+const pinmux = `u-boot/arch/riscv/dts/<b>k230_canmv_v3p0.dts</b>
+
+&amp;iomux {
+    pinctrl-names = "default";
+    pinctrl-0 = &lt;&amp;pins&gt;;
+    pins: iomux_pins {
+        pinctrl-single,pins = &lt;
+          <i>// lcd_rst</i>
+          (IO22) ( <u>0</u>&lt;&lt;SEL | … | 1&lt;&lt;IE | 1&lt;&lt;OE | 15&lt;&lt;DS | 1&lt;&lt;ST )
+          <i>// hdmi_int,gpio</i>      <em>← on this board it is the touch INT</em>
+          (IO23) ( <u>0</u>&lt;&lt;SEL | … )
+          <i>// hdmi_rset ,gpio</i>    <em>← on this board it is the touch reset</em>
+          (IO24) ( <u>0</u>&lt;&lt;SEL | … )
+          <i>// LCD_EN</i>
+          (IO25) ( <u>0</u>&lt;&lt;SEL | … | 7&lt;&lt;DS | 1&lt;&lt;ST )
+          <i>// i2c3</i>
+          (IO36) ( <u>1</u>&lt;&lt;SEL | … )    <i>→ IIC3_SCL</i>
+          <i>// BT_UART_TXD</i>         <em>← also wrong; SEL=1 on IO37 is IIC3_SDA</em>
+          (IO37) ( <u>1</u>&lt;&lt;SEL | … )
+          (IO45) ( <u>0</u>&lt;&lt;SEL | … )    <i>→ plain GPIO; the schematic calls it IO45_WIFI_EN</i>
+          <i>// MMC1 -&gt; TFCARD</i>
+          (IO54) ( <u>2</u>&lt;&lt;SEL | … )    <i>→ MMC1_CMD</i>
+        &gt;;
+    };
+};`;
+---
+
+<HardwareNote
+  slug="silicon-map"
+  title="What the device tree actually turns on"
+  eyebrow="LILYGO T-Display-K230 · hardware note"
+  dek="Every subsystem on this board, traced to the exact device-tree node that enables it &mdash; and marked where the upstream CanMV&nbsp;v3 reference describes a board that is not ours."
+  description="Every subsystem on the LILYGO T-Display-K230, traced to the device-tree node that enables it, and where the CanMV v3 reference describes a different board."
+  source="nix/dts/k230-tdisplay.dts"
+  meta={[
+    { label: "SoC file", value: "canaan/k230.dtsi<br>857 lines, 56 nodes" },
+    { label: "Reference board", value: "canaan/k230-canmv-v3-lcd.dts<br>96 lines" },
+    { label: "Our board file", value: "nix/dts/k230-tdisplay.dts<br>compiles to 55,156 bytes" },
+    { label: "Kernel", value: "ruyisdk/linux-xuantie-kernel<br>pinned 7d4e1f4" },
+    { label: "Observed so far", value: "U-Boot, on hardware<br>Linux has not booted" },
+  ]}
+>
+  <HwSection kind="the board" title="Four things a product render can prove">
+    <p class="hw-lede">
+      A 4.1&Prime; AMOLED slab on a K230D. The picture below is LilyGO&rsquo;s own
+      product shot and the markers are placed by eye. The authoritative map is the
+      fan-out that follows: the device tree cares which pad a thing hangs off, not
+      where it sits on the board.
+    </p>
+
+    <HwFigure
+      bare
+      caption="<strong>Only four markers, because only four things are identifiable in a render.</strong> The connectors along the bottom edge &mdash; USB-C, HDMI and the card slot are all present per LilyGO&rsquo;s pin table &mdash; have not been told apart here, and guessing at them would be the wrong kind of confident. Component identities come from the schematic and the vendor BSP; positions are eyeballed."
+    >
+      <div class="hw-photo">
+        <Image
+          src={board}
+          alt="Two views of the LILYGO T-Display-K230: the AMOLED front, and the component side."
+          widths={[400, 548]}
+          sizes="(max-width: 700px) 100vw, 920px"
+          loading="eager"
+        />
+        <span class="hw-pin hw-pin-l" style="left:23%; top:36%">
+          <i></i><span>RM69A10 568&times;1232 AMOLED</span>
+        </span>
+        <span class="hw-pin" style="left:75.5%; top:33.5%">
+          <i></i><span>camera &middot; MIPI CSI</span>
+        </span>
+        <span class="hw-pin" style="left:85%; top:41%"><i></i><span>RF module</span></span>
+        <span class="hw-pin hw-pin-l" style="left:56.5%; top:55%">
+          <i></i><span>K230D, approximately</span>
+        </span>
+      </div>
+    </HwFigure>
+  </HwSection>
+
+  <HwSection kind="fan-out" title="Nine paths off the pads">
+    <p class="hw-lede">
+      Each path carries the bus or pin group it uses and the device-tree node that
+      has to exist before Linux sees it. Colour says which file the node lives in,
+      not how well it is known &mdash; only one row on this diagram has been
+      exercised on hardware.
+    </p>
+
+    <HwFigure
+      caption="Pad assignments read out of this board&rsquo;s own U-Boot pinmux (<strong>u-boot/arch/riscv/dts/k230_canmv_v3p0.dts</strong>, whose <code>model</code> string is the one U-Boot prints on our hardware) and cross-checked against the FPIOA alternate-function table in <strong>machine_fpioa.c</strong>. Node names and <code>status</code> come from the Xuantie tree at 7d4e1f4; the violet nodes come from <code>nix/dts/</code> in this repository and compile, which is not the same as working."
+    >
+      <svg
+        viewBox="0 0 920 712"
+        role="img"
+        aria-label="Nine peripherals on the T-Display-K230, each connected to a K230 pad group and labelled with its bus, pins and the device-tree node that enables it. Only the micro-SD path has been observed on hardware."
+      >
+        <defs>
+          <marker id="fo-ref" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"></path>
+          </marker>
+          <marker id="fo-ours" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ours)"></path>
+          </marker>
+          <marker id="fo-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--grounded)"></path>
+          </marker>
+        </defs>
+
+        {/* the SoC */}
+        <rect x="8" y="24" width="190" height="626" rx="4" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.4"></rect>
+        <text x="24" y="52" font-size="16" font-weight="700" fill="var(--soc)" font-family="var(--sans)">Kendryte K230D</text>
+        <text x="24" y="70" font-size="10.5" fill="var(--soc)" font-family="var(--mono)">canaan,kendryte-k230</text>
+        <line x1="24" y1="82" x2="182" y2="82" stroke="var(--soc)" stroke-width="0.8" opacity="0.4"></line>
+        <text x="24" y="102" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">cpu@0 · thead,c908</text>
+        <text x="24" y="119" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">plic@f00000000</text>
+        <text x="24" y="136" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">clint@f04000000</text>
+        <text x="24" y="153" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">gpio0_ports · IO0–31</text>
+        <text x="24" y="170" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">gpio1_ports · IO32–63</text>
+        <text x="24" y="187" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">vo@90840000</text>
+        <text x="24" y="204" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">dsi@90850000</text>
+        <text x="24" y="221" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">gnne · ai2d · gpu · vpu</text>
+        <line x1="24" y1="236" x2="182" y2="236" stroke="var(--soc)" stroke-width="0.8" opacity="0.4"></line>
+        <text x="24" y="256" font-size="10.5" font-weight="700" fill="var(--soc)" font-family="var(--sans)" letter-spacing="1">PADS</text>
+        <text x="24" y="276" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">IO0–IO63 via FPIOA</text>
+        <text x="24" y="292" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">MMC0 — dedicated</text>
+        <text x="24" y="308" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">DSI D0/D1/CLK</text>
+        <text x="24" y="324" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">CSI lanes</text>
+        <rect x="24" y="344" width="158" height="74" rx="3" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3"></rect>
+        <text x="34" y="363" font-size="10" font-weight="700" fill="var(--muted)" font-family="var(--sans)" letter-spacing="0.9">NO PINCTRL NODE</text>
+        <text x="34" y="380" font-size="9.5" fill="var(--muted)" font-family="var(--mono)">FPIOA muxing is set by</text>
+        <text x="34" y="393" font-size="9.5" fill="var(--muted)" font-family="var(--mono)">U-Boot and inherited.</text>
+        <text x="34" y="406" font-size="9.5" fill="var(--muted)" font-family="var(--mono)">Nothing in Linux sets it.</text>
+
+        {/* 1 — console */}
+        <line x1="198" y1="52" x2="484" y2="52" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#fo-ref)"></line>
+        <text x="341" y="45" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">IO38/39 · UART0_TXD/RXD</text>
+        <rect x="488" y="27" width="424" height="50" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="502" y="48" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">CH342 ch0 — the console</text>
+        <text x="502" y="66" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">{'&uart0 { status = "okay"; } · stdout-path = serial0'}</text>
+
+        {/* 2 — second uart */}
+        <line x1="198" y1="120" x2="484" y2="120" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#fo-ref)"></line>
+        <text x="341" y="113" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">IO50/51 · UART3_TXD/RXD</text>
+        <rect x="488" y="95" width="424" height="50" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="502" y="116" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">CH342 ch1 — second port</text>
+        <text x="502" y="134" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">{'&uart3 { status = "okay"; } · aliases { serial3 }'}</text>
+
+        {/* 3 — panel */}
+        <line x1="198" y1="188" x2="484" y2="188" stroke="var(--ours)" stroke-width="2" marker-end="url(#fo-ours)"></line>
+        <text x="341" y="181" text-anchor="middle" font-size="10.5" fill="var(--ours)" font-family="var(--mono)">DSI 2 lane · RST IO22 high · BL IO25</text>
+        <rect x="488" y="163" width="424" height="50" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.5"></rect>
+        <text x="502" y="184" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">RM69A10 AMOLED 568×1232</text>
+        <text x="502" y="202" font-size="10.5" fill="var(--ours)" font-family="var(--mono)">{'&dsi { lcd: panel@0 } — ours; the reference fits an ST7701'}</text>
+
+        {/* 4 — touch */}
+        <line x1="198" y1="256" x2="484" y2="256" stroke="var(--ours)" stroke-width="2" marker-end="url(#fo-ours)"></line>
+        <text x="341" y="249" text-anchor="middle" font-size="10.5" fill="var(--ours)" font-family="var(--mono)">IO36/37 · IIC3 · RST IO24 · INT IO23</text>
+        <rect x="488" y="231" width="424" height="50" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.5"></rect>
+        <text x="502" y="252" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">GT9895 touch @ 0x5d</text>
+        <text x="502" y="270" font-size="10.5" fill="var(--undeclared)" font-family="var(--mono)">no mainline driver matches this part, at any version</text>
+
+        {/* 5 — the HDMI bridge that is not in our tree */}
+        <line x1="198" y1="324" x2="484" y2="324" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="6 4"></line>
+        <text x="341" y="317" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">IIC3 · would want RST IO24 · INT IO23</text>
+        <rect x="488" y="299" width="424" height="50" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+        <text x="502" y="320" font-size="13" font-weight="600" fill="var(--muted)" font-family="var(--sans)">LT9611 HDMI bridge @ 0x3b</text>
+        <text x="502" y="338" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">only in the non-LCD k230-canmv-v3.dts — not our base</text>
+
+        {/* 6 — wifi */}
+        <line x1="198" y1="392" x2="484" y2="392" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#fo-ref)"></line>
+        <text x="341" y="385" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">MMC0 pads · WIFI_3V3 gated by IO45</text>
+        <rect x="488" y="367" width="424" height="50" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="502" y="388" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">RTL8189FTV Wi-Fi — SDIO</text>
+        <text x="502" y="406" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">{'&mmc_sd0 enabled — but nothing drives IO45; no pwrseq yet'}</text>
+
+        {/* 7 — the card, the one observed path */}
+        <line x1="198" y1="460" x2="484" y2="460" stroke="var(--grounded)" stroke-width="2" marker-end="url(#fo-ok)"></line>
+        <text x="341" y="453" text-anchor="middle" font-size="10.5" fill="var(--grounded)" font-family="var(--mono)">IO54–59 · MMC1_CMD/CLK/D0–D3</text>
+        <rect x="488" y="435" width="424" height="50" rx="3" fill="var(--grounded-f)" stroke="var(--grounded)" stroke-width="1.5"></rect>
+        <text x="502" y="456" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">micro-SD — the boot device</text>
+        <text x="502" y="474" font-size="10.5" fill="var(--grounded)" font-family="var(--mono)">U-Boot on our board: mmc1@91581000: 1 (SD), partitions read</text>
+
+        {/* 8 — camera */}
+        <line x1="198" y1="528" x2="484" y2="528" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#fo-ref)"></line>
+        <text x="341" y="521" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">CSI lanes · IIC1 on IO40/41</text>
+        <rect x="488" y="503" width="424" height="50" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.2"></rect>
+        <text x="502" y="524" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">Camera — MIPI CSI-2</text>
+        <text x="502" y="542" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">{'&mipi0 re-pointed: reg, interrupts and resets all overridden'}</text>
+
+        {/* 9 — power and radio */}
+        <line x1="198" y1="596" x2="484" y2="596" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 4"></line>
+        <text x="341" y="589" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">an I²C bus and an SPI — which, is unread</text>
+        <rect x="488" y="571" width="424" height="50" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="4 4"></rect>
+        <text x="502" y="592" font-size="13" font-weight="600" fill="var(--muted)" font-family="var(--sans)">BQ25896 charger · BQ27220 gauge · LoRa</text>
+        <text x="502" y="610" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">no node in any device tree; bus and chip-select unread</text>
+
+        <line x1="8" y1="668" x2="912" y2="668" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="8" y="686" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">ink = carried from the reference unchanged · violet = written in this repo · green = observed on hardware · dashed = not established</text>
+        <text x="8" y="702" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">blue = declared by the SoC .dtsi</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="grounded" label="What the green row means, and what it does not">
+      <p>
+        On 2026-09-20 the board came up far enough to give a U-Boot prompt on
+        <code>/dev/ttyACM0</code>, and U-Boot listed <code>mmc1@91581000: 1 (SD)</code>
+        and read our partitions and files off it. That is an observation, and it
+        independently confirms the controller mapping: the card is MMC1, the radio
+        is MMC0.
+      </p>
+      <p>
+        Nothing on this page beyond that has been exercised. U-Boot then failed its
+        own boot command &mdash; it wanted a text file named <code>force_dtb</code>
+        naming the device tree, and we had written <code>force.dtb</code>, the tree
+        itself &mdash; so Linux has never started on this board and no Linux driver
+        on this page has ever probed.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="subsystems" title="Which file carries which node">
+    <p class="hw-lede">
+      Left: the hardware and its pins. Right: where the node lives &mdash; blue for
+      the SoC <code>k230.dtsi</code>, plain ink for the reference board
+      <code>.dts</code>, violet for what this repository had to write.
+    </p>
+
+    <ul class="hw-key">
+      <li><i class="k-soc"></i>declared in k230.dtsi</li>
+      <li><i class="k-ref"></i>from the reference board .dts</li>
+      <li><i class="k-ours"></i>written in nix/dts/</li>
+      <li><i class="k-open"></i>not established</li>
+    </ul>
+
+    <div class="hw-rows">
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Console</strong>CH342 ch0<br />IO38 TX · IO39 RX<br />115200 8N1</div>
+        <div class="hw-mid">
+          <p>
+            The SoC file declares five identical <code>snps,dw-apb-uart</code> nodes,
+            all disabled, and aliases <code>serial0</code> to <code>uart0</code>. The
+            board file flips <code>uart0</code> on and points <code>stdout-path</code>
+            at it.
+          </p>
+          <p>
+            Only <code>uart0</code> and <code>uart3</code> are ever enabled, so the
+            kernel will register <code>ttyS0</code> and <code>ttyS3</code> and there
+            is no <code>ttyS1</code> &mdash; which the SDK&rsquo;s default environment
+            nevertheless asks for.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>uart0: serial@91400000<br />status = "disabled"</div>
+          <div class="hw-node hw-node-ref"><em>carried over</em>{'&uart0 { status = "okay"; }'}</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Display</strong>RM69A10<br />568×1232 AMOLED<br />DSI 2 lane<br />RST IO22 · BL IO25</div>
+        <div class="hw-mid">
+          <p>
+            The whole display chain &mdash; <code>display-subsystem</code>,
+            <code>vo@90840000</code> and <code>dsi@90850000</code> &mdash; is already
+            <code>status = "okay"</code> in the SoC file, wired VO&nbsp;&rarr;&nbsp;DSI
+            by an endpoint pair. A board file&rsquo;s only job is to hang a panel off
+            <code>&amp;dsi</code> port&nbsp;1.
+          </p>
+          <p>
+            The reference <code>-lcd</code> variant does that by including
+            <code>display-st7701-480x800.dtsi</code>. Same reset pin, same enable pin,
+            entirely different panel.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi — already okay</em>vo@90840000<br />dsi@90850000<br />display-subsystem</div>
+          <div class="hw-node hw-node-ours"><em>ours, written and compiled</em>nix/dts/display-rm69a10-568x1232.dtsi</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Touch</strong>GT9895 @ 0x5d<br />I²C3 on IO36/37<br />RST IO24 · INT IO23</div>
+        <div class="hw-mid">
+          <p>
+            Our pins are <em>identical</em> to the reference LCD board&rsquo;s touch
+            wiring &mdash; <code>reset-gpios = &lt;&amp;gpio0_ports 24&gt;</code>,
+            <code>interrupts = &lt;23 IRQ_TYPE_EDGE_FALLING&gt;</code>, confirmed
+            against the schematic. Only the chip and its address change.
+          </p>
+          <p>
+            The node is written and inert. Mainline has never carried a GT9895: at
+            v6.18 <code>goodix_berlin</code> matches only
+            <code>goodix,gt9916</code>, and the binding enumerates
+            <code>gt9897</code> and <code>gt9916</code> and nothing else.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>i2c3: i2c@91408000<br />status = "disabled"</div>
+          <div class="hw-node hw-node-ref"><em>reference — different chip</em>touchscreen@38<br />compatible = "edt,edt-ft5306"</div>
+          <div class="hw-node hw-node-ours"><em>ours</em>touchscreen@5d<br />compatible = "goodix,gt9895"</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Wi-Fi</strong>RTL8189FTV<br />SDIO on MMC0<br />EN IO45</div>
+        <div class="hw-mid">
+          <p>
+            The schematic ties <code>WIFI_CLK/CMD/D0&ndash;D3</code> to the SoC&rsquo;s
+            <strong>MMC0</strong> balls &mdash; the dedicated pads, not FPIOA pins.
+            The RT-Smart board defconfig agrees:
+            <code>CONFIG_REALTEK_SDIO_DEV0=y</code>.
+          </p>
+          <p>
+            Power is a rail, not a reset line: IO45 enables an RT9080-33 LDO that makes
+            <code>WIFI_3V3</code>. Our board file carries the reference&rsquo;s
+            <code>&amp;mmc_sd0</code> block over unchanged and adds nothing, so nothing
+            asserts IO45 under Linux either. That is a known gap, not an oversight.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>mmc_sd0: sdhci0@91580000<br />bus-width = &lt;8&gt;; disabled</div>
+          <div class="hw-node hw-node-ref"><em>carried over verbatim</em>okay; no-1-8-v;<br />rx_delay_line = &lt;0x0d&gt;;<br />tx_delay_line = &lt;0xc0&gt;;</div>
+          <div class="hw-node hw-node-open"><em>not written</em>no mmc-pwrseq, no regulator,<br />no cap-sdio-irq — unresolved</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Storage</strong>micro-SD<br />MMC1 on IO54–59<br />4-bit · 50 MHz</div>
+        <div class="hw-mid">
+          <p>
+            The card is the boot device, and the one path on this page with an
+            observation behind it: U-Boot enumerated it, listed its partitions and
+            read our three files off the ext4.
+          </p>
+          <p>
+            The reference settings carry over unchanged. This is the one storage path
+            where our board and the CanMV v3 agree exactly.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>mmc_sd1: sdhci1@91581000<br />bus-width = &lt;4&gt;; disabled</div>
+          <div class="hw-node hw-node-ref"><em>carried over verbatim</em>okay; no-1-8-v;<br />cap-sd-highspeed;<br />mshc_ctrl_r = &lt;0x00&gt;;</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>USB</strong>2 × OTG<br />USB-C + host</div>
+        <div class="hw-mid">
+          <p>
+            Two <code>canaan,k230-otg</code> controllers, both disabled in the SoC file,
+            both switched on by the board file with no further properties. Nothing
+            board-specific to do.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>usb0: usb@91500000<br />usb1: usb@91540000</div>
+          <div class="hw-node hw-node-ref"><em>carried over</em>{'&usb0 { okay; } &usb1 { okay; }'}</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Audio</strong>Inno codec<br />I²S</div>
+        <div class="hw-mid">
+          <p>
+            Unusually, the codec and the I²S controller are already <code>okay</code> in
+            the SoC file. The board file supplies only the machine-level glue node that
+            binds them into a sound card.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi — already okay</em>i2s@9140f000<br />inno_codec@9140e000<br />audio@9140f400</div>
+          <div class="hw-node hw-node-ref"><em>carried over</em>sound &#123; compatible =<br />"canaan,k230-audio-inno"; &#125;</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Accelerators</strong>KPU · GPU<br />VPU · crypto</div>
+        <div class="hw-mid">
+          <p>
+            The NPU (<code>gnne</code> plus <code>ai2d</code>), the GC8000UL GPU, the
+            video codec and the whole <code>security</code> subtree are enabled in the
+            SoC file and never mentioned by any board file. They cost a new board port
+            nothing &mdash; and, in the GPU&rsquo;s case, give it nothing either: no
+            Mesa or Vulkan driver exists for that part.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi — all okay</em>gnne@80400000 · ai2d@80400c00<br />gpu@90800000 · vpu@90400000<br />aes · hash · rsa · trng · otp</div>
+        </div>
+      </div>
+
+      <div class="hw-row">
+        <div class="hw-rail"><strong>Power &amp; radio</strong>BQ25896<br />BQ27220<br />SX1262 / LR2021</div>
+        <div class="hw-mid">
+          <p>
+            Present on the board, absent from every device tree in play. The SoC file
+            declares <code>i2c0</code>&ndash;<code>i2c4</code> and
+            <code>spi0</code>&ndash;<code>spi2</code>, all disabled; the U-Boot pinmux
+            muxes IIC0 onto IO48/49 and IIC4 onto IO7/8. Which of those the PMIC hangs
+            off, and which SPI and chip-select the radio uses, is not something this
+            survey established.
+          </p>
+        </div>
+        <div class="hw-nodes">
+          <div class="hw-node hw-node-soc"><em>k230.dtsi</em>i2c0@91405000 … i2c4@91409000<br />spi0 · spi1 · spi2 — all disabled</div>
+          <div class="hw-node hw-node-open"><em>not established</em>read the schematic nets before<br />writing any of these nodes</div>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="a trap" title="The pinmux is not in this device tree">
+    <p class="hw-lede">
+      Worth saying plainly, because it inverts the usual expectation:
+      <code>k230.dtsi</code> and every board <code>.dts</code> in this family contain
+      no <code>pinctrl</code> node, no <code>pinmux</code>, no
+      <code>pinctrl-names</code>, and no regulators of any kind.
+    </p>
+
+    <p class="hw-p">
+      A grep for all of those across the Linux device-tree files returns nothing. GPIO
+      banks exist as <code>gpio-controller</code>s, so a driver can ask for pin 22
+      &mdash; but nothing in the Linux device tree decides that pin 22 is a GPIO rather
+      than <code>OSPI_D6</code>. That decision is made one stage earlier, in U-Boot&rsquo;s
+      own device tree, which drives the FPIOA block at <code>0x91105000</code> through
+      <code>pinctrl-single</code>:
+    </p>
+
+    <pre class="hw-code" set:html={pinmux} />
+
+    <HwNote kind="ours" label="Consequence for the board file we write">
+      <p>
+        Our Linux board file must not try to set pin functions, and cannot. It inherits
+        whatever FPIOA state U-Boot left behind. If a pin we need is muxed wrong, the fix
+        is in the U-Boot device tree, not the kernel one &mdash; and changing it means
+        touching vendored firmware.
+      </p>
+      <p>
+        Every pin this board actually uses is already muxed correctly by
+        <code>k230_canmv_v3p0.dts</code>: the AMOLED, the touch controller, both UARTs,
+        the SD card and the Wi-Fi enable. <code>SEL</code> decodes against the
+        alternate-function table in <code>machine_fpioa.c</code> &mdash; 0 is plain
+        GPIO, 1&ndash;4 are the alternates in order.
+      </p>
+    </HwNote>
+
+    <HwNote kind="undeclared" label="Two of the vendor's own comments are wrong">
+      <p>
+        IO23 and IO24 are commented <code>hdmi_int</code> and <code>hdmi_rset</code>,
+        and on this board they are the touch controller&rsquo;s interrupt and reset.
+        IO37 is commented <code>BT_UART_TXD</code> while its <code>SEL</code> value
+        selects <code>IIC3_SDA</code>. The register values are the evidence; the
+        comments are not.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="numbering" title="Two GPIO banks, and the off-by-32">
+    <p class="hw-lede">
+      The SoC file splits 64 pins into two controllers of 32, and each numbers its own
+      pins from zero. Every GPIO our board file references lands in bank 0, so the trap
+      never fires &mdash; the Wi-Fi enable would be the first thing to cross into bank 1,
+      and nothing references it yet.
+    </p>
+
+    <HwFigure
+      caption="Each <code>canaan,k230-apb-gpio-port</code> numbers its own pins from zero. Writing <code>&lt;&amp;gpio1_ports 45&gt;</code> for the Wi-Fi enable would be out of range on a 32-pin controller; writing <code>&lt;&amp;gpio0_ports 45&gt;</code> would be silently wrong. The index is 13."
+    >
+      <svg
+        viewBox="0 0 920 250"
+        role="img"
+        aria-label="gpio0_ports covers pins IO0 to IO31 and numbers them 0 to 31; gpio1_ports covers IO32 to IO63 and numbers them 0 to 31, so the Wi-Fi enable on IO45 is index 13."
+      >
+        <rect x="8" y="44" width="432" height="64" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.3"></rect>
+        <text x="20" y="34" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">gpio0_ports</text>
+        <text x="432" y="34" text-anchor="end" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">gpio@9140b000 · snps,nr-gpios = 32</text>
+        <text x="20" y="72" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">SoC pin</text>
+        <text x="20" y="96" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">DT index</text>
+        <text x="250" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--mono)">IO0 … IO31</text>
+        <text x="250" y="96" text-anchor="middle" font-size="13" font-weight="600" fill="var(--soc)" font-family="var(--mono)">0 … 31 (same number)</text>
+
+        <rect x="472" y="44" width="440" height="64" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.4"></rect>
+        <text x="484" y="34" font-size="11.5" font-weight="600" fill="var(--ours)" font-family="var(--mono)">gpio1_ports</text>
+        <text x="904" y="34" text-anchor="end" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">gpio@9140c000 · snps,nr-gpios = 32</text>
+        <text x="484" y="72" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">SoC pin</text>
+        <text x="484" y="96" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">DT index</text>
+        <text x="700" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--mono)">IO32 … IO63</text>
+        <text x="700" y="96" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ours)" font-family="var(--mono)">0 … 31 (pin − 32)</text>
+
+        <line x1="8" y1="134" x2="912" y2="134" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="8" y="156" font-size="10.5" font-weight="700" fill="var(--muted)" font-family="var(--sans)" letter-spacing="1">WHAT OUR BOARD FILE REFERENCES BY NUMBER</text>
+
+        <text x="8" y="182" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">IO22 panel reset, active high</text>
+        <text x="250" y="182" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">{'<&gpio0_ports 22>'}</text>
+        <text x="8" y="204" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">IO23 touch INT</text>
+        <text x="250" y="204" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">{'<&gpio0_ports 23>'}</text>
+        <text x="8" y="226" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">IO24 touch reset</text>
+        <text x="250" y="226" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">{'<&gpio0_ports 24>'}</text>
+
+        <text x="472" y="182" font-size="11.5" fill="var(--ink-2)" font-family="var(--mono)">IO25 backlight, active high</text>
+        <text x="700" y="182" font-size="11.5" font-weight="600" fill="var(--soc)" font-family="var(--mono)">{'<&gpio0_ports 25>'}</text>
+        <text x="472" y="212" font-size="11.5" font-weight="600" fill="var(--muted)" font-family="var(--mono)">IO45 Wi-Fi 3V3 enable</text>
+        <text x="472" y="230" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">not referenced by any node we ship</text>
+        <rect x="692" y="196" width="220" height="26" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.2"></rect>
+        <text x="700" y="214" font-size="11.5" font-weight="600" fill="var(--ours)" font-family="var(--mono)">{'<&gpio1_ports 13>  not 45'}</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="unverified" label="Still open: which UART Linux will print on">
+      <p>
+        The SDK&rsquo;s default environment sets
+        <code>console_port=console=ttyS1,115200</code>. With these device trees
+        <code>uart1</code> is never enabled and there is no <code>ttyS1</code> to attach
+        to; the aliases give <code>serial0 = &amp;uart0</code> and
+        <code>serial3 = &amp;uart3</code>, so our board file asks for
+        <code>serial0:115200n8</code>.
+      </p>
+      <p>
+        That is reasoning from the device tree, not an observation. U-Boot has printed on
+        this board, but Linux has not. A console on the wrong UART is indistinguishable
+        from a board that did not boot, so try <code>ttyS0</code> first and
+        <code>ttyS3</code> second before suspecting the image.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="divergence" title="Where the reference board is not our board">
+    <HwNote kind="ours" label="Panel — the reason a new board file exists at all">
+      <p>
+        The CanMV v3 LCD reference is an ST7701 480×800 RGB LCD at 39.6 MHz over a
+        600×1100 total frame, which is 60 Hz. Ours is an RM69A10 568×1232 AMOLED, also
+        2 lanes, also 39.6 MHz &mdash; but over a 788×1268 total frame, which is about
+        <strong>39.6 Hz</strong>, not the 60 the vendor&rsquo;s own enum name claims.
+        Same reset pin, same backlight pin, different everything else.
+      </p>
+    </HwNote>
+
+    <HwNote kind="undeclared" label="Touch — right pins, wrong chip, and no driver anywhere">
+      <p>
+        Reference: <code>edt,edt-ft5306</code> at 0x38. Ours: GT9895 at 0x5d. An earlier
+        version of this note said the GT9895 was &ldquo;in mainline since about 6.7, so
+        this is a backport&rdquo;. Both halves were wrong.
+        <code>goodix_berlin</code> landed in v6.9, and as of <strong>v6.18</strong> its
+        match table carries one entry, <code>goodix,gt9916</code>. Backporting the driver
+        as written would not make this touch panel work.
+      </p>
+      <p>
+        What we do have is LilyGO&rsquo;s own GT9895 driver for RT-Smart &mdash; not a
+        Linux driver, but a working register-level description of this exact part on this
+        exact board. The cheapest next step is to claim <code>goodix,gt9916</code> and
+        see whether the Berlin programming model is close enough; that is an experiment,
+        not a plan.
+      </p>
+    </HwNote>
+
+    <HwNote kind="ours" label="HDMI — a collision we sidestepped rather than solved">
+      <p>
+        The base <code>k230-canmv-v3.dts</code> puts an LT9611 bridge on
+        <code>&amp;i2c3</code> with <code>reset-gpios = &lt;&amp;gpio0_ports 24&gt;</code>
+        and <code>interrupts = &lt;23 …&gt;</code> &mdash; our touch controller&rsquo;s
+        reset and interrupt. The I²C addresses do not collide, 0x3b against 0x5d; the
+        GPIOs do.
+      </p>
+      <p>
+        Our board file derives from the <code>-lcd</code> variant, which has no LT9611,
+        so there is no collision in the tree we ship. Anyone merging HDMI support back in
+        has to resolve it, and the schematic around that shared section has still not been
+        read.
+      </p>
+    </HwNote>
+
+    <HwNote kind="ours" label="Wi-Fi — on the other controller from what we first believed">
+      <p>
+        Earlier notes in this repository put the RTL8189FTV on MMC1 at GPIO26&ndash;31.
+        The schematic ties it to the <strong>MMC0</strong> balls, the board&rsquo;s
+        RT-Smart defconfig selects <code>REALTEK_SDIO_DEV0</code>, and the U-Boot pinmux
+        leaves IO26&ndash;31 as plain GPIO routed to the expansion header. U-Boot on the
+        hardware then listed the card as <code>mmc1</code>, which settles it. MMC1 is the
+        SD card.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="One CPU in the device tree, two in the chip">
+      <p>
+        <code>k230.dtsi</code> declares a single <code>cpu@0</code>. The K230 has two C908
+        cores; the second is the one RT-Smart runs on in the vendor&rsquo;s AMP split.
+        Whether Linux can or should be given the second core is not answered by any file
+        read here.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Kernel sources: ruyisdk/linux-xuantie-kernel @ 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529
+      &mdash; arch/riscv/boot/dts/canaan/{"{"}k230.dtsi, k230-canmv-v3.dts,
+      k230-canmv-v3-lcd.dts, display-st7701-480x800.dtsi{"}"}.
+    </p>
+    <p>
+      Board evidence: the V1.0_NEW schematic, the vendored U-Boot device tree
+      k230_canmv_v3p0.dts, the RT-Smart k230_canmv_v3p0_defconfig, and machine_fpioa.c.
+      The hardware observation is the first-boot console log committed under docs/evidence.
+    </p>
+    <p>
+      House rule in force: observations outrank vendor source, and a datasheet grounds
+      nothing. Anything not read out of a file, a schematic net or a console is marked
+      unestablished above.
+    </p>
+  </div>
+</HardwareNote>

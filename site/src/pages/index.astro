@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import Tape from "../components/Tape.astro";
 import Legend from "../components/Legend.astro";
 import { specs, url, kib, unproven, total } from "../lib/specs";
+import { HARDWARE_NOTES } from "../lib/hardware";
 
 const t = specs.tally;
 const n = specs.total;
@@ -99,6 +100,29 @@ const { unverified, undeclared } = t;
       </section>
     )
   }
+
+  <section class="hw-links">
+    <h2 class="section-title">Hardware notes</h2>
+    <p class="defect-lede">
+      Hand-authored rather than rendered from the specs, and maintained here
+      rather than anywhere else. They describe the board as it is read out of
+      the device trees, the schematic and the vendor BSP &mdash; and they get
+      corrected in place when the repository learns something newer, which has
+      already happened to all three.
+    </p>
+    <ul>
+      {
+        HARDWARE_NOTES.map((n) => (
+          <li>
+            <a href={url(`hardware/${n.slug}/`)}>
+              <b>{n.title}</b>
+              <span>{n.blurb}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 
   {
     specs.defects.length > 0 && (
