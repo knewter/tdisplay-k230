@@ -42,8 +42,18 @@ cp u-boot-spl.bin u-boot-spl.bin.t
 python3 $UB/tools/firmware_gen_no_securiy.py -i u-boot-spl.bin.t -o fn_u-boot-spl.bin -n
 python3 $UB/tools/endian-swap.py fn_u-boot-spl.bin swap_fn_u-boot-spl.bin
 
-echo "--- env"
-$UB/tools/mkenvimage -s 0x2000 -o env.env "$ENVF"
+echo "--- env (load addresses that fit a NixOS kernel)"
+# The vendor blinux loads Image at 0x200000, the dtb at 0x2200000 and the
+# OpenSBI payload at 0x3000000, which assumes a kernel under 32 MiB. Ours
+# is ~60 MB and lands on top of both; bootm then reports "Wrong Image
+# Format", which reads like a corrupt header and is not. Observed on
+# hardware -- see docs/evidence/hardware-boot.txt.
+#
+# The environment is plain data we generate, not vendor firmware, so move
+# the dtb and OpenSBI above the kernel instead of constraining the kernel.
+sed -e "s|0x3000000 /fw_jump_add_uboot_head.bin|0x8000000 /fw_jump_add_uboot_head.bin|" -e "s|0x2200000 /\${dtb}|0x8400000 /\${dtb}|" -e "s|bootm 0x3000000 - 0x2200000|bootm 0x8000000 - 0x8400000|" "$ENVF" > tdisplay.env
+echo "--- env changes:"; diff "$ENVF" tdisplay.env || true
+$UB/tools/mkenvimage -s 0x2000 -o env.env tdisplay.env
 
 rm -f *.t u-boot.bin.gz ug_u-boot.bin
 echo "--- RESULT"

@@ -33,7 +33,7 @@ sha256
 ------
 3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
 0ff124df3571acaeb88b78d236c3c2c8b947bc9b2c80eb2361fc34285bc2ecf7  fn_ug_u-boot.bin
-f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  env.env
+3a9664f43f8d1b50299155cbc8014d69cdb0ed7d12193187e56d9e3c5707e1af  env.env
 
 Each carries a Canaan firmware header: magic "K230", no encryption,
 SHA-256 integrity, applied by the U-Boot tree's
@@ -96,3 +96,26 @@ difference would have been invisible until something behaved oddly.
 Found by the blob audit reading post-image.sh line by line, not by me.
 tools/gen-stage1.sh now carries the sed and these blobs are rebuilt with
 it; fn_ug_u-boot.bin's hash changed accordingly.
+
+
+Correction, 2026-09-20: the environment's load addresses
+---------------------------------------------------------
+env.env is no longer byte-identical to the SDK's default.env. One line
+changed, in blinux:
+
+  was  ... 0x3000000 /fw_jump_add_uboot_head.bin ... 0x2200000 /${dtb}
+       ... bootm 0x3000000 - 0x2200000
+  now  ... 0x8000000 /fw_jump_add_uboot_head.bin ... 0x8400000 /${dtb}
+       ... bootm 0x8000000 - 0x8400000
+
+The vendor layout puts the kernel at 0x200000, the device tree 32 MiB
+above it and OpenSBI 14 MiB above that. That works for Canaan's kernel.
+Ours is ~60 MB and overwrote both, and bootm then reported "Wrong Image
+Format" -- which reads like a corrupt header and is not; iminfo confirmed
+the header was valid before the kernel landed on it. Observed on hardware,
+docs/evidence/hardware-boot.txt.
+
+This modifies the ENVIRONMENT, which is plain data we generate with
+mkenvimage from a text file, not the SPL or U-Boot binaries.
+image/boot-chain requires our kernel be loaded "without modification to
+stage 1 itself", and the binaries are untouched.
