@@ -40,6 +40,16 @@ buildLinux (args // {
       inherit rev;
       hash = "sha256-ITlci/1nGcE46kglR7i1AG3MZH6RBfpcGLWPakyXMTk=";
     };
+
+    # A real patch file, not a sed, because this replaces a whole function
+    # body. canaan_dsi_dcs_read() ships as "// TODO; return 1", so the panel
+    # cannot be asked anything -- and six hypotheses about why the screen
+    # stays dark have now died for want of exactly that. Reading DCS 0x04
+    # (RDDID) or 0x0A (RDDPM) separates "the panel never receives the init
+    # sequence" from "it receives it, acknowledges it, and still does not
+    # light". See docs/evidence/dsi-phy-hang.md.
+    patches = [ ../nix/patches/canaan-dsi-implement-dcs-read.patch ];
+
     postPatch = ''
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3-lcd.dtb' >> arch/riscv/boot/dts/canaan/Makefile

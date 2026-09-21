@@ -1,0 +1,54 @@
+--- a/drivers/gpu/drm/canaan/canaan_dsi.c	2026-09-21 14:00:59.037685042 -0500
++++ b/drivers/gpu/drm/canaan/canaan_dsi.c	2026-09-21 14:00:59.136064336 -0500
+@@ -176,8 +176,49 @@
+ static int canaan_dsi_dcs_read(struct canaan_dsi *dsi,
+ 			       const struct mipi_dsi_msg *msg)
+ {
+-	// TODO
+-	return 1;
++	const u8 *tx_buf = msg->tx_buf;
++	u8 *rx_buf = msg->rx_buf;
++	u32 hdr_val, val;
++	int ret, i, drain;
++
++	if (!tx_buf || !rx_buf || msg->tx_len < 1 || msg->rx_len < 1)
++		return -EINVAL;
++
++	/*
++	 * Drain anything a previous read left in the payload FIFO, bounded:
++	 * an unbounded drain here would be the third infinite register-poll
++	 * loop in this driver, and the other two hung the board.
++	 */
++	for (drain = 0; drain < 16; drain++) {
++		if (readl(dsi->base + DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)
++			break;
++		readl(dsi->base + DSI_GEN_PLD_DATA);
++	}
++
++	/* 0x06 is DCS read, one parameter; same header layout as the writes */
++	hdr_val = (tx_buf[0] << 8) | (msg->channel << 6) | 0x06;
++	ret = dw_mipi_dsi_gen_pkt_hdr_write(dsi, hdr_val);
++	if (ret)
++		return ret;
++
++	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
++				 !(val & GEN_PLD_R_EMPTY), 1000,
++				 CMD_PKT_STATUS_TIMEOUT_US);
++	if (ret) {
++		dev_err(dsi->dev,
++			"DCS read 0x%02x: panel did not answer (status 0x%x)\n",
++			tx_buf[0], readl(dsi->base + DSI_CMD_PKT_STATUS));
++		return ret;
++	}
++
++	val = readl(dsi->base + DSI_GEN_PLD_DATA);
++	for (i = 0; i < msg->rx_len && i < 4; i++)
++		rx_buf[i] = (val >> (8 * i)) & 0xff;
++
++	dev_info(dsi->dev, "DCS read 0x%02x -> 0x%08x (%d bytes)\n",
++		 tx_buf[0], val, i);
++
++	return i;
+ }
+ 
+ static void canaan_dsi_set_lan_num(struct canaan_dsi *dsi, int lan_num)
