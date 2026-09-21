@@ -57,9 +57,14 @@ openspec validate --all                       check them
 
 **<https://knewter.github.io/tdisplay-k230/>** — rebuilt from
 `openspec/specs/` on every push to `main`, and its first line is how many
-requirements are still unverified. *(Not live yet: GitHub Pages has to be
-switched on once, at Settings → Pages → Source: GitHub Actions. The build
-runs and passes on every push regardless.)*
+requirements are still unverified. Live.
+
+To watch it being built rather than read the result:
+**<https://github.com/knewter/tdisplay-k230/actions/workflows/spec-site.yml>**
+— one run per push to `main`, each with the page count, byte size and the
+render assertions. The stage 1 firmware has its own workflow alongside it,
+`stage1.yml`, which publishes the `.bin` artifacts instead of committing
+them.
 
 Locally:
 
