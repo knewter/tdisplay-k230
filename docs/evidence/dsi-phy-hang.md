@@ -283,3 +283,64 @@ here, and the pattern is consistent: the ones that died cheaply were the
 ones where an instrument existed.
 
 Implementing DCS read is the next step, not another guess.
+
+## The measurement: the panel does not answer
+
+With `canaan_dsi_dcs_read()` implemented and a caller added to
+`canaan_panel_prepare()`, the board reports:
+
+```
+[3.270] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+[3.489] canaan-panel-dsi 90850000.dsi.0: RDDID (0x04) failed: -22
+[3.539] canaan-mipi-dsi  90850000.dsi:   DCS read 0x0a: panel did not answer (status 0x50015)
+[3.548] canaan-panel-dsi 90850000.dsi.0: RDDPM (0x0A) failed: -110
+```
+
+`0x50015` against the driver's own bits (`canaan_dsi.c:37-42`):
+
+| bit | name | state |
+| --- | --- | --- |
+| 0 | `GEN_CMD_EMPTY` | set — the read command was sent and drained |
+| 2 | `GEN_PLD_W_EMPTY` | set |
+| **4** | **`GEN_PLD_R_EMPTY`** | **set — the read payload FIFO is empty** |
+
+The command went out; nothing came back; the wait timed out at `-110`.
+
+### Why this changes the reading of every earlier result
+
+"All 20 DCS writes accepted, no errors" has been treated as evidence the
+panel receives the init sequence. **It is not.** A DSI write reports only
+that the controller's own FIFO drained — the panel never acknowledges it.
+A read is the first operation on this link that requires the panel to
+respond, and the panel is silent.
+
+That single fact is consistent with every hypothesis that died here:
+
+- the init sequence is byte-identical to the vendor's — irrelevant if it
+  is not arriving
+- the delays are longer than the vendor's — same
+- LP-before-HS ordering is correct — same
+- RG16 vs AR24 made no difference — same
+- the CRTC is `active=1` with a bound framebuffer — same
+
+None of them were wrong about what they measured. They were all measuring
+the SoC side of a link whose far end is not responding.
+
+### Next suspects, now much narrower
+
+1. **Panel supply.** `backlight_gpio`/`power_on` is asserted, but that is
+   one GPIO; an AMOLED needs VCI and ELVDD, and nothing in the device tree
+   or driver models them. If the panel is unpowered it cannot answer.
+2. **The physical DSI link.** Lane mapping, polarity, or a connector
+   issue. The PHY reports lock (`PHY_STATUS == 0x1fbd`) but that is the
+   SoC's own PHY, not proof of a working link to the panel.
+3. **The part is not an RM69A10** with these addresses.
+
+### A bug of mine in the above
+
+`RDDID (0x04) failed: -22` is EINVAL, not a timeout: the request asked for
+3 bytes and `canaan_dsi_transfer()` only routes `MIPI_DSI_DCS_READ` when
+`msg->rx_len == 1`, falling through to `default: -EINVAL`. The RDDPM read
+used one byte and exercised the new code correctly, so the conclusion
+stands, but the RDDID call should either request one byte or the
+dispatcher should be widened.

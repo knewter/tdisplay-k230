@@ -1,0 +1,47 @@
+--- a/drivers/gpu/drm/panel/panel-canaan-universal.c	2026-09-21 14:17:39.116263489 -0500
++++ b/drivers/gpu/drm/panel/panel-canaan-universal.c	2026-09-21 14:18:09.380308379 -0500
+@@ -146,6 +146,44 @@
+ 		// config screen
+ 		panel_simple_xfer_dsi_cmd_seq(p, p->init_seq_v1);
+ 	}
++
++	/*
++	 * Ask the panel whether any of that landed.
++	 *
++	 * The controller reports every DCS write as successful and the screen
++	 * stays dark, so "accepted" has told us nothing for six hypotheses
++	 * running. RDDID (0x04) returns the manufacturer/version bytes and
++	 * RDDPM (0x0A) returns the power mode, whose bit 2 is display-on and
++	 * bit 4 is sleep-out -- exactly what the tail of the init sequence
++	 * (0x11 then 0x29) is supposed to have set.
++	 *
++	 * A reply means the panel is alive and listening and the fault is
++	 * downstream. A timeout means the sequence never reaches it despite
++	 * the controller's success. Diagnostic only: failures are logged and
++	 * ignored, never fatal to prepare().
++	 */
++	if (p->dsi) {
++		u8 id[3] = { 0, 0, 0 };
++		u8 pm = 0;
++		int r;
++
++		r = mipi_dsi_dcs_read(p->dsi, 0x04, id, sizeof(id));
++		if (r < 0)
++			dev_err(panel->dev, "RDDID (0x04) failed: %d\n", r);
++		else
++			dev_info(panel->dev,
++				 "RDDID (0x04) = %02x %02x %02x (%d bytes)\n",
++				 id[0], id[1], id[2], r);
++
++		r = mipi_dsi_dcs_read(p->dsi, 0x0A, &pm, 1);
++		if (r < 0)
++			dev_err(panel->dev, "RDDPM (0x0A) failed: %d\n", r);
++		else
++			dev_info(panel->dev,
++				 "RDDPM (0x0A) = 0x%02x (sleep_out=%d display_on=%d)\n",
++				 pm, (pm >> 4) & 1, (pm >> 2) & 1);
++	}
++
+ 	return 0;
+ }
+ 
