@@ -146,6 +146,39 @@ EOM
       sed -i 's|\t\t// msleep(2600);|\t\tusleep_range(100, 200);|' drivers/thermal/canaan_thermal.c
       grep -q 'tries++ < 10000' drivers/thermal/canaan_thermal.c
       grep -q 'usleep_range(100, 200);' drivers/thermal/canaan_thermal.c
+
+      # Bound the DSI PHY ready spin, and say what the PHY actually reports.
+      #
+      # THIS is the hang. canaan_phy.c waits for the D-PHY to report ready
+      # with two bare infinite loops whose body is a single semicolon:
+      #
+      #     while (readl(dsi->base + PHY_STATUS) != 0x1fbd)
+      #             ;
+      #
+      # No timeout, no sleep, no iteration cap -- note the vendor DID bound
+      # the PHY_TST_CTRL1 loop just above these with "count >= 1000; break",
+      # so the omission looks accidental. On this board PHY_STATUS never
+      # reaches 0x1fbd and the CPU spins in kernel context forever:
+      #
+      #   watchdog: BUG: soft lockup - CPU#0 stuck for 26s! [kworker/0:5:44]
+      #   Workqueue: events output_poll_execute
+      #   epc : k230_dsi_config_4lan_phy+0x562/0x620
+      #   [<..>] canaan_dsi_encoder_enable+0x216/0x532
+      #   [<..>] drm_atomic_helper_commit_modeset_enables+0x194/0x1b4
+      #
+      # That also explains the dark panel: encoder_enable never returns, so
+      # drm_panel_prepare() is never reached and the DCS init sequence is
+      # never written. Captured with softlockup_panic=1, because the plain
+      # soft-lockup path deadlocks before it can print a trace.
+      #
+      # 0x1fbd is very likely an all-four-lanes-ready encoding --
+      # canaan_dsi.c calls k230_dsi_config_4lan_phy() unconditionally and
+      # only sets the real lane count afterwards -- and this panel is
+      # 2-lane. Bounding the wait turns an unkillable hang into a logged
+      # value, which is the evidence needed to decide the real fix.
+      sed -i 's|^\twhile (readl(dsi->base + PHY_STATUS) != 0x1fbd)$|\t{ int _w = 0; u32 _s = 0; while ((_s = readl(dsi->base + PHY_STATUS)) != 0x1fbd \&\& _w++ < 2000) usleep_range(100, 200); if (_s != 0x1fbd) dev_err(dsi->dev, "PHY_STATUS 0x%x != 0x1fbd after %d tries, continuing\\n", _s, _w); }|' \
+        drivers/gpu/drm/canaan/canaan_phy.c
+      test "$(grep -c 'PHY_STATUS 0x%x != 0x1fbd' drivers/gpu/drm/canaan/canaan_phy.c)" = 2
     '';
   };
 
