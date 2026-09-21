@@ -76,7 +76,8 @@ const kind7 = `#include "k230.dtsi"
 
 // The committed board file, abridged only by eliding the reference's own
 // &mipi0 override and the sound node's inner properties.
-const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles; has never booted Linux.</i>
+const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles, and booted Linux on</i>
+<i>// 2026-09-20. The panel it describes has still never lit.</i>
 
 /dts-v1/;
 
@@ -265,7 +266,7 @@ const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles; has never boote
       </svg>
     </HwFigure>
 
-    <HwNote kind="unverified" label="The .dtb exists; getting U-Boot to load it is a separate problem">
+    <HwNote kind="grounded" label="The .dtb exists; getting U-Boot to load it was a separate problem — now solved">
       <p>
         On the first hardware boot U-Boot found our device tree on the card
         &mdash; <code>ext4ls</code> listed <code>force.dtb</code> next to the kernel
@@ -273,6 +274,13 @@ const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles; has never boote
         <code>k230_set_dtb</code> command does not read a device tree. It reads a
         text file named <code>force_dtb</code> whose <em>contents</em> name one.
         Two filenames a single character apart, with completely different jobs.
+      </p>
+      <p>
+        With that sorted, U-Boot loads this tree and hands it to <code>bootm</code>,
+        and on 2026-09-20 Linux booted from it. One caveat that bit afterwards: the
+        <code>/chosen/bootargs</code> property in this tree is <em>not</em> what the
+        kernel ends up reading, because U-Boot overwrites it. The kernel command
+        line on this board is a property of the U-Boot environment.
       </p>
     </HwNote>
   </HwSection>
@@ -621,8 +629,9 @@ const boardFile = `<i>// nix/dts/k230-tdisplay.dts — compiles; has never boote
       <p>
         It proves the description is well-formed and that every label it reaches for
         exists. It says nothing about whether the panel lights, whether the timings are
-        right, or whether the reset polarity is correct. Linux has not booted on this
-        board; U-Boot has.
+        right, or whether the reset polarity is correct. Linux now boots from this
+        tree &mdash; to a root shell, on 2026-09-20 &mdash; and the panel has still
+        never shown anything.
       </p>
       <p>
         Two syntax mistakes cost time and are worth recording, because both produce

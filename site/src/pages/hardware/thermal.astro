@@ -1,0 +1,348 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import { url } from "../../lib/specs";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// From System.map of our own build,
+// linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.
+const symbols = `<i># System.map — linux-…-6.6.36-xuantie</i>
+t canaan_thermal_probe
+t canaan_thermal_init
+d __initcall__kmod_canaan_thermal__258_122_canaan_thermal_init6
+d of_canaan_thermal_match
+
+<i># …and the core it registers with</i>
+T thermal_zone_device_register_with_trips
+T thermal_zone_device_critical
+<i># 306 thermal* symbols in total</i>`;
+
+const tripless = `<i>// drivers/thermal/canaan_thermal.c:86</i>
+data-&gt;tz = <b>thermal_tripless_zone_device_register</b>(
+        …
+);`;
+---
+
+<HardwareNote
+  slug="thermal"
+  title="The temperature is readable, and nothing acts on it"
+  eyebrow="LILYGO T-Display-K230 · hardware note · read"
+  dek="The sensor has a driver, the driver is built in, and the thermal core is present. Between them they implement a thermometer. No trip point exists, no governor is ever invoked, and there is no cooling device to invoke one on &mdash; so this page is a characterised gap, with four ordered steps out of it."
+  description="Thermal protection on the K230: the canaan_thermal driver binds the sensor but registers a tripless zone, no K230 device tree declares thermal-zones, and there is no cpufreq driver. Temperature is readable; nothing acts on it."
+  source="docs/thermal.md"
+  meta={[
+    { label: "Sensor", value: "tsensor@91107000<br>canaan,k230-tsensor · okay" },
+    { label: "Driver", value: "canaan_thermal.c<br>CONFIG_CANAAN_THERMAL, built in" },
+    { label: "Thermal core", value: "built in<br>306 thermal* symbols" },
+    { label: "Trip points", value: "none<br>tripless zone, no thermal-zones node" },
+    { label: "Cooling devices", value: "none<br>no cpufreq driver in this kernel" },
+  ]}
+>
+  <HwSection kind="the question" title="Is it safe to leave this board powered and unattended?">
+    <p class="hw-lede">
+      A direct question, and it deserves a direct answer rather than a survey.
+      <strong>The temperature is readable, and nothing acts on it.</strong> No
+      throttling, no shutdown, no trip point of any kind. That is a property of the
+      vendor kernel and the vendor device trees, not of anything this project
+      configured or left out.
+    </p>
+    <p class="hw-p">
+      This is a gap that has been characterised, not a fire. Nobody has yet
+      measured what this part runs at, and it is entirely possible it never gets
+      warm enough for any of it to matter &mdash; which is exactly why the first
+      step below is a measurement and not a patch.
+    </p>
+  </HwSection>
+
+  <HwSection kind="what works" title="The sensor is bound, and the core is there to receive it">
+    <p class="hw-lede">
+      All symbol evidence on this page comes from <code>System.map</code> of our own
+      build, <code>linux-riscv64-unknown-linux-gnu-6.6.36-xuantie</code> &mdash; the
+      kernel that is on the card, not an upstream tree.
+    </p>
+
+    <pre class="hw-code" set:html={symbols} />
+
+    <p class="hw-p">
+      <code>drivers/thermal/canaan_thermal.c</code> is enabled by
+      <code>CONFIG_CANAAN_THERMAL</code>, which is <code>default ARCH_CANAAN</code>
+      and so arrives without ever being named in <code>k230_defconfig</code>. It
+      matches <code>tsensor@91107000</code>, <code>compatible = "canaan,k230-tsensor"</code>,
+      which is <code>status = "okay"</code> at <code>k230.dtsi:850</code>. The
+      <code>initcall6</code> symbol is the built-in registration &mdash; it is not a
+      module that might fail to load.
+    </p>
+
+    <HwNote kind="unverified" label="One cheap thing has not been done yet">
+      <p>
+        On this evidence <code>/sys/class/thermal/thermal_zone0/temp</code> should
+        exist on the booted board. Nobody has looked. The board was powered down
+        before the thought occurred, and reading that file is the first item in the
+        next-steps list for exactly that reason.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="what does not" title="Three breaks in the loop, and any one of them is enough">
+    <p class="hw-lede">
+      A thermal response in Linux is a chain: a sensor produces a temperature, a
+      zone compares it against trip points, a governor reacts to a crossed trip,
+      and a cooling device is what the governor acts on. This kernel has the first
+      link and the last three are missing.
+    </p>
+
+    <HwFigure
+      caption="<strong>The left half is real; everything right of the zone is absent.</strong> The driver registers through <code>thermal_tripless_zone_device_register</code>, which is exactly what it says. A zone with no trips never crosses a trip, so the core never invokes a governor and never calls <code>thermal_zone_device_critical()</code> &mdash; the emergency-shutdown path that <em>is</em> compiled in, and is unreachable."
+    >
+      <svg
+        viewBox="0 0 920 430"
+        role="img"
+        aria-label="The Linux thermal control loop on the K230. The tsensor and the canaan_thermal driver are present and register a thermal zone, which exposes a temperature in sysfs. The trip points, the governor and the cooling device are all absent, so the critical shutdown path is never reached."
+      >
+        <defs>
+          <marker id="th-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--grounded)"></path>
+          </marker>
+          <marker id="th-gone" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+          </marker>
+        </defs>
+
+        <text x="8" y="20" font-size="10" font-weight="700" letter-spacing="1.2" fill="var(--grounded)" font-family="var(--sans)">PRESENT AND WORKING</text>
+        <text x="472" y="20" font-size="10" font-weight="700" letter-spacing="1.2" fill="var(--muted)" font-family="var(--sans)">ABSENT</text>
+        <line x1="462" y1="30" x2="462" y2="400" stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 4"></line>
+
+        {/* sensor */}
+        <rect x="8" y="118" width="184" height="76" rx="3" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.5"></rect>
+        <text x="24" y="142" font-size="12.5" font-weight="700" fill="var(--soc)" font-family="var(--mono)">tsensor@91107000</text>
+        <text x="24" y="160" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">canaan,k230-tsensor</text>
+        <text x="24" y="176" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">k230.dtsi:850 · okay</text>
+
+        <line x1="192" y1="156" x2="232" y2="156" stroke="var(--grounded)" stroke-width="1.8" marker-end="url(#th-ok)"></line>
+
+        {/* driver */}
+        <rect x="236" y="118" width="184" height="76" rx="3" fill="var(--grounded-f)" stroke="var(--grounded)" stroke-width="1.5"></rect>
+        <text x="252" y="142" font-size="12.5" font-weight="700" fill="var(--grounded)" font-family="var(--mono)">canaan_thermal</text>
+        <text x="252" y="160" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">built in · initcall6</text>
+        <text x="252" y="176" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">probes and binds</text>
+
+        {/* zone, straddling */}
+        <rect x="236" y="228" width="184" height="86" rx="3" fill="var(--surface)" stroke="var(--unverified)" stroke-width="1.6"></rect>
+        <text x="252" y="252" font-size="12.5" font-weight="700" fill="var(--unverified)" font-family="var(--mono)">thermal zone</text>
+        <text x="252" y="270" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">registered TRIPLESS</text>
+        <text x="252" y="286" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">canaan_thermal.c:86</text>
+        <text x="252" y="304" font-size="10" fill="var(--muted)" font-family="var(--mono)">a thermometer, nothing more</text>
+        <line x1="328" y1="194" x2="328" y2="226" stroke="var(--grounded)" stroke-width="1.8" marker-end="url(#th-ok)"></line>
+
+        {/* sysfs readout */}
+        <rect x="8" y="228" width="184" height="86" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4" stroke-dasharray="4 3"></rect>
+        <text x="24" y="252" font-size="11.5" font-weight="700" fill="var(--ink-2)" font-family="var(--mono)">/sys/class/thermal/</text>
+        <text x="24" y="268" font-size="11.5" font-weight="700" fill="var(--ink-2)" font-family="var(--mono)">thermal_zone0/temp</text>
+        <text x="24" y="288" font-size="10" fill="var(--unverified)" font-family="var(--mono)">expected to exist</text>
+        <text x="24" y="304" font-size="10" fill="var(--unverified)" font-family="var(--mono)">never yet read on the board</text>
+        <line x1="236" y1="271" x2="196" y2="271" stroke="var(--grounded)" stroke-width="1.6" marker-end="url(#th-ok)"></line>
+
+        {/* missing: trips */}
+        <line x1="420" y1="271" x2="490" y2="271" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#th-gone)"></line>
+        <rect x="494" y="228" width="196" height="86" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 4"></rect>
+        <text x="510" y="252" font-size="12.5" font-weight="700" fill="var(--muted)" font-family="var(--mono)">trip points</text>
+        <text x="510" y="270" font-size="10" fill="var(--muted)" font-family="var(--mono)">none from the driver</text>
+        <text x="510" y="286" font-size="10" fill="var(--muted)" font-family="var(--mono)">no thermal-zones node in</text>
+        <text x="510" y="302" font-size="10" fill="var(--muted)" font-family="var(--mono)">any K230 device tree</text>
+
+        {/* missing: governor */}
+        <line x1="690" y1="271" x2="726" y2="271" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#th-gone)"></line>
+        <rect x="730" y="228" width="182" height="86" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 4"></rect>
+        <text x="746" y="252" font-size="12.5" font-weight="700" fill="var(--muted)" font-family="var(--mono)">governor</text>
+        <text x="746" y="270" font-size="10" fill="var(--muted)" font-family="var(--mono)">never invoked — a zone</text>
+        <text x="746" y="286" font-size="10" fill="var(--muted)" font-family="var(--mono)">with no trips cannot</text>
+        <text x="746" y="302" font-size="10" fill="var(--muted)" font-family="var(--mono)">cross one</text>
+
+        {/* missing: cooling device */}
+        <line x1="821" y1="314" x2="821" y2="344" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#th-gone)"></line>
+        <rect x="730" y="346" width="182" height="72" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 4"></rect>
+        <text x="746" y="370" font-size="12.5" font-weight="700" fill="var(--muted)" font-family="var(--mono)">cooling device</text>
+        <text x="746" y="388" font-size="10" fill="var(--muted)" font-family="var(--mono)">no cpufreq_register_driver</text>
+        <text x="746" y="404" font-size="10" fill="var(--muted)" font-family="var(--mono)">no DVFS states to select</text>
+
+        {/* missing: critical */}
+        <line x1="592" y1="314" x2="592" y2="344" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#th-gone)"></line>
+        <rect x="494" y="346" width="196" height="72" rx="3" fill="none" stroke="var(--undeclared)" stroke-width="1.4" stroke-dasharray="4 4"></rect>
+        <text x="510" y="370" font-size="11.5" font-weight="700" fill="var(--undeclared)" font-family="var(--mono)">thermal_zone_device_</text>
+        <text x="510" y="386" font-size="11.5" font-weight="700" fill="var(--undeclared)" font-family="var(--mono)">critical()</text>
+        <text x="510" y="404" font-size="10" fill="var(--undeclared)" font-family="var(--mono)">compiled in · unreachable</text>
+
+        <text x="8" y="60" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">Sensor → driver → zone: all three exist and bind.</text>
+        <text x="8" y="78" font-size="11" fill="var(--ink-2)" font-family="var(--mono)">The zone exposes a number and stops there.</text>
+        <text x="472" y="60" font-size="11" fill="var(--muted)" font-family="var(--mono)">Nothing right of this line exists in this kernel</text>
+        <text x="472" y="78" font-size="11" fill="var(--muted)" font-family="var(--mono)">or in any K230 device tree.</text>
+      </svg>
+    </HwFigure>
+
+    <pre class="hw-code" set:html={tripless} />
+
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>The driver registers a zone with no trip points, deliberately</h3>
+          <p>
+            <code>thermal_tripless_*</code> is exactly what its name says. The
+            driver is not incomplete; it was written to be a thermometer. A zone
+            with no trips never crosses a trip, so the thermal core never invokes a
+            governor and never calls <code>thermal_zone_device_critical()</code>.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3>No device tree supplies trips either</h3>
+          <p>
+            A <code>thermal-zones</code> node is the usual place a board declares
+            <code>trip-point</code> and <code>critical</code> entries and binds a
+            cooling device to them. There is no <code>thermal-zones</code> node in
+            any K230 device tree in the Xuantie tree, so the gap is not closed from
+            the DT side either.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>There is no cooling device to bind even if a trip existed</h3>
+          <p>
+            The only cpufreq symbol in this kernel is
+            <code>cpufreq_add_device</code>; there is no
+            <code>cpufreq_register_driver</code>, so no cpufreq driver is present
+            and the CPU has no DVFS states Linux can select. The conventional
+            response to a passive trip &mdash; throttle the CPU &mdash; has nothing
+            to act on. That leaves a critical trip forcing an orderly poweroff as
+            the only meaningful protection available, and it is not configured.
+          </p>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="in practice" title="What that means for a board on a desk">
+    <HwNote kind="unverified" label="Three statements, stated at the strength the evidence supports">
+      <p>
+        <strong>Nothing in software will stop this board getting hot.</strong> Any
+        protection is whatever the silicon does on its own, which has not been
+        characterised. The TSENSOR block may well have a hardware trip independent
+        of Linux; nobody has read the datasheet on that point yet.
+      </p>
+      <p>
+        <strong>The second C908 is still running its own firmware.</strong> Whether
+        RT&#8209;Smart implements a thermal response of its own is unknown and
+        outside our kernel entirely. See the
+        <a href={url("hardware/first-boot/")}>first-boot note</a> for why that core
+        is not ours.
+      </p>
+      <p>
+        <strong>Powering the board down when leaving it unattended is the correct
+        instinct</strong> on this evidence, rather than excessive caution. It is
+        also a cheap habit, which is the main argument for it while steps 1 and 2
+        below are outstanding.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="next" title="Four steps, cheapest first, and the order is the point">
+    <p class="hw-lede">
+      Steps 1 and 2 are research. Step 3 is a small change. Step 4 should not be
+      started until 1 and 2 say it is needed &mdash; and they may well say it is
+      not.
+    </p>
+
+    <div class="hw-recipes">
+      <div class="hw-rec">
+        <div>
+          <p class="k">step 1 · one boot</p>
+          <h3>Read the sensor</h3>
+        </div>
+        <div>
+          <p>
+            <code>cat /sys/class/thermal/thermal_zone*/temp</code> at idle, then
+            again after a sustained load, and write both numbers down.
+          </p>
+          <p>
+            This costs a single boot and tells us whether the part even runs warm.
+            It may make everything below it moot, which is the best possible outcome
+            for a list like this one.
+          </p>
+        </div>
+      </div>
+      <div class="hw-rec">
+        <div>
+          <p class="k">step 2 · research</p>
+          <h3>Find the hardware limit</h3>
+        </div>
+        <div>
+          <p>
+            The K230 datasheet&rsquo;s operating range, and whether the TSENSOR block
+            has a hardware trip of its own independent of Linux.
+          </p>
+          <p>
+            <code>canaan_thermal.c</code> and the <code>hardlock = &lt;2&gt;</code>
+            property on the DT node are the two places to look.
+          </p>
+        </div>
+      </div>
+      <div class="hw-rec">
+        <div>
+          <p class="k">step 3 · small change</p>
+          <h3>Add a critical trip</h3>
+        </div>
+        <div>
+          <p>
+            A <code>thermal-zones</code> node with a <code>critical</code> trip
+            referencing the tsensor, which finally gives
+            <code>thermal_zone_device_critical()</code> something to fire on.
+          </p>
+          <p>
+            This needs step 2 first. A made-up threshold is <em>worse</em> than none,
+            because it either never fires &mdash; and is then a comfort rather than a
+            protection &mdash; or it shuts the board down in the middle of normal
+            work.
+          </p>
+        </div>
+      </div>
+      <div class="hw-rec">
+        <div>
+          <p class="k">step 4 · only if needed</p>
+          <h3>Consider throttling</h3>
+        </div>
+        <div>
+          <p>
+            Which means a cpufreq driver and an OPP table: a substantially larger
+            piece of work, for a board that may simply never get hot enough to need
+            it.
+          </p>
+          <p>
+            Not started until steps 1 and 2 have argued for it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Research: docs/thermal.md. Symbol evidence: System.map of
+      linux-riscv64-unknown-linux-gnu-6.6.36-xuantie, this repository's own build.
+    </p>
+    <p>
+      Kernel sources: drivers/thermal/canaan_thermal.c (line 86 is the tripless
+      registration), drivers/thermal/thermal_core.c, and
+      arch/riscv/boot/dts/canaan/k230.dtsi line 850 for the tsensor node.
+    </p>
+    <p>
+      Nothing on this page has been observed on the board. It is read out of source
+      and out of our own build's symbol table, which is enough to establish what is
+      absent and not enough to say what the hardware does about it.
+    </p>
+  </div>
+</HardwareNote>

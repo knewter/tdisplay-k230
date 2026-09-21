@@ -55,7 +55,10 @@ compile them from source.
 `U-Boot SPL 2022.10`, the PMU training messages, `U-Boot 2022.10`, then
 `OpenSBI v0.9`. Canaan packages these with a custom header and compression
 (`image: uboot load to 20000000 compress =1`), which is why reproducing them is
-out of scope.*
+out of scope. That `v0.9` belongs to the shipped RT-Smart image and is not the
+SBI our kernel boots through: the Linux path uses the SDK's
+`opensbi-1.4-overlay` — OpenSBI 1.4 plus Canaan's T-Head overlay — recorded in
+`firmware/stage1/PROVENANCE.txt` and `docs/evidence/boot-path-differences.md`.*
 
 This boundary SHALL be explicit in the build rather than implied by what
 happens not to be built, so that a later change cannot acquire a dependency on

@@ -1,0 +1,307 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import { url } from "../../lib/specs";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// The capture, with the bracketed-paste escape sequences and the repeated
+// empty prompts taken out. Nothing else is changed: every character of every
+// command and every line of output is as it came off the wire. <i> is the
+// prompt and the command, <b> is a line that settles something.
+const transcript = `<i>[root@nixos:~]# cat /proc/cpuinfo</i>
+processor	: 0
+hart		: 0
+isa		: rv64imafdcv_zicbom_zicboz_zicntr_zicsr_zifencei_zihpm_zba_zbb_zbs_svpbmt
+mmu		: sv39
+<b>uarch		: thead,c908</b>
+<b>mvendorid	: 0x5b7</b>
+marchid		: 0x8000000009140d00
+mimpid		: 0x50000
+
+<i>[root@nixos:~]# uname -a</i>
+<b>Linux nixos 6.6.36 #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980 riscv64 GNU/Linux</b>
+
+<i>[root@nixos:~]# cat /proc/cmdline</i>
+console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf <b>init=/nix/store/2h0xrlf5n74fjjhxqd18y6vl55w4zyrr-nixos-system-nixos-26.11.20260919.20b1ddd/init</b>
+
+<i>[root@nixos:~]# findmnt -no SOURCE,FSTYPE /</i>
+<b>/dev/mmcblk1p2 ext4</b>
+
+<i>[root@nixos:~]# nproc; free -m | head -2</i>
+<b>1</b>
+               total        used        free      shared  buff/cache   available
+Mem:             935         136         773           6         101         798`;
+---
+
+<HardwareNote
+  slug="first-boot"
+  title="The first NixOS userspace on this board"
+  eyebrow="LILYGO T-Display-K230 · hardware note · observed"
+  dek="On 2026&#8209;09&#8209;20 the board reached a root shell and answered questions. Five commands, and each one of them closes something this project had only been able to argue about from source."
+  description="On 2026-09-20 a NixOS system cross-built by this repository reached a root shell on the LILYGO T-Display-K230. The transcript, what each line proves, and why Linux gets one hart."
+  source="docs/evidence/hardware-userspace.md"
+  meta={[
+    { label: "Observed", value: "2026-09-20<br>/dev/ttyACM0, 115200 8N1" },
+    { label: "Kernel", value: "Linux 6.6.36 #1-NixOS<br>Xuantie, riscv64" },
+    { label: "CPU", value: "thead,c908 · mvendorid 0x5b7<br>one hart under Linux" },
+    { label: "Memory", value: "935 MB usable<br>of the 1 GiB LPDDR" },
+    { label: "Root", value: "/dev/mmcblk1p2, ext4<br>resolved via the NIXOS_SD label" },
+  ]}
+>
+  <HwSection kind="the capture" title="Five commands that only this board could answer">
+    <p class="hw-lede">
+      Captured with <code>tools/capture-boot.py</code> over the CH342 bridge. These
+      are commands run <em>on the board</em>, not on the build host &mdash; which is
+      the entire point, and is why each one was chosen to be unfakeable somewhere
+      else.
+    </p>
+
+    <pre class="hw-code" set:html={transcript} />
+
+    <p class="hw-p">
+      The raw capture, escape sequences and all, is committed at
+      <code>docs/evidence/hardware-userspace.md</code>. Elided above: the
+      bracketed&#8209;paste sequences the shell emits around every prompt, and the
+      empty prompts between commands. No output line is changed.
+    </p>
+  </HwSection>
+
+  <HwSection kind="line by line" title="What each line settles">
+    <div class="hw-contract">
+      <div class="hw-crow hw-crow-head">
+        <span>the line</span>
+        <span>what it is</span>
+        <span>what it closes</span>
+      </div>
+      <div class="hw-crow">
+        <div class="a">uarch : thead,c908<br />mvendorid : 0x5b7</div>
+        <div class="b">T-Head&rsquo;s JEDEC vendor ID and the C908 core name, read out of the hart&rsquo;s own CSRs</div>
+        <div class="c">
+          <strong>We are on the real silicon.</strong> These values are read from a
+          T&#8209;Head hart&rsquo;s own machine CSRs; the x86 build host has no way to
+          produce them, and the emulated <code>virt</code> machine this project boots
+          under is not a C908. Every claim below inherits this one.
+        </div>
+      </div>
+      <div class="hw-crow">
+        <div class="a">Linux nixos 6.6.36<br />#1-NixOS … riscv64</div>
+        <div class="b">the kernel banner: version, build number, architecture</div>
+        <div class="c">
+          <strong>It is our kernel, not the vendor&rsquo;s.</strong> The board shipped
+          running RT&#8209;Smart out of Canaan&rsquo;s image. This is the Xuantie
+          6.6.36 tree built by this flake, running as a NixOS system.
+        </div>
+      </div>
+      <div class="hw-crow">
+        <div class="a">init=/nix/store/2h0x…<br />-nixos-system-nixos-…/init</div>
+        <div class="b">the kernel command line as the kernel received it</div>
+        <div class="c">
+          <strong>Our command line got through.</strong> It is character-for-character
+          the string the SD image derivation writes into
+          <code>bootargs.txt</code>. Getting it there took a fix in the U&#8209;Boot
+          environment &mdash; the whole story is in the
+          <a href={url("hardware/boot-chain/")}>boot-chain note</a>.
+        </div>
+      </div>
+      <div class="hw-crow">
+        <div class="a">/dev/mmcblk1p2 ext4</div>
+        <div class="b">what <code>/</code> is actually mounted from</div>
+        <div class="c">
+          <strong>root=fstab works here.</strong> There is no explicit
+          <code>root=</code> on that command line, so the initrd resolved the device
+          through its own fstab and the <code>NIXOS_SD</code> label. Until this boot
+          every root mount had been done for us by the vendor fallback string; the
+          label path had never once been exercised.
+        </div>
+      </div>
+      <div class="hw-crow">
+        <div class="a">nproc → 1<br />Mem: 935</div>
+        <div class="b">harts Linux is scheduling on, and usable RAM</div>
+        <div class="c">
+          <strong>One hart, 935 MB.</strong> The memory figure is unremarkable. The
+          hart count is not what the specs expected, and the next section is about
+          why it is nevertheless correct.
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="the finding" title="Linux gets one hart, and that is the device tree, not a mistake">
+    <p class="hw-lede">
+      The K230D has two C908 cores. Linux sees one. The first instinct &mdash; that
+      something in our configuration switched SMP off &mdash; is wrong, and it is
+      worth being precise about why, because the wrong diagnosis here costs a day.
+    </p>
+
+    <HwFigure
+      caption="<strong>The second core is not missing; it is spoken for.</strong> <code>CONFIG_SMP=y</code> is set, so the kernel would happily bring up a second hart if one were described to it. Nothing describes one: <code>k230.dtsi</code> declares <code>cpu@0</code> and stops. The K210 device trees in the same directory do declare a <code>cpu@1</code>, which is a good way to convince yourself K230 support has it too, and a wrong one."
+    >
+      <svg
+        viewBox="0 0 920 330"
+        role="img"
+        aria-label="The K230D's two C908 cores. cpu@0 is declared in k230.dtsi and runs Linux; the second core is declared in no K230 device tree and runs Canaan's RT-Smart firmware under an AMP split."
+      >
+        <defs>
+          <marker id="fb-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--grounded)"></path>
+          </marker>
+          <marker id="fb-mut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+          </marker>
+        </defs>
+
+        <rect x="8" y="30" width="286" height="272" rx="4" fill="var(--soc-f)" stroke="var(--soc)" stroke-width="1.4"></rect>
+        <text x="26" y="58" font-size="15" font-weight="700" fill="var(--soc)" font-family="var(--sans)">Kendryte K230D</text>
+        <text x="26" y="76" font-size="10.5" fill="var(--soc)" font-family="var(--mono)">two C908 harts in silicon</text>
+
+        <rect x="26" y="98" width="250" height="78" rx="3" fill="var(--surface)" stroke="var(--grounded)" stroke-width="1.6"></rect>
+        <text x="40" y="122" font-size="13" font-weight="700" fill="var(--grounded)" font-family="var(--mono)">cpu@0</text>
+        <text x="40" y="141" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">thead,c908 · rv64imafdcv</text>
+        <text x="40" y="158" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">declared in k230.dtsi</text>
+
+        <rect x="26" y="192" width="250" height="78" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 4"></rect>
+        <text x="40" y="216" font-size="13" font-weight="700" fill="var(--muted)" font-family="var(--mono)">the other C908</text>
+        <text x="40" y="235" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">no cpu@1 in any K230 DT</text>
+        <text x="40" y="252" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">invisible to Linux</text>
+
+        <line x1="294" y1="137" x2="470" y2="137" stroke="var(--grounded)" stroke-width="1.8" marker-end="url(#fb-ok)"></line>
+        <text x="382" y="128" text-anchor="middle" font-size="10" fill="var(--grounded)" font-family="var(--mono)">described → booted</text>
+
+        <line x1="294" y1="231" x2="470" y2="231" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#fb-mut)"></line>
+        <text x="382" y="222" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">Canaan AMP split</text>
+
+        <rect x="474" y="98" width="252" height="78" rx="3" fill="var(--grounded-f)" stroke="var(--grounded)" stroke-width="1.6"></rect>
+        <text x="490" y="122" font-size="13" font-weight="700" fill="var(--grounded)" font-family="var(--sans)">Linux 6.6.36 #1-NixOS</text>
+        <text x="490" y="141" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">nproc → 1</text>
+        <text x="490" y="158" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">CONFIG_SMP=y, one hart to use</text>
+
+        <rect x="474" y="192" width="252" height="78" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"></rect>
+        <text x="490" y="216" font-size="13" font-weight="700" fill="var(--ink-2)" font-family="var(--sans)">RT-Smart firmware</text>
+        <text x="490" y="235" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">the vendor&rsquo;s own OS</text>
+        <text x="490" y="252" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">still resident; not ours to schedule</text>
+
+        <line x1="748" y1="40" x2="748" y2="296" stroke="var(--rule)" stroke-width="1"></line>
+        <text x="768" y="60" font-size="10" font-weight="700" letter-spacing="1.1" fill="var(--muted)" font-family="var(--sans)">THE TRAP</text>
+        <text x="768" y="84" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">dts/canaan/ does</text>
+        <text x="768" y="99" font-size="10.5" fill="var(--ink-2)" font-family="var(--mono)">contain cpu@1 nodes.</text>
+        <text x="768" y="121" font-size="10.5" fill="var(--undeclared)" font-family="var(--mono)">Every one of them</text>
+        <text x="768" y="136" font-size="10.5" fill="var(--undeclared)" font-family="var(--mono)">belongs to the K210,</text>
+        <text x="768" y="151" font-size="10.5" fill="var(--undeclared)" font-family="var(--mono)">an unrelated part.</text>
+        <text x="768" y="176" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">grep for cpu@1 in that</text>
+        <text x="768" y="191" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">directory and you will</text>
+        <text x="768" y="206" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">find one. It is not</text>
+        <text x="768" y="221" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">this chip&rsquo;s.</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="grounded" label="Three facts, and the conclusion they force">
+      <p>
+        <code>arch/riscv/boot/dts/canaan/k230.dtsi</code> declares
+        <code>cpu@0</code> and no sibling. No K230 device tree in the Xuantie tree
+        declares a <code>cpu@1</code>; every <code>cpu@1</code> under
+        <code>dts/canaan/</code> is a K210 node. <code>CONFIG_SMP=y</code> is set in
+        the kernel we built.
+      </p>
+      <p>
+        So the kernel is capable of SMP and was handed one hart to be SMP over. The
+        second C908 is the core Canaan&rsquo;s AMP split gives to RT&#8209;Smart,
+        which is consistent with the board having shipped running RT&#8209;Smart on
+        it. Taking it for Linux would mean describing it in the device tree
+        <em>and</em> taking it away from that firmware &mdash; a separate piece of
+        work with its own risks, not a detail of this bring-up.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="A spec clause is wrong, and is flagged rather than quietly rewritten">
+      <p>
+        The in-flight change covering this bring-up carries a verification clause
+        asking for <code>cat /proc/cpuinfo</code> &ldquo;showing two C908
+        harts&rdquo;. That is not achievable on this hardware under Linux, so the
+        clause is <em>wrong</em> rather than unmet. Its substance &mdash; reach an
+        interactive prompt, run a command that could only run on this hardware
+        &mdash; is satisfied by the transcript above.
+      </p>
+      <p>
+        The clause needs restating to &ldquo;showing a <code>thead,c908</code>
+        hart&rdquo;, and the single-hart fact belongs in the spec rather than only
+        here. Recorded openly because a verification clause edited silently to match
+        the result it got is not a verification clause.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="scope" title="What this boot does not prove">
+    <p class="hw-lede">
+      A prompt is a prompt. Almost everything this board is <em>for</em> is still
+      dark, and the milestone is worth nothing if it is allowed to imply otherwise.
+    </p>
+
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>The panel has not lit</h3>
+          <p>
+            The RM69A10 init sequence, the DSI timings and the reset polarity are
+            all still transcription from vendor code. See the
+            <a href={url("hardware/panel-contract/")}>panel contract</a> for what is written
+            down and what is guessed.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3>Touch, radio and camera are untested</h3>
+          <p>
+            The GT9895 now gets a chance to bind and the probe tooling exists, but
+            nothing on the <a href={url("hardware/silicon-map/")}>silicon map</a> beyond the SD
+            card and the console has been exercised on a running Linux.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>Nothing is watching the temperature</h3>
+          <p>
+            The sensor binds and the thermal core is present, and between them they
+            do exactly nothing. The <a href={url("hardware/thermal/")}>thermal note</a> is
+            precise about the gap, and about what to measure first.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">4</span>
+        <div>
+          <h3>One boot is one boot</h3>
+          <p>
+            <code>root=fstab</code> resolved once. Generation selection does not
+            exist &mdash; the U&#8209;Boot environment loads exactly one kernel by
+            literal filename &mdash; so a bad rebuild is still recovered with a card
+            reader, not a boot menu.
+          </p>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Transcript: docs/evidence/hardware-userspace.md, captured 2026-09-20 with
+      tools/capture-boot.py over /dev/ttyACM0 at 115200 8N1. The boot chain that
+      preceded it, failures included, is in docs/evidence/hardware-boot.txt.
+    </p>
+    <p>
+      Device-tree claims: ruyisdk/linux-xuantie-kernel @ 7d4e1f4 —
+      arch/riscv/boot/dts/canaan/k230.dtsi, and the absence of a cpu@1 anywhere
+      under arch/riscv/boot/dts/canaan/ that is not a K210 file.
+    </p>
+    <p>
+      House rule in force: observations outrank vendor source, and a datasheet
+      grounds nothing. This page is the first one on this site written entirely
+      from observations.
+    </p>
+  </div>
+</HardwareNote>

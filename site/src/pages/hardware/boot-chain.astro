@@ -1,0 +1,413 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import { url } from "../../lib/specs";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// The three lines that were on the console. Nothing else was.
+const symptom = `[  OK  ] Finished Create Volatile Files and Directories in the Real Root.
+<em>You are in emergency mode.</em> After logging in, type "journalctl -xb" to view
+system logs, "systemctl reboot" to reboot, or "exit" to continue bootup.
+
+<em>Cannot open access to console, the root account is locked.</em>
+See sulogin(8) man page for more details.`;
+
+// nixos/modules/system/boot/systemd/initrd.nix, abridged to the branch that
+// fired. <b> is the line that ends the boot.
+const unit = `<i># initrd-find-nixos-closure.service</i>
+<i># RequiresMountsFor = "/sysroot/nix/store"</i>
+<i># requiredBy        = [ "initrd.target" ]</i>
+
+closure=
+for o in $(&lt; /proc/cmdline); do
+    case $o in
+        init=*) … closure="\${initParam[1]}" ;;
+    esac
+done
+
+if [ -z "\${closure:-}" ]; then
+  echo 'No init= parameter on the kernel command line' &gt;&amp;2
+  <b>exit 1</b>
+fi`;
+
+// board/canaan/common/k230_img.c, verbatim from line 110.
+const vendor = `<i>// u-boot/board/canaan/common/k230_img.c:110</i>
+char *board_fdt_chosen_bootargs(void){
+    char *bootargs = <b>env_get("bootargs")</b>;
+    if(NULL == bootargs) {
+        …
+        bootargs = <em>"root=/dev/mmcblk1p2 loglevel=8 rw rootdelay=4 \\
+                    rootfstype=ext4 console=ttyS0,115200  earlycon=sbi"</em>;
+    }
+    printf("g_bootmod = %d, bootargs=%s\\n", g_bootmod, bootargs);
+    return bootargs;
+}`;
+
+// The environment as tools/gen-stage1.sh now writes it. <b> is what the sed
+// added; the rest is the vendor's own default.env.
+const blinux = `blinux = k230_set_dtb &&
+         <b>ext4load mmc \${mmc_boot_dev_num}:1 0x7000000 /bootargs.txt &&</b>
+         <b>env import -t 0x7000000 \${filesize} &&</b>
+         ext4load mmc \${mmc_boot_dev_num}:1 <mark>0x8000000</mark> /fw_jump_add_uboot_head.bin &&
+         ext4load mmc \${mmc_boot_dev_num}:1 0x200000  /\${k} &&
+         ext4load mmc \${mmc_boot_dev_num}:1 <mark>0x8400000</mark> /\${dtb} &&
+         <b>ext4load mmc \${mmc_boot_dev_num}:1 0x9000000 /initrd.uimg &&</b>
+         bootm <mark>0x8000000 0x9000000 0x8400000</mark>
+
+<i>mmc_boot_dev_num = 1     k = Image     dtb = force.dtb</i>`;
+---
+
+<HardwareNote
+  slug="boot-chain"
+  title="The command line the bootloader threw away"
+  eyebrow="LILYGO T-Display-K230 · hardware note · observed"
+  dek="The device tree carried a correct kernel command line. U&#8209;Boot replaced it with a vendor string that had no <code>init=</code> in it, NixOS stage&nbsp;1 gave up, and the board stopped in emergency mode with the root account locked. One <code>if</code> in <code>k230_img.c</code> explains all of it."
+  description="Why NixOS stage 1 dropped to emergency mode on the T-Display-K230: U-Boot's board_fdt_chosen_bootargs() overwrites /chosen/bootargs unless the environment defines bootargs, and the fix that beats it."
+  source="docs/evidence/stage1-emergency-mode.md"
+  meta={[
+    { label: "Symptom", value: "emergency mode<br>root locked, no shell offered" },
+    { label: "Failing unit", value: "initrd-find-nixos-closure<br>.service, exit 1" },
+    { label: "Cause", value: "board/canaan/common<br>/k230_img.c:110" },
+    { label: "Fix", value: "bootargs.txt on the boot<br>partition + <code>env import</code>" },
+    { label: "Confirmed", value: "2026-09-20, /proc/cmdline<br>on the booted board" },
+  ]}
+>
+  <HwSection kind="the symptom" title="Three lines, and two of them are good news">
+    <p class="hw-lede">
+      This is everything the console said. It looks like a catastrophe and it is
+      very nearly a success &mdash; which is the useful thing about reading it
+      carefully rather than reaching for the card reader.
+    </p>
+
+    <pre class="hw-code" set:html={symptom} />
+
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>The root filesystem <em>is</em> mounted</h3>
+          <p>
+            &ldquo;in the Real Root&rdquo; is the <code>/sysroot</code> variant of
+            the tmpfiles unit. It cannot possibly run before
+            <code>sysroot.mount</code> has succeeded. So the card, the partition
+            table, the ext4 filesystem and the MMC driver are all fine.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3>The failure is the very next unit</h3>
+          <p>
+            Something ordered immediately after that tmpfiles unit failed, and
+            failed fatally to <code>initrd.target</code>. That is a short list.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>The locked root account is why it looks worse than it is</h3>
+          <p>
+            Emergency mode normally drops you into a shell. NixOS leaves root
+            locked, so <code>sulogin</code> has nothing to offer and the boot simply
+            stops. That is a NixOS default meeting a bad day, not a second fault.
+          </p>
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <HwSection kind="the unit" title="initrd-find-nixos-closure.service, and its one demand">
+    <p class="hw-lede">
+      From <code>nixos/modules/system/boot/systemd/initrd.nix</code>. It reads
+      <code>/proc/cmdline</code>, looks for <code>init=</code>, and if it does not
+      find one it refuses to continue &mdash; because without it, stage 1 does not
+      know which of the closures on the disk it is supposed to be booting.
+    </p>
+
+    <pre class="hw-code" set:html={unit} />
+
+    <p class="hw-p">
+      <code>RequiresMountsFor = "/sysroot/nix/store"</code> is what orders it
+      immediately after the sysroot tmpfiles unit, and
+      <code>requiredBy = [ "initrd.target" ]</code> is what turns its
+      <code>exit 1</code> into emergency mode. The entire failure therefore reduces
+      to one sentence: <strong>there was no <code>init=</code> on the kernel command
+      line.</strong>
+    </p>
+  </HwSection>
+
+  <HwSection kind="the cause" title="U-Boot honours /chosen/bootargs only when it feels like it">
+    <p class="hw-lede">
+      The SD image derivation writes the command line into the device tree with
+      <code>fdtput -t s … /chosen bootargs</code>, and that step is genuinely
+      required &mdash; an earlier boot with no <code>/chosen/bootargs</code> at all
+      was silent on both UARTs. It is also, on its own, useless. Vendored U-Boot
+      rewrites the property on its way past.
+    </p>
+
+    <pre class="hw-code" set:html={vendor} />
+
+    <p class="hw-p">
+      The vendor environment never defines <code>bootargs</code>, so every boot took
+      the second branch. The <code>g_bootmod = 3</code> line printed on every one of
+      those boots is line 126 of this same function &mdash; it had been sitting in
+      the log the whole time, naming the function that was doing it.
+    </p>
+
+    <HwFigure
+      caption="<strong>The decision, and the two boots either side of it.</strong> Note what the left branch costs: whatever <code>fdtput</code> wrote into <code>/chosen/bootargs</code> is discarded before the kernel ever sees the tree. The device tree is not where the kernel command line lives on this board."
+    >
+      <svg
+        viewBox="0 0 920 540"
+        role="img"
+        aria-label="A flowchart. bootm calls board_fdt_chosen_bootargs, which tests whether the U-Boot environment defines bootargs. If it does not, a hardcoded vendor string with no init= overwrites /chosen/bootargs and NixOS stage 1 exits 1 into emergency mode. If it does, our command line reaches the kernel and the boot succeeds."
+      >
+        <defs>
+          <marker id="bc-mut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+          </marker>
+          <marker id="bc-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--undeclared)"></path>
+          </marker>
+          <marker id="bc-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--grounded)"></path>
+          </marker>
+        </defs>
+
+        {/* top: what feeds the decision */}
+        <rect x="300" y="12" width="320" height="52" rx="3" fill="var(--ours-f)" stroke="var(--ours)" stroke-width="1.4"></rect>
+        <text x="460" y="34" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ours)" font-family="var(--mono)">our DTB: /chosen/bootargs</text>
+        <text x="460" y="52" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">written by fdtput in nix/sd-image.nix</text>
+
+        <line x1="460" y1="64" x2="460" y2="92" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#bc-mut)"></line>
+
+        <rect x="300" y="94" width="320" height="52" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"></rect>
+        <text x="460" y="116" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">bootm → board_fdt_chosen_bootargs()</text>
+        <text x="460" y="134" text-anchor="middle" font-size="10.5" fill="var(--muted)" font-family="var(--mono)">board/canaan/common/k230_img.c:110</text>
+
+        <line x1="460" y1="146" x2="460" y2="172" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#bc-mut)"></line>
+
+        {/* the test */}
+        <rect x="316" y="174" width="288" height="46" rx="23" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.6"></rect>
+        <text x="460" y="203" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" font-family="var(--mono)">env_get("bootargs") == NULL ?</text>
+
+        {/* branches */}
+        <path d="M316,197 L200,197 L200,246" fill="none" stroke="var(--undeclared)" stroke-width="1.8" marker-end="url(#bc-bad)"></path>
+        <text x="256" y="189" text-anchor="middle" font-size="11" font-weight="700" fill="var(--undeclared)" font-family="var(--mono)">yes</text>
+        <text x="256" y="230" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">every boot until 2026-09-20</text>
+
+        <path d="M604,197 L720,197 L720,246" fill="none" stroke="var(--grounded)" stroke-width="1.8" marker-end="url(#bc-ok)"></path>
+        <text x="662" y="189" text-anchor="middle" font-size="11" font-weight="700" fill="var(--grounded)" font-family="var(--mono)">no</text>
+        <text x="662" y="230" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">after the env fix</text>
+
+        {/* failing column */}
+        <rect x="40" y="248" width="320" height="86" rx="3" fill="var(--undeclared-f)" stroke="var(--undeclared)" stroke-width="1.4"></rect>
+        <text x="56" y="270" font-size="11.5" font-weight="700" fill="var(--undeclared)" font-family="var(--sans)">HARDCODED VENDOR STRING</text>
+        <text x="56" y="289" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">root=/dev/mmcblk1p2 loglevel=8 rw</text>
+        <text x="56" y="304" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">rootdelay=4 rootfstype=ext4</text>
+        <text x="56" y="319" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">console=ttyS0,115200  earlycon=sbi</text>
+
+        <line x1="200" y1="334" x2="200" y2="360" stroke="var(--undeclared)" stroke-width="1.6" marker-end="url(#bc-bad)"></line>
+        <text x="212" y="352" font-size="10" fill="var(--undeclared)" font-family="var(--mono)">overwrites /chosen/bootargs</text>
+
+        <rect x="40" y="362" width="320" height="44" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.3"></rect>
+        <text x="200" y="381" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">kernel boots · no init= present</text>
+        <text x="200" y="398" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">root mounts anyway — see the coincidence</text>
+
+        <line x1="200" y1="406" x2="200" y2="432" stroke="var(--undeclared)" stroke-width="1.6" marker-end="url(#bc-bad)"></line>
+
+        <rect x="40" y="434" width="320" height="44" rx="3" fill="var(--surface)" stroke="var(--undeclared)" stroke-width="1.3"></rect>
+        <text x="200" y="453" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--undeclared)" font-family="var(--mono)">initrd-find-nixos-closure: exit 1</text>
+        <text x="200" y="470" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">initrd.target fails</text>
+
+        <line x1="200" y1="478" x2="200" y2="500" stroke="var(--undeclared)" stroke-width="1.6" marker-end="url(#bc-bad)"></line>
+        <text x="200" y="522" text-anchor="middle" font-size="14" font-weight="700" fill="var(--undeclared)" font-family="var(--sans)">EMERGENCY MODE · root locked</text>
+
+        {/* working column */}
+        <rect x="560" y="248" width="320" height="86" rx="3" fill="var(--grounded-f)" stroke="var(--grounded)" stroke-width="1.4"></rect>
+        <text x="576" y="270" font-size="11.5" font-weight="700" fill="var(--grounded)" font-family="var(--sans)">OUR STRING, FROM THE ENV</text>
+        <text x="576" y="289" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">console=ttyS0,115200n8 root=fstab</text>
+        <text x="576" y="304" font-size="10" fill="var(--ink-2)" font-family="var(--mono)">loglevel=4 lsm=landlock,yama,bpf</text>
+        <text x="576" y="319" font-size="10" fill="var(--grounded)" font-family="var(--mono)">init=/nix/store/2h0x…/init</text>
+
+        <line x1="720" y1="334" x2="720" y2="360" stroke="var(--grounded)" stroke-width="1.6" marker-end="url(#bc-ok)"></line>
+        <text x="732" y="352" font-size="10" fill="var(--grounded)" font-family="var(--mono)">written into /chosen/bootargs</text>
+
+        <rect x="560" y="362" width="320" height="44" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.3"></rect>
+        <text x="720" y="381" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-2)" font-family="var(--mono)">kernel boots · init= present</text>
+        <text x="720" y="398" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">root=fstab resolves via NIXOS_SD</text>
+
+        <line x1="720" y1="406" x2="720" y2="432" stroke="var(--grounded)" stroke-width="1.6" marker-end="url(#bc-ok)"></line>
+
+        <rect x="560" y="434" width="320" height="44" rx="3" fill="var(--surface)" stroke="var(--grounded)" stroke-width="1.3"></rect>
+        <text x="720" y="453" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--grounded)" font-family="var(--mono)">closure found · stage 2 starts</text>
+        <text x="720" y="470" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">initrd.target reached</text>
+
+        <line x1="720" y1="478" x2="720" y2="500" stroke="var(--grounded)" stroke-width="1.6" marker-end="url(#bc-ok)"></line>
+        <text x="720" y="522" text-anchor="middle" font-size="14" font-weight="700" fill="var(--grounded)" font-family="var(--sans)">[root@nixos:~]#</text>
+      </svg>
+    </HwFigure>
+
+    <HwNote kind="unverified" label="The coincidence that made it look like progress">
+      <p>
+        The failing boots got as far as a mounted root filesystem, which read as
+        evidence that our storage configuration was correct. It was not evidence of
+        that at all. The vendor fallback string happens to carry
+        <code>root=/dev/mmcblk1p2</code>, and our partition layout happens to match
+        it. The root mount that appeared to work was the bootloader&rsquo;s doing.
+      </p>
+      <p>
+        This is the shape of bug worth naming: a wrong configuration that is rescued
+        by a coincidence produces a <em>partial</em> success, and a partial success
+        is much harder to read than a clean failure.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="the fix" title="Define the variable, and win the test outright">
+    <p class="hw-lede">
+      <code>env_get("bootargs")</code> is checked first, so anything that defines it
+      wins. The interesting part is <em>where</em> the value is allowed to live: the
+      command line names the NixOS closure and therefore changes on every rebuild,
+      while the stage 1 environment image must not, because it is vendored firmware
+      data with a recorded hash.
+    </p>
+
+    <pre class="hw-code" set:html={blinux} />
+
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>The value lives on the boot partition, not in the image</h3>
+          <p>
+            <code>nix/sd-image.nix</code> writes <code>bootargs.txt</code> from
+            <code>config.boot.kernelParams</code> plus <code>init=</code> &mdash;
+            the same string it puts in the DTB, so the two cannot drift apart.
+            <code>env.env</code> stays closure-independent.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3><code>env import</code> is available because the build enables it</h3>
+          <p>
+            <code>CONFIG_CMD_IMPORTENV=y</code> in this U&#8209;Boot build.
+            <code>ext4load</code> sets the <code>filesize</code> variable as a side
+            effect (<code>fs/fs.c:743</code>), which the very next command consumes
+            &mdash; the two lines only work as a pair, and in that order.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>0x7000000 is chosen, not arbitrary</h3>
+          <p>
+            Above the ~60&nbsp;MB kernel that lands at <code>0x200000</code> and
+            below <code>fw_jump</code> at <code>0x8000000</code>. The highlighted
+            addresses in the listing are the same problem solved once before: the
+            vendor layout assumes a kernel under 32&nbsp;MiB, ours is not, and the
+            device tree and OpenSBI payload had to move above it.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <HwNote kind="grounded" label="Confirmed end to end">
+      <p>
+        <code>cat /proc/cmdline</code> on the booted board returns exactly the
+        string <code>bootargs.txt</code> carries, <code>init=</code> included. The
+        transcript is on the <a href={url("hardware/first-boot/")}>first-boot
+        note</a>.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="What the fix did not settle, and what to suspect next">
+      <p>
+        <code>root=fstab</code> resolved correctly on the first boot after the fix,
+        which closes a risk that had been open since the vendor fallback started
+        quietly supplying an explicit <code>root=</code>. One success is not a
+        pattern. If <code>sysroot</code> ever fails to mount on a later boot, the
+        <code>NIXOS_SD</code> label path is the thing to suspect, not this.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="corrections" title="Three things this project believed that the board disproved">
+    <p class="hw-lede">
+      Written from the QEMU side before the board had ever run our image, repeated
+      in this repository, and wrong. Each one cost a boot cycle, which is why they
+      are named here rather than quietly edited out.
+    </p>
+
+    <div class="hw-contract">
+      <div class="hw-crow hw-crow-head">
+        <span>was believed</span>
+        <span>is actually</span>
+        <span>why it mattered</span>
+      </div>
+      <div class="hw-crow hw-crow-hard">
+        <div class="a">U-Boot reads extlinux</div>
+        <div class="b">nothing on this board parses extlinux.conf</div>
+        <div class="c">
+          Vendored U-Boot runs <code>blinux</code>, an environment variable holding
+          a chain of <code>ext4load</code> commands that fetch each file by literal
+          filename, ending in <code>bootm</code>. There is no generation menu and no
+          <code>APPEND</code> line to put <code>init=</code> on, which is why
+          <code>nix/hardware.nix</code> sets
+          <code>boot.loader.generic-extlinux-compatible.enable = false</code>.
+        </div>
+      </div>
+      <div class="hw-crow hw-crow-hard">
+        <div class="a">OpenSBI is v0.9</div>
+        <div class="b">v1.4, on the path that boots Linux</div>
+        <div class="c">
+          v0.9 is what the shipped RT&#8209;Smart firmware prints, and that log is
+          real. It is not our chain. We boot through
+          <code>opensbi-1.4-overlay</code> &mdash; OpenSBI 1.4 plus Canaan&rsquo;s
+          T&#8209;Head overlay, <code>FW_TEXT_START=0</code> &mdash; and the version
+          matters because the overlay carries
+          <code>THEAD_QUIRK_DISABLE_MAEE</code>.
+        </div>
+      </div>
+      <div class="hw-crow hw-crow-hard">
+        <div class="a">the DTB carries the kernel command line</div>
+        <div class="b">the U-Boot environment does</div>
+        <div class="c">
+          This is the sharpest difference from QEMU, where <code>-append</code> is
+          simply honoured. On the board the command line is a property of the
+          environment image and the boot partition. Writing it into the device tree
+          is still necessary, and is not sufficient.
+        </div>
+      </div>
+    </div>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Analysis: docs/evidence/stage1-emergency-mode.md. Console evidence:
+      docs/evidence/hardware-boot.txt for the failure,
+      docs/evidence/hardware-userspace.md for /proc/cmdline after the fix. The
+      vendor environment as shipped is in docs/evidence/uboot-env.txt; the
+      differences from QEMU are tabulated in docs/evidence/boot-path-differences.md.
+    </p>
+    <p>
+      Vendor source: u-boot/board/canaan/common/k230_img.c line 110 (the function)
+      and line 126 (the g_bootmod printf). NixOS source:
+      nixos/modules/system/boot/systemd/initrd.nix. Our side:
+      nix/sd-image.nix, nix/hardware.nix, tools/gen-stage1.sh and
+      firmware/stage1/PROVENANCE.txt, which records every byte of stage 1 that this
+      project generates rather than vendors.
+    </p>
+    <p>
+      The U-Boot and SPL binaries are untouched. Only the environment image &mdash;
+      plain data produced with <code>mkenvimage</code> from a text file &mdash; is
+      ours, which is what <code>image/boot-chain</code> requires.
+    </p>
+  </div>
+</HardwareNote>

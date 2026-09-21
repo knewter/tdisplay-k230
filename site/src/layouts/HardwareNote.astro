@@ -5,7 +5,7 @@
 // rest of the site rather than like something pasted into it.
 import Base from "./Base.astro";
 import { url } from "../lib/specs";
-import { HARDWARE_NOTES } from "../lib/hardware";
+import { NOTE_GROUPS, notesOfKind } from "../lib/hardware";
 
 interface Props {
   /** Matches a slug in HARDWARE_NOTES; picks the current entry out of the set. */
@@ -21,8 +21,6 @@ interface Props {
   meta: { label: string; value: string }[];
 }
 const { slug, title, eyebrow, dek, description, source, meta } = Astro.props;
-const others = HARDWARE_NOTES.filter((n) => n.slug !== slug);
-const here = HARDWARE_NOTES.find((n) => n.slug === slug);
 ---
 
 <Base title={`${title} — T-Display-K230 hardware notes`} description={description} source="hand">
@@ -53,27 +51,34 @@ const here = HARDWARE_NOTES.find((n) => n.slug === slug);
 
   <nav class="hw-links">
     <h2 class="section-title">The rest of the set</h2>
-    <ul>
-      {
-        others.map((n) => (
-          <li>
-            <a href={url(`hardware/${n.slug}/`)}>
-              <b>{n.title}</b>
-              <span>{n.blurb}</span>
-            </a>
-          </li>
-        ))
-      }
-      {
-        here && (
-          <li>
-            <span class="here">
-              <b>{here.title}</b>
-              <span>you are here</span>
-            </span>
-          </li>
-        )
-      }
-    </ul>
+    {
+      NOTE_GROUPS.map((g) => (
+        <>
+          <h3 class="hw-links-group">
+            {g.name}
+            <span class="rule" />
+          </h3>
+          <ul>
+            {notesOfKind(g.kind).map((n) =>
+              n.slug === slug ? (
+                <li>
+                  <span class="here">
+                    <b>{n.title}</b>
+                    <span>you are here</span>
+                  </span>
+                </li>
+              ) : (
+                <li>
+                  <a href={url(`hardware/${n.slug}/`)}>
+                    <b>{n.title}</b>
+                    <span>{n.blurb}</span>
+                  </a>
+                </li>
+              ),
+            )}
+          </ul>
+        </>
+      ))
+    }
   </nav>
 </Base>

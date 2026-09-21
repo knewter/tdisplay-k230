@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import Tape from "../components/Tape.astro";
 import Legend from "../components/Legend.astro";
 import { specs, url, kib, unproven, total } from "../lib/specs";
-import { HARDWARE_NOTES } from "../lib/hardware";
+import { NOTE_GROUPS, notesOfKind } from "../lib/hardware";
 
 const t = specs.tally;
 const n = specs.total;
@@ -68,6 +68,93 @@ const { unverified, undeclared } = t;
     <Legend tally={t} />
   </section>
 
+  <!--
+    2026-09-20. The single largest thing that has happened to this project,
+    and the only section on this page whose facts came off the board rather
+    than out of a file. It sits directly under the count because the count is
+    the site's product and this is its best entry.
+  -->
+  <section class="milestone" aria-labelledby="milestone-h">
+    <p class="milestone-eyebrow">
+      <span class="live" aria-hidden="true"></span>
+      first boot &middot; 2026-09-20
+    </p>
+    <h2 id="milestone-h">NixOS reached a root shell on the silicon.</h2>
+    <p class="milestone-lede">
+      Not under emulation, not on the build host. A kernel this repository
+      cross-compiled, an image this repository wrote, an SD card in the board
+      &mdash; and a prompt on <code>/dev/ttyACM0</code> that answered four
+      questions no x86 machine and no <code>qemu-system-riscv64&nbsp;-machine&nbsp;virt</code>
+      could have answered the same way.
+    </p>
+
+    <pre class="milestone-term" tabindex="0" aria-label="Console transcript from the booted board"><i>[root@nixos:~]#</i> cat /proc/cpuinfo
+processor	: 0
+hart		: 0
+isa		: rv64imafdcv_zicbom_zicboz_zicntr_zicsr_zifencei_zihpm_zba_zbb_zbs_svpbmt
+mmu		: sv39
+<b>uarch		: thead,c908</b>
+<b>mvendorid	: 0x5b7</b>
+marchid		: 0x8000000009140d00
+mimpid		: 0x50000
+
+<i>[root@nixos:~]#</i> uname -a
+<b>Linux nixos 6.6.36 #1-NixOS</b> SMP Tue Jan  1 00:00:00 UTC 1980 <b>riscv64</b> GNU/Linux
+
+<i>[root@nixos:~]#</i> cat /proc/cmdline
+console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf <b>init=</b>/nix/store/2h0xrlf5n74fjjhxqd18y6vl55w4zyrr-nixos-system-nixos-26.11.20260919.20b1ddd/init
+
+<i>[root@nixos:~]#</i> findmnt -no SOURCE,FSTYPE /
+/dev/mmcblk1p2 ext4
+
+<i>[root@nixos:~]#</i> nproc
+1</pre>
+
+    <ul class="milestone-facts">
+      <li>
+        <b>thead,c908 &middot; 0x5b7</b>
+        <span>
+          T&#8209;Head&rsquo;s vendor ID and the C908 microarchitecture. This is the
+          real K230D, not a host and not <code>virt</code>.
+        </span>
+      </li>
+      <li>
+        <b>6.6.36 #1-NixOS</b>
+        <span>
+          The Xuantie kernel built by this flake, running as a NixOS system
+          &mdash; not the vendor image the board shipped with.
+        </span>
+      </li>
+      <li>
+        <b>init= arrived intact</b>
+        <span>
+          <code>/proc/cmdline</code> is exactly the string the SD image writes
+          to <code>bootargs.txt</code>. Making that true took a fix in the
+          U&#8209;Boot environment.
+        </span>
+      </li>
+      <li>
+        <b>root=fstab resolved</b>
+        <span>
+          No explicit <code>root=</code>, yet <code>/</code> is
+          <code>/dev/mmcblk1p2</code>. The <code>NIXOS_SD</code> label path had
+          never been exercised before; it works.
+        </span>
+      </li>
+    </ul>
+
+    <div class="milestone-go">
+      <a href={url("hardware/first-boot/")}>
+        <b>The full transcript, and why Linux gets one hart</b>
+        <span>first-boot note &rarr;</span>
+      </a>
+      <a href={url("hardware/boot-chain/")}>
+        <b>How the kernel command line got through</b>
+        <span>boot-chain note &rarr;</span>
+      </a>
+    </div>
+  </section>
+
   {
     specs.capabilities.length > 0 && (
       <section class="ledger">
@@ -105,23 +192,32 @@ const { unverified, undeclared } = t;
     <h2 class="section-title">Hardware notes</h2>
     <p class="defect-lede">
       Hand-authored rather than rendered from the specs, and maintained here
-      rather than anywhere else. They describe the board as it is read out of
-      the device trees, the schematic and the vendor BSP &mdash; and they get
-      corrected in place when the repository learns something newer, which has
-      already happened to all three.
+      rather than anywhere else. They are split by where their facts came from,
+      because that is what decides how much they are worth: a note written from
+      a console transcript outranks a note written from a device tree, and both
+      get corrected in place when the repository learns something newer.
     </p>
-    <ul>
-      {
-        HARDWARE_NOTES.map((n) => (
-          <li>
-            <a href={url(`hardware/${n.slug}/`)}>
-              <b>{n.title}</b>
-              <span>{n.blurb}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    {
+      NOTE_GROUPS.map((g) => (
+        <>
+          <h3 class="hw-links-group">
+            {g.name}
+            <span class="rule" />
+          </h3>
+          <p class="hw-links-blurb">{g.blurb}</p>
+          <ul>
+            {notesOfKind(g.kind).map((n) => (
+              <li>
+                <a href={url(`hardware/${n.slug}/`)}>
+                  <b>{n.title}</b>
+                  <span>{n.blurb}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      ))
+    }
   </section>
 
   {

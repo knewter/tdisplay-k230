@@ -558,8 +558,10 @@ const dtsi = `<i>// nix/dts/display-rm69a10-568x1232.dtsi (abridged: the 20-comm
       <p>
         Compiling proves the description is well-formed, not that it is correct. The
         init sequence is transcribed from working vendor code, but the timings, the
-        reset polarity and the burst-mode mismatch are all untested on hardware, and
-        Linux has not booted on this board.
+        reset polarity and the burst-mode mismatch are all untested on hardware. As
+        of 2026-09-20 Linux does boot on this board, so the obstacle is no longer
+        that nothing can probe &mdash; it is that nobody has looked at what happens
+        when it does.
       </p>
     </HwNote>
   </HwSection>

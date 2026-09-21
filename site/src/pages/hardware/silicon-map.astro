@@ -48,7 +48,7 @@ const pinmux = `u-boot/arch/riscv/dts/<b>k230_canmv_v3p0.dts</b>
     { label: "Reference board", value: "canaan/k230-canmv-v3-lcd.dts<br>96 lines" },
     { label: "Our board file", value: "nix/dts/k230-tdisplay.dts<br>compiles to 55,156 bytes" },
     { label: "Kernel", value: "ruyisdk/linux-xuantie-kernel<br>pinned 7d4e1f4" },
-    { label: "Observed so far", value: "U-Boot, on hardware<br>Linux has not booted" },
+    { label: "Observed so far", value: "U-Boot, then Linux to a root shell<br>2026-09-20; no peripheral but the card" },
   ]}
 >
   <HwSection kind="the board" title="Four things a product render can prove">
@@ -216,11 +216,13 @@ const pinmux = `u-boot/arch/riscv/dts/<b>k230_canmv_v3p0.dts</b>
         is MMC0.
       </p>
       <p>
-        Nothing on this page beyond that has been exercised. U-Boot then failed its
-        own boot command &mdash; it wanted a text file named <code>force_dtb</code>
-        naming the device tree, and we had written <code>force.dtb</code>, the tree
-        itself &mdash; so Linux has never started on this board and no Linux driver
-        on this page has ever probed.
+        <strong>Updated 2026-09-20:</strong> Linux has since booted on this board,
+        to a root shell &mdash; that boot needed the <code>force_dtb</code> /
+        <code>force.dtb</code> filename confusion sorted out and then a fix to the
+        kernel command line, both recorded elsewhere on this site. It changes
+        nothing else on this page. The console and the SD card are still the only
+        two things here that have been exercised; every other driver named below
+        remains one that has never probed.
       </p>
     </HwNote>
   </HwSection>
@@ -586,12 +588,20 @@ const pinmux = `u-boot/arch/riscv/dts/<b>k230_canmv_v3p0.dts</b>
       </p>
     </HwNote>
 
-    <HwNote kind="unverified" label="One CPU in the device tree, two in the chip">
+    <HwNote kind="grounded" label="One CPU in the device tree, two in the chip — settled on hardware">
       <p>
-        <code>k230.dtsi</code> declares a single <code>cpu@0</code>. The K230 has two C908
-        cores; the second is the one RT-Smart runs on in the vendor&rsquo;s AMP split.
-        Whether Linux can or should be given the second core is not answered by any file
-        read here.
+        <code>k230.dtsi</code> declares a single <code>cpu@0</code>. The K230D has two
+        C908 cores; the second is the one RT-Smart runs on in the vendor&rsquo;s AMP
+        split. On 2026-09-20 the booted board answered the open question directly:
+        <code>nproc</code> reports <strong>1</strong>, and <code>/proc/cpuinfo</code>
+        lists only <code>processor: 0</code>.
+      </p>
+      <p>
+        This is the device tree rather than a misconfiguration &mdash;
+        <code>CONFIG_SMP=y</code> is set, and no K230 device tree in the Xuantie tree
+        declares a <code>cpu@1</code> at all. Every <code>cpu@1</code> under
+        <code>dts/canaan/</code> belongs to the K210, an unrelated part, which is an
+        easy way to convince yourself otherwise.
       </p>
     </HwNote>
   </HwSection>
