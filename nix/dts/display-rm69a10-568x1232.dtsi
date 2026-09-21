@@ -52,19 +52,26 @@
 		// 100us after 0x29; neither is expressible, so both become 1 ms,
 		// which is longer than the vendor waits.
 		panel-init-sequence = [
-			15 00 02 fe fd   /* Raydium page select: FE=FD */
-			15 00 02 80 fc   /* page FC */
-			15 00 02 fe 00   /* back to user page 00 */
-			39 00 05 2a 00 00 02 37   /* column address 0..0x237 (567) */
-			39 00 05 2b 00 00 04 cf   /* page address 0..0x4cf (1231) */
-			39 00 05 31 00 03 02 34   /* partial columns */
-			39 00 05 30 00 00 04 cf   /* partial rows */
-			15 00 02 12 00   /* enter partial mode */
-			15 00 02 35 00   /* tearing effect on */
-			15 02 02 51 fe   /* SET_DISPLAY_BRIGHTNESS 0xFE, then 2ms */
-			05 78 01 11   /* sleep out, then 120ms */
-			05 00 01 29   /* display on */
-			15 00 02 3a 77   /* pixel format 0x77 */
+			15 03 02 fe fd   /* Raydium page select: FE=FD */
+			15 03 02 80 fc   /* page FC */
+			15 03 02 fe 00   /* back to user page 00 */
+			39 03 05 2a 00 00 02 37   /* column address 0..0x237 (567) */
+			39 03 05 2b 00 00 04 cf   /* page address 0..0x4cf (1231) */
+			/* The vendor sets a partial area here and enters partial
+			 * display mode (0x12). Reproducing that lit the panel but
+			 * the image glitches, which is what a restricted partial
+			 * area looks like when the VO is streaming a full frame
+			 * into it. We want the whole 568x1232 panel, so: skip the
+			 * partial-area writes and use ENTER_NORMAL_MODE instead.
+			 * If this regresses, the vendor's 31/30/12 block is above
+			 * in the history and its VO differences are catalogued in
+			 * docs/evidence/rtsmart-panel-bringup.md. */
+			15 03 02 13 00   /* enter normal mode (was 31/30 + 12) */
+			15 03 02 35 00   /* tearing effect on */
+			15 05 02 51 fe   /* SET_DISPLAY_BRIGHTNESS 0xFE, then 2ms */
+			05 7b 01 11   /* sleep out, then 120ms */
+			05 03 01 29   /* display on */
+			15 03 02 3a 77   /* pixel format 0x77 */
 		];
 
 		// From connector_info_list[] in mpi_connector.c:
