@@ -27,13 +27,20 @@
 , rootfsImage     # ext4 of the NixOS closure
 , dtbName ? "canaan/k230-canmv-v3.dtb"
 , bootargs          # the kernel command line, baked into the DTB
+, initrd            # NixOS stage 1 -- without it /etc is never assembled
 }:
 
 let
   MiB = 1024 * 1024;
 
   bootPartOffset = 4 * MiB;
-  bootPartSize = 80 * MiB;
+  # The SDK uses 80 MiB, which fits a vendor-sized kernel. Ours is 57 MiB
+  # and the NixOS initrd another 26, which overflowed it:
+  #   __populate_fs: Could not allocate block ... while writing "initrd.uimg"
+  # There is room: boot starts at 4 MiB and root at 128 MiB, so 124 MiB is
+  # free. 112 leaves headroom without moving the root partition, which would
+  # diverge further from the layout stage 1 expects.
+  bootPartSize = 112 * MiB;
   rootPartOffset = 128 * MiB;
 
   # Stage 1 lives in the gap before the first partition. Sizes are checked at
@@ -59,7 +66,7 @@ in
 stdenvNoCC.mkDerivation {
   name = "k230-sd-image.img";
 
-  nativeBuildInputs = with buildPackages; [ e2fsprogs util-linux fakeroot dtc ];
+  nativeBuildInputs = with buildPackages; [ e2fsprogs util-linux fakeroot dtc ubootTools ];
 
   buildCommand = ''
     img=$out
@@ -87,7 +94,41 @@ stdenvNoCC.mkDerivation {
     fdtput -t s boot/$(basename ${dtbName}) /chosen bootargs \
       ${lib.escapeShellArg bootargs}
     echo "bootargs: $(fdtget boot/$(basename ${dtbName}) /chosen bootargs)"
+
+    # ...and ALSO in the U-Boot environment, which is what actually wins.
+    #
+    # The DTB alone is not enough. board_fdt_chosen_bootargs()
+    # (board/canaan/common/k230_img.c:110) reads env "bootargs" and, when it
+    # is unset, substitutes a hardcoded vendor string picked by g_bootmod --
+    # overwriting whatever fdtput put in /chosen. That string has no init=,
+    # so NixOS stage 1's initrd-find-nixos-closure.service exits 1 with "No
+    # init= parameter on the kernel command line", and because it is
+    # requiredBy initrd.target the boot lands in emergency mode with the
+    # root account locked. Observed on hardware -- see
+    # docs/evidence/hardware-boot.txt.
+    #
+    # Setting env "bootargs" takes the first branch and our command line is
+    # used verbatim. It is written here rather than baked into the stage 1
+    # env image because it names the NixOS closure, which changes on every
+    # rebuild; stage 1 stays closure-independent and `env import`s this file.
+    printf 'bootargs=%s\n' ${lib.escapeShellArg bootargs} > boot/bootargs.txt
+
     cp ${stage1.src}/fw_jump_add_uboot_head.bin boot/
+
+    # NixOS stage 1, wrapped as a U-Boot ramdisk image so bootm can take it.
+    #
+    # Not optional. On this NixOS, /etc is not a directory on disk -- it is
+    # assembled at boot by $toplevel/prepare-root, which runs IN THE INITRD.
+    # Booting without it mounts the root fine and then leaves systemd with
+    # no units at all:
+    #
+    #   systemd[1]: Unit default.target not found.
+    #   systemd[1]: Failed to load rescue.target.
+    #   systemd[1]: Freezing execution.
+    #
+    # Observed on hardware, docs/evidence/hardware-boot.txt.
+    mkimage -A riscv -O linux -T ramdisk -C none -n initrd \
+      -d ${initrd} boot/initrd.uimg
 
     # U-Boot's bootcmd runs k230_set_dtb before loading anything, and that
     # command does NOT read a device tree -- it reads a TEXT file naming

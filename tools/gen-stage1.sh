@@ -66,7 +66,18 @@ echo "--- env (load addresses that fit a NixOS kernel)"
 #
 # The environment is plain data we generate, not vendor firmware, so move
 # the dtb and OpenSBI above the kernel instead of constraining the kernel.
-sed -e "s|0x3000000 /fw_jump_add_uboot_head.bin|0x8000000 /fw_jump_add_uboot_head.bin|" -e "s|0x2200000 /\${dtb}|0x8400000 /\${dtb}|" -e "s|bootm 0x3000000 - 0x2200000|bootm 0x8000000 - 0x8400000|" "$ENVF" > tdisplay.env
+#
+# blinux also gains a bootargs.txt load + "env import". Without env
+# "bootargs" set, board_fdt_chosen_bootargs() (board/canaan/common/
+# k230_img.c:110) substitutes a hardcoded vendor command line chosen by
+# g_bootmod and overwrites /chosen/bootargs in our dtb. That line has no
+# init=, which drops NixOS stage 1 into emergency mode. The file lives on
+# the boot partition rather than in this env image because it names the
+# NixOS closure and so changes on every rebuild -- this env must not.
+# 0x7000000 is below fw_jump (0x8000000) and above the ~60 MB kernel at
+# 0x200000. ${filesize} is set by the ext4load immediately before it.
+sed -e "s|blinux=k230_set_dtb \&\& |blinux=k230_set_dtb \&\& ext4load mmc \${mmc_boot_dev_num}:1 0x7000000 /bootargs.txt \&\& env import -t 0x7000000 \${filesize} \&\& |" \
+    -e "s|0x3000000 /fw_jump_add_uboot_head.bin|0x8000000 /fw_jump_add_uboot_head.bin|" -e "s|0x2200000 /\${dtb}|0x8400000 /\${dtb}|" -e "s|bootm 0x3000000 - 0x2200000|ext4load mmc \${mmc_boot_dev_num}:1 0x9000000 /initrd.uimg \&\& bootm 0x8000000 0x9000000 0x8400000|" "$ENVF" > tdisplay.env
 echo "--- env changes:"; diff "$ENVF" tdisplay.env || true
 $UB/tools/mkenvimage -s 0x2000 -o env.env tdisplay.env
 
