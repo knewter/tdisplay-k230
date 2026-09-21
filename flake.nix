@@ -89,6 +89,7 @@
           in
           pkgs.callPackage ./nix/sd-image.nix {
             inherit stage1 rootfsImage;
+            initrd = "${cfg.system.build.toplevel}/initrd";
             kernel = self.k230Kernel.kernel;
             # Our own board, not the CanMV reference.
             dtbName = "canaan/k230-tdisplay.dtb";
