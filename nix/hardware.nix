@@ -68,7 +68,11 @@
   # hangs during bring-up -- which is exactly when the messages are needed.
   # Observed: a soft lockup in the panel path with nothing on the console to
   # say where. Revert to 4 once the panel is up and boots are quiet again.
-  boot.kernelParams = [ "loglevel=7" ];
+  # mkAfter matters: the kernel takes the LAST loglevel on the command line,
+  # and nixpkgs' own "loglevel=4" is already there. Without mkAfter this
+  # lands before it and is silently overridden -- caught by reading
+  # bootargs.txt out of the built image rather than trusting the option.
+  boot.kernelParams = lib.mkAfter [ "loglevel=7" ];
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD";
