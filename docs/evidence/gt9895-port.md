@@ -355,3 +355,44 @@ the part answers i2c, the pad is muxed (4 real edges prove it), the IC-info
 parse is arithmetically sound, the register layout is confirmed byte-for-byte
 against LILYGO's own driver, and that driver performs no initialisation the
 backport is missing.
+
+## Hardware result: LEVEL_LOW applied, still no interrupts
+
+The DTB change is confirmed live on the board:
+
+```
+87:   0   gpio-k230  23 Level   goodix-berlin
+```
+
+`Level`, as intended, replacing `Edge`. The count stayed at **0** across a
+20-second window.
+
+That zero is itself informative. With **level** triggering, a line stuck
+low would produce an interrupt storm, not silence. Zero means the INT line
+is sitting high and the controller never asserts it.
+
+Reading the touch-data register directly — `0x10308`, the same one
+LilyGO's `gt9895.c` polls — twice, 8 seconds apart:
+
+```
+81 01 00 00 5a 10 ec 00
+81 01 00 00 5a 10 ec 00
+```
+
+Byte-for-byte identical, and byte 2 (`rdbuf[2] & 0xf`, the touch count per
+`gt9895.c:44`) is `0`. The register is not changing. So the controller
+answers i2c but is not scanning.
+
+**This measurement is not yet trustworthy.** It depends on a finger
+actually being on the panel during those windows, and that was assumed
+rather than confirmed. Before drawing conclusions the test must be redone
+with the press confirmed — otherwise it is exactly the kind of untested
+assumption that produced three wrong conclusions earlier in this project
+(DSI writes taken as delivery, a faithful transcription of dead code, and
+a bound driver taken as a working one).
+
+If the press IS confirmed and the register still does not change, the next
+question is what puts this part into sensing mode. LilyGO's `gt9895.c`
+does no initialisation at all, which on their system implies something
+else — bootloader, RT-Smart firmware, or the part's own power-on default —
+leaves it scanning. That is the thing to find.
