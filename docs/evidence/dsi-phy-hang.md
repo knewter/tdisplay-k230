@@ -404,16 +404,40 @@ not an edit.
 `phy_lan_num` to registers, is declared in the RT-Smart tree but
 implemented outside it, so the delta cannot simply be read off.
 
-### Suggested order of work from here
+### Confirmed against the schematic: the panel is physically 2-lane
 
-1. **Try the cheap experiment first:** set `panel-dsi-lane = <4>` in the
-   device tree. If the panel is in fact wired for 4 lanes and the *2* is
-   ours to blame, this costs one build and settles it. `dts-divergence.md`
-   should record where the 2 came from; if it came from `rm69a10.c` it is
-   well-grounded and this step is just cheap disconfirmation.
-2. **Otherwise, implement the 2-lane PHY path**, using the 4-lane function
-   as the template and gating the `0x400` writes on `device->lanes > 2`.
-   Expect the `0x1fbd` ready mask to need changing too — the bounded wait
-   added earlier will report whatever value a 2-lane configuration
-   actually produces, which is the information needed to get the mask
-   right.
+`repo/schematic/T-Display K230_V1.0_NEW.pdf`, the LCD FPC connector
+(J101x group) carries exactly:
+
+```
+DSI_CLK_P / DSI_CLK_N
+DSI_D0_P  / DSI_D0_N
+DSI_D1_P  / DSI_D1_N
+LCD_RST, LCD_VDD
+```
+
+`DSI_D2_*` and `DSI_D3_*` appear **only** at the SoC pinout (balls Y7,
+Y11 and neighbours) and are never routed to the panel connector.
+
+So `panel-dsi-lane = <2>` is correct and matches both the schematic and
+RT-Smart. The defect is that the Linux driver programs the D-PHY for four
+lanes regardless.
+
+This also rules out the cheap experiment that suggested itself here
+earlier — setting `panel-dsi-lane = <4>` to see if the *2* was ours to
+blame. The board says 2. That test would have been a wasted build.
+
+### Suggested work from here
+
+**Implement the 2-lane PHY path**, using `k230_dsi_config_4lan_phy()` as
+the template and gating the second-instance writes (`dsi->base + 0x400 +
+...`) on lane count. Expect the `0x1fbd` ready mask to need changing too:
+it is the all-ready value for a four-lane configuration. The bounded wait
+added earlier will print whatever a 2-lane configuration actually
+produces, which is exactly the information needed to pick the new mask —
+so the first build of this does not have to guess the constant, it can
+read it.
+
+Worth noting what makes this tractable now and was not before: the read
+path exists, so a 2-lane attempt can be judged by whether the panel
+*answers* rather than by whether the screen lights.
