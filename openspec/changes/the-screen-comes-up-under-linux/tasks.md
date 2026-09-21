@@ -23,7 +23,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 ## 4. Touch
 
 - [x] 4.1 Determine which driver can drive this part, by experiment rather than assumption: mainline has no GT9895 support at any version (`docs/evidence/gt9895-touch.md`). Verify by booting with `compatible = "goodix,gt9916"` against a backported `goodix_berlin` and recording in `docs/evidence/touch-probe.txt` whether it binds
-- [ ] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`.
+- [x] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`. **Neither was needed.** The backported `goodix_berlin` drives the GT9895 with the existing `gt9916` chip data once the device tree declares the interrupt correctly: `IRQ_TYPE_EDGE_FALLING` yields 0 interrupts, `IRQ_TYPE_LEVEL_LOW` yields 2173 in a 45 s capture, with multitouch events on `/dev/input/event0`. Both branches of this task assumed the driver could not drive the part; it can. See `docs/evidence/touch-reports.md`.
       - REOPENED. Closed earlier as "neither branch needed, the Berlin
         backport works". It binds, but two evtest runs with a finger on
         the panel produced zero events and /proc/interrupts shows only 4
