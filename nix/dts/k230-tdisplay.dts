@@ -93,8 +93,22 @@
 	//
 	// The GPIOs are the same as the reference's touch controller:
 	// RST on 24, INT on 23. Confirmed against the schematic.
+	//
+	// Two compatibles, most-specific first, which is how a fallback is
+	// meant to be written. The part really is a GT9895, and that string
+	// is what a driver gaining real GT9895 support would match on. But
+	// the backported goodix_berlin matches ONLY "goodix,gt9916" --
+	// nix/patches/goodix-berlin/goodix_berlin_i2c.c:57 -- so with the
+	// specific string alone nothing binds and the experiment task 4.1
+	// asks for cannot even run. The fallback lets the Berlin driver
+	// attach while the device tree keeps telling the truth about the
+	// silicon.
+	//
+	// Whether a GT9895 is close enough to a GT9916 for that driver to
+	// actually work is the open question, and it is decided by booting,
+	// not by reading. See docs/evidence/gt9895-touch.md.
 	touchscreen@5d {
-		compatible = "goodix,gt9895";
+		compatible = "goodix,gt9895", "goodix,gt9916";
 		reg = <0x5d>;
 		reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_LOW>;
 		interrupt-parent = <&gpio0_ports>;
