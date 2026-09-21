@@ -65,3 +65,28 @@ failed DCS read is **not** proof the panel is deaf — the read path or its
 timing is wrong somewhere. That is worth remembering: the read timeout
 was treated earlier as strong evidence the panel received nothing, and
 that inference is now known to be unsafe.
+
+## The kernel console renders on the panel (task 3.3)
+
+`docs/evidence/panel-photos/05-console-on-panel.jpg` — console text on the
+glass, photographed off the board.
+
+From the boot log:
+
+```
+[0.174613] fbcon: Taking over console
+[3.665931] Console: switching to colour frame buffer device 71x77
+```
+
+71x77 characters is 568/8 by 1232/16, i.e. the whole panel at an 8x16
+font. Two changes were needed:
+
+- `CONFIG_FRAMEBUFFER_CONSOLE=y`. It had been turned off earlier while
+  testing whether fbcon's console take-over was holding `console_lock`
+  across the boot hang. It was not — the board hung identically without
+  it, and the real cause was the unbounded DSI PHY wait — so it goes back.
+- `console=tty0` on the kernel command line, added with `lib.mkBefore`.
+  The ordering is deliberate: the LAST `console=` becomes `/dev/console`,
+  and `ttyS0` has to stay primary. Losing the serial console on a board
+  mid-bring-up would be a bad trade, and every diagnosis in this
+  directory depended on having it.

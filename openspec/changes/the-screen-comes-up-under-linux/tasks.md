@@ -18,7 +18,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 
 - [x] 3.1 Confirm a framebuffer at 568x1232 is present. Verify with `fbset -i` over the serial console, captured into `docs/evidence/panel-probe.txt`
 - [x] 3.2 Write a test pattern to the framebuffer and photograph the physical screen. Verify by committing the photograph to `docs/evidence/` — a framebuffer node is explicitly not sufficient evidence for this task
-- [ ] 3.3 Put the kernel console on the panel so the board is usable without a serial cable. Verify with a photograph of the boot messages on the screen
+- [x] 3.3 Put the kernel console on the panel so the board is usable without a serial cable. Verify with a photograph of the boot messages on the screen
 
 ## 4. Touch
 
