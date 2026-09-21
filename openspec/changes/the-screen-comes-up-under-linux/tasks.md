@@ -30,4 +30,4 @@ display pipeline, so nothing in this change can be proven under emulation.
 ## 5. Ground the specs
 
 - [ ] 5.1 Resolve the `UNVERIFIED` markers in `display/panel` and `display/touch` against the committed photograph and `evtest` session, or restate what remains unproven. Verify with `openspec validate the-screen-comes-up-under-linux`
-- [ ] 5.2 Record the carried patches and device tree divergences under the modified `system/kernel` requirement so a later kernel bump can tell what is still needed. Verify with `openspec validate --all`
+- [x] 5.2 Record the carried patches and device tree divergences under the modified `system/kernel` requirement so a later kernel bump can tell what is still needed. Verify with `openspec validate --all`
