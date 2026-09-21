@@ -185,3 +185,43 @@ Remaining suspects, in the order worth testing:
    returning 1, so the panel's ID registers cannot be read to confirm it is
    responding at all. Implementing it would turn "the panel is silent" into
    a measurement.
+
+### Also ruled out: the framebuffer pixel format
+
+The DSI wire format is set to RGB888 (`dsi->format = MIPI_DSI_FMT_RGB888`,
+`panel-canaan-universal.c`), while the fbdev fix made the framebuffer
+RGB565. That mismatch looked like a candidate, so it was tested directly
+without a rebuild:
+
+```
+modetest -M canaan-drm -s 48:568x1232@AR24
+```
+
+ARGB8888, held open, no error reported. A webcam frame taken while it was
+driving the panel is indistinguishable from the one taken with the RGB565
+framebuffer: still dark. The format is not the problem.
+
+### Also ruled out: the panel power GPIO
+
+`canaan_panel_prepare()` has its `power_on` assertion commented out, which
+looked like the reset-pulse bug repeating. It is not: probe does
+`gpiod_direction_output(ctx->power_on, 1)` unconditionally
+(`panel-canaan-universal.c:338`), and `/sys/kernel/debug/gpio` confirms
+`gpio-537 (backlight_gpio) out hi` on the running board.
+
+### Where this leaves it
+
+Everything the SoC drives is verified correct, and three panel-side
+theories are dead. The two things still untested both point the same way:
+
+- **The init sequence is accepted, not validated.** The DSI controller
+  ACKing 20 writes says the bus works, not that the bytes are right for
+  this panel.
+- **`canaan_dsi_dcs_read()` is a stub** (`// TODO`, returns 1), so the
+  panel cannot be asked anything — not its ID, not its power mode, not
+  whether it received the sequence.
+
+Implementing DCS read is therefore the highest-value next step. It converts
+"the panel is silent" from an inference into a measurement, and would
+distinguish a panel that is not responding at all from one that is
+responding but not lighting.
