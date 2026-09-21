@@ -344,3 +344,76 @@ the SoC side of a link whose far end is not responding.
 used one byte and exercised the new code correctly, so the conclusion
 stands, but the RDDID call should either request one byte or the
 dispatcher should be widened.
+
+## Leading hypothesis: the PHY is configured for 4 lanes, the panel has 2
+
+Found by reading LilyGO's RT-Smart driver for this exact panel against the
+Linux driver.
+
+**RT-Smart sets the PHY to 2 lanes for the RM69A10**, in
+`rm69a10_set_phy_freq()`:
+
+```c
+mipi_phy_attr.phy_lan_num = K_DSI_2LAN;
+connector_set_phy_freq(&mipi_phy_attr);
+```
+
+And it is the *only* vendor panel that does. Across
+`mpp/kernel/connector/src/`:
+
+| connector | lanes |
+| --- | --- |
+| `st7701.c` (the reference board's panel) | `K_DSI_4LAN` |
+| `ili9806.c` | `K_DSI_4LAN` |
+| `lt9611.c` (HDMI bridge) | `K_DSI_4LAN` |
+| **`rm69a10.c` — this panel** | **`K_DSI_2LAN`** |
+
+**The Linux driver has no 2-lane path at all.** `canaan_phy.c` exports
+exactly one PHY configuration function, `k230_dsi_config_4lan_phy()`, and
+`canaan_dsi.c:383` calls it unconditionally:
+
+```c
+k230_dsi_config_4lan_phy(dsi, m - 2, n - 1, voc, 0x96);
+```
+
+`canaan_dsi_set_lan_num(dsi, device->lanes)` at line 403 sets the lane
+count in the *DSI controller*, but nothing tells the *D-PHY*. The driver
+was evidently developed against the 4-lane panels; ours is the exception.
+
+This fits the measurement better than anything else so far. The SoC's own
+PHY reports lock (`PHY_STATUS == 0x1fbd`) because both PHY instances are
+configured and happy — but the data is being striped across four lanes
+into a panel wired for two. The panel would see malformed traffic,
+respond to nothing, and never light. Writes would still "succeed", because
+a DSI write only reports the controller's FIFO draining.
+
+It also explains why `0x1fbd` is reachable: it is the all-PHYs-ready value
+for the 4-lane configuration the driver always programs.
+
+### Why this is not a quick patch
+
+`k230_dsi_phy0_config()` and `k230_dsi_phy1_config()` interleave writes to
+the second PHY instance (`dsi->base + 0x400 + ...`) throughout, and there
+is no register documentation in the tree for `TXDPHY_PLL_CFG0/1`,
+`TXDPHY_CFG0/1` or the `PHY_STATUS` bit layout. Producing a correct
+2-lane configuration means working out which of those writes belong to the
+second lane pair and what the ready mask becomes — reverse engineering,
+not an edit.
+
+`connector_set_phy_freq()`, which would show the vendor's own mapping from
+`phy_lan_num` to registers, is declared in the RT-Smart tree but
+implemented outside it, so the delta cannot simply be read off.
+
+### Suggested order of work from here
+
+1. **Try the cheap experiment first:** set `panel-dsi-lane = <4>` in the
+   device tree. If the panel is in fact wired for 4 lanes and the *2* is
+   ours to blame, this costs one build and settles it. `dts-divergence.md`
+   should record where the 2 came from; if it came from `rm69a10.c` it is
+   well-grounded and this step is just cheap disconfirmation.
+2. **Otherwise, implement the 2-lane PHY path**, using the 4-lane function
+   as the template and gating the `0x400` writes on `device->lanes > 2`.
+   Expect the `0x1fbd` ready mask to need changing too — the bounded wait
+   added earlier will report whatever value a 2-lane configuration
+   actually produces, which is the information needed to get the mask
+   right.
