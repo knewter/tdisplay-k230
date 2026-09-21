@@ -1,9 +1,10 @@
-## Purpose
+# image/boot-chain Specification
 
+## Purpose
 Defines what executes before our kernel on this board, which parts are
 vendored, and how control reaches the system we built.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Stage 1 is a pinned vendored artifact
 
@@ -23,8 +24,14 @@ it was produced. It SHALL NOT be built from source by this project.
 
 ### Requirement: Stage 1 hands control to our kernel
 
-<!-- UNVERIFIED: no image of ours has been loaded by this chain yet.
-Grounded by docs/evidence/hardware-boot.txt. -->
+*Grounded on hardware. The vendored chain loaded our kernel, our device tree
+and our initrd from the card and reached userspace: `uname -a` on the board
+reports `Linux nixos 6.6.36 #1-NixOS ... riscv64`
+(`docs/evidence/hardware-userspace.md`). Stage 1 itself was not modified; the
+two things it required of us were recorded rather than rediscovered — the
+literal filenames its `blinux` variable `ext4load`s, and the fact that the
+kernel command line comes from the U-Boot environment and not from
+`/chosen/bootargs` (`docs/evidence/stage1-emergency-mode.md`).*
 
 The vendored chain SHALL load the kernel, device tree and initrd this project
 builds, from the SD card, without modification to stage 1 itself. Where stage 1

@@ -9,36 +9,32 @@ vendored from Canaan.
 
 ### Requirement: The system boots to a console prompt
 
-*Grounding: `docs/evidence/qemu-boot.txt`. Booted under
-`qemu-system-riscv64 -machine virt` on 2026-09-20, reaching
-`<<< Welcome to NixOS kexec-26.11.20260919.20b1ddd (riscv64) - ttyS0 >>>`
-and an interactive shell on `ttyS0` at 115200 8N1, with no display, no
-keyboard and no network configured. OpenSBI v1.8.1 handed off to S-mode and
-systemd reached `Login Prompts`.*
+*Grounded on both halves. QEMU: `docs/evidence/qemu-boot.txt`. Hardware: a
+root prompt was reached on the board over the CH342 serial console at 115200
+8N1, with no display, no keyboard and no network, and commands were run at it
+(`docs/evidence/hardware-userspace.md`). The transcript format is shared, as
+the requirement intends.*
 
 The system SHALL boot to an interactive console prompt on the serial console
-without a display, a keyboard, or a network. Everything this project does next
-is done through that prompt, so it is the first thing that must hold.
+without a display, a keyboard, or a network.
 
 The console SHALL be the serial console at 115200 8N1, matching the board's
 CH342 bridge, so that one transcript format serves both QEMU and hardware.
 
-What this proves is machine-independent: that the closure is coherent and
-that userspace starts. It SHALL NOT be read as evidence about the board.
-
-*The emulated machine is `virt`, not `k230`, and that is a finding rather
-than a shortcut. Mainline Linux has no bootable K230 platform: 6.18.52
-carries `pinctrl-k230.c` and `reset-k230.c` but ships no K230 device tree
-(`arch/riscv/boot/dts/canaan/` is K210-only) and has no `SOC_CANAAN_K230` —
-only `SOC_CANAAN_K210`, which is `depends on !MMU`. A `k230`-machine boot
-additionally needs the Xuantie kernel built with `CONFIG_ERRATA_THEAD_PBMT=n`,
-that errata being the T-Head MAEE page-table extension QEMU does not
-implement. That kernel is the panel bring-up's to package.*
+**This SHALL hold on the physical board, not only under emulation.** A boot
+under QEMU's `k230` machine is not evidence for this requirement, because that
+machine models neither the vendored boot chain nor the SD card the board loads
+from.
 
 #### Scenario: The system boots under emulation
 
-- **WHEN** the system is booted under QEMU on a riscv64 machine
+- **WHEN** the system is booted under QEMU's `k230` machine
 - **THEN** a console prompt is reached, and the transcript is committed as evidence
+
+#### Scenario: The system boots on the board
+
+- **WHEN** the board is powered on with a flashed card and a data cable attached
+- **THEN** a console prompt is reached on `/dev/ttyACM0`, and that transcript is committed as evidence
 
 #### Scenario: Someone reads an emulated boot as a claim about the board
 

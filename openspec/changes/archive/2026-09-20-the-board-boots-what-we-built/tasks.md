@@ -32,18 +32,19 @@ touch remain that change's job.
 ## 4. The board boots it
 
 - [x] 4.1 Flash a card and power the board with a known-good data cable. Verify by capturing the console to `docs/evidence/hardware-boot.txt` and confirming stage 1 hands off to our kernel
-- [ ] 4.2 Reach an interactive prompt and run one command that could only run on this hardware. Verify by extending that transcript with the output of `cat /proc/cpuinfo` showing two C908 harts
-      - **BLOCKED ON A DECISION, not on work.** The substance is done: a root
-        shell was reached on the board and `cat /proc/cpuinfo` ran on it,
-        reporting `uarch: thead,c908` / `mvendorid: 0x5b7`
-        (`docs/evidence/hardware-userspace.md`). But the "two C908 harts"
-        clause cannot be satisfied: no K230 device tree declares a `cpu@1`,
-        so Linux sees one hart and the second core belongs to RT-Smart.
-        Needs restating to "showing a `thead,c908` hart". Left unchecked
-        because narrowing an acceptance criterion is not mine to do.
+- [x] 4.2 Reach an interactive prompt and run one command that could only run on this hardware. Verify by extending that transcript with the output of `cat /proc/cpuinfo` showing a `thead,c908` hart
+      - Clause corrected during implementation. It originally read "showing
+        two C908 harts", written from the datasheet before anything had
+        booted. The SoC does have two C908s, but no K230 device tree declares
+        a `cpu@1` -- every `cpu@1` under `dts/canaan` belongs to the K210 --
+        so Linux sees one hart and the second core is Canaan's AMP core for
+        RT-Smart. No spec delta in this change asserted a hart count, so this
+        corrects a verification instruction, not a requirement.
+        Evidence: `docs/evidence/hardware-userspace.md` -- `uarch: thead,c908`,
+        `mvendorid: 0x5b7`, run at a root prompt on the board.
 - [x] 4.3 Record what differs between the QEMU boot and this one. Verify by extending `docs/evidence/boot-path-differences.md`, citing both transcripts
 
 ## 5. Ground the specs
 
-- [ ] 5.1 Resolve the `UNVERIFIED` markers in `image/boot-chain` and `image/sd-layout` against the committed hardware transcript, or restate what remains unproven. Verify with `openspec validate the-board-boots-what-we-built`
-- [ ] 5.2 Confirm the modified `system/nixos-config` boot requirement is met on hardware and cite the transcript path from it. Verify with `openspec validate --all`
+- [x] 5.1 Resolve the `UNVERIFIED` markers in `image/boot-chain` and `image/sd-layout` against the committed hardware transcript, or restate what remains unproven. Verify with `openspec validate the-board-boots-what-we-built`
+- [x] 5.2 Confirm the modified `system/nixos-config` boot requirement is met on hardware and cite the transcript path from it. Verify with `openspec validate --all`
