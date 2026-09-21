@@ -62,6 +62,14 @@
     '';
   };
 
+  # loglevel=4 (the nixpkgs default) drops KERN_INFO on the console, which
+  # is every drm and panel message and every dev_info we add. That is fine
+  # when a shell is reachable and `dmesg` works, and useless when the board
+  # hangs during bring-up -- which is exactly when the messages are needed.
+  # Observed: a soft lockup in the panel path with nothing on the console to
+  # say where. Revert to 4 once the panel is up and boots are quiet again.
+  boot.kernelParams = [ "loglevel=7" ];
+
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD";
     fsType = "ext4";

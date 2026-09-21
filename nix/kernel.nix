@@ -108,6 +108,20 @@ EOM
       sed -i 's|\tif (p->init_set_v1_flag) {|\tdev_info(panel->dev, "canaan_panel_prepare: entered, init_set_v1_flag=%u\\n", p->init_set_v1_flag);\n\tif (p->init_set_v1_flag) {|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'canaan_panel_prepare: entered' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Reset the panel immediately before the init sequence.
+      #
+      # canaan_panel_prepare() has the vendor's own reset pulses commented
+      # out, so the only reset happens in probe, seconds earlier. RT-Smart
+      # drives three resets on GPIO22 immediately before it writes the init
+      # sequence -- docs/evidence/rm69a10-init-sequence.md, taken from the
+      # shipped firmware's boot log. With the reset that far away the panel
+      # does not answer, and once fbdev started actually performing a modeset
+      # the DCS write blocked forever: "soft lockup - CPU#0 stuck for 130s!".
+      # See docs/evidence/panel-dark.md.
+      sed -i 's|\tif (p->init_set_v1_flag) {|\tif (p->reset) {\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 0);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(120);\n\t}\n\n\tif (p->init_set_v1_flag) {|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'panel_simple_sleep(120);' drivers/gpu/drm/panel/panel-canaan-universal.c
     '';
   };
 
