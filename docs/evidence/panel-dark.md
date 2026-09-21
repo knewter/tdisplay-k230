@@ -84,3 +84,74 @@ image built from it has not been flashed yet.
 If that turns out not to light the panel, the next step is a `dev_info` in
 `canaan_panel_prepare()` to confirm whether it is reached at all, rather than
 more inference from the absence of log lines.
+
+## Update: two more hypotheses killed, and a real trace at last
+
+### The soft lockup was never the panel
+
+Later boots gained `/dev/fb0` (the 16 bpp fbdev fix below) and then hung: a
+kworker soft-locking ~30s in, right as udev began coldplugging. Three
+explanations were tried and each is disproved on hardware:
+
+| Hypothesis | Disproved by |
+| --- | --- |
+| The DSI write spins forever | `CMD_PKT_STATUS_TIMEOUT_US` is 20 ms and `panel_simple_sleep()` uses `msleep`/`usleep_range`. That path cannot hold a CPU for 22 s. |
+| fbcon's console take-over holds `console_lock` | Hung identically with `CONFIG_FRAMEBUFFER_CONSOLE=n`. |
+| `canaan_get_temp()`'s unbounded `while (1)` | Hung identically with the loop capped and sleeping. |
+
+The reason each took a boot to rule out is that **the kernel could not print
+a backtrace**. `k230_defconfig` sets `CONFIG_SOFTLOCKUP_DETECTOR=y` and no
+`FRAME_POINTER`; on RISC-V the default unwinder walks frame pointers, so
+every lockup printed its header followed by an empty stack dump. The
+evidence needed to settle it in one boot was configured out.
+
+### With FRAME_POINTER on, the board tells us exactly what it is doing
+
+Enabling `FRAME_POINTER` and `STACKTRACE` immediately produced a real trace
+— of a *different* fault, one introduced by adding `KALLSYMS_ALL` in the
+same change:
+
+```
+status: 0000000200000100 badaddr: 000000000000000c cause: 000000000000000d
+[<...>] do_raw_spin_lock+0x10/0x134
+[<...>] _raw_spin_lock_irqsave+0x2a/0x36
+[<...>] complete+0x26/0x82
+[<...>] module_kobj_release+0x1a/0x22
+[<...>] kobject_put+0xa0/0x1fe
+[<...>] locate_module_kobject+0xd8/0x10c
+[<...>] param_sysfs_builtin_init+0x54/0x1d8
+[<...>] do_one_initcall+0x62/0x26a
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+```
+
+`cause 0xd` is a load page fault, `badaddr 0xc` a near-NULL pointer. This is
+the known 6.6-era bug in which `locate_module_kobject()` fails, `kobject_put()`
+then invokes `module_kobj_release()`, and that calls `complete()` on the
+`kobj_completion` of a synthetic builtin-module object, which is NULL.
+
+`KALLSYMS_ALL` only adds data symbols and is not needed for backtraces, so it
+is dropped; `FRAME_POINTER` alone is what makes `dump_stack()` work.
+
+### Boot-chain facts established while bisecting
+
+Driven by hand from the U-Boot prompt, with the serial port already settled:
+
+```
+ext4load mmc 1:1 0x8000000 /fw_jump_add_uboot_head.bin   270792 bytes read
+ext4load mmc 1:1 0x200000  /Image                      62445056 bytes read in 2189 ms
+echo STILL_ALIVE                                        STILL_ALIVE
+```
+
+So the 62 MB kernel load is clean and U-Boot survives it. An earlier theory
+that the kernel had outgrown its load region and was overwriting U-Boot is
+**wrong**.
+
+Two artifacts of the harness, not the board, also became clear and are worth
+recording because both were mistaken for hardware faults:
+
+- **The CH342 emits a burst of garbage when the port opens.** Readable text
+  resumes immediately after. Some of what earlier logs show as mid-boot
+  "corruption" is USB re-enumeration noise.
+- **A single keypress cannot stop U-Boot autoboot.** The port opens before
+  the countdown starts, so the key is consumed too early. `tools/capture-boot.py`
+  gained `--hammer`, which sends a key every 100 ms through the window.

@@ -211,8 +211,20 @@ EOM
     # trace instead of guessing again.
     FRAME_POINTER = yes;
     STACKTRACE = yes;
-    KALLSYMS = yes;
-    KALLSYMS_ALL = yes;
+    # NOT KALLSYMS_ALL. Adding it panicked the board during init:
+    #
+    #   do_raw_spin_lock <- complete <- module_kobj_release
+    #     <- kobject_put <- locate_module_kobject
+    #     <- param_sysfs_builtin_init <- do_one_initcall
+    #   Kernel panic - not syncing: Attempted to kill init!
+    #
+    # badaddr 0xc, cause 0xd: a load fault on a near-NULL pointer. It is the
+    # known 6.6-era bug where locate_module_kobject fails, kobject_put then
+    # runs module_kobj_release, and that calls complete() on the
+    # kobj_completion of a synthetic builtin-module object, which is NULL.
+    # KALLSYMS_ALL only adds data symbols and is not needed for backtraces;
+    # FRAME_POINTER alone is what makes dump_stack() work.
+    # See docs/evidence/panel-dark.md.
 
     # fb0 yes, fbcon no -- for now.
     #

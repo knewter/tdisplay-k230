@@ -40,6 +40,12 @@ def main():
                     help="send a newline after opening, to elicit a prompt "
                          "from an idle shell. Do NOT use for a boot capture: "
                          "it would interrupt U-Boot's autoboot countdown")
+    ap.add_argument("--hammer", type=float, default=0.0,
+                    help="after opening, send a key every 100ms for this "
+                         "many seconds. A single --kick is not enough to stop "
+                         "U-Boot autoboot: the port opens before the countdown "
+                         "starts, so the keypress is consumed too early and the "
+                         "board boots anyway. Hammering covers the window.")
     ap.add_argument("--quiet-exit", type=float, default=0.0,
                     help="stop early after this many seconds with no output")
     args = ap.parse_args()
@@ -70,6 +76,21 @@ def main():
             time.sleep(0.2)          # udev has not finished with it yet
             continue
         emit("--- port opened ---")
+        if args.hammer:
+            emit(f"--- hammering keys for {args.hammer}s to stop autoboot ---")
+            end = time.time() + args.hammer
+            while time.time() < end:
+                try:
+                    port.write(b" \x08")     # space then backspace: harmless at a prompt
+                    port.flush()
+                except Exception:
+                    break
+                chunk = port.read(512)
+                if chunk:
+                    log.write(chunk)
+                    sys.stdout.write(chunk.decode("utf-8", "replace"))
+                    sys.stdout.flush()
+                time.sleep(0.1)
         if args.kick:
             # An idle shell emits nothing, so an --expect that is only checked
             # on arriving data never matches and no --send ever fires.
