@@ -11,7 +11,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 ## 2. A device tree for this panel
 
 - [x] 2.1 Write `display-rm69a10-568x1232.dtsi` for `panel-canaan-universal`, modelled on `display-st7701-480x800.dtsi`, carrying the sequence from 1.1. Verify by building the DTB with `nix build .#deviceTree` and checking it compiles without warnings
-- [ ] 2.2 Write this board's top-level `.dts` including that panel, and record every divergence from `k230-canmv-v3-lcd.dts`. Verify by committing the divergence list to `docs/evidence/dts-divergence.md` and building the DTB
+- [x] 2.2 Write this board's top-level `.dts` including that panel, and record every divergence from `k230-canmv-v3-lcd.dts`. Verify by committing the divergence list to `docs/evidence/dts-divergence.md` and building the DTB
 - [ ] 2.3 Boot the board with the new device tree and confirm the panel probes. Verify by capturing the kernel log to `docs/evidence/panel-probe.txt` showing the panel bound with no DSI errors
 
 ## 3. The screen actually shows something
