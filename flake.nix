@@ -70,6 +70,20 @@
                 mkdir -p ./files/nix/var/nix/profiles
                 ln -sf ${cfg.system.build.toplevel} ./files/nix/var/nix/profiles/system-1-link
                 ln -sf system-1-link ./files/nix/var/nix/profiles/system
+
+                # /sbin/init, because U-Boot discards our init=.
+                #
+                # Observed on hardware: the vendor board code sets its own
+                # bootargs and overwrites /chosen/bootargs from the DTB, so
+                # our init= never reaches the kernel and it falls back to
+                # /sbin/init, /etc/init, /bin/init, /bin/sh -- none of which
+                # exist on a NixOS root -- and panics with "No working init
+                # found". See docs/evidence/hardware-boot.txt.
+                #
+                # Pointing /sbin/init at the profile rather than at a store
+                # path means it follows the current system across updates.
+                mkdir -p ./files/sbin
+                ln -sf /nix/var/nix/profiles/system/init ./files/sbin/init
               '';
             };
           in
