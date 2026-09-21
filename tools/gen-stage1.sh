@@ -11,6 +11,12 @@ docker run --rm \
 set -euo pipefail
 apt-get update -qq && apt-get install -y -qq --no-install-recommends python3 xxd >/dev/null
 
+# mkimage stamps the uImage header with the current time, which then
+# changes the K230 firmware header SHA-256 over it -- so two builds of
+# identical inputs produced different bytes and there was no way to tell a
+# real change from a rebuild. mkimage honours SOURCE_DATE_EPOCH.
+export SOURCE_DATE_EPOCH=1700000000
+
 SDK=/sdk
 CONF=k230_canmv_v3_defconfig
 UB=$SDK/output/$CONF/build/uboot-2022.10
@@ -25,7 +31,16 @@ cp $UB/u-boot.bin .
 cp $UB/spl/u-boot-spl.bin .
 
 echo "--- u-boot: gzip -> CM byte -> mkimage(uboot head) -> firmware head"
-$SDK/tools/k230_priv_gzip -n8 -f -k u-boot.bin
+# Stock gzip, NOT the SDK tools/k230_priv_gzip binary.
+#
+# That binary is a stripped x86-64 ELF we would otherwise have to execute
+# to produce bootable firmware. It is GNU gzip with the name filed off --
+# FSF copyright, "Written by Jean-loup Gailly.", bug-gzip@gnu.org, and
+# the unmodified gzip option table, in which its "-n8" parses as the
+# ordinary "-n -8". Verified byte-identical to nixpkgs gzip 1.14 at every
+# level the SDK falls back through (8, 9, 7, 6, 5, 4) against this very
+# u-boot.bin. See docs/blob-inventory.md.
+gzip -n -8 -f -k u-boot.bin
 # post-image.sh line 96, inside k230_gzip(). Flips the gzip CM byte from
 # 0x08 (deflate, software) to 0x09, which is how SPL is told to use the
 # SoC hardware decompressor. Omitting it still boots -- SPL links both

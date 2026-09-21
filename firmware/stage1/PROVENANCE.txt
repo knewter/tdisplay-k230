@@ -32,7 +32,7 @@ partition table.
 sha256
 ------
 3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
-0ff124df3571acaeb88b78d236c3c2c8b947bc9b2c80eb2361fc34285bc2ecf7  fn_ug_u-boot.bin
+c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4  fn_ug_u-boot.bin
 3a9664f43f8d1b50299155cbc8014d69cdb0ed7d12193187e56d9e3c5707e1af  env.env
 
 Each carries a Canaan firmware header: magic "K230", no encryption,
@@ -119,3 +119,37 @@ This modifies the ENVIRONMENT, which is plain data we generate with
 mkenvimage from a text file, not the SPL or U-Boot binaries.
 image/boot-chain requires our kernel be loaded "without modification to
 stage 1 itself", and the binaries are untouched.
+
+
+k230_priv_gzip removed, and the build is now reproducible
+-----------------------------------------------------------
+The SDK compresses u-boot.bin with tools/k230_priv_gzip -- a stripped
+x86-64 ELF we would otherwise have to EXECUTE to produce bootable
+firmware. It is GNU gzip with the name filed off:
+
+    Copyright (C) 1993 Jean-loup Gailly.
+    Written by Jean-loup Gailly.
+    Report bugs to <bug-gzip@gnu.org>.
+
+and its "-n8" is the ordinary gzip "-n -8". Compared against nixpkgs
+gzip 1.14 on this exact u-boot.bin, at every level the SDK falls back
+through:
+
+    -n8  IDENTICAL     -n6  IDENTICAL
+    -n9  IDENTICAL     -n5  IDENTICAL
+    -n7  IDENTICAL     -n4  IDENTICAL
+
+and end to end, the whole fn_ug_u-boot.bin is byte-identical either way:
+
+    vendor k230_priv_gzip : c0fb8d95a983c33f...
+    stock nixpkgs gzip    : c0fb8d95a983c33f...
+
+tools/gen-stage1.sh now uses stock gzip. One executed vendor binary gone
+from the firmware path.
+
+Proving that required fixing something else first: mkimage stamps the
+uImage header with the current time, and the K230 firmware header carries
+a SHA-256 over that, so two builds of identical inputs differed in 32
+bytes and there was no way to tell a real change from a rebuild. gen-stage1.sh
+now pins SOURCE_DATE_EPOCH, and two consecutive builds produce identical
+bytes.
