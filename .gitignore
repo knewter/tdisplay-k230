@@ -31,3 +31,4 @@ __pycache__/
 # are and where they came from.
 /firmware/stage1/*.bin
 /firmware/stage1/*.env
+result-sd-image
