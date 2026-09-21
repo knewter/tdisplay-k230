@@ -113,3 +113,51 @@ Read back the controller over i2c directly -- i2cget on bus 1 address
 0x5d -- and compare against what goodix_berlin expects. i2c-tools is in
 the image. That distinguishes "the part is not responding" from "the
 driver is misreading a part that is".
+
+
+=====================================================================
+i2c probe: the controller is alive and answering
+=====================================================================
+
+    $ i2cdetect -y -r 1
+    50: -- -- -- -- -- -- -- -- -- -- -- -- -- UU -- --      (0x5d, claimed)
+
+    $ i2ctransfer -f -y 1 w4@0x5d 0x00 0x01 0x00 0x70 r16     # IC info, 0x10070
+    0xad 0x00 0x01 0x00 0x00 0x00 0x22 0xfc 0x0b 0x65 0x02 0x01 0x00 0x01 0x00 0x00
+
+    $ i2ctransfer -f -y 1 w4@0x5d 0x00 0x01 0x00 0x00 r8      # 0x10000
+    0xaa 0xaa 0xaa 0xaa 0xaa 0xaa 0xaa 0xaa
+
+Real data, not 0xff (dead bus) and not 0x00. The GT9895 is present,
+powered, and responding to 32-bit-addressed reads -- the Goodix Berlin
+access pattern.
+
+So the earlier framing of the problem was wrong in an instructive way.
+"The panel does not answer" was true of the DISPLAY's DCS reads; the
+TOUCH controller answers fine. These are different parts on different
+buses and they were briefly conflated.
+
+WHAT THIS LEAVES
+
+The controller is alive on i2c and never asserts its interrupt (4 counts
+since boot on IRQ 87, where a 40s drag would give thousands). That is a
+driver-initialisation mismatch, not absent or broken hardware:
+goodix_berlin derives every register address at runtime from the IC-info
+blob above, so if a GT9895's layout differs from the GT9916 the driver
+was written for, it will initialise without error, compute wrong
+addresses, and then wait forever for data that is being written
+somewhere else.
+
+That is precisely branch two of task 4.1b -- "port LilyGO's RT-Smart
+gt9895.c" -- and the i2c evidence now supports choosing it, where before
+the choice rested on the driver merely having bound.
+
+CONCRETE NEXT STEP
+
+Decode the IC-info blob by hand against goodix_berlin_get_ic_info() and
+check whether the addresses it derives are plausible. The first bytes
+(0xad 0x00 0x01 0x00 ...) are a length and version header in the Berlin
+format; if the length field does not match what the driver expects, the
+parse silently produces garbage. LilyGO's gt9895.c in
+repo/canmv_k230/src/rtsmart/ is the reference for what the layout should
+be for this exact part.
