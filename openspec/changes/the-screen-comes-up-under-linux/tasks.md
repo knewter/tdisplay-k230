@@ -5,7 +5,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 
 ## 1. Extract the working init sequence
 
-- [ ] 1.1 Transcribe the RM69A10 init sequence, PHY frequency, lane count and delays from LilyGO's `mpp/kernel/connector/src/rm69a10.c` into a reviewable table. Verify by committing it to `docs/evidence/rm69a10-init-sequence.md` with each entry citing its line in the vendor source
+- [x] 1.1 Transcribe the RM69A10 init sequence, PHY frequency, lane count and delays from LilyGO's `mpp/kernel/connector/src/rm69a10.c` into a reviewable table. Verify by committing it to `docs/evidence/rm69a10-init-sequence.md` with each entry citing its line in the vendor source
 - [ ] 1.2 Record the vendor bring-up order and GPIO usage from `docs/rtsmart-boot-log.txt`, including the three resets on GPIO22 before init. Verify by extending that document and noting anything the boot log shows that the source does not explain
 
 ## 2. A device tree for this panel
