@@ -26,6 +26,7 @@
 , kernel          # the Xuantie kernel: provides Image and dtbs/
 , rootfsImage     # ext4 of the NixOS closure
 , dtbName ? "canaan/k230-canmv-v3.dtb"
+, bootargs          # the kernel command line, baked into the DTB
 }:
 
 let
@@ -58,7 +59,7 @@ in
 stdenvNoCC.mkDerivation {
   name = "k230-sd-image.img";
 
-  nativeBuildInputs = with buildPackages; [ e2fsprogs util-linux fakeroot ];
+  nativeBuildInputs = with buildPackages; [ e2fsprogs util-linux fakeroot dtc ];
 
   buildCommand = ''
     img=$out
@@ -71,6 +72,21 @@ stdenvNoCC.mkDerivation {
     mkdir -p boot
     cp ${kernel}/Image boot/Image
     cp ${kernel}/dtbs/${dtbName} boot/$(basename ${dtbName})
+    chmod +w boot/$(basename ${dtbName})
+
+    # Put the kernel command line in the device tree.
+    #
+    # `bootm` hands the kernel this DTB and nothing else, so /chosen/bootargs
+    # IS the command line. Without it the kernel gets an empty one: no
+    # console=, no root=, no init=. Observed on hardware -- the board booted
+    # and then sat silent on both UARTs, which looks exactly like a board
+    # that never started. The DTB had stdout-path and no bootargs.
+    #
+    # Taken from config.boot.kernelParams rather than written here, so the
+    # card cannot disagree with the system on it.
+    fdtput -t s boot/$(basename ${dtbName}) /chosen bootargs \
+      ${lib.escapeShellArg bootargs}
+    echo "bootargs: $(fdtget boot/$(basename ${dtbName}) /chosen bootargs)"
     cp ${stage1.src}/fw_jump_add_uboot_head.bin boot/
 
     # U-Boot's bootcmd runs k230_set_dtb before loading anything, and that

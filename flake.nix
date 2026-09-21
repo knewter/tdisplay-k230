@@ -78,6 +78,11 @@
             kernel = self.k230Kernel.kernel;
             # Our own board, not the CanMV reference.
             dtbName = "canaan/k230-tdisplay.dtb";
+            # bootm passes only the DTB, so /chosen/bootargs is the kernel
+            # command line. Derived from the system so the two cannot drift.
+            bootargs =
+              builtins.concatStringsSep " " cfg.boot.kernelParams
+              + " init=${cfg.system.build.toplevel}/init";
           };
       };
 

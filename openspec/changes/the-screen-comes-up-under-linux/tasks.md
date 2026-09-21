@@ -24,7 +24,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 
 - [ ] 4.1 Determine which driver can drive this part, by experiment rather than assumption: mainline has no GT9895 support at any version (`docs/evidence/gt9895-touch.md`). Verify by booting with `compatible = "goodix,gt9916"` against a backported `goodix_berlin` and recording in `docs/evidence/touch-probe.txt` whether it binds
 - [ ] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`. Verify with `nix build .#packages.x86_64-linux.xuantie-kernel` and by recording the choice and its reason in `docs/evidence/kernel-patches.md`
-- [ ] 4.2 Add the GT9895 to the device tree on I2C with reset GPIO24, interrupt GPIO23. Verify by booting and capturing the probe to `docs/evidence/touch-probe.txt`
+- [x] 4.2 Add the GT9895 to the device tree on I2C with reset GPIO24, interrupt GPIO23. Verify by booting and capturing the probe to `docs/evidence/touch-probe.txt`
 - [ ] 4.3 Confirm touches report coordinates that track a deliberate movement across the panel. Verify with a recorded `evtest` session committed to `docs/evidence/touch-evtest.txt`, showing a drag rather than a single tap, and confirm the axes are neither swapped nor mirrored
 
 ## 5. Ground the specs
