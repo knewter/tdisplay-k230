@@ -11,12 +11,9 @@
 { lib, buildLinux, fetchFromGitHub, applyPatches, ... }@args:
 
 let
-  # Pinned by kendryte/k230_linux_sdk @ dev, buildroot-overlay/configs/
-  # k230_canmv_v3_defconfig:
-  #   BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://github.com/ruyisdk/linux-xuantie-kernel.git"
-  #   BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="7d4e1f444f461dbe3833bd99a4640e7b6c2cd529"
-  #   BR2_LINUX_KERNEL_DEFCONFIG="k230"
-  rev = "7d4e1f444f461dbe3833bd99a4640e7b6c2cd529";
+  # The pin itself lives in nix/kernel-src.nix, because nix/device-tree.nix
+  # needs the same tree for its headers and the two must not drift.
+  kernelSrc = import ./kernel-src.nix { inherit fetchFromGitHub; };
 in
 buildLinux (args // {
   version = "6.6.36-xuantie";
@@ -34,12 +31,7 @@ buildLinux (args // {
   # missing. Found by the derivation hash not changing.
   src = applyPatches {
     name = "linux-xuantie-k230-src";
-    src = fetchFromGitHub {
-      owner = "ruyisdk";
-      repo = "linux-xuantie-kernel";
-      inherit rev;
-      hash = "sha256-ITlci/1nGcE46kglR7i1AG3MZH6RBfpcGLWPakyXMTk=";
-    };
+    src = kernelSrc;
 
     # A real patch file, not a sed, because this replaces a whole function
     # body. canaan_dsi_dcs_read() ships as "// TODO; return 1", so the panel
@@ -64,12 +56,15 @@ buildLinux (args // {
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3-lcd.dtb' >> arch/riscv/boot/dts/canaan/Makefile
 
-      # This board's own device tree and panel.
-      cp ${../nix/dts/display-rm69a10-568x1232.dtsi} \
-         arch/riscv/boot/dts/canaan/display-rm69a10-568x1232.dtsi
-      cp ${../nix/dts/k230-tdisplay.dts} \
-         arch/riscv/boot/dts/canaan/k230-tdisplay.dts
-      echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-tdisplay.dtb' >> arch/riscv/boot/dts/canaan/Makefile
+      # NOT our board's device tree. nix/dts/k230-tdisplay.dts and
+      # nix/dts/display-rm69a10-568x1232.dtsi used to be copied in here and
+      # added to that Makefile, which put them in the kernel's `src` -- so a
+      # one-byte edit to panel-init-sequence invalidated the whole kernel
+      # and cost a ~20 minute cross-compile. They are compiled in their own
+      # derivation now (nix/device-tree.nix) and the image takes the DTB
+      # from there; the output is byte-identical. Nothing in this kernel
+      # depends on them any more, which is the entire point -- do not add
+      # them back.
 
       # goodix_berlin, backported from v6.12. The pinned 6.6 tree has only
       # the older GT9xx goodix.c. See docs/evidence/gt9895-touch.md -- note

@@ -23,9 +23,13 @@
 , stdenvNoCC
 , buildPackages
 , stage1          # nix/stage1.nix
-, kernel          # the Xuantie kernel: provides Image and dtbs/
+, kernel          # the Xuantie kernel: provides Image
+, deviceTree      # nix/device-tree.nix: a directory holding the board DTB.
+                  #   Deliberately NOT ${kernel}/dtbs. The DTB used to be
+                  #   built inside the kernel, which meant a one-byte edit
+                  #   to the panel init sequence cost a full cross-compile.
 , rootfsImage     # ext4 of the NixOS closure
-, dtbName ? "canaan/k230-canmv-v3.dtb"
+, dtbName ? "k230-tdisplay.dtb"   # the bare filename, in ${deviceTree}
 , bootargs          # the kernel command line, baked into the DTB
 , initrd            # NixOS stage 1 -- without it /etc is never assembled
 }:
@@ -78,8 +82,8 @@ stdenvNoCC.mkDerivation {
     echo "--- boot partition"
     mkdir -p boot
     cp ${kernel}/Image boot/Image
-    cp ${kernel}/dtbs/${dtbName} boot/$(basename ${dtbName})
-    chmod +w boot/$(basename ${dtbName})
+    cp ${deviceTree}/${dtbName} boot/${dtbName}
+    chmod +w boot/${dtbName}
 
     # Put the kernel command line in the device tree.
     #
@@ -91,9 +95,9 @@ stdenvNoCC.mkDerivation {
     #
     # Taken from config.boot.kernelParams rather than written here, so the
     # card cannot disagree with the system on it.
-    fdtput -t s boot/$(basename ${dtbName}) /chosen bootargs \
+    fdtput -t s boot/${dtbName} /chosen bootargs \
       ${lib.escapeShellArg bootargs}
-    echo "bootargs: $(fdtget boot/$(basename ${dtbName}) /chosen bootargs)"
+    echo "bootargs: $(fdtget boot/${dtbName} /chosen bootargs)"
 
     # ...and ALSO in the U-Boot environment, which is what actually wins.
     #
@@ -142,9 +146,9 @@ stdenvNoCC.mkDerivation {
     # force_dtb is checked first and short-circuits display detection, so
     # one file is enough. lcd_dtb and hdmi_dtb are written too, pointing at
     # the same tree, so a board that takes the detection path still works.
-    echo -n "$(basename ${dtbName})" > boot/force_dtb
-    echo -n "$(basename ${dtbName})" > boot/lcd_dtb
-    echo -n "$(basename ${dtbName})" > boot/hdmi_dtb
+    echo -n "${dtbName}" > boot/force_dtb
+    echo -n "${dtbName}" > boot/lcd_dtb
+    echo -n "${dtbName}" > boot/hdmi_dtb
 
     # Deliberately no extlinux: the vendored U-Boot never calls sysboot.
     faketime_unused=1

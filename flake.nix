@@ -18,6 +18,11 @@
       # Stage 1 is vendored, never built. See nix/stage1.nix and
       # openspec/specs/image/boot-chain.
       stage1 = import ./nix/stage1.nix { inherit (pkgs) lib fetchurl runCommand stdenvNoCC; };
+
+      # One pin, two consumers: the kernel build and the standalone device
+      # tree build. Native rather than cross because it is a source fetch --
+      # a fixed-output derivation lands on the same store path either way.
+      kernelSrc = import ./nix/kernel-src.nix { inherit (pkgs) fetchFromGitHub; };
     in
     {
       # Two systems on one base, because the boot paths genuinely differ.
@@ -57,6 +62,12 @@
 
         xuantie-kernel = self.k230Kernel.kernel;
 
+        # The board device tree, compiled WITHOUT the kernel, so that
+        # iterating on the panel's DCS init sequence costs seconds instead
+        # of a 20 minute cross-compile. See nix/device-tree.nix.
+        #   nix build --impure .#deviceTree
+        deviceTree = pkgs.callPackage ./nix/device-tree.nix { inherit kernelSrc; };
+
         # The bootable card image: vendored stage 1 at its raw offsets, a
         # boot ext4 holding the three filenames U-Boot loads by name, and
         # our root filesystem.
@@ -91,8 +102,10 @@
             inherit stage1 rootfsImage;
             initrd = "${cfg.system.build.toplevel}/initrd";
             kernel = self.k230Kernel.kernel;
-            # Our own board, not the CanMV reference.
-            dtbName = "canaan/k230-tdisplay.dtb";
+            inherit (self.packages.${buildSystem}) deviceTree;
+            # Our own board, not the CanMV reference. A bare filename now:
+            # it names a file in ${deviceTree}, not a path under dtbs/.
+            dtbName = "k230-tdisplay.dtb";
             # bootm passes only the DTB, so /chosen/bootargs is the kernel
             # command line. Derived from the system so the two cannot drift.
             bootargs =

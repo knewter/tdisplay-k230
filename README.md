@@ -113,7 +113,15 @@ nix build .#checks.x86_64-linux.cross-hello     # smoke-test the cross toolchain
 nix build .#nixosConfigurations.k230.config.system.build.toplevel
 ./tools/qemu-k230.sh                            # boot it under QEMU
 CAPTURE=120 ./tools/qemu-k230.sh > boot.txt     # ...and record the boot
+
+# The board device tree on its own -- seconds, no kernel rebuild.
+K230_STAGE1_DIR="$PWD/firmware/stage1" nix build --impure .#deviceTree
 ```
+
+Editing `nix/dts/` does **not** rebuild the kernel. The DTB is a separate
+derivation (`nix/device-tree.nix`) compiled against the pinned kernel's
+headers, so iterating on the panel init sequence costs about a second
+instead of a twenty-minute cross-compile.
 
 Everything cross-compiles from `x86_64-linux`; you do not need riscv64
 hardware to build. Budget real time for a first build: the glibc cross

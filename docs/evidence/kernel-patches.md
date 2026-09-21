@@ -22,14 +22,31 @@ change.
 | --- | --- |
 | `k230-canmv-v3.dtb` | The reference board's DTB. The vendor Makefile genuinely does not list it, so the tree cannot build the board its own defconfig is named after. |
 | `k230-canmv-v3-lcd.dtb` | The reference board's LCD variant, kept as the comparison point for our divergence record. |
-| `k230-tdisplay.dtb` | This board. |
 
-**Drop when:** upstream lists the first two itself. The third is ours forever.
+**Drop when:** upstream lists them itself.
 
-## 2. This board's device tree
+`k230-tdisplay.dtb` used to be a third row here. It is not built by the
+kernel any more — see below.
 
-`nix/dts/k230-tdisplay.dts` and `nix/dts/display-rm69a10-568x1232.dtsi`,
-copied into `arch/riscv/boot/dts/canaan/`.
+## 2. This board's device tree — NO LONGER IN THE KERNEL
+
+`nix/dts/k230-tdisplay.dts` and `nix/dts/display-rm69a10-568x1232.dtsi` were
+copied into `arch/riscv/boot/dts/canaan/` from `applyPatches`' `postPatch`,
+which put them in the kernel's `src`. Correct, and very slow: a one-byte edit
+to `panel-init-sequence` — the thing actively being iterated on to bring the
+panel up — invalidated the whole kernel and cost a ~20 minute cross-compile.
+
+A DTB needs the kernel's *headers*, not a built kernel. So the pin moved to
+`nix/kernel-src.nix` and the DTS is preprocessed and compiled on its own in
+`nix/device-tree.nix`, exposed as `nix build --impure .#deviceTree`. That
+takes about 1.5 seconds, and `nix/sd-image.nix` takes the DTB from there
+instead of from `${kernel}/dtbs/canaan/`.
+
+The output is **byte-identical** to what the kernel build produced: same
+preprocessor flags as `scripts/Makefile.lib`'s `cmd_dtc`, plus the `-@` that
+nixpkgs' kernel builder adds to every `make dtbs`
+(`pkgs/os-specific/linux/kernel/build.nix`). Verified by `cmp` against
+`${kernel}/dtbs/canaan/k230-tdisplay.dtb` from the previous build.
 
 Configuration rather than a code patch: `panel-canaan-universal` is already in
 the pinned tree and is driven entirely from the device tree, so the RM69A10 is
