@@ -1,0 +1,23 @@
+# Keep ModemManager off the T-Display-K230 console.
+#
+# The board's CH342K dual USB-UART bridge (1a86:55d2) shows up as two plain
+# CDC-ACM ports. /usr/lib/udev/rules.d/80-mm-candidate.rules tags *every* tty
+# as a ModemManager candidate with no vendor filtering, so on every
+# enumeration ModemManager grabs both ports with TIOCEXCL for ~18 seconds,
+# reprograms the UART to its default 57600 while the K230 talks at 115200,
+# flashes the line at baud 0, writes "AT" six times and then a binary QCDM
+# frame. The result is a burst of mis-framed bytes on our side and junk
+# prefixed onto U-Boot's command line on the board's side.
+#
+# See docs/evidence/ch342-open-garbage.md for the full trace.
+#
+# Install:
+#   sudo install -m0644 tools/99-tdisplay-k230-no-modemmanager.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload
+#   # then unplug and replug the console cable
+#
+# ID_MM_DEVICE_IGNORE is honoured under every ModemManager filter policy,
+# including strict. Tag the usb_device, not the tty, so both ports are
+# covered at once.
+
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d2", ENV{ID_MM_DEVICE_IGNORE}="1"

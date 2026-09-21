@@ -14,15 +14,66 @@ missed the reason the boot failed, for three different reasons:
 So: reopen forever until the deadline, stamp every line, flush every write,
 and never require a prompt to be present.
 
+A fourth reason, found much later and much more expensively: the burst of
+garbage every open begins with is made on the *host*, not the board. See
+docs/evidence/ch342-open-garbage.md. In short, ModemManager probes the CH342
+on every enumeration -- it holds the port with TIOCEXCL for ~18s, drops the
+UART to its own default of 57600 while the K230 talks at 115200, and writes
+"AT" at that wrong rate straight into U-Boot's line editor. Hence mis-framed
+bytes on our side, and `Unknown command 'kKBBBBkBBBkrun'` on the board's.
+
+The real fix is the udev rule next door:
+
+  sudo install -m0644 tools/99-tdisplay-k230-no-modemmanager.rules /etc/udev/rules.d/
+  sudo udevadm control --reload   # then replug the console cable
+
+That cannot be the whole answer, because cdc_acm also programs 9600 into
+every CDC device at probe time and leaves it there until the first open. So
+this script additionally settles, flushes, and *records what it discarded*
+under a marker -- so nobody reads a host artefact as a board crash again.
+
   tools/capture-boot.py --out docs/evidence/hardware-boot.txt --seconds 180
   tools/capture-boot.py --send 'cat /proc/cpuinfo' --expect '# '
 """
-import argparse, os, sys, time
+import argparse, os, subprocess, sys, time
 
 try:
     import serial
 except ImportError:
     sys.exit("need pyserial: nix shell nixpkgs#python3Packages.pyserial")
+
+# Kill-line. U-Boot's cread_line treats CTL_CH('u') as "erase the line", and a
+# tty in canonical mode treats it as VKILL. Sending it before a command drops
+# whatever junk is already in the target's line editor instead of letting it
+# become a prefix on ours.
+KILL_LINE = b"\x15"
+
+
+def modemmanager_warning(dev):
+    """Return a warning if ModemManager will fight us for `dev`, else None.
+
+    Reads systemd state and udev properties only. Never opens the port.
+    """
+    try:
+        if subprocess.run(["systemctl", "is-active", "--quiet", "ModemManager"],
+                          timeout=5).returncode != 0:
+            return None
+    except Exception:
+        return None                  # no systemd, or no ModemManager: fine
+    try:
+        out = subprocess.run(["udevadm", "info", "--query=property", "--name", dev],
+                             capture_output=True, text=True, timeout=5).stdout
+    except Exception:
+        return None
+    if "ID_VENDOR_ID=" not in out:
+        return None                  # not a USB device: a pty, a real UART
+    if "ID_MM_DEVICE_IGNORE=1" in out or "ID_MM_PORT_IGNORE=1" in out:
+        return None
+    return (f"ModemManager is running and {dev} is not tagged "
+            "ID_MM_DEVICE_IGNORE. It will hold the port with TIOCEXCL for "
+            "~18s per enumeration and write AT at 57600 into the board. Fix: "
+            "sudo install -m0644 tools/99-tdisplay-k230-no-modemmanager.rules "
+            "/etc/udev/rules.d/ && sudo udevadm control --reload, then replug")
 
 
 def main():
@@ -48,6 +99,25 @@ def main():
                          "board boots anyway. Hammering covers the window.")
     ap.add_argument("--quiet-exit", type=float, default=0.0,
                     help="stop early after this many seconds with no output")
+    ap.add_argument("--settle", type=float, default=0.30,
+                    help="after opening, read and DISCARD for this long before "
+                         "doing anything else. The CH342 sits at the wrong baud "
+                         "from enumeration until our tcsetattr lands, so its "
+                         "FIFO drains mis-framed bytes first; pyserial's own "
+                         "flush during open() fires too early to catch them. "
+                         "Discarded bytes are logged under a marker, not thrown "
+                         "away. With the udev rule installed 0.05 is enough; "
+                         "0 disables")
+    ap.add_argument("--no-line-kill", dest="line_kill", action="store_false",
+                    help="do not prefix each --send with Ctrl-U. By default we "
+                         "do, so junk already in the target's line editor is "
+                         "erased instead of prefixed onto our command")
+    ap.add_argument("--no-exclusive", dest="exclusive", action="store_false",
+                    help="do not take an advisory flock on the port. By default "
+                         "we do, so a second copy of this script (or tio) "
+                         "cannot silently steal half our bytes. This is flock, "
+                         "not TIOCEXCL: it keeps our own tooling out, not "
+                         "ModemManager")
     args = ap.parse_args()
 
     deadline = time.time() + args.seconds
@@ -61,31 +131,84 @@ def main():
         sys.stdout.write(stamp.decode() + text + "\n")
         sys.stdout.flush()
 
+    warning = modemmanager_warning(args.dev)
+    if warning:
+        emit(f"--- WARNING: {warning} ---")
+
     emit(f"--- capture start, waiting for {args.dev} ---")
     line = b""
     tail = b""
     last_output = time.time()
+    last_busy_report = 0.0
+
+    def write_cmd(port, cmd):
+        """Send one command, erasing whatever junk precedes it."""
+        if args.line_kill:
+            port.write(KILL_LINE)
+            port.flush()
+            time.sleep(0.05)
+        port.write(cmd.encode() + b"\r\n")
+        port.flush()
 
     while time.time() < deadline:
         if not os.path.exists(args.dev):
             time.sleep(0.2)
             continue
         try:
-            port = serial.Serial(args.dev, args.baud, timeout=0.2)
-        except Exception:
-            time.sleep(0.2)          # udev has not finished with it yet
+            port = serial.Serial(args.dev, args.baud, timeout=0.2,
+                                 exclusive=True if args.exclusive else None)
+        except Exception as exc:
+            # Not "udev has not finished with it yet", as this used to claim.
+            # Usually ModemManager holding TIOCEXCL, or another reader's flock.
+            if time.time() - last_busy_report > 5.0:
+                last_busy_report = time.time()
+                emit(f"--- {args.dev} not openable "
+                     f"({exc.__class__.__name__}: {exc}), retrying ---")
+            time.sleep(0.2)
             continue
         emit("--- port opened ---")
+
+        # Settle, then flush. Everything read here came out of the chip's FIFO
+        # from the wrong-baud window before our tcsetattr landed. Log it under
+        # a marker so it is on the record but can never be mistaken for the
+        # board's own output, and so no --expect can ever match inside it.
+        if args.settle > 0:
+            junk = b""
+            end = time.time() + args.settle
+            while time.time() < end:
+                try:
+                    junk += port.read(4096)
+                except Exception:
+                    break
+                time.sleep(0.02)
+            try:
+                port.reset_input_buffer()
+                port.reset_output_buffer()
+            except Exception:
+                pass
+            if junk:
+                emit(f"--- discarded {len(junk)} bytes from the {args.settle}s "
+                     f"settle window (host-side wrong-baud artefact, NOT board "
+                     f"output): {junk!r} ---")
+            else:
+                emit("--- settle window clean, nothing discarded ---")
+            tail = b""      # a prompt may only be matched in post-flush data
+
         if args.hammer:
             emit(f"--- hammering keys for {args.hammer}s to stop autoboot ---")
             end = time.time() + args.hammer
+            # The whole loop is guarded. The port disappears mid-hammer on
+            # every power cycle -- which is exactly when hammering matters --
+            # and an unguarded read() there raises SerialException straight
+            # out of the program, killing the capture at the worst moment.
             while time.time() < end:
                 try:
-                    port.write(b" \x08")     # space then backspace: harmless at a prompt
+                    port.write(b" \x08")   # space then backspace: harmless at a prompt
                     port.flush()
+                    chunk = port.read(512)
                 except Exception:
+                    emit("--- port lost while hammering, reopening ---")
                     break
-                chunk = port.read(512)
                 if chunk:
                     log.write(chunk)
                     sys.stdout.write(chunk.decode("utf-8", "replace"))
@@ -118,8 +241,7 @@ def main():
                     if args.expect.encode() in tail:
                         cmd = pending.pop(0)
                         emit(f"--- sending: {cmd} ---")
-                        port.write(cmd.encode() + b"\r\n")
-                        port.flush()
+                        write_cmd(port, cmd)
                         tail = b""
         except Exception as exc:
             emit(f"--- port lost ({exc.__class__.__name__}), reopening ---")
