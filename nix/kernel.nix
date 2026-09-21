@@ -48,7 +48,17 @@ buildLinux (args // {
     # (RDDID) or 0x0A (RDDPM) separates "the panel never receives the init
     # sequence" from "it receives it, acknowledges it, and still does not
     # light". See docs/evidence/dsi-phy-hang.md.
-    patches = [ ../nix/patches/canaan-dsi-implement-dcs-read.patch ];
+    patches = [
+      ../nix/patches/canaan-dsi-implement-dcs-read.patch
+      # Implementing the read is useless on its own -- nothing in the
+      # panel driver ever issues one. This adds the caller: read RDDID
+      # (0x04) and RDDPM (0x0A) right after the init sequence, and log
+      # both. RDDPM bit 4 is sleep-out and bit 2 is display-on, which is
+      # precisely what the 0x11 and 0x29 at the tail of the sequence are
+      # supposed to have set. Diagnostic only; failures are logged, never
+      # fatal to prepare().
+      ../nix/patches/canaan-panel-read-back-id-and-power-mode.patch
+    ];
 
     postPatch = ''
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
