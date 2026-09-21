@@ -116,3 +116,72 @@ Every one of those cost a build and a flash, because the kernel could not
 print a backtrace: `k230_defconfig` sets `CONFIG_SOFTLOCKUP_DETECTOR=y` with
 no `FRAME_POINTER`, so `dump_stack()` emitted nothing. The lesson is to fix
 the instrument before forming the fifth theory, not the first.
+
+## Resolved: the display power domain was the cause
+
+Pinning `K230_PM_DOMAIN_DISP` at probe — `pm_runtime_get_sync()` in
+`canaan_drm_probe()` rather than only in `canaan_drm_open()` — fixed the
+whole SoC-side chain. On the next boot, every symptom above is gone:
+
+```
+[ 3.055734] canaan-mipi-dsi 90850000.dsi: Attached device universal
+[ 3.136970] [drm] Initialized canaan-drm 1.0.0 20230501
+[ 3.162288] [drm] fb0: canaan-drmdrmfb frame buffer device
+[ 3.179270] [drm:canaan_drm_bind] Canaan K230 DRM driver register successfully
+[ 3.299730] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+```
+
+- **No `PHY_STATUS 0xffffffff`.** The PHY now reaches `0x1fbd`, so the
+  bounded wait succeeds instead of timing out 2001 times.
+- **No `failed to write dcs cmd: -110`.** All 20 init commands are written.
+- **`canaan_panel_prepare: entered` appears for the first time on any boot.**
+- No soft lockup; the board boots to a login prompt.
+
+This also retires the guess that `0x1fbd` was a four-lane encoding an
+unreachable for a two-lane panel. It was reachable all along; the block was
+simply unpowered.
+
+## The panel is still dark, and it is now a panel-side problem
+
+State read off the running board:
+
+```
+crtc[46]: canaan_crtc
+	enable=1
+	active=1
+plane[33]: plane-1  crtc=canaan_crtc  crtc-pos=568x1232+0+0
+	format=RG16 little-endian   size=568x1232  pitch[0]=1136
+	dma_addr=0x000000001e100000
+connector[48]: DSI-1
+gpio-534 (dsi_reset)      out hi
+gpio-537 (backlight_gpio) out hi
+```
+
+`dd if=/dev/urandom of=/dev/fb0` wrote 1400832 bytes — the whole
+framebuffer — and a webcam pointed at the board shows no change. Note that
+writing a pattern was necessary to test this at all: an all-zero
+framebuffer on a working panel is indistinguishable from a dark one.
+
+So every stage the SoC controls is verified good: domain powered, PHY
+locked, DCS accepted, CRTC active, plane bound to a real buffer at the
+right geometry and format. What remains is between the DSI output and the
+glass.
+
+Remaining suspects, in the order worth testing:
+
+1. **The init sequence content.** Transcribed from LilyGO's RT-Smart
+   `rm69a10.c` into `panel-init-sequence`. It is *accepted* by the DSI
+   controller, which says nothing about whether it is correct for this
+   panel. `docs/evidence/rm69a10-init-sequence.md` has the per-command
+   provenance.
+2. **Panel supply rails.** `canaan_panel_prepare()` has its `power_on`
+   assertion commented out by the vendor exactly like the reset pulses
+   were; the GPIO reads high, but whether GPIO25 is the AMOLED's VCI/ELVDD
+   enable or something else is unverified.
+3. **`vth_line`.** Ours is 9, the vendor reference uses 10. Unlikely to
+   cause total darkness, but it is a known divergence
+   (`docs/evidence/dts-divergence.md`).
+4. **DCS read-back is unimplemented.** `canaan_dsi_dcs_read()` is a stub
+   returning 1, so the panel's ID registers cannot be read to confirm it is
+   responding at all. Implementing it would turn "the panel is silent" into
+   a measurement.
