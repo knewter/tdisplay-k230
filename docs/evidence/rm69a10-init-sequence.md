@@ -103,3 +103,29 @@ say 39.6; the numbers are self-consistent (39.6 MHz x 24bpp / 2 lanes =
 
 Reset: GPIO22, pulsed three times before init per docs/rtsmart-boot-log.txt.
 
+
+Compiled (task 2.1)
+-------------------
+nix/dts/display-rm69a10-568x1232.dtsi compiles and round-trips:
+
+  $ cpp -nostdinc -undef -x assembler-with-cpp test.dts | dtc -I dts -O dtb
+  DTB: 1298 bytes
+
+  panel-init-sequence   357 bytes  = 297 payload + 20 x 3 framing
+  clock-frequency       39600000
+  hactive/vactive       568 / 1232
+  lan-num               2
+  panel-width-mm        44
+
+Two syntax mistakes worth recording, since both produce misleading errors:
+
+  1. A DTS bytestring takes BARE hex pairs. Writing `[0x39 0x00 ...]`
+     fails with a bare "syntax error" pointing at the opening bracket.
+  2. All properties must precede any subnode. panel-init-sequence sat
+     after display-timings and dtc said "Properties must precede
+     subnodes", naming the whole node rather than the property.
+
+STILL UNVERIFIED: that this lights the panel. Compiling proves the
+description is well-formed, not that it is correct. The init sequence is
+transcribed from working vendor code, but the timings, the reset polarity
+and the burst-mode mismatch are all untested on hardware.
