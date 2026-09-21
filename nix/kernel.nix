@@ -122,6 +122,30 @@ EOM
       sed -i 's|\tif (p->init_set_v1_flag) {|\tif (p->reset) {\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 0);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(120);\n\t}\n\n\tif (p->init_set_v1_flag) {|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'panel_simple_sleep(120);' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Bound the thermal sensor read loop.
+      #
+      # canaan_get_temp() busy-polls TS_DATA in "while (1)" with no timeout,
+      # no iteration cap and no sleep, breaking only when (val >> 12) is
+      # non-zero. If the sensor does not produce that, the loop spins in
+      # kernel context forever. Thermal zone reads run from a workqueue, so
+      # the symptom is exactly what the board does: "BUG: soft lockup -
+      # CPU#0 stuck for 22s! [kworker/0:5:45]", starting the moment udev
+      # begins coldplugging devices, with no call trace because the CPU
+      # never gets to print one. See docs/thermal.md, which flagged this
+      # loop before it was observed to bite.
+      #
+      # Cap it at 10000 iterations and sleep between reads so the loop is
+      # both bounded and schedulable. A failed read now reports 0 rather
+      # than hanging the machine -- and 0 is no less meaningful than the
+      # raw ADC code this driver reports on success, since it does no
+      # conversion to millidegrees at all.
+      sed -i 's|\tu32 val = 0;|\tu32 val = 0;\n\tint tries = 0;\n\n\t*temp = 0;|' \
+        drivers/thermal/canaan_thermal.c
+      sed -i 's|\twhile (1) {|\twhile (tries++ < 10000) {|' drivers/thermal/canaan_thermal.c
+      sed -i 's|\t\t// msleep(2600);|\t\tusleep_range(100, 200);|' drivers/thermal/canaan_thermal.c
+      grep -q 'tries++ < 10000' drivers/thermal/canaan_thermal.c
+      grep -q 'usleep_range(100, 200);' drivers/thermal/canaan_thermal.c
     '';
   };
 
@@ -169,6 +193,23 @@ EOM
     # The backported Berlin touch driver. Built in, not a module, so a
     # failure to probe shows up in the boot log rather than in whether
     # something got modprobed.
+    # fb0 yes, fbcon no -- for now.
+    #
+    # Creating fb0 (the 16 bpp fix above) is what started hanging the boot:
+    # a kworker soft-locks ~30s in, after udev, and NOTHING prints
+    # afterwards, not even the lockup's own call trace. Console output dying
+    # with the task is what holding console_lock looks like, and fbcon's
+    # deferred take-over is the thing that takes that lock and then does a
+    # modeset. The panel path itself cannot be the spin: its DSI timeout is
+    # 20ms and panel_simple_sleep() sleeps rather than busy-waits.
+    #
+    # Turning fbcon off keeps the framebuffer that display/panel 3.1 needs
+    # while removing the console take-over, so the board boots to a shell
+    # and dmesg can be read -- which is the only way to see the panel
+    # messages at all. Task 3.3 (console on the panel) needs this back on,
+    # and should only be attempted once the panel actually lights.
+    FRAMEBUFFER_CONSOLE = lib.mkForce no;
+
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
   };
