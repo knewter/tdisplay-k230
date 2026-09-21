@@ -31,7 +31,7 @@ touch remain that change's job.
 
 ## 4. The board boots it
 
-- [ ] 4.1 Flash a card and power the board with a known-good data cable. Verify by capturing the console to `docs/evidence/hardware-boot.txt` and confirming stage 1 hands off to our kernel
+- [x] 4.1 Flash a card and power the board with a known-good data cable. Verify by capturing the console to `docs/evidence/hardware-boot.txt` and confirming stage 1 hands off to our kernel
 - [ ] 4.2 Reach an interactive prompt and run one command that could only run on this hardware. Verify by extending that transcript with the output of `cat /proc/cpuinfo` showing two C908 harts
 - [ ] 4.3 Record what differs between the QEMU boot and this one. Verify by extending `docs/evidence/boot-path-differences.md`, citing both transcripts
 
