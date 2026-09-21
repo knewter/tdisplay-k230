@@ -12,7 +12,7 @@ display pipeline, so nothing in this change can be proven under emulation.
 
 - [x] 2.1 Write `display-rm69a10-568x1232.dtsi` for `panel-canaan-universal`, modelled on `display-st7701-480x800.dtsi`, carrying the sequence from 1.1. Verify by building the DTB with `nix build .#deviceTree` and checking it compiles without warnings
 - [x] 2.2 Write this board's top-level `.dts` including that panel, and record every divergence from `k230-canmv-v3-lcd.dts`. Verify by committing the divergence list to `docs/evidence/dts-divergence.md` and building the DTB
-- [ ] 2.3 Boot the board with the new device tree and confirm the panel probes. Verify by capturing the kernel log to `docs/evidence/panel-probe.txt` showing the panel bound with no DSI errors
+- [x] 2.3 Boot the board with the new device tree and confirm the panel probes. Verify by capturing the kernel log to `docs/evidence/panel-probe.txt` showing the panel bound with no DSI errors
 
 ## 3. The screen actually shows something
 
@@ -22,8 +22,13 @@ display pipeline, so nothing in this change can be proven under emulation.
 
 ## 4. Touch
 
-- [ ] 4.1 Determine which driver can drive this part, by experiment rather than assumption: mainline has no GT9895 support at any version (`docs/evidence/gt9895-touch.md`). Verify by booting with `compatible = "goodix,gt9916"` against a backported `goodix_berlin` and recording in `docs/evidence/touch-probe.txt` whether it binds
-- [ ] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`. Verify with `nix build .#packages.x86_64-linux.xuantie-kernel` and by recording the choice and its reason in `docs/evidence/kernel-patches.md`
+- [x] 4.1 Determine which driver can drive this part, by experiment rather than assumption: mainline has no GT9895 support at any version (`docs/evidence/gt9895-touch.md`). Verify by booting with `compatible = "goodix,gt9916"` against a backported `goodix_berlin` and recording in `docs/evidence/touch-probe.txt` whether it binds
+- [x] 4.1b Depending on 4.1, either add a `gt9895_data` chip entry to the backported driver or port LilyGO's RT-Smart `gt9895.c`. Verify with `nix build .#packages.x86_64-linux.xuantie-kernel` and by recording the choice and its reason in `docs/evidence/kernel-patches.md`
+      - Resolved to NEITHER branch. The GT9895 answers the Berlin protocol,
+        so the existing v6.12 backport binds it through the
+        `"goodix,gt9895", "goodix,gt9916"` fallback and no driver change is
+        needed. The first branch was not available in any case: the driver
+        has no chip table to add an entry to. Recorded in kernel-patches.md.
 - [x] 4.2 Add the GT9895 to the device tree on I2C with reset GPIO24, interrupt GPIO23. Verify by booting and capturing the probe to `docs/evidence/touch-probe.txt`
 - [ ] 4.3 Confirm touches report coordinates that track a deliberate movement across the panel. Verify with a recorded `evtest` session committed to `docs/evidence/touch-evtest.txt`, showing a drag rather than a single tap, and confirm the axes are neither swapped nor mirrored
 

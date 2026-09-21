@@ -1,0 +1,134 @@
+[   0.000] --- capture start, waiting for /dev/ttyACM0 ---
+[   0.098] --- port opened ---
+[!p]104\[0m[?7h[1G[0J7[32766;32766H[6n8[!p]104\[0m[?7h[1G[0J7[32766;32766H[6n8]3008;start=2881e61ff3ed47a2854d54fafa3279c0;user=root;hostname=nixos;machineid=5232f89e0de34dfda0403ae9b5f50e1e;bootid=397efb4217924f14a39788f5a1b3d5a8;pid=653;comm=(agetty);servicename=serial-getty@ttyS0.service;invocationid=e3455a581bfe455cbd8e5e62b9848c92;type=service\P+q6E616D65\
+
+[1;32m<<< Welcome to NixOS 26.11.20260919.20b1ddd (riscv64) - ttyS0 >>>[0m
+
+
+nixos login: root (automatic login)
+
+]3008;start=019563a81ca6408887fab1053c0f4481;user=root;hostname=nixos;machineid=5232f89e0de34dfda0403ae9b5f50e1e;bootid=397efb4217924f14a39788f5a1b3d5a8;pid=653;comm=login;targetuser=root;sessionid=2;type=session\[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  11.712] --- sending: dmesg | grep -iE "drm|dsi|panel|canaan|vo@|backlight" | head -40 ---
+dmesg | grep -iE "drm|dsi|panel|canaan|vo@|backlight" | head -40 [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K0
+[?2004l[    0.160265] platform 90840000.vo: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    0.160426] platform 90840000.vo: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    0.160524] platform 90850000.dsi: Fixed dependency cycle(s) with /soc/dsi@90850000/panel@0
+[    0.160541] platform 90850000.dsi: Fixed dependency cycle(s) with /soc/vo@90840000
+[    0.655048] canaan-vo 90840000.vo: probe
+[    0.655930] canaan-mipi-dsi 90850000.dsi: Fixed dependency cycle(s) with /soc/dsi@90850000/panel@0
+[    0.656030] mipi-dsi 90850000.dsi.0: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    1.077819] canaan-mipi-dsi 90850000.dsi: Attached device universal
+[    1.079739] canaan-vo 90840000.vo: background color is ffffff
+[    1.079985] canaan-drm soc:display-subsystem: bound 90840000.vo (ops 0xffffffff83696b48)
+[    1.080043] canaan-drm soc:display-subsystem: bound 90850000.dsi (ops 0xffffffff83696fe0)
+[    1.081107] [drm] Initialized canaan-drm 1.0.0 20230501 for soc:display-subsystem on minor 0
+[    1.084175] canaan-drm soc:display-subsystem: [drm] bpp/depth value of 32/24 not supported
+[    1.084194] canaan-drm soc:display-subsystem: [drm] No compatible format found
+[    1.093970] canaan-drm soc:display-subsystem: [drm] *ERROR* fbdev: Failed to setup generic emulation (ret=-22)
+[    1.104083] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] Canaan K230 DRM driver register successfully
+[    1.109246] canaan-drm soc:display-subsystem: [drm] bpp/depth value of 32/24 not supported
+[    1.109265] canaan-drm soc:display-subsystem: [drm] No compatible format found
+[    1.112542] canaan-drm soc:display-subsystem: [drm] *ERROR* fbdev: Failed to setup generic emulation (ret=-22)
+[   22.947804] systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  12.115] --- sending: ls -l /dev/dri/ 2>&1; ls -l /dev/fb* 2>&1 ---
+ls -l /dev/dri/ 2>&1; ls -l /dev/fb* 2>&1
+[?2004ltotal 0
+drwxr-xr-x 2 root root      60 Mar 17 19:56 [0m[01;34mby-path[0m
+crw-rw---- 1 root video 226, 0 Mar 17 19:56 [40;33;01mcard0[0m
+ls: cannot access '/dev/fb*': No such file or directory
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  12.316] --- sending: fbset -i 2>&1 | head -20 ---
+fbset -i 2>&1 | head -20
+[?2004lopen /dev/fb0: No such file or directory
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  12.516] --- sending: modetest -M canaan-drm -c 2>&1 | head -30 ---
+modetest -M canaan-drm -c 2>&1 | head -30
+[?2004lopened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 20230501)
+Connectors:
+id	encoder	status		name		size (mm)	modes	encoders
+48	0	connected	DSI-1          	44x95		1	47
+  modes:
+	index name refresh (Hz) hdisp hss hse htot vdisp vss vse vtot
+  #0 568x1232 39.63 568 608 648 788 1232 1248 1252 1268 39600 flags: ; type: preferred, driver
+  props:
+	1 EDID:
+		flags: immutable blob
+		blobs:
+
+		value:
+	2 DPMS:
+		flags: enum
+		enums: On=0 Standby=1 Suspend=2 Off=3
+		value: 0
+	5 link-status:
+		flags: enum
+		enums: Good=0 Bad=1
+		value: 0
+	6 non-desktop:
+		flags: immutable range
+		values: 0 1
+		value: 0
+	4 TILE:
+		flags: immutable blob
+		blobs:
+
+		value:
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  12.717] --- sending: for z in /sys/class/thermal/thermal_zone*; do echo "$z $(cat $z/type) $(cat $z/temp)"; done 2>&1 ---
+for z in /sys/class/thermal/thermal_zone*; do echo "$z $(cat $z/type) $(cat $z/temp)"; done 2>&1
+[?2004l/sys/class/thermal/thermal_zone0 canaan_thermal_zone 7179
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  12.922] --- sending: cat /sys/class/thermal/thermal_zone0/trip_point_* 2>&1 | head ---
+cat /sys/class/thermal/thermal_zone0/trip_point_* 2>&1 | head
+[?2004lcat: '/sys/class/thermal/thermal_zone0/trip_point_*': No such file or directory
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  13.123] --- sending: dmesg | grep -iE "goodix|berlin|touch|i2c" | head -20 ---
+dmesg | grep -iE "goodix|berlin|touch|i2c" | head -20
+[?2004l[    1.495480] goodix-berlin-i2c 1-005d: supply avdd not found, using dummy regulator
+[    1.495631] goodix-berlin-i2c 1-005d: supply iovdd not found, using dummy regulator
+[    1.652309] input: Goodix Berlin Capacitive TouchScreen as /devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+[    1.653960] i2c_dev: i2c /dev entries driver
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  13.323] --- sending: i2cdetect -y -r 3 2>&1 | head -12 ---
+i2cdetect -y -r 3 2>&1 | head -12
+[?2004lError: Could not open file `/dev/i2c-3' or `/dev/i2c/3': No such file or directory
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  13.523] --- sending: ls -l /dev/input/ 2>&1; cat /proc/bus/input/devices 2>&1 | head -30 ---
+ls -l /dev/input/ 2>&1; cat /proc/bus/input/devices 2>&1 | head -30
+[?2004ltotal 0
+drwxr-xr-x 2 root root      60 Mar 17 19:56 [0m[01;34mby-path[0m
+crw-rw---- 1 root input 13, 64 Mar 17 19:56 [40;33;01mevent0[0m
+crw-rw---- 1 root input 13, 63 Mar 17 19:56 [40;33;01mmice[0m
+crw-rw---- 1 root input 13, 32 Mar 17 19:56 [40;33;01mmouse0[0m
+I: Bus=0018 Vendor=0000 Product=0000 Version=0000
+N: Name="Goodix Berlin Capacitive TouchScreen"
+P: Phys=input/ts
+S: Sysfs=/devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+U: Uniq=
+H: Handlers=mouse0 event0 
+B: PROP=2
+B: EV=b
+B: KEY=400 0 0 0 0 0
+B: ABS=261800000000003
+
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [ 120.058] --- capture end ---

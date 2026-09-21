@@ -28,9 +28,47 @@ is `default ARCH_CANAAN` and so comes in without being named in
 `thermal_zone_device_register_with_trips` and `thermal_zone_device_critical`,
 the emergency-shutdown path.
 
-So `/sys/class/thermal/thermal_zone0/temp` should exist on the booted board.
-**Unverified** — the board was powered down before this was checked, and it is
-the first thing to run next session.
+`/sys/class/thermal/thermal_zone0` exists on the booted board and reads:
+
+```
+/sys/class/thermal/thermal_zone0 canaan_thermal_zone 7179
+```
+
+**But that number is not a temperature.** See below.
+
+## The reading is a raw sensor code, not millidegrees
+
+`canaan_get_temp()` does no conversion at all:
+
+```c
+while (1) {
+	val = ioread32(data->base + TS_DATA);
+	if (val >> 12) {
+		*temp = val;
+		break;
+	}
+}
+```
+
+`*temp` is the raw `TS_DATA` register. The sysfs contract for
+`thermal_zone*/temp` is **millidegrees Celsius**, so `7179` would be read by
+any standard consumer as 7.2 °C — implausible for a running SoC. It is
+neither 7.2 °C nor 71.8 °C; it is an uncalibrated ADC code with no published
+transfer function in the driver.
+
+Two consequences:
+
+- **Anything that reads this zone gets nonsense.** A userspace thermal daemon,
+  a monitoring agent, or a `critical` trip expressed in millidegrees would all
+  be operating on a number that does not mean what the interface says it does.
+- **A trip point cannot be set correctly without the transfer function.** This
+  is why step 2 below has to come before step 3; picking a millidegree
+  threshold against a raw code would produce a trip that fires at the wrong
+  temperature or never.
+
+Also worth noting: that `while (1)` has no timeout or iteration cap. If
+`val >> 12` never becomes non-zero the read spins forever in kernel context.
+It has not been observed to hang, but nothing prevents it.
 
 ## What does not work, and why
 

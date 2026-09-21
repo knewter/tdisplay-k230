@@ -1,0 +1,63 @@
+The GT9895 binds to the backported goodix_berlin driver.
+Captured on hardware 2026-09-20, extracted from docs/evidence/panel-probe.txt.
+
+Device tree declares, in nix/dts/k230-tdisplay.dts:
+
+    touchscreen@5d {
+        compatible = "goodix,gt9895", "goodix,gt9916";
+        reg = <0x5d>;
+        reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_LOW>;
+        interrupt-parent = <&gpio0_ports>;
+        interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+    };
+
+Kernel log:
+
+    [    1.495480] goodix-berlin-i2c 1-005d: supply avdd not found, using dummy regulator
+    [    1.495631] goodix-berlin-i2c 1-005d: supply iovdd not found, using dummy regulator
+    [    1.652309] input: Goodix Berlin Capacitive TouchScreen as \
+                   /devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+
+Resulting input device:
+
+    $ cat /proc/bus/input/devices
+    I: Bus=0018 Vendor=0000 Product=0000 Version=0000
+    N: Name="Goodix Berlin Capacitive TouchScreen"
+    P: Phys=input/ts
+    S: Sysfs=/devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+    H: Handlers=mouse0 event0
+    B: PROP=2
+    B: EV=b
+    B: ABS=261800000000003
+
+    $ ls -l /dev/input/
+    crw-rw---- 1 root input 13, 64 event0
+    crw-rw---- 1 root input 13, 32 mouse0
+
+WHAT THIS SETTLES
+
+Task 4.1 asked which driver can drive this part, by experiment rather than
+assumption. The answer is the v6.12 goodix_berlin backport, reached through
+the "goodix,gt9916" fallback compatible.
+
+It binds at address 0x5d on i2c-1 and registers an input device with
+PROP=2 (INPUT_PROP_DIRECT, i.e. a touchscreen rather than a trackpad) and a
+multitouch ABS bitmap. The driver reads its register layout off the part at
+runtime from the IC-info blob at 0x10070 -- see gt9895-touch.md -- and
+neither goodix_berlin_read_version() nor goodix_berlin_get_ic_info() logged
+a failure, so the GT9895 answers the Berlin protocol.
+
+Task 4.1b therefore resolves to NEITHER of its two branches. No gt9895_data
+chip entry is added, because the driver has no chip table to add one to. No
+port of LilyGO's RT-Smart gt9895.c is needed, because the backport works.
+The only change required was the fallback compatible in the device tree.
+
+STILL UNPROVEN
+
+That it binds is not that it tracks. Task 4.3 requires an evtest transcript
+of a deliberate drag, to show coordinates follow the finger and that the axes
+are neither swapped nor mirrored on a portrait panel. Not yet captured.
+
+The two "dummy regulator" lines mean avdd and iovdd are not described in the
+device tree. The panel works, so they are evidently supplied in hardware,
+but the device tree does not model them.

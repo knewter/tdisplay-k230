@@ -102,3 +102,41 @@ initrd panic that says nothing about the real cause.
   See `docs/thermal.md`.
 - **No SMP patch.** Linux runs on one hart here because no K230 device tree
   declares a `cpu@1`. See `hardware-userspace.md`.
+
+## Update after the first display bring-up (2026-09-20)
+
+**Task 4.1b resolved to "no patch".** The GT9895 answers the Berlin protocol.
+The v6.12 `goodix_berlin` backport already in item 3 binds it through a
+`"goodix,gt9895", "goodix,gt9916"` fallback in the device tree, and registers
+a touchscreen input device. Neither branch of 4.1b was taken: no chip entry
+(there is no chip table), and no port of LilyGO's `gt9895.c`. Evidence:
+`docs/evidence/touch-probe.txt`.
+
+**One patch added: the DRM fbdev colour depth.**
+
+```
+sed -i 's|drm_fbdev_generic_setup(drm_dev, 32);|drm_fbdev_generic_setup(drm_dev, 16);|' \
+  drivers/gpu/drm/canaan/canaan_drv.c
+```
+
+`canaan_drv.c:272` asks DRM's generic fbdev emulation for 32 bpp, which means
+`XRGB8888`. The driver's own RGB planes advertise `AR24 AR12 AR15 RG24 RG16
+BG24` — `XR24` is **not** among them — so format negotiation fails and no
+`/dev/fb0` is created:
+
+```
+[drm] bpp/depth value of 32/24 not supported
+[drm] No compatible format found
+[drm] *ERROR* fbdev: Failed to setup generic emulation (ret=-22)
+```
+
+Observed on hardware, `docs/evidence/panel-probe.txt`. 16 bpp maps to
+`RGB565`, which those planes do advertise.
+
+This affects the fbdev console only. DRM clients negotiate format for
+themselves and already work — `modetest -s 48:568x1232@AR24` sets a mode on
+this panel with the unpatched driver.
+
+**Drop when:** the vendor driver either advertises `XR24` on its RGB planes
+or stops hardcoding 32 in the fbdev setup call. Worth re-checking on any
+kernel bump, since a one-line constant is easy for upstream to change.

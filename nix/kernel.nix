@@ -80,6 +80,22 @@ EOK
 obj-$(CONFIG_TOUCHSCREEN_GOODIX_BERLIN_CORE) += goodix_berlin_core.o
 obj-$(CONFIG_TOUCHSCREEN_GOODIX_BERLIN_I2C)  += goodix_berlin_i2c.o
 EOM
+
+      # fbdev emulation asks canaan-drm for 32 bpp, which means XRGB8888.
+      # The driver's RGB planes advertise AR24 AR12 AR15 RG24 RG16 BG24 and
+      # NOT XR24, so the format negotiation fails and there is no /dev/fb0:
+      #
+      #   [drm] bpp/depth value of 32/24 not supported
+      #   [drm] No compatible format found
+      #   [drm] *ERROR* fbdev: Failed to setup generic emulation (ret=-22)
+      #
+      # Observed on hardware -- docs/evidence/panel-probe.txt. 16 bpp maps to
+      # RGB565, which those planes do advertise. This costs colour depth on
+      # the fbdev console only; DRM clients still negotiate AR24 for
+      # themselves and are unaffected.
+      sed -i 's|drm_fbdev_generic_setup(drm_dev, 32);|drm_fbdev_generic_setup(drm_dev, 16);|' \
+        drivers/gpu/drm/canaan/canaan_drv.c
+      grep -q 'drm_fbdev_generic_setup(drm_dev, 16);' drivers/gpu/drm/canaan/canaan_drv.c
     '';
   };
 
