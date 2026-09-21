@@ -161,3 +161,37 @@ format; if the length field does not match what the driver expects, the
 parse silently produces garbage. LilyGO's gt9895.c in
 repo/canmv_k230/src/rtsmart/ is the reference for what the layout should
 be for this exact part.
+
+
+=====================================================================
+2026-09-21 RESOLVED (pending a boot): wrong interrupt trigger type
+=====================================================================
+
+The concrete next step above was taken. Both of its premises turned out
+to be false and the answer was somewhere else.
+
+The IC-info blob parses CORRECTLY. Length 0xad = 173 is exactly
+2 + 16 + 10 + 4 + 25 + 114 + 2, where 114 is sizeof the driver's misc
+struct and 25 is the five variable-length parameter arrays with counts
+summing to 10. The decoded version fields are all in range. The parse
+cannot be producing garbage.
+
+LILYGO's RT-Smart gt9895.c has NO init sequence, NO config upload and
+NO firmware upload -- it opens i2c and polls 90 bytes from 0x00010308,
+which is the Berlin layout byte for byte (8-byte header, count in byte
+2 low nibble, ten 8-byte points, 2-byte checksum). There is nothing for
+a port to add.
+
+The bug is the device tree. `IRQ_TYPE_EDGE_FALLING` was cloned from the
+reference board's edt-ft5306 at k230-canmv-v3-lcd.dts:66. A Goodix
+Berlin part holds INT low until the host clears the status byte, so it
+wants IRQ_TYPE_LEVEL_LOW. caveman99/k230-linux runs this same driver on
+this same board on this same kernel with LEVEL_LOW and working
+multitouch; its /proc/interrupts line says "Level" where ours says
+"Edge".
+
+Also missing: touchscreen-size-x/y, without which the driver advertises
+a 65536-unit axis for a 1024x2400 sensor.
+
+Full decode, citations and the confirming sources are in
+docs/evidence/gt9895-port.md. The fix is DTB-only.

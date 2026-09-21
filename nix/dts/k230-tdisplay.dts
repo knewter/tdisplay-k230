@@ -104,15 +104,54 @@
 	// attach while the device tree keeps telling the truth about the
 	// silicon.
 	//
-	// Whether a GT9895 is close enough to a GT9916 for that driver to
-	// actually work is the open question, and it is decided by booting,
-	// not by reading. See docs/evidence/gt9895-touch.md.
+	// It is close enough: the backport binds, reads the firmware version
+	// and the IC-info blob without error, and derives touch_data_addr
+	// from the part at runtime. See docs/evidence/gt9895-port.md.
 	touchscreen@5d {
 		compatible = "goodix,gt9895", "goodix,gt9916";
 		reg = <0x5d>;
 		reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_LOW>;
 		interrupt-parent = <&gpio0_ports>;
-		interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+
+		// LEVEL_LOW, not EDGE_FALLING.
+		//
+		// EDGE_FALLING was inherited from the reference board's
+		// edt-ft5306 (k230-canmv-v3-lcd.dts:66), a different part,
+		// and it is why touch bound but reported nothing: four
+		// interrupts on IRQ 87 since boot and then silence, with a
+		// live controller answering i2c. A Goodix Berlin part holds
+		// INT asserted low until the host clears the status byte at
+		// touch_data_addr; goodix_berlin_irq() returns early WITHOUT
+		// clearing whenever it reads status == 0
+		// (nix/patches/goodix-berlin/goodix_berlin_core.c:566), so
+		// one such early return leaves the line low forever and an
+		// edge detector never sees another falling edge. A level
+		// detector re-asserts immediately and the handler clears it.
+		//
+		// caveman99/k230-linux runs this same backported driver on
+		// this same 6.6.36 tree on this same board with
+		// IRQ_TYPE_LEVEL_LOW and reports working multitouch; its
+		// /proc/interrupts line reads "gpio-k230 23 Level
+		// goodix-berlin" where ours reads "Edge". gpio-k230 supports
+		// both (drivers/gpio/gpio-k230.c:333).
+		interrupts = <23 IRQ_TYPE_LEVEL_LOW>;
+
+		// The digitizer grid, not the panel. goodix_berlin declares
+		// ABS_MT_POSITION_X/Y max = SZ_64K-1 and then lets
+		// touchscreen_parse_properties() override it
+		// (goodix_berlin_core.c:621-627); with nothing to read, every
+		// touch lands in the top-left 1% of any client that scales by
+		// the declared range.
+		//
+		// 1024 x 2400 has two independent sources: LILYGO's own
+		// RT-Smart driver, which divides raw coordinates by exactly
+		// these constants
+		// (repo/canmv_k230/src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/touch/gt9895.c:44-45),
+		// and caveman99's Linux port. The panel is 568x1232, so the
+		// sensor grid is roughly 1.8x the pixel grid in both axes --
+		// same orientation, hence no swapped-x-y or inverted-* here.
+		touchscreen-size-x = <1024>;
+		touchscreen-size-y = <2400>;
 	};
 };
 
