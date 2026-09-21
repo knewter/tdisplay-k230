@@ -33,9 +33,21 @@ carried as an explicit patch, recorded with what was backported and from where,
 so the cost of the pin is visible when the kernel is next moved.
 
 *Grounding: the pinned Xuantie kernel carries `drivers/input/touchscreen/goodix.c`,
-which serves the older GT9xx generation. No `goodix_berlin` source is present in
-that tree. GT9895 is a Berlin-generation part, supported in mainline from
-approximately 6.7; the pinned tree is 6.6-based.*
+which serves the older GT9xx generation, and no `goodix_berlin` source. But
+the gap is larger than "backport it": `goodix_berlin` landed in **v6.9**,
+not 6.7, and **mainline has never supported the GT9895 at any version**. At
+v6.18 the I2C driver matches only `goodix,gt9916` and the binding
+enumerates `gt9897` and `gt9916`. See `docs/evidence/gt9895-touch.md`.*
+
+What the project HAS is LilyGO's RT-Smart `gt9895.c` (219 lines): not a
+Linux driver, but a working register-level description of this part on this
+board.
+
+The route SHALL therefore be chosen by experiment rather than asserted. The
+`goodix,gt9916` compatible is a one-word change and the Berlin generation
+shares a programming model, so whether the existing driver drives this part
+is cheap to discover once the board boots — and the answer decides between
+teaching the mainline driver the GT9895 and porting the vendor one.
 
 #### Scenario: The kernel pin is moved
 
