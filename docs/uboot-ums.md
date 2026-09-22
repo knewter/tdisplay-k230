@@ -186,8 +186,12 @@ So with both enabled, the **gadget driver claims every `snps,dwc2` node**,
 including `usbotg1`, and U-Boot's USB host stack goes dark — meaning the
 onboard RTL8152 Ethernet is no longer reachable from U-Boot.
 
-<!-- UNVERIFIED: reasoned from the source in the tree, not observed. The
-proof is a build plus a `dm tree` on the board. -->
+<!-- UNVERIFIED, half resolved: the BEFORE half is observed --
+docs/evidence/uboot-ums-hardware.txt, 2026-09-22, `dm tree` on the card's
+own U-Boot shows exactly one snps,dwc2 node, usb-otg@91540000, bound to the
+host driver dwc2_usb, and usb-otg@91500000 absent. The AFTER half -- which
+driver takes which node once the gadget is compiled in -- needs the ums
+build on the board (task 3.2). -->
 
 Corroboration that this is real and not a misreading: Canaan's
 `k230_canmv_burntool_defconfig` enables the gadget and **drops
@@ -252,6 +256,10 @@ Less than the round trip suggests, and more than throughput suggests.
 The current image is **2.21 GB** (`k230-sd-image.img` in the store). U-Boot
 `ums` over DWC2 high-speed realistically moves 5–20 MB/s, so a *full* image
 write is 2–7 minutes — not obviously faster than a card reader.
+**Measured 2026-09-22** (`docs/evidence/uboot-ums-write.txt`,
+`uboot-ums-enumerate.txt` session 8): **12.6 MB/s written**, 175 s for
+2 210 918 400 bytes, `dd bs=4M oflag=sync conv=fsync`; **12.0 MB/s read**,
+184 s. Three minutes either way, with nobody at the desk.
 
 The win is not bandwidth, it is:
 
@@ -458,3 +466,129 @@ work.
 4. **Do not do Route B for this.** Revisit it as its own change when the goal
    is dropping Canaan's U-Boot fork, and know going in that it cannot touch
    the SPL or the DDR training blob.
+
+---
+
+## 9. What has been observed since (2026-09-22)
+
+Written after `every-blob-is-built-from-source-or-named` landed, so "the
+U-Boot we build" now means `nix/uboot-k230.nix`, and after the first session
+at the board's own prompt for
+`the-card-is-flashed-over-usb-from-u-boot`. Everything here is in
+`docs/evidence/uboot-ums-hardware.txt` or `docs/evidence/uboot-ums-build.txt`.
+
+**§1 confirmed on the board.** `help ums` → `Unknown command 'ums'`;
+`help k230_dfu` → `k230 burntool enter dfu`. `version` reports
+`riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0`: the card carries this
+project's build, not the Docker one, and it has no gadget.
+
+**§2 confirmed on the board.** `usb start; usb tree` on today's U-Boot finds
+`Realtek USB 10/100 LAN` behind `usb-otg@91540000` — the onboard RTL8152 on
+`usbotg1`, as the schematic and the Linux boot log said. `usb-otg@91500000`
+does not appear in `dm tree` at all, which is `k230.dtsi`'s
+`status = "disabled"` doing what §2 says it does. `mmc list` names the card
+`mmc1@91581000: 1 (SD)`, 119.1 GiB; `ums 0 mmc 1` is the argument.
+
+**§3's driver-binding claim: the before half is observed.** `dm tree` shows
+`usb-otg@91540000` bound to `dwc2_usb`, the host driver, and nothing else in
+`UCLASS_USB`. What the gadget driver binds once it exists is still the
+after half, and it needs the new build on the board.
+
+**§3's build, done.** `nix/uboot-k230-ums.config` carries the six gadget
+symbols plus `CONFIG_CMD_USB_MASS_STORAGE=y` and `# CONFIG_USB_DWC2 is not
+set`, with D3's reasoning next to that line;
+`nix/patches/uboot-k230/0001-k230_canmv_v3-enable-usbotg0-as-a-peripheral.patch`
+is the device-tree override. Two things the plan did not foresee, both in
+`docs/evidence/uboot-ums-build.txt`: turning `USB_GADGET` on exposes
+Kconfig symbols that a non-interactive build cannot answer, so the
+derivation runs `olddefconfig` after appending the fragment; and Canaan's
+own addition to `dwc2_udc_otg.c` (the `USB0_TEST_CTL3` pull-down clear,
+passing a `u32` address to `readl`) is an error under GCC ≥ 14's
+`-Wint-conversion`, so the build demotes that one diagnostic rather than
+pin the whole tree to GCC 13. The result: `ums` in the binary
+(`do_usb_mass_storage`, `UMS: LUN %d, dev %s ...`), the gadget driver in the
+linker list, the host driver gone, `usb-otg@91500000` `okay`/`peripheral`
+in the embedded device tree, and U-Boot proper 31 KB *smaller* than before
+because the USB host and Ethernet class drivers left with `USB_DWC2`.
+
+**§7's warm-reboot detail, worth knowing.** A `reboot` from Linux does not
+drop the CH342 console: the port stayed open through the SoC reset and
+`tools/capture-boot.py --hammer` caught the 1 s `bootdelay` first time. A
+cold boot is different (`docs/evidence/boot-from-source-cold.txt`): the
+bridge loses power with the board and the prompt is unreachable from the
+host until it re-enumerates.
+
+**A caution for Route C, from LilyGO's own BSP** (reported by the agent
+reading it for `the-screen-lights-before-linux`; their evidence file is
+`docs/evidence/lilygo-uboot-logo.md` once that branch lands). LilyGO's
+U-Boot overlay *deletes* `enter_to_usb_burn_mode()` from
+`board/canaan/common/k230_board_common.c` and moves the environment to
+offset `0x1e0000`, size `0x10000`. Neither is in the stage 1 this project
+builds, which takes Canaan's SDK overlay and keeps the environment at 3 MiB
+/ 3.5 MiB (`nix/sd-image.nix`) — which is why 1.1 found `k230_dfu` present,
+as the SDK source says it should be. So if the BootROM/USB recovery path
+behaves differently from what §5 reads out of the SDK, the first thing to
+ask is which U-Boot was on the card; the characterisation in §5's tasks must
+be made against *our* stage 1, and the RT-Smart image LilyGO shipped is not
+evidence about it either way.
+
+**§3's gadget, on the board (2026-09-22, `docs/evidence/uboot-ums-enumerate.txt`).**
+`ums 0 mmc 1` runs: `UMS: LUN 0, dev mmc 1, hwpart 0, sector 0x0, count
+0xee4c000` (the 119.1 GiB card), and `dm tree` shows both `snps,dwc2` nodes
+bound to `dwc2-udc-otg` — `usbotg1` too, its `dr_mode` still `otg`, so the
+A2 `.bind` is needed to keep USB host. Four sessions and two cables later
+the host had still seen nothing; the core's own registers say why the
+usual suspects are wrong. `GOTGCTL` reads `0x000d0000` with the cable in:
+bit 19 `B_SESSION_VALID` set — **the PHY sees VBUS**, so §3's "classic dwc2
+failure" is not this one. And the two `u-boot,force-*` properties named
+there as the mitigation are inert on this SoC in this tree:
+`dwc2_udc_otg_of_to_plat()` parses them (`dwc2_udc_otg.c:1014-1018`) but
+`dwc2_udc_otg_probe()` acts on them only under
+`if (plat->activate_stm_id_vb_detection)` (`:1121-1158`), a flag set solely
+by `dwc2_set_stm32mp1_hsotg_params()` (`:1030-1043`), reached only through
+`st,stm32mp15-hsotg`'s driver data. Struck from the plan. After `ums`:
+`DCTL` bit 1 clear (D+ pulled up), `GINTSTS` with `INT_RESET` and
+`INT_ENUMDONE` set (a host reset the bus and enumeration completed — at
+**full** speed, `DSTS` EnumSpd 01, on a high-speed core), then
+`INT_SUSPEND`. Meanwhile solomon's kernel log has no attach on any bus in
+any window. Whatever reset that bus was a host, and it was not this machine.
+
+**And then it enumerated (session 5).** The cable's far end was proven to
+reach this machine with a phone first; moved to J3, `ums 0 mmc 1` on the
+same firmware put `29f1:0230 … USB download gadget` on `usb 3-4` at
+**480 Mb/s**, as `/dev/disk/by-id/usb-Linux_UMS_disk_0-0:0`, 249 872 384
+sectors — the card — with `K230_BOOT` and `NIXOS_SD` visible, and the
+2 MiB slot read back over USB hashing to the build's `fn_ug_u-boot.bin`.
+`DSTS` this time reads high speed; the full-speed enumeration of sessions
+3–4 was the other host's doing. Four failed sessions and the register
+decode were the cost of not being able to see the bench: the board had
+been right all along.
+
+**Read back over `ums`, every byte (sessions 6–8).** The whole 2.2 GB
+image region read from the gadget at **12.0 MB/s** (184 s, `dd bs=4M`,
+high speed on xhci) — so §3's "5–20 MB/s" guess lands at the low-middle
+for reads, and a full-image write will be about that or slower. The card
+does not equal the image after a boot, and cannot: `k230_set_dtb_env()`
+calls `env_save()` on every boot (`k230_board_common.c:511`), rewriting
+the env copy at 3 MiB (only that one — this U-Boot has no
+`CONFIG_ENV_OFFSET_REDUND`, so the 3.2 MiB copy the SDK layout writes is
+dead weight it never reads), and Linux mounts both ext4 partitions
+read-write. Compared region by region instead: `[0, 3 MiB)` identical;
+partition 1's five files — `Image`, `fw_jump_add_uboot_head.bin`, the DTB,
+`bootargs.txt`, `initrd.uimg`, 88 MB — byte-identical through `debugfs`
+with no mount; and of 538 943 4 KiB blocks after the env, the 5 506 that
+differ are all inside the two mounted filesystems, none in the gaps. The
+transport is proven for reads; task 3.4's literal `cmp` check needs
+rewording to say so.
+
+**Written through, and booted (session 9,
+`docs/evidence/uboot-ums-write.txt`).** The same image flashed onto the
+card in the board by `tools/flash.sh` against the gadget's by-id path,
+12.6 MB/s, 175 s; `reset`; the board came up to the login prompt and hashed
+its own SPL and U-Boot slots to the image's bytes. The reset also put the
+from-source SPL banner and the whole `PMU Major Msg` training sequence on
+the record, which a cold boot never could. The loop this document was
+written for exists: `./tools/flash-latest.sh --ums` with the board at
+`ums 0 mmc 1`.
+
+**Not yet observed.** Route C; USB host and gadget in one binary (A2).

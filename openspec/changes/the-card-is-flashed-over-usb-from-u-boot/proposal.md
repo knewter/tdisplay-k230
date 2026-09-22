@@ -52,38 +52,42 @@ emulation beyond "U-Boot still compiles".
 
 **New Capabilities**
 
-- `image/boot-chain` — new requirements about what stage 1 offers a host over
-  USB, and about how a stage 1 that does not boot is recovered. The
-  capability does not yet exist under `openspec/specs/`; it is introduced by
-  `the-board-boots-what-we-built` and revised by
-  `every-blob-is-built-from-source-or-named`, both in flight. This change
-  adds to it rather than modifying it — see design.md, "Why this is an ADDED
-  delta and not a MODIFIED one".
+- None.
 
 **Modified Capabilities**
 
-- None. The requirement this change would have had to overturn — "Stage 1 …
-  SHALL NOT be built from source by this project" — is already being
-  reversed by `every-blob-is-built-from-source-or-named`, which renames it to
-  "Stage 1 is built from source this project can read". This change depends
-  on that one landing first and conflicts with nothing once it has.
+- `image/boot-chain` — gains three requirements, about what stage 1 offers a
+  host over USB and about how a stage 1 that does not boot is recovered. The
+  capability is in `openspec/specs/` (introduced by
+  `the-board-boots-what-we-built`, revised by
+  `every-blob-is-built-from-source-or-named`, both archived by 2026-09-22).
+  The delta is ADDED requirements only; no existing requirement is modified
+  or renamed — see design.md, "Why this is an ADDED delta and not a MODIFIED
+  one". The requirement this change would once have had to overturn —
+  "Stage 1 … SHALL NOT be built from source by this project" — is gone: it
+  now reads "Stage 1 is built from source this project can read", and this
+  change is the first to use that.
 
 ## Impact
 
 - **Stage 1.** A defconfig delta and a one-line device-tree override in the
   Canaan U-Boot tree. No new vendor blob; no change to the SPL, the DDR
   training firmware or OpenSBI.
-- **Wherever U-Boot is compiled.** `tools/gen-stage1.sh` packages an
-  already-built tree and does not run `make`, so the configuration change has
-  to reach the compile step. That step is being moved into the flake by
-  `every-blob-is-built-from-source-or-named`; this change lands on top of it
-  rather than creating a second way to build stage 1.
+- **Where U-Boot is compiled: `nix/uboot-k230.nix`.** Written when
+  `tools/gen-stage1.sh` packaged a tree built elsewhere; since
+  `every-blob-is-built-from-source-or-named` landed, the flake compiles
+  U-Boot from pinned sources, so the configuration change is a Kconfig
+  fragment (`nix/uboot-k230-ums.config`) and a patch file
+  (`nix/patches/uboot-k230/`) that derivation applies, and `nix build
+  .#stage1` is the whole rebuild.
 - **`tools/flash.sh` / `tools/flash-latest.sh`.** `flash.sh` refuses anything
   that is not a `/dev/disk/by-id` path, for good reasons recorded in its
   header. A `ums` target is a different by-id path, not an exception to that
   rule.
-- **`firmware/stage1/PROVENANCE.txt` and `docs/blob-inventory.md`.** The
-  hashes of `fn_ug_u-boot.bin` change. Nothing enters or leaves the blob
-  inventory.
+- **`docs/blob-inventory.md`.** Nothing enters or leaves the blob inventory
+  — the sources are the same pinned sources, only the configuration
+  changes — and `tools/blob-scan.py` says so. There is no committed binary
+  whose hash needs refreshing any more; the built hashes live in
+  `nix build .#stage1`'s `SHA256SUMS` and in the evidence.
 - **Risk to the board: none that a card reader does not fix.** The TF card is
   this board's only boot medium.

@@ -8,11 +8,11 @@ Three constraints shape everything below.
 1. **The work lands in stage 1**, specifically in the Canaan U-Boot 2022.10
    tree: a Kconfig delta and a device-tree override. Not the kernel, not Nix
    beyond plumbing, not userspace.
-2. **`tools/gen-stage1.sh` does not compile U-Boot.** It packages an
-   already-built tree under `.build/k230_linux_sdk/output/`. A configuration
-   change has nowhere to land until the compile step is inside this
-   repository, which is what `every-blob-is-built-from-source-or-named` is
-   doing.
+2. **The compile step is `nix/uboot-k230.nix`.** When this was written,
+   `tools/gen-stage1.sh` packaged a tree built elsewhere and a configuration
+   change had nowhere to land; `every-blob-is-built-from-source-or-named`
+   moved the compile into the flake, so the change is a Kconfig fragment and
+   a patch file that derivation applies.
 3. **The card is the only boot medium**, so the blast radius of a wrong
    stage 1 is one trip to the card reader — the loop we are already in.
 
@@ -115,20 +115,39 @@ merely awkward but forbidden.
 
 ### Why this is an ADDED delta and not a MODIFIED one
 
-The obvious move is a MODIFIED delta against "Stage 1 is a pinned vendored
-artifact". Two reasons not to:
+The obvious move was a MODIFIED delta against "Stage 1 is a pinned vendored
+artifact". Two reasons not to, both now history but still the reason the
+delta has the shape it has:
 
-- That requirement is not in `openspec/specs/` yet. `image/boot-chain` exists
-  only as an ADDED delta in `the-board-boots-what-we-built`, which is still
-  in flight.
-- It is already being overturned. `every-blob-is-built-from-source-or-named`
-  carries a RENAMED + MODIFIED delta turning it into "Stage 1 is built from
-  source this project can read". A second MODIFIED delta against the same
-  requirement, from a change that depends on the first, would be two changes
-  editing the same sentence in opposite directions.
+- When this was drafted that requirement was not in `openspec/specs/`;
+  `image/boot-chain` existed only as an ADDED delta in
+  `the-board-boots-what-we-built`. Both that change and
+  `every-blob-is-built-from-source-or-named` have since archived, and the
+  capability is in `openspec/specs/image/boot-chain/spec.md`.
+- It was already being overturned: `every-blob-is-built-from-source-or-named`
+  renamed it to "Stage 1 is built from source this project can read". A
+  second MODIFIED delta against the same requirement, from a change that
+  depends on the first, would have been two changes editing the same
+  sentence in opposite directions.
+
+So the delta ADDs three requirements to the existing capability and touches
+none of the five already there. `openspec archive` accepts ADDED against an
+existing capability; it is MODIFIED and RENAMED that need their target to
+exist under the exact name, and this delta carries neither.
 
 So this change adds requirements about what stage 1 *offers*, and states its
 dependency instead of re-litigating how stage 1 is produced.
+
+### A note for `image/sd-layout`, learned while reading the card back
+
+The SDK's `genimage.cfg` writes the environment twice, at 3 MiB and at
+3.2 MiB, and `nix/sd-image.nix` reproduces that. Only the first copy is
+live: `k230_canmv_v3_defconfig` sets `CONFIG_ENV_OFFSET=0x300000` and has no
+`CONFIG_ENV_OFFSET_REDUND`, so this U-Boot never reads or writes the copy at
+3.2 MiB — observed 2026-09-22 (`docs/evidence/uboot-ums-enumerate.txt`,
+session 8): after boots, the 3 MiB copy holds the saved live environment and
+the 3.2 MiB copy is still byte-identical to the image. Not a requirement of
+this change; recorded so nobody relies on the second copy as a backup.
 
 ## Risks / Trade-offs
 
@@ -158,9 +177,10 @@ dependency instead of re-litigating how stage 1 is produced.
 ## Migration Plan
 
 1. `every-blob-is-built-from-source-or-named` lands; stage 1 is compiled from
-   this repository.
-2. Add the defconfig fragment and the device-tree override. Build. The old
-   stage 1 still exists in git history and in the store.
+   this repository. (Done, 2026-09-22.)
+2. Add the Kconfig fragment and the device-tree patch to `nix/uboot-k230.nix`.
+   `nix build .#stage1`. The old stage 1 still exists in git history and in
+   the store.
 3. One card-reader cycle installs the new stage 1. This is the last mandatory
    one.
 4. Prove `ums` on hardware, capture the console into

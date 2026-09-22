@@ -76,11 +76,18 @@ read -r answer
 EXPECT="${TARGET: -12}"
 [ "$answer" = "$EXPECT" ] || die "got '$answer', expected '$EXPECT' — nothing written"
 
+# sudo only when the device is not already ours to write. A user in group
+# `disk` can write /dev/sdX directly, and an unattended flash (the ums
+# loop, driven by tools/ums-session.py) has no terminal for a password.
+SUDO=sudo; [ -w "$REAL" ] && SUDO=""
+
 for m in $(lsblk -nro MOUNTPOINT "$REAL" 2>/dev/null | grep -v '^$'); do
-  echo "unmounting $m"; sudo umount "$m"
+  echo "unmounting $m"; $SUDO umount "$m"
 done
 
 echo "writing..."
-sudo dd if="$IMG" of="$REAL" bs=4M status=progress oflag=sync conv=fsync
+START=$(date +%s.%N)
+$SUDO dd if="$IMG" of="$REAL" bs=4M status=progress oflag=sync conv=fsync
 sync
-echo "done. $(date -Is)"
+END=$(date +%s.%N)
+echo "done. $(date -Is)  wrote $IMGBYTES bytes in $(echo "$END - $START" | bc) s"
