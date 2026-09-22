@@ -79,7 +79,15 @@ static void draw(void) {
   rect(0, 0, width, 8, 0xff38bdf8);
   text("APPS", width/2, 42, 7, 0xffffffff);
   text("TOUCH A CARD", width/2, 104, 3, 0xffcbd5e1);
-  buttons[3].y = height - 142;
+  if (height < 900) {
+    int gap = 14, top = 120, back_h = 86, back_y = height - back_h - 24;
+    int app_h = (back_y - top - 3 * gap) / 3;
+    for (int i = 0; i < 3; i++) { buttons[i].y = top + i * (app_h + gap); buttons[i].h = app_h; }
+    buttons[3].y = back_y; buttons[3].h = back_h;
+  } else {
+    buttons[0].y=150; buttons[1].y=346; buttons[2].y=542;
+    buttons[0].h=buttons[1].h=buttons[2].h=178; buttons[3].y=height-142; buttons[3].h=112;
+  }
   for (size_t i = 0; i < sizeof buttons/sizeof buttons[0]; i++) {
     struct button *b = &buttons[i];
     rect(28, b->y, width - 56, b->h, b->color);
@@ -122,7 +130,7 @@ static void layer_configure(void *d, struct zwlr_layer_surface_v1 *ls, uint32_t 
   zwlr_layer_surface_v1_ack_configure(ls, serial);
   if ((int)w == width && (int)h == height && configured) return;
   width = (int)w; height = (int)h;
-  if (width < 200 || height < 800) { fprintf(stderr, "k230-touch-launcher: portrait surface is too small\n"); running=false; return; }
+  if (width < 200 || height < 500) { fprintf(stderr, "k230-touch-launcher: portrait surface is too small\n"); running=false; return; }
   /* Keep an old server-owned buffer mapped through its release; resize events
    * are rare and this avoids invalidating pixels still owned by Wayland. */
   current=make_buffer(); pixels=current->pixels; draw(); wl_surface_attach(surface, current->buffer, 0, 0);
