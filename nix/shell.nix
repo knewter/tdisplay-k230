@@ -60,8 +60,9 @@ let
   # (swaybar/input.c wl_touch_up -> process_hotspots ->
   # block_hotspot_callback), but not to a `bindsym` mouse binding.  This
   # little, deliberately boring, state machine is therefore the board's
-  # touch launcher. Four 128 px primary controls plus swaybar's normal text
-  # padding fit inside 568 px; each is 56 px high. It needs no gesture daemon,
+  # touch launcher. Home and Apps each expose four 128 px controls; their
+  # restrained colours make the launcher page recognisable at a glance. Both
+  # rows fit inside 568 px and are 56 px high. It needs no gesture daemon,
   # physical buttons, or touch-hostile launcher.
   terminalFootConfig = pkgs.writeText "k230-terminal-foot.ini" ''
     font=DejaVu Sans Mono:size=15

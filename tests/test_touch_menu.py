@@ -68,8 +68,10 @@ class TouchMenuTest(unittest.TestCase):
         stream, _ = self.run_menu(['{"name": "apps"}', '{"name":"back"}', '{ "name" : "system" }'])
         frames = self.frames(stream)
         self.assertEqual([block["name"] for block in frames[0]], ["apps", "windows", "keyboard", "system"])
-        self.assertEqual([block["name"] for block in frames[1]], ["terminal", "monitor", "back"])
+        self.assertEqual([block["name"] for block in frames[1]], ["terminal", "monitor", "new-terminal", "back"])
         self.assertEqual([block["name"] for block in frames[3]], ["reboot", "poweroff", "back"])
+        self.assertEqual([block["background"] for block in frames[1]], ["#2f6b4f", "#245f7a", "#396b57", "#3b3f46"])
+        self.assertTrue(all(block["color"] == "#ffffff" for block in frames[1]))
         for frame in frames:
             self.assertLessEqual(sum(block["min_width"] for block in frame), 540)
             self.assertTrue(all(block["separator_block_width"] == 0 for block in frame))
@@ -100,6 +102,9 @@ class TouchMenuTest(unittest.TestCase):
         _, actions = self.run_menu(['{"name":"apps"}', '{"name":"monitor"}'], missing)
         self.assertIn('foot --config /mock/monitor.ini -e /mock/htop', actions)
         self.assertIn('HTOPRC=/mock/monitor.htoprc', actions)
+        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"new-terminal"}'])
+        self.assertIn('foot --config /mock/terminal.ini', actions)
+        self.assertNotIn('swaymsg [app_id="k230-terminal"] focus', actions)
 
     def test_cancel_does_not_call_sudo_and_confirm_does(self):
         _, actions = self.run_menu(['{"name":"system"}', '{"name":"reboot"}', '{"name":"cancel"}'])

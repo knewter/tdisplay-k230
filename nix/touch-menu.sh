@@ -19,6 +19,16 @@ set -u
 page=home
 window_offset=0
 
+# Keep the home and Apps surfaces visually related without a theme framework.
+menu_foreground='#ffffff'
+menu_apps='#2f6b4f'
+menu_windows='#2b547c'
+menu_keyboard='#6b4f2b'
+menu_system='#5e3d61'
+menu_monitor='#245f7a'
+menu_new_terminal='#396b57'
+menu_back='#3b3f46'
+
 windows_json() {
   "$K230_SWAYMSG" -t get_tree -r | "$K230_JQ" -c --argjson offset "$window_offset" '
     [recurse(.nodes[]?, .floating_nodes[]?)
@@ -34,10 +44,10 @@ windows_json() {
 emit() {
   case "$page" in
     home)
-      printf '%s\n' '[{"name":"apps","full_text":"Apps","min_width":128,"align":"center","separator":false,"separator_block_width":0},{"name":"windows","full_text":"Windows","min_width":128,"align":"center","separator":false,"separator_block_width":0},{"name":"keyboard","full_text":"Keyboard","min_width":128,"align":"center","separator":false,"separator_block_width":0},{"name":"system","full_text":"System","min_width":128,"align":"center","separator":false,"separator_block_width":0}],'
+      printf '%s\n' "[{\"name\":\"apps\",\"full_text\":\"Apps\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_apps\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"windows\",\"full_text\":\"Windows\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_windows\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"keyboard\",\"full_text\":\"Keyboard\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_keyboard\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"system\",\"full_text\":\"System\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_system\",\"separator\":false,\"separator_block_width\":0}],"
       ;;
     apps)
-      printf '%s\n' '[{"name":"terminal","full_text":"Terminal","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"monitor","full_text":"Monitor","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
+      printf '%s\n' "[{\"name\":\"terminal\",\"full_text\":\"Terminal\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_apps\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"monitor\",\"full_text\":\"Monitor\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_monitor\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"new-terminal\",\"full_text\":\"New term\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_new_terminal\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"back\",\"full_text\":\"Back\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_back\",\"separator\":false,\"separator_block_width\":0}],"
       ;;
     windows)
       all_windows=$(windows_json)
@@ -70,6 +80,10 @@ emit() {
   esac
 }
 
+start_terminal() {
+  "$K230_FOOT" --config "$K230_TERMINAL_CONFIG" >/dev/null 2>&1 &
+}
+
 present_or_start() {
   app_id="$1"
   config="$2"
@@ -80,7 +94,7 @@ present_or_start() {
   elif [ "$app_id" = k230-monitor ]; then
     HTOPRC="$K230_HTOPRC" "$K230_FOOT" --config "$config" -e "$K230_HTOP" >/dev/null 2>&1 &
   else
-    "$K230_FOOT" --config "$config" >/dev/null 2>&1 &
+    start_terminal
   fi
 }
 
@@ -107,6 +121,7 @@ while IFS= read -r line; do
     system) page=system ;;
     terminal|home) present_or_start k230-terminal "$K230_TERMINAL_CONFIG"; page=home ;;
     monitor) present_or_start k230-monitor "$K230_MONITOR_CONFIG"; page=home ;;
+    new-terminal) start_terminal; page=home ;;
     window:*)
       con_id=${name#window:}
       case "$con_id" in
