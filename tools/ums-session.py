@@ -12,7 +12,9 @@ same time.
   1. `reboot` from Linux. The CH342 console survives a warm reset
      (docs/evidence/uboot-ums-hardware.txt), so the port is kept open and a
      key is sent every 100 ms until U-Boot's 1 s `bootdelay` is caught.
-  2. At `K230# `: `version`, `dm tree`, `mmc list` for the record.
+  2. At `K230# `: `version`, `dm tree`, `mmc list` for the record. With
+     `--check-usb-host`, record the U-Boot USB and driver trees before UMS
+     and again after leaving it.
   3. `ums 0 mmc 1`, then watch /dev/disk/by-id/ for a NEW whole-disk entry
      (the card reader, the console bridge and everything else present before
      the command are excluded by snapshot, not by name).
@@ -327,6 +329,10 @@ def main():
                     help="optional expected SHA-256 for the nonempty --pull output")
     ap.add_argument("--expected-sectors", type=int,
                     help="required with --flash or --pull: card size previously observed on the board")
+    ap.add_argument("--check-usb-host", action="store_true",
+                    help="record U-Boot usb start/tree and dm tree before UMS, then "
+                         "usb tree and dm tree after it; records controller binding, "
+                         "not packet connectivity")
     ap.add_argument("--regs", action="store_true",
                     help="dump usbotg0's DWC2 OTG/device registers with md.l "
                          "before ums and again right after Ctrl-C. GOTGCTL "
@@ -381,7 +387,11 @@ def main():
 
         # 2. For the record.
         s.cmd("version")
-        s.cmd("dm tree")
+        if args.check_usb_host:
+            s.note("USB host coexistence record before ums (binding only; no packet test)")
+            s.cmd("usb start", timeout=60)
+            s.cmd("usb tree", timeout=30)
+        s.cmd("dm tree", timeout=30)
         s.cmd("mmc list")
 
         def regs(tag):
@@ -590,6 +600,10 @@ def main():
             s.port.write(b"\r\n"); s.port.flush()
             s.wait_for(PROMPT, 10)
         regs("after Ctrl-C (the driver has probed, run, and been released)")
+        if args.check_usb_host:
+            s.note("USB host coexistence record after leaving ums (binding only; no packet test)")
+            s.cmd("usb tree", timeout=30)
+            s.cmd("dm tree", timeout=30)
         gone_at = None
         for _ in range(20):
             if not (usb_disks() - disks_before):

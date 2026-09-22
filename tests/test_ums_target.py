@@ -71,6 +71,13 @@ class ReadbackTests(unittest.TestCase):
 
 
 class PullTests(unittest.TestCase):
+    def test_usb_host_check_is_opt_in_and_documented_without_serial_access(self):
+        result = subprocess.run([sys.executable, str(SCRIPT), "--help"],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("--check-usb-host", result.stdout)
+        self.assertIn("not packet connectivity", result.stdout)
+
     def test_pull_arguments_refuse_missing_target_guards_before_serial_access(self):
         with tempfile.TemporaryDirectory() as directory:
             output = str(Path(directory) / "capture.tar")
