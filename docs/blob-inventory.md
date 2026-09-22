@@ -773,6 +773,32 @@ DATA group:38-files   (lilygo)src/uboot/uboot/**                                
 DATA group:1-file    (lilygo)tools/genimage/test/qemu.qcow.gz
 IO   group:2-files    repo/firmware/CanMV-K230-V3P0_rtsmart_release{V1.2,V1.3}.zip        the shipped images; evidence, not a dependency
 DATA group:16-files   repo/{Structural_Design,datasheet,schematic,image}/**                LilyGO's mechanical, datasheet and schematic documents
+DATA 56c6a25b7d91a921199034d0f1005f068f103dc3f6dfe31638c72bad24e5230c  docs/evidence/shell-features/neofetch-cpu/20260922T185501Z-neofetch-cpu.mp4
+DATA 2f25602ad853140dd9efa618c334d7d01cc2c2e48f02c91acba78102fd0bd769  docs/evidence/shell-features/neofetch-cpu/first-launch-path-error.png
+DATA d7fdf5e05bef42cb01a6c407d386a94064c27769d47dd039f1c18ce01beea4cd  docs/evidence/shell-features/neofetch-cpu/native.png
+DATA e22deb8c67b22fad47334f6b98803869fdc2f419202ed6b49075a3a1e3f52bae  docs/evidence/shell-features/portrait-launcher/20260922T185608Z-portrait-launcher.mp4
+DATA bcc465eda496c31f6f384f2a20942f683c3a09899a22d4051c189b0ef9a80ed8  docs/evidence/shell-features/portrait-launcher/20260922T190646Z-portrait-launcher-final.mp4
+DATA 3136f7257fb9851ede40444d080a9e1d2774a7c5874c73051f02d635e0cee388  docs/evidence/shell-features/portrait-launcher/drag-cancelled.png
+DATA 871ddd0190226d7d901058bc047b1a5969e6e7c62ee982f95aea7aebc2d3460e  docs/evidence/shell-features/portrait-launcher/final-drag-cancelled.png
+DATA 6b0b14f0350f98d11afdcaa49c810bb8ea7adf221213f0d54472a9a63a180bef  docs/evidence/shell-features/portrait-launcher/final-keyboard.png
+DATA 871ddd0190226d7d901058bc047b1a5969e6e7c62ee982f95aea7aebc2d3460e  docs/evidence/shell-features/portrait-launcher/final-menu.png
+DATA db23b8c873238bdb79f88c2c4f4e462acf1c765940fb00a5f2e7f177575f9855  docs/evidence/shell-features/portrait-launcher/final-monitor.png
+DATA 0ca8ad93f91f38e7e2f46d84777b8a790e8010277a6d4045318ef38a4b2deee6  docs/evidence/shell-features/portrait-launcher/final-new-terminal.png
+DATA 3e92020c1c0073cbd86560ef46bcb0f914e2aa931b7be65f0d6028015de8cf6e  docs/evidence/shell-features/portrait-launcher/first-layout-extra-margin.png
+DATA a3dd9800b1caeb2e4d7c0d6f0d6ad52285f1889cae25952797ef54c978281e4c  docs/evidence/shell-features/portrait-launcher/keyboard.png
+DATA 3136f7257fb9851ede40444d080a9e1d2774a7c5874c73051f02d635e0cee388  docs/evidence/shell-features/portrait-launcher/menu.png
+DATA 9bb466599777d7975742e274a33d7f0d7fafb47144e17d85f874acf8b10ad143  docs/evidence/shell-features/portrait-launcher/monitor.png
+DATA 2ac85f505b954a014e72026e4d01e571f9cb66c65840b233a958686204f28ea3  docs/evidence/shell-features/portrait-launcher/new-terminal.png
+DATA 3d1a9b8cab377b20a59de1214907eb1b779064520b4daa352a7fab6d68609d31  docs/evidence/splash-trial/20260922T183200Z-uboot-splash-first-trial.mp4
+DATA 31cc52a11767d7f4b1d114ac104fc1aa906c9b756aca4523da8f4c9e426424ab  docs/evidence/splash-trial/20260922T183316Z-splash-to-linux-first-trial.mp4
+DATA 5128fb0bd80b0f0c598c06777cce19ff6b108bedc9d211b5270bfe2b65028a9c  docs/evidence/splash-trial/20260922T183432Z-shell-after-splash.jpg
+DATA f947d3631ffeee8b0a9d63e83126a0ba54b1095ee04b3455205407b75aea5bb9  docs/evidence/splash-trial/20260922T184003Z-shell-without-logo.jpg
+DATA 70ac27055e70e2add02b8460b8596b1c4597aacfad212e8f1793257606536cfa  docs/evidence/splash-trial/linux-native.png
+DATA 403ee78cf4d3f516a2550ce4c73784587c709ce1956a41278882beefe5af60cf  docs/evidence/splash-trial/splash-to-linux-rotated.mp4
+DATA 264f0169cef918095b431bc1f6dbabfafdbace2041248bbb16ea24fbb2f657c4  docs/evidence/splash-trial/timeline-linux.jpg
+DATA 2c3e28403e9fa01f82e431bd198762b8481f26a50b35e5ef324ae1503119ddb4  docs/evidence/splash-trial/timeline-uboot.jpg
+DATA eda0693650af79208e1f170b0e7c78ba8b939df22f82543a12645e28e4f756e5  docs/evidence/splash-trial/uboot-held-25s.jpg
+DATA 7fb0582fe6d94d7252c4d71cd1243132c516da43b617bb5420a3d09fc0be3216  docs/evidence/splash-trial/uboot-splash-held-rotated.mp4
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
