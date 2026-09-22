@@ -40,7 +40,24 @@ export const NOTE_GROUPS: { kind: NoteKind; name: string; blurb: string }[] = [
   },
 ];
 
+// Newest first within each group. The set is small enough that a reader can
+// hold all of it, and what happened most recently is what they are most
+// likely to have come for.
 export const HARDWARE_NOTES: HardwareNote[] = [
+  {
+    slug: "panel-lit",
+    title: "The panel lights",
+    kind: "observed",
+    blurb:
+      "2026-09-21: the AMOLED emits and the kernel console renders on it. The wrong panel's init sequence, the brightness byte that was never sent, and the clock patch that blanked it again.",
+  },
+  {
+    slug: "touch-reports",
+    title: "Touch reports",
+    kind: "observed",
+    blurb:
+      "2026-09-21: the GT9895 delivers multitouch. It had bound, probed and created a device node while reporting nothing — the interrupt was declared edge-triggered on a part that holds its line low.",
+  },
   {
     slug: "first-boot",
     title: "First boot",

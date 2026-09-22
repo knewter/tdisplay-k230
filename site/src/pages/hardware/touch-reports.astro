@@ -1,0 +1,259 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import { url, evidenceUrl } from "../../lib/specs";
+import HwSection from "../../components/HwSection.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// From docs/evidence/touch-reports.md: evtest, a finger dragged on the glass.
+// <b> marks the lines that distinguish "a device node exists" from "the
+// controller is scanning".
+const evtest = `Event: time ..., type 3 (EV_ABS), code 57 (ABS_MT_TRACKING_ID), value 27
+<b>Event: time ..., type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 456</b>
+<b>Event: time ..., type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 888</b>
+Event: time ..., type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 3
+<b>Event: time ..., type 1 (EV_KEY), code 330 (BTN_TOUCH), value 1</b>
+Event: time ..., type 3 (EV_ABS), code 0 (ABS_X), value 456
+Event: time ..., type 3 (EV_ABS), code 1 (ABS_Y), value 888
+Event: time ..., -------------- SYN_REPORT ------------`;
+---
+
+<HardwareNote
+  slug="touch-reports"
+  title="The touch controller was awake the whole time"
+  eyebrow="LILYGO T-Display-K230 · hardware note · observed"
+  dek="The GT9895 bound, probed, and created <code>/dev/input/event0</code> while reporting nothing at all. Every status check passed. The fault was one word in the device tree: the interrupt was declared edge&#8209;triggered, and a Goodix Berlin part holds its interrupt line low until it is acknowledged."
+  description="On 2026-09-21 the GT9895 touch controller on the LILYGO T-Display-K230 reported multitouch under Linux. The interrupt type was the whole problem: 0 interrupts edge-triggered, 2173 level-triggered."
+  source="docs/evidence/touch-reports.md"
+  meta={[
+    { label: "Observed", value: "2026-09-21<br>evtest and /proc/interrupts, on the board" },
+    { label: "Controller", value: "Goodix GT9895 on i2c&#8209;1, 0x5d<br>interrupt GPIO23, reset GPIO24" },
+    { label: "The fix", value: "one device-tree word<br><code>IRQ_TYPE_LEVEL_LOW</code>, no kernel change" },
+    { label: "Reported grid", value: "1024&times;2400, the digitizer's own<br>against a 568&times;1232 panel" },
+    { label: "Not settled", value: "whether the axes are swapped<br>or mirrored against the screen" },
+  ]}
+>
+  <HwSection kind="the measurement" title="Zero, against two thousand one hundred and seventy-three">
+    <p class="hw-lede">
+      Everything that is easy to check was passing. The driver bound at
+      <code>i2c 1-005d</code>, <code>goodix_berlin</code> probed,
+      <code>/dev/input/event0</code> appeared, and the part answered
+      32&#8209;bit&#8209;addressed i2c reads. None of that is the same as a
+      controller that is scanning the glass, which is the whole lesson of this
+      board and the reason this site exists.
+    </p>
+
+    <div class="hw-table">
+      <table>
+        <thead>
+          <tr>
+            <th><code>interrupts = &lt;23 &hellip;&gt;</code></th>
+            <th>what changed</th>
+            <th><code>/proc/interrupts</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>IRQ_TYPE_EDGE_FALLING</code> (0x02)</th>
+            <td class="remark">nothing else &mdash; same kernel, same image</td>
+            <td><b>0</b></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>IRQ_TYPE_LEVEL_LOW</code> (0x08)</th>
+            <td class="remark">the device tree word, and only that</td>
+            <td class="ours"><b>2173</b> over one 45 s capture</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <pre class="hw-code">87:   <b>2173</b>   gpio-k230  23  <b>Level</b>   goodix-berlin</pre>
+
+    <p class="hw-p">
+      That line is read back off the running board, so the setting under test
+      is the setting that was live &mdash; not the one the source says should
+      have been pushed. The gap between the two is not hypothetical here: the
+      clock patch described in the <a href={url("hardware/panel-lit/")}>panel
+      note</a> was built, shipped and never looked at, and it had blanked the
+      screen.
+    </p>
+  </HwSection>
+
+  <HwSection kind="the cause" title="A trigger type cloned from a different part">
+    <p class="hw-lede">
+      Our touch node was cloned from the Canaan reference board's, which
+      describes an Edtech FT5306 &mdash; a different controller that happens to
+      sit on the same pins. The comment in our device tree said as much. The
+      trigger type came along for the ride and was never derived from any
+      Goodix source.
+    </p>
+
+    <pre class="hw-code">touchscreen@38 &#123;
+    compatible = "edt,edt-ft5306";        <i>/* not what is on this board */</i>
+    reg = &lt;0x38&gt;;
+    reset-gpios = &lt;&amp;gpio0_ports 24 GPIO_ACTIVE_LOW&gt;;
+    interrupt-parent = &lt;&amp;gpio0_ports&gt;;
+    interrupts = &lt;23 <b>IRQ_TYPE_EDGE_FALLING</b>&gt;;   <i>/* inherited */</i>
+&#125;;</pre>
+
+    <HwNote kind="soc" label="Why edge does not merely under-report — inferred, not measured">
+      <p>
+        A Goodix Berlin part asserts its interrupt low and <em>holds</em> it
+        until the host clears the status byte. The handler clears that byte
+        only on its <code>out_clear</code> path, and its very first check
+        returns early when <code>status</code> reads zero &mdash; without
+        clearing. One interrupt taken at the wrong moment therefore leaves the
+        line stuck low forever, and an edge detector never sees another falling
+        edge. A level detector re-fires immediately and the handler eventually
+        clears it: self-healing, which is why level is correct for a
+        hold&#8209;until&#8209;acknowledged interrupt.
+      </p>
+      <p>
+        This mechanism is read out of the driver source, not observed. It
+        explains the counter freezing, and nothing rests on it: what settles
+        the question is the two rows in the table above, measured on the board
+        with one word changed between them.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="what it reports" title="Multitouch, with the tracking IDs to prove it">
+    <pre class="hw-code" set:html={evtest} />
+
+    <p class="hw-p">
+      Tracking IDs are allocated and retired, <code>BTN_TOUCH</code> goes 1 and
+      0, and <code>ABS_MT_TOUCH_MAJOR</code> ramps as the contact patch grows.
+      A slot&#8209;0 trajectory decoded from a 60 s capture, with
+      <code>ABS_MT_SLOT</code> honoured, spans X 86..728 and Y 765..1765
+      continuously: both axes move, and the motion is smooth rather than
+      quantised to a handful of values. That is the difference between a device
+      node and a digitizer.
+    </p>
+
+    <div class="hw-table">
+      <table>
+        <thead>
+          <tr><th>axis</th><th>min</th><th>max</th><th>panel</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ABS_X</code>, <code>ABS_MT_POSITION_X</code></th>
+            <td>0</td><td>1023</td><td class="remark">568 pixels wide</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>ABS_Y</code>, <code>ABS_MT_POSITION_Y</code></th>
+            <td>0</td><td>2399</td><td class="remark">1232 pixels tall</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="hw-p">
+      <strong>The two grids do not match, and the driver cannot make them
+      match.</strong> <code>goodix_berlin</code> reports through
+      <code>touchscreen_report_pos()</code>, which applies the swap and invert
+      properties and does <em>not</em> scale;
+      <code>touchscreen-size-x</code> / <code>touchscreen-size-y</code> only
+      declare the advertised maximum, and the controller's raw values pass
+      through unchanged. So the input device speaks the digitizer's native
+      1024&times;2400 and anything consuming it scales by 568/1024 and
+      1232/2400. That is the ordinary Linux arrangement, and it is worth
+      knowing before something lands a touch a factor of two away from the
+      finger.
+    </p>
+
+    <p class="hw-p">
+      Declaring those two properties was itself a fix. Without them the driver
+      advertises <code>0 .. SZ_64K - 1</code> on both axes for a sensor that
+      reports 0..1023 and 0..2399 &mdash; a client scaling by the advertised
+      maximum would have collapsed every touch into the top-left corner.
+    </p>
+  </HwSection>
+
+  <HwSection kind="what is not known" title="A drag proves movement, not direction">
+    <HwNote kind="unverified" label="Whether the axes are swapped or mirrored">
+      <p>
+        Every capture so far is of undirected movement. A finger dragged around
+        the glass proves the coordinates move and move smoothly; it cannot
+        prove they move the right way. Settling it needs a touch at a
+        <em>known</em> screen position &mdash; <code>tools/touch-axis-test.py</code>
+        draws four coloured corner targets and reports which corner each
+        contact fell in by its reported coordinates.
+      </p>
+      <p>
+        It was blocked on the panel rather than on the touch controller: the
+        image was sheared by the pixel&#8209;clock workaround described in the
+        <a href={url("hardware/panel-lit/")}>panel note</a>, so a target drawn
+        on screen was not where it appeared to be. That image has since been
+        corrected and the shear is gone; the transcript still does not exist.
+        Until it does this stays unverified, and the in-flight requirement
+        carries a marker saying so.
+      </p>
+    </HwNote>
+
+    <HwNote kind="ours" label="The scare in the middle, and why it was not trusted">
+      <p>
+        Between the fix and the result above there was a capture that showed
+        <code>Level</code> in <code>/proc/interrupts</code> and a count still at
+        zero, with the touch-data register byte&#8209;for&#8209;byte identical
+        eight seconds apart. It looked like a second, deeper fault.
+      </p>
+      <p>
+        It was recorded as untrustworthy at the time, for a specific reason: it
+        assumed a finger was on the panel during the window, and that was never
+        confirmed. Three earlier conclusions on this project had already failed
+        in exactly that way &mdash; DSI writes taken as delivery, a faithful
+        transcription of dead code, and a bound driver taken as a working one.
+        Redone with the press confirmed, the counter read 2173.
+      </p>
+    </HwNote>
+
+    <HwNote kind="unverified" label="No touch requirement is in the ledger">
+      <p>
+        The count on the <a href={url("")}>front page</a> does not include
+        touch. Requirements reach that count when a change is archived into
+        <code>openspec/specs/</code>, and this work is still in flight. What is
+        on this page is an observation with a file behind it, which is not the
+        same thing as a requirement the project has committed to.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="the cost of the pin" title="Mainline has never supported this part">
+    <p class="hw-lede">
+      The pinned Xuantie kernel is 6.6 and carries
+      <code>drivers/input/touchscreen/goodix.c</code>, which serves the older
+      GT9xx generation. <code>goodix_berlin</code> landed in v6.9, and even at
+      v6.18 the i2c driver matches only <code>goodix,gt9916</code> while the
+      binding enumerates <code>gt9897</code> and <code>gt9916</code>. Mainline
+      has never supported the GT9895 at any version.
+    </p>
+    <p class="hw-p">
+      So the driver is carried here as an explicit backport under
+      <code>nix/patches/goodix-berlin/</code>, and the Berlin programming model
+      turned out to cover this part unchanged &mdash; the register layout was
+      checked byte&#8209;for&#8209;byte against LilyGO's own RT&#8209;Smart
+      <code>gt9895.c</code>, which performs no initialisation the backport is
+      missing. Nothing in the kernel needed fixing. The cost of the pin is one
+      backport to carry forward, recorded so that it is visible the next time
+      the kernel revision moves.
+    </p>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Evidence: <a href={evidenceUrl("docs/evidence/touch-reports.md")}><code>docs/evidence/touch-reports.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/gt9895-port.md")}><code>docs/evidence/gt9895-port.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/touch-probe.txt")}><code>docs/evidence/touch-probe.txt</code></a>,
+      and <a href={evidenceUrl("docs/evidence/gt9895-touch.md")}><code>docs/evidence/gt9895-touch.md</code></a>.
+    </p>
+    <p>
+      Source read for this note: the backported
+      <code>goodix_berlin_core.c</code> under <code>nix/patches/</code>,
+      <code>drivers/gpio/gpio-k230.c</code> and
+      <code>arch/riscv/boot/dts/canaan/k230-canmv-v3-lcd.dts</code> in the
+      pinned tree, and LilyGO's RT&#8209;Smart <code>gt9895.c</code>. The
+      vendor trees are not committed here, so those paths are named and not
+      linked.
+    </p>
+  </div>
+</HardwareNote>

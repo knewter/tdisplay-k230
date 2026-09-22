@@ -693,6 +693,52 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
 }
 .hw-pin-l { flex-direction: row-reverse; }
 
+/* ---- photographs off the board ----
+   A photograph is the strongest evidence this project can produce, so the
+   frame stays out of its way: a thin rule, a mono caption, and the whole
+   thing is a link to the committed file. ---- */
+.hw-shots {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.hw-shots figure { margin: 0; }
+.hw-shots a {
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #000;
+  line-height: 0;
+}
+.hw-shots a:hover { border-color: var(--grounded); }
+.hw-shots img { display: block; width: 100%; height: auto; }
+.hw-shots figcaption {
+  margin-top: 7px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.hw-shots figcaption code { font-size: 11px; }
+.hw-shots figcaption span { display: block; color: var(--ink-2); }
+.hw-shot-wide {
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #000;
+  line-height: 0;
+}
+.hw-shot-wide a { display: block; }
+.hw-shot-wide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+}
+
 /* ---- keys ---- */
 .hw-key {
   display: flex;
@@ -1043,6 +1089,7 @@ pre.hw-code mark { background: none; color: var(--unverified); font-weight: 600;
   box-shadow: 0 0 0 0 color-mix(in srgb, var(--grounded) 60%, transparent);
   animation: milestone-pulse 2.8s ease-out infinite;
 }
+.milestone-eyebrow .live-past { animation: none; box-shadow: none; opacity: 0.55; }
 @keyframes milestone-pulse {
   0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--grounded) 55%, transparent); }
   70%  { box-shadow: 0 0 0 9px transparent; }
@@ -1083,6 +1130,34 @@ pre.hw-code mark { background: none; color: var(--unverified); font-weight: 600;
 }
 .milestone-term i { font-style: normal; color: color-mix(in srgb, var(--grounded) 70%, var(--muted)); }
 .milestone-term b { color: var(--ink); font-weight: 600; }
+/* A photograph inside a milestone band: the strongest thing the band can
+   carry, so it gets the width and a mono caption naming the committed file. */
+.milestone-shot { margin-top: 20px; }
+.milestone-shot a {
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--grounded) 30%, var(--rule));
+  border-radius: 3px;
+  overflow: hidden;
+  background: #000;
+  line-height: 0;
+}
+.milestone-shot a:hover { border-color: var(--grounded); }
+.milestone-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+}
+.milestone-shot p {
+  margin: 8px 0 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.milestone-shot p code { font-size: 11px; }
+
 .milestone-facts {
   list-style: none;
   margin: 18px 0 0;

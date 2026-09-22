@@ -56,8 +56,13 @@ const desc =
     <slot />
     <footer class="footer">
       <p class="mono">
-        generated {specs.generated} &middot; {specs.capabilities.length} capability{specs.capabilities.length === 1 ? "" : "s"}
+        generated {specs.generated} &middot; {specs.capabilities.length}{" "}
+        {specs.capabilities.length === 1 ? "capability" : "capabilities"}
         &middot; {specs.total} requirement{specs.total === 1 ? "" : "s"} &middot; built by <code>scripts/build_site.py</code>
+      </p>
+      <p class="mono dim">
+        The port, the specs and this site are one repository:{" "}
+        <a href="https://github.com/knewter/tdisplay-k230">github.com/knewter/tdisplay-k230</a>.
       </p>
       {
         source === "specs" ? (

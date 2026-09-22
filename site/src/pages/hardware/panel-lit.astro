@@ -27,30 +27,38 @@ const shots = [
   },
 ];
 
-// The live sequence, as transcribed from the function the vendor dispatcher
-// actually calls. <b> marks the three things the sequence we had been sending
-// did not contain.
-const initSeq = `29 00 02 FE 00     switch to the user command page
-<b>29 00 02 51 FE     SET_DISPLAY_BRIGHTNESS -- to near maximum</b>
-<b>39 00 05 2A 00 00 02 37   column window, 0..567</b>
-<b>39 00 05 2B 00 00 04 CF   row window, 0..1231</b>
-05 78 02 11 00     SLEEP_OUT, then wait <b>120 ms</b>
-05 14 02 29 00     DISPLAY_ON, then wait 20 ms`;
+// The sequence the board actually sends, quoted from
+// nix/dts/display-rm69a10-568x1232.dtsi. Framing is {data type, delay in
+// milliseconds, payload length}, then the payload. <b> marks what the dead
+// sequence we had been sending did not contain at all.
+const initSeq = `panel-init-sequence = [
+    15 03 02 fe fd            Raydium page select: FE=FD
+    15 03 02 80 fc            page FC
+    15 03 02 fe 00            back to the user page 00
+<b>    39 03 05 2a 00 00 02 37   column window, 0..567</b>
+<b>    39 03 05 2b 00 00 04 cf   row window, 0..1231</b>
+    15 03 02 13 00            ENTER_NORMAL_MODE
+    15 03 02 35 00            tearing effect on
+<b>    15 05 02 51 fe            SET_DISPLAY_BRIGHTNESS 0xFE, then 5 ms</b>
+<b>    05 7b 01 11               SLEEP_OUT, then 123 ms</b>
+    05 03 01 29               DISPLAY_ON
+    15 03 02 3a 77            pixel format
+];`;
 ---
 
 <HardwareNote
   slug="panel-lit"
   title="The panel lights, and what was keeping it dark"
   eyebrow="LILYGO T-Display-K230 · hardware note · observed"
-  dek="On 2026&#8209;09&#8209;21 the RM69A10 emitted light under Linux, and the kernel console rendered on the glass. The panel had never been deaf: for weeks it had been fully initialised by <em>a different panel's</em> init sequence, and told to sit at zero brightness."
+  dek="On 2026&#8209;09&#8209;21 the RM69A10 emitted light under Linux, and the kernel console rendered on the glass. The panel had never been deaf: it had been fully initialised by <em>a different panel's</em> init sequence, and never told to leave zero brightness."
   description="On 2026-09-21 the RM69A10 AMOLED on the LILYGO T-Display-K230 emitted light under Linux and the kernel console rendered on it. Photographs, the transcription error that kept it dark, and the regression that blanked it again."
   source="docs/evidence/panel-lit.md"
   meta={[
     { label: "Observed", value: "2026-09-21<br>webcam, photographs committed" },
     { label: "Panel", value: "RM69A10 568&times;1232 AMOLED<br>MIPI DSI, 2 lanes, 24 bpp" },
     { label: "Console", value: "71&times;77 characters<br>fbcon on <code>/dev/fb0</code>, 8&times;16 font" },
-    { label: "Init sequence", value: "13 commands, 36 bytes<br>from <code>rm69a10_568x1232_init()</code>" },
-    { label: "Not settled", value: "the image flickers<br>and no requirement rests on this yet" },
+    { label: "Init sequence", value: "11 commands, 26 payload bytes<br>the vendor's live function, not its dead one" },
+    { label: "Not settled", value: "~3 rows of vertical motion<br>and no requirement rests on this yet" },
   ]}
 >
   <HwSection kind="the photographs" title="Three states, because one proves nothing">
@@ -105,9 +113,11 @@ const initSeq = `29 00 02 FE 00     switch to the user command page
         <div class="a">rm69a10_OLD_init()<br />line 39</div>
         <div class="b">no callers anywhere in the tree; byte&#8209;for&#8209;byte identical to <code>hx8399_v2_init()</code></div>
         <div class="c">
-          <strong>This is what we had been sending.</strong> It is the init
-          sequence for a Himax HX8399, a 1080&times;1920 panel that is not on
-          this board. It was reachable, plausible, and dead.
+          <strong>This is what we had been sending</strong> &mdash; all 20
+          commands and 297 payload bytes of it, transcribed faithfully and
+          verified byte&#8209;for&#8209;byte against the vendor source. It is
+          the init sequence for a Himax HX8399, a 1080&times;1920 panel that is
+          not on this board. It was reachable, plausible, and dead.
         </div>
       </div>
       <div class="hw-crow">
@@ -119,6 +129,16 @@ const initSeq = `29 00 02 FE 00     switch to the user command page
         </div>
       </div>
     </div>
+
+    <p class="hw-p">
+      What the board sends now is below, quoted from
+      <code>nix/dts/display-rm69a10-568x1232.dtsi</code>. It follows the live
+      vendor function with one deliberate difference, which is marked further
+      down: the vendor's partial-area block is replaced by
+      <code>ENTER_NORMAL_MODE</code>. Every packet also carries the 3 ms the
+      vendor's <code>dwc_lpdt_send_pkg()</code> waits after each one and ours
+      did not.
+    </p>
 
     <pre class="hw-code" set:html={initSeq} />
 
@@ -329,32 +349,51 @@ const initSeq = `29 00 02 FE 00     switch to the user command page
       <div>
         <span class="num">1</span>
         <div>
-          <h3>The image flickers, and that is unfixed.</h3>
+          <h3>The brightness flicker is largely gone. Something still moves.</h3>
           <p>
-            Measured with static stripes on the panel and the webcam exposure
-            locked, over 30 seconds: stripe position jitters &minus;9..+1 px with
-            no monotonic drift, and brightness shows 19 irregular dips, one to
-            53% of the mean. That is unstable frame delivery rather than a
-            refresh-rate beat. Whatever fixes it has to move the VO timing and
-            the DSI byte clock together; the attempt that moved only one of them
-            is the regression above.
+            Remeasured on the corrected image &mdash; headroom patch removed,
+            49.5 MHz pixel clock, LILYGO 52.19 Hz timings, lit and unsheared
+            &mdash; over 30 s of webcam video at a locked manual exposure,
+            because otherwise what gets measured is the camera's gain control.
+            Brightness dips below 90% of the mean: <strong>none</strong>, against
+            a baseline of 19 dips in 30 s with the worst at 53%. Two dips fall
+            below 95%, which is what &ldquo;it flickers sometimes&rdquo; looks
+            like as a number.
+          </p>
+          <p>
+            Vertical motion remains, about 3 panel rows out of 1232, seen
+            directly as bands moving in unison with no tearing.
+            <a href={evidenceUrl("docs/evidence/flicker-after-headroom-revert.md")}
+              >The measurement note</a
+            > is worth reading for what it refuses to conclude: the apparent
+            displacement grows 9.3&times; down the frame, which looks exactly
+            like timing error accumulating from a vsync anchor &mdash; and the
+            panel is shot at an oblique angle whose perspective magnification is
+            5.6&times; across the same strip, in the same direction. Uniform
+            shift and accumulation are not distinguished by that footage, so
+            neither is claimed. A perpendicular photograph would settle it.
           </p>
         </div>
       </div>
       <div>
         <span class="num">2</span>
         <div>
-          <h3>The panel is being driven in partial display mode.</h3>
+          <h3>We do not drive the VO the way the vendor does.</h3>
           <p>
-            The transcribed sequence ends <code>31</code> / <code>30</code> /
-            <code>12 00</code> &mdash; partial columns, partial rows,
-            <code>ENTER_PARTIAL_MODE</code> over a restricted area. That is what
-            the vendor firmware does, but the vendor also drives the VO
-            differently, and the remaining divergences are listed in priority
-            order in the bring-up note: no SoC display reset on enable, a stale
-            reset pulse, no 3 ms settle after each DCS packet,
-            <code>vco_cntrl</code> 0x19 against 0x17, and CRTC&#8209;before&#8209;encoder
-            ordering that streams video into a link that is not configured yet.
+            One divergence is deliberate and settled: the vendor ends its
+            sequence <code>31</code> / <code>30</code> / <code>12 00</code>
+            &mdash; partial columns, partial rows,
+            <code>ENTER_PARTIAL_MODE</code> over a restricted area &mdash; and
+            copying that exactly lit the panel but banded the image, which is
+            what a restricted partial area looks like when the VO streams a
+            full frame into it. <code>ENTER_NORMAL_MODE</code> replaced it, and
+            <a href={evidenceUrl("docs/evidence/panel-photos/04-normal-mode-fullscreen-noise.jpg")}>photograph 04</a>
+            is the full-screen result. The divergences that
+            remain are listed in priority order in the bring&#8209;up note: no
+            SoC display reset on enable, a stale reset pulse,
+            <code>vco_cntrl</code> 0x19 against the 0x17 Linux computes, and
+            CRTC&#8209;before&#8209;encoder ordering that streams video into a
+            link that is not configured yet.
           </p>
         </div>
       </div>
@@ -375,14 +414,22 @@ const initSeq = `29 00 02 FE 00     switch to the user command page
       <div>
         <span class="num">4</span>
         <div>
-          <h3>The state after the revert has not been photographed.</h3>
+          <h3>What the corrected image does, and what it is still not.</h3>
           <p>
-            Reverting restores the configuration that <em>was</em> photographed
-            working &mdash; the earlier PHY clock and the LILYGO 52 Hz timings
-            &mdash; but as of the last evidence committed here, no image built
-            after the revert has been flashed and photographed. Until one is,
-            this note claims the panel lit on 2026&#8209;09&#8209;21, and claims
-            nothing about the card currently in the board.
+            Reverting restores <code>pclk &times; 6</code> at the LILYGO
+            52.19 Hz timings &mdash; 297 MHz on the link, the rate the console
+            photograph above was taken at &mdash; and that image has since been
+            built, flashed and measured: lit, no shear, and the brightness
+            numbers in the item above. So the panel currently in the board is
+            working in the sense that light comes out of it and the console is
+            legible.
+          </p>
+          <p>
+            It is not working in the sense a requirement would need. Nothing has
+            been drawn at a known position and photographed against it, the
+            residual motion is unexplained, and the panel's colour, orientation
+            and refresh have never been checked against anything. Lit is a long
+            way from correct, and this note claims only the first.
           </p>
         </div>
       </div>

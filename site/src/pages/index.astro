@@ -2,7 +2,16 @@
 import Base from "../layouts/Base.astro";
 import Tape from "../components/Tape.astro";
 import Legend from "../components/Legend.astro";
-import { specs, url, kib, unproven, total } from "../lib/specs";
+import {
+  specs,
+  url,
+  kib,
+  unproven,
+  total,
+  evidenceUrl,
+  evidenceAsset,
+  evidenceCitedBy,
+} from "../lib/specs";
 import { NOTE_GROUPS, notesOfKind } from "../lib/hardware";
 
 const t = specs.tally;
@@ -69,6 +78,90 @@ const { unverified, undeclared } = t;
   </section>
 
   <!--
+    2026-09-21, and the newest thing here. It sits above the first-boot band
+    because the bands are a log and a log runs newest first. It is also the
+    one section on this page describing work that is NOT in the count above,
+    which is why it says so in its own body rather than leaving a reader to
+    reconcile "the screen works" with "no display requirement exists".
+  -->
+  <section class="milestone" aria-labelledby="screen-h">
+    <p class="milestone-eyebrow">
+      <span class="live" aria-hidden="true"></span>
+      the screen &middot; 2026-09-21
+    </p>
+    <h2 id="screen-h">The panel lights, and the touch controller reports.</h2>
+    <p class="milestone-lede">
+      The AMOLED emits under Linux, the kernel console renders on the glass at
+      71&times;77 characters, and the GT9895 delivers multitouch to
+      <code>/dev/input/event0</code>. Both faults were the same shape: a driver
+      that reported itself healthy while producing nothing. The panel had been
+      sent <em>a different panel&rsquo;s</em> initialisation sequence &mdash;
+      correctly transcribed, from a function with no callers &mdash; and never
+      told to leave zero brightness. The touch controller had its interrupt
+      declared edge&#8209;triggered on a part that holds the line low until it
+      is acknowledged: 0 interrupts against 2173.
+    </p>
+
+    <div class="milestone-shot">
+      <a href={evidenceUrl("docs/evidence/panel-photos/05-console-on-panel.jpg")}>
+        <img
+          src={evidenceAsset("docs/evidence/panel-photos/05-console-on-panel.jpg")}
+          alt="The board's AMOLED panel showing the Linux kernel console, photographed off the board."
+          loading="lazy"
+        />
+      </a>
+      <p>
+        <code>docs/evidence/panel-photos/05-console-on-panel.jpg</code> &mdash;
+        photographed off the board, not rendered. Five more photographs are
+        committed beside it.
+      </p>
+    </div>
+
+    <ul class="milestone-facts">
+      <li>
+        <b>51 FE &mdash; SET_DISPLAY_BRIGHTNESS</b>
+        <span>
+          A DCS&#8209;brightness AMOLED powers up at zero, so it can be fully
+          initialised, accept every command, and emit nothing.
+        </span>
+      </li>
+      <li>
+        <b>0 &rarr; 2173 interrupts</b>
+        <span>
+          Same kernel, same image, one device&#8209;tree word:
+          <code>IRQ_TYPE_EDGE_FALLING</code> to <code>IRQ_TYPE_LEVEL_LOW</code>.
+        </span>
+      </li>
+      <li>
+        <b>a patch that blanked it</b>
+        <span>
+          25% DSI burst headroom, built and never looked at. The persistent
+          journal dated the regression to the image. Reverted, remeasured, and
+          the brightness flicker largely went with it.
+        </span>
+      </li>
+      <li>
+        <b>not in the count above</b>
+        <span>
+          Requirements enter the count when a change is archived. The display
+          work is in flight, and this site does not publish proposals.
+        </span>
+      </li>
+    </ul>
+
+    <div class="milestone-go">
+      <a href={url("hardware/panel-lit/")}>
+        <b>The photographs, the dead function, and the clock that blanked it</b>
+        <span>panel note &rarr;</span>
+      </a>
+      <a href={url("hardware/touch-reports/")}>
+        <b>Why the controller was awake and silent for a day</b>
+        <span>touch note &rarr;</span>
+      </a>
+    </div>
+  </section>
+
+  <!--
     2026-09-20. The single largest thing that has happened to this project,
     and the only section on this page whose facts came off the board rather
     than out of a file. It sits directly under the count because the count is
@@ -76,7 +169,7 @@ const { unverified, undeclared } = t;
   -->
   <section class="milestone" aria-labelledby="milestone-h">
     <p class="milestone-eyebrow">
-      <span class="live" aria-hidden="true"></span>
+      <span class="live live-past" aria-hidden="true"></span>
       first boot &middot; 2026-09-20
     </p>
     <h2 id="milestone-h">NixOS reached a root shell on the silicon.</h2>
@@ -247,12 +340,19 @@ console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf <b>init=</b>/
       <section class="evidence-index">
         <h2 class="section-title">Evidence on file</h2>
         <p class="defect-lede">
-          Committed in the repository, and what the grounded requirements above
-          point at. An observation on the board outranks vendor source; a datasheet
-          grounds nothing.
+          Committed in the repository and rendered here in full, so a boot log
+          or a photograph is readable without a checkout. An observation on the
+          board outranks vendor source; a datasheet grounds nothing. The two
+          lists are kept apart because they carry different weight.
         </p>
+
+        <h3 class="group">
+          grounding a requirement
+          <span class="group-blurb">what the count above rests on</span>
+          <span class="rule" />
+        </h3>
         <ul>
-          {specs.evidence.map((e) => (
+          {evidenceCitedBy("requirement").map((e) => (
             <li>
               <a href={url(`evidence/${e.slug}/`)}>
                 <code>{e.path}</code>
@@ -261,6 +361,28 @@ console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf <b>init=</b>/
             </li>
           ))}
         </ul>
+
+        {evidenceCitedBy("note").length > 0 && (
+          <>
+            <h3 class="group">
+              cited by a hardware note
+              <span class="group-blurb">
+                real, and holding up no requirement yet
+              </span>
+              <span class="rule" />
+            </h3>
+            <ul>
+              {evidenceCitedBy("note").map((e) => (
+                <li>
+                  <a href={url(`evidence/${e.slug}/`)}>
+                    <code>{e.path}</code>
+                  </a>
+                  <span class="ev-size">{kib(e.bytes)}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
     )
   }
