@@ -1,0 +1,20 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; cat /proc/cmdline; ls -l /proc/device-tree/chosen/canaan,stage1-splash /dev/fb0 2>&1; dmesg | grep -E "stage 1|stage1|canaan_panel_prepare|DSI PHY|dcs"; systemctl is-active shell; systemctl show shell -p LoadState -p UnitFileState; echo HANDOFF_INSPECTED =====
+export SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; cat /proc/cmdline; ls -l /proc/device-tree/chosen/canaan,stage1-splash /dev/fb0 2>&1; dmesg | grep -E "stage 1|stage1|canaan_panel_prepare|DSI PHY|dcs"; systemctl is-active shell; systemctl show shell -p LoadState -p UnitFileState; echo HANDOFF_INSPECTED
+[?2004l
+/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service
+ls: cannot access '/dev/fb0': No such file or directory
+-r--r--r-- 1 root root 0 Mar 17 20:14 /proc/device-tree/chosen/canaan,stage1-splash
+[    2.790451] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+inactive
+LoadState=masked
+UnitFileState=masked-runtime
+HANDOFF_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,18 @@
+
+===== > cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; SYSTEMD_PAGER=cat systemctl is-active shell-handoff; dmesg | grep -E "stage 1|stage1|canaan_panel_prepare|DSI PHY|dcs"; echo FIRST_MODESET_COMPLETE =====
+cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; SYSTEMD_PAGER=cat systemctl is-active shell-handoff; dmesg | grep -E "stage 1|stage1|canaan_panel_prepare|DSI PHY|dcs"; echo FIRST_MODESET_COMPLETE
+[?2004l
+[  190.418067] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+[  190.875319] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+active
+[    2.790451] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+[  189.816878] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 594000 kbps, voc 0x17, hsfreqrange 0x87
+[  190.884338] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it
+FIRST_MODESET_COMPLETE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

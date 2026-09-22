@@ -82,3 +82,13 @@ incremental dry-run cost, not installed closure size; see
 Task 4.1 build evidence: `docs/evidence/daily-shell-image-3f397a6.md` records
 the source-built U-Boot output and its runtime property string. This does not
 verify a logo-enabled physical handoff. The daily image omits the logo.
+
+
+2026-09-22 runtime-flag trial: `docs/evidence/boot-splash-handoff.md` proves
+logo preservation to the Linux serial prompt and the successful `/chosen`
+flag/no-fb0 path. No prepare message appears until the first modeset, because
+no DRM client has prepared the panel before that point. Starting Sway then
+logs the one-shot skip but still produces a physically wrapped/color-shifted
+screen. Tasks 4.3/4.4 stay open: the prescribed second-card/matching-logo-mode
+procedure is not complete, and the final handoff is still defective. The
+normal no-logo boot configuration was restored after capture.

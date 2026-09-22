@@ -1,0 +1,19 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell seatd; systemctl show shell -p DropInPaths; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_FLAG; ls /dev/fb0; cat /proc/cmdline; echo NORMAL_SHELL_RECOVERED =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell seatd; systemctl show shell -p DropInPaths; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_FLAG; ls /dev/fb0; cat /proc/cmdline; echo NORMAL_SHELL_RECOVERED
+[?2004l
+active
+active
+DropInPaths=
+NO_LOGO
+NO_FLAG
+[0m[40;33;01m/dev/fb0[0m
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init
+NORMAL_SHELL_RECOVERED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

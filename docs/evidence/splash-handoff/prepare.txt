@@ -1,0 +1,14 @@
+
+===== > test ! -e /boot/bootargs.before-handoff.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/k230-trial-logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /boot/bootargs.txt /boot/bootargs.before-handoff.txt && sed -i "s/$/ systemd.mask=shell.service/" /boot/bootargs.txt && cp /tmp/k230-trial-logo.xrgb /boot/logo.xrgb && sync && cat /boot/bootargs.txt && sha256sum /boot/logo.xrgb && echo HANDOFF_PREPARED =====
+test ! -e /boot/bootargs.before-handoff.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/k230-trial-logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /boot/bootargs.txt /boot/bootargs.before-handoff.txt && sed -i "s/$/ systemd.mask=shell.service/" /boot/bootargs.txt && cp /tmp/k230-trial-logo.xrgb /boot/logo.xrgb && sync && cat /boot/bootargs.txt && sha256sum /boot/logo.xrgb && echo HANDOFF_PREPARED
+[?2004l
+bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service
+6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af  /boot/logo.xrgb
+HANDOFF_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,47 @@
+{
+  "method": "ffprobe metadata; visual review of preserved logo and faulty physical first modeset alongside native screenshot. No calibrated motion or dark-frame-duration claim.",
+  "videos": [
+    {
+      "path": "20260922T195817Z-splash-kernel-preservation.mp4",
+      "sha256": "4a483866071a8bf78916e2deda97343d3ff334c1b27e2534ce357ca982621206",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "100.000000",
+          "size": "10613556"
+        }
+      }
+    },
+    {
+      "path": "20260922T200130Z-splash-to-shell.mp4",
+      "sha256": "5eb6bcbdea3c6813db176afdf220523cf727e0cf9b9ddec7ea874a524197ef7b",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2366930"
+        }
+      }
+    }
+  ]
+}

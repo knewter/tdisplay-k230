@@ -1,0 +1,12 @@
+
+===== > test -f /boot/bootargs.before-handoff.txt && cp /boot/bootargs.before-handoff.txt /boot/bootargs.txt && rm /boot/bootargs.before-handoff.txt /boot/logo.xrgb && sync && echo NORMAL_BOOT_RESTORED =====
+test -f /boot/bootargs.before-handoff.txt && cp /boot/bootargs.before-handoff.txt /boot/bootargs.txt && rm /boot/bootargs.before-handoff.txt /boot/logo.xrgb && sync && echo NORMAL_BOOT_RESTORED
+[?2004l
+NORMAL_BOOT_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

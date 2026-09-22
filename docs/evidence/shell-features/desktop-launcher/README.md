@@ -81,7 +81,7 @@ active shell and seatd, empty systemd `DropInPaths`, and the expected
 contains the 576 requisite paths without a manual load, and Neofetch reports
 T-Head C908 (RISC-V64) (1).
 
-The no-logo daily display path is in use: no `/boot/logo.bmp`, no one-shot
+The no-logo daily display path is in use: no `/boot/logo.xrgb`, no one-shot
 splash flag, and `/dev/fb0` present. This does not prove logo-to-kernel handoff.
 The same boot exposed `firewall.service` failing with
 `iptables: Failed to initialize nft: Protocol not supported`; the launcher
