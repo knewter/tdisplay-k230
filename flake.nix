@@ -93,6 +93,7 @@
         # board image to log CPU scene-build plus KMS-commit submission time.
         shell-compositor-frame-timing = self.nixosConfigurations.k230.config.k230.shell.frameTimingCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
+        touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
         # Native asset conversion; the U-Boot and Linux owners share this image.
         bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;

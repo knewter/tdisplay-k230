@@ -75,6 +75,27 @@ let
     locked-title=yes
     app-id=k230-monitor
   '';
+  touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
+  touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
+    case "$1" in
+      terminal|monitor)
+        if ${sway}/bin/swaymsg -t get_tree -r | ${pkgs.jq}/bin/jq -e --arg app_id "k230-$1" \
+            'recurse(.nodes[]?, .floating_nodes[]?) | select(.app_id? == $app_id) | .id' >/dev/null 2>&1; then
+          ${sway}/bin/swaymsg "[app_id=\"k230-$1\"] focus"
+        elif [ "$1" = monitor ]; then
+          HTOPRC=${monitorHtopConfig} ${pkgs.foot}/bin/foot --config ${monitorFootConfig} -e ${pkgs.htop}/bin/htop &
+        else
+          ${pkgs.foot}/bin/foot --config ${terminalFootConfig} &
+        fi
+        ;;
+      new-terminal) ${pkgs.foot}/bin/foot --config ${terminalFootConfig} & ;;
+      *) echo "k230-launcher-action: unknown action" >&2; exit 2 ;;
+    esac
+  '';
+  touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
+    export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
+    exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
+  '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
     export K230_SWAYMSG=${sway}/bin/swaymsg
     export K230_FOOT=${pkgs.foot}/bin/foot
@@ -89,6 +110,7 @@ let
     export K230_SYSTEMCTL=${pkgs.systemd}/bin/systemctl
     export K230_TERMINAL_CONFIG=${terminalFootConfig}
     export K230_MONITOR_CONFIG=${monitorFootConfig}
+    export K230_LAUNCHER=${touchLauncher}/bin/k230-touch-launcher
     exec ${pkgs.bash}/bin/bash ${./touch-menu.sh}
   '';
 
@@ -186,6 +208,13 @@ in
       default = sway;
       readOnly = true;
       description = "The compositor package, exposed so it can be built alone.";
+    };
+
+    launcher = lib.mkOption {
+      type = lib.types.package;
+      default = touchLauncher;
+      readOnly = true;
+      description = "Native portrait Apps launcher, exposed for a narrow build.";
     };
 
     frameTimingCompositor = lib.mkOption {
@@ -314,6 +343,7 @@ in
       pkgs.wvkbd
       pkgs.seatd
       pkgs.htop
+      touchLauncher
     ] ++ lib.optionals cfg.probes [
       cage
       cage-rgb565

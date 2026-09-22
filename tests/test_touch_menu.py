@@ -29,7 +29,7 @@ class TouchMenuTest(unittest.TestCase):
                 "if [ \"$1\" = -t ]; then printf '%s\\n' \"$K230_TEST_TREE\"; "
                 "else printf 'swaymsg %s\\n' \"$*\" >> \"$K230_TEST_LOG\"; fi\n"
             )
-            for name in ("foot", "pkill", "sudo"):
+            for name in ("foot", "pkill", "sudo", "launcher"):
                 path = root / name
                 exit_status = 'exit "${K230_TEST_SUDO_STATUS:-0}"\n' if name == "sudo" else ""
                 htoprc = 'printf "HTOPRC=%s\\n" "${HTOPRC:-}" >> "$K230_TEST_LOG"\n' if name == "foot" else ""
@@ -43,7 +43,7 @@ class TouchMenuTest(unittest.TestCase):
                 "K230_SUDO": str(root / "sudo"), "K230_SYSTEMCTL": "/mock/systemctl",
                 "K230_TERMINAL_CONFIG": "/mock/terminal.ini",
                 "K230_MONITOR_CONFIG": "/mock/monitor.ini",
-                "K230_HTOPRC": "/mock/monitor.htoprc",
+                "K230_HTOPRC": "/mock/monitor.htoprc", "K230_LAUNCHER": str(root / "launcher"),
                 "K230_TEST_TREE": tree, "K230_TEST_LOG": str(log),
             }
             self.assertIsNotNone(env["K230_JQ"], "jq is required by the tested menu")
@@ -65,13 +65,14 @@ class TouchMenuTest(unittest.TestCase):
         return [json.loads(line.rstrip(",")) for line in lines[2:]]
 
     def test_stream_and_whitespace_events(self):
-        stream, _ = self.run_menu(['{"name": "apps"}', '{"name":"back"}', '{ "name" : "system" }'])
+        stream, actions = self.run_menu(['{"name": "apps"}', '{"name":"back"}', '{ "name" : "system" }'])
         frames = self.frames(stream)
         self.assertEqual([block["name"] for block in frames[0]], ["apps", "windows", "keyboard", "system"])
-        self.assertEqual([block["name"] for block in frames[1]], ["terminal", "monitor", "new-terminal", "back"])
+        self.assertEqual([block["name"] for block in frames[1]], ["apps", "windows", "keyboard", "system"])
         self.assertEqual([block["name"] for block in frames[3]], ["reboot", "poweroff", "back"])
-        self.assertEqual([block["background"] for block in frames[1]], ["#2f6b4f", "#245f7a", "#396b57", "#3b3f46"])
-        self.assertTrue(all(block["color"] == "#ffffff" for block in frames[1]))
+        self.assertEqual([block["background"] for block in frames[0]], ["#2f6b4f", "#2b547c", "#6b4f2b", "#5e3d61"])
+        self.assertTrue(all(block["color"] == "#ffffff" for block in frames[0]))
+        self.assertIn('launcher ', actions)
         for frame in frames:
             self.assertLessEqual(sum(block["min_width"] for block in frame), 540)
             self.assertTrue(all(block["separator_block_width"] == 0 for block in frame))
@@ -94,15 +95,15 @@ class TouchMenuTest(unittest.TestCase):
         self.assertEqual([block["name"] for block in self.frames(stream)[1]], ["no-windows", "home", "back"])
 
     def test_existing_app_focus_and_missing_app_recovery(self):
-        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"terminal"}'])
+        _, actions = self.run_menu(['{"name":"terminal"}'])
         self.assertIn('swaymsg [app_id="k230-terminal"] focus', actions)
         missing = json.dumps({"type": "root", "nodes": []})
-        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"terminal"}'], missing)
+        _, actions = self.run_menu(['{"name":"terminal"}'], missing)
         self.assertIn('foot --config /mock/terminal.ini', actions)
-        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"monitor"}'], missing)
+        _, actions = self.run_menu(['{"name":"monitor"}'], missing)
         self.assertIn('foot --config /mock/monitor.ini -e /mock/htop', actions)
         self.assertIn('HTOPRC=/mock/monitor.htoprc', actions)
-        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"new-terminal"}'])
+        _, actions = self.run_menu(['{"name":"new-terminal"}'])
         self.assertIn('foot --config /mock/terminal.ini', actions)
         self.assertNotIn('swaymsg [app_id="k230-terminal"] focus', actions)
 

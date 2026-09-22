@@ -15,6 +15,7 @@ set -u
 : "${K230_SYSTEMCTL:=systemctl}"
 : "${K230_TERMINAL_CONFIG:?K230_TERMINAL_CONFIG is required}"
 : "${K230_MONITOR_CONFIG:?K230_MONITOR_CONFIG is required}"
+: "${K230_LAUNCHER:?K230_LAUNCHER is required}"
 
 page=home
 window_offset=0
@@ -115,7 +116,7 @@ while IFS= read -r line; do
   # the fixed control name while accepting compact or whitespace-formatted JSON.
   name=$(printf '%s\n' "$line" | "$K230_SED" -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   case "$name" in
-    apps) page=apps ;;
+    apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=home ;;
     windows) page=windows; window_offset=0 ;;
     keyboard) "$K230_PKILL" -RTMIN -x wvkbd-mobintl ;;
     system) page=system ;;

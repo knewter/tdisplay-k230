@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="568" height="1232" viewBox="0 0 568 1232">
+  <rect width="568" height="1232" fill="#111827"/><rect width="568" height="56" fill="#202020"/>
+  <g fill="#fff" font-family="DejaVu Sans Mono,monospace" font-size="15" text-anchor="middle"><text x="71" y="34">Apps</text><text x="213" y="34">Windows</text><text x="355" y="34">Keyboard</text><text x="497" y="34">System</text></g>
+  <rect y="56" width="568" height="8" fill="#38bdf8"/><text x="284" y="150" fill="#fff" font-family="sans-serif" font-size="44" font-weight="bold" text-anchor="middle">APPS</text><text x="284" y="198" fill="#cbd5e1" font-family="sans-serif" font-size="18" text-anchor="middle">TOUCH A CARD</text>
+  <g font-family="sans-serif" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle"><rect x="28" y="206" width="512" height="178" rx="18" fill="#276749"/><text x="284" y="309">TERMINAL</text><rect x="28" y="402" width="512" height="178" rx="18" fill="#1f5e78"/><text x="284" y="505">MONITOR</text><rect x="28" y="598" width="512" height="178" rx="18" fill="#3f765a"/><text x="284" y="701">NEW TERM</text><rect x="28" y="1090" width="512" height="112" rx="18" fill="#374151"/><text x="284" y="1159">BACK</text></g>
+  <text x="284" y="1222" fill="#94a3b8" font-family="sans-serif" font-size="12" text-anchor="middle">Source layout preview — not hardware evidence</text>
+</svg>
