@@ -34,3 +34,42 @@ requiring a physical keyboard.
 - **WHEN** the user taps Back on the Apps surface
 - **THEN** the launcher closes and the persistent bar retains Apps, Keyboard,
   Windows/Home, and System controls
+
+### Requirement: Apps discovers installed desktop applications
+
+<!-- UNVERIFIED: GLib fixture tests and cross-build pass; physical discovery,
+launch and refresh captures are in progress. -->
+
+The system's Apps surface SHALL list visible application desktop entries from
+the user's XDG data directories and Nix profile data directories, applying
+user-over-system precedence and desktop visibility rules. Reopening Apps SHALL
+reflect entries added or removed since the previous open. The surface SHALL
+provide readable application names and touch-accessible pages when the list
+exceeds the portrait display. Launching an entry SHALL preserve desktop-entry
+argument expansion and working-directory semantics. Terminal applications SHALL
+open in the configured terminal. A launch error SHALL leave a visible explanation
+and a usable Back control.
+
+#### Scenario: An installed application becomes available
+
+- **WHEN** a visible application desktop entry is installed in a session data
+  directory and the user reopens Apps
+- **THEN** its name appears in the application list and can be selected by touch
+
+#### Scenario: An application is removed or hidden
+
+- **WHEN** an application entry is removed or hidden by a user override and the
+  user reopens Apps
+- **THEN** that application is absent from the list
+
+#### Scenario: An application needs a terminal
+
+- **WHEN** the user selects an installed application with Terminal=true
+- **THEN** its expanded argument list runs in the readable terminal profile
+  with the desktop entry's configured working directory
+
+#### Scenario: A launch fails
+
+- **WHEN** the selected application cannot be launched
+- **THEN** the launcher reports the failure and lets the user return or choose
+  another action without a physical keyboard

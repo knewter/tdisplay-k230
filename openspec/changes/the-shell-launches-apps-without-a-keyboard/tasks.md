@@ -26,14 +26,27 @@ Foot; verify graceful unsupported launch behavior.
   .#touch-launcher --option max-jobs 2 --option cores 8` after the coordinated
   builder slot is idle; inspect `nix path-info -Sh .#touch-launcher`. This is
   a cross-package claim, not hardware proof.
-- [x] 3.2 Run `python3 tests/test_touch_menu.py`, source-level launcher tests,
+- [x] 3.2 Run `python3 tests/test_touch_menu.py`, `python3 tests/test_desktop_catalog.py`,
   `nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`,
   and `openspec validate the-shell-launches-apps-without-a-keyboard --strict`.
   Record their laptop-only result and a labelled layout preview.
 
 ## 4. Physical verification
 
-- [ ] 4.1 **Hardware.** On the panel, tap Apps, Terminal, Monitor, New
+- [x] 4.1 **Hardware.** On the panel, tap Apps, Terminal, Monitor, New
   terminal, and Back. Record whether each interaction was real glass touch or
   injected, with camera capture and a committed manifest under
   `docs/evidence/shell-features/`. Release the board after capture.
+
+Fixed baseline 4.1 evidence: `docs/evidence/shell-features/portrait-launcher/README.md`
+and its final camera recording, screenshots, action script and window-tree log.
+Input was injected; actual finger accuracy remains the parent shell change's task.
+
+- [ ] 4.2 **Hardware.** Record the desktop-aware launcher listing the installed
+  Foot/Htop entries, paging, launching a Terminal=true entry, and reflecting a
+  temporary entry's addition and removal on reopen. Capture keyboard layout and
+  an error path with a recoverable Back control. Commit the script, console,
+  screenshots, camera clip and provenance under `docs/evidence/shell-features/`.
+- [ ] 4.3 Integrate the verified configuration in a bootable source-built image
+  and capture the desktop-aware launcher after reboot. A runtime service override
+  alone does not complete this task.
