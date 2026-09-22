@@ -1,0 +1,14 @@
+
+===== > bash /tmp/k230-install-host-uboot-v2.sh =====
+bash /tmp/k230-install-host-uboot-v2.sh
+[?2004l
+GUARDS PASS: root card identity, capacity, candidate length/hash, complete old slot hash; backup saved
+Readback full 1 MiB slot SHA256: 6554c22886286c8f4af2417c42007dacf46011a5c7f60b10e29c9f281b33eeb7
+INSTALL VERIFIED: only U-Boot at 2 MiB changed; no reboot issued
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

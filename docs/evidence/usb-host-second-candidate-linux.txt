@@ -1,0 +1,45 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p DropInPaths; readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -t get_outputs; sha256sum /root/k230-before-usb-host-uboot-slot.bin /root/k230-before-usb-host-v2-slot.bin; dmesg | grep -E "KFENCE:|memory corruption|r8152|irq 85" =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p DropInPaths; readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -t get_outputs; sha256sum /root/k230-before-usb-host-uboot-slot.bin /root/k230-before-usb-host- 
+v2-slot.bin; dmesg | grep -E "KFENCE:|memory corruption|r8152|irq 85"
+[?2004l
+active
+DropInPaths=
+/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd
+87de56e1-b886-41cf-b2ae-c380980fd157
+Output DSI-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 568x1232 @ 52.190 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: normal
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    568x1232 @ 52.190 Hz
+
+f8b0718c7ea2a290d8663aec44d9d4df766fe2a656d87be59de7e9db56428fd1  /root/k230-before-usb-host-uboot-slot.bin
+ce6ed38e9c771b148b1481021f996d98e27aa418bf480d030afa24c5969e1e29  /root/k230-before-usb-host-v2-slot.bin
+[    3.815335] usbcore: registered new device driver r8152-cfgselector
+[    3.821837] usbcore: registered new interface driver r8152
+[    3.972859] irq 85: nobody cared (try booting with the "irqpoll" option)
+[    4.234980] dwc2 91500000.usb: irq 85, io mem 0x91500000
+[    5.089513] BUG: KFENCE: memory corruption in hub_port_init+0x4ac/0xcc8
+[    5.526902] r8152-cfgselector 2-1: reset high-speed USB device number 2 using dwc2
+[    5.877881] r8152 2-1:1.0: skip request firmware
+[    5.884367] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Invalid ether addr 00:00:00:00:00:00
+[    5.896554] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Random ether addr 5e:bc:23:f3:82:e2
+[    5.979184] r8152 2-1:1.0 eth0: v1.12.13
+[   15.040195] r8152 2-1:1.0 enu1: renamed from eth0
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
