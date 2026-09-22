@@ -158,7 +158,8 @@ Optional, and only after group 3 has settled whether it is needed.
 - [x] 6.2 Confirm both work at once. **Hardware proof.**
       `./tools/console.py /dev/ttyACM0 --wait=3 "dm tree; usb start; usb tree"`
       then `ums 0 mmc 1` and check the host.
-      Done: `docs/evidence/usb-host-second-candidate-linux.txt` records
+      Done: `docs/evidence/uboot-usb-host-coexist-v2.txt` and
+      `docs/evidence/usb-host-second-candidate-linux.txt` record
       RTL8152 in the U-Boot host tree, UMS enumeration/readback, and return
       to Linux with the shell active. This does not claim packet traffic.
 
@@ -170,11 +171,12 @@ Optional, and only after group 3 has settled whether it is needed.
       there is no committed binary or PROVENANCE hash to refresh any more.)
       `nix build .#stage1 && cat result/SHA256SUMS && ./tools/blob-scan.py`
       Done when the hashes are in `docs/evidence/` and the scan exits 0.
-- [ ] 7.2 Fold the measured numbers and the settled D3 answer back into
+- [x] 7.2 Fold the measured numbers and the settled D3 answer back into
       `docs/uboot-ums.md`, so it reads as a record rather than a forecast.
       `./scripts/build_site.py`
       Done when the site build is green and every `docs/` path cited by a
       requirement is committed.
-      - Not ticked, 2026-09-22: the measured A1 write rate and repaired A2 build are
-        documented; task 6.2 now has its board result, but this remains unchecked
-        until the site build and final docs are committed.
+      - Completed 2026-09-22: measured A1 transfer rates and repaired A2
+        binding/enumeration are documented, both raw hardware transcripts are
+        committed, and the full site build passes (55 pages, 1,100,344 bytes,
+        12.63 seconds). See `docs/evidence/usb-host-validation.md`.
