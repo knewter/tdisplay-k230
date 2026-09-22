@@ -23,9 +23,12 @@ nix eval --impure --expr 'import ./tools/k230-plymouth-eval.nix'
 nix build --dry-run --impure --expr 'import ./tools/k230-plymouth-eval.nix'
 ```
 
-The pinned evaluation produced
+The initial evaluation (before the helper was narrowed to `spinner`) produced
 `/nix/store/x4jjd44s91yrhnx40rjy9l7w9vcz85az-nixos-system-nixos-26.11.20260919.20b1ddd.drv`.
-The dry run reported:
+After the native media work changed the warm store, the exact committed
+helper was rerun at **2026-09-22T18:08:06Z**. It produced
+`/nix/store/yxclgzsb8v2qhg34mz4ldlzak86pdb9k-nixos-system-nixos-26.11.20260919.20b1ddd.drv`.
+That rerun's dry-run summary was:
 
 ```text
 76 derivations will be built
@@ -34,7 +37,8 @@ The dry run reported:
 897.3 MiB unpacked
 ```
 
-The 76 derivations include the riscv64 Plymouth build and its generated initrd
+The counts are unchanged between those two evaluations; only the toplevel
+derivation path changed. The 76 derivations include the riscv64 Plymouth build and its generated initrd
 units, plugins, themes, fonts, and transitive closure. The 83 fetched paths
 are mostly development inputs and image/font libraries. These figures are
 incremental against the warm store used by the shell measurement; they are not
