@@ -911,6 +911,52 @@
           "size": "11729006"
         }
       }
+    },
+    {
+      "path": "desktop-launcher/20260922T193941Z-desktop-image-boot.mp4",
+      "site_presentation": false,
+      "bytes": 10586729,
+      "sha256": "45ca6eeb078eb2ec7ab66990fa23060a5510cef35d20b13f9a16c8a72a304659",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "100.000000",
+          "size": "10586729"
+        }
+      }
+    },
+    {
+      "path": "desktop-launcher/20260922T195137Z-desktop-image-launcher.mp4",
+      "site_presentation": false,
+      "bytes": 2477744,
+      "sha256": "1e2c1e90e7c2fe2bc85366ea926e1e7773744bd5d4be613ba5d3e16714009c65",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "25.000000",
+          "size": "2477744"
+        }
+      }
     }
   ]
 }

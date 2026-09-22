@@ -811,6 +811,11 @@ DATA 755c39d0a82d53456d604af8d84133304b009e72aa3d6a66bd12a6dd5d9d5a12  docs/evid
 DATA da27b7a03b4e3351f3be052b5b5284ce10064371e04eebf3f6cb663283884374  docs/evidence/shell-features/desktop-launcher/launched.png
 DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/removed.png
 DATA 570881146f0b409a3b82504cacf91d6a4d98afb87d324761b2ab4ac10fefcaef  docs/evidence/shell-features/desktop-launcher/second-page.png
+DATA cd0c1a4f6341032bb6ec4a2fe9511c4a2589c9f88f7dfd8e7106cdc6905e4391  docs/evidence/shell-features/desktop-launcher/image-htop.png
+DATA 570881146f0b409a3b82504cacf91d6a4d98afb87d324761b2ab4ac10fefcaef  docs/evidence/shell-features/desktop-launcher/image-entries.png
+DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/image-apps.png
+DATA 1e2c1e90e7c2fe2bc85366ea926e1e7773744bd5d4be613ba5d3e16714009c65  docs/evidence/shell-features/desktop-launcher/20260922T195137Z-desktop-image-launcher.mp4
+DATA 45ca6eeb078eb2ec7ab66990fa23060a5510cef35d20b13f9a16c8a72a304659  docs/evidence/shell-features/desktop-launcher/20260922T193941Z-desktop-image-boot.mp4
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

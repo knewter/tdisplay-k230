@@ -1,0 +1,18 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; systemctl show shell -p DropInPaths -p ExecStart; ls -ld /home/shell/.config /home/shell/.local/share/applications 2>/dev/null || true; /tmp/inject-tap.sh /dev/input/event1 115 28; sleep 3; grim /tmp/image-apps.png; /tmp/inject-tap.sh /dev/input/event1 460 1165; sleep 3; grim /tmp/image-entries.png; /tmp/inject-tap.sh /dev/input/event1 284 764; sleep 3; grim /tmp/image-htop.png; swaymsg -t get_tree -r | /nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/bin/jq -Mc '[recurse(.nodes[]?,.floating_nodes[]?)|select(.app_id? != null)|{id,app_id,focused,name}]'; /tmp/inject-tap.sh /dev/input/event1 115 28; sleep 2; echo IMAGE_LAUNCHER_DEMO_DONE =====
+export SWAYSOCK=/run/shell/sway-ipc.sock XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; systemctl show shell -p DropInPaths -p ExecStart; ls -ld /home/shell/.config /home/shell/.local/share/applications 2>/dev/null || true; /tmp/inject-tap.sh /dev/input/event1 115 28; sleep 3; grim /tmp/image-apps.png; /tmp/inject-tap 
+.sh /dev/input/event1 460 1165; sleep 3; grim /tmp/image-entries.png; /tmp/inject-tap.sh /dev/input/event1 284 764; sleep 3; grim /tmp/image-htop.png; swaymsg -t get_tree -r | /nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/bin/jq -Mc '[recurse(.nodes[]?,.floating_nodes[]?)|select(.ap 
+p_id? != null)|{id,app_id,focused,name}]'; /tmp/inject-tap.sh /dev/input/event1 115 28; sleep 2; echo IMAGE_LAUNCHER_DEMO_DONE
+[?2004l
+/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd
+DropInPaths=
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 19:56:35 UTC] ; stop_time=[n/a] ; pid=544 ; code=(null) ; status=0/0 }
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":true,"name":"foot"}]
+IMAGE_LAUNCHER_DEMO_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

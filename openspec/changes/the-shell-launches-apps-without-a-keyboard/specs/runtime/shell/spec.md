@@ -8,8 +8,8 @@ Provides the handheld Sway shell with keyboard-free application discovery and la
 
 *Grounding: `docs/evidence/shell-features/portrait-launcher/README.md` records
 physical-panel rendering and injected actions. The user separately confirmed launcher finger usability in
-`docs/evidence/shell-features/desktop-launcher/README.md`; the final image
-reboot remains unverified.*
+`docs/evidence/shell-features/desktop-launcher/README.md`; the normal source-image reboot and post-boot launcher capture are recorded
+in the same evidence directory.*
 
 The persistent Apps control SHALL open a native Wayland portrait launcher while
 Keyboard, Windows/Home, and System remain available through the persistent
@@ -41,8 +41,8 @@ requiring a physical keyboard.
 
 *Grounding: `docs/evidence/shell-features/desktop-launcher/README.md`, its
 console, PNGs and camera recording establish physical-panel discovery, launch,
-refresh and error recovery using injected input. The user separately confirmed finger usability on 2026-09-22; final
-image reboot persistence remains unverified.*
+refresh and error recovery using injected input. The user separately confirmed finger usability on 2026-09-22; normal source-image reboot persistence is demonstrated by the separate
+image-launcher video and console, without restoring home-directory state.*
 
 The system's Apps surface SHALL list visible application desktop entries from
 the user's XDG data directories and Nix profile data directories, applying

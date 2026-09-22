@@ -40,7 +40,8 @@ compositor and libraries. The final transfer from the preceding trial was
 [Final deployment](install-final.txt) imported source-built store paths and
 restarted the shell with `/nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf`.
 This capture uses a runtime systemd override, which survives service restart
-but not reboot. Full-image/reboot acceptance remains a separate task.
+but not reboot. That recording remains runtime-deployment evidence; the
+subsequent image boot is recorded separately below.
 
 Host verification: `python3 tests/test_touch_menu.py` (six tests),
 `python3 tests/test_desktop_catalog.py` (three tests, including two launch
@@ -56,3 +57,42 @@ After the desktop-aware launcher demo on 2026-09-22, the user reported:
 usability of the launcher. It is separate from the automated camera recording,
 which remains labeled injected. The report does not claim the prescribed axis
 string, a battery-only boot, or every parent-shell system-control test.
+
+
+## Source-built image boot
+
+The daily source image from `3f397a6`,
+`/nix/store/x0qz7ibmyb1bbmx1cpwgryxapkzisb0m-k230-sd-image.img`, was written
+successfully (2,308,689,920 bytes). The image SHA-256 is
+`797d3fdf1e9901c6cf5d219a75c902e0cae12b951c9582514042535837d4b0a6`.
+[Write transcript](image-flash.txt) retains a `READBACK FAILED` line because
+the already-running comparison was deliberately terminated after the user
+requested an end to routine full readbacks. It is neither evidence of a write
+failure nor a successful full comparison. No full-image equality is claimed.
+
+[Subsequent reset and Linux boot](image-boot.txt) succeeded.
+[100-second physical boot video](20260922T193941Z-desktop-image-boot.mp4)
+shows the shell terminal and persistent controls after startup. USB cables
+were attached; serial initiated the reset. This is not a battery-only boot.
+[Post-boot diagnostics](post-boot.txt) record the immutable system
+`/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd`,
+active shell and seatd, empty systemd `DropInPaths`, and the expected
+`mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf`. The Nix store database
+contains the 576 requisite paths without a manual load, and Neofetch reports
+T-Head C908 (RISC-V64) (1).
+
+The no-logo daily display path is in use: no `/boot/logo.bmp`, no one-shot
+splash flag, and `/dev/fb0` present. This does not prove logo-to-kernel handoff.
+The same boot exposed `firewall.service` failing with
+`iptables: Failed to initialize nft: Protocol not supported`; the launcher
+boot claim does not imply a fully healthy network firewall.
+
+[25-second launcher video after reboot](20260922T195137Z-desktop-image-launcher.mp4),
+[action script](image-actions.sh), and [console](image-launcher-console.txt)
+record Apps, page two, Htop launch and reopening Apps with the same immutable
+configuration. Native images show [Apps](image-apps.png),
+[desktop entries](image-entries.png) and [Htop](image-htop.png).
+These are injected touches on the physical board. No home-directory backup was
+restored: the fresh shell home had neither a `.config` directory nor user
+application entries before the demonstration. The private backup transfer was
+canceled and its partial board copy removed; it is not a shell dependency.

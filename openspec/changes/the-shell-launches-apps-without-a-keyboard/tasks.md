@@ -47,7 +47,7 @@ Input was injected; actual finger accuracy remains the parent shell change's tas
   temporary entry's addition and removal on reopen. Capture keyboard layout and
   an error path with a recoverable Back control. Commit the script, console,
   screenshots, camera clip and provenance under `docs/evidence/shell-features/`.
-- [ ] 4.3 Integrate the verified configuration in a bootable source-built image
+- [x] 4.3 Integrate the verified configuration in a bootable source-built image
   and capture the desktop-aware launcher after reboot. A runtime service override
   alone does not complete this task.
 
@@ -57,3 +57,8 @@ and its video, screenshots and console. Input was injected on the physical board
 The user separately confirmed launcher finger usability on 2026-09-22; see
 `docs/evidence/shell-features/desktop-launcher/README.md`. Existing video
 provenance stays injected. Broader axis/battery/system-control tasks stay open.
+
+Task 4.3: `docs/evidence/shell-features/desktop-launcher/README.md` links the
+source-image build/write/reset evidence, normal system/config paths with no
+service drop-ins, and post-reboot launcher video and screenshots. Shell home
+state was not restored. The boot is USB-attached, not a battery-only test.
