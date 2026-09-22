@@ -94,6 +94,19 @@ class PullTests(unittest.TestCase):
                     self.assertIn(message, result.stderr)
                     self.assertNotIn("SerialException", result.stderr)
 
+    def test_pull_refuses_existing_output_before_debugfs_can_leave_stale_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "capture.tar"
+            output.write_bytes(b"old archive that must never pass as a new pull")
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "--out", "/dev/null",
+                 "--dev", "/does-not-exist", "--pull", "/var/lib/capture.tar",
+                 "--pull-output", str(output), "--expected-sectors", "249872384"],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("must not already exist", result.stderr)
+            self.assertNotIn("SerialException", result.stderr)
+
     def test_pull_hash_requires_nonempty_matching_output(self):
         payload = b"prepared png sample archive\n"
         expected = hashlib.sha256(payload).hexdigest()

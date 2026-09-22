@@ -229,6 +229,8 @@ def validate_pull_arguments(pull, pull_output, expected_sectors, expected_sha256
     if not pull_output:
         raise ValueError("--pull requires --pull-output")
     output = str(Path(pull_output).resolve())
+    if os.path.lexists(output):
+        raise ValueError("--pull-output must not already exist; refuse stale debugfs output")
     safe_path = re.compile(r"/[^\s'\"\\]*$")
     if not safe_path.fullmatch(pull):
         raise ValueError("--pull must be an absolute debugfs-safe path (no whitespace or quotes)")
@@ -347,6 +349,7 @@ def main():
 
     s = Session(args.dev, args.baud, args.out)
     status = 1
+    validated_byid = None
     try:
         s.note("ums session start")
         disks_before = usb_disks()
@@ -445,7 +448,6 @@ def main():
                     except OSError as exc:
                         s.note(f"could not read {dev} unprivileged: {exc}")
             status = 0
-            validated_byid = None
             if args.flash or args.pull:
                 try:
                     validated_byid = validated_ums_byid(new, args.expected_sectors)
@@ -538,7 +540,11 @@ def main():
             status = 3
 
         wrote = False
-        if args.flash:
+        write_requested = bool(args.flash and validated_byid)
+        if args.flash and not validated_byid:
+            s.note("WRITE REFUSED: exact UMS target did not validate; no write")
+            status = 1
+        if write_requested:
             byid = validated_byid
             size = os.path.getsize(args.flash)
             s.note(f"WRITE: tools/flash.sh {args.flash} {byid} ({size} bytes); confirmation = last 12 chars of the by-id path, supplied by this tool")
