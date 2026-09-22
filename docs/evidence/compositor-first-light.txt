@@ -1,0 +1,199 @@
+
+===== > q =====
+
+[K[0m[01;32m/nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin/dbus-daemon[0m[K
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl show shell -p Environment -p ExecStart --no-pager; ls /nix/store/*dbus*/bin/dbus-daemon =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl show shell -p Environment -p ExecStart --no-pager; ls /nix/store/*dbus*/bin/dbus-daemon
+[?2004l
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/gmblj8zrf83v715vzwkv35g80fgszd2v-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 19:58:37 UTC] ; stop_time=[Tue 2026-03-17 19:58:38 UTC] ; pid=1120 ; code=exited ; status=127 }
+Environment=LIBSEAT_BACKEND=seatd LOCALE_ARCHIVE=/nix/store/07bryp8s1m62brscsdzmx6ick286irjm-glibc-locales-riscv64-unknown-linux-gnu-2.42-84/lib/locale/locale-archive PATH=/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin:/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin:/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7/bin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin:/nix/store/nyy80gvhfcalcm8g9x3fcx3bgilllj3g-htop-riscv64-unknown-linux-gnu-3.5.3/bin:/nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/bin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/bin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/bin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/bin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/bin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin:/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/sbin:/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/sbin:/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7/sbin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/sbin:/nix/store/nyy80gvhfcalcm8g9x3fcx3bgilllj3g-htop-riscv64-unknown-linux-gnu-3.5.3/sbin:/nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/sbin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/sbin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/sbin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/sbin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/sbin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/sbin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/sbin SWAYSOCK=/run/shell/sway-ipc.sock TZDIR=/nix/store/ycxsn8k4xxw4kx54fi36hibhry8bjjzw-tzdata-riscv64-unknown-linux-gnu-2026c/share/zoneinfo WLR_RENDERER=pixman XDG_RUNTIME_DIR=/run/shell XDG_SEAT=seat0
+[0m[01;32m/nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin/dbus-daemon[0m[K
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > systemd-run --unit=cage-unpatched --property=User=shell --property=Group=shell --property=RuntimeDirectory=cage-probe --setenv=XDG_RUNTIME_DIR=/run/cage-probe --setenv=LIBSEAT_BACKEND=seatd --setenv=WLR_RENDERER=pixman /run/current-system/sw/bin/cage -D -- /run/current-system/sw/bin/foot =====
+systemd-run --unit=cage-unpatched --property=User=shell --property=Group=shell --property=RuntimeDirectory=cage-probe --setenv=XDG_RUNTIME_DIR=/run/cage-probe --setenv=LIBSEAT_BACKEND=seatd --setenv=WLR_RENDERER=pixman /run/ 
+current-system/sw/bin/cage -D -- /run/current-system/sw/bin/foot
+[?2004l
+Running as unit: cage-unpatched.service; invocation ID: b34c854cb5d549b1b21d47319e52745a
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > journalctl -u cage-unpatched -b --no-pager -n 100 =====
+journalctl -u cage-unpatched -b --no-pager -n 100
+[?2004l
+Mar 17 19:59:31 nixos systemd[1]: Started [systemd-run] /run/current-system/sw/bin/cage -D -- /run/current-system/sw/bin/foot.
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.013 [INFO] [libseat] [libseat/libseat.c:62] Seat opened with backend 'seatd'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.018 [INFO] [libseat] [libseat/backend/seatd.c:218] Enabling seat
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.018 [INFO] [backend/session/session.c:117] Successfully loaded libseat session
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.036 [INFO] [backend/backend.c:248] Found 1 GPUs
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.037 [INFO] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card0 (canaan-drm)
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.038 [DEBUG] [backend/drm/drm.c:112] Using atomic DRM interface
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.038 [DEBUG] [backend/drm/drm.c:133] ADDFB2 modifiers supported
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.038 [INFO] [backend/drm/drm.c:312] Found 1 DRM CRTCs
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.038 [INFO] [backend/drm/drm.c:270] Found 7 DRM planes
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.039 [INFO] [util/env.c:25] Loading WLR_RENDERER option: pixman
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.039 [INFO] [render/pixman/renderer.c:328] Creating pixman renderer
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.044 [DEBUG] [render/allocator/allocator.c:142] Trying to create drm dumb allocator
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.045 [DEBUG] [render/allocator/drm_dumb.c:230] Created DRM dumb allocator
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.055 [DEBUG] [types/wlr_drm_lease_v1.c:599] Creating wlr_drm_lease_device_v1 for /dev/dri/card0
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.055 [DEBUG] [backend/libinput/backend.c:88] Starting libinput backend
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.142 [DEBUG] [backend/libinput/events.c:69] Adding Goodix Berlin Capacitive TouchScreen [0:0]
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.142 [INFO] [../seat.c:141] Input device Goodix Berlin Capacitive TouchScreen cannot be mapped to an output device
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.142 [DEBUG] [backend/libinput/backend.c:125] libinput successfully initialized
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.142 [INFO] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1836] Found connector 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1861] 'DSI-1' connected
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [DEBUG] [backend/drm/drm.c:1632] Current CRTC: 46
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1646] Detected modes:
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1670]   568x1232 @ 52.190 Hz (preferred)
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1707] Physical size: 44x95
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [DEBUG] [backend/drm/drm.c:1744] Connector has no EDID
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [INFO] [backend/drm/drm.c:1895] connector DSI-1: Requesting modeset
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [DEBUG] [types/output/render.c:172] Output doesn't support format 0x34325258
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [ERROR] [types/output/swapchain.c:21] Failed to pick primary buffer format for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.143 [ERROR] [types/output/swapchain.c:92] Failed to create swapchain for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [DEBUG] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (26 available cursors)
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [DEBUG] [../output.c:314] Enabling new output DSI-1
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [DEBUG] [types/output/render.c:172] Output doesn't support format 0x34325258
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [ERROR] [types/output/swapchain.c:21] Failed to pick primary buffer format for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [ERROR] [types/output/swapchain.c:92] Failed to create swapchain for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.144 [DEBUG] [../cage.c:614] Cage 0.3.1 is running on Wayland display wayland-0
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.152 [DEBUG] [../cage.c:174] Child process created with pid 1137
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.152 [DEBUG] [types/output/render.c:172] Output doesn't support format 0x34325258
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.152 [ERROR] [types/output/swapchain.c:21] Failed to pick primary buffer format for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.152 [ERROR] [types/output/swapchain.c:92] Failed to create swapchain for output 'DSI-1'
+Mar 17 19:59:32 nixos cage[1137]: warn: config.c:3724: no configuration found, using defaults
+Mar 17 19:59:32 nixos cage[1137]:  err: wayland.c:1861: no monitors available
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.635 [DEBUG] [../cage.c:106] Child process closed normally
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.636 [DEBUG] [../cage.c:186] Child exited normally with exit status 230
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.637 [DEBUG] [types/wlr_drm_lease_v1.c:645] Destroying wlr_drm_lease_v1_manager
+Mar 17 19:59:32 nixos cage[1135]: 00:00:00.637 [DEBUG] [types/wlr_drm_lease_v1.c:98] Destroying wlr_drm_lease_device_v1 for /dev/dri/card0
+Mar 17 19:59:33 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mcage-unpatched.service: Main process exited, code=exited, status=230/PERSONALITY[0m
+Mar 17 19:59:33 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mcage-unpatched.service: Failed with result 'exit-code'.[0m
+Mar 17 19:59:33 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mcage-unpatched.service: Consumed 391ms CPU time over 1.284s wall clock time, 18.6M memory peak, 13.9M read from disk.[0m
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > systemd-run --unit=cage-rgb565-probe --property=User=shell --property=Group=shell --property=RuntimeDirectory=cage-probe --setenv=XDG_RUNTIME_DIR=/run/cage-probe --setenv=LIBSEAT_BACKEND=seatd --setenv=WLR_RENDERER=pixman /run/current-system/sw/bin/cage-rgb565 -D -- /run/current-system/sw/bin/foot =====
+systemd-run --unit=cage-rgb565-probe --property=User=shell --property=Group=shell --property=RuntimeDirectory=cage-probe --setenv=XDG_RUNTIME_DIR=/run/cage-probe --setenv=LIBSEAT_BACKEND=seatd --setenv=WLR_RENDERER=pixman /run/current-system/sw/bin/cage-rgb565 -D -- /run/current-system/sw/bin/foot
+[?2004l
+Running as unit: cage-rgb565-probe.service; invocation ID: f3e414e0405b40058e508c058d07dc93
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > journalctl -u cage-rgb565-probe -b --no-pager -n 100 =====
+journalctl -u cage-rgb565-probe -b --no-pager -n 100
+[?2004l
+Mar 17 19:59:49 nixos systemd[1]: Started [systemd-run] /run/current-system/sw/bin/cage-rgb565 -D -- /run/current-system/sw/bin/foot.
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.004 [INFO] [libseat] [libseat/libseat.c:62] Seat opened with backend 'seatd'
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.004 [INFO] [libseat] [libseat/backend/seatd.c:218] Enabling seat
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.004 [INFO] [backend/session/session.c:117] Successfully loaded libseat session
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.022 [INFO] [backend/backend.c:248] Found 1 GPUs
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.023 [INFO] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card0 (canaan-drm)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.023 [DEBUG] [backend/drm/drm.c:112] Using atomic DRM interface
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.023 [DEBUG] [backend/drm/drm.c:133] ADDFB2 modifiers supported
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.023 [INFO] [backend/drm/drm.c:312] Found 1 DRM CRTCs
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.024 [INFO] [backend/drm/drm.c:270] Found 7 DRM planes
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.026 [INFO] [util/env.c:25] Loading WLR_RENDERER option: pixman
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.026 [INFO] [render/pixman/renderer.c:328] Creating pixman renderer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.026 [DEBUG] [render/allocator/allocator.c:142] Trying to create drm dumb allocator
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.027 [DEBUG] [render/allocator/drm_dumb.c:230] Created DRM dumb allocator
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.027 [DEBUG] [types/wlr_drm_lease_v1.c:599] Creating wlr_drm_lease_device_v1 for /dev/dri/card0
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.027 [DEBUG] [backend/libinput/backend.c:88] Starting libinput backend
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.069 [DEBUG] [backend/libinput/events.c:69] Adding Goodix Berlin Capacitive TouchScreen [0:0]
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.069 [INFO] [../seat.c:141] Input device Goodix Berlin Capacitive TouchScreen cannot be mapped to an output device
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.069 [DEBUG] [backend/libinput/backend.c:125] libinput successfully initialized
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.069 [INFO] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.069 [INFO] [backend/drm/drm.c:1836] Found connector 'DSI-1'
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [INFO] [backend/drm/drm.c:1861] 'DSI-1' connected
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [backend/drm/drm.c:1632] Current CRTC: 46
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [INFO] [backend/drm/drm.c:1646] Detected modes:
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [INFO] [backend/drm/drm.c:1670]   568x1232 @ 52.190 Hz (preferred)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [INFO] [backend/drm/drm.c:1707] Physical size: 44x95
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [backend/drm/drm.c:1744] Connector has no EDID
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [INFO] [backend/drm/drm.c:1895] connector DSI-1: Requesting modeset
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format RG16 (0x36314752) for output 'DSI-1'
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'DSI-1'
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.070 [DEBUG] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.078 [DEBUG] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.078 [DEBUG] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.080 [DEBUG] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (26 available cursors)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.080 [DEBUG] [../output.c:325] Enabling new output DSI-1
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.080 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.081 [INFO] [backend/drm/drm.c:980] connector DSI-1: Modesetting with 568x1232 @ 52.190 Hz
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.085 [DEBUG] [../cage.c:614] Cage 0.3.1 is running on Wayland display wayland-0
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.093 [DEBUG] [../cage.c:174] Child process created with pid 1145
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: config.c:3724: no configuration found, using defaults
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: wayland.c:1874: compositor does not implement XDG activation, bell.urgent will fall back to coloring the window margins red
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: wayland.c:1880: compositor does not implement fractional scaling
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: wayland.c:1883: compositor does not implement server-side cursors, falling back to client-side cursors
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+Mar 17 19:59:49 nixos cage-rgb565[1145]: warn: wayland.c:1893: text input interface not implemented by compositor; IME will be disabled
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.280 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f672b70 (res 0x385f672f40)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.280 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x385f673060 (res 0x385f672fd0)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.280 [DEBUG] [types/wlr_xdg_decoration_v1.c:220] new xdg_toplevel_decoration 0x385f673250 (res 0x385f673340)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.281 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f6733d0 (res 0x385f6737a0)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.332 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f6739e0 (res 0x385f673950)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.332 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f673f20 (res 0x385f6742f0)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f674740 (res 0x385f669820)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f674d60 (res 0x385f675130)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f675410 (res 0x385f6757e0)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f675b90 (res 0x385f675f60)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f676280 (res 0x385f676650)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.333 [DEBUG] [types/wlr_compositor.c:785] New wlr_surface 0x385f676970 (res 0x385f676d40)
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.334 [DEBUG] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.334 [DEBUG] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.334 [DEBUG] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.357 [DEBUG] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.357 [DEBUG] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.397 [DEBUG] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.398 [DEBUG] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.498 [DEBUG] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.499 [DEBUG] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.506 [DEBUG] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 19:59:49 nixos cage-rgb565[1143]: 00:00:00.507 [DEBUG] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

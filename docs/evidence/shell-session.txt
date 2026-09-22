@@ -1,0 +1,378 @@
+
+===== > systemctl status shell --no-pager; journalctl -u shell -b --no-pager --since "2026-03-17 20:00:40" =====
+systemctl status shell --no-pager; journalctl -u shell -b --no-pager --since "2026-03-17 20:00:40"
+[?2004l
+[0;1;32m●[0m shell.service - sway on the panel
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/shell.service\/etc/systemd/system/shell.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+    Drop-In: /run/systemd/system/shell.service.d
+             └─]8;;file://nixos/run/systemd/system/shell.service.d/10-dbus-path.conf\10-dbus-path.conf]8;;\
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-17 20:00:41 UTC; 51s ago
+ Invocation: fe988dd043184bccb890a7cc05246345
+    Process: 1201 ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd (code=exited, status=0/SUCCESS)
+   Main PID: 1205 (dbus-run-sessio)
+         IP: 0B in, 0B out
+         IO: 6.4M read, 0B written
+      Tasks: 5[0;90m[0;38:5:245m (limit: 466)[0m
+     Memory: 10.2M (peak: 12.3M)
+        CPU: 637ms
+     CGroup: /system.slice/shell.service
+             ├─[0;90m[0;38:5:245m1205 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-un…[0m
+             ├─[0;90m[0;38:5:245m1210 dbus-daemon --nofork --print-address 4 --session[0m
+             ├─[0;90m[0;38:5:245m1211 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-…[0m
+             └─[0;90m[0;38:5:245m1214 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-…[0m
+
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.542 [DEBUG] [sway/commands/exec_…1217
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.542 [INFO] [sway/server.c:799] R…d-1'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.546 [DEBUG] [wlr] [render/swapch…ffer
+Mar 17 20:00:43 nixos sway[1216]: [ERROR] [sway/commands/exec_always.c:65] …tory
+Mar 17 20:00:43 nixos sway[1217]: 00:00:00.556 [ERROR] [sway/commands/exec_…tory
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.574 [DEBUG] [wlr] [render/alloca…ffer
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.574 [DEBUG] [wlr] [render/pixman…1232
+Mar 17 20:00:43 nixos sway[1214]: 2026-03-17 20:00:43 - [main.c:328] Could …ll))
+Mar 17 20:01:13 nixos sway[1211]: 00:00:30.520 [DEBUG] [wlr] [types/wlr_xdg…ired
+Mar 17 20:01:13 nixos sway[1211]: 00:00:30.528 [DEBUG] [wlr] [types/wlr_xdg…ired
+Hint: Some lines were ellipsized, use -l to show in full.
+Mar 17 20:00:41 nixos systemd[1]: Starting sway on the panel...
+Mar 17 20:00:41 nixos systemd[1]: Started sway on the panel.
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.000 [INFO] [sway/main.c:308] Sway version 1.12
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.002 [INFO] [sway/main.c:309] wlroots version 0.20.2
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.031 [INFO] [sway/main.c:78] Linux nixos 6.6.36 #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980 riscv64 GNU/Linux
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.033 [INFO] [sway/main.c:94] Contents of /etc/lsb-release:
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.035 [INFO] [sway/main.c:78] DISTRIB_CODENAME=zokor
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.036 [INFO] [sway/main.c:78] DISTRIB_DESCRIPTION="NixOS 26.11 (Zokor)"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.037 [INFO] [sway/main.c:78] DISTRIB_ID=nixos
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.037 [INFO] [sway/main.c:78] DISTRIB_RELEASE="26.11"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.037 [INFO] [sway/main.c:78] LSB_VERSION="26.11 (Zokor)"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.037 [INFO] [sway/main.c:94] Contents of /etc/os-release:
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] ANSI_COLOR="0;38;2;126;186;228"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] BUG_REPORT_URL="https://github.com/NixOS/nixpkgs/issues"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] BUILD_ID="26.11.20260919.20b1ddd"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] CPE_NAME="cpe:/o:nixos:nixos:26.11"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] DEFAULT_HOSTNAME=nixos
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] DOCUMENTATION_URL="https://nixos.org/learn.html"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] HOME_URL="https://nixos.org/"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] ID=nixos
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] LOGO="nix-snowflake"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] NAME=NixOS
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] PRETTY_NAME="NixOS 26.11 (Zokor)"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] SUPPORT_URL="https://nixos.org/community.html"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] VENDOR_NAME=NixOS
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] VENDOR_URL="https://nixos.org/"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] VERSION="26.11 (Zokor)"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] VERSION_CODENAME=zokor
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:78] VERSION_ID="26.11"
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:66] LD_LIBRARY_PATH=
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:66] LD_PRELOAD=
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.038 [INFO] [sway/main.c:66] PATH=/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin:/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin:/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7/bin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin:/nix/store/nyy80gvhfcalcm8g9x3fcx3bgilllj3g-htop-riscv64-unknown-linux-gnu-3.5.3/bin:/nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/bin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/bin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/bin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/bin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/bin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin:/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/sbin:/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/sbin:/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7/sbin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/sbin:/nix/store/nyy80gvhfcalcm8g9x3fcx3bgilllj3g-htop-riscv64-unknown-linux-gnu-3.5.3/sbin:/nix/store/fy9xmga7mbqqiqp6gaj79239a98ssy9g-jq-riscv64-unknown-linux-gnu-1.8.2-bin/sbin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/sbin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/sbin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/sbin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/sbin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/sbin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/sbin:/nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.039 [INFO] [sway/main.c:66] SWAYSOCK=/run/shell/sway-ipc.sock
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.039 [INFO] [sway/main.c:338] Starting sway version 1.12
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.039 [DEBUG] [sway/server.c:246] Initializing Wayland server
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.044 [INFO] [wlr] [libseat] [libseat/libseat.c:62] Seat opened with backend 'seatd'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.045 [INFO] [wlr] [libseat] [libseat/backend/seatd.c:218] Enabling seat
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.045 [INFO] [wlr] [backend/session/session.c:117] Successfully loaded libseat session
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.068 [INFO] [wlr] [backend/backend.c:248] Found 1 GPUs
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.069 [INFO] [wlr] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card0 (canaan-drm)
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.069 [DEBUG] [wlr] [backend/drm/drm.c:112] Using atomic DRM interface
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.069 [DEBUG] [wlr] [backend/drm/drm.c:133] ADDFB2 modifiers supported
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.069 [INFO] [wlr] [backend/drm/drm.c:312] Found 1 DRM CRTCs
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.069 [INFO] [wlr] [backend/drm/drm.c:270] Found 7 DRM planes
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.070 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.070 [INFO] [wlr] [render/pixman/renderer.c:328] Creating pixman renderer
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.070 [DEBUG] [wlr] [render/allocator/allocator.c:142] Trying to create drm dumb allocator
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.071 [DEBUG] [wlr] [render/allocator/drm_dumb.c:230] Created DRM dumb allocator
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.071 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:599] Creating wlr_drm_lease_device_v1 for /dev/dri/card0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.071 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.157 [INFO] [sway/config.c:423] Loading config from /nix/store/gmblj8zrf83v715vzwkv35g80fgszd2v-k230-sway.conf
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.159 [DEBUG] [sway/config.c:782] Read line 1: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.159 [INFO] [sway/commands.c:381] Config command: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.159 [INFO] [sway/commands.c:404] After replacement: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.160 [DEBUG] [sway/commands.c:436] Subcommand: mode 568x1232 transform normal scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.160 [DEBUG] [sway/commands.c:436] Subcommand: transform normal scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.160 [DEBUG] [sway/commands.c:436] Subcommand: scale 1 render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.160 [DEBUG] [sway/commands.c:436] Subcommand: render_bit_depth 6
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.160 [DEBUG] [sway/config/output.c:279] Config stored for output DSI-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale 1.000000 subpixel unknown transform 0) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [DEBUG] [sway/config.c:782] Read line 2: input type:touch map_to_output DSI-1
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [INFO] [sway/commands.c:381] Config command: input type:touch map_to_output DSI-1
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [INFO] [sway/commands.c:404] After replacement: input type:touch map_to_output DSI-1
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [DEBUG] [sway/commands/input.c:58] entering input block: type:touch
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [DEBUG] [sway/config/input.c:15] new_input_config(type:touch)
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [DEBUG] [sway/commands.c:436] Subcommand: map_to_output DSI-1
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.161 [DEBUG] [sway/config/input.c:15] new_input_config(temp)
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [DEBUG] [sway/config/input.c:366] Config stored for input type:touch
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [DEBUG] [sway/config.c:782] Read line 3:
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [DEBUG] [sway/config.c:782] Read line 4: default_border none
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [INFO] [sway/commands.c:381] Config command: default_border none
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [INFO] [sway/commands.c:404] After replacement: default_border none
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.189 [DEBUG] [sway/config.c:782] Read line 5: font pango:DejaVu Sans Mono 15
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.190 [INFO] [sway/commands.c:381] Config command: font pango:DejaVu Sans Mono 15
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.190 [INFO] [sway/commands.c:404] After replacement: font pango:DejaVu Sans Mono 15
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.345 [DEBUG] [sway/config.c:782] Read line 6: focus_follows_mouse no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.345 [INFO] [sway/commands.c:381] Config command: focus_follows_mouse no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.345 [INFO] [sway/commands.c:404] After replacement: focus_follows_mouse no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.345 [DEBUG] [sway/config.c:782] Read line 7: # A 568 px panel cannot make two tiled terminals useful. New applications
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 8: # share a tabbed workspace; the touch menu can still focus any container.
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 9: workspace_layout tabbed
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:381] Config command: workspace_layout tabbed
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:404] After replacement: workspace_layout tabbed
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 10:
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 11: bar {
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:836] Entering block 'bar'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 12:   position top
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:381] Config command: bar position top
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:404] After replacement: bar position top
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands/bar.c:90] Creating bar: bar-0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands.c:436] Subcommand: position top
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands/bar/position.c:14] Setting bar position 'top' for bar: bar-0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 13:   height 56
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:381] Config command: bar height 56
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:404] After replacement: bar height 56
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands.c:436] Subcommand: height 56
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands/bar/height.c:17] Setting bar height to 56 on bar: bar-0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/config.c:782] Read line 14:   font pango:DejaVu Sans Mono 16
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:381] Config command: bar font pango:DejaVu Sans Mono 16
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [INFO] [sway/commands.c:404] After replacement: bar font pango:DejaVu Sans Mono 16
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.346 [DEBUG] [sway/commands.c:436] Subcommand: font pango:DejaVu Sans Mono 16
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [DEBUG] [sway/commands/bar/font.c:27] Settings font 'DejaVu Sans Mono 16' for bar: bar-0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [DEBUG] [sway/config.c:782] Read line 15:   # swaybar starts status_command with the Wayland display inherited from
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [DEBUG] [sway/config.c:782] Read line 16:   # sway, so foot launched by the menu joins this session rather than a
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [DEBUG] [sway/config.c:782] Read line 17:   # system service environment with no WAYLAND_DISPLAY.
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [DEBUG] [sway/config.c:782] Read line 18:   status_command /nix/store/lhrk08jf4vxhg1jsgzsap48ay5fdikpi-k230-touch-menu/bin/k230-touch-menu
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [INFO] [sway/commands.c:381] Config command: bar status_command /nix/store/lhrk08jf4vxhg1jsgzsap48ay5fdikpi-k230-touch-menu/bin/k230-touch-menu
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.347 [INFO] [sway/commands.c:404] After replacement: bar status_command /nix/store/lhrk08jf4vxhg1jsgzsap48ay5fdikpi-k230-touch-menu/bin/k230-touch-menu
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/commands.c:436] Subcommand: status_command /nix/store/lhrk08jf4vxhg1jsgzsap48ay5fdikpi-k230-touch-menu/bin/k230-touch-menu
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/commands/bar/status_command.c:17] Feeding bar with status command: /nix/store/lhrk08jf4vxhg1jsgzsap48ay5fdikpi-k230-touch-menu/bin/k230-touch-menu
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/config.c:782] Read line 19:   workspace_buttons no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [INFO] [sway/commands.c:381] Config command: bar workspace_buttons no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [INFO] [sway/commands.c:404] After replacement: bar workspace_buttons no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/commands.c:436] Subcommand: workspace_buttons no
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/commands/bar/workspace_buttons.c:18] Disabling workspace buttons on bar: bar-0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/config.c:782] Read line 20:   colors {
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.351 [DEBUG] [sway/config.c:836] Entering block 'bar colors'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 21:     statusline #ffffff
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:381] Config command: bar colors statusline #ffffff
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:404] After replacement: bar colors statusline #ffffff
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/commands.c:436] Subcommand: colors statusline #ffffff
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/commands.c:436] Subcommand: statusline #ffffff
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 22:     background #202020
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:381] Config command: bar colors background #202020
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:404] After replacement: bar colors background #202020
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/commands.c:436] Subcommand: colors background #202020
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/commands.c:436] Subcommand: background #202020
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 23:   }
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:853] Exiting block 'bar colors'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 24: }
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:853] Exiting block 'bar'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 25:
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 26: # 400 px: with ten keys across 568 px each key is
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 27: # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [DEBUG] [sway/config.c:782] Read line 28: exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:381] Config command: exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.352 [INFO] [sway/commands.c:404] After replacement: exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config.c:826] Deferring command `exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config.c:782] Read line 29: exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [INFO] [sway/commands.c:381] Config command: exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [INFO] [sway/commands.c:404] After replacement: exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config.c:826] Deferring command `exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/input/input-manager.c:190] no fallback seat config - creating default
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config/seat.c:65] Adding non-wildcard seat config
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config/seat.c:82] Config stored for seat seat0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.353 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.361 [INFO] [sway/realtime.c:35] Failed to set scheduling priority to 1
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.361 [INFO] [sway/server.c:787] Starting backend on wayland display 'wayland-1'
+Mar 17 20:00:42 nixos sway[1211]: 00:00:00.361 [DEBUG] [wlr] [backend/libinput/backend.c:88] Starting libinput backend
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.441 [DEBUG] [wlr] [backend/libinput/events.c:69] Adding Goodix Berlin Capacitive TouchScreen [0:0]
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.442 [DEBUG] [sway/input/input-manager.c:240] adding device: '0:0:Goodix_Berlin_Capacitive_TouchScreen'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.442 [DEBUG] [sway/input/libinput.c:260] sway_input_configure_libinput_device('type:touch' on '0:0:Goodix_Berlin_Capacitive_TouchScreen')
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.442 [DEBUG] [sway/input/libinput.c:237] (null) 'type:touch' is mapped to offline output 'DSI-1'; disabling input
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.442 [DEBUG] [sway/input/libinput.c:23] send_events_set_mode(1)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.459 [DEBUG] [sway/input/seat.c:945] adding device 0:0:Goodix_Berlin_Capacitive_TouchScreen to seat seat0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.459 [DEBUG] [sway/input/seat.c:694] Applying input mapping to 0:0:Goodix_Berlin_Capacitive_TouchScreen
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.459 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.459 [DEBUG] [sway/input/seat.c:752] Requested output DSI-1 for device 0:0:Goodix_Berlin_Capacitive_TouchScreen isn't present
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [DEBUG] [wlr] [backend/libinput/backend.c:125] libinput successfully initialized
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1836] Found connector 'DSI-1'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1861] 'DSI-1' connected
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [DEBUG] [wlr] [backend/drm/drm.c:1632] Current CRTC: 46
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1646] Detected modes:
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1670]   568x1232 @ 52.190 Hz (preferred)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1707] Physical size: 44x95
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [DEBUG] [wlr] [backend/drm/drm.c:1744] Connector has no EDID
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [INFO] [wlr] [backend/drm/drm.c:1895] connector DSI-1: Requesting modeset
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.460 [DEBUG] [sway/desktop/output.c:541] New output 0x389823d120: DSI-1 (non-desktop: 0)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.461 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:769] Output state for DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:783]     mode:          568x1232@52190mHz (preferred)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.465 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.486 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.487 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.488 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.502 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.503 [DEBUG] [sway/config/output.c:1080] Finalizing config for DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.503 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.503 [DEBUG] [sway/tree/output.c:165] Creating default workspace 1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.503 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.505 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.505 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.505 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x38981fcef0 committing with 2 instructions
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x38981fcef0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/input/seat.c:694] Applying input mapping to 0:0:Goodix_Berlin_Capacitive_TouchScreen
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/input/seat.c:760] Mapped to output DSI-1
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.506 [DEBUG] [sway/input/libinput.c:23] send_events_set_mode(0)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.509 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (26 available cursors)
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.509 [DEBUG] [sway/config/bar.c:245] Invoking swaybar for bar id 'bar-0'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.515 [DEBUG] [sway/config/bar.c:238] Spawned swaybar bar-0
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.519 [DEBUG] [sway/config.c:631] Running deferred commands
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.519 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.519 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.528 [DEBUG] [sway/commands/exec_always.c:73] Child process created with pid 1216
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.528 [DEBUG] [sway/commands/exec_always.c:75] Recording workspace for process 1216
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.528 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.528 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.538 [DEBUG]
+Mar 17 20:00:43 nixos sway[1216]: 00:00:00.541
+Mar 17 20:00:43 nixos sway[1211]: [sway/commands/exec_always.c:73] Child process created with pid 1217
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.542 [DEBUG] [sway/commands/exec_always.c:75] Recording workspace for process 1217
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.542 [INFO] [sway/server.c:799] Running compositor on wayland display 'wayland-1'
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.546 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 20:00:43 nixos sway[1216]: [ERROR] [sway/commands/exec_always.c:65] execve failed: No such file or directory
+Mar 17 20:00:43 nixos sway[1217]: 00:00:00.556 [ERROR] [sway/commands/exec_always.c:65] execve failed: No such file or directory
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.574 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 20:00:43 nixos sway[1211]: 00:00:00.574 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 20:00:43 nixos sway[1214]: 2026-03-17 20:00:43 - [main.c:328] Could not find config for output DSI-1 ((null) (null))
+Mar 17 20:01:13 nixos sway[1211]: 00:00:30.520 [DEBUG] [wlr] [types/wlr_xdg_activation_v1.c:48] Activation token '3fa8c8d398a07b698d762c22625abb91' has expired
+Mar 17 20:01:13 nixos sway[1211]: 00:00:30.528 [DEBUG] [wlr] [types/wlr_xdg_activation_v1.c:48] Activation token '5f819d7711bf32dbb1409de440add3ea' has expired
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > swaymsg -t get_outputs -r; swaymsg -t get_inputs -r =====
+swaymsg -t get_outputs -r; swaymsg -t get_inputs -r
+[?2004l
+[
+  {
+    "id": 3,
+    "type": "output",
+    "orientation": "none",
+    "percent": 1.0,
+    "urgent": false,
+    "marks": [],
+    "layout": "output",
+    "border": "none",
+    "current_border_width": 0,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 568,
+      "height": 1232
+    },
+    "deco_rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "window_rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "geometry": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "name": "DSI-1",
+    "window": null,
+    "nodes": [],
+    "floating_nodes": [],
+    "focus": [
+      4
+    ],
+    "fullscreen_mode": 0,
+    "sticky": false,
+    "floating": null,
+    "scratchpad_state": null,
+    "primary": false,
+    "make": "Unknown",
+    "model": "Unknown",
+    "serial": "Unknown",
+    "modes": [
+      {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      }
+    ],
+    "features": {
+      "adaptive_sync": false,
+      "hdr": false
+    },
+    "non_desktop": false,
+    "active": true,
+    "dpms": true,
+    "power": true,
+    "scale": 1.0,
+    "scale_filter": "nearest",
+    "transform": "normal",
+    "adaptive_sync_status": "disabled",
+    "current_workspace": "1",
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    },
+    "max_render_time": 0,
+    "allow_tearing": false,
+    "hdr": false,
+    "focused": true,
+    "subpixel_hinting": "unknown"
+  }
+]
+[
+  {
+    "identifier": "0:0:Goodix_Berlin_Capacitive_TouchScreen",
+    "name": "Goodix Berlin Capacitive TouchScreen",
+    "type": "touch",
+    "libinput": {
+      "send_events": "enabled",
+      "calibration_matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "vendor": 0,
+    "product": 0
+  }
+]
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

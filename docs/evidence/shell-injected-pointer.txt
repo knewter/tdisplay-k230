@@ -1,0 +1,514 @@
+
+===== > swaymsg 'seat seat0 cursor set 365 28; seat seat0 cursor press button1; seat seat0 cursor release button1'; ps -o pid,comm,rss,args -C sway -C swaybar -C foot -C wvkbd-mobintl; udevadm info --query=property --name=/dev/input/event0 =====
+swaymsg 'seat seat0 cursor set 365 28; seat seat0 cursor press button1; seat seat0 cursor release button1'; ps -o pid,comm,rss,args -C sway -C swaybar -C foot -C wvkbd-mobintl; udevadm info --query=property --name=/dev/input/event0
+[?2004l
+    PID COMMAND           RSS COMMAND
+   1279 sway            21504 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-u
+   1283 swaybar         13184 swaybar -b bar-0
+   1284 wvkbd-mobintl    6016 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-
+   1285 foot            14936 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-r
+DEVPATH=/devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0/event0
+DEVNAME=/dev/input/event0
+MAJOR=13
+MINOR=64
+SUBSYSTEM=input
+USEC_INITIALIZED=12618114
+PATH=/nix/store/r1ykjrvp1w9n2dwnvpyisja340kqhkwj-udev-path/bin:/nix/store/r1ykjrvp1w9n2dwnvpyisja340kqhkwj-udev-path/sbin
+ID_INPUT=1
+ID_INPUT_TOUCHSCREEN=1
+ID_BUS=i2c
+ID_PATH=platform-91408000.i2c
+ID_PATH_TAG=platform-91408000_i2c
+ID_INTEGRATION=internal
+DEVLINKS=/dev/input/by-path/platform-91408000.i2c-event
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > pkill -RTMIN -x wvkbd-mobintl; sleep 1; swaymsg -t get_seats -r; swaymsg -t get_tree -r =====
+pkill -RTMIN -x wvkbd-mobintl; sleep 1; swaymsg -t get_seats -r; swaymsg -t get_tree -r
+[?2004l
+[
+  {
+    "name": "seat0",
+    "capabilities": 6,
+    "focus": 5,
+    "devices": [
+      {
+        "identifier": "0:0:wlr_virtual_keyboard_v1",
+        "name": "wlr_virtual_keyboard_v1",
+        "type": "keyboard",
+        "repeat_delay": 600,
+        "repeat_rate": 25,
+        "xkb_layout_names": [
+          "wvkbd"
+        ],
+        "xkb_active_layout_index": 0,
+        "xkb_active_layout_name": "wvkbd"
+      },
+      {
+        "identifier": "0:0:Goodix_Berlin_Capacitive_TouchScreen",
+        "name": "Goodix Berlin Capacitive TouchScreen",
+        "type": "touch",
+        "libinput": {
+          "send_events": "enabled",
+          "calibration_matrix": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        "vendor": 0,
+        "product": 0
+      }
+    ]
+  }
+]
+{
+  "id": 1,
+  "type": "root",
+  "orientation": "horizontal",
+  "percent": null,
+  "urgent": false,
+  "marks": [],
+  "focused": false,
+  "layout": "splith",
+  "border": "none",
+  "current_border_width": 0,
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "width": 568,
+    "height": 1232
+  },
+  "deco_rect": {
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0
+  },
+  "window_rect": {
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0
+  },
+  "geometry": {
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0
+  },
+  "name": "root",
+  "window": null,
+  "nodes": [
+    {
+      "id": 2147483647,
+      "type": "output",
+      "orientation": "horizontal",
+      "percent": null,
+      "urgent": false,
+      "marks": [],
+      "focused": false,
+      "layout": "output",
+      "border": "none",
+      "current_border_width": 0,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 568,
+        "height": 1232
+      },
+      "deco_rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "window_rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "name": "__i3",
+      "window": null,
+      "nodes": [
+        {
+          "id": 2147483646,
+          "type": "workspace",
+          "orientation": "horizontal",
+          "percent": null,
+          "urgent": false,
+          "marks": [],
+          "focused": false,
+          "layout": "splith",
+          "border": "none",
+          "current_border_width": 0,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 568,
+            "height": 1232
+          },
+          "deco_rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "window_rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "geometry": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "name": "__i3_scratch",
+          "window": null,
+          "nodes": [],
+          "floating_nodes": [],
+          "focus": [],
+          "fullscreen_mode": 1,
+          "sticky": false,
+          "floating": null,
+          "scratchpad_state": null
+        }
+      ],
+      "floating_nodes": [],
+      "focus": [
+        2147483646
+      ],
+      "fullscreen_mode": 0,
+      "sticky": false,
+      "floating": null,
+      "scratchpad_state": null
+    },
+    {
+      "id": 3,
+      "type": "output",
+      "orientation": "none",
+      "percent": 1.0,
+      "urgent": false,
+      "marks": [],
+      "focused": false,
+      "layout": "output",
+      "border": "none",
+      "current_border_width": 0,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 568,
+        "height": 1232
+      },
+      "deco_rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "window_rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "name": "DSI-1",
+      "window": null,
+      "nodes": [
+        {
+          "id": 4,
+          "type": "workspace",
+          "orientation": "horizontal",
+          "percent": null,
+          "urgent": false,
+          "marks": [],
+          "focused": false,
+          "layout": "splith",
+          "border": "none",
+          "current_border_width": 0,
+          "rect": {
+            "x": 0,
+            "y": 56,
+            "width": 568,
+            "height": 776
+          },
+          "deco_rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "window_rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "geometry": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "name": "1",
+          "window": null,
+          "nodes": [
+            {
+              "id": 6,
+              "type": "con",
+              "orientation": "none",
+              "percent": 1.0,
+              "urgent": false,
+              "marks": [],
+              "focused": false,
+              "layout": "tabbed",
+              "border": "none",
+              "current_border_width": 0,
+              "rect": {
+                "x": 0,
+                "y": 56,
+                "width": 568,
+                "height": 776
+              },
+              "deco_rect": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0
+              },
+              "window_rect": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0
+              },
+              "geometry": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0
+              },
+              "name": null,
+              "window": null,
+              "nodes": [
+                {
+                  "id": 5,
+                  "type": "con",
+                  "orientation": "none",
+                  "percent": 1.0,
+                  "urgent": false,
+                  "marks": [],
+                  "focused": true,
+                  "layout": "none",
+                  "border": "none",
+                  "current_border_width": 2,
+                  "rect": {
+                    "x": 0,
+                    "y": 88,
+                    "width": 568,
+                    "height": 744
+                  },
+                  "deco_rect": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 568,
+                    "height": 32
+                  },
+                  "window_rect": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 568,
+                    "height": 744
+                  },
+                  "geometry": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 696,
+                    "height": 480
+                  },
+                  "name": "shell@nixos: \/",
+                  "window": null,
+                  "nodes": [],
+                  "floating_nodes": [],
+                  "focus": [],
+                  "fullscreen_mode": 0,
+                  "sticky": false,
+                  "floating": "auto_off",
+                  "scratchpad_state": "none",
+                  "pid": 1285,
+                  "app_id": "k230-terminal",
+                  "foreign_toplevel_identifier": "a71ecff361747a8d23851fa10153f0d9",
+                  "visible": true,
+                  "max_render_time": 0,
+                  "allow_tearing": false,
+                  "shell": "xdg_shell",
+                  "inhibit_idle": false,
+                  "sandbox_engine": null,
+                  "sandbox_app_id": null,
+                  "sandbox_instance_id": null,
+                  "tag": null,
+                  "idle_inhibitors": {
+                    "user": "none",
+                    "application": "none"
+                  }
+                }
+              ],
+              "floating_nodes": [],
+              "focus": [
+                5
+              ],
+              "fullscreen_mode": 0,
+              "sticky": false,
+              "floating": "auto_off",
+              "scratchpad_state": "none"
+            }
+          ],
+          "floating_nodes": [],
+          "focus": [
+            6
+          ],
+          "fullscreen_mode": 1,
+          "sticky": false,
+          "floating": null,
+          "scratchpad_state": null,
+          "num": 1,
+          "output": "DSI-1",
+          "representation": "H[T[k230-terminal]]"
+        }
+      ],
+      "floating_nodes": [],
+      "focus": [
+        4
+      ],
+      "fullscreen_mode": 0,
+      "sticky": false,
+      "floating": null,
+      "scratchpad_state": null,
+      "primary": false,
+      "make": "Unknown",
+      "model": "Unknown",
+      "serial": "Unknown",
+      "modes": [
+        {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        }
+      ],
+      "features": {
+        "adaptive_sync": false,
+        "hdr": false
+      },
+      "non_desktop": false,
+      "active": true,
+      "dpms": true,
+      "power": true,
+      "scale": 1.0,
+      "scale_filter": "nearest",
+      "transform": "normal",
+      "adaptive_sync_status": "disabled",
+      "current_workspace": "1",
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "max_render_time": 0,
+      "allow_tearing": false,
+      "hdr": false
+    }
+  ],
+  "floating_nodes": [],
+  "focus": [
+    3
+  ],
+  "fullscreen_mode": 0,
+  "sticky": false,
+  "floating": null,
+  "scratchpad_state": null
+}
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > journalctl -u shell -b --no-pager -n 40 =====
+journalctl -u shell -b --no-pager -n 40
+[?2004l
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3400940400
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.955 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.955 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.978 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1176@0,56
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.979 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 56.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x3fd7b4f318 horizontally
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3400911550 committing with 4 instructions
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x3400911550 is ready
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3400911550
+Mar 17 20:03:06 nixos sway[1279]: 00:00:30.378 [DEBUG] [wlr] [types/wlr_xdg_activation_v1.c:48] Activation token '7d7ceb5b25d8b9a64e3e5243298df9fe' has expired
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.904 [DEBUG] [sway/ipc-server.c:196] New client: fd 46
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.907 [INFO] [sway/commands.c:261] Handling command 'seat seat0 cursor set 365 28'
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.907 [DEBUG] [sway/commands.c:436] Subcommand: cursor set 365 28
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.907 [INFO] [sway/commands.c:261] Handling command 'seat seat0 cursor press button1'
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.908 [DEBUG] [sway/commands.c:436] Subcommand: cursor press button1
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.908 [INFO] [sway/commands.c:261] Handling command 'seat seat0 cursor release button1'
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.908 [DEBUG] [sway/commands.c:436] Subcommand: cursor release button1
+Mar 17 20:04:21 nixos sway[1279]: 00:01:45.911 [INFO] [sway/ipc-server.c:570] IPC Client 46 disconnected
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.458 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x3400908040 (res 0x3400949210)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.458 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x3400908520 (res 0x3400946cf0)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.458 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.474 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x3400908040 (res 0x3400949210)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.474 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x3400908520 (res 0x340094a410)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.474 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+Mar 17 20:05:27 nixos sway[1284]: Resize 568x400 1.000000, 55 layouts
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.666 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x340090ab30 (res 0x3400948130)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.666 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x34008f9070 (res 0x3400948c70)
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.666 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.667 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x776@0,56
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.667 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 56.000000
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.667 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x3fd7b4f318 horizontally
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.667 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x34009323f0 committing with 3 instructions
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.715 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x34009323f0 is ready
+Mar 17 20:05:27 nixos sway[1279]: 00:02:51.716 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x34009323f0
+Mar 17 20:05:28 nixos sway[1279]: 00:02:52.518 [DEBUG] [sway/ipc-server.c:196] New client: fd 45
+Mar 17 20:05:28 nixos sway[1279]: 00:02:52.524 [INFO] [sway/ipc-server.c:570] IPC Client 45 disconnected
+Mar 17 20:05:28 nixos sway[1279]: 00:02:52.529 [DEBUG] [sway/ipc-server.c:196] New client: fd 45
+Mar 17 20:05:29 nixos sway[1279]: 00:02:53.201 [INFO] [sway/ipc-server.c:570] IPC Client 45 disconnected
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

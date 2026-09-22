@@ -1,0 +1,145 @@
+
+===== > sed -i 's|/bin"$|/bin:/run/current-system/sw/bin"|' /run/systemd/system/shell.service.d/10-dbus-path.conf; systemctl daemon-reload; systemctl restart shell; sleep 3; systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 95 =====
+sed -i 's|/bin"$|/bin:/run/current-system/sw/bin"|' /run/systemd/system/shell.service.d/10-dbus-path.conf; systemctl daemon-reload; systemctl restart shell; sleep 3; systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 95
+[?2004l
+
+===== > systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 95 =====
+systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 95
+[?2004l
+[0;1;32m●[0m shell.service - sway on the panel
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/shell.service\/etc/systemd/system/shell.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+    Drop-In: /run/systemd/system/shell.service.d
+             └─]8;;file://nixos/run/systemd/system/shell.service.d/10-dbus-path.conf\10-dbus-path.conf]8;;\
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-17 20:02:35 UTC; 51s ago
+ Invocation: 552ba48ac0af408c9efc1c1c533646b4
+    Process: 1270 ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd (code=exited, status=0/SUCCESS)
+   Main PID: 1274 (dbus-run-sessio)
+         IP: 0B in, 0B out
+         IO: 3M read, 0B written
+      Tasks: 12[0;90m[0;38:5:245m (limit: 466)[0m
+     Memory: 23.1M (peak: 23.3M)
+        CPU: 1.305s
+     CGroup: /system.slice/shell.service
+             ├─[0;90m[0;38:5:245m1274 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-un…[0m
+             ├─[0;90m[0;38:5:245m1278 dbus-daemon --nofork --print-address 4 --session[0m
+             ├─[0;90m[0;38:5:245m1279 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-…[0m
+             ├─[0;90m[0;38:5:245m1282 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-…[0m
+             ├─[0;90m[0;38:5:245m1283 swaybar -b bar-0[0m
+             ├─[0;90m[0;38:5:245m1284 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-u…[0m
+             ├─[0;90m[0;38:5:245m1285 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-un…[0m
+             ├─[0;90m[0;38:5:245m1287 /run/current-system/sw/bin/bash[0m
+             └─[0;90m[0;38:5:245m1288 /nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactiv…[0m
+
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.955 [DEBUG] [wlr] [backend/drm/d…-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/f…ffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/d…-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.978 [DEBUG] [sway/tree/arrange.c…0,56
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.979 [DEBUG] [sway/tree/arrange.c…0000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/tree/arrange.c…ally
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/desktop/transa…ions
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transa…eady
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transa…1550
+Mar 17 20:03:06 nixos sway[1279]: 00:00:30.378 [DEBUG] [wlr] [types/wlr_xdg…ired
+Hint: Some lines were ellipsized, use -l to show in full.
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.310 [DEBUG] [sway/input/libinput.c:23] send_events_set_mode(1)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [DEBUG] [sway/input/seat.c:945] adding device 0:0:Goodix_Berlin_Capacitive_TouchScreen to seat seat0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [DEBUG] [sway/input/seat.c:694] Applying input mapping to 0:0:Goodix_Berlin_Capacitive_TouchScreen
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [DEBUG] [sway/input/seat.c:752] Requested output DSI-1 for device 0:0:Goodix_Berlin_Capacitive_TouchScreen isn't present
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [DEBUG] [wlr] [backend/libinput/backend.c:125] libinput successfully initialized
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.333 [INFO] [wlr] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1836] Found connector 'DSI-1'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1861] 'DSI-1' connected
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [wlr] [backend/drm/drm.c:1632] Current CRTC: 46
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1646] Detected modes:
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1670]   568x1232 @ 52.190 Hz (preferred)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1707] Physical size: 44x95
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [wlr] [backend/drm/drm.c:1744] Connector has no EDID
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/drm/drm.c:1895] connector DSI-1: Requesting modeset
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/desktop/output.c:541] New output 0x34008866f0: DSI-1 (non-desktop: 0)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/config/output.c:769] Output state for DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.334 [DEBUG] [sway/config/output.c:783]     mode:          568x1232@52190mHz (preferred)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.335 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.335 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.335 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.335 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.350 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.351 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.351 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.365 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.365 [DEBUG] [sway/config/output.c:1080] Finalizing config for DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.365 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.365 [DEBUG] [sway/tree/output.c:165] Creating default workspace 1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.365 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x340084a1e0 committing with 2 instructions
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x340084a1e0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/input/seat.c:694] Applying input mapping to 0:0:Goodix_Berlin_Capacitive_TouchScreen
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/input/seat.c:760] Mapped to output DSI-1
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.366 [DEBUG] [sway/input/libinput.c:23] send_events_set_mode(0)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.371 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (26 available cursors)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.371 [DEBUG] [sway/config/bar.c:245] Invoking swaybar for bar id 'bar-0'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.376 [DEBUG] [sway/config/bar.c:238] Spawned swaybar bar-0
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.377 [DEBUG] [sway/config.c:631] Running deferred commands
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.377 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.378 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.385 [DEBUG] [sway/commands/exec_always.c:73] Child process created with pid 1284
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.388 [DEBUG] [sway/commands/exec_always.c:75] Recording workspace for process 1284
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.388 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.389 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.405 [DEBUG] [sway/commands/exec_always.c:73] Child process created with pid 1285
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.405 [DEBUG] [sway/commands/exec_always.c:75] Recording workspace for process 1285
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.405 [INFO] [sway/server.c:799] Running compositor on wayland display 'wayland-1'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.406 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.428 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.441 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+Mar 17 20:02:36 nixos sway[1282]: 2026-03-17 20:02:36 - [main.c:328] Could not find config for output DSI-1 ((null) (null))
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.576 [DEBUG] [sway/ipc-server.c:196] New client: fd 33
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.578 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+Mar 17 20:02:36 nixos sway[1284]: Initializing keyboard
+Mar 17 20:02:36 nixos sway[1284]: Found 54 layouts
+Mar 17 20:02:36 nixos sway[1284]: Found 2 layers
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.653 [DEBUG] [sway/input/input-manager.c:389] adding virtual keyboard: '0:0:wlr_virtual_keyboard_v1'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.653 [DEBUG] [sway/input/seat.c:945] adding device 0:0:wlr_virtual_keyboard_v1 to seat seat0
+Mar 17 20:02:36 nixos sway[1285]: warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.849 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x340090c440 (res 0x340093c680)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.850 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x340091c6a0 (res 0x340093b290)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.850 [DEBUG] [sway/desktop/xdg_shell.c:559] New xdg_shell toplevel title='(null)' app_id='(null)'
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.850 [DEBUG] [wlr] [types/wlr_xdg_decoration_v1.c:220] new xdg_toplevel_decoration 0x34008f8030 (res 0x340093f6a0)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.850 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x3400915290 (res 0x340093f500)
+Mar 17 20:02:36 nixos sway[1283]: 00:00:00.358 [INFO] [swaybar/tray/icon.c:339] Warning: no icon themes loaded
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.935 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x34009176c0 (res 0x340093b830)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.935 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x3400917a90 (res 0x340093b710)
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.935 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace panel layer 1 anchor 0 size 0x0 margin 0,0,0,0,
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1176@0,56
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 56.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3400940400 committing with 1 instructions
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.954 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3400940400
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.955 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.955 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.963 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.978 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1176@0,56
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.979 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 56.000000
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x3fd7b4f318 horizontally
+Mar 17 20:02:36 nixos sway[1279]: 00:00:00.981 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3400911550 committing with 4 instructions
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x3400911550 is ready
+Mar 17 20:02:36 nixos sway[1279]: 00:00:01.026 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3400911550
+Mar 17 20:03:06 nixos sway[1279]: 00:00:30.378 [DEBUG] [wlr] [types/wlr_xdg_activation_v1.c:48] Activation token '7d7ceb5b25d8b9a64e3e5243298df9fe' has expired
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -49,8 +49,8 @@ measurement committed. This says nothing whatsoever about the board.
 could invalidate everything. It is a probe, not a destination — it has no
 layer-shell and so can never host the keyboard.
 
-- [ ] 3.1 Build a throwaway system with `cage` and `foot` and start it on the board. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "cage -- foot"` and a photograph of a terminal on the panel
-- [ ] 3.2 Capture which renderer and which allocator wlroots selected, and confirm it reached the Pixman renderer and the DRM dumb allocator rather than failing over to them noisily. Verify by committing the `WLR_DEBUG`-level log to `docs/evidence/compositor-first-light.txt`, showing the `Trying to create drm dumb allocator` line and no GLES or GBM error
+- [x] 3.1 Build a throwaway system with `cage` and `foot` and start it on the board. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "cage -- foot"` and a photograph of a terminal on the panel
+- [x] 3.2 Capture which renderer and which allocator wlroots selected, and confirm it reached the Pixman renderer and the DRM dumb allocator rather than failing over to them noisily. Verify by committing the `WLR_DEBUG`-level log to `docs/evidence/compositor-first-light.txt`, showing the `Trying to create drm dumb allocator` line and no GLES or GBM error
 
 **Proves group 3 — hardware claim.** A photograph plus
 `docs/evidence/compositor-first-light.txt`. If this fails, the failure is the
@@ -60,8 +60,8 @@ anything else is attempted.
 ## 4. sway owns the panel
 
 - [ ] 4.1 Switch the module on, start sway at boot with no getty prompt and no display manager, with `WLR_RENDERER=pixman` set explicitly. Verify with a photograph of the board booting unattended to a sway session with a terminal, no cable attached
-- [ ] 4.2 Configure the output as 568x1232, `transform normal`, scale 1, and confirm sway agrees. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_outputs"` committed to `docs/evidence/shell-session.txt`
-- [ ] 4.3 Record whether sway's built-in touch auto-mapping fired — whether the output is named `DSI-1` and whether the GT9895's `ID_PATH` starts with `platform-` — and add an explicit `map_to_output` regardless. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_inputs"` appended to `docs/evidence/shell-session.txt`, showing the touch device mapped to the panel
+- [x] 4.2 Configure the output as 568x1232, `transform normal`, scale 1, and confirm sway agrees. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_outputs"` committed to `docs/evidence/shell-session.txt`
+- [x] 4.3 Record whether sway's built-in touch auto-mapping fired — whether the output is named `DSI-1` and whether the GT9895's `ID_PATH` starts with `platform-` — and add an explicit `map_to_output` regardless. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_inputs"` appended to `docs/evidence/shell-session.txt`, showing the touch device mapped to the panel
 
 **Proves group 4 — hardware claim.** A photograph of an unattended boot into
 sway, plus `docs/evidence/shell-session.txt`.

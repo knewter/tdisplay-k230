@@ -1,0 +1,23 @@
+
+===== > systemctl stop shell; modprobe uinput; ls -l /dev/uinput =====
+systemctl stop shell; modprobe uinput; ls -l /dev/uinput
+[?2004l
+modprobe: FATAL: Module uinput not found in directory /run/booted-system/kernel-modules/lib/modules/6.6.36
+ls: cannot access '/dev/uinput': No such file or directory
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > systemctl show shell -p Environment -p ExecStart; ls /nix/store/*dbus*/bin/dbus-daemon =====
+systemctl show shell -p Environment -p ExecStart; ls /nix/store/*dbus*/bin/dbus-daemon
+[?2004l
+
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway[m[7m>[27m
+Environment=LIBSEAT_BACKEND=seatd LOCALE_ARCHIVE=/nix/store/07bryp8s1m62brscsdz[m[7m>[27m
+[7mlines 1-2/2 (END)[27m[K
+[K
+[K[7mlines 1-2/2 (END)[27m[K

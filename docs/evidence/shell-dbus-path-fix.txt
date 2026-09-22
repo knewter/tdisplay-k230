@@ -1,0 +1,151 @@
+
+===== > systemctl stop cage-rgb565-probe; mkdir -p /run/systemd/system/shell.service.d; shell_path=$(systemctl show shell -p Environment --value --no-pager | tr ' ' '\n' | grep '^PATH='); printf '[Service]\nEnvironment="%s:/nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin"\n' "$shell_path" > /run/systemd/system/shell.service.d/10-dbus-path.conf; systemctl daemon-reload; systemctl start shell =====
+systemctl stop cage-rgb565-probe; mkdir -p /run/systemd/system/shell.service.d; shell_path=$(systemctl show shell -p Environment --value --no-pager | tr ' ' '\n' | grep '^PATH='); printf '[Service]\nEnvironment="%s:/nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin"\n' "$shell_path" > /run/systemd/system/shell.service.d/10-dbus-path.conf; systemctl daemon-reload; systemctl start shell
+[?2004l
+
+===== > systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 110 =====
+systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 110
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m systemctl status shell --no-pager; journalctl -u shell -b --no-pager -n 110
+[?2004l
+[0;1;32m●[0m shell.service - sway on the panel
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/shell.service\/etc/systemd/system/shell.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+    Drop-In: /run/systemd/system/shell.service.d
+             └─]8;;file://nixos/run/systemd/system/shell.service.d/10-dbus-path.conf\10-dbus-path.conf]8;;\
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-17 20:00:41 UTC; 147ms ago
+ Invocation: fe988dd043184bccb890a7cc05246345
+    Process: 1201 ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd (code=exited, status=0/SUCCESS)
+   Main PID: 1205 ((sway))
+         IP: 0B in, 0B out
+         IO: 4K read, 0B written
+      Tasks: 1[0;90m[0;38:5:245m (limit: 466)[0m
+     Memory: 1M (peak: 2M)
+        CPU: 92ms
+     CGroup: /system.slice/shell.service
+             └─[0;90m[0;38:5:245m1205 "(sway)"[0m
+
+Mar 17 20:00:41 nixos systemd[1]: Starting sway on the panel...
+Mar 17 20:00:41 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:00 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:00 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:02 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 35.
+Mar 17 19:58:02 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:02 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:03 nixos sway[1006]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:03 nixos sway[1004]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:03 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:03 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:05 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 36.
+Mar 17 19:58:05 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:05 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:05 nixos sway[1015]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:05 nixos sway[1013]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:05 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:05 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:07 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 37.
+Mar 17 19:58:07 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:07 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:08 nixos sway[1024]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:08 nixos sway[1022]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:08 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:08 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:10 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 38.
+Mar 17 19:58:10 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:10 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:10 nixos sway[1032]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:10 nixos sway[1030]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:10 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:10 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:12 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 39.
+Mar 17 19:58:12 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:12 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:13 nixos sway[1042]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:13 nixos sway[1040]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:13 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:13 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:15 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 40.
+Mar 17 19:58:15 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:15 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:15 nixos sway[1050]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:15 nixos sway[1048]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:15 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:15 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:17 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 41.
+Mar 17 19:58:17 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:17 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:18 nixos sway[1058]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:18 nixos sway[1056]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:18 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:18 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:20 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 42.
+Mar 17 19:58:20 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:20 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:20 nixos sway[1066]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:20 nixos sway[1064]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:20 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:20 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:22 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 43.
+Mar 17 19:58:22 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:22 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:23 nixos sway[1074]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:23 nixos sway[1072]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:23 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:23 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:25 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 44.
+Mar 17 19:58:25 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:25 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:25 nixos sway[1082]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:25 nixos sway[1080]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:25 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:25 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:27 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 45.
+Mar 17 19:58:27 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:27 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:28 nixos sway[1090]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:28 nixos sway[1088]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:28 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:28 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:30 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 46.
+Mar 17 19:58:30 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:30 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:30 nixos sway[1098]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:30 nixos sway[1096]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:30 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:30 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:32 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 47.
+Mar 17 19:58:32 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:32 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:33 nixos sway[1106]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:33 nixos sway[1104]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:33 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:33 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:35 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 48.
+Mar 17 19:58:35 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:35 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:35 nixos sway[1114]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:35 nixos sway[1112]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:35 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:35 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:37 nixos systemd[1]: shell.service: Scheduled restart job, restart counter is at 49.
+Mar 17 19:58:37 nixos systemd[1]: Starting sway on the panel...
+Mar 17 19:58:37 nixos systemd[1]: Started sway on the panel.
+Mar 17 19:58:38 nixos sway[1122]: dbus-run-session: failed to execute message bus daemon 'dbus-daemon': No such file or directory
+Mar 17 19:58:38 nixos sway[1120]: dbus-run-session: EOF reading address from bus daemon
+Mar 17 19:58:38 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mshell.service: Main process exited, code=exited, status=127/n/a[0m
+Mar 17 19:58:38 nixos systemd[1]: [0;1;33m[0;1;38:5:185m[0;1;39m[0;1;33m[0;1;38:5:185mshell.service: Failed with result 'exit-code'.[0m
+Mar 17 19:58:38 nixos systemd[1]: Stopped sway on the panel.
+Mar 17 20:00:41 nixos systemd[1]: Starting sway on the panel...
+Mar 17 20:00:41 nixos systemd[1]: Started sway on the panel.
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
