@@ -97,3 +97,45 @@ portrait, injected taps reach the intended control, and a separate physical
 touch recording establishes accuracy. Omarchy screenshots or x86_64/GPU
 tests cannot substitute for that evidence.
 
+## What the current Omarchy launcher actually does
+
+The current official `quattro` tree has moved past the older Walker/Elephant
+stack. At immutable ref
+[`d3cfd53b997f8bdcf776b8db68bf0d735e7a065d`](https://github.com/omacom/omarchy/commit/d3cfd53b997f8bdcf776b8db68bf0d735e7a065d), the launcher is a menu in the
+long-running Quickshell process, and its application data service is
+[`shell/services/AppLibrary.qml`](https://github.com/omacom/omarchy/blob/d3cfd53b997f8bdcf776b8db68bf0d735e7a065d/shell/services/AppLibrary.qml):
+
+* It consumes Quickshell's `DesktopEntries.applications.values`, filters both
+  configured hidden IDs and IDs discovered by the session's hidden-entry
+  helper, and sorts through `AppSearch.sortedEntries` (lines 785-810).
+* It resolves icons through a small XDG icon index, falling back to themed
+  lookup and then `application-x-executable` (lines 812-844). The index scans
+  `$HOME/.icons`, `$HOME/.local/share/icons`, each `$XDG_DATA_DIRS` icon
+  directory, and `/usr/share/pixmaps`; a 750 ms debounce coalesces changes
+  (lines 923-949 and 1075-1085).
+* It does not interpolate `Exec=` itself. `launch()` starts
+  `uwsm-app -- gtk-launch <desktop-id>.desktop` and shell-quotes the ID (lines
+  846-863). This lets the desktop-entry launcher perform the specification's
+  field-code and environment handling while keeping the entry ID bounded.
+* The old Walker/Elephant behavior remains useful historical context: Walker
+  indexed desktop applications through Elephant and offered fuzzy/prefix
+  modes. It is not the current Quattro implementation; importing either
+  daemon would be the wrong dependency decision for this image.
+
+For a future K230 app page, use the same data contract rather than copying
+Quickshell: scan the standard application directories, parse `Name`, `Icon`,
+`NoDisplay`/`Hidden`, and `Exec`, sort a bounded list, and refresh after a
+directory change. Prefer GLib's `GDesktopAppInfo`/`GAppInfo` for parsing and
+launching if the existing closure already contains GLib; it handles quoting,
+field codes, and desktop-entry launch context more safely than a handwritten
+`Exec` parser. Confirm the incremental closure cost with `nix path-info` before
+adding GLib solely for this feature. If GLib is not already present, retain a
+small allowlisted action table until that cost and the launch environment
+(`DISPLAY`, Wayland, D-Bus) are measured. Never execute raw `Exec=` text with
+`sh -c`, and keep package installation or network actions outside a tap.
+
+The low-cost adaptation for this panel is therefore a bounded desktop-entry
+provider behind the existing portrait UI: cache entries in memory, show large
+text/icon cards, use a single selected entry, and invoke the desktop-entry
+API with a fixed launch context. Keep Terminal, Monitor, Keyboard, Windows,
+and System as built-in fallback actions when no desktop file is available.
