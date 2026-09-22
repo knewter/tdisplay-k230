@@ -46,35 +46,41 @@ def read_frames(path):
 
 
 def fit_homography(frames):
+    """Camera -> panel homography, fitted ONCE and held fixed.
+
+    Three markers are enough: each contributes four corners, so three
+    give twelve correspondences against the four a homography needs.
+    Requiring all four made the tool refuse to run whenever one marker
+    was clipped by the frame edge or covered by a finger, which is a
+    routine occurrence and not an error.
+
+    Markers are accumulated independently rather than only from frames
+    where every one was visible -- the board is static, so a corner seen
+    in any frame is evidence about the same fixed geometry.
+    """
     det = cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(DICT),
                                   cv2.aruco.DetectorParameters())
     acc = {k: [] for k in MARKERS}
-    seen = 0
-    # Aim for ~200 samples whatever the clip length. A fixed [::3] needs
-    # 15 frames to clear the minimum below, which silently failed on
-    # short synthetic clips.
     step = max(1, len(frames) // 200)
     for g in frames[::step]:
         corners, ids, _ = det.detectMarkers(g)
         if ids is None:
             continue
-        got = {int(i): c[0] for i, c in zip(ids.flatten(), corners)}
-        if set(got) != set(MARKERS):
-            continue
-        seen += 1
-        for k, c in got.items():
-            acc[k].append(c)
-    if seen < 3:
-        return None, seen
+        for i, c in zip(ids.flatten(), corners):
+            k = int(i)
+            if k in acc:
+                acc[k].append(c[0])
+    usable = {k: v for k, v in acc.items() if len(v) >= 3}
+    if len(usable) < 3:
+        return None, usable
     src, dst = [], []
-    for k, lst in acc.items():
-        med = np.median(np.array(lst), axis=0)     # 4x2
-        src.append(med)
+    for k, lst in sorted(usable.items()):
+        src.append(np.median(np.array(lst), axis=0))
         dst.append(panel_corners(k))
     src = np.concatenate(src).astype(np.float32)
     dst = np.concatenate(dst).astype(np.float32)
     Hm, _ = cv2.findHomography(src, dst, 0)
-    return Hm, seen
+    return Hm, usable
 
 
 def norm1(p, k=41):
@@ -100,9 +106,10 @@ def shift(a, b, maxlag=40):
 
 
 def measure(frames, label):
-    Hm, seen = fit_homography(frames)
+    Hm, usable = fit_homography(frames)
     if Hm is None:
-        print("%s: all four markers resolved in only %d frames -- cannot register" % (label, seen))
+        print("%s: only %d marker(s) usable %s -- need 3 to register"
+              % (label, len(usable), sorted(usable)))
         return None
     r0, r1, c0, c1 = FIELD
     profs, bright = [], []
@@ -117,7 +124,8 @@ def measure(frames, label):
     near = np.array([shift(norm1(profs[0][:half]), norm1(profs[k][:half])) for k in range(n)])
     far  = np.array([shift(norm1(profs[0][half:]), norm1(profs[k][half:])) for k in range(n)])
     m = bright.mean()
-    print("\n=== %s   (%d frames, registered from %d)" % (label, n, seen))
+    print("\n=== %s   (%d frames, markers %s)"
+          % (label, n, ", ".join("%d:%dx" % (k, len(v)) for k, v in sorted(usable.items()))))
     print("  motion   std %.2f panel rows   span %.2f   p5..p95 %.2f..%.2f"
           % (s.std(), s.max() - s.min(), np.percentile(s, 5), np.percentile(s, 95)))
     print("  near half std %.2f   far half std %.2f   ratio %.2f   corr %.3f"

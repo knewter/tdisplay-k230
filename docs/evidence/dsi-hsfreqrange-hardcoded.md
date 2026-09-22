@@ -79,3 +79,60 @@ value can be swept with an 11 second `push-file.py` DTB push instead of
 a 20 minute kernel rebuild per candidate, exactly as was done for the
 panel init sequence. One rebuild, then measure the roll against each
 candidate and keep what is measured to be best.
+
+---
+
+# RESOLVED: 0x87 stops the roll
+
+2026-09-21, later. `hsfreqrange` was plumbed through the device tree
+(`canaan,hsfreqrange`, commit `ac31e98`) so candidates could be tried
+with an 11 s DTB push rather than a 20 minute rebuild each. Three were.
+
+| value | code | standard-table meaning | result |
+| --- | --- | --- | --- |
+| 0x96 | 0x16 | 450..499 Mbps | works, **rolls** (the shipped default) |
+| 0x97 | 0x17 | 550..599 Mbps | **blanks the panel** |
+| **0x87** | **0x07** | **500..549 Mbps** | **works, stable** |
+
+## The prediction was wrong, and that is the interesting part
+
+The standard Synopsys hsfreqrange table puts 594 Mbps in the 550..599
+band, i.e. 0x17, byte 0x97. That was the reasoned first candidate. It
+blanks the panel outright. The value that works is one band BELOW what
+the table prescribes, so this SoC's bands do not line up with the
+standard table. 0x87 is here because it was measured, not because it
+was derived.
+
+## Measurement
+
+Like-for-like: same board, same camera position, same crop, only the
+device tree value changed between runs. Registration deliberately not
+used -- for a relative A/B with the geometry fixed, perspective is
+identical and cancels, so camera pixels are a valid comparison even
+though an absolute figure in panel rows would not be.
+
+| | 0x96 | 0x87 run 1 (20 s) | 0x87 run 2 (30 s) |
+| --- | --- | --- | --- |
+| motion std | 0.68 px | 0.35 px | **0.02 px** |
+| span | 4.50 px | 1.92 px | **0.09 px** |
+| frame-to-frame mean | 0.26 px | 0.02 px | **0.00 px** |
+| frame-to-frame max | 2.33 px | 0.35 px | **0.04 px** |
+| jumps > 2 px | 1 | 0 | **0** |
+| brightness range | 91..101% | 88..101% | **100..100%** |
+
+The user, watching the screen, called 0x87 "rock solid" before any of
+these numbers existed.
+
+**Run 2 was checked for the failure it resembles.** Numbers that good --
+and a brightness range of exactly 100..100% -- are also what a FROZEN
+panel produces, which is how the 60 Hz experiment fooled us earlier.
+Verified by writing an all-white framebuffer and re-photographing: mean
+absolute difference 59.8 against the target image, so the panel is
+live and updating. The stability is real.
+
+## What this does not settle
+
+Why 0x07 rather than 0x17 -- that is empirical. A different pixel clock
+would need its own value and there is still no table to derive it from,
+which is precisely why the value stays in the device tree rather than
+being folded back into a driver constant.

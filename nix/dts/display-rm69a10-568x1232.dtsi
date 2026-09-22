@@ -27,19 +27,27 @@
 &dsi {
 	// DSI PHY HS timing calibration band (DWC D-PHY register 0x44).
 	//
-	// The driver hardcoded 0x96 -- its own TXPHY_445_5_HS_FREQ, i.e. the
-	// setting for 445.5 Mbps -- regardless of the rate actually run, while
-	// deriving the VCO range from the frequency. We run 594 Mbps here, 33%
-	// outside that calibration, and the failure grows with the gap: 682
-	// Mbps freezes the panel and 742 blanks it. See
-	// docs/evidence/dsi-hsfreqrange-hardcoded.md.
+	// The driver hardcoded 0x96 -- its own TXPHY_445_5_HS_FREQ, the band
+	// for 445.5 Mbps -- regardless of the rate actually run. We run 594
+	// Mbps. Measured like-for-like, same board, same camera position, only
+	// this value changed:
 	//
-	// 0x96 is kept as the value because it is the one measured to work,
-	// NOT because it is right. It is here rather than in the driver so
-	// candidates cost an 11 s DTB push instead of a 20 minute rebuild. The
-	// correct value for 594 Mbps is unknown: the three points the driver
-	// exposes (445.5 -> 0x96, 891 -> 0x96, 475 -> 0xa3) do not interpolate.
-	canaan,hsfreqrange = <0x96>;
+	//            motion std   span   frame-to-frame mean / max   jumps>2px
+	//   0x96        0.68 px   4.50            0.26 / 2.33             1
+	//   0x87        0.35 px   1.92            0.02 / 0.35             0
+	//
+	// Frame-to-frame jitter drops thirteenfold and the visible roll stops.
+	// See docs/evidence/dsi-hsfreqrange-hardcoded.md.
+	//
+	// The byte is 0x80 | code. Against the standard Synopsys hsfreqrange
+	// table the codes mean 0x16 = 450..499 Mbps, 0x07 = 500..549,
+	// 0x17 = 550..599. By that table 594 Mbps should be 0x17, and 0x17
+	// BLANKS the panel outright -- tried, dark screen. 0x07 is what
+	// actually works, so this SoC's bands sit one step below the standard
+	// table. That is an empirical result, not a datasheet one: the value
+	// is here because it was measured, and the reasoning that predicted
+	// 0x17 was wrong.
+	canaan,hsfreqrange = <0x87>;
 
 	ports {
 		port@1 {
