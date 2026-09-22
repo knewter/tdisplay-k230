@@ -45,6 +45,13 @@ export interface EvidenceFile {
   kind: "text" | "image";
   text?: string;
   asset?: string;
+  /**
+   * Whether a requirement in the ledger rests on this file, or only a
+   * hand-authored note. The distinction is the site's whole subject and is
+   * never collapsed: a note's evidence is real, and it is still not a
+   * requirement anyone has archived.
+   */
+  citedBy: "requirement" | "note";
 }
 
 export interface Specs {
@@ -87,4 +94,41 @@ export function unproven(t: Tally): number {
 
 export function total(t: Tally): number {
   return t.grounded + t.unverified + t.undeclared;
+}
+
+/** The evidence entry for a committed path, or a build-time failure.
+ *
+ * `scripts/render_specs.py` renders every `docs/...` path it finds in this
+ * directory's `.astro` sources, so a path spelled here is a path that got a
+ * page -- unless it is misspelled or the file is gone, and then the build
+ * says so rather than emitting a dead link.
+ */
+export function evidenceFile(path: string): EvidenceFile {
+  const hit = specs.evidence.find((e) => e.path === path);
+  if (!hit) {
+    throw new Error(
+      `${path} is cited by a hand-authored page but was not rendered. ` +
+        `Check the spelling, and that the file is committed.`,
+    );
+  }
+  return hit;
+}
+
+/** The page rendering a committed evidence file. */
+export function evidenceUrl(path: string): string {
+  return url(`evidence/${evidenceFile(path).slug}/`);
+}
+
+/** The copied image for a committed photograph. */
+export function evidenceAsset(path: string): string {
+  const file = evidenceFile(path);
+  if (file.kind !== "image" || !file.asset) {
+    throw new Error(`${path} is not an image; it has no asset to show.`);
+  }
+  return url(file.asset);
+}
+
+/** Evidence files of one kind of citation, in path order. */
+export function evidenceCitedBy(by: "requirement" | "note"): EvidenceFile[] {
+  return specs.evidence.filter((e) => e.citedBy === by);
 }

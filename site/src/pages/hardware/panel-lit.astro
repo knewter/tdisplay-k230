@@ -1,0 +1,423 @@
+---
+import HardwareNote from "../../layouts/HardwareNote.astro";
+import { url, evidenceUrl, evidenceAsset } from "../../lib/specs";
+import HwSection from "../../components/HwSection.astro";
+import HwFigure from "../../components/HwFigure.astro";
+import HwNote from "../../components/HwNote.astro";
+
+// Every photograph on this page is a file committed under
+// docs/evidence/panel-photos/. `scripts/render_specs.py` finds these paths in
+// this source, copies the image into the site and gives it a page of its own,
+// so the caption and the file a reader can open are the same thing.
+const shots = [
+  {
+    path: "docs/evidence/panel-photos/01-urandom-noise.jpg",
+    wrote: "dd if=/dev/urandom",
+    saw: "bright field, visible speckle",
+  },
+  {
+    path: "docs/evidence/panel-photos/02-all-black.jpg",
+    wrote: "dd if=/dev/zero",
+    saw: "dark",
+  },
+  {
+    path: "docs/evidence/panel-photos/03-all-white.jpg",
+    wrote: "0xFF bytes",
+    saw: "bright band",
+  },
+];
+
+// The live sequence, as transcribed from the function the vendor dispatcher
+// actually calls. <b> marks the three things the sequence we had been sending
+// did not contain.
+const initSeq = `29 00 02 FE 00     switch to the user command page
+<b>29 00 02 51 FE     SET_DISPLAY_BRIGHTNESS -- to near maximum</b>
+<b>39 00 05 2A 00 00 02 37   column window, 0..567</b>
+<b>39 00 05 2B 00 00 04 CF   row window, 0..1231</b>
+05 78 02 11 00     SLEEP_OUT, then wait <b>120 ms</b>
+05 14 02 29 00     DISPLAY_ON, then wait 20 ms`;
+---
+
+<HardwareNote
+  slug="panel-lit"
+  title="The panel lights, and what was keeping it dark"
+  eyebrow="LILYGO T-Display-K230 · hardware note · observed"
+  dek="On 2026&#8209;09&#8209;21 the RM69A10 emitted light under Linux, and the kernel console rendered on the glass. The panel had never been deaf: for weeks it had been fully initialised by <em>a different panel's</em> init sequence, and told to sit at zero brightness."
+  description="On 2026-09-21 the RM69A10 AMOLED on the LILYGO T-Display-K230 emitted light under Linux and the kernel console rendered on it. Photographs, the transcription error that kept it dark, and the regression that blanked it again."
+  source="docs/evidence/panel-lit.md"
+  meta={[
+    { label: "Observed", value: "2026-09-21<br>webcam, photographs committed" },
+    { label: "Panel", value: "RM69A10 568&times;1232 AMOLED<br>MIPI DSI, 2 lanes, 24 bpp" },
+    { label: "Console", value: "71&times;77 characters<br>fbcon on <code>/dev/fb0</code>, 8&times;16 font" },
+    { label: "Init sequence", value: "13 commands, 36 bytes<br>from <code>rm69a10_568x1232_init()</code>" },
+    { label: "Not settled", value: "the image flickers<br>and no requirement rests on this yet" },
+  ]}
+>
+  <HwSection kind="the photographs" title="Three states, because one proves nothing">
+    <p class="hw-lede">
+      A single bright photograph of a screen could be a reflection, and a single
+      dark one is exactly what a dead panel looks like. So the framebuffer was
+      driven to three known states from a shell on the board and each was
+      photographed. <strong>The change is the evidence</strong>, not any one
+      frame.
+    </p>
+
+    <div class="hw-shots">
+      {
+        shots.map((s) => (
+          <figure>
+            <a href={evidenceUrl(s.path)}>
+              <img src={evidenceAsset(s.path)} alt={`The panel while ${s.wrote} was written to /dev/fb0: ${s.saw}.`} loading="lazy" />
+            </a>
+            <figcaption>
+              <code>{s.wrote}</code>
+              <span>{s.saw}</span>
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+
+    <p class="hw-p">
+      Writing a pattern at all was necessary, and it is worth saying why: an
+      all&#8209;zero framebuffer on a working panel is indistinguishable from a
+      panel that is off, and for most of this investigation the framebuffer was
+      zeroed. Several days of &ldquo;the screen is dark&rdquo; contained an
+      unknown amount of &ldquo;nothing was ever drawn&rdquo;.
+    </p>
+  </HwSection>
+
+  <HwSection kind="the cause" title="We transcribed the function nothing calls">
+    <p class="hw-lede">
+      The board is driven by the kernel's generic Canaan panel support, which
+      takes its initialisation sequence from the device tree. That sequence was
+      transcribed from LilyGO's RT&#8209;Smart driver for this exact panel on
+      this exact board &mdash; and from the wrong function in it.
+    </p>
+
+    <div class="hw-contract">
+      <div class="hw-crow hw-crow-head">
+        <span>in <code>rm69a10.c</code></span>
+        <span>what it is</span>
+        <span>what that meant</span>
+      </div>
+      <div class="hw-crow hw-crow-hard">
+        <div class="a">rm69a10_OLD_init()<br />line 39</div>
+        <div class="b">no callers anywhere in the tree; byte&#8209;for&#8209;byte identical to <code>hx8399_v2_init()</code></div>
+        <div class="c">
+          <strong>This is what we had been sending.</strong> It is the init
+          sequence for a Himax HX8399, a 1080&times;1920 panel that is not on
+          this board. It was reachable, plausible, and dead.
+        </div>
+      </div>
+      <div class="hw-crow">
+        <div class="a">rm69a10_568x1232_init()<br />line 96</div>
+        <div class="b">what the dispatcher at lines 345 and 347 actually calls</div>
+        <div class="c">
+          <strong>This is the live one.</strong> 13 commands, 36 bytes, and it
+          contains three things the Himax sequence does not.
+        </div>
+      </div>
+    </div>
+
+    <pre class="hw-code" set:html={initSeq} />
+
+    <ul class="hw-key">
+      <li>
+        <i class="k-ours"></i>
+        <span
+          ><code>51 FE</code> &mdash; <code>SET_DISPLAY_BRIGHTNESS</code>. A
+          DCS&#8209;brightness AMOLED powers up at zero. It can be completely
+          and correctly initialised, accept every command, report itself
+          healthy, and emit nothing. This is almost certainly the single line
+          that was keeping the screen dark.</span
+        >
+      </li>
+      <li>
+        <i class="k-ours"></i>
+        <span
+          ><code>2A</code> / <code>2B</code> &mdash; the frame memory window,
+          which the Himax sequence never sets for this geometry.</span
+        >
+      </li>
+      <li>
+        <i class="k-ours"></i>
+        <span
+          >120&nbsp;ms after <code>SLEEP_OUT</code>, where the wrong sequence
+          allowed 1&nbsp;ms.</span
+        >
+      </li>
+    </ul>
+
+    <p class="hw-p">
+      The full transcription, command by command, with what each one is for, is
+      in <a href={evidenceUrl("docs/evidence/rm69a10-init-sequence.md")}
+        ><code>docs/evidence/rm69a10-init-sequence.md</code></a
+      >; the comparison against how the vendor firmware drives the same part is
+      in <a href={evidenceUrl("docs/evidence/rtsmart-panel-bringup.md")}
+        ><code>docs/evidence/rtsmart-panel-bringup.md</code></a
+      >.
+    </p>
+  </HwSection>
+
+  <HwSection kind="the console" title="71&times;77 characters on the glass">
+    <HwFigure
+      bare
+      caption="<strong>docs/evidence/panel-photos/05-console-on-panel.jpg</strong> &mdash; the kernel console rendering on the panel, photographed off the board."
+    >
+      <div class="hw-shot-wide">
+        <a href={evidenceUrl("docs/evidence/panel-photos/05-console-on-panel.jpg")}>
+          <img
+            src={evidenceAsset("docs/evidence/panel-photos/05-console-on-panel.jpg")}
+            alt="The board's panel showing the Linux kernel console as white text on black."
+          />
+        </a>
+      </div>
+    </HwFigure>
+
+    <pre class="hw-code">[0.174613] fbcon: Taking over console
+[3.665931] <b>Console: switching to colour frame buffer device 71x77</b></pre>
+
+    <p class="hw-p">
+      71&times;77 characters is 568/8 by 1232/16: the whole panel at an
+      8&times;16 font, which is the arithmetic confirming that fbcon has the
+      real geometry and not a fallback. Two changes were needed, and one of
+      them is a trap worth naming.
+    </p>
+
+    <HwNote kind="ours" label="console=tty0 goes first, not last">
+      <p>
+        The <em>last</em> <code>console=</code> on the kernel command line
+        becomes <code>/dev/console</code>. <code>ttyS0</code> has to stay
+        primary, so <code>console=tty0</code> is added with
+        <code>lib.mkBefore</code>. Losing the serial console on a board in the
+        middle of bring&#8209;up would be a bad trade: every diagnosis on this
+        page was made over it.
+      </p>
+      <p>
+        <code>CONFIG_FRAMEBUFFER_CONSOLE=y</code> also had to go back. It had
+        been switched off while testing whether fbcon's console take&#8209;over
+        was holding <code>console_lock</code> across a boot hang. It was not
+        &mdash; the board hung identically without it, and the cause was an
+        unbounded wait in the DSI PHY.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <HwSection kind="the regression" title="A driver's opinion of itself is not evidence">
+    <p class="hw-lede">
+      Hours after the photographs above, the panel went dark again and stayed
+      dark across reboots and a full power cycle. Every status bit the driver
+      exposes said the display was on. DRM reported the connector
+      <code>connected</code>, the CRTC <code>enabled</code>, and
+      <code>dpms On</code>. All of it was true, and none of it was worth
+      anything.
+    </p>
+
+    <div class="hw-table">
+      <table>
+        <thead>
+          <tr><th>hypothesis</th><th>test, on the board</th><th>result</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">the framebuffer is all zeroes</th>
+            <td>wrote 1.4 MB of <code>/dev/urandom</code>, then all&#8209;<code>0xFF</code>, to <code>/dev/fb0</code></td>
+            <td class="remark">still black</td>
+          </tr>
+          <tr>
+            <th scope="row">the pushed touch DTB broke it</th>
+            <td>decompiled both DTBs and diffed them</td>
+            <td class="remark">only the interrupt type and <code>touchscreen-size-*</code> differ; zero display deltas</td>
+          </tr>
+          <tr>
+            <th scope="row">&hellip;still the DTB</th>
+            <td>pushed the image's original DTB back and rebooted</td>
+            <td class="remark">still black</td>
+          </tr>
+          <tr>
+            <th scope="row">console blanking</th>
+            <td>black 35 s after a cold boot; the default is 600 s</td>
+            <td class="remark">not blanking</td>
+          </tr>
+          <tr>
+            <th scope="row">panel power or reset GPIO</th>
+            <td><code>/sys/kernel/debug/gpio</code></td>
+            <td class="remark"><code>dsi_reset</code> hi, <code>backlight_gpio</code> hi</td>
+          </tr>
+          <tr>
+            <th scope="row">display power domain off</th>
+            <td><code>pm_genpd_summary</code></td>
+            <td class="remark"><code>disp_domain on</code>, subsystem active</td>
+          </tr>
+          <tr>
+            <th scope="row">display clocks gated</th>
+            <td><code>clk_summary</code></td>
+            <td class="remark">all <code>disp_*</code> enabled</td>
+          </tr>
+          <tr>
+            <th scope="row">the panel latched in a bad state</th>
+            <td>power-cycled the board by hand</td>
+            <td class="remark">still black</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="hw-p">
+      What broke the tie was the persistent journal.
+      <code>journalctl --list-boots</code> held all four boots of that card, and
+      the display lines are byte&#8209;identical in every one of them &mdash;
+      including the first. So <em>that card had never lit the panel</em>, which
+      dates the regression to the image rather than to anything done at runtime,
+      and leaves exactly one kernel&#8209;affecting commit between the last lit
+      image and this one: a patch giving the DSI link 25% burst headroom, built
+      at 17:12 and never visually confirmed.
+    </p>
+
+    <HwNote kind="grounded" label="The confirming experiment, and what it cost">
+      <p>
+        A kernel patch cannot be pushed over serial, but the PHY clock is
+        derived from the device tree's pixel clock &mdash;
+        <code>phy_clk_freq = pclk &times; 3 &times; 8 / lanes / 2</code>, which
+        for 2 lanes at 24 bpp is <code>pclk &times; 6</code>, and then
+        <code>&times; 5/4</code> for the patch. Scaling
+        <code>clock-frequency</code> down by 4/5 cancels it exactly.
+      </p>
+      <p>
+        At the shipped 49.5 MHz (371.25 MHz on the link) the panel was black. At
+        31.68 MHz &mdash; 237.6 MHz, the rate that had been lit &mdash; it lit
+        and the console was legible, and <em>every scanline was sheared
+        progressively to the right</em>. That is a line&#8209;length mismatch:
+        the VO's pixel timing and the DSI byte clock are not independent in this
+        driver, nothing recomputes the video-mode registers when the PHY moves,
+        and so no device-tree value can work around the patch. It was reverted.
+      </p>
+    </HwNote>
+
+    <HwFigure
+      bare
+      caption="<strong>docs/evidence/panel-photos/06-sheared-console-31.68mhz.jpg</strong> &mdash; the same console at the cancelling pixel clock. Lit, legible, and sheared: this photograph is what diagnosed the clock, and is not a picture of the panel working."
+    >
+      <div class="hw-shot-wide">
+        <a href={evidenceUrl("docs/evidence/panel-photos/06-sheared-console-31.68mhz.jpg")}>
+          <img
+            src={evidenceAsset("docs/evidence/panel-photos/06-sheared-console-31.68mhz.jpg")}
+            alt="The panel showing console text sheared progressively to the right, drawing diagonal bands across the frame."
+          />
+        </a>
+      </div>
+    </HwFigure>
+
+    <p class="hw-p">
+      There is a postscript in
+      <a href={evidenceUrl("docs/evidence/dsi-burst-headroom.md")}
+        ><code>docs/evidence/dsi-burst-headroom.md</code></a
+      >
+      worth reading if you ever multiply a clock: the patch also moved the PHY's
+      VCO range. <code>phy_clk_freq</code> is in kHz and immediately feeds a
+      ladder of comparisons that pick the VCO bucket, so 297 000 landed under
+      <code>&lt; 330000</code> and 371 250 under <code>&lt; 440000</code>. The
+      original commit called that out as intended, and it was intended, and the
+      patch still broke the picture &mdash; because nothing moved the VO's pixel
+      timing to match.
+    </p>
+  </HwSection>
+
+  <HwSection kind="what is not known" title="Lit is not working">
+    <div class="hw-q">
+      <div>
+        <span class="num">1</span>
+        <div>
+          <h3>The image flickers, and that is unfixed.</h3>
+          <p>
+            Measured with static stripes on the panel and the webcam exposure
+            locked, over 30 seconds: stripe position jitters &minus;9..+1 px with
+            no monotonic drift, and brightness shows 19 irregular dips, one to
+            53% of the mean. That is unstable frame delivery rather than a
+            refresh-rate beat. Whatever fixes it has to move the VO timing and
+            the DSI byte clock together; the attempt that moved only one of them
+            is the regression above.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">2</span>
+        <div>
+          <h3>The panel is being driven in partial display mode.</h3>
+          <p>
+            The transcribed sequence ends <code>31</code> / <code>30</code> /
+            <code>12 00</code> &mdash; partial columns, partial rows,
+            <code>ENTER_PARTIAL_MODE</code> over a restricted area. That is what
+            the vendor firmware does, but the vendor also drives the VO
+            differently, and the remaining divergences are listed in priority
+            order in the bring-up note: no SoC display reset on enable, a stale
+            reset pulse, no 3 ms settle after each DCS packet,
+            <code>vco_cntrl</code> 0x19 against 0x17, and CRTC&#8209;before&#8209;encoder
+            ordering that streams video into a link that is not configured yet.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">3</span>
+        <div>
+          <h3>A failed DCS read is not proof the panel is deaf.</h3>
+          <p>
+            <code>RDDPM (0x0A)</code> still times out &mdash; <code>-110</code>,
+            <code>CMD_PKT_STATUS 0x50015</code>, <code>GEN_PLD_R_EMPTY</code>
+            set &mdash; on a panel that is visibly working. Earlier in this
+            investigation that timeout was read as strong evidence the panel was
+            receiving nothing. That inference is now known to be unsafe, and the
+            correction belongs on the record next to the conclusion it spoiled.
+          </p>
+        </div>
+      </div>
+      <div>
+        <span class="num">4</span>
+        <div>
+          <h3>The state after the revert has not been photographed.</h3>
+          <p>
+            Reverting restores the configuration that <em>was</em> photographed
+            working &mdash; the earlier PHY clock and the LILYGO 52 Hz timings
+            &mdash; but as of the last evidence committed here, no image built
+            after the revert has been flashed and photographed. Until one is,
+            this note claims the panel lit on 2026&#8209;09&#8209;21, and claims
+            nothing about the card currently in the board.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <HwNote kind="unverified" label="No display requirement is in the ledger">
+      <p>
+        The count on the <a href={url("")}>front page</a> does not include the
+        panel. Requirements reach that count when a change is archived into
+        <code>openspec/specs/</code>, and the display work is still in flight
+        &mdash; this site does not publish proposals, because a published draft
+        gets read as a decision. Everything above is an observation with a file
+        behind it, which is not the same thing as a requirement this project has
+        committed to.
+      </p>
+    </HwNote>
+  </HwSection>
+
+  <div class="hw-sources">
+    <p>
+      Evidence: <a href={evidenceUrl("docs/evidence/panel-lit.md")}><code>docs/evidence/panel-lit.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/dsi-burst-headroom.md")}><code>docs/evidence/dsi-burst-headroom.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/panel-dark.md")}><code>docs/evidence/panel-dark.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/dsi-phy-hang.md")}><code>docs/evidence/dsi-phy-hang.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/rm69a10-init-sequence.md")}><code>docs/evidence/rm69a10-init-sequence.md</code></a>,
+      <a href={evidenceUrl("docs/evidence/rtsmart-panel-bringup.md")}><code>docs/evidence/rtsmart-panel-bringup.md</code></a>,
+      and the photographs under <code>docs/evidence/panel-photos/</code>.
+    </p>
+    <p>
+      Vendor source read for this note: <code>rm69a10.c</code> and
+      <code>gt9895.c</code> in LilyGO's RT&#8209;Smart tree, and
+      <code>canaan_dsi.c</code> and
+      <code>drivers/gpu/drm/panel/panel-canaan-universal.c</code> in the pinned
+      Xuantie kernel. Neither tree is committed here &mdash; they are large
+      vendor clones &mdash; so those paths are named but not linked.
+    </p>
+  </div>
+</HardwareNote>

@@ -415,6 +415,32 @@ def parse_capability(repo_root: Path, path: Path, specs_dir: Path) -> tuple[Capa
     )
 
 
+def hand_authored_citations(repo_root: Path) -> list[tuple[str, str]]:
+    """Paths under `docs/` named by the hand-authored pages, with their page.
+
+    The hardware notes under `site/src/pages/hardware/` are written by hand and
+    are not requirements -- but they cite the same committed evidence, and a
+    reader has the same claim on it. Naming the path in the page is what asks
+    for it: the file is rendered into the site, the note links to it, and a
+    note citing something that is not committed is a defect exactly as a
+    requirement citing it would be.
+    """
+    src = repo_root / "site" / "src"
+    found: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    if not src.is_dir():
+        return found
+    for page in sorted(src.rglob("*.astro")):
+        text = page.read_text(encoding="utf-8", errors="replace")
+        for match in BARE_DOCS_PATH.finditer(text):
+            path = match.group(0)
+            if path in seen:
+                continue
+            seen.add(path)
+            found.append((path, page.relative_to(repo_root).as_posix()))
+    return found
+
+
 def load_capabilities(repo_root: Path) -> tuple[list[Capability], list[Defect]]:
     """Read openspec/specs/ -- and nothing else. openspec/changes/ holds
     in-flight proposals, and a published draft is read as a decision."""
@@ -618,6 +644,22 @@ def build_data(repo_root: Path, asset_dir: Path | None = None) -> tuple[dict, Re
             }
         )
 
+    # Evidence the requirements cite is registered by now; what the
+    # hand-authored pages cite is registered here, so both kinds reach the
+    # site as pages and both are checked for being committed.
+    from_requirements = set(link.wanted)
+    for path, page in hand_authored_citations(repo_root):
+        if link(path) is None:
+            defects.append(
+                Defect(
+                    "missing-evidence",
+                    page,
+                    "(hand-authored page)",
+                    f"{page}: cites evidence {path!r}, which is not in the "
+                    f"repository",
+                )
+            )
+
     evidence = []
     for path, slug in sorted(link.wanted.items()):
         source = repo_root / path
@@ -626,6 +668,10 @@ def build_data(repo_root: Path, asset_dir: Path | None = None) -> tuple[dict, Re
             "slug": slug,
             "name": source.name,
             "bytes": source.stat().st_size,
+            # Which kind of claim rests on this file. A requirement's evidence
+            # is counted in the tally above; a note's is not, and the landing
+            # page says so rather than letting the two look alike.
+            "citedBy": "requirement" if path in from_requirements else "note",
         }
         if source.suffix.lower() in IMAGE_SUFFIXES:
             asset = f"evidence/{slug}{source.suffix.lower()}"
