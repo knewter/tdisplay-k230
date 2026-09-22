@@ -799,6 +799,18 @@ DATA 264f0169cef918095b431bc1f6dbabfafdbace2041248bbb16ea24fbb2f657c4  docs/evid
 DATA 2c3e28403e9fa01f82e431bd198762b8481f26a50b35e5ef324ae1503119ddb4  docs/evidence/splash-trial/timeline-uboot.jpg
 DATA eda0693650af79208e1f170b0e7c78ba8b939df22f82543a12645e28e4f756e5  docs/evidence/splash-trial/uboot-held-25s.jpg
 DATA 7fb0582fe6d94d7252c4d71cd1243132c516da43b617bb5420a3d09fc0be3216  docs/evidence/splash-trial/uboot-splash-held-rotated.mp4
+DATA 4cfc9d5278c031360775cb51e717d3e83941214314d401848c852081c2429673  docs/evidence/shell-features/desktop-launcher/20260922T192343Z-desktop-launcher.mp4
+DATA 002d71ec94c44a4d6d9968ad8be4ff71341f7067c839f426438e6873a4cbfaf2  docs/evidence/shell-features/desktop-launcher/added.png
+DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/apps.png
+DATA d6f1f7f7f6ddf724b759cb9f1efb5e722baa8b93e9e328caf947e4bc94625052  docs/evidence/shell-features/desktop-launcher/error.png
+DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/final.png
+DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/first-page.png
+DATA b9ad5f630b399f5e2aaec8399ed74cbcf91d56f9ee1346fe8a50a4f58f32ccba  docs/evidence/shell-features/desktop-launcher/htop.png
+DATA 2915cf45af55f550316009ac4e433813ae3bf349da646f6780dff159f3210b43  docs/evidence/shell-features/desktop-launcher/keyboard-page-two.png
+DATA 755c39d0a82d53456d604af8d84133304b009e72aa3d6a66bd12a6dd5d9d5a12  docs/evidence/shell-features/desktop-launcher/keyboard.png
+DATA da27b7a03b4e3351f3be052b5b5284ce10064371e04eebf3f6cb663283884374  docs/evidence/shell-features/desktop-launcher/launched.png
+DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/removed.png
+DATA 570881146f0b409a3b82504cacf91d6a4d98afb87d324761b2ab4ac10fefcaef  docs/evidence/shell-features/desktop-launcher/second-page.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

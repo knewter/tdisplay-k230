@@ -1,0 +1,65 @@
+
+===== > bash /tmp/desktop-actions.sh =====
+bash /tmp/desktop-actions.sh
+[?2004l
+STATE:apps
+[{"id":5,"app_id":"k230-terminal","focused":true,"name":"shell@nixos: ~"}]
+2970
+3784000000-3fca34a000 ---p 00000000 00:00 0                              [rollup]
+Rss:               15748 kB
+Pss:                7289 kB
+Pss_Dirty:          4266 kB
+Pss_Anon:           2960 kB
+Pss_File:           3023 kB
+Pss_Shmem:          1306 kB
+Shared_Clean:       9212 kB
+Shared_Dirty:       2612 kB
+Private_Clean:       964 kB
+Private_Dirty:      2960 kB
+Referenced:        15748 kB
+Anonymous:          2960 kB
+KSM:                   0 kB
+LazyFree:              0 kB
+AnonHugePages:         0 kB
+ShmemPmdMapped:        0 kB
+FilePmdMapped:         0 kB
+Shared_Hugetlb:        0 kB
+Private_Hugetlb:       0 kB
+Swap:                  0 kB
+SwapPss:               0 kB
+Locked:                0 kB
+STATE:second_page
+[{"id":5,"app_id":"k230-terminal","focused":true,"name":"shell@nixos: ~"}]
+2970
+STATE:desktop_htop
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":true,"name":"foot"}]
+STATE:added
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":true,"name":"foot"}]
+3059
+STATE:discovered_entry_launched
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+STATE:removed
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+3125
+STATE:keyboard
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+3197
+STATE:keyboard_page_two
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+3197
+STATE:error_retains_launcher
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+3292
+STATE:recovered
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":false,"name":"foot"},{"id":8,"app_id":"k230-discovery-proof","focused":true,"name":"shell@nixos: ~"}]
+STATE:final
+[{"id":5,"app_id":"k230-terminal","focused":false,"name":"shell@nixos: ~"},{"id":7,"app_id":"k230-terminal","focused":true,"name":"foot"}]
+3370
+DESKTOP_DISCOVERY_DEMO_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

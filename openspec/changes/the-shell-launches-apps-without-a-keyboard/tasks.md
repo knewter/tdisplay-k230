@@ -14,10 +14,10 @@
 
 ## 2. Installed application catalogue
 
-- [ ] 2.1 Use GDesktopAppInfo/GAppInfo for refresh-on-open XDG discovery,
+- [x] 2.1 Use GDesktopAppInfo/GAppInfo for refresh-on-open XDG discovery,
 filtering, precedence, safe launch, and pagination; retain built-ins and test
 fixtures for hidden/overridden/space-containing Exec entries.
-- [ ] 2.2 Render dynamic labels with Pango/Cairo and bridge Terminal=true to
+- [x] 2.2 Render dynamic labels with Pango/Cairo and bridge Terminal=true to
 Foot; verify graceful unsupported launch behavior.
 
 ## 3. Laptop package verification
@@ -42,7 +42,7 @@ Fixed baseline 4.1 evidence: `docs/evidence/shell-features/portrait-launcher/REA
 and its final camera recording, screenshots, action script and window-tree log.
 Input was injected; actual finger accuracy remains the parent shell change's task.
 
-- [ ] 4.2 **Hardware.** Record the desktop-aware launcher listing the installed
+- [x] 4.2 **Hardware.** Record the desktop-aware launcher listing the installed
   Foot/Htop entries, paging, launching a Terminal=true entry, and reflecting a
   temporary entry's addition and removal on reopen. Capture keyboard layout and
   an error path with a recoverable Back control. Commit the script, console,
@@ -50,3 +50,6 @@ Input was injected; actual finger accuracy remains the parent shell change's tas
 - [ ] 4.3 Integrate the verified configuration in a bootable source-built image
   and capture the desktop-aware launcher after reboot. A runtime service override
   alone does not complete this task.
+
+Discovery task 4.2 evidence: `docs/evidence/shell-features/desktop-launcher/README.md`
+and its video, screenshots and console. Input was injected on the physical board.

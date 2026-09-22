@@ -6,8 +6,9 @@ Provides the handheld Sway shell with keyboard-free application discovery and la
 
 ### Requirement: Apps opens a portrait touch launcher
 
-<!-- UNVERIFIED: source/package tests establish the client contract; real-glass
-use requires coordinator capture. -->
+*Grounding: `docs/evidence/shell-features/portrait-launcher/README.md` records
+physical-panel rendering and injected actions. Real finger accuracy and the
+final image reboot remain unverified.*
 
 The persistent Apps control SHALL open a native Wayland portrait launcher while
 Keyboard, Windows/Home, and System remain available through the persistent
@@ -37,8 +38,10 @@ requiring a physical keyboard.
 
 ### Requirement: Apps discovers installed desktop applications
 
-<!-- UNVERIFIED: GLib fixture tests and cross-build pass; physical discovery,
-launch and refresh captures are in progress. -->
+*Grounding: `docs/evidence/shell-features/desktop-launcher/README.md`, its
+console, PNGs and camera recording establish physical-panel discovery, launch,
+refresh and error recovery using injected input. Finger accuracy and final
+image reboot persistence remain unverified.*
 
 The system's Apps surface SHALL list visible application desktop entries from
 the user's XDG data directories and Nix profile data directories, applying

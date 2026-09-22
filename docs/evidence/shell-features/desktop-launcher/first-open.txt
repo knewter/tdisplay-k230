@@ -1,0 +1,11 @@
+
+===== > /tmp/inject-tap.sh /dev/input/event1 115 28 =====
+/tmp/inject-tap.sh /dev/input/event1 115 28
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

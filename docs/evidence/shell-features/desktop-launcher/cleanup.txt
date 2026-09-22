@@ -1,0 +1,16 @@
+
+===== > test ! -e /home/shell/.local/share/applications/k230-evidence-temp.desktop && echo TEMP_ENTRY_REMOVED; ls -ld /home/shell/.local /home/shell/.local/share /home/shell/.local/share/applications; chown shell:shell /home/shell/.local /home/shell/.local/share /home/shell/.local/share/applications; pid=$(cat /tmp/k230-evemu-launcher.pid); if [ "$(cat /proc/$pid/comm)" = evemu-device ]; then kill "$pid"; fi; echo INJECTED_DEVICE_RELEASED =====
+test ! -e /home/shell/.local/share/applications/k230-evidence-temp.desktop && echo TEMP_ENTRY_REMOVED; ls -ld /home/shell/.local /home/shell/.local/share /home/shell/.local/share/applications; chown shell:shell /home/shell/.local /home/shell/.local/share /home/shell/.local/share/applications; pid=$(cat /tmp/k230-evemu-launcher.pid); if [ "$(cat /proc/$pid/comm)" = evemu-device ]; then kill "$pid"; fi; echo INJECTED_DEVICE_RELEASED
+[?2004l
+TEMP_ENTRY_REMOVED
+drwxr-xr-x 3 root root 4096 Mar 17 21:48 [0m[01;34m/home/shell/.local[0m
+drwxr-xr-x 3 root root 4096 Mar 17 21:48 [01;34m/home/shell/.local/share[0m
+drwxr-xr-x 2 root root 4096 Mar 17 21:49 [01;34m/home/shell/.local/share/applications[0m
+INJECTED_DEVICE_RELEASED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

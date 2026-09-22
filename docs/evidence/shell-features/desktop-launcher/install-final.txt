@@ -1,0 +1,19 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; nix-store --import < /tmp/k230-discovery-final.nar && nix-store --add-root /nix/var/nix/gcroots/k230-discovery-final --realise /nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf && sed -i s/hxjz1b7cy2j0ylakkr0yysyflhp3q0d7/mrs3y5x82skma9xkz6s035ily6fs308r/ /run/systemd/system/shell.service.d/40-touch-launcher.conf && systemctl daemon-reload && systemctl restart shell; sleep 4; systemctl is-active shell; systemctl show shell -p ExecStart --no-pager =====
+export SYSTEMD_PAGER=cat PAGER=cat; nix-store --import < /tmp/k230-discovery-final.nar && nix-store --add-root /nix/var/nix/gcroots/k230-discovery-final --realise /nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf && sed -i s/hxjz1b7cy2j0ylakkr0yysyflhp3q0d7/mrs3y5x82skma9xkz6s035ily6fs308r/ /run/systemd/system/shell.service.d/40-touch-launcher.conf && systemctl daemon-reload && systemctl restart shell; sleep 4; systemctl is-active shell; systemctl show shell -p ExecStart --no-pager
+[?2004l
+/nix/store/0c2l4cv3mpp64jc2pyvmq2dhf3pzxvdl-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1
+/nix/store/y5lgjbwdzhp51x1kja5agixhln8qn7j8-foot
+/nix/store/4j5253rgl4zkbgah6zm57s6ayvrafy87-k230-touch-launcher
+/nix/store/12xnw913f4ccgglyvjq4csnzbigfcaqk-k230-touch-menu
+/nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf
+/nix/var/nix/gcroots/k230-discovery-final
+active
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 21:47:27 UTC] ; stop_time=[n/a] ; pid=2917 ; code=(null) ; status=0/0 }
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

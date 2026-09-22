@@ -1,0 +1,21 @@
+
+===== > bash /tmp/discovery-install.sh =====
+bash /tmp/discovery-install.sh
+[?2004l
+/nix/store/1gyc3vfq29f7v7g38nn6vpjpar8p7knj-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1
+/nix/store/xqq8bis4yn2099l1h1w2kdd2375vpvmp-xdg-terminal-exec
+/nix/store/2vyyzm9saspjvsfx1rjljylqdjdzcl9i-k230-touch-launcher
+/nix/store/pidj0wdf6fi5b904w9kmgpgxaij9zzrp-k230-touch-menu
+/nix/store/hxjz1b7cy2j0ylakkr0yysyflhp3q0d7-k230-sway.conf
+/nix/var/nix/gcroots/k230-discovery-trial
+active
+DropInPaths=/run/systemd/system/shell.service.d/40-touch-launcher.conf
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/hxjz1b7cy2j0ylakkr0yysyflhp3q0d7-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 21:44:04 UTC] ; stop_time=[n/a] ; pid=2803 ; code=(null) ; status=0/0 }
+DISCOVERY_INSTALLED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
