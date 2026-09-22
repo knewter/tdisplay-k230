@@ -1,8 +1,10 @@
 # Tasks
 
-**This change cannot start until `the-screen-comes-up-under-linux` is done.**
-It needs `/dev/dri/card0` with a mode set on a real panel, and touch events
-with coordinates. Neither exists today.
+**`the-screen-comes-up-under-linux` is archived.** It supplied `/dev/dri/card0`
+with a real-panel mode and touch events with coordinates; the committed
+evidence is `docs/evidence/drm-info.txt` and `docs/evidence/touch-evtest.txt`.
+This change consumes those capabilities but still needs its own compositor and
+real-glass interaction evidence.
 
 Group 2 is the only **build-host claim** here — it can be answered on
 `solomon` with the board in pieces. Everything else is a **hardware claim**:
