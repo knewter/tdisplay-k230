@@ -6,11 +6,18 @@ is an observation of the logs, not a diagnosed cause.
 
 ## What is observed
 
-The affected call paths are:
+The primary KFENCE report sites and their allocation/free stacks are:
 
-- `hub_port_init+0x4ac/0xcc8`, followed by `usb_get_device_descriptor+0x64/0xb4`;
-- in two records, a second warning at `usb_get_bos_descriptor+0xbc/0x308`;
+- `hub_port_init+0x4ac/0xcc8`; the allocation stack names
+  `usb_get_device_descriptor+0x64/0xb4`, while the free is in
+  `hub_port_init`;
+- in two records, a second report at
+  `usb_get_bos_descriptor+0xbc/0x308`; its allocation is also in
+  `usb_get_bos_descriptor`;
 - the workqueue is `usb_hub_wq hub_event`.
+
+The descriptor functions above are stack evidence for the allocations and
+are not, by themselves, proof of the original corrupting write.
 
 The device then identified by Linux is USB `2-1`, vendor/product `0bda:8152`,
 `USB 10/100 LAN`. The `r8152` driver resets it, assigns a random address after
@@ -50,10 +57,13 @@ that these boots reached the shell/login path after the warning.
 
 ## Next investigation
 
-Reproduce with a serial console and KFENCE enabled while varying one condition
-at a time: the attached USB LAN device, the DWC2 host controller, and the UMS
-gadget/boot transition. Preserve the complete kernel log and compare the IRQ
-85/DWC2 sequence with the USB descriptor sequence. Check whether the warning
-still occurs with no UMS session and whether the same image boots with the
-external LAN device absent. Do not disable KFENCE or infer a code fix from this
-observation alone.
+The `0bda:8152` device is the board's onboard RTL8152B behind `usbotg1`
+(`usb-otg@91540000`), not a conveniently removable external LAN dongle; see
+`docs/uboot-ums.md:72-78`. Reproduce with a serial console and KFENCE enabled
+while varying conditions that are actually controllable: boot with and without
+the UMS transition, and compare diagnostic kernel/image variants with the
+DWC2 host path or the `r8152` driver disabled. Preserve the complete kernel
+log and compare the IRQ 85/DWC2 sequence with the USB descriptor sequence.
+Disabling only `r8152` would test the later network binding, while disabling the
+USB host path would test whether enumeration itself is required. Do not disable
+KFENCE or infer a code fix from this observation alone.
