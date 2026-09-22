@@ -98,7 +98,10 @@ let
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
-    export PATH=${xdgTerminalExec}/bin:$PATH
+    # Include Nix profiles because the systemd session does not run a login shell.
+    export PATH=${xdgTerminalExec}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+    export XDG_DATA_DIRS="''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
   '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''

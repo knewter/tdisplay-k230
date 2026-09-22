@@ -1,5 +1,5 @@
-/* A fixed-action portrait launcher. It deliberately uses only Wayland SHM and
- * layer-shell: no toolkit, GPU path, font catalogue, or long-lived service. */
+/* Portrait desktop-entry launcher on Wayland SHM/layer-shell. GLib owns
+ * desktop-entry semantics; Pango/Cairo render installed application names. */
 #define _POSIX_C_SOURCE 200809L
 #include <fcntl.h>
 #include <poll.h>
@@ -13,17 +13,19 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <wayland-client.h>
+#include <pango/pangocairo.h>
+#include "catalog.h"
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 
-enum action { ACT_TERMINAL, ACT_MONITOR, ACT_NEW_TERMINAL, ACT_BACK };
-struct button { enum action action; const char *label; int y, h; uint32_t color; };
-static struct button buttons[] = {
-  { ACT_TERMINAL, "TERMINAL", 150, 178, 0xff276749 },
-  { ACT_MONITOR, "MONITOR", 346, 178, 0xff1f5e78 },
-  { ACT_NEW_TERMINAL, "NEW TERMINAL", 542, 178, 0xff3f765a },
-  { ACT_BACK, "BACK", 0, 112, 0xff374151 },
-};
+enum action { ACT_TERMINAL=-1, ACT_MONITOR=-2, ACT_NEW_TERMINAL=-3,
+  ACT_BACK=-4, ACT_PREVIOUS=-5, ACT_NEXT=-6 };
+struct button { int action, x, y, w, h; const char *label, *hint; uint32_t color; };
+static struct button buttons[8];
+static int button_count, page, page_size=4;
+static GPtrArray *apps;
+static char *launch_error;
+static void redraw(void);
 static struct wl_display *display;
 static struct wl_compositor *compositor;
 static struct wl_shm *shm;
@@ -44,73 +46,109 @@ static bool pointer_pressed;
 static uint32_t pointer_button_code;
 static int pointer_card = -1, touch_card = -1;
 
-/* 5x7 source-controlled glyphs keep labels legible without fontconfig. */
-struct glyph { char c; uint8_t r[7]; };
-static const struct glyph glyphs[] = {
- {'A',{14,17,17,31,17,17,17}}, {'B',{30,17,17,30,17,17,30}},
- {'C',{15,16,16,16,16,16,15}}, {'E',{31,16,16,30,16,16,31}},
- {'H',{17,17,17,31,17,17,17}}, {'I',{31,4,4,4,4,4,31}},
- {'K',{17,18,20,24,20,18,17}}, {'L',{16,16,16,16,16,16,31}},
- {'M',{17,27,21,21,17,17,17}}, {'N',{17,25,21,19,17,17,17}},
- {'O',{14,17,17,17,17,17,14}}, {'P',{30,17,17,30,16,16,16}},
- {'R',{30,17,17,30,20,18,17}}, {'S',{15,16,16,14,1,1,30}},
- {'T',{31,4,4,4,4,4,4}}, {'U',{17,17,17,17,17,17,14}},
- {'W',{17,17,17,21,21,27,17}}, {'D',{30,17,17,17,17,17,30}},
- {' ',{0,0,0,0,0,0,0}}, {'-',{0,0,0,31,0,0,0}},
-};
-static const struct glyph *get_glyph(char c) {
-  for (size_t i = 0; i < sizeof glyphs / sizeof glyphs[0]; i++) if (glyphs[i].c == c) return &glyphs[i];
-  return &glyphs[sizeof glyphs / sizeof glyphs[0] - 2];
-}
 static void rect(int x, int y, int w, int h, uint32_t c) {
   if (x < 0) { w += x; x = 0; } if (y < 0) { h += y; y = 0; }
   if (x + w > width) w = width - x; if (y + h > height) h = height - y;
   for (int yy = y; yy < y + h; yy++) for (int xx = x; xx < x + w; xx++) pixels[yy * width + xx] = c;
 }
-static void text(const char *s, int cx, int y, int scale, uint32_t color) {
-  int n = (int)strlen(s), total = n * 6 * scale - scale, x = cx - total / 2;
-  for (; *s; s++, x += 6 * scale) { const struct glyph *g = get_glyph(*s);
-    for (int row = 0; row < 7; row++) for (int col = 0; col < 5; col++)
-      if (g->r[row] & (1u << (4-col))) rect(x + col*scale, y + row*scale, scale, scale, color);
-  }
+static void text(const char *value, int x, int y, int w, int h, int size, uint32_t color) {
+  cairo_surface_t *cs=cairo_image_surface_create_for_data((unsigned char *)pixels,
+    CAIRO_FORMAT_ARGB32,width,height,stride);
+  cairo_t *cr=cairo_create(cs);
+  PangoLayout *layout=pango_cairo_create_layout(cr);
+  PangoFontDescription *font=pango_font_description_new();
+  pango_font_description_set_family(font,"DejaVu Sans");
+  pango_font_description_set_absolute_size(font,size*PANGO_SCALE);
+  pango_layout_set_font_description(layout,font);
+  pango_layout_set_text(layout,value,-1);
+  pango_layout_set_width(layout,w*PANGO_SCALE);
+  pango_layout_set_height(layout,-1);
+  pango_layout_set_ellipsize(layout,PANGO_ELLIPSIZE_END);
+  pango_layout_set_alignment(layout,PANGO_ALIGN_CENTER);
+  int th; pango_layout_get_pixel_size(layout,NULL,&th);
+  cairo_rectangle(cr,x,y,w,h); cairo_clip(cr);
+  cairo_set_source_rgb(cr,((color>>16)&255)/255.0,((color>>8)&255)/255.0,(color&255)/255.0);
+  cairo_move_to(cr,x,y+(h-th)/2); pango_cairo_show_layout(cr,layout);
+  pango_font_description_free(font); g_object_unref(layout);
+  cairo_destroy(cr); cairo_surface_destroy(cs);
+}
+static void add_button(int action,const char *label,const char *hint,int x,int y,int w,int h,uint32_t color) {
+  buttons[button_count++]=(struct button){action,x,y,w,h,label,hint,color};
 }
 static void draw(void) {
-  rect(0, 0, width, height, 0xff111827);
-  rect(0, 0, width, 8, 0xff38bdf8);
-  text("APPS", width/2, 42, 7, 0xffffffff);
-  text("TOUCH A CARD", width/2, 104, 3, 0xffcbd5e1);
-  if (height < 900) {
-    int gap = 14, top = 144, back_h = 86, back_y = height - back_h - 24;
-    int app_h = (back_y - top - 3 * gap) / 3;
-    for (int i = 0; i < 3; i++) { buttons[i].y = top + i * (app_h + gap); buttons[i].h = app_h; }
-    buttons[3].y = back_y; buttons[3].h = back_h;
-  } else {
-    buttons[0].y=150; buttons[1].y=346; buttons[2].y=542;
-    buttons[0].h=buttons[1].h=buttons[2].h=178; buttons[3].y=height-142; buttons[3].h=112;
+  int count=3+(int)apps->len;
+  page_size=height<900?3:4;
+  int pages=(count+page_size-1)/page_size;
+  if(page>=pages) page=pages-1;
+  rect(0,0,width,height,0xff111827);
+  text("Applications",24,22,width-48,64,42,0xfff8fafc);
+  char subtitle[100];
+  snprintf(subtitle,sizeof subtitle,"%u installed · Page %d of %d",apps->len,page+1,pages);
+  text(launch_error?launch_error:subtitle,24,90,width-48,44,22,
+    launch_error?0xfffca5a5:0xffcbd5e1);
+  int top=150,gap=14,footer=height-110;
+  int bh=(footer-top-24-(page_size-1)*gap)/page_size;
+  button_count=0;
+  for(int row=0;row<page_size;row++) {
+    int item=page*page_size+row;
+    if(item>=count) break;
+    if(item<3) {
+      const char *labels[]={"Terminal","Monitor","New terminal"};
+      const char *hints[]={"Resume or open a terminal","Resume or open system monitor","Open another terminal"};
+      add_button(-item-1,labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,0xff24495a);
+    } else {
+      GAppInfo *app=g_ptr_array_index(apps,item-3);
+      add_button(item-3,g_app_info_get_display_name(app),"Installed application",24,
+        top+row*(bh+gap),width-48,bh,0xff243547);
+    }
   }
-  for (size_t i = 0; i < sizeof buttons/sizeof buttons[0]; i++) {
-    struct button *b = &buttons[i];
-    rect(28, b->y, width - 56, b->h, b->color);
-    rect(28, b->y, width - 56, 5, 0xfff8fafc);
-    text(b->label, width/2, b->y + (b->h - 42) / 2, 6, 0xffffffff);
+  int bw=(width-64)/3;
+  add_button(ACT_PREVIOUS,"Previous",NULL,24,footer,bw,86,page?0xff304f65:0xff202b38);
+  add_button(ACT_BACK,"Back",NULL,32+bw,footer,bw,86,0xff374151);
+  add_button(ACT_NEXT,"Next",NULL,40+2*bw,footer,bw,86,page+1<pages?0xff304f65:0xff202b38);
+  for(int i=0;i<button_count;i++) {
+    struct button *b=&buttons[i];
+    rect(b->x,b->y,b->w,b->h,b->color);
+    if(b->hint) {
+      text(b->label,b->x+12,b->y+b->h/2-42,b->w-24,52,32,0xffffffff);
+      text(b->hint,b->x+12,b->y+b->h/2+10,b->w-24,30,18,0xffcbd5e1);
+    } else text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);
   }
 }
-static int card_at(int x, int y) {
-  for (size_t i = 0; i < sizeof buttons/sizeof buttons[0]; i++)
-    if (x >= 28 && x < width-28 && y >= buttons[i].y && y < buttons[i].y+buttons[i].h) return (int)i;
+static int card_at(int x,int y) {
+  for(int i=0;i<button_count;i++) {
+    struct button *b=&buttons[i];
+    if(x>=b->x && x<b->x+b->w && y>=b->y && y<b->y+b->h) return i;
+  }
   return -1;
 }
-static void run_action(enum action a) {
-  if (a == ACT_BACK) { running = false; return; }
-  const char *name = a == ACT_TERMINAL ? "terminal" : a == ACT_MONITOR ? "monitor" : "new-terminal";
-  const char *helper = getenv("K230_LAUNCHER_ACTION");
-  if (!helper || !*helper) { fprintf(stderr, "k230-touch-launcher: action helper is unset\n"); return; }
-  pid_t child = fork();
-  if (child < 0) { perror("k230-touch-launcher fork"); return; }
-  if (child == 0) { if (display) close(wl_display_get_fd(display)); if (lock_fd >= 0) close(lock_fd); execl(helper, helper, name, (char *)NULL); _exit(127); }
-  running = false;
+static void run_action(int action) {
+  if(action==ACT_BACK) { running=false; return; }
+  if(action==ACT_PREVIOUS || action==ACT_NEXT) {
+    int pages=(3+(int)apps->len+page_size-1)/page_size;
+    int next=page+(action==ACT_NEXT?1:-1);
+    if(next>=0 && next<pages) { page=next; g_clear_pointer(&launch_error,g_free); redraw(); }
+    return;
+  }
+  GError *error=NULL;
+  gboolean ok=FALSE;
+  if(action>=0) {
+    GAppInfo *app=g_ptr_array_index(apps,action);
+    ok=k230_app_launch(g_app_info_get_id(app),&error);
+  } else {
+    const char *helper=getenv("K230_LAUNCHER_ACTION");
+    const char *name=action==ACT_TERMINAL?"terminal":action==ACT_MONITOR?"monitor":"new-terminal";
+    if(helper && *helper) {
+      char *argv[]={(char *)helper,(char *)name,NULL};
+      ok=g_spawn_async(NULL,argv,NULL,G_SPAWN_DEFAULT,NULL,NULL,NULL,&error);
+    } else g_set_error_literal(&error,G_IO_ERROR,G_IO_ERROR_NOT_FOUND,"Application action is unavailable");
+  }
+  if(ok) { running=false; return; }
+  g_free(launch_error); launch_error=g_strdup(error?error->message:"Could not launch application");
+  fprintf(stderr,"k230-touch-launcher: %s\n",launch_error);
+  g_clear_error(&error); redraw();
 }
-static void activate_card(int card) { if (card >= 0) run_action(buttons[card].action); }
+static void activate_card(int card) { if(card>=0 && card<button_count) run_action(buttons[card].action); }
 static void buffer_release(void *d, struct wl_buffer *b) {
   struct shm_buffer *old = d; munmap(old->pixels, old->size); wl_buffer_destroy(b); free(old);
 }
@@ -126,15 +164,20 @@ static struct shm_buffer *make_buffer(void) {
   out->buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
   wl_shm_pool_destroy(pool); close(fd); wl_buffer_add_listener(out->buffer, &buffer_listener, out); return out;
 }
-static void layer_configure(void *d, struct zwlr_layer_surface_v1 *ls, uint32_t serial, uint32_t w, uint32_t h) {
-  zwlr_layer_surface_v1_ack_configure(ls, serial);
-  if ((int)w == width && (int)h == height && configured) return;
-  width = (int)w; height = (int)h;
-  if (width < 200 || height < 500) { fprintf(stderr, "k230-touch-launcher: portrait surface is too small\n"); running=false; return; }
-  /* Keep an old server-owned buffer mapped through its release; resize events
-   * are rare and this avoids invalidating pixels still owned by Wayland. */
-  current=make_buffer(); pixels=current->pixels; draw(); wl_surface_attach(surface, current->buffer, 0, 0);
-  wl_surface_damage_buffer(surface, 0, 0, width, height); wl_surface_commit(surface); configured=true;
+static void redraw(void) {
+  current=make_buffer(); pixels=current->pixels; draw();
+  wl_surface_attach(surface,current->buffer,0,0);
+  wl_surface_damage_buffer(surface,0,0,width,height); wl_surface_commit(surface);
+}
+static void layer_configure(void *d,struct zwlr_layer_surface_v1 *ls,uint32_t serial,uint32_t w,uint32_t h) {
+  zwlr_layer_surface_v1_ack_configure(ls,serial);
+  if((int)w==width && (int)h==height && configured) return;
+  width=(int)w; height=(int)h;
+  if(width<300 || height<600 || width>4096 || height>4096) {
+    fprintf(stderr,"k230-touch-launcher: unsupported surface size\n"); running=false; return;
+  }
+  pointer_card=touch_card=-1;
+  redraw(); configured=true;
 }
 static void layer_closed(void *d, struct zwlr_layer_surface_v1 *ls) { running=false; }
 static const struct zwlr_layer_surface_v1_listener layer_listener = { .configure=layer_configure, .closed=layer_closed };
@@ -159,7 +202,7 @@ static void global_add(void*d,struct wl_registry*r,uint32_t n,const char*i,uint3
 static void global_remove(void*d,struct wl_registry*r,uint32_t n) {}
 static const struct wl_registry_listener registry_listener = { .global=global_add,.global_remove=global_remove };
 int main(int argc,char**argv) {
- if(argc==2 && !strcmp(argv[1],"--layout")) { puts("568x1176: title; Terminal y=150 h=178; Monitor y=346 h=178; New term y=542 h=178; Back y=1034 h=112"); return 0; }
+ if(argc==2 && !strcmp(argv[1],"--layout")) { puts("Portrait application catalogue: 4 cards per page, 3 with keyboard; Previous / Back / Next"); return 0; }
  if(argc!=1) { fprintf(stderr,"usage: k230-touch-launcher [--layout]\n"); return 2; }
  const char *runtime = getenv("XDG_RUNTIME_DIR");
  if (!runtime) { fprintf(stderr,"k230-touch-launcher: XDG_RUNTIME_DIR is unset\n"); return 1; }
@@ -167,6 +210,7 @@ int main(int argc,char**argv) {
  lock_fd=open(lock_path,O_CREAT|O_RDWR|O_CLOEXEC,0600);
  if(lock_fd < 0) { perror("k230-touch-launcher lock"); return 1; }
  if(flock(lock_fd,LOCK_EX|LOCK_NB) < 0) return 0; /* Existing surface stays usable. */
+ apps=k230_app_catalog();
  display=wl_display_connect(NULL); if(!display) { fprintf(stderr,"k230-touch-launcher: cannot connect to Wayland\n"); return 1; }
  struct wl_registry*r=wl_display_get_registry(display); wl_registry_add_listener(r,&registry_listener,NULL); wl_display_roundtrip(display);
  if(!compositor||!shm||!layer_shell) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, and layer-shell\n"); return 1; }

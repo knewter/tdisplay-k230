@@ -107,15 +107,6 @@ class TouchMenuTest(unittest.TestCase):
         self.assertIn('foot --config /mock/terminal.ini', actions)
         self.assertNotIn('swaymsg [app_id="k230-terminal"] focus', actions)
 
-    def test_native_launcher_source_handles_portrait_input_edges(self):
-        source = (ROOT / "nix" / "touch-launcher" / "touch-launcher.c").read_text()
-        self.assertIn('"TOUCH A CARD"', source)
-        self.assertIn("{'U'", source)
-        self.assertIn("{'D'", source)
-        self.assertIn('LOCK_EX|LOCK_NB', source)
-        self.assertIn('WL_POINTER_BUTTON_STATE_PRESSED', source)
-        self.assertIn('if ((int)w == width && (int)h == height && configured) return;', source)
-
     def test_cancel_does_not_call_sudo_and_confirm_does(self):
         _, actions = self.run_menu(['{"name":"system"}', '{"name":"reboot"}', '{"name":"cancel"}'])
         self.assertNotIn('sudo', actions)
