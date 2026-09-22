@@ -224,8 +224,9 @@ enable clears all three one-shot states, so a later enable is also ordinary.
 
 This is deliberately **not build or hardware evidence**.  It was prepared as
 a bounded diagnostic after a stage-1 logo reached Linux but the first Sway
-modeset showed a physical geometry/colour defect.  It must remain out of an
-image until a controlled physical comparison establishes that retaining the
+modeset showed a physical geometry/colour defect.  It may enter a dedicated
+diagnostic image for a controlled physical comparison, but must not become a
+default handoff path until that comparison establishes that retaining the
 stage-1 VO/DSI state is safer than the normal first modeset.  In particular,
 the source does not read back or prove the U-Boot hardware state, and the
 physical owner experiment may show that normal Linux VO timing/conversion

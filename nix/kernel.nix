@@ -222,7 +222,7 @@ EOM
       sed -i '/^void canaan_vo_enable_crtc/,/canaan_vo_init(vo);/ s|\tcanaan_vo_init(vo);|\tif (vo->stage1_handoff_pending) {\n\t\tvo->stage1_handoff_pending = false;\n\t\tif (canaan_stage1_mode_matches(adjusted_mode)) {\n\t\t\tcanaan_vo_set_stage1_vblank_timing(vo, adjusted_mode);\n\t\t\tdev_info(vo->dev, "stage 1 splash: preserving VO to first plane update\\n");\n\t\t\treturn;\n\t\t}\n\t\tdev_warn(vo->dev, "stage 1 splash: VO mode differs; reinitializing\\n");\n\t}\n\n\tcanaan_vo_init(vo);|' \
         drivers/gpu/drm/canaan/canaan_vo.c
       grep -q 'preserving VO to first plane update' drivers/gpu/drm/canaan/canaan_vo.c
-      sed -i '/^void canaan_vo_disable_crtc/,/\tvoid \*rst;/ s|\tvoid \*rst;|\tif (vo->stage1_handoff_pending) {\n\t\tdev_info(vo->dev, "stage 1 splash: VO disabled before handoff; reinitializing later\\n");\n\t\tvo->stage1_handoff_pending = false;\n\t}\n\n\tvoid *rst;|' \
+      sed -i '/^void canaan_vo_disable_crtc/,/\tvoid \*rst;/ s|\tvoid \*rst;|\tvoid *rst;\n\n\tif (vo->stage1_handoff_pending) {\n\t\tdev_info(vo->dev, "stage 1 splash: VO disabled before handoff; reinitializing later\\n");\n\t\tvo->stage1_handoff_pending = false;\n\t}|' \
         drivers/gpu/drm/canaan/canaan_vo.c
       grep -q 'VO disabled before handoff' drivers/gpu/drm/canaan/canaan_vo.c
 
