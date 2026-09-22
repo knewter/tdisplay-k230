@@ -5,7 +5,7 @@
 - [x] 1.2 Add New terminal with the existing readable Foot profile while
   retaining Terminal focus-or-start behavior. Verify it through the menu
   action test.
-- [ ] 1.3 Add the local Wayland SHM/layer-shell launcher and its fixed action
+- [x] 1.3 Add the local Wayland SHM/layer-shell launcher and its fixed action
   bridge. Verify host source checks and package installation expose the client
   and action helper without arbitrary command input.
 - [x] 1.4 Wire Apps to start the portrait launcher without removing the
@@ -14,11 +14,11 @@
 
 ## 2. Laptop package verification
 
-- [ ] 2.1 Build the named launcher derivation with `nix build
+- [x] 2.1 Build the named launcher derivation with `nix build
   .#touch-launcher --option max-jobs 2 --option cores 8` after the coordinated
   builder slot is idle; inspect `nix path-info -Sh .#touch-launcher`. This is
   a cross-package claim, not hardware proof.
-- [ ] 2.2 Run `python3 tests/test_touch_menu.py`, source-level launcher tests,
+- [x] 2.2 Run `python3 tests/test_touch_menu.py`, source-level launcher tests,
   `nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`,
   and `openspec validate the-shell-launches-apps-without-a-keyboard --strict`.
   Record their laptop-only result and a labelled layout preview.

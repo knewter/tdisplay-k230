@@ -16,17 +16,16 @@ nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath
 openspec validate the-shell-launches-apps-without-a-keyboard --strict
 ```
 
-The initial package build passed before follow-up input and strip fixes; its
-measurements below are retained only as a historical record. The corrected
-source requires the replacement build tracked in `tasks.md` before this is
-current validation. The initial package output was
-`/nix/store/07w3dmc4d79c86cjafc2n28xj6khhnlg-k230-touch-launcher`; its complete
+All commands passed against the corrected source. The package output is
+`/nix/store/7rrd0aq28knmxwvij2cpq3abxd1xn6gs-k230-touch-launcher`; its complete
 closure is 192.7 MiB, including the existing RISC-V Bash, glibc, and Wayland
-runtime graph. The native RISC-V launcher ELF itself is 34,265,384 bytes.
+runtime graph. The stripped native RISC-V launcher ELF is 27,120 bytes
+(27,616 bytes Nix store payload); the closure figure is not its executable
+size.
 
 For an offline test deployment, the complete closure was exported as
-`/tmp/k230-touch-launcher-07w3dmc-closure.nar.xz` (51 MiB,
-SHA-256 `01a9a9ad273a3f71325c6576c9d3577d0503d8abb393752faf3dd43ef6e5a007`).
+`/tmp/k230-touch-launcher-current-closure.nar.xz` (51 MiB,
+SHA-256 `61681a2c898b731cd6a368497fb46871386d6f6670e63b830dee80a90b8fe802`).
 A normal integrated system closure is preferred because it can share these
 runtime references instead of importing them separately.
 
