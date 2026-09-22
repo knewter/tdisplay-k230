@@ -95,3 +95,11 @@ console image keeps its current path. A shell restart accepts an already
 dropped master or an inactive optional owner, since neither can retain DRM
 master, but refuses to start after its bounded wait if an active owner never
 reaches `scanout`.
+
+
+The splash-enabled toplevel build passed on 2026-09-22 with
+`k230.panelConsole = false`:
+`/nix/store/m39vc96iaw7s5vlyxmlxa9a027kkizag-nixos-system-nixos-26.11.20260919.20b1ddd`.
+[Build and installed unit evidence](splash-owner-build.txt) records the exact
+command, the built unit, its immutable program, and the shell's release hook.
+Task 5.3's build claim is complete; physical handoff task 5.4 remains open.

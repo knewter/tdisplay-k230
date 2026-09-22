@@ -1,0 +1,35 @@
+Splash-enabled toplevel build, 2026-09-22
+Source: d124722 (daily image keeps panelConsole=true)
+Command: nix build --impure --expr 'let f = builtins.getFlake (toString ./.); in (f.nixosConfigurations.k230.extendModules { modules = [ ({ lib, ... }: { k230.panelConsole = lib.mkForce false; }) ]; }).config.system.build.toplevel' --out-link result-splash-system --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Exit: 0
+Output: /nix/store/m39vc96iaw7s5vlyxmlxa9a027kkizag-nixos-system-nixos-26.11.20260919.20b1ddd
+
+Unit:
+[Unit]
+After=systemd-udev-settle.service
+Before=shell.service multi-user.target
+Description=Static DRM owner for the K230 stage-1 splash
+
+[Service]
+Environment="LOCALE_ARCHIVE=/nix/store/07bryp8s1m62brscsdzmx6ick286irjm-glibc-locales-riscv64-unknown-linux-gnu-2.42-84/lib/locale/locale-archive"
+Environment="PATH=/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/bin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/bin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/bin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin:/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/sbin:/nix/store/f9vfmg7i47yz1pys69h44qsgffynpl6x-findutils-riscv64-unknown-linux-gnu-4.11.0/sbin:/nix/store/82hag9xq80yh6js55xp754dskys95ab2-gnugrep-riscv64-unknown-linux-gnu-3.12/sbin:/nix/store/8p3x57wkpfzjm7kbi15ygywrvmfpvc4g-gnused-riscv64-unknown-linux-gnu-4.10/sbin:/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/sbin"
+Environment="TZDIR=/nix/store/ycxsn8k4xxw4kx54fi36hibhry8bjjzw-tzdata-riscv64-unknown-linux-gnu-2026c/share/zoneinfo"
+ExecStart=/nix/store/qkvxyd8cajqsz2ablbngzxnzsn4a62cn-k230-drm-splash-riscv64-unknown-linux-gnu-0.1/bin/k230-drm-splash --ready-file /run/k230-drm-splash/state
+Group=shell
+KillSignal=SIGTERM
+Restart=on-failure
+RestartSec=1
+RuntimeDirectory=k230-drm-splash
+RuntimeDirectoryMode=0700
+TimeoutStopSec=5s
+Type=simple
+User=shell
+
+[Install]
+WantedBy=multi-user.target
+
+Shell handoff commands:
+Wants=k230-drm-splash.service
+ExecStart=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/mrs3y5x82skma9xkz6s035ily6fs308r-k230-sway.conf
+ExecStartPre=/nix/store/9ngzz9p95jarykckf357i41198w9b91i-release-k230-drm-splash
+ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd
