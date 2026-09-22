@@ -15,8 +15,8 @@ Camera clips are 30-fps recordings of the physical panel. `demo.mp4` is the rota
 | Terminal recovery | [native.mp4](terminal-recovery/native.mp4) | [screen.png](terminal-recovery/screen.png), [menu.png](terminal-recovery/menu.png) | [demo.mp4](terminal-recovery/demo.mp4) | Injected close then Windows/Home recovery |
 | System controls | [native.mp4](system-controls/native.mp4) | [screen.png](system-controls/screen.png), [menu.png](system-controls/menu.png) | [demo.mp4](system-controls/demo.mp4) | Injected inspection and cancellation; Power off/Reboot were not executed |
 | Neofetch | [native.mp4](neofetch-clean/native.mp4) | [screen.png](neofetch-clean/screen.png) | [demo.mp4](neofetch-clean/demo.mp4) | Clean image after automatic Nix registration; launched through Sway IPC/login shell |
-| Monitor portrait | [native.mp4](monitor-portrait/native.mp4) | [screen.png](monitor-portrait/screen.png) | [demo.mp4](monitor-portrait/demo.mp4) | Live portrait profile via Sway IPC; evidence predates final image integration and is distinct from the older clipped Monitor capture |
-| Unattended startup | — | [screen.jpg](startup/screen.jpg) | [demo.mp4](startup/demo.mp4) | Camera-only startup evidence; no native sample clip |
+| Monitor portrait | [native.mp4](monitor-integrated/native.mp4) | [screen.png](monitor-integrated/screen.png) | [demo.mp4](monitor-integrated/demo.mp4) | Injected Apps launch after verified image flash; uses the shipped Nix HTOPRC, without a local profile |
+| Unattended startup | — | [screen.png](startup-portrait/screen.png) | [demo.mp4](startup-portrait/demo.mp4) | Verified portrait image, serial reset and automatic startup; USB cables attached |
 | Reboot | — | [screen.png](reboot/screen.png) | [demo.mp4](reboot/demo.mp4) | Injected reboot confirmation and return; camera evidence, no native sample clip |
 
 The diagnostic [neofetch-launch-failed](neofetch-launch-failed/) and earlier [neofetch](neofetch/) captures are retained for debugging but are excluded from the featured gallery.
@@ -26,3 +26,9 @@ The confirmed Reboot clip verifies return to an active shell with a new boot ID.
 Power-off execution, battery-only boot, and a complete finger-touch workflow
 remain unverified. These files are ready for site integration; this portable
 gallery does not publish them into the existing Astro site.
+
+The gallery now features the verified portrait image for Monitor and startup.
+Earlier [live Monitor](monitor-portrait/) and [startup](startup/) recordings remain
+for provenance. The newer Monitor sample originals are retained separately in
+[its source archive](monitor-integrated/native-source.tar.gz). Its board clock
+was unset (March 17); host camera timestamps are September 22.

@@ -1,0 +1,13 @@
+
+===== > chmod +x /tmp/inject-tap.sh; evemu-describe /dev/input/event0 > /tmp/k230-touch.desc; sed -i "s/^N:.*/N: K230 injected touchscreen/" /tmp/k230-touch.desc; nohup evemu-device /tmp/k230-touch.desc > /tmp/k230-virtual.log 2>&1 < /dev/null & sleep 2; cat /tmp/k230-virtual.log =====
+chmod +x /tmp/inject-tap.sh; evemu-describe /dev/input/event0 > /tmp/k230-touch.desc; sed -i "s/^N:.*/N: K230 injected touchscreen/" /tmp/k230-touch.desc; nohup evemu-device /tmp/k230-touch.desc > /tmp/k230-virtual.log 2>&1 < /dev/null & sleep 2; cat /tmp/k230-virtual.log
+[?2004l
+[1] 806
+K230 injected touchscreen: /dev/input/event1
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

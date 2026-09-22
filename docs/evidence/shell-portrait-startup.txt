@@ -1,0 +1,69 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; systemctl is-active shell; systemctl show shell -p DropInPaths -p ExecStart -p WorkingDirectory; systemctl show register-nix-paths -p Result -p ExecMainStatus; nix-store -qR /run/current-system | wc -l; cat /proc/sys/kernel/random/boot_id; test ! -e /home/shell/.config/htop/htoprc && echo NO_LOCAL_HTOP_PROFILE; cat /nix/store/9l7x6r7fqfdbbhjln3sh0g5hs44i4pwr-k230-monitor.htoprc; cat /nix/store/b9g2ppzzhy3ra5bkgd1hiclb8wql0zmd-k230-monitor-foot.ini; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_outputs; ls -l /dev/uinput =====
+export SYSTEMD_PAGER=cat PAGER=cat; readlink /run/current-system; systemctl is-active shell; systemctl show shell -p DropInPaths -p ExecStart -p WorkingDirectory; systemctl show register-nix-paths -p Result -p ExecMainStatus; nix-store -qR /run/current-system | wc -l; cat /proc/sys/kernel/random/boot_id; test ! -e /home/shell/.config/htop/htoprc && echo NO_LOCAL_HTOP_PROFILE; cat /nix/store/9l7x6r7fqfdbbhjln3sh0g5hs44i4pwr-k230-monitor.htoprc; cat /nix/store/b9g2ppzzhy3ra5bkgd1hiclb8wql0zmd-k230-monitor-foot.ini; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_outputs; ls -l /dev/uinput
+[?2004l
+/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+DropInPaths=
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/d04nc010qksfn7inp0dr8brg6kbz5apl-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 19:56:36 UTC] ; stop_time=[n/a] ; pid=562 ; code=(null) ; status=0/0 }
+WorkingDirectory=/home/shell
+Result=success
+ExecMainStatus=0
+571
+3c4583d7-01ad-4138-a75c-6063a248863e
+NO_LOCAL_HTOP_PROFILE
+# Narrow 568 px portrait profile for htop 3.5.3.
+#
+# The named fields and meters are from the pinned htop source: LinuxProcess.c
+# declares PID, PERCENT_CPU, PERCENT_MEM, and Command; HeaderLayout.h declares
+# one_100; the upstream htoprc fixture uses CPU, Memory, Tasks, and LoadAverage.
+htop_version=3.5.3
+config_reader_min_version=3
+hide_kernel_threads=1
+hide_userland_threads=1
+show_thread_names=0
+show_program_path=0
+show_merged_command=0
+header_margin=0
+screen_tabs=0
+delay=15
+hide_function_bar=1
+header_layout=one_100
+column_meters_0=CPU Memory Tasks LoadAverage
+column_meter_modes_0=1 1 2 2
+screen:Main=PID PERCENT_CPU PERCENT_MEM Command
+.sort_key=PERCENT_CPU
+.tree_sort_key=PID
+.tree_view_always_by_pid=0
+.tree_view=0
+.sort_direction=-1
+.tree_sort_direction=1
+.all_branches_collapsed=0
+font=DejaVu Sans Mono:size=15
+title=Monitor
+locked-title=yes
+app-id=k230-monitor
+Output DSI-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 568x1232 @ 52.190 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: normal
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    568x1232 @ 52.190 Hz
+
+crw------- 1 root root 10, 223 Mar 17 19:56 [0m[40;33;01m/dev/uinput[0m
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

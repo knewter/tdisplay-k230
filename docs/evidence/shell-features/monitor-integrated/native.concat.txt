@@ -1,0 +1,98 @@
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000001.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000002.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000003.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000004.png'
+option framerate 100
+duration 0.630000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000005.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000006.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000007.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000008.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000009.png'
+option framerate 100
+duration 0.620000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000010.png'
+option framerate 100
+duration 0.550000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000011.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000012.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000013.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000014.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000015.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000016.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000017.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000018.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000019.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000020.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000021.png'
+option framerate 100
+duration 0.580000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000022.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000023.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000024.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000025.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000026.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000027.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000028.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000029.png'
+option framerate 100
+duration 0.560000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000030.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000031.png'
+option framerate 100
+duration 0.570000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000032.png'
+option framerate 100
+duration 0.270000
+file '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/.scratch/monitor-integrated/20260317T200019Z-monitor-integrated/frame-000032.png'
+option framerate 100

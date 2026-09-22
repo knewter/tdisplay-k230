@@ -629,6 +629,14 @@ E1   023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/
 E1   d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
 IO   517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
 IO   1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
+DATA 5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236  docs/evidence/shell-features/startup-portrait/20260922T172430Z-portrait-image-startup.mp4
+DATA 3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947  docs/evidence/shell-features/startup-portrait/demo.mp4
+DATA 70ac27055e70e2add02b8460b8596b1c4597aacfad212e8f1793257606536cfa  docs/evidence/shell-features/startup-portrait/screen.png
+DATA a21b31bc9f2083a07b064d6e7903e5cee8171c5b17f98d25fe13f715e5351556  docs/evidence/shell-features/monitor-integrated/20260922T172916Z-monitor-integrated.mp4
+DATA da384bb99cc17340995486503e40266d5c5d3a5bbe62d8673953f7df9484634e  docs/evidence/shell-features/monitor-integrated/demo.mp4
+DATA bbaedd2437c461121860b4371e3519ae4e9a9f60833baecd2eb1ffd9b9ef162c  docs/evidence/shell-features/monitor-integrated/native-source.tar.gz
+DATA b0bfd387d777e37bba4eecdca7b1f64dde8687012bb6fb26ce8af027c6c549cc  docs/evidence/shell-features/monitor-integrated/native.mp4
+DATA 2997bf72414d03c70b23381cf4ccc30be1bc75ca79663f23cb20a365e1410fe3  docs/evidence/shell-features/monitor-integrated/screen.png
 DATA 72815940d742506f6b6a8b1889e90b982c8b9d7bcb9899ffa2b73c528557a3d2  docs/evidence/shell-frame-timing/20260922T171130Z-portrait-frame-load.jpg
 DATA ac7b86aa20bcca4c38c44047a21471e3a80a2f2b11fe36d552fd4fcbb05b88c0  docs/evidence/shell-frame-timing/portrait-scroll-keyboard.png
 DATA group:10-files  docs/evidence/panel-photos/*.{jpg,png}   photographs of the panel, cited as evidence

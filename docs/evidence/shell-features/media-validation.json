@@ -705,6 +705,120 @@
           "size": "436046"
         }
       }
+    },
+    {
+      "path": "startup-portrait/20260922T172430Z-portrait-image-startup.mp4",
+      "site_presentation": false,
+      "bytes": 14767688,
+      "sha256": "5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "150.000000",
+          "size": "14767688"
+        }
+      }
+    },
+    {
+      "path": "startup-portrait/demo.mp4",
+      "site_presentation": true,
+      "bytes": 10691516,
+      "sha256": "3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "110.000000",
+          "size": "10691516"
+        }
+      }
+    },
+    {
+      "path": "monitor-integrated/20260922T172916Z-monitor-integrated.mp4",
+      "site_presentation": false,
+      "bytes": 2001834,
+      "sha256": "a21b31bc9f2083a07b064d6e7903e5cee8171c5b17f98d25fe13f715e5351556",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2001834"
+        }
+      }
+    },
+    {
+      "path": "monitor-integrated/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2043456,
+      "sha256": "da384bb99cc17340995486503e40266d5c5d3a5bbe62d8673953f7df9484634e",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2043456"
+        }
+      }
+    },
+    {
+      "path": "monitor-integrated/native.mp4",
+      "site_presentation": true,
+      "bytes": 247174,
+      "sha256": "b0bfd387d777e37bba4eecdca7b1f64dde8687012bb6fb26ce8af027c6c549cc",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "17.840000",
+          "size": "247174"
+        }
+      }
     }
   ]
 }

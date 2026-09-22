@@ -1,0 +1,269 @@
+{
+  "created_at": "2026-09-22T17:36:16Z",
+  "description": "Apps launches the shipped portrait Monitor on the verified image. Native sampled state evidence; no physical-touch or smooth-frame-rate claim.",
+  "artifact": {
+    "path": "docs/evidence/shell-features/monitor-integrated/native.mp4",
+    "kind": "mp4-h264-yuv420p",
+    "portrait_source": true
+  },
+  "capture_source": {
+    "kind": "sampled-wayland-screencopy-png",
+    "sample_directory": ".scratch/monitor-integrated/20260317T200019Z-monitor-integrated",
+    "frame_count": 32,
+    "timestamps": "board /proc/uptime boot-relative monotonic seconds",
+    "rendered_duration_seconds": 17.830000000000002,
+    "final_frame_codec_duration_note": "The concat input repeats the final PNG so FFmpeg honors its measured duration. At its 100 fps input timebase, the MP4 may extend by 0.01 seconds beyond the measured display duration."
+  },
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-000001.png",
+      "capture_start_monotonic_seconds": 273.12,
+      "capture_end_monotonic_seconds": 273.35,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 2,
+      "file": "frame-000002.png",
+      "capture_start_monotonic_seconds": 273.68,
+      "capture_end_monotonic_seconds": 273.91,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 3,
+      "file": "frame-000003.png",
+      "capture_start_monotonic_seconds": 274.24,
+      "capture_end_monotonic_seconds": 274.47,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 4,
+      "file": "frame-000004.png",
+      "capture_start_monotonic_seconds": 274.8,
+      "capture_end_monotonic_seconds": 275.09,
+      "display_duration_seconds": 0.63
+    },
+    {
+      "index": 5,
+      "file": "frame-000005.png",
+      "capture_start_monotonic_seconds": 275.43,
+      "capture_end_monotonic_seconds": 275.67,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 6,
+      "file": "frame-000006.png",
+      "capture_start_monotonic_seconds": 275.99,
+      "capture_end_monotonic_seconds": 276.21,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 7,
+      "file": "frame-000007.png",
+      "capture_start_monotonic_seconds": 276.55,
+      "capture_end_monotonic_seconds": 276.78,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 8,
+      "file": "frame-000008.png",
+      "capture_start_monotonic_seconds": 277.11,
+      "capture_end_monotonic_seconds": 277.34,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 9,
+      "file": "frame-000009.png",
+      "capture_start_monotonic_seconds": 277.67,
+      "capture_end_monotonic_seconds": 278.08,
+      "display_duration_seconds": 0.62
+    },
+    {
+      "index": 10,
+      "file": "frame-000010.png",
+      "capture_start_monotonic_seconds": 278.29,
+      "capture_end_monotonic_seconds": 278.76,
+      "display_duration_seconds": 0.55
+    },
+    {
+      "index": 11,
+      "file": "frame-000011.png",
+      "capture_start_monotonic_seconds": 278.84,
+      "capture_end_monotonic_seconds": 279.12,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 12,
+      "file": "frame-000012.png",
+      "capture_start_monotonic_seconds": 279.4,
+      "capture_end_monotonic_seconds": 279.68,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 13,
+      "file": "frame-000013.png",
+      "capture_start_monotonic_seconds": 279.96,
+      "capture_end_monotonic_seconds": 280.29,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 14,
+      "file": "frame-000014.png",
+      "capture_start_monotonic_seconds": 280.53,
+      "capture_end_monotonic_seconds": 280.81,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 15,
+      "file": "frame-000015.png",
+      "capture_start_monotonic_seconds": 281.09,
+      "capture_end_monotonic_seconds": 281.37,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 16,
+      "file": "frame-000016.png",
+      "capture_start_monotonic_seconds": 281.66,
+      "capture_end_monotonic_seconds": 281.98,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 17,
+      "file": "frame-000017.png",
+      "capture_start_monotonic_seconds": 282.23,
+      "capture_end_monotonic_seconds": 282.51,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 18,
+      "file": "frame-000018.png",
+      "capture_start_monotonic_seconds": 282.79,
+      "capture_end_monotonic_seconds": 283.07,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 19,
+      "file": "frame-000019.png",
+      "capture_start_monotonic_seconds": 283.36,
+      "capture_end_monotonic_seconds": 283.64,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 20,
+      "file": "frame-000020.png",
+      "capture_start_monotonic_seconds": 283.92,
+      "capture_end_monotonic_seconds": 284.2,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 21,
+      "file": "frame-000021.png",
+      "capture_start_monotonic_seconds": 284.48,
+      "capture_end_monotonic_seconds": 284.76,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 22,
+      "file": "frame-000022.png",
+      "capture_start_monotonic_seconds": 285.06,
+      "capture_end_monotonic_seconds": 285.33,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 23,
+      "file": "frame-000023.png",
+      "capture_start_monotonic_seconds": 285.62,
+      "capture_end_monotonic_seconds": 285.9,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 24,
+      "file": "frame-000024.png",
+      "capture_start_monotonic_seconds": 286.18,
+      "capture_end_monotonic_seconds": 286.51,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 25,
+      "file": "frame-000025.png",
+      "capture_start_monotonic_seconds": 286.74,
+      "capture_end_monotonic_seconds": 287.02,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 26,
+      "file": "frame-000026.png",
+      "capture_start_monotonic_seconds": 287.3,
+      "capture_end_monotonic_seconds": 287.58,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 27,
+      "file": "frame-000027.png",
+      "capture_start_monotonic_seconds": 287.86,
+      "capture_end_monotonic_seconds": 288.17,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 28,
+      "file": "frame-000028.png",
+      "capture_start_monotonic_seconds": 288.42,
+      "capture_end_monotonic_seconds": 288.7,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 29,
+      "file": "frame-000029.png",
+      "capture_start_monotonic_seconds": 288.98,
+      "capture_end_monotonic_seconds": 289.26,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 30,
+      "file": "frame-000030.png",
+      "capture_start_monotonic_seconds": 289.54,
+      "capture_end_monotonic_seconds": 289.81,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 31,
+      "file": "frame-000031.png",
+      "capture_start_monotonic_seconds": 290.11,
+      "capture_end_monotonic_seconds": 290.38,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 32,
+      "file": "frame-000032.png",
+      "capture_start_monotonic_seconds": 290.68,
+      "capture_end_monotonic_seconds": 290.95,
+      "display_duration_seconds": 0.27
+    }
+  ],
+  "interaction_provenance": "injected",
+  "evidence_note": "This is sampled Wayland screencopy. It does not demonstrate smoothness, frame rate, compositor performance, or prove real touch.",
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    "docs/evidence/shell-features/monitor-integrated/native.concat.txt",
+    "-fps_mode",
+    "vfr",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "docs/evidence/shell-features/monitor-integrated/native.mp4"
+  ],
+  "dry_run": false
+}

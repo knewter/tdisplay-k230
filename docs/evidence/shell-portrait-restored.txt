@@ -1,0 +1,18 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] focus'; pkill -USR2 -x wvkbd-mobintl; pkill -x evemu-device; systemctl is-active shell; systemctl show shell -p DropInPaths; echo HOME_ARCHIVE_RESTORED_SHA256_6dfdf1dd3c1012f2a98b5c943ecb20f0dbe3aa595eb27e45feba6237601b85ef; stat -c "%U %G %a %n" /home/shell; readlink /run/current-system =====
+export SYSTEMD_PAGER=cat PAGER=cat SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] focus'; pkill -USR2 -x wvkbd-mobintl; pkill -x evemu-device; systemctl is-active shell; systemctl show shell -p DropInPaths; echo HOME_ARCHIVE_RESTORED_SHA256_6dfdf1dd3c1012f2a98b5c943ecb20f0dbe3aa595 
+eb27e45feba6237601b85ef; stat -c "%U %G %a %n" /home/shell; readlink /run/current-system
+[?2004l
+active
+[1]+  Terminated                 nohup evemu-device /tmp/k230-touch.desc > /tmp/k230-virtual.log 2>&1 < /dev/null
+DropInPaths=
+HOME_ARCHIVE_RESTORED_SHA256_6dfdf1dd3c1012f2a98b5c943ecb20f0dbe3aa595eb27e45feba6237601b85ef
+shell shell 700 /home/shell
+/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
