@@ -55,3 +55,21 @@ Linux; [inspection](splash-handoff/normal-recovery.txt) records active shell and
 seatd with no drop-ins, no splash flag, `/dev/fb0` restored and no shell mask in
 the command line. The [recovery photograph](splash-handoff/20260922T200502Z-normal-shell-recovered.jpg)
 shows the correct control order and colors again.
+
+## Read-only register diagnostic
+
+`tools/vo-registers.c`, built with `nix/vo-registers.nix`, snapshots only named
+VO/DSI registers from the pinned register headers and device-tree addresses.
+It contains no write path. The target build used the same flake's cross pkgs:
+
+```
+nix build --impure --expr 'let f = builtins.getFlake "<absolute-worktree>"; in f.nixosConfigurations.k230.pkgs.callPackage ./nix/vo-registers.nix {}' --option max-jobs 1 --option cores 1
+```
+
+The helper compiled with `-Wall -Wextra -Werror`, was transferred with hash
+verification, and was run on the no-logo control boot. The running kernel
+[refused its mmap with Operation not permitted](splash-handoff/normal-vo-registers.txt).
+A preceding [read attempt through dd](splash-handoff/devmem-read-failed.txt)
+returned Bad address. Neither transcript contains successful register values.
+Comparison of actual normal/splash register state remains unverified; the
+probe failure is not evidence that a particular register caused the defect.

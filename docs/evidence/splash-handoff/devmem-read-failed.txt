@@ -1,0 +1,20 @@
+
+===== > for off in 0x880 0x884 0x888 0x898 0x89c 0x8a0 0x118 0x380 0x340; do printf "%s " "$off"; dd if=/dev/mem bs=4 skip=$(((0x90840000+off)/4)) count=1 status=none | od -An -tx4; done =====
+for off in 0x880 0x884 0x888 0x898 0x89c 0x8a0 0x118 0x380 0x340; do printf "%s " "$off"; dd if=/dev/mem bs=4 skip=$(((0x90840000+off)/4)) count=1 status=none | od -An -tx4; done
+[?2004l
+0x880 dd: error reading '/dev/mem': Bad address
+0x884 dd: error reading '/dev/mem': Bad address
+0x888 dd: error reading '/dev/mem': Bad address
+0x898 dd: error reading '/dev/mem': Bad address
+0x89c dd: error reading '/dev/mem': Bad address
+0x8a0 dd: error reading '/dev/mem': Bad address
+0x118 dd: error reading '/dev/mem': Bad address
+0x380 dd: error reading '/dev/mem': Bad address
+0x340 dd: error reading '/dev/mem': Bad address
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

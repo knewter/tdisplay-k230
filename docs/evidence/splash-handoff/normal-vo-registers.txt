@@ -1,0 +1,12 @@
+
+===== > chmod +x /tmp/vo-registers; /tmp/vo-registers =====
+chmod +x /tmp/vo-registers; /tmp/vo-registers
+[?2004l
+mmap display registers: Operation not permitted
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
