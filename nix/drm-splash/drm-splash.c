@@ -17,8 +17,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <drm/drm.h>
-#include <drm/drm_mode.h>
+#include <drm.h>
+#include <drm_mode.h>
 #include <drm_fourcc.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -168,6 +168,8 @@ static int read_asset(uint8_t **asset) {
     size_t at = 0;
     while (at < SPLASH_BYTES) {
         ssize_t read_bytes = read(fd, *asset + at, SPLASH_BYTES - at);
+        if (read_bytes < 0 && errno == EINTR)
+            continue;
         if (read_bytes <= 0) { if (read_bytes == 0) errno = EIO; fail("read splash asset"); free(*asset); close(fd); return -1; }
         at += (size_t)read_bytes;
     }
@@ -182,6 +184,13 @@ static int make_buffer(int fd, uint32_t width, uint32_t height, uint32_t format,
     buffer->handle = create.handle;
     buffer->pitch = create.pitch;
     buffer->size = create.size;
+    uint32_t bytes_per_pixel = format == DRM_FORMAT_RGB565 ? 2 : 4;
+    if (create.pitch < width * bytes_per_pixel ||
+        create.size < (uint64_t)create.pitch * height) {
+        fprintf(stderr, "k230-drm-splash: invalid dumb buffer pitch/size\n");
+        errno = EINVAL;
+        return -1;
+    }
     uint32_t handles[4] = { create.handle };
     uint32_t pitches[4] = { create.pitch };
     uint32_t offsets[4] = { 0 };
@@ -279,14 +288,20 @@ int main(int argc, char **argv) {
     uint8_t *asset = NULL;
     int result = 1;
     bool successor_seen = false;
-    if (find_target(fd, &target) || verify_primary_format(fd, &target, format) ||
-        read_asset(&asset) || make_buffer(fd, target.mode.hdisplay, target.mode.vdisplay, format, &buffer))
+    if (drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1)) {
+        fail("enable universal DRM planes");
+        goto out_before_modeset;
+    }
+    if (find_target(fd, &target))
         goto out_before_modeset;
     if (target.mode.hdisplay != SPLASH_WIDTH || target.mode.vdisplay != SPLASH_HEIGHT) {
         fprintf(stderr, "k230-drm-splash: connected mode is %ux%u, splash is %ux%u\n",
             target.mode.hdisplay, target.mode.vdisplay, SPLASH_WIDTH, SPLASH_HEIGHT);
         goto out_before_modeset;
     }
+    if (verify_primary_format(fd, &target, format) || read_asset(&asset) ||
+        make_buffer(fd, target.mode.hdisplay, target.mode.vdisplay, format, &buffer))
+        goto out_before_modeset;
     fill_buffer(&buffer, asset, format);
     if (drmModeSetCrtc(fd, target.crtc_id, buffer.fb_id, 0, 0, &target.connector_id, 1, &target.mode)) {
         fail("set splash mode");

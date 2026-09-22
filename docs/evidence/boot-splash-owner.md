@@ -72,8 +72,9 @@ started under the design rule; task 5.3 is the documented fallback and task
 ## Task 5.3 implementation boundary
 
 The selected fallback is a small libdrm owner in the main system. It opens the
-primary node, finds a connected connector, preferred mode, CRTC, and matching
-primary plane, then creates a dumb buffer. The source asset is immutable
+primary node, enables universal-plane enumeration, finds a connected connector,
+preferred mode, CRTC, and matching primary plane, then creates a dumb buffer.
+The source asset is immutable
 `logo.xrgb` in the Nix store. The K230 primary plane does not advertise XR24,
 so the default path converts its B,G,R,X bytes to RG16; AR24 is available only
 when the discovered primary plane advertises it. There is no animation because
@@ -88,5 +89,9 @@ arrangement avoids treating close-time framebuffer lifetime as a handoff
 mechanism. It still does **not** prove that the panel
 will remain lit: DRM object lifetime after file release and Sway's first
 modeset are driver-dependent. Task 5.4 must film the transition before any
-continuity claim is made. The service is absent when `k230.panelConsole` is
-true, so the daily no-logo console image keeps its current path.
+continuity claim is made. The service is present only when both
+`k230.panelConsole` is false and the shell is enabled; the daily no-logo
+console image keeps its current path. A shell restart accepts an already
+dropped master or an inactive optional owner, since neither can retain DRM
+master, but refuses to start after its bounded wait if an active owner never
+reaches `scanout`.

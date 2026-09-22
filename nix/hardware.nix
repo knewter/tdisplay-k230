@@ -30,6 +30,7 @@
 
 let
   drmSplash = pkgs.callPackage ./drm-splash { inherit bootSplashImage; };
+  splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
 in
 {
   imports = [ ./panel-console.nix ];
@@ -134,7 +135,7 @@ in
 
   # The image owner only exists on splash boots.  The current daily image
   # selects panelConsole and therefore retains the verified console path.
-  systemd.services.k230-drm-splash = lib.mkIf (!config.k230.panelConsole) {
+  systemd.services.k230-drm-splash = lib.mkIf splashOwnerEnabled {
     description = "Static DRM owner for the K230 stage-1 splash";
     wantedBy = [ "multi-user.target" ];
     before = [ "shell.service" "multi-user.target" ];

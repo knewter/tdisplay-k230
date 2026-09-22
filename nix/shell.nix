@@ -335,28 +335,52 @@ in
         WorkingDirectory = config.users.users.shell.home;
         RuntimeDirectory = "shell";
         RuntimeDirectoryMode = "0700";
-        # On a splash boot, the owner has completed a KMS set before it
-        # writes `scanout`.  Tell it to drop DRM master while retaining its
-        # framebuffer, then wait for its acknowledgement before Sway opens
-        # the device.  A timeout fails the shell rather than silently taking
-        # DRM before a splash owner existed.
+        # On a splash boot, an active owner writes `scanout` only after its
+        # KMS set. Tell it to drop DRM master while retaining its framebuffer,
+        # then wait for acknowledgement before Sway opens DRM. A completed or
+        # failed optional owner cannot hold DRM master, so shell restart and
+        # a splash setup failure deliberately fall through with a journal log.
         ExecStartPre = lib.optional (!config.k230.panelConsole)
           (pkgs.writeShellScript "release-k230-drm-splash" ''
             state=/run/k230-drm-splash/state
-            for i in $(seq 100); do
-              [ "$(cat "$state" 2>/dev/null || true)" = scanout ] && break
-              sleep 0.1
-            done
-            [ "$(cat "$state" 2>/dev/null || true)" = scanout ] || {
-              echo "k230 DRM splash never reached scanout" >&2
-              exit 1
+            systemctl=${pkgs.systemd}/bin/systemctl
+            owner_active() {
+              "$systemctl" is-active --quiet k230-drm-splash.service
             }
-            pkill -USR1 -x k230-drm-splash
+            state_value() {
+              cat "$state" 2>/dev/null || true
+            }
             for i in $(seq 100); do
-              [ "$(cat "$state" 2>/dev/null || true)" = master-dropped ] && exit 0
+              case "$(state_value)" in
+                master-dropped)
+                  echo "k230 DRM splash handoff was already acknowledged" >&2
+                  exit 0
+                  ;;
+                scanout)
+                  if owner_active; then
+                    pkill -USR1 -x k230-drm-splash
+                    for j in $(seq 100); do
+                      [ "$(state_value)" = master-dropped ] && exit 0
+                      if ! owner_active; then
+                        echo "k230 DRM splash owner exited after handoff; proceeding" >&2
+                        exit 0
+                      fi
+                      sleep 0.1
+                    done
+                    echo "active k230 DRM splash owner did not drop DRM master" >&2
+                    exit 1
+                  fi
+                  echo "k230 DRM splash state is stale but owner is inactive; proceeding" >&2
+                  exit 0
+                  ;;
+              esac
+              if ! owner_active; then
+                echo "k230 DRM splash owner is inactive; proceeding without optional splash" >&2
+                exit 0
+              fi
               sleep 0.1
             done
-            echo "k230 DRM splash did not drop DRM master" >&2
+            echo "active k230 DRM splash owner never reached scanout" >&2
             exit 1
           '') ++ [
           # seatd's unit is Type=simple (see above), so "after seatd" only
