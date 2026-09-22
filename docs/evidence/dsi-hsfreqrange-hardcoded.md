@@ -136,3 +136,84 @@ Why 0x07 rather than 0x17 -- that is empirical. A different pixel clock
 would need its own value and there is still no table to derive it from,
 which is precisely why the value stays in the device tree rather than
 being folded back into a driver constant.
+
+---
+
+# The PLL numbers for 594 Mbps, derived by hand from `canaan_dsi_clk_cfg()`
+
+2026-09-22, task 1.3 of `the-screen-lights-before-linux`. U-Boot's logo
+path takes the PHY PLL as a per-panel `{n, m, voc, hs_freq}` table
+(`display_logo.h:430-436`) where Linux derives `m`, `n` and `voc` from
+the pixel clock at runtime. Stage 1 must drive the panel at the same mode
+as Linux, so here are the numbers Linux actually uses, worked through the
+driver's own arithmetic. Source: `drivers/gpu/drm/canaan/canaan_dsi.c:316-383`
+in the pinned tree (`nix/kernel-src.nix`,
+`ruyisdk/linux-xuantie-kernel @ 7d4e1f44`), unpatched line numbers.
+
+## The arithmetic, for `clock = 49500` kHz and `lanes = 2`
+
+| line | expression | value |
+| --- | --- | --- |
+| 323 | `div = DIV64_U64_ROUND_CLOSEST(594000, 49500)` | 12 (exact) |
+| 324 | `clk_freq = 594000 / div` | 49 500 kHz |
+| 325 | `phy_clk_freq = clk_freq * 3 * 8 / lanes / 2` | 49500·24/2/2 = **297 000 kHz** |
+| 326-347 | ladder: `297000 < 330000` | **`voc = 0x17`** |
+| 349 | `voc_freq = phy_clk_freq << (voc >> 4)` = 297000·2 | 594 000 kHz |
+| 350-352 | `cmp = voc_freq * 1000 / 24` | 24 750 000 |
+| 353-367 | for `i` in 1..16: `val = (cmp·i + 500000) / 1000000`, `diff = \|cmp − val·10⁶/i\|` | i=1: val 25, diff 250 000; i=2: 50, 250 000; i=3: 74, 83 334; **i=4: 99, diff 0 → break** |
+| — | result | **`m = 99`, `n = 4`** |
+| 370-374 | `phy_freq = 24000 · 2 · m / n / 2^(voc>>4)` = 24000·198/4/2 | 594 000 kHz |
+| 376-380 | pixel-clock divider: `(div − 1) << 3` into `0x91100078` | 11 |
+| 383 | `k230_dsi_config_4lan_phy(dsi, m − 2, n − 1, voc, hsfreqrange)` | **`(97, 3, 0x17, 0x87)`** |
+
+`m − 2` and `n − 1` are the register encodings: `canaan_phy.c:73-75` writes
+them as `M = m + 2` into `TXDPHY_PLL_CFG0[26:17]` and `N = n + 1` into
+`[30:27]`; U-Boot's `display_logo.c:757-760` is the same code. So a U-Boot
+connector table carries the *encoded* values, which is why LILYGO's entry
+reads `{4, 97, …}` for a PLL whose real `M/N` is 99/5.
+
+The transcription of the function in Python integer arithmetic that these
+rows were checked against reproduces the boot log's line exactly:
+`phy_clk_freq * 2 = 594000` kbps and `voc = 0x17` are what
+`docs/evidence/boot-from-source-cold.txt` line 315 prints —
+`canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 594000 kbps, voc 0x17,
+hsfreqrange 0x87`. The same transcription run at 39 600 kHz gives
+`m = 99, n = 5 → (97, 4)`, matching both LILYGO's table and the earlier
+hand-derivation in `docs/research/linux-on-t-display-k230.md` §3.
+
+## The table
+
+`{n, m, voc, hs_freq}` in U-Boot's table order, encoded as the PHY takes
+them. VCO = 24 MHz · 2 · M / N; PHY clock = VCO / 2^(voc>>4); lane rate =
+2 · PHY clock.
+
+| entry | pclk | `{n, m, voc, hs_freq}` | real M/N | VCO | PHY clk | lane rate | where |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **this system, derived** | 49.5 MHz | **`{3, 97, 0x17, 0x87}`** | 99/4 | 1188 MHz | 297 MHz | **594 Mbps** | this section; `hs_freq` measured above |
+| LILYGO RM69A10 (U-Boot table, and RT-Smart) | 39.6 MHz | `{4, 97, 0x19, 0x96}` | 99/5 | 950.4 MHz | 237.6 MHz | 475.2 Mbps | `docs/evidence/lilygo-uboot-logo.md`, `k230_logo.c` |
+| SDK ST7701 480x800 (the `#else` default) | 39.6 MHz | `{9, 196, 0x17, 0xa3}` | 198/10 | 950.4 MHz | 237.6 MHz | 475.2 Mbps | SDK `k230_logo.c:259-260` |
+| SDK ILI9881 (4 lanes) | 74.25 MHz | `{15, 295, 0x17, 0x96}` | 297/16 | 891 MHz | 222.75 MHz | 445.5 Mbps | SDK `k230_logo.c:244-245` |
+| Linux, what it would compute for 39.6 MHz | 39.6 MHz | `{4, 97, 0x17, 0x96}` | 99/5 | 950.4 MHz | 237.6 MHz | 475.2 Mbps | same arithmetic, `i = 5` |
+
+Three things the table makes visible:
+
+1. **`m` does not change between LILYGO's mode and ours; only `n` does.**
+   49.5/39.6 = 5/4, and the VCO ladder keeps `voc = 0x17` (PHY clock in
+   220..330 MHz) for both, so the same M = 99 with N = 4 instead of 5 is the
+   whole PLL change. The pixel-clock divider (`pixclk_div`, written `div <<
+   3`) goes from 14 to 11.
+2. **The SDK's ST7701 entry and the Linux computation are the same PLL
+   frequency in two encodings** (198/10 = 99/5). The driver's search picks
+   the smallest `n` with zero error; the SDK's author picked a larger one.
+   Neither is "more right".
+3. **`voc`: LILYGO's `0x19` versus the ladder's `0x17`.** The upper nibble
+   (the post-divider, `voc >> 4`) is 1 in both; only the low nibble differs,
+   and `docs/research/linux-on-t-display-k230.md` §3 could find no
+   documentation for what it selects. This system has booted with `0x17` at
+   594 Mbps on every capture since the panel lit, so `0x17` is the grounded
+   value and the one stage 1 should use; `0x19` is LILYGO's and has only
+   been seen at 475 Mbps.
+
+`hs_freq` is the one column no arithmetic produces: `0x87` is in the table
+because it was measured (the section above), and it goes into stage 1's
+table for the same reason it went into the device tree.
