@@ -25,8 +25,10 @@ same time.
 
 Every byte the board sends is in the transcript, timestamped, as is every
 host command and its output. Exit status: 0 when the gadget enumerated and
-Linux came back, 3 when it did not enumerate but Linux came back, 1 when
-the board was not returned to Linux (say so loudly; the board is shared).
+Linux came back, 3 when it did not enumerate but Linux came back, 4 when
+that UMS path succeeded but the opt-in host coexistence verdict failed, and
+1 when the board was not returned to Linux (say so loudly; the board is
+shared).
 """
 import argparse, hashlib, os, re, shlex, subprocess, sys, time
 from pathlib import Path
@@ -157,11 +159,15 @@ class Session:
         self.port.flush()
 
     def cmd(self, text, timeout=30):
+        return self.cmd_output(text, timeout) is not None
+
+    def cmd_output(self, text, timeout=30):
+        """Send one command and return its complete prompt-delimited output."""
         self.send_line(text)
         if not self.wait_for(PROMPT, timeout):
             self.note(f"no prompt within {timeout}s after {text!r}")
-            return False
-        return True
+            return None
+        return self.buf
 
     def host(self, argv, check=False):
         """Run a host command and put its output in the transcript."""
@@ -298,6 +304,37 @@ def validated_ums_byid(disks, expected_sectors):
     return byid
 
 
+def usb_host_verdict(usb_tree, dm_tree, usb_start=None, require_start=False):
+    """Return explicit binding/enumeration failures for one coexistence phase.
+
+    A U-Boot prompt means only that a command completed.  It is not evidence
+    that the host controller was available, so parse the transcript rather
+    than treating Session.cmd() success as a host success.
+    """
+    failures = []
+
+    def text(output):
+        return output.decode("utf-8", "replace") if output is not None else ""
+
+    start = text(usb_start)
+    tree = text(usb_tree)
+    dm = text(dm_tree)
+    if require_start:
+        if usb_start is None:
+            failures.append("usb start did not return to the U-Boot prompt")
+        elif "No working controllers found" in start:
+            failures.append("usb start reported no working controllers")
+        elif "dwc2_usb" not in start or "usb-otg@91540000" not in start:
+            failures.append("usb start did not initialize usbotg1 with dwc2_usb")
+    if "Realtek USB 10/100 LAN" not in tree:
+        failures.append("usb tree did not enumerate the onboard RTL8152")
+    if "dwc2_usb" not in dm or "usb-otg@91540000" not in dm:
+        failures.append("dm tree lacks usbotg1 bound to dwc2_usb")
+    if "dwc2-udc-otg" not in dm or "usb-otg@91500000" not in dm:
+        failures.append("dm tree lacks usbotg0 bound to dwc2-udc-otg")
+    return failures
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dev", default="/dev/ttyACM0")
@@ -356,6 +393,7 @@ def main():
     s = Session(args.dev, args.baud, args.out)
     status = 1
     validated_byid = None
+    host_failures = []
     try:
         s.note("ums session start")
         disks_before = usb_disks()
@@ -389,9 +427,17 @@ def main():
         s.cmd("version")
         if args.check_usb_host:
             s.note("USB host coexistence record before ums (binding only; no packet test)")
-            s.cmd("usb start", timeout=60)
-            s.cmd("usb tree", timeout=30)
-        s.cmd("dm tree", timeout=30)
+            host_start = s.cmd_output("usb start", timeout=60)
+            host_tree = s.cmd_output("usb tree", timeout=30)
+            host_dm = s.cmd_output("dm tree", timeout=30)
+            host_failures += usb_host_verdict(
+                host_tree, host_dm, host_start, require_start=True)
+            if host_failures:
+                s.note("USB HOST VERDICT before ums: FAIL: " + "; ".join(host_failures))
+            else:
+                s.note("USB HOST VERDICT before ums: PASS")
+        else:
+            s.cmd("dm tree", timeout=30)
         s.cmd("mmc list")
 
         def regs(tag):
@@ -596,21 +642,32 @@ def main():
         s.note("sending Ctrl-C to leave ums")
         s.buf = b""
         s.port.write(CTRL_C); s.port.flush()
-        if not s.wait_for(PROMPT, 20):
+        left_ums = s.wait_for(PROMPT, 20)
+        if not left_ums:
             s.port.write(b"\r\n"); s.port.flush()
-            s.wait_for(PROMPT, 10)
+            left_ums = s.wait_for(PROMPT, 10)
+        if not left_ums:
+            s.note("U-Boot prompt NOT recovered after Ctrl-C; host verdict is skipped")
+            status = 1
         regs("after Ctrl-C (the driver has probed, run, and been released)")
-        if args.check_usb_host:
+        if args.check_usb_host and left_ums:
             s.note("USB host coexistence record after leaving ums (binding only; no packet test)")
-            s.cmd("usb tree", timeout=30)
-            s.cmd("dm tree", timeout=30)
+            host_tree = s.cmd_output("usb tree", timeout=30)
+            host_dm = s.cmd_output("dm tree", timeout=30)
+            post_failures = usb_host_verdict(host_tree, host_dm)
+            host_failures += post_failures
+            if post_failures:
+                s.note("USB HOST VERDICT after ums: FAIL: " + "; ".join(post_failures))
+            else:
+                s.note("USB HOST VERDICT after ums: PASS")
         gone_at = None
         for _ in range(20):
             if not (usb_disks() - disks_before):
                 gone_at = time.time()
                 break
             time.sleep(0.5)
-        s.note("host: gadget disk " + ("gone after Ctrl-C" if gone_at else "STILL PRESENT 10 s after Ctrl-C"))
+        s.note("host: gadget disk " + ("gone after Ctrl-C" if gone_at else "STILL PRESENT 10 s after Ctrl-C") +
+               " (informational teardown timing only)")
 
         # 5. Back to Linux. After a write, `reset` rather than `boot`, so the
         #    SPL and U-Boot that run are the ones just written to the card.
@@ -628,6 +685,12 @@ def main():
                     end = time.time() + 12
                     while time.time() < end:
                         s.pump(); time.sleep(0.05)
+            if args.check_usb_host:
+                if host_failures and status == 0:
+                    status = 4
+                    s.note("UMS VERDICT: PASS; USB HOST VERDICT: FAIL (status 4)")
+                elif not host_failures and status == 0:
+                    s.note("UMS VERDICT: PASS; USB HOST VERDICT: PASS")
         else:
             s.note("Linux login prompt NOT seen within 240 s -- the board may not be in Linux")
             status = 1

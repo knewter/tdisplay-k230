@@ -70,6 +70,36 @@ class ReadbackTests(unittest.TestCase):
                                      expected, session.log.getvalue())
 
 
+class UsbHostVerdictTests(unittest.TestCase):
+    def test_original_host_baseline_is_not_misreported_as_coexistence_success(self):
+        # This committed baseline predates UMS/gadget support.  It proves the
+        # host controller and RTL8152 only; the parser must require the other
+        # controller's gadget binding too before it can pass a coexistence run.
+        trace = (SCRIPT.parents[1] / "docs" / "evidence" /
+                 "uboot-ums-hardware.txt").read_bytes()
+        failures = ums.usb_host_verdict(trace, trace, trace, require_start=True)
+        self.assertNotIn("usb start reported no working controllers", failures)
+        self.assertNotIn("usb tree did not enumerate the onboard RTL8152", failures)
+        self.assertNotIn("dm tree lacks usbotg1 bound to dwc2_usb", failures)
+        self.assertIn("dm tree lacks usbotg0 bound to dwc2-udc-otg", failures)
+
+    def test_no_working_controller_is_an_explicit_host_failure(self):
+        failures = ums.usb_host_verdict(
+            b"USB is stopped. Please issue 'usb start' first.",
+            b"usb 0 [ ] dwc2-udc-otg |-- usb-otg@91500000",
+            b"starting USB...\nNo working controllers found\nK230# ",
+            require_start=True)
+        self.assertIn("usb start reported no working controllers", failures)
+        self.assertIn("usb tree did not enumerate the onboard RTL8152", failures)
+        self.assertIn("dm tree lacks usbotg1 bound to dwc2_usb", failures)
+
+    def test_missing_usb_start_prompt_is_not_ignored_before_ums(self):
+        failures = ums.usb_host_verdict(
+            b"Realtek USB 10/100 LAN", b"dwc2_usb usb-otg@91540000\n"
+            b"dwc2-udc-otg usb-otg@91500000", None, require_start=True)
+        self.assertIn("usb start did not return to the U-Boot prompt", failures)
+
+
 class PullTests(unittest.TestCase):
     def test_usb_host_check_is_opt_in_and_documented_without_serial_access(self):
         result = subprocess.run([sys.executable, str(SCRIPT), "--help"],
