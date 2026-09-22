@@ -1,0 +1,36 @@
+
+===== > cat /proc/cpuinfo; for f in online offline present possible; do printf "%s=" "$f"; cat "/sys/devices/system/cpu/$f"; done; ls /proc/device-tree/cpus; for d in /proc/device-tree/cpus/cpu@*; do echo "$d"; printf "reg bytes: "; od -An -tx1 "$d/reg"; if test -f "$d/status"; then tr "\000" "\n" < "$d/status"; fi; done; if test -r /proc/config.gz; then zcat /proc/config.gz | grep -E "^(# )?CONFIG_(SMP|NR_CPUS|RISCV_SBI|RISCV_IPI|RISCV_TIMER|RISCV_INTC)"; fi; dmesg | grep -E "smp:|SMP:|Booting Linux on hart|CPU[0-9]|HART" =====
+cat /proc/cpuinfo; for f in online offline present possible; do printf "%s=" "$f"; cat "/sys/devices/system/cpu/$f"; done; ls /proc/device-tree/cpus; for d in /proc/device-tree/cpus/cpu@*; do echo "$d"; printf "reg bytes: "; od -An -tx1 "$d/reg"; if test -f "$d/status"; then tr "\000" "\n" < "$d/status"; fi; done; if test -r /proc/config.gz; then zcat /proc/config.gz | grep -E "^(# )?CONFIG_(SMP|NR_CPUS|RISCV_SBI|RISCV_IPI|RISCV_TIMER|RISCV_INTC)"; fi; dmesg | grep -E "smp:|SMP:|Booting Linux on hart|CPU[0-9]|HART"
+[?2004l
+processor	: 0
+hart		: 0
+isa		: rv64imafdcv_zicbom_zicboz_zicntr_zicsr_zifencei_zihpm_zba_zbb_zbs_svpbmt
+mmu		: sv39
+uarch		: thead,c908
+mvendorid	: 0x5b7
+marchid		: 0x8000000009140d00
+mimpid		: 0x50000
+
+online=0
+offline=
+present=0
+possible=0
+'#address-cells'   [0m[01;34mcpu@0[0m   [01;34ml2-cache[0m   name  '#size-cells'   timebase-frequency
+/proc/device-tree/cpus/cpu@0
+reg bytes:  00 00 00 00
+CONFIG_RISCV_SBI=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=64
+# CONFIG_RISCV_SBI_V01 is not set
+CONFIG_RISCV_SBI_CPUIDLE=y
+CONFIG_RISCV_TIMER=y
+CONFIG_RISCV_INTC=y
+[    0.015847] smp: Bringing up secondary CPUs ...
+[    0.015888] smp: Brought up 1 node, 1 CPU
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
