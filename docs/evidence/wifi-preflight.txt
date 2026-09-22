@@ -1,0 +1,23 @@
+# Wi-Fi preflight (sanitized)
+
+Captured on the physical board before any network association. This is evidence of the missing driver/userspace path only; it does not prove Wi-Fi connectivity.
+
+===== > ip -brief link; command -v iw wpa_supplicant wpa_cli; ls /sys/bus/sdio/devices; dmesg | grep -iE "8189|rtl|sdio|wlan|firmware" | tail -35 =====
+ip -brief link; command -v iw wpa_supplicant wpa_cli; ls /sys/bus/sdio/devices; dmesg | grep -iE "8189|rtl|sdio|wlan|firmware" | tail -35
+lo               UNKNOWN        <redacted-mac> <LOOPBACK,UP,LOWER_UP>
+enu1             DOWN           <redacted-mac> <NO-CARRIER,BROADCAST,MULTICAST,UP>
+sit0@NONE        DOWN           0.0.0.0 <NOARP>
+ip6tnl0@NONE     DOWN           :: <NOARP>
+mmc0:0001:1
+[    4.684905] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[    4.717739] mmc0: new high speed SDIO card at address 0001
+[    5.403609] r8152 2-1:1.0: skip request firmware
+[    5.705279] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+[   27.881457] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+
+===== > for f in vendor device modalias; do cat /sys/bus/sdio/devices/mmc0:0001:1/$f; done; readlink /sys/bus/sdio/devices/mmc0:0001:1/driver; ls /run/current-system/kernel-modules/lib/modules/*/kernel/drivers/net/wireless/realtek; ls /run/current-system/kernel-modules/lib/modules/*/extra 2>/dev/null; ls /sys/class/ieee80211 =====
+for f in vendor device modalias; do cat /sys/bus/sdio/devices/mmc0:0001:1/$f; done; readlink /sys/bus/sdio/devices/mmc0:0001:1/driver; ls /run/current-system/kernel-modules/lib/modules/*/kernel/drivers/net/wireless/realtek; ls /run/current-system/kernel-modules/lib/modules/*/extra 2>/dev/null; ls /sys/class/ieee80211
+0x024c
+0xf179
+sdio:c07v024CdF179
+rtw88
