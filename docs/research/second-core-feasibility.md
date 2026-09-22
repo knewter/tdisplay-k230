@@ -129,10 +129,12 @@ memory:
    coherency/atomic-sharing contract.
 2. Only then prepare an experimental DT with CPU1 and those verified
    descriptions; do not infer routes from the CPU count.
-3. Build an OpenSBI variant that enumerates HART 1 and provides generic HSM
-   calls plus a valid platform hart-start path, retaining the Canaan MAEE quirk
-   and a rollback image. Treat `Platform HSM Device: ---` as informational,
-   not as the acceptance test.
+3. Generic SBI HSM is already compiled and detected in this image
+   (`docs/evidence/boot-from-source-cold.txt:173`). Investigate whether the
+   verified second hart can use OpenSBI's existing raw-IPI start path or needs
+   a platform HSM start device, then build a variant that enumerates it.
+   Retain the Canaan MAEE quirk and a rollback image. Treat
+   `Platform HSM Device: ---` as informational, not as the acceptance test.
 4. Boot with early serial logging and require HART count 2, Linux
    `smp: Brought up 1 node, 2 CPUs`, and successful CPU status checks. Stop on
    any hang, missing HART, or interrupt/timer failure. Only after that test
