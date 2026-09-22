@@ -1,0 +1,58 @@
+{
+  "captured_at": "20260922T160722Z",
+  "feature": "neofetch",
+  "description": "Original Neofetch 7.1.0 built with Nix and launched on the physical K230 via sway IPC; no real-touch launch is claimed.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "docs/evidence/shell-features/neofetch/20260922T160722Z-neofetch.mp4",
+    "kind": "mp4",
+    "duration_seconds": 12.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-t",
+    "12.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "docs/evidence/shell-features/neofetch/20260922T160722Z-neofetch.mp4"
+  ],
+  "dry_run": false,
+  "site_assets": {
+    "video": "docs/evidence/shell-features/neofetch/demo.mp4",
+    "screenshot": "docs/evidence/shell-features/neofetch/screen.png",
+    "video_transform": "180 degree rotation and full-to-limited range conversion; original camera clip retained",
+    "screenshot_source": "grim on the physical board, transferred over serial"
+  },
+  "review": {
+    "video_probe": "H.264, yuv420p, limited range, 1920x1080, 12.000 seconds",
+    "visual_review": "Reviewed frame at 6 seconds: Neofetch is visible on the panel; glare crosses the top controls and the oblique camera softens text. Use the native screenshot for readable details.",
+    "image_state": "First image with temporary shell PATH override and manually initialized Nix database; corrected clean-boot recording pending."
+  }
+}

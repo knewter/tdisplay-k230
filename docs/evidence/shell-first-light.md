@@ -57,5 +57,32 @@ must be checked after build and on the board, not inferred from the fragment.
 IPC pointer commands were attempted with a seat that reports keyboard and
 touch capabilities, but no pointer capability. They did not establish a
 working menu interaction. The later keyboard probe was a direct process
-signal, not a finger tap. Real touch, keyboard command entry, standalone
-boot, and the complete menu workflow remain unverified here.
+signal, not a finger tap. At the end of that probe, real touch, keyboard
+command entry, standalone boot, and the complete menu workflow were unverified.
+
+## Subsequent real keyboard use
+
+The user then reported: "i was able to use the keyboard".
+`keyboard-user-touch.jpg` captures `ls` and its directory listing on the
+panel, followed by an attempted `neofetch` (not yet installed). No injected
+input entered these commands. A later native screenshot,
+`keyboard-user-touch-screenshot.png`, captures the user's running `top`.
+This proves a command was entered through the real keyboard and ran on the
+panel. It does not replace a deliberate axis test or the remaining menu tests.
+
+## Neofetch and Nix store initialization
+
+The user requested Neofetch via Nix. The pinned Nixpkgs removed it, so
+`nix/neofetch.nix` packages original version 7.1.0 from a hash-pinned source.
+The build produced `/nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0`.
+All dependencies already existed in the image; only this path was transferred.
+
+The first import exposed a missing first-boot Nix database initialization:
+the image's store files existed but were unregistered. Loading the image's
+`/nix-path-registration`, setting the system profile, and removing the marker
+fixed it. `neofetch-nix.txt` records the failure and successful recovery/run.
+The committed `register-nix-paths` unit still needs verification on a fresh image.
+
+`neofetch-panel.jpg` and `shell-features/neofetch/screen.png` show the program
+running as the shell user in a separate Foot terminal, launched through
+`nix shell` and Sway IPC. This launch is automated, not real-touch evidence.

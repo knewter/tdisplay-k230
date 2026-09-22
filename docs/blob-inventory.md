@@ -629,7 +629,17 @@ E1   023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/
 E1   d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
 IO   517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
 IO   1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
-DATA group:8-files   docs/evidence/panel-photos/*.{jpg,png}   photographs of the panel, cited as evidence
+DATA group:10-files  docs/evidence/panel-photos/*.{jpg,png}   photographs of the panel, cited as evidence
+DATA 9458168554467e700d6e67616d4f1d94cb389439b81da030a163fde1cef8b222  docs/evidence/cage-rgb565-first-light.jpg
+DATA e15ef2cfcdb22b20bb693b2a5615aee11d25dfb2ead4d4a4dc7ef7563b97228a  docs/evidence/keyboard-signal-probe.jpg
+DATA cdc5411c38b201629049ca282753473bdf523abbd5ef875efcafb05c236c4fd6  docs/evidence/keyboard-signal-screenshot.png
+DATA 7aa3cf4543591727c3aafc89eccfde4644830852856ac43458c34876ad83c7b0  docs/evidence/keyboard-user-touch-screenshot.png
+DATA 09bb59aa5db08fdc0c354beaa89813e7f0b9a70d0c8536db8ed79a081e3068cb  docs/evidence/keyboard-user-touch.jpg
+DATA 0e59c03446e3d660ef8c0517b69557a6cc3632d41ccb38952ec8ebd62026ea62  docs/evidence/neofetch-panel.jpg
+DATA d5f7cecfa9233657cae3a4e1b990239ca49a5c8729c60d73d555055ece533e29  docs/evidence/shell-features/neofetch/20260922T160722Z-neofetch.mp4
+DATA e7d8bc52830857448cab640d99f70e592f41c74121c997b7ba433386360695bb  docs/evidence/shell-features/neofetch/demo.mp4
+DATA 2d6d2959a427df3becde53cb97dc9468aa583a4d075be8b85c0caaeefd6cd6a8  docs/evidence/shell-features/neofetch/screen.png
+DATA 682084b0523df900014af2236ef97e011ff519cd947f17bd00eda567e80ab839  docs/evidence/sway-first-light.jpg
 DATA group:1-file    site/src/assets/*.png                    the board photograph on the spec site
 #
 # --- what the stage-1 nix files fetch by hash --------------------------------

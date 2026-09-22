@@ -1,0 +1,96 @@
+
+===== > nix-store --import < /tmp/neofetch.nar; nix --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --stdout --config none --disable gpu theme icons wm_theme packages =====
+nix-store --import < /tmp/neofetch.nar; nix --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --stdout --config none --disable gpu theme icons wm_theme packages
+[?2004l
+[31;1merror:[0m path '[35;1m/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7[0m' is not valid
+
+[0m[K
+[K[35;1mwarning:[0m you don't have Internet access; disabling some network-dependent features[0m
+
+[K[31;1merror:[0m path '[35;1m/nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0[0m' is required, but there is no substituter that can build it[0m
+
+[K[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > ls -l /nix-path-registration /nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7; head -n 8 /nix-path-registration; nix-store -q --requisites /run/current-system =====
+ls -l /nix-path-registration /nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7; head -n 8 /nix-path-registration; nix-store -q --requisites /run/current-system
+[?2004l
+-r--r--r-- 1 root root 268428 Jan  1  1970 /nix-path-registration
+
+/nix/store/0qvygxiyvyscmbmc5632wxbly3f45lgg-procps-riscv64-unknown-linux-gnu-4.0.7:
+total 12
+dr-xr-xr-x 2 root root 4096 Jan  1  1970 [0m[01;34mbin[0m
+dr-xr-xr-x 2 root root 4096 Jan  1  1970 [01;34mlib[0m
+lrwxrwxrwx 1 root root    3 Jan  1  1970 [01;36msbin[0m -> [01;34mbin[0m
+dr-xr-xr-x 3 root root 4096 Jan  1  1970 [01;34mshare[0m
+/nix/store/04xvxlznpgbfzxmz4lcv10qlfhq271pm-libcap-riscv64-unknown-linux-gnu-2.78-lib
+sha256:0zblkdfg4jz2x56xjqi1yg6qpni1dppmzp0l1wn9v6j4jaf0zdn5
+76200
+
+1
+/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84
+/nix/store/054jd0ikpdbh4ww016c1lxvrmisn8rsp-unit-multi-user.target
+sha256:1xa5mlfi8ngdfgfjv3nxazljhc2q93i2xfpal1qbmkfnim290c0z
+[31;1merror:[0m path '[35;1m/nix/store/n8hhaw7ncrqpb3dic8kc2ini8wsl6kq9-nixos-system-nixos-26.11.20260919.20b1ddd[0m' is not valid
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > nix-store --load-db < /nix-path-registration && nix-store --import < /tmp/neofetch.nar && nix --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --stdout --config none --disable gpu theme icons wm_theme packages =====
+nix-store --load-db < /nix-path-registration && nix-store --import < /tmp/neofetch.nar && nix --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --stdout --config none --disable gpu theme icons wm_theme packages
+[?2004l
+/nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0
+
+[0m[K
+[K[35;1mwarning:[0m you don't have Internet access; disabling some network-dependent features[0m
+
+[Kroot@nixos 
+---------- 
+OS: NixOS 26.11 (Zokor) riscv64 
+Host: LILYGO T-Display-K230 
+Kernel: 6.6.36 
+Uptime: 21 mins 
+Shell: bash 5.3.15 
+Resolution: 568x1232 
+Terminal: /dev/ttyS0 
+CPU: (1) 
+Memory: 110MiB / 935MiB 
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > touch /etc/NIXOS && nix-env -p /nix/var/nix/profiles/system --set /run/current-system && rm /nix-path-registration =====
+touch /etc/NIXOS && nix-env -p /nix/var/nix/profiles/system --set /run/current-system && rm /nix-path-registration
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font='\''DejaVu Sans Mono:size=12'\'' bash -c '\''nix --offline --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash'\''' =====
+swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font='\''DejaVu Sans Mono:size=12'\'' bash -c '\''nix --offline --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash'\'''
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

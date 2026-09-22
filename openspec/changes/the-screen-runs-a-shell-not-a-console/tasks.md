@@ -69,10 +69,12 @@ sway, plus `docs/evidence/shell-session.txt`.
 ## 5. A person can use the board with no cable
 
 - [ ] 5.1 Add the on-screen keyboard as a layer-shell client that can be summoned and dismissed by touch. Verify with a photograph of the keyboard over the terminal and a second photograph with it dismissed and the terminal fully visible
-- [ ] 5.2 Type a command entirely on the panel and show its output on the panel. Verify with a photograph of the typed command and its result — this task is not complete on a keyboard that appears; it is complete on a command that ran
+- [x] 5.2 Type a command entirely on the panel and show its output on the panel. Verify with a photograph of the typed command and its result — this task is not complete on a keyboard that appears; it is complete on a command that ran
 - [ ] 5.3 Confirm a press lands on the key that was pressed, not a neighbour and not its mirror. Verify by typing a string that distinguishes the four rotations and mirrorings of the layout, photographed, with the string and the reasoning recorded in `docs/evidence/shell-session.txt`
 - [ ] 5.4 If the axes are wrong, fix them in the device tree rather than in the compositor, and record which layer the fix landed in. Verify by stating in `docs/evidence/shell-session.txt` whether a `touchscreen-swapped-x-y`/`touchscreen-inverted-*` property, a libinput calibration matrix, or nothing at all was needed — and confirm that no more than one of them is in force
 - [ ] 5.5 Exercise the persistent Apps, Windows/Home, Keyboard, and System touch bar. Verify first with an `evemu`/uinput event and record it explicitly as injected-input evidence; then photograph or record real glass taps that launch/focus Terminal and Monitor, page to and focus another sway window, recover Terminal with Home after closing it, toggle the keyboard, cancel one system confirmation, and confirm the other. The latter is the hardware claim and is required before this task is checked.
+
+- [ ] 5.6 Run the user-requested original Neofetch through Nix on the board and show it in a panel terminal. Verify with its Nix build/store path, console transcript, and screenshot/video. The final image must initialize its Nix store database automatically; verify `nix-store -q --requisites /run/current-system` after a fresh boot without a manual database load.
 
 **Proves group 5 — hardware claim.** Photographs of a command typed on the
 panel and its output, plus real-glass touch-bar evidence, committed under
@@ -96,3 +98,4 @@ committed.
 - [ ] 7.1 Resolve the `UNVERIFIED` markers in `runtime/shell` against the committed photographs, logs and measurements, or restate precisely what remains unproven. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
 - [ ] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
 - [ ] 7.3 Record the measured build cost in the `runtime/shell` requirement that asks for it, replacing the estimate with the number. Verify with `openspec validate --all`
+- [ ] 7.4 Record the user-requested feature evidence with FFmpeg: terminal use, keyboard show/hide and typing, app launching, window switching, terminal recovery, system controls, and Neofetch. Provide a screenshot and finite video for each feature, with a site-ready index and manifests identifying the capture source and real-touch versus injected interactions. Retain original camera footage when generating presentation copies; verify media with `ffprobe` and review the visible result.
