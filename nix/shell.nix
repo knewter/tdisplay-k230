@@ -275,6 +275,10 @@ in
       serviceConfig = {
         User = "shell";
         Group = "shell";
+        # Sway inherits this into foot and every menu-launched client.  `/`
+        # is readable but not a useful first terminal directory; the shell
+        # account's home is writable and becomes the predictable session cwd.
+        WorkingDirectory = config.users.users.shell.home;
         RuntimeDirectory = "shell";
         RuntimeDirectoryMode = "0700";
         # seatd's unit is Type=simple (see above), so "after seatd" only
