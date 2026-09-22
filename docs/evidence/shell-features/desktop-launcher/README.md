@@ -48,3 +48,11 @@ variants), and the narrow cross build passed. Catalogue fixtures exercise
 precedence, hiding, visibility, addition/removal, encoded labels, quoted
 arguments, `%c`, `%k`, `%%`, `%f`, `%i`, working directories, and the terminal
 bridge using real GLib 2.88.3. A launch handoff is not application-health proof.
+
+## User hands-on verification
+
+After the desktop-aware launcher demo on 2026-09-22, the user reported:
+“i used my finger to tst it it's fine”. This confirms user-observed finger
+usability of the launcher. It is separate from the automated camera recording,
+which remains labeled injected. The report does not claim the prescribed axis
+string, a battery-only boot, or every parent-shell system-control test.

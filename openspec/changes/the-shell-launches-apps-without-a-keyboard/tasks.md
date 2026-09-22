@@ -53,3 +53,7 @@ Input was injected; actual finger accuracy remains the parent shell change's tas
 
 Discovery task 4.2 evidence: `docs/evidence/shell-features/desktop-launcher/README.md`
 and its video, screenshots and console. Input was injected on the physical board.
+
+The user separately confirmed launcher finger usability on 2026-09-22; see
+`docs/evidence/shell-features/desktop-launcher/README.md`. Existing video
+provenance stays injected. Broader axis/battery/system-control tasks stay open.
