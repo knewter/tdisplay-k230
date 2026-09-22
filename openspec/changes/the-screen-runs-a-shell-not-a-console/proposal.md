@@ -29,6 +29,11 @@ today.
 - **Touch drives the shell, not just the input subsystem.** A touch already
   producing `evtest` output is not a touch that activates a button. That is a
   separate claim and it gets separate evidence.
+- **The cable-free session has practical touch controls.** A persistent,
+  finger-sized bar exposes Apps, Windows/Home, Keyboard, and System. Its
+  launcher can start or return to the terminal and a system monitor; System
+  makes reboot and power-off deliberate two-tap operations with Cancel. This
+  is the small SXMO-inspired part that fits this board, without adopting SXMO.
 - **Hyprland is ruled out, in writing, with the measurement behind it.**
   Josh named it first and it is the wrong tool here; recording why costs one
   paragraph and saves the next person the same week.
@@ -43,9 +48,10 @@ today.
   2.4 GiB of Mesa and LLVM to produce the slowest option available. If Pixman
   turns out to be too slow, that is a finding to record, not a reason to reach
   for llvmpipe inside this change.
-- **Dozer itself, AtomVM, or any application beyond a terminal.** This change
+- **Dozer itself or AtomVM.** This change
   delivers the surface a shell sits on. What sits on it is still deliberately
-  undecided, and this change must not decide it.
+  undecided, and this change must not decide it. A terminal and system monitor
+  are session utilities, not a choice of Dozer application shell.
 - **Adopting SXMO as a distribution.** Its Wayland variant is sway underneath,
   which this change gives us anyway; packaging its shell scripts is its own
   proposal if anyone still wants it afterwards.
@@ -53,7 +59,9 @@ today.
   starting one compositor at boot.** One user, one seat, one screen.
 - **Rotation, scaling, fractional DPI, or animations.** The panel is portrait
   and the compositor will use it portrait.
-- **Power management, suspend, or idle blanking.** Worth having; not here.
+- **Power management, suspend, or idle blanking.** Worth having; not here. The
+  confirmed reboot and power-off controls are session escape hatches, not
+  power policy.
 
 **Needs the physical board.** QEMU's `k230` machine models no display pipeline,
 so no claim about a compositor on this panel can be proven under emulation. One
@@ -81,6 +89,10 @@ events in panel coordinates, which is exactly what they already promise.
 Adds a NixOS module under `nix/` for the compositor stack and its session, and
 the packages it needs to the system closure. Nothing in the kernel or the device
 tree changes.
+
+<!-- UNVERIFIED: the recorded closure measurement predates the small `htop`
+utility added for the touch monitor control. Task 2.5 remeasures the enabled
+closure before the final build-cost claim is closed. -->
 
 **Build cost, measured on `solomon` against the pinned nixpkgs, on top of the
 existing 1.2 GiB closure** (`docs/display-environment-options.md`):

@@ -14,9 +14,11 @@ of that line and gets fixed there, not worked around here.
 
 What constrains the approach:
 
-- **No GPU driver, and none coming.** The K230's 2.5D block has no Mesa or
-  Vulkan driver. The kernel will expose a card node with dumb buffers and no
-  render node.
+- **No GPU driver, and none coming.** The K230's 2.5D block has no Mesa GL or
+  Vulkan driver. The kernel exposes a card node with dumb buffers and no render
+  node. The measured closure contains `mesa-libgbm`, a generic buffer-manager
+  library linked by wlroots but unused by Pixman's allocator; that is not a GL
+  runtime and does not change the CPU/dumb-buffer rendering path.
 - **wlroots already handles exactly this case.** Its Pixman renderer needs no
   GL, and its DRM dumb allocator needs no GBM and no render node. It even
   selects Pixman on its own when `drmGetRenderDeviceNameFromFd()` returns NULL
@@ -44,9 +46,10 @@ What constrains the approach:
 
 **Non-Goals (design level, beyond the proposal's):**
 
-- Configuring sway to be pleasant. Keybindings, colours, bar contents and
-  gesture bindings are follow-on work; this change stops at "a person can use
-  it without a cable".
+- Broad desktop customization. The bounded touch bar is part of making the
+  cable-free session usable: Apps, Windows/Home, Keyboard, and System only.
+  Keybinding suites, gesture bindings, theming, notifications, and a general
+  application catalogue remain follow-on work.
 - Packaging SXMO. It is absent from nixpkgs and its scripts assume a
   PostmarketOS-shaped system; if we want it later, sway being in place is the
   prerequisite, not an obstacle.
@@ -102,6 +105,23 @@ What we are declining is SXMO's *packaging*, which does not exist in nixpkgs at
 all (no `sxmo-utils`, no module; the two third-party attempts are unmaintained
 since 2024 and 2022), and its assumption of a phone — modem, proximity sensor,
 a power button that raises the menu — none of which this board has.
+
+**Use an i3bar click menu for the few controls the board needs.** `swaybar`
+already turns a touchscreen release inside a status block into a JSON click
+event, which is the same proven path used to toggle wvkbd. A `status_command`
+can retain a small page state without a new GUI toolkit or a launcher whose
+touch behaviour has not been established. Four 142-pixel blocks in a 56-pixel
+bar give Apps, Windows/Home, Keyboard, and System visible targets. Apps starts
+or focuses a readable `foot` terminal and a `htop` monitor; Windows/Home uses
+the same presence check so closing every terminal does not strand the user.
+System changes to a confirmation page before its narrowly-authorized
+`systemctl reboot` or `systemctl poweroff`, and Cancel returns to the main
+page. This is SXMO-inspired interaction, not SXMO packaging.
+
+The menu implementation can be exercised with `evemu` and `/dev/uinput`, but
+that only proves injected input reached swaybar. It does not prove a finger
+lands on the expected control through the GT9895 and panel glass; the latter
+stays a photographed board claim.
 
 **Hyprland is rejected on two independent grounds, either sufficient.**
 First, it cannot run without GL: `CMakeLists.txt:129-130` makes GLES3 a

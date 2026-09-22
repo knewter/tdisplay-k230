@@ -40,20 +40,78 @@ let
 
   wlfps = pkgs.callPackage ./wlfps { wlroots_0_20 = wlroots; };
 
-  # The on-screen keyboard toggle. swaybar delivers a touch tap to a status
-  # block's click handler (swaybar/input.c wl_touch_up -> process_hotspots ->
-  # block_hotspot_callback) but never to a `bindsym` mouse binding, which
-  # only pointer buttons reach. So the summon/dismiss control is an i3bar
-  # status block, and this is the status command: it prints one block and
-  # then turns each click on it into SIGRTMIN, which wvkbd treats as toggle
-  # (wvkbd main.c: SIGUSR1 hide, SIGUSR2 show, SIGRTMIN toggle_visibility).
-  keyboardToggle = pkgs.writeShellScript "k230-keyboard-toggle" ''
-    printf '{"version":1,"click_events":true}\n[\n'
-    printf '[{"name":"kbd","full_text":"  [ keyboard ]  ","separator":false}],\n'
+  # swaybar delivers a touch tap to a status block's click handler
+  # (swaybar/input.c wl_touch_up -> process_hotspots ->
+  # block_hotspot_callback), but not to a `bindsym` mouse binding.  This
+  # little, deliberately boring, state machine is therefore the board's
+  # touch launcher. `min_width` gives each of the four primary controls 142
+  # px of the 568 px display and the 56 px bar gives them a finger-sized
+  # height. It needs no gesture daemon, physical buttons, or touch-hostile
+  # launcher.
+  terminalFootConfig = pkgs.writeText "k230-terminal-foot.ini" ''
+    font=DejaVu Sans Mono:size=15
+    app-id=k230-terminal
+  '';
+  monitorFootConfig = pkgs.writeText "k230-monitor-foot.ini" ''
+    font=DejaVu Sans Mono:size=15
+    app-id=k230-monitor
+  '';
+  touchMenu = pkgs.writeShellScript "k230-touch-menu" ''
+    page=home
+
+    emit() {
+      printf '{"version":1,"click_events":true}\n[\n'
+      case "$page" in
+        home)
+          printf '[{"name":"apps","full_text":"Apps","min_width":142,"align":"center","separator":false},{"name":"windows","full_text":"Windows/Home","min_width":142,"align":"center","separator":false},{"name":"keyboard","full_text":"Keyboard","min_width":142,"align":"center","separator":false},{"name":"system","full_text":"System","min_width":142,"align":"center","separator":false}],\n'
+          ;;
+        apps)
+          printf '[{"name":"terminal","full_text":"Terminal","min_width":189,"align":"center","separator":false},{"name":"monitor","full_text":"System monitor","min_width":189,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":189,"align":"center","separator":false}],\n'
+          ;;
+        windows)
+          printf '[{"name":"terminal","full_text":"Terminal","min_width":142,"align":"center","separator":false},{"name":"monitor","full_text":"Monitor","min_width":142,"align":"center","separator":false},{"name":"home","full_text":"Home","min_width":142,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":142,"align":"center","separator":false}],\n'
+          ;;
+        system)
+          printf '[{"name":"reboot","full_text":"Reboot","min_width":189,"align":"center","separator":false},{"name":"poweroff","full_text":"Power off","min_width":189,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":189,"align":"center","separator":false}],\n'
+          ;;
+        confirm-reboot)
+          printf '[{"name":"confirm-reboot","full_text":"Confirm reboot","min_width":284,"align":"center","separator":false},{"name":"cancel","full_text":"Cancel","min_width":284,"align":"center","separator":false}],\n'
+          ;;
+        confirm-poweroff)
+          printf '[{"name":"confirm-poweroff","full_text":"Confirm power off","min_width":284,"align":"center","separator":false},{"name":"cancel","full_text":"Cancel","min_width":284,"align":"center","separator":false}],\n'
+          ;;
+      esac
+    }
+
+    present_or_start() {
+      app_id="$1"
+      config="$2"
+      command="$3"
+      if ${pkgs.sway}/bin/swaymsg -t get_tree -r | ${pkgs.gnugrep}/bin/grep -q "\"app_id\": \"$app_id\""; then
+        ${pkgs.sway}/bin/swaymsg "[app_id=\"$app_id\"] focus" >/dev/null
+      else
+        # Starting the terminal here is also recovery: closing every foot
+        # window never strands a cable-free user outside an application.
+        ${pkgs.foot}/bin/foot --config "$config" $command >/dev/null 2>&1 &
+      fi
+    }
+
+    emit
     while IFS= read -r line; do
       case "$line" in
-        *'"name":"kbd"'*) ${pkgs.procps}/bin/pkill -RTMIN -x wvkbd-mobintl ;;
+        *'"name":"apps"'*) page=apps ;;
+        *'"name":"windows"'*) page=windows ;;
+        *'"name":"keyboard"'*) ${pkgs.procps}/bin/pkill -RTMIN -x wvkbd-mobintl ;;
+        *'"name":"system"'*) page=system ;;
+        *'"name":"terminal"'*|*'"name":"home"'*) present_or_start k230-terminal ${terminalFootConfig} ""; page=home ;;
+        *'"name":"monitor"'*) present_or_start k230-monitor ${monitorFootConfig} "-e ${pkgs.htop}/bin/htop"; page=home ;;
+        *'"name":"reboot"'*) page=confirm-reboot ;;
+        *'"name":"poweroff"'*) page=confirm-poweroff ;;
+        *'"name":"confirm-reboot"'*) exec ${pkgs.sudo}/bin/sudo -n ${pkgs.systemd}/bin/systemctl reboot ;;
+        *'"name":"confirm-poweroff"'*) exec ${pkgs.sudo}/bin/sudo -n ${pkgs.systemd}/bin/systemctl poweroff ;;
+        *'"name":"back"'*|*'"name":"cancel"'*) page=home ;;
       esac
+      emit
     done
   '';
 
@@ -76,15 +134,15 @@ let
     input type:touch map_to_output DSI-1
 
     default_border none
-    font pango:DejaVu Sans Mono 11
+    font pango:DejaVu Sans Mono 15
     focus_follows_mouse no
 
     bar {
       position top
-      height 44
-      font pango:DejaVu Sans Mono 13
-      status_command ${keyboardToggle}
-      workspace_buttons yes
+      height 56
+      font pango:DejaVu Sans Mono 16
+      status_command ${touchMenu}
+      workspace_buttons no
       colors {
         statusline #ffffff
         background #202020
@@ -94,7 +152,7 @@ let
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
     exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
-    exec ${pkgs.foot}/bin/foot
+    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig}
   '';
 in
 {
@@ -169,6 +227,20 @@ in
       description = "owns the panel";
     };
 
+    # The touch menu can ask PID 1 only for these two explicit state changes.
+    # A second menu page requires an affirmative tap and offers Cancel before
+    # either command is run. No general root shell or passwordless command is
+    # granted to the session user.
+    security.sudo.extraRules = [
+      {
+        users = [ "shell" ];
+        commands = [
+          { command = "${pkgs.systemd}/bin/systemctl reboot"; options = [ "NOPASSWD" ]; }
+          { command = "${pkgs.systemd}/bin/systemctl poweroff"; options = [ "NOPASSWD" ]; }
+        ];
+      }
+    ];
+
     # No login prompt on the panel. The serial getty (serial-getty@ttyS0)
     # is untouched and stays the console. The VT getty is what
     # services.getty.autologinUser was landing on; masking it here means
@@ -194,7 +266,7 @@ in
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
       };
-      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils ];
+      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.sudo ];
 
       serviceConfig = {
         User = "shell";
@@ -228,6 +300,7 @@ in
       pkgs.foot.terminfo
       pkgs.wvkbd
       pkgs.seatd
+      pkgs.htop
     ] ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
