@@ -29,11 +29,6 @@ the board was not returned to Linux (say so loudly; the board is shared).
 import argparse, hashlib, os, subprocess, sys, time
 from pathlib import Path
 
-try:
-    import serial
-except ImportError:
-    sys.exit("need pyserial: nix shell nixpkgs#python3Packages.pyserial")
-
 KILL_LINE = b"\x15"
 CTRL_C = b"\x03"
 PROMPT = b"K230# "
@@ -57,6 +52,10 @@ def validate_flash_target(disks, properties, sectors, expected_sectors):
 
 class Session:
     def __init__(self, dev, baud, out):
+        try:
+            import serial
+        except ImportError:
+            sys.exit("need pyserial: nix shell nixpkgs#python3Packages.pyserial")
         self.started = time.time()
         self.log = open(out, "wb", buffering=0)
         self.port = serial.Serial(dev, baud, timeout=0.1, exclusive=True)
