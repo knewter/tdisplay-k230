@@ -49,13 +49,13 @@ int main(void) {
         { "VO_OSD4_STRIDE", 0x89c }, { "VO_OSD4_ADDR_SEL_MODE", 0x8a0 },
     };
     const struct register_def dsi[] = {
-        { "VERSION", 0x004 }, { "DPI_COLOR_CODING", 0x010 },
-        { "VID_MODE_CFG", 0x034 }, { "VID_PKT_SIZE", 0x038 },
-        { "VID_HSA_TIME", 0x03c }, { "VID_HBP_TIME", 0x040 },
-        { "VID_HLINE_TIME", 0x044 }, { "VID_VSA_LINES", 0x048 },
-        { "VID_VBP_LINES", 0x04c }, { "VID_VFP_LINES", 0x050 },
-        { "VID_VACTIVE_LINES", 0x054 }, { "EDPI_CMD_SIZE", 0x058 },
-        { "CMD_MODE_CFG", 0x05c }, { "GEN_HDR", 0x060 },
+        { "PWR_UP", 0x004 }, { "DPI_COLOR_CODING", 0x010 },
+        { "MODE_CFG", 0x034 }, { "VID_MODE_CFG", 0x038 },
+        { "VID_PKT_SIZE", 0x03c }, { "VID_NUM_CHUNKS", 0x040 },
+        { "VID_NULL_SIZE", 0x044 }, { "VID_HSA_TIME", 0x048 },
+        { "VID_HBP_TIME", 0x04c }, { "VID_HLINE_TIME", 0x050 },
+        { "VID_VSA_LINES", 0x054 }, { "VID_VBP_LINES", 0x058 },
+        { "VID_VFP_LINES", 0x05c }, { "VID_VACTIVE_LINES", 0x060 },
     };
     int fd = open("/dev/mem", O_RDONLY | O_SYNC | O_CLOEXEC);
     if (fd < 0) { perror("/dev/mem"); return 1; }
