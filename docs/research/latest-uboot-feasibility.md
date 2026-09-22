@@ -35,7 +35,7 @@ read-only `ls-remote` and source checkout from that repository found:
 
 | item | observed official revision/date | conclusion |
 | --- | --- | --- |
-| latest stable | annotated `v2026.07`, object `ece349ade2973e220f524ce59e59711cc919263f`, 2026-07-06T17:50:43-06:00 | recommended first upstream base |
+| latest stable | signed annotated `v2026.07` resolves to immutable commit `ece349ade2973e220f524ce59e59711cc919263f`, 2026-07-06T17:50:43-06:00 | recommended first upstream base |
 | current development | annotated `v2026.10-rc5`, commit `a06e89ab05eaa2b8344d521319399333cd760ae5`, 2026-09-21T16:12:01-06:00 | inspected only; release candidate |
 | licence | `Licenses/README` in the inspected upstream tree starts `SPDX-License-Identifier: GPL-2.0` | retain per-file SPDX accounting when carrying patches |
 
@@ -95,9 +95,22 @@ The project packs U-Boot proper as gzip `-n -8`, changes the gzip CM byte from
 integrity header. It repeats a Canaan header over SPL. See
 [nix/stage1.nix](../../nix/stage1.nix) and the existing source-build evidence
 in [docs/evidence/stage1-from-source.txt](../evidence/stage1-from-source.txt).
-The 2 MiB U-Boot slot ends before the 3 MiB environment slot, so the packaged
-replacement must stay within 1 MiB. This packaging and size constraint are
+The 2 MiB U-Boot slot ends before the first environment slot at `0x300000`, so
+the packaged replacement must stay within 1 MiB. `env.env` itself is exactly
+`0x2000` (8 KiB) and is stored at `0x300000` and `0x320000` (the two raw
+locations are 128 KiB apart). This packaging and size constraint are
 independent of whether upstream itself can compile.
+
+There is also a concrete boot-flow compatibility gap. The preserved
+environment sets `bootcmd=run blinux`; `blinux` calls the vendor
+`k230_set_dtb`, then `ext4load`s `bootargs.txt`, the wrapped OpenSBI
+`fw_jump_add_uboot_head.bin`, kernel, DTB, and initrd before `bootm`. A source
+search of upstream `v2026.07` finds neither `k230_set_dtb` nor `blinux`.
+Consequently, retaining the environment is not enough: the pilot needs either
+a reviewed port of that command and its semantics, or an explicitly recorded
+transient boot command that loads the same artifacts and passes the FDT to the
+existing OpenSBI handoff. That command path must be proved before claiming a
+Linux handoff.
 
 ## Delta that must be carried or deliberately replaced
 
@@ -128,24 +141,33 @@ diagnostic decision.
 
 ## Minimal-risk experiment
 
-1. Keep a GC-rooted known-good whole-card image and raw hashes of both SPL
+1. Before writing a new U-Boot slot, prove a physical recovery route for this
+   board: a working card reader plus BootROM fallback, or a separately tested
+   RAM-chainload/rollback procedure. A raw backup alone is not remote recovery
+   unless a proven writer can reach the card after a failed U-Boot boot. The
+   BootROM fallback and RAM chainload have not been tested in this work.
+2. Keep a GC-rooted known-good whole-card image and raw hashes of both SPL
    copies, both environment copies, the OpenSBI payload, and the existing
    packaged U-Boot slot.
-2. Create a separate, explicitly pinned `v2026.07` source derivation with its
-   official source hash. Do not switch the normal `ubootK230` input.
-3. Start from upstream `k230_canmv_defconfig`; add only enough local
+3. Create a separate, explicitly pinned `v2026.07` source derivation from
+   immutable commit `ece349ade2973e220f524ce59e59711cc919263f`, with the
+   official release tarball hash recorded when the derivation is introduced.
+   Do not switch the normal `ubootK230` input.
+4. Start from upstream `k230_canmv_defconfig`; add only enough local
    configuration and DTS to reach serial output and the existing boot flow.
-   Keep panel splash and UMS out of the first boot-to-prompt attempt if that
-   reduces variables.
-4. Package only the resulting `u-boot.bin` through the current, verified
+   A physically recoverable, local serial pilot may keep panel splash and UMS
+   out of the first boot-to-prompt attempt. A remote-only pilot cannot: it
+   must carry and prove UMS in its first functional candidate, since a failed
+   replacement cannot run the old UMS helper.
+5. Package only the resulting `u-boot.bin` through the current, verified
    gzip-CM/K230-header procedure. Use the *existing* `fn_u-boot-spl.bin` and
    current environments. Assert K230 magic, checksum, load/entry address,
    and packaged U-Boot size at or below 1 MiB before any card operation.
-5. First physical proof is a one-slot reversible write with exact direct-I/O
-   readback and rollback material. It must demonstrate: vendor SPL reaches
-   new U-Boot; serial prompt works; MMC and existing OpenSBI/Linux handoff
-   work; and a rollback returns the known image.
-6. Reintroduce features one family at a time: UMS on USB0 with the exact
+6. First physical proof is a one-slot reversible write with exact direct-I/O
+   readback and the already-proved recovery route. It must demonstrate: vendor
+   SPL reaches new U-Boot; serial prompt works; MMC and the ported or transient
+   OpenSBI/Linux handoff work; and a rollback returns the known image.
+7. Reintroduce features one family at a time: UMS on USB0 with the exact
    VID/PID/capacity safeguard; USB1 RTL8152 plus UMS coexistence; the T-Display
    DT and panel splash; then runtime handoff. Each needs a fresh packaged-slot
    size/readback check and board evidence.
@@ -153,7 +175,8 @@ diagnostic decision.
 Only after that sequence should a full image be considered. A full-image flash
 would add SPL, environment, OpenSBI, rootfs, and U-Boot variables when the
 upstream documentation already supports testing the 2 MiB U-Boot-proper
-boundary alone.
+boundary alone. A RAM-chainload trial is not proposed as an assumed shortcut:
+its compatibility with this BootROM/SPL path is unverified.
 
 ## Evidence boundary and remaining unknowns
 
@@ -168,6 +191,7 @@ coexistence have hardware evidence in the cited evidence files.
 
 **Not proven:** a `v2026.07` Nix cross-build; compatibility of the current
 K230 header and CM-byte convention with that image; SPL loading a newer
-payload; modern U-Boot execution on this T-Display; panel output, UMS,
-RTL8152 coexistence, OpenSBI handoff, or Linux boot. Those require the staged
-build and physical proof above.
+payload; modern U-Boot execution on this T-Display; the `blinux` replacement,
+panel output, UMS, RTL8152 coexistence, OpenSBI handoff, Linux boot, BootROM
+fallback, or RAM chainload. Those require the staged build and physical proof
+above.
