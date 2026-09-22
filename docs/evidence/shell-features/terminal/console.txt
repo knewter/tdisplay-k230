@@ -1,0 +1,18 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh terminal --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Type pwd on the on-screen keyboard using injected uinput taps; the physical terminal prints /home/shell, then the keyboard is dismissed.' > /tmp/terminal-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 540 995; tap 85 995; tap 170 1060; tap 525 1195; sleep 3; grim /tmp/terminal-keyboard.png; tap 375 28; sleep 3; grim /tmp/terminal-screen.png; wait "$sampler"; cat /tmp/terminal-samples.log; echo FEATURE_ACTIONS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh terminal --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Type pwd on the on-screen keyboard using injected uinput taps; the physical terminal p 
+rints /home/shell, then the keyboard is dismissed.' > /tmp/terminal-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 540 995; tap 85 995; tap 170 1060; tap 525 1195; sleep 3; grim /tmp/termin 
+al-keyboard.png; tap 375 28; sleep 3; grim /tmp/terminal-screen.png; wait "$sampler"; cat /tmp/terminal-samples.log; echo FEATURE_ACTIONS_DONE
+[?2004l
+[2] 833
+[2]+  Done                       bash /tmp/sample-grim-frames.sh terminal --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Type pwd on the on-screen keyboard using injected uinput taps; the physical terminal prints /home/shell, then the keyboard is dismissed.' > /tmp/terminal-samples.log 2>&1
+captured 32 sampled PNG frame(s): /tmp/k230-samples/20260317T200006Z-terminal
+serial-transfer archive: /tmp/k230-samples/20260317T200006Z-terminal.tar.gz
+FEATURE_ACTIONS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

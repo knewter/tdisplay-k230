@@ -1,0 +1,18 @@
+
+===== > tar -C /tmp/k230-samples --exclude="*.tar.gz" -cf /home/shell/k230-feature-samples.tar . && sync && sha256sum /home/shell/k230-feature-samples.tar; ls -lh /home/shell/k230-feature-samples.tar; tail -5 /tmp/k230-real-touch-media.evemu =====
+tar -C /tmp/k230-samples --exclude="*.tar.gz" -cf /home/shell/k230-feature-samples.tar . && sync && sha256sum /home/shell/k230-feature-samples.tar; ls -lh /home/shell/k230-feature-samples.tar; tail -5 /tmp/k230-real-touch-media.evemu
+[?2004l
+b75ec094bdaf2c19321306a38e61b0565fb4a8f48e45762651e8f5559ea5ab4b  /home/shell/k230-feature-samples.tar
+-rw-r--r-- 1 root root 20M Mar 17 20:11 [0m[01;31m/home/shell/k230-feature-samples.tar[0m
+A: 2f 0 9 0 0 0
+A: 30 0 255 0 0 0
+A: 35 0 1023 0 0 0
+A: 36 0 2399 0 0 0
+A: 39 0 65535 0 0 0
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

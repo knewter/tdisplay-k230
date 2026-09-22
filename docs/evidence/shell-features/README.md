@@ -1,20 +1,28 @@
 # Shell feature media
 
-These assets come from the physical K230. Native screenshots use Grim;
-camera clips use host FFmpeg and `/dev/video0`. Each clip has an adjacent
-JSON manifest with source settings and interaction provenance. A provenance
-label records the method; it does not by itself prove a finger touched glass.
+This directory contains evidence captured from the physical K230. The gallery is available at [index.html](index.html).
 
-| Feature | Screenshot | Presentation video | Interaction |
-| --- | --- | --- | --- |
-| Nix / Neofetch | [Screen](neofetch/screen.png) | [MP4](neofetch/demo.mp4) | Launched by Sway IPC; camera records the physical panel |
+Native clips are portrait 568×1232 H.264 videos assembled from Wayland screencopy PNG samples. They use the measured capture-start intervals, which are roughly 2 samples per second; they show state changes and readability, not smoothness, frame rate, compositor performance, or touch accuracy. The adjacent `native.json` records the sample timing and injected-input provenance. The original PNG samples are retained in [native-source.tar.xz](native-source.tar.xz).
 
-The timestamped MP4 in the Neofetch directory is the original camera view.
-`demo.mp4` rotates it 180 degrees for reading and converts full-range camera
-pixels to limited-range H.264/yuv420p. Both copies retain real-time playback.
-The clean screenshot is a separate compositor capture, not a video frame.
+Camera clips are 30-fps recordings of the physical panel. `demo.mp4` is the rotated, web-ready copy; the timestamped MP4 is retained as the camera source. Camera footage proves that pixels appeared on the panel, while the automated recordings use injected uinput or Sway IPC as identified below. It does not prove a finger touched the glass.
 
-Terminal use, keyboard interaction, launching, switching, terminal recovery,
-and system-control demonstrations are still being recorded; they are not
-claimed complete by this index. Final evidence must also distinguish fresh
-image behavior from the temporary service overrides used during first light.
+| Feature | Native sampled video | Screenshot | Camera video | Provenance and limits |
+| --- | --- | --- | --- | --- |
+| Terminal | [native.mp4](terminal/native.mp4) | [screen.png](terminal/screen.png) | [demo.mp4](terminal/demo.mp4) | Injected keyboard taps type `pwd`; sampled state changes plus physical-panel camera |
+| Keyboard show/hide | [native.mp4](keyboard-show-hide/native.mp4) | [screen.png](keyboard-show-hide/screen.png), [hidden.png](keyboard-show-hide/hidden.png) | [demo.mp4](keyboard-show-hide/demo.mp4) | Injected taps show, dismiss, and reopen wvkbd |
+| Launch Monitor | [native.mp4](launch/native.mp4) | [screen.png](launch/screen.png), [menu.png](launch/menu.png) | [demo.mp4](launch/demo.mp4) | Injected Apps launch; default htop clips columns, corrected by the portrait profile below |
+| Window switching | [native.mp4](switch/native.mp4) | [screen.png](switch/screen.png), [next.png](switch/next.png) | [demo.mp4](switch/demo.mp4) | Injected Windows/Next navigation; older narrow Monitor layout remains visible in this capture |
+| Terminal recovery | [native.mp4](terminal-recovery/native.mp4) | [screen.png](terminal-recovery/screen.png), [menu.png](terminal-recovery/menu.png) | [demo.mp4](terminal-recovery/demo.mp4) | Injected close then Windows/Home recovery |
+| System controls | [native.mp4](system-controls/native.mp4) | [screen.png](system-controls/screen.png), [menu.png](system-controls/menu.png) | [demo.mp4](system-controls/demo.mp4) | Injected inspection and cancellation; Power off/Reboot were not executed |
+| Neofetch | [native.mp4](neofetch-clean/native.mp4) | [screen.png](neofetch-clean/screen.png) | [demo.mp4](neofetch-clean/demo.mp4) | Clean image after automatic Nix registration; launched through Sway IPC/login shell |
+| Monitor portrait | [native.mp4](monitor-portrait/native.mp4) | [screen.png](monitor-portrait/screen.png) | [demo.mp4](monitor-portrait/demo.mp4) | Live portrait profile via Sway IPC; evidence predates final image integration and is distinct from the older clipped Monitor capture |
+| Unattended startup | — | [screen.jpg](startup/screen.jpg) | [demo.mp4](startup/demo.mp4) | Camera-only startup evidence; no native sample clip |
+| Reboot | — | [screen.png](reboot/screen.png) | [demo.mp4](reboot/demo.mp4) | Injected reboot confirmation and return; camera evidence, no native sample clip |
+
+The diagnostic [neofetch-launch-failed](neofetch-launch-failed/) and earlier [neofetch](neofetch/) captures are retained for debugging but are excluded from the featured gallery.
+
+
+The confirmed Reboot clip verifies return to an active shell with a new boot ID.
+Power-off execution, battery-only boot, and a complete finger-touch workflow
+remain unverified. These files are ready for site integration; this portable
+gallery does not publish them into the existing Astro site.

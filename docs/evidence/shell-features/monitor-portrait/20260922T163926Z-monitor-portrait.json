@@ -1,0 +1,86 @@
+{
+  "captured_at": "20260922T163926Z",
+  "feature": "monitor-portrait",
+  "description": "Portrait Monitor profile keeps process names, CPU and memory visible at 15pt; live profile launched by Sway IPC for validation before image integration.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/monitor-portrait/20260922T163926Z-monitor-portrait.mp4",
+    "kind": "mp4",
+    "duration_seconds": 22.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "scale=out_range=tv",
+    "-t",
+    "22.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/monitor-portrait/20260922T163926Z-monitor-portrait.mp4"
+  ],
+  "dry_run": false,
+  "site_assets": {
+    "video": "docs/evidence/shell-features/monitor-portrait/demo.mp4",
+    "native_video": "docs/evidence/shell-features/monitor-portrait/native.mp4",
+    "screenshot": "docs/evidence/shell-features/monitor-portrait/screen.png",
+    "video_transform": "Camera presentation rotated180 degrees, limited-range H264/yuv420p, realtime; original retained.",
+    "screenshot_source": "Grim on physical board transferred over serial"
+  },
+  "review": {
+    "outcome": "Single-column meters and PID/CPU%/MEM%/Command display readable process names at15pt.",
+    "limitations": "Live HTOPRC launched through Sway IPC; new image/menu integration pending. Capture sampler adds CPU load, so shown CPU values are not idle-performance measurements.",
+    "native_capture": "Sampled Wayland screencopy with measured monotonic intervals; not smoothness or finger accuracy proof."
+  },
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "pix_fmt": "yuv420p",
+        "color_range": "tv"
+      }
+    ],
+    "format": {
+      "duration": "22.000000",
+      "size": "2306237"
+    }
+  }
+}

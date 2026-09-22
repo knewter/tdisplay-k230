@@ -1,0 +1,293 @@
+{
+  "created_at": "2026-09-22T16:44:10Z",
+  "description": "Original Neofetch 7.1.0 runs through offline nix shell after automatic first-boot Nix database registration; launched by Sway IPC with a login shell.",
+  "artifact": {
+    "path": "docs/evidence/shell-features/neofetch-clean/native.mp4",
+    "kind": "mp4-h264-yuv420p",
+    "portrait_source": true
+  },
+  "capture_source": {
+    "kind": "sampled-wayland-screencopy-png",
+    "sample_directory": ".scratch/shell-native-samples/20260317T200950Z-neofetch-clean",
+    "frame_count": 35,
+    "timestamps": "board /proc/uptime boot-relative monotonic seconds",
+    "rendered_duration_seconds": 19.88,
+    "final_frame_codec_duration_note": "The concat input repeats the final PNG so FFmpeg honors its measured duration. At its 100 fps input timebase, the MP4 may extend by 0.01 seconds beyond the measured display duration."
+  },
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-000001.png",
+      "capture_start_monotonic_seconds": 845.07,
+      "capture_end_monotonic_seconds": 845.3,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 2,
+      "file": "frame-000002.png",
+      "capture_start_monotonic_seconds": 845.64,
+      "capture_end_monotonic_seconds": 845.9,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 3,
+      "file": "frame-000003.png",
+      "capture_start_monotonic_seconds": 846.21,
+      "capture_end_monotonic_seconds": 846.47,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 4,
+      "file": "frame-000004.png",
+      "capture_start_monotonic_seconds": 846.77,
+      "capture_end_monotonic_seconds": 847.09,
+      "display_duration_seconds": 0.63
+    },
+    {
+      "index": 5,
+      "file": "frame-000005.png",
+      "capture_start_monotonic_seconds": 847.4,
+      "capture_end_monotonic_seconds": 847.87,
+      "display_duration_seconds": 0.64
+    },
+    {
+      "index": 6,
+      "file": "frame-000006.png",
+      "capture_start_monotonic_seconds": 848.04,
+      "capture_end_monotonic_seconds": 848.51,
+      "display_duration_seconds": 0.63
+    },
+    {
+      "index": 7,
+      "file": "frame-000007.png",
+      "capture_start_monotonic_seconds": 848.67,
+      "capture_end_monotonic_seconds": 849.14,
+      "display_duration_seconds": 0.63
+    },
+    {
+      "index": 8,
+      "file": "frame-000008.png",
+      "capture_start_monotonic_seconds": 849.3,
+      "capture_end_monotonic_seconds": 849.79,
+      "display_duration_seconds": 0.66
+    },
+    {
+      "index": 9,
+      "file": "frame-000009.png",
+      "capture_start_monotonic_seconds": 849.96,
+      "capture_end_monotonic_seconds": 850.44,
+      "display_duration_seconds": 0.65
+    },
+    {
+      "index": 10,
+      "file": "frame-000010.png",
+      "capture_start_monotonic_seconds": 850.61,
+      "capture_end_monotonic_seconds": 850.96,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 11,
+      "file": "frame-000011.png",
+      "capture_start_monotonic_seconds": 851.17,
+      "capture_end_monotonic_seconds": 851.41,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 12,
+      "file": "frame-000012.png",
+      "capture_start_monotonic_seconds": 851.73,
+      "capture_end_monotonic_seconds": 851.97,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 13,
+      "file": "frame-000013.png",
+      "capture_start_monotonic_seconds": 852.29,
+      "capture_end_monotonic_seconds": 852.53,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 14,
+      "file": "frame-000014.png",
+      "capture_start_monotonic_seconds": 852.85,
+      "capture_end_monotonic_seconds": 853.09,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 15,
+      "file": "frame-000015.png",
+      "capture_start_monotonic_seconds": 853.41,
+      "capture_end_monotonic_seconds": 853.68,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 16,
+      "file": "frame-000016.png",
+      "capture_start_monotonic_seconds": 853.98,
+      "capture_end_monotonic_seconds": 854.22,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 17,
+      "file": "frame-000017.png",
+      "capture_start_monotonic_seconds": 854.54,
+      "capture_end_monotonic_seconds": 854.78,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 18,
+      "file": "frame-000018.png",
+      "capture_start_monotonic_seconds": 855.1,
+      "capture_end_monotonic_seconds": 855.37,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 19,
+      "file": "frame-000019.png",
+      "capture_start_monotonic_seconds": 855.67,
+      "capture_end_monotonic_seconds": 855.9,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 20,
+      "file": "frame-000020.png",
+      "capture_start_monotonic_seconds": 856.25,
+      "capture_end_monotonic_seconds": 856.64,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 21,
+      "file": "frame-000021.png",
+      "capture_start_monotonic_seconds": 856.83,
+      "capture_end_monotonic_seconds": 857.07,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 22,
+      "file": "frame-000022.png",
+      "capture_start_monotonic_seconds": 857.39,
+      "capture_end_monotonic_seconds": 857.63,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 23,
+      "file": "frame-000023.png",
+      "capture_start_monotonic_seconds": 857.95,
+      "capture_end_monotonic_seconds": 858.19,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 24,
+      "file": "frame-000024.png",
+      "capture_start_monotonic_seconds": 858.53,
+      "capture_end_monotonic_seconds": 858.77,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 25,
+      "file": "frame-000025.png",
+      "capture_start_monotonic_seconds": 859.09,
+      "capture_end_monotonic_seconds": 859.33,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 26,
+      "file": "frame-000026.png",
+      "capture_start_monotonic_seconds": 859.65,
+      "capture_end_monotonic_seconds": 859.92,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 27,
+      "file": "frame-000027.png",
+      "capture_start_monotonic_seconds": 860.22,
+      "capture_end_monotonic_seconds": 860.46,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 28,
+      "file": "frame-000028.png",
+      "capture_start_monotonic_seconds": 860.78,
+      "capture_end_monotonic_seconds": 861.02,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 29,
+      "file": "frame-000029.png",
+      "capture_start_monotonic_seconds": 861.34,
+      "capture_end_monotonic_seconds": 861.61,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 30,
+      "file": "frame-000030.png",
+      "capture_start_monotonic_seconds": 861.9,
+      "capture_end_monotonic_seconds": 862.14,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 31,
+      "file": "frame-000031.png",
+      "capture_start_monotonic_seconds": 862.46,
+      "capture_end_monotonic_seconds": 862.7,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 32,
+      "file": "frame-000032.png",
+      "capture_start_monotonic_seconds": 863.02,
+      "capture_end_monotonic_seconds": 863.26,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 33,
+      "file": "frame-000033.png",
+      "capture_start_monotonic_seconds": 863.58,
+      "capture_end_monotonic_seconds": 863.82,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 34,
+      "file": "frame-000034.png",
+      "capture_start_monotonic_seconds": 864.14,
+      "capture_end_monotonic_seconds": 864.38,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 35,
+      "file": "frame-000035.png",
+      "capture_start_monotonic_seconds": 864.72,
+      "capture_end_monotonic_seconds": 864.95,
+      "display_duration_seconds": 0.23
+    }
+  ],
+  "interaction_provenance": "injected",
+  "evidence_note": "This is sampled Wayland screencopy. It does not demonstrate smoothness, frame rate, compositor performance, or prove real touch.",
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    "docs/evidence/shell-features/neofetch-clean/native.concat.txt",
+    "-fps_mode",
+    "vfr",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "docs/evidence/shell-features/neofetch-clean/native.mp4"
+  ],
+  "dry_run": false,
+  "original_samples_archive": "docs/evidence/shell-features/native-source.tar.xz",
+  "archive_directory": "20260317T200950Z-neofetch-clean",
+  "board_clock_note": "Board wall clock was unset (March17); use monotonic sample times and host UTC camera manifest for ordering."
+}

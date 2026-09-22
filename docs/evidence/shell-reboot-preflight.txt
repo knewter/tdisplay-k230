@@ -1,0 +1,16 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; ls /tmp/inject-tap.sh /tmp/k230-touch.desc; nohup evemu-device /tmp/k230-touch.desc > /tmp/k230-virtual.log 2>&1 < /dev/null & sleep 2; cat /tmp/k230-virtual.log; systemctl is-active shell; cat /proc/sys/kernel/random/boot_id =====
+export SYSTEMD_PAGER=cat PAGER=cat; ls /tmp/inject-tap.sh /tmp/k230-touch.desc; nohup evemu-device /tmp/k230-touch.desc > /tmp/k230-virtual.log 2>&1 < /dev/null & sleep 2; cat /tmp/k230-virtual.log; systemctl is-active shell; cat /proc/sys/kernel/random/boot_id
+[?2004l
+[0m[01;32m/tmp/inject-tap.sh[0m  /tmp/k230-touch.desc
+[1] 740
+K230 injected touchscreen: /dev/input/event1
+active
+af476995-3edd-4c30-bf98-996223657bf2
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

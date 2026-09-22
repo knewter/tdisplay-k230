@@ -1,0 +1,75 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl --no-pager status shell.service register-nix-paths.service; ls -l /dev/uinput; test ! -e /nix-path-registration && echo REGISTRATION_MARKER_REMOVED; nix-store -q --requisites /run/current-system | wc -l; systemctl show shell.service -p DropInPaths -p WorkingDirectory; pgrep -a -u shell; readlink /proc/$(pgrep -u shell -x foot | head -1)/cwd; command -v neofetch; ls /run/shell =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl --no-pager status shell.service register-nix-paths.service; ls -l /dev/uinput; test ! -e /nix-path-registration && echo REGISTRATION_MARKER_REMOVED; nix-store -q --requisites /run/current-system | wc -l; systemctl show shell.service -p DropInPaths -p WorkingDirectory; pgrep -a -u shell; readlink /proc/$(pgrep -u shell -x foot | head -1)/cwd; command -v neofetch; ls /run/shell
+[?2004l
+[0;1;32m●[0m shell.service - sway on the panel
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/shell.service\/etc/systemd/system/shell.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-17 19:56:36 UTC; 1min 24s ago
+ Invocation: b71c99c35f3440c2a499021554281707
+    Process: 517 ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd (code=exited, status=0/SUCCESS)
+   Main PID: 558 (dbus-run-sessio)
+         IP: 0B in, 0B out
+         IO: 25.8M read, 0B written
+      Tasks: 12[0;90m[0;38:5:245m (limit: 466)[0m
+     Memory: 47.3M (peak: 47.5M)
+        CPU: 1.495s
+     CGroup: /system.slice/shell.service
+             ├─[0;90m[0;38:5:245m558 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unk…[0m
+             ├─[0;90m[0;38:5:245m590 dbus-daemon --nofork --print-address 4 --session[0m
+             ├─[0;90m[0;38:5:245m597 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-r…[0m
+             ├─[0;90m[0;38:5:245m693 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-u…[0m
+             ├─[0;90m[0;38:5:245m694 swaybar -b bar-0[0m
+             ├─[0;90m[0;38:5:245m695 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-un…[0m
+             ├─[0;90m[0;38:5:245m696 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unk…[0m
+             ├─[0;90m[0;38:5:245m698 /nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive…[0m
+             └─[0;90m[0;38:5:245m699 /run/current-system/sw/bin/bash[0m
+
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.397 [DEBUG] [sway/tree/arrange.c…@0,56
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.408 [DEBUG] [sway/tree/arrange.c…00000
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.408 [DEBUG] [sway/tree/arrange.c…tally
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.408 [DEBUG] [sway/desktop/transa…tions
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.480 [DEBUG] [sway/desktop/transa…ready
+Mar 17 19:56:40 nixos sway[597]: 00:00:02.480 [DEBUG] [sway/desktop/transa…9c6f0
+Mar 17 19:56:42 nixos sway[597]: 00:00:04.270 [DEBUG] [wlr] [backend/sessi…(add)
+Mar 17 19:56:42 nixos sway[597]: 00:00:04.273 [DEBUG] [wlr] [backend/sessi…card0
+Mar 17 19:56:42 nixos sway[597]: 00:00:04.378 [DEBUG] [wlr] [backend/sessi…(add)
+Mar 17 19:57:09 nixos sway[597]: 00:00:31.454 [DEBUG] [wlr] [types/wlr_xdg…pired
+
+[0;1;32m●[0m register-nix-paths.service - Register Nix Store Paths
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/register-nix-paths.service\/etc/systemd/system/register-nix-paths.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+     Active: [0;1;32mactive (exited)[0m since Tue 2026-03-17 19:56:34 UTC; 1min 25s ago
+ Invocation: dcc22079320a4afb85008bc1c175c851
+    Process: 472 ExecStart=/nix/store/zgy34blqrsf37sysi2binmaknr9pnwl8-unit-script-register-nix-paths-start/bin/register-nix-paths-start (code=exited, status=0/SUCCESS)
+   Main PID: 472 (code=exited, status=0/SUCCESS)
+         IP: 0B in, 0B out
+         IO: 31M read, 712K written
+   Mem peak: 39.3M
+        CPU: 961ms
+
+Mar 17 19:56:30 nixos systemd[1]: Starting Register Nix Store Paths...
+Mar 17 19:56:34 nixos systemd[1]: Finished Register Nix Store Paths.
+Hint: Some lines were ellipsized, use -l to show in full.
+crw------- 1 root root 10, 223 Mar 17 19:56 [0m[40;33;01m/dev/uinput[0m
+REGISTRATION_MARKER_REMOVED
+570
+DropInPaths=
+WorkingDirectory=/home/shell
+558 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin/dbus-run-session /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway -d -c /nix/store/gmblj8zrf83v715vzwkv35g80fgszd2v-k230-sway.conf
+590 dbus-daemon --nofork --print-address 4 --session
+597 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway -d -c /nix/store/gmblj8zrf83v715vzwkv35g80fgszd2v-k230-sway.conf
+693 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+694 swaybar -b bar-0
+695 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+696 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini
+698 /nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash /nix/store/bmwl1d8fz60ijx9d3xawmbl7yn6h6syx-touch-menu.sh
+699 /run/current-system/sw/bin/bash
+/
+/run/current-system/sw/bin/neofetch
+[0m[01;34mdbus-1[0m  [01;35msway-ipc.sock[0m  [01;35mwayland-1[0m  wayland-1.lock
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,16 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh system-controls --duration 24 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps open System, inspect and cancel Power off, then inspect and cancel Reboot. Neither action executes in this clip.' > /tmp/system-controls-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 505 28; sleep 2; grim /tmp/system-menu.png; tap 285 28; sleep 2; grim /tmp/poweroff-confirm.png; tap 425 28; sleep 2; tap 505 28; tap 110 28; sleep 2; grim /tmp/reboot-confirm.png; tap 425 28; sleep 2; grim /tmp/system-return.png; wait "$sampler"; cat /tmp/system-controls-samples.log; echo FEATURE_ACTIONS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh system-controls --duration 24 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps open System, inspect and cancel Power off, then inspect and cancel Reboot. Neither action executes in this clip.' > /tmp/system-controls-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 505 28; sleep 2; grim /tmp/system-menu.png; tap 285 28; sleep 2; grim /tmp/poweroff-confirm.png; tap 425 28; sleep 2; tap 505 28; tap 110 28; sleep 2; grim /tmp/reboot-confirm.png; tap 425 28; sleep 2; grim /tmp/system-return.png; wait "$sampler"; cat /tmp/system-controls-samples.log; echo FEATURE_ACTIONS_DONE
+[?2004l
+[2] 3171
+[2]+  Done                       bash /tmp/sample-grim-frames.sh system-controls --duration 24 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps open System, inspect and cancel Power off, then inspect and cancel Reboot. Neither action executes in this clip.' > /tmp/system-controls-samples.log 2>&1
+captured 42 sampled PNG frame(s): /tmp/k230-samples/20260317T200631Z-system-controls
+serial-transfer archive: /tmp/k230-samples/20260317T200631Z-system-controls.tar.gz
+FEATURE_ACTIONS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

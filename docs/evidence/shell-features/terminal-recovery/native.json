@@ -1,0 +1,335 @@
+{
+  "created_at": "2026-09-22T16:44:09Z",
+  "description": "Injected keyboard taps exit the original terminal; Windows Home recreates a usable terminal after it has closed.",
+  "artifact": {
+    "path": "docs/evidence/shell-features/terminal-recovery/native.mp4",
+    "kind": "mp4-h264-yuv420p",
+    "portrait_source": true
+  },
+  "capture_source": {
+    "kind": "sampled-wayland-screencopy-png",
+    "sample_directory": ".scratch/shell-native-samples/20260317T200501Z-terminal-recovery",
+    "frame_count": 41,
+    "timestamps": "board /proc/uptime boot-relative monotonic seconds",
+    "rendered_duration_seconds": 24.05,
+    "final_frame_codec_duration_note": "The concat input repeats the final PNG so FFmpeg honors its measured duration. At its 100 fps input timebase, the MP4 may extend by 0.01 seconds beyond the measured display duration."
+  },
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-000001.png",
+      "capture_start_monotonic_seconds": 555.48,
+      "capture_end_monotonic_seconds": 555.78,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 2,
+      "file": "frame-000002.png",
+      "capture_start_monotonic_seconds": 556.05,
+      "capture_end_monotonic_seconds": 556.34,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 3,
+      "file": "frame-000003.png",
+      "capture_start_monotonic_seconds": 556.61,
+      "capture_end_monotonic_seconds": 556.95,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 4,
+      "file": "frame-000004.png",
+      "capture_start_monotonic_seconds": 557.17,
+      "capture_end_monotonic_seconds": 557.6,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 5,
+      "file": "frame-000005.png",
+      "capture_start_monotonic_seconds": 557.74,
+      "capture_end_monotonic_seconds": 558.34,
+      "display_duration_seconds": 0.83
+    },
+    {
+      "index": 6,
+      "file": "frame-000006.png",
+      "capture_start_monotonic_seconds": 558.57,
+      "capture_end_monotonic_seconds": 558.93,
+      "display_duration_seconds": 0.67
+    },
+    {
+      "index": 7,
+      "file": "frame-000007.png",
+      "capture_start_monotonic_seconds": 559.24,
+      "capture_end_monotonic_seconds": 559.54,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 8,
+      "file": "frame-000008.png",
+      "capture_start_monotonic_seconds": 559.8,
+      "capture_end_monotonic_seconds": 560.04,
+      "display_duration_seconds": 0.6
+    },
+    {
+      "index": 9,
+      "file": "frame-000009.png",
+      "capture_start_monotonic_seconds": 560.4,
+      "capture_end_monotonic_seconds": 560.79,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 10,
+      "file": "frame-000010.png",
+      "capture_start_monotonic_seconds": 560.97,
+      "capture_end_monotonic_seconds": 561.37,
+      "display_duration_seconds": 0.58
+    },
+    {
+      "index": 11,
+      "file": "frame-000011.png",
+      "capture_start_monotonic_seconds": 561.55,
+      "capture_end_monotonic_seconds": 561.9,
+      "display_duration_seconds": 0.61
+    },
+    {
+      "index": 12,
+      "file": "frame-000012.png",
+      "capture_start_monotonic_seconds": 562.16,
+      "capture_end_monotonic_seconds": 562.64,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 13,
+      "file": "frame-000013.png",
+      "capture_start_monotonic_seconds": 562.72,
+      "capture_end_monotonic_seconds": 563.0,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 14,
+      "file": "frame-000014.png",
+      "capture_start_monotonic_seconds": 563.28,
+      "capture_end_monotonic_seconds": 563.56,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 15,
+      "file": "frame-000015.png",
+      "capture_start_monotonic_seconds": 563.84,
+      "capture_end_monotonic_seconds": 564.16,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 16,
+      "file": "frame-000016.png",
+      "capture_start_monotonic_seconds": 564.4,
+      "capture_end_monotonic_seconds": 564.82,
+      "display_duration_seconds": 0.62
+    },
+    {
+      "index": 17,
+      "file": "frame-000017.png",
+      "capture_start_monotonic_seconds": 565.02,
+      "capture_end_monotonic_seconds": 565.46,
+      "display_duration_seconds": 0.68
+    },
+    {
+      "index": 18,
+      "file": "frame-000018.png",
+      "capture_start_monotonic_seconds": 565.7,
+      "capture_end_monotonic_seconds": 566.33,
+      "display_duration_seconds": 0.78
+    },
+    {
+      "index": 19,
+      "file": "frame-000019.png",
+      "capture_start_monotonic_seconds": 566.48,
+      "capture_end_monotonic_seconds": 566.77,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 20,
+      "file": "frame-000020.png",
+      "capture_start_monotonic_seconds": 567.05,
+      "capture_end_monotonic_seconds": 567.36,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 21,
+      "file": "frame-000021.png",
+      "capture_start_monotonic_seconds": 567.62,
+      "capture_end_monotonic_seconds": 567.91,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 22,
+      "file": "frame-000022.png",
+      "capture_start_monotonic_seconds": 568.18,
+      "capture_end_monotonic_seconds": 568.69,
+      "display_duration_seconds": 0.67
+    },
+    {
+      "index": 23,
+      "file": "frame-000023.png",
+      "capture_start_monotonic_seconds": 568.85,
+      "capture_end_monotonic_seconds": 569.33,
+      "display_duration_seconds": 0.68
+    },
+    {
+      "index": 24,
+      "file": "frame-000024.png",
+      "capture_start_monotonic_seconds": 569.53,
+      "capture_end_monotonic_seconds": 570.15,
+      "display_duration_seconds": 0.76
+    },
+    {
+      "index": 25,
+      "file": "frame-000025.png",
+      "capture_start_monotonic_seconds": 570.29,
+      "capture_end_monotonic_seconds": 570.56,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 26,
+      "file": "frame-000026.png",
+      "capture_start_monotonic_seconds": 570.86,
+      "capture_end_monotonic_seconds": 571.09,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 27,
+      "file": "frame-000027.png",
+      "capture_start_monotonic_seconds": 571.43,
+      "capture_end_monotonic_seconds": 571.86,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 28,
+      "file": "frame-000028.png",
+      "capture_start_monotonic_seconds": 571.99,
+      "capture_end_monotonic_seconds": 572.26,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 29,
+      "file": "frame-000029.png",
+      "capture_start_monotonic_seconds": 572.55,
+      "capture_end_monotonic_seconds": 572.78,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 30,
+      "file": "frame-000030.png",
+      "capture_start_monotonic_seconds": 573.11,
+      "capture_end_monotonic_seconds": 573.34,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 31,
+      "file": "frame-000031.png",
+      "capture_start_monotonic_seconds": 573.67,
+      "capture_end_monotonic_seconds": 573.9,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 32,
+      "file": "frame-000032.png",
+      "capture_start_monotonic_seconds": 574.23,
+      "capture_end_monotonic_seconds": 574.46,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 33,
+      "file": "frame-000033.png",
+      "capture_start_monotonic_seconds": 574.79,
+      "capture_end_monotonic_seconds": 575.02,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 34,
+      "file": "frame-000034.png",
+      "capture_start_monotonic_seconds": 575.35,
+      "capture_end_monotonic_seconds": 575.58,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 35,
+      "file": "frame-000035.png",
+      "capture_start_monotonic_seconds": 575.92,
+      "capture_end_monotonic_seconds": 576.14,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 36,
+      "file": "frame-000036.png",
+      "capture_start_monotonic_seconds": 576.49,
+      "capture_end_monotonic_seconds": 576.74,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 37,
+      "file": "frame-000037.png",
+      "capture_start_monotonic_seconds": 577.05,
+      "capture_end_monotonic_seconds": 577.28,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 38,
+      "file": "frame-000038.png",
+      "capture_start_monotonic_seconds": 577.61,
+      "capture_end_monotonic_seconds": 577.84,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 39,
+      "file": "frame-000039.png",
+      "capture_start_monotonic_seconds": 578.17,
+      "capture_end_monotonic_seconds": 578.42,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 40,
+      "file": "frame-000040.png",
+      "capture_start_monotonic_seconds": 578.74,
+      "capture_end_monotonic_seconds": 578.97,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 41,
+      "file": "frame-000041.png",
+      "capture_start_monotonic_seconds": 579.3,
+      "capture_end_monotonic_seconds": 579.53,
+      "display_duration_seconds": 0.23
+    }
+  ],
+  "interaction_provenance": "injected",
+  "evidence_note": "This is sampled Wayland screencopy. It does not demonstrate smoothness, frame rate, compositor performance, or prove real touch.",
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    "docs/evidence/shell-features/terminal-recovery/native.concat.txt",
+    "-fps_mode",
+    "vfr",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "docs/evidence/shell-features/terminal-recovery/native.mp4"
+  ],
+  "dry_run": false,
+  "original_samples_archive": "docs/evidence/shell-features/native-source.tar.xz",
+  "archive_directory": "20260317T200501Z-terminal-recovery",
+  "board_clock_note": "Board wall clock was unset (March17); use monotonic sample times and host UTC camera manifest for ordering."
+}

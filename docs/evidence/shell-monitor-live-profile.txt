@@ -1,0 +1,14 @@
+
+===== > install -d -o shell -g shell /home/shell/.config/htop; if test -f /home/shell/.config/htop/htoprc; then cp -n /home/shell/.config/htop/htoprc /home/shell/.config/htop/htoprc.before-portrait; fi; install -o shell -g shell -m 0644 /tmp/k230-monitor.htoprc /home/shell/.config/htop/htoprc; sha256sum /home/shell/.config/htop/htoprc; rm /home/shell/k230-feature-samples.tar; df -h / =====
+install -d -o shell -g shell /home/shell/.config/htop; if test -f /home/shell/.config/htop/htoprc; then cp -n /home/shell/.config/htop/htoprc /home/shell/.config/htop/htoprc.before-portrait; fi; install -o shell -g shell -m 0644 /tmp/k230-monitor.htoprc /home/shell/.config/htop/htoprc; sha256sum /home/shell/.config/htop/htoprc; rm /home/shell/k230-feature-samples.tar; df -h /
+[?2004l
+7041f8121b461ec5723813344dec9bd5f1bd75dd31c40fd099a6ae57098de123  /home/shell/.config/htop/htoprc
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/mmcblk1p2  2.0G  1.7G  203M  90% /
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

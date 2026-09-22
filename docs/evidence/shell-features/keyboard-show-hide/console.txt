@@ -1,0 +1,17 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh keyboard-show-hide --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps on the persistent Keyboard control show, dismiss, and reopen wvkbd; the terminal resizes above it.' > /tmp/keyboard-show-hide-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 375 28; sleep 3; grim /tmp/keyboard-shown.png; tap 375 28; sleep 3; grim /tmp/keyboard-hidden.png; tap 375 28; sleep 2; wait "$sampler"; cat /tmp/keyboard-show-hide-samples.log; echo FEATURE_ACTIONS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh keyboard-show-hide --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps on the persistent Keyboard control show, dismiss, and reopen wvkbd; the terminal resizes above it.' > /tmp/keyboard-show-hide-samples.log 2>&1 & sampler=$!; sleep 2; tap() { /tmp/inject-tap.sh /dev/input/event1 "$@"; }; tap 375 28; sleep 3; grim /tmp/keyboard-shown.png; tap 375 28; sleep 3; grim /tmp/ 
+keyboard-hidden.png; tap 375 28; sleep 2; wait "$sampler"; cat /tmp/keyboard-show-hide-samples.log; echo FEATURE_ACTIONS_DONE
+[?2004l
+[2] 1237
+[2]+  Done                       bash /tmp/sample-grim-frames.sh keyboard-show-hide --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Injected taps on the persistent Keyboard control show, dismiss, and reopen wvkbd; the terminal resizes above it.' > /tmp/keyboard-show-hide-samples.log 2>&1
+captured 32 sampled PNG frame(s): /tmp/k230-samples/20260317T200102Z-keyboard-show-hide
+serial-transfer archive: /tmp/k230-samples/20260317T200102Z-keyboard-show-hide.tar.gz
+FEATURE_ACTIONS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,2 @@
+# Injected uinput actions on the physical board.
+swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font="DejaVu Sans Mono:size=12" bash -c '"'"'nix --offline --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash'"'"''; sleep 9; grim /tmp/neofetch-clean.png

@@ -1,0 +1,18 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh neofetch-clean --duration 20 --output-dir /tmp/k230-samples --provenance injected --description 'Original Neofetch 7.1.0 runs through offline nix shell after automatic first-boot Nix database registration; launched by Sway IPC with a login shell.' > /tmp/neofetch-clean-samples.log 2>&1 & sampler=$!; sleep 2; swaymsg '[app_id="k230-neofetch"] kill'; swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font="DejaVu Sans Mono:size=12" bash -lc '"'"'nix --offline --extra-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash -l'"'"''; sleep 9; grim /tmp/neofetch-clean.png; wait "$sampler"; cat /tmp/neofetch-clean-samples.log; echo FEATURE_ACTIONS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh neofetch-clean --duration 20 --output-dir /tmp/k230-samples --provenance injected --description 'Original Neofetch 7.1.0 runs through offline nix shell after automatic first-boot Nix database registration; launched by Sway IPC with a login shell.' > /tmp/neofetch-clean-samples.log 2>&1 & sampler=$!; sleep 2; swaymsg '[app_id="k230-neofetch"] kill'; swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font="DejaVu Sans Mono:size=12" bash -lc '"'"'nix --offline --extra 
+-experimental-features nix-command shell /nix/store/8kby6bnnkd5360izrz9lal3vk0x9yvny-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash -l'"'"''; sle 
+ep 9; grim /tmp/neofetch-clean.png; wait "$sampler"; cat /tmp/neofetch-clean-samples.log; echo FEATURE_ACTIONS_DONE
+[?2004l
+[3] 4068
+[3]+  Done                       bash /tmp/sample-grim-frames.sh neofetch-clean --duration 20 --output-dir /tmp/k230-samples --provenance injected --description 'Original Neofetch 7.1.0 runs through offline nix shell after automatic first-boot Nix database registration; launched by Sway IPC with a login shell.' > /tmp/neofetch-clean-samples.log 2>&1
+captured 35 sampled PNG frame(s): /tmp/k230-samples/20260317T200950Z-neofetch-clean
+serial-transfer archive: /tmp/k230-samples/20260317T200950Z-neofetch-clean.tar.gz
+FEATURE_ACTIONS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

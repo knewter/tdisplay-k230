@@ -1,0 +1,710 @@
+{
+  "method": "ffprobe metadata and per-feature visual review; native samples use measured monotonic intervals. Presentation copies are H264/yuv420p; originals retain original capture encoding.",
+  "videos": [
+    {
+      "path": "keyboard-show-hide/20260922T162954Z-keyboard-show-hide.mp4",
+      "site_presentation": false,
+      "bytes": 2409284,
+      "sha256": "12b8c09a3cf8f296d6aab6446efe8c4ec18fb847c49495c3403a8d83ff4f14fb",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2409284"
+        }
+      }
+    },
+    {
+      "path": "keyboard-show-hide/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2319929,
+      "sha256": "49241c2b0f8b35a2e15626d2fc063f24ee913140b019ae810e996abb5c330a1e",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2319929"
+        }
+      }
+    },
+    {
+      "path": "keyboard-show-hide/native.mp4",
+      "site_presentation": true,
+      "bytes": 40689,
+      "sha256": "5baa7df84c80eedd8d3c824b92751ebc649feb9870fed6497c7695430d8a69eb",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "17.920000",
+          "size": "40689"
+        }
+      }
+    },
+    {
+      "path": "launch/20260922T163054Z-launch.mp4",
+      "site_presentation": false,
+      "bytes": 2099100,
+      "sha256": "093723defda27fd079fe76056c2cdea3d55c18e82c64062bd2f1f3777bd3a8d9",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2099100"
+        }
+      }
+    },
+    {
+      "path": "launch/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2016854,
+      "sha256": "1b10fe9dd8e5f36084c070e4bed9dcb22768d6692f42e352fe8d8cca2c681ff8",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2016854"
+        }
+      }
+    },
+    {
+      "path": "launch/native.mp4",
+      "site_presentation": true,
+      "bytes": 323520,
+      "sha256": "8448897bb280748cc3bfcc0f82e6d00eb96ac916a8555af9c17c61b60189687a",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "18.180000",
+          "size": "323520"
+        }
+      }
+    },
+    {
+      "path": "monitor-portrait/20260922T163926Z-monitor-portrait.mp4",
+      "site_presentation": false,
+      "bytes": 2415333,
+      "sha256": "64e15949d323c518248afe2bcf03b6d8077efde57e946e0bd7d77ea968a6d558",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2415333"
+        }
+      }
+    },
+    {
+      "path": "monitor-portrait/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2306237,
+      "sha256": "6e5bda7007857f96003ee6aae70b70913b3e16aa57fc4b95ebf15fea87975e3b",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2306237"
+        }
+      }
+    },
+    {
+      "path": "monitor-portrait/native.mp4",
+      "site_presentation": true,
+      "bytes": 316405,
+      "sha256": "6af3645676bddc303115904c349caa5be3bbe60d7edd475e468843cab72fb233",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "17.870000",
+          "size": "316405"
+        }
+      }
+    },
+    {
+      "path": "neofetch/20260922T160722Z-neofetch.mp4",
+      "site_presentation": false,
+      "bytes": 2689126,
+      "sha256": "d5f7cecfa9233657cae3a4e1b990239ca49a5c8729c60d73d555055ece533e29",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuvj420p",
+            "color_range": "pc"
+          }
+        ],
+        "format": {
+          "duration": "12.000000",
+          "size": "2689126"
+        }
+      }
+    },
+    {
+      "path": "neofetch/demo.mp4",
+      "site_presentation": true,
+      "bytes": 1535052,
+      "sha256": "e7d8bc52830857448cab640d99f70e592f41c74121c997b7ba433386360695bb",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "12.000000",
+          "size": "1535052"
+        }
+      }
+    },
+    {
+      "path": "neofetch-clean/20260922T163842Z-neofetch-clean.mp4",
+      "site_presentation": false,
+      "bytes": 2300074,
+      "sha256": "0d4c3d0821713b63510b5b218e886dc538727e8db0651027c8411673223969ca",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "24.000000",
+          "size": "2300074"
+        }
+      }
+    },
+    {
+      "path": "neofetch-clean/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2190980,
+      "sha256": "45ff2bc95ec643e9be76b8911238b24ea8d918a52c0ab1aa0f1c8a8dcad25d19",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "24.000000",
+          "size": "2190980"
+        }
+      }
+    },
+    {
+      "path": "neofetch-clean/native.mp4",
+      "site_presentation": true,
+      "bytes": 48053,
+      "sha256": "9e12f344648897d0b207157fa079f21ae8c7360c8eb1fe07a5d840e538274ac9",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "19.890000",
+          "size": "48053"
+        }
+      }
+    },
+    {
+      "path": "neofetch-launch-failed/20260922T163706Z-neofetch-clean.mp4",
+      "site_presentation": false,
+      "bytes": 2204730,
+      "sha256": "da040cec9c72f5923eb8c03f841ac2266ad4100b859375343af9f1745ae46a5d",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "24.000000",
+          "size": "2204730"
+        }
+      }
+    },
+    {
+      "path": "reboot/20260922T164431Z-reboot.mp4",
+      "site_presentation": false,
+      "bytes": 10622716,
+      "sha256": "63dee924435f0ac8ef13dfb9382f6319385ef2997920994c076633eabd294f75",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "95.000000",
+          "size": "10622716"
+        }
+      }
+    },
+    {
+      "path": "reboot/demo.mp4",
+      "site_presentation": true,
+      "bytes": 10222354,
+      "sha256": "d52617e484759bfadfce009f34b22a2123ae1c2661b948b1ae821948e32a5620",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "95.000000",
+          "size": "10222354"
+        }
+      }
+    },
+    {
+      "path": "startup/20260922T162402Z-unattended-startup.mp4",
+      "site_presentation": false,
+      "bytes": 19267001,
+      "sha256": "3593e96abf46d2c1736c7cbfb7f5a7496428c2b25d2c921ee3c606b284bd88b8",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "150.000000",
+          "size": "19267001"
+        }
+      }
+    },
+    {
+      "path": "startup/demo.mp4",
+      "site_presentation": true,
+      "bytes": 10000673,
+      "sha256": "3b9466f6baa8cd81d6ba09399e347abb03976cfdfed5f3663c671aac39e5a399",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "70.000000",
+          "size": "10000673"
+        }
+      }
+    },
+    {
+      "path": "switch/20260922T163200Z-switch.mp4",
+      "site_presentation": false,
+      "bytes": 2774713,
+      "sha256": "ced1003cbd52c8021e6ba40eab24df07ea9ebc451ab7a31116ae90b55e596af7",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "2774713"
+        }
+      }
+    },
+    {
+      "path": "switch/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2640681,
+      "sha256": "494a893b235776b204a4bbd371dcdbe05f7e4ba5250d650a9ab7f2dd1fa3cd29",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "2640681"
+        }
+      }
+    },
+    {
+      "path": "switch/native.mp4",
+      "site_presentation": true,
+      "bytes": 628136,
+      "sha256": "1c698823d78ca8a9ac4b476a540f066284969a7b1795ad048e36fd78a65424cf",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "23.930000",
+          "size": "628136"
+        }
+      }
+    },
+    {
+      "path": "system-controls/20260922T163523Z-system-controls.mp4",
+      "site_presentation": false,
+      "bytes": 2723616,
+      "sha256": "303ad0dfcdd9fd0a8321604cff8db6c7eb0bcfc16eb946be462817226d537364",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "2723616"
+        }
+      }
+    },
+    {
+      "path": "system-controls/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2533558,
+      "sha256": "0ff33771611d487aa09e9f11d86f2f05351c062e7e5b3bf494242fd52a6b759b",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "2533558"
+        }
+      }
+    },
+    {
+      "path": "system-controls/native.mp4",
+      "site_presentation": true,
+      "bytes": 24905,
+      "sha256": "f05f37915bfa0c9d051d2facabe4eb2822f80b274cfe62f463e3e4add5c803fe",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "23.670000",
+          "size": "24905"
+        }
+      }
+    },
+    {
+      "path": "terminal/20260922T162858Z-terminal.mp4",
+      "site_presentation": false,
+      "bytes": 2365529,
+      "sha256": "f0bb888a4d5f19e22a62af4e2bab07bf62040dcf627b891576e42aea8f1eea47",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2365529"
+        }
+      }
+    },
+    {
+      "path": "terminal/demo.mp4",
+      "site_presentation": true,
+      "bytes": 2302796,
+      "sha256": "2dcf150c931c9c47f82a1db35d95fb063fcaebde68ca21e39d8798edb78b57f8",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "22.000000",
+          "size": "2302796"
+        }
+      }
+    },
+    {
+      "path": "terminal/native.mp4",
+      "site_presentation": true,
+      "bytes": 31134,
+      "sha256": "e35b37ff6f6c9cb539232e019e7036cb304c6f0c544b42743d990cedf32226d5",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "17.860000",
+          "size": "31134"
+        }
+      }
+    },
+    {
+      "path": "terminal-recovery/20260922T163353Z-terminal-recovery.mp4",
+      "site_presentation": false,
+      "bytes": 3311290,
+      "sha256": "f6bd888aa7e85118d4c6f9e6ff5a787e626c44d4baf9fb1d7fa571475ec4edde",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "3311290"
+        }
+      }
+    },
+    {
+      "path": "terminal-recovery/demo.mp4",
+      "site_presentation": true,
+      "bytes": 3412915,
+      "sha256": "696908522be22f2e0ffd7efc5884a18e752de06897b84e7e2416697b646b86dc",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "3412915"
+        }
+      }
+    },
+    {
+      "path": "terminal-recovery/native.mp4",
+      "site_presentation": true,
+      "bytes": 436046,
+      "sha256": "e0af206407cdf44adec544a7ce9b83522d15cecbba09b45d38bf5532d23d5f49",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 568,
+            "height": 1232,
+            "pix_fmt": "yuv420p"
+          }
+        ],
+        "format": {
+          "duration": "24.060000",
+          "size": "436046"
+        }
+      }
+    }
+  ]
+}

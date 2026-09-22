@@ -7,6 +7,15 @@ Wi-Fi, and an SX1262/LR2021 LoRa radio.
 Goal: replace the shipped RT-Smart firmware with **NixOS** on riscv64, then run
 [AtomVM](https://www.atomvm.net/) and the Dozer core on top.
 
+## Shell demonstrations
+
+The [feature gallery](docs/evidence/shell-features/index.html) and
+[evidence index](docs/evidence/shell-features/README.md) contain native screen
+clips, screenshots, and FFmpeg camera recordings for ten shell workflows.
+They distinguish injected touch events from IPC launches; full real-touch
+verification remains separate. The gallery is portable and ready for site
+integration.
+
 ## Connecting to the board
 
 The board has two USB-C ports. The one that also charges (`J2` on the

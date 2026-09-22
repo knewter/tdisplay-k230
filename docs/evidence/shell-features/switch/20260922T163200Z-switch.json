@@ -1,0 +1,69 @@
+{
+  "captured_at": "20260922T163200Z",
+  "feature": "switch",
+  "description": "Injected taps page through Windows and focus Terminal, then Monitor, using the persistent touch controls.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/switch/20260922T163200Z-switch.mp4",
+    "kind": "mp4",
+    "duration_seconds": 28.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "scale=out_range=tv",
+    "-t",
+    "28.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/switch/20260922T163200Z-switch.mp4"
+  ],
+  "dry_run": false,
+  "site_assets": {
+    "video": "docs/evidence/shell-features/switch/demo.mp4",
+    "screenshot": "docs/evidence/shell-features/switch/menu.png",
+    "terminal_screenshot": "docs/evidence/shell-features/switch/terminal.png",
+    "video_transform": "180 degree rotation and full-to-limited range conversion; original camera clip retained",
+    "screenshot_source": "grim on the physical board, transferred over serial"
+  },
+  "review": {
+    "video_probe": "H.264, yuv420p, limited range, 1920x1080, 28.000 seconds, 840 frames",
+    "visual_review": "Reviewed camera frames near 2, 8, 14, and 22 seconds. The Windows control, terminal, and Monitor views are visible on the portrait panel; camera glare and the oblique view soften text. The Monitor presentation is narrow and clipped, so it is retained as diagnostic evidence and not claimed as polished site presentation.",
+    "interaction_state": "Injected uinput taps opened Windows and focused Terminal, then selected Monitor; no physical-touch claim is made."
+  }
+}

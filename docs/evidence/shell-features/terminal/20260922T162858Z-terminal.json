@@ -1,0 +1,69 @@
+{
+  "captured_at": "20260922T162858Z",
+  "feature": "terminal",
+  "description": "Type pwd on the on-screen keyboard using injected uinput taps; the physical terminal prints /home/shell, then the keyboard is dismissed.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/terminal/20260922T162858Z-terminal.mp4",
+    "kind": "mp4",
+    "duration_seconds": 22.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "scale=out_range=tv",
+    "-t",
+    "22.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/terminal/20260922T162858Z-terminal.mp4"
+  ],
+  "dry_run": false
+  ,"site_assets": {
+    "video": "docs/evidence/shell-features/terminal/demo.mp4",
+    "screenshot": "docs/evidence/shell-features/terminal/screen.png",
+    "keyboard_screenshot": "docs/evidence/shell-features/terminal/keyboard.png",
+    "video_transform": "180 degree rotation and full-to-limited range conversion; original camera clip retained",
+    "screenshot_source": "grim on the physical board, transferred over serial"
+  },
+  "review": {
+    "video_probe": "H.264, yuv420p, limited range, 1920x1080, 30 fps, 22.000 seconds, 660 frames",
+    "visual_review": "Reviewed frames near 1, 11, and 20 seconds: the camera shows the portrait terminal with pwd output and the top touch controls; camera glare crosses the upper controls and softens the text. Use screen.png for readable terminal output and keyboard.png for the keyboard layout.",
+    "interaction_state": "Injected uinput taps typed pwd and dismissed the keyboard; the camera clip proves the physical panel display, not a real finger touch."
+  }
+}

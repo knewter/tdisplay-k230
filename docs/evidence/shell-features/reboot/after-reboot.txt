@@ -1,0 +1,25 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; cat /proc/sys/kernel/random/boot_id; journalctl -b -1 --no-pager -n 12 =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; cat /proc/sys/kernel/random/boot_id; journalctl -b -1 --no-pager -n 12
+[?2004l
+active
+98227a7f-034d-4d32-b733-6230d2b79e78
+Mar 17 20:14:48 nixos systemd[1]: systemd-reboot.service: Deactivated successfully.
+Mar 17 20:14:48 nixos systemd[1]: Finished System Reboot.
+Mar 17 20:14:48 nixos systemd[1]: Reached target System Reboot.
+Mar 17 20:14:48 nixos systemd[1]: [0;1;39m[0;1;31m[0;1;39mShutting down.[0m
+Mar 17 20:14:48 nixos systemd[1]: Using hardware watchdog /dev/watchdog0: 'Synopsys DesignWare Watchdog', version 0.
+Mar 17 20:14:48 nixos systemd[1]: Watchdog running with a hardware timeout of 11min 55s.
+Mar 17 20:14:48 nixos kernel: [0;1;31m[0;1;39m[0;1;31mwatchdog: watchdog0: watchdog did not stop![0m
+Mar 17 20:14:48 nixos systemd-shutdown[1]: Using hardware watchdog /dev/watchdog0: 'Synopsys DesignWare Watchdog', version 0.
+Mar 17 20:14:48 nixos systemd-shutdown[1]: Watchdog running with a hardware timeout of 11min 55s.
+Mar 17 20:14:48 nixos systemd-shutdown[1]: Syncing filesystems and block devices.
+Mar 17 20:14:48 nixos systemd-shutdown[1]: Sending SIGTERM to remaining processes...
+Mar 17 20:14:48 nixos systemd-journald[276]: Journal stopped
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

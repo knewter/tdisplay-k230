@@ -1,0 +1,16 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh monitor-portrait --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Portrait Monitor profile keeps process names, CPU and memory visible at 15pt; live profile launched by Sway IPC for validation before image integration.' > /tmp/monitor-portrait-samples.log 2>&1 & sampler=$!; sleep 2; swaymsg '[app_id="k230-monitor"] kill'; swaymsg 'exec HTOPRC=/tmp/k230-monitor.htoprc foot --app-id=k230-monitor --title=Monitor --font="DejaVu Sans Mono:size=15" htop'; sleep 5; grim /tmp/monitor-portrait.png; wait "$sampler"; cat /tmp/monitor-portrait-samples.log; echo FEATURE_ACTIONS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh monitor-portrait --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Portrait Monitor profile keeps process names, CPU and memory visible at 15pt; live profile launched by Sway IPC for validation before image integration.' > /tmp/monitor-portrait-samples.log 2>&1 & sampler=$!; sleep 2; swaymsg '[app_id="k230-monitor"] kill'; swaymsg 'exec HTOPRC=/tmp/k230-monitor.htoprc foot --app-id=k230-monitor --title=Monitor --font="DejaVu Sans Mono:size=15" htop'; sleep 5; grim /tmp/monitor-portrait.png; wait "$sampler"; cat /tmp/monitor-portrait-samples.log; echo FEATURE_ACTIONS_DONE
+[?2004l
+[3] 4517
+[3]+  Done                       bash /tmp/sample-grim-frames.sh monitor-portrait --duration 18 --output-dir /tmp/k230-samples --provenance injected --description 'Portrait Monitor profile keeps process names, CPU and memory visible at 15pt; live profile launched by Sway IPC for validation before image integration.' > /tmp/monitor-portrait-samples.log 2>&1
+captured 32 sampled PNG frame(s): /tmp/k230-samples/20260317T201034Z-monitor-portrait
+serial-transfer archive: /tmp/k230-samples/20260317T201034Z-monitor-portrait.tar.gz
+FEATURE_ACTIONS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

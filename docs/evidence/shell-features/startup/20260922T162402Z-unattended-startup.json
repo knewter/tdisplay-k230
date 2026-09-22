@@ -1,0 +1,68 @@
+{
+  "captured_at": "20260922T162402Z",
+  "feature": "unattended-startup",
+  "description": "Physical panel during corrected-image boot after verified UMS write; reset commanded over serial, no display-session intervention.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "docs/evidence/shell-features/startup/20260922T162402Z-unattended-startup.mp4",
+    "kind": "mp4",
+    "duration_seconds": 150.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "scale=out_range=tv",
+    "-t",
+    "150.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "docs/evidence/shell-features/startup/20260922T162402Z-unattended-startup.mp4"
+  ],
+  "dry_run": false,
+  "site_assets": {
+    "video": "docs/evidence/shell-features/startup/demo.mp4",
+    "screenshot": "docs/evidence/shell-features/startup/screen.jpg",
+    "video_transform": "Source interval 33\u2013103 seconds, rotated 180 degrees; real-time playback; original 150-second camera recording retained.",
+    "screenshot_source": "Frame two seconds before the end of the original camera recording, rotated 180 degrees."
+  },
+  "image": "/nix/store/s50h4h5awhx9479nhflayif890z2r6c0-k230-sd-image.img",
+  "review": {
+    "observed": "Boot console followed by Sway terminal and persistent touch controls without graphical-session intervention.",
+    "limits": "USB cables connected; this does not prove battery-only boot. Camera glare and perspective reduce text readability."
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "captured_at": "20260922T163523Z",
+  "feature": "system-controls",
+  "description": "Injected taps open System, inspect and cancel Power off, then inspect and cancel Reboot. Neither action executes in this clip.",
+  "capture_source": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1920x1080",
+    "framerate": 30
+  },
+  "interaction_provenance": "injected",
+  "provenance_note": "Operator-declared metadata does not prove that footage shows a real touch.",
+  "artifact": {
+    "path": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/system-controls/20260922T163523Z-system-controls.mp4",
+    "kind": "mp4",
+    "duration_seconds": 28.0,
+    "presentation_rotation": 0
+  },
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1920x1080",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "scale=out_range=tv",
+    "-t",
+    "28.0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/system-controls/20260922T163523Z-system-controls.mp4"
+  ],
+  "dry_run": false,
+  "site_assets": {
+    "video": "docs/evidence/shell-features/system-controls/demo.mp4",
+    "screenshot": "docs/evidence/shell-features/system-controls/screen.png",
+    "menu_screenshot": "docs/evidence/shell-features/system-controls/menu.png",
+    "poweroff_screenshot": "docs/evidence/shell-features/system-controls/poweroff.png",
+    "video_transform": "180 degree rotation and full-to-limited range conversion; original camera clip retained",
+    "screenshot_source": "grim on the physical board, transferred over serial"
+  },
+  "review": {
+    "video_probe": "H.264, yuv420p, limited range, 1920x1080, 30 fps, 28.000 seconds, 840 frames",
+    "visual_review": "Reviewed camera frames near 1, 8, 15, and 23 seconds: System, Power off, and Reboot confirmation screens plus the return state are visible. Camera glare and the oblique view soften text; native screenshots are readable.",
+    "interaction_state": "Injected uinput opened System and inspected then cancelled Power off and Reboot; neither power action executed. Camera proves panel display, not real finger touch."
+  }
+}
