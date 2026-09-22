@@ -1,0 +1,53 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p DropInPaths; readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; dmesg | grep -E "KFENCE:|memory corruption|Call Trace|usb 2-1|r8152|irq 85"; free -m; SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -t get_outputs =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p DropInPaths; readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; dmesg | grep -E "KFENCE:|memory corruption|Call Trace|usb 2-1|r8152|irq 85"; free -m; SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -t get_outputs
+[?2004l
+active
+DropInPaths=
+/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd
+5dbd45eb-490d-4801-9d51-b2c146367bd2
+[    3.804779] usbcore: registered new device driver r8152-cfgselector
+[    3.811283] usbcore: registered new interface driver r8152
+[    3.962268] irq 85: nobody cared (try booting with the "irqpoll" option)
+[    3.980617] Call Trace:
+[    4.224053] dwc2 91500000.usb: irq 85, io mem 0x91500000
+[    4.844075] usb 2-1: new high-speed USB device number 2 using dwc2
+[    5.082564] BUG: KFENCE: memory corruption in hub_port_init+0x4ac/0xcc8
+[    5.301123] BUG: KFENCE: memory corruption in usb_get_bos_descriptor+0xbc/0x308
+[    5.515634] usb 2-1: New USB device found, idVendor=0bda, idProduct=8152, bcdDevice=20.00
+[    5.526501] usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[    5.536463] usb 2-1: Product: USB 10/100 LAN
+[    5.542150] usb 2-1: Manufacturer: Realtek
+[    5.547656] usb 2-1: SerialNumber: 000000000000
+[    5.747995] r8152-cfgselector 2-1: reset high-speed USB device number 2 using dwc2
+[    6.098412] r8152 2-1:1.0: skip request firmware
+[    6.104700] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Invalid ether addr 00:00:00:00:00:00
+[    6.116772] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Random ether addr d6:28:75:e1:08:43
+[    6.197994] r8152 2-1:1.0 eth0: v1.12.13
+[   15.277708] r8152 2-1:1.0 enu1: renamed from eth0
+               total        used        free      shared  buff/cache   available
+Mem:             935         172         708          11         137         763
+Swap:              0           0           0
+Output DSI-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 568x1232 @ 52.190 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: normal
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    568x1232 @ 52.190 Hz
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
