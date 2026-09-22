@@ -228,18 +228,20 @@ control.
 - **THEN** that result is recorded as injected-input evidence only; it does not
   close the requirement for a real finger tap on the glass
 
-### Requirement: The shell hosts Dozer's shell; it is not Dozer's shell
+### Requirement: The shell hosts a later application shell; it does not choose one
 
-The compositor chosen here SHALL NOT be treated as a decision about which shell
-draws Dozer. It provides a surface, an input path and a way to type; what runs
-on it stays open.
+The compositor and the separately archived installed-application launcher SHALL
+NOT be treated as a decision about which application shell draws the product
+experience. They provide a surface, an input path, a way to type, and a small
+way to launch installed desktop entries; the later application shell remains
+open.
 
 *Grounding: `openspec/config.yaml` defines "a shell" as "whatever draws Dozer on
-this screen; not yet chosen", and `the-screen-comes-up-under-linux` names
-choosing a UI toolkit as an explicit non-goal. `docs/findings.md` records the
-Compose Desktop and Kotlin/Native assessments as still open.*
+this screen; not yet chosen", and the archived launcher change is scoped to
+desktop-entry discovery and session utilities. `docs/findings.md` records the
+application-framework assessments as still open.*
 
-#### Scenario: A Dozer shell is proposed later
+#### Scenario: A later application shell is proposed
 
-- **WHEN** someone proposes a way to draw Dozer on this board
+- **WHEN** someone proposes a way to draw the product experience on this board
 - **THEN** nothing in this capability forbids it, whether it is a Wayland client, a direct DRM/KMS renderer that replaces the compositor, or something else

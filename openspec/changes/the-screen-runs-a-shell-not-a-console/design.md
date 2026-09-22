@@ -4,9 +4,10 @@ See proposal.md — Why. The full comparison, with every measurement and every
 source citation, is `docs/display-environment-options.md`; this document
 records only what shapes the approach.
 
-**The layer this work lands in is Nix and userspace.** Nothing here touches
-stage 1, the kernel, or the device tree. That is deliberate and it is the
-cleanest seam this project has: `the-screen-comes-up-under-linux` owns
+**The layer this work lands in is primarily Nix and userspace.** The shell does
+not change stage 1, the device tree, or the display/touch drivers. It does add
+the small kernel configuration needed by the NixOS firewall backend. The clean
+seam remains: `the-screen-comes-up-under-linux` owns
 everything down to and including `/dev/dri/card0` and `/dev/input/event*`; this
 change owns everything above them. If a problem turns out to need a device tree
 property — a swapped touch axis, a plane format — it belongs on the other side
@@ -27,9 +28,11 @@ What constrains the approach:
   existing 1.2 GiB closure took 353 local derivations and 73 minutes, of which
   a single extra cross toolchain was the largest cost. Package choice here is a
   build-time decision as much as a runtime one.
-- **1 GiB of RAM and two in-order cores.** A compositor that is fine on a
-  laptop is not automatically fine here, and a full frame at 568x1232 in
-  ARGB8888 is 2.8 MiB the CPU has to touch.
+- **1 GiB of RAM and the observed Linux CPU.** The current image brings up one
+  Linux C908; ownership and enablement of any second physical core remain a
+  separate feasibility question. A compositor that is fine on a laptop is not
+  automatically fine here, and a full frame at 568x1232 in ARGB8888 is 2.8 MiB
+  the CPU has to touch.
 - **The panel is portrait natively.** 568x1232, and the touch controller
   reports in the same space. Every rotation we do not do is per-pixel CPU work
   we do not pay for.
@@ -124,6 +127,11 @@ System changes to a confirmation page before its narrowly-authorized
 `systemctl reboot` or `systemctl poweroff`, and Cancel returns to the main
 page. This is SXMO-inspired interaction, not SXMO packaging.
 
+The installed-application launcher that now supplies the Apps behavior is a
+separately archived extension of this work. It does not expand this change's
+scope into a general desktop environment; this change records the shell
+surface, input path, session controls, and measured resource cost.
+
 The menu implementation can be exercised with `evemu` and `/dev/uinput`, but
 that only proves injected input reached swaybar. It does not prove a finger
 lands on the expected control through the GT9895 and panel glass; the latter
@@ -212,9 +220,9 @@ degrees off" report.
 
 ## Open Questions
 
-- Which on-screen keyboard: `wvkbd` (layer-shell, what SXMO uses) or
-  `squeekboard` (also packaged). Both cross-compile at the pin. This changes a
-  task's contents, not the approach, and is answerable once there is a screen
-  to look at one on.
-- Whether `foot` or the kernel console remains the thing on screen at boot.
-  Answerable after task group 3 and it does not affect the specs.
+- Whether the remaining first-boot and battery-only paths stay reliable across
+  the final image defaults, including firewall activation and the unresolved
+  splash-to-Linux handoff geometry/color issue.
+- Whether a later application shell should draw the product experience on this
+  Wayland session. Dozer, AtomVM, and other application frameworks remain open;
+  the separately archived launcher does not decide that question.

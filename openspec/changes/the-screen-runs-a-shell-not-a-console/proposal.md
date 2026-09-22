@@ -11,10 +11,11 @@ a Crux application with swappable shells, and nothing can be a shell here until
 something owns the screen, owns the touch events, and can put a second
 application on top of the first.
 
-This change is **not startable** until `the-screen-comes-up-under-linux` lands.
-It needs a DRM device, a mode set on a real panel, and touch events with
-coordinates — all three of which that change delivers and none of which exist
-today.
+The prerequisite `the-screen-comes-up-under-linux` is now archived and supplies
+the DRM, panel, and touch interfaces this change consumes. The shell remains a
+hardware-facing change: first-light, physical touch accuracy, and unattended
+boot still require the board and are tracked in this change's tasks and
+evidence.
 
 ## What Changes
 
@@ -87,8 +88,9 @@ events in panel coordinates, which is exactly what they already promise.
 ## Impact
 
 Adds a NixOS module under `nix/` for the compositor stack and its session, and
-the packages it needs to the system closure. Nothing in the kernel or the device
-tree changes.
+the packages it needs to the system closure. It also carries the small kernel
+configuration required by the existing NixOS firewall backend; it does not
+change the device tree or display/touch drivers.
 
 **Build cost, measured on `solomon` against the pinned nixpkgs, including the
 touch-menu utilities** (`docs/evidence/shell-build.txt`): the final enabled
@@ -117,7 +119,7 @@ No new toolchain. The sway stack builds on the GCC 15.3.0 cross-compiler the
 closure already uses; Hyprland would have required a second full GCC
 cross-bootstrap, which is a large part of why it is rejected.
 
-**Depends on `the-screen-comes-up-under-linux`.** Hard dependency, not a
-sequencing preference: without a DRM device that supports dumb buffers, the
-compositor has nothing to allocate from, and without touch events it has nothing
-to route.
+**Consumes the interfaces from `the-screen-comes-up-under-linux`.** That change
+is archived, but the board-facing dependency remains: without a DRM device that
+supports dumb buffers, the compositor has nothing to allocate from, and without
+touch events it has nothing to route.
