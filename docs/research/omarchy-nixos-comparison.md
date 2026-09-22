@@ -139,3 +139,34 @@ provider behind the existing portrait UI: cache entries in memory, show large
 text/icon cards, use a single selected entry, and invoke the desktop-entry
 API with a fixed launch context. Keep Terminal, Monitor, Keyboard, Windows,
 and System as built-in fallback actions when no desktop file is available.
+
+### GLib launch caveats for this image
+
+`GDesktopAppInfo` is the right parser/launcher boundary, but it is not a
+complete terminal policy. The UNIX header is
+`<gio/gdesktopappinfo.h>`, so the derivation must use `gio-unix-2.0` in
+`pkg-config` and link the UNIX GIO library. `g_app_info_launch()` inherits the
+launcher environment and can add launch-context variables such as
+`GIO_LAUNCHED_DESKTOP_FILE`; it does not magically repair a missing session
+environment. Preserve `XDG_RUNTIME_DIR`, `WAYLAND_DISPLAY`, `SWAYSOCK`, and
+the Nix service's PATH when starting it from swaybar.
+
+For a desktop entry with `Terminal=true`, GLib prepends a terminal selected
+from a fixed known list. In the current GLib source that list includes
+`xdg-terminal-exec`, `kgx`, `gnome-terminal`, `mate-terminal`, `xfce4-terminal`,
+`tilix`, `konsole`, `nxterm`, `color-xterm`, `rxvt`, `dtterm`, and `xterm`; it
+does not include `foot`. With only foot installed, `g_app_info_launch()` can
+therefore fail with “Unable to find terminal required for application.” Add a
+small Nix-provided `xdg-terminal-exec` wrapper that invokes the pinned foot
+profile (and put it in the service PATH), or explicitly handle Terminal=true
+through the same trusted Foot bridge. Do not replace `Exec` with a shell
+string.
+
+Use `g_app_info_should_show()` and desktop-entry type/ID filtering, retain
+user-over-system desktop-ID precedence, and skip `Hidden`, `NoDisplay`, and
+inapplicable `OnlyShowIn`/`NotShowIn` entries. `DBusActivatable=true` can
+require a working user D-Bus session; either verify the existing shell's bus
+is available or mark such entries unavailable with an explanatory error.
+`g_app_info_launch()` reports only launch handoff success, not whether the
+application later stayed alive, so the launcher should close after a true
+handoff and show a bounded error on a GLib failure.
