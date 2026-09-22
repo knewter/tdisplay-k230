@@ -16,7 +16,10 @@ nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath
 openspec validate the-shell-launches-apps-without-a-keyboard --strict
 ```
 
-All commands passed. The package output is
+The initial package build passed before follow-up input and strip fixes; its
+measurements below are retained only as a historical record. The corrected
+source requires the replacement build tracked in `tasks.md` before this is
+current validation. The initial package output was
 `/nix/store/07w3dmc4d79c86cjafc2n28xj6khhnlg-k230-touch-launcher`; its complete
 closure is 192.7 MiB, including the existing RISC-V Bash, glibc, and Wayland
 runtime graph. The native RISC-V launcher ELF itself is 34,265,384 bytes.
