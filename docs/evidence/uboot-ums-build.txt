@@ -172,3 +172,41 @@ Their SHA-256 hashes are `fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1
 respectively. This is source/build evidence only. Task 6.2 remains unchecked:
 it requires a board to show the RTL8152 host tree while the J3 UMS gadget is
 present on the host.
+
+USB host match-priority repair — build-host evidence only
+----------------------------------------------------------
+The first coexistence candidate (`5133502`, stage 1
+`/nix/store/g8r05lrfbb8gcwh1m1nrfy6q870y7mh1-k230-stage1`) is retained as a
+failed hardware diagnostic: it booted and UMS enumerated, but its
+`docs/evidence/uboot-usb-host-coexist.txt` transcript shows no working host
+controller and no `usbotg1` in `dm tree`. The source explains why. In this
+U-Boot, `lists_bind_fdt()` handles the gadget bind's `-ENODEV` by continuing
+the outer compatible-string loop, not by trying the next driver for the same
+`snps,dwc2` compatible. With only that one compatible string, the host driver
+was never considered.
+
+Commit `b25702e` retains that bind guard and adds
+`canaan,k230-usbotg-host` as usbotg1's first compatible, with a matching
+entry in the DWC2 host driver's ID table. The host driver therefore matches
+the first compatible before the gadget sees the generic fallback. On
+2026-09-22, the repaired `nix build .#stage1` used only
+`https://cache.nixos.org`, `--max-jobs 2`, and `--cores 8`; it built three
+derivations and exited 0 in 22.782 seconds:
+
+  stage 1: /nix/store/bsv0h6hx9w90iyzv3d7imzb5dbafw503-k230-stage1
+  U-Boot:  /nix/store/0lnadpfx4bz99r5z1y22sfyq11wdj53w-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10
+
+The generated configuration still has `CONFIG_USB_DWC2=y`,
+`CONFIG_USB_GADGET=y`, `CONFIG_DM_USB_GADGET=y`,
+`CONFIG_USB_GADGET_DWC2_OTG=y`, and `CONFIG_CMD_USB_MASS_STORAGE=y`. Its
+embedded DTB has:
+
+  /soc/usb-otg@91500000  compatible=snps,dwc2  dr_mode=peripheral
+  /soc/usb-otg@91540000  compatible=canaan,k230-usbotg-host,snps,dwc2  dr_mode=host
+
+The resulting `fn_ug_u-boot.bin` is 380911 bytes in the 1 MiB slot, with
+SHA-256 `4cb755ed0b0ac06fcccade582fcbc90f99ffb6f4c35cec65e3564804b5be6226`.
+SPL, environment, OpenSBI, and wrapped OpenSBI retain their prior hashes.
+This is source/build evidence only. The repair still requires the task 6.2
+hardware proof; it does not claim that the host controller or packet traffic
+works.
