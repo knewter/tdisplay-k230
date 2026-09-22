@@ -96,3 +96,9 @@ These are injected touches on the physical board. No home-directory backup was
 restored: the fresh shell home had neither a `.config` directory nor user
 application entries before the demonstration. The private backup transfer was
 canceled and its partial board copy removed; it is not a shell dependency.
+
+The newly flashed source U-Boot (including patch 0005) also passed the
+[read-only UMS and USB host coexistence cycle](../../uboot-ums-host-coexist-daily.txt):
+host RTL8152 before UMS, mass-storage enumeration, host RTL8152 after UMS,
+and return to Linux in 100.2 seconds. This cycle performed no write or full
+image readback. The separate BootROM recovery drills remain unverified.
