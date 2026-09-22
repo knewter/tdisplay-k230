@@ -181,6 +181,77 @@ EOM
         drivers/gpu/drm/canaan/canaan_drv.c
       grep -q 'stage 1 splash: leaving fbdev unset' drivers/gpu/drm/canaan/canaan_drv.c
 
+
+      # Preserve U-Boot's already-running VO/DSI through exactly the first
+      # matching DRM modeset.  The stage-1 flag is only a claim that U-Boot
+      # initialized this boot; both drivers independently require the exact
+      # RM69A10 timing before trusting its live hardware state.  A mismatch,
+      # a disable before the first enable, or every later enable follows the
+      # ordinary vendor initialization path.
+      #
+      # This does not adopt a framebuffer: the same atomic commit still runs
+      # the Linux OSD plane update and register load.  It only avoids the
+      # preceding VO/DSI reprogramming that disturbed the physical panel in
+      # the retained-logo trial.  Keep the narrowly-scoped fallback visible.
+      sed -i 's|#include <linux/of_graph.h>|#include <linux/of_graph.h>\n#include <linux/of.h>|' \
+        drivers/gpu/drm/canaan/canaan_vo.c
+      grep -q '#include <linux/of.h>' drivers/gpu/drm/canaan/canaan_vo.c
+      sed -i 's|#include <linux/of_address.h>|#include <linux/of_address.h>\n#include <linux/of.h>|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q '#include <linux/of.h>' drivers/gpu/drm/canaan/canaan_dsi.c
+      sed -i 's|#include <video/videomode.h>|#include <video/videomode.h>\n\n#include "../canaan/canaan_dsi.h"|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan_dsi.h' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      sed -i 's|\tatomic_t vsync_enabled;|\tatomic_t vsync_enabled;\n\tbool stage1_handoff_pending;|' \
+        drivers/gpu/drm/canaan/canaan_vo.h
+      grep -q 'bool stage1_handoff_pending;' drivers/gpu/drm/canaan/canaan_vo.h
+      sed -i 's|\tu32 clk_freq;|\tu32 clk_freq;\n\tbool stage1_handoff_pending;\n\tbool stage1_handoff_active;|' \
+        drivers/gpu/drm/canaan/canaan_dsi.h
+      grep -q 'bool stage1_handoff_active;' drivers/gpu/drm/canaan/canaan_dsi.h
+      sed -i 's|^void k230_dsi_config_4lan_phy|static inline bool canaan_dsi_stage1_handoff_active(struct mipi_dsi_device *device)\n{\n\treturn device \&\& device->host \&\&\n\t\thost_to_canaan_dsi(device->host)->stage1_handoff_active;\n}\n\nvoid k230_dsi_config_4lan_phy|' \
+        drivers/gpu/drm/canaan/canaan_dsi.h
+      grep -q 'canaan_dsi_stage1_handoff_active' drivers/gpu/drm/canaan/canaan_dsi.h
+
+      sed -i 's|\tvo->drm_dev = drm_dev;|\tvo->drm_dev = drm_dev;\n\tvo->stage1_handoff_pending =\n\t\tof_property_read_bool(of_chosen, "canaan,stage1-splash");|' \
+        drivers/gpu/drm/canaan/canaan_vo.c
+      grep -q 'vo->stage1_handoff_pending =' drivers/gpu/drm/canaan/canaan_vo.c
+      sed -i 's|^void canaan_vo_enable_crtc(struct canaan_vo \*vo,|static bool canaan_stage1_mode_matches(const struct drm_display_mode *mode)\n{\n\treturn mode->clock == 49500 \&\&\n\t\tmode->hdisplay == 568 \&\& mode->hsync_start == 668 \&\&\n\t\tmode->hsync_end == 708 \&\& mode->htotal == 748 \&\&\n\t\tmode->vdisplay == 1232 \&\& mode->vsync_start == 1236 \&\&\n\t\tmode->vsync_end == 1252 \&\& mode->vtotal == 1268;\n}\n\nstatic void canaan_vo_set_stage1_vblank_timing(struct canaan_vo *vo,\n\t\t\t\t\t const struct drm_display_mode *mode)\n{\n\tu32 irq_line = 32 - __builtin_clz(mode->vtotal) - 1;\n\n\t/* Match canaan_vo_set_timing() without changing visual registers. */\n\tcanaan_vo_write(vo, VO_DISP_IRQ1_CTL, irq_line);\n}\n\nvoid canaan_vo_enable_crtc(struct canaan_vo *vo,|' \
+        drivers/gpu/drm/canaan/canaan_vo.c
+      grep -q 'canaan_vo_set_stage1_vblank_timing' drivers/gpu/drm/canaan/canaan_vo.c
+      sed -i '/^void canaan_vo_enable_crtc/,/canaan_vo_init(vo);/ s|\tcanaan_vo_init(vo);|\tif (vo->stage1_handoff_pending) {\n\t\tvo->stage1_handoff_pending = false;\n\t\tif (canaan_stage1_mode_matches(adjusted_mode)) {\n\t\t\tcanaan_vo_set_stage1_vblank_timing(vo, adjusted_mode);\n\t\t\tdev_info(vo->dev, "stage 1 splash: preserving VO to first plane update\\n");\n\t\t\treturn;\n\t\t}\n\t\tdev_warn(vo->dev, "stage 1 splash: VO mode differs; reinitializing\\n");\n\t}\n\n\tcanaan_vo_init(vo);|' \
+        drivers/gpu/drm/canaan/canaan_vo.c
+      grep -q 'preserving VO to first plane update' drivers/gpu/drm/canaan/canaan_vo.c
+      sed -i '/^void canaan_vo_disable_crtc/,/\tvoid \*rst;/ s|\tvoid \*rst;|\tif (vo->stage1_handoff_pending) {\n\t\tdev_info(vo->dev, "stage 1 splash: VO disabled before handoff; reinitializing later\\n");\n\t\tvo->stage1_handoff_pending = false;\n\t}\n\n\tvoid *rst;|' \
+        drivers/gpu/drm/canaan/canaan_vo.c
+      grep -q 'VO disabled before handoff' drivers/gpu/drm/canaan/canaan_vo.c
+
+      sed -i 's|\tdsi->host.dev = dev;|\tdsi->host.dev = dev;\n\tdsi->stage1_handoff_pending =\n\t\tof_property_read_bool(of_chosen, "canaan,stage1-splash");|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q 'dsi->stage1_handoff_pending =' drivers/gpu/drm/canaan/canaan_dsi.c
+      sed -i 's|^static void canaan_dsi_encoder_enable(struct drm_encoder \*encoder)|static bool canaan_dsi_stage1_mode_matches(const struct drm_display_mode *mode)\n{\n\treturn mode->clock == 49500 \&\&\n\t\tmode->hdisplay == 568 \&\& mode->hsync_start == 668 \&\&\n\t\tmode->hsync_end == 708 \&\& mode->htotal == 748 \&\&\n\t\tmode->vdisplay == 1232 \&\& mode->vsync_start == 1236 \&\&\n\t\tmode->vsync_end == 1252 \&\& mode->vtotal == 1268;\n}\n\nstatic void canaan_dsi_encoder_enable(struct drm_encoder *encoder)|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q 'canaan_dsi_stage1_mode_matches' drivers/gpu/drm/canaan/canaan_dsi.c
+      sed -i '/^static void canaan_dsi_encoder_enable/,/if (canaan_dsi_clk_cfg/ s|\tif (canaan_dsi_clk_cfg(dsi, adjusted_mode->clock))|\tif (dsi->stage1_handoff_pending) {\n\t\tdsi->stage1_handoff_pending = false;\n\t\tdsi->stage1_handoff_active = canaan_dsi_stage1_mode_matches(adjusted_mode);\n\t\tif (dsi->stage1_handoff_active) {\n\t\t\tif (dsi->panel)\n\t\t\t\tdrm_panel_prepare(dsi->panel);\n\t\t\tif (dsi->panel)\n\t\t\t\tdrm_panel_enable(dsi->panel);\n\t\t\tdev_info(dsi->dev, "stage 1 splash: preserving DSI to first plane update\\n");\n\t\t\treturn;\n\t\t}\n\t\tdev_warn(dsi->dev, "stage 1 splash: DSI mode differs; reinitializing\\n");\n\t}\n\n\tif (canaan_dsi_clk_cfg(dsi, adjusted_mode->clock))|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q 'preserving DSI to first plane update' drivers/gpu/drm/canaan/canaan_dsi.c
+      sed -i '/^static void canaan_dsi_encoder_disable/,/DRM_DEBUG_DRIVER/ s|\tDRM_DEBUG_DRIVER|\tif (dsi->stage1_handoff_pending) {\n\t\tdev_info(dsi->dev, "stage 1 splash: DSI disabled before handoff; reinitializing later\\n");\n\t\tdsi->stage1_handoff_pending = false;\n\t}\n\tdsi->stage1_handoff_active = false;\n\n\tDRM_DEBUG_DRIVER|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q 'DSI disabled before handoff' drivers/gpu/drm/canaan/canaan_dsi.c
+
+      # A mismatched first mode must not leave the panel's own one-shot
+      # preservation bit set: it receives the normal reset and DCS sequence.
+      # An early disable also consumes it, so the next enable is normal.
+      sed -i '/static int canaan_panel_prepare/,/\/\/ set power on/ s|\tif (p->stage1_splash) {|\tif (p->stage1_splash \&\&\n\t    canaan_dsi_stage1_handoff_active(p->dsi)) {|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan_dsi_stage1_handoff_active(p->dsi)' drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i '/static int canaan_panel_prepare/,/\/\*$/ s|^\t/\*$|\tif (p->stage1_splash) {\n\t\tdev_warn(panel->dev, "stage 1 splash: mode mismatch; reinitializing panel\\n");\n\t\tp->stage1_splash = false;\n\t}\n\n\t/*|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'mode mismatch; reinitializing panel' drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i '/static int canaan_panel_unprepare/,/if (p->power_on)/ s|\tif (p->power_on)|\tif (p->stage1_splash) {\n\t\tdev_info(panel->dev, "stage 1 splash: panel disabled before handoff; reinitializing later\\n");\n\t\tp->stage1_splash = false;\n\t}\n\n\tif (p->power_on)|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'panel disabled before handoff' drivers/gpu/drm/panel/panel-canaan-universal.c
+
       # Bound the thermal sensor read loop.
       #
       # canaan_get_temp() busy-polls TS_DATA in "while (1)" with no timeout,
