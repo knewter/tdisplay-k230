@@ -29,11 +29,6 @@ the board was not returned to Linux (say so loudly; the board is shared).
 import argparse, hashlib, os, subprocess, sys, time
 from pathlib import Path
 
-try:
-    import serial
-except ImportError:
-    sys.exit("need pyserial: nix shell nixpkgs#python3Packages.pyserial")
-
 KILL_LINE = b"\x15"
 CTRL_C = b"\x03"
 PROMPT = b"K230# "
@@ -55,8 +50,62 @@ def validate_flash_target(disks, properties, sectors, expected_sectors):
         raise ValueError(f"card size {sectors} sectors != expected {expected_sectors}")
 
 
+def verify_written_image(session, image_path, target):
+    """Read through the device, bypassing host page cache, before boot."""
+    size = os.path.getsize(image_path)
+    session.note(f"verifying all {size} written bytes with direct I/O before leaving ums")
+    reader = subprocess.Popen(
+        ["dd", f"if={target}", "bs=4M", "iflag=direct,count_bytes",
+         f"count={size}", "status=none"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    verify = None
+    started = last = time.monotonic()
+    try:
+        verify = subprocess.Popen(["cmp", "-n", str(size), str(image_path), "-"],
+                                  stdin=reader.stdout, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT)
+        reader.stdout.close()
+        while verify.poll() is None:
+            session.pump()
+            now = time.monotonic()
+            if now - last >= 30:
+                last = now
+                session.note(f"readback still running, elapsed {now - started:.0f}s")
+            if now - started > 900:
+                session.note("readback timed out")
+                verify.kill()
+                break
+            time.sleep(0.01)
+        output, _ = verify.communicate()
+        session.log.write(output)
+        try:
+            reader.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            reader.kill()
+            reader.wait()
+        session.log.write(reader.stderr.read())
+        if verify.returncode or reader.returncode:
+            session.note(f"READBACK FAILED (dd {reader.returncode}, cmp {verify.returncode}); board remains in ums for recovery")
+            return False
+        session.note(f"readback PASS: all {size} bytes identical, {time.monotonic() - started:.1f}s")
+        return True
+    finally:
+        for process in (verify, reader):
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait()
+        for stream in (reader.stdout, reader.stderr,
+                       verify.stdout if verify is not None else None):
+            if stream is not None:
+                stream.close()
+
+
 class Session:
     def __init__(self, dev, baud, out):
+        try:
+            import serial
+        except ImportError:
+            sys.exit("need pyserial: nix shell nixpkgs#python3Packages.pyserial")
         self.started = time.time()
         self.log = open(out, "wb", buffering=0)
         self.port = serial.Serial(dev, baud, timeout=0.1, exclusive=True)
@@ -175,9 +224,9 @@ def main():
                     help="after the gadget appears, WRITE IMAGE to it with the "
                          "project's own tools/flash.sh (by-id path, its "
                          "print-and-confirm step answered by this tool), time "
-                         "it, then reset the board and verify the boot: login "
-                         "prompt, the board hashing its own stage-1 slots, the "
-                         "DSI PHY line. Only with explicit authorisation")
+                         "it, verify every byte with direct readback, then "
+                         "reset and capture the Linux boot and DSI diagnostics. "
+                         "Only with explicit authorisation")
     ap.add_argument("--expected-sectors", type=int,
                     help="required with --flash: card size previously observed on the board")
     ap.add_argument("--regs", action="store_true",
@@ -417,25 +466,9 @@ def main():
 
             # Before boot, every image byte must still match. After boot,
             # env_save and ext4 legitimately change bytes, so verify now.
-            s.note(f"verifying all {size} written bytes before leaving ums")
-            verify = subprocess.Popen(["cmp", "-n", str(size), args.flash, byid],
-                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            started = time.time(); last = started
-            while verify.poll() is None:
-                s.pump()
-                if time.time() - last >= 30:
-                    last = time.time()
-                    s.note(f"readback still running, elapsed {last - started:.0f}s")
-                if time.time() - started > 900:
-                    verify.kill()
-                    break
-            output, _ = verify.communicate()
-            s.log.write(output)
-            if verify.returncode:
-                s.note(f"READBACK FAILED (exit {verify.returncode}); board remains in ums for recovery")
+            if not verify_written_image(s, args.flash, byid):
                 status = 1
                 return
-            s.note(f"readback PASS: all {size} bytes identical, {time.time() - started:.1f}s")
 
         # 4. Out of ums.
         s.note("sending Ctrl-C to leave ums")
@@ -473,6 +506,12 @@ def main():
             s.note("Linux login prompt NOT seen within 240 s -- the board may not be in Linux")
             status = 1
     finally:
+        # This finally exits explicitly even on early returns. Never let an
+        # unexpected exception inherit status 0 from successful enumeration.
+        failure = sys.exc_info()[1]
+        if failure is not None:
+            status = 1
+            s.note(f"session failed: {type(failure).__name__}: {failure}")
         s.note(f"ums session end, status {status}")
         s.port.close()
         s.log.close()

@@ -1,8 +1,11 @@
 """The unattended writer must never accept a newly plugged-in reader."""
 import importlib.util
+import io
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
+from types import SimpleNamespace
 import unittest
 
 SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "ums-session.py"
@@ -43,6 +46,26 @@ class FlashTargetTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--expected-sectors", result.stderr)
         self.assertNotIn("SerialException", result.stderr)
+
+
+class ReadbackTests(unittest.TestCase):
+    def test_identical_corrupt_and_short_readback(self):
+        payload = bytes(range(256)) * 32
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "image"
+            target = Path(directory) / "target"
+            image.write_bytes(payload)
+            for name, data, expected in (
+                ("identical", payload, True),
+                ("corrupt", b"!" + payload[1:], False),
+                ("short", payload[:4096], False),
+            ):
+                with self.subTest(name=name):
+                    target.write_bytes(data)
+                    session = SimpleNamespace(log=io.BytesIO(), pump=lambda: None,
+                                              note=lambda message: None)
+                    self.assertEqual(ums.verify_written_image(session, image, target),
+                                     expected, session.log.getvalue())
 
 
 if __name__ == "__main__":
