@@ -19,12 +19,21 @@ let
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
-  # Built only when frameTiming is selected. The patch measures CPU elapsed
-  # time across wlroots scene building/Pixman submission and KMS commit
-  # submission; it neither waits for nor claims panel scanout.
-  swayFrameTiming = swayBase.overrideAttrs (old: {
+  # Built only when frameTiming is selected. The patch measures monotonic
+  # wall-clock elapsed time across wlroots scene building/Pixman submission
+  # and KMS commit submission; it neither waits for nor claims panel scanout.
+  swayFrameTimingUnwrapped = (pkgs.sway-unwrapped.override {
+    enableXWayland = false;
+  }).overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-cpu-frame-timing.patch ];
   });
+  # pkgs.sway is a wrapper around sway-unwrapped. Supplying the patched
+  # unwrapped package here preserves the wrapper's DBus/session behavior while
+  # applying the C-source patch to the derivation Meson actually compiles.
+  swayFrameTiming = pkgs.sway.override {
+    enableXWayland = false;
+    sway-unwrapped = swayFrameTimingUnwrapped;
+  };
   sway = if cfg.frameTiming then swayFrameTiming else swayBase;
   wlroots = pkgs.wlroots_0_20.override { enableXWayland = false; };
 
@@ -153,7 +162,8 @@ in
       default = false;
       description = ''
         Use the diagnostic sway build and set SWAY_K230_CPU_FRAME_TIMING=1.
-        It logs CLOCK_MONOTONIC elapsed time from immediately before
+        It logs CLOCK_MONOTONIC wall-clock elapsed time (including scheduling)
+        from immediately before
         wlr_scene_output_build_state through wlr_output_commit_state returning.
         This includes CPU scene/Pixman work and commit submission, not vblank
         or physical panel scanout.

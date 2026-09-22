@@ -42,7 +42,7 @@
  	if (!wlr_scene_output_build_state(output->scene_output, &pending, &opts)) {
 +		if (cpu_timing) {
 +			clock_gettime(CLOCK_MONOTONIC, &cpu_end);
-+			sway_log(SWAY_INFO, "K230_CPU_FRAME output=%s build_state_failed_ns=%" PRId64,
++			sway_log(SWAY_INFO, "K230_CPU_FRAME_WALL output=%s build_state_failed_ns=%" PRId64,
 +				output->wlr_output->name, k230_elapsed_ns(&cpu_start, &cpu_end));
 +		}
  		wlr_output_state_finish(&pending);
@@ -62,7 +62,7 @@
 +		// This ends when DRM accepts or rejects the commit. It does not wait for
 +		// a vblank, panel scanout, or a presentation event.
 +		sway_log(SWAY_INFO,
-+			"K230_CPU_FRAME output=%s build_state_plus_commit_submission_ns=%" PRId64 " committed=%d",
++			"K230_CPU_FRAME_WALL output=%s build_state_plus_commit_submission_ns=%" PRId64 " committed=%d",
 +			output->wlr_output->name, k230_elapsed_ns(&cpu_start, &cpu_end), committed);
 +	}
  	wlr_output_state_finish(&pending);
