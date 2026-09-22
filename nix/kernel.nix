@@ -384,6 +384,11 @@ EOM
     # unbounded DSI PHY wait. Now that the panel displays, display/panel
     # task 3.3 wants the kernel console on it, which needs fbcon.
     FRAMEBUFFER_CONSOLE = yes;
+    # /dev/uinput, so the shell change can inject touches at known panel
+    # coordinates with evemu and exercise compositor -> keyboard -> terminal
+    # unattended. A software proxy only: the touch requirement still closes
+    # on a real tap at the bench, and the evidence must say which was which.
+    INPUT_UINPUT = yes;
 
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
