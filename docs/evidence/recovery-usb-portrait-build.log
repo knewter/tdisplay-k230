@@ -1,0 +1,63 @@
+this derivation will be built:
+  /nix/store/flayq5fdmrhym4pz2i7448vzkvhh1ywl-k230-sd-image.img.drv
+building '/nix/store/flayq5fdmrhym4pz2i7448vzkvhh1ywl-k230-sd-image.img.drv'...
+k230-sd-image.img> --- boot partition
+k230-sd-image.img> bootargs: console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd/init
+k230-sd-image.img> Image Name:   initrd
+k230-sd-image.img> Created:      Tue Jan  1 00:00:00 1980
+k230-sd-image.img> Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+k230-sd-image.img> Data Size:    27295054 Bytes = 26655.33 KiB = 26.03 MiB
+k230-sd-image.img> Load Address: 00000000
+k230-sd-image.img> Entry Point:  00000000
+k230-sd-image.img> mke2fs 1.47.4 (6-Mar-2025)
+k230-sd-image.img> Creating regular file boot.ext4
+k230-sd-image.img> 64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.
+k230-sd-image.img> Creating filesystem with 114688 1k blocks and 28672 inodes
+k230-sd-image.img> Filesystem UUID: 151b9c65-7ebf-42fd-b6f3-5548375765ef
+k230-sd-image.img> Superblock backups stored on blocks:
+k230-sd-image.img>      8193, 24577, 40961, 57345, 73729
+k230-sd-image.img> 
+k230-sd-image.img> Allocating group tables:  0/14     done
+k230-sd-image.img> Writing inode tables:  0/14     done
+k230-sd-image.img> Creating journal (4096 blocks): done
+k230-sd-image.img> Copying files into the device: done
+k230-sd-image.img> Writing superblocks and filesystem accounting information:  0/14     done
+k230-sd-image.img> 
+k230-sd-image.img> --- root partition
+k230-sd-image.img> --- MBR: boot and root only; stage 1 is intentionally NOT in the table
+k230-sd-image.img> Checking that no-one is using this disk right now ... OK
+k230-sd-image.img> 
+k230-sd-image.img> Disk /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img: 2.15 GiB, 2308689920 bytes, 4509160 sectors
+k230-sd-image.img> Units: sectors of 1 * 512 = 512 bytes
+k230-sd-image.img> Sector size (logical/physical): 512 bytes / 512 bytes
+k230-sd-image.img> I/O size (minimum/optimal): 512 bytes / 512 bytes
+k230-sd-image.img> 
+k230-sd-image.img> >>> Script header accepted.
+k230-sd-image.img> >>> Created a new DOS (MBR) disklabel with disk identifier 0x77e486a4.
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img1: Created a new partition 1 of type 'Linux' and of size 112 MiB.
+k230-sd-image.img> Partition #1 contains a ext4 signature.
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img2: Created a new partition 2 of type 'Linux' and of size 2 GiB.
+k230-sd-image.img> Partition #2 contains a ext4 signature.
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img3: Done.
+k230-sd-image.img> 
+k230-sd-image.img> New situation:
+k230-sd-image.img> Disklabel type: dos
+k230-sd-image.img> Disk identifier: 0x77e486a4
+k230-sd-image.img> 
+k230-sd-image.img> Device                                                         Boot  Start     End Sectors Size Id Type
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img2      262144 4507111 4244968   2G 83 Linu
+k230-sd-image.img> 
+k230-sd-image.img> The partition table has been altered.
+k230-sd-image.img> --- stage 1, raw, into the gap before partition 1
+k230-sd-image.img> --- done
+k230-sd-image.img> Disk /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img: 2.15 GiB, 2308689920 bytes, 4509160 sectors
+k230-sd-image.img> Units: sectors of 1 * 512 = 512 bytes
+k230-sd-image.img> Sector size (logical/physical): 512 bytes / 512 bytes
+k230-sd-image.img> I/O size (minimum/optimal): 512 bytes / 512 bytes
+k230-sd-image.img> Disklabel type: dos
+k230-sd-image.img> Disk identifier: 0x77e486a4
+k230-sd-image.img> 
+k230-sd-image.img> Device                                                         Boot  Start     End Sectors Size Id Type
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+k230-sd-image.img> /nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img2      262144 4507111 4244968   2G 83 Linu

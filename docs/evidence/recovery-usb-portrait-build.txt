@@ -1,0 +1,46 @@
+USB + portrait recovery image build (build-host evidence only)
+==============================================================
+
+Source was the clean integration snapshot
+`347592c6d168d46bae1b67137c27b674d6e28a68` (`Complete USB coexistence
+checks and record validation`).  This is a recovery artifact only; it has not
+been flashed or booted as part of this record.
+
+Command:
+
+```
+NIX_CONFIG='substituters = https://cache.nixos.org/' \
+  nix build .#sdImage --max-jobs 2 --cores 8 --print-build-logs
+```
+
+The log records one local derivation, `k230-sd-image.img`; its dependencies
+were already available.  The detached build was observed live for 13 seconds
+and had completed at the next 25-second check, so its wall time was under 39
+seconds.  The full stdout/stderr record is
+`docs/evidence/recovery-usb-portrait-build.log`.
+
+Result:
+
+```
+/nix/store/nkh09xvh5lfv31lk0v5wcmmwp5c3h5d9-k230-sd-image.img
+2308689920 bytes
+sha256 c961b4aacb0d134812133511efc52e02b6e07fe52b736135cf956b3b4382a217
+```
+
+The image refers to the existing portrait shell root filesystem
+`/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd`
+and kernel `/nix/store/1kgxy1xsvmyb2y8gzjxz4j2asirgy5ap-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`.
+
+Stage 1 came from `/nix/store/bsv0h6hx9w90iyzv3d7imzb5dbafw503-k230-stage1`,
+whose `source` metadata says `built from source by this flake (nix/stage1.nix)`.
+The following direct reads from the image matched the corresponding source
+files exactly:
+
+```
+offset     file                 bytes   sha256
+0x100000   fn_u-boot-spl.bin    223348  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+0x180000   fn_u-boot-spl.bin    223348  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+0x200000   fn_ug_u-boot.bin    380911  4cb755ed0b0ac06fcccade582fcbc90f99ffb6f4c35cec65e3564804b5be6226
+0x300000   env.env                8192  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+0x320000   env.env                8192  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+```
