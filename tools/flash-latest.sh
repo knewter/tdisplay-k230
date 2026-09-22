@@ -70,7 +70,7 @@ fi
 # build commands only; do not change the user's global Nix configuration.
 #
 MAX_JOBS="${K230_MAX_JOBS:-2}"
-CORES="${K230_CORES:-2}"
+CORES="${K230_CORES:-8}"
 NIX_IMAGE_ARGS=(--option substituters https://cache.nixos.org/ --max-jobs "$MAX_JOBS" --cores "$CORES")
 case "${K230_STAGE1:-source}" in
   source)
