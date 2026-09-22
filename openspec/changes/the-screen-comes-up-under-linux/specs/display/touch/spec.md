@@ -6,25 +6,36 @@ Defines what the board does when a person touches the screen.
 
 ### Requirement: Touches are reported as input events
 
-<!-- STILL UNVERIFIED, restated. The GT9895 HAS now been probed under
-Linux on this board, and that much is grounded: the backported
-goodix_berlin driver binds at i2c 1-005d, registers an input device with
-INPUT_PROP_DIRECT, and the controller answers direct 32-bit-addressed i2c
-reads with real data (docs/evidence/touch-probe.txt).
+<!-- PARTIALLY RESOLVED. Reporting is now grounded; orientation is not.
 
-But this requirement is about touches being REPORTED, and that is not
-demonstrated. No evtest session exists. The interrupt line is wired,
-claimed, and now level-triggered rather than edge-triggered
-(docs/evidence/gt9895-port.md), but whether touches produce events is
-untested -- the measurements attempted so far were run without confirming
-a finger was on the panel, so they establish nothing either way.
+Grounded: the controller reports touches. Changing only the device tree
+interrupt type, same kernel, IRQ_TYPE_EDGE_FALLING gives 0 interrupts and
+IRQ_TYPE_LEVEL_LOW gives 2173 in a 45 s capture, with tracking IDs,
+BTN_TOUCH, ABS_MT_TOUCH_MAJOR ramping, and a continuous slot-0 trajectory
+spanning X 86..728 and Y 765..1765. See docs/evidence/touch-reports.md.
+That settles "binding is not reporting": it reports.
 
-Binding is not reporting. This marker stays until an evtest transcript of
-a deliberate drag exists. -->
+STILL UNVERIFIED: that the axes are neither swapped nor mirrored. A drag
+proves the coordinates move, not that they move the right way, and every
+capture so far was of undirected movement. Deciding it needs a touch at a
+KNOWN screen position -- tools/touch-axis-test.py draws four coloured
+corner targets and reports which corner each contact fell in by its
+reported coordinates. This marker stays until that transcript exists. -->
 
 The GT9895 controller SHALL be probed and SHALL report touches as standard
-Linux input events, with coordinates in the panel's own 568x1232 space so that
-a touch lands where it is seen.
+Linux input events, over the digitizer's native 1024x2400 range declared via
+`touchscreen-size-x` / `touchscreen-size-y`, mapping monotonically onto the
+panel with the axes neither swapped nor mirrored, so that a consumer scaling
+by 568/1024 and 1232/2400 lands a touch where it is seen.
+
+*Why not report in the panel's own 568x1232 space, which is what a reader
+would expect: the driver cannot. `goodix_berlin_core.c` reports through
+`touchscreen_report_pos()`, which applies the swap and invert properties and
+**does not scale**; `touchscreen-size-x/y` only declare the advertised
+maximum, and the controller's raw values pass through unchanged. Pre-scaling
+in the kernel would mean patching the backport further and discarding
+digitizer resolution. Reporting the native grid and letting the consumer map
+it to the display is the ordinary Linux arrangement.*
 
 *Grounding for the hardware: the schematic gives the controller as a GT9895 on
 I2C, with reset on GPIO24, SCL on GPIO36, SDA on GPIO37 and interrupt on
