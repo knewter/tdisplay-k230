@@ -103,3 +103,26 @@ original boot arguments and removes the logo before the
 [Recovery inspection](splash-handoff/register-recovery.txt) confirms the original
 command line without `iomem=relaxed`, no logo or splash flag, `/dev/fb0` present,
 and active shell and seatd services.
+
+### Address-select source audit and next diagnostic
+
+The pinned Linux `drivers/gpu/drm/canaan/canaan_vo.c` writes `0x100` directly
+to `VO_OSD0_7_ADDR_SEL_MODE_REG_OFFSET` in `canaan_vo_update_osd()`. The
+U-Boot RM69A10 path in `0004-rm69a10-logo-port.patch` writes `0x1100` to its
+same OSD4 register. Neither the pinned Linux `canaan_vo_regs.h` nor the
+vendor U-Boot `display_logo.h` defines individual bits for that register, so
+the source does not establish whether bit 12 is writable mode state, a latch,
+or a readback/status bit. The earlier research's description of the value as
+flip-related reports a LILYGO change; it is not a hardware-register semantic.
+
+The missing-logo path gives no U-Boot explanation for the normal snapshot's
+`0x1100`: `_k230_display_logo_load_pic()` returns before display power or
+`st7701_init()` when `/logo.xrgb` is absent, so it cannot write the OSD4
+register. That leaves a reset/default or unobserved Linux/hardware transition.
+No corrective register write is justified from these snapshots alone.
+
+`tools/vo-registers.c` now reads the complete named OSD4 buffer block,
+`VO_OSD4_BD_CTL`, DMA setup, mix/alpha/background/dither/CLUT, and the two
+global conversion controls. It remains read-only. Collect it at the retained
+stage-1 frame, immediately after the first Linux atomic commit, and steady
+Sway to distinguish a hardware/latch transition from a software writer.
