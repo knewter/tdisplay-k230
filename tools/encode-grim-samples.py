@@ -12,6 +12,7 @@ import sys
 
 
 def read_frames(sample_dir: pathlib.Path) -> list[dict[str, object]]:
+    sample_dir = sample_dir.resolve()
     table = sample_dir / "frames.tsv"
     try:
         rows = list(csv.DictReader(table.open(newline=""), delimiter="\t"))
@@ -52,13 +53,16 @@ def display_durations(frames: list[dict[str, object]]) -> list[float]:
 
 
 def concat_text(frames: list[dict[str, object]], durations: list[float]) -> str:
+    def quote(path: pathlib.Path) -> str:
+        # ffconcat accepts backslash escapes inside single-quoted file names.
+        return str(path).replace("\\", "\\\\").replace("'", "'\\''")
+
     lines = []
     for frame, duration in zip(frames, durations):
-        # Paths are absolute and the sampler restricts names, so concat quoting is safe.
-        lines.append(f"file '{frame['path']}'")
+        lines.append(f"file '{quote(frame['path'])}'")
         lines.append(f"duration {duration:.6f}")
     # ffmpeg's concat demuxer otherwise ignores the final duration.
-    lines.append(f"file '{frames[-1]['path']}'")
+    lines.append(f"file '{quote(frames[-1]['path'])}'")
     return "\n".join(lines) + "\n"
 
 

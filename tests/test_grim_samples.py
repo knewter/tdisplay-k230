@@ -1,5 +1,6 @@
 import json
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -37,6 +38,35 @@ class GrimSamplesTests(unittest.TestCase):
             self.assertIn("duration 0.510000", concat)
             self.assertIn("duration 0.760000", concat)
             self.assertIn("duration 0.040000", concat)
+
+    @unittest.skipUnless(shutil.which("ffmpeg"), "requires host ffmpeg")
+    def test_relative_sample_path_and_apostrophes_encode(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            sample = root / "input's samples"
+            sample.mkdir()
+            fixture = sample / "frame-000001.png"
+            subprocess.run(
+                ["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
+                 "color=c=red:s=2x2", "-frames:v", "1", "-y", str(fixture)],
+                check=True,
+            )
+            shutil.copyfile(fixture, sample / "frame-000002.png")
+            (sample / "frames.tsv").write_text(
+                "index\tstart_monotonic_seconds\tend_monotonic_seconds\tfile\n"
+                "1\t100.00\t100.04\tframe-000001.png\n"
+                "2\t100.50\t100.54\tframe-000002.png\n"
+            )
+            output = pathlib.Path("output's clips") / "feature.mp4"
+            subprocess.run(
+                [str(ENCODER), "input's samples", "--output", str(output),
+                 "--description", "relative path regression"],
+                check=True,
+                text=True,
+                capture_output=True,
+                cwd=root,
+            )
+            self.assertGreater((root / output).stat().st_size, 0)
 
 
 if __name__ == "__main__":
