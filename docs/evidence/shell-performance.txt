@@ -27,7 +27,7 @@ CPU-side frame-work measurement, host date 2026-09-22
 
 Verdict: Sway/Pixman is viable for this terminal-and-touch-menu shell. The
 20-second measured interval with the normal 15pt portrait terminal scrolling
-and the 400px keyboard visible yielded 254 successful frame submissions:
+and the 400px keyboard visible yielded 254 successful instrumented output commits:
   median 14.0037405 ms; p95 15.585629 ms; p99 22.735222 ms
   min 0.714408 ms; max 23.253370 ms; failed commits 0.
 These durations do not imply an FPS, physical refresh, or touch-latency result.

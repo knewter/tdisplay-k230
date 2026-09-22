@@ -23,7 +23,7 @@ Two kinds of claim appear below and they are not interchangeable:
 The candidate comparison below records the original build-host investigation.
 Physical-board update, 2026-09-22: **Sway/Pixman is viable for the terminal and
 touch-menu shell on this board.** At 568x1232 with the portrait terminal
-scrolling and keyboard shown, 254 measured CPU-side frame-work submissions
+scrolling and keyboard shown, 254 measured CPU-side output commits
 had a 14.00 ms median and 15.59 ms p95, with no rejected commits. An idle
 session with the keyboard shown used 39.99 MiB summed PSS (51.08 MiB service
 memory). See `docs/evidence/shell-performance.txt` for methods and raw logs.
