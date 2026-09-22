@@ -1,0 +1,45 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; echo MEMORY_KEYBOARD_HIDDEN; free -m; systemctl show shell -p MemoryCurrent -p MemoryPeak; ps -u shell -o pid,comm,rss; for p in $(pgrep -u shell); do awk "/^Pss:/{print \$2}" /proc/$p/smaps_rollup 2>/dev/null; done | awk "{s+=\$1} END {print \"session_PSS_KiB\",s}"; pkill -RTMIN -x wvkbd-mobintl; sleep 2; echo MEMORY_KEYBOARD_SHOWN; free -m; systemctl show shell -p MemoryCurrent -p MemoryPeak; ps -u shell -o pid,comm,rss; for p in $(pgrep -u shell); do awk "/^Pss:/{print \$2}" /proc/$p/smaps_rollup 2>/dev/null; done | awk "{s+=\$1} END {print \"session_PSS_KiB\",s}" =====
+export SYSTEMD_PAGER=cat PAGER=cat; echo MEMORY_KEYBOARD_HIDDEN; free -m; systemctl show shell -p MemoryCurrent -p MemoryPeak; ps -u shell -o pid,comm,rss; for p in $(pgrep -u shell); do awk "/^Pss:/{print \$2}" /proc/$p/smaps_rollup 2>/dev/null; done | awk "{s+=\$1} END {print \"session_PSS_KiB\",s}"; pkill -RTMIN -x wvkbd-mobintl; sleep 2; echo MEMORY_KEYBOARD_SHOWN; free -m; systemctl show shell -p MemoryCurrent -p MemoryPeak; ps -u shell -o pid,comm,rss; for p in $(pgrep -u shell); do awk "/^Pss:/{print \$2}" /proc/$p/smaps_rollup 2>/dev/null; done | awk "{s+=\$1} END {print \"session_PSS_KiB\",s}"
+[?2004l
+MEMORY_KEYBOARD_HIDDEN
+               total        used        free      shared  buff/cache   available
+Mem:             935         175         703          11         139         760
+Swap:              0           0           0
+MemoryCurrent=50073600
+MemoryPeak=50339840
+    PID COMMAND           RSS
+    530 dbus-run-sessio  1536
+    546 dbus-daemon      3072
+    550 sway            21376
+    652 .swaybg-wrapped  4992
+    659 swaybar         13440
+    660 wvkbd-mobintl    6144
+    661 foot            14984
+    673 bash             3328
+    674 bash             4864
+session_PSS_KiB 37500
+MEMORY_KEYBOARD_SHOWN
+               total        used        free      shared  buff/cache   available
+Mem:             935         176         700          12         142         759
+Swap:              0           0           0
+MemoryCurrent=53559296
+MemoryPeak=55414784
+    PID COMMAND           RSS
+    530 dbus-run-sessio  1536
+    546 dbus-daemon      3072
+    550 sway            24696
+    652 .swaybg-wrapped  4992
+    659 swaybar         13440
+    660 wvkbd-mobintl   13696
+    661 foot            13188
+    673 bash             3328
+    674 bash             4864
+session_PSS_KiB 40950
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,28 @@
+Physical K230 shell memory, host date 2026-09-22
+
+Source transcript: docs/evidence/shell-memory.txt
+Image: /nix/store/s50h4h5awhx9479nhflayif890z2r6c0-k230-sd-image.img
+Kernel: 6.6.36; stock Sway1.12, Pixman RGB565, 568x1232
+State: idle terminal after confirmed reboot, with no camera/screencopy sampler
+or Monitor workload running. Keyboard visibility changed by RTMIN signal;
+this measurement does not claim a finger tap. The board clock is unset.
+
+                                 keyboard hidden    keyboard shown
+Session PSS (sum, KiB)            37500              40950
+Session PSS (MiB)                 36.62              39.99
+shell.service MemoryCurrent(B)   50073600           53559296
+shell.service MemoryCurrent(MiB)  47.75              51.08
+Linux usable memory(MiB)         935                935
+Linux available memory(MiB)      760                759
+Swap(MiB)                        0                  0
+
+PSS is summed across the shell user's graphical/session processes and
+proportionally accounts for shared pages. Individual process RSS values are
+in the transcript; summing RSS would double-count shared pages. The cgroup
+MemoryCurrent also accounts for memory charged to the service beyond the
+process PSS, so the two values are not interchangeable. These are sequential
+snapshots, not an atomic whole-system measurement or a peak-load benchmark.
+
+CPU-side frame-work timing and the representative scrolling-terminal load
+remain unmeasured. No FPS or compositor-throughput claim follows from these
+memory numbers or from the sampled feature videos.
