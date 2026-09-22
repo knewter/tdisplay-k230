@@ -251,6 +251,23 @@ background; it is the *end* of the handoff, never the middle. Rejected: an
 animation in U-Boot — single-threaded, and every frame is time the kernel
 is not being loaded. Layer: **Nix, userspace**.
 
+**The fallback owner uses the primary plane's actual formats and hands master
+off before the shell opens DRM.** `docs/evidence/drm-info.txt` records that
+the K230 primary plane supports RG16 and AR24 but not XR24. The static asset
+remains B,G,R,X so that it matches stage 1; the fallback defaults to an
+explicit RG16 conversion and permits AR24 only after discovering it on the
+selected primary plane. It discovers the connected connector, preferred mode,
+usable CRTC, and primary plane instead of treating their observed IDs as an
+ABI. When the shell is about to start, it sends `SIGUSR1`; the owner calls
+`drmDropMaster()` while retaining its fd and dumb framebuffer, acknowledges
+that state, then polls until a non-zero successor framebuffer differs from
+its own. It does not clear the CRTC; only after that successor is observed
+does it remove its replaced framebuffer and dumb allocation. This avoids
+using close-time DRM object lifetime as the handoff mechanism, but it does
+not establish seamless scanout: only task 5.4's film can prove that Sway's
+first modeset and the driver's cleanup leave no dark frame. Layer: Nix,
+userspace.
+
 **Console on the panel becomes `k230.panelConsole`, off by default.** On:
 `console=tty0` stays, `FRAMEBUFFER_CONSOLE` is used, and Nix omits the
 splash file from the boot partition, so stage 1 leaves the panel dark and

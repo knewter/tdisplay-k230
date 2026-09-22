@@ -26,8 +26,11 @@
 # `sysboot`. That is deferred until something boots at all, because a
 # bringup failure and a bootloader-configuration failure look identical from
 # a dark screen.
-{ config, pkgs, lib, k230Kernel, ... }:
+{ config, pkgs, lib, k230Kernel, bootSplashImage, ... }:
 
+let
+  drmSplash = pkgs.callPackage ./drm-splash { inherit bootSplashImage; };
+in
 {
   imports = [ ./panel-console.nix ];
   # Mainline cannot boot this SoC -- no K230 device tree, no
@@ -128,4 +131,26 @@
     evtest
     i2c-tools
   ];
+
+  # The image owner only exists on splash boots.  The current daily image
+  # selects panelConsole and therefore retains the verified console path.
+  systemd.services.k230-drm-splash = lib.mkIf (!config.k230.panelConsole) {
+    description = "Static DRM owner for the K230 stage-1 splash";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "shell.service" "multi-user.target" ];
+    after = [ "systemd-udev-settle.service" ];
+
+    serviceConfig = {
+      Type = "simple";
+      User = "shell";
+      Group = "shell";
+      RuntimeDirectory = "k230-drm-splash";
+      RuntimeDirectoryMode = "0700";
+      ExecStart = "${drmSplash}/bin/k230-drm-splash --ready-file /run/k230-drm-splash/state";
+      KillSignal = "SIGTERM";
+      TimeoutStopSec = "5s";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+  };
 }

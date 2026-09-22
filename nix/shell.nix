@@ -302,7 +302,9 @@ in
       description = "sway on the panel";
       wantedBy = [ "multi-user.target" ];
       requires = [ "seatd.service" ];
-      after = [ "seatd.service" "systemd-udev-settle.service" ];
+      wants = lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
+      after = [ "seatd.service" "systemd-udev-settle.service" ]
+        ++ lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
 
       environment = {
         XDG_RUNTIME_DIR = "/run/shell";
@@ -333,16 +335,41 @@ in
         WorkingDirectory = config.users.users.shell.home;
         RuntimeDirectory = "shell";
         RuntimeDirectoryMode = "0700";
-        # seatd's unit is Type=simple (see above), so "after seatd" only
-        # means the process exists. Wait for its socket, up to 10 s.
-        ExecStartPre = pkgs.writeShellScript "wait-for-seatd" ''
-          for i in $(seq 50); do
-            [ -S /run/seatd.sock ] && exit 0
-            sleep 0.2
-          done
-          echo "seatd socket never appeared" >&2
-          exit 1
-        '';
+        # On a splash boot, the owner has completed a KMS set before it
+        # writes `scanout`.  Tell it to drop DRM master while retaining its
+        # framebuffer, then wait for its acknowledgement before Sway opens
+        # the device.  A timeout fails the shell rather than silently taking
+        # DRM before a splash owner existed.
+        ExecStartPre = lib.optional (!config.k230.panelConsole)
+          (pkgs.writeShellScript "release-k230-drm-splash" ''
+            state=/run/k230-drm-splash/state
+            for i in $(seq 100); do
+              [ "$(cat "$state" 2>/dev/null || true)" = scanout ] && break
+              sleep 0.1
+            done
+            [ "$(cat "$state" 2>/dev/null || true)" = scanout ] || {
+              echo "k230 DRM splash never reached scanout" >&2
+              exit 1
+            }
+            pkill -USR1 -x k230-drm-splash
+            for i in $(seq 100); do
+              [ "$(cat "$state" 2>/dev/null || true)" = master-dropped ] && exit 0
+              sleep 0.1
+            done
+            echo "k230 DRM splash did not drop DRM master" >&2
+            exit 1
+          '') ++ [
+          # seatd's unit is Type=simple (see above), so "after seatd" only
+          # means the process exists. Wait for its socket, up to 10 s.
+          (pkgs.writeShellScript "wait-for-seatd" ''
+            for i in $(seq 50); do
+              [ -S /run/seatd.sock ] && exit 0
+              sleep 0.2
+            done
+            echo "seatd socket never appeared" >&2
+            exit 1
+          '')
+        ];
         ExecStart = "${sway}/bin/sway ${if cfg.debugLog then "-d" else "-V"} -c ${swayConfig}";
         Restart = "on-failure";
         RestartSec = 2;

@@ -68,3 +68,25 @@ hands off without a dark frame.
 No image, kernel, hardware, or Wi-Fi state was changed. Task 5.2 should not be
 started under the design rule; task 5.3 is the documented fallback and task
 5.4 remains a hardware claim.
+
+## Task 5.3 implementation boundary
+
+The selected fallback is a small libdrm owner in the main system. It opens the
+primary node, finds a connected connector, preferred mode, CRTC, and matching
+primary plane, then creates a dumb buffer. The source asset is immutable
+`logo.xrgb` in the Nix store. The K230 primary plane does not advertise XR24,
+so the default path converts its B,G,R,X bytes to RG16; AR24 is available only
+when the discovered primary plane advertises it. There is no animation because
+this program only bridges the static stage-1 frame until the shell begins.
+
+On shell handoff the owner drops DRM master on `SIGUSR1` but retains its file
+descriptor and framebuffer. It polls the CRTC until a non-zero successor
+framebuffer replaces its own, then removes only that replaced framebuffer and
+its dumb allocation, without issuing a CRTC clear. Until a successor appears
+it retains the active objects; service stop is the only other exit path. This
+arrangement avoids treating close-time framebuffer lifetime as a handoff
+mechanism. It still does **not** prove that the panel
+will remain lit: DRM object lifetime after file release and Sway's first
+modeset are driver-dependent. Task 5.4 must film the transition before any
+continuity claim is made. The service is absent when `k230.panelConsole` is
+true, so the daily no-logo console image keeps its current path.

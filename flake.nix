@@ -32,6 +32,7 @@
       # tree build. Native rather than cross because it is a source fetch --
       # a fixed-output derivation lands on the same store path either way.
       kernelSrc = import ./nix/kernel-src.nix { inherit (pkgs) fetchFromGitHub; };
+      bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
     in
     {
       # Two systems on one base, because the boot paths genuinely differ.
@@ -50,7 +51,7 @@
         # probes/debugLog are the bring-up settings for this change's
         # evidence; they should leave with it.
         k230 = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit (self) k230Kernel; };
+          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage; };
           modules = [
             ./nix/k230.nix
             ./nix/hardware.nix
@@ -68,7 +69,7 @@
         # system/nixos-config requires, kept evaluable so the shell's cost
         # can be measured as a delta against it.
         k230-console = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit (self) k230Kernel; };
+          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage; };
           modules = [
             ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix
             { k230.panelConsole = true; }
@@ -101,7 +102,8 @@
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
         # Native asset conversion; the U-Boot and Linux owners share this image.
-        bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
+        inherit bootSplashImage;
+        drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
 
         # What tools/qemu-k230.sh boots: a kernel with standard RISC-V PTE
@@ -166,8 +168,7 @@
           in
           pkgs.callPackage ./nix/sd-image.nix {
             inherit stage1 rootfsImage;
-            splashImage = if cfg.k230.panelConsole then null
-              else self.packages.${buildSystem}.bootSplashImage;
+            splashImage = if cfg.k230.panelConsole then null else bootSplashImage;
             initrd = "${cfg.system.build.toplevel}/initrd";
             kernel = self.k230Kernel.kernel;
             inherit (self.packages.${buildSystem}) deviceTree;
