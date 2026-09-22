@@ -90,12 +90,18 @@ Adds a NixOS module under `nix/` for the compositor stack and its session, and
 the packages it needs to the system closure. Nothing in the kernel or the device
 tree changes.
 
-<!-- UNVERIFIED: the recorded closure measurement predates the small `htop`,
-`jq`, and `gnused` utilities added for the touch controls. Task 2.5 remeasures
-the enabled closure before the final build-cost claim is closed. -->
+**Build cost, measured on `solomon` against the pinned nixpkgs, including the
+touch-menu utilities** (`docs/evidence/shell-build.txt`): the final enabled
+closure is 1,280,679,016 bytes (1221.0 MiB), a +110.2 MiB / +95-path delta
+against the 1109.9 MiB baseline. The complete build sequence took 2705 seconds
+(45 minutes) and built about 235 derivations across its resumed stages. The
+final menu increment, including `htop`, `jq`, `gnused`, `grim`, and regenerated
+image/configuration paths, added 22 derivations and 8.0 MiB unpacked. These are
+build-host measurements; they do not establish runtime performance.
 
-**Build cost, measured on `solomon` against the pinned nixpkgs, on top of the
-existing 1.2 GiB closure** (`docs/display-environment-options.md`):
+The original candidate comparison remains useful as a historical estimate,
+but the measured final closure and build sequence above are the claim for this
+change (`docs/display-environment-options.md`):
 
 | stack | riscv64 derivations to build | to fetch (unpacked) |
 | --- | ---: | ---: |

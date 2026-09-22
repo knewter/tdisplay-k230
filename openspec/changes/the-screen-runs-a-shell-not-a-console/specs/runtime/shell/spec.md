@@ -69,22 +69,20 @@ substituted paths, including Qt 6 and a second GCC cross-bootstrap
 
 ### Requirement: The shell's build cost is measured and recorded
 
-<!-- UNVERIFIED: `docs/evidence/shell-build.txt` measures sway, foot, wvkbd,
-and seatd, but predates the `htop`, `jq`, and `gnused` utilities added for the
-touch controls. Task 2.5 must remeasure the enabled closure. -->
-
 Every package this change adds is compiled for riscv64 without a native binary
 cache, so the cost of the shell SHALL be measured on the build host and
 committed, and SHALL be the smallest of the candidates that meets the other
 requirements here.
 
-*Grounding: `docs/evidence/cross-build.txt` records the baseline — 353 local
-derivations, 73 minutes, a 1.2 GiB closure — and records that a second cross
-toolchain was the largest single cost in that build.
-`docs/display-environment-options.md` measures each candidate as a delta on
-that closure with `nix build --dry-run`: 68 derivations for a `cage` smoke
-test, 89 for `sway` with `foot` and `wvkbd`, 184 for Hyprland, 288 for
-nixpkgs' default Weston.*
+*Grounding: `docs/evidence/shell-build.txt` records the completed enabled
+build: about 235 derivations across resumed stages and 2705 seconds (45
+minutes), with a final 1,280,679,016-byte (1221.0 MiB) closure, +110.2 MiB and
++95 paths over the 1109.9 MiB baseline. The final menu/image increment,
+including `htop`, `jq`, `gnused`, and `grim`, added 22 derivations and 8.0 MiB
+unpacked. `docs/display-environment-options.md` remains the historical
+candidate estimate: 68 derivations for the `cage` smoke test, 89 for `sway`
+with `foot` and `wvkbd`, 184 for Hyprland, and 288 for nixpkgs' default
+Weston.*
 
 The compositor SHALL be built with Xwayland disabled.
 
@@ -105,9 +103,10 @@ at-spi2-core and dconf. Recorded in `docs/display-environment-options.md`.*
 
 ### Requirement: The shell starts at boot and owns the panel
 
-<!-- UNVERIFIED: no compositor has been started on this board. Grounded by a
-photograph of the running shell and by the compositor's own log showing which
-renderer and allocator it selected. -->
+<!-- The compositor has been started and owns the panel. Battery-only boot is
+still unverified because the recorded startup retained USB cables. Grounding:
+docs/evidence/shell-first-light.md, docs/evidence/shell-session.txt, and
+docs/evidence/shell-features/startup/. -->
 
 The system SHALL start the compositor without a serial cable, a login prompt or
 a display manager, and the compositor SHALL take the panel at its native
@@ -131,8 +130,10 @@ failure this board already produced once, when the Wi-Fi driver reported
 
 ### Requirement: A person can type on the board with no cable attached
 
-<!-- UNVERIFIED: no on-screen keyboard has run on this panel. Grounded by a
-photograph of a command typed on the panel and its output on the panel. -->
+<!-- The user typed `ls` and its output was recorded on the panel; the feature
+gallery also records injected keyboard show/hide and typing. Whether a real
+finger can summon and dismiss the keyboard remains unverified. Grounding:
+docs/evidence/shell-first-light.md and docs/evidence/shell-features/. -->
 
 The shell SHALL present an on-screen keyboard that a person can summon and
 dismiss by touch, and characters typed on it SHALL reach the focused
@@ -150,9 +151,10 @@ application.
 
 ### Requirement: A touch activates what is under the finger
 
-<!-- UNVERIFIED: nothing interactive has been touched on this panel. Grounded
-by a photograph or recording of a deliberate press activating a specific
-target. -->
+<!-- The controller is mapped and injected taps activate the menu, but full
+real-glass coordinate accuracy remains unverified. Grounding for the injected
+path: docs/evidence/shell-injected-pointer.txt and
+docs/evidence/shell-features/. -->
 
 Touches SHALL be routed to the surface drawn at the touched location, in the
 panel's own 568x1232 coordinate space, with the axes neither swapped nor
@@ -177,10 +179,11 @@ invalidate only one of them.
 
 ### Requirement: The cable-free session has practical touch controls
 
-<!-- UNVERIFIED: the menu is implemented but has not been tapped on the board.
-Injected evemu/uinput input can demonstrate routing to swaybar only; a
-photograph or recording of a real GT9895/glass tap is required to ground this
-requirement. -->
+<!-- The menu workflow is demonstrated by injected uinput, including launch,
+window switching, keyboard, recovery, and cancelled system confirmations.
+Those recordings do not prove a real GT9895/glass tap, so the full hardware
+claim remains unverified. Grounding: docs/evidence/shell-features/index.html,
+its adjacent manifests, and docs/evidence/shell-virtual-touch.txt. -->
 
 The shell SHALL keep a persistent touch bar with Apps, Windows/Home, Keyboard,
 and System controls. Its visible targets SHALL be at least 56 pixels high and
