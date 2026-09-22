@@ -34,7 +34,7 @@ reset is GPIO22.*
 
 ### Requirement: The panel displays what the system draws
 
-*Grounded on hardware by photographs in `docs/evidence/panel-photos/`.
+*Grounding: observed on hardware -- photographs in `docs/evidence/panel-photos/`.
 The panel was driven to three known states from a shell on the board —
 `/dev/urandom` (speckled bright field), `/dev/zero` (dark), and `0xFF`
 bytes (bright) — and photographed each time. Three states rather than one
