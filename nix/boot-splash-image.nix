@@ -51,6 +51,6 @@ runCommand "k230-boot-splash-image" {
 
   cat > $out/README <<'EOF'
   logo.xrgb is 568x1232 XRGB8888, stored B,G,R,X for the little-endian K230.
-  It is derived from assets/boot-splash.png by nix/boot-splash.nix.
+  It is derived from assets/boot-splash.png by nix/boot-splash-image.nix.
   EOF
 ''
