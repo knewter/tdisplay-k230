@@ -122,16 +122,17 @@ logo failed to load would then never be lit at all.* `ft_board_setup()` *in*
 already edits the device tree before boot, and is where a runtime flag can be
 written.*
 
-<!-- UNVERIFIED: skipping reset and init is necessary but may not be
-sufficient. canaan_vo_enable_crtc() (canaan_vo.c:675) begins with
-k230_display_rst(), a reset of the whole display block at 0x91101090
-followed by a VO software reset, and the encoder path then reprograms the
-DSI controller and PHY. The video stream to the panel is interrupted for
-the duration. Whether an RM69A10 left in display-on holds its image across
-that, shows black, or needs re-initialising is not known and cannot be
-known from source. Grounded once a webcam capture across the first modeset
-is committed; if it shows a dark interval, the fallback in design.md
-applies and this requirement is restated to what was measured. -->
+<!-- UNVERIFIED: skipping panel reset and init is necessary but may not be
+sufficient. canaan_vo_enable_crtc() (canaan_vo.c:652) performs VO
+initialization and timing setup, while commit_tail_rpm enables the CRTC before
+programming planes; the explicit k230_display_rst() call is in the disable path
+(canaan_vo.c:666), not at the start of canaan_vo_enable_crtc. The encoder path
+also reprograms the DSI controller and PHY. Whether an RM69A10 left in
+display-on holds its image across the first modeset, shows black, or needs
+re-initialising is not known and cannot be known from source. Grounded once a
+webcam capture across the first modeset is committed; if it shows a dark
+interval, the fallback in design.md applies and this requirement is restated to
+what was measured. -->
 
 #### Scenario: The kernel boots behind a splash
 

@@ -36,15 +36,16 @@ See proposal.md — Why. What shapes the approach:
   `nix/kernel.nix` builds) said `0x96` at any rate until
   `canaan,hsfreqrange` was plumbed through the device tree. At our 594 Mbps the
   measured answer is `0x87` (`docs/evidence/dsi-hsfreqrange-hardcoded.md`).
-- **The kernel extinguishes the panel at probe and again at first enable.**
-  `panel-canaan-universal.c:318-329` pulses reset in probe; our
-  `nix/kernel.nix` adds three more pulses in `prepare()` ahead of the init
-  replay, because without them the panel did not answer. Then
-  `canaan_vo_enable_crtc()` (`canaan_vo.c:675`) opens with
-  `k230_display_rst()`: a write of 0 then `0xffffffff` to `0x91101090` and a VO
-  software reset, before re-timing VO, and the encoder path reprograms the
-  DSI controller and PHY. The first enable during boot is driven by the
-  fbdev emulation from the output poll worker (`dsi-phy-hang.md` trace:
+- **The kernel resets the panel at probe, while the first modeset reinitializes
+  the display pipeline.** `panel-canaan-universal.c:318-329` pulses reset in
+  probe; our `nix/kernel.nix` adds three more pulses in `prepare()` ahead of
+  the init replay, because without them the panel did not answer.
+  `canaan_vo_enable_crtc()` (`canaan_vo.c:652`) performs VO initialization and
+  timing setup, and `commit_tail_rpm` enables the CRTC before programming the
+  planes. The explicit `k230_display_rst()` call is in the disable path
+  (`canaan_vo.c:666`), not at the start of `canaan_vo_enable_crtc`. The first
+  enable during boot was historically driven by fbdev emulation from the
+  output poll worker (`dsi-phy-hang.md` trace:
   `output_poll_execute → canaan_dsi_encoder_enable`), scanning out a buffer
   `drm_fbdev_generic.c:89-98` allocated zeroed.
 - **There is no memory map, and the last unmapped address corrupted the
@@ -79,9 +80,10 @@ See proposal.md — Why. What shapes the approach:
   `bmp display` and `fdt_simplefb` work would be a rewrite of code we did
   not write, for no visible benefit.
 - Making the kernel adopt the running hardware state (a "no-op modeset"
-  when U-Boot's mode matches). That is a rewrite of `canaan_vo_enable_crtc`,
-  which starts with a block reset, and of the encoder path. Considered and
-  deferred: the measurement in task 4.4 decides whether it is even needed.
+  when U-Boot's mode matches). That would require a careful change to the VO
+  initialization/timing path, encoder setup, and CRTC/plane commit ordering.
+  Considered and deferred: the measurement in task 4.4 decides whether it is
+  even needed.
 - Continuity in the strict sense of one scanout buffer never touched. See the
   decision below; the design carries the *image* across, not the buffer.
 
@@ -178,8 +180,9 @@ scanning out; nothing in Linux reads it. The first Linux frame is the same
 picture because the owner draws the same asset, from the store. Rejected:
 a `simple-framebuffer` handoff. `simpledrm` would be evicted by
 `canaan-drm` at probe through the aperture helpers, and `canaan-drm`'s
-first enable begins with a block reset regardless of what it inherited;
-the buffer identity buys nothing. Rejected: making the reserved region the
+first modeset still has to run the VO initialization/timing and commit path;
+the buffer identity alone buys nothing. The explicit display-block reset is in
+the disable path. Rejected: making the reserved region the
 CMA pool so the first GEM allocation lands on the U-Boot buffer — the
 address is not guaranteed and `dma_alloc_wc` zeroes it anyway. Layer:
 **device tree, userspace**.
@@ -284,14 +287,14 @@ would look like a dead panel. Layer: **Nix**.
 
 ## Risks / Trade-offs
 
-- **The display block reset at Linux's first enable visibly blanks the
-  panel, or the panel does not come back without its init sequence.** →
-  This is the open question the whole "smooth" claim rests on, and it is
-  measured before anything is built on it (task 4.4). If a dark interval
-  shows, the fallback is to keep reset + init in prepare and accept a blink
-  at the owner's first frame; the splash still covers stage 1 and the
-  kernel boot, and the boot-splash requirement is restated to what was
-  measured. If the panel does not recover at all, the fallback is the same.
+- **The first Linux modeset's VO/DSI reprogramming visibly blanks the panel,
+  or the panel does not come back without its init sequence.** → This is the
+  open question the whole "smooth" claim rests on, and it is measured before
+  anything is built on it (task 4.4). If a dark interval shows, the fallback
+  is to keep reset + init in prepare and accept a blink at the owner's first
+  frame; the splash still covers stage 1 and the kernel boot, and the
+  boot-splash requirement is restated to what was measured. If the panel does
+  not recover at all, the fallback is the same.
 - **`0x87` behaves differently under U-Boot's PHY routine.** → LILYGO's
   2-lane routine waits 20 ms where the SDK waits 1 ms and orders the resets
   differently from `canaan_phy.c`. Prove the path on LILYGO's numbers first,

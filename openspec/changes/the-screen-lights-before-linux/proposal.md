@@ -114,7 +114,7 @@ Four pieces, each proven separately:
 | --- | --- | --- |
 | Light the panel from U-Boot with the right PHY band | stage 1 (U-Boot overlay, Kconfig, env) | vendored from LILYGO; one measured value to change |
 | An address that survives the handoff, and a map | stage 1 env, device tree, Nix | small, but it is the place a wrong number corrupts a kernel silently |
-| Probe and first modeset leave a lit panel alone | kernel (two drivers), U-Boot `/chosen` fixup | real driver work; the display block reset on first enable is the open risk |
+| Probe and first modeset leave a lit panel alone | kernel (two drivers), U-Boot `/chosen` fixup | real driver work; the first modeset's VO/DSI reprogramming and commit path are the open risk |
 | Own the screen from the initrd to the shell without a cut | Nix, userspace | the largest cross-build in the change if it is Plymouth |
 
 ## Capabilities
