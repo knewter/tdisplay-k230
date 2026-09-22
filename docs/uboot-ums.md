@@ -592,3 +592,19 @@ written for exists: `./tools/flash-latest.sh --ums` with the board at
 `ums 0 mmc 1`.
 
 **Not yet observed.** Route C; USB host and gadget in one binary (A2).
+
+### Unattended image verification
+
+`tools/ums-session.py --flash IMAGE --expected-sectors SECTORS --out LOG`
+now requires the card capacity observed from the board. For the card measured
+in `docs/evidence/uboot-ums-write.txt`, that is `249872384` sectors. It refuses
+a different capacity, more than one newly discovered disk, a name other than
+`usb-Linux_UMS_disk_0-0:0`, or USB identity other than `29f1:0230`.
+
+After `flash.sh` succeeds it compares every image byte against the gadget
+before resetting the board. This comparison must happen before boot: U-Boot
+saves its environment and Linux modifies the mounted filesystems. Failure
+leaves U-Boot in mass-storage mode so a known-good image can be restored.
+The pre-boot comparison has no hardware evidence yet; its next invocation
+must record the result alongside the boot transcript. Host refusal checks:
+`python3 -m unittest discover -s tests -p test_ums_target.py`.
