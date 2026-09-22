@@ -93,8 +93,12 @@ let
       *) echo "k230-launcher-action: unknown action" >&2; exit 2 ;;
     esac
   '';
+  xdgTerminalExec = pkgs.writeShellScriptBin "xdg-terminal-exec" ''
+    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig} -e "$@"
+  '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
+    export PATH=${xdgTerminalExec}/bin:$PATH
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
   '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
