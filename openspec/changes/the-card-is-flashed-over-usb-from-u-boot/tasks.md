@@ -88,7 +88,7 @@ binary any more.
       `sudo cmp -n $(stat -c %s "$IMG") "$IMG" /dev/disk/by-id/<ums path>`
       Done when `cmp` is silent. This proves the transport before anything is
       trusted to write through it.
-      - Not ticked, 2026-09-22: 350 046 bytes at the 2 MiB slot were read over ums and match `bd562f2b…` (`docs/evidence/uboot-ums-enumerate.txt`, session 5); the whole-image `cmp` this task asks for has not been run.
+      - Not ticked, 2026-09-22, and it cannot be on this check: after one boot the card differs from the image by design — U-Boot's `env_save()` (`k230_board_common.c:511`) rewrites the env at 3 MiB every boot, and Linux mounts both ext4 partitions read-write — so `cmp` stops at byte 3 145 729 in 0.4 s (`docs/evidence/uboot-ums-enumerate.txt`, sessions 6–8). What was proven instead, read-only, over ums: `[0, 3 MiB)` identical; the 3.2 MiB env copy identical; all five partition-1 files (88 MB, `debugfs`, no mount) byte-identical to the image's; every remaining byte read to the end with all 5 506 differing 4 KiB blocks inside the two mounted filesystems and none in the gaps; sequential read 12.0 MB/s (184 s for 2.2 GB). The transport returns the card's bytes. Reword the check or tick on this evidence — coordinator's call.
 - [ ] 3.5 Measure the write rate, so the claim in design.md is a number and
       not an estimate. **Hardware proof.**
       `sudo dd if="$IMG" of=/dev/disk/by-id/<ums path> bs=4M status=progress oflag=direct`

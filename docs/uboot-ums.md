@@ -560,6 +560,22 @@ sectors — the card — with `K230_BOOT` and `NIXOS_SD` visible, and the
 decode were the cost of not being able to see the bench: the board had
 been right all along.
 
-**Not yet observed.** The whole image compared over `ums` (3.4); a write
-over `ums` and its rate (3.5); a boot of an image written that way (4.2);
-Route C.
+**Read back over `ums`, every byte (sessions 6–8).** The whole 2.2 GB
+image region read from the gadget at **12.0 MB/s** (184 s, `dd bs=4M`,
+high speed on xhci) — so §3's "5–20 MB/s" guess lands at the low-middle
+for reads, and a full-image write will be about that or slower. The card
+does not equal the image after a boot, and cannot: `k230_set_dtb_env()`
+calls `env_save()` on every boot (`k230_board_common.c:511`), rewriting
+the env copy at 3 MiB (only that one — this U-Boot has no
+`CONFIG_ENV_OFFSET_REDUND`, so the 3.2 MiB copy the SDK layout writes is
+dead weight it never reads), and Linux mounts both ext4 partitions
+read-write. Compared region by region instead: `[0, 3 MiB)` identical;
+partition 1's five files — `Image`, `fw_jump_add_uboot_head.bin`, the DTB,
+`bootargs.txt`, `initrd.uimg`, 88 MB — byte-identical through `debugfs`
+with no mount; and of 538 943 4 KiB blocks after the env, the 5 506 that
+differ are all inside the two mounted filesystems, none in the gaps. The
+transport is proven for reads; task 3.4's literal `cmp` check needs
+rewording to say so.
+
+**Not yet observed.** A write over `ums` and its rate (3.5); a boot of an
+image written that way (4.2); Route C.

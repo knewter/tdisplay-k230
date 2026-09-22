@@ -151,6 +151,11 @@ def main():
     ap.add_argument("--hammer", type=float, default=20.0)
     ap.add_argument("--slot-len", type=int, default=0,
                     help="bytes to hash at the 2 MiB U-Boot slot (0: skip)")
+    ap.add_argument("--cmp", default=None, metavar="IMAGE",
+                    help="after the gadget appears, compare the whole card image "
+                         "region (the IMAGE's length, from offset 0) against the "
+                         "gadget disk, read-only, and record dd's throughput. "
+                         "The console keeps being read while it runs")
     ap.add_argument("--regs", action="store_true",
                     help="dump usbotg0's DWC2 OTG/device registers with md.l "
                          "before ums and again right after Ctrl-C. GOTGCTL "
@@ -258,6 +263,78 @@ def main():
                         s.note(f"sha256 = {digest}")
                     except OSError as exc:
                         s.note(f"could not read {dev} unprivileged: {exc}")
+            if args.cmp and len(new) == 1:
+                byid = f"/dev/disk/by-id/{sorted(new)[0]}"
+                size = os.path.getsize(args.cmp)
+                # Three regions, because the card is NOT expected to equal the
+                # image at 3 MiB: U-Boot's k230_set_dtb saves the environment
+                # (board/canaan/common/k230_board_common.c) into the env slots
+                # at 3 MiB and 3.2 MiB on every boot, so the first cmp of the
+                # whole image stopped at byte 3145729 after 0.4 s. Compare
+                # everything before, show the env difference as text, then
+                # compare everything after -- which is where the bytes and the
+                # throughput are.
+                ENV0, ENV_END = 3 * 1024 * 1024, 3 * 1024 * 1024 + 256 * 1024
+                # cmp -l prints "byteno v1 v2" per differing byte; fold that into
+                # 4 KiB blocks and say which partition each falls in. A plain
+                # string, not an f-string: awk's braces are not Python's.
+                AWK_BLOCKS = (
+                    'BEGIN{last=-1} '
+                    '{bytes++; b=int(($1-1)/4096); if(b!=last){blocks++; last=b; off=base+b*4096; '
+                    ' part=(off<4194304)?"gap":(off<121634816)?"p1(boot)":(off<134217728)?"gap":"p2(root)"; cnt[part]++; '
+                    ' if(blocks<=8) printf("  differing block at byte %d (0x%x) in %s\\n", off, off, part)}} '
+                    'END{printf("  %d differing bytes in %d differing 4 KiB blocks of %d compared: ", bytes+0, blocks+0, total); '
+                    ' for(k in cnt) printf("%s=%d ", k, cnt[k]); printf("\\n")}'
+                )
+                s.note(f"cmp, read-only, in three regions: [0,{ENV0}) [{ENV0},{ENV_END}) env slots [{ENV_END},{size}) of {byid} against {args.cmp}")
+                script = (
+                    f"echo '== region A [0, {ENV0}) =='; "
+                    f"dd if={byid} bs=1M iflag=count_bytes count={ENV0} status=none | cmp -n {ENV0} - {args.cmp}; echo \"cmp A exit $?\"; "
+                    f"echo '== region B: the two 8 KiB environments, as text (device | image) =='; "
+                    f"for off in {ENV0} {ENV0 + 200*1024}; do "
+                    f"  echo \"-- env copy at $off --\"; "
+                    f"  diff <(dd if={byid} bs=1 skip=$off count=8192 status=none | tail -c +5 | tr '\\0' '\\n' | grep .) "
+                    f"       <(dd if={args.cmp} bs=1 skip=$off count=8192 status=none | tail -c +5 | tr '\\0' '\\n' | grep .) "
+                    f"  && echo '   (identical text)'; done; "
+                    f"echo '== region B2: partition 1 files, read through debugfs on the gadget (no mount) vs the same files in the image =='; "
+                    f"dd if={args.cmp} bs=1M skip=4 count=112 of={args.out}.p1 status=none; "
+                    f"for f in Image fw_jump_add_uboot_head.bin k230-tdisplay.dtb bootargs.txt initrd.uimg; do "
+                    f"  a=$(/nix/store/xkbzmsvva53p5vbzm8j65hj8bkv4bhrc-e2fsprogs-1.47.4-bin/bin/debugfs -R \"cat /$f\" {args.out}.p1 2>/dev/null | sha256sum | cut -c1-64); "
+                    f"  b=$(/nix/store/xkbzmsvva53p5vbzm8j65hj8bkv4bhrc-e2fsprogs-1.47.4-bin/bin/debugfs -R \"cat /$f\" {byid}-part1 2>/dev/null | sha256sum | cut -c1-64); "
+                    f"  n=$(/nix/store/xkbzmsvva53p5vbzm8j65hj8bkv4bhrc-e2fsprogs-1.47.4-bin/bin/debugfs -R \"cat /$f\" {byid}-part1 2>/dev/null | wc -c); "
+                    f"  [ \"$a\" = \"$b\" ] && v=IDENTICAL || v=DIFFERENT; "
+                    f"  printf '  %-28s %s  %9d bytes  %s\\n' $f $b $n $v; done; rm -f {args.out}.p1; "
+                    f"echo '== region C [{ENV_END}, {size}): the whole rest of the image, every byte, cmp -l aggregated per 4 KiB block =='; "
+                    f"start=$(date +%s.%N); "
+                    f"dd if={byid} bs=4M iflag=skip_bytes,count_bytes skip={ENV_END} count={size - ENV_END} status=progress 2>{args.out}.dd "
+                    f"| cmp -l - <(dd if={args.cmp} bs=4M iflag=skip_bytes skip={ENV_END} status=none) "
+                    f"| awk -v base={ENV_END} -v total={int((size - ENV_END + 4095) / 4096)} '{AWK_BLOCKS}'; "
+                    f"end=$(date +%s.%N); "
+                    f"tail -c 600 {args.out}.dd | tr '\\r' '\\n' | grep 'copied' | tail -1; "
+                    f"echo \"region C read complete; elapsed $(echo \"$end - $start\" | bc) s\""
+                )
+                s.note("host: $ " + script)
+                proc = subprocess.Popen(["bash", "-c", script], stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, text=True)
+                last = 0.0
+                while proc.poll() is None:
+                    s.pump()
+                    if time.time() - last > 30:
+                        last = time.time()
+                        try:
+                            with open(args.out + ".dd", "rb") as fh:
+                                fh.seek(0, 2); fh.seek(max(0, fh.tell() - 200))
+                                prog = fh.read().decode("utf-8", "replace").replace("\r", "\n").strip().splitlines()
+                            s.note("dd progress: " + (prog[-1] if prog else "(none yet)"))
+                        except OSError:
+                            pass
+                    time.sleep(0.05)
+                out = proc.stdout.read()
+                s.log.write(out.encode("utf-8", "replace")); sys.stdout.write(out); sys.stdout.flush()
+                a_ok = "cmp A exit 0" in out
+                files_ok = out.count(" IDENTICAL") == 5
+                c_done = "region C read complete" in out
+                s.note(f"image cmp: region A {'IDENTICAL' if a_ok else 'DIFFERENT'}; partition-1 files {'all 5 IDENTICAL' if files_ok else 'NOT all identical'}; region C {'read to the end, block statistics above' if c_done else 'NOT completed'}; region B is the saved environment, shown above")
             status = 0
         else:
             s.note("no new usb disk appeared on the host")
