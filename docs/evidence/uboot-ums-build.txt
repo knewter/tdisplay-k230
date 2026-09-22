@@ -1,0 +1,107 @@
+Stage 1 with USB device mode: what the build produced and what was checked (tasks 2.1-2.5)
+==========================================================================================
+2026-09-22, solomon, worktree for the-card-is-flashed-over-usb-from-u-boot, nixpkgs
+20b1ddd1aa5ace70c9468305030aa4f9ef79671b. Everything is pasted from build logs or from
+commands run on the results. NOT A BOOT: this stage 1 has not been on a card.
+
+What changed, and where
+-----------------------
+  nix/uboot-k230-ums.config   appended to k230_canmv_v3_defconfig by nix/uboot-k230.nix (extraConfig):
+    CONFIG_USB_GADGET=y
+    CONFIG_DM_USB_GADGET=y
+    CONFIG_USB_GADGET_DWC2_OTG=y
+    CONFIG_USB_GADGET_DOWNLOAD=y
+    CONFIG_USB_GADGET_VENDOR_NUM=0x29f1
+    CONFIG_USB_GADGET_PRODUCT_NUM=0x0230
+    CONFIG_CMD_USB_MASS_STORAGE=y
+    # CONFIG_USB_DWC2 is not set
+  nix/patches/uboot-k230/0001-k230_canmv_v3-enable-usbotg0-as-a-peripheral.patch:
+    /* The data USB-C, J3, is wired to usbotg0 (schematic: USB0_P/USB0_N to J3
+     * A6/A7/B6/B7, with USB0_ID and USB0_VBUS). k230.dtsi leaves usbotg0
+     * disabled unless CONFIG_CMD_DFU is set; say so explicitly instead, and as
+     * a peripheral, so U-Boot's `ums` can present the TF card to a host there.
+     * Other Canaan boards (mrt, lckfb, gt6700) carry the same override.
+     */
+    &usbotg0 {
+    	status = "okay";
+    	dr_mode = "peripheral";
+    };
+    
+  Sources unchanged: the same u-boot-2022.10 tarball and the same SDK commit as before.
+
+Three build attempts, two of which the plan did not foresee
+-----------------------------------------------------------
+1. Fragment appended, nothing else. Turning USB_GADGET on makes symbols visible that the
+   defconfig never answered, and a non-interactive make dies in syncconfig:
+     Enable USB fastboot gadget (USB_FUNCTION_FASTBOOT) [N/y/?] (NEW)
+     Error in reading or end of file.
+   Fix: nix/uboot-k230.nix runs 'make olddefconfig' after the append (postConfigure).
+2. Configured, then Canaan's own addition to drivers/usb/gadget/dwc2_udc_otg.c -- code the
+   old configuration never compiled -- fails under GCC 15.3.0:
+     drivers/usb/gadget/dwc2_udc_otg.c:1117:72: error: passing argument 1 of 'readl' makes pointer from integer without a cast [-Wint-conversion]
+     drivers/usb/gadget/dwc2_udc_otg.c:1119:68: error: passing argument 2 of 'writel' makes pointer from integer without a cast [-Wint-conversion]
+   The lines (overlay, dwc2_udc_otg_probe, marked '// kendryte'):
+         #define USB0_TEST_CTL3 (0x9158507cU)
+         #define USB1_TEST_CTL3 (0x9158509cU)
+         #define USB_DMPULLDOWN0 	(1<<8)
+         #define USB_DPPULLDOWN0 	(1<<9)
+         u32 usb_test_ctl3 = readl((usbotg_reg == 0x91500000)?USB0_TEST_CTL3:USB1_TEST_CTL3);
+         usb_test_ctl3 &= ~(USB_DMPULLDOWN0 | USB_DPPULLDOWN0);
+         writel(usb_test_ctl3, (usbotg_reg == 0x91500000)?USB0_TEST_CTL3:USB1_TEST_CTL3);
+   GCC 13 warned about this; GCC 14 made -Wint-conversion an error. A u32 register address
+   converted to a pointer is well defined on rv64, and the SPL and U-Boot the board booted were
+   compiled by GCC 15, so the fix is the narrowest one: KCFLAGS=-Wno-error=int-conversion
+   (extraMakeFlags), not a GCC 13 pin for the whole tree and not a patch to the vendor driver.
+3. Built. Kconfig's later-wins for the three symbols the fragment reassigns, as expected:
+     .config:1727:warning: override: reassigning to symbol USB_GADGET
+     .config:1728:warning: override: reassigning to symbol DM_USB_GADGET
+     .config:1759:warning: override: reassigning to symbol USB_DWC2
+     build flags: -j32 SHELL=/nix/store/svx59425zxp552p2b8gm11qj5r09b56i-bash-5.3p15/bin/bash DTC=/nix/store/yj48bn5mmzd
+     drivers/usb/gadget/dwc2_udc_otg.c:1117:72: warning: passing argument 1 of 'readl' makes pointer from integer withou
+     drivers/usb/gadget/dwc2_udc_otg.c:1119:68: warning: passing argument 2 of 'writel' makes pointer from integer witho
+     SPL size check: spl/u-boot-spl.bin is 222816 bytes (0x36660) against CONFIG_SPL_SIZE_LIMIT=0x80000 (524288 bytes)
+
+The result: nix build .#uboot-k230 -> /nix/store/r55379zj8d5vwgq35ckzcr6m8xidsd9j-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10
+------------------------------------------------------------------------------------------
+  2.1  $ grep -E 'CONFIG_(CMD_USB_MASS_STORAGE|USB_GADGET|DM_USB_GADGET|USB_GADGET_DWC2_OTG|USB_GADGET_DOWNLOAD|USB_GADGET_VENDOR_NUM|USB_GADGET_PRODUCT_NUM|USB_FUNCTION_MASS_STORAGE)=' .config
+       CONFIG_CMD_USB_MASS_STORAGE=y
+       CONFIG_DM_USB_GADGET=y
+       CONFIG_USB_GADGET=y
+       CONFIG_USB_GADGET_VENDOR_NUM=0x29f1
+       CONFIG_USB_GADGET_PRODUCT_NUM=0x0230
+       CONFIG_USB_GADGET_DWC2_OTG=y
+       CONFIG_USB_GADGET_DOWNLOAD=y
+       CONFIG_USB_FUNCTION_MASS_STORAGE=y
+  2.2  $ grep -E 'CONFIG_(USB_DWC2|USB_HOST|USB_HOST_ETHER|USB_ETHER_RTL8152|USB_STORAGE|CMD_USB|CMD_DFU)\b' .config
+       # CONFIG_CMD_DFU is not set
+       # CONFIG_USB_DWC2 is not set
+       (USB host off, and every host-side class driver went with it; CMD_USB stays as a command with nothing under it)
+  2.3  $ fdtget k230_canmv_v3.dtb /soc/usb-otg@91500000 status dr_mode; ... @91540000
+       usb-otg@91500000   status=okay      dr_mode=peripheral
+       usb-otg@91540000   status=okay      dr_mode=otg
+  2.4  $ strings u-boot.bin | grep -E 'UMS|ums <'
+       UMS disk %d
+       UMS: LUN %d, dev %s %d, hwpart %d, sector %#x, count %#x
+       Use the UMS [USB Mass Storage]
+       $ riscv64-unknown-linux-gnu-nm u-boot | grep -E ' (do_usb_mass_storage|dwc2_udc_otg_probe|_u_boot_list_2_driver_2_(dwc2_udc_otg|usb_dwc2))$'
+       000000000001e8aa t do_usb_mass_storage
+       0000000000044640 t dwc2_udc_otg_probe
+       0000000000096a80 D _u_boot_list_2_driver_2_dwc2_udc_otg
+       The ums command, the gadget driver's probe and its linker-list entry are in; the host driver's entry
+       (_u_boot_list_2_driver_2_usb_dwc2) is not, so design D3's binding conflict cannot arise in this binary.
+  Sizes: u-boot.bin 690280 bytes (was 721392 without the gadget and with USB host),
+         spl/u-boot-spl.bin 222816 bytes (unchanged; nothing here touches the SPL).
+
+nix build .#stage1 -> /nix/store/7s8fkshr67s6impk0syb9y2dl7xsfm54-k230-stage1
+-----------------------------------------------------------------------
+  $ cat result-stage1/SHA256SUMS
+    fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  fn_u-boot-spl.bin
+    bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e  fn_ug_u-boot.bin
+    cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  env.env
+    74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9  fw_jump.bin
+    9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  fw_jump_add_uboot_head.bin
+  Against the stage 1 the board booted (docs/evidence/stage1-from-source.txt): fn_u-boot-spl.bin, env.env,
+  fw_jump.bin and fw_jump_add_uboot_head.bin are byte-identical; only fn_ug_u-boot.bin changed
+  (805bd543... -> bd562f2bcff46ba9...). fn_ug_u-boot.bin is 350046 bytes against its 1 MiB slot.
+  $ xxd -s 596 -l 4 result-stage1/fn_ug_u-boot.bin      (gzip magic, CM 09 -- the packaging is unchanged)
+    00000254: 1f8b 0900                                ....

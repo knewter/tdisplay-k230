@@ -186,8 +186,12 @@ So with both enabled, the **gadget driver claims every `snps,dwc2` node**,
 including `usbotg1`, and U-Boot's USB host stack goes dark — meaning the
 onboard RTL8152 Ethernet is no longer reachable from U-Boot.
 
-<!-- UNVERIFIED: reasoned from the source in the tree, not observed. The
-proof is a build plus a `dm tree` on the board. -->
+<!-- UNVERIFIED, half resolved: the BEFORE half is observed --
+docs/evidence/uboot-ums-hardware.txt, 2026-09-22, `dm tree` on the card's
+own U-Boot shows exactly one snps,dwc2 node, usb-otg@91540000, bound to the
+host driver dwc2_usb, and usb-otg@91500000 absent. The AFTER half -- which
+driver takes which node once the gadget is compiled in -- needs the ums
+build on the board (task 3.2). -->
 
 Corroboration that this is real and not a misreading: Canaan's
 `k230_canmv_burntool_defconfig` enables the gadget and **drops
@@ -458,3 +462,58 @@ work.
 4. **Do not do Route B for this.** Revisit it as its own change when the goal
    is dropping Canaan's U-Boot fork, and know going in that it cannot touch
    the SPL or the DDR training blob.
+
+---
+
+## 9. What has been observed since (2026-09-22)
+
+Written after `every-blob-is-built-from-source-or-named` landed, so "the
+U-Boot we build" now means `nix/uboot-k230.nix`, and after the first session
+at the board's own prompt for
+`the-card-is-flashed-over-usb-from-u-boot`. Everything here is in
+`docs/evidence/uboot-ums-hardware.txt` or `docs/evidence/uboot-ums-build.txt`.
+
+**§1 confirmed on the board.** `help ums` → `Unknown command 'ums'`;
+`help k230_dfu` → `k230 burntool enter dfu`. `version` reports
+`riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0`: the card carries this
+project's build, not the Docker one, and it has no gadget.
+
+**§2 confirmed on the board.** `usb start; usb tree` on today's U-Boot finds
+`Realtek USB 10/100 LAN` behind `usb-otg@91540000` — the onboard RTL8152 on
+`usbotg1`, as the schematic and the Linux boot log said. `usb-otg@91500000`
+does not appear in `dm tree` at all, which is `k230.dtsi`'s
+`status = "disabled"` doing what §2 says it does. `mmc list` names the card
+`mmc1@91581000: 1 (SD)`, 119.1 GiB; `ums 0 mmc 1` is the argument.
+
+**§3's driver-binding claim: the before half is observed.** `dm tree` shows
+`usb-otg@91540000` bound to `dwc2_usb`, the host driver, and nothing else in
+`UCLASS_USB`. What the gadget driver binds once it exists is still the
+after half, and it needs the new build on the board.
+
+**§3's build, done.** `nix/uboot-k230-ums.config` carries the six gadget
+symbols plus `CONFIG_CMD_USB_MASS_STORAGE=y` and `# CONFIG_USB_DWC2 is not
+set`, with D3's reasoning next to that line;
+`nix/patches/uboot-k230/0001-k230_canmv_v3-enable-usbotg0-as-a-peripheral.patch`
+is the device-tree override. Two things the plan did not foresee, both in
+`docs/evidence/uboot-ums-build.txt`: turning `USB_GADGET` on exposes
+Kconfig symbols that a non-interactive build cannot answer, so the
+derivation runs `olddefconfig` after appending the fragment; and Canaan's
+own addition to `dwc2_udc_otg.c` (the `USB0_TEST_CTL3` pull-down clear,
+passing a `u32` address to `readl`) is an error under GCC ≥ 14's
+`-Wint-conversion`, so the build demotes that one diagnostic rather than
+pin the whole tree to GCC 13. The result: `ums` in the binary
+(`do_usb_mass_storage`, `UMS: LUN %d, dev %s ...`), the gadget driver in the
+linker list, the host driver gone, `usb-otg@91500000` `okay`/`peripheral`
+in the embedded device tree, and U-Boot proper 31 KB *smaller* than before
+because the USB host and Ethernet class drivers left with `USB_DWC2`.
+
+**§7's warm-reboot detail, worth knowing.** A `reboot` from Linux does not
+drop the CH342 console: the port stayed open through the SoC reset and
+`tools/capture-boot.py --hammer` caught the 1 s `bootdelay` first time. A
+cold boot is different (`docs/evidence/boot-from-source-cold.txt`): the
+bridge loses power with the board and the prompt is unreachable from the
+host until it re-enumerates.
+
+**Not yet observed.** Any gadget enumerating on J3; `ums` presenting the
+card; Route C. Those are the hardware tasks that remain, and they start with
+the new stage 1 on a card.

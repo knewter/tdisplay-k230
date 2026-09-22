@@ -17,9 +17,16 @@ K230_V1.0_NEW.pdf` routes `USB0_P`/`USB0_N` to `J3` pins A6/A7/B6/B7 with
 `USB0_ID` and `USB0_VBUS`, and `USB_P`/`USB_N` on `J2` to the CH342.
 `docs/evidence/hardware-boot.txt` agrees: Linux registers `dwc2
 91500000.usb` as bus 1 with nothing attached and `dwc2 91540000.usb` as bus 2
-carrying an onboard `Realtek USB 10/100 LAN`. The gadget configuration is not
-speculative — Canaan ships one for this SoC in the same U-Boot tree, as
-`k230_canmv_burntool_defconfig`.*
+carrying an onboard `Realtek USB 10/100 LAN`. So does U-Boot itself:
+`docs/evidence/uboot-ums-hardware.txt`, at the board's own `K230#` prompt
+on 2026-09-22, shows `dm tree` with exactly one `snps,dwc2` node bound —
+`usb-otg@91540000`, to the host driver — and `usb start; usb tree` finding
+the RTL8152 behind it, while `usb-otg@91500000` is absent because the
+vendor device tree disables it. The gadget configuration is not speculative
+— Canaan ships one for this SoC in the same U-Boot tree, as
+`k230_canmv_burntool_defconfig` — and this project's build of it
+(`nix/uboot-k230-ums.config`, `docs/evidence/uboot-ums-build.txt`) puts
+`ums` in the binary and enables `usb-otg@91500000` as a peripheral.*
 
 <!-- UNVERIFIED: no USB gadget has enumerated from this board. Grounded once
 docs/evidence/uboot-ums-hardware.txt records the host seeing a block device

@@ -1,0 +1,20 @@
+--- a/arch/riscv/dts/k230_canmv_v3.dts
++++ b/arch/riscv/dts/k230_canmv_v3.dts
+@@ -58,6 +58,17 @@
+ 	status = "okay";
+ };
+ 
++/* The data USB-C, J3, is wired to usbotg0 (schematic: USB0_P/USB0_N to J3
++ * A6/A7/B6/B7, with USB0_ID and USB0_VBUS). k230.dtsi leaves usbotg0
++ * disabled unless CONFIG_CMD_DFU is set; say so explicitly instead, and as
++ * a peripheral, so U-Boot's `ums` can present the TF card to a host there.
++ * Other Canaan boards (mrt, lckfb, gt6700) carry the same override.
++ */
++&usbotg0 {
++	status = "okay";
++	dr_mode = "peripheral";
++};
++
+ &iomux {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pins>;

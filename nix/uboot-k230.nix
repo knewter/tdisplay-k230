@@ -52,7 +52,33 @@ in
     hash = "sha256-ULRIKlBbwoG6hHDDmaPCbhReKbI1ALw1xQ3r1/pGvfg=";
   };
   defconfig = "k230_canmv_v3_defconfig";
+  # USB device mode for `ums`, and USB host off: nix/uboot-k230-ums.config
+  # says why, line by line. buildUBoot appends this after `make defconfig`;
+  # Kconfig's syncconfig then takes the later value for a symbol set twice.
+  extraConfig = builtins.readFile ./uboot-k230-ums.config;
+  # Turning USB_GADGET on makes a dozen previously-hidden symbols visible
+  # (USB_FUNCTION_FASTBOOT, USB_GADGET_MANUFACTURER, ...), and a non-
+  # interactive `make` then dies in syncconfig with "Error in reading or
+  # end of file" asking about them. olddefconfig answers each with its
+  # default, which is what a defconfig would have done. Observed on the
+  # first build with the fragment, 2026-09-22.
+  postConfigure = ''
+    make olddefconfig
+  '';
   filesToInstall = [ "u-boot.bin" "spl/u-boot-spl.bin" ];
+  # The one place the vendor tree fights GCC 15, and it is in code the ums
+  # configuration newly compiles: Canaan's addition to
+  # drivers/usb/gadget/dwc2_udc_otg.c (dwc2_udc_otg_probe, "// kendryte")
+  # passes the USB PHY test-control register addresses to readl()/writel()
+  # as bare u32 constants (0x9158507cU / 0x9158509cU). GCC 13 warned; GCC 14
+  # made -Wint-conversion an error, and the build died there on 2026-09-22.
+  # The conversion is well defined on rv64 (a 32-bit unsigned address,
+  # zero-extended), so demote that one diagnostic back to a warning rather
+  # than pin the whole tree to GCC 13: the SPL and U-Boot the board booted
+  # were compiled by GCC 15, and this keeps everything but the new driver
+  # byte-for-byte the same compiler's output. Recorded in
+  # docs/evidence/uboot-ums-build.txt.
+  extraMakeFlags = [ "KCFLAGS=-Wno-error=int-conversion" ];
   extraMeta.platforms = [ "riscv64-linux" ];
 
   # The overlay, applied the way the SDK applies it: every file in the
@@ -63,6 +89,13 @@ in
     cp -r ${overlay}/. .
     chmod -R u+w .
     patchShebangs tools scripts arch/riscv/cpu/k230
+    # This project's own changes to the vendor tree, as patch files so they
+    # are reviewable and so nothing here is a hand edit. Applied after the
+    # overlay, which is what they are written against.
+    for p in ${./patches/uboot-k230}/*.patch; do
+      echo "applying $p"
+      patch -p1 < "$p"
+    done
   '';
 
   # The SPL must fit the slot the BootROM loads it from. U-Boot's own build
@@ -83,6 +116,9 @@ in
     mkdir -p $out/spl
     cp u-boot.bin u-boot .config $out/
     cp spl/u-boot-spl.bin spl/u-boot-spl $out/spl/
+    # The device tree U-Boot embeds (CONFIG_OF_EMBED), so a node's status
+    # can be checked with fdtget without disassembling u-boot.bin.
+    cp arch/riscv/dts/k230_canmv_v3.dtb $out/
     # Say what ISA the compiler emitted, next to the binaries, so the
     # "no vendor toolchain needed" claim is checkable from the output.
     ${stdenv'.cc.targetPrefix}readelf -A u-boot spl/u-boot-spl > $out/readelf-A.txt
