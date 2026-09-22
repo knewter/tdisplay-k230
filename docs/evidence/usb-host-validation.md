@@ -12,10 +12,19 @@ matching the source-built candidate. Linux returned; the separate
 `usb-host-second-candidate-linux.txt` confirms the stock shell is active,
 has no service drop-ins, and drives 568x1232 in the normal orientation.
 
-The original bootloader slot backup remains on the board and its hash was
-verified again. The narrow installer changes only the U-Boot slot; the
-previous complete portrait image remains the recovery image. A full image
-incorporating this repaired stage 1 has not yet been built or flashed.
+That was the **initial narrow trial**: its installer changed only the U-Boot
+slot, and the slot-backup/recovery-image statements apply to that session's
+board state only. They are historical evidence, not a claim about the board
+after later full-image flashing.
+
+The repaired stage 1 was subsequently included in the source-built daily
+image. [`daily-shell-image.md`](daily-shell-image.md) identifies the exact
+image and stage-1 store paths, and
+[`declarative-final/image-flash.txt`](shell-features/declarative-final/image-flash.txt)
+records the complete 2,308,689,920-byte image written through UMS at
+12.7 MB/s, U-Boot reset, and return to the Linux login prompt with status 0.
+That transcript intentionally skipped a full readback, so it proves full-image
+boot and recovery to Linux, not byte-for-byte post-write verification.
 
 The first candidate's missing host remains recorded in
 `uboot-usb-host-coexist.txt`. The helper now reports a separate host verdict:
