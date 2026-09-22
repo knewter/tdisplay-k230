@@ -53,6 +53,10 @@ buildLinux (args // {
     ];
 
     postPatch = ''
+      # Seed dependencies before oldconfig traverses NFT_COMPAT/NFT_CT.
+      # Their prerequisites occur later in Kconfig; answering new prompts
+      # against the vendor's modular prerequisites otherwise loops forever.
+      cat ${./kernel-firewall.config} >> arch/riscv/configs/k230_defconfig
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3.dtb' >> arch/riscv/boot/dts/canaan/Makefile
       echo 'dtb-$(CONFIG_ARCH_CANAAN) += k230-canmv-v3-lcd.dtb' >> arch/riscv/boot/dts/canaan/Makefile
 

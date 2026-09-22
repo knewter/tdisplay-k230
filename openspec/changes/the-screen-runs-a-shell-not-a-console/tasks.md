@@ -82,6 +82,11 @@ sway, plus `docs/evidence/shell-session.txt`.
   config paths and panel screenshots. A preserved private backup is not an
   implementation dependency.
 
+- [ ] 5.8 Fix the observed firewall startup failure without disabling the
+  firewall. Verify the current generated IPv4/IPv6 rules against the kernel
+  configuration, build the kernel/system, then capture an active firewall
+  service and installed filter/mangle rules after board boot.
+
 **Proves group 5 — hardware claim.** Photographs of a command typed on the
 panel and its output, plus real-glass touch-bar evidence, committed under
 `docs/evidence/`. Injection evidence is diagnostic and does not substitute for
