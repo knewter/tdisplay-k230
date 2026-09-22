@@ -23,9 +23,9 @@
 # fw_jump.bin goes on the card, wrapped by nix/stage1.nix.
 #
 # With FW_TEXT_START=0, platform/generic/objects.mk derives
-# FW_JUMP_ADDR=0x200000 and FW_JUMP_FDT_ADDR=0x2200000. Those are the
-# vendor's numbers and this derivation keeps them: stage 1 rebuilt from
-# source is meant to do exactly what the vendored one does.
+# FW_JUMP_ADDR=0x200000, which this build keeps, and FW_JUMP_FDT_ADDR=
+# 0x2200000, which it deliberately does not -- the one place this stage 1
+# departs from the vendor's. See the makeFlags below.
 { lib
 , stdenv
 , fetchFromGitHub
@@ -68,6 +68,33 @@ stdenv'.mkDerivation {
     "PLATFORM=generic"
     "FW_TEXT_START=0"
     "CROSS_COMPILE=${stdenv'.cc.targetPrefix}"
+    # Leave FW_JUMP_FDT_ADDR undefined, so fw_jump hands the kernel the
+    # device tree where bootm put it instead of copying it to a fixed
+    # address. The vendor's build defines it as FW_TEXT_START + 0x2200000
+    # (platform/generic/objects.mk:35); fw_jump.S:46-52 then makes
+    # fw_next_arg1 return that constant and fw_base.S:391-396 copies the
+    # FDT there. 0x2200000 is Image + 0x2000000, which on this kernel is
+    # inside .BTF (__start_BTF Image+0x1fc78a4 .. __stop_BTF Image+0x30fef04):
+    # docs/evidence/opensbi-fdt-lands-in-kernel-image.md reads the FDT
+    # header back out of /sys/kernel/btf/vmlinux on the board, which is also
+    # why every boot printed "Kernel module BTF mismatch detected". The
+    # mechanism: firmware/objects.mk:44 guards the -D with `ifdef
+    # FW_JUMP_FDT_ADDR`, and GNU make's ifdef is false for a variable whose
+    # value is empty, so an empty assignment on the command line -- which
+    # overrides the makefile's -- takes fw_jump.S's #else branch
+    # (`add a0, a1, zero`). No source is patched.
+    # docs/evidence/opensbi-fdt-passthrough.txt is the disassembly, before
+    # and after.
+    "FW_JUMP_FDT_ADDR="
+    # ...and do not build fw_payload at all. The card never carries it (the
+    # SDK builds one because buildroot passes FW_PAYLOAD_PATH; blinux loads
+    # fw_jump), and it cannot be built alongside the line above:
+    # platform/generic/objects.mk:44 says `FW_PAYLOAD_FDT_ADDR=$(FW_JUMP_FDT_ADDR)`,
+    # a recursively expanded variable whose *unexpanded* text is non-empty,
+    # so `ifdef FW_PAYLOAD_FDT_ADDR` at firmware/objects.mk:62 stays true
+    # while its value expands to nothing, and fw_payload.S:48 becomes
+    # `li a0,` -- "illegal operands", observed 2026-09-22 on the first try.
+    "FW_PAYLOAD=n"
   ];
 
   enableParallelBuilding = true;

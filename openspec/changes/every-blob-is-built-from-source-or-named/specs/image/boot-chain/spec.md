@@ -40,7 +40,16 @@ compiles OpenSBI 1.4 with the overlay under a GCC 13 pin, and `nix build
 .#stage1` wraps both into the five files the card carries, with the `K230`
 magic, a CM byte of `0x09`, and the environment's `mkenvimage` step
 reproducing the SDK default byte for byte
-(`f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957`).*
+(`f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957`).
+One deliberate departure from the vendor's build: the vendor's OpenSBI is
+compiled with `FW_JUMP_FDT_ADDR = FW_TEXT_START + 0x2200000`, so `fw_jump`
+copies the device tree to `0x2200000` — inside the kernel image loaded at
+`0x200000`, in its `.BTF` section, as
+`docs/evidence/opensbi-fdt-lands-in-kernel-image.md` reads back from
+`/sys/kernel/btf/vmlinux` on the board. The OpenSBI this project builds
+leaves `FW_JUMP_FDT_ADDR` undefined and passes the device tree through where
+`bootm` placed it; `docs/evidence/opensbi-fdt-passthrough.txt` is the
+`fw_next_arg1` disassembly before and after.*
 
 <!-- UNVERIFIED: no stage 1 compiled by this project has been booted. The
 compilation step is the one part not yet reproduced; grounded once

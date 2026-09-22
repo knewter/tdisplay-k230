@@ -1,0 +1,77 @@
+OpenSBI fw_jump: fw_next_arg1 before and after leaving FW_JUMP_FDT_ADDR undefined (task 4.2b)
+===========================================================================================
+2026-09-22, solomon. Why: docs/evidence/opensbi-fdt-lands-in-kernel-image.md -- the vendor
+build's FW_JUMP_FDT_ADDR = FW_TEXT_START + 0x2200000 makes fw_jump copy the device tree
+32 MiB into the kernel Image, into .BTF. Every command and hash below is pasted from a run.
+
+The source, at riscv-software-src/opensbi v1.4 (the fetch nix/opensbi-k230.nix pins)
+-------------------------------------------------------------------------------------
+  platform/generic/objects.mk:35
+    FW_JUMP_FDT_ADDR=$(shell printf "0x%X" $$(($(FW_TEXT_START) + 0x2200000)))
+  platform/generic/objects.mk:44
+    FW_PAYLOAD_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
+  firmware/objects.mk:44-46
+    ifdef FW_JUMP_FDT_ADDR
+    firmware-genflags-$(FW_JUMP) += -DFW_JUMP_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
+    endif
+  firmware/objects.mk:62-64
+    ifdef FW_PAYLOAD_FDT_ADDR
+    firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_ADDR=$(FW_PAYLOAD_FDT_ADDR)
+    endif
+  firmware/fw_jump.S:46-52
+    fw_next_arg1:
+    #ifdef FW_JUMP_FDT_ADDR
+    	li	a0, FW_JUMP_FDT_ADDR
+    #else
+    	add	a0, a1, zero
+    #endif
+    	ret
+
+The make mechanism, checked on GNU Make 4.4.1 with a two-line Makefile before relying on it
+-------------------------------------------------------------------------------------------
+  J=$(shell printf 0x%X 0x2200000)   # stands for FW_JUMP_FDT_ADDR
+  P=$(J)                             # stands for FW_PAYLOAD_FDT_ADDR, recursively expanded
+  $ make          ifdef J: TRUE  (value [0x2200000])   ifdef P: TRUE  (value [0x2200000])
+  $ make J=       ifdef J: FALSE (value [])            ifdef P: TRUE  (value [])
+  $ make J= P=    ifdef J: FALSE (value [])            ifdef P: FALSE (value [])
+
+  So: a command-line assignment overrides the makefile's, and ifdef is false for an
+  empty value -- FW_JUMP_FDT_ADDR= on the command line makes firmware/objects.mk:44
+  skip the -D and fw_jump.S takes its #else branch. But ifdef looks at a recursively
+  expanded variable's UNEXPANDED text, so FW_PAYLOAD_FDT_ADDR=$(FW_JUMP_FDT_ADDR) stays
+  'defined' while expanding to nothing, and fw_payload.S:48 becomes 'li a0,':
+
+  First build attempt, makeFlags FW_JUMP_FDT_ADDR= alone:
+    /build/source/firmware/fw_payload.S:48: Error: illegal operands `li a0,'
+  The card never carries fw_payload (blinux loads fw_jump), so nix/opensbi-k230.nix passes
+  FW_PAYLOAD=n rather than a second empty assignment. Second attempt, build flags from the log:
+    PLATFORM=generic FW_TEXT_START=0 CROSS_COMPILE=riscv64-unknown-linux-gnu- FW_JUMP_FDT_ADDR= FW_PAYLOAD=n
+
+BEFORE: /nix/store/0k1hy9c6lyqwr8jw34mks45xyfak2f1b-opensbi-k230-riscv64-unknown-linux-gnu-1.4
+-------
+  $ riscv64-unknown-linux-gnu-objdump -d fw_jump.elf | grep -A4 '<fw_next_arg1>:'
+  0000000000000558 <fw_next_arg1>:
+       558:	02200537          	lui	a0,0x2200
+       55c:	8082                	ret
+       55e:	0001                	nop
+  
+  lui a0,0x2200 = li a0,0x2200000: the constant, the vendor's behaviour.
+  7936a5aebba364663e65c04028f95d7b1d90c93082ea710c65ccd6f23fee77b3  fw_jump.bin
+
+AFTER: /nix/store/7fmfx6dan9c2dsa55cs3jba3b5wx6w6p-opensbi-k230-riscv64-unknown-linux-gnu-1.4
+------
+  $ riscv64-unknown-linux-gnu-objdump -d fw_jump.elf | grep -A4 '<fw_next_arg1>:'
+  0000000000000558 <fw_next_arg1>:
+       558:	00058533          	add	a0,a1,zero
+       55c:	8082                	ret
+       55e:	0001                	nop
+  
+  add a0,a1,zero: pass-through, the FDT stays where bootm put it (0x8400000 per tdisplay.env,
+  or wherever U-Boot relocated it -- outside every image bootm loads).
+  74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9  fw_jump.bin
+
+  Everything else about the build is unchanged: opensbi-k230: fw_jump.bin is 270744 bytes; carries canaan,kendryte-k230 and thead_disable_maee
+
+Not proven here: a boot. The evidence document's second check -- the dd on
+/sys/kernel/btf/vmlinux returning BTF bytes rather than d00dfeed -- needs this
+fw_jump on a card, and the board.

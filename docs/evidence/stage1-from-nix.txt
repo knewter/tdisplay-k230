@@ -207,3 +207,34 @@ and it is the only one that has not been checked at all.
   $ debugfs -R 'dump /fw_jump_add_uboot_head.bin' <partition 1>; sha256sum
     42db0259fca9e81a32469ae749754378c587ef3a8fdef519925f2d8c12ffb2d4  = fw_jump_add_uboot_head.bin
   Every slot holds the bytes result-stage1/SHA256SUMS lists. This image has not been written to a card.
+
+6. Rebuilt with OpenSBI passing the device tree through  (task 4.2b; supersedes §2 and §4-5 for what the card should carry)
+------------------------------------------------------------------------------------------------------------------------------
+  §2 above recorded fw_next_arg1 returning 0x2200000, the vendor's FW_JUMP_FDT_ADDR, and docs/evidence/
+  opensbi-fdt-lands-in-kernel-image.md then proved on the board that this copies the DTB into the kernel's
+  .BTF section. nix/opensbi-k230.nix now leaves FW_JUMP_FDT_ADDR undefined (FW_JUMP_FDT_ADDR= FW_PAYLOAD=n
+  on the make command line; docs/evidence/opensbi-fdt-passthrough.txt has the mechanism and the disassembly
+  before and after). §2 through §5 are left as written: they are the byte-identical-packaging checkpoint and
+  the image at /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img is the faithful-to-vendor fallback.
+
+  $ nix build .#opensbi-k230 .#stage1 .#sdImage   (pure)
+  opensbi-k230: /nix/store/7fmfx6dan9c2dsa55cs3jba3b5wx6w6p-opensbi-k230-riscv64-unknown-linux-gnu-1.4
+  stage1:       /nix/store/p0p73sa482k9i60j4nq93vy71x31yish-k230-stage1
+  sdImage:      /nix/store/vs5mll0vif0lnq36srm6qxgx75mgwf5m-k230-sd-image.img
+  $ cat result-stage1/SHA256SUMS
+    fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  fn_u-boot-spl.bin
+    805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  fn_ug_u-boot.bin
+    cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  env.env
+    74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9  fw_jump.bin
+    9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  fw_jump_add_uboot_head.bin
+  Only the two OpenSBI files changed; the SPL, U-Boot and environment hashes are those of §4.
+  $ sha256 over each slot of the image, for the file's length:
+    0x100000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x180000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x200000  805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  = fn_ug_u-boot.bin
+    0x300000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+    0x320000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+  $ debugfs -R 'dump /fw_jump_add_uboot_head.bin' <partition 1>; sha256sum
+    9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  = fw_jump_add_uboot_head.bin  (the pass-through OpenSBI)
+  Not flashed, not booted. When it is, opensbi-fdt-lands-in-kernel-image.md's dd on /sys/kernel/btf/vmlinux
+  should return BTF bytes, not d0 0d fe ed.
