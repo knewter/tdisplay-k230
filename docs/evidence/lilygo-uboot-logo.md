@@ -1196,3 +1196,12 @@ defconfig, environment layout, or GPIO52 keyboard-backlight change. Its
 framebuffer address is supplied by `nix/boot-splash.nix` as `0x10000000`,
 the address selected in `docs/evidence/stage1-memory-map.md`; LILYGO's
 `0x1f000000` remains rejected because it lies in this system's CMA region.
+
+### Loader safety delta
+
+Before a logo is loaded to the fixed reservation, the port uses U-Boot
+`ext4size` to require the exact 2,799,104-byte XRGB file. Only then does a
+bounded `ext4load` request that exact byte count and recheck `filesize`.
+Command construction uses bounded `snprintf`. A missing, malformed, or
+oversized file still skips the logo and continues booting; it cannot overwrite
+memory beyond the planned reservation.

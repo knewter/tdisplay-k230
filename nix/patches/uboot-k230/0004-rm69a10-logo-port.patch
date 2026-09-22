@@ -303,8 +303,8 @@ diff -urN a/board/canaan/common/logo/display_logo.h b/board/canaan/common/logo/d
  #endif
 diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230_logo.c
 --- a/board/canaan/common/logo/k230_logo.c	2026-09-22 12:59:56.132452521 -0500
-+++ b/board/canaan/common/logo/k230_logo.c	2026-09-22 12:59:56.257214793 -0500
-@@ -193,24 +193,90 @@
++++ b/board/canaan/common/logo/k230_logo.c	2026-09-22 13:06:50.958015830 -0500
+@@ -193,24 +193,106 @@
  }
  #define BACKGROUND_BLACK_COLOR                            (0x808000)
  #define BACKGROUND_PINK_COLOR                             (0xffffff)
@@ -321,41 +321,64 @@ diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230
  }
 -int _k230_display_logo_load_pic()
 +
-+int _k230_display_logo_load_pic(void)
++static int rm69a10_logo_load(const char *mmc_dev, unsigned long add)
  {
-+#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
 +    char cmd[160];
-+    const char *mmc_dev = env_get("mmc_boot_dev_num");
-+    unsigned long add = k230_display_logo_get_pic_mem_addr();
 +    unsigned long size;
-+    int ret;
++    int n, ret;
 +
-+    invalidate_dcache_range(add, add + ROUND(RM69A10_LOGO_XRGB_SIZE, CONFIG_SYS_CACHELINE_SIZE));
-+    if (mmc_dev && *mmc_dev)
-+        sprintf(cmd, "ext4load mmc %s:1 0x%lx /logo.xrgb", mmc_dev, add);
-+    else
-+        sprintf(cmd, "ext4load mmc 1:1 0x%lx /logo.xrgb", add);
-+    printf("cmd=%s\n", cmd);
++    n = snprintf(cmd, sizeof(cmd), "ext4size mmc %s:1 /logo.xrgb", mmc_dev);
++    if (n < 0 || n >= sizeof(cmd))
++        return -1;
 +    ret = run_command(cmd, 0);
-+    if (ret) {
-+        sprintf(cmd, "ext4load mmc 0:1 0x%lx /logo.xrgb", add);
-+        printf("cmd=%s\n", cmd);
-+        ret = run_command(cmd, 0);
-+    }
-+    if (ret) {
-+        printf("logo.xrgb load failed, skip U-Boot logo\n");
++    if (ret)
 +        return ret;
-+    }
 +
 +    size = env_get_ulong("filesize", 16, 0);
 +    if (size != RM69A10_LOGO_XRGB_SIZE) {
-+        printf("logo.xrgb size mismatch: got %lu, expected %u\n",
++        printf("logo.xrgb size mismatch: got %lu, expected %u; skip U-Boot logo\n",
 +               size, RM69A10_LOGO_XRGB_SIZE);
 +        return -1;
 +    }
++
++    /* ext4size proved the source fits before this writes the reserved range. */
++    n = snprintf(cmd, sizeof(cmd),
++                 "ext4load mmc %s:1 0x%lx /logo.xrgb %u",
++                 mmc_dev, add, RM69A10_LOGO_XRGB_SIZE);
++    if (n < 0 || n >= sizeof(cmd))
++        return -1;
++    ret = run_command(cmd, 0);
++    if (ret)
++        return ret;
++
++    size = env_get_ulong("filesize", 16, 0);
++    if (size != RM69A10_LOGO_XRGB_SIZE) {
++        printf("logo.xrgb bounded load mismatch: got %lu, expected %u; skip U-Boot logo\n",
++               size, RM69A10_LOGO_XRGB_SIZE);
++        return -1;
++    }
++    return 0;
++}
++
++int _k230_display_logo_load_pic(void)
++{
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    const char *mmc_dev = env_get("mmc_boot_dev_num");
++    const char *first_dev = (mmc_dev && *mmc_dev) ? mmc_dev : "1";
++    unsigned long add = k230_display_logo_get_pic_mem_addr();
++    int ret;
++
++    invalidate_dcache_range(add, add + ROUND(RM69A10_LOGO_XRGB_SIZE, CONFIG_SYS_CACHELINE_SIZE));
++    ret = rm69a10_logo_load(first_dev, add);
++    if (ret && strcmp(first_dev, "0") != 0)
++        ret = rm69a10_logo_load("0", add);
++    if (ret) {
++        printf("logo.xrgb unavailable or unsafe, skip U-Boot logo\n");
++        return ret;
++    }
++
 +    flush_cache(add, ROUND(RM69A10_LOGO_XRGB_SIZE, CONFIG_SYS_CACHELINE_SIZE));
 +    printf("RM69A10 direct XRGB8888 logo.xrgb full-screen OSD4\n");
-+
 +    return 0;
 +#else
      char cmd[128];
@@ -383,13 +406,6 @@ diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230
 +    }
  
      size = env_get_ulong("filesize", 16,0x100000);
-+#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
-+    if (size != RM69A10_LOGO_SIZE) {
-+        printf("logo.yuv size mismatch: got %lu, expected %u\n",
-+               size, RM69A10_LOGO_SIZE);
-+        return -1;
-+    }
-+#endif
 +    invalidate_dcache_range(0x1000000, 0x1000000 + ROUND(size, CONFIG_SYS_CACHELINE_SIZE));
      memcpy((void*)add, (void*)0x1000000, size);
      flush_cache(add, ROUND(size, CONFIG_SYS_CACHELINE_SIZE));//
@@ -398,7 +414,7 @@ diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230
  }
  int k230_display_logo(void)
  {
-@@ -246,6 +312,21 @@
+@@ -246,6 +328,21 @@
                    8, 48, 52, 1402,
                     1280, 6, 16, 100 },
      };
@@ -420,7 +436,7 @@ diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230
  #else
      info = (k_connector_info){
          0,
-@@ -261,7 +342,8 @@
+@@ -261,7 +358,8 @@
      };
  #endif
  
@@ -430,26 +446,6 @@ diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230
  
      sysctl_pwr_set_power(SYSCTL_PD_DISP, true);
      st7701_init(&info);
-@@ -289,15 +371,15 @@
- 
- /*
- usb start;dhcp;
--tftp 0x1000000 192.168.1.2:wjx/disney_800x480_nv12.yuv ;
--tftp 0x100000 192.168.1.2:wjx/display_logo.bin;cp.b 0x100000 0x80200000 0x100000;
-+tftp 0x1000000 10.10.1.94:wjx/disney_800x480_nv12.yuv ;
-+tftp 0x100000 10.10.1.94:wjx/display_logo.bin;cp.b 0x100000 0x80200000 0x100000;
- boot_baremetal 0 0x80200000 0x100000
- 
- 
- 
--usb start;dhcp; tftp 0x100000 192.168.1.2:wjx/u-boot.bin;cp.b 0x100000 0 0x100000;
-+usb start;dhcp; tftp 0x100000 10.10.1.94:wjx/u-boot.bin;cp.b 0x100000 0 0x100000;
- go 0;
--usb start;dhcp;  tftp 0x30000000 192.168.1.2:wjx/disney_800x480_nv12.yuv ; cp.b 0x30000000   0x3ff00000 0x100000;k230_logo;
-+usb start;dhcp;  tftp 0x30000000 10.10.1.94:wjx/disney_800x480_nv12.yuv ; cp.b 0x30000000   0x3ff00000 0x100000;k230_logo;
- k230_logo;
- uboot下更新vmlinux;更新设备树：
- 
 diff -urN a/board/canaan/common/logo/st7701.c b/board/canaan/common/logo/st7701.c
 --- a/board/canaan/common/logo/st7701.c	2026-09-22 12:59:56.134902883 -0500
 +++ b/board/canaan/common/logo/st7701.c	2026-09-22 12:59:56.257315854 -0500
