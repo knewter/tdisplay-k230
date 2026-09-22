@@ -26,9 +26,10 @@
 # `sysboot`. That is deferred until something boots at all, because a
 # bringup failure and a bootloader-configuration failure look identical from
 # a dark screen.
-{ pkgs, lib, k230Kernel, ... }:
+{ config, pkgs, lib, k230Kernel, ... }:
 
 {
+  imports = [ ./panel-console.nix ];
   # Mainline cannot boot this SoC -- no K230 device tree, no
   # SOC_CANAAN_K230 -- so the board runs the Xuantie kernel, built from
   # source. See nix/kernel.nix.
@@ -75,8 +76,8 @@
   # Two orderings in one definition, because Nix will not let the same
   # attribute be declared twice in one attrset.
   #
-  # console=tty0 FIRST, via mkBefore: it puts the kernel console on the
-  # panel for display/panel task 3.3. It must not be last, because the
+  # When k230.panelConsole is selected, console=tty0 goes FIRST via
+  # mkBefore. It must not be last, because the
   # LAST console= on the command line becomes /dev/console, and ttyS0 has
   # to stay primary -- losing the serial console on a board whose panel is
   # still being brought up would be a bad trade.
@@ -88,7 +89,8 @@
       # consoleblank=0: Linux blanks the console after 10 minutes idle,
       # and nothing writes to tty0 once boot finishes, so the panel goes
       # dark and looks broken. It is not.
-      (lib.mkBefore [ "console=tty0" "consoleblank=0" ])
+      (lib.mkBefore (lib.optional config.k230.panelConsole "console=tty0"
+        ++ [ "consoleblank=0" ]))
       (lib.mkAfter [ "loglevel=7" ])
     ];
 

@@ -82,3 +82,16 @@ sectors 0-102399 and two FAT32 partitions at 102400 and 163840
 (docs/findings.md). Stage 1 is configured differently for the two payload
 types, which is why the Linux SDK's build was chosen over extracting firmware
 from the RT-Smart image.
+
+=== Source splash integration (2026-09-22; board trial pending) ===
+The RM69A10 U-Boot logo path optionally reads /logo.xrgb from the boot
+partition before loading Linux. Format:568x1232 XRGB8888, little-endian
+B,G,R,X bytes, exactly2799104 bytes. The address comes from
+nix/boot-splash.nix (currently0x10000000), selected against
+docs/evidence/stage1-memory-map.md. The loader checks ext4size before writing
+and limits ext4load to the exact size; a missing or malformed asset skips
+the logo without preventing normal boot.
+k230.panelConsole=true omits logo.xrgb and puts console=tty0 first in the
+command line, retaining the serial console as primary. The default false
+includes the asset and leaves kernel text on serial. Hardware splash and
+Linux handoff remain unverified; this describes the source configuration.

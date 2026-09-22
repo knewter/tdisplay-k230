@@ -63,7 +63,10 @@
         # can be measured as a delta against it.
         k230-console = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit (self) k230Kernel; };
-          modules = [ ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix ];
+          modules = [
+            ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix
+            { k230.panelConsole = true; }
+          ];
         };
         k230-qemu = nixpkgs.lib.nixosSystem {
           modules = [ ./nix/k230.nix ./nix/qemu.nix ];
@@ -156,6 +159,8 @@
           in
           pkgs.callPackage ./nix/sd-image.nix {
             inherit stage1 rootfsImage;
+            splashImage = if cfg.k230.panelConsole then null
+              else self.packages.${buildSystem}.bootSplashImage;
             initrd = "${cfg.system.build.toplevel}/initrd";
             kernel = self.k230Kernel.kernel;
             inherit (self.packages.${buildSystem}) deviceTree;

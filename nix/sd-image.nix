@@ -32,6 +32,7 @@
 , dtbName ? "k230-tdisplay.dtb"   # the bare filename, in ${deviceTree}
 , bootargs          # the kernel command line, baked into the DTB
 , initrd            # NixOS stage 1 -- without it /etc is never assembled
+, splashImage ? null # Native asset output; null restores panel-console boot.
 }:
 
 let
@@ -82,6 +83,10 @@ stdenvNoCC.mkDerivation {
     echo "--- boot partition"
     mkdir -p boot
     cp ${kernel}/Image boot/Image
+    ${lib.optionalString (splashImage != null) ''
+      cp ${splashImage}/logo.xrgb boot/logo.xrgb
+      test "$(stat -c %s boot/logo.xrgb)" -eq 2799104
+    ''}
     cp ${deviceTree}/${dtbName} boot/${dtbName}
     chmod +w boot/${dtbName}
 
