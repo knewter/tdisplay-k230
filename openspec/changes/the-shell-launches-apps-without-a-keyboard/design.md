@@ -16,8 +16,8 @@ fourth 128-pixel block cannot present an attractive handheld launcher. See
 
 **Non-Goals:**
 
-- A general application catalogue, desktop-file parsing, search, icons from a
-  theme, or session/onboarding framework.
+- A general desktop environment, GTK/Qt widget stack, shell evaluation of
+  desktop entries, or session/onboarding framework.
 - Replacing swaybar controls, changing keyboard/window/system behavior, or
   claiming physical-touch proof from host tests.
 
@@ -46,11 +46,14 @@ known app IDs and Foot profiles as the bar path; it never accepts arbitrary
 commands. Terminal and Monitor query Sway then focus-or-start. New terminal
 always starts another readable Foot window.
 
-**Reject GTK/Qt and a terminal-only UI.** GTK/Qt would add a large dependency
-and rendering surface for four fixed actions. Foot's mouse reporting is not a
-reliable native touch control plane and would turn a launcher into a terminal
-workflow. A tiny native client makes touch routing direct while keeping the
-installed shell stack intact.
+**Use GLib for installed applications and Pango/Cairo for text.**
+GDesktopAppInfo applies XDG precedence, Hidden/NoDisplay/TryExec filtering,
+and parses/launches Exec without shell evaluation. The service exports the
+shell profile XDG data directories and a Sway desktop identity. Pango/Cairo,
+already in the closure, renders arbitrary application names. Entries refresh
+at each Apps open and paginate after the built-ins. Terminal=true is routed
+through the existing Foot bridge; unsupported launches show an in-surface
+error.
 
 ## Risks / Trade-offs
 

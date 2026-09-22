@@ -1,3 +1,7 @@
+## Purpose
+
+Provides the handheld Sway shell with keyboard-free application discovery and launch.
+
 ## ADDED Requirements
 
 ### Requirement: Apps opens a portrait touch launcher

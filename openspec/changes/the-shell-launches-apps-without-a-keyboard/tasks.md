@@ -12,20 +12,28 @@
   Keyboard, Windows/Home, or System bar controls. Verify the menu protocol
   test covers the start action.
 
-## 2. Laptop package verification
+## 2. Installed application catalogue
 
-- [x] 2.1 Build the named launcher derivation with `nix build
+- [ ] 2.1 Use GDesktopAppInfo/GAppInfo for refresh-on-open XDG discovery,
+filtering, precedence, safe launch, and pagination; retain built-ins and test
+fixtures for hidden/overridden/space-containing Exec entries.
+- [ ] 2.2 Render dynamic labels with Pango/Cairo and bridge Terminal=true to
+Foot; verify graceful unsupported launch behavior.
+
+## 3. Laptop package verification
+
+- [x] 3.1 Build the named launcher derivation with `nix build
   .#touch-launcher --option max-jobs 2 --option cores 8` after the coordinated
   builder slot is idle; inspect `nix path-info -Sh .#touch-launcher`. This is
   a cross-package claim, not hardware proof.
-- [x] 2.2 Run `python3 tests/test_touch_menu.py`, source-level launcher tests,
+- [x] 3.2 Run `python3 tests/test_touch_menu.py`, source-level launcher tests,
   `nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`,
   and `openspec validate the-shell-launches-apps-without-a-keyboard --strict`.
   Record their laptop-only result and a labelled layout preview.
 
-## 3. Physical verification
+## 4. Physical verification
 
-- [ ] 3.1 **Hardware.** On the panel, tap Apps, Terminal, Monitor, New
+- [ ] 4.1 **Hardware.** On the panel, tap Apps, Terminal, Monitor, New
   terminal, and Back. Record whether each interaction was real glass touch or
   injected, with camera capture and a committed manifest under
   `docs/evidence/shell-features/`. Release the board after capture.
