@@ -51,12 +51,18 @@ this change**: its `k230` machine models neither stage 1 nor a display.
 
 ## 5. Something on the Linux side owns the screen
 
-- [ ] 5.1 Measure what Plymouth costs to cross-build for riscv64 against the pinned nixpkgs with the same method as `docs/display-environment-options.md`: derivations to build and unpacked size for `boot.plymouth.enable = true` with a minimal theme, on top of the existing closure. Verify by committing `docs/evidence/boot-splash-owner.md` with the numbers beside the shell stack's 89 / 875 MiB budget and a one-line verdict applying the design's rule — laptop claim
+- [x] 5.1 Measure what Plymouth costs to cross-build for riscv64 against the pinned nixpkgs with the same method as `docs/display-environment-options.md`: derivations to build and unpacked size for `boot.plymouth.enable = true` with a minimal theme, on top of the existing closure. Verify by committing `docs/evidence/boot-splash-owner.md` with the numbers beside the shell stack's 89 / 875 MiB budget and a one-line verdict applying the design's rule — laptop claim
 - [ ] 5.2 If 5.1 is within budget: enable `boot.plymouth` in `nix/hardware.nix` with a theme whose first frame is the 3.3 asset, running from the systemd initrd, and remove `console=tty0` from the default command line. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and `lsinitrd`-equivalent inspection of the initrd showing `plymouthd` and the theme present — laptop claim
 - [ ] 5.3 If 5.1 is over budget: add a minimal DRM splash program to the closure — opens `/dev/dri/card0`, sets the mode with a dumb buffer holding the 3.3 asset, holds it, and exits on a signal from the shell's session without clearing — and start it as the first thing in the main system. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and the unit present in the closure; record in `docs/evidence/boot-splash-owner.md` that there is no animation and why — laptop claim
 - [ ] 5.4 **Hardware.** Film a complete boot from power-on to the owner's last frame — and, if `the-screen-runs-a-shell-not-a-console` has landed, to the compositor's first frame. Verify by committing the frame timings to `docs/evidence/boot-splash-handoff.md` showing no dark frame between the splash appearing and the last frame filmed, and the first Linux frame indistinguishable from the last stage 1 frame. Release the board — hardware claim
 
 **Proves group 5 — hardware claim.** The filmed boot in `docs/evidence/boot-splash-handoff.md`. The laptop half is `nix build .#nixosConfigurations.k230.config.system.build.toplevel` with the measurement committed.
+
+Task 5.1 measured 76 derivations / 897.3 MiB fetched-unpacked with the
+minimal built-in spinner theme on 2026-09-22. The written 875 MiB budget is
+exceeded by 22.3 MiB, selecting task 5.3 rather than 5.2. This is an
+incremental dry-run cost, not installed closure size; see
+`docs/evidence/boot-splash-owner.md`.
 
 ## 6. The switch, and the specs
 
