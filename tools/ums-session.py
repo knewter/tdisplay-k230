@@ -27,6 +27,7 @@ Linux came back, 3 when it did not enumerate but Linux came back, 1 when
 the board was not returned to Linux (say so loudly; the board is shared).
 """
 import argparse, hashlib, os, subprocess, sys, time
+from pathlib import Path
 
 try:
     import serial
@@ -38,6 +39,20 @@ CTRL_C = b"\x03"
 PROMPT = b"K230# "
 LOGIN = b"nixos login"
 UBOOT_SLOT = 2 * 1024 * 1024
+UMS_DISK = "usb-Linux_UMS_disk_0-0:0"
+
+
+def validate_flash_target(disks, properties, sectors, expected_sectors):
+    """Fail closed before auto-confirming the board's flash.sh prompt."""
+    if disks != {UMS_DISK}:
+        raise ValueError(f"expected only {UMS_DISK}, discovered {sorted(disks)}")
+    expected = {"DEVTYPE": "disk", "ID_BUS": "usb",
+                "ID_VENDOR_ID": "29f1", "ID_MODEL_ID": "0230"}
+    for key, value in expected.items():
+        if properties.get(key) != value:
+            raise ValueError(f"unexpected {key}: {properties.get(key)!r}")
+    if expected_sectors <= 0 or sectors != expected_sectors:
+        raise ValueError(f"card size {sectors} sectors != expected {expected_sectors}")
 
 
 class Session:
@@ -163,6 +178,8 @@ def main():
                          "it, then reset the board and verify the boot: login "
                          "prompt, the board hashing its own stage-1 slots, the "
                          "DSI PHY line. Only with explicit authorisation")
+    ap.add_argument("--expected-sectors", type=int,
+                    help="required with --flash: card size previously observed on the board")
     ap.add_argument("--regs", action="store_true",
                     help="dump usbotg0's DWC2 OTG/device registers with md.l "
                          "before ums and again right after Ctrl-C. GOTGCTL "
@@ -170,6 +187,11 @@ def main():
                          "whether the PHY sees VBUS from the cable. DCTL bit 1 "
                          "is soft-disconnect: whether D+ was ever pulled up")
     args = ap.parse_args()
+    if args.flash:
+        if not args.expected_sectors or args.expected_sectors <= 0:
+            ap.error("--flash requires a positive --expected-sectors from the board")
+        if not os.path.isfile(args.flash) or os.path.getsize(args.flash) == 0:
+            ap.error("--flash requires an existing, nonempty image")
 
     s = Session(args.dev, args.baud, args.out)
     status = 1
@@ -349,8 +371,20 @@ def main():
             status = 3
 
         wrote = False
-        if args.flash and len(new) == 1:
-            byid = f"/dev/disk/by-id/{sorted(new)[0]}"
+        if args.flash:
+            byid = f"/dev/disk/by-id/{UMS_DISK}"
+            try:
+                properties = subprocess.run(
+                    ["udevadm", "info", "--query=property", "--name", byid],
+                    check=True, capture_output=True, text=True, timeout=10)
+                props = dict(line.split("=", 1) for line in properties.stdout.splitlines() if "=" in line)
+                real = os.path.realpath(byid)
+                sectors = int(Path(f"/sys/class/block/{os.path.basename(real)}/size").read_text())
+                validate_flash_target(new, props, sectors, args.expected_sectors)
+            except (ValueError, OSError, subprocess.SubprocessError) as exc:
+                s.note(f"WRITE REFUSED: {exc}; board remains in ums, nothing written")
+                status = 1
+                return
             size = os.path.getsize(args.flash)
             s.note(f"WRITE: tools/flash.sh {args.flash} {byid} ({size} bytes); confirmation = last 12 chars of the by-id path, supplied by this tool")
             proc = subprocess.Popen(["./tools/flash.sh", args.flash, byid], stdin=subprocess.PIPE,
@@ -381,6 +415,28 @@ def main():
                 status = 1
                 return
 
+            # Before boot, every image byte must still match. After boot,
+            # env_save and ext4 legitimately change bytes, so verify now.
+            s.note(f"verifying all {size} written bytes before leaving ums")
+            verify = subprocess.Popen(["cmp", "-n", str(size), args.flash, byid],
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            started = time.time(); last = started
+            while verify.poll() is None:
+                s.pump()
+                if time.time() - last >= 30:
+                    last = time.time()
+                    s.note(f"readback still running, elapsed {last - started:.0f}s")
+                if time.time() - started > 900:
+                    verify.kill()
+                    break
+            output, _ = verify.communicate()
+            s.log.write(output)
+            if verify.returncode:
+                s.note(f"READBACK FAILED (exit {verify.returncode}); board remains in ums for recovery")
+                status = 1
+                return
+            s.note(f"readback PASS: all {size} bytes identical, {time.time() - started:.1f}s")
+
         # 4. Out of ums.
         s.note("sending Ctrl-C to leave ums")
         s.buf = b""
@@ -404,9 +460,8 @@ def main():
             s.note("Linux login prompt reached; the board is back in Linux")
             if wrote:
                 time.sleep(6); s.pump()
-                s.note("post-write checks on the board: the card's own stage-1 slots and the DSI PHY line")
-                for c in ("dd if=/dev/mmcblk1 bs=1 skip=$((0x100000)) count=223348 2>/dev/null | sha256sum",
-                          "dd if=/dev/mmcblk1 bs=1 skip=$((0x200000)) count=350046 2>/dev/null | sha256sum",
+                s.note("post-write diagnostics; full image equality was checked before boot")
+                for c in ("readlink /run/current-system",
                           "dmesg | grep -m1 hsfreqrange",
                           "dmesg | grep -c 'BTF mismatch'",
                           "uptime"):
