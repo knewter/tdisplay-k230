@@ -150,7 +150,7 @@ binary any more.
 
 Optional, and only after group 3 has settled whether it is needed.
 
-- [ ] 6.1 Add a `.bind` to `drivers/usb/gadget/dwc2_udc_otg.c` returning
+- [x] 6.1 Add a `.bind` to `drivers/usb/gadget/dwc2_udc_otg.c` returning
       `-ENODEV` unless `dr_mode` is `peripheral` or `otg`, set
       `dr_mode = "host"` on `&usbotg1`, and re-enable `CONFIG_USB_DWC2`.
       Done when the patch is a file in this repository, not a hand edit in
