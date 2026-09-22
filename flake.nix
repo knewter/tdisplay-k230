@@ -58,10 +58,10 @@
             ./nix/shell.nix
             {
               k230.shell = { enable = true; probes = true; debugLog = true; };
-              # The logo is proven in U-Boot, but its Linux handoff currently
-              # corrupts physical scanout. Keep the daily shell image usable
-              # until both owners pass the recorded handoff test.
-              k230.panelConsole = true;
+              # Isolated diagnostic image: exercise first-enable preservation
+              # with the immutable DRM owner and automatic shell handoff.
+              # Do not promote this default without physical repeat evidence.
+              k230.panelConsole = false;
             }
           ];
         };
