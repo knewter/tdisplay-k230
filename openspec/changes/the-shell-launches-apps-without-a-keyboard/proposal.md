@@ -1,21 +1,20 @@
 ## Why
 
-The persistent bar already opens Terminal and Monitor, but its Apps page is a
-plain utility list. A person holding the 568×1232 device should be able to
-recognise and launch the useful installed applications quickly, without a
-keyboard or a general desktop launcher.
+A four-button status row is an entry point, but not a pleasant application
+launcher on a 568×1232 handheld. Opening an app needs a full portrait surface
+with enough hierarchy, labels, and spacing to be read and tapped comfortably.
 
 ## What Changes
 
-- Turn the existing Apps page into a compact, visually grouped launcher with
-  large Terminal, Monitor, New terminal, and Back targets.
-- Give the persistent controls and launcher entries distinct, restrained
-  colours while retaining their current names, target sizes, and i3bar touch
-  click protocol.
-- Keep the launcher fixed to applications this NixOS shell provides; document
-  why generic desktop-file discovery is not part of this small Pixman session.
-- Extend menu protocol/action tests for the new target and preserve the
-  existing Keyboard, Windows/Home, and System paths.
+- Keep the persistent swaybar controls as the always-available route to Apps,
+  Windows, Keyboard, and System.
+- Make Apps open a lightweight native Wayland portrait launcher with a title,
+  large Terminal, Monitor, and New terminal cards, and an explicit Back
+  control.
+- Add a small unprivileged action bridge so launcher cards preserve the
+  terminal and monitor focus-or-start behavior already used by the menu.
+- Package the launcher from local C source with Wayland SHM and layer-shell;
+  do not add GTK, Qt, a desktop-file scanner, or a session service.
 
 ## Capabilities
 
@@ -25,12 +24,13 @@ _None._
 
 ### Modified Capabilities
 
-- `runtime/shell`: The cable-free session gains a recognisable Apps launcher
-  with direct touch actions for its installed terminal and monitor.
+- `runtime/shell`: The cable-free session gains a native portrait Apps surface
+  for its installed terminal and monitor.
 
 ## Impact
 
-The change affects `nix/touch-menu.sh`, its wrapper in `nix/shell.nix`, menu
-protocol tests, and the `runtime/shell` OpenSpec delta. It adds no package or
-desktop environment dependency. It can be tested on a laptop; a real-glass
-usability check remains hardware work for the coordinator.
+The change affects the shell Nix module, its bar action path, a small local
+Wayland client, touch-menu tests, and the `runtime/shell` OpenSpec delta. It
+adds only the Wayland client libraries and protocol build tools already in the
+shell's dependency family. Package build evidence can be collected on a
+laptop; real-glass usability remains coordinator hardware work.

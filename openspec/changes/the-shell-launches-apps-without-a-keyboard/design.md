@@ -1,63 +1,69 @@
 ## Context
 
-The existing Nix/userspace shell draws one 56-pixel swaybar row and routes its
-click JSON into `nix/touch-menu.sh`. It already launches or focuses Terminal
-and Monitor, pages real Sway windows, toggles wvkbd, and gates power actions.
-Physical evidence shows the bar can be reached with injected input; real-glass
-launcher use remains unverified.
+The persistent 56-pixel swaybar is the proven click route for Apps, Windows,
+Keyboard, and System. Its prior Apps row made useful actions reachable, but a
+fourth 128-pixel block cannot present an attractive handheld launcher. See
+`proposal.md` for the user-facing motivation.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Make Apps read as an application launcher rather than a utility submenu.
-- Keep every target within the 568-pixel row, at least 56 pixels high, and
-  usable with Pixman's small CPU budget.
-- Retain all existing menu pages and their recovery/security behaviour.
+- Open a full portrait launcher beneath the persistent bar.
+- Make Terminal, Monitor, New terminal, and Back large named touch targets.
+- Retain focus-or-start recovery and avoid adding a long-lived service.
+- Keep the implementation small enough for the Pixman RISC-V session.
 
 **Non-Goals:**
 
-- Generic `.desktop` discovery, a searchable launcher, icon themes, or a
-  second GUI toolkit.
-- Adding applications or changing the keyboard, window paging, or system
-  authorization policy.
-- Claiming real-glass verification from protocol tests or injected input.
+- A general application catalogue, desktop-file parsing, search, icons from a
+  theme, or session/onboarding framework.
+- Replacing swaybar controls, changing keyboard/window/system behavior, or
+  claiming physical-touch proof from host tests.
 
 ## Decisions
 
-**Use the existing i3bar state machine.** Four 128-pixel blocks total 512
-pixels, leaving swaybar padding inside the 568-pixel display. The Apps page
-therefore presents Terminal, Monitor, New terminal, and Back in one stable
-row. Each app entry receives a restrained background colour and short label;
-the same visual treatment distinguishes the home controls. This has no new
-process, protocol, or dependency.
+**Use a local Wayland SHM layer-shell client.** The client creates an overlay
+surface with a 56-pixel top margin, so Sway's persistent bar remains visible.
+It draws a title and four high-contrast portrait cards into one ARGB SHM
+buffer and listens for both `wl_touch` and `wl_pointer` release events. This
+uses `wayland-client` and protocol XML already available through the pinned
+Wayland/wlroots stack. It does not need a widget toolkit, GPU, font catalogue,
+or extra daemon. The fixed bitmap labels are deliberately local and
+predictable.
 
-**Launch a fixed, known set.** Terminal and Monitor are explicitly supplied by
-the shell Nix module and have tested app IDs/configuration. Desktop-file
-scanning would make the launcher depend on uninstalled metadata and parse
-arbitrary Exec lines; it would not discover the two terminal profiles in a
-useful way. Windows remains the dynamic discovery page because Sway's tree is
-the authoritative list of running windows.
+**Retain swaybar as the entry point.** Apps launches the client in the session;
+Windows, Keyboard, and System retain their current status-command state
+machine. The surface's Back card closes it, returning to the bar's home
+controls.
 
-**Make New terminal deliberate.** Terminal retains focus-or-start behavior for
-recovery. A separate New terminal action avoids overloading it and creates a
-second tabbed window for a task that needs one. It uses the same readable Foot
-configuration as Terminal.
+**Use a narrow action bridge.** The client invokes one wrapper-owned helper
+with `terminal`, `monitor`, or `new-terminal`. The helper contains the same
+known app IDs and Foot profiles as the bar path; it never accepts arbitrary
+commands. Terminal and Monitor query Sway then focus-or-start. New terminal
+always starts another readable Foot window.
+
+**Reject GTK/Qt and a terminal-only UI.** GTK/Qt would add a large dependency
+and rendering surface for four fixed actions. Foot's mouse reporting is not a
+reliable native touch control plane and would turn a launcher into a terminal
+workflow. A tiny native client makes touch routing direct while keeping the
+installed shell stack intact.
 
 ## Risks / Trade-offs
 
-- [Colours differ between panels/themes] → Labels and target geometry carry the
-  meaning; colours are supplementary and use high-contrast text.
-- [The menu row is still not a full-screen grid] → It keeps 56-pixel targets
-  that current swaybar touch handling already supports, without a toolkit or
-  compositor change.
-- [New terminal can create many windows] → Windows continues to enumerate and
-  focus all actual Sway containers.
+- [Layer-shell input/configuration differs on the board] → fail clearly when
+  required globals are absent; leave the bar controls available and record
+  real-glass results separately.
+- [The fixed bitmap text is less flexible than a toolkit] → labels are short,
+  large, high contrast, and source-controlled; no font dependency is added.
+- [An action helper duplicates small focus-or-start logic] → it accepts only
+  three fixed action names and shares the same Nix-provided binaries/configs.
+- [A Wayland client adds a small closure] → build the named package separately
+  and report its closure before image integration.
 
 ## Migration Plan
 
-Deploy by rebuilding the existing shell configuration. Removing the launcher
-entries reverts to the current Apps row; no persisted state, data, or system
-privilege changes. The coordinator can verify on glass by filming Apps,
-Terminal, Monitor, New terminal, and Back, recording whether the interaction
-was real touch or injected.
+Deploy via the normal shell system closure. Apps starts the launcher only in
+the Sway session; closing it or an unavailable client leaves the bar usable.
+Removing the package/wrapper restores the bar-only Apps path and leaves no
+state or privilege change.
