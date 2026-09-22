@@ -1201,7 +1201,7 @@ the address selected in `docs/evidence/stage1-memory-map.md`; LILYGO's
 
 Before a logo is loaded to the fixed reservation, the port uses U-Boot
 `ext4size` to require the exact 2,799,104-byte XRGB file. Only then does a
-bounded `ext4load` request that exact byte count and recheck `filesize`.
+bounded `ext4load` request that exact hexadecimal byte count (`0x2ab600`) and recheck `filesize`.
 Command construction uses bounded `snprintf`. A missing, malformed, or
 oversized file still skips the logo and continues booting; it cannot overwrite
 memory beyond the planned reservation.
