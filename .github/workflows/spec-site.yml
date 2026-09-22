@@ -1,4 +1,4 @@
-# Build the spec site and publish it to GitHub Pages on every push to main,
+# Build the spec site and publish it to GitHub Pages on every push to master,
 # so https://knewter.github.io/tdisplay-k230/ says what the specs say.
 #
 # The build fails -- and so does this workflow -- when a requirement declares
@@ -8,7 +8,7 @@ name: Spec site
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
