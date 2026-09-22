@@ -170,7 +170,7 @@ static int read_asset(uint8_t **asset) {
         ssize_t read_bytes = read(fd, *asset + at, SPLASH_BYTES - at);
         if (read_bytes < 0 && errno == EINTR)
             continue;
-        if (read_bytes <= 0) { if (read_bytes == 0) errno = EIO; fail("read splash asset"); free(*asset); close(fd); return -1; }
+        if (read_bytes <= 0) { if (read_bytes == 0) errno = EIO; fail("read splash asset"); free(*asset); *asset = NULL; close(fd); return -1; }
         at += (size_t)read_bytes;
     }
     close(fd);
