@@ -44,10 +44,9 @@ let
   # (swaybar/input.c wl_touch_up -> process_hotspots ->
   # block_hotspot_callback), but not to a `bindsym` mouse binding.  This
   # little, deliberately boring, state machine is therefore the board's
-  # touch launcher. `min_width` gives each of the four primary controls 142
-  # px of the 568 px display and the 56 px bar gives them a finger-sized
-  # height. It needs no gesture daemon, physical buttons, or touch-hostile
-  # launcher.
+  # touch launcher. Four 128 px primary controls plus swaybar's normal text
+  # padding fit inside 568 px; each is 56 px high. It needs no gesture daemon,
+  # physical buttons, or touch-hostile launcher.
   terminalFootConfig = pkgs.writeText "k230-terminal-foot.ini" ''
     font=DejaVu Sans Mono:size=15
     app-id=k230-terminal
@@ -56,63 +55,20 @@ let
     font=DejaVu Sans Mono:size=15
     app-id=k230-monitor
   '';
-  touchMenu = pkgs.writeShellScript "k230-touch-menu" ''
-    page=home
-
-    emit() {
-      printf '{"version":1,"click_events":true}\n[\n'
-      case "$page" in
-        home)
-          printf '[{"name":"apps","full_text":"Apps","min_width":142,"align":"center","separator":false},{"name":"windows","full_text":"Windows/Home","min_width":142,"align":"center","separator":false},{"name":"keyboard","full_text":"Keyboard","min_width":142,"align":"center","separator":false},{"name":"system","full_text":"System","min_width":142,"align":"center","separator":false}],\n'
-          ;;
-        apps)
-          printf '[{"name":"terminal","full_text":"Terminal","min_width":189,"align":"center","separator":false},{"name":"monitor","full_text":"System monitor","min_width":189,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":189,"align":"center","separator":false}],\n'
-          ;;
-        windows)
-          printf '[{"name":"terminal","full_text":"Terminal","min_width":142,"align":"center","separator":false},{"name":"monitor","full_text":"Monitor","min_width":142,"align":"center","separator":false},{"name":"home","full_text":"Home","min_width":142,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":142,"align":"center","separator":false}],\n'
-          ;;
-        system)
-          printf '[{"name":"reboot","full_text":"Reboot","min_width":189,"align":"center","separator":false},{"name":"poweroff","full_text":"Power off","min_width":189,"align":"center","separator":false},{"name":"back","full_text":"Back","min_width":189,"align":"center","separator":false}],\n'
-          ;;
-        confirm-reboot)
-          printf '[{"name":"confirm-reboot","full_text":"Confirm reboot","min_width":284,"align":"center","separator":false},{"name":"cancel","full_text":"Cancel","min_width":284,"align":"center","separator":false}],\n'
-          ;;
-        confirm-poweroff)
-          printf '[{"name":"confirm-poweroff","full_text":"Confirm power off","min_width":284,"align":"center","separator":false},{"name":"cancel","full_text":"Cancel","min_width":284,"align":"center","separator":false}],\n'
-          ;;
-      esac
-    }
-
-    present_or_start() {
-      app_id="$1"
-      config="$2"
-      command="$3"
-      if ${pkgs.sway}/bin/swaymsg -t get_tree -r | ${pkgs.gnugrep}/bin/grep -q "\"app_id\": \"$app_id\""; then
-        ${pkgs.sway}/bin/swaymsg "[app_id=\"$app_id\"] focus" >/dev/null
-      else
-        # Starting the terminal here is also recovery: closing every foot
-        # window never strands a cable-free user outside an application.
-        ${pkgs.foot}/bin/foot --config "$config" $command >/dev/null 2>&1 &
-      fi
-    }
-
-    emit
-    while IFS= read -r line; do
-      case "$line" in
-        *'"name":"apps"'*) page=apps ;;
-        *'"name":"windows"'*) page=windows ;;
-        *'"name":"keyboard"'*) ${pkgs.procps}/bin/pkill -RTMIN -x wvkbd-mobintl ;;
-        *'"name":"system"'*) page=system ;;
-        *'"name":"terminal"'*|*'"name":"home"'*) present_or_start k230-terminal ${terminalFootConfig} ""; page=home ;;
-        *'"name":"monitor"'*) present_or_start k230-monitor ${monitorFootConfig} "-e ${pkgs.htop}/bin/htop"; page=home ;;
-        *'"name":"reboot"'*) page=confirm-reboot ;;
-        *'"name":"poweroff"'*) page=confirm-poweroff ;;
-        *'"name":"confirm-reboot"'*) exec ${pkgs.sudo}/bin/sudo -n ${pkgs.systemd}/bin/systemctl reboot ;;
-        *'"name":"confirm-poweroff"'*) exec ${pkgs.sudo}/bin/sudo -n ${pkgs.systemd}/bin/systemctl poweroff ;;
-        *'"name":"back"'*|*'"name":"cancel"'*) page=home ;;
-      esac
-      emit
-    done
+  touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
+    export K230_SWAYMSG=${sway}/bin/swaymsg
+    export K230_FOOT=${pkgs.foot}/bin/foot
+    export K230_HTOP=${pkgs.htop}/bin/htop
+    export K230_JQ=${pkgs.jq}/bin/jq
+    export K230_SED=${pkgs.gnused}/bin/sed
+    export K230_PKILL=${pkgs.procps}/bin/pkill
+    # NixOS makes sudo setuid only in this wrapper directory. A store path is
+    # deliberately non-setuid and cannot perform the confirmed system action.
+    export K230_SUDO=/run/wrappers/bin/sudo
+    export K230_SYSTEMCTL=${pkgs.systemd}/bin/systemctl
+    export K230_TERMINAL_CONFIG=${terminalFootConfig}
+    export K230_MONITOR_CONFIG=${monitorFootConfig}
+    exec ${pkgs.bash}/bin/bash ${./touch-menu.sh}
   '';
 
   # 568x1232 portrait, transform normal, scale 1: the panel's native mode
@@ -136,12 +92,18 @@ let
     default_border none
     font pango:DejaVu Sans Mono 15
     focus_follows_mouse no
+    # A 568 px panel cannot make two tiled terminals useful. New applications
+    # share a tabbed workspace; the touch menu can still focus any container.
+    workspace_layout tabbed
 
     bar {
       position top
       height 56
       font pango:DejaVu Sans Mono 16
-      status_command ${touchMenu}
+      # swaybar starts status_command with the Wayland display inherited from
+      # sway, so foot launched by the menu joins this session rather than a
+      # system service environment with no WAYLAND_DISPLAY.
+      status_command ${touchMenu}/bin/k230-touch-menu
       workspace_buttons no
       colors {
         statusline #ffffff
@@ -266,7 +228,7 @@ in
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
       };
-      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.sudo ];
+      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.jq pkgs.gnused ];
 
       serviceConfig = {
         User = "shell";

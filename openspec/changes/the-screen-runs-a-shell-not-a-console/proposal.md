@@ -90,9 +90,9 @@ Adds a NixOS module under `nix/` for the compositor stack and its session, and
 the packages it needs to the system closure. Nothing in the kernel or the device
 tree changes.
 
-<!-- UNVERIFIED: the recorded closure measurement predates the small `htop`
-utility added for the touch monitor control. Task 2.5 remeasures the enabled
-closure before the final build-cost claim is closed. -->
+<!-- UNVERIFIED: the recorded closure measurement predates the small `htop`,
+`jq`, and `gnused` utilities added for the touch controls. Task 2.5 remeasures
+the enabled closure before the final build-cost claim is closed. -->
 
 **Build cost, measured on `solomon` against the pinned nixpkgs, on top of the
 existing 1.2 GiB closure** (`docs/display-environment-options.md`):

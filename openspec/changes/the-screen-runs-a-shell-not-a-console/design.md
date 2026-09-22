@@ -110,10 +110,12 @@ a power button that raises the menu — none of which this board has.
 already turns a touchscreen release inside a status block into a JSON click
 event, which is the same proven path used to toggle wvkbd. A `status_command`
 can retain a small page state without a new GUI toolkit or a launcher whose
-touch behaviour has not been established. Four 142-pixel blocks in a 56-pixel
+touch behaviour has not been established. Four 128-pixel blocks, leaving room
+for swaybar's text padding, in a 56-pixel
 bar give Apps, Windows/Home, Keyboard, and System visible targets. Apps starts
-or focuses a readable `foot` terminal and a `htop` monitor; Windows/Home uses
-the same presence check so closing every terminal does not strand the user.
+or focuses a readable `foot` terminal and a `htop` monitor. Windows pages
+through actual sway containers and has Home, which uses the terminal presence
+check so closing every terminal does not strand the user.
 System changes to a confirmation page before its narrowly-authorized
 `systemctl reboot` or `systemctl poweroff`, and Cancel returns to the main
 page. This is SXMO-inspired interaction, not SXMO packaging.

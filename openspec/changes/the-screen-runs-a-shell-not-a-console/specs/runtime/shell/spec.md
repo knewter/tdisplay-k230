@@ -70,8 +70,8 @@ substituted paths, including Qt 6 and a second GCC cross-bootstrap
 ### Requirement: The shell's build cost is measured and recorded
 
 <!-- UNVERIFIED: `docs/evidence/shell-build.txt` measures sway, foot, wvkbd,
-and seatd, but predates the `htop` utility added for the touch monitor control.
-Task 2.5 must remeasure the enabled closure. -->
+and seatd, but predates the `htop`, `jq`, and `gnused` utilities added for the
+touch controls. Task 2.5 must remeasure the enabled closure. -->
 
 Every package this change adds is compiled for riscv64 without a native binary
 cache, so the cost of the shell SHALL be measured on the build host and
@@ -184,11 +184,12 @@ requirement. -->
 
 The shell SHALL keep a persistent touch bar with Apps, Windows/Home, Keyboard,
 and System controls. Its visible targets SHALL be at least 56 pixels high and
-the primary controls SHALL each be at least 142 pixels wide on the 568-pixel
+the primary controls SHALL each be at least 128 pixels wide on the 568-pixel
 panel. Apps SHALL start or focus a readable terminal and a system monitor
-without a physical keyboard. Windows/Home SHALL return to a running terminal
-or start one when it was closed. Keyboard SHALL summon or dismiss the on-screen
-keyboard. System SHALL offer reboot and power-off only after a second
+without a physical keyboard. Windows SHALL page through running sway windows,
+and its Home control SHALL return to a running terminal or start one when it
+was closed. Keyboard SHALL summon or dismiss the on-screen keyboard. System
+SHALL offer reboot and power-off only after a second
 confirmation page that includes Cancel.
 
 The session user SHALL have authority only for those two explicit `systemctl`
@@ -197,9 +198,11 @@ control.
 
 #### Scenario: A user returns to an application without a keyboard
 
-- **WHEN** the user taps Apps or Windows/Home and selects Terminal or Monitor
-- **THEN** the named running application is focused, or the terminal is started
-  when it had been closed, without serial or physical-keyboard input
+- **WHEN** the user taps Apps or Windows/Home and selects Terminal, Monitor, or
+  a listed sway window
+- **THEN** the named running application or window is focused, or Home starts
+  the terminal when it had been closed, without serial or physical-keyboard
+  input
 
 #### Scenario: A user chooses a system action by touch
 
