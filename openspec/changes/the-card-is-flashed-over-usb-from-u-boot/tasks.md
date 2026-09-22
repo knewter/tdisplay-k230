@@ -64,12 +64,12 @@ binary any more.
 
 ## 3. Prove it on the board
 
-- [ ] 3.1 Write the new stage 1 to the card in a reader. This is the last
+- [x] 3.1 Write the new stage 1 to the card in a reader. This is the last
       mandatory card-reader cycle. **Hardware.**
       `./tools/flash-latest.sh`
       Done when the board still boots Linux exactly as before — the gadget
       must not have broken the normal path.
-- [ ] 3.2 Record what is bound now, as the after half of 1.2. **Hardware
+- [x] 3.2 Record what is bound now, as the after half of 1.2. **Hardware
       proof.**
       `./tools/console.py /dev/ttyACM0 --wait=3 "dm tree"`
       Done when the gadget driver is bound to `usb-otg@91500000` and the
@@ -82,6 +82,7 @@ binary any more.
       Done when a by-id path exists whose size matches 1.4, and both the
       console and the host output are in
       `docs/evidence/uboot-ums-hardware.txt`.
+      - Not ticked, 2026-09-22: `docs/evidence/uboot-ums-enumerate.txt` — `ums 0 mmc 1` runs on the board (`UMS: LUN 0, dev mmc 1 ... count 0xee4c000`, the 119.1 GiB card) and was held for 300 s, but the host saw no new USB device. Whether the J3 cable was connected during the window is not knowable from the console; if it was, the next thing to try is `u-boot,force-b-session-valid` / `u-boot,force-vbus-detection` on `&usbotg0`, which costs a rebuild and a card write.
 - [ ] 3.4 Read the card back over `ums` and compare it against the image that
       was written in 3.1. **Hardware proof.**
       `sudo cmp -n $(stat -c %s "$IMG") "$IMG" /dev/disk/by-id/<ums path>`
