@@ -1,5 +1,5 @@
-# wlfps: a frame-callback counter for measuring the compositor's real frame
-# rate on the panel (runtime/shell task 6.1). See wlfps.c for the method.
+# wlfps: a frame-callback cadence probe supporting runtime/shell task 6.1.
+# This is not physical presentation timing. See wlfps.c for the limits.
 #
 # The layer-shell protocol XML is taken from the same wlroots source the
 # compositor is built from, so client and compositor cannot disagree about

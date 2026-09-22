@@ -1,19 +1,17 @@
-/* wlfps: measure how often a wlroots compositor actually presents a frame.
+/* wlfps: measure Wayland frame-throttling callback cadence under load.
  *
  * It maps one small layer-shell surface (an 8x8 red square in the overlay
  * layer, exclusive zone 0, so it changes no layout) and then does nothing but
  * request wl_surface.frame callbacks. A wlroots-scene compositor such as sway
- * sends `done` to every visible surface once per output frame it renders
- * (sway/desktop/output.c: output_repaint_timer_handler -> send_frame_done),
- * so the interval between two `done`s is the compositor's real frame period
- * under whatever load the rest of the screen is generating. The timestamp in
- * the callback is the compositor's own (milliseconds, CLOCK_MONOTONIC), so
- * the measurement does not depend on this client being scheduled promptly.
+ * sends `done` when it is ready for the client to draw another frame.
+ * Core Wayland defines this as a throttling hint, not presentation feedback.
+ * The callback timestamp is in milliseconds with an unspecified epoch; it
+ * must not be treated as CLOCK_MONOTONIC or a physical scanout timestamp.
  *
- * Every --interval seconds it prints frames, fps and the mean / min / p95 /
- * max frame interval. It says nothing about how long a frame took to render,
- * only how often one was presented; combine with the compositor's CPU time
- * over the same window for cost per frame.
+ * Every --interval seconds it prints callbacks, callbacks/s and their mean /
+ * min / p95 / max interval. It cannot measure rendering duration, scanout,
+ * dropped frames, or touch-to-photon latency. Pair it with CPU/RSS and camera
+ * evidence; presentation timing would require wp_presentation feedback.
  *
  *   wlfps [--interval S] [--duration S]
  */
@@ -58,6 +56,7 @@ static size_t nsamples;
 static double window_start;
 static double run_start;
 static unsigned long total_frames;
+static unsigned long window_callbacks;
 
 static double now_s(void) {
 	struct timespec ts;
@@ -73,22 +72,23 @@ static int cmp_u32(const void *a, const void *b) {
 static void report(void) {
 	double now = now_s();
 	double span = now - window_start;
+	printf("t=%6.1fs callbacks=%lu callbacks/s=%.1f ", now - run_start,
+		window_callbacks, span > 0 ? window_callbacks / span : 0.0);
 	if (nsamples == 0) {
-		printf("t=%6.1fs frames=0 in %.1fs (no frame callbacks: compositor idle)\n",
-			now - run_start, span);
+		printf("(insufficient interval samples; no callback does not establish idle)\n");
 	} else {
 		qsort(samples, nsamples, sizeof(samples[0]), cmp_u32);
 		unsigned long long sum = 0;
 		for (size_t i = 0; i < nsamples; i++) sum += samples[i];
 		double mean = (double)sum / nsamples;
-		uint32_t p95 = samples[(size_t)((nsamples - 1) * 0.95)];
-		/* nsamples is intervals; frames in the window is intervals + 1 */
-		printf("t=%6.1fs frames=%zu fps=%.1f interval ms: mean=%.1f min=%u p95=%u max=%u\n",
-			now - run_start, nsamples + 1, (nsamples + 1) / span, mean,
-			samples[0], p95, samples[nsamples - 1]);
+		uint32_t p95 = samples[(nsamples * 95 + 99) / 100 - 1];
+		printf("callback interval ms: mean=%.1f min=%u p95=%u max=%u samples=%zu\n", mean,
+			samples[0], p95, samples[nsamples - 1], nsamples);
 	}
 	fflush(stdout);
 	nsamples = 0;
+	window_callbacks = 0;
+	have_last = false; /* Do not include an interval spanning two windows. */
 	window_start = now;
 }
 
@@ -97,6 +97,7 @@ static void request_frame(void);
 static void frame_done(void *data, struct wl_callback *cb, uint32_t time_ms) {
 	wl_callback_destroy(cb);
 	total_frames++;
+	window_callbacks++;
 	if (have_last) {
 		uint32_t dt = time_ms - last_ms;
 		if (nsamples < MAX_SAMPLES) samples[nsamples++] = dt;
@@ -116,7 +117,7 @@ static void request_frame(void) {
 
 static struct wl_buffer *make_buffer(void) {
 	int stride = SIDE * 4, size = stride * SIDE;
-	char name[] = "/wlfps-XXXXXX";
+	char name[64];
 	int fd = -1;
 	for (int i = 0; i < 100 && fd < 0; i++) {
 		snprintf(name, sizeof name, "/wlfps-%d-%d", (int)getpid(), i);
@@ -188,6 +189,10 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 	}
+	if (interval_s <= 0 || duration_s < 0) {
+		fprintf(stderr, "wlfps: interval must be positive and duration nonnegative\n");
+		return 2;
+	}
 
 	display = wl_display_connect(NULL);
 	if (!display) { fprintf(stderr, "wlfps: cannot connect to a Wayland display\n"); return 1; }
@@ -235,6 +240,6 @@ int main(int argc, char **argv) {
 		}
 	}
 	if (configured) report();
-	printf("total frames: %lu\n", total_frames);
+	printf("total frame callbacks: %lu (not presentation feedback)\n", total_frames);
 	return 0;
 }
