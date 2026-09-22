@@ -1,0 +1,201 @@
+diff -urN a/board/canaan/common/k230_board_common.c b/board/canaan/common/k230_board_common.c
+--- a/board/canaan/common/k230_board_common.c	2026-09-22 13:14:00.397063278 -0500
++++ b/board/canaan/common/k230_board_common.c	2026-09-22 13:16:16.741766192 -0500
+@@ -52,6 +52,8 @@
+ #include <mmc.h>
+ #include <dm.h>
+ #include <i2c.h>
++#include <fdt_support.h>
++#include "logo/display_logo.h"
+ //weak
+ int mmc_get_env_dev(void)
+ {
+@@ -584,6 +586,22 @@
+ 	size = env_get_bootm_size();
+ 
+ 	fdt_fixup_memory(blob, (u64)base, (u64)size);
++
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    if (k230_display_logo_is_ready()) {
++        int chosen = fdt_find_or_add_subnode(blob, 0, "chosen");
++        int ret;
++
++        if (chosen < 0) {
++            printf("cannot add /chosen for stage-1 splash: %d\n", chosen);
++            return 0;
++        }
++
++        ret = fdt_setprop_empty(blob, chosen, "canaan,stage1-splash");
++        if (ret)
++            printf("cannot set stage-1 splash flag: %d\n", ret);
++    }
++#endif
+     return 0;
+ }
+ 
+diff -urN a/board/canaan/common/logo/display_logo.c b/board/canaan/common/logo/display_logo.c
+--- a/board/canaan/common/logo/display_logo.c	2026-09-22 13:14:00.428819637 -0500
++++ b/board/canaan/common/logo/display_logo.c	2026-09-22 13:15:54.501203155 -0500
+@@ -904,7 +904,7 @@
+ 
+ 
+ 
+-void k230_dsi_phy1_config(uint8_t hsfreq)
++int k230_dsi_phy1_config(uint8_t hsfreq)
+ {
+     uint32_t reg = 0;
+     uint32_t count = 0;
+@@ -963,11 +963,15 @@
+     {
+         k230_dsi_write_phy_reg(0x03, 0x80);
+         msleep(20);
+-        if (++count >= 1000)
+-            break;
++        if (++count >= 1000) {
++            printf("DSI PHY test-control timeout: got 0x%04x\n",
++                   readl(DSI_BASE_ADDR + PHY_TST_CTRL1));
++            return -1;
++        }
+     }
+ 
+     // printf("phy1 config done \n");
++    return 0;
+ }
+ 
+ 
+@@ -1004,13 +1008,14 @@
+ 
+ }
+ 
+-void k230_dsi_config_2lan_phy(uint32_t m, uint32_t n, uint8_t vco, uint8_t hsfreq)
++int k230_dsi_config_2lan_phy(uint32_t m, uint32_t n, uint8_t vco, uint8_t hsfreq)
+ {
+     uint32_t reg = 0;
+     uint32_t timeout = 0;
+ 
+     k230_dsi_phy0_config(m, n, vco, hsfreq);
+-    k230_dsi_phy1_config(hsfreq);
++    if (k230_dsi_phy1_config(hsfreq))
++        return -1;
+ 
+     reg = readl(TXPHY_BASE_ADDR + TXDPHY_CFG1);
+     writel(0x0, TXPHY_BASE_ADDR + TXDPHY_CFG1);
+@@ -1021,7 +1026,7 @@
+         if (++timeout > 100000) {
+             printf("DSI 2-lane PHY_STATUS timeout: got 0x%04x\n",
+                    readl(DSI_BASE_ADDR + PHY_STATUS));
+-            break;
++            return -1;
+         }
+         udelay(10);
+     }
+@@ -1037,16 +1042,17 @@
+         if (++timeout > 100000) {
+             printf("DSI 2-lane PHY_STATUS(2) timeout: got 0x%04x\n",
+                    readl(DSI_BASE_ADDR + PHY_STATUS));
+-            break;
++            return -1;
+         }
+         udelay(10);
+     }
+ 
+     reg = readl(DSI_BASE_ADDR + PHY_STATUS);
++    return 0;
+ }
+ 
+ 
+-uint32_t dwc_mipi_phy_config(k_vo_mipi_phy_attr *phy)
++int dwc_mipi_phy_config(k_vo_mipi_phy_attr *phy)
+ {
+ #if 0
+     // 下边的是和 phy 有关的，以后在研究
+@@ -1061,9 +1067,9 @@
+     writel(0x0, DSI_BASE_ADDR + 0xc);
+ 
+     if (phy->phy_lan_num == K_DSI_2LAN)
+-        k230_dsi_config_2lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
+-    else
+-        k230_dsi_config_4lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
++        return k230_dsi_config_2lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
++
++    k230_dsi_config_4lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
+ #endif
+     return 0;
+ }
+diff -urN a/board/canaan/common/logo/display_logo.h b/board/canaan/common/logo/display_logo.h
+--- a/board/canaan/common/logo/display_logo.h	2026-09-22 13:14:00.428961715 -0500
++++ b/board/canaan/common/logo/display_logo.h	2026-09-22 13:15:54.500760760 -0500
+@@ -525,6 +525,7 @@
+ void vo_layer1_test(k_connector_info *info);
+ void vo_osd4_logo_test(k_connector_info *info);
+ unsigned long k230_display_logo_get_pic_mem_addr(void);
++int k230_display_logo_is_ready(void);
+ 
+ 
+ // dsi
+diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230_logo.c
+--- a/board/canaan/common/logo/k230_logo.c	2026-09-22 13:14:00.429054661 -0500
++++ b/board/canaan/common/logo/k230_logo.c	2026-09-22 13:15:54.500818767 -0500
+@@ -196,6 +196,15 @@
+ #define RM69A10_LOGO_WIDTH                                568
+ #define RM69A10_LOGO_HEIGHT                               1232
+ #define RM69A10_LOGO_XRGB_SIZE                            (RM69A10_LOGO_WIDTH * RM69A10_LOGO_HEIGHT * 4)
++
++/* Process-local: never placed in U-Boot's persistent environment. */
++static int k230_display_logo_ready;
++
++int k230_display_logo_is_ready(void)
++{
++    return k230_display_logo_ready;
++}
++
+ unsigned long k230_display_logo_get_pic_mem_addr(void)
+ {
+ #ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
+@@ -300,6 +309,9 @@
+ {
+     k_connector_info info;
+ 
++    /* A failed later attempt must not inherit a previous attempt's result. */
++    k230_display_logo_ready = 0;
++
+ #ifdef CONFIG_K230_BARE_DISP_LOGO_DF
+     info = (k_connector_info){
+         0,
+@@ -364,7 +376,10 @@
+         return -1;
+ 
+     sysctl_pwr_set_power(SYSCTL_PD_DISP, true);
+-    st7701_init(&info);
++    if (st7701_init(&info))
++        return -1;
++
++    k230_display_logo_ready = 1;
+     return 0;
+ }
+ 
+diff -urN a/board/canaan/common/logo/st7701.c b/board/canaan/common/logo/st7701.c
+--- a/board/canaan/common/logo/st7701.c	2026-09-22 13:14:00.429154739 -0500
++++ b/board/canaan/common/logo/st7701.c	2026-09-22 13:15:54.501330986 -0500
+@@ -836,9 +836,7 @@
+     mipi_phy_attr.voc = phy_attr->voc;
+     mipi_phy_attr.phy_lan_num = info->lan_num;
+ 
+-    dwc_mipi_phy_config(&mipi_phy_attr);
+-
+-    return 0;
++    return dwc_mipi_phy_config(&mipi_phy_attr);
+ }
+ 
+ 
+@@ -856,7 +854,9 @@
+     if(info->pixclk_div != 0)
+         k230_set_pixclk(info->pixclk_div);
+ 
+-    ret |= st7701_set_phy_freq(info);
++    ret = st7701_set_phy_freq(info);
++    if (ret)
++        return ret;
+ 
+     ret |= st7701_dsi_resolution_init(info);
+ 
