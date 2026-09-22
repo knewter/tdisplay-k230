@@ -82,9 +82,41 @@ operations:
         the evidence this project runs on.
       - Push after each change lands. Work here is easy to lose to a
         reflash.
+      - Work each change in its own git worktree, not in the shared
+        checkout. Several agents run here at once and they have already
+        swept each other's in-progress files into one another's commits.
+        `git worktree add ../k230-<change-name> -b <change-name>`.
+      # Quoted because YAML reserves a leading backtick in a plain scalar,
+      # and an unparseable config is ignored in full rather than complained
+      # about -- one bad line silently drops every instruction in this file.
+      - "The board is a single shared resource and only one agent may hold
+        /dev/ttyACM0. Concurrent opens fail as `device reports readiness to
+        read but returned no data (device disconnected or multiple access on
+        port?)`, which reads like a hardware fault and is not one. Say when
+        you take the board and when you release it."
+      - "A device tree change does NOT need a reflash: `tools/push-file.py
+        --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot` moves it to the
+        running board in about 11 seconds, and `nix build .#deviceTree`
+        compiles a DTB without the kernel. Plan around that before costing
+        anything as a 20 minute rebuild and a card swap."
   archive:
     guidance:
       - Say which capability files the delta touched.
+      - Fast-forward the shared checkout before you finish, since changes
+        are applied in per-change worktrees and the shared directory's main
+        is never pulled by anybody. From the shared checkout run
+        `git fetch origin && git merge --ff-only origin/main`.
+      # Quoted for the same reason as above.
+      - "`--ff-only` rather than `pull`, because that checkout usually holds
+        another agent's uncommitted work. It refuses instead of clobbering,
+        and untracked files do not block it. If it refuses, say which paths
+        are in the way and leave them alone; never stash, reset, or check
+        out a path you did not create there."
+      - "Check the delta's operation against what openspec/specs/ actually
+        holds. `openspec archive` refuses a MODIFIED or RENAMED requirement
+        whose target spec does not exist, and it refuses at archive time,
+        after the work is done -- `system/kernel` was declared MODIFIED
+        against a capability that had never existed."
       - If a requirement was grounded by a boot log, make sure that log is
         committed before the change is archived. A requirement whose evidence
         lives only in a terminal scrollback is unverified.
