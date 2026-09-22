@@ -63,6 +63,13 @@ STATUS_LABEL = {
 
 UNVERIFIED_MARKER = re.compile(r"<!--\s*UNVERIFIED\b\s*:?\s*(.*?)\s*-->", re.S)
 GROUNDING_LINE = re.compile(r"(?m)^\s*\*{0,2}Grounding\b[^\n]*?:")
+# Not the convention, and deliberately not accepted as one: three archived
+# requirements opened with `*Grounded on hardware. ...*`, which classifies as
+# undeclared and failed every build for a day. Widening the classifier to take
+# it would also take `Grounded once the photograph is committed`, which is a
+# promise rather than a citation -- so the near miss is detected only to say so
+# in the error, and the prose is what gets fixed.
+NEAR_MISS_GROUNDING = re.compile(r"(?m)^\s*\*{0,2}(Ground(?:ed|s|ing)\b[^\n]{0,40})")
 REQUIREMENT_HEADING = re.compile(r"(?m)^###\s+Requirement:\s*(.+?)\s*$")
 SCENARIO_HEADING = re.compile(r"(?m)^####\s+Scenario:\s*(.+?)\s*$")
 SECTION_HEADING = re.compile(r"(?m)^##\s+(.+?)\s*$")
@@ -108,14 +115,23 @@ class UnclassifiedRequirement(Exception):
     is worse than no site.
     """
 
-    def __init__(self, source: str, requirement: str) -> None:
+    def __init__(self, source: str, requirement: str, near_miss: str = "") -> None:
         self.source = source
         self.requirement = requirement
-        super().__init__(
+        self.near_miss = near_miss
+        detail = (
             f"{source}: requirement {requirement!r} declares no verification "
             f"status: it carries neither an `<!-- UNVERIFIED -->` marker nor a "
             f"`*Grounding: ...*` citation"
         )
+        if near_miss:
+            detail += (
+                f"; it does begin a paragraph {near_miss!r}, which is close but "
+                f"is not the convention -- the renderer looks for the word "
+                f"`Grounding` followed by a colon on the same line, so write "
+                f"`*Grounding: observed on hardware. ...*`"
+            )
+        super().__init__(detail)
 
 
 class MissingEvidence(Exception):
@@ -249,6 +265,19 @@ def strip_markers(text: str) -> str:
     return "".join(out)
 
 
+def near_miss(body: str) -> str:
+    """The opening of a paragraph that looks like a grounding line and is not.
+
+    Reported in the error so the drift names itself. The convention lives in
+    .skills/k230-spec-change/SKILL.md; this is what makes a change to it a
+    legible build failure rather than a puzzling one.
+    """
+    hit = NEAR_MISS_GROUNDING.search(mask_code(strip_markers(body)))
+    if not hit:
+        return ""
+    return " ".join(hit.group(1).split())
+
+
 def classify(source: str, name: str, body: str) -> tuple[str, str]:
     """Return (status, reason) for one requirement body, or raise.
 
@@ -261,7 +290,7 @@ def classify(source: str, name: str, body: str) -> tuple[str, str]:
         return UNVERIFIED, reason or "no reason given"
     if GROUNDING_LINE.search(mask_code(strip_markers(body))):
         return GROUNDED, ""
-    raise UnclassifiedRequirement(source, name)
+    raise UnclassifiedRequirement(source, name, near_miss(body))
 
 
 def code_spans(text: str) -> list[str]:

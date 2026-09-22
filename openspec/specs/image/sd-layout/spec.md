@@ -8,12 +8,12 @@ endangering the machine producing it.
 
 ### Requirement: The card carries stage 1 and our system in known regions
 
-*Grounded on hardware. Our layout has now been written to a card and booted:
-stage 1 raw at 1M and 1.5M, U-Boot at 2M, environment at 3M and 3.5M, the boot
-ext4 at 4M and the root ext4 at 128M. The board boots from it and mounts `/`
-from `/dev/mmcblk1p2` (`docs/evidence/hardware-userspace.md`). One size in the
-list is empirical rather than chosen: the boot partition is 112 MiB because
-83 MiB of content did not fit the original 80.*
+*Grounding: observed on hardware. Our layout has now been written to a card
+and booted: stage 1 raw at 1M and 1.5M, U-Boot at 2M, environment at 3M and
+3.5M, the boot ext4 at 4M and the root ext4 at 128M. The board boots from it
+and mounts `/` from `/dev/mmcblk1p2` (`docs/evidence/hardware-userspace.md`).
+One size in the list is empirical rather than chosen: the boot partition is
+112 MiB because 83 MiB of content did not fit the original 80.*
 
 The card SHALL carry the vendored stage 1 and the system this project builds in
 documented regions, and the layout SHALL be recorded as offsets and sizes

@@ -114,6 +114,28 @@ class TestClassification(unittest.TestCase):
         self.assertIn("openspec/specs/image/boot-chain/spec.md", message)
         self.assertIn("The hardware boot path differs", message)
 
+    def test_grounded_on_hardware_is_a_near_miss_and_the_error_says_so(self) -> None:
+        """`*Grounded on hardware. ...*` is what three archived requirements
+        actually said. It is not the convention, it must not be accepted as
+        one -- `Grounded once ... is committed` is a promise, not a citation --
+        and the error has to name the near miss or the next person spends the
+        day the last one did."""
+        body = (
+            "*Grounded on hardware. The vendored chain loaded our kernel "
+            "(`docs/evidence/hardware-userspace.md`).*\n\n"
+            "The chain SHALL load the kernel this project builds.\n"
+        )
+        with self.assertRaises(render_specs.UnclassifiedRequirement) as caught:
+            render_specs.classify("f.md", "R", body)
+        message = str(caught.exception)
+        self.assertIn("Grounded on hardware.", message)
+        self.assertIn("`*Grounding: observed on hardware. ...*`", message)
+
+    def test_no_near_miss_is_reported_when_the_prose_never_mentions_grounding(self) -> None:
+        with self.assertRaises(render_specs.UnclassifiedRequirement) as caught:
+            render_specs.classify("f.md", "R", UNDECLARED_BODY)
+        self.assertNotIn("close but", str(caught.exception))
+
     def test_marker_wins_over_a_forward_looking_grounding_sentence(self) -> None:
         body = (
             "<!-- UNVERIFIED: nothing built yet. Grounded once "
