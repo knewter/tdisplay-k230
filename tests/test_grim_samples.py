@@ -40,7 +40,7 @@ class GrimSamplesTests(unittest.TestCase):
             self.assertIn("duration 0.040000", concat)
 
     @unittest.skipUnless(shutil.which("ffmpeg"), "requires host ffmpeg")
-    def test_relative_sample_path_and_apostrophes_encode(self):
+    def test_relative_sample_path_and_apostrophes_preserve_centisecond_pts(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
             sample = root / "input's samples"
@@ -55,8 +55,10 @@ class GrimSamplesTests(unittest.TestCase):
             (sample / "frames.tsv").write_text(
                 "index\tstart_monotonic_seconds\tend_monotonic_seconds\tfile\n"
                 "1\t100.00\t100.04\tframe-000001.png\n"
-                "2\t100.50\t100.54\tframe-000002.png\n"
+                "2\t100.51\t100.55\tframe-000002.png\n"
+                "3\t101.27\t101.31\tframe-000003.png\n"
             )
+            shutil.copyfile(fixture, sample / "frame-000003.png")
             output = pathlib.Path("output's clips") / "feature.mp4"
             subprocess.run(
                 [str(ENCODER), "input's samples", "--output", str(output),
@@ -67,6 +69,16 @@ class GrimSamplesTests(unittest.TestCase):
                 cwd=root,
             )
             self.assertGreater((root / output).stat().st_size, 0)
+            pts = subprocess.run(
+                ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                 "frame=best_effort_timestamp_time", "-of", "default=noprint_wrappers=1:nokey=1", str(root / output)],
+                check=True,
+                text=True,
+                capture_output=True,
+            ).stdout.splitlines()
+            self.assertEqual([float(value) for value in pts], [0.0, 0.51, 1.27, 1.31])
+            concat = (root / output.with_suffix(".concat.txt")).read_text()
+            self.assertEqual(concat.count("option framerate 100"), 4)
 
 
 if __name__ == "__main__":

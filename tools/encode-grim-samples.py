@@ -60,9 +60,13 @@ def concat_text(frames: list[dict[str, object]], durations: list[float]) -> str:
     lines = []
     for frame, duration in zip(frames, durations):
         lines.append(f"file '{quote(frame['path'])}'")
+        # /proc/uptime records centiseconds. Without this image2 option, the
+        # concat demuxer assumes 25 fps and rounds every timestamp to 40 ms.
+        lines.append("option framerate 100")
         lines.append(f"duration {duration:.6f}")
     # ffmpeg's concat demuxer otherwise ignores the final duration.
     lines.append(f"file '{quote(frames[-1]['path'])}'")
+    lines.append("option framerate 100")
     return "\n".join(lines) + "\n"
 
 
@@ -102,6 +106,11 @@ def main() -> int:
             "frame_count": len(frames),
             "timestamps": "board /proc/uptime boot-relative monotonic seconds",
             "rendered_duration_seconds": sum(durations),
+            "final_frame_codec_duration_note": (
+                "The concat input repeats the final PNG so FFmpeg honors its measured "
+                "duration. At its 100 fps input timebase, the MP4 may extend by 0.01 "
+                "seconds beyond the measured display duration."
+            ),
         },
         "frames": [
             {"index": frame["index"], "file": frame["name"],
