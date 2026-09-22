@@ -234,6 +234,9 @@ in
       pkgs.drm_info
       pkgs.libinput
       pkgs.wayland-utils
+      # A Wayland screenshot is a layout inspection aid during bring-up.  It
+      # complements, rather than replaces, a photograph of the physical panel.
+      pkgs.grim
       # evemu creates a uinput touchscreen and injects touches at known
       # panel coordinates (the kernel gained INPUT_UINPUT for exactly this),
       # so compositor -> keyboard -> terminal can be exercised unattended.
