@@ -23,6 +23,63 @@ MemoryCurrent also accounts for memory charged to the service beyond the
 process PSS, so the two values are not interchangeable. These are sequential
 snapshots, not an atomic whole-system measurement or a peak-load benchmark.
 
-CPU-side frame-work timing and the representative scrolling-terminal load
-remain unmeasured. No FPS or compositor-throughput claim follows from these
-memory numbers or from the sampled feature videos.
+CPU-side frame-work measurement, host date 2026-09-22
+
+Verdict: Sway/Pixman is viable for this terminal-and-touch-menu shell. The
+20-second measured interval with the normal 15pt portrait terminal scrolling
+and the 400px keyboard visible yielded 254 successful frame submissions:
+  median 14.0037405 ms; p95 15.585629 ms; p99 22.735222 ms
+  min 0.714408 ms; max 23.253370 ms; failed commits 0.
+These durations do not imply an FPS, physical refresh, or touch-latency result.
+The output reports 52.190 Hz (about 19.16 ms per refresh), but this probe does
+not wait for display completion and the workload does not demand every refresh.
+
+Method and exact evidence:
+- Full journal: docs/evidence/shell-frame-journal.txt (includes startup and two
+  preliminary runs using Foot's smaller default font, excluded from statistics).
+- Final launch marker: shell-frame-portrait-start.txt, uptime 1587.38 s.
+  Fixed analysis interval [1589.38, 1609.38), excluding the first two seconds.
+  shell-frame-portrait-end.txt records collection after the workload.
+- Per-sample data and nearest-rank percentile method:
+  shell-frame-timing/measurement.json. Select journal lines whose monotonic
+  timestamp lies in that interval and parse
+  build_state_plus_commit_submission_ns; divide by 1e6 for milliseconds.
+- Workload source: shell-frame-timing/scroll.sh: 400 numbered text lines, a
+  requested 50 ms sleep after each line. Process creation and scheduling add
+  delay, so this is a nominal 20-line/s producer, not a measured 20 Hz rate.
+  Foot uses the image's 15pt terminal configuration. No wlfps overlay is used.
+- Keyboard shown with SIGUSR2; workload launched through Sway IPC. Screenshot
+  shell-frame-timing/portrait-scroll-keyboard.png proves the visible layout.
+  The adjacent camera JPEG shows the physical terminal but its oblique framing
+  does not show the entire keyboard. These are automated controls, not finger
+  accuracy evidence. One Grim screenshot and serial retrieval occurred during
+  the analysis interval; this is not an instrumentation-free benchmark.
+- k230.shell.frameTiming selects the Nix-built diagnostic Sway package and
+  SWAY_K230_CPU_FRAME_TIMING=1. The same binary and environment were installed
+  temporarily through a runtime systemd override on the existing verified image,
+  without rebuilding/flashing a diagnostic image. shell-frame-confirm.txt proves
+  environment, executable hash, service invocation, and 568x1232 mode.
+  Diagnostic package: /nix/store/l1v7llidvivsmy0s7g9lf314kvr82m6b-sway-1.12
+  Actual executable: /nix/store/jwnazrqchp75n155mfwmbks3y348nw6b-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+  MD5 on host and board: 8137c3ffa57ef99148da756323f8165a.
+- Patch: nix/patches/sway-k230-cpu-frame-timing.patch. CLOCK_MONOTONIC wall
+  time starts immediately before wlroots scene-output state initialization /
+  build and ends after output commit returns. It includes scene/Pixman work,
+  KMS submission and scheduling delay. It is neither process CPU accounting,
+  presentation timing, scanout, nor end-to-end responsiveness. Sway debug logs
+  and the diagnostic logging itself may affect timing.
+- All journalled builds/commits succeeded in this diagnostic session. The
+  service was then restored to its stock executable, with no runtime drop-in;
+  shell-frame-restore.txt records the active service and native output mode.
+
+The remaining usability gates are deliberate real-glass accuracy/control tests
+and unattended cable-free boot. Neither is established by these measurements.
+
+Nix option evaluation (no diagnostic image flash):
+{"compositor":"/nix/store/l1v7llidvivsmy0s7g9lf314kvr82m6b-sway-1.12","environment":"1"}
+
+
+Representative journal lines (minimum, middle, maximum; full log cited above):
+[ 1589.504125] nixos sway-frame-timing[874]: 00:02:22.927 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=714408 committed=1
+[ 1598.940200] nixos sway-frame-timing[874]: 00:02:32.367 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=14005185 committed=1
+[ 1599.974114] nixos sway-frame-timing[874]: 00:02:33.396 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=23253370 committed=1

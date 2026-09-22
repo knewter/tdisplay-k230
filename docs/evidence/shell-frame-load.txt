@@ -1,0 +1,28 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -RTMIN -x wvkbd-mobintl; sleep 2; echo LOAD_START; cat /proc/uptime; swaymsg exec 'foot -T Frame-Timing bash /tmp/k230-frame-scroll.sh'; sleep 22; echo LOAD_END; cat /proc/uptime; ps -u shell -o pid,pcpu,rss,args; systemctl show shell -p MemoryCurrent; journalctl _SYSTEMD_INVOCATION_ID=$(systemctl show shell -p InvocationID --value) -o short-monotonic --no-pager > /tmp/k230-frame-journal.txt; gzip -c /tmp/k230-frame-journal.txt > /tmp/k230-frame-journal.txt.gz; wc -l /tmp/k230-frame-journal.txt =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -RTMIN -x wvkbd-mobintl; sleep 2; echo LOAD_START; cat /proc/uptime; swaymsg exec 'foot -T Frame-Timing bash /tmp/k230-frame-scroll.sh'; sleep 22; echo LOAD_END; cat /proc/uptime; ps -u shell -o pid,pcpu,rss,args; systemctl show shell -p MemoryCurrent; journalctl _SYSTEMD_INVOCATION_ID=$(systemctl show shell -p InvocationID --value) -o short-monotonic --no-pager > /tmp/k230-frame-journal.txt; gzip -c /tmp/k230-frame-journal.txt > /tmp/k230-frame-journal.txt.gz; wc -l /tmp/k230-frame-journal.txt
+[?2004l
+LOAD_START
+1454.47 1338.44
+LOAD_END
+1476.56 1352.00
+    PID %CPU   RSS COMMAND
+    874  6.4 28264 /tmp/sway-frame-timing -d -c /nix/store/gmblj8zrf83v715vzwkv3
+    881  0.0  5120 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-un
+    882  0.5 13184 swaybar -b bar-0
+    883  0.6 13824 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unk
+    884  0.7 13008 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unkn
+    886  0.1  3200 /nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-
+    887  0.4  4992 /run/current-system/sw/bin/bash
+    907  2.7 13600 foot -T Frame-Timing bash /tmp/k230-frame-scroll.sh
+    909  1.6  3200 bash /tmp/k230-frame-scroll.sh
+   1197  0.0  2816 sleep 0.05
+MemoryCurrent=31174656
+581 /tmp/k230-frame-journal.txt
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

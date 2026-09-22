@@ -1,0 +1,13 @@
+
+===== > sleep 12; echo PORTRAIT_LOAD_END; cat /proc/uptime; journalctl _SYSTEMD_INVOCATION_ID=b44d8cb5f5ff4ccda7ee8c2eac2efccb -o short-monotonic --no-pager > /tmp/k230-frame-journal-final.txt; gzip -c /tmp/k230-frame-journal-final.txt > /tmp/k230-frame-journal-final.txt.gz =====
+sleep 12; echo PORTRAIT_LOAD_END; cat /proc/uptime; journalctl _SYSTEMD_INVOCATION_ID=b44d8cb5f5ff4ccda7ee8c2eac2efccb -o short-monotonic --no-pager > /tmp/k230-frame-journal-final.txt; gzip -c /tmp/k230-frame-journal-final.txt > /tmp/k230-frame-journal-final.txt.gz
+[?2004l
+PORTRAIT_LOAD_END
+1631.59 1474.78
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

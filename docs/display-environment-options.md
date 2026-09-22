@@ -20,8 +20,17 @@ Two kinds of claim appear below and they are not interchangeable:
   build number in this document is therefore an *incremental* cost on top of
   that 1.2 GiB closure, not a from-scratch number.
 
-Nothing here has run on the board. Nothing here has run at all. The panel does
-not come up under Linux yet; that is `the-screen-comes-up-under-linux`.
+The candidate comparison below records the original build-host investigation.
+Physical-board update, 2026-09-22: **Sway/Pixman is viable for the terminal and
+touch-menu shell on this board.** At 568x1232 with the portrait terminal
+scrolling and keyboard shown, 254 measured CPU-side frame-work submissions
+had a 14.00 ms median and 15.59 ms p95, with no rejected commits. An idle
+session with the keyboard shown used 39.99 MiB summed PSS (51.08 MiB service
+memory). See `docs/evidence/shell-performance.txt` for methods and raw logs.
+These measurements support continuing with the compositor; a direct DRM/KMS
+replacement is not recommended for this shell. They do not measure physical
+presentation or finger latency. Full real-touch controls and cable-free boot
+remain separate verification gates.
 
 ---
 

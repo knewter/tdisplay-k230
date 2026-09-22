@@ -1,0 +1,13 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -USR2 -x wvkbd-mobintl; echo PORTRAIT_LOAD_START; cat /proc/uptime; swaymsg exec 'foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini -T Frame-Timing bash /tmp/k230-frame-scroll.sh' =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -USR2 -x wvkbd-mobintl; echo PORTRAIT_LOAD_START; cat /proc/uptime; swaymsg exec 'foot --config /nix/store/630xq18xf4szzhdka12a0pp8ywdd0a9z-k230-terminal-foot.ini -T Frame-Timing bash /tmp/k230-frame-scroll.sh'
+[?2004l
+PORTRAIT_LOAD_START
+1587.38 1443.80
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

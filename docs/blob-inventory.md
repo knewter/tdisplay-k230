@@ -629,6 +629,8 @@ E1   023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/
 E1   d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
 IO   517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
 IO   1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
+DATA 72815940d742506f6b6a8b1889e90b982c8b9d7bcb9899ffa2b73c528557a3d2  docs/evidence/shell-frame-timing/20260922T171130Z-portrait-frame-load.jpg
+DATA ac7b86aa20bcca4c38c44047a21471e3a80a2f2b11fe36d552fd4fcbb05b88c0  docs/evidence/shell-frame-timing/portrait-scroll-keyboard.png
 DATA group:10-files  docs/evidence/panel-photos/*.{jpg,png}   photographs of the panel, cited as evidence
 DATA 9458168554467e700d6e67616d4f1d94cb389439b81da030a163fde1cef8b222  docs/evidence/cage-rgb565-first-light.jpg
 DATA e15ef2cfcdb22b20bb693b2a5615aee11d25dfb2ead4d4a4dc7ef7563b97228a  docs/evidence/keyboard-signal-probe.jpg

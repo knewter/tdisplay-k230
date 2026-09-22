@@ -1,0 +1,35 @@
+
+===== > systemctl is-active shell; systemctl show shell -p InvocationID -p ExecStart; tr '\0' '\n' < /proc/$(pidof sway-frame-timing)/environ | grep SWAY_K230; md5sum /tmp/sway-frame-timing; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_outputs; echo SECOND_LOAD_START; cat /proc/uptime; swaymsg exec 'foot -T Frame-Timing bash /tmp/k230-frame-scroll.sh' =====
+systemctl is-active shell; systemctl show shell -p InvocationID -p ExecStart; tr '\0' '\n' < /proc/$(pidof sway-frame-timing)/environ | grep SWAY_K230; md5sum /tmp/sway-frame-timing; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_outputs; echo SECOND_LOAD_START; cat /proc/uptime; swaymsg exec  
+'foot -T Frame-Timing bash /tmp/k230-frame-scroll.sh'
+[?2004l
+active
+InvocationID=b44d8cb5f5ff4ccda7ee8c2eac2efccb
+ExecStart={ path=/tmp/sway-frame-timing ; argv[]=/tmp/sway-frame-timing -d -c /nix/store/gmblj8zrf83v715vzwkv35g80fgszd2v-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 20:38:31 UTC] ; stop_time=[n/a] ; pid=874 ; code=(null) ; status=0/0 }
+SWAY_K230_CPU_FRAME_TIMING=1
+8137c3ffa57ef99148da756323f8165a  /tmp/sway-frame-timing
+Output DSI-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 568x1232 @ 52.190 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: normal
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    568x1232 @ 52.190 Hz
+
+SECOND_LOAD_START
+1523.42 1393.57
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

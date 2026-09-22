@@ -86,16 +86,16 @@ the photograph or recording.
 There is no prior art for Pixman composite throughput on a C908. The number
 does not gate this change; not having it does.
 
-- [ ] 6.1 Measure the compositor's CPU-side frame work at 568x1232 under a representative load — a terminal scrolling and the keyboard shown. Enable `k230.shell.frameTiming`, then record `K230_CPU_FRAME_WALL` journal lines in `docs/evidence/shell-performance.txt`. Each successful sample is `CLOCK_MONOTONIC` wall-clock elapsed time, including scheduler delay, from immediately before `wlr_scene_output_build_state()` through `wlr_output_commit_state()` returning: scene build, Pixman submission, and KMS commit submission. It is not process CPU accounting, a vblank, presentation, or physical scanout measurement. Verify by committing the measurement and method to `docs/evidence/shell-performance.txt`
+- [x] 6.1 Measure the compositor's CPU-side frame work at 568x1232 under a representative load — a terminal scrolling and the keyboard shown. Enable `k230.shell.frameTiming`, then record `K230_CPU_FRAME_WALL` journal lines in `docs/evidence/shell-performance.txt`. Each successful sample is `CLOCK_MONOTONIC` wall-clock elapsed time, including scheduler delay, from immediately before `wlr_scene_output_build_state()` through `wlr_output_commit_state()` returning: scene build, Pixman submission, and KMS commit submission. It is not process CPU accounting, a vblank, presentation, or physical scanout measurement. Verify by committing the measurement and method to `docs/evidence/shell-performance.txt`
 - [x] 6.2 Record resident memory for the whole session against the board's 1 GiB. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "free -m; ps aux --sort=-rss | head -15"` appended to `docs/evidence/shell-performance.txt`
-- [ ] 6.3 State a verdict in `docs/display-environment-options.md`: whether a compositor is viable on this board, or whether a direct DRM/KMS shell with no compositor is now the recommendation. Verify by the document saying one or the other in a sentence, with the measurement cited
+- [x] 6.3 State a verdict in `docs/display-environment-options.md`: whether a compositor is viable on this board, or whether a direct DRM/KMS shell with no compositor is now the recommendation. Verify by the document saying one or the other in a sentence, with the measurement cited
 
 **Proves group 6 — hardware claim.** `docs/evidence/shell-performance.txt`,
 committed.
 
 ## 7. Ground the specs
 
-- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the battery-only boot, real-glass controls/calibration, and performance limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
+- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the battery-only boot and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
 - [ ] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
 - [x] 7.3 Record the measured final closure and build cost in the `runtime/shell` requirement, while retaining the historical candidate estimates for comparison. Verify with `openspec validate --all`
 - [x] 7.4 Record the user-requested feature evidence with FFmpeg: terminal use, keyboard show/hide and typing, app launching, window switching, terminal recovery, system controls, and Neofetch. Provide a screenshot and finite video for each feature, with a site-ready index and manifests identifying the capture source and real-touch versus injected interactions. Retain original camera footage when generating presentation copies; verify media with `ffprobe` and review the visible result.

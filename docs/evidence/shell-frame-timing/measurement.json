@@ -1,0 +1,1287 @@
+{
+  "interval_monotonic_s": [
+    1589.38,
+    1609.38
+  ],
+  "selection": "Twenty seconds beginning two seconds after portrait workload launch marker; includes one Grim screenshot. Journal timestamp is emission time, not presentation time.",
+  "samples": 254,
+  "min_ms": 0.714408,
+  "median_ms": 14.0037405,
+  "p95_ms": 15.585629,
+  "p99_ms": 22.735222,
+  "max_ms": 23.25337,
+  "percentile_method": "nearest rank",
+  "failed_commits": 0,
+  "rows": [
+    {
+      "journal_monotonic_s": 1589.428663,
+      "duration_ns": 3558371,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.504125,
+      "duration_ns": 714408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.572617,
+      "duration_ns": 1337815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.644341,
+      "duration_ns": 740630,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.720419,
+      "duration_ns": 4901852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.799624,
+      "duration_ns": 10882704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.881361,
+      "duration_ns": 14172296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1589.960514,
+      "duration_ns": 15774037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.03747,
+      "duration_ns": 14224297,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.116512,
+      "duration_ns": 15399408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.192572,
+      "duration_ns": 12883297,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.269502,
+      "duration_ns": 10940259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.348223,
+      "duration_ns": 9909334,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.430478,
+      "duration_ns": 14166740,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.512232,
+      "duration_ns": 13565741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.59035,
+      "duration_ns": 14036592,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.668514,
+      "duration_ns": 14401963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.746073,
+      "duration_ns": 14050889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.822868,
+      "duration_ns": 10008518,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.904232,
+      "duration_ns": 9982185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1590.984513,
+      "duration_ns": 15354778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.060512,
+      "duration_ns": 14284037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.140658,
+      "duration_ns": 15436777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.216504,
+      "duration_ns": 14165111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.292562,
+      "duration_ns": 11481296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.372624,
+      "duration_ns": 11863741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.456688,
+      "duration_ns": 15769186,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.534126,
+      "duration_ns": 14254704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.608231,
+      "duration_ns": 9905185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.689835,
+      "duration_ns": 14121741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.768567,
+      "duration_ns": 11582444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.848703,
+      "duration_ns": 14892111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1591.921128,
+      "duration_ns": 10161704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.009117,
+      "duration_ns": 15298481,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.0845,
+      "duration_ns": 11784556,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.160615,
+      "duration_ns": 13276555,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.240515,
+      "duration_ns": 15013593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.317728,
+      "duration_ns": 14213074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.396525,
+      "duration_ns": 15150593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.469601,
+      "duration_ns": 10127444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.558404,
+      "duration_ns": 9993000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.62923,
+      "duration_ns": 10018333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.711948,
+      "duration_ns": 13644593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.792925,
+      "duration_ns": 14306148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.868778,
+      "duration_ns": 14117296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1592.942623,
+      "duration_ns": 9975074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.025118,
+      "duration_ns": 11787592,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.10931,
+      "duration_ns": 15311185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.178299,
+      "duration_ns": 10016815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.260504,
+      "duration_ns": 14198482,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.340605,
+      "duration_ns": 10900630,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.417083,
+      "duration_ns": 9992592,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.496658,
+      "duration_ns": 14512925,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.576114,
+      "duration_ns": 10138815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.657023,
+      "duration_ns": 9997777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.736249,
+      "duration_ns": 11966111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.816584,
+      "duration_ns": 14079333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.888638,
+      "duration_ns": 11890778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1593.969291,
+      "duration_ns": 14158444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.048832,
+      "duration_ns": 15098037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.121399,
+      "duration_ns": 9995149,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.20445,
+      "duration_ns": 11794408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.285067,
+      "duration_ns": 11262149,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.365325,
+      "duration_ns": 14228111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.441237,
+      "duration_ns": 14816666,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.516432,
+      "duration_ns": 13312592,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.601151,
+      "duration_ns": 15740741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.68133,
+      "duration_ns": 15209703,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.750716,
+      "duration_ns": 9984000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.833991,
+      "duration_ns": 14117778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.912809,
+      "duration_ns": 14158777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1594.993023,
+      "duration_ns": 14799666,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.064699,
+      "duration_ns": 10027704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.142639,
+      "duration_ns": 9902889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.228256,
+      "duration_ns": 11661037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.309455,
+      "duration_ns": 14215704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.384439,
+      "duration_ns": 11676074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.461434,
+      "duration_ns": 14204222,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.540561,
+      "duration_ns": 15435333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.620427,
+      "duration_ns": 10971259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.698303,
+      "duration_ns": 14102518,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.773075,
+      "duration_ns": 10990593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.85504,
+      "duration_ns": 13950407,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1595.934126,
+      "duration_ns": 14179851,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.012613,
+      "duration_ns": 15027186,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.088446,
+      "duration_ns": 12889555,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.168514,
+      "duration_ns": 14901555,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.246217,
+      "duration_ns": 14030667,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.324516,
+      "duration_ns": 14503629,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.398062,
+      "duration_ns": 10060518,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.481525,
+      "duration_ns": 14160111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.561362,
+      "duration_ns": 14496444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.640323,
+      "duration_ns": 9982408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.720594,
+      "duration_ns": 15552186,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.795982,
+      "duration_ns": 10021852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.877367,
+      "duration_ns": 14600259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1596.956404,
+      "duration_ns": 15703963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.053128,
+      "duration_ns": 11268074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.130471,
+      "duration_ns": 14116000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.208182,
+      "duration_ns": 10003778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.289201,
+      "duration_ns": 15405518,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.365138,
+      "duration_ns": 12835185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.444674,
+      "duration_ns": 10963000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.518134,
+      "duration_ns": 10063185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.602417,
+      "duration_ns": 13999778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.681832,
+      "duration_ns": 14111223,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.761171,
+      "duration_ns": 14170037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.83966,
+      "duration_ns": 10064297,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1597.91471,
+      "duration_ns": 9998296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.0012,
+      "duration_ns": 14151815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.069709,
+      "duration_ns": 10043777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.152511,
+      "duration_ns": 14478889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.229062,
+      "duration_ns": 11111297,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.312724,
+      "duration_ns": 15729926,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.383612,
+      "duration_ns": 10086407,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.462804,
+      "duration_ns": 10108741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.545847,
+      "duration_ns": 14214481,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.629128,
+      "duration_ns": 15335740,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.699037,
+      "duration_ns": 9993260,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.782713,
+      "duration_ns": 14029408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.861076,
+      "duration_ns": 11111222,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1598.9402,
+      "duration_ns": 14005185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.01321,
+      "duration_ns": 10095704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.09725,
+      "duration_ns": 14876888,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.169963,
+      "duration_ns": 10073370,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.252526,
+      "duration_ns": 14728926,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.330282,
+      "duration_ns": 14153111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.40853,
+      "duration_ns": 14442777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.488694,
+      "duration_ns": 15426703,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.561485,
+      "duration_ns": 10084592,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.645277,
+      "duration_ns": 11243852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.692443,
+      "duration_ns": 11306408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.744177,
+      "duration_ns": 17942111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.7726,
+      "duration_ns": 22869481,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.873134,
+      "duration_ns": 22735222,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1599.974114,
+      "duration_ns": 23253370,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.060605,
+      "duration_ns": 12718963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.141842,
+      "duration_ns": 14200741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.220581,
+      "duration_ns": 11663111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.300314,
+      "duration_ns": 14430519,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.377191,
+      "duration_ns": 12822148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.453187,
+      "duration_ns": 10215963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.530101,
+      "duration_ns": 10063963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.612834,
+      "duration_ns": 14455074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.692649,
+      "duration_ns": 15792963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.768192,
+      "duration_ns": 10021037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.849175,
+      "duration_ns": 14144222,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1600.929078,
+      "duration_ns": 9987741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.009344,
+      "duration_ns": 14856074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.081198,
+      "duration_ns": 10131259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.165074,
+      "duration_ns": 11258407,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.24467,
+      "duration_ns": 15315778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.321749,
+      "duration_ns": 14179333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.401127,
+      "duration_ns": 11665963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.477111,
+      "duration_ns": 12714777,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.556833,
+      "duration_ns": 14903000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.633123,
+      "duration_ns": 12544667,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.7087,
+      "duration_ns": 11137111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.79411,
+      "duration_ns": 14411666,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.871855,
+      "duration_ns": 13297815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1601.948344,
+      "duration_ns": 11549629,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.02854,
+      "duration_ns": 10951223,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.105103,
+      "duration_ns": 12350074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.188703,
+      "duration_ns": 15481889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.264382,
+      "duration_ns": 10039074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.340554,
+      "duration_ns": 11679185,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.421546,
+      "duration_ns": 14186333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.501114,
+      "duration_ns": 11064519,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.579968,
+      "duration_ns": 14263851,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.656572,
+      "duration_ns": 11610370,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.737991,
+      "duration_ns": 14728704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.822708,
+      "duration_ns": 16576815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.90871,
+      "duration_ns": 14854223,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1602.982943,
+      "duration_ns": 12013148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.060609,
+      "duration_ns": 11985074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.145408,
+      "duration_ns": 15363593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.220667,
+      "duration_ns": 14262519,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.300527,
+      "duration_ns": 15585629,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.373563,
+      "duration_ns": 10279667,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.456951,
+      "duration_ns": 14581074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.532627,
+      "duration_ns": 10691296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.615048,
+      "duration_ns": 10100852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.694209,
+      "duration_ns": 14085259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.772811,
+      "duration_ns": 14245629,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.857153,
+      "duration_ns": 15143518,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1603.933201,
+      "duration_ns": 14873223,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.005551,
+      "duration_ns": 10176444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.092855,
+      "duration_ns": 15747926,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.16853,
+      "duration_ns": 14262889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.244433,
+      "duration_ns": 11363481,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.328637,
+      "duration_ns": 15207778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.40484,
+      "duration_ns": 14559593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.480628,
+      "duration_ns": 11484852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.56455,
+      "duration_ns": 14901370,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.641115,
+      "duration_ns": 13017296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.717584,
+      "duration_ns": 11265963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.797099,
+      "duration_ns": 11543814,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.884128,
+      "duration_ns": 12952851,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1604.960742,
+      "duration_ns": 15287815,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.033562,
+      "duration_ns": 10071333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.117775,
+      "duration_ns": 14238852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.196541,
+      "duration_ns": 15008407,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.273122,
+      "duration_ns": 12390444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.349334,
+      "duration_ns": 10205111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.428573,
+      "duration_ns": 11127296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.511863,
+      "duration_ns": 14634666,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.589105,
+      "duration_ns": 12251778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.665182,
+      "duration_ns": 10040740,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.745141,
+      "duration_ns": 11981740,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.826685,
+      "duration_ns": 14261593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.908529,
+      "duration_ns": 15052074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1605.982209,
+      "duration_ns": 10189148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.067971,
+      "duration_ns": 14461889,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.144746,
+      "duration_ns": 14292259,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.224698,
+      "duration_ns": 10746408,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.298863,
+      "duration_ns": 10140778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.382444,
+      "duration_ns": 14275667,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.460546,
+      "duration_ns": 14544333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.53648,
+      "duration_ns": 11950074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.617348,
+      "duration_ns": 11255630,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.696609,
+      "duration_ns": 14363148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.777159,
+      "duration_ns": 14700741,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.85315,
+      "duration_ns": 11595445,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1606.937382,
+      "duration_ns": 15224444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.014978,
+      "duration_ns": 14091556,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.097137,
+      "duration_ns": 14695852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.167348,
+      "duration_ns": 10048556,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.252254,
+      "duration_ns": 11827296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.332165,
+      "duration_ns": 11215852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.408658,
+      "duration_ns": 14949148,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.485153,
+      "duration_ns": 11395963,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.566101,
+      "duration_ns": 14290444,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.644532,
+      "duration_ns": 14508037,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.722567,
+      "duration_ns": 14002296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.805165,
+      "duration_ns": 15361556,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.880792,
+      "duration_ns": 13088667,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1607.963907,
+      "duration_ns": 11980630,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.040835,
+      "duration_ns": 14138629,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.117599,
+      "duration_ns": 11775000,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.200609,
+      "duration_ns": 12051703,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.277617,
+      "duration_ns": 14272111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.354732,
+      "duration_ns": 10077926,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.436549,
+      "duration_ns": 15358111,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.512866,
+      "duration_ns": 14211593,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.587208,
+      "duration_ns": 10005778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.670126,
+      "duration_ns": 14144074,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.749759,
+      "duration_ns": 14293333,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.829588,
+      "duration_ns": 14293296,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.909182,
+      "duration_ns": 15492814,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1608.988528,
+      "duration_ns": 14932778,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1609.069082,
+      "duration_ns": 11228704,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1609.145339,
+      "duration_ns": 12832926,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1609.22466,
+      "duration_ns": 14209852,
+      "committed": true
+    },
+    {
+      "journal_monotonic_s": 1609.301117,
+      "duration_ns": 10039815,
+      "committed": true
+    }
+  ]
+}
