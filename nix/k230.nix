@@ -14,7 +14,7 @@
 # Minimal on purpose: riscv64-linux has no binary cache, so every package here
 # is compiled on every clean build. See openspec/specs/system/nixos-config —
 # anything added needs a recorded reason it is needed to reach or use a prompt.
-{ lib, modulesPath, ... }:
+{ config, lib, modulesPath, ... }:
 
 {
   imports = [ "${modulesPath}/profiles/minimal.nix" ];
@@ -44,6 +44,40 @@
   # Keeps the closure honest: without a cache, a firmware tree we cannot use
   # is pure compile time.
   hardware.enableRedistributableFirmware = false;
+
+  # make-ext4-fs writes this registration stream into the SD root image but,
+  # unlike nixos/modules/installer/sd-card/sd-image.nix, our custom image
+  # builder does not import the module that consumes it.  A fresh card can
+  # therefore contain all store files yet have an empty Nix database: `nix
+  # shell` cannot see packages and the system profile is absent.  Keep the
+  # upstream ordering and one-shot semantics, with the marker as the guard.
+  systemd.services.register-nix-paths = {
+    description = "Register Nix Store Paths";
+    unitConfig = {
+      DefaultDependencies = false;
+      ConditionPathExists = "/nix-path-registration";
+    };
+    wantedBy = [ "sysinit.target" ];
+    before = [
+      "sysinit.target"
+      "shutdown.target"
+      "nix-daemon.socket"
+      "nix-daemon.service"
+    ];
+    after = [ "local-fs.target" ];
+    conflicts = [ "shutdown.target" ];
+    restartIfChanged = false;
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${lib.getExe' config.nix.package.out "nix-store"} --load-db < /nix-path-registration
+      touch /etc/NIXOS
+      ${lib.getExe' config.nix.package.out "nix-env"} -p /nix/var/nix/profiles/system --set /run/current-system
+      rm -f /nix-path-registration
+    '';
+  };
 
   system.stateVersion = "25.05";
 }
