@@ -220,7 +220,7 @@ EOM
       # Take the reference at probe and never drop it, pinning DISP on.
       #
       # SOURCE PROVENANCE, learned the hard way: check this against the
-      # pristine tree nix unpacks, NOT .build/k230_linux_sdk/output/*/build/
+      # pristine tree nix unpacks, NOT the vendor SDK checkoutk230_linux_sdk/output/*/build/
       # linux-*/. They differ -- the SDK's built tree has these pm_runtime
       # calls commented out, and a patch written against that copy matched
       # nothing and failed its guard. Every other patch here was compared
