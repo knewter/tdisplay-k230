@@ -224,9 +224,9 @@ def main():
                     help="after the gadget appears, WRITE IMAGE to it with the "
                          "project's own tools/flash.sh (by-id path, its "
                          "print-and-confirm step answered by this tool), time "
-                         "it, then reset the board and verify the boot: login "
-                         "prompt, the board hashing its own stage-1 slots, the "
-                         "DSI PHY line. Only with explicit authorisation")
+                         "it, verify every byte with direct readback, then "
+                         "reset and capture the Linux boot and DSI diagnostics. "
+                         "Only with explicit authorisation")
     ap.add_argument("--expected-sectors", type=int,
                     help="required with --flash: card size previously observed on the board")
     ap.add_argument("--regs", action="store_true",
@@ -506,6 +506,12 @@ def main():
             s.note("Linux login prompt NOT seen within 240 s -- the board may not be in Linux")
             status = 1
     finally:
+        # This finally exits explicitly even on early returns. Never let an
+        # unexpected exception inherit status 0 from successful enumeration.
+        failure = sys.exc_info()[1]
+        if failure is not None:
+            status = 1
+            s.note(f"session failed: {type(failure).__name__}: {failure}")
         s.note(f"ums session end, status {status}")
         s.port.close()
         s.log.close()
