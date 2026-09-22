@@ -364,9 +364,12 @@ def main():
                     help="after the gadget appears, WRITE IMAGE to it with the "
                          "project's own tools/flash.sh (by-id path, its "
                          "print-and-confirm step answered by this tool), time "
-                         "it, verify every byte with direct readback, then "
+                         "it, optionally read back with --full-readback, then "
                          "reset and capture the Linux boot and DSI diagnostics. "
                          "Only with explicit authorisation")
+    ap.add_argument("--full-readback", action="store_true",
+                    help="with --flash, compare every written byte before boot; "
+                         "routine flashes instead check the write and Linux boot")
     ap.add_argument("--pull", metavar="REMOTE_ABSOLUTE_PATH",
                     help="while the exact UMS gadget is present, read one prepared "
                          "absolute rootfs path with read-only debugfs dump, then boot Linux")
@@ -387,6 +390,8 @@ def main():
                          "whether the PHY sees VBUS from the cable. DCTL bit 1 "
                          "is soft-disconnect: whether D+ was ever pulled up")
     args = ap.parse_args()
+    if args.full_readback and not args.flash:
+        ap.error("--full-readback requires --flash")
     if args.flash and args.pull:
         ap.error("--flash and --pull are mutually exclusive")
     if args.flash:
@@ -642,11 +647,14 @@ def main():
                 status = 1
                 return
 
-            # Before boot, every image byte must still match. After boot,
-            # env_save and ext4 legitimately change bytes, so verify now.
-            if not verify_written_image(s, args.flash, byid):
-                status = 1
-                return
+            # The established flashing path uses write success plus boot and
+            # feature checks. Full device readback is an explicit diagnostic.
+            if args.full_readback:
+                if not verify_written_image(s, args.flash, byid):
+                    status = 1
+                    return
+            else:
+                s.note("full readback skipped by policy; verifying Linux boot next")
 
         # 4. Out of ums.
         s.note("sending Ctrl-C to leave ums")
@@ -686,7 +694,7 @@ def main():
             s.note("Linux login prompt reached; the board is back in Linux")
             if wrote:
                 time.sleep(6); s.pump()
-                s.note("post-write diagnostics; full image equality was checked before boot")
+                s.note("post-write diagnostics; " + ("full image equality checked before boot" if args.full_readback else "write succeeded; full readback not requested"))
                 for c in ("readlink /run/current-system",
                           "dmesg | grep -m1 hsfreqrange",
                           "dmesg | grep -c 'BTF mismatch'",

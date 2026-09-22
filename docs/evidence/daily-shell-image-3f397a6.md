@@ -48,3 +48,14 @@ The source-built U-Boot output is
 `strings u-boot` finds `canaan,stage1-splash`, confirming that the 0005
 runtime-handoff property is present in this build. The property can only be
 validated on a board when a successful stage-1 splash path reaches Linux.
+
+## Routine flashing policy
+
+On 2026-09-22 the user requested that routine flashes stop repeating full
+image readback now that the path has repeatedly passed it. `tools/ums-session.py`
+therefore defaults to checking write completion and normal Linux return;
+`--full-readback` explicitly enables the full device comparison for diagnosis.
+Target identification and card-size checks still run before a write.
+For this deployment, the write succeeded and the already-running comparison
+was intentionally interrupted at the user's request. The subsequent boot
+is recorded separately; this attempt is not labeled a readback pass.
