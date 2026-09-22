@@ -1,0 +1,176 @@
+Shell build cost — runtime/shell task group 2
+=============================================
+
+Host:     solomon, x86_64-linux, 32 cores, 125 GiB RAM
+Nix:      nix (Nix) 2.35.2
+Date:     2026-09-22
+nixpkgs:  the flake.lock pin (20b1ddd1aa5ace70c9468305030aa4f9ef79671b),
+          the same pin docs/display-environment-options.md measured against
+Config:   nixosConfigurations.k230 with k230.shell = { enable = true;
+          probes = true; debugLog = true; } -- nix/shell.nix, i.e. sway
+          (Xwayland off) + foot + wvkbd + seatd, plus the bring-up probes
+          cage, cage-rgb565, drm_info, libinput, wayland-utils, wlfps.
+Baseline: nixosConfigurations.k230-console, the same board with the
+          shell off. Its toplevel derivation is byte-identical to main's
+          (i724km86i4ysyq47zajinx4bs10d5hh5-nixos-system-nixos-26.11.20260919.20b1ddd.drv)
+          and `nix build --dry-run .#toplevel-console` reports nothing to
+          build and nothing to fetch, so every number below is a delta on
+          a fully present baseline closure.
+
+Task 2.1 — the module evaluates both ways
+-----------------------------------------
+  $ nix eval --raw .#nixosConfigurations.k230-console.config.system.build.toplevel.drvPath
+  /nix/store/i724km86i4ysyq47zajinx4bs10d5hh5-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+  $ nix eval --raw .#nixosConfigurations.k230.config.system.build.toplevel.drvPath
+  /nix/store/xfcjmdifzqxi4n9sgdq68hx7cdirisk7-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+  (the second path is the pre-rename evaluation; the final one is recorded
+  with the build below)
+
+Dry run, before building anything
+---------------------------------
+  $ nix build --dry-run .#shell-compositor
+  these 139 derivations will be built
+  these 388 paths will be fetched (1.3 GiB download, 3.8 GiB unpacked)
+
+  $ nix build --dry-run .#nixosConfigurations.k230.config.system.build.toplevel
+  these 237 derivations will be built
+  these 555 paths will be fetched (1.8 GiB download, 5.7 GiB unpacked)
+
+Against the estimate of 89 derivations / 875 MiB in
+docs/display-environment-options.md these look far worse, and the
+difference has three parts, each checked rather than guessed:
+
+1. The count includes non-compile derivations. The 139 for the compositor
+   include ~45 that are patches, setup hooks, wrapper scripts and
+   `python3-env` builders (absolute_gir_path.patch, pkg-config-role-hook,
+   pythoncheck.sh, ...). They take seconds. The document's 89 was counted
+   the same way, so this does not explain the gap on its own.
+
+2. About 50 of the 237 are REBUILDS OF DERIVATIONS THE BASELINE ALREADY
+   CONTAINS. Checked with nix-store -q --outputs: for systemd
+   (hrg87xdmvmibsh6mwh9i65mhy03i8887, the very same derivation
+   config.systemd.package names in both configurations) the `out` output
+   is present and `dev`, `man` and `debug` are missing; util-linux has
+   `bin`, `lib`, `mount`, `login`, `swap` and `lastlog` present and `out`,
+   `dev`, `man`, `debug` missing; linux-pam and openssh likewise keep `out`
+   and have lost `dev`/`man`/`doc`. Those outputs were garbage-collected on
+   this host after the baseline was built, and sway's stack needs some of
+   them (libsystemd headers for the tray, libpam for seatd's login checks,
+   util-linux's dev output through libinput's udev rules). Nix cannot
+   rebuild one output of a multi-output derivation, so the whole
+   derivation -- and everything between it and the toplevel: cryptsetup,
+   lvm2, iptables, iproute2, shadow, sudo, kbd, e2fsprogs, dbus, the
+   system units -- is rebuilt to identical store paths. These cost
+   wall-clock time on this host and add nothing to the closure. The full
+   list is under "Rebuilt baseline derivations" below.
+
+3. The genuinely new work is larger than 89 because of what the measured
+   stack pulls in on this pin beyond sway/foot/wvkbd themselves, traced
+   with `nix why-depends --derivation`:
+     - libjxl, openexr, imath, libhwy, gperftools, gtest, dav1d, libwebp,
+       libtiff, lerc, giflib: gdk-pixbuf's loader cache, reached through
+       swaybg, which sway-unwrapped hard-depends on for `output bg`.
+     - a CROSS-COMPILED python3 with fonttools, pyudev, libevdev, mako,
+       markdown, pyyaml: gobject-introspection for glib, reached through
+       wvkbd -> pango/cairo -> glib. glib's introspection data is built
+       with the target's python under mesonEmulatorHook.
+     - go: libcap's Go bindings (libcap -> system-path).
+     - libice, libsm, libxcb-{errors,image,render-util,util,wm}, libxft:
+       wlroots' X11 *backend* and sway's libxcb-wm, still built with
+       Xwayland off.
+     - the probes: cage x2, drm_info (pciutils, libdisplay-info),
+       libinput's tools, wayland-utils, wlfps, dejavu fonts.
+   None of these was in the document's dry run because that run was made
+   against a store that still had the GC'd outputs and, judging by the
+   count, before this pin's gobject-introspection required a target
+   python.
+
+Build, measured
+---------------
+Task 2.2 — the compositor alone
+  $ time nix build --max-jobs 8 --cores 0 .#shell-compositor
+  wall 722.140 s (12 min 2 s), 139 derivations built, 388 paths fetched
+  -> /nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12
+     (the wrapper; sway-unwrapped, wlroots 0.20.2 with Xwayland off,
+     librsvg and the gdk-pixbuf loader tail are inside that 12 minutes)
+  Every derivation cross-compiled. Nothing refused. The one build failure
+  of the whole exercise was in this repository's own wlfps derivation,
+  recorded under 2.4.
+
+Task 2.4 — derivations that refused to cross-compile
+-----------------------------------------------------
+One, and it was not in the shell stack itself.
+
+  execline-riscv64-unknown-linux-gnu-2.9.9.2
+    ./configure: line 270: pkg-config: command not found
+    ./configure: fatal: pkg-config --atleast-version=2.15.1.0 --print-errors -- libskarnet failed
+
+  Reached through: services.seatd (nixos/modules/services/desktops/seatd.nix)
+  -> ExecStart wraps seatd in `s6-notify-socket-from-fd` -> pkgs.s6 ->
+  execline. execline's configure shells out to pkg-config to find skalibs
+  and nixpkgs' derivation for it puts no pkg-config in nativeBuildInputs,
+  so the cross build dies in configurePhase before compiling anything.
+
+  What was done: nix/shell.nix no longer uses services.seatd. It declares
+  its own seatd unit (Type=simple, no notify wrapper, no s6) and the
+  compositor's unit waits for /run/seatd.sock in an ExecStartPre loop
+  instead of on a readiness notification. seatd itself cross-compiled
+  without complaint. Cost: -3 derivations (s6, execline, skalibs) and one
+  fewer supervisor in the closure.
+
+Two failures in this repository's own additions, for completeness, both
+fixed in the same commit and neither a nixpkgs refusal:
+  - wlfps: `pkg-config` in a cross buildPhase resolves to the build
+    platform's, which has no riscv64 wayland-client. It must be
+    $PKG_CONFIG, the cross wrapper.
+  - cage-rgb565: the probe patch included <drm_fourcc.h>, which is in
+    libdrm's include path and cage does not depend on libdrm. The fourcc
+    is now spelled out in the patch.
+
+Task 2.3 — the whole closure with the shell on
+-----------------------------------------------
+  $ time nix build --max-jobs 8 --cores 0 .#nixosConfigurations.k230.config.system.build.toplevel
+  (the closure as first evaluated: without evemu, and before the kernel
+  gained INPUT_UINPUT; those ride the image build below)
+
+  Stages, because the build restarted three times on the three failures
+  recorded under 2.4 (each restart resumed from the store; nothing was
+  rebuilt twice):
+    compositor (task 2.2)          139 derivations    722 s
+    toplevel, attempt 1             98 to build  ->  failed at wlfps, 10 s
+    toplevel, attempt 2             76 to build  ->  failed at cage-rgb565, 37 s
+    toplevel, attempt 3             73 to build  ->  failed at execline, 122 s
+    toplevel, attempt 4             30 to build  ->  done, 1814 s
+                                                     -------
+  wall-clock, all stages                              2705 s = 45 min
+  derivations built, all stages         about 235 (237 in the initial dry
+                                        run, less s6/execline/skalibs,
+                                        plus the regenerated unit and /etc
+                                        derivations)
+  of which rebuilds of baseline
+  derivations for GC'd outputs          about 50 (see above)
+
+  -> /nix/store/l6p5v97r0wjxvjcakflyvm7h9vwn9dc0-nixos-system-nixos-26.11.20260919.20b1ddd
+
+  Closure, nix path-info -S:
+    baseline (shell off)   1109.9 MiB   481 store paths
+    shell on               1220.1 MiB   560 store paths
+    delta                  +110.2 MiB   +95 paths added, 16 replaced
+                                        (the 16 are /etc, units, fontconfig
+                                        and the system-path, regenerated)
+  The added 95 paths total 111.2 MiB. Largest: librsvg 16.1, glib 15.2,
+  python3.14-setuptools 11.1 (dragged in as a runtime reference by
+  gobject-introspection's glib build, not used on the board),
+  xkeyboard-config 10.3, dejavu-fonts 9.0, sway-unwrapped 5.8, libjxl 3.7,
+  harfbuzz 3.5, gdk-pixbuf 2.8, libglvnd 2.6 (wlroots links it for its GLES
+  renderer even though Pixman is selected; no Mesa behind it), wlroots 1.9.
+
+  Against the estimate: docs/display-environment-options.md said 89
+  derivations and 875 MiB of fetches. Measured, the real delta ON THE
+  BOARD is +110 MiB of closure; the build-host cost was 45 minutes and
+  ~235 derivations, of which ~50 were this host re-making outputs it had
+  thrown away and ~45 are hooks and patches. The 875 MiB "to fetch" figure
+  was build-time inputs, not closure, and is not comparable to +110 MiB.
+
+  Mesa: absent. `grep -iE 'mesa|llvm|libgbm'` over the shell closure's
+  560 paths matches nothing, as in the baseline.

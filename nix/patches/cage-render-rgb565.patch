@@ -1,32 +1,34 @@
 --- a/output.c
 +++ b/output.c
-@@ -25,6 +25,7 @@
+@@ -25,6 +25,9 @@
  #include <wlr/render/wlr_renderer.h>
  #include <wlr/types/wlr_compositor.h>
  #include <wlr/types/wlr_data_device.h>
-+#include <drm_fourcc.h>
++/* DRM_FORMAT_RGB565, fourcc "RG16", as drm_fourcc.h defines it; spelled
++ * out so this probe needs no libdrm include path. */
++#define K230_DRM_FORMAT_RGB565 0x36314752u
  #include <wlr/types/wlr_output.h>
  #include <wlr/types/wlr_output_layout.h>
  #include <wlr/types/wlr_output_management_v1.h>
-@@ -108,6 +109,10 @@
+@@ -108,6 +111,10 @@
  
  	struct wlr_output_state state = {0};
  	wlr_output_state_set_enabled(&state, true);
 +	/* T-Display-K230 probe: the canaan-drm primary plane has no XRGB8888,
 +	 * so wlroots' default render format cannot be scanned out here; RGB565
 +	 * is on the plane and Pixman renders it. docs/evidence/drm-info.txt. */
-+	wlr_output_state_set_render_format(&state, DRM_FORMAT_RGB565);
++	wlr_output_state_set_render_format(&state, K230_DRM_FORMAT_RGB565);
  
  	if (wlr_output_commit_state(wlr_output, &state)) {
  		output_layout_add_auto(output);
-@@ -281,6 +286,10 @@
+@@ -281,6 +288,10 @@
  
  	struct wlr_output_state state = {0};
  	wlr_output_state_set_enabled(&state, true);
 +	/* T-Display-K230 probe: the canaan-drm primary plane has no XRGB8888,
 +	 * so wlroots' default render format cannot be scanned out here; RGB565
 +	 * is on the plane and Pixman renders it. docs/evidence/drm-info.txt. */
-+	wlr_output_state_set_render_format(&state, DRM_FORMAT_RGB565);
++	wlr_output_state_set_render_format(&state, K230_DRM_FORMAT_RGB565);
  	if (!wl_list_empty(&wlr_output->modes)) {
  		struct wlr_output_mode *preferred_mode = wlr_output_preferred_mode(wlr_output);
  		if (preferred_mode) {

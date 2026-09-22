@@ -25,7 +25,7 @@ stdenv.mkDerivation {
     wayland-scanner private-code  $xdg   xdg-shell-protocol.c
     $CC -std=c11 -O2 -Wall -o wlfps wlfps.c \
       wlr-layer-shell-unstable-v1-protocol.c xdg-shell-protocol.c \
-      $(pkg-config --cflags --libs wayland-client) -lrt
+      $($PKG_CONFIG --cflags --libs wayland-client) -lrt
     runHook postBuild
   '';
 

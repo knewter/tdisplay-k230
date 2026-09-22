@@ -30,6 +30,12 @@ let
   cage-rgb565 = cage.overrideAttrs (old: {
     pname = "cage-rgb565";
     patches = (old.patches or [ ]) ++ [ ./patches/cage-render-rgb565.patch ];
+    # Both variants sit in the system path; give this one its own name and
+    # drop its man page so nothing collides with the unpatched cage.
+    postInstall = (old.postInstall or "") + ''
+      mv $out/bin/cage $out/bin/cage-rgb565
+      rm -rf $out/share/man
+    '';
   });
 
   wlfps = pkgs.callPackage ./wlfps { wlroots_0_20 = wlroots; };
@@ -134,7 +140,25 @@ in
     # compositor's behalf and puts the active VT into KD_GRAPHICS, which is
     # what stops fbcon drawing over the compositor. The shell user only needs
     # to be in the `seat` group.
-    services.seatd.enable = true;
+    #
+    # Not services.seatd: that module wraps seatd in s6-notify-socket-from-fd,
+    # and s6's dependency execline refuses to cross-compile at this pin (its
+    # configure needs pkg-config and the derivation does not provide one --
+    # docs/evidence/shell-build.txt, task 2.4). A plain unit needs neither;
+    # the compositor's unit waits for the socket instead of a notification.
+    users.groups.seat = { };
+    systemd.services.seatd = {
+      description = "Seat management daemon";
+      documentation = [ "man:seatd(1)" ];
+      wantedBy = [ "multi-user.target" ];
+      restartIfChanged = false;
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${lib.getExe' pkgs.seatd "seatd"} -g seat -l info";
+        Restart = "always";
+        RestartSec = 1;
+      };
+    };
 
     users.groups.shell = { };
     users.users.shell = {
@@ -177,6 +201,16 @@ in
         Group = "shell";
         RuntimeDirectory = "shell";
         RuntimeDirectoryMode = "0700";
+        # seatd's unit is Type=simple (see above), so "after seatd" only
+        # means the process exists. Wait for its socket, up to 10 s.
+        ExecStartPre = pkgs.writeShellScript "wait-for-seatd" ''
+          for i in $(seq 50); do
+            [ -S /run/seatd.sock ] && exit 0
+            sleep 0.2
+          done
+          echo "seatd socket never appeared" >&2
+          exit 1
+        '';
         ExecStart = "${sway}/bin/sway ${if cfg.debugLog then "-d" else "-V"} -c ${swayConfig}";
         Restart = "on-failure";
         RestartSec = 2;
@@ -193,12 +227,19 @@ in
       pkgs.foot
       pkgs.foot.terminfo
       pkgs.wvkbd
+      pkgs.seatd
     ] ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
       pkgs.drm_info
       pkgs.libinput
       pkgs.wayland-utils
+      # evemu creates a uinput touchscreen and injects touches at known
+      # panel coordinates (the kernel gained INPUT_UINPUT for exactly this),
+      # so compositor -> keyboard -> terminal can be exercised unattended.
+      # A software proxy: evidence from it is labelled "injected", and the
+      # touch requirement still closes on a real tap at the bench.
+      pkgs.evemu
       wlfps
     ];
 

@@ -24,7 +24,13 @@ GBM branch and reaches the dumb-buffer branch at
 `drmIsMaster()` on it. `include/render/allocator/drm_dumb.h` declares
 `wlr_drm_dumb_allocator_create(int fd)` returning buffers with a `void *data`
 the CPU writes into. The trade-offs of every alternative are recorded in
-`docs/display-environment-options.md`.*
+`docs/display-environment-options.md`. On the board, `docs/evidence/drm-info.txt`:
+`canaan-drm` exposes a primary node only (no `renderD*`),
+`DRM_CAP_DUMB_BUFFER = 1`, and `modetest` scanned out a dumb buffer in
+ARGB8888 and in RGB565, photographed. The primary plane has no XRGB8888, so
+the compositor must render RGB565 (sway `render_bit_depth 6`) or ARGB8888;
+wlroots' default of XRGB8888 is refused by `output_pick_format()`
+(`types/output/render.c:147-190`) with no fallback.*
 
 #### Scenario: The rendering path is inspected
 
