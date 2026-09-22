@@ -183,3 +183,27 @@ The sparse SDK fetch, checked file by file:
 
 Not done here: booting any of it. The compilation step is the one that cannot be checked against a hash,
 and it is the only one that has not been checked at all.
+
+5. nix build .#sdImage, pure  (the card image with the stage 1 above, for task 5.1)
+-----------------------------------------------------------------------------------
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img
+  2210918400 bytes. From the build log:
+  Device                                                         Boot  Start     End Sectors Size Id Type
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img2      262144 4316151 4054008 1.9G 83 Linu
+  --- stage 1, raw, into the gap before partition 1
+  Device                                                         Boot  Start     End Sectors Size Id Type
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img2      262144 4316151 4054008 1.9G 83 Linu
+  $ xxd at the raw offsets, then sha256 over each slot for the file's length:
+    0x100000  4b32 3330           
+    0x180000  4b32 3330           
+    0x200000  4b32 3330           
+    0x100000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x180000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x200000  805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  = fn_ug_u-boot.bin
+    0x300000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+    0x320000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+  $ debugfs -R 'dump /fw_jump_add_uboot_head.bin' <partition 1>; sha256sum
+    42db0259fca9e81a32469ae749754378c587ef3a8fdef519925f2d8c12ffb2d4  = fw_jump_add_uboot_head.bin
+  Every slot holds the bytes result-stage1/SHA256SUMS lists. This image has not been written to a card.
