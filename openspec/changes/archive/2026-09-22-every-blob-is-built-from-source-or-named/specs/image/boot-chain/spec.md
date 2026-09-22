@@ -30,12 +30,45 @@ nixpkgs `gzip` plus `mkimage` plus the U-Boot tree's own
 byte from the compiled U-Boot. `readelf -A` reports the compiled SPL as
 `rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0` — no vendor ISA — and
 the T-Head cache operations are hand-encoded as `.long` words, so the vendor
-toolchain is not required to assemble them.*
+toolchain is not required to assemble them. Built 2026-09-22 and recorded in
+`docs/evidence/stage1-from-nix.txt`: `nix build .#uboot-k230` compiles
+U-Boot and its SPL with nixpkgs GCC 15.3.0 (SPL 222 816 bytes against the
+524 288-byte `CONFIG_SPL_SIZE_LIMIT`; `readelf -A` reports
+`rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0`,
+no vendor extension; zero `th.` mnemonics), `nix build .#opensbi-k230`
+compiles OpenSBI 1.4 with the overlay under a GCC 13 pin, and `nix build
+.#stage1` wraps both into the five files the card carries, with the `K230`
+magic, a CM byte of `0x09`, and the environment's `mkenvimage` step
+reproducing the SDK default byte for byte
+(`f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957`).
+One deliberate departure from the vendor's build: the vendor's OpenSBI is
+compiled with `FW_JUMP_FDT_ADDR = FW_TEXT_START + 0x2200000`, so `fw_jump`
+copies the device tree to `0x2200000` — inside the kernel image loaded at
+`0x200000`, in its `.BTF` section, as
+`docs/evidence/opensbi-fdt-lands-in-kernel-image.md` reads back from
+`/sys/kernel/btf/vmlinux` on the board. The OpenSBI this project builds
+leaves `FW_JUMP_FDT_ADDR` undefined and passes the device tree through where
+`bootm` placed it; `docs/evidence/opensbi-fdt-passthrough.txt` is the
+`fw_next_arg1` disassembly before and after.*
 
-<!-- UNVERIFIED: no stage 1 compiled by this project has been booted. The
-compilation step is the one part not yet reproduced; grounded once
-docs/evidence/stage1-from-source.txt records the board reaching a prompt on a
-stage 1 the flake built. -->
+*Grounding, on hardware: `docs/evidence/stage1-from-source.txt`. On
+2026-09-22 the board booted the pure `nix build .#sdImage` to the NixOS
+login prompt with no panic and no emergency shell, and hashed its own
+card's raw slots from Linux: SPL at 1 MiB `fe3d537f…`, U-Boot at 2 MiB
+`805bd543…`, `/boot/fw_jump_add_uboot_head.bin` `9627edbe…` — the bytes
+`result-stage1/SHA256SUMS` lists for this flake's output. The BootROM ran
+this SPL, it trained the DRAM and ran this U-Boot, and U-Boot ran this
+OpenSBI; nothing vendor-compiled was on that card.
+`docs/evidence/boot-from-source-cold.txt` is a second capture from power-on:
+bootm's `Loading Device Tree to 000000000a0eb000` followed by this flake's
+OpenSBI banner reporting `Platform Name : LILYGO T-Display-K230` and
+`Domain0 Next Arg1 : 0x000000000a0eb000` — the device tree handed on where
+`bootm` put it, not at `0x2200000`. What neither transcript holds: the SPL's
+`PMU Major Msg:` lines and the `U-Boot 2022.10` banner. The CH342 console
+bridge loses power with the board and takes about 3.4 s to re-enumerate,
+and stage 1 prints inside that window; the cold capture's `--- port lost`
+/ `--- port opened` markers at 10.7 s and 14.1 s bracket it. The boot is
+observed; the banners are inferred from it.*
 
 #### Scenario: Someone needs to change how the board boots
 
@@ -66,7 +99,11 @@ into an array at build time. Measured 2026-09-20 and recorded in
 memory, sha256
 `517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b`, plus 1 660
 bytes of data memory, and it sits verbatim at offset `0x1fc74` of the
-committed SPL — 15.9 % of it.*
+vendor-compiled SPL — 15.9 % of it. In the SPL this flake compiles the same
+bytes, same hashes, sit at `0x23f80` of `u-boot-spl.bin` and `0x24184` of
+`fn_u-boot-spl.bin` — 14.7 % of a 222 816-byte SPL — measured 2026-09-22 and
+recorded in `docs/evidence/stage1-from-nix.txt`. Compiling it moved it; it
+did not shrink it.*
 
 #### Scenario: A reader asks whether stage 1 is now fully open
 
@@ -88,9 +125,15 @@ Gailly.`, `bug-gzip@gnu.org`, and gzip's unmodified option table
 `ab:cdfhH?klLmMnNqrS:tvVZ123456789`, in which `-n8` is the ordinary `-n -8`.
 Measured 2026-09-20 on the SDK's own 693 576-byte `u-boot.bin`: nixpkgs gzip
 1.14 produces output identical to the vendor binary at every level the SDK
-falls back through. What is actually vendor-specific is a one-byte `sed` on
-the following line, flipping the gzip header's CM field to `0x09` so that the
-SPL's `k230_priv_unzip()` uses the SoC's hardware decompressor.*
+falls back through — `docs/evidence/gzip-equivalence.txt` is that
+measurement, re-run 2026-09-22 with both sha256 sets at levels 4 through 9.
+What is actually vendor-specific is a one-byte `sed` on the following line,
+flipping the gzip header's CM field to `0x09` so that the SPL's
+`k230_priv_unzip()` uses the SoC's hardware decompressor; `nix/stage1.nix`
+carries that `sed`, and `docs/evidence/stage1-from-nix.txt` records the
+packaging over the vendor-compiled U-Boot reproducing the on-card
+`fn_ug_u-boot.bin` and `fn_u-boot-spl.bin` byte for byte with nixpkgs tools
+alone, and exactly which 40 bytes the `sed` changes.*
 
 #### Scenario: The firmware build is audited
 

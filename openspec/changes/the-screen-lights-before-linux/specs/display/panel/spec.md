@@ -1,36 +1,4 @@
-# display/panel Specification
-
-## Purpose
-Defines what appears on this board's AMOLED and how the panel is driven under
-Linux.
-
-## Requirements
-
-### Requirement: The panel is described by device tree, not by a bespoke driver
-
-The RM69A10 SHALL be driven through the kernel's device-tree-configured
-generic Canaan panel support. This project SHALL NOT add a panel driver in C
-for it.
-
-*Grounding: `drivers/gpu/drm/panel/panel-canaan-universal.c` in the pinned
-Xuantie kernel is 395 lines and reads its init command sequence
-(`struct panel_cmd_seq *init_seq_v1`), timings (`struct videomode vm`), reset
-and power GPIOs, and DSI lane count from the device tree. The reference
-`k230-canmv-v3-lcd.dts` uses it via `display-st7701-480x800.dtsi` for a
-different panel.*
-
-The init sequence SHALL be transcribed from the vendor's working
-implementation rather than derived from the panel datasheet.
-
-*Grounding: LilyGO's `mpp/kernel/connector/src/rm69a10.c` drives this exact
-panel on this exact board; `docs/rtsmart-boot-log.txt` records it running —
-`rm69a10_init`, `rm69a10_568x1232_init`, `rm69a10_set_phy_freq`. The panel
-reset is GPIO22.*
-
-#### Scenario: The panel support is inspected
-
-- **WHEN** someone asks which driver drives this screen
-- **THEN** it is the generic Canaan panel support, configured by this board's device tree, with no board-specific C
+## MODIFIED Requirements
 
 ### Requirement: The panel displays what the system draws
 
@@ -59,8 +27,26 @@ frame and no tearing. Mechanism is not established; the untested
 hypothesis is that `35 00` SET_TEAR_ON is issued but nothing consumes
 TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 
-The system SHALL present the panel as a working framebuffer at 568x1232, and
-what is written to that framebuffer SHALL appear on the screen.
+*The roll was subsequently stopped by the DSI PHY calibration band:
+`canaan,hsfreqrange = <0x87>` in the device tree,
+`docs/evidence/dsi-hsfreqrange-hardcoded.md`.*
+
+The system SHALL present the panel as a display device at 568x1232 through
+DRM, and what the system draws on it SHALL appear on the screen. The
+framebuffer console on the panel — `/dev/fb0` and `console=tty0` — SHALL
+remain available as a configuration, and SHALL be the configuration used
+when the panel path is being debugged; it is no longer what a boot shows by
+default, because `display/boot-splash` puts a splash there and the console's
+takeover is what would clear it.
+
+*Why this changed: the fbdev emulation is the thing that performs the first
+modeset during boot, from the output poll worker onto a zeroed buffer
+(`drm_fbdev_generic.c:89-98`, and the trace in
+`docs/evidence/dsi-phy-hang.md`). A splash that survives the kernel cannot
+coexist with it, so it becomes the debugging configuration rather than the
+default. Nothing about the DRM device, the mode, or the plane formats
+changes; `modetest -s 48:568x1232@AR24` set a mode on this panel before the
+fbdev fix was ever applied (`docs/evidence/kernel-patches.md`).*
 
 **A framebuffer device existing is not evidence.** This SHALL be grounded by a
 photograph of the physical screen, because a pipeline that reports success and
@@ -70,6 +56,11 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
 #### Scenario: The system boots with the panel configured
 
 - **WHEN** the board boots
+- **THEN** a DRM device with a 568x1232 mode is present, and a photograph shows the panel displaying what the boot's owner drew — the splash by default, the console when that configuration is selected
+
+#### Scenario: The panel console is configured
+
+- **WHEN** the system is built with the panel console selected
 - **THEN** a framebuffer at 568x1232 is present, and a photograph shows the console on the screen
 
 #### Scenario: Something is written to the framebuffer

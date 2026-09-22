@@ -1,11 +1,12 @@
-## Purpose
+# image/vendor-blobs Specification
 
+## Purpose
 Names every opaque binary this project ships, executes during a build, or is
 one configuration line away from pulling in — with what it is, what would
 remove it, and what it says about the next board — so that a blob we keep is
 one we chose rather than one nobody noticed.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Every opaque binary this project depends on is listed before it ships
 
@@ -17,12 +18,18 @@ binaries that are *not* on the current path as well as those that are, marked
 as such, because the cost of a blob is paid when someone enables it rather
 than when it is written down.
 
-*Grounding: `docs/blob-inventory.md` is that inventory. It records 33 entries
-covering roughly 330 individual files: three committed under
-`firmware/stage1/`, two byte ranges embedded inside one of those, 121 in the
-Kendryte Linux SDK, about 203 in the LilyGO RT-Smart clone, one downloaded
-toolchain, and the BootROM. Every sha256 in it was computed from the tree
-`firmware/stage1/PROVENANCE.txt` describes.*
+*Grounding: `docs/blob-inventory.md` is that inventory. Its MANIFEST holds
+68 rows: the five stage-1 files and the two byte ranges embedded in one of
+them, the nine images this repository commits as evidence, the three source
+fetches the stage-1 nix files pin, the BootROM, the toolchain and two
+downloads, and the rest covering the Kendryte Linux SDK and the LilyGO
+RT-Smart clone by hash or by counted group. `docs/evidence/blob-scan.txt`
+records `tools/blob-scan.py` walking the committed tree and both vendor
+checkouts on 2026-09-22 — 45 422 files, 3 597 of them binary — and matching
+every binary to a row, with 54 rows verified against the bytes on disk. The
+first run of that scanner is also in the file: it found 3 080 vendor binaries
+and four group counts the hand-compiled inventory had wrong, which is why
+the inventory is a scanned artifact and not a remembered one.*
 
 #### Scenario: Someone asks what unauditable code this board runs
 
@@ -42,9 +49,17 @@ account for. The check SHALL be "every binary is accounted for", not "there
 are no binaries" — an entry may record that a blob is permanent and that is a
 passing state.
 
-<!-- UNVERIFIED: tools/blob-scan.py does not exist yet. Grounded once it is
-committed and docs/evidence/blob-scan.txt records a run that both passes on
-the current tree and fails on a planted unlisted binary. -->
+*Grounding: `tools/blob-scan.py`, called from `scripts/build_site.py` beside
+the evidence check, so a site that publishes the inventory cannot publish a
+stale one. `docs/evidence/blob-scan.txt` records, on 2026-09-22: the scan
+passing on the committed tree with both vendor checkouts walked; the scan
+passing on the committed tree alone, which is what CI sees; and the
+scanner's self-test planting, in a scratch copy of the tree, a binary with
+no row, a release hash in `nix/stage1.nix` with no row, and a listed blob
+whose bytes had changed — each refused with a non-zero exit that names the
+fault. The check also reaches what a filesystem walk cannot: every hash the
+stage-1 nix files pin must be classified by the inventory as source or as a
+fetched binary, so a blob arriving by URL is refused the same way.*
 
 #### Scenario: A new firmware file appears in the tree
 

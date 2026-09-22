@@ -1,0 +1,262 @@
+Stage 1 built by the flake: what came out, and what was checked (tasks 2.2, 3.1-3.4, 4.1-4.2)
+===========================================================================================
+Built 2026-09-22 on solomon from the worktree for every-blob-is-built-from-source-or-named,
+nixpkgs 20b1ddd1aa5ace70c9468305030aa4f9ef79671b, with --max-jobs 8 --cores 0. Everything
+below is pasted from the build logs and from commands run on the results. NONE OF THIS IS
+A BOOT: no stage 1 this flake compiled has been put on a card yet. The boot transcript,
+when it exists, is docs/evidence/stage1-from-source.txt.
+
+Sources, pinned by hash (nix/uboot-k230.nix, nix/opensbi-k230.nix, nix/k230-sdk-src.nix)
+------------------------------------------------------------------------------------------
+  u-boot-2022.10.tar.bz2         sha256-ULRIKlBbwoG6hHDDmaPCbhReKbI1ALw1xQ3r1/pGvfg=  (50b4482a...)
+  riscv-software-src/opensbi v1.4  sha256-T8ZeAzjM9aeTXitjE7s+m+jjGGtDo2jK1qO5EuKiVLU=
+  kendryte/k230_linux_sdk 1104236  sha256-P3XkeyJPkpe/h0oHAHCiz8a0VXofw1zsQ3YSa6UcG8w=  (sparse: boot/uboot, boot/opensbi, k230-soc/env, configs)
+
+The sparse SDK fetch, checked file by file:
+  $ find -L result-k230-sdk-src -type f -print0 | xargs -0 file --mime-type -b | sort | uniq -c
+      103 text/plain
+      174 text/x-c
+        2 text/x-makefile
+        3 text/x-script.python
+        5 text/x-shellscript
+  $ diff -r result-k230-sdk-src/buildroot-overlay/boot .build/k230_linux_sdk/buildroot-overlay/boot && echo identical
+  identical
+
+1. nix build .#uboot-k230  (U-Boot 2022.10 + Canaan overlay, k230_canmv_v3_defconfig, nixpkgs GCC 15.3.0 cross)
+----------------------------------------------------------------------------------------------------------------
+  built first time, no compiler pin needed. From the build log:
+  SPL size check: spl/u-boot-spl.bin is 222816 bytes (0x36660) against CONFIG_SPL_SIZE_LIMIT=0x80000 (524288 bytes)
+  $ ls -l result-uboot-k230/u-boot.bin result-uboot-k230/spl/u-boot-spl.bin
+  222816  result-uboot-k230/spl/u-boot-spl.bin
+  721392  result-uboot-k230/u-boot.bin
+  $ cat result-uboot-k230/readelf-A.txt   (the ISA the compiler emitted; no vendor extension)
+  
+  File: u-boot
+  Attribute Section: riscv
+  File Attributes
+    Tag_RISCV_stack_align: 16-bytes
+    Tag_RISCV_arch: "rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0"
+    Tag_RISCV_priv_spec: 1
+    Tag_RISCV_priv_spec_minor: 11
+  
+  File: spl/u-boot-spl
+  Attribute Section: riscv
+  File Attributes
+    Tag_RISCV_stack_align: 16-bytes
+    Tag_RISCV_arch: "rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0"
+    Tag_RISCV_priv_spec: 1
+    Tag_RISCV_priv_spec_minor: 11
+  $ riscv64-unknown-linux-gnu-objdump -d result-uboot-k230/spl/u-boot-spl | grep -c 'th\.'
+/bin/bash: line 31: /nix/store/80r48xbrknf3d5c02p7h24k9cd2aq6rv-riscv64-unknown-linux-gnu-binutils-wrapper-2.46-man/bin/riscv64-unknown-linux-gnu-objdump: No such file or directory
+  0
+  $ strings result-uboot-k230/spl/u-boot-spl.bin | grep -c 'PMU Major Msg'
+  18
+
+  The DDR PMU training firmware, inside the SPL we compiled. The same bytes docs/blob-inventory.md
+  §A5-A6 hashed inside the vendor SPL, at a new offset (the compiler laid the image out differently):
+    imem (32768 B): sha256 517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b
+      in the vendor fn_u-boot-spl.bin at 0x1fc74, in our u-boot-spl.bin at 0x23f80, in our fn_u-boot-spl.bin at 0x24194
+    dmem (1660 B): sha256 1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313
+      in the vendor fn_u-boot-spl.bin at 0x1f5f4, in our u-boot-spl.bin at 0x23900, in our fn_u-boot-spl.bin at 0x23b14
+    imem is 14.7% of our 222816-byte SPL
+
+2. nix build .#opensbi-k230  (OpenSBI 1.4 + Canaan's nine-file overlay, generic, FW_TEXT_START=0)
+---------------------------------------------------------------------------------------------------
+  First attempt, GCC 15.3.0, failed: GCC 15 defaults to C23, where bool is a keyword, and
+  include/sbi/sbi_types.h:47 says 'typedef int bool;' under -Werror:
+    error: 'bool' cannot be defined via 'typedef'
+    note: 'bool' is a keyword with '-std=c23' onwards
+  Pinned GCC 13 (useGcc13 = true in nix/opensbi-k230.nix), as the design says to do rather than patch.
+  Second attempt, from the build log:
+  opensbi-k230: fw_jump.bin is 270744 bytes; carries canaan,kendryte-k230 and thead_disable_maee
+  $ grep THEAD result-opensbi-k230/config
+  CONFIG_PLATFORM_THEAD=y
+  CONFIG_THEAD_C9XX_PMU=y
+  CONFIG_THEAD_C9XX_ERRATA=y
+  $ strings result-opensbi-k230/fw_jump.bin | grep -n 'canaan,kendryte-k230'
+  776:canaan,kendryte-k230
+  $ riscv64-unknown-linux-gnu-nm result-opensbi-k230/fw_jump.elf | grep -i 'maee\|fw_next_arg1'
+/bin/bash: line 63: /nix/store/80r48xbrknf3d5c02p7h24k9cd2aq6rv-riscv64-unknown-linux-gnu-binutils-wrapper-2.46-man/bin/riscv64-unknown-linux-gnu-nm: No such file or directory
+  $ riscv64-unknown-linux-gnu-objdump -d result-opensbi-k230/fw_jump.elf | grep -A2 '<fw_next_arg1>:'   (FW_JUMP_FDT_ADDR, as the vendor derives it)
+/bin/bash: line 65: /nix/store/80r48xbrknf3d5c02p7h24k9cd2aq6rv-riscv64-unknown-linux-gnu-binutils-wrapper-2.46-man/bin/riscv64-unknown-linux-gnu-objdump: No such file or directory
+  Size against the vendor's build of the same sources: ours 270744 bytes, vendor 270728 (Xuantie GCC 14.1.1).
+
+3. nix build .#stage1-packaging over the VENDOR-compiled u-boot.bin  (task 2.2: the packaging reproduces the vendor's bytes)
+--------------------------------------------------------------------------------------------------------------------------
+  Inputs: the SDK's Docker build of u-boot.bin (07bca1a1d64f26e7...) and spl/u-boot-spl.bin (fd2f3a34733b4258...)
+  $ K230_UBOOT_DIR=<that dir> nix build --impure .#stage1-packaging
+  $ sha256sum result-stage1-packaging-vendor/*.bin firmware/stage1/*.bin   (the latter: tools/gen-stage1.sh's output, what the last image carried)
+  3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  result-stage1-packaging-vendor/fn_u-boot-spl.bin
+  c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4  result-stage1-packaging-vendor/fn_ug_u-boot.bin
+  3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  (shared checkout) firmware/stage1/fn_u-boot-spl.bin
+  c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4  (shared checkout) firmware/stage1/fn_ug_u-boot.bin
+  Byte-identical, both files. nixpkgs gzip 1.14 + nixpkgs mkimage 2026.07 + the U-Boot tree's firmware_gen_no_securiy.py,
+  SOURCE_DATE_EPOCH=1700000000, no vendor executable.
+
+  What the vendor's one-byte sed changes. The same packaging with cmByte = false (the CM byte left at 0x08):
+  $ sha256sum result-stage1-packaging-vendor-cm08/fn_ug_u-boot.bin
+  322a829eae456e5483a57932f5b8e7f0c9469328931f814d417d25f7d4cc40d2  result-stage1-packaging-vendor-cm08/fn_ug_u-boot.bin
+  $ cmp -l result-stage1-packaging-vendor-cm08/fn_ug_u-boot.bin result-stage1-packaging-vendor/fn_ug_u-boot.bin   (1-based offset, octal bytes)
+      13 201 340
+      14 161  60
+      15 107 153
+      16 221 174
+      17   4 136
+      18 304 173
+      19 173 126
+      20 300 270
+      21 200 137
+      23  76  20
+      24  61   5
+      25 275  32
+      26  21 273
+      27 170 124
+      28 243 323
+      29 322   1
+      30 142 263
+      31 237 123
+      32  14   6
+      33  22 144
+      34  52 106
+      35 147 333
+      36 244   3
+      37 260 175
+      38 357  65
+      39  63 122
+      40 232 161
+      41  13 256
+      42 175 221
+      43 301 232
+      44  26 364
+     537  55 365
+     538 151 335
+     539 325 122
+     540 373 272
+     557 250 201
+     558  51 145
+     559 265 221
+     560  63  42
+     599  10  11
+  40 bytes differ:
+    offset 599        the gzip CM byte, 010 -> 011 (0x08 -> 0x09); the gzip stream starts at 0-based 596, after the 532-byte K230 header and the 64-byte uImage header
+    offsets 557-560   the uImage header's data CRC (ih_dcrc), which covers the gzip stream
+    offsets 537-540   the uImage header's header CRC (ih_hcrc), which covers ih_dcrc
+    offsets 13-44     the K230 firmware header's SHA-256 over the payload (31 of 32 bytes differ; byte 22 happens to coincide)
+  Three digests, not two: the task said 'the two checksums that cover it' and there is a third, the K230 header's SHA-256.
+
+4. nix build .#stage1  (the five files the card carries, from this flake's own U-Boot and OpenSBI)
+-----------------------------------------------------------------------------------------------------
+  $ cat result-stage1/SHA256SUMS
+  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  fn_u-boot-spl.bin
+  805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  fn_ug_u-boot.bin
+  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  env.env
+  7936a5aebba364663e65c04028f95d7b1d90c93082ea710c65ccd6f23fee77b3  fw_jump.bin
+  42db0259fca9e81a32469ae749754378c587ef3a8fdef519925f2d8c12ffb2d4  fw_jump_add_uboot_head.bin
+  $ ls -l result-stage1
+  $ head -c4 result-stage1/fn_u-boot-spl.bin; head -c4 result-stage1/fn_ug_u-boot.bin      (the K230 magic the BootROM looks for)
+  K230 K230
+  $ xxd -s 596 -l 4 result-stage1/fn_ug_u-boot.bin                                        (gzip magic 1f 8b, CM 09)
+  00000254: 1f8b 0900                                ....
+  $ file result-stage1/fw_jump_add_uboot_head.bin
+  result-stage1/fw_jump_add_uboot_head.bin: u-boot legacy uImage, linux, Linux/RISC-V, OS Kernel Image (Not compressed), 270744 bytes, Tue Nov 14 22:13:20 2023, Load Address: 00000000, Entry Point: 00000000, Header CRC: 0X1A0FAB6D, Data CRC: 0X8E89CE9F
+  $ mkimage -l result-stage1/fw_jump_add_uboot_head.bin
+  Image Name:   linux
+  Created:      Tue Nov 14 16:13:20 2023
+  Image Type:   RISC-V Linux Kernel Image (uncompressed)
+  Data Size:    270744 Bytes = 264.40 KiB = 0.26 MiB
+  Load Address: 00000000
+  Entry Point:  00000000
+
+  The environment (task 3.4), from the build log of the k230-stage1-env derivation:
+    default.env -> f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957 (matches)
+    cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  env.env
+  mkenvimage over the SDK's unmodified default.env gives f522ba13..., the hash task 3.4 names, and the
+  derivation fails if it ever does not. The env.env that ships is mkenvimage over
+  firmware/stage1/tdisplay.env -- default.env with the load addresses moved above a 57 MiB kernel and
+  the bootargs.txt import, both observed on hardware (docs/evidence/hardware-boot.txt) -- and its hash
+  cf108755... is byte-identical to the env.env tools/gen-stage1.sh produced for the last image.
+  $ diff .build/k230_linux_sdk/buildroot-overlay/board/canaan/k230-soc/env/default.env firmware/stage1/tdisplay.env
+  27c27
+  < blinux=k230_set_dtb && ext4load mmc ${mmc_boot_dev_num}:1 0x3000000 /fw_jump_add_uboot_head.bin && ext4load mmc ${mmc_boot_dev_num}:1 0x200000 /${k} && ext4load mmc ${mmc_boot_dev_num}:1 0x2200000 /${dtb} && bootm 0x3000000 - 0x2200000;
+  ---
+  > blinux=k230_set_dtb && ext4load mmc ${mmc_boot_dev_num}:1 0x7000000 /bootargs.txt && env import -t 0x7000000 ${filesize} && ext4load mmc ${mmc_boot_dev_num}:1 0x8000000 /fw_jump_add_uboot_head.bin && ext4load mmc ${mmc_boot_dev_num}:1 0x200000 /${k} && ext4load mmc ${mmc_boot_dev_num}:1 0x8400000 /${dtb} && ext4load mmc ${mmc_boot_dev_num}:1 0x9000000 /initrd.uimg && bootm 0x8000000 0x9000000 0x8400000;
+
+Not done here: booting any of it. The compilation step is the one that cannot be checked against a hash,
+and it is the only one that has not been checked at all.
+
+5. nix build .#sdImage, pure  (the card image with the stage 1 above, for task 5.1)
+-----------------------------------------------------------------------------------
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img
+  2210918400 bytes. From the build log:
+  Device                                                         Boot  Start     End Sectors Size Id Type
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img2      262144 4316151 4054008 1.9G 83 Linu
+  --- stage 1, raw, into the gap before partition 1
+  Device                                                         Boot  Start     End Sectors Size Id Type
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img1        8192  237567  229376 112M 83 Linu
+  /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img2      262144 4316151 4054008 1.9G 83 Linu
+  $ xxd at the raw offsets, then sha256 over each slot for the file's length:
+    0x100000  4b32 3330           
+    0x180000  4b32 3330           
+    0x200000  4b32 3330           
+    0x100000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x180000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x200000  805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  = fn_ug_u-boot.bin
+    0x300000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+    0x320000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+  $ debugfs -R 'dump /fw_jump_add_uboot_head.bin' <partition 1>; sha256sum
+    42db0259fca9e81a32469ae749754378c587ef3a8fdef519925f2d8c12ffb2d4  = fw_jump_add_uboot_head.bin
+  Every slot holds the bytes result-stage1/SHA256SUMS lists. This image has not been written to a card.
+
+6. Rebuilt with OpenSBI passing the device tree through  (task 4.2b; supersedes §2 and §4-5 for what the card should carry)
+------------------------------------------------------------------------------------------------------------------------------
+  §2 above recorded fw_next_arg1 returning 0x2200000, the vendor's FW_JUMP_FDT_ADDR, and docs/evidence/
+  opensbi-fdt-lands-in-kernel-image.md then proved on the board that this copies the DTB into the kernel's
+  .BTF section. nix/opensbi-k230.nix now leaves FW_JUMP_FDT_ADDR undefined (FW_JUMP_FDT_ADDR= FW_PAYLOAD=n
+  on the make command line; docs/evidence/opensbi-fdt-passthrough.txt has the mechanism and the disassembly
+  before and after). §2 through §5 are left as written: they are the byte-identical-packaging checkpoint and
+  the image at /nix/store/05p8mf1p5k4ss0xw7dnmqs644gbvs8rf-k230-sd-image.img is the faithful-to-vendor fallback.
+
+  $ nix build .#opensbi-k230 .#stage1 .#sdImage   (pure)
+  opensbi-k230: /nix/store/7fmfx6dan9c2dsa55cs3jba3b5wx6w6p-opensbi-k230-riscv64-unknown-linux-gnu-1.4
+  stage1:       /nix/store/p0p73sa482k9i60j4nq93vy71x31yish-k230-stage1
+  sdImage:      /nix/store/vs5mll0vif0lnq36srm6qxgx75mgwf5m-k230-sd-image.img
+  $ cat result-stage1/SHA256SUMS
+    fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  fn_u-boot-spl.bin
+    805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  fn_ug_u-boot.bin
+    cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  env.env
+    74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9  fw_jump.bin
+    9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  fw_jump_add_uboot_head.bin
+  Only the two OpenSBI files changed; the SPL, U-Boot and environment hashes are those of §4.
+  $ sha256 over each slot of the image, for the file's length:
+    0x100000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x180000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin
+    0x200000  805bd5434a48e79ba604f309c12d3273a78babc993eae67eff3065cc9e38a2b9  = fn_ug_u-boot.bin
+    0x300000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+    0x320000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+  $ debugfs -R 'dump /fw_jump_add_uboot_head.bin' <partition 1>; sha256sum
+    9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  = fw_jump_add_uboot_head.bin  (the pass-through OpenSBI)
+  Not flashed, not booted. When it is, opensbi-fdt-lands-in-kernel-image.md's dd on /sys/kernel/btf/vmlinux
+  should return BTF bytes, not d0 0d fe ed.
+
+7. tools/flash-latest.sh after task 5.3: the everyday flash builds the from-source image  (dry runs, nothing written)
+----------------------------------------------------------------------------------------------------------------------
+  Before 5.3 the script set K230_STAGE1_DIR unconditionally, so after this change landed a plain
+  'nix build .#sdImage' and './tools/flash-latest.sh' would have written two different stage 1s.
+  $ ./tools/flash-latest.sh --dry-run
+    image: /nix/store/vs5mll0vif0lnq36srm6qxgx75mgwf5m-k230-sd-image.img
+    stage 1: built from source by this flake (nix/stage1.nix)
+    dry run: not flashing /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1
+  (the image the board booted, docs/evidence/stage1-from-source.txt)
+  $ K230_STAGE1=vendor ./tools/flash-latest.sh --dry-run     # with firmware/stage1/ empty
+    error: K230_STAGE1=vendor but .../firmware/stage1/fn_u-boot-spl.bin is missing; run ./tools/gen-stage1.sh   rc=1
+  $ K230_STAGE1=bogus ./tools/flash-latest.sh --dry-run
+    error: K230_STAGE1 must be 'source' (default) or 'vendor', got 'bogus'   rc=1
+  $ K230_STAGE1=vendor ./tools/flash-latest.sh --dry-run     # with the gen-stage1.sh output copied into firmware/stage1/
+    image: /nix/store/k5bzs11m2xy05radxjajskcf2ig18qwy-k230-sd-image.img
+    stage 1: local directory (K230_STAGE1_DIR=.../firmware/stage1), vendor-compiled
+    dry run: not flashing /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1
+  $ dd if=<that image> bs=1 skip=$((0x200000)) count=353794 | sha256sum
+    c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4   = the vendor-compiled fn_ug_u-boot.bin, as intended
+  $ git ls-files firmware/ | xargs file --mime-type -b
+    text/plain  text/plain     (PROVENANCE.txt, tdisplay.env; nothing binary is tracked)

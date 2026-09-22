@@ -220,8 +220,8 @@ EOM
       # Take the reference at probe and never drop it, pinning DISP on.
       #
       # SOURCE PROVENANCE, learned the hard way: check this against the
-      # pristine tree nix unpacks, NOT .build/k230_linux_sdk/output/*/build/
-      # linux-*/. They differ -- the SDK's built tree has these pm_runtime
+      # pristine tree nix unpacks, NOT the vendor SDK's built copy under
+      # k230_linux_sdk/output/*/build/linux-*/. They differ -- the SDK's built tree has these pm_runtime
       # calls commented out, and a patch written against that copy matched
       # nothing and failed its guard. Every other patch here was compared
       # against both trees and is identical in each.
@@ -384,6 +384,11 @@ EOM
     # unbounded DSI PHY wait. Now that the panel displays, display/panel
     # task 3.3 wants the kernel console on it, which needs fbcon.
     FRAMEBUFFER_CONSOLE = yes;
+    # /dev/uinput, so the shell change can inject touches at known panel
+    # coordinates with evemu and exercise compositor -> keyboard -> terminal
+    # unattended. A software proxy only: the touch requirement still closes
+    # on a real tap at the bench, and the evidence must say which was which.
+    INPUT_UINPUT = yes;
 
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;

@@ -1,155 +1,78 @@
-K230 stage-1 firmware — provenance (tasks 1.1, 1.2)
-====================================================
-Built 2026-09-20 on solomon. NOT written by this project: these are the
-vendored boot chain, and openspec/specs/image/boot-chain requires that we
-never build them from source as part of our own image.
+K230 stage 1 -- provenance
+==========================
+Rewritten 2026-09-22 (every-blob-is-built-from-source-or-named, task 5.3).
+The text this replaces described five vendor-compiled binaries that lived
+in this directory; it is in git history at 6c5d50c if the Docker-era
+details are ever needed.
 
-Source
-------
-  repo      https://github.com/kendryte/k230_linux_sdk
-  branch    dev
-  commit    1104236db4d1e47873bd68924f912747b820228c
-  config    k230_canmv_v3_defconfig  ("CanMV-K230_V3P0" in the SDK's own
-            naming -- the same designation LilyGO ships RT-Smart under,
-            which is why this configuration was chosen)
-  built in  docker ubuntu:22.04, toolchain
-            Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410
+Stage 1 is built from source by the flake. This directory holds one text
+file and no binary:
 
-Regenerate with tools/gen-stage1.sh, which reproduces the SDK's
-gen_uboot_bin() from buildroot-overlay/board/canaan/k230-soc/post-image.sh
-rather than approximating it. Note it uses the SDK's private
-tools/k230_priv_gzip -n8, not stock gzip.
+  tdisplay.env    the U-Boot environment, as text. The SDK's default.env
+                  with three changes, each observed on hardware
+                  (docs/evidence/hardware-boot.txt): the device tree and
+                  OpenSBI load addresses moved above a 57 MiB kernel, and
+                  a bootargs.txt import so the kernel command line can
+                  name the NixOS closure without the environment changing
+                  on every rebuild.
 
-Files and where they go on the card
-------------------------------------
-Offsets from the SDK's genimage_cfg/genimage.cfg. All raw, outside the MBR
-partition table.
+What produces the five files the card carries
+---------------------------------------------
+  nix/k230-sdk-src.nix    kendryte/k230_linux_sdk @ 1104236, fetched
+                          sparsely: the two overlays and the env directory,
+                          287 files, all text
+  nix/uboot-k230.nix      U-Boot 2022.10 (upstream tarball, sha256
+                          50b4482a...) with Canaan's overlay copied over it,
+                          k230_canmv_v3_defconfig, nixpkgs riscv64 cross GCC
+                          -> u-boot.bin, spl/u-boot-spl.bin
+  nix/opensbi-k230.nix    OpenSBI v1.4 with Canaan's nine-file overlay,
+                          generic platform, FW_TEXT_START=0, GCC 13,
+                          FW_JUMP_FDT_ADDR left undefined
+                          -> fw_jump.bin
+  nix/stage1.nix          the packaging, step for step from the SDK's
+                          post-image.sh with nixpkgs gzip in place of the
+                          vendor's renamed one -> fn_u-boot-spl.bin,
+                          fn_ug_u-boot.bin, env.env, fw_jump.bin,
+                          fw_jump_add_uboot_head.bin
+
+  nix build .#stage1      builds all five; SHA256SUMS is in the output
+
+Where they go on the card (nix/sd-image.nix, from the SDK's genimage.cfg;
+raw, outside the partition table):
 
   fn_u-boot-spl.bin   1 MiB (0x100000) AND again at 1.5 MiB (0x180000)
   fn_ug_u-boot.bin    2 MiB (0x200000)
   env.env             3 MiB (0x300000) AND again at 3.5 MiB (0x320000)
+  fw_jump_add_uboot_head.bin   in the boot ext4, at its root; blinux
+                               ext4loads it by name
 
-sha256
-------
-3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  fn_u-boot-spl.bin
-c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4  fn_ug_u-boot.bin
-3a9664f43f8d1b50299155cbc8014d69cdb0ed7d12193187e56d9e3c5707e1af  env.env
+Evidence
+--------
+  docs/evidence/stage1-from-nix.txt        what each derivation produced and
+                                           what was checked, including the
+                                           packaging reproducing the vendor
+                                           pipeline's bytes exactly
+  docs/evidence/gzip-equivalence.txt       vendor k230_priv_gzip == nixpkgs gzip
+  docs/evidence/opensbi-fdt-passthrough.txt  the one deliberate departure
+                                           from the vendor build, and why
+  docs/evidence/stage1-from-source.txt     the board booting it, 2026-09-22
 
-Each carries a Canaan firmware header: magic "K230", no encryption,
-SHA-256 integrity, applied by the U-Boot tree's
-tools/firmware_gen_no_securiy.py.
+What stays opaque
+-----------------
+The Synopsys DDR PHY training firmware: 32 768 bytes of instruction memory
+(sha256 517aa534...) and 1 660 bytes of data memory (1c0819e8...), arriving
+as C in the overlay and compiled into the SPL. Building from source moved
+it (0x23f80 in u-boot-spl.bin, 0x24184 in fn_u-boot-spl.bin) and did not
+remove it. docs/blob-inventory.md A5-A6.
 
-Why these are committed rather than fetched
---------------------------------------------
-the-board-boots-what-we-built's design said to pin stage 1 as a
-fixed-output derivation and rejected committing it as "several megabytes of
-opaque vendor output". Measured, it is 570 KB, and a fixed-output derivation
-needs a URL to fetch from -- but these were BUILT here, not downloaded, so
-there is no URL. Committing them makes the repository self-contained: an
-image can be built without Docker, without the 284 MB SDK checkout and
-without the 1.9 GB toolchain. The provenance above and tools/gen-stage1.sh
-are what make that honest rather than mysterious.
-
-OpenSBI (added 2026-09-20)
---------------------------
-  fw_jump.bin                  built from source, OpenSBI 1.4
-  fw_jump_add_uboot_head.bin   the same with a U-Boot image header
-
-Built in the same container from the SDK's own OpenSBI package:
-  version   1.4  (BR2_TARGET_OPENSBI_CUSTOM_VERSION_VALUE="1.4")
-  platform  generic, with Canaan's T-Head overlay at
-            buildroot-overlay/boot/opensbi/opensbi-1.4-overlay/platform/generic/thead
-  extra     FW_TEXT_START=0
-
-The header is applied exactly as post-image.sh does:
-  mkimage -A riscv -O linux -T kernel -C none -a 0 -e 0 -n linux \
-          -d fw_jump.bin fw_jump_add_uboot_head.bin
-
-This one goes INSIDE the boot ext4 at the root, not into the raw region --
-vendored U-Boot ext4loads /fw_jump_add_uboot_head.bin to 0x3000000 and
-bootm's it. See docs/evidence/uboot-env.txt.
-
-sha256
-023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  fw_jump.bin
-d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  fw_jump_add_uboot_head.bin
-
-Note for the blob inventory: unlike the DDR training firmware, this is
-compiled from published source (riscv/opensbi 1.4 plus Canaan's overlay,
-both readable). It is committed for the same build-convenience reason as
-U-Boot, not because source is unavailable, and building it inside the flake
-would remove it from the tree entirely.
-
-
-Correction, 2026-09-20: the gzip CM byte
----------------------------------------------
-The first build of these omitted post-image.sh line 96, inside k230_gzip():
-
-    sed -i -e "1s/\x08/\x09/" ${filename}.gz
-
-That flips the gzip CM byte from 0x08 (deflate) to 0x09, which is how SPL
-is told to use the SoC's hardware decompressor rather than software
-inflate. fn_ug_u-boot.bin was therefore built with 0x08 and would have
-taken a code path the vendor neither ships nor tests -- SPL links both
-zunzip and k230_priv_unzip, so it would most likely have booted, and the
-difference would have been invisible until something behaved oddly.
-
-Found by the blob audit reading post-image.sh line by line, not by me.
-tools/gen-stage1.sh now carries the sed and these blobs are rebuilt with
-it; fn_ug_u-boot.bin's hash changed accordingly.
-
-
-Correction, 2026-09-20: the environment's load addresses
----------------------------------------------------------
-env.env is no longer byte-identical to the SDK's default.env. One line
-changed, in blinux:
-
-  was  ... 0x3000000 /fw_jump_add_uboot_head.bin ... 0x2200000 /${dtb}
-       ... bootm 0x3000000 - 0x2200000
-  now  ... 0x8000000 /fw_jump_add_uboot_head.bin ... 0x8400000 /${dtb}
-       ... bootm 0x8000000 - 0x8400000
-
-The vendor layout puts the kernel at 0x200000, the device tree 32 MiB
-above it and OpenSBI 14 MiB above that. That works for Canaan's kernel.
-Ours is ~60 MB and overwrote both, and bootm then reported "Wrong Image
-Format" -- which reads like a corrupt header and is not; iminfo confirmed
-the header was valid before the kernel landed on it. Observed on hardware,
-docs/evidence/hardware-boot.txt.
-
-This modifies the ENVIRONMENT, which is plain data we generate with
-mkenvimage from a text file, not the SPL or U-Boot binaries.
-image/boot-chain requires our kernel be loaded "without modification to
-stage 1 itself", and the binaries are untouched.
-
-
-k230_priv_gzip removed, and the build is now reproducible
------------------------------------------------------------
-The SDK compresses u-boot.bin with tools/k230_priv_gzip -- a stripped
-x86-64 ELF we would otherwise have to EXECUTE to produce bootable
-firmware. It is GNU gzip with the name filed off:
-
-    Copyright (C) 1993 Jean-loup Gailly.
-    Written by Jean-loup Gailly.
-    Report bugs to <bug-gzip@gnu.org>.
-
-and its "-n8" is the ordinary gzip "-n -8". Compared against nixpkgs
-gzip 1.14 on this exact u-boot.bin, at every level the SDK falls back
-through:
-
-    -n8  IDENTICAL     -n6  IDENTICAL
-    -n9  IDENTICAL     -n5  IDENTICAL
-    -n7  IDENTICAL     -n4  IDENTICAL
-
-and end to end, the whole fn_ug_u-boot.bin is byte-identical either way:
-
-    vendor k230_priv_gzip : c0fb8d95a983c33f...
-    stock nixpkgs gzip    : c0fb8d95a983c33f...
-
-tools/gen-stage1.sh now uses stock gzip. One executed vendor binary gone
-from the firmware path.
-
-Proving that required fixing something else first: mkimage stamps the
-uImage header with the current time, and the K230 firmware header carries
-a SHA-256 over that, so two builds of identical inputs differed in 32
-bytes and there was no way to tell a real change from a rebuild. gen-stage1.sh
-now pins SOURCE_DATE_EPOCH, and two consecutive builds produce identical
-bytes.
+The vendor-compiled fallback
+----------------------------
+tools/gen-stage1.sh still builds the same five files the old way -- the
+SDK in Docker with the 1.9 GB Xuantie toolchain -- into this directory,
+gitignored, and `K230_STAGE1=vendor ./tools/flash-latest.sh` (or
+`K230_STAGE1_DIR=$PWD/firmware/stage1 nix build --impure .#sdImage`)
+builds an image from them. That is a bisect tool: the bytes the board
+booted before stage 1 was built here, for when a from-source change
+fails and the question is whether the change or the build is at fault.
+It is not the default anywhere, and nothing reads this directory unless
+asked to by name.

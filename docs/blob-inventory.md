@@ -20,6 +20,8 @@ appearing or disappearing from the tree is a visible diff.
 | **E2** | **Excisable with effort.** Source exists; building it is a project. The estimate is in the row. |
 | **IO** | **Irreducibly opaque.** No source exists anywhere we can reach. Can only be flagged, checksummed and isolated. |
 | **NP** | **Not on our path.** A real blob, sitting in a vendor tree we have checked out, that nothing we build touches. Listed so that enabling it later is a deliberate act and not an accident. |
+| **DATA** | **Not code.** Images, fonts, sample media, test vectors, certificates, documents. Cannot execute, but is a binary file, and the scanner will not let one go unlisted -- the photographs in `docs/evidence/` are the reason this class exists. |
+| **SRC** | **Source, fetched by hash.** Not a blob at all; listed because a nix file pins it and `tools/blob-scan.py` must be told which pinned hashes are text and which are binary. |
 
 **Scope** — whose fault it is. This is the column to read when choosing the
 next board.
@@ -33,8 +35,11 @@ next board.
 | `INDUSTRY` | Near-universal on modern SoCs. Buying a different chip does not escape it; you only change whose blob it is. |
 
 Every sha256 in this document was computed on 2026-09-20 from the tree
-described in `firmware/stage1/PROVENANCE.txt`. The `MANIFEST` section at the
-end is the machine-readable form.
+described in `firmware/stage1/PROVENANCE.txt`, and re-verified on 2026-09-22
+by `tools/blob-scan.py`, which now enforces the `MANIFEST` section at the
+end — the machine-readable form — on every site build. What the scanner
+changed is under **Rescan, 2026-09-22** at the very end; the sections
+between were written on the 20th and are left as they were, dated.
 
 ---
 
@@ -615,42 +620,87 @@ so that building stage 1 from source does not silently drop them from view.
 
 ```
 # class  sha256                                                            path
-E2  3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  firmware/stage1/fn_u-boot-spl.bin
-E2  0f8feb747ef4437afbe26b9081c19acbd99475086f2b82db64cc3d3195c54579  firmware/stage1/fn_ug_u-boot.bin
-E1  f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957  firmware/stage1/env.env
-E1  c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  (sdk)tools/k230_priv_gzip
-IO  517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
-IO  1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
-E1  023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/stage1/fw_jump.bin
-E1  d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
-IO  -  (silicon) K230 BootROM
-E2  md5:8cefc7e94f760eaecc3620ffb238bf4a  Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410.tar.gz
-IO  28680932ac879d8591fbaaaab7b8c1ee2d305c2a82471fb2f38c449316cfb91f  dl:nncase_k230_v2.11.0_runtime_linux.tgz
-IO  525e4611b587afb1ab406548ddc6a5e1add3e5fa74ff2829da9441d4a62f3075  dl:nncaseruntime_k230-2.11.0-py3-none-linux_riscv64.whl
-NP  c11b83cfb92b9b01cdfb7150c75674c69563add2c8c1e71df1dc741694aae5a4  (sdk)buildroot-overlay/board/canaan/k230-soc/rootfs_overlay/etc/firmware/fw_bcm43438a1.bin
-NP  6a35357449419dd493b201487f1a8467298dce0b990ad061bd00962a039c0b88  (sdk)buildroot-overlay/board/canaan/k230-soc/rootfs_overlay/boot/nuttx-7000000-uart2.bin
-NP  91f53b9af6bacf9f91bb3995727cb4f9712810baaffbb2f230ff0ce87ab4464e  (sdk)buildroot-overlay/package/ai2d_kpu/test.kmodel
-NP  56d35ded2a717fafcc1a357fd6e634531fa1693e59c77707140d8c6e1693eae9  (sdk)buildroot-overlay/package/face_detect/utils/face_detection_320.kmodel
-NP  bb6c1142da99f017861d6d5ffaf956eb2b4a29cc393a6a7bc5bedad392499e15  (sdk)buildroot-overlay/package/yolo/utils/yolo11n.kmodel
-NP  11c6f0aa707c63d351fb54fa24be3df23ae579590cd448921ffa3614a6a05190  (sdk)buildroot-overlay/package/yolo/utils/yolo26n.kmodel
-NP  91b6c3e9bc2fc5d0bf5258e1217b6d8a81b4330521922165db255fe98795901c  (sdk)buildroot-overlay/package/yolo/utils/yolov5n.kmodel
-NP  0b4bcdd3eef7ad05d827127ec630d2354659f6db1b0c627ecb4af32cb2004a09  (sdk)buildroot-overlay/package/yolo/utils/yolov8n.kmodel
-NP  group:103-files  (sdk)buildroot-overlay/package/aic8800{,_sdio/src}/fw/**            8.8 MB
-NP  group:7-files    (sdk)buildroot-overlay/package/k230_assistant/dist/lib/*.a
-NP  group:1-file     (sdk)buildroot-overlay/package/opencv4/3rdparty/csi-cv/libcsi_cv_c908v.a
-NP  group:3-files    (sdk)buildroot-overlay/package/ai2d_kpu/{input,ai2d_input,result}.bin
-IO  e776d472979e32d761fd22a6c1f69e1bdee6aa32663169e684900e61eb08dd43  (lilygo)src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/realtek/wlan_lib/libwlan_v1_1.a
-IO  5f6baf7c785916beb7e18bda2535585cabaa62315dd8446f256d651900c06564  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libnncase.rt_modules.k230.a
-IO  f6674a664be8133e368ab0f08df3e42d351e1f50811fdbddb6cf195cab6c0264  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libNncase.Runtime.Native.a
-IO  1ac694e7197944e7217e21b50acfa2a8b14956355cf28e2f887d16d2a608fb01  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libfunctional_k230.a
-IO  88c690d309fa5bc04b53ad909b450d97a9b9ebe887ee634891d8e4e44845118e  (lilygo)src/rtsmart/libs/nncase/riscv64/rvvlib/librvv.a
-NP  6e5eac63398ecf18dd8327585232c2245d0087a699b6a964291b35660f8a94f7  (lilygo)src/rtsmart/rtsmart/tools/udb-tools/linux/udb
-IO  group:14-files   (lilygo)src/rtsmart/mpp/kernel/lib/*.a                              6.6 MB
-IO  group:39-files   (lilygo)src/rtsmart/mpp/userapps/lib/*.a                             18 MB
-E1  group:25-files   (lilygo)src/rtsmart/libs/opencv/lib/*.a
-NP  group:87-files   (lilygo)src/rtsmart/libs/kmodel/**
-NP  group:19-files   (lilygo)src/canmv/resources/examples/*.{bin,kmodel}
-IO  group:2-files    repo/firmware/CanMV-K230-V3P0_rtsmart_release{V1.2,V1.3}.zip
+#
+# --- this project's own tree ---------------------------------------------
+E2   3872df5a4e60c53b163a49b31d7b41ee0a407d08d06d18fefe6f8102b3866a94  firmware/stage1/fn_u-boot-spl.bin
+E2   c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4  firmware/stage1/fn_ug_u-boot.bin
+E1   cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  firmware/stage1/env.env
+E1   023b5495c9450af553c24d8c518cf8f191c9ed8e5622e7a7405007172cb4fb10  firmware/stage1/fw_jump.bin
+E1   d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/stage1/fw_jump_add_uboot_head.bin
+IO   517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
+IO   1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
+DATA group:8-files   docs/evidence/panel-photos/*.{jpg,png}   photographs of the panel, cited as evidence
+DATA group:1-file    site/src/assets/*.png                    the board photograph on the spec site
+#
+# --- what the stage-1 nix files fetch by hash --------------------------------
+# nix/uboot-k230.nix, nix/opensbi-k230.nix, nix/k230-sdk-src.nix. All three
+# are text; the SDK fetch is sparse and was checked file by file (287 files,
+# 287 text/*).
+SRC  sha256-ULRIKlBbwoG6hHDDmaPCbhReKbI1ALw1xQ3r1/pGvfg=  src:u-boot-2022.10.tar.bz2                (50b4482a505bc281ba8470c399a3c26e145e29b23500bc35c50debd7fa46bdf8)
+SRC  sha256-T8ZeAzjM9aeTXitjE7s+m+jjGGtDo2jK1qO5EuKiVLU=  src:riscv-software-src/opensbi@v1.4
+SRC  sha256-P3XkeyJPkpe/h0oHAHCiz8a0VXofw1zsQ3YSa6UcG8w=  src:kendryte/k230_linux_sdk@1104236,sparse
+#
+# --- not files -----------------------------------------------------------
+IO   -  (silicon) K230 BootROM
+E2   md5:8cefc7e94f760eaecc3620ffb238bf4a  Xuantie-900-gcc-linux-6.6.0-glibc-x86_64-V3.0.2-20250410.tar.gz
+IO   28680932ac879d8591fbaaaab7b8c1ee2d305c2a82471fb2f38c449316cfb91f  dl:nncase_k230_v2.11.0_runtime_linux.tgz
+IO   525e4611b587afb1ab406548ddc6a5e1add3e5fa74ff2829da9441d4a62f3075  dl:nncaseruntime_k230-2.11.0-py3-none-linux_riscv64.whl
+#
+# --- the Linux SDK checkout, (sdk) = .build/k230_linux_sdk/ ----------------
+E1   c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  (sdk)tools/k230_priv_gzip
+NP   c11b83cfb92b9b01cdfb7150c75674c69563add2c8c1e71df1dc741694aae5a4  (sdk)buildroot-overlay/board/canaan/k230-soc/rootfs_overlay/etc/firmware/fw_bcm43438a1.bin
+NP   6a35357449419dd493b201487f1a8467298dce0b990ad061bd00962a039c0b88  (sdk)buildroot-overlay/board/canaan/k230-soc/rootfs_overlay/boot/nuttx-7000000-uart2.bin
+NP   91f53b9af6bacf9f91bb3995727cb4f9712810baaffbb2f230ff0ce87ab4464e  (sdk)buildroot-overlay/package/ai2d_kpu/test.kmodel
+NP   56d35ded2a717fafcc1a357fd6e634531fa1693e59c77707140d8c6e1693eae9  (sdk)buildroot-overlay/package/face_detect/utils/face_detection_320.kmodel
+NP   bb6c1142da99f017861d6d5ffaf956eb2b4a29cc393a6a7bc5bedad392499e15  (sdk)buildroot-overlay/package/yolo/utils/yolo11n.kmodel
+NP   11c6f0aa707c63d351fb54fa24be3df23ae579590cd448921ffa3614a6a05190  (sdk)buildroot-overlay/package/yolo/utils/yolo26n.kmodel
+NP   91b6c3e9bc2fc5d0bf5258e1217b6d8a81b4330521922165db255fe98795901c  (sdk)buildroot-overlay/package/yolo/utils/yolov5n.kmodel
+NP   0b4bcdd3eef7ad05d827127ec630d2354659f6db1b0c627ecb4af32cb2004a09  (sdk)buildroot-overlay/package/yolo/utils/yolov8n.kmodel
+NP   group:90-files   (sdk)buildroot-overlay/package/aic8800{,_sdio/src}/fw/**            8.8 MB: 103 files, of which 13 are text configuration
+NP   group:7-files    (sdk)buildroot-overlay/package/k230_assistant/dist/lib/*.a
+NP   group:1-file     (sdk)buildroot-overlay/package/opencv4/3rdparty/csi-cv/libcsi_cv_c908v.a
+NP   group:3-files    (sdk)buildroot-overlay/package/ai2d_kpu/{input,ai2d_input,result}.bin
+DATA group:2536-files   (sdk)buildroot-overlay/package/k230_assistant/libpeer/**             test corpora and certificates of libsrtp, mbedtls and usrsctp
+DATA group:5-files   (sdk)buildroot-overlay/package/{face_detect,usage_ai2d,yolo,helloworld_cmake}/**/*.jpg   sample inputs
+DATA group:1-file    (sdk)buildroot-overlay/package/audio_rec_play/audio.pcm
+DATA group:1-file    (sdk)buildroot-overlay/package/cloudplat_deploy_code_linux/utils/SourceHanSansSC-Normal-Min.ttf
+DATA group:2-files   (sdk)buildroot-overlay/package/webrtc/**/__pycache__/*.pyc
+DATA group:1-file   (sdk)buildroot-overlay/package/lvgl/*/*.patch                       patches carrying binary hunks
+DATA group:2-files   (sdk)buildroot-overlay/board/canaan/k230-soc/logo/*                 the U-Boot splash, png and raw yuv
+DATA group:2-files   (sdk)docs/pic/*.png
+#
+# --- the LilyGO RT-Smart clone, (lilygo) = repo/canmv_k230/ ----------------
+IO   e776d472979e32d761fd22a6c1f69e1bdee6aa32663169e684900e61eb08dd43  (lilygo)src/rtsmart/rtsmart/kernel/bsp/maix3/drivers/extdrv/realtek/wlan_lib/libwlan_v1_1.a
+IO   5f6baf7c785916beb7e18bda2535585cabaa62315dd8446f256d651900c06564  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libnncase.rt_modules.k230.a
+IO   f6674a664be8133e368ab0f08df3e42d351e1f50811fdbddb6cf195cab6c0264  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libNncase.Runtime.Native.a
+IO   1ac694e7197944e7217e21b50acfa2a8b14956355cf28e2f887d16d2a608fb01  (lilygo)src/rtsmart/libs/nncase/riscv64/nncase/lib/libfunctional_k230.a
+IO   88c690d309fa5bc04b53ad909b450d97a9b9ebe887ee634891d8e4e44845118e  (lilygo)src/rtsmart/libs/nncase/riscv64/rvvlib/librvv.a
+NP   6e5eac63398ecf18dd8327585232c2245d0087a699b6a964291b35660f8a94f7  (lilygo)src/rtsmart/rtsmart/tools/udb-tools/linux/udb
+E1   c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  (lilygo)tools/k230_priv_gzip
+E1   c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  (lilygo)src/uboot/uboot/tools/k230_priv_gzip
+IO   group:14-files   (lilygo)src/rtsmart/mpp/kernel/lib/*.a                              6.6 MB
+IO   group:39-files   (lilygo)src/rtsmart/mpp/userapps/lib/*.a                             18 MB
+E1   group:15-files   (lilygo)src/rtsmart/libs/opencv/lib/*.a
+IO   group:1-file     (lilygo)src/rtsmart/libs/opencv/lib/opencv4/3rdparty/libcsi_cv.a    T-Head CSI-CV, as B7
+E1   group:9-files    (lilygo)src/rtsmart/libs/opencv/lib/opencv4/3rdparty/*.a            ade, jpeg-turbo, openjp2, png, protobuf, tiff, webp, quirc, zlib: upstream open source
+NP   group:64-files    (lilygo)src/rtsmart/libs/kmodel/**/*.{kmodel,model}
+NP   group:5-files    (lilygo)src/rtsmart/libs/nncase/examples/**/*.{tflite,onnx,bin}    example models and their inputs
+DATA group:345-files   (lilygo)src/rtsmart/libs/**                                          sample images, test vectors, audio
+IO   group:2-files    (lilygo)src/rtsmart/rtsmart/userapps/sdk/**/*.so                    the prebuilt RT-Smart userspace runtime: libcxx, librtthread
+DATA group:51-files   (lilygo)src/rtsmart/rtsmart/**                                       images, documents, an archived doxygen tree
+NP   group:11-files    (lilygo)src/rtsmart/mpp/userapps/sample/fastboot_app/build/**       a CMake build directory the vendor committed: .obj, a.out, an .elf
+NP   group:2-files    (lilygo)src/rtsmart/mpp/userapps/src/sensor/dewarp/*.bin            dewarp tables for an IMX335 that is not on this board
+DATA group:47-files   (lilygo)src/rtsmart/mpp/**                                           images, fonts, vim swap files
+NP   group:19-files    (lilygo)src/canmv/resources/examples/**/*.{bin,kmodel}
+DATA group:20-files   (lilygo)src/canmv/resources/**                                       sample images, audio, fonts
+NP   group:1-file     (lilygo)src/canmv/micropython/ports/cc3200/bootmgr/relocator/relocator.bin   upstream MicroPython's CC3200 port
+DATA group:56-files   (lilygo)src/canmv/micropython/**                                     upstream MicroPython test data, certificates, images
+DATA group:161-files   (lilygo)src/canmv/port/**                                            UI assets: images, fonts
+NP   group:1-file     (lilygo)src/opensbi/opensbi/hw.dtb
+DATA group:38-files   (lilygo)src/uboot/uboot/**                                           upstream U-Boot's logos, fonts, test data
+DATA group:1-file    (lilygo)tools/genimage/test/qemu.qcow.gz
+IO   group:2-files    repo/firmware/CanMV-K230-V3P0_rtsmart_release{V1.2,V1.3}.zip        the shipped images; evidence, not a dependency
+DATA group:16-files   repo/{Structural_Design,datasheet,schematic,image}/**                LilyGO's mechanical, datasheet and schematic documents
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -743,3 +793,67 @@ device tree and OpenSBI at `0x8400000` and `0x8000000` instead of
 overwrote both. Observed on hardware; see `docs/evidence/hardware-boot.txt`.
 That changes the ENVIRONMENT, which is data we generate with `mkenvimage`,
 not the SPL or U-Boot binaries.
+
+
+---
+
+## Rescan, 2026-09-22 — the scanner exists, and stage 1 is a derivation
+
+`tools/blob-scan.py` landed, and its first run over the vendor checkouts
+found what §E predicted a hand-maintained list would hide: **3 080 binary
+files with no row** and four `group:` counts that were wrong. The LilyGO
+clone's OpenCV archives were recorded as 25 (there are 15), its `kmodel/`
+tree as 87 files (401, most of them sample images the glob also matched), the
+examples glob was one directory too shallow, and C8's two `k230_priv_gzip`
+copies had never been given rows. Two of the project's own rows were stale:
+A2 at `0f8feb74…` (the build before the CM-byte fix) and A3 at `f522ba13…`
+(the SDK default, not the modified environment the card carries). None of it
+was hidden on purpose, which is the point: a document nobody is forced to
+update describes the tree as it was the last time someone remembered.
+
+**What changed in the MANIFEST.** Two classes were added to the table at the
+top: `DATA` for binary files that are not code (images, fonts, test vectors,
+certificates, documents — the eight photographs in `docs/evidence/` and the
+board photograph on the site are the reason it exists), and `SRC` for a
+source tarball or checkout a nix file pins by hash, which is text and must be
+told apart from a fetched blob. Every vendor binary is now covered by a
+counted `group:` row or an individual hash, 68 rows in all; the scanner
+verifies 54 of them against bytes on disk here and walks 45 422 files to do
+it. `docs/evidence/blob-scan.txt` is the run.
+
+**What changed in stage 1.** A1, A2, A9 and A10 are now produced by the
+flake from source — `nix/uboot-k230.nix`, `nix/opensbi-k230.nix`,
+`nix/k230-sdk-src.nix` and `nix/stage1.nix` — and A3 from
+`firmware/stage1/tdisplay.env`, a text file in this repository. Nothing is
+fetched by URL except the three sources, which are the `SRC` rows. No
+release tarball is pinned in `nix/stage1.nix` any more, so A0's warning about
+a release hash is satisfied by there being nothing to check; the scanner
+still reads the file, and would refuse a pin with no row. The one executed
+vendor binary, A4, stays excised: `docs/evidence/gzip-equivalence.txt` is
+the measurement redone with both hash sets. §D's third reproduction was
+redone in Nix too — the packaging over the vendor-compiled `u-boot.bin`
+gives `c0fb8d95…` and `3872df5a…`, the bytes on the card, and
+`docs/evidence/stage1-from-nix.txt` shows which 40 bytes the CM-byte `sed`
+changes.
+
+**Later the same day: it booted.** `docs/evidence/stage1-from-source.txt`
+records the board reaching the NixOS login prompt on the pure `nix build
+.#sdImage` and hashing its own card's stage-1 slots to this flake's
+output. So A1, A2, A3, A9 and A10 are now **E1 in fact, not in prospect**:
+built in Nix, booted, and the gitignored vendor-compiled files in
+`firmware/stage1/` are a bisect fallback that nothing reads unless asked
+by name (`K230_STAGE1=vendor ./tools/flash-latest.sh`). Their MANIFEST
+rows stay, because the files still exist on the machines that built them
+and a fallback whose bytes drift is no fallback. A7, the Xuantie
+toolchain, is off the path entirely: nothing this project ships was
+compiled by it. A4 is gone. A8 is silicon.
+
+**What did not change.** A5 and A6 are exactly where they were promised to
+be: the same 32 768 and 1 660 bytes, same hashes, inside the SPL we
+compiled, at `0x23f80` and `0x23900` of `u-boot-spl.bin` — 14.7 % of a
+222 816-byte SPL. Compiling it moved it. It did not remove it. And one thing
+the boot settled that the inventory had not asked: the vendor's OpenSBI
+copies the device tree to `0x2200000`, inside the kernel's `.BTF` section
+(`docs/evidence/opensbi-fdt-lands-in-kernel-image.md`); the OpenSBI built
+here passes it through, and the board's `/sys/kernel/btf/vmlinux` now reads
+BTF bytes where it used to read an FDT header.

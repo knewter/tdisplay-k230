@@ -15,9 +15,18 @@
       pkgs = nixpkgs.legacyPackages.${buildSystem};
       pkgsCross = pkgs.pkgsCross.riscv64;
 
-      # Stage 1 is vendored, never built. See nix/stage1.nix and
-      # openspec/specs/image/boot-chain.
-      stage1 = import ./nix/stage1.nix { inherit (pkgs) lib fetchurl runCommand stdenvNoCC; };
+      # Stage 1 is built from source. Two cross derivations, one fetched
+      # overlay, and the packaging that turns them into what the card
+      # carries. See nix/stage1.nix and openspec/specs/image/boot-chain.
+      k230Sdk = pkgs.callPackage ./nix/k230-sdk-src.nix { };
+      ubootK230 = pkgsCross.callPackage ./nix/uboot-k230.nix { inherit k230Sdk; };
+      opensbiK230 = pkgsCross.callPackage ./nix/opensbi-k230.nix { inherit k230Sdk; };
+      stage1 = pkgs.callPackage ./nix/stage1.nix { inherit k230Sdk ubootK230 opensbiK230; };
+
+      # Only under --impure: a directory holding a vendor-compiled u-boot.bin
+      # and spl/u-boot-spl.bin, so the packaging can be checked against the
+      # bytes the SDK's own pipeline produced. Empty otherwise.
+      ubootDirEnv = builtins.getEnv "K230_UBOOT_DIR";
 
       # One pin, two consumers: the kernel build and the standalone device
       # tree build. Native rather than cross because it is a source fetch --
@@ -91,9 +100,26 @@
         #   nix build --impure .#deviceTree
         deviceTree = pkgs.callPackage ./nix/device-tree.nix { inherit kernelSrc; };
 
-        # The bootable card image: vendored stage 1 at its raw offsets, a
-        # boot ext4 holding the three filenames U-Boot loads by name, and
-        # our root filesystem.
+        # Stage 1, piece by piece, so each can be built and inspected alone.
+        #   nix build .#uboot-k230      u-boot.bin, spl/u-boot-spl.bin
+        #   nix build .#opensbi-k230    fw_jump.bin
+        #   nix build .#fwJump          fw_jump_add_uboot_head.bin
+        #   nix build .#stage1          the five files the card carries
+        k230-sdk-src = k230Sdk;
+        uboot-k230 = ubootK230;
+        opensbi-k230 = opensbiK230;
+        fwJump = stage1.fwJump;
+        stage1 = stage1.built;
+        # The packaging alone. Over this flake's own U-Boot by default; under
+        # --impure with K230_UBOOT_DIR set, over the vendor-compiled one, which
+        # is how the packaging was shown to reproduce the vendor's bytes.
+        stage1-packaging =
+          if ubootDirEnv == "" then stage1.packaging
+          else stage1.packagingOf { ubootDir = /. + ubootDirEnv; name = "k230-stage1-packaging-of-vendor-uboot"; };
+
+        # The bootable card image: stage 1 at its raw offsets, a boot ext4
+        # holding the three filenames U-Boot loads by name, and our root
+        # filesystem.
         sdImage =
           let
             cfg = self.nixosConfigurations.k230.config;
@@ -137,9 +163,9 @@
           };
       };
 
-      # The vendored stage-1 boundary, exposed so it can be inspected without
-      # reading the source. `vendored = true` and `builtFromSource = false`
-      # are the contract: nothing in this flake compiles U-Boot or OpenSBI.
+      # The stage-1 boundary, exposed so it can be inspected without reading
+      # the source: its sources, its derivations, and which one an image
+      # build carries (`stage1.source`).
       inherit stage1;
 
 

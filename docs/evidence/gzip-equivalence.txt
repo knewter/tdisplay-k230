@@ -1,0 +1,74 @@
+gzip equivalence: vendor k230_priv_gzip against nixpkgs gzip (task 2.1)
+======================================================================
+Run 2026-09-22 on solomon (x86_64-linux). Every command below was executed;
+the hashes are pasted from its output, not typed.
+
+Input: the SDK's own compiled U-Boot, from the Docker build recorded in
+firmware/stage1/PROVENANCE.txt:
+  .build/k230_linux_sdk/output/k230_canmv_v3_defconfig/build/uboot-2022.10/u-boot.bin
+  693576 bytes
+  07bca1a1d64f26e74fbe35c364bf05a96c62d388b82beff41f3f9b4056e9a1fe  u-boot.bin
+
+Vendor binary: .build/k230_linux_sdk/tools/k230_priv_gzip
+  ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=73aabd51455cae138ef23eacb3ad1be60bf200cf, for GNU/Linux 3.2.0, stripped
+  c6d029a05f2d3038fd02f9b18716b595f4e8beeebca33f3598328fbde99bf11e  k230_priv_gzip
+  $ ./k230_priv_gzip --version
+    k230_priv_gzip 1.6
+    Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
+    Copyright (C) 1993 Jean-loup Gailly.
+    This is free software.  You may redistribute copies of it under the terms of
+    the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+    There is NO WARRANTY, to the extent permitted by law.
+    
+    Written by Jean-loup Gailly.
+
+nixpkgs binary: /nix/store/l5sll8nxk70p73l5yqbsjy4mh0c3g0v5-gzip-1.14/bin/gzip
+  (nixpkgs at the flake's pin, 20b1ddd1aa5ace70c9468305030aa4f9ef79671b)
+  $ gzip --version
+    gzip 1.14
+    Copyright (C) 2025 Free Software Foundation, Inc.
+
+The SDK's k230_gzip() (buildroot-overlay/board/canaan/k230-soc/post-image.sh)
+tries -n8, then -n9, -n7, -n6, -n5, -n4. In gzip's getopt string
+'ab:cdfhH?klLmMnNqrS:tvVZ123456789' the n option takes no argument, so
+-nN parses as -n -N. Both tools were run at every level the SDK falls
+through:
+
+  for lvl in 4 5 6 7 8 9; do
+    ./k230_priv_gzip -n$lvl -f -k u-boot.bin && mv u-boot.bin.gz vendor-n$lvl.gz
+    gzip -n -$lvl -f -k u-boot.bin        && mv u-boot.bin.gz nixpkgs-n$lvl.gz
+  done
+
+sha256, vendor:
+  474cb1cc99eef6a295568bdc511fc96a912530bbe6ac3dba6c49ae733908757e  vendor-n4.gz
+  305626da5128a7367fcf17a078c86358744cf9e1374ca78df86e9d8c249a68ee  vendor-n5.gz
+  564f7ae3e9760807dc94de1c117780e8cd44a5b4d31f30f994b1017a112d4958  vendor-n6.gz
+  cbf90250d550484411112c8ea6bb537c9e1cb3fe3c44d0916ad85a09eecebc3e  vendor-n7.gz
+  2051b07f1edbf8aebca5f512b1f72eba33b9c97934b4bb8c2ed0cfd1039e57d3  vendor-n8.gz
+  a2a1e0603beec31a6def217e28855359a51dd0758c2e52128b5e366492626a8c  vendor-n9.gz
+
+sha256, nixpkgs:
+  474cb1cc99eef6a295568bdc511fc96a912530bbe6ac3dba6c49ae733908757e  nixpkgs-n4.gz
+  305626da5128a7367fcf17a078c86358744cf9e1374ca78df86e9d8c249a68ee  nixpkgs-n5.gz
+  564f7ae3e9760807dc94de1c117780e8cd44a5b4d31f30f994b1017a112d4958  nixpkgs-n6.gz
+  cbf90250d550484411112c8ea6bb537c9e1cb3fe3c44d0916ad85a09eecebc3e  nixpkgs-n7.gz
+  2051b07f1edbf8aebca5f512b1f72eba33b9c97934b4bb8c2ed0cfd1039e57d3  nixpkgs-n8.gz
+  a2a1e0603beec31a6def217e28855359a51dd0758c2e52128b5e366492626a8c  nixpkgs-n9.gz
+
+cmp, byte for byte:
+  level 4: identical (358491 bytes)
+  level 5: identical (354597 bytes)
+  level 6: identical (353574 bytes)
+  level 7: identical (353384 bytes)
+  level 8: identical (353198 bytes)
+  level 9: identical (353181 bytes)
+
+Identical at every level. -n8, the level the SDK actually uses, gives
+2051b07f1edbf8aebca5f512b1f72eba33b9c97934b4bb8c2ed0cfd1039e57d3 from
+both, matching the figure docs/blob-inventory.md §A4 recorded on 2026-09-20.
+
+This is the whole argument for replacing the vendor binary with pkgs.gzip
+in nix/stage1.nix, and it is empirical: whatever Canaan changed in their
+copy of gzip 1.6, it does not change the bytes. The vendor-specific step
+is the sed on the next line of post-image.sh, which flips the gzip CM
+byte from 0x08 to 0x09; nix/stage1.nix carries that sed.

@@ -56,15 +56,15 @@ openspec validate --all                       check them
 ### Reading the specs
 
 **<https://knewter.github.io/tdisplay-k230/>** — rebuilt from
-`openspec/specs/` on every push to `main`, and its first line is how many
+`openspec/specs/` on every push to `master`, and its first line is how many
 requirements are still unverified. Live.
 
 To watch it being built rather than read the result:
 **<https://github.com/knewter/tdisplay-k230/actions/workflows/spec-site.yml>**
-— one run per push to `main`, each with the page count, byte size and the
-render assertions. The stage 1 firmware has its own workflow alongside it,
-`stage1.yml`, which publishes the `.bin` artifacts instead of committing
-them.
+— one run per push to `master`, each with the page count, byte size and the
+render assertions. That build also runs `tools/blob-scan.py`, which fails it
+if a binary file exists anywhere in the tree that `docs/blob-inventory.md`
+does not account for.
 
 Locally:
 
@@ -115,7 +115,23 @@ nix build .#nixosConfigurations.k230.config.system.build.toplevel
 CAPTURE=120 ./tools/qemu-k230.sh > boot.txt     # ...and record the boot
 
 # The board device tree on its own -- seconds, no kernel rebuild.
-K230_STAGE1_DIR="$PWD/firmware/stage1" nix build --impure .#deviceTree
+nix build .#deviceTree
+
+# Stage 1 -- U-Boot SPL, U-Boot 2022.10, OpenSBI 1.4 and the environment --
+# built from source by the flake. nix/stage1.nix says how; nothing in it is
+# a committed or downloaded binary except the 32 KiB of DDR training
+# firmware that arrives as C, which docs/blob-inventory.md names.
+nix build .#uboot-k230 .#opensbi-k230     # the two compilers' worth
+nix build .#stage1                        # the five files the card carries
+
+# The card image, carrying the stage 1 above. Booted on the board on
+# 2026-09-22 (docs/evidence/stage1-from-source.txt).
+nix build .#sdImage
+./tools/flash-latest.sh          # the same build, then tools/flash.sh
+
+# For bisecting only: the vendor-compiled stage 1 tools/gen-stage1.sh leaves
+# in firmware/stage1/ (gitignored), selected by name.
+K230_STAGE1=vendor ./tools/flash-latest.sh
 ```
 
 Editing `nix/dts/` does **not** rebuild the kernel. The DTB is a separate

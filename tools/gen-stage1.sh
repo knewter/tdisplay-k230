@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
-# Reproduce the SDK's gen_uboot_bin() and env generation to produce exactly
-# the four files genimage.cfg places on the card. Run in the SDK container so
-# the toolchain and the x86-64 helper binaries resolve.
+# THE VENDOR-COMPILED FALLBACK, not the way stage 1 is built.
+#
+# Stage 1 is built from source by the flake: `nix build .#stage1`, see
+# nix/stage1.nix and firmware/stage1/PROVENANCE.txt. That is what
+# `nix build .#sdImage` and ./tools/flash-latest.sh put on the card, and
+# the board has booted it (docs/evidence/stage1-from-source.txt).
+#
+# This script builds the same five files the old way -- the SDK's own
+# Docker build with the 1.9 GB Xuantie toolchain -- into firmware/stage1/,
+# where they are gitignored and read by nothing unless asked for by name:
+#
+#     K230_STAGE1=vendor ./tools/flash-latest.sh
+#     K230_STAGE1_DIR=$PWD/firmware/stage1 nix build --impure .#sdImage
+#
+# Keep it for bisecting: when a from-source stage 1 fails to boot, an image
+# carrying the bytes the board booted before answers whether the change or
+# the build is at fault. Needs the SDK checkout at .build/k230_linux_sdk
+# with `make uboot` and `make opensbi` already run in it.
+#
+# What it does: reproduce the SDK's gen_uboot_bin() and env generation to
+# produce exactly the files genimage.cfg places on the card, in the SDK
+# container so the toolchain and the x86-64 helper binaries resolve.
 set -euo pipefail
 ROOT=/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230
 docker run --rm \
@@ -86,4 +105,12 @@ echo "--- RESULT"
 ls -la
 echo "--- sha256"
 sha256sum fn_u-boot-spl.bin fn_ug_u-boot.bin env.env swap_fn_u-boot-spl.bin
+cp fn_u-boot-spl.bin fn_ug_u-boot.bin env.env /sdk/../../firmware/stage1/ 2>/dev/null || true
 '
+# The container wrote into the SDK's output tree; put the five files where
+# the vendor override looks for them, next to this text.
+OUT="$ROOT/.build/k230_linux_sdk/output/k230_canmv_v3_defconfig/images"
+cp "$OUT/uboot/fn_u-boot-spl.bin" "$OUT/uboot/fn_ug_u-boot.bin" "$OUT/uboot/env.env" "$ROOT/firmware/stage1/"
+cp "$OUT/fw_jump.bin" "$OUT/fw_jump_add_uboot_head.bin" "$ROOT/firmware/stage1/"
+echo "--- firmware/stage1/ (gitignored; the vendor-compiled fallback)"
+sha256sum "$ROOT"/firmware/stage1/*.bin "$ROOT"/firmware/stage1/env.env
