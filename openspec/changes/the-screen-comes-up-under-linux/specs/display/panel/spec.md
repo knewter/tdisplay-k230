@@ -42,12 +42,21 @@ dark frame is what a dead panel looks like, so the change is the
 evidence. A fourth photograph shows the kernel console rendering on the
 panel at 71x77 characters. See `docs/evidence/panel-lit.md`.*
 
-*What is NOT yet grounded: the image flickers. Measured with the panel
-showing static stripes and the webcam exposure locked, over 30 seconds:
-stripe position jitters -9..+1 px with no monotonic drift, and brightness
-shows 19 irregular dips, one to 53% of mean. That is unstable frame
-delivery, not a refresh-rate beat. A fix giving the DSI link 25% burst
-headroom is built but not yet confirmed on hardware.*
+*What is NOT yet grounded: the image still moves slightly. The 25% DSI
+burst headroom fix referred to here was confirmed on hardware and it
+**blanks the panel outright**; it was reverted in `a96ca99`. See
+`docs/evidence/dsi-burst-headroom.md`.*
+
+*On the corrected image, measured over 30 s with the webcam exposure
+locked and the oblique view rectified by a four-fiducial homography, so
+the numbers are in real panel rows: brightness is now flat (95%..101% of
+mean, against 19 dips with the worst at 53% before), and the residual is
+a **uniform whole-frame vertical shift** of about 2.8 rows RMS out of
+1232. Near and far halves of the panel move identically -- std 2.76
+against 2.76, correlation 0.959 -- so there is no accumulation down the
+frame and no tearing. Mechanism is not established; the untested
+hypothesis is that `35 00` SET_TEAR_ON is issued but nothing consumes
+TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 
 The system SHALL present the panel as a working framebuffer at 568x1232, and
 what is written to that framebuffer SHALL appear on the screen.
