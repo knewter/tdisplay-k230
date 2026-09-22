@@ -68,7 +68,7 @@ not change the PMP configuration, and matches what
 `k230_canmv_mrt.dts`, `k230_canmv_lckfb.dts` and `k230_canmv_gt6700.dts`
 already do in the vendor tree.
 
-### D3: Turn the dwc2 *host* driver off in the first variant
+### D3: Keep the host driver in the repaired variant
 
 In U-Boot 2022.10, `U_BOOT_DRIVER(usb_dwc2)` (`UCLASS_USB`) and
 `U_BOOT_DRIVER(dwc2_udc_otg)` (`UCLASS_USB_GADGET_GENERIC`) both match
@@ -78,23 +78,23 @@ neither driver has one. The gadget's `dr_mode` refusal lives in
 `dwc2_udc_otg_of_to_plat()`, which runs at probe — too late. Linker-list
 entries sort by name, and `dwc2_udc_otg` sorts before `usb_dwc2`.
 
-So with both enabled the gadget claims every `snps,dwc2` node, including
-`usbotg1` and the onboard RTL8152 behind it, and U-Boot's USB host goes dark
-without saying so. Canaan reached the same conclusion: their
-`k230_canmv_burntool_defconfig` enables the gadget and drops
-`CONFIG_USB_DWC2`.
+So with both enabled and only the generic compatible, the gadget claims every
+`snps,dwc2` node, including `usbotg1`, and U-Boot's USB host goes dark.
+This was confirmed by the first coexistence candidate; `.bind` alone was
+insufficient because `lists_bind_fdt()` advances to the next compatible
+string, not another driver for the same string.
 
-The first variant therefore sets `# CONFIG_USB_DWC2 is not set`. A silent
-loss is worse than a declared one, and nothing in `bootcmd` — `run blinux`,
-which touches only `mmc` — uses USB host.
+The first A1 variant therefore set `# CONFIG_USB_DWC2 is not set`. That
+configuration is historical: it produced the working UMS enumeration and
+measured flash documented in `docs/evidence/uboot-ums-write.txt`.
 
-*Alternative kept for the follow-up:* add a ten-line `.bind` to
-`dwc2_udc_otg.c` returning `-ENODEV` unless `dr_mode` is `peripheral` or
-`otg`, then set `dr_mode = "host"` on `usbotg1`. `lists_bind_fdt()` falls
-through to the host driver and both work. Worth doing, because a TFTP loop
-over the onboard Ethernet is a *faster* iteration path than `ums` for
-kernel-only changes — but it is a source patch to a driver, so it comes after
-the configuration-only version is proven.
+The preferred A2 variant keeps `CONFIG_USB_DWC2`. Its gadget driver has a
+bind-time refusal for non-peripheral/non-OTG nodes, and `usbotg1` has
+`canaan,k230-usbotg-host` before the generic `snps,dwc2` compatible. The
+K230-specific entry is needed so the host driver can claim `usbotg1` while
+the gadget claims `usbotg0`. The repaired build and current hardware evidence
+are recorded separately; board proof confirms both paths work in the repaired
+candidate. It does not claim USB packet traffic.
 
 ### D4: No board C code
 

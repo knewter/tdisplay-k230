@@ -52,8 +52,10 @@ in
     hash = "sha256-ULRIKlBbwoG6hHDDmaPCbhReKbI1ALw1xQ3r1/pGvfg=";
   };
   defconfig = "k230_canmv_v3_defconfig";
-  # USB device mode for `ums`, and USB host off: nix/uboot-k230-ums.config
-  # says why, line by line. buildUBoot appends this after `make defconfig`;
+  # USB device mode for `ums`, with the host controller restored by the
+  # K230-specific compatible and gadget bind guard in patches 0002/0003.
+  # The fragment records the historical host-off A1 and current A2 intent.
+  # buildUBoot appends this after `make defconfig`;
   # Kconfig's syncconfig then takes the later value for a symbol set twice.
   extraConfig = builtins.readFile ./uboot-k230-ums.config;
   # Turning USB_GADGET on makes a dozen previously-hidden symbols visible

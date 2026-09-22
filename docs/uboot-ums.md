@@ -7,8 +7,10 @@ instead of a human moving it to a reader every round trip?
 
 Short answers:
 
-- **`ums` is not compiled into the U-Boot we build today.** `CONFIG_USB_GADGET`
-  is `n`. Nothing on the board can be USB-device right now.
+- **The old U-Boot had no `ums`; the A1 stage-1 build added it and was flashed
+  and measured.** The current source also contains a repaired A2 host/gadget
+  build; its simultaneous host proof is recorded in
+  `docs/evidence/usb-host-second-candidate-linux.txt`.
 - **Route A is real and small.** Canaan already ships a working USB-gadget
   configuration for this exact SoC in this exact U-Boot tree
   (`k230_canmv_burntool_defconfig`), so the Kconfig, the UDC driver and the
@@ -182,20 +184,22 @@ they do not, in this version:
 - Linker-list entries are emitted as `__u_boot_list_2_driver_2_<name>` and
   `SORT`ed, and `dwc2_udc_otg` sorts before `usb_dwc2`.
 
-So with both enabled, the **gadget driver claims every `snps,dwc2` node**,
-including `usbotg1`, and U-Boot's USB host stack goes dark — meaning the
-onboard RTL8152 Ethernet is no longer reachable from U-Boot.
+So with both enabled and only the generic compatible, the **gadget driver
+claims every `snps,dwc2` node**, including `usbotg1`, and U-Boot's USB host
+stack goes dark. The first coexistence candidate confirmed this; `.bind`
+alone was insufficient because `lists_bind_fdt()` advances to the next
+compatible string, not another driver for the same string.
 
-<!-- UNVERIFIED, half resolved: the BEFORE half is observed --
-docs/evidence/uboot-ums-hardware.txt, 2026-09-22, `dm tree` on the card's
-own U-Boot shows exactly one snps,dwc2 node, usb-otg@91540000, bound to the
-host driver dwc2_usb, and usb-otg@91500000 absent. The AFTER half -- which
-driver takes which node once the gadget is compiled in -- needs the ums
-build on the board (task 3.2). -->
+The repaired A2 source adds `canaan,k230-usbotg-host` first on `usbotg1`
+and adds that ID to the host driver, while retaining the gadget bind guard.
+Its build evidence is in `docs/evidence/uboot-ums-build.txt`; the repaired
+candidate's host/gadget result and return to Linux are in
+`docs/evidence/usb-host-second-candidate-linux.txt`. The record does not
+claim packet traffic.
 
-Corroboration that this is real and not a misreading: Canaan's
+Corroboration for the historical A1 choice: Canaan's
 `k230_canmv_burntool_defconfig` enables the gadget and **drops
-`CONFIG_USB_DWC2`**. They did not put both in one binary.
+`CONFIG_USB_DWC2`**.
 
 Two ways out:
 
@@ -204,16 +208,12 @@ Two ways out:
   in U-Boot today — `bootcmd` is `run blinux`, which touches only `mmc` (see
   `docs/evidence/uboot-env.txt`) — so nothing in the current boot path
   regresses.
-- **A2, preferred.** Keep the host driver, set `dr_mode = "peripheral"` on
-  `usbotg0` and `dr_mode = "host"` on `usbotg1`, and add a ~10-line `.bind` to
-  `dwc2_udc_otg.c` that returns `-ENODEV` unless `dr_mode` is `peripheral` or
-  `otg`. Then `lists_bind_fdt()` falls through to the host driver for
-  `usbotg1` and both work. This keeps the door open for a TFTP loop over the
-  onboard Ethernet, which is a *faster* iteration path than `ums` for
-  kernel-only changes.
-
-Start with A1 to prove the gadget enumerates at all; A2 is a follow-up worth
-about an hour once A1 is on the board.
+- **A2, preferred and built.** Keep the host driver, set `dr_mode =
+  "peripheral"` on `usbotg0` and `dr_mode = "host"` on `usbotg1`, add
+  the gadget bind guard, and put the K230-specific host compatible before
+  `snps,dwc2`. This keeps the door open for a TFTP loop over the onboard
+  Ethernet. The repaired candidate's hardware result is recorded in
+  `docs/evidence/usb-host-second-candidate-linux.txt`.
 
 ### Where the change lands, and the sequencing problem
 
@@ -591,7 +591,12 @@ the record, which a cold boot never could. The loop this document was
 written for exists: `./tools/flash-latest.sh --ums` with the board at
 `ums 0 mmc 1`.
 
-**Not yet observed.** Route C; USB host and gadget in one binary (A2).
+**A2 hardware proof (2026-09-22).** The repaired candidate's transcript
+shows `usb start` finding the onboard RTL8152 host, `ums 0 mmc 1` exposing
+the card and a successful readback, then Linux returning with the shell
+active. See `docs/evidence/usb-host-second-candidate-linux.txt`. This proves
+the host/gadget coexistence path and recovery to Linux; it does not claim
+network packet traffic.
 
 ### Unattended image verification
 

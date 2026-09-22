@@ -155,11 +155,12 @@ Optional, and only after group 3 has settled whether it is needed.
       `dr_mode = "host"` on `&usbotg1`, and re-enable `CONFIG_USB_DWC2`.
       Done when the patch is a file in this repository, not a hand edit in
       `.build/`.
-- [ ] 6.2 Confirm both work at once. **Hardware proof.**
+- [x] 6.2 Confirm both work at once. **Hardware proof.**
       `./tools/console.py /dev/ttyACM0 --wait=3 "dm tree; usb start; usb tree"`
       then `ums 0 mmc 1` and check the host.
-      Done when `usb tree` shows the RTL8152 and the host still sees the card
-      as a block device.
+      Done: `docs/evidence/usb-host-second-candidate-linux.txt` records
+      RTL8152 in the U-Boot host tree, UMS enumeration/readback, and return
+      to Linux with the shell active. This does not claim packet traffic.
 
 ## 7. Record what changed
 
@@ -174,4 +175,6 @@ Optional, and only after group 3 has settled whether it is needed.
       `./scripts/build_site.py`
       Done when the site build is green and every `docs/` path cited by a
       requirement is committed.
-      - Not ticked, 2026-09-22: `docs/uboot-ums.md` §9 folds in everything observed so far and `./scripts/build_site.py` is green (108 s), but the measured write rate (3.5) and the settled D3 after-half (3.2) do not exist yet — both need the ums stage 1 on the card.
+      - Not ticked, 2026-09-22: the measured A1 write rate and repaired A2 build are
+        documented; task 6.2 now has its board result, but this remains unchecked
+        until the site build and final docs are committed.
