@@ -819,6 +819,98 @@
           "size": "247174"
         }
       }
+    },
+    {
+      "path": "neofetch-cpu/20260922T185501Z-neofetch-cpu.mp4",
+      "site_presentation": true,
+      "bytes": 691040,
+      "sha256": "56c6a25b7d91a921199034d0f1005f068f103dc3f6dfe31638c72bad24e5230c",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "8.000000",
+          "size": "691040"
+        }
+      }
+    },
+    {
+      "path": "portrait-launcher/20260922T185608Z-portrait-launcher.mp4",
+      "site_presentation": false,
+      "bytes": 6049792,
+      "sha256": "e22deb8c67b22fad47334f6b98803869fdc2f419202ed6b49075a3a1e3f52bae",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "60.000000",
+          "size": "6049792"
+        }
+      }
+    },
+    {
+      "path": "portrait-launcher/20260922T190646Z-portrait-launcher-final.mp4",
+      "site_presentation": true,
+      "bytes": 6444877,
+      "sha256": "bcc465eda496c31f6f384f2a20942f683c3a09899a22d4051c189b0ef9a80ed8",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "60.000000",
+          "size": "6444877"
+        }
+      }
+    },
+    {
+      "path": "desktop-launcher/20260922T192343Z-desktop-launcher.mp4",
+      "site_presentation": true,
+      "bytes": 11729006,
+      "sha256": "4cfc9d5278c031360775cb51e717d3e83941214314d401848c852081c2429673",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "90.000000",
+          "size": "11729006"
+        }
+      }
     }
   ]
 }
