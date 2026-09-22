@@ -230,7 +230,8 @@ in
       description = ''
         Use the experimental Sway scene seed for the immutable 568x1232 XRGB
         boot logo. It is created before the first forced output commit and is
-        removed only after a non-null toplevel plus top-layer shell scene state
+        removed only after a non-null toplevel plus Swaybar's mapped bottom
+        panel scene state
         commits and wlroots reports the matching compositor present event. This
         does not claim physical no-black-frame
         continuity until hardware evidence exists.
