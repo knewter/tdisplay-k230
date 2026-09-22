@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   }
   GError *error = NULL;
   if (k230_app_launch(argv[2], &error)) return 0;
-  fprintf(stderr, "launch failed: %s\n", error->message);
-  g_error_free(error); return 1;
+  fprintf(stderr, "launch failed: %s\n", error ? error->message : "unknown error");
+  g_clear_error(&error); return 1;
 }
 #endif

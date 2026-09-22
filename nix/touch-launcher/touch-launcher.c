@@ -41,7 +41,7 @@ static uint32_t *pixels;
 static int width, height, stride, mapped_size;
 static int lock_fd = -1;
 static bool running = true, configured;
-static int press_x, press_y, touch_id = -1;
+static int press_x, press_y, touch_x, touch_y, touch_id = -1;
 static bool pointer_pressed;
 static uint32_t pointer_button_code;
 static int pointer_card = -1, touch_card = -1;
@@ -157,12 +157,17 @@ static struct shm_buffer *make_buffer(void) {
   stride = width * 4; mapped_size = stride * height; char name[64]; int fd = -1;
   for (int i = 0; i < 100 && fd < 0; i++) { snprintf(name, sizeof name, "/k230-launcher-%d-%d", getpid(), i); fd = shm_open(name, O_RDWR|O_CREAT|O_EXCL, 0600); }
   if (fd < 0 || ftruncate(fd, mapped_size) < 0) { perror("k230-touch-launcher shm"); exit(1); }
-  shm_unlink(name); struct shm_buffer *out = calloc(1, sizeof *out); out->size = mapped_size;
+  shm_unlink(name); struct shm_buffer *out = calloc(1, sizeof *out); if(!out) { perror("k230-touch-launcher calloc"); close(fd); exit(1); } out->size = mapped_size;
   out->pixels = mmap(NULL, mapped_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
   if (out->pixels == MAP_FAILED) { perror("k230-touch-launcher mmap"); exit(1); }
   struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, mapped_size);
+  if(!pool) { close(fd); munmap(out->pixels,out->size); free(out); exit(1); }
   out->buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
-  wl_shm_pool_destroy(pool); close(fd); wl_buffer_add_listener(out->buffer, &buffer_listener, out); return out;
+  wl_shm_pool_destroy(pool); close(fd);
+  if(!out->buffer || wl_buffer_add_listener(out->buffer,&buffer_listener,out)<0) {
+    if(out->buffer) wl_buffer_destroy(out->buffer); munmap(out->pixels,out->size); free(out); exit(1);
+  }
+  return out;
 }
 static void redraw(void) {
   current=make_buffer(); pixels=current->pixels; draw();
@@ -176,7 +181,7 @@ static void layer_configure(void *d,struct zwlr_layer_surface_v1 *ls,uint32_t se
   if(width<300 || height<600 || width>4096 || height>4096) {
     fprintf(stderr,"k230-touch-launcher: unsupported surface size\n"); running=false; return;
   }
-  pointer_card=touch_card=-1;
+  pointer_card=touch_card=-1; pointer_pressed=false; pointer_button_code=0; touch_id=-1;
   redraw(); configured=true;
 }
 static void layer_closed(void *d, struct zwlr_layer_surface_v1 *ls) { running=false; }
@@ -190,9 +195,9 @@ static void pointer_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint
 }
 static void pointer_axis(void*d,struct wl_pointer*p,uint32_t t,uint32_t a,wl_fixed_t v) {}
 static const struct wl_pointer_listener pointer_listener = { .enter=pointer_enter,.leave=pointer_leave,.motion=pointer_motion,.button=pointer_button,.axis=pointer_axis };
-static void touch_down(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,struct wl_surface*sf,int32_t id,wl_fixed_t x,wl_fixed_t y) { if (touch_id != -1) return; touch_id=id; press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); touch_card=card_at(press_x,press_y); }
-static void touch_up(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,int32_t id) { if(id==touch_id) { if (touch_card == card_at(press_x,press_y)) activate_card(touch_card); touch_id=-1; touch_card=-1; } }
-static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixed_t x,wl_fixed_t y) { if(id==touch_id) { press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); if (card_at(press_x,press_y) != touch_card) touch_card=-1; } }
+static void touch_down(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,struct wl_surface*sf,int32_t id,wl_fixed_t x,wl_fixed_t y) { if (touch_id != -1) return; touch_id=id; touch_x=wl_fixed_to_int(x); touch_y=wl_fixed_to_int(y); touch_card=card_at(touch_x,touch_y); }
+static void touch_up(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,int32_t id) { if(id==touch_id) { if (touch_card == card_at(touch_x,touch_y)) activate_card(touch_card); touch_id=-1; touch_card=-1; } }
+static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixed_t x,wl_fixed_t y) { if(id==touch_id) { touch_x=wl_fixed_to_int(x); touch_y=wl_fixed_to_int(y); if (card_at(touch_x,touch_y) != touch_card) touch_card=-1; } }
 static void touch_frame(void*d,struct wl_touch*t) {} static void touch_cancel(void*d,struct wl_touch*t) { touch_id=-1; touch_card=-1; }
 static const struct wl_touch_listener touch_listener = { .down=touch_down,.up=touch_up,.motion=touch_motion,.frame=touch_frame,.cancel=touch_cancel };
 static void seat_caps(void*d,struct wl_seat*s,uint32_t caps) { if ((caps&WL_SEAT_CAPABILITY_POINTER) && !pointer) { pointer=wl_seat_get_pointer(s); wl_pointer_add_listener(pointer,&pointer_listener,NULL); } if ((caps&WL_SEAT_CAPABILITY_TOUCH) && !touch) { touch=wl_seat_get_touch(s); wl_touch_add_listener(touch,&touch_listener,NULL); } }
@@ -213,7 +218,7 @@ int main(int argc,char**argv) {
  apps=k230_app_catalog();
  display=wl_display_connect(NULL); if(!display) { fprintf(stderr,"k230-touch-launcher: cannot connect to Wayland\n"); return 1; }
  struct wl_registry*r=wl_display_get_registry(display); wl_registry_add_listener(r,&registry_listener,NULL); wl_display_roundtrip(display);
- if(!compositor||!shm||!layer_shell) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, and layer-shell\n"); return 1; }
+ if(!compositor||!shm||!layer_shell||!seat) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, layer-shell, and a seat\n"); return 1; }
  surface=wl_compositor_create_surface(compositor); layer_surface=zwlr_layer_shell_v1_get_layer_surface(layer_shell,surface,NULL,ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,"k230-launcher"); zwlr_layer_surface_v1_add_listener(layer_surface,&layer_listener,NULL);
  zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,0,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
  while(running && wl_display_dispatch(display)>=0) {} return 0;
