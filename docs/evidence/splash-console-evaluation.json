@@ -1,0 +1,29 @@
+{
+  "console": {
+    "drvPath": "/nix/store/7xb9q93gcaq6kgd362w27hnmkf7bgwfj-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "kernelParams": [
+      "console=tty0",
+      "consoleblank=0",
+      "console=ttyS0,115200n8",
+      "root=fstab",
+      "loglevel=4",
+      "lsm=landlock,yama,bpf",
+      "loglevel=7"
+    ],
+    "panelConsole": true
+  },
+  "splash": {
+    "drvPath": "/nix/store/zvpbx48jgznqyyal54ms9hcslkai42ns-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "kernelParams": [
+      "consoleblank=0",
+      "console=ttyS0,115200n8",
+      "root=fstab",
+      "loglevel=4",
+      "lsm=landlock,yama,bpf",
+      "loglevel=7"
+    ],
+    "panelConsole": false
+  },
+  "source": "3cff765",
+  "claim": "Nix evaluation only; neither splash nor panel-console variant has been built as a full image or deployed."
+}

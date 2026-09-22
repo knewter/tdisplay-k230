@@ -69,3 +69,17 @@ fw_jump_add_uboot_head.bin 9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7
 
 Only `fn_ug_u-boot.bin` changed, from 380911 to 385766 bytes, for the splash
 port.
+
+Device-tree reservation (source 3cff765; build-host only)
+------------------------------------------------------
+The separately built output is:
+/nix/store/slxqmgng9k2a120bw8lrssa3rqb9p8fc-k230-tdisplay.dtb/k230-tdisplay.dtb
+Root independently read the compiled DTB with fdtget:
+  -tx ... /reserved-memory/framebuffer@10000000 reg
+    0 10000000 0 400000
+  -p ... /reserved-memory/framebuffer@10000000
+    reg
+    no-map
+    phandle
+This proves the 4 MiB reservation is encoded at the same address as U-Boot.
+Actual kernel reservation and CMA placement remain unverified on hardware.
