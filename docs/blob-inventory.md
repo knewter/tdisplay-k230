@@ -836,11 +836,24 @@ gives `c0fb8d95…` and `3872df5a…`, the bytes on the card, and
 `docs/evidence/stage1-from-nix.txt` shows which 40 bytes the CM-byte `sed`
 changes.
 
-**What did not change.** The A-table's classes. A1 and A2 now meet `E1`'s
-definition — built in Nix today — but no stage 1 this flake compiled has
-been booted, the gitignored vendor-compiled files are still what the card
-carries, and the rows say so until a boot transcript exists. A5 and A6 are
-exactly where they were promised to be: the same 32 768 and 1 660 bytes,
-same hashes, inside the SPL we compiled, at `0x23f80` and `0x23900` of
-`u-boot-spl.bin` — 14.7 % of a 222 816-byte SPL. Compiling it moved it. It
-did not remove it.
+**Later the same day: it booted.** `docs/evidence/stage1-from-source.txt`
+records the board reaching the NixOS login prompt on the pure `nix build
+.#sdImage` and hashing its own card's stage-1 slots to this flake's
+output. So A1, A2, A3, A9 and A10 are now **E1 in fact, not in prospect**:
+built in Nix, booted, and the gitignored vendor-compiled files in
+`firmware/stage1/` are a bisect fallback that nothing reads unless asked
+by name (`K230_STAGE1=vendor ./tools/flash-latest.sh`). Their MANIFEST
+rows stay, because the files still exist on the machines that built them
+and a fallback whose bytes drift is no fallback. A7, the Xuantie
+toolchain, is off the path entirely: nothing this project ships was
+compiled by it. A4 is gone. A8 is silicon.
+
+**What did not change.** A5 and A6 are exactly where they were promised to
+be: the same 32 768 and 1 660 bytes, same hashes, inside the SPL we
+compiled, at `0x23f80` and `0x23900` of `u-boot-spl.bin` — 14.7 % of a
+222 816-byte SPL. Compiling it moved it. It did not remove it. And one thing
+the boot settled that the inventory had not asked: the vendor's OpenSBI
+copies the device tree to `0x2200000`, inside the kernel's `.BTF` section
+(`docs/evidence/opensbi-fdt-lands-in-kernel-image.md`); the OpenSBI built
+here passes it through, and the board's `/sys/kernel/btf/vmlinux` now reads
+BTF bytes where it used to read an FDT header.

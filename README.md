@@ -124,11 +124,14 @@ nix build .#deviceTree
 nix build .#uboot-k230 .#opensbi-k230     # the two compilers' worth
 nix build .#stage1                        # the five files the card carries
 
-# The card image. Pure builds carry the stage 1 above. Until a stage 1 this
-# flake compiled has been booted (docs/evidence/stage1-from-source.txt will
-# say), the known-good card was written from the vendor-compiled binaries
-# tools/gen-stage1.sh leaves in firmware/stage1/, selected like this:
-K230_STAGE1_DIR="$PWD/firmware/stage1" nix build --impure .#sdImage
+# The card image, carrying the stage 1 above. Booted on the board on
+# 2026-09-22 (docs/evidence/stage1-from-source.txt).
+nix build .#sdImage
+./tools/flash-latest.sh          # the same build, then tools/flash.sh
+
+# For bisecting only: the vendor-compiled stage 1 tools/gen-stage1.sh leaves
+# in firmware/stage1/ (gitignored), selected by name.
+K230_STAGE1=vendor ./tools/flash-latest.sh
 ```
 
 Editing `nix/dts/` does **not** rebuild the kernel. The DTB is a separate

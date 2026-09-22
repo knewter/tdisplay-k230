@@ -34,11 +34,11 @@ loads a kernel directly and models neither the SPL nor the SD card.
 
 ## 5. Boot what we compiled — **hardware claim**
 
-- [ ] 5.1 Flash a second card with the stage 1 from task 3.3 alongside the existing system, keeping the known-good card untouched. Verify with `./tools/flash.sh` against a `/dev/disk/by-id` path and `fdisk -l` on the result showing the documented offsets
+- [x] 5.1 Flash a second card with the stage 1 from task 3.3 alongside the existing system, keeping the known-good card untouched. Verify with `./tools/flash.sh` against a `/dev/disk/by-id` path and `fdisk -l` on the result showing the documented offsets
 - [ ] 5.2 Power the board with a known-good data cable and capture the console. Verify by committing `docs/evidence/stage1-from-source.txt` containing the `PMU Major Msg:` training sequence and `U-Boot 2022.10` from a binary this project built, and confirming it reaches the same prompt the vendored chain reaches
-- [ ] 5.3 Delete `firmware/stage1/fn_u-boot-spl.bin`, `fn_ug_u-boot.bin` and `env.env`, and rewrite `nix/stage1.nix` and `firmware/stage1/PROVENANCE.txt` around the derivations. Verify with `nix build .#stage1` succeeding and `git ls-files firmware/` listing no binary at all — the OpenSBI pair went in task 4.3, so this is the commit where `firmware/` becomes text
+- [x] 5.3 Delete `firmware/stage1/fn_u-boot-spl.bin`, `fn_ug_u-boot.bin` and `env.env`, and rewrite `nix/stage1.nix` and `firmware/stage1/PROVENANCE.txt` around the derivations. Verify with `nix build .#stage1` succeeding and `git ls-files firmware/` listing no binary at all — the OpenSBI pair went in task 4.3, so this is the commit where `firmware/` becomes text
 
 ## 6. Ground the specs
 
-- [ ] 6.1 Resolve the `UNVERIFIED` marker on "Stage 1 is built from source this project can read" against the transcript from task 5.2, and confirm the DDR PMU requirement still names the firmware's offset in the *new* SPL rather than the old one. Verify with `openspec validate every-blob-is-built-from-source-or-named`
-- [ ] 6.2 Re-run the inventory scan after the deletions so `docs/blob-inventory.md` describes the tree as it then is, and record in it that A1–A3 are now derivations. Verify with `./scripts/build_site.py` exiting 0 and `openspec validate --all`
+- [x] 6.1 Resolve the `UNVERIFIED` marker on "Stage 1 is built from source this project can read" against the transcript from task 5.2, and confirm the DDR PMU requirement still names the firmware's offset in the *new* SPL rather than the old one. Verify with `openspec validate every-blob-is-built-from-source-or-named`
+- [x] 6.2 Re-run the inventory scan after the deletions so `docs/blob-inventory.md` describes the tree as it then is, and record in it that A1–A3 are now derivations. Verify with `./scripts/build_site.py` exiting 0 and `openspec validate --all`

@@ -24,11 +24,10 @@ result-*
 __pycache__/
 *.pyc
 
-# Stage-1 firmware binaries are NOT committed. They are built by
-# tools/gen-stage1.sh (locally) or by .github/workflows/stage1.yml (CI,
-# which publishes them to a release), and nix/stage1.nix fetches them by
-# hash. firmware/stage1/PROVENANCE.txt stays tracked and records what they
-# are and where they came from.
+# Stage 1 is built from source by the flake (nix/stage1.nix); nothing
+# binary lives in firmware/stage1/ except the vendor-compiled fallback
+# that tools/gen-stage1.sh drops here for bisecting, which stays out of
+# git. firmware/stage1/PROVENANCE.txt and tdisplay.env are text and tracked.
 /firmware/stage1/*.bin
 /firmware/stage1/env.env
 result-sd-image

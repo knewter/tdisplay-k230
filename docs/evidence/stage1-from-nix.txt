@@ -238,3 +238,25 @@ and it is the only one that has not been checked at all.
     9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  = fw_jump_add_uboot_head.bin  (the pass-through OpenSBI)
   Not flashed, not booted. When it is, opensbi-fdt-lands-in-kernel-image.md's dd on /sys/kernel/btf/vmlinux
   should return BTF bytes, not d0 0d fe ed.
+
+7. tools/flash-latest.sh after task 5.3: the everyday flash builds the from-source image  (dry runs, nothing written)
+----------------------------------------------------------------------------------------------------------------------
+  Before 5.3 the script set K230_STAGE1_DIR unconditionally, so after this change landed a plain
+  'nix build .#sdImage' and './tools/flash-latest.sh' would have written two different stage 1s.
+  $ ./tools/flash-latest.sh --dry-run
+    image: /nix/store/vs5mll0vif0lnq36srm6qxgx75mgwf5m-k230-sd-image.img
+    stage 1: built from source by this flake (nix/stage1.nix)
+    dry run: not flashing /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1
+  (the image the board booted, docs/evidence/stage1-from-source.txt)
+  $ K230_STAGE1=vendor ./tools/flash-latest.sh --dry-run     # with firmware/stage1/ empty
+    error: K230_STAGE1=vendor but .../firmware/stage1/fn_u-boot-spl.bin is missing; run ./tools/gen-stage1.sh   rc=1
+  $ K230_STAGE1=bogus ./tools/flash-latest.sh --dry-run
+    error: K230_STAGE1 must be 'source' (default) or 'vendor', got 'bogus'   rc=1
+  $ K230_STAGE1=vendor ./tools/flash-latest.sh --dry-run     # with the gen-stage1.sh output copied into firmware/stage1/
+    image: /nix/store/k5bzs11m2xy05radxjajskcf2ig18qwy-k230-sd-image.img
+    stage 1: local directory (K230_STAGE1_DIR=.../firmware/stage1), vendor-compiled
+    dry run: not flashing /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1
+  $ dd if=<that image> bs=1 skip=$((0x200000)) count=353794 | sha256sum
+    c0fb8d95a983c33f3d0a1d7f18de721314878cb3322eaf62fbb1d2788d26b0c4   = the vendor-compiled fn_ug_u-boot.bin, as intended
+  $ git ls-files firmware/ | xargs file --mime-type -b
+    text/plain  text/plain     (PROVENANCE.txt, tdisplay.env; nothing binary is tracked)

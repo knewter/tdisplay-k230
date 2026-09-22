@@ -51,10 +51,17 @@ leaves `FW_JUMP_FDT_ADDR` undefined and passes the device tree through where
 `bootm` placed it; `docs/evidence/opensbi-fdt-passthrough.txt` is the
 `fw_next_arg1` disassembly before and after.*
 
-<!-- UNVERIFIED: no stage 1 compiled by this project has been booted. The
-compilation step is the one part not yet reproduced; grounded once
-docs/evidence/stage1-from-source.txt records the board reaching a prompt on a
-stage 1 the flake built. -->
+*Grounding, on hardware: `docs/evidence/stage1-from-source.txt`. On
+2026-09-22 the board booted the pure `nix build .#sdImage` to the NixOS
+login prompt with no panic and no emergency shell, and hashed its own
+card's raw slots from Linux: SPL at 1 MiB `fe3d537f…`, U-Boot at 2 MiB
+`805bd543…`, `/boot/fw_jump_add_uboot_head.bin` `9627edbe…` — the bytes
+`result-stage1/SHA256SUMS` lists for this flake's output. The BootROM ran
+this SPL, it trained the DRAM and ran this U-Boot, and U-Boot ran this
+OpenSBI; nothing vendor-compiled was on that card. What that transcript does
+not hold: the SPL's `PMU Major Msg:` lines and the `U-Boot 2022.10` banner,
+because the serial capture opened after stage 1 had scrolled by. The boot
+is observed; the banner is inferred from it.*
 
 #### Scenario: Someone needs to change how the board boots
 

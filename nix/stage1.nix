@@ -37,12 +37,13 @@
 # u-boot.bin reproduces the bytes that were on the card
 # (c0fb8d95... for fn_ug_u-boot.bin, 3872df5a... for fn_u-boot-spl.bin).
 #
-# `src` is what nix/sd-image.nix reads. Under --impure with K230_STAGE1_DIR
-# set it is that directory -- the vendor-compiled binaries from
-# tools/gen-stage1.sh, which are what the board has booted. Otherwise it is
-# `built`, the stage 1 this flake compiled, which has NOT yet been booted:
-# see the UNVERIFIED marker on image/boot-chain. Both are named in
-# `source` so an image build says which it carried.
+# `src` is what nix/sd-image.nix reads: `built`, the stage 1 this flake
+# compiled, which the board booted on 2026-09-22
+# (docs/evidence/stage1-from-source.txt). The one override is
+# K230_STAGE1_DIR under --impure, pointing at the vendor-compiled binaries
+# tools/gen-stage1.sh leaves in firmware/stage1/ -- a bisect tool, never a
+# default. Both are named in `source` so an image build says which it
+# carried.
 { lib
 , runCommand
 , gzip
@@ -170,7 +171,7 @@ in
     else built;
   source =
     if haveLocal then "local directory (K230_STAGE1_DIR=${envDir}), vendor-compiled"
-    else "built from source by this flake (nix/stage1.nix) -- not yet booted on hardware";
+    else "built from source by this flake (nix/stage1.nix)";
 
   # Raw offsets on the card, from the SDK's genimage_cfg/genimage.cfg.
   layout = {
