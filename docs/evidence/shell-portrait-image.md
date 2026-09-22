@@ -47,3 +47,10 @@ After recording, the checked home archive was restored privately and its tempora
 board copy removed. `shell-portrait-restored.txt` records the active unmodified
 shell, Terminal focus, keyboard display, and removal of the virtual touchscreen.
 The board is released for ordinary use and the pending physical checks.
+
+Validation after the evidence commit: 11 UMS helper tests passed; OpenSpec
+validated all 14 items; blob scan accounted for 82 binary files. The spec site
+built 55 pages / 1,100,344 bytes in 15.01 seconds, within its limits. All 77
+portable-gallery asset links resolve, and the media manifest validates 36
+finite H.264 videos. The gallery remains ready for site integration, not
+published into the Astro site by this change.
