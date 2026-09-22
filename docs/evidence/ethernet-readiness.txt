@@ -1,0 +1,28 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; for d in /sys/class/net/*; do n=${d##*/}; driver=$(readlink -f "$d/device/driver" 2>/dev/null); case "$driver" in */r8152) echo "ETHERNET_INTERFACE=$n"; printf "CARRIER="; cat "$d/carrier"; printf "OPERSTATE="; cat "$d/operstate"; ip -4 -o addr show dev "$n" scope global | awk "END { print \"GLOBAL_IPV4_COUNT=\" NR }"; ip -4 route show default dev "$n" | awk "END { print \"DEFAULT_ROUTE_COUNT=\" NR }";; esac; done; systemctl is-active dhcpcd; command -v ping; command -v getent; command -v curl =====
+export SYSTEMD_PAGER=cat PAGER=cat; for d in /sys/class/net/*; do n=${d##*/}; driver=$(readlink -f "$d/device/driver" 2>/dev/null); case "$driver" in */r8152) echo "ETHERNET_INTERFACE=$n"; printf "CARRIER="; cat "$d/carrier"; printf "OPERSTATE="; cat "$d/operstate"; ip -4 -o addr show dev "$n" scope glo 
+bal | awk "END { print \"GLOBAL_IPV4_COUNT=\" NR }"; ip -4 route show default dev "$n" | awk "END { print \"DEFAULT_ROUTE_COUNT=\" NR }";; esac; done; systemctl is-active dhcpcd; command -v ping; command -v getent; command -v curl
+[?2004l
+ETHERNET_INTERFACE=enu1
+CARRIER=0
+OPERSTATE=down
+GLOBAL_IPV4_COUNT=0
+DEFAULT_ROUTE_COUNT=0
+active
+/run/current-system/sw/bin/ping
+/run/current-system/sw/bin/getent
+/run/current-system/sw/bin/curl
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+Coordinator interpretation (2026-09-22): Linux r8152 interface enu1 exists,
+but carrier=0, operstate=down, no global IPv4 address and no default route.
+dhcpcd is active. DNS and outbound traffic were not attempted without a link.
+USB host enumeration does not prove Ethernet connectivity; J3 currently
+provides USB mass storage, not USB network sharing. No network configuration
+was changed and no Wi-Fi credentials were used.
