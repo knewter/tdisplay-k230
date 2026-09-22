@@ -199,7 +199,7 @@
  enum wlr_direction opposite_direction(enum wlr_direction d) {
  	switch (d) {
  	case WLR_DIRECTION_UP:
-@@ -147,6 +297,122 @@
+@@ -147,6 +297,134 @@
  	return output;
  }
  
@@ -244,18 +244,30 @@
 +	(void)sx;
 +	(void)sy;
 +	struct k230_initial_splash_ready_data *ready = data;
-+	if (buffer->buffer == NULL) {
-+		return;
-+	}
++	/*
++	 * scene_buffer_get_texture() may upload the immutable logo, release its
++	 * wlr_buffer and retain only its texture. Identity must therefore win over
++	 * the live-buffer test below.
++	 */
 +	if (buffer == ready->initial_splash) {
 +		ready->initial_splash_seen = true;
++		return;
++	}
++	/*
++	 * Readiness only concerns Wayland view and layer-shell replacements. The
++	 * public surface API preserves attached-buffer state after wlroots uploads
++	 * and releases a scene buffer, unlike the private scene texture field.
++	 */
++	struct wlr_scene_surface *scene_surface =
++		wlr_scene_surface_try_from_buffer(buffer);
++	if (scene_surface == NULL || !wlr_surface_has_buffer(scene_surface->surface)) {
 +		return;
 +	}
 +
 +	/*
 +	 * shell_background is below the placeholder in the global scene order.
 +	 * Ignore it so a black swaybg buffer cannot retire the logo. This iterator
-+	 * checks enabled output-intersecting scene buffers; it does not infer
++	 * checks enabled output-intersecting Wayland surfaces; it does not infer
 +	 * occlusion from their order.
 +	 */
 +	if (!ready->initial_splash_seen) {
@@ -322,7 +334,7 @@
  void output_enable(struct sway_output *output) {
  	if (!sway_assert(!output->enabled, "output is already enabled")) {
  		return;
-@@ -269,6 +535,7 @@
+@@ -269,6 +547,7 @@
  		return;
  	}
  
@@ -330,7 +342,7 @@
  	destroy_scene_layers(output);
  	list_free(output->workspaces);
  	list_free(output->current.workspaces);
-@@ -293,6 +560,7 @@
+@@ -293,6 +572,7 @@
  	list_del(root->outputs, index);
  	output->enabled = false;
  
