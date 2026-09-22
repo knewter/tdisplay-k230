@@ -17,6 +17,7 @@ stdenv.mkDerivation {
     $CC -std=c11 -O2 -Wall -o k230-touch-launcher touch-launcher.c \
       wlr-layer-shell-unstable-v1-protocol.c xdg-shell-protocol.c \
       $($PKG_CONFIG --cflags --libs wayland-client) -lrt
+    $STRIP k230-touch-launcher
   '';
   installPhase = "install -Dm755 k230-touch-launcher $out/bin/k230-touch-launcher";
   meta.description = "Small native portrait Apps surface for the K230 Sway shell";
