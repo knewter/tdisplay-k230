@@ -1,0 +1,42 @@
+Boot-splash asset build (build-host evidence only)
+===================================================
+
+Source: `assets/boot-splash.py`, rendered with Python 3 standard library to
+`assets/boot-splash.png`.  The source has no fonts, downloaded assets, progress
+indicator, or network-status content: it draws a dark field, two cyan rules,
+and a centred `K230` mark.
+
+PNG
+---
+
+```
+assets/boot-splash.png: PNG image data, 568 x 1232, 8-bit/color RGB, non-interlaced
+sha256 910743a6c9ace7d92dab5fcf0a5bfe2e3bcc986bea428a9f102d4185ece20206
+```
+
+Running `python3 assets/boot-splash.py --out /tmp/boot-splash-rebuilt.png`
+and `cmp` against the committed PNG produced identical bytes.
+
+Raw stage-1 asset
+-----------------
+
+`nix/boot-splash-image.nix` was built directly before flake wiring:
+
+```
+nix-build --expr 'with import <nixpkgs> {}; callPackage ./nix/boot-splash-image.nix {}' --no-out-link
+/nix/store/j01qdby1flsqgr5cma50qq5n3z3v12pq-k230-boot-splash-image
+```
+
+The derivation identifies a 568 x 1232 sRGB PNG, converts it to a raw
+little-endian XRGB8888 framebuffer, and checks both the exact byte count and
+the known dark top-left pixel.  The resulting file is:
+
+```
+/nix/store/j01qdby1flsqgr5cma50qq5n3z3v12pq-k230-boot-splash-image/logo.xrgb
+2799104 bytes
+first bytes (B,G,R,X): 32 16 10 255
+sha256 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af
+```
+
+It is not yet installed on a boot partition.  The touch-port integration owns
+the flake export and stage-1 wiring.
