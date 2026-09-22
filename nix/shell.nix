@@ -266,10 +266,11 @@ in
       } // lib.optionalAttrs cfg.frameTiming {
         SWAY_K230_CPU_FRAME_TIMING = "1";
       };
-      # sway's dbus-run-session execs dbus-daemon by bare name.  systemd
-      # services do not inherit the login PATH, so dbus must be explicit or
-      # the compositor exits with status 127 before wlroots is reached.
-      path = [ pkgs.dbus pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.jq pkgs.gnused ];
+      # systemd services do not inherit the login PATH.  Sway starts
+      # dbus-daemon, swaybar and `exec` commands by bare name, so retain the
+      # session's actual executables here rather than relying on
+      # /run/current-system/sw/bin being present by accident.
+      path = [ pkgs.dbus pkgs.bash sway pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.jq pkgs.gnused ];
 
       serviceConfig = {
         User = "shell";
