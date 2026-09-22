@@ -1,0 +1,20 @@
+
+===== > nix-store --import < /tmp/neofetch-riscv-uarch.nar && /nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0/bin/neofetch --stdout; printf "\nCOMMAND_PATH\n"; command -v neofetch; printf "\nROOT_PROFILE\n"; readlink -f /root/.nix-profile; nix-env -q =====
+nix-store --import < /tmp/neofetch-riscv-uarch.nar && /nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0/bin/neofetch --stdout; printf "\nCOMMAND_PATH\n"; command -v neofetch; printf "\nROOT_PROFILE\n"; readlink -f /root/.nix-profile; nix-env -q
+[?2004l
+/nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0
+/nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0/bin/neofetch: line 2091: syntax error near unexpected token `)'
+/nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0/bin/neofetch: line 2091: `                "riscv32" | "riscv64")'
+
+COMMAND_PATH
+/run/current-system/sw/bin/neofetch
+
+ROOT_PROFILE
+/root/.nix-profile
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

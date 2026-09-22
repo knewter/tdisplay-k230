@@ -1,0 +1,53 @@
+
+===== > nix-env --profile /nix/var/nix/profiles/per-user/root/profile --install /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0 && hash -r && command -v neofetch && neofetch --stdout && su -s /run/current-system/sw/bin/bash shell -c 'command -v neofetch; neofetch --stdout' =====
+nix-env --profile /nix/var/nix/profiles/per-user/root/profile --install /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0 && hash -r && command -v neofetch && neofetch --stdout && su -s /run/current-system/sw/bin/bash shell -c 'command -v neofetch; neofetch --stdout'
+[?2004l
+installing 'neofetch-7.1.0'
+building '/nix/store/7vwvi6avyzw3lcc38y1r0bzwvfxx5785-user-environment.drv'...
+-bash: hash: hashing disabled
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+===== > command -v neofetch; neofetch --stdout; su -s /run/current-system/sw/bin/bash shell -c 'command -v neofetch; neofetch --stdout' =====
+command -v neofetch; neofetch --stdout; su -s /run/current-system/sw/bin/bash shell -c 'command -v neofetch; neofetch --stdout'
+[?2004l
+/root/.nix-profile/bin/neofetch
+root@nixos 
+---------- 
+OS: NixOS 26.11 (Zokor) riscv64 
+Host: LILYGO T-Display-K230 
+Kernel: 6.6.36 
+Uptime: 10 mins 
+Packages: 329 (nix-system), 22 (nix-user), 22 (nix-default) 
+Shell: bash 5.3.15 
+Resolution: 568x1232 
+Terminal: /dev/ttyS0 
+CPU: T-Head C908 (RISC-V64) (1) 
+Memory: 110MiB / 931MiB 
+
+/nix/var/nix/profiles/default/bin/neofetch
+shell@nixos 
+----------- 
+OS: NixOS 26.11 (Zokor) riscv64 
+Host: LILYGO T-Display-K230 
+Kernel: 6.6.36 
+Uptime: 10 mins 
+Packages: 329 (nix-system), 22 (nix-default) 
+Shell: bash 5.3.15 
+Resolution: 568x1232 
+Terminal: /dev/ttyS0 
+CPU: T-Head C908 (RISC-V64) (1) 
+Memory: 116MiB / 931MiB 
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

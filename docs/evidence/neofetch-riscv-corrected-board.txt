@@ -1,0 +1,25 @@
+
+===== > nix-store --import < /tmp/neofetch-riscv-final.nar && bash -n /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0/bin/neofetch && /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0/bin/neofetch --stdout =====
+nix-store --import < /tmp/neofetch-riscv-final.nar && bash -n /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0/bin/neofetch && /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0/bin/neofetch --stdout
+[?2004l
+/nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0
+root@nixos 
+---------- 
+OS: NixOS 26.11 (Zokor) riscv64 
+Host: LILYGO T-Display-K230 
+Kernel: 6.6.36 
+Uptime: 9 mins 
+Packages: 329 (nix-system) 
+Shell: bash 5.3.15 
+Resolution: 568x1232 
+Terminal: /dev/ttyS0 
+CPU: T-Head C908 (RISC-V64) (1) 
+Memory: 107MiB / 931MiB 
+
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -13,6 +13,7 @@ stdenvNoCC.mkDerivation {
     runHook preInstall
     cp "$src" neofetch
     patch -p1 < ${./patches/neofetch-riscv-uarch.patch}
+    bash -n neofetch
     mkdir -p $out/bin
     {
       printf '#!${bash}/bin/bash\n'

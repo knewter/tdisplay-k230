@@ -1,6 +1,11 @@
 --- a/neofetch
 +++ b/neofetch
-@@ -2089,0 +2090,11 @@
+@@ -2084,4 +2084,15 @@
+                 "ia64" | "m32r")
+                     cpu="$(awk -F':' '/model/ {print $2; exit}' "$cpu_file")"
+                     [[ -z "$cpu" ]] && cpu="$(awk -F':' '/family/ {printf $2; exit}' "$cpu_file")"
++                ;;
++
 +                "riscv32" | "riscv64")
 +                    cpu="$(awk -F':' '/^uarch[[:space:]]*:/ {print $2; exit}' "$cpu_file")"
 +                    cpu="$(trim "$cpu")"
@@ -10,5 +15,4 @@
 +                        "")           cpu="${kernel_machine/riscv/RISC-V}" ;;
 +                        *)             cpu="RISC-V $cpu" ;;
 +                    esac
-+                ;;
-+
+                 ;;
