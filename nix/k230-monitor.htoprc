@@ -1,0 +1,27 @@
+# Narrow 568 px portrait profile for htop 3.5.3.
+#
+# The named fields and meters are from the pinned htop source: LinuxProcess.c
+# declares PID, PERCENT_CPU, PERCENT_MEM, and Command; HeaderLayout.h declares
+# one_100; the upstream htoprc fixture uses CPU, Memory, Tasks, and LoadAverage.
+htop_version=3.5.3
+config_reader_min_version=3
+hide_kernel_threads=1
+hide_userland_threads=1
+show_thread_names=0
+show_program_path=0
+show_merged_command=0
+header_margin=0
+screen_tabs=0
+delay=15
+hide_function_bar=1
+header_layout=one_100
+column_meters_0=CPU Memory Tasks LoadAverage
+column_meter_modes_0=1 1 2 2
+screen:Main=PID PERCENT_CPU PERCENT_MEM Command
+.sort_key=PERCENT_CPU
+.tree_sort_key=PID
+.tree_view_always_by_pid=0
+.tree_view=0
+.sort_direction=-1
+.tree_sort_direction=1
+.all_branches_collapsed=0

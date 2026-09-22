@@ -67,14 +67,18 @@ let
     font=DejaVu Sans Mono:size=15
     app-id=k230-terminal
   '';
+  monitorHtopConfig = pkgs.writeText "k230-monitor.htoprc" (builtins.readFile ./k230-monitor.htoprc);
   monitorFootConfig = pkgs.writeText "k230-monitor-foot.ini" ''
     font=DejaVu Sans Mono:size=15
+    title=Monitor
+    locked-title=yes
     app-id=k230-monitor
   '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
     export K230_SWAYMSG=${sway}/bin/swaymsg
     export K230_FOOT=${pkgs.foot}/bin/foot
     export K230_HTOP=${pkgs.htop}/bin/htop
+    export K230_HTOPRC=${monitorHtopConfig}
     export K230_JQ=${pkgs.jq}/bin/jq
     export K230_SED=${pkgs.gnused}/bin/sed
     export K230_PKILL=${pkgs.procps}/bin/pkill

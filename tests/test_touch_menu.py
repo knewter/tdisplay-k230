@@ -32,7 +32,8 @@ class TouchMenuTest(unittest.TestCase):
             for name in ("foot", "pkill", "sudo"):
                 path = root / name
                 exit_status = 'exit "${K230_TEST_SUDO_STATUS:-0}"\n' if name == "sudo" else ""
-                path.write_text("#!/bin/sh\nprintf '%s %s\\n' \"$0\" \"$*\" >> \"$K230_TEST_LOG\"\n" + exit_status)
+                htoprc = 'printf "HTOPRC=%s\\n" "${HTOPRC:-}" >> "$K230_TEST_LOG"\n' if name == "foot" else ""
+                path.write_text("#!/bin/sh\nprintf '%s %s\\n' \"$0\" \"$*\" >> \"$K230_TEST_LOG\"\n" + htoprc + exit_status)
                 path.chmod(0o755)
             swaymsg.chmod(0o755)
             env = os.environ | {
@@ -42,6 +43,7 @@ class TouchMenuTest(unittest.TestCase):
                 "K230_SUDO": str(root / "sudo"), "K230_SYSTEMCTL": "/mock/systemctl",
                 "K230_TERMINAL_CONFIG": "/mock/terminal.ini",
                 "K230_MONITOR_CONFIG": "/mock/monitor.ini",
+                "K230_HTOPRC": "/mock/monitor.htoprc",
                 "K230_TEST_TREE": tree, "K230_TEST_LOG": str(log),
             }
             self.assertIsNotNone(env["K230_JQ"], "jq is required by the tested menu")
@@ -95,6 +97,9 @@ class TouchMenuTest(unittest.TestCase):
         missing = json.dumps({"type": "root", "nodes": []})
         _, actions = self.run_menu(['{"name":"apps"}', '{"name":"terminal"}'], missing)
         self.assertIn('foot --config /mock/terminal.ini', actions)
+        _, actions = self.run_menu(['{"name":"apps"}', '{"name":"monitor"}'], missing)
+        self.assertIn('foot --config /mock/monitor.ini -e /mock/htop', actions)
+        self.assertIn('HTOPRC=/mock/monitor.htoprc', actions)
 
     def test_cancel_does_not_call_sudo_and_confirm_does(self):
         _, actions = self.run_menu(['{"name":"system"}', '{"name":"reboot"}', '{"name":"cancel"}'])

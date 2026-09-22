@@ -7,6 +7,7 @@ set -u
 : "${K230_SWAYMSG:=swaymsg}"
 : "${K230_FOOT:=foot}"
 : "${K230_HTOP:=htop}"
+: "${K230_HTOPRC:?K230_HTOPRC is required}"
 : "${K230_JQ:=jq}"
 : "${K230_SED:=sed}"
 : "${K230_PKILL:=pkill}"
@@ -77,7 +78,7 @@ present_or_start() {
       >/dev/null 2>&1; then
     "$K230_SWAYMSG" "[app_id=\"$app_id\"] focus" >/dev/null
   elif [ "$app_id" = k230-monitor ]; then
-    "$K230_FOOT" --config "$config" -e "$K230_HTOP" >/dev/null 2>&1 &
+    HTOPRC="$K230_HTOPRC" "$K230_FOOT" --config "$config" -e "$K230_HTOP" >/dev/null 2>&1 &
   else
     "$K230_FOOT" --config "$config" >/dev/null 2>&1 &
   fi
