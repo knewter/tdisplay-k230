@@ -138,7 +138,7 @@ EOM
       # does not answer, and once fbdev started actually performing a modeset
       # the DCS write blocked forever: "soft lockup - CPU#0 stuck for 130s!".
       # See docs/evidence/panel-dark.md.
-      sed -i 's|\tif (p->init_set_v1_flag) {|\tif (p->reset) {\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 0);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(120);\n\t}\n\n\tif (p->init_set_v1_flag) {|' \
+      sed -i 's|\tif (p->init_set_v1_flag) {|\tif (p->reset) {\n\t\tret = gpiod_direction_output(p->reset, 1);\n\t\tif (ret) {\n\t\t\tdev_err(panel->dev, "failed to set panel reset output: %d\\n", ret);\n\t\t\treturn ret;\n\t\t}\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 0);\n\t\tpanel_simple_sleep(20);\n\t\tgpiod_set_value_cansleep(p->reset, 1);\n\t\tpanel_simple_sleep(120);\n\t}\n\n\tif (p->init_set_v1_flag) {|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'panel_simple_sleep(120);' drivers/gpu/drm/panel/panel-canaan-universal.c
 
@@ -166,7 +166,7 @@ EOM
       sed -i '/ctx->reset = devm_gpiod_get/,/ctx->power_on =/ s|^\t} else {$|\t} else if (!ctx->stage1_splash) {|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'else if (!ctx->stage1_splash)' drivers/gpu/drm/panel/panel-canaan-universal.c
-      sed -i '/static int canaan_panel_prepare/,/\/\/ set power on/ s|\tstruct canaan_panel \*p = panel_to_canaan_panel(panel);|\tstruct canaan_panel *p = panel_to_canaan_panel(panel);\n\n\tif (p->stage1_splash) {\n\t\tdev_info(panel->dev, "canaan_panel_prepare: left as stage 1 set it\\n");\n\t\tp->stage1_splash = false;\n\t\treturn 0;\n\t}|' \
+      sed -i '/static int canaan_panel_prepare/,/\/\/ set power on/ s|\tstruct canaan_panel \*p = panel_to_canaan_panel(panel);|\tstruct canaan_panel *p = panel_to_canaan_panel(panel);\n\tint ret;\n\n\tif (p->stage1_splash) {\n\t\tdev_info(panel->dev, "canaan_panel_prepare: left as stage 1 set it\\n");\n\t\tp->stage1_splash = false;\n\t\treturn 0;\n\t}|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'canaan_panel_prepare: left as stage 1 set it' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
