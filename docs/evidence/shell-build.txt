@@ -231,3 +231,39 @@ The image reports stage 1 as `built from source by this flake
   fn_u-boot-spl.bin  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
   fn_ug_u-boot.bin   bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e
   env.env            cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+
+Portrait monitor image — build-host evidence only
+--------------------------------------------------
+On 2026-09-22, the portrait monitor configuration at source commit
+`bafb59e58f404912248538f8b5a4077b4fbe54e1` was evaluated and built from a
+clean worktree. The immutable evaluated image derivation is
+`/nix/store/vlmb1p30qxscg37lkrw43fii8b03jagf-k230-sd-image.img.drv`; it
+contains the evaluated toplevel, kernel, stage-1 and device-tree derivation
+inputs listed below. The build used only `https://cache.nixos.org`, with
+`--max-jobs 2 --cores 8`. It exited 0 after 61.303 seconds and built 12
+derivations. This is build-host evidence only; it does not claim that this
+image has been flashed or booted.
+
+  image:    /nix/store/3ss2r7bwgvxy1yhspkz2g42w504wlkvw-k230-sd-image.img
+  size:     2,308,689,920 bytes
+  toplevel: /nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd
+  closure:  1,280,680,104 bytes
+  kernel:   /nix/store/1kgxy1xsvmyb2y8gzjxz4j2asirgy5ap-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie
+  stage 1:  /nix/store/7s8fkshr67s6impk0syb9y2dl7xsfm54-k230-stage1
+
+The installed kernel configuration in its matching `dev` output still has
+`CONFIG_INPUT_MISC=y` and `CONFIG_INPUT_UINPUT=y`.
+
+The image identifies stage 1 as `built from source by this flake
+(nix/stage1.nix)`. Both SPL copies, U-Boot, and both environment copies
+byte-compare against that exact built stage-1 output at their raw offsets:
+
+  offset 1 MiB:     fn_u-boot-spl.bin  PASS
+  offset 1.5 MiB:   fn_u-boot-spl.bin  PASS
+  offset 2 MiB:     fn_ug_u-boot.bin   PASS
+  offset 3 MiB:     env.env            PASS
+  offset 3.125 MiB: env.env            PASS
+
+  fn_u-boot-spl.bin fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+  fn_ug_u-boot.bin  bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e
+  env.env            cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
