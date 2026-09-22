@@ -20,6 +20,8 @@ on:
     paths:
       - 'nix/stage1.nix'
       - 'nix/uboot-k230.nix'
+      - 'nix/uboot-k230-ums.config'
+      - 'nix/patches/uboot-k230/**'
       - 'nix/opensbi-k230.nix'
       - 'nix/k230-sdk-src.nix'
       - 'firmware/stage1/tdisplay.env'

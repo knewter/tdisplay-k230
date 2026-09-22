@@ -39,8 +39,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install touch-menu test dependency
-        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Install host test dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev ffmpeg
 
       - name: Install site dependencies
         run: npm ci
@@ -54,6 +54,12 @@ jobs:
 
       - name: Check unattended flash target refusals
         run: python3 -m unittest discover -s tests -p 'test_ums_target.py'
+
+      - name: Check desktop catalogue discovery and launch arguments
+        run: python3 tests/test_desktop_catalog.py
+
+      - name: Check sampled-frame video encoding
+        run: python3 tests/test_grim_samples.py
 
       - name: Build the site
         run: python3 scripts/build_site.py
