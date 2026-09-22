@@ -1,0 +1,4 @@
+[swscaler @ 0x7f44f0021800] deprecated pixel format used, make sure you did set range correctly
+[swscaler @ 0x7f44f0100a80] deprecated pixel format used, make sure you did set range correctly
+manifest: /mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/portrait-launcher/20260922T190646Z-portrait-launcher-final.json
+command: ffmpeg -hide_banner -loglevel warning -f v4l2 -input_format mjpeg -video_size 1920x1080 -framerate 30 -i /dev/video0 -vf transpose=2,transpose=2,scale=out_range=tv -t 60.0 -an -c:v libx264 -pix_fmt yuv420p -color_range tv -preset veryfast -crf 23 -threads 2 -movflags +faststart -y /mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console/docs/evidence/shell-features/portrait-launcher/20260922T190646Z-portrait-launcher-final.mp4

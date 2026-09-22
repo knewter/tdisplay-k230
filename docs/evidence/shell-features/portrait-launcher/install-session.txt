@@ -1,0 +1,20 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; bash /tmp/install-launcher-session.sh =====
+export SYSTEMD_PAGER=cat PAGER=cat; bash /tmp/install-launcher-session.sh
+[?2004l
+/nix/store/pazylzj7iksw71cdm5h9513iyzix1x3g-touch-menu.sh
+/nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini
+/nix/store/cwap9q90x73p0v9zalpnbrjbhdyxzf12-k230-launcher-action
+/nix/store/wbjw3fibvwv3x005xh38c1qmz81nhxm0-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1
+/nix/store/phnsn2mj4234zxa35nwrk4rvhipma718-k230-touch-launcher
+/nix/store/3jpjxmwjrwawc0q2kqh35626nrxganf8-k230-touch-menu
+/nix/store/83q3pzk9jyrwxckn05ybj7qn1k7fkqsr-k230-sway.conf
+/nix/var/nix/gcroots/k230-launcher-trial
+mkdir: cannot create directory ‘/etc/systemd/system/shell.service.d’: Read-only file system
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

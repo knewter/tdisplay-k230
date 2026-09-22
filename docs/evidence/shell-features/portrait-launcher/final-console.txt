@@ -1,0 +1,61 @@
+
+===== > bash /tmp/final-launcher-actions.sh =====
+bash /tmp/final-launcher-actions.sh
+[?2004l
+STATE:apps
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+2080
+2d8e7f9000-3fc797e000 ---p 00000000 00:00 0                              [rollup]
+Rss:                4128 kB
+Pss:                1558 kB
+Pss_Dirty:          1466 kB
+Pss_Anon:            160 kB
+Pss_File:             92 kB
+Pss_Shmem:          1306 kB
+Shared_Clean:       1336 kB
+Shared_Dirty:       2612 kB
+Private_Clean:        20 kB
+Private_Dirty:       160 kB
+Referenced:         4128 kB
+Anonymous:           160 kB
+KSM:                   0 kB
+LazyFree:              0 kB
+AnonHugePages:         0 kB
+ShmemPmdMapped:        0 kB
+FilePmdMapped:         0 kB
+Shared_Hugetlb:        0 kB
+Private_Hugetlb:       0 kB
+Swap:                  0 kB
+SwapPss:               0 kB
+Locked:                0 kB
+STATE:repeated_apps
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+2080
+STATE:terminal
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+STATE:monitor
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m][0m
+STATE:new_terminal
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+STATE:back
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+STATE:with_keyboard
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+2342
+STATE:keyboard_closed
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+STATE:drag_cancelled
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+2414
+STATE:final
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+STATE:windows_dismiss
+[1;39m[[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m5[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m7[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-monitor"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mfalse[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"Monitor"[0m[1;39m}[0m[1;39m,[0m[1;39m{[0m[1;34m"id"[0m[1;39m:[0m[0;39m8[0m[1;39m,[0m[1;34m"app_id"[0m[1;39m:[0m[0;32m"k230-terminal"[0m[1;39m,[0m[1;34m"focused"[0m[1;39m:[0m[0;39mtrue[0m[1;39m,[0m[1;34m"name"[0m[1;39m:[0m[0;32m"shell@nixos: ~"[0m[1;39m}[0m[1;39m][0m
+LAUNCHER_DEMO_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

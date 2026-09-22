@@ -1,0 +1,40 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; echo DESKTOP_INVENTORY; su -s /run/current-system/sw/bin/bash -l shell -c 'printf "XDG_DATA_HOME=%s\nXDG_DATA_DIRS=%s\nXDG_CURRENT_DESKTOP=%s\n" "$XDG_DATA_HOME" "$XDG_DATA_DIRS" "$XDG_CURRENT_DESKTOP"; for d in "$HOME/.local/share/applications" "$HOME/.nix-profile/share/applications" /nix/var/nix/profiles/default/share/applications /run/current-system/sw/share/applications; do echo "DIRECTORY:$d"; if [ -d "$d" ]; then find -L "$d" -name "*.desktop" -type f -exec sh -c '\''printf "FILE:%s\n" "$1"; sed -n "/^Name=/p;/^Exec=/p;/^Type=/p;/^Terminal=/p;/^NoDisplay=/p;/^Hidden=/p" "$1"'\'' sh {} \;; fi; done'; echo DESKTOP_INVENTORY_DONE =====
+export SYSTEMD_PAGER=cat PAGER=cat; echo DESKTOP_INVENTORY; su -s /run/current-system/sw/bin/bash -l shell -c 'printf "XDG_DATA_HOME=%s\nXDG_DATA_DIRS=%s\nXDG_CURRENT_DESKTOP=%s\n" "$XDG_DATA_HOME" "$XDG_DATA_DIRS" "$XDG_CURRENT_DESKTOP"; for d in "$HOME/.local/share/applications" "$HOME/.nix-profile/share/applications" /nix/var/nix/profiles/default/share/applications /run/current-system/sw/share/applications; do echo "DIRECTORY:$d"; if [ -d "$d" ]; then find -L "$d" -name "*.desktop" -type f -exec sh -c '\''printf "FILE:%s\n" "$1"; sed -n "/^Name=/p;/^Exec=/p;/^Type=/p;/^Terminal=/p;/^NoDisplay=/p;/^Hidden=/p" "$1"'\'' sh {} \;; fi; done'; echo DESKTOP_INVENTORY_DONE
+[?2004l
+DESKTOP_INVENTORY
+XDG_DATA_HOME=
+XDG_DATA_DIRS=/home/shell/.nix-profile/share:/nix/profile/share:/home/shell/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share
+XDG_CURRENT_DESKTOP=
+DIRECTORY:/home/shell/.local/share/applications
+DIRECTORY:/home/shell/.nix-profile/share/applications
+DIRECTORY:/nix/var/nix/profiles/default/share/applications
+DIRECTORY:/run/current-system/sw/share/applications
+FILE:/run/current-system/sw/share/applications/foot.desktop
+Type=Application
+Exec=foot
+Terminal=false
+Name=Foot
+FILE:/run/current-system/sw/share/applications/htop.desktop
+Type=Application
+Name=Htop
+Exec=htop
+Terminal=true
+FILE:/run/current-system/sw/share/applications/foot-server.desktop
+Type=Application
+Exec=foot --server
+Terminal=false
+Name=Foot Server
+FILE:/run/current-system/sw/share/applications/footclient.desktop
+Type=Application
+Exec=footclient
+Terminal=false
+Name=Foot Client
+DESKTOP_INVENTORY_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

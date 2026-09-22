@@ -1,0 +1,21 @@
+
+===== > nix-store --import < /tmp/k230-launcher-deploy.nar; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_bar_config; swaymsg 'bar bar-0 status_command /nix/store/2jb6nmahq1q3v1q9h5zf1h39v4dxy1x5-k230-touch-menu/bin/k230-touch-menu' =====
+nix-store --import < /tmp/k230-launcher-deploy.nar; export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_bar_config; swaymsg 'bar bar-0 status_command /nix/store/2jb6nmahq1q3v1q9h5zf1h39v4dxy1x5-k230-touch-menu/bin/k230-touch-menu'
+[?2004l
+/nix/store/276jzl7kgqj694g4gv7361al06jqxf3r-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1
+/nix/store/33sazzcxmk36vl8b3xs1adgf9kzdz82s-touch-menu.sh
+/nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini
+/nix/store/cwap9q90x73p0v9zalpnbrjbhdyxzf12-k230-launcher-action
+/nix/store/shc0si8rz3v7q4qpwwfd12fpxzf3wznm-k230-touch-launcher
+/nix/store/2jb6nmahq1q3v1q9h5zf1h39v4dxy1x5-k230-touch-menu
+/nix/store/33y43l1c1ksak75nclk64km1p1chnb4b-k230-sway.conf
+[
+  "bar-0"
+]
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

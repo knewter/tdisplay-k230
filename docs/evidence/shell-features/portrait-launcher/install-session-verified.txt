@@ -1,0 +1,18 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p ExecStart -p DropInPaths --no-pager; pgrep -af sway =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; systemctl show shell -p ExecStart -p DropInPaths --no-pager; pgrep -af sway
+[?2004l
+active
+DropInPaths=/run/systemd/system/shell.service.d/40-touch-launcher.conf
+ExecStart={ path=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway ; argv[]=/nix/store/0dw6pla4d4qqyndk77mhahijjzv4g81v-sway-1.12/bin/sway -d -c /nix/store/83q3pzk9jyrwxckn05ybj7qn1k7fkqsr-k230-sway.conf ; ignore_errors=no ; start_time=[Tue 2026-03-17 21:30:49 UTC] ; stop_time=[n/a] ; pid=2025 ; code=(null) ; status=0/0 }
+2025 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unknown-linux-gnu-1.16.2/bin/dbus-run-session /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway -d -c /nix/store/83q3pzk9jyrwxckn05ybj7qn1k7fkqsr-k230-sway.conf
+2030 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway -d -c /nix/store/83q3pzk9jyrwxckn05ybj7qn1k7fkqsr-k230-sway.conf
+2033 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+2034 swaybar -b bar-0
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

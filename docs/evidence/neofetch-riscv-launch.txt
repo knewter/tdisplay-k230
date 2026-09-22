@@ -1,0 +1,11 @@
+
+===== > SWAYSOCK=/run/shell/sway-ipc.sock swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font='"'"'DejaVu Sans Mono:size=12'"'"' bash -c '"'"'nix --offline --extra-experimental-features nix-command shell /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash'"'"'' =====
+SWAYSOCK=/run/shell/sway-ipc.sock swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --font='"'"'DejaVu Sans Mono:size=12'"'"' bash -c '"'"'nix --offline --extra-experimental-features nix-command shell /nix/store/j7m1v5k5m0h8b46m8krngrqfmxmsc023-neofetch-7.1.0 -c neofetch --config none --ascii_distro nixos_small --color_blocks off --disable gpu theme icons wm_theme packages; exec bash'"'"''
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
