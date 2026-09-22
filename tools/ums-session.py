@@ -229,6 +229,17 @@ def main():
             s.pump()
             s.note("new lsusb entries: " + "; ".join(sorted(lsusb_set() - usb_before)))
             s.host(["lsusb"])
+            # The speed the HOST negotiated, from sysfs, for every USB device
+            # carrying the gadget's vendor id -- to compare with what the
+            # board's DSTS said. And the kernel's own account of the attach.
+            s.host(["sh", "-c",
+                    "for d in /sys/bus/usb/devices/*; do "
+                    "[ -f $d/idVendor ] || continue; "
+                    "v=$(cat $d/idVendor); p=$(cat $d/idProduct); "
+                    "[ \"$v\" = 29f1 ] || continue; "
+                    "echo \"$(basename $d): $v:$p speed=$(cat $d/speed) Mb/s version=$(cat $d/version) "
+                    "manufacturer=$(cat $d/manufacturer 2>/dev/null) product=$(cat $d/product 2>/dev/null) serial=$(cat $d/serial 2>/dev/null)\"; done"])
+            s.host(["sh", "-c", "journalctl -k --since -10min --no-pager 2>/dev/null | grep -i -E 'usb [0-9]+-[0-9.]+|usb-storage|scsi|sd [a-z]' | tail -25"])
             for name in sorted(new):
                 byid = f"/dev/disk/by-id/{name}"
                 dev = os.path.realpath(byid)

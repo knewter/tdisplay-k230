@@ -549,8 +549,17 @@ by `dwc2_set_stm32mp1_hsotg_params()` (`:1030-1043`), reached only through
 `INT_SUSPEND`. Meanwhile solomon's kernel log has no attach on any bus in
 any window. Whatever reset that bus was a host, and it was not this machine.
 
-**Not yet observed.** A gadget enumerating on *this* host; `ums`
-presenting the card here; Route C. The next step is a cable whose far end
-is confirmed to be in this machine, on the same firmware, with
-`journalctl -k -f` watching — then, only if that also fails, the
-full-speed-only enumeration is the thread to pull.
+**And then it enumerated (session 5).** The cable's far end was proven to
+reach this machine with a phone first; moved to J3, `ums 0 mmc 1` on the
+same firmware put `29f1:0230 … USB download gadget` on `usb 3-4` at
+**480 Mb/s**, as `/dev/disk/by-id/usb-Linux_UMS_disk_0-0:0`, 249 872 384
+sectors — the card — with `K230_BOOT` and `NIXOS_SD` visible, and the
+2 MiB slot read back over USB hashing to the build's `fn_ug_u-boot.bin`.
+`DSTS` this time reads high speed; the full-speed enumeration of sessions
+3–4 was the other host's doing. Four failed sessions and the register
+decode were the cost of not being able to see the bench: the board had
+been right all along.
+
+**Not yet observed.** The whole image compared over `ums` (3.4); a write
+over `ums` and its rate (3.5); a boot of an image written that way (4.2);
+Route C.

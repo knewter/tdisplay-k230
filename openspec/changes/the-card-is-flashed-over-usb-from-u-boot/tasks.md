@@ -75,19 +75,20 @@ binary any more.
       Done when the gadget driver is bound to `usb-otg@91500000` and the
       evidence file says whether it also took `usb-otg@91540000`, settling
       design.md D3.
-- [ ] 3.3 With a cable from the host to J3, enter `ums` and confirm the host
+- [x] 3.3 With a cable from the host to J3, enter `ums` and confirm the host
       sees a block device of the right size. **Hardware proof.**
       board: `./tools/console.py /dev/ttyACM0 --wait=3 "ums 0 mmc 1"`;
       host: `lsblk -o NAME,SIZE,MODEL,TRAN` and `ls -l /dev/disk/by-id/`
       Done when a by-id path exists whose size matches 1.4, and both the
       console and the host output are in
       `docs/evidence/uboot-ums-hardware.txt`.
-      - Not ticked, 2026-09-22: `docs/evidence/uboot-ums-enumerate.txt` — `ums 0 mmc 1` runs on the board (`UMS: LUN 0, dev mmc 1 ... count 0xee4c000`, the 119.1 GiB card) and was held for 300 s, but the host saw no new USB device. Sessions 3-4 (a second cable, then a register dump): `GOTGCTL` bit 19 `B_SESSION_VALID` = 1 — the PHY sees VBUS — and after `ums` the core shows D+ pulled up, a bus reset received and enumeration done at full speed; this host's kernel log shows no attach on any bus. A host is on the far end of that cable and it is not this machine. The `u-boot,force-*` properties are inert for `snps,dwc2` in this tree (`dwc2_udc_otg.c:1121`, gated on an STM32-only flag) and were not added. Next: confirm the cable's far end is in this host, same firmware.
+      - Ticked 2026-09-22 on session 5 of `docs/evidence/uboot-ums-enumerate.txt`: `29f1:0230` on `usb 3-4` at 480 Mb/s, `/dev/disk/by-id/usb-Linux_UMS_disk_0-0:0`, 249 872 384 sectors = the card. Sessions 1-4 failed because the cable's far end was not this host; the registers said so before the phone test proved it.
 - [ ] 3.4 Read the card back over `ums` and compare it against the image that
       was written in 3.1. **Hardware proof.**
       `sudo cmp -n $(stat -c %s "$IMG") "$IMG" /dev/disk/by-id/<ums path>`
       Done when `cmp` is silent. This proves the transport before anything is
       trusted to write through it.
+      - Not ticked, 2026-09-22: 350 046 bytes at the 2 MiB slot were read over ums and match `bd562f2b…` (`docs/evidence/uboot-ums-enumerate.txt`, session 5); the whole-image `cmp` this task asks for has not been run.
 - [ ] 3.5 Measure the write rate, so the claim in design.md is a number and
       not an estimate. **Hardware proof.**
       `sudo dd if="$IMG" of=/dev/disk/by-id/<ums path> bs=4M status=progress oflag=direct`

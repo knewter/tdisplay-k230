@@ -28,9 +28,18 @@ vendor device tree disables it. The gadget configuration is not speculative
 (`nix/uboot-k230-ums.config`, `docs/evidence/uboot-ums-build.txt`) puts
 `ums` in the binary and enables `usb-otg@91500000` as a peripheral.*
 
-<!-- UNVERIFIED: no USB gadget has enumerated from this board. Grounded once
-docs/evidence/uboot-ums-hardware.txt records the host seeing a block device
-while the card is still in the slot. -->
+*Grounding, on hardware: `docs/evidence/uboot-ums-enumerate.txt`, session 5,
+2026-09-22. With the card in the slot and the ums stage 1 on it, `ums 0 mmc
+1` at the `K230#` prompt made this host log `usb 3-4: new high-speed USB
+device ... idVendor=29f1, idProduct=0230 ... Product: USB download gadget,
+Manufacturer: U-Boot` and attach `/dev/disk/by-id/usb-Linux_UMS_disk_0-0:0`
+as a 249 872 384-sector removable disk — the size `mmc info` reports for the
+card and the count `ums` printed — with the image's `K230_BOOT` and
+`NIXOS_SD` partitions visible to `lsblk`. 350 046 bytes read back from its
+2 MiB offset hash to `bd562f2b…`, the `fn_ug_u-boot.bin` of that build.
+Four earlier sessions had failed with the core's registers showing VBUS
+valid and a bus reset received: the cable's far end was not this machine,
+which a phone on the same cable then proved. Nothing was written.*
 
 #### Scenario: A rebuilt image is written to the board
 
