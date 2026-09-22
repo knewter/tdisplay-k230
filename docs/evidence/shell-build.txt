@@ -203,3 +203,31 @@ for that final enabled closure. The final closure contains riscv64 `htop`,
 `jq` store paths and `/run/wrappers/bin/sudo`, rather than relying on a
 terminal's ambient PATH. No package refused to cross-compile in this final
 increment.
+
+Corrected final image — build-host evidence only
+------------------------------------------------
+On 2026-09-22, from source tip `ce2f37f`, the corrected image was built with
+the official cache only and `--max-jobs 2 --cores 8`. It completed with exit
+status 0 in 58.187 s and built 21 derivations. This is a build-host result; it
+does not claim that the resulting image booted or that its shell ran on the
+physical board.
+
+  image:    /nix/store/s50h4h5awhx9479nhflayif890z2r6c0-k230-sd-image.img
+  size:     2,308,689,920 bytes
+  toplevel: /nix/store/7py9rixdgi2z79p6njcv3rik7azsvfa9-nixos-system-nixos-26.11.20260919.20b1ddd
+  closure:  1,280,679,016 bytes
+  kernel:   /nix/store/1kgxy1xsvmyb2y8gzjxz4j2asirgy5ap-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie
+
+The built kernel's installed configuration, not the Nix source fragment, was
+read from
+`/nix/store/sidwsxh7gq6ih1ma81xmh2c1pa8xmmk1-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie-dev/lib/modules/6.6.36/build/.config`:
+
+  CONFIG_INPUT_MISC=y
+  CONFIG_INPUT_UINPUT=y
+
+The image reports stage 1 as `built from source by this flake
+(nix/stage1.nix)`. Its raw slots byte-compare with that built stage-1 output:
+
+  fn_u-boot-spl.bin  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+  fn_ug_u-boot.bin   bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e
+  env.env            cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
