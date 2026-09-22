@@ -155,7 +155,7 @@ EOM
       sed -i 's|\tu32 init_set_v1_flag;|\tu32 init_set_v1_flag;\n\tbool stage1_splash;|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'bool stage1_splash;' drivers/gpu/drm/panel/panel-canaan-universal.c
-      sed -i 's|\tctx->reset = devm_gpiod_get(&dsi->dev, "dsi_reset", GPIOD_OUT_LOW);|\tctx->stage1_splash = of_property_read_bool(of_chosen, "canaan,stage1-splash");\n\n\tctx->reset = devm_gpiod_get(&dsi->dev, "dsi_reset",\n\t\t\t\t    ctx->stage1_splash ? GPIOD_ASIS : GPIOD_OUT_LOW);|' \
+      sed -i 's|\tctx->reset = devm_gpiod_get(&dsi->dev, "dsi_reset", GPIOD_OUT_LOW);|\tctx->stage1_splash = of_property_read_bool(of_chosen, "canaan,stage1-splash");\n\n\tctx->reset = devm_gpiod_get(\&dsi->dev, "dsi_reset",\n\t\t\t\t    ctx->stage1_splash ? GPIOD_ASIS : GPIOD_OUT_LOW);|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'ctx->stage1_splash = of_property_read_bool(of_chosen, "canaan,stage1-splash");' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
