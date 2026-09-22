@@ -1,0 +1,14 @@
+--- a/neofetch
++++ b/neofetch
+@@ -2089,0 +2090,11 @@
++                "riscv32" | "riscv64")
++                    cpu="$(awk -F':' '/^uarch[[:space:]]*:/ {print $2; exit}' "$cpu_file")"
++                    cpu="$(trim "$cpu")"
++
++                    case $cpu in
++                        "thead,c908") cpu="T-Head C908 (${kernel_machine/riscv/RISC-V})" ;;
++                        "")           cpu="${kernel_machine/riscv/RISC-V}" ;;
++                        *)             cpu="RISC-V $cpu" ;;
++                    esac
++                ;;
++

@@ -93,4 +93,6 @@ swaymsg 'exec cd /home/shell && foot --app-id=k230-neofetch --title=Neofetch --f
 [?2004l
 [?2004h
 
-[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m
+===== Host narrow build: RISC-V uarch parser =====
+`nix build .#neofetch --option max-jobs 2 --option cores 8 --option substituters https://cache.nixos.org` rebuilt the package after applying `nix/patches/neofetch-riscv-uarch.patch` to pinned Neofetch 7.1.0. It produced `/nix/store/10bmbyyj6ljyjrjbg3l83gkpwr7lx8qa-neofetch-7.1.0`; `nix path-info -S` reports 71684640 bytes. This is a laptop build, not board proof. The parser was exercised against the captured `cpu-readiness.txt` record and emitted `T-Head C908 (RISC-V64) (1)` before the host's separately measured frequency suffix.

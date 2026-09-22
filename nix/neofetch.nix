@@ -11,11 +11,13 @@ stdenvNoCC.mkDerivation {
   dontUnpack = true;
   installPhase = ''
     runHook preInstall
+    cp "$src" neofetch
+    patch -p1 < ${./patches/neofetch-riscv-uarch.patch}
     mkdir -p $out/bin
     {
       printf '#!${bash}/bin/bash\n'
       printf 'export PATH="${lib.makeBinPath [ coreutils gawk gnugrep gnused procps ]}:$PATH"\n'
-      tail -n +2 "$src"
+      tail -n +2 neofetch
     } > $out/bin/neofetch
     chmod +x $out/bin/neofetch
     runHook postInstall
