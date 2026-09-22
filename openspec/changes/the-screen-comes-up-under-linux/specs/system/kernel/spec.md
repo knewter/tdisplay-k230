@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: The kernel is pinned, and its divergence from upstream is recorded
 
