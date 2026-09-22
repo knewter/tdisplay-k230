@@ -324,6 +324,7 @@ in
       # A software proxy: evidence from it is labelled "injected", and the
       # touch requirement still closes on a real tap at the bench.
       pkgs.evemu
+      (pkgs.callPackage ./neofetch.nix { })
       wlfps
     ];
 

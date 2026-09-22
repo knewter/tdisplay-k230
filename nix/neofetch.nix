@@ -1,5 +1,5 @@
 # Optional original Neofetch for the board; removed from the pinned Nixpkgs.
-# Kept out of the default image and built explicitly with `nix build .#neofetch`.
+# Included with bring-up probes; also build directly with `nix build .#neofetch`.
 { stdenvNoCC, fetchurl, lib, bash, coreutils, gawk, gnugrep, gnused, procps }:
 stdenvNoCC.mkDerivation {
   pname = "neofetch";

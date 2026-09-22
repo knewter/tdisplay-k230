@@ -27,15 +27,23 @@ def command(args: argparse.Namespace, output: pathlib.Path) -> list[str]:
         "-input_format", args.input_format, "-video_size", args.video_size,
         "-framerate", str(args.framerate), "-i", args.device,
     ]
+    filters = []
     if args.rotate180:
         # Two clockwise transposes are a presentation transform. Leaving this
         # out preserves the camera's raw orientation.
-        cmd += ["-vf", "transpose=2,transpose=2"]
+        filters.append("transpose=2,transpose=2")
     if args.still:
+        if filters:
+            cmd += ["-vf", ",".join(filters)]
         return cmd + ["-frames:v", "1", "-q:v", "2", "-y", str(output)]
+    # MJPEG cameras supply full-range pixels. Convert the range as well as
+    # the pixel format so the H.264 output is ordinary limited-range yuv420p.
+    filters.append("scale=out_range=tv")
+    cmd += ["-vf", ",".join(filters)]
     return cmd + [
         "-t", str(args.duration), "-an", "-c:v", "libx264", "-pix_fmt",
-        "yuv420p", "-movflags", "+faststart", "-y", str(output),
+        "yuv420p", "-color_range", "tv", "-preset", "veryfast", "-crf", "23",
+        "-threads", "2", "-movflags", "+faststart", "-y", str(output),
     ]
 
 
