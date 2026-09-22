@@ -207,7 +207,7 @@ between the loaded initrd's end and the bottom of the CMA pool, less the
 two scratch addresses). Everything from `0x1e000000` up is spoken for by
 the kernel or by `bootm`.
 
-### 2.4 The splash address (task 2.3 — decision pending `bdinfo`)
+### 2.4 The splash address (task 2.3 — the design's candidate, confirmation pending `bdinfo`)
 
 The design's starting candidate is LILYGO's `0x1f000000`, 4 MiB. Against
 this map it is clear of everything stage 1 loads or relocates, and it is
@@ -233,7 +233,8 @@ not. **It fails on the kernel side instead:**
   `docs/evidence/lilygo-uboot-logo.md`). This system pins 26 MiB of initrd
   at the top at exactly the moment CMA is placed.
 
-**Recommended: `0x10000000`, 4 MiB (`0x10000000 .. 0x10400000`).** Free
+**The design's candidate, adopted from this analysis: `0x10000000`, 4 MiB
+(`0x10000000 .. 0x10400000`).** Free
 in every row of the table; 86 MiB above the loaded initrd's end (room for
 the initrd to more than quadruple before it reaches the buffer, and a
 growing initrd is the likeliest change on this card); below `loadaddr`'s
@@ -252,7 +253,7 @@ LILYGO's reservation size, and `no-map` regions are best kept
 2 MiB-aligned on a Sv39 kernel so the linear map is not fragmented at a
 page granularity for 0.5 MiB of savings.
 
-**This decision is written but not taken.** Task 2.3 requires the `bdinfo`
-transcript in §2.1 first; the only thing that transcript can change is the
+**Task 2.3 is not ticked.** It requires the `bdinfo` transcript in §2.1
+first; the only thing that transcript can change is the
 U-Boot-side bound, and `0x10000000` is 764 MiB below where that bound
 could plausibly fall.

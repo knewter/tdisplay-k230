@@ -29,8 +29,13 @@ programs DSI and VO timing and points a layer at the picture. LILYGO's
 official BSP extends that path to this panel: its overlay's `k230_logo.c`
 adds a `CONFIG_K230_BARE_DISP_LOGO_RM69A10` case with a 568x1232 XRGB8888
 `/logo.xrgb` at `0x1f000000`, `st7701.c` gains `rm69a10_568x1232_init()`
-carrying the same 13-command sequence our device tree sends and `GPIO_RST_PIN
-22`, and `display_logo.c` gains a 2-lane PHY routine and an OSD4 scanout.
+and `GPIO_RST_PIN 22`, and `display_logo.c` gains a 2-lane PHY routine and
+an OSD4 scanout. Their init sequence is not the one this project sends:
+its rows 6-8 are the partial-area block `31/30/12`, which lit this panel
+under Linux but glitched (`docs/evidence/panel-lit.md`), and which
+`nix/dts/display-rm69a10-568x1232.dtsi` replaced with `13`
+(ENTER_NORMAL_MODE). Stage 1 sends the DTSI's sequence. Recorded, with the
+commit hash and the full diff, in `docs/evidence/lilygo-uboot-logo.md`.
 Their U-Boot returns `-1` and skips the logo when the load fails
 (`k230_logo.c`, `_k230_display_logo_load_pic`). The vendored `k230_canmv_v3`
 configuration this project builds does not enable any of it.*
@@ -60,7 +65,7 @@ board's lane rate is `0x87`, and stage 1 SHALL use it rather than the value
 either vendor hardcodes.
 
 *Grounding: measured on this board under Linux, like for like, changing only
-the device tree value —* `0x96` *(the value in* `canaan_dsi.c:424` *and in
+the device tree value —* `0x96` *(the value in* `canaan_dsi.c:383` *(pristine; 428 as patched) and in
 LILYGO's U-Boot* `k230_logo.c` *connector table) works and rolls, `0x97` blanks
 the panel, `0x87` is stable to 0.02 px over 30 s;*
 `docs/evidence/dsi-hsfreqrange-hardcoded.md`. *The system's mode is 49.5 MHz,

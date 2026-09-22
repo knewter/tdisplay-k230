@@ -14,15 +14,27 @@ See proposal.md — Why. What shapes the approach:
   overlay (`Xinyuan-LilyGO/T-Display-K230`,
   `k230_bsp/overlay/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/`)
   adds `CONFIG_K230_BARE_DISP_LOGO_RM69A10`: a 2-lane PHY routine,
-  `rm69a10_568x1232_init()` with the 13-command sequence our device tree
-  carries, `GPIO_RST_PIN 22`, and an OSD4 XRGB8888 scanout of `/logo.xrgb`
-  from `0x1f000000`. Read in full on 2026-09-22 and diffed against the SDK
-  copy; the diff is about 300 lines. It is authored by an AI agent and its
+  `rm69a10_568x1232_init()` with a 13-command sequence, `GPIO_RST_PIN 22`,
+  and an OSD4 XRGB8888 scanout of `/logo.xrgb` from `0x1f000000`. Read in
+  full on 2026-09-22 at commit `bb831ab` and diffed against the SDK copy —
+  `docs/evidence/lilygo-uboot-logo.md`, 549 lines over the four logo files.
+  Their sequence is **not** the one our device tree sends: rows 6-8 are the
+  partial-area block `31 …`, `30 …`, `12` (ENTER_PARTIAL_MODE), which lit
+  this panel under Linux but glitched (`docs/evidence/panel-lit.md`, "Still
+  wrong: the image is glitchy"), and which
+  `nix/dts/display-rm69a10-568x1232.dtsi` replaced with `13`
+  (ENTER_NORMAL_MODE). The port sends the DTSI's sequence, not LILYGO's.
+  The same overlay also deletes `enter_to_usb_burn_mode()` from
+  `k230_board_common.c` and moves the U-Boot environment to
+  `ENV_OFFSET 0x1e0000` / `ENV_SIZE 0x10000`; neither is carried (see the
+  vendoring decision below). It is authored by an AI agent and its
   commit messages are not to be trusted (`docs/research/linux-on-t-display-k230.md`
   §3), but LILYGO ships images in which it lights this panel.
 - **Both vendors hardcode the wrong PHY band for our lane rate.** LILYGO's
   connector table says `hs_freq 0x96` at 475 Mbps, where it is correct;
-  Linux's `canaan_dsi.c:424` says `0x96` at any rate. At our 594 Mbps the
+  Linux's `canaan_dsi.c:383` (pristine pinned tree; line 428 in the tree
+  `nix/kernel.nix` builds) said `0x96` at any rate until
+  `canaan,hsfreqrange` was plumbed through the device tree. At our 594 Mbps the
   measured answer is `0x87` (`docs/evidence/dsi-hsfreqrange-hardcoded.md`).
 - **The kernel extinguishes the panel at probe and again at first enable.**
   `panel-canaan-universal.c:318-329` pulses reset in probe; our
@@ -85,7 +97,19 @@ into fresh code — a second implementation of a bring-up we only just got
 right in Linux, with a second set of timing bugs. Rejected: taking LILYGO's
 whole overlay — it also carries their defconfig and board files, and this
 project's stage 1 is deliberately `k230_canmv_v3` plus recorded deltas.
-Layer: **stage 1 (Nix over vendor source)**.
+Concretely, three things in that overlay are left out on purpose
+(`docs/evidence/lilygo-uboot-logo.md`, "What LILYGO's U-Boot overlay
+contains", item 9): their `k230_board_common.c` deletes
+`enter_to_usb_burn_mode()` and inlines it into `do_2_burn_mode`, a file
+`the-card-is-flashed-over-usb-from-u-boot` owns; their defconfig moves the
+environment to `ENV_OFFSET 0x1e0000` / `ENV_SIZE 0x10000` where this
+project's card has it at 3 MiB and 3.5 MiB, 8 KiB (`nix/stage1.nix`); and
+their `board.c` drives GPIO52 low at `board_init()` for a keyboard
+backlight this change has no opinion on. What is carried is the four
+`logo/` files and the one Kconfig hunk. The init sequence inside `st7701.c`
+is rewritten to the DTSI's (`13` for LILYGO's `31/30/12`), so that stage 1
+and the kernel initialise the panel identically. Layer: **stage 1 (Nix
+over vendor source)**.
 
 **Drive the same mode from U-Boot that Linux drives: 49.5 MHz, 594 Mbps,
 hsfreqrange `0x87`, with the PLL `m/n/voc` derived by the same arithmetic
@@ -158,12 +182,30 @@ address is not guaranteed and `dma_alloc_wc` zeroes it anyway. Layer:
 **device tree, userspace**.
 
 **The address is one constant in the flake, and it is chosen against a
-recorded map — starting candidate `0x1f000000`, 4 MiB.** That is LILYGO's
-number, which their images boot with on this SoC; it is above the initrd's
-loaded extent (`0x9000000` + 26 MiB) and below where a 1 GiB U-Boot
-relocates. It is a candidate until `bdinfo` and the `bootm` relocation
-messages are read from the board, because U-Boot's heap and the initrd's
-final position are exactly the two things nobody has written down. The
+recorded map — candidate `0x10000000`, 4 MiB
+(`0x10000000..0x10400000`).** From `docs/evidence/stage1-memory-map.md`: it
+is free in every row of the map — 86 MiB above the loaded initrd's end
+(`0x0aa0aaa5`), below `loadaddr` (`0xc000000` is not in its range) and
+the `force_dtb` scratch address, and far below where `bootm` relocates the
+initrd (`0x3e135000`, read from the cold-boot capture) and where U-Boot
+itself lives. It leaves `0x10400000..0x3e135000` = 733 MiB above it, so the
+kernel's 512 MiB CMA pool stays where the boot log already puts it
+(`cma: Reserved 512 MiB at 0x1e000000`) and the kernel's memory layout
+does not change at all. It is a candidate until `bdinfo` is read from the
+board (task 2.1), the one input not yet written down; the `bootm`
+relocation lines are already in the map (task 2.2). **Rejected:
+`0x1f000000`, LILYGO's number.** It is clear of everything stage 1 loads
+or relocates, but it is *inside* the CMA pool the kernel places at
+`0x1e000000..0x3e000000`. A `no-map` reservation there is excluded from
+`memblock` allocation (`drivers/of/fdt.c:479-494`,
+`mm/memblock.c:1001-1025`), splitting the free range into 335 MiB below
+the hole and 493 MiB above it, and 512 MiB fits in neither; the likely
+result is `cma: Failed to reserve` and the display driver's `dma_alloc_wc`
+falling back to the page allocator — reasoning from source, unverified on
+the board, and the reason not to find out on the board. LILYGO's images
+survive it because they boot without an initrd, so their free range above
+the hole runs to the top of RAM (524 MiB); this system pins 26 MiB of
+initrd at the top at exactly the moment CMA is placed. The
 constant feeds `CONFIG_K230_BARE_DISP_LOGO_FB_ADDR` (a new Kconfig symbol
 replacing LILYGO's `#define`) and the `reserved-memory` node's `reg`
 through the device tree's preprocessor, so they cannot disagree. Rejected:
@@ -176,8 +218,9 @@ the class of bug. Layer: **Nix, stage 1, device tree**.
 
 **Splash format: XRGB8888, as LILYGO's path scans out; one asset, one
 derivation.** A PNG in the repository; a Nix derivation renders it to
-`568x1232` XRGB8888 with a size check equal to `2 799 616` bytes (the U-Boot
-code refuses any other size), and the same derivation produces the frames
+`568x1232` XRGB8888 with a size check equal to `2 799 104` bytes
+(568 x 1232 x 4; LILYGO's `RM69A10_LOGO_XRGB_SIZE`, and the U-Boot code
+refuses any other `filesize`), and the same derivation produces the frames
 the Linux-side owner uses, so frame 0 on both sides is the same bytes
 through different pipelines. Rejected: RGB565 to halve the buffer — it
 would diverge from the only U-Boot scanout configuration proven on this
@@ -230,17 +273,19 @@ would look like a dead panel. Layer: **Nix**.
   2-lane routine waits 20 ms where the SDK waits 1 ms and orders the resets
   differently from `canaan_phy.c`. Prove the path on LILYGO's numbers first,
   then change one parameter at a time, measuring with `tools/panel-measure.py`.
-- **`0x1f000000` is under U-Boot's heap or where `bootm` relocates the
-  initrd.** → Read `bdinfo` and the `Loading Ramdisk to` line before the
-  number is committed; the map exists so this is a lookup, not a
-  discovery.
+- **`0x10000000` is under U-Boot's heap or where `bootm` relocates the
+  initrd.** → The `Loading Ramdisk to` line is read (`0x3e135000`, 738 MiB
+  above); `bdinfo` is read before the number is committed. The map exists
+  so this is a lookup, not a discovery. The risk that was found instead —
+  the kernel's CMA placement — is handled in the address decision above.
 - **Plymouth drags in a second cross toolchain or fails to build.** →
   The decision rule caps it; the fallback is written down and is small.
 - **Losing boot text on the glass by default.** → Real. Every panel
   diagnosis so far watched the console. The switch restores it in one
   option, and the serial console never moved.
-- **The U-Boot sequence and the device tree sequence drift.** → They are
-  the same 13 commands today, one in C and one in DT bytes. Record both in
+- **The U-Boot sequence and the device tree sequence drift.** → They
+  already differ: LILYGO's C sends `31/30/12`, our DT bytes send `13`, and
+  the port rewrites the C to match the DT. Record both in
   `docs/evidence/rm69a10-init-sequence.md` side by side, and make the
   divergence table the place a future change has to edit.
 - **LILYGO moves or rewrites their repository.** → The diff is committed

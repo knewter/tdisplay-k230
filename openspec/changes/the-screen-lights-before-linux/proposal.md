@@ -66,6 +66,12 @@ device tree, Nix, userspace — and each has its own proof.
   clear. The switch restores exactly today's behaviour for bring-up work.
 
 **Non-goals.** A NixOS generations menu, or any interactivity in U-Boot.
+The rest of LILYGO's U-Boot overlay beyond the four `logo/` files and one
+Kconfig hunk: their `k230_board_common.c` deletes `enter_to_usb_burn_mode()`
+(that file belongs to `the-card-is-flashed-over-usb-from-u-boot`), their
+defconfig moves the environment to `0x1e0000` / 64 KiB, and their `board.c`
+sets a keyboard-backlight GPIO — none is carried
+(`docs/evidence/lilygo-uboot-logo.md`).
 Changing U-Boot's `bootdelay` — the splash appears before the countdown, so
 the countdown delays the kernel, not the picture, and shortening it is a
 separate decision that affects `the-card-is-flashed-over-usb-from-u-boot`.

@@ -15,7 +15,7 @@ of the boot partition are recorded.
 in `arch/riscv/cpu/k230/Kconfig:35` and run from `last_stage_init()`), and
 LILYGO's BSP overlay carries the RM69A10 case of it —
 `CONFIG_K230_BARE_DISP_LOGO_RM69A10`, `/logo.xrgb`, 568x1232 XRGB8888 at
-`0x1f000000`, reset on GPIO22 — in
+`0x1f000000` (an address this change rejects; `docs/evidence/stage1-memory-map.md`), reset on GPIO22 — in
 `k230_bsp/overlay/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/board/canaan/common/logo/`
 of `Xinyuan-LilyGO/T-Display-K230`, read 2026-09-22. Neither is enabled in
 the `k230_canmv_v3_defconfig` this project builds.*
