@@ -319,18 +319,28 @@ def usb_host_verdict(usb_tree, dm_tree, usb_start=None, require_start=False):
     start = text(usb_start)
     tree = text(usb_tree)
     dm = text(dm_tree)
+
+    def has_dm_binding(driver, node):
+        # `dm tree` has one driver and one node per line.  Checking them
+        # separately lets a swapped host/gadget pairing look valid.
+        return re.search(
+            rf"^\s*usb\s+\d+\s+\[[^\]]*\]\s+{re.escape(driver)}\s+\|.*"
+            rf"\|--\s+{re.escape(node)}\s*$", dm, re.MULTILINE) is not None
+
     if require_start:
         if usb_start is None:
             failures.append("usb start did not return to the U-Boot prompt")
         elif "No working controllers found" in start:
             failures.append("usb start reported no working controllers")
-        elif "dwc2_usb" not in start or "usb-otg@91540000" not in start:
+        elif not re.search(
+                r"^Bus usb-otg@91540000:\s+dwc2_usb\s+usb-otg@91540000:",
+                start, re.MULTILINE):
             failures.append("usb start did not initialize usbotg1 with dwc2_usb")
     if "Realtek USB 10/100 LAN" not in tree:
         failures.append("usb tree did not enumerate the onboard RTL8152")
-    if "dwc2_usb" not in dm or "usb-otg@91540000" not in dm:
+    if not has_dm_binding("dwc2_usb", "usb-otg@91540000"):
         failures.append("dm tree lacks usbotg1 bound to dwc2_usb")
-    if "dwc2-udc-otg" not in dm or "usb-otg@91500000" not in dm:
+    if not has_dm_binding("dwc2-udc-otg", "usb-otg@91500000"):
         failures.append("dm tree lacks usbotg0 bound to dwc2-udc-otg")
     return failures
 

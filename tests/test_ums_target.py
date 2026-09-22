@@ -71,6 +71,13 @@ class ReadbackTests(unittest.TestCase):
 
 
 class UsbHostVerdictTests(unittest.TestCase):
+    def test_physical_candidate_two_record_passes_before_and_after_ums(self):
+        trace = (SCRIPT.parents[1] / "tests" / "fixtures" /
+                 "uboot-usb-host-coexist-v2.txt").read_bytes()
+        self.assertEqual(
+            ums.usb_host_verdict(trace, trace, trace, require_start=True), [])
+        self.assertEqual(ums.usb_host_verdict(trace, trace), [])
+
     def test_original_host_baseline_is_not_misreported_as_coexistence_success(self):
         # This committed baseline predates UMS/gadget support.  It proves the
         # host controller and RTL8152 only; the parser must require the other
@@ -98,6 +105,15 @@ class UsbHostVerdictTests(unittest.TestCase):
             b"Realtek USB 10/100 LAN", b"dwc2_usb usb-otg@91540000\n"
             b"dwc2-udc-otg usb-otg@91500000", None, require_start=True)
         self.assertIn("usb start did not return to the U-Boot prompt", failures)
+
+    def test_swapped_driver_node_bindings_fail(self):
+        start = b"Bus usb-otg@91540000: dwc2_usb usb-otg@91540000: Core Release: 4.30a"
+        tree = b"Realtek USB 10/100 LAN"
+        swapped = (b"usb 0 [ + ] dwc2_usb |-- usb-otg@91500000\n"
+                   b"usb 0 [ + ] dwc2-udc-otg |-- usb-otg@91540000")
+        failures = ums.usb_host_verdict(tree, swapped, start, require_start=True)
+        self.assertIn("dm tree lacks usbotg1 bound to dwc2_usb", failures)
+        self.assertIn("dm tree lacks usbotg0 bound to dwc2-udc-otg", failures)
 
 
 class PullTests(unittest.TestCase):

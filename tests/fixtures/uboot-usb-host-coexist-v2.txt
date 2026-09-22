@@ -1,0 +1,33 @@
+# Minimal command excerpts from integration evidence commit 61c3379,
+# docs/evidence/uboot-usb-host-coexist-v2.txt.  This is the physical
+# candidate-2 success record; it intentionally contains only the command
+# blocks the pure verdict parser consumes.
+starting USB...
+Bus usb-otg@91540000: dwc2_usb usb-otg@91540000: Core Release: 4.30a
+USB DWC2
+scanning bus usb-otg@91540000 for devices... 2 USB Device(s) found
+       scanning usb for storage devices... 0 Storage Device(s) found
+K230#
+USB device tree:
+  1  Hub (480 Mb/s, 0mA)
+  |   U-Boot Root Hub
+  |
+  |+-2  Vendor specific (480 Mb/s, 100mA)
+       Realtek USB 10/100 LAN 000000000000
+K230#
+ usb           0  [   ]   dwc2-udc-otg          |   |-- usb-otg@91500000
+ usb           0  [ + ]   dwc2_usb              |   |-- usb-otg@91540000
+ usb_hub       0  [ + ]   usb_hub               |   |   `-- usb_hub
+ ethernet      0  [ + ]   r8152_eth             |   |       `-- r8152_eth
+K230#
+USB device tree:
+  1  Hub (480 Mb/s, 0mA)
+  |   U-Boot Root Hub
+  |
+  |+-2  Vendor specific (480 Mb/s, 100mA)
+       Realtek USB 10/100 LAN 000000000000
+K230#
+ usb           0  [   ]   dwc2-udc-otg          |   |-- usb-otg@91500000
+ usb           0  [ + ]   dwc2_usb              |   |-- usb-otg@91540000
+ usb_hub       0  [ + ]   usb_hub               |   |   `-- usb_hub
+ ethernet      0  [ + ]   r8152_eth             |   |       `-- r8152_eth
