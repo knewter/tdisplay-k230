@@ -20,8 +20,10 @@ runCommand "k230-boot-splash-image" {
   set -euo pipefail
   mkdir -p $out
 
-  dimensions="$(${imagemagick}/bin/magick identify -format '%w %h %[channels]' ${source})"
-  test "$dimensions" = '${toString width} ${toString height} srgb'
+  dimensions="$(${imagemagick}/bin/magick identify -format '%w %h' ${source})"
+  test "$dimensions" = '${toString width} ${toString height}'
+  channels="$(${imagemagick}/bin/magick identify -format '%[channels]' ${source})"
+  case "$channels" in srgb*) ;; *) echo "expected sRGB PNG, got $channels" >&2; exit 1;; esac
 
   # ImageMagick writes RGB reliably.  Add X and reorder explicitly so the
   # stage-1 bytes are B,G,R,X regardless of ImageMagick raw-coder aliases.
