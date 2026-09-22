@@ -6,21 +6,25 @@ context: |
   AMOLED, GT9895 touch, an RTL8189FTV SDIO radio and an SX1262/LR2021 LoRa
   radio. It arrived running LilyGO's RT-Smart firmware.
 
-  The goal is to replace that firmware with NixOS on riscv64, and then run
-  AtomVM and the Dozer core on it. Dozer is a Crux application: a
-  shell-neutral Rust core behind a serialized FFI boundary, with swappable
-  shells. Which shell this board gets is deliberately undecided.
+  The current goal is a practical touchscreen NixOS handheld, inspired by
+  SXMO on the PinePhone Pro: Sway, readable terminals, an on-screen keyboard,
+  desktop-entry app discovery, window switching and system controls. Preserve
+  USB flashing and recovery; complete the boot splash after the shell works.
+  AtomVM and the Dozer core are later work, outside this implementation goal.
 
   Terms specs should use:
     - stage 1        BootROM, U-Boot SPL with its DDR PMU training blob,
-                     U-Boot 2022.10 and OpenSBI. Vendored as a binary, not
-                     built by us.
+                     U-Boot 2022.10 and OpenSBI. SPL, U-Boot and OpenSBI
+                     are built from pinned vendor source with local patches;
+                     SPL retains identified DDR training blobs. BootROM is
+                     in silicon. See docs/blob-inventory.md.
     - the system     the NixOS closure: kernel, initrd, rootfs
     - the console    the CH342 bridge on the charging USB-C, two CDC-ACM
                      ports at 115200 8N1
     - the panel      the RM69A10 AMOLED, driven through the kernel's
                      device-tree-configured panel-canaan-universal
-    - a shell        whatever draws Dozer on this screen; not yet chosen
+    - the shell      the Sway/Pixman handheld session with Foot, a touch bar,
+                     an on-screen keyboard and a desktop-entry launcher
 
   Say "vendored" for anything we take as a prebuilt binary from Canaan or
   LilyGO, and say who owns a boundary when a requirement crosses one.
@@ -94,6 +98,8 @@ operations:
         read but returned no data (device disconnected or multiple access on
         port?)`, which reads like a hardware fault and is not one. Say when
         you take the board and when you release it."
+      - "Routine flashes write and verify boot; full-image readback is opt-in
+        for flashing changes, suspected corruption, or an explicit user request."
       - "A device tree change does NOT need a reflash: `tools/push-file.py
         --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot` moves it to the
         running board in about 11 seconds, and `nix build .#deviceTree`
