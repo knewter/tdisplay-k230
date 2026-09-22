@@ -236,10 +236,10 @@ experience. They provide a surface, an input path, a way to type, and a small
 way to launch installed desktop entries; the later application shell remains
 open.
 
-*Grounding: `openspec/config.yaml` defines "a shell" as "whatever draws Dozer on
-this screen; not yet chosen", and the archived launcher change is scoped to
-desktop-entry discovery and session utilities. `docs/findings.md` records the
-application-framework assessments as still open.*
+*Grounding: `openspec/config.yaml` identifies the current Sway handheld goal and
+places AtomVM/Dozer integration outside its scope. The archived launcher change
+is scoped to desktop-entry discovery and session utilities. `docs/findings.md`
+records the application-framework assessments as still open.*
 
 #### Scenario: A later application shell is proposed
 

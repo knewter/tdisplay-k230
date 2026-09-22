@@ -73,7 +73,7 @@ pixels. Path (b) — llvmpipe via `kms_swrast` — genuinely works on riscv64 no
 riscv64's default gallium driver list includes llvmpipe and softpipe), so this
 is a real choice rather than a forced one. It is rejected on cost: `mesa` for
 riscv64 is 2.4 GiB unpacked and brings LLVM 21, to put a JIT and a full GL
-implementation between two 1.6 GHz in-order cores and 700,000 pixels. Pixman is
+implementation between the currently enabled Linux C908 core and 700,000 pixels. Pixman is
 a 2D rasteriser with no GL API surface at all, and emersion's introduction of
 it said plainly that it "should be significantly faster than our previous
 llvmpipe-based fallback". We would be paying 2.4 GiB to go slower.
@@ -200,7 +200,7 @@ degrees off" report.
   → Presents as a compositor that starts and then fails to commit a frame.
   Mitigation: the same `drm_info` dump in task group 1 answers it, and the fix
   is small once it is not a mystery.
-- **Pixman at 568x1232 on two C908s is too slow to be pleasant.** → This is the
+- **Pixman at 568x1232 on the enabled Linux C908 is too slow to be pleasant.** → This is the
   risk with no mitigation and no prior art; nobody has published a number for
   pixman composite throughput on this core. It is measured in task group 4 and
   recorded whatever it says. If it is bad, the answer is fewer surfaces — a
