@@ -1,0 +1,12 @@
+
+===== > pkill -USR1 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_HIDE =====
+pkill -USR1 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_HIDE
+[?2004l
+VISIBLE_KEYBOARD_HIDE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

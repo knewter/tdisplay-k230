@@ -1,0 +1,4 @@
+/tmp/k230-uboot-motion/target.xrgb: 2799104 bytes, md5 c2269e5e98f808ccefc0a97267b2bdd0, 9496 b64 chars
+  chunk 1/19  chunk 6/19  chunk 11/19  chunk 16/19  chunk 19/19
+md5 verified on board: c2269e5e98f808ccefc0a97267b2bdd0
+installed -> /boot/logo.xrgb

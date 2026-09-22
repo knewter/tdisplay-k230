@@ -1,0 +1,4 @@
+/tmp/k230-uboot-motion/target.png: 9232 bytes, md5 8de06ae6f2e2af57d12a099066865d82, 1216 b64 chars
+  chunk 1/3  chunk 3/3
+md5 verified on board: 8de06ae6f2e2af57d12a099066865d82
+installed -> /tmp/k230-motion-target.png

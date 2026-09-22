@@ -1,0 +1,17 @@
+
+===== > pkill -USR1 -x wvkbd-mobintl; systemctl is-active shell seatd firewall; sha256sum /boot/logo.xrgb; cat /tmp/k230-motion-swaybg.log; echo OPTICS_RESTORED =====
+pkill -USR1 -x wvkbd-mobintl; systemctl is-active shell seatd firewall; sha256sum /boot/logo.xrgb; cat /tmp/k230-motion-swaybg.log; echo OPTICS_RESTORED
+[?2004l
+active
+active
+active
+6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af  /boot/logo.xrgb
+2026-03-17 20:09:49 - [main.c:332] Found config DSI-1 for output DSI-1 ((null) (null))
+OPTICS_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

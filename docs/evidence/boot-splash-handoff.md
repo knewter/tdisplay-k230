@@ -244,3 +244,10 @@ frame in the dense warm-boot transition samples. The carried kernel and
 optional compositor build successfully; the daily defaults remain the console
 and ordinary Sway. This is progress toward the power-on handoff requirement,
 not its final acceptance or a claim of uninterrupted animation.
+
+The [keyboard visibility follow-up](splash-initial-scene-ready/keyboard-visibility-audit.md)
+completes the candidate's filmed keyboard show/hide regression at a farther
+camera focus, without claiming finger accuracy or complete label readability.
+The [U-Boot motion measurement attempt](splash-uboot-motion/README.md) was
+rejected by the existing registration tool because only two markers were
+usable. No calibrated motion figure or task 3.7 completion is claimed.

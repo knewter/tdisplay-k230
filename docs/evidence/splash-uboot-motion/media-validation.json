@@ -1,0 +1,27 @@
+{
+  "method": "FFprobe metadata, SHA-256 and visual review of sampled frames. Serial-controlled diagnostics; no physical touch proof. See README.md and video-audit.md for limitations.",
+  "videos": [
+    {
+      "path": "20260922T224020Z-uboot-motion-target.mp4",
+      "sha256": "94c8f2c8a1b3fea2a066cadf6d647149942de2d35c4f4255edfdba951af75f29",
+      "bytes": 2466391,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "30.000000",
+          "size": "2466391"
+        }
+      }
+    }
+  ]
+}

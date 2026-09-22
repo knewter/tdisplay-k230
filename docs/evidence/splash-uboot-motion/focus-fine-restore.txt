@@ -1,0 +1,13 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; if test -f /tmp/k230-motion-swaybg.pid; then kill "$(cat /tmp/k230-motion-swaybg.pid)"; rm /tmp/k230-motion-swaybg.pid; fi; swaymsg bar mode dock; swaymsg '[app_id="k230-terminal"] scratchpad show'; echo FOCUS_SCENE_RESTORED =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; if test -f /tmp/k230-motion-swaybg.pid; then kill "$(cat /tmp/k230-motion-swaybg.pid)"; rm /tmp/k230-motion-swaybg.pid; fi; swaymsg bar mode dock; swaymsg '[app_id="k230-terminal"] scratchpad show'; echo FOCUS_SCENE_RESTORED
+[?2004l
+[1]+  Terminated                 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg -o DSI-1 -i /tmp/k230-motion-target.png -m stretch > /tmp/k230-motion-swaybg.log 2>&1
+FOCUS_SCENE_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

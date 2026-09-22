@@ -1,0 +1,10 @@
+2026-09-22 evidence validation:
+openspec validate --all: 17 passed, 0 failed.
+python3 tools/blob-scan.py --no-vendor: PASS, 216 binary files accounted for.
+python3 scripts/build_site.py: PASS, 58 pages, 7 tests, 1,144,607 bytes, 8.95 s.
+git diff --cached --check -- '*.md' '*.json': PASS.
+Media ffprobe validation: PASS (media-validation.json in each evidence directory).
+
+The panel-measure command itself exited 1: only two fiducials usable.
+That failed physical measurement remains open and is not overridden by these
+host validation checks. No source or Nix build changed in this evidence commit.

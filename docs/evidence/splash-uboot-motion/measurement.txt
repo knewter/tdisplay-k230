@@ -1,0 +1,1 @@
+U-Boot 61dcc90 candidate, fixed ArUco registration: only 2 marker(s) usable [0, 1] -- need 3 to register

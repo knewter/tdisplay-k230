@@ -1,0 +1,12 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] floating disable'; swaymsg '[app_id="k230-terminal"] move workspace current'; pkill -USR1 -x wvkbd-mobintl; echo NORMAL_LAYOUT_RESTORED =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] floating disable'; swaymsg '[app_id="k230-terminal"] move workspace current'; pkill -USR1 -x wvkbd-mobintl; echo NORMAL_LAYOUT_RESTORED
+[?2004l
+NORMAL_LAYOUT_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

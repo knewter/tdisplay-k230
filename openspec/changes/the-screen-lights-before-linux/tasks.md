@@ -81,7 +81,7 @@ incremental dry-run cost, not installed closure size; see
 
 - [x] 5a.1 Carry the exact-mode, runtime-flag-gated first VO/DSI enable preservation into the candidate, retaining normal initialization on mismatch and after disable. Build the kernel and record physical missing-logo and off/on regressions. The existing diagnostic image is evidence for the candidate only until its code is integrated and documented.
 - [x] 5a.2 Add an opt-in Sway initial logo scene before its first real output commit, above background clients, using the immutable asset. Retire it only after a toplevel plus bar replacement commit is presented; handle invalid assets and teardown, and leave the daily compositor unchanged when disabled. Verify `nix build .#shell-compositor-initial-splash`, source review of initial staging/commit order, and recorded invalid-asset behavior.
-- [ ] 5a.3 Build the image with both diagnostic paths enabled and film the automatic boot, first shell content, keyboard visibility and display off/on. Record whether any dark frame remains. Only the physical no-dark-frame result may close 5.4; a compositor presentation log or native screenshot alone is insufficient.
+- [x] 5a.3 Build the image with both diagnostic paths enabled and film the automatic boot, first shell content, keyboard visibility and display off/on. Record whether any dark frame remains. Only the physical no-dark-frame result may close 5.4; a compositor presentation log or native screenshot alone is insufficient.
 
 ## 6. The switch, and the specs
 
@@ -107,3 +107,5 @@ normal no-logo boot configuration was restored after capture.
 2026-09-22 same-kernel missing-logo regression satisfies task 4.5: `docs/evidence/splash-preserve-trial/README.md` links the no-flag/full-prepare/fb0 console transcript and physical console frame. The diagnostic splash configuration was restored afterward. The same trial proves physical content updates but still shows a compositor startup dark gap; task 5.4 remains open.
 
 2026-09-22 integrated initial-scene candidate: `docs/evidence/splash-initial-scene-ready/README.md` records the matching kernel/compositor builds, successful seed retirement, and physical warm-boot samples without the earlier dark gap. Tasks 5a.1/5a.2 are complete. The earlier wrapped/color-shifted observations above are historical failures, not the latest result. Tasks requiring a second card, calibrated geometry, full power-on continuity, and physical keyboard acceptance remain open.
+
+2026-09-22 follow-up: `docs/evidence/splash-initial-scene-ready/keyboard-visibility-audit.md` supplies physical show/hide visibility at camera focus 30 for task 5a.3; full label readability and real touch remain separate. `docs/evidence/splash-uboot-motion/README.md` records an attempted task 3.7 measurement that failed optical registration, so that box stays open. The normal logo, tiled shell and camera controls were restored.

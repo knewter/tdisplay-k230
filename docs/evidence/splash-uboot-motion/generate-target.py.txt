@@ -1,0 +1,20 @@
+# Run from the repository root. Requires the same NumPy/OpenCV as panel-target.py.
+from pathlib import Path
+import hashlib
+import importlib.util
+import numpy as np
+import cv2
+out = Path('/tmp/k230-uboot-motion')
+out.mkdir(exist_ok=True)
+spec = importlib.util.spec_from_file_location('target', 'tools/panel-target.py')
+target = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(target)
+_, gray = target.build()
+raw = np.empty((target.H, target.W, 4), dtype=np.uint8)
+raw[:, :, :3] = gray[:, :, None]
+raw[:, :, 3] = 255
+payload = raw.tobytes()
+assert len(payload) == 2799104
+(out / 'target.xrgb').write_bytes(payload)
+cv2.imwrite(str(out / 'target.png'), gray)
+print(len(payload), hashlib.sha256(payload).hexdigest())

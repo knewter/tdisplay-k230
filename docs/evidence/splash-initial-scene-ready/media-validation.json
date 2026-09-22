@@ -44,6 +44,28 @@
           "size": "6703571"
         }
       }
+    },
+    {
+      "path": "20260922T224622Z-keyboard-visible-focus30.mp4",
+      "sha256": "d411b25e783eae3d63736a1bca1acf3c8f6e5c5479c035173134e90d615e7406",
+      "bytes": 3128441,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "30.000000",
+          "size": "3128441"
+        }
+      }
     }
   ]
 }

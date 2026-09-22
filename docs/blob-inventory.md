@@ -890,6 +890,22 @@ DATA cb6db86340520a8a1ec7bf6efa76bc40ce6bca085080982a9237fe6858ecc70e  docs/evid
 DATA d093fcf3768834ef40205f558e17832bf22d0404de0451b5430239377ed8690d  docs/evidence/splash-initial-scene-ready/panel-ready-shell.png
 DATA 15d4fdc1a82bae8c09d97218ba0ff9484480e969dd65d757e648342b5e8804a6  docs/evidence/splash-initial-scene-ready/panel-ready-transition.png
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-ready/shell-native.png
+DATA 94c8f2c8a1b3fea2a066cadf6d647149942de2d35c4f4255edfdba951af75f29  docs/evidence/splash-uboot-motion/20260922T224020Z-uboot-motion-target.mp4
+DATA 844b0eb59f684b7710b8c9296df5e30cecd5ffdc6f4b897f5316940af75fe73e  docs/evidence/splash-uboot-motion/focus-0.png
+DATA 11bd164ee6ce2ffce913aa619470bc98553fbf1183428f21b14e7e946abd9c08  docs/evidence/splash-uboot-motion/focus-30.png
+DATA 457227104d3add298806950e778d396b060feb7200fe971fc462656e81a8b614  docs/evidence/splash-uboot-motion/focus-50.png
+DATA 3a7e1a570714cf3f8d37f991e138894ec3b4e9a754a40cdfa49caf72ad3d0217  docs/evidence/splash-uboot-motion/focus-55.png
+DATA 937a69079635dffd1f56c6b9937ff1fbe6a9586bbc3be76cc1225bb7351e7964  docs/evidence/splash-uboot-motion/focus-60.png
+DATA 312fc297a5186f9ca88d390823f3aeb27026e308dc4118f5474709b47b9840c1  docs/evidence/splash-uboot-motion/focus-65.png
+DATA 90df8e93c3070659a91390b4ece8760ade4e698a1e0db40bbd8dada0e0b5a9b1  docs/evidence/splash-uboot-motion/focus-70.png
+DATA a4ece8f965a8d04a3db8d62d3df118564a2fa45abd3115839ee97fa0ccc4ee0e  docs/evidence/splash-uboot-motion/focus-90.png
+DATA 3479d31e302cb5ed65dd82150c109d3b26c88c21143d3bc6f2e37a8c964f66b4  docs/evidence/splash-uboot-motion/keyboard-focus-30.png
+DATA fc54f15c8f969569ee5c3c9312342b24961e69a3bbc3050c52d31909afdc6f21  docs/evidence/splash-uboot-motion/keyboard-focus-50.png
+DATA b5d5a89184ae66833f4e3dfa0cef65a6bd35e87fbe4690039b7b4d29bdb8c47a  docs/evidence/splash-uboot-motion/uboot-target-physical.png
+DATA d411b25e783eae3d63736a1bca1acf3c8f6e5c5479c035173134e90d615e7406  docs/evidence/splash-initial-scene-ready/20260922T224622Z-keyboard-visible-focus30.mp4
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-ready/keyboard-visible-restored-native.png
+DATA 0fd988037536dd0b6d21f9e1abfab558fe913cbcc666f74ce83bd363a85c9bcb  docs/evidence/splash-initial-scene-ready/keyboard-visible-hidden.png
+DATA 69b610fa9249b2b6fcd89235641829e83a63687cab97d5e7f73806e322013741  docs/evidence/splash-initial-scene-ready/keyboard-visible-shown.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

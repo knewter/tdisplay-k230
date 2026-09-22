@@ -1,0 +1,36 @@
+from pathlib import Path
+import importlib.util,subprocess,time
+ROOT=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console')
+out=ROOT/'docs/evidence/splash-uboot-motion'
+spec=importlib.util.spec_from_file_location('ums',ROOT/'tools/ums-session.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+s=m.Session('/dev/ttyACM0',115200,str(out/'console.txt'))
+held=False
+try:
+ s.port.write(b'\r\n');s.port.flush();time.sleep(.4);s.pump()
+ s.send_line('reboot',kill=False)
+ end=time.monotonic()+20
+ while time.monotonic()<end:
+  s.port.write(b' \x08');s.port.flush();s.pump();time.sleep(.1)
+ s.buf=b'';s.port.write(b'\r\n');s.port.flush()
+ if not s.wait_for(m.PROMPT,30):raise RuntimeError('U-Boot prompt not captured; inspect before recovery')
+ held=True
+ if not s.cmd('version; printenv bootcmd; echo UBOOT_MOTION_TARGET_READY'):raise RuntimeError('U-Boot probe failed')
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=auto_exposure=1,exposure_time_absolute=200'],check=True)
+ (out/'camera-controls.txt').write_text(subprocess.check_output(['v4l2-ctl','-d','/dev/video0','--list-ctrls'],text=True))
+ cam=subprocess.Popen(['python3','tools/capture-feature.py','uboot-motion-target','--output-dir',str(out),'--duration','30','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Stage1 U-Boot held at prompt after loading the deterministic ArUco/barcode target as logo.xrgb. Locked exposure, no Linux renderer, no real touch.'],cwd=ROOT,stdout=(out/'camera.log').open('w'),stderr=subprocess.STDOUT)
+ while cam.poll() is None:s.pump();time.sleep(.1)
+ if cam.returncode:raise RuntimeError('camera failed')
+ s.cmd('echo UBOOT_MOTION_TARGET_DONE')
+finally:
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=auto_exposure=1,exposure_time_absolute=250'])
+ if held:
+  s.send_line('boot')
+  if not s.wait_for(b'root@nixos',150):
+   s.note('RECOVERY REQUIRED: no Linux root prompt; target still installed')
+   raise RuntimeError('Linux did not return')
+  s.send_line('cp /nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb /boot/logo.xrgb && sync && sha256sum /boot/logo.xrgb && systemctl is-active shell seatd firewall; echo MOTION_LOGO_RESTORED')
+  if not s.wait_for(b'\nMOTION_LOGO_RESTORED\r',20):
+   s.note('Check restoration output before releasing board')
+  end=time.monotonic()+3
+  while time.monotonic()<end:s.pump()
+ s.port.close();s.log.close()

@@ -59,7 +59,20 @@ produce specific diagnostics and a usable shell. Its temporary overrides
 were removed. The same kernel's missing-logo console and later full-prepare
 regressions are recorded in the [preservation trial](../splash-preserve-trial/README.md).
 
-Tasks 5a.1 and 5a.2 have build, review and regression evidence. Task 5a.3
-retains the unresolved physical keyboard-visibility acceptance, and task 5.4
-still requires its specified complete power-on evidence. No animation or
-persistent simulation state is implemented here.
+## Keyboard visibility follow-up
+
+The [focus-30 recording](20260922T224622Z-keyboard-visible-focus30.mp4)
+resolves the repeated lower-panel key pattern while it is shown, followed by
+its disappearance after hide. See the [camera audit](keyboard-visibility-audit.md),
+[shown frame](keyboard-visible-shown.png), and
+[hidden frame](keyboard-visible-hidden.png). This is visibility evidence;
+individual label readability, calibrated geometry and real-finger accuracy
+remain outside this result. The keyboard theme and image were unchanged.
+`keyboard-visible-show.txt` and `keyboard-visible-hide.txt` identify the serial
+signals. The [restored native frame](keyboard-visible-restored-native.png)
+records the terminal back in its tiled layout with the keyboard hidden.
+
+Tasks 5a.1–5a.3 now have build, review and physical regression evidence:
+automatic boot and first shell, keyboard visibility, and display off/on.
+Task 5.4 still requires its specified complete power-on evidence. No animation
+or persistent simulation state is implemented here.

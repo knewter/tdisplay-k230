@@ -1,0 +1,19 @@
+import subprocess,time,sys,json
+from pathlib import Path
+import cv2
+sys.path.insert(0,'/tmp');from k230_demo import ROOT,console
+out=ROOT/'docs/evidence/splash-uboot-motion'; env='export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; '
+try:
+ print(console(env+'test -x /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg && { swaymsg \'[app_id="k230-terminal"] move scratchpad\'; swaymsg bar mode invisible; /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg -o DSI-1 -i /tmp/k230-motion-target.png -m stretch > /tmp/k230-motion-swaybg.log 2>&1 & echo $! > /tmp/k230-motion-swaybg.pid; }; echo TARGET_SCENE',3,out/'focus-scene.txt'))
+ det=cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50),cv2.aruco.DetectorParameters());results=[]
+ for focus in [0,30,50,70,90]:
+  subprocess.run(['v4l2-ctl','-d','/dev/video0',f'--set-ctrl=focus_absolute={focus},auto_exposure=1,exposure_time_absolute=200'],check=True);time.sleep(2)
+  dest=out/f'focus-{focus}.png'
+  subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-f','v4l2','-input_format','mjpeg','-video_size','1920x1080','-i','/dev/video0','-vf','transpose=2,transpose=2','-frames:v','1','-y',str(dest)],check=True)
+  _,ids,_=det.detectMarkers(cv2.imread(str(dest),cv2.IMREAD_GRAYSCALE))
+  found=sorted(ids.flatten().tolist()) if ids is not None else []
+  results.append({'focus':focus,'ids':found});print(results[-1],flush=True)
+ (out/'focus-detection.json').write_text(json.dumps(results,indent=2)+'\n')
+finally:
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=focus_absolute=90,exposure_time_absolute=250'])
+ print(console(env+'if test -f /tmp/k230-motion-swaybg.pid; then kill "$(cat /tmp/k230-motion-swaybg.pid)"; rm /tmp/k230-motion-swaybg.pid; fi; swaymsg bar mode dock; swaymsg \'[app_id="k230-terminal"] scratchpad show\'; echo FOCUS_SCENE_RESTORED',3,out/'focus-restore.txt'))

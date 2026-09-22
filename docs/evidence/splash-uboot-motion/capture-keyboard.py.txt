@@ -1,0 +1,12 @@
+import sys,subprocess,time
+from pathlib import Path
+sys.path.insert(0,'/tmp');from k230_demo import ROOT,console
+out=ROOT/'docs/evidence/splash-uboot-motion'
+try:
+ print(console('pkill -USR2 -x wvkbd-mobintl; echo OPTICS_KEYBOARD_SHOW',3,out/'keyboard-optics-show.txt'))
+ for focus in [30,50]:
+  subprocess.run(['v4l2-ctl','-d','/dev/video0',f'--set-ctrl=focus_absolute={focus},exposure_time_absolute=250'],check=True);time.sleep(2)
+  subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-f','v4l2','-input_format','mjpeg','-video_size','1920x1080','-i','/dev/video0','-vf','transpose=2,transpose=2','-frames:v','1','-y',str(out/f'keyboard-focus-{focus}.png')],check=True)
+finally:
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=focus_absolute=90,exposure_time_absolute=250'])
+ print(console('pkill -USR1 -x wvkbd-mobintl; systemctl is-active shell seatd firewall; sha256sum /boot/logo.xrgb; cat /tmp/k230-motion-swaybg.log; echo OPTICS_RESTORED',3,out/'keyboard-optics-restore.txt'))

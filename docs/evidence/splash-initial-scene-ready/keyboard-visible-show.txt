@@ -1,0 +1,12 @@
+
+===== > pkill -USR2 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_SHOW =====
+pkill -USR2 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_SHOW
+[?2004l
+VISIBLE_KEYBOARD_SHOW
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

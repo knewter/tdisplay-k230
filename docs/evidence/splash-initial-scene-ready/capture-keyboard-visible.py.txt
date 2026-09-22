@@ -1,0 +1,20 @@
+import sys,subprocess,time
+from pathlib import Path
+sys.path.insert(0,'/tmp');from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-initial-scene-ready';env='export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; '
+cam=None
+try:
+ print(console(env+'swaymsg \'[app_id="k230-terminal"] floating disable\'; swaymsg \'[app_id="k230-terminal"] move workspace current\'; pkill -USR1 -x wvkbd-mobintl; echo NORMAL_LAYOUT_RESTORED',3,out/'keyboard-visible-layout.txt'))
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=focus_absolute=30,exposure_time_absolute=250'],check=True)
+ cam=subprocess.Popen(['python3','tools/capture-feature.py','keyboard-visible-focus30','--output-dir',str(out),'--duration','30','--video-size','1920x1080','--rotate180','--provenance','injected','--description','Unchanged default keyboard shown and hidden by serial USR2/USR1. C920 focus30, manual exposure250 to resolve far lower-panel keys. No real-touch or calibrated geometry claim.'],cwd=ROOT,stdout=open('/tmp/k230-keyboard-visible-camera.log','w'),stderr=subprocess.STDOUT)
+ time.sleep(4)
+ print(console('pkill -USR2 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_SHOW',3,out/'keyboard-visible-show.txt'))
+ time.sleep(8)
+ print(console('pkill -USR1 -x wvkbd-mobintl; echo VISIBLE_KEYBOARD_HIDE',3,out/'keyboard-visible-hide.txt'))
+ cam.wait(timeout=45)
+ if cam.returncode:raise RuntimeError('camera failed')
+finally:
+ if cam and cam.poll() is None:cam.wait(timeout=45)
+ subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl=focus_absolute=90,exposure_time_absolute=250'])
+ print(console(env+'pkill -USR1 -x wvkbd-mobintl; swaymsg -t get_tree -r; systemctl is-active shell seatd firewall; echo KEYBOARD_VISIBLE_RESTORED',3,out/'keyboard-visible-restore.txt'))
+ screenshot(out/'keyboard-visible-restored-native.png')
