@@ -16,9 +16,10 @@ line 193). U-Boot sizes it at runtime by probing
 node from `env_get_bootm_low()`/`env_get_bootm_size()` before boot. All
 vendor U-Boot paths are under
 `.build/k230_linux_sdk/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/`
-(the overlay `nix/uboot-k230.nix` builds from). Sizes are from the pure
-`nix build .#sdImage` image the board booted on 2026-09-22
-(`docs/evidence/stage1-from-source.txt`).
+(the overlay `nix/uboot-k230.nix` builds from). Current sizes and relocation addresses are from the physical-board capture
+`docs/evidence/uboot-usb-host-coexist.txt`, whose kernel is the pinned store
+output named in §1.2. Earlier cold-boot values remain below as historical
+measurements where they explain a difference.
 
 ## 1. Static half: read from files on disk
 
@@ -47,8 +48,11 @@ force_dtb`, 17 bytes, visible as the first line after the countdown in
 
 ### 1.2 The kernel Image at `0x200000`
 
-- File: 60 350 976 bytes (`ext4load` line "60350976 bytes read" in
-  `boot-from-source-cold.txt`; `stat` of the Nix output).
+- File: **60 351 488 bytes**, read by U-Boot as `60351488 bytes read` in
+  `docs/evidence/uboot-usb-host-coexist.txt` and verified from
+  `/nix/store/1kgxy1xsvmyb2y8gzjxz4j2asirgy5ap-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image`.
+  The earlier cold-boot capture recorded 60 350 976 bytes; that is retained
+  as a historical image measurement, not used for this candidate's map.
 - In memory: the RISC-V Image header's `image_size` field (bytes 16-23 of
   the file) is **`0x3a25000`** (60 967 936; `od -An -tx8 -j8 -N16 Image` →
   `0000000000200000 0000000003a25000`), which is `_end - _start` in
@@ -62,13 +66,15 @@ force_dtb`, 17 bytes, visible as the first line after the countdown in
 
 ### 1.3 The initrd at `0x9000000`
 
-- `initrd.uimg`: 27 306 661 bytes = 64-byte legacy header + 27 306 597 bytes
-  of payload (`Data Size: 27306597 Bytes = 26 MiB` in the `bootm` output).
-- **Loaded extent: `0x09000000 .. 0x0aa0aaa5`.** Overlaps `ramdisk_addr`
-  and `fdt_high` from the env (both `0xa100000`); neither is a problem
-  because `bootm` has already relocated both the FDT and the initrd (§2.2)
-  before anything reads them, but it means `0x0a100000` is *not* a free
-  address while `blinux` runs.
+- Current `initrd.uimg`: 27 295 118 bytes read from the card in
+  `docs/evidence/uboot-usb-host-coexist.txt`; `bootm` reports a 27 295 054-byte
+  payload after the 64-byte legacy header. The earlier 27 306 661-byte image
+  in the cold-boot capture is historical only.
+- **Current loaded extent: `0x09000000 .. 0x0aa07d4e`.** It overlaps
+  `ramdisk_addr` and `fdt_high` from the env (both `0xa100000`); neither is a
+  problem because `bootm` has already relocated both the FDT and the initrd
+  (§2.2) before anything reads them, but it means `0x0a100000` is *not* a
+  free address while `blinux` runs.
 
 ### 1.4 OpenSBI
 
@@ -137,47 +143,58 @@ largest free range, and the top of that range is the relocated initrd
 
 ## 2. Read from the board
 
-### 2.1 `bdinfo` at the U-Boot prompt — NOT YET READ (task 2.1)
+### 2.1 `bdinfo` at the U-Boot prompt (task 2.1)
 
-*Empty on purpose. Needs the board: interrupt the countdown, run `bdinfo`,
-and paste `relocaddr`, `reloc off`, `ram_top`, `fdt_blob`, and the malloc
-base here, with the date and the image it was read from.*
+Captured from the physical board before `ums 0 mmc 1` in
+`docs/evidence/uboot-usb-host-coexist.txt`. This is the current source for
+U-Boot's live placement:
 
-What the rest of this file lets one predict, so that the transcript can be
-checked against it rather than merely filed: with `ram_top = 0x40000000`,
-U-Boot relocates its 721 392-byte `u-boot.bin` plus `.bss` to just below
-`ram_top`, carves the 4 MiB `CONFIG_SYS_MALLOC_LEN` heap below that, then
-the stack. The relocated initrd (§2.2) ends at `0x3fb3fa65`, and `bootm`
-places it as high as the `lmb` reservations allow, so U-Boot's reserved
-region begins at or above `0x3fb40000`, leaving it at most
-`0x40000000 - 0x3fb40000 = 0x4c0000` (4.75 MiB) — consistent with
-721 KiB + 4 MiB + stack. **This paragraph is inference from source and
-from §2.2, and is UNVERIFIED until `bdinfo` is read.**
+```
+DRAM bank start = 0x0000000000000000
+DRAM bank size  = 0x0000000040000000
+relocaddr       = 0x000000003ff3b000
+reloc off       = 0x000000003ff3b000
+fdt_blob        = 0x0000000000097020
+reserved LMB    = 0x3fb37920..0x3fffffff (0x004c86e0 bytes)
+malloc          = 0x3fb39000..0x3ff3b000
+sp              = 0x3fb38970
+```
+
+The live environment leaves `initrd_high`, `bootm_low`, and `bootm_size`
+unset, retains `fdt_high=0xa100000`, and has `loadaddr=0xc000000`. Thus
+`bootm` uses its normal highest-free-range placement, bounded by the LMB
+reservation above. `fdt addr -c` reported the embedded control FDT at
+`0x00097020`; the following `fdt print /memory` failed because no *working*
+FDT address was configured. That command failure says nothing about the
+presence of the memory node and is not used as memory-map evidence.
+
+The physical reservation starts at `0x3fb37920`, 3 026 bytes above the
+current relocated-initrd end in §2.2. It confirms the former inferred
+U-Boot bound and places all relocated code, heap, and stack 764 MiB above
+the proposed splash range.
 
 ### 2.2 `bootm`'s relocation messages (task 2.2)
 
-Taken from `docs/evidence/boot-from-source-cold.txt`, the coordinator's
-cold-boot capture of 2026-09-22 (`tools/capture-boot.py`, image
-`/nix/store/vs5mll0vif0lnq36srm6qxgx75mgwf5m-k230-sd-image.img`), file
-lines 85-86; not a fresh boot for this task:
+The current physical-board capture `docs/evidence/uboot-usb-host-coexist.txt`
+records:
 
 ```
-   Loading Ramdisk to 3e135000, end 3fb3fa65 ... OK
-   Loading Device Tree to 000000000a0eb000, end 000000000a0ff681 ... OK
+Loading Ramdisk to 3e12f000, end 3fb36d4e ... OK
+Loading Device Tree to 000000000a0eb000, end 000000000a0ff681 ... OK
+Domain0 Next Arg1         : 0x000000000a0eb000
 ```
 
-and OpenSBI's `Domain0 Next Arg1 : 0x000000000a0eb000` confirming the DTB
-is handed to the kernel where `bootm` left it.
+- **Initrd, relocated: `0x3e12f000 .. 0x3fb36d4e`** (27 295 054-byte
+  payload). With no `initrd_high`, `bootm` moves it to the highest free LMB
+  range, directly below U-Boot's reservation. Its position moves with both
+  initrd size and U-Boot's footprint.
+- **Device tree, relocated: `0x0a0eb000 .. 0x0a0ff681`** (83 585 bytes).
+  `fdt_high=0xa100000` caps it, which is why it lands here rather than at the
+  top with the initrd.
 
-- **Initrd, relocated: `0x3e135000 .. 0x3fb3fa65`** (27 306 597 bytes, the
-  payload without its uImage header). No `initrd_high` in the environment,
-  so `bootm` moves it to the highest free `lmb` range, directly under
-  U-Boot's own reservation. Its position therefore moves with the initrd's
-  size *and* with U-Boot's footprint.
-- **Device tree, relocated: `0x0a0eb000 .. 0x0a0ff681`** (83 585 bytes: the
-  71 298-byte file plus the room `bootm` adds for `/chosen` and the memory
-  fixup). `fdt_high=0xa100000` caps it, which is why it lands here and not
-  at the top with the initrd.
+The prior cold-boot capture put the initrd at `0x3e135000 .. 0x3fb3fa65` and
+is retained as historical evidence. The current range above, captured from
+the candidate image, is the one used for the address decision.
 
 ### 2.3 The map, with each address classified
 
@@ -192,22 +209,23 @@ is handed to the kernel where `bootm` left it.
 | `0x07000000` | `0x070000d3` | `bootargs.txt` | scratch (consumed by `env import`) | §1.1 |
 | `0x08000000` | `0x080421d8` | OpenSBI uImage as loaded | scratch after `bootm` copies it to `0x0` | §1.1 |
 | `0x08400000` | `0x08411682` | DTB as loaded | scratch after relocation | §1.1 |
-| `0x09000000` | `0x0aa0aaa5` | `initrd.uimg` as loaded | scratch after relocation | §1.3 |
+| `0x09000000` | `0x0aa07d4e` | current `initrd.uimg` as loaded | scratch after relocation | §1.3 |
 | `0x0a0eb000` | `0x0a0ff681` | DTB, relocated; handed to the kernel | relocated | §2.2 |
 | `0x0c000000` | — | `CONFIG_SYS_LOAD_ADDR` / `loadaddr` | default target of an address-less load; unused by `blinux` | §1.5 |
 | `0x15000000` | `0x15000011` | `force_dtb` probe | scratch | §1.1 |
 | `0x1e000000` | `0x3e000000` | Linux CMA pool (512 MiB) | kernel-time; **placed against the relocated initrd** | §1.7 |
-| `0x3e135000` | `0x3fb3fa65` | initrd, relocated; handed to the kernel; freed at 3.46 s | relocated | §2.2 |
-| `≥ 0x3fb40000` | `0x40000000` | U-Boot relocated code, heap, stack (UNVERIFIED bound) | U-Boot only; free once the kernel runs | §2.1 |
+| `0x3e12f000` | `0x3fb36d4e` | current initrd, relocated and handed to the kernel | relocated | §2.2 |
+| `0x3fb37920` | `0x40000000` | U-Boot relocated code, heap, stack, and LMB reservation | U-Boot only; free once the kernel runs | §2.1 |
 
 Free at every moment of stage 1 *and* untouched by the kernel's own
 placement, from the table: **`0x0aa10000 .. 0x0c000000`**,
 **`0x0c100000 .. 0x15000000`** and **`0x15010000 .. 0x1e000000`** (the gap
 between the loaded initrd's end and the bottom of the CMA pool, less the
 two scratch addresses). Everything from `0x1e000000` up is spoken for by
-the kernel or by `bootm`.
+the kernel or by `bootm`; `bdinfo` now gives the exact final U-Boot
+reservation rather than an inferred bound.
 
-### 2.4 The splash address (task 2.3 — the design's candidate, confirmation pending `bdinfo`)
+### 2.4 The splash address (task 2.3 — chosen from the completed map)
 
 The design's starting candidate is LILYGO's `0x1f000000`, 4 MiB. Against
 this map it is clear of everything stage 1 loads or relocates, and it is
@@ -233,17 +251,15 @@ not. **It fails on the kernel side instead:**
   `docs/evidence/lilygo-uboot-logo.md`). This system pins 26 MiB of initrd
   at the top at exactly the moment CMA is placed.
 
-**The design's candidate, adopted from this analysis: `0x10000000`, 4 MiB
-(`0x10000000 .. 0x10400000`).** Free
-in every row of the table; 86 MiB above the loaded initrd's end (room for
-the initrd to more than quadruple before it reaches the buffer, and a
-growing initrd is the likeliest change on this card); below `loadaddr`'s
-neighbours and `force_dtb`'s scratch address by design of the round
-number; and it leaves `0x10400000..0x3e135000` = 733 MiB for CMA, so the
-pool stays at `0x1e000000` and the kernel's memory layout does not change
-at all. The `reserved-memory` node becomes `framebuffer@10000000` and the
-task 3.5 path adjusts with it. The one constant in the flake carries this
-value to both `CONFIG_K230_BARE_DISP_LOGO_FB_ADDR` and the DTS.
+**Chosen: `0x10000000`, 4 MiB (`0x10000000 .. 0x10400000`).** It is free
+in every current row of the table: 86 MiB above the loaded initrd's end,
+above `loadaddr` (`0x0c000000`) but clear of it, below the `force_dtb`
+scratch address, 764 MiB below U-Boot's exact LMB reservation, and below
+CMA. It leaves `0x10400000..0x3e12f000` = 733 MiB for CMA, so the pool stays
+at `0x1e000000` and the kernel's memory layout does not change. The
+`reserved-memory` node becomes `framebuffer@10000000`; one flake constant
+must carry this value to both `CONFIG_K230_BARE_DISP_LOGO_FB_ADDR` and the
+DTS.
 
 Not chosen: anywhere above `0x1e000000` (splits CMA, above); the top of
 RAM (U-Boot's heap and the relocated initrd are there); `0x0c000000`
@@ -253,7 +269,7 @@ LILYGO's reservation size, and `no-map` regions are best kept
 2 MiB-aligned on a Sv39 kernel so the linear map is not fragmented at a
 page granularity for 0.5 MiB of savings.
 
-**Task 2.3 is not ticked.** It requires the `bdinfo` transcript in §2.1
-first; the only thing that transcript can change is the
-U-Boot-side bound, and `0x10000000` is 764 MiB below where that bound
-could plausibly fall.
+Tasks 2.1 and 2.3 are complete: the `bdinfo` transcript confirms the
+U-Boot-side bound and the current `bootm` lines confirm that this range is
+not a load or relocation target. This decision does not prove that a future
+U-Boot logo can drive the panel; that remains task 3 hardware work.

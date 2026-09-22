@@ -183,17 +183,15 @@ address is not guaranteed and `dma_alloc_wc` zeroes it anyway. Layer:
 
 **The address is one constant in the flake, and it is chosen against a
 recorded map — candidate `0x10000000`, 4 MiB
-(`0x10000000..0x10400000`).** From `docs/evidence/stage1-memory-map.md`: it
-is free in every row of the map — 86 MiB above the loaded initrd's end
-(`0x0aa0aaa5`), below `loadaddr` (`0xc000000` is not in its range) and
-the `force_dtb` scratch address, and far below where `bootm` relocates the
-initrd (`0x3e135000`, read from the cold-boot capture) and where U-Boot
-itself lives. It leaves `0x10400000..0x3e135000` = 733 MiB above it, so the
-kernel's 512 MiB CMA pool stays where the boot log already puts it
-(`cma: Reserved 512 MiB at 0x1e000000`) and the kernel's memory layout
-does not change at all. It is a candidate until `bdinfo` is read from the
-board (task 2.1), the one input not yet written down; the `bootm`
-relocation lines are already in the map (task 2.2). **Rejected:
+(`0x10000000..0x10400000`).** `docs/evidence/stage1-memory-map.md` now
+records the physical-board `bdinfo` and the candidate image's `bootm` lines:
+the range is 86 MiB above the loaded initrd end (`0x0aa07d4e`), above but
+clear of `loadaddr` (`0x0c000000`), below the `force_dtb` scratch address,
+and 764 MiB below U-Boot's exact LMB reservation beginning at `0x3fb37920`.
+The current initrd relocates to `0x3e12f000`, leaving
+`0x10400000..0x3e12f000` = 733 MiB for CMA. The 512 MiB CMA pool therefore
+stays at the logged `0x1e000000`, leaving the kernel's memory layout
+unchanged. **Rejected:
 `0x1f000000`, LILYGO's number.** It is clear of everything stage 1 loads
 or relocates, but it is *inside* the CMA pool the kernel places at
 `0x1e000000..0x3e000000`. A `no-map` reservation there is excluded from
@@ -274,10 +272,11 @@ would look like a dead panel. Layer: **Nix**.
   differently from `canaan_phy.c`. Prove the path on LILYGO's numbers first,
   then change one parameter at a time, measuring with `tools/panel-measure.py`.
 - **`0x10000000` is under U-Boot's heap or where `bootm` relocates the
-  initrd.** → The `Loading Ramdisk to` line is read (`0x3e135000`, 738 MiB
-  above); `bdinfo` is read before the number is committed. The map exists
-  so this is a lookup, not a discovery. The risk that was found instead —
-  the kernel's CMA placement — is handled in the address decision above.
+  initrd.** → The physical-board `bdinfo` puts U-Boot's LMB reservation at
+  `0x3fb37920..0x40000000`, and the current `Loading Ramdisk to` line ends
+  at `0x3fb36d4e`; both are far above the chosen range. The remaining risk
+  is a future load command added without updating the recorded map. The CMA
+  placement risk is handled by the address decision above.
 - **Plymouth drags in a second cross toolchain or fails to build.** →
   The decision rule caps it; the fallback is written down and is small.
 - **Losing boot text on the glass by default.** → Real. Every panel
