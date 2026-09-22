@@ -218,9 +218,11 @@ The VO bypass writes only the IRQ1 timing value which
 `canaan_vo_set_timing()` would calculate, leaving visual registers alone;
 normal DRM vblank enable remains responsible for its interrupt-enable bit.
 A timing mismatch logs a warning and uses the ordinary VO/DSI setup.  The
-panel sees that the DSI did not authorize preservation, clears its flag, and
-runs its normal reset and DCS initialization.  A disable before the first
-enable clears all three one-shot states, so a later enable is also ordinary.
+panel sees that the DSI did not authorize preservation, clears its flag, then
+explicitly restores the reset GPIO to output-high before its normal reset
+pulses; a failure to set that direction is returned from `prepare()`.  A
+disable before the first enable clears all three one-shot states, so a later
+enable is also ordinary.
 
 This is deliberately **not build or hardware evidence**.  It was prepared as
 a bounded diagnostic after a stage-1 logo reached Linux but the first Sway
