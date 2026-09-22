@@ -89,6 +89,7 @@
         # the image builder is idle, then enable k230.shell.frameTiming on a
         # board image to log CPU scene-build plus KMS-commit submission time.
         shell-compositor-frame-timing = self.nixosConfigurations.k230.config.k230.shell.frameTimingCompositor;
+        neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
 
         # What tools/qemu-k230.sh boots: a kernel with standard RISC-V PTE
