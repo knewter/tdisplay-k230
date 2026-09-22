@@ -23,4 +23,4 @@ The launcher now proves the shell can discover and start installed desktop entri
 
 ## Impact
 
-The change affects the shell Nix package set, desktop-entry exposure, launcher cards, and evidence tasks. Candidate packages must work with the pinned riscv64 cross build, 568x1232 portrait layout, Pixman rendering, 1 GiB RAM, and existing Foot terminal profile. The board is needed for physical touch and reboot evidence; package closure, desktop discovery, startup, and injected touch checks can run on the host or in the existing shell image workflow.
+The change affects the shell Nix package set, desktop-entry exposure, launcher cards, and evidence tasks. Candidate packages must work with the pinned riscv64 cross build, 568x1232 portrait layout, Pixman rendering, 1 GiB RAM, and existing Foot terminal profile. The board is needed for physical touch and reboot evidence; package closure and isolated desktop-entry fixtures can run on the host; startup and injected panel workflow checks require the physical board.
