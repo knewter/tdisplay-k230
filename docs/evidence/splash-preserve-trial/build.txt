@@ -1,0 +1,20 @@
+Isolated first-enable display preservation trial, 2026-09-22.
+This is a diagnostic image, not the master default.
+
+Kernel source: dd83305 (4f3f25a + 88d3d44 + reset-direction fallback fix).
+Command in /tmp/k230-stage1-first-vo-dsi:
+  nix build .#packages.x86_64-linux.xuantie-kernel --out-link result-preserve-trial --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Result: passed, exit 0.
+Derivation: /nix/store/lqh4gn8gvkq4z3cf6620v8i3s5qk8mq4-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv
+Output: /nix/store/qd5d77dganzhzk1vj0kwzfy49nvc6aad-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie
+
+Diagnostic image source: 671d404f60076f39cfe1c93ca9f6f4d61b7d6c4a.
+This includes the same kernel fix and k230.panelConsole=false, enabling the
+immutable DRM owner and shell release hook already present in source.
+Image evaluation: /nix/store/xk2xava2zwk422lnlr4bpzyjk9pb3svn-k230-sd-image.img.drv
+Command in /tmp/k230-preserve-splash-image:
+  nix build .#sdImage --out-link result-preserve-image --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Image build: passed, exit 0.
+Output: /nix/store/jdamxwmzapynd9arp339ds6hs3aqwda7-k230-sd-image.img
+Bytes: 2308694016
+SHA-256: 1e104c5987e6fd67d3574e7ef19e8ee148ed01b9249de844853768a54e74f838

@@ -83,7 +83,7 @@ sectors 0-102399 and two FAT32 partitions at 102400 and 163840
 types, which is why the Linux SDK's build was chosen over extracting firmware
 from the RT-Smart image.
 
-=== Source splash integration (2026-09-22; board trial pending) ===
+=== Source splash integration (2026-09-22) ===
 The RM69A10 U-Boot logo path optionally reads /logo.xrgb from the boot
 partition before loading Linux. Format: 568x1232 XRGB8888, little-endian
 B,G,R,X bytes, exactly 2799104 bytes. The address comes from
@@ -92,6 +92,21 @@ docs/evidence/stage1-memory-map.md. The loader checks ext4size before writing
 and limits ext4load to the exact size; a missing or malformed asset skips
 the logo without preventing normal boot.
 k230.panelConsole=true omits logo.xrgb and puts console=tty0 first in the
-command line, retaining the serial console as primary. The default false
-includes the asset and leaves kernel text on serial. Hardware splash and
-Linux handoff remain unverified; this describes the source configuration.
+command line, retaining the serial console as primary. This remains the
+daily default while splash acceptance is incomplete. Setting the option false
+includes the asset and leaves kernel text on serial. The hardware stage-1
+splash is observed; seamless Linux handoff remains unverified. See
+docs/evidence/boot-splash-handoff.md and the diagnostic trial below.
+
+
+=== Splash-enabled image contents (2026-09-22; host-side artifact proof) ===
+The isolated diagnostic image at source 671d404 includes /logo.xrgb beside
+Image, initrd.uimg and k230-tdisplay.dtb. Its 112 MiB boot partition starts at
+4 MiB, as nix/sd-image.nix defines; the 80 MiB figure above describes the
+original SDK layout. The copied asset is exactly 2799104 bytes and hashes to
+6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af.
+See docs/evidence/splash-preserve-trial/build.txt and image-contents.txt for
+the successful nix build .#sdImage and debugfs inspection. This inspection
+reads the immutable host image, not the card, and is not a flash readback.
+The default daily image is still the verified no-logo configuration pending
+physical acceptance of the diagnostic handoff.

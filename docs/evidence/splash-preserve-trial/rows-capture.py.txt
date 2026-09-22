@@ -1,0 +1,25 @@
+import sys,time,subprocess,base64,shlex
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-preserve-trial'
+script='''#!/bin/sh
+set -- $(stty size </dev/tty)
+rows=$1
+cols=$2
+printf '\\033[2J'
+i=1
+while [ "$i" -le "$rows" ]; do
+  if [ "$i" -le "$((rows / 3))" ]; then bg=41; elif [ "$i" -le "$((rows * 2 / 3))" ]; then bg=42; else bg=44; fi
+  printf '\\033[%s;1H\\033[%s;97mROW %02d OF %02d %-40s' "$i" "$bg" "$i" "$rows" MARKER
+  i=$((i+1))
+done
+sleep 22
+'''
+data=base64.b64encode(script.encode()).decode()
+print(console('printf %s '+shlex.quote(data)+' | base64 -d > /tmp/k230-scanout-rows.sh; chmod +x /tmp/k230-scanout-rows.sh',2,out/'rows-prepare.txt'))
+cam=subprocess.Popen(['python3','tools/capture-feature.py','preserve-full-height-rows','--output-dir',str(out),'--duration','36','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Numbered terminal rows in red green blue bands identify which physical screen areas are visible to the camera. Serial stimulus, no finger input.'],cwd=ROOT,stdout=open('/tmp/k230-preserve-rows-camera.log','w'),stderr=subprocess.STDOUT)
+time.sleep(3)
+print(console("export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-rows --font=monospace:size=20 /tmp/k230-scanout-rows.sh'; echo ROWS_STARTED",3,out/'rows-launch.txt'))
+screenshot(out/'rows-native.png')
+cam.wait(timeout=45)
+if cam.returncode:raise RuntimeError('camera failed')

@@ -1,0 +1,12 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -USR1 -x wvkbd-mobintl; swaymsg 'exec timeout 24 wvkbd-mobintl -H 400 --bg 00ffff --fg ffffff --fg-sp ffffff --text 000000 --text-sp 000000 --alpha 255'; echo CONTRAST_KEYBOARD_STARTED =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; pkill -USR1 -x wvkbd-mobintl; swaymsg 'exec timeout 24 wvkbd-mobintl -H 400 --bg 00ffff --fg ffffff --fg-sp ffffff --text 000000 --text-sp 000000 --alpha 255'; echo CONTRAST_KEYBOARD_STARTED
+[?2004l
+CONTRAST_KEYBOARD_STARTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

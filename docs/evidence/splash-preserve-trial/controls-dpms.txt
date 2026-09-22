@@ -1,0 +1,15 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'output DSI-1 power off'; sleep 3; swaymsg 'output DSI-1 power on'; echo DPMS_CYCLE_DONE =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'output DSI-1 power off'; sleep 3; swaymsg 'output DSI-1 power on'; echo DPMS_CYCLE_DONE
+[?2004l
+[  352.267513] canaan-panel-dsi 90850000.dsi.0: RDDID (0x04) failed: -22
+[  352.294630] canaan-mipi-dsi 90850000.dsi: DCS read 0x0a: panel did not answer (status 0x50015)
+[  352.303301] canaan-panel-dsi 90850000.dsi.0: RDDPM (0x0A) failed: -110
+DPMS_CYCLE_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

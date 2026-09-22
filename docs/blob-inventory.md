@@ -847,6 +847,35 @@ DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evid
 DATA c5b6365d9ed306a960794e02995905cf18b5c418a8a70115512e81a6a7a53a59  docs/evidence/splash-phases/repeat-sway.jpg
 DATA 48b6ef6dc7e59962f1b4d004958f28cdc8c8d0f51354169f391b3b626b761dd8  docs/evidence/splash-phases/sway-first-physical.jpg
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-phases/sway-native.png
+DATA c9ef74213899144262cb22b4575ca988456d216460d051b6bc1897e0cf9e22b8  docs/evidence/splash-preserve-trial/20260922T214204Z-preserve-image-automatic-boot.mp4
+DATA 817757902d37a7dd7ae30adc9c0eed869e8916ec39f1e6bdcbe8eb90a3fbea58  docs/evidence/splash-preserve-trial/20260922T214458Z-preserve-automatic-repeat-1.mp4
+DATA ce1bac8c208fc1a91449e232ba71fc58a460eb0086450aefee6bf596f44d3c5a  docs/evidence/splash-preserve-trial/20260922T214638Z-preserve-automatic-repeat-2.mp4
+DATA 895042cb38cec7e2e8bd6ed5b4570752120e4fe48453940cef2041d8144dd11a  docs/evidence/splash-preserve-trial/20260922T214914Z-preserve-keyboard-pageflips.mp4
+DATA 3c396c1d8dc1a0201cc5565d5cc669f1df472ca1112620c52a7d006533b739bb  docs/evidence/splash-preserve-trial/20260922T215021Z-preserve-kernel-no-logo-fallback.mp4
+DATA 60862df429822d6913fa6e7534fe98a2ce0a2dcd631db2479371cfecf8b4a025  docs/evidence/splash-preserve-trial/20260922T215603Z-preserve-colors-pageflips.mp4
+DATA 19d68e46eb59089553afe7b4a98f842fdcfa4e64e2d48502338dc52d23873b54  docs/evidence/splash-preserve-trial/20260922T215737Z-preserve-keyboard-and-dpms.mp4
+DATA 12e466f6df6954051f225c15f7b91e46bba8efb616cac3257ecde6ec350554c5  docs/evidence/splash-preserve-trial/20260922T220022Z-preserve-keyboard-explicit.mp4
+DATA 75a162c4727b2360d867bdf016943d702d4c3ab7182465913cabc29d9c140795  docs/evidence/splash-preserve-trial/20260922T220155Z-preserve-full-height-rows.mp4
+DATA 8d9371c61b9f84e2d8450f43925a9df29bd611562d2c538a7c7e6dab6d78209b  docs/evidence/splash-preserve-trial/20260922T220341Z-keyboard-contrast-diagnostic.mp4
+DATA 31618a04a377883eb57013eee541b1e47faf995711788e4c11cb55d1a319a4a9  docs/evidence/splash-preserve-trial/20260922T220505Z-keyboard-camera-focus.mp4
+DATA e4e8d272c81e0780cc393f831952f127546355b48125bfd5f89ad921aec53704  docs/evidence/splash-preserve-trial/colors-native.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/controls-after-dpms-native.png
+DATA 51aaeb480cc87621bb997d7afbb961d949510dcf09885ff2f11b795293c67704  docs/evidence/splash-preserve-trial/controls-after-dpms-physical.jpg
+DATA fc9e766b661bff2840f225dc401526c1edf0c4436d83b3bd4ef40b3266ad6816  docs/evidence/splash-preserve-trial/keyboard-contrast-native.png
+DATA d65287480b85f3ab3130d6796587fb5b4cc7fdbfe4beb27278441af8cbc254a1  docs/evidence/splash-preserve-trial/keyboard-contrast-physical.jpg
+DATA cb6db86340520a8a1ec7bf6efa76bc40ce6bca085080982a9237fe6858ecc70e  docs/evidence/splash-preserve-trial/keyboard-explicit-native.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/keyboard-hidden-native.png
+DATA 8cf4c3042a911519efc9d5e9fe7f852899c71c7b1d382faed22509c2f77cc179  docs/evidence/splash-preserve-trial/keyboard-physical.jpg
+DATA cb6db86340520a8a1ec7bf6efa76bc40ce6bca085080982a9237fe6858ecc70e  docs/evidence/splash-preserve-trial/keyboard-shown-native.png
+DATA 6f5546bfaa97346253abf25384e56a5da6e60d06be13a609ba11b5510ab6add8  docs/evidence/splash-preserve-trial/no-logo-physical.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/repeat-1-native.png
+DATA c3dd8073bdbaae308ac0bcb2c5861c91ef15edbaa06e674e10bad624783e8603  docs/evidence/splash-preserve-trial/repeat-1-physical.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/repeat-2-native.png
+DATA 883e607182d6726108242633702487bd4c6893431d046ffe378577213e37b245  docs/evidence/splash-preserve-trial/repeat-2-physical.jpg
+DATA 1a888057276d30433c81d4a7866ddf19e2c2640737ff4a46c11f9f114603fabd  docs/evidence/splash-preserve-trial/rows-native.png
+DATA 356f7a499f10fcd9b7a488bcac72e27e1136e5cf57c783306c1e73c1df2df5d4  docs/evidence/splash-preserve-trial/rows-physical.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/shell-native.png
+DATA 4a6e83eadde865c50360841244297b32a58e8ec7f96a2aea08026645edf5d68f  docs/evidence/splash-preserve-trial/shell-physical.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

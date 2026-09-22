@@ -1,0 +1,13 @@
+
+===== > systemctl is-active shell; dmesg | grep -Ei "vblank.*timed|flip.*timed|PHY_STATUS"; echo COLORS_FINISHED =====
+systemctl is-active shell; dmesg | grep -Ei "vblank.*timed|flip.*timed|PHY_STATUS"; echo COLORS_FINISHED
+[?2004l
+active
+COLORS_FINISHED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

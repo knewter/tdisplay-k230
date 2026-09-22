@@ -1,0 +1,13 @@
+
+===== > dmesg | grep -Ei "vblank.*timed|flip.*timed|PHY_STATUS"; systemctl is-active shell; echo PAGEFLIP_CHECK_DONE =====
+dmesg | grep -Ei "vblank.*timed|flip.*timed|PHY_STATUS"; systemctl is-active shell; echo PAGEFLIP_CHECK_DONE
+[?2004l
+active
+PAGEFLIP_CHECK_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

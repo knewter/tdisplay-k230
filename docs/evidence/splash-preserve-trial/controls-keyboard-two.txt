@@ -1,0 +1,12 @@
+
+===== > pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_TOGGLE_TWO =====
+pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_TOGGLE_TWO
+[?2004l
+KEYBOARD_TOGGLE_TWO
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

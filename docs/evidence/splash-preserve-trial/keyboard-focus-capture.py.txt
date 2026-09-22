@@ -1,0 +1,19 @@
+import sys,time,subprocess
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console
+out=ROOT/'docs/evidence/splash-preserve-trial'
+cam=subprocess.Popen(['python3','tools/capture-feature.py','keyboard-camera-focus','--output-dir',str(out),'--duration','36','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Packaged default keyboard shown with USR2 while camera manual focus sweeps 90,110,130,150,170. Camera restored to 90, keyboard hidden afterward. Serial input, not touch.'],cwd=ROOT,stdout=open('/tmp/k230-keyboard-focus-camera.log','w'),stderr=subprocess.STDOUT)
+start=time.monotonic()
+try:
+    time.sleep(3)
+    print(console('pkill -USR2 -x wvkbd-mobintl; echo FOCUS_KEYBOARD_SHOW',2,out/'keyboard-focus-show.txt'))
+    with (out/'keyboard-focus-controls.txt').open('w') as log:
+        for focus in [90,110,130,150,170]:
+            r=subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl',f'focus_absolute={focus}'],capture_output=True,text=True,check=True)
+            log.write(f'host elapsed {time.monotonic()-start:.3f}s: focus_absolute={focus}\n'+r.stdout+r.stderr);log.flush()
+            time.sleep(4)
+finally:
+    subprocess.run(['v4l2-ctl','-d','/dev/video0','--set-ctrl','focus_absolute=90'],check=True)
+    print(console('pkill -USR1 -x wvkbd-mobintl; echo FOCUS_KEYBOARD_HIDE',2,out/'keyboard-focus-hide.txt'))
+cam.wait(timeout=45)
+if cam.returncode:raise RuntimeError('camera failed')

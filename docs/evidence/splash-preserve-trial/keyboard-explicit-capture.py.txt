@@ -1,0 +1,13 @@
+import sys,time,subprocess
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-preserve-trial'
+cam=subprocess.Popen(['python3','tools/capture-feature.py','preserve-keyboard-explicit','--output-dir',str(out),'--duration','44','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','After display off/on, explicit SIGUSR2 shows keyboard, with native screenshot while camera records; SIGUSR1 hides it. Serial-controlled, not finger input.'],cwd=ROOT,stdout=open('/tmp/k230-preserve-keyboard-explicit-camera.log','w'),stderr=subprocess.STDOUT)
+time.sleep(4)
+print(console('pkill -USR2 -x wvkbd-mobintl; echo EXPLICIT_KEYBOARD_SHOW',2,out/'keyboard-explicit-show.txt'))
+time.sleep(5)
+screenshot(out/'keyboard-explicit-native.png')
+time.sleep(8)
+print(console('pkill -USR1 -x wvkbd-mobintl; echo EXPLICIT_KEYBOARD_HIDE',2,out/'keyboard-explicit-hide.txt'))
+cam.wait(timeout=50)
+if cam.returncode:raise RuntimeError('camera failed')

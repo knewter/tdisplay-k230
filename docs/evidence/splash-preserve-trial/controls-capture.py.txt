@@ -1,0 +1,15 @@
+import sys,time,subprocess
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-preserve-trial'
+cam=subprocess.Popen(['python3','tools/capture-feature.py','preserve-keyboard-and-dpms','--output-dir',str(out),'--duration','60','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Serial-driven keyboard show/hide with long dwell followed by Sway output power off/on. No finger input. Checks physical redraw and panel full-init fallback after stage1-preserving first enable.'],cwd=ROOT,stdout=open('/tmp/k230-preserve-controls-camera.log','w'),stderr=subprocess.STDOUT)
+time.sleep(4)
+print(console('pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_TOGGLE_ONE',2,out/'controls-keyboard-one.txt'))
+time.sleep(10)
+print(console('pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_TOGGLE_TWO',2,out/'controls-keyboard-two.txt'))
+time.sleep(8)
+print(console("export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'output DSI-1 power off'; sleep 3; swaymsg 'output DSI-1 power on'; echo DPMS_CYCLE_DONE",8,out/'controls-dpms.txt'))
+screenshot(out/'controls-after-dpms-native.png')
+cam.wait(timeout=65)
+if cam.returncode:raise RuntimeError('camera failed')
+print(console('systemctl is-active shell; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare|reset GPIO|timed out"; echo CONTROLS_DONE',3,out/'controls-inspection.txt'))

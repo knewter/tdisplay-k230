@@ -1,0 +1,11 @@
+
+===== > printf %s IyEvYmluL3NoCnByaW50ZiAnXDAzM1s0MTs5N21cMDMzWzJKXDAzM1tIUkVEXG4nOyBzbGVlcCA5CnByaW50ZiAnXDAzM1s0Mjs5N21cMDMzWzJKXDAzM1tIR1JFRU5cbic7IHNsZWVwIDkKcHJpbnRmICdcMDMzWzQ0Ozk3bVwwMzNbMkpcMDMzW0hCTFVFXG4nOyBzbGVlcCA5Cg== | base64 -d > /tmp/k230-scanout-test.sh; chmod +x /tmp/k230-scanout-test.sh =====
+printf %s IyEvYmluL3NoCnByaW50ZiAnXDAzM1s0MTs5N21cMDMzWzJKXDAzM1tIUkVEXG4nOyBzbGVlcCA5CnByaW50ZiAnXDAzM1s0Mjs5N21cMDMzWzJKXDAzM1tIR1JFRU5cbic7IHNsZWVwIDkKcHJpbnRmICdcMDMzWzQ0Ozk3bVwwMzNbMkpcMDMzW0hCTFVFXG4nOyBzbGVlcCA5Cg== | base64 -d > /tmp/k230-scanout-test.sh; chmod +x /tmp/k230-scanout-test.sh
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

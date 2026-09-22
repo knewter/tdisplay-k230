@@ -1,0 +1,22 @@
+$ debugfs -R 'ls -l /' <image boot partition, offset 4 MiB, length 112 MiB>
+      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 .
+      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 ..
+     11   40700 (2)      0      0   12288 31-Dec-1979 18:00 lost+found
+     13  100444 (1)      0      0   60426752 31-Dec-1979 18:00 Image
+     14  100644 (1)      0      0     198 31-Dec-1979 18:00 bootargs.txt
+     15  100644 (1)      0      0      17 31-Dec-1979 18:00 force_dtb
+     16  100444 (1)      0      0   270808 31-Dec-1979 18:00 fw_jump_add_uboot_head.bin
+     17  100644 (1)      0      0      17 31-Dec-1979 18:00 hdmi_dtb
+     18  100644 (1)      0      0   27302624 31-Dec-1979 18:00 initrd.uimg
+     19  100644 (1)      0      0   71520 31-Dec-1979 18:00 k230-tdisplay.dtb
+     20  100644 (1)      0      0      17 31-Dec-1979 18:00 lcd_dtb
+     21  100444 (1)      0      0   2799104 31-Dec-1979 18:00 logo.xrgb
+
+debugfs 1.47.4 (6-Mar-2025)
+
+$ debugfs -R 'cat /bootargs.txt' <image boot partition, offset 4 MiB, length 112 MiB>
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/8cr3ra6dbnlh99lfq2kr0xn22hn9xml4-nixos-system-nixos-26.11.20260919.20b1ddd/init
+debugfs 1.47.4 (6-Mar-2025)
+
+logo.xrgb bytes: 2799104
+logo.xrgb SHA-256: 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af

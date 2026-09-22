@@ -1,0 +1,14 @@
+
+===== > test -f /boot/bootargs.before-preserve-fallback.txt && test -f /boot/logo.before-preserve-fallback.xrgb && cp /boot/bootargs.before-preserve-fallback.txt /boot/bootargs.txt && mv /boot/logo.before-preserve-fallback.xrgb /boot/logo.xrgb && rm /boot/bootargs.before-preserve-fallback.txt && sync && cat /boot/bootargs.txt && sha256sum /boot/logo.xrgb && echo SPLASH_CONFIG_RESTORED =====
+test -f /boot/bootargs.before-preserve-fallback.txt && test -f /boot/logo.before-preserve-fallback.xrgb && cp /boot/bootargs.before-preserve-fallback.txt /boot/bootargs.txt && mv /boot/logo.before-preserve-fallback.xrgb /boot/logo.xrgb && rm /boot/bootargs.before-preserve-fallback.txt && sync && cat /boot/bootargs.txt && sha256sum /boot/logo.xrgb && echo SPLASH_CONFIG_RESTORED
+[?2004l
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/8cr3ra6dbnlh99lfq2kr0xn22hn9xml4-nixos-system-nixos-26.11.20260919.20b1ddd/init
+6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af  /boot/logo.xrgb
+SPLASH_CONFIG_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

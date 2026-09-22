@@ -1,0 +1,247 @@
+{
+  "method": "FFprobe metadata, SHA-256 and visual review of sampled frames. Serial-controlled diagnostics; no physical touch proof. See README.md and video-audit.md for limitations.",
+  "videos": [
+    {
+      "path": "20260922T214204Z-preserve-image-automatic-boot.mp4",
+      "sha256": "c9ef74213899144262cb22b4575ca988456d216460d051b6bc1897e0cf9e22b8",
+      "bytes": 11960363,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "120.000000",
+          "size": "11960363"
+        }
+      }
+    },
+    {
+      "path": "20260922T214458Z-preserve-automatic-repeat-1.mp4",
+      "sha256": "817757902d37a7dd7ae30adc9c0eed869e8916ec39f1e6bdcbe8eb90a3fbea58",
+      "bytes": 10511310,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "100.000000",
+          "size": "10511310"
+        }
+      }
+    },
+    {
+      "path": "20260922T214638Z-preserve-automatic-repeat-2.mp4",
+      "sha256": "ce1bac8c208fc1a91449e232ba71fc58a460eb0086450aefee6bf596f44d3c5a",
+      "bytes": 10755230,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "100.000000",
+          "size": "10755230"
+        }
+      }
+    },
+    {
+      "path": "20260922T214914Z-preserve-keyboard-pageflips.mp4",
+      "sha256": "895042cb38cec7e2e8bd6ed5b4570752120e4fe48453940cef2041d8144dd11a",
+      "bytes": 3983774,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "35.000000",
+          "size": "3983774"
+        }
+      }
+    },
+    {
+      "path": "20260922T215021Z-preserve-kernel-no-logo-fallback.mp4",
+      "sha256": "3c396c1d8dc1a0201cc5565d5cc669f1df472ca1112620c52a7d006533b739bb",
+      "bytes": 10405840,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "100.000000",
+          "size": "10405840"
+        }
+      }
+    },
+    {
+      "path": "20260922T215603Z-preserve-colors-pageflips.mp4",
+      "sha256": "60862df429822d6913fa6e7534fe98a2ce0a2dcd631db2479371cfecf8b4a025",
+      "bytes": 4322525,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "42.000000",
+          "size": "4322525"
+        }
+      }
+    },
+    {
+      "path": "20260922T215737Z-preserve-keyboard-and-dpms.mp4",
+      "sha256": "19d68e46eb59089553afe7b4a98f842fdcfa4e64e2d48502338dc52d23873b54",
+      "bytes": 6102836,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "60.000000",
+          "size": "6102836"
+        }
+      }
+    },
+    {
+      "path": "20260922T220022Z-preserve-keyboard-explicit.mp4",
+      "sha256": "12e466f6df6954051f225c15f7b91e46bba8efb616cac3257ecde6ec350554c5",
+      "bytes": 4302887,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "44.000000",
+          "size": "4302887"
+        }
+      }
+    },
+    {
+      "path": "20260922T220155Z-preserve-full-height-rows.mp4",
+      "sha256": "75a162c4727b2360d867bdf016943d702d4c3ab7182465913cabc29d9c140795",
+      "bytes": 4229847,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "36.000000",
+          "size": "4229847"
+        }
+      }
+    },
+    {
+      "path": "20260922T220341Z-keyboard-contrast-diagnostic.mp4",
+      "sha256": "8d9371c61b9f84e2d8450f43925a9df29bd611562d2c538a7c7e6dab6d78209b",
+      "bytes": 3980902,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "38.000000",
+          "size": "3980902"
+        }
+      }
+    },
+    {
+      "path": "20260922T220505Z-keyboard-camera-focus.mp4",
+      "sha256": "31618a04a377883eb57013eee541b1e47faf995711788e4c11cb55d1a319a4a9",
+      "bytes": 3940374,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "36.000000",
+          "size": "3940374"
+        }
+      }
+    }
+  ]
+}

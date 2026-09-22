@@ -1,0 +1,14 @@
+
+===== > ps -eo pid,args | grep wvkbd; echo CONTRAST_TEMP_FINISHED =====
+ps -eo pid,args | grep wvkbd; echo CONTRAST_TEMP_FINISHED
+[?2004l
+    730 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+    874 grep wvkbd
+CONTRAST_TEMP_FINISHED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

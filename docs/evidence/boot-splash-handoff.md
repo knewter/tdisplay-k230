@@ -223,3 +223,12 @@ The [recovery boot](splash-phases/recovery-boot.txt),
 [physical frame](splash-phases/20260922T210603Z-phase-normal-recovery.jpg)
 confirm the restored normal configuration: no diagnostic arguments, no logo or
 splash flag, `/dev/fb0` present, and shell, seatd and firewall active.
+
+## First-enable preservation image trial
+
+The [diagnostic image trial](splash-preserve-trial/README.md) records three
+correctly arranged automatic shell boots, visible successive color updates,
+and the same-kernel missing-logo console fallback. It also records a measured
+approximately 1.1–1.2 second camera-visible dark gap before Sway content.
+The candidate remains separate from the daily default; seamless handoff is
+not proved.

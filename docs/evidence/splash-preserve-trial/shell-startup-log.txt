@@ -1,0 +1,103 @@
+
+===== > journalctl -b -u shell -o short-monotonic --no-pager | grep -Ei "DRM|modeset|framebuffer|commit|renderer|output|backend|new layer|new surface" | head -100; echo SHELL_STARTUP_LOG_DONE =====
+journalctl -b -u shell -o short-monotonic --no-pager | grep -Ei "DRM|modeset|framebuffer|commit|renderer|output|backend|new layer|new surface" | head -100; echo SHELL_STARTUP_LOG_DONE
+[?2004l
+[   49.098881] nixos sway[648]: 00:00:00.155 [INFO] [wlr] [libseat] [libseat/libseat.c:62] Seat opened with backend 'seatd'
+[   49.098881] nixos sway[648]: 00:00:00.156 [INFO] [wlr] [libseat] [libseat/backend/seatd.c:218] Enabling seat
+[   49.098881] nixos sway[648]: 00:00:00.156 [INFO] [wlr] [backend/session/session.c:117] Successfully loaded libseat session
+[   49.175726] nixos sway[648]: 00:00:00.294 [INFO] [wlr] [backend/backend.c:248] Found 1 GPUs
+[   49.175726] nixos sway[648]: 00:00:00.301 [INFO] [wlr] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card0 (canaan-drm)
+[   49.175726] nixos sway[648]: 00:00:00.301 [DEBUG] [wlr] [backend/drm/drm.c:112] Using atomic DRM interface
+[   49.175726] nixos sway[648]: 00:00:00.301 [DEBUG] [wlr] [backend/drm/drm.c:133] ADDFB2 modifiers supported
+[   49.175726] nixos sway[648]: 00:00:00.302 [INFO] [wlr] [backend/drm/drm.c:312] Found 1 DRM CRTCs
+[   49.175726] nixos sway[648]: 00:00:00.302 [INFO] [wlr] [backend/drm/drm.c:270] Found 7 DRM planes
+[   49.175726] nixos sway[648]: 00:00:00.303 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+[   49.175726] nixos sway[648]: 00:00:00.303 [INFO] [wlr] [render/pixman/renderer.c:328] Creating pixman renderer
+[   49.175726] nixos sway[648]: 00:00:00.303 [DEBUG] [wlr] [render/allocator/allocator.c:142] Trying to create drm dumb allocator
+[   49.175726] nixos sway[648]: 00:00:00.303 [DEBUG] [wlr] [render/allocator/drm_dumb.c:230] Created DRM dumb allocator
+[   49.175726] nixos sway[648]: 00:00:00.303 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:599] Creating wlr_drm_lease_device_v1 for /dev/dri/card0
+[   49.175726] nixos sway[648]: 00:00:00.304 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+[   49.340149] nixos sway[648]: 00:00:00.468 [DEBUG] [sway/config.c:782] Read line 1: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+[   49.340149] nixos sway[648]: 00:00:00.468 [INFO] [sway/commands.c:381] Config command: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+[   49.340149] nixos sway[648]: 00:00:00.468 [INFO] [sway/commands.c:404] After replacement: output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+[   49.344285] nixos sway[648]: 00:00:00.470 [DEBUG] [sway/config/output.c:279] Config stored for output DSI-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale 1.000000 subpixel unknown transform 0) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+[   49.344285] nixos sway[648]: 00:00:00.470 [DEBUG] [sway/config.c:782] Read line 2: input type:touch map_to_output DSI-1
+[   49.344285] nixos sway[648]: 00:00:00.470 [INFO] [sway/commands.c:381] Config command: input type:touch map_to_output DSI-1
+[   49.344285] nixos sway[648]: 00:00:00.470 [INFO] [sway/commands.c:404] After replacement: input type:touch map_to_output DSI-1
+[   49.344285] nixos sway[648]: 00:00:00.470 [DEBUG] [sway/commands.c:436] Subcommand: map_to_output DSI-1
+[   50.060252] nixos sway[648]: 00:00:01.158 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+[   50.060252] nixos sway[648]: 00:00:01.174 [INFO] [sway/server.c:787] Starting backend on wayland display 'wayland-1'
+[   50.060252] nixos sway[648]: 00:00:01.174 [DEBUG] [wlr] [backend/libinput/backend.c:88] Starting libinput backend
+[   50.356457] nixos sway[648]: 00:00:01.483 [DEBUG] [wlr] [backend/libinput/events.c:69] Adding Goodix Berlin Capacitive TouchScreen [0:0]
+[   50.356457] nixos sway[648]: 00:00:01.484 [DEBUG] [sway/input/libinput.c:237] (null) 'type:touch' is mapped to offline output 'DSI-1'; disabling input
+[   50.382437] nixos sway[648]: 00:00:01.509 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+[   50.382437] nixos sway[648]: 00:00:01.509 [DEBUG] [sway/input/seat.c:752] Requested output DSI-1 for device 0:0:Goodix_Berlin_Capacitive_TouchScreen isn't present
+[   50.382437] nixos sway[648]: 00:00:01.509 [DEBUG] [wlr] [backend/libinput/backend.c:125] libinput successfully initialized
+[   50.382437] nixos sway[648]: 00:00:01.509 [INFO] [wlr] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+[   50.382437] nixos sway[648]: 00:00:01.509 [INFO] [wlr] [backend/drm/drm.c:1836] Found connector 'DSI-1'
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/drm/drm.c:1861] 'DSI-1' connected
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [wlr] [backend/drm/drm.c:1632] Current CRTC: 46
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/drm/drm.c:1646] Detected modes:
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/drm/drm.c:1670]   568x1232 @ 52.190 Hz (preferred)
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/drm/drm.c:1707] Physical size: 44x95
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [wlr] [backend/drm/drm.c:1744] Connector has no EDID
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/drm/drm.c:1895] connector DSI-1: Requesting modeset
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/desktop/output.c:541] New output 0x2dc453a1a0: DSI-1 (non-desktop: 0)
+[   50.382437] nixos sway[648]: 00:00:01.510 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:769] Output state for DSI-1
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:783]     mode:          568x1232@52190mHz (preferred)
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+[   50.382437] nixos sway[648]: 00:00:01.510 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+[   50.413553] nixos sway[648]: 00:00:01.539 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+[   50.415804] nixos sway[648]: 00:00:01.541 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+[   50.415804] nixos sway[648]: 00:00:01.543 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/config/output.c:1080] Finalizing config for DSI-1
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output DSI-1
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/tree/output.c:165] Creating default workspace 1
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output DSI-1
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+[   50.427582] nixos sway[648]: 00:00:01.555 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2dc44eb320 committing with 2 instructions
+[   50.427582] nixos sway[648]: 00:00:01.556 [DEBUG] [sway/input/seat.c:740] Mapping input device 0:0:Goodix_Berlin_Capacitive_TouchScreen to output DSI-1
+[   50.427582] nixos sway[648]: 00:00:01.556 [DEBUG] [sway/input/seat.c:760] Mapped to output DSI-1
+[   50.575547] nixos sway[648]: 00:00:01.698 [DEBUG] [wlr] [render/allocator/drm_dumb.c:105] Allocated 568x1232 DRM dumb buffer
+[   50.575547] nixos sway[648]: 00:00:01.703 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+[   50.611850] nixos sway[722]: 2026-03-17 20:00:10 - [main.c:328] Could not find config for output DSI-1 ((null) (null))
+[   51.501351] nixos sway[648]: 00:00:02.625 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2dc45f1820 committing with 4 instructions
+[   51.501351] nixos sway[648]: 00:00:02.627 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x2dc45cba00 (res 0x2dc45f6210)
+[   51.501351] nixos sway[648]: 00:00:02.627 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace panel layer 1 anchor 0 size 0x0 margin 0,0,0,0,
+[   51.685824] nixos sway[648]: 00:00:02.813 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+[   51.685824] nixos sway[648]: 00:00:02.814 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2dc45cf1a0 committing with 3 instructions
+[   54.514821] nixos sway[648]: 00:00:05.643 [DEBUG] [wlr] [backend/session/session.c:189] udev event for card0 (add)
+[   54.514821] nixos sway[648]: 00:00:05.643 [DEBUG] [wlr] [backend/session/session.c:208] Skipping duplicate device card0
+[   54.664409] nixos sway[648]: 00:00:05.791 [DEBUG] [wlr] [backend/session/session.c:189] udev event for card0-DSI-1 (add)
+[   58.013521] nixos sway[648]: 00:00:09.117 [DEBUG] [wlr] [backend/session/session.c:189] udev event for card0 (change)
+[   58.013521] nixos sway[648]: 00:00:09.134 [DEBUG] [wlr] [backend/session/session.c:222] DRM device card0 changed
+[   58.013521] nixos sway[648]: 00:00:09.134 [DEBUG] [wlr] [backend/drm/backend.c:139] Received hotplug event for /dev/dri/card0
+[   58.013521] nixos sway[648]: 00:00:09.134 [INFO] [wlr] [backend/drm/drm.c:1781] Scanning DRM connectors on /dev/dri/card0
+[   73.505666] nixos sway[648]: 00:00:24.634 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+[   73.684762] nixos sway[648]: 00:00:24.811 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+[  143.432762] nixos sway[648]: 00:01:34.556 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x2dc45b9600 (res 0x2dc45fab00)
+[  143.432762] nixos sway[648]: 00:01:34.556 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+[  143.438799] nixos sway[648]: 00:01:34.564 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x2dc45b9600 (res 0x2dc45f6ba0)
+[  143.438799] nixos sway[648]: 00:01:34.564 [DEBUG] [sway/desktop/layer_shell.c:412] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+[  143.616137] nixos sway[648]: 00:01:34.744 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+[  143.616137] nixos sway[648]: 00:01:34.744 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2dc45b1b90 committing with 3 instructions
+[  147.432225] nixos sway[648]: 00:01:38.560 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+[  147.635782] nixos sway[648]: 00:01:38.762 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+[  157.540918] nixos sway[648]: 00:01:48.667 [DEBUG] [sway/desktop/layer_shell.c:96] Usable area changed, rearranging output
+[  157.540918] nixos sway[648]: 00:01:48.667 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2dc45dad20 committing with 3 instructions
+[  161.507908] nixos sway[648]: 00:01:52.636 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+[  161.682457] nixos sway[648]: 00:01:52.811 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+SHELL_STARTUP_LOG_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

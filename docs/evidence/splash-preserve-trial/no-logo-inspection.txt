@@ -1,0 +1,21 @@
+
+===== > export SYSTEMD_PAGER=cat; cat /proc/cmdline; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; ls /dev/fb0; systemctl is-active shell k230-drm-splash seatd firewall; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare|fb0"; echo NO_LOGO_INSPECTED =====
+export SYSTEMD_PAGER=cat; cat /proc/cmdline; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; ls /dev/fb0; systemctl is-active shell k230-drm-splash seatd firewall; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare|fb0"; echo NO_LOGO_INSPECTED
+[?2004l
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/8cr3ra6dbnlh99lfq2kr0xn22hn9xml4-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=k230-drm-splash.service
+NO_SPLASH_FLAG
+[0m[40;33;01m/dev/fb0[0m
+inactive
+inactive
+active
+active
+[    3.328640] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+[    3.799267] canaan-drm soc:display-subsystem: [drm] fb0: canaan-drmdrmfb frame buffer device
+NO_LOGO_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

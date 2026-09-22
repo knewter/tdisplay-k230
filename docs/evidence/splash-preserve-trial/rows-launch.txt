@@ -1,0 +1,12 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-rows --font=monospace:size=20 /tmp/k230-scanout-rows.sh'; echo ROWS_STARTED =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-rows --font=monospace:size=20 /tmp/k230-scanout-rows.sh'; echo ROWS_STARTED
+[?2004l
+ROWS_STARTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

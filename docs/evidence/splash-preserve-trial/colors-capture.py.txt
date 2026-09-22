@@ -1,0 +1,17 @@
+import sys,time,subprocess,base64,shlex
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-preserve-trial'
+script='#!/bin/sh\n'
+for color,name in [(41,'RED'),(42,'GREEN'),(44,'BLUE')]:
+    script += "printf '\\033[%s;97m\\033[2J\\033[H%s\\n'; sleep 9\n"%(color,name)
+data=base64.b64encode(script.encode()).decode()
+print(console('printf %s '+shlex.quote(data)+' | base64 -d > /tmp/k230-scanout-test.sh; chmod +x /tmp/k230-scanout-test.sh',2,out/'colors-prepare.txt'))
+cam=subprocess.Popen(['python3','tools/capture-feature.py','preserve-colors-pageflips','--output-dir',str(out),'--duration','42','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Serial-launched temporary Foot app displays RED GREEN BLUE for nine seconds each. Physical scanout regression; no touchscreen input.'],cwd=ROOT,stdout=open('/tmp/k230-preserve-colors-camera.log','w'),stderr=subprocess.STDOUT)
+time.sleep(4)
+cmd="export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-test --font=monospace:size=34 /tmp/k230-scanout-test.sh'; echo COLORS_STARTED"
+print(console(cmd,3,out/'colors-launch.txt'))
+screenshot(out/'colors-native.png')
+cam.wait(timeout=50)
+if cam.returncode: raise RuntimeError('camera failed')
+print(console('systemctl is-active shell; dmesg | grep -Ei "vblank.*timed|flip.*timed|PHY_STATUS"; echo COLORS_FINISHED',3,out/'colors-inspection.txt'))

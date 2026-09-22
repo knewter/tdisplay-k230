@@ -1,0 +1,5 @@
+host elapsed 6.030s: focus_absolute=90
+host elapsed 10.033s: focus_absolute=110
+host elapsed 14.036s: focus_absolute=130
+host elapsed 18.040s: focus_absolute=150
+host elapsed 22.044s: focus_absolute=170

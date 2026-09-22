@@ -1,0 +1,18 @@
+
+===== > systemctl is-active shell; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare|reset GPIO|timed out"; echo CONTROLS_DONE =====
+systemctl is-active shell; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare|reset GPIO|timed out"; echo CONTROLS_DONE
+[?2004l
+active
+[    2.753324] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+[   44.665737] canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update
+[   44.665765] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it
+[   44.665773] canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update
+[  351.927469] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+CONTROLS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

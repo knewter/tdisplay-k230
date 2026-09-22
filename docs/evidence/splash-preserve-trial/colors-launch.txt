@@ -1,0 +1,12 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-test --font=monospace:size=34 /tmp/k230-scanout-test.sh'; echo COLORS_STARTED =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg 'exec foot --app-id=k230-scanout-test --font=monospace:size=34 /tmp/k230-scanout-test.sh'; echo COLORS_STARTED
+[?2004l
+COLORS_STARTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

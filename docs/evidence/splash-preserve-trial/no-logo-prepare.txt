@@ -1,0 +1,12 @@
+
+===== > test -f /boot/logo.xrgb && test ! -e /boot/logo.before-preserve-fallback.xrgb && test ! -e /boot/bootargs.before-preserve-fallback.txt && cp /boot/bootargs.txt /boot/bootargs.before-preserve-fallback.txt && mv /boot/logo.xrgb /boot/logo.before-preserve-fallback.xrgb && sed -i "s/^bootargs=/bootargs=console=tty0 /; s/$/ systemd.mask=shell.service systemd.mask=k230-drm-splash.service/" /boot/bootargs.txt && sync && echo NO_LOGO_PREPARED =====
+test -f /boot/logo.xrgb && test ! -e /boot/logo.before-preserve-fallback.xrgb && test ! -e /boot/bootargs.before-preserve-fallback.txt && cp /boot/bootargs.txt /boot/bootargs.before-preserve-fallback.txt && mv /boot/logo.xrgb /boot/logo.before-preserve-fallback.xrgb && sed -i "s/^bootargs=/bootargs=console=tty0 /; s/$/ systemd.mask=shell.service systemd.mask=k230-drm-splash.service/" /boot/bootargs.txt && sync && echo NO_LOGO_PREPARED
+[?2004l
+NO_LOGO_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

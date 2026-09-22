@@ -1,0 +1,11 @@
+
+===== > printf %s IyEvYmluL3NoCnNldCAtLSAkKHN0dHkgc2l6ZSA8L2Rldi90dHkpCnJvd3M9JDEKY29scz0kMgpwcmludGYgJ1wwMzNbMkonCmk9MQp3aGlsZSBbICIkaSIgLWxlICIkcm93cyIgXTsgZG8KICBpZiBbICIkaSIgLWxlICIkKChyb3dzIC8gMykpIiBdOyB0aGVuIGJnPTQxOyBlbGlmIFsgIiRpIiAtbGUgIiQoKHJvd3MgKiAyIC8gMykpIiBdOyB0aGVuIGJnPTQyOyBlbHNlIGJnPTQ0OyBmaQogIHByaW50ZiAnXDAzM1slczsxSFwwMzNbJXM7OTdtUk9XICUwMmQgT0YgJTAyZCAlLTQwcycgIiRpIiAiJGJnIiAiJGkiICIkcm93cyIgTUFSS0VSCiAgaT0kKChpKzEpKQpkb25lCnNsZWVwIDIyCg== | base64 -d > /tmp/k230-scanout-rows.sh; chmod +x /tmp/k230-scanout-rows.sh =====
+printf %s IyEvYmluL3NoCnNldCAtLSAkKHN0dHkgc2l6ZSA8L2Rldi90dHkpCnJvd3M9JDEKY29scz0kMgpwcmludGYgJ1wwMzNbMkonCmk9MQp3aGlsZSBbICIkaSIgLWxlICIkcm93cyIgXTsgZG8KICBpZiBbICIkaSIgLWxlICIkKChyb3dzIC8gMykpIiBdOyB0aGVuIGJnPTQxOyBlbGlmIFsgIiRpIiAtbGUgIiQoKHJvd3MgKiAyIC8gMykpIiBdOyB0aGVuIGJnPTQyOyBlbHNlIGJnPTQ0OyBmaQogIHByaW50ZiAnXDAzM1slczsxSFwwMzNbJXM7OTdtUk9XICUwMmQgT0YgJTAyZCAlLTQwcycgIiRpIiAiJGJnIiAiJGkiICIkcm93cyIgTUFSS0VSCiAgaT0kKChpKzEpKQpkb25lCnNsZWVwIDIyCg== | base64 -d > /tmp/k230-scanout-rows.sh; chmod +x /tmp/k230-scanout-rows.sh
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

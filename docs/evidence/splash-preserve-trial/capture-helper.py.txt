@@ -1,0 +1,23 @@
+import subprocess, pathlib, base64, re, shlex, json, time
+ROOT=pathlib.Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-the-screen-runs-a-shell-not-a-console')
+def console(cmd, wait=4, log=None):
+    r=subprocess.run(['flock','-w','5','/tmp/k230-board.lock','python3','tools/console.py',f'--wait={wait}',cmd],cwd=ROOT,capture_output=True,text=True,check=True)
+    if log: pathlib.Path(log).write_text(r.stdout+r.stderr)
+    return r.stdout
+def pull(remote,dest):
+    s=console('echo FILE_BEGIN; base64 '+shlex.quote(remote)+'; echo FILE_END',6)
+    data=s.split('\nFILE_BEGIN\n',1)[1].split('\nFILE_END',1)[0]
+    p=pathlib.Path(dest); p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(base64.b64decode(data))
+    return p
+def screenshot(dest):
+    console('XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 grim /tmp/feature-screen.png',2)
+    return pull('/tmp/feature-screen.png',dest)
+def record(name,description,actions,duration=20):
+    out=ROOT/'docs/evidence/shell-features'/name;out.mkdir(parents=True,exist_ok=True)
+    (out/'actions.sh').write_text('# Injected uinput actions on the physical board.\n'+actions+'\n')
+    camera=subprocess.Popen(['python3','tools/capture-feature.py',name,'--output-dir',str(out),'--video-size','1920x1080','--duration',str(duration+4),'--provenance','injected','--description',description],cwd=ROOT,stdout=(out/'camera.log').open('w'),stderr=subprocess.STDOUT)
+    cmd='export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; bash /tmp/sample-grim-frames.sh '+shlex.quote(name)+' --duration '+str(duration)+' --output-dir /tmp/k230-samples --provenance injected --description '+shlex.quote(description)+' > /tmp/'+name+'-samples.log 2>&1 & sampler=$!; sleep 2; '+actions+'; wait "$sampler"; cat /tmp/'+name+'-samples.log; echo FEATURE_ACTIONS_DONE'
+    console(cmd,duration+3,out/'console.txt')
+    camera.wait(timeout=duration+10)
+    if camera.returncode: raise RuntimeError('camera failed')
+    return out

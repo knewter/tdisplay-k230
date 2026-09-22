@@ -1,0 +1,12 @@
+
+===== > pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_SIGNAL_SHOW =====
+pkill -RTMIN -x wvkbd-mobintl; echo KEYBOARD_SIGNAL_SHOW
+[?2004l
+KEYBOARD_SIGNAL_SHOW
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,23 @@
+
+===== > export SYSTEMD_PAGER=cat; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; systemctl is-active shell seatd firewall; journalctl -b -u k230-drm-splash --no-pager; echo SPLASH_CONFIG_RECOVERED =====
+export SYSTEMD_PAGER=cat; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; systemctl is-active shell seatd firewall; journalctl -b -u k230-drm-splash --no-pager; echo SPLASH_CONFIG_RECOVERED
+[?2004l
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/8cr3ra6dbnlh99lfq2kr0xn22hn9xml4-nixos-system-nixos-26.11.20260919.20b1ddd/init
+/proc/device-tree/chosen/canaan,stage1-splash
+active
+active
+active
+Mar 17 20:04:26 nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+Mar 17 20:04:27 nixos k230-drm-splash[526]: k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+Mar 17 20:04:28 nixos k230-drm-splash[526]: k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+Mar 17 20:04:32 nixos k230-drm-splash[526]: k230-drm-splash: successor replaced fb 49; releasing owner
+Mar 17 20:04:32 nixos systemd[1]: k230-drm-splash.service: Deactivated successfully.
+Mar 17 20:04:32 nixos systemd[1]: k230-drm-splash.service: Consumed 73ms CPU time over 5.675s wall clock time, 5.9M memory peak, 2.8M read from disk.
+SPLASH_CONFIG_RECOVERED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
