@@ -528,6 +528,29 @@ ask is which U-Boot was on the card; the characterisation in §5's tasks must
 be made against *our* stage 1, and the RT-Smart image LilyGO shipped is not
 evidence about it either way.
 
-**Not yet observed.** Any gadget enumerating on J3; `ums` presenting the
-card; Route C. Those are the hardware tasks that remain, and they start with
-the new stage 1 on a card.
+**§3's gadget, on the board (2026-09-22, `docs/evidence/uboot-ums-enumerate.txt`).**
+`ums 0 mmc 1` runs: `UMS: LUN 0, dev mmc 1, hwpart 0, sector 0x0, count
+0xee4c000` (the 119.1 GiB card), and `dm tree` shows both `snps,dwc2` nodes
+bound to `dwc2-udc-otg` — `usbotg1` too, its `dr_mode` still `otg`, so the
+A2 `.bind` is needed to keep USB host. Four sessions and two cables later
+the host had still seen nothing; the core's own registers say why the
+usual suspects are wrong. `GOTGCTL` reads `0x000d0000` with the cable in:
+bit 19 `B_SESSION_VALID` set — **the PHY sees VBUS**, so §3's "classic dwc2
+failure" is not this one. And the two `u-boot,force-*` properties named
+there as the mitigation are inert on this SoC in this tree:
+`dwc2_udc_otg_of_to_plat()` parses them (`dwc2_udc_otg.c:1014-1018`) but
+`dwc2_udc_otg_probe()` acts on them only under
+`if (plat->activate_stm_id_vb_detection)` (`:1121-1158`), a flag set solely
+by `dwc2_set_stm32mp1_hsotg_params()` (`:1030-1043`), reached only through
+`st,stm32mp15-hsotg`'s driver data. Struck from the plan. After `ums`:
+`DCTL` bit 1 clear (D+ pulled up), `GINTSTS` with `INT_RESET` and
+`INT_ENUMDONE` set (a host reset the bus and enumeration completed — at
+**full** speed, `DSTS` EnumSpd 01, on a high-speed core), then
+`INT_SUSPEND`. Meanwhile solomon's kernel log has no attach on any bus in
+any window. Whatever reset that bus was a host, and it was not this machine.
+
+**Not yet observed.** A gadget enumerating on *this* host; `ums`
+presenting the card here; Route C. The next step is a cable whose far end
+is confirmed to be in this machine, on the same firmware, with
+`journalctl -k -f` watching — then, only if that also fails, the
+full-speed-only enumeration is the thread to pull.

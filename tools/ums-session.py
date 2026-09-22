@@ -151,6 +151,12 @@ def main():
     ap.add_argument("--hammer", type=float, default=20.0)
     ap.add_argument("--slot-len", type=int, default=0,
                     help="bytes to hash at the 2 MiB U-Boot slot (0: skip)")
+    ap.add_argument("--regs", action="store_true",
+                    help="dump usbotg0's DWC2 OTG/device registers with md.l "
+                         "before ums and again right after Ctrl-C. GOTGCTL "
+                         "bit 19 is B_SESSION_VALID (dwc2_udc_otg_regs.h:91): "
+                         "whether the PHY sees VBUS from the cable. DCTL bit 1 "
+                         "is soft-disconnect: whether D+ was ever pulled up")
     args = ap.parse_args()
 
     s = Session(args.dev, args.baud, args.out)
@@ -188,6 +194,15 @@ def main():
         s.cmd("version")
         s.cmd("dm tree")
         s.cmd("mmc list")
+
+        def regs(tag):
+            if not args.regs:
+                return
+            s.note(f"usbotg0 registers, {tag}: GOTGCTL GOTGINT GAHBCFG GUSBCFG GRSTCTL GINTSTS GINTMSK GRXSTSR @0x91500000, then DCFG DCTL DSTS @0x91500800")
+            s.cmd("md.l 0x91500000 8")
+            s.cmd("md.l 0x91500800 3")
+
+        regs("before ums (core untouched by the gadget driver yet)")
 
         # 3. ums, and watch the host.
         s.send_line("ums 0 mmc 1")
@@ -245,6 +260,7 @@ def main():
         if not s.wait_for(PROMPT, 20):
             s.port.write(b"\r\n"); s.port.flush()
             s.wait_for(PROMPT, 10)
+        regs("after Ctrl-C (the driver has probed, run, and been released)")
         gone_at = None
         for _ in range(20):
             if not (usb_disks() - disks_before):

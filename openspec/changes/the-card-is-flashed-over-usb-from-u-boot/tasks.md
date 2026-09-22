@@ -82,7 +82,7 @@ binary any more.
       Done when a by-id path exists whose size matches 1.4, and both the
       console and the host output are in
       `docs/evidence/uboot-ums-hardware.txt`.
-      - Not ticked, 2026-09-22: `docs/evidence/uboot-ums-enumerate.txt` — `ums 0 mmc 1` runs on the board (`UMS: LUN 0, dev mmc 1 ... count 0xee4c000`, the 119.1 GiB card) and was held for 300 s, but the host saw no new USB device. Whether the J3 cable was connected during the window is not knowable from the console; if it was, the next thing to try is `u-boot,force-b-session-valid` / `u-boot,force-vbus-detection` on `&usbotg0`, which costs a rebuild and a card write.
+      - Not ticked, 2026-09-22: `docs/evidence/uboot-ums-enumerate.txt` — `ums 0 mmc 1` runs on the board (`UMS: LUN 0, dev mmc 1 ... count 0xee4c000`, the 119.1 GiB card) and was held for 300 s, but the host saw no new USB device. Sessions 3-4 (a second cable, then a register dump): `GOTGCTL` bit 19 `B_SESSION_VALID` = 1 — the PHY sees VBUS — and after `ums` the core shows D+ pulled up, a bus reset received and enumeration done at full speed; this host's kernel log shows no attach on any bus. A host is on the far end of that cable and it is not this machine. The `u-boot,force-*` properties are inert for `snps,dwc2` in this tree (`dwc2_udc_otg.c:1121`, gated on an STM32-only flag) and were not added. Next: confirm the cable's far end is in this host, same firmware.
 - [ ] 3.4 Read the card back over `ums` and compare it against the image that
       was written in 3.1. **Hardware proof.**
       `sudo cmp -n $(stat -c %s "$IMG") "$IMG" /dev/disk/by-id/<ums path>`
