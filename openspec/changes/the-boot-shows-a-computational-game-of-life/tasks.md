@@ -12,7 +12,7 @@
 
 ## 3. Touch and optional continuation
 
-- [ ] 3.1 Add Linux touch glider insertion with no-touch fallback; verify injected touch drops a glider and the animation remains recoverable when the input device is absent.
+- [ ] 3.1 Add Linux touch glider insertion with no-touch fallback; verify injected touch drops a glider and the animation remains recoverable when the input device is absent, then separately record a real finger tap adding a glider with camera and console evidence.
 - [ ] 3.2 Investigate feasibility of porting Goodix input into U-Boot using the existing Linux driver as a reference; verify with a source/ABI feasibility note and, only if pursued, separate board serial/camera evidence for probe, coordinates, and glider insertion. This optional task does not gate archive on a successful port.
 - [ ] 3.3 Add optional Wayland continuation without removing persistent shell controls; verify Apps, Keyboard, Windows/Home, System, and recovery remain reachable in a shell capture.
 

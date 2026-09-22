@@ -29,9 +29,9 @@ promising uninterrupted animation during kernel startup.
 
 ## Impact
 
-The change affects the vendored stage-1 display path, Linux early userspace or
+The change affects the source-built vendor-derived U-Boot display path, Linux early userspace or
 kernel handoff, reserved RAM ownership, and optionally the Wayland shell. It
 must not depend on the unproven second RISC-V core. The host can test the pure C
 engine and deterministic images; the physical board is required for panel
-handoff, touch, RAM reservation, and boot timing evidence. No current task is
-complete until those future hardware checks are recorded.
+handoff, touch, RAM reservation, and boot timing evidence. Host checks establish only their stated software claims; physical handoff and
+touch tasks require separately recorded board evidence.

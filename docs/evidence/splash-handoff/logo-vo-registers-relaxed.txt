@@ -1,0 +1,41 @@
+
+===== > cat /proc/cmdline; /tmp/vo-registers; echo REGISTER_LOGO_DONE =====
+cat /proc/cmdline; /tmp/vo-registers; echo REGISTER_LOGO_DONE
+[?2004l
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init iomem=relaxed
+VO +0x004 = 0x00000000
+VO +0x0c0 = 0x025f0028
+VO +0x0c4 = 0x04e00011
+VO +0x118 = 0x00000100
+VO +0x340 = 0x00010101
+VO +0x380 = 0x00000001
+VO +0x828 = 0x025f0028
+VO +0x82c = 0x04e00011
+VO +0x880 = 0x00000002
+VO +0x884 = 0x04d00238
+VO +0x888 = 0x1e200000
+VO +0x898 = 0x0000004f
+VO +0x89c = 0x0000008e
+VO +0x8a0 = 0x00000100
+DSI +0x004 = 0x00000001
+DSI +0x010 = 0x00000105
+DSI +0x034 = 0x00000000
+DSI +0x038 = 0x0000bf02
+DSI +0x03c = 0x00000238
+DSI +0x040 = 0x00000000
+DSI +0x044 = 0x00000000
+DSI +0x048 = 0x0000003c
+DSI +0x04c = 0x0000003c
+DSI +0x050 = 0x00000462
+DSI +0x054 = 0x00000010
+DSI +0x058 = 0x00000010
+DSI +0x05c = 0x00000004
+DSI +0x060 = 0x000004d0
+REGISTER_LOGO_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

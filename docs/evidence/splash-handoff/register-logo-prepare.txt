@@ -1,0 +1,13 @@
+
+===== > test -f /boot/bootargs.before-registers.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/k230-trial-logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /tmp/k230-trial-logo.xrgb /boot/logo.xrgb && sync && echo LOGO_REGISTER_TRIAL_PREPARED =====
+test -f /boot/bootargs.before-registers.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/k230-trial-logo.xrgb | cut -d' ' -f1)" = 6c7a 
+36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /tmp/k230-trial-logo.xrgb /boot/logo.xrgb && sync && echo LOGO_REGISTER_TRIAL_PREPARED
+[?2004l
+LOGO_REGISTER_TRIAL_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

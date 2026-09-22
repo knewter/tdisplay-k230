@@ -31,5 +31,7 @@ nix build .#nixosConfigurations.k230.config.boot.kernelPackages.kernel.configfil
 Output: `/nix/store/5y0acf2qzdicdlscn474jfp0xf0807cj-linux-config-riscv64-unknown-linux-gnu-6.6.36-xuantie`.
 All 23 requested selections resolve exactly to `y`. No nonexistent NFT_COUNTER
 symbol is requested; counter support is part of nftables core in this tree.
-The kernel build and actual firewall start/rules verification are still pending.
+The kernel and complete daily image builds passed; see
+[build metadata](declarative-daily-build.json). Actual firewall start/rules
+verification on the new image is still pending.
 No firewall policy was disabled or relaxed.

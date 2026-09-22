@@ -1,0 +1,13 @@
+
+===== > test -f /boot/bootargs.before-registers.txt && cp /boot/bootargs.before-registers.txt /boot/bootargs.txt && rm /boot/bootargs.before-registers.txt /boot/logo.xrgb && sync && cat /boot/bootargs.txt && echo REGISTER_DIAGNOSTIC_RESTORED =====
+test -f /boot/bootargs.before-registers.txt && cp /boot/bootargs.before-registers.txt /boot/bootargs.txt && rm /boot/bootargs.before-registers.txt /boot/logo.xrgb && sync && cat /boot/bootargs.txt && echo REGISTER_DIAGNOSTIC_RESTORED
+[?2004l
+bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init
+REGISTER_DIAGNOSTIC_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

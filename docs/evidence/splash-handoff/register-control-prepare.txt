@@ -1,0 +1,12 @@
+
+===== > test ! -e /boot/bootargs.before-registers.txt && test ! -e /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-registers.txt && sed -i "s/$/ iomem=relaxed/" /boot/bootargs.txt && sync && echo REGISTER_CONTROL_PREPARED =====
+test ! -e /boot/bootargs.before-registers.txt && test ! -e /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-registers.txt && sed -i "s/$/ iomem=relaxed/" /boot/bootargs.txt && sync && echo REGISTER_CONTROL_PREPARED
+[?2004l
+REGISTER_CONTROL_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

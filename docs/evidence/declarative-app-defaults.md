@@ -25,3 +25,9 @@ Host verification:
 No private backup was restored. An in-progress archive transfer was stopped
 before extraction and its partial temporary board files removed. Private backup
 contents remain outside the repository and are not part of the image workflow.
+
+The complete daily image subsequently built successfully from source `6b59f33`:
+`/nix/store/qmib01kmi68dwygxymmwga3b5h23gmal-k230-sd-image.img`
+(2,308,689,920 bytes). [Build metadata](declarative-daily-build.json) records the
+command and elapsed time, including the wait for the shared kernel build.
+Fresh-image board verification remains pending.

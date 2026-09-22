@@ -73,3 +73,33 @@ A preceding [read attempt through dd](splash-handoff/devmem-read-failed.txt)
 returned Bad address. Neither transcript contains successful register values.
 Comparison of actual normal/splash register state remains unverified; the
 probe failure is not evidence that a particular register caused the defect.
+
+
+### Successful comparison with temporary diagnostic boot arguments
+
+The kernel permitted the same read-only probe after temporarily adding
+`iomem=relaxed`. This is a diagnostic boot setting, not an image default.
+The [control preparation](splash-handoff/register-control-prepare.txt),
+[control boot](splash-handoff/register-control-boot.txt), and
+[normal snapshot](splash-handoff/normal-vo-registers-relaxed.txt) record the
+no-logo boot. The [logo preparation](splash-handoff/register-logo-prepare.txt),
+[logo boot](splash-handoff/register-logo-boot.txt), and
+[logo snapshot](splash-handoff/logo-vo-registers-relaxed.txt) record the same
+image with the known logo installed and Sway running.
+
+All sampled registers match except the framebuffer address and
+`VO_OSD4_ADDR_SEL_MODE` at VO offset `0x8a0`: the normal boot reads `0x1100`,
+while the logo boot reads `0x0100`. The framebuffer addresses are `0x1e300000`
+and `0x1e200000`, respectively, and can vary with allocation. Both snapshots
+have RGB565 format `2`, stride `0x8e`, DMA control `0x4f`, and identical sampled
+DSI timing values. This narrows the investigation but does not establish that
+the address-selection difference causes the physical defect; the probe samples
+only a subset of registers, and no corrective write was attempted.
+
+The [restoration transcript](splash-handoff/register-restore.txt) restores the
+original boot arguments and removes the logo before the
+[recovery reboot](splash-handoff/register-recovery-boot.txt).
+
+[Recovery inspection](splash-handoff/register-recovery.txt) confirms the original
+command line without `iomem=relaxed`, no logo or splash flag, `/dev/fb0` present,
+and active shell and seatd services.

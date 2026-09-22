@@ -1,0 +1,23 @@
+{
+  "source": "6b59f336d008c7aafc1d5fa0d9297ff6f2f4ace6",
+  "command": [
+    "nix",
+    "build",
+    ".#sdImage",
+    "--out-link",
+    "result-declarative-daily",
+    "--option",
+    "max-jobs",
+    "1",
+    "--option",
+    "cores",
+    "8",
+    "--option",
+    "substituters",
+    "https://cache.nixos.org"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds_including_kernel_wait": 734.86,
+  "image": "/nix/store/qmib01kmi68dwygxymmwga3b5h23gmal-k230-sd-image.img",
+  "bytes": 2308689920
+}

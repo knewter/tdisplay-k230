@@ -1,0 +1,17 @@
+
+===== > cat /proc/cmdline; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; test -e /dev/fb0 && echo FB0_PRESENT; SYSTEMD_PAGER=cat systemctl is-active shell seatd =====
+cat /proc/cmdline; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; test -e /dev/fb0 && echo FB0_PRESENT; SYSTEMD_PAGER=cat systemctl is-active shell seatd
+[?2004l
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd/init
+NO_LOGO
+NO_SPLASH_FLAG
+FB0_PRESENT
+active
+active
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
