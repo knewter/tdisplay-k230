@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/file.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <wayland-client.h>
@@ -37,6 +38,8 @@ static uint32_t *pixels;
 static int width, height, stride, mapped_size;
 static bool running = true, configured;
 static int press_x, press_y, touch_id = -1;
+static bool pointer_pressed;
+static uint32_t pointer_button_code;
 
 /* 5x7 source-controlled glyphs keep labels legible without fontconfig. */
 struct glyph { char c; uint8_t r[7]; };
@@ -48,7 +51,8 @@ static const struct glyph glyphs[] = {
  {'M',{17,27,21,21,17,17,17}}, {'N',{17,25,21,19,17,17,17}},
  {'O',{14,17,17,17,17,17,14}}, {'P',{30,17,17,30,16,16,16}},
  {'R',{30,17,17,30,20,18,17}}, {'S',{15,16,16,14,1,1,30}},
- {'T',{31,4,4,4,4,4,4}}, {'W',{17,17,17,21,21,27,17}},
+ {'T',{31,4,4,4,4,4,4}}, {'U',{17,17,17,17,17,17,14}},
+ {'W',{17,17,17,21,21,27,17}}, {'D',{30,17,17,17,17,17,30}},
  {' ',{0,0,0,0,0,0,0}}, {'-',{0,0,0,31,0,0,0}},
 };
 static const struct glyph *get_glyph(char c) {
@@ -107,16 +111,24 @@ static struct wl_buffer *make_buffer(void) {
   wl_shm_pool_destroy(pool); close(fd); wl_buffer_add_listener(b, &buffer_listener, NULL); return b;
 }
 static void layer_configure(void *d, struct zwlr_layer_surface_v1 *ls, uint32_t serial, uint32_t w, uint32_t h) {
-  zwlr_layer_surface_v1_ack_configure(ls, serial); if (configured) return;
-  width = (int)w; height = (int)h; if (width < 200 || height < 800) { fprintf(stderr, "k230-touch-launcher: portrait surface is too small\n"); running=false; return; }
-  buffer=make_buffer(); draw(); wl_surface_attach(surface, buffer, 0, 0); wl_surface_damage_buffer(surface, 0, 0, width, height); wl_surface_commit(surface); configured=true;
+  zwlr_layer_surface_v1_ack_configure(ls, serial);
+  if ((int)w == width && (int)h == height && configured) return;
+  width = (int)w; height = (int)h;
+  if (width < 200 || height < 800) { fprintf(stderr, "k230-touch-launcher: portrait surface is too small\n"); running=false; return; }
+  /* Keep an old server-owned buffer mapped through its release; resize events
+   * are rare and this avoids invalidating pixels still owned by Wayland. */
+  buffer=make_buffer(); draw(); wl_surface_attach(surface, buffer, 0, 0);
+  wl_surface_damage_buffer(surface, 0, 0, width, height); wl_surface_commit(surface); configured=true;
 }
 static void layer_closed(void *d, struct zwlr_layer_surface_v1 *ls) { running=false; }
 static const struct zwlr_layer_surface_v1_listener layer_listener = { .configure=layer_configure, .closed=layer_closed };
 static void pointer_enter(void*d,struct wl_pointer*p,uint32_t s,struct wl_surface*sf,wl_fixed_t x,wl_fixed_t y) { press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); }
 static void pointer_leave(void*d,struct wl_pointer*p,uint32_t s,struct wl_surface*sf) {}
 static void pointer_motion(void*d,struct wl_pointer*p,uint32_t t,wl_fixed_t x,wl_fixed_t y) { press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); }
-static void pointer_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint32_t b,uint32_t state) { if (state == WL_POINTER_BUTTON_STATE_RELEASED) release_at(press_x,press_y); }
+static void pointer_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint32_t b,uint32_t state) {
+  if (state == WL_POINTER_BUTTON_STATE_PRESSED && b == 0x110) { pointer_pressed=true; pointer_button_code=b; }
+  if (state == WL_POINTER_BUTTON_STATE_RELEASED && pointer_pressed && b == pointer_button_code) { pointer_pressed=false; release_at(press_x,press_y); }
+}
 static void pointer_axis(void*d,struct wl_pointer*p,uint32_t t,uint32_t a,wl_fixed_t v) {}
 static const struct wl_pointer_listener pointer_listener = { .enter=pointer_enter,.leave=pointer_leave,.motion=pointer_motion,.button=pointer_button,.axis=pointer_axis };
 static void touch_down(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,struct wl_surface*sf,int32_t id,wl_fixed_t x,wl_fixed_t y) { touch_id=id; press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); }
@@ -131,8 +143,15 @@ static void global_add(void*d,struct wl_registry*r,uint32_t n,const char*i,uint3
 static void global_remove(void*d,struct wl_registry*r,uint32_t n) {}
 static const struct wl_registry_listener registry_listener = { .global=global_add,.global_remove=global_remove };
 int main(int argc,char**argv) {
+ int lock_fd = -1;
  if(argc==2 && !strcmp(argv[1],"--layout")) { puts("568x1176: title; Terminal y=150 h=178; Monitor y=346 h=178; New term y=542 h=178; Back y=1034 h=112"); return 0; }
  if(argc!=1) { fprintf(stderr,"usage: k230-touch-launcher [--layout]\n"); return 2; }
+ const char *runtime = getenv("XDG_RUNTIME_DIR");
+ if (!runtime) { fprintf(stderr,"k230-touch-launcher: XDG_RUNTIME_DIR is unset\n"); return 1; }
+ char lock_path[512]; snprintf(lock_path, sizeof lock_path, "%s/k230-touch-launcher.lock", runtime);
+ lock_fd=open(lock_path,O_CREAT|O_RDWR,0600);
+ if(lock_fd < 0) { perror("k230-touch-launcher lock"); return 1; }
+ if(flock(lock_fd,LOCK_EX|LOCK_NB) < 0) return 0; /* Existing surface stays usable. */
  display=wl_display_connect(NULL); if(!display) { fprintf(stderr,"k230-touch-launcher: cannot connect to Wayland\n"); return 1; }
  struct wl_registry*r=wl_display_get_registry(display); wl_registry_add_listener(r,&registry_listener,NULL); wl_display_roundtrip(display);
  if(!compositor||!shm||!layer_shell) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, and layer-shell\n"); return 1; }
