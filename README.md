@@ -33,12 +33,36 @@ charge LED lights either way.
 | `tools/probe.py` | Passively sniff a serial port, optionally poke it with CR/LF |
 | `tools/bootcap.py` | Send `reboot` and capture the full boot log |
 | `tools/snap.sh` | Snapshot USB/serial/block state for diffing |
+| `tools/capture-feature.py` | Record a finite, named V4L2 camera evidence clip or still with FFmpeg |
 | `tools/watch.sh` | Poll for USB device changes (misses failed enumerations) |
 | `tools/kwatch.sh` | Follow the kernel log for USB events **including** failures |
 
 ```sh
 ./tools/console.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
 ```
+
+### Camera evidence clips
+
+Record one feature at a time from the host camera. The default is a 15-second
+raw-orientation H.264 MP4 suitable for the site; a JSON manifest next to it
+records the camera, timestamp, operator-declared touch provenance, description,
+and exact FFmpeg command. That metadata does not prove a real touch happened.
+
+```sh
+./tools/capture-feature.py keyboard-show --provenance real-touch \
+  --description 'Touch Keyboard, type a command, then dismiss it'
+
+./tools/capture-feature.py system-confirm --duration 12 --provenance injected \
+  --description 'Injected input opens System and cancels reboot'
+
+./tools/capture-feature.py terminal-still --still --rotate180 \
+  --description 'Terminal visible after boot; presentation rotation requested'
+```
+
+Use `--device /dev/videoN`, `--output-dir DIR`, and `--duration SECONDS` when
+needed. `--rotate180` changes only the recorded presentation; omit it to keep
+the camera's raw view. `--dry-run` writes only the manifest and prints the
+command, without opening the camera.
 
 ## Planning
 
