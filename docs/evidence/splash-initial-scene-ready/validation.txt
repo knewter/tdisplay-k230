@@ -1,0 +1,12 @@
+Validation for the integrated opt-in splash candidate, 2026-09-22.
+
+Nix kernel, optional compositor and default system build: PASS (integration-build.txt).
+Default configuration evaluation: PASS (default-config.json).
+openspec validate --all: 17 passed, 0 failed.
+python3 tools/blob-scan.py --no-vendor: PASS.
+python3 scripts/build_site.py: PASS, 58 pages, 7 tests, 1,142,547 bytes, 10.68 s.
+git diff --cached --check -- '*.md' '*.json' '*.nix': PASS.
+Four completed videos across the two scene trial directories validated with
+ffprobe as H.264, 1920x1080, yuv420p, limited range; see media-validation.json.
+
+These host checks do not establish power-on continuity or physical touch.

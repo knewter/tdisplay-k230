@@ -1,0 +1,17 @@
+from pathlib import Path
+import sys,subprocess,time
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-initial-scene-ready'
+cam=subprocess.Popen(['python3','tools/capture-feature.py','initial-scene-ready-controls','--output-dir',str(out),'--duration','65','--video-size','1920x1080','--rotate180','--provenance','injected','--description','Serial-controlled keyboard show/hide and display off/on on the corrected initial-scene image. Physical camera plus native frames; no real-finger claim.'],cwd=ROOT,stdout=open('/tmp/k230-ready-controls-camera.log','w'),stderr=subprocess.STDOUT)
+try:
+ time.sleep(4)
+ print(console('export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; pkill -USR2 -x wvkbd-mobintl; echo KEYBOARD_SHOW',3,out/'keyboard-show.txt'))
+ screenshot(out/'keyboard-native.png')
+ time.sleep(5)
+ print(console('pkill -USR1 -x wvkbd-mobintl; echo KEYBOARD_HIDE',3,out/'keyboard-hide.txt'))
+ print(console('export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg output DSI-1 power off; sleep 3; swaymsg output DSI-1 power on; sleep 3; systemctl is-active shell seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo READY_DPMS_DONE',10,out/'display-off-on.txt'))
+ screenshot(out/'after-dpms-native.png')
+finally:
+ cam.wait(timeout=90)
+ if cam.returncode:raise RuntimeError('camera capture failed')

@@ -876,6 +876,20 @@ DATA 1a888057276d30433c81d4a7866ddf19e2c2640737ff4a46c11f9f114603fabd  docs/evid
 DATA 356f7a499f10fcd9b7a488bcac72e27e1136e5cf57c783306c1e73c1df2df5d4  docs/evidence/splash-preserve-trial/rows-physical.jpg
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-preserve-trial/shell-native.png
 DATA 4a6e83eadde865c50360841244297b32a58e8ec7f96a2aea08026645edf5d68f  docs/evidence/splash-preserve-trial/shell-physical.jpg
+DATA a675bf43671b9c099e6fe33c436d0f955c8d95a729f414ace8d75dc1d5b2dafd  docs/evidence/splash-initial-scene-trial/20260922T221824Z-initial-scene-automatic-boot.mp4
+DATA cc1d078bdab03677cd5539ef41e6a08c2e8b8afe966c83d7fbfc9fa5a61b2f68  docs/evidence/splash-initial-scene-trial/20260922T222253Z-initial-scene-invalid-assets.mp4
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-trial/invalid-missing-native.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-trial/invalid-size-native.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-trial/shell-native.png
+DATA 4423e99ff3d309711ac9a8653d57b7c0ad8d49e67da1da494c6c0b5cc03259fd  docs/evidence/splash-initial-scene-trial/shell-physical.jpg
+DATA c2d6856150e7ffab2d38ad8766689ec4f2459c75c50b99b01f08c14b0201f8ef  docs/evidence/splash-initial-scene-ready/20260922T222835Z-initial-scene-panel-ready-boot.mp4
+DATA b9831514a542c77ac820a2e2fd4a611e817b50e7e3120e21cfeacf7416827420  docs/evidence/splash-initial-scene-ready/20260922T223311Z-initial-scene-ready-controls.mp4
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-ready/after-dpms-native.png
+DATA c0153647eb895d46e5a220986d181389d917fe1e6c808246a44dfd5fe46982b7  docs/evidence/splash-initial-scene-ready/controls-recovery-38s.png
+DATA cb6db86340520a8a1ec7bf6efa76bc40ce6bca085080982a9237fe6858ecc70e  docs/evidence/splash-initial-scene-ready/keyboard-native.png
+DATA d093fcf3768834ef40205f558e17832bf22d0404de0451b5430239377ed8690d  docs/evidence/splash-initial-scene-ready/panel-ready-shell.png
+DATA 15d4fdc1a82bae8c09d97218ba0ff9484480e969dd65d757e648342b5e8804a6  docs/evidence/splash-initial-scene-ready/panel-ready-transition.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-ready/shell-native.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

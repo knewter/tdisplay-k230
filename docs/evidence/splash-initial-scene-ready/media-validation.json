@@ -1,0 +1,49 @@
+{
+  "method": "FFprobe metadata, SHA-256 and visual review of sampled frames. Serial-controlled diagnostics; no physical touch proof. See README.md and video-audit.md for limitations.",
+  "videos": [
+    {
+      "path": "20260922T222835Z-initial-scene-panel-ready-boot.mp4",
+      "sha256": "c2d6856150e7ffab2d38ad8766689ec4f2459c75c50b99b01f08c14b0201f8ef",
+      "bytes": 12087473,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "120.000000",
+          "size": "12087473"
+        }
+      }
+    },
+    {
+      "path": "20260922T223311Z-initial-scene-ready-controls.mp4",
+      "sha256": "b9831514a542c77ac820a2e2fd4a611e817b50e7e3120e21cfeacf7416827420",
+      "bytes": 6703571,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "65.000000",
+          "size": "6703571"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+Integration worktree build of the carried kernel and optional Sway patch,
+2026-09-22. Defaults remain panelConsole=true and initialSplash=false.
+
+Command:
+  nix build .#packages.x86_64-linux.xuantie-kernel .#shell-compositor-initial-splash .#nixosConfigurations.k230.config.system.build.toplevel --out-link result-handoff-review --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Passed, exit 0.
+Outputs in argument order:
+  /nix/store/qd5d77dganzhzk1vj0kwzfy49nvc6aad-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie
+  /nix/store/d3rrknimwl3iwas0hzw1fyjs8mfnpz7a-sway-1.12
+  /nix/store/8ax8wxzj24p4vlyrfcx88aqnxkv3k5ik-nixos-system-nixos-26.11.20260919.20b1ddd
+
+Evaluation command for default-config.json:
+  nix eval --json .#nixosConfigurations.k230.config --apply 'cfg: { panelConsole = cfg.k230.panelConsole; initialSplash = cfg.k230.shell.initialSplash; compositor = cfg.k230.shell.compositor.outPath; hasInitialSplashEnvironment = cfg.systemd.services.shell.environment ? SWAY_K230_INITIAL_SPLASH; kernel = cfg.boot.kernelPackages.kernel.outPath; }'
+This confirms ordinary Sway is selected and the initial-splash environment
+variable is absent in the default service. It does not claim a battery boot.

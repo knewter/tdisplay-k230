@@ -1,0 +1,18 @@
+import sys,subprocess,time
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-initial-scene-trial'
+cam=subprocess.Popen(['python3','tools/capture-feature.py','initial-scene-invalid-assets','--output-dir',str(out),'--duration','90','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Runtime-only shell environment override tests missing then wrong-size initial-scene asset; ordinary shell must recover. Override removed and immutable service restored. Serial-controlled, no finger input.'],cwd=ROOT,stdout=open('/tmp/k230-invalid-splash-camera.log','w'),stderr=subprocess.STDOUT)
+try:
+    cmd="test ! -e /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && mkdir -p /run/systemd/system/shell.service.d && printf '[Service]\\nEnvironment=SWAY_K230_INITIAL_SPLASH=/tmp/k230-invalid-logo.xrgb\\n' > /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && systemctl daemon-reload && systemctl restart shell; echo MISSING_ASSET_RESTARTED"
+    print(console(cmd,12,out/'invalid-missing-restart.txt'))
+    print(console("systemctl is-active shell; journalctl -b -u shell --no-pager | grep -E 'Unable to open K230|K230 initial splash'; echo MISSING_ASSET_INSPECTED",3,out/'invalid-missing-inspection.txt'))
+    screenshot(out/'invalid-missing-native.png')
+    print(console("printf bad > /tmp/k230-invalid-logo.xrgb; systemctl restart shell; echo BAD_SIZE_RESTARTED",12,out/'invalid-size-restart.txt'))
+    print(console("systemctl is-active shell; journalctl -b -u shell --no-pager | grep -E 'wrong size|K230 initial splash'; echo BAD_SIZE_INSPECTED",3,out/'invalid-size-inspection.txt'))
+    screenshot(out/'invalid-size-native.png')
+finally:
+    print(console('rm -f /run/systemd/system/shell.service.d/99-invalid-splash-test.conf /tmp/k230-invalid-logo.xrgb; systemctl daemon-reload; systemctl restart shell; echo IMMUTABLE_SERVICE_RESTORED',12,out/'invalid-restore.txt'))
+    print(console("systemctl is-active shell; systemctl show shell -p DropInPaths -p Environment; echo INVALID_TRIAL_CLEAN",3,out/'invalid-cleanup.txt'))
+cam.wait(timeout=100)
+if cam.returncode:raise RuntimeError('camera failed')

@@ -1,0 +1,12 @@
+
+===== > rm -f /run/systemd/system/shell.service.d/99-invalid-splash-test.conf /tmp/k230-invalid-logo.xrgb; systemctl daemon-reload; systemctl restart shell; echo IMMUTABLE_SERVICE_RESTORED =====
+rm -f /run/systemd/system/shell.service.d/99-invalid-splash-test.conf /tmp/k230-invalid-logo.xrgb; systemctl daemon-reload; systemctl restart shell; echo IMMUTABLE_SERVICE_RESTORED
+[?2004l
+IMMUTABLE_SERVICE_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

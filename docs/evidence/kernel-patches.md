@@ -193,3 +193,55 @@ kernel handoff implementation adopts the running display state without the
 fbdev modeset and has hardware evidence for both splash and no-splash boots.
 If the first-modeset measurement shows a dark interval, restore the reset and
 init work in `prepare()` as task 4.4 requires; do not hide that fallback.
+
+## First-VO/DSI handoff preservation — opt-in splash path
+
+The first stage-1 preservation patch deliberately stopped at the panel reset,
+DCS sequence, and fbdev.  The first real DRM client still runs the Canaan
+runtime-PM commit order: CRTC enable calls `canaan_vo_enable_crtc()`, then the
+encoder calls `canaan_dsi_encoder_enable()`, then the active plane update
+writes the Linux framebuffer and `canaan_vo_flush_config()` loads it.  In the
+pinned source this is `drm_atomic_helper_commit_tail_rpm()`, which enables
+modesets before committing active planes.
+
+The diagnostic implementation is carried in `nix/kernel.nix`. Each VO and DSI driver
+reads the runtime `/chosen/canaan,stage1-splash` boolean into an independent
+one-shot flag.  It bypasses its first hardware reprogramming only when the
+adjusted mode exactly matches the U-Boot RM69A10 mode: 49.5 MHz, 568x1232,
+hsync 668..708 of 748, and vsync 1236..1252 of 1268.  On that path the DSI
+still calls `drm_panel_prepare()` and `drm_panel_enable()`: the panel's
+existing one-shot bookkeeping consumes its flag without reset or DCS writes.
+The plane update and register load in that same atomic commit remain the
+handoff point; this is not framebuffer adoption.
+
+The VO bypass writes only the IRQ1 timing value which
+`canaan_vo_set_timing()` would calculate, leaving visual registers alone;
+normal DRM vblank enable remains responsible for its interrupt-enable bit.
+A timing mismatch logs a warning and uses the ordinary VO/DSI setup.  The
+panel sees that the DSI did not authorize preservation, clears its flag, then
+explicitly restores the reset GPIO to output-high before its normal reset
+pulses; a failure to set that direction is returned from `prepare()`.  A
+disable before the first enable clears all three one-shot states, so a later
+enable is also ordinary.
+
+The exact kernel cross-build and physical comparison are now recorded in
+`docs/evidence/splash-preserve-trial/README.md`: three automatic warm boots
+ended with the expected portrait shell; successive color updates were visible;
+removing the logo exercised full initialization and the framebuffer console;
+and display off/on exercised later full prepare with visible shell recovery.
+The first preservation-only image still had an approximately 1.1–1.2 second
+compositor startup dark gap. The kernel patch alone does not solve that gap,
+and the camera did not resolve the default keyboard well enough for complete
+keyboard geometry acceptance. Cold/battery boot and remaining real-touch
+acceptance are still open. The daily `k230.panelConsole=true` choice omits the
+logo and does not select the preservation path.
+
+The source does not independently read back or prove every inherited U-Boot
+register. The runtime flag and exact mode are the contract for this vendor
+path, with the normal initialization fallback retained. The separate opt-in
+Sway scene seed addresses the measured empty first compositor frame.
+
+**Drop when:** the physical first-frame evidence shows that ordinary VO/DSI
+programming is the correct handoff, or a supported DRM handoff replaces this
+one-shot vendor-driver experiment.  Do not retain it merely because the
+stage-1 flag is present.

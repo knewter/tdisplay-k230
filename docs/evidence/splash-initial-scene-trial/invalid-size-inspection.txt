@@ -1,0 +1,16 @@
+
+===== > systemctl is-active shell; journalctl -b -u shell --no-pager | grep -E 'wrong size|K230 initial splash'; echo BAD_SIZE_INSPECTED =====
+systemctl is-active shell; journalctl -b -u shell --no-pager | grep -E 'wrong size|K230 initial splash'; echo BAD_SIZE_INSPECTED
+[?2004l
+active
+Mar 17 19:56:41 nixos sway[719]: 00:00:01.045 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 20:00:06 nixos sway[898]: 00:00:00.341 [ERROR] [sway/tree/output.c:110] Unable to open K230 initial splash asset: No such file or directory
+Mar 17 20:00:28 nixos sway[948]: 00:00:00.327 [ERROR] [sway/tree/output.c:121] K230 initial splash asset has wrong size (need 2799104 bytes)
+BAD_SIZE_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

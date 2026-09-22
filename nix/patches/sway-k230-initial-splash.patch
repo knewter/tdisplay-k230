@@ -1,0 +1,395 @@
+--- a/include/sway/output.h
++++ b/include/sway/output.h
+@@ -38,6 +38,11 @@
+ 	// is black.
+ 	struct wlr_scene_rect *fullscreen_background;
+ 
++	// Opt-in K230 boot-logo scene buffer, removed only after a replacement
++	// scene buffer has a matching compositor presentation event.
++	struct wlr_scene_buffer *k230_initial_splash;
++	uint32_t k230_initial_splash_replacement_commit_seq;
++
+ 	struct wlr_output *wlr_output;
+ 	struct wlr_scene_output *scene_output;
+ 	struct sway_server *server;
+@@ -84,6 +89,15 @@
+ 
+ void output_destroy(struct sway_output *output);
+ 
++void output_k230_initial_splash_maybe_create(struct sway_output *output);
++
++void output_k230_initial_splash_update_position(struct sway_output *output);
++
++bool output_k230_initial_splash_has_replacement(struct sway_output *output);
++
++void output_k230_initial_splash_handle_present(struct sway_output *output,
++	const struct wlr_output_event_present *event);
++
+ void output_begin_destroy(struct sway_output *output);
+ 
+ struct sway_output *output_from_wlr_output(struct wlr_output *output);
+--- a/sway/tree/output.c
++++ b/sway/tree/output.c
+@@ -1,11 +1,20 @@
+ #include <assert.h>
+ #include <ctype.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <stdint.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <strings.h>
++#include <sys/stat.h>
++#include <unistd.h>
++#include <drm_fourcc.h>
++#include <wlr/interfaces/wlr_buffer.h>
+ #include <wlr/types/wlr_ext_workspace_v1.h>
+ #include "sway/tree/workspace.h"
+ #include "sway/ipc-server.h"
+ #include "sway/layers.h"
++#include "sway/scene_descriptor.h"
+ #include "sway/output.h"
+ #include "sway/tree/arrange.h"
+ #include "sway/tree/workspace.h"
+@@ -13,6 +22,147 @@
+ #include "log.h"
+ #include "util.h"
+ 
++#define K230_INITIAL_SPLASH_ENV "SWAY_K230_INITIAL_SPLASH"
++#define K230_INITIAL_SPLASH_OUTPUT_ENV "SWAY_K230_INITIAL_SPLASH_OUTPUT"
++#define K230_INITIAL_SPLASH_WIDTH 568
++#define K230_INITIAL_SPLASH_HEIGHT 1232
++#define K230_INITIAL_SPLASH_STRIDE (K230_INITIAL_SPLASH_WIDTH * 4)
++#define K230_INITIAL_SPLASH_SIZE \
++	((size_t)K230_INITIAL_SPLASH_STRIDE * K230_INITIAL_SPLASH_HEIGHT)
++
++struct k230_initial_splash_buffer {
++	struct wlr_buffer base;
++	uint8_t data[];
++};
++
++static void k230_initial_splash_buffer_destroy(struct wlr_buffer *wlr_buffer) {
++	struct k230_initial_splash_buffer *buffer =
++		wl_container_of(wlr_buffer, buffer, base);
++	wlr_buffer_finish(wlr_buffer);
++	free(buffer);
++}
++
++static bool k230_initial_splash_buffer_begin_data_ptr_access(
++		struct wlr_buffer *wlr_buffer, uint32_t flags, void **data,
++		uint32_t *format, size_t *stride) {
++	struct k230_initial_splash_buffer *buffer =
++		wl_container_of(wlr_buffer, buffer, base);
++
++	if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE) {
++		return false;
++	}
++
++	*data = buffer->data;
++	*format = DRM_FORMAT_XRGB8888;
++	*stride = K230_INITIAL_SPLASH_STRIDE;
++	return true;
++}
++
++static void k230_initial_splash_buffer_end_data_ptr_access(
++		struct wlr_buffer *wlr_buffer) {
++	(void)wlr_buffer;
++	// The immutable asset remains allocated until wlroots releases the buffer.
++}
++
++static const struct wlr_buffer_impl k230_initial_splash_buffer_impl = {
++	.destroy = k230_initial_splash_buffer_destroy,
++	.begin_data_ptr_access = k230_initial_splash_buffer_begin_data_ptr_access,
++	.end_data_ptr_access = k230_initial_splash_buffer_end_data_ptr_access,
++};
++
++static bool k230_initial_splash_read(int fd, uint8_t *data, size_t size) {
++	while (size > 0) {
++		ssize_t n = read(fd, data, size);
++		if (n < 0 && errno == EINTR) {
++			continue;
++		}
++		if (n <= 0) {
++			return false;
++		}
++		data += n;
++		size -= n;
++	}
++	return true;
++}
++
++static struct wlr_scene_buffer *k230_initial_splash_create(
++		struct sway_output *output) {
++	const char *path = getenv(K230_INITIAL_SPLASH_ENV);
++	const char *target = getenv(K230_INITIAL_SPLASH_OUTPUT_ENV);
++	if (path == NULL || path[0] == '\0' || target == NULL || target[0] == '\0') {
++		return NULL;
++	}
++	if (strcmp(target, output->wlr_output->name) != 0) {
++		return NULL;
++	}
++
++	struct wlr_output_mode *mode = wlr_output_preferred_mode(output->wlr_output);
++	if (mode == NULL || mode->width != K230_INITIAL_SPLASH_WIDTH ||
++			mode->height != K230_INITIAL_SPLASH_HEIGHT) {
++		sway_log(SWAY_ERROR, "%s needs a %dx%d preferred mode",
++			K230_INITIAL_SPLASH_ENV, K230_INITIAL_SPLASH_WIDTH,
++			K230_INITIAL_SPLASH_HEIGHT);
++		return NULL;
++	}
++
++	int fd = open(path, O_RDONLY | O_CLOEXEC);
++	if (fd < 0) {
++		sway_log_errno(SWAY_ERROR, "Unable to open K230 initial splash asset");
++		return NULL;
++	}
++
++	struct stat st;
++	if (fstat(fd, &st) < 0) {
++		sway_log_errno(SWAY_ERROR, "Unable to stat K230 initial splash asset");
++		close(fd);
++		return NULL;
++	}
++	if (!S_ISREG(st.st_mode) || st.st_size != (off_t)K230_INITIAL_SPLASH_SIZE) {
++		sway_log(SWAY_ERROR, "K230 initial splash asset has wrong size (need %zu bytes)",
++			K230_INITIAL_SPLASH_SIZE);
++		close(fd);
++		return NULL;
++	}
++
++	struct k230_initial_splash_buffer *buffer =
++		calloc(1, sizeof(*buffer) + K230_INITIAL_SPLASH_SIZE);
++	if (buffer == NULL) {
++		sway_log(SWAY_ERROR, "Unable to allocate K230 initial splash asset");
++		close(fd);
++		return NULL;
++	}
++
++	bool read_ok = k230_initial_splash_read(fd, buffer->data,
++		K230_INITIAL_SPLASH_SIZE);
++	close(fd);
++	if (!read_ok) {
++		sway_log(SWAY_ERROR, "Unable to read complete K230 initial splash asset");
++		free(buffer);
++		return NULL;
++	}
++
++	wlr_buffer_init(&buffer->base, &k230_initial_splash_buffer_impl,
++		K230_INITIAL_SPLASH_WIDTH, K230_INITIAL_SPLASH_HEIGHT);
++	/*
++	 * This is deliberately a root layer, not output->layers.shell_bottom:
++	 * output_create puts the latter under disabled root->staging until the
++	 * first transaction. The target output is selected by exact name and this
++	 * node is positioned when that transaction establishes layout coordinates.
++	 * It stays above layer-shell backgrounds and below normal toplevels/panel.
++	 */
++	struct wlr_scene_buffer *scene_buffer = wlr_scene_buffer_create(
++		root->layers.shell_bottom, &buffer->base);
++	if (scene_buffer == NULL) {
++		sway_log(SWAY_ERROR, "Unable to add K230 initial splash to scene");
++		wlr_buffer_drop(&buffer->base);
++		return NULL;
++	}
++	wlr_buffer_drop(&buffer->base);
++	sway_log(SWAY_INFO, "K230 initial splash seeded output=%s asset=%s",
++		output->wlr_output->name, path);
++	return scene_buffer;
++}
++
+ enum wlr_direction opposite_direction(enum wlr_direction d) {
+ 	switch (d) {
+ 	case WLR_DIRECTION_UP:
+@@ -147,6 +297,136 @@
+ 	return output;
+ }
+ 
++void output_k230_initial_splash_maybe_create(struct sway_output *output) {
++	if (output->k230_initial_splash == NULL) {
++		output->k230_initial_splash = k230_initial_splash_create(output);
++	}
++}
++
++void output_k230_initial_splash_update_position(struct sway_output *output) {
++	if (output->k230_initial_splash != NULL) {
++		wlr_scene_node_set_position(&output->k230_initial_splash->node,
++			output->lx, output->ly);
++	}
++}
++
++struct k230_initial_splash_ready_data {
++	struct wlr_scene_buffer *initial_splash;
++	bool initial_splash_seen;
++	bool panel_visible;
++	bool view_visible;
++};
++
++static bool k230_initial_splash_node_has_descriptor(struct wlr_scene_node *node,
++		enum sway_scene_descriptor_type type, void **data) {
++	for (; node != NULL; ) {
++		void *desc = scene_descriptor_try_get(node, type);
++		if (desc != NULL) {
++			*data = desc;
++			return true;
++		}
++		if (node->parent == NULL) {
++			break;
++		}
++		node = &node->parent->node;
++	}
++	return false;
++}
++
++static void k230_initial_splash_ready_iterator(
++		struct wlr_scene_buffer *buffer, int sx, int sy, void *data) {
++	(void)sx;
++	(void)sy;
++	struct k230_initial_splash_ready_data *ready = data;
++	/*
++	 * scene_buffer_get_texture() may upload the immutable logo, release its
++	 * wlr_buffer and retain only its texture. Identity must therefore win over
++	 * the live-buffer test below.
++	 */
++	if (buffer == ready->initial_splash) {
++		ready->initial_splash_seen = true;
++		return;
++	}
++	/*
++	 * Readiness only concerns Wayland view and layer-shell replacements. The
++	 * public surface API preserves attached-buffer state after wlroots uploads
++	 * and releases a scene buffer, unlike the private scene texture field.
++	 */
++	struct wlr_scene_surface *scene_surface =
++		wlr_scene_surface_try_from_buffer(buffer);
++	if (scene_surface == NULL || !wlr_surface_has_buffer(scene_surface->surface)) {
++		return;
++	}
++
++	/*
++	 * shell_background is below the placeholder in the global scene order.
++	 * Ignore it so a black swaybg buffer cannot retire the logo. This iterator
++	 * checks enabled output-intersecting Wayland surfaces; it does not infer
++	 * occlusion from their order.
++	 */
++	if (!ready->initial_splash_seen) {
++		return;
++	}
++
++	void *desc;
++	if (k230_initial_splash_node_has_descriptor(&buffer->node,
++			SWAY_SCENE_DESC_VIEW, &desc)) {
++		ready->view_visible = true;
++	}
++	if (k230_initial_splash_node_has_descriptor(&buffer->node,
++			SWAY_SCENE_DESC_LAYER_SHELL, &desc)) {
++		struct sway_layer_surface *layer_surface = desc;
++		if (layer_surface->mapped &&
++				layer_surface->layer_surface->current.layer ==
++				ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM &&
++				layer_surface->layer_surface->namespace != NULL &&
++				strcmp(layer_surface->layer_surface->namespace, "panel") == 0) {
++			ready->panel_visible = true;
++		}
++	}
++}
++
++bool output_k230_initial_splash_has_replacement(struct sway_output *output) {
++	if (output->k230_initial_splash == NULL || output->scene_output == NULL) {
++		return false;
++	}
++
++	struct k230_initial_splash_ready_data ready = {
++		.initial_splash = output->k230_initial_splash,
++	};
++	wlr_scene_output_for_each_buffer(output->scene_output,
++		k230_initial_splash_ready_iterator, &ready);
++	return ready.view_visible && ready.panel_visible;
++}
++
++void output_k230_initial_splash_handle_present(struct sway_output *output,
++		const struct wlr_output_event_present *event) {
++	if (output->k230_initial_splash == NULL ||
++			event->commit_seq !=
++			output->k230_initial_splash_replacement_commit_seq) {
++		return;
++	}
++
++	/*
++	 * The sequence is recorded only after a state built with a non-placeholder
++	 * scene buffer commits successfully. Matching it to this compositor event
++	 * avoids treating an earlier scanout or a raw client map as readiness.
++	 */
++	sway_log(SWAY_INFO, "K230 initial splash removed output=%s commit_seq=%u",
++		output->wlr_output->name, event->commit_seq);
++	wlr_scene_node_destroy(&output->k230_initial_splash->node);
++	output->k230_initial_splash = NULL;
++	output->k230_initial_splash_replacement_commit_seq = 0;
++}
++
++static void output_k230_initial_splash_destroy(struct sway_output *output) {
++	if (output->k230_initial_splash != NULL) {
++		wlr_scene_node_destroy(&output->k230_initial_splash->node);
++		output->k230_initial_splash = NULL;
++		output->k230_initial_splash_replacement_commit_seq = 0;
++	}
++}
++
+ void output_enable(struct sway_output *output) {
+ 	if (!sway_assert(!output->enabled, "output is already enabled")) {
+ 		return;
+@@ -269,6 +549,7 @@
+ 		return;
+ 	}
+ 
++	output_k230_initial_splash_destroy(output);
+ 	destroy_scene_layers(output);
+ 	list_free(output->workspaces);
+ 	list_free(output->current.workspaces);
+@@ -293,6 +574,7 @@
+ 	list_del(root->outputs, index);
+ 	output->enabled = false;
+ 
++	output_k230_initial_splash_destroy(output);
+ 	destroy_layers(output);
+ 	output_evacuate(output);
+ 	sway_ext_workspace_output_disable(output);
+--- a/sway/desktop/output.c
++++ b/sway/desktop/output.c
+@@ -303,8 +303,12 @@
+ 		}
+ 	}
+ 
++	bool replacement = output_k230_initial_splash_has_replacement(output);
+ 	if (!wlr_output_commit_state(output->wlr_output, &pending)) {
+ 		sway_log(SWAY_ERROR, "Page-flip failed on output %s", output->wlr_output->name);
++	} else if (replacement) {
++		output->k230_initial_splash_replacement_commit_seq =
++			output->wlr_output->commit_seq;
+ 	}
+ 	wlr_output_state_finish(&pending);
+ 	return 0;
+@@ -476,6 +480,7 @@
+ 
+ 	output->last_presentation = output_event->when;
+ 	output->refresh_nsec = output_event->refresh;
++	output_k230_initial_splash_handle_present(output, output_event);
+ }
+ 
+ static void handle_request_state(struct wl_listener *listener, void *data) {
+@@ -578,6 +583,7 @@
+ 
+ 	output->server = server;
+ 	output->scene_output = scene_output;
++	output_k230_initial_splash_maybe_create(output);
+ 
+ 	wl_signal_add(&root->output_layout->events.destroy, &output->layout_destroy);
+ 	output->layout_destroy.notify = handle_layout_destroy;
+--- a/sway/desktop/transaction.c
++++ b/sway/desktop/transaction.c
+@@ -702,6 +702,7 @@
+ 			wlr_scene_node_set_position(&output->layers.shell_top->node, output->lx, output->ly);
+ 			wlr_scene_node_set_position(&output->layers.shell_overlay->node, output->lx, output->ly);
+ 			wlr_scene_node_set_position(&output->layers.session_lock->node, output->lx, output->ly);
++			output_k230_initial_splash_update_position(output);
+ 
+ 			arrange_output(output, output->width, output->height);
+ 		}

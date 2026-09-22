@@ -232,3 +232,15 @@ and the same-kernel missing-logo console fallback. It also records a measured
 approximately 1.1–1.2 second camera-visible dark gap before Sway content.
 The candidate remains separate from the daily default; seamless handoff is
 not proved.
+
+## Initial compositor scene candidate
+
+The [first scene trial](splash-initial-scene-trial/README.md) removed the
+previous long dark interval from the sampled transition but failed to retire
+its logo node because it expected the wrong bar layer. The
+[corrected candidate](splash-initial-scene-ready/README.md) uses the actual
+mapped Swaybar panel, records both seed and removal, and again shows no dark
+frame in the dense warm-boot transition samples. The carried kernel and
+optional compositor build successfully; the daily defaults remain the console
+and ordinary Sway. This is progress toward the power-on handoff requirement,
+not its final acceptance or a claim of uninterrupted animation.

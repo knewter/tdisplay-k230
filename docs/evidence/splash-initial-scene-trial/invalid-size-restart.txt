@@ -1,0 +1,12 @@
+
+===== > printf bad > /tmp/k230-invalid-logo.xrgb; systemctl restart shell; echo BAD_SIZE_RESTARTED =====
+printf bad > /tmp/k230-invalid-logo.xrgb; systemctl restart shell; echo BAD_SIZE_RESTARTED
+[?2004l
+BAD_SIZE_RESTARTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

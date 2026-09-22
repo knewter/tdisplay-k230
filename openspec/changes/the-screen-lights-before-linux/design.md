@@ -360,7 +360,7 @@ layers initially live under disabled staging, so merely creating it in an
 output layer before `request_modeset()` is insufficient.
 
 Place the placeholder above background clients and below normal shell content.
-Keep it until an actual toplevel buffer and the top-layer bar are included in
+Keep it until an actual toplevel buffer and the mapped Swaybar `panel` surface are included in
 a successful output commit and the matching presentation event is observed.
 A mapped descriptor, background-only frame, successful TEST_ONLY call or an
 unrelated presentation does not meet this condition. Presentation events are
@@ -372,3 +372,8 @@ the option is disabled. Missing or invalid assets must log a clear error and
 allow the ordinary shell to start. Do not depend on home state. Cold boot,
 normal no-logo shell, display re-enable and touch acceptance remain required;
 a draft or passing cross-build does not enable the new default.
+
+The pinned Swaybar uses `ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM` with namespace
+`panel` in normal dock mode (`swaybar/bar.c:105`), not the top layer.
+The readiness predicate must follow this actual surface; the first diagnostic
+image seeded the logo but never retired it because it checked the wrong layer.

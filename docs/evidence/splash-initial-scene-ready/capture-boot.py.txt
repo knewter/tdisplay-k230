@@ -1,0 +1,25 @@
+from pathlib import Path
+import subprocess,time,sys
+sys.path.insert(0,'/tmp')
+from k230_demo import ROOT,console,screenshot
+trial=Path('/tmp/k230-preserve-splash-image')
+image=(trial/'result-initial-splash-panel-image').resolve(strict=True)
+out=ROOT/'docs/evidence/splash-initial-scene-ready';out.mkdir(parents=True,exist_ok=True)
+log=out/'image-flash.txt'
+if log.exists():raise SystemExit('Existing trial transcript: refuse overwrite')
+flash=subprocess.Popen(['flock','-w','5','/tmp/k230-board.lock','python3','tools/ums-session.py','--out',str(log),'--flash',str(image),'--expected-sectors','249872384','--check-usb-host'],cwd=ROOT,stdout=open('/tmp/k230-initial-scene-ready-flash.log','w'),stderr=subprocess.STDOUT)
+cam=None
+try:
+ while flash.poll() is None:
+  s=log.read_text(errors='replace') if log.exists() else ''
+  if cam is None and 'flash.sh exit status 0;' in s:
+   cam=subprocess.Popen(['python3','tools/capture-feature.py','initial-scene-panel-ready-boot','--output-dir',str(out),'--duration','120','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Isolated source-built display preservation plus opt-in initial Sway logo scene image. Camera starts after successful write, before U-Boot reset; automatic logo-owner-to-Sway startup. USB attached, serial reset, no real-touch or battery claim.'],cwd=ROOT,stdout=open('/tmp/k230-initial-scene-ready-camera.log','w'),stderr=subprocess.STDOUT)
+  time.sleep(.5)
+ if flash.returncode:raise RuntimeError(f'flash/boot failed {flash.returncode}: inspect board state before further action')
+ if cam is None:raise RuntimeError('boot camera never started')
+ print(console('export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell seatd firewall; systemctl --no-pager --full status k230-drm-splash; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare"; echo INITIAL_SCENE_READY_INSPECTED',6,out/'inspection.txt'))
+ screenshot(out/'shell-native.png')
+ cam.wait(timeout=130)
+ if cam.returncode:raise RuntimeError('camera failed')
+finally:
+ if cam is not None and cam.poll() is None:cam.wait(timeout=130)

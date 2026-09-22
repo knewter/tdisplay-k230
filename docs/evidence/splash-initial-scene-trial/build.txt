@@ -1,0 +1,17 @@
+Opt-in initial Sway scene trial, 2026-09-22.
+Source: 06cd7a854e0f4287b83425007acc836c28225c16 on diagnostic/preserve-splash-image.
+Narrow compositor build (source 93b1cca):
+  nix build .#shell-compositor-initial-splash --out-link result-initial-splash --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Passed, exit 0.
+Compositor output: /nix/store/qda6rak0mxjkag5vsi2kkbh57x29dsjc-sway-1.12
+
+Image build in /tmp/k230-preserve-splash-image:
+  nix build .#sdImage --out-link result-initial-splash-image --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Passed, exit 0.
+Derivation: /nix/store/x3qwjhxvwmngwcz07b1qjmw342drjzvn-k230-sd-image.img.drv
+System: /nix/store/py3kvqky9pjsc4zw7n0lgh0by3fnn9n7-nixos-system-nixos-26.11.20260919.20b1ddd
+Image: /nix/store/p7jwmbcgwqd4fcq3490c7fs2pbi0mqj7-k230-sd-image.img
+Bytes: 2308694016
+SHA-256: 8aaa63910a49f8c57fafb92a98fef52990f9edbaaffa76796dcbea013d78c873
+Same kernel as the preservation-only trial; this image additionally enables
+k230.shell.initialSplash. No home restore or private network configuration.

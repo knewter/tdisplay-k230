@@ -1,0 +1,20 @@
+Initial Sway scene with actual Swaybar readiness, 2026-09-22.
+Source: 12c1b0e549d4ef0466ba9d904dff92ea403e31e9 on diagnostic/preserve-splash-image.
+Compositor source: 56b60c7 on diagnostic/sway-initial-splash.
+Narrow compositor build in /tmp/k230-stage1-first-vo-dsi:
+  nix build .#shell-compositor-initial-splash --out-link result-initial-splash-panel --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Passed, exit 0.
+Compositor output: /nix/store/d3rrknimwl3iwas0hzw1fyjs8mfnpz7a-sway-1.12
+Compositor derivation: /nix/store/8w1lb5vkhjag537kkmggdra7yfp9j5s9-sway-1.12.drv
+
+Image build in /tmp/k230-preserve-splash-image:
+  nix build .#sdImage --out-link result-initial-splash-panel-image --option max-jobs 1 --option cores 8 --option substituters https://cache.nixos.org
+Passed, exit 0.
+Image derivation: /nix/store/a8h9xh8fxpbg63v2r1zqgh5pvp056igf-k230-sd-image.img.drv
+Image: /nix/store/77pdgrcd1ygz79r61xv70nkvp6hkq09v-k230-sd-image.img
+Bytes: 2308694016
+SHA-256: df47afb9a6a777c5e5c649e3829d563a6b5850443e19373e1cdc3fb44c28eb39
+Uses the same first-enable preservation kernel as 671d404. Initial scene
+readiness recognizes the mapped bottom-layer panel namespace and an actual
+Wayland view surface, then matches the successful commit's present event.
+No home restore or private network configuration.

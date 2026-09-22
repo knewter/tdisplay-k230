@@ -1,0 +1,25 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg output DSI-1 power off; sleep 3; swaymsg output DSI-1 power on; sleep 3; systemctl is-active shell seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo READY_DPMS_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg output DSI-1 power off; sleep 3; swaymsg output DSI-1 power on; sleep 3; systemctl is-active shell seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo READY_DPMS_DONE
+[?2004l
+[  291.262248] canaan-panel-dsi 90850000.dsi.0: RDDID (0x04) failed: -22
+[  291.289354] canaan-mipi-dsi 90850000.dsi: DCS read 0x0a: panel did not answer (status 0x50015)
+[  291.298022] canaan-panel-dsi 90850000.dsi.0: RDDPM (0x0A) failed: -110
+active
+active
+active
+[    2.771713] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+[   48.726746] canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update
+[   48.726772] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it
+[   48.726781] canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update
+[  290.922197] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+Mar 17 19:56:41 nixos sway[726]: 00:00:01.013 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 19:56:42 nixos sway[726]: 00:00:02.323 [INFO] [sway/tree/output.c:415] K230 initial splash removed output=DSI-1 commit_seq=6
+READY_DPMS_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

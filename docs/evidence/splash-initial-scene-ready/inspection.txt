@@ -1,0 +1,50 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell seatd firewall; systemctl --no-pager --full status k230-drm-splash; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; dmesg | grep -E "stage 1|PHY_STATUS|canaan_panel_prepare"; echo INITIAL_SCENE_READY_INSPECTED =====
+export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell seatd firewall; systemctl --no-pager --full status k230-drm-splash; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; dmesg | gr 
+ep -E "stage 1|PHY_STATUS|canaan_panel_prepare"; echo INITIAL_SCENE_READY_INSPECTED
+[?2004l
+/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd/init
+/proc/device-tree/chosen/canaan,stage1-splash
+ls: cannot access '/dev/fb0': No such file or directory
+active
+active
+active
+○ k230-drm-splash.service - Static DRM owner for the K230 stage-1 splash
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/k230-drm-splash.service\/etc/systemd/system/k230-drm-splash.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+     Active: inactive (dead) since Tue 2026-03-17 19:56:41 UTC; 1min 0s ago
+   Duration: 6.025s
+ Invocation: bbd19ad4abd64a408ecbcc5ee7426380
+    Process: 550 ExecStart=/nix/store/qkvxyd8cajqsz2ablbngzxnzsn4a62cn-k230-drm-splash-riscv64-unknown-linux-gnu-0.1/bin/k230-drm-splash --ready-file /run/k230-drm-splash/state (code=exited, status=0/SUCCESS)
+   Main PID: 550 (code=exited, status=0/SUCCESS)
+         IP: 0B in, 0B out
+         IO: 2.8M read, 0B written
+   Mem peak: 5.9M
+        CPU: 74ms
+
+Mar 17 19:56:35 nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+Mar 17 19:56:35 nixos k230-drm-splash[550]: k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+Mar 17 19:56:37 nixos k230-drm-splash[550]: k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+Mar 17 19:56:41 nixos k230-drm-splash[550]: k230-drm-splash: successor replaced fb 49; releasing owner
+Mar 17 19:56:41 nixos systemd[1]: k230-drm-splash.service: Deactivated successfully.
+Mar 17 19:56:41 nixos systemd[1]: k230-drm-splash.service: Consumed 74ms CPU time over 6.025s wall clock time, 5.9M memory peak, 2.8M read from disk.
+Mar 17 19:56:35 nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+Mar 17 19:56:35 nixos k230-drm-splash[550]: k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+Mar 17 19:56:37 nixos k230-drm-splash[550]: k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+Mar 17 19:56:41 nixos k230-drm-splash[550]: k230-drm-splash: successor replaced fb 49; releasing owner
+Mar 17 19:56:41 nixos systemd[1]: k230-drm-splash.service: Deactivated successfully.
+Mar 17 19:56:41 nixos systemd[1]: k230-drm-splash.service: Consumed 74ms CPU time over 6.025s wall clock time, 5.9M memory peak, 2.8M read from disk.
+Mar 17 19:56:41 nixos sway[726]: 00:00:01.013 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 19:56:42 nixos sway[726]: 00:00:02.323 [INFO] [sway/tree/output.c:415] K230 initial splash removed output=DSI-1 commit_seq=6
+[    2.771713] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+[   48.726746] canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update
+[   48.726772] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it
+[   48.726781] canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update
+INITIAL_SCENE_READY_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

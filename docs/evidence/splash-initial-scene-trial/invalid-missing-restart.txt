@@ -1,0 +1,12 @@
+
+===== > test ! -e /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && mkdir -p /run/systemd/system/shell.service.d && printf '[Service]\nEnvironment=SWAY_K230_INITIAL_SPLASH=/tmp/k230-invalid-logo.xrgb\n' > /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && systemctl daemon-reload && systemctl restart shell; echo MISSING_ASSET_RESTARTED =====
+test ! -e /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && mkdir -p /run/systemd/system/shell.service.d && printf '[Service]\nEnvironment=SWAY_K230_INITIAL_SPLASH=/tmp/k230-invalid-logo.xrgb\n' > /run/systemd/system/shell.service.d/99-invalid-splash-test.conf && systemctl daemon-reload && systemctl restart shell; echo MISSING_ASSET_RESTARTED
+[?2004l
+MISSING_ASSET_RESTARTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
