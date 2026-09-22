@@ -30,7 +30,17 @@ nixpkgs `gzip` plus `mkimage` plus the U-Boot tree's own
 byte from the compiled U-Boot. `readelf -A` reports the compiled SPL as
 `rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0` — no vendor ISA — and
 the T-Head cache operations are hand-encoded as `.long` words, so the vendor
-toolchain is not required to assemble them.*
+toolchain is not required to assemble them. Built 2026-09-22 and recorded in
+`docs/evidence/stage1-from-nix.txt`: `nix build .#uboot-k230` compiles
+U-Boot and its SPL with nixpkgs GCC 15.3.0 (SPL 222 816 bytes against the
+524 288-byte `CONFIG_SPL_SIZE_LIMIT`; `readelf -A` reports
+`rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0`,
+no vendor extension; zero `th.` mnemonics), `nix build .#opensbi-k230`
+compiles OpenSBI 1.4 with the overlay under a GCC 13 pin, and `nix build
+.#stage1` wraps both into the five files the card carries, with the `K230`
+magic, a CM byte of `0x09`, and the environment's `mkenvimage` step
+reproducing the SDK default byte for byte
+(`f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957`).*
 
 <!-- UNVERIFIED: no stage 1 compiled by this project has been booted. The
 compilation step is the one part not yet reproduced; grounded once
@@ -66,7 +76,11 @@ into an array at build time. Measured 2026-09-20 and recorded in
 memory, sha256
 `517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b`, plus 1 660
 bytes of data memory, and it sits verbatim at offset `0x1fc74` of the
-committed SPL — 15.9 % of it.*
+vendor-compiled SPL — 15.9 % of it. In the SPL this flake compiles the same
+bytes, same hashes, sit at `0x23f80` of `u-boot-spl.bin` and `0x24184` of
+`fn_u-boot-spl.bin` — 14.7 % of a 222 816-byte SPL — measured 2026-09-22 and
+recorded in `docs/evidence/stage1-from-nix.txt`. Compiling it moved it; it
+did not shrink it.*
 
 #### Scenario: A reader asks whether stage 1 is now fully open
 
@@ -88,9 +102,15 @@ Gailly.`, `bug-gzip@gnu.org`, and gzip's unmodified option table
 `ab:cdfhH?klLmMnNqrS:tvVZ123456789`, in which `-n8` is the ordinary `-n -8`.
 Measured 2026-09-20 on the SDK's own 693 576-byte `u-boot.bin`: nixpkgs gzip
 1.14 produces output identical to the vendor binary at every level the SDK
-falls back through. What is actually vendor-specific is a one-byte `sed` on
-the following line, flipping the gzip header's CM field to `0x09` so that the
-SPL's `k230_priv_unzip()` uses the SoC's hardware decompressor.*
+falls back through — `docs/evidence/gzip-equivalence.txt` is that
+measurement, re-run 2026-09-22 with both sha256 sets at levels 4 through 9.
+What is actually vendor-specific is a one-byte `sed` on the following line,
+flipping the gzip header's CM field to `0x09` so that the SPL's
+`k230_priv_unzip()` uses the SoC's hardware decompressor; `nix/stage1.nix`
+carries that `sed`, and `docs/evidence/stage1-from-nix.txt` records the
+packaging over the vendor-compiled U-Boot reproducing the on-card
+`fn_ug_u-boot.bin` and `fn_u-boot-spl.bin` byte for byte with nixpkgs tools
+alone, and exactly which 40 bytes the `sed` changes.*
 
 #### Scenario: The firmware build is audited
 

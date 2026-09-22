@@ -9,6 +9,8 @@ This is the one command. It fails, loudly and with a non-zero exit, when
   * a requirement declares neither an `<!-- UNVERIFIED -->` marker nor a
     `*Grounding: ...*` citation -- the renderer will not call it grounded;
   * a requirement cites evidence under `docs/` that is not committed;
+  * a binary file exists that `docs/blob-inventory.md` does not account for
+    (`tools/blob-scan.py`);
   * the build takes longer or produces more than its recorded budget;
   * the built site fails its own assertions (a count that is not first, a
     dead link, anything from an in-flight proposal).
@@ -95,6 +97,18 @@ def main(argv: list[str] | None = None) -> int:
     if data_status != 0:
         failures.append(
             "the specs carry defects; they are listed above and shown on the site"
+        )
+
+    # 1b. Every binary is accounted for in docs/blob-inventory.md, or the
+    #     build fails here, beside the evidence check, for the same reason:
+    #     a site that publishes the inventory must not publish a stale one.
+    #     The scan walks the committed tree and whichever vendor checkouts
+    #     are on this machine; it says which. See tools/blob-scan.py.
+    print("\n$ ./tools/blob-scan.py")
+    scan = subprocess.run([sys.executable, str(REPO / "tools" / "blob-scan.py")], cwd=REPO)
+    if scan.returncode != 0:
+        failures.append(
+            "a binary is not accounted for in docs/blob-inventory.md (tools/blob-scan.py)"
         )
 
     # 2. Astro.

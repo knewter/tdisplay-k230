@@ -1,0 +1,89 @@
+tools/blob-scan.py: a passing run, a run without the vendor checkouts, and the failure modes (tasks 1.2, 1.4)
+========================================================================================================
+Run 2026-09-22 on solomon, in the worktree for every-blob-is-built-from-source-or-named,
+with the vendor checkouts reachable at .build/k230_linux_sdk (kendryte/k230_linux_sdk @ 1104236)
+and repo/ (Xinyuan-LilyGo/T-Display-K230_canmv_rt). Output is pasted from the runs, not typed.
+
+1. The tree as committed, plus both vendor checkouts
+----------------------------------------------------
+$ ./tools/blob-scan.py; echo rc=$?
+blob-scan: /mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-every-blob-is-built-from-source-or-named
+  walked vendor checkout (sdk) at .build/k230_linux_sdk/: 9171 files
+  walked vendor checkout (lilygo) at repo/: 36055 files
+  walked 45422 files: 3597 binary (17 by file row, 3580 by group row); 54 inventory rows verified on disk, 7 not present here; 3 nix pins checked
+blob-scan: ok -- every binary is accounted for
+rc=0
+
+2. The committed tree only -- what CI sees, where no vendor checkout exists
+---------------------------------------------------------------------------
+$ ./tools/blob-scan.py --no-vendor; echo rc=$?
+blob-scan: /mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-every-blob-is-built-from-source-or-named (committed tree only)
+  walked 196 files: 9 binary (0 by file row, 9 by group row); 19 inventory rows verified on disk, 42 not present here; 3 nix pins checked
+blob-scan: ok -- every binary is accounted for
+rc=0
+
+3. Every binary in the committed tree, and the row that covers it
+------------------------------------------------------------------
+$ ./tools/blob-scan.py --no-vendor -v | grep -E '^  (binary|pin|absent)'
+  binary  docs/evidence/panel-photos/01-urandom-noise.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/02-all-black.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/03-all-white.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/04-normal-mode-fullscreen-noise.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/05-console-on-panel.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/06-sheared-console-31.68mhz.jpg  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/07-rectified-panel-space.png  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  docs/evidence/panel-photos/08-four-fiducials-oblique.png  <- group row 629 (DATA) docs/evidence/panel-photos/*.{jpg,png}
+  binary  site/src/assets/t-display-k230-board.png  <- group row 630 (DATA) site/src/assets/*.png
+  absent  firmware/stage1/fn_u-boot-spl.bin  (row 622; not on this machine)
+  absent  firmware/stage1/fn_ug_u-boot.bin  (row 623; not on this machine)
+  absent  firmware/stage1/env.env  (row 624; not on this machine)
+  absent  firmware/stage1/fw_jump.bin  (row 625; not on this machine)
+  absent  firmware/stage1/fw_jump_add_uboot_head.bin  (row 626; not on this machine)
+  pin     nix/k230-sdk-src.nix: sha256-P3XkeyJPkpe/h0oHAHCiz8a0VXofw1zsQ3YSa6UcG8w=  <- row 638 (SRC) src:kendryte/k230_linux_sdk@1104236,sparse
+  pin     nix/uboot-k230.nix: sha256-ULRIKlBbwoG6hHDDmaPCbhReKbI1ALw1xQ3r1/pGvfg=  <- row 636 (SRC) src:u-boot-2022.10.tar.bz2
+  pin     nix/opensbi-k230.nix: sha256-T8ZeAzjM9aeTXitjE7s+m+jjGGtDo2jK1qO5EuKiVLU=  <- row 637 (SRC) src:riscv-software-src/opensbi@v1.4
+
+4. The failure modes, each planted in a scratch copy and each reported
+-----------------------------------------------------------------------
+$ ./tools/blob-scan.py --self-test; echo rc=$?
+--- baseline: the inventory and the nix files alone
+    scan exit status: 0  (passed, as expected)
+    blob-scan: /tmp/blob-scan-selftest-igwoqwgc (committed tree only)
+    blob-scan: ok -- every binary is accounted for
+--- a binary with no inventory row is planted at firmware/planted.bin
+    scan exit status: 1  (failed, as expected)
+    blob-scan: /tmp/blob-scan-selftest-igwoqwgc (committed tree only)
+    error: binary with no inventory row: firmware/planted.bin
+    blob-scan: FAIL (1 problem(s))
+--- nix/stage1.nix pins a release hash the inventory does not list
+    scan exit status: 1  (failed, as expected)
+    blob-scan: /tmp/blob-scan-selftest-igwoqwgc (committed tree only)
+    error: nix/stage1.nix pins sha256-0EBVCBOWyeHBJ8LHZLw3PnwuSFYlDgiFCwb32Qm+i+o=, which the inventory does not list. Add a `src:` row if it is source, a `release:` or `dl:` row if it is a binary
+    blob-scan: FAIL (1 problem(s))
+--- a listed blob (firmware/stage1/env.env) has different bytes than its row
+    scan exit status: 1  (failed, as expected)
+    blob-scan: /tmp/blob-scan-selftest-igwoqwgc (committed tree only)
+    error: firmware/stage1/env.env: sha256 is d5c06a6a6248ac25733244fb3c2ad566bb05da800dedd86753fed304bd0a5a36, inventory row 624 records cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+    blob-scan: FAIL (1 problem(s))
+
+self-test: ok -- every planted fault was reported
+rc=0
+
+The self-test's own exit status is 0 when every planted fault made the scan
+exit non-zero and name the fault; the three 'scan exit status: 1' lines above
+are the scanner refusing an unlisted binary, an unlisted release hash, and a
+listed blob whose bytes moved.
+
+5. What the first run found, before the inventory was corrected
+----------------------------------------------------------------
+The scanner's first run over the vendor checkouts, on 2026-09-22, reported 3 080
+binaries with no row and four group rows whose counts were wrong. The inventory
+as first committed had counted the LilyGO clone's opencv archives as 25 (there
+are 15), its kmodel directory as 87 files (401, most of them sample images),
+the examples glob one directory too shallow, and had never given the C8
+k230_priv_gzip copies MANIFEST rows. Two of its own stage-1 rows were stale:
+fn_ug_u-boot.bin at 0f8feb74... (the build before the CM-byte fix; the file
+the last image carried is c0fb8d95...) and env.env at f522ba13... (the SDK
+default; the file the last image carried is cf108755...). All of it is
+corrected in the MANIFEST the runs above were made against, and the
+correction is the argument for the scanner.
