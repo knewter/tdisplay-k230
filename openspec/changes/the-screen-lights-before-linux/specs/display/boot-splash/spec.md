@@ -125,7 +125,7 @@ written.*
 <!-- UNVERIFIED: skipping panel reset and init is necessary but may not be
 sufficient. canaan_vo_enable_crtc() (canaan_vo.c:652) performs VO
 initialization and timing setup, while commit_tail_rpm enables the CRTC before
-programming planes; the explicit k230_display_rst() call is in the disable path
+programming planes; the explicit display-block reset writes are in the disable path
 (canaan_vo.c:666), not at the start of canaan_vo_enable_crtc. The encoder path
 also reprograms the DSI controller and PHY. Whether an RM69A10 left in
 display-on holds its image across the first modeset, shows black, or needs

@@ -1,0 +1,94 @@
+
+===== > kill -USR1 "$(cat /tmp/phase-owner.pid)"; sleep 1; cat /tmp/phase-owner.state /tmp/phase-owner.log; cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; cat /tmp/phase-owner.log; systemctl --no-pager status shell-handoff; /tmp/vo-registers; echo PHASE_SWAY_DONE =====
+kill -USR1 "$(cat /tmp/phase-owner.pid)"; sleep 1; cat /tmp/phase-owner.state /tmp/phase-owner.log; cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; cat /tmp/phase-owner.log; systemctl --no-pager status shell-handoff; /tmp/vo-registers; echo PHASE_SWAY_DONE
+[?2004l
+master-dropped
+k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+[1]+  Done                       /tmp/k230-drm-splash --ready-file /tmp/phase-owner.state > /tmp/phase-owner.log 2>&1
+k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+k230-drm-splash: successor replaced fb 49; releasing owner
+[0;1;32m●[0m shell-handoff.service - sway on the panel
+     Loaded: loaded (]8;;file://nixos/run/systemd/system/shell-handoff.service\/run/systemd/system/shell-handoff.service]8;;\; [0;1;33m[0;1;38:5:185mdisabled[0m; preset: ignored)
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-17 20:13:21 UTC; 5s ago
+ Invocation: d37ee3c6eea04d8ab2e8167fe5761699
+    Process: 804 ExecStartPre=/nix/store/d8m8jh02rsf1vql1c2z1iag0j3d11030-wait-for-seatd (code=exited, status=0/SUCCESS)
+   Main PID: 808 (dbus-run-sessio)
+         IP: 0B in, 0B out
+         IO: 25.4M read, 0B written
+      Tasks: 12[0;90m[0;38:5:245m (limit: 462)[0m
+     Memory: 45.8M (peak: 45.9M)
+        CPU: 1.465s
+     CGroup: /system.slice/shell-handoff.service
+             ├─[0;90m[0;38:5:245m808 /nix/store/1xh1w3x7nqhf6k5lw81ic996s0fjg4j1-dbus-riscv64-unk…[0m
+             ├─[0;90m[0;38:5:245m811 dbus-daemon --nofork --print-address 4 --session[0m
+             ├─[0;90m[0;38:5:245m812 /nix/store/09aymslf57zmz90rqw7v0gy3kip3c9na-sway-unwrapped-r…[0m
+             ├─[0;90m[0;38:5:245m815 /nix/store/swnlmpv5jbjhh1gq4cy30jvsgygzdwg9-swaybg-riscv64-u…[0m
+             ├─[0;90m[0;38:5:245m816 swaybar -b bar-0[0m
+             ├─[0;90m[0;38:5:245m817 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-un…[0m
+             ├─[0;90m[0;38:5:245m818 /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unk…[0m
+             ├─[0;90m[0;38:5:245m820 /nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive…[0m
+             └─[0;90m[0;38:5:245m821 -/run/current-system/sw/bin/bash[0m
+
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.467 [DEBUG] [wlr] [types/xdg_she…6b20)
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.467 [DEBUG] [sway/desktop/xdg_sh…ull)'
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.467 [DEBUG] [wlr] [types/wlr_xdg…7520)
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.467 [DEBUG] [wlr] [types/wlr_com…7400)
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.529 [DEBUG] [sway/tree/arrange.c…@0,56
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.530 [DEBUG] [sway/tree/arrange.c…00000
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.530 [DEBUG] [sway/tree/arrange.c…tally
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.530 [DEBUG] [sway/desktop/transa…tions
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.558 [DEBUG] [sway/desktop/transa…ready
+Mar 17 20:13:23 nixos sway[812]: 00:00:01.558 [DEBUG] [sway/desktop/transa…48550
+Hint: Some lines were ellipsized, use -l to show in full.
+VO VO_REG_LOAD_CTL                +0x004 = 0x00000000
+VO VO_DMA_SW_CTL                  +0x008 = 0x00000011
+VO VO_DMA_RD_CTL_OUT              +0x00c = 0x00000088
+VO VO_DMA_ARB_MODE                +0x010 = 0x00000000
+VO VO_DISP_XZONE_CTL              +0x0c0 = 0x025f0028
+VO VO_DISP_YZONE_CTL              +0x0c4 = 0x04e00011
+VO VO_DISP_ENABLE                 +0x118 = 0x00000100
+VO VO_OSD_RGB2YUV_CTL             +0x340 = 0x00010101
+VO VO_DISP_YUV2RGB_CTL            +0x380 = 0x00000001
+VO VO_DISP_MIX_LAYER_GLB_EN       +0x3c0 = 0x000000ff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA0   +0x3c4 = 0xffffffff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA1   +0x3c8 = 0xffffffff
+VO VO_DISP_MIX_SEL                +0x3cc = 0x00003210
+VO VO_DISP_BACKGROUND             +0x3d0 = 0x00ffffff
+VO VO_DISP_DITH_CTL               +0x3d4 = 0x00000001
+VO VO_DISP_CLUT_CTL               +0x3d8 = 0x00000000
+VO VO_OSD4_BD_CTL                 +0x804 = 0x00000701
+VO VO_DISP_OSD4_XCTL              +0x828 = 0x025f0028
+VO VO_DISP_OSD4_YCTL              +0x82c = 0x04e00011
+VO VO_OSD4_INFO                   +0x880 = 0x00000002
+VO VO_OSD4_SIZE                   +0x884 = 0x04d00238
+VO VO_OSD4_VLU_ADDR0              +0x888 = 0x1e300000
+VO VO_OSD4_ALP_ADDR0              +0x88c = 0x1e300000
+VO VO_OSD4_VLU_ADDR1              +0x890 = 0x1e300000
+VO VO_OSD4_ALP_ADDR1              +0x894 = 0x1e300000
+VO VO_OSD4_DMA_CTRL               +0x898 = 0x0000004f
+VO VO_OSD4_STRIDE                 +0x89c = 0x0000008e
+VO VO_OSD4_ADDR_SEL_MODE          +0x8a0 = 0x00000100
+DSI PWR_UP                         +0x004 = 0x00000001
+DSI DPI_COLOR_CODING               +0x010 = 0x00000105
+DSI MODE_CFG                       +0x034 = 0x00000000
+DSI VID_MODE_CFG                   +0x038 = 0x0000bf02
+DSI VID_PKT_SIZE                   +0x03c = 0x00000238
+DSI VID_NUM_CHUNKS                 +0x040 = 0x00000000
+DSI VID_NULL_SIZE                  +0x044 = 0x00000000
+DSI VID_HSA_TIME                   +0x048 = 0x0000003c
+DSI VID_HBP_TIME                   +0x04c = 0x0000003c
+DSI VID_HLINE_TIME                 +0x050 = 0x00000462
+DSI VID_VSA_LINES                  +0x054 = 0x00000010
+DSI VID_VBP_LINES                  +0x058 = 0x00000010
+DSI VID_VFP_LINES                  +0x05c = 0x00000004
+DSI VID_VACTIVE_LINES              +0x060 = 0x000004d0
+PHASE_SWAY_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

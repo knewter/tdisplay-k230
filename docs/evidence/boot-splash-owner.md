@@ -103,3 +103,12 @@ The splash-enabled toplevel build passed on 2026-09-22 with
 [Build and installed unit evidence](splash-owner-build.txt) records the exact
 command, the built unit, its immutable program, and the shell's release hook.
 Task 5.3's build claim is complete; physical handoff task 5.4 remains open.
+
+
+A manual physical diagnostic now exercises the owner and its retained-buffer
+handoff. One warm-boot trial rendered Sway correctly; a controlled repeat
+wrapped the logo during the owner's first modeset and left Sway physically
+wrong, despite successful DRM calls and a correct native screenshot. See
+[phase recordings and register evidence](boot-splash-handoff.md#separate-retained-logo-linux-owner-and-compositor-phases).
+This establishes the owner protocol running on the board, not reliable visual
+handoff or automatic service startup. Task 5.4 remains open.

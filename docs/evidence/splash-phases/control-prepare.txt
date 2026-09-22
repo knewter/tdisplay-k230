@@ -1,0 +1,13 @@
+
+===== > chmod +x /tmp/vo-registers; test ! -e /boot/bootargs.before-phases.txt && test ! -e /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-phases.txt && sed -i "s/$/ iomem=relaxed/" /boot/bootargs.txt && sync && readlink -f /run/current-system && echo PHASE_CONTROL_PREPARED =====
+chmod +x /tmp/vo-registers; test ! -e /boot/bootargs.before-phases.txt && test ! -e /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-phases.txt && sed -i "s/$/ iomem=relaxed/" /boot/bootargs.txt && sync && readlink -f /run/current-system && echo PHASE_CONTROL_PREPARED
+[?2004l
+/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd
+PHASE_CONTROL_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

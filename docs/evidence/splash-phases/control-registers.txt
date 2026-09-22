@@ -1,0 +1,55 @@
+
+===== > cat /proc/cmdline; /tmp/vo-registers; echo PHASE_CONTROL_DONE =====
+cat /proc/cmdline; /tmp/vo-registers; echo PHASE_CONTROL_DONE
+[?2004l
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd/init iomem=relaxed
+VO VO_REG_LOAD_CTL                +0x004 = 0x00000000
+VO VO_DMA_SW_CTL                  +0x008 = 0x00000011
+VO VO_DMA_RD_CTL_OUT              +0x00c = 0x00000088
+VO VO_DMA_ARB_MODE                +0x010 = 0x00000000
+VO VO_DISP_XZONE_CTL              +0x0c0 = 0x025f0028
+VO VO_DISP_YZONE_CTL              +0x0c4 = 0x04e00011
+VO VO_DISP_ENABLE                 +0x118 = 0x00000100
+VO VO_OSD_RGB2YUV_CTL             +0x340 = 0x00010101
+VO VO_DISP_YUV2RGB_CTL            +0x380 = 0x00000001
+VO VO_DISP_MIX_LAYER_GLB_EN       +0x3c0 = 0x000000ff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA0   +0x3c4 = 0xffffffff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA1   +0x3c8 = 0xffffffff
+VO VO_DISP_MIX_SEL                +0x3cc = 0x00003210
+VO VO_DISP_BACKGROUND             +0x3d0 = 0x00ffffff
+VO VO_DISP_DITH_CTL               +0x3d4 = 0x00000001
+VO VO_DISP_CLUT_CTL               +0x3d8 = 0x00000000
+VO VO_OSD4_BD_CTL                 +0x804 = 0x00000701
+VO VO_DISP_OSD4_XCTL              +0x828 = 0x025f0028
+VO VO_DISP_OSD4_YCTL              +0x82c = 0x04e00011
+VO VO_OSD4_INFO                   +0x880 = 0x00000002
+VO VO_OSD4_SIZE                   +0x884 = 0x04d00238
+VO VO_OSD4_VLU_ADDR0              +0x888 = 0x1e400000
+VO VO_OSD4_ALP_ADDR0              +0x88c = 0x1e400000
+VO VO_OSD4_VLU_ADDR1              +0x890 = 0x1e400000
+VO VO_OSD4_ALP_ADDR1              +0x894 = 0x1e400000
+VO VO_OSD4_DMA_CTRL               +0x898 = 0x0000004f
+VO VO_OSD4_STRIDE                 +0x89c = 0x0000008e
+VO VO_OSD4_ADDR_SEL_MODE          +0x8a0 = 0x00001100
+DSI PWR_UP                         +0x004 = 0x00000001
+DSI DPI_COLOR_CODING               +0x010 = 0x00000105
+DSI MODE_CFG                       +0x034 = 0x00000000
+DSI VID_MODE_CFG                   +0x038 = 0x0000bf02
+DSI VID_PKT_SIZE                   +0x03c = 0x00000238
+DSI VID_NUM_CHUNKS                 +0x040 = 0x00000000
+DSI VID_NULL_SIZE                  +0x044 = 0x00000000
+DSI VID_HSA_TIME                   +0x048 = 0x0000003c
+DSI VID_HBP_TIME                   +0x04c = 0x0000003c
+DSI VID_HLINE_TIME                 +0x050 = 0x00000462
+DSI VID_VSA_LINES                  +0x054 = 0x00000010
+DSI VID_VBP_LINES                  +0x058 = 0x00000010
+DSI VID_VFP_LINES                  +0x05c = 0x00000004
+DSI VID_VACTIVE_LINES              +0x060 = 0x000004d0
+PHASE_CONTROL_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

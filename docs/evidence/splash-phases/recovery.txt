@@ -1,0 +1,19 @@
+
+===== > cat /proc/cmdline; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; ls /dev/fb0; systemctl is-active shell seatd firewall; echo PHASE_RECOVERY_DONE =====
+cat /proc/cmdline; test ! -e /boot/logo.xrgb && echo NO_LOGO; test ! -e /proc/device-tree/chosen/canaan,stage1-splash && echo NO_SPLASH_FLAG; ls /dev/fb0; systemctl is-active shell seatd firewall; echo PHASE_RECOVERY_DONE
+[?2004l
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd/init
+NO_LOGO
+NO_SPLASH_FLAG
+[0m[40;33;01m/dev/fb0[0m
+active
+active
+active
+PHASE_RECOVERY_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

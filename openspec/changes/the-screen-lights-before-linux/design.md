@@ -42,7 +42,7 @@ See proposal.md — Why. What shapes the approach:
   the init replay, because without them the panel did not answer.
   `canaan_vo_enable_crtc()` (`canaan_vo.c:652`) performs VO initialization and
   timing setup, and `commit_tail_rpm` enables the CRTC before programming the
-  planes. The explicit `k230_display_rst()` call is in the disable path
+  planes. The explicit display-block reset writes are in the disable path
   (`canaan_vo.c:666`), not at the start of `canaan_vo_enable_crtc`. The first
   enable during boot was historically driven by fbdev emulation from the
   output poll worker (`dsi-phy-hang.md` trace:

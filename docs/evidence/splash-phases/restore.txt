@@ -1,0 +1,13 @@
+
+===== > test -f /boot/bootargs.before-phases.txt && cp /boot/bootargs.before-phases.txt /boot/bootargs.txt && rm /boot/bootargs.before-phases.txt /boot/logo.xrgb && sync && cat /boot/bootargs.txt && echo PHASE_RESTORED =====
+test -f /boot/bootargs.before-phases.txt && cp /boot/bootargs.before-phases.txt /boot/bootargs.txt && rm /boot/bootargs.before-phases.txt /boot/logo.xrgb && sync && cat /boot/bootargs.txt && echo PHASE_RESTORED
+[?2004l
+bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd/init
+PHASE_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,71 @@
+{
+  "method": "FFprobe metadata plus visual review of extracted frames. Manual serial-driven diagnostics, no touch proof or calibrated dark-frame timing claim.",
+  "videos": [
+    {
+      "path": "20260922T205934Z-logo-to-drm-owner.mp4",
+      "sha256": "8ede6ec14095a5fbd7b51ce02723859cfcac1c0cf15c1891acccc6ff4ce6050d",
+      "bytes": 2434210,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "25.000000",
+          "size": "2434210"
+        }
+      }
+    },
+    {
+      "path": "20260922T210027Z-drm-owner-to-sway.mp4",
+      "sha256": "615edc721c0a645db588bb43a7d4ffca3579796db0815f2df81d4902bf7e807a",
+      "bytes": 2796729,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "30.000000",
+          "size": "2796729"
+        }
+      }
+    },
+    {
+      "path": "20260922T210255Z-retained-logo-owner-sway-repeat.mp4",
+      "sha256": "c261663a7ebd59e7e842f93c3e91fd79d5378721a58b86b6d66cbe9cd92094eb",
+      "bytes": 4101420,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "40.000000",
+          "size": "4101420"
+        }
+      }
+    }
+  ]
+}

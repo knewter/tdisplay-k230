@@ -837,6 +837,16 @@ DATA e8b36be194f16abf621ea67fd633e2919fb21be08718849ed549780d9a118e2c  docs/evid
 DATA ecb6ea5d43be2ff34ed4420f4a499bad6c3f626d43687b24541e2fe39661d04b  docs/evidence/shell-features/declarative-final/plain-neofetch-physical.jpg
 DATA 06f0648371ab08b2b2ec6b7b903c9d8d22c3ad33626baee09f678317feb4e35a  docs/evidence/shell-features/declarative-final/plain-neofetch.png
 DATA fe941c83dd2d5e36ecc13b376f605aecad623279d46b5d6cf448d7f25c162845  docs/evidence/shell-features/declarative-final/startup-physical.jpg
+DATA 8ede6ec14095a5fbd7b51ce02723859cfcac1c0cf15c1891acccc6ff4ce6050d  docs/evidence/splash-phases/20260922T205934Z-logo-to-drm-owner.mp4
+DATA 615edc721c0a645db588bb43a7d4ffca3579796db0815f2df81d4902bf7e807a  docs/evidence/splash-phases/20260922T210027Z-drm-owner-to-sway.mp4
+DATA c261663a7ebd59e7e842f93c3e91fd79d5378721a58b86b6d66cbe9cd92094eb  docs/evidence/splash-phases/20260922T210255Z-retained-logo-owner-sway-repeat.mp4
+DATA abc592b6938179374ec8b37dc943a615d3dc94bca5c6b98eb2e289a9cdcadff0  docs/evidence/splash-phases/20260922T210603Z-phase-normal-recovery.jpg
+DATA f77eaccedeae13f14bd13e14d8f52b6c53a66fca9d3458276ec0b0edfd9ab54d  docs/evidence/splash-phases/repeat-owner.jpg
+DATA ada6806d5ef6a7e3fcedd06d5cd8fce11d02a971ee51cd301deeb44137e3c65a  docs/evidence/splash-phases/repeat-retained-logo.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-phases/repeat-sway-native.png
+DATA c5b6365d9ed306a960794e02995905cf18b5c418a8a70115512e81a6a7a53a59  docs/evidence/splash-phases/repeat-sway.jpg
+DATA 48b6ef6dc7e59962f1b4d004958f28cdc8c8d0f51354169f391b3b626b761dd8  docs/evidence/splash-phases/sway-first-physical.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-phases/sway-native.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

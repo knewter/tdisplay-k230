@@ -1,0 +1,12 @@
+
+===== > test -f /boot/bootargs.before-phases.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/phase-logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /tmp/phase-logo.xrgb /boot/logo.xrgb && cp /tmp/phase-logo.xrgb /tmp/logo.xrgb && chmod +x /tmp/k230-drm-splash && sed -i "s/$/ systemd.mask=shell.service/" /boot/bootargs.txt && sync && echo PHASE_LOGO_PREPARED =====
+test -f /boot/bootargs.before-phases.txt && test ! -e /boot/logo.xrgb && test "$(sha256sum /tmp/phase-logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && cp /tmp/phase-logo.xrgb /boot/logo.xrgb && cp /tmp/phase-logo.xrgb /tmp/logo.xrgb && chmod +x /tmp/k230-drm-splash && sed -i "s/$/ systemd.mask=shell.service/" /boot/bootargs.txt && sync && echo PHASE_LOGO_PREPARED
+[?2004l
+PHASE_LOGO_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

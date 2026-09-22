@@ -1,0 +1,171 @@
+
+===== > echo REPEAT_BEFORE; /tmp/vo-registers; /tmp/k230-drm-splash --ready-file /tmp/phase-owner.state > /tmp/phase-owner.log 2>&1 & echo $! > /tmp/phase-owner.pid; sleep 8; echo REPEAT_OWNER; cat /tmp/phase-owner.state /tmp/phase-owner.log; /tmp/vo-registers; kill -USR1 "$(cat /tmp/phase-owner.pid)"; sleep 2; cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; echo REPEAT_SWAY; cat /tmp/phase-owner.log; systemctl is-active shell-handoff; /tmp/vo-registers; echo REPEAT_DONE =====
+echo REPEAT_BEFORE; /tmp/vo-registers; /tmp/k230-drm-splash --ready-file /tmp/phase-owner.state > /tmp/phase-owner.log 2>&1 & echo $! > /tmp/phase-owner.pid; sleep 8; echo REPEAT_OWNER; cat /tmp/phase-owner.state /tmp/phase-owner.log; /tmp/vo-registers; kill -USR1 "$(cat /tmp/phase-owner.pid)"; sleep 2; cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; echo REPEAT_SWAY; cat /tmp/phase-owner.log; systemctl is-active shell-handoff; /tmp/vo-registers; echo REPEAT_DONE
+
+]3008;start=7344a1a22d7340fc8ef82957718356ea;user=root;hostname=nixos;machineid=d6ed46f4d8774c56a84263c166e91761;bootid=3fad4914aeea4e998bd487bfe3935d81;pid=688;comm=login;targetuser=root;sessionid=1;type=session\[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m echo REPEAT_BEFORE; /tmp/vo-registers; /tmp/k230-drm-splash --ready-file /tmp/phase-owner.state > /tmp/phase-owner.log 2>&1 & echo $! > /tmp/phase-owner.pid; sleep 8; echo REPEAT_OWNER; cat /tmp/phase-owner.state /tmp/phase-owner.log; /tmp/vo-registers; kill -USR1 "$(cat /tmp/phase-owner.pid)"; sleep 2; cp /etc/systemd/system/shell.service /run/systemd/system/shell-handoff.service; systemctl daemon-reload; systemctl start shell-handoff; sleep 5; echo REPEAT_SWAY; cat /tmp/phase-owner.log; systemctl is-active shell-handoff; /tmp/vo-registers; echo REPEAT_DONE
+[?2004l
+REPEAT_BEFORE
+VO VO_REG_LOAD_CTL                +0x004 = 0x00000000
+VO VO_DMA_SW_CTL                  +0x008 = 0x00000011
+VO VO_DMA_RD_CTL_OUT              +0x00c = 0x00000008
+VO VO_DMA_ARB_MODE                +0x010 = 0x00000000
+VO VO_DISP_XZONE_CTL              +0x0c0 = 0x025f0028
+VO VO_DISP_YZONE_CTL              +0x0c4 = 0x04df0010
+VO VO_DISP_ENABLE                 +0x118 = 0x00000100
+VO VO_OSD_RGB2YUV_CTL             +0x340 = 0x00000000
+VO VO_DISP_YUV2RGB_CTL            +0x380 = 0x00000000
+VO VO_DISP_MIX_LAYER_GLB_EN       +0x3c0 = 0x000000ff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA0   +0x3c4 = 0xffffffff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA1   +0x3c8 = 0xffffffff
+VO VO_DISP_MIX_SEL                +0x3cc = 0x00003210
+VO VO_DISP_BACKGROUND             +0x3d0 = 0x00ffffff
+VO VO_DISP_DITH_CTL               +0x3d4 = 0x00000001
+VO VO_DISP_CLUT_CTL               +0x3d8 = 0x00000000
+VO VO_OSD4_BD_CTL                 +0x804 = 0x00000701
+VO VO_DISP_OSD4_XCTL              +0x828 = 0x025f0028
+VO VO_DISP_OSD4_YCTL              +0x82c = 0x04df0010
+VO VO_OSD4_INFO                   +0x880 = 0x00000003
+VO VO_OSD4_SIZE                   +0x884 = 0x04d00238
+VO VO_OSD4_VLU_ADDR0              +0x888 = 0x10000000
+VO VO_OSD4_ALP_ADDR0              +0x88c = 0x10000000
+VO VO_OSD4_VLU_ADDR1              +0x890 = 0x10000000
+VO VO_OSD4_ALP_ADDR1              +0x894 = 0x10000000
+VO VO_OSD4_DMA_CTRL               +0x898 = 0x00000040
+VO VO_OSD4_STRIDE                 +0x89c = 0x0000011c
+VO VO_OSD4_ADDR_SEL_MODE          +0x8a0 = 0x00000100
+DSI PWR_UP                         +0x004 = 0x00000001
+DSI DPI_COLOR_CODING               +0x010 = 0x00000105
+DSI MODE_CFG                       +0x034 = 0x00000000
+DSI VID_MODE_CFG                   +0x038 = 0x0000bf02
+DSI VID_PKT_SIZE                   +0x03c = 0x00000238
+DSI VID_NUM_CHUNKS                 +0x040 = 0x00000000
+DSI VID_NULL_SIZE                  +0x044 = 0x00000000
+DSI VID_HSA_TIME                   +0x048 = 0x0000003c
+DSI VID_HBP_TIME                   +0x04c = 0x0000003c
+DSI VID_HLINE_TIME                 +0x050 = 0x00000462
+DSI VID_VSA_LINES                  +0x054 = 0x00000010
+DSI VID_VBP_LINES                  +0x058 = 0x00000010
+DSI VID_VFP_LINES                  +0x05c = 0x00000004
+DSI VID_VACTIVE_LINES              +0x060 = 0x000004d0
+[1] 739
+[   61.746072] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+[   62.207621] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+REPEAT_OWNER
+scanout
+k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+VO VO_REG_LOAD_CTL                +0x004 = 0x00000000
+VO VO_DMA_SW_CTL                  +0x008 = 0x00000011
+VO VO_DMA_RD_CTL_OUT              +0x00c = 0x00000088
+VO VO_DMA_ARB_MODE                +0x010 = 0x00000000
+VO VO_DISP_XZONE_CTL              +0x0c0 = 0x025f0028
+VO VO_DISP_YZONE_CTL              +0x0c4 = 0x04e00011
+VO VO_DISP_ENABLE                 +0x118 = 0x00000100
+VO VO_OSD_RGB2YUV_CTL             +0x340 = 0x00010101
+VO VO_DISP_YUV2RGB_CTL            +0x380 = 0x00000001
+VO VO_DISP_MIX_LAYER_GLB_EN       +0x3c0 = 0x000000ff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA0   +0x3c4 = 0xffffffff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA1   +0x3c8 = 0xffffffff
+VO VO_DISP_MIX_SEL                +0x3cc = 0x00003210
+VO VO_DISP_BACKGROUND             +0x3d0 = 0x00ffffff
+VO VO_DISP_DITH_CTL               +0x3d4 = 0x00000001
+VO VO_DISP_CLUT_CTL               +0x3d8 = 0x00000000
+VO VO_OSD4_BD_CTL                 +0x804 = 0x00000701
+VO VO_DISP_OSD4_XCTL              +0x828 = 0x025f0028
+VO VO_DISP_OSD4_YCTL              +0x82c = 0x04e00011
+VO VO_OSD4_INFO                   +0x880 = 0x00000002
+VO VO_OSD4_SIZE                   +0x884 = 0x04d00238
+VO VO_OSD4_VLU_ADDR0              +0x888 = 0x1e200000
+VO VO_OSD4_ALP_ADDR0              +0x88c = 0x1e200000
+VO VO_OSD4_VLU_ADDR1              +0x890 = 0x1e200000
+VO VO_OSD4_ALP_ADDR1              +0x894 = 0x1e200000
+VO VO_OSD4_DMA_CTRL               +0x898 = 0x0000004f
+VO VO_OSD4_STRIDE                 +0x89c = 0x0000008e
+VO VO_OSD4_ADDR_SEL_MODE          +0x8a0 = 0x00000100
+DSI PWR_UP                         +0x004 = 0x00000001
+DSI DPI_COLOR_CODING               +0x010 = 0x00000105
+DSI MODE_CFG                       +0x034 = 0x00000000
+DSI VID_MODE_CFG                   +0x038 = 0x0000bf02
+DSI VID_PKT_SIZE                   +0x03c = 0x00000238
+DSI VID_NUM_CHUNKS                 +0x040 = 0x00000000
+DSI VID_NULL_SIZE                  +0x044 = 0x00000000
+DSI VID_HSA_TIME                   +0x048 = 0x0000003c
+DSI VID_HBP_TIME                   +0x04c = 0x0000003c
+DSI VID_HLINE_TIME                 +0x050 = 0x00000462
+DSI VID_VSA_LINES                  +0x054 = 0x00000010
+DSI VID_VBP_LINES                  +0x058 = 0x00000010
+DSI VID_VFP_LINES                  +0x05c = 0x00000004
+DSI VID_VACTIVE_LINES              +0x060 = 0x000004d0
+         Starting [0;1;39msway on the panel[0m...
+
+[[0;32m  OK  [0m] Started [0;1;39msway on the panel[0m.
+
+[[0;32m  OK  [0m] Started [0;1;39mDHCP Client[0m.
+
+[[0;32m  OK  [0m] Reached target [0;1;39mMulti-User System[0m.
+
+[1]+  Done                       /tmp/k230-drm-splash --ready-file /tmp/phase-owner.state > /tmp/phase-owner.log 2>&1
+REPEAT_SWAY
+k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+k230-drm-splash: successor replaced fb 49; releasing owner
+active
+VO VO_REG_LOAD_CTL                +0x004 = 0x00000000
+VO VO_DMA_SW_CTL                  +0x008 = 0x00000011
+VO VO_DMA_RD_CTL_OUT              +0x00c = 0x00000088
+VO VO_DMA_ARB_MODE                +0x010 = 0x00000000
+VO VO_DISP_XZONE_CTL              +0x0c0 = 0x025f0028
+VO VO_DISP_YZONE_CTL              +0x0c4 = 0x04e00011
+VO VO_DISP_ENABLE                 +0x118 = 0x00000100
+VO VO_OSD_RGB2YUV_CTL             +0x340 = 0x00010101
+VO VO_DISP_YUV2RGB_CTL            +0x380 = 0x00000001
+VO VO_DISP_MIX_LAYER_GLB_EN       +0x3c0 = 0x000000ff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA0   +0x3c4 = 0xffffffff
+VO VO_DISP_MIX_LAYER_GLB_ALPHA1   +0x3c8 = 0xffffffff
+VO VO_DISP_MIX_SEL                +0x3cc = 0x00003210
+VO VO_DISP_BACKGROUND             +0x3d0 = 0x00ffffff
+VO VO_DISP_DITH_CTL               +0x3d4 = 0x00000001
+VO VO_DISP_CLUT_CTL               +0x3d8 = 0x00000000
+VO VO_OSD4_BD_CTL                 +0x804 = 0x00000701
+VO VO_DISP_OSD4_XCTL              +0x828 = 0x025f0028
+VO VO_DISP_OSD4_YCTL              +0x82c = 0x04e00011
+VO VO_OSD4_INFO                   +0x880 = 0x00000002
+VO VO_OSD4_SIZE                   +0x884 = 0x04d00238
+VO VO_OSD4_VLU_ADDR0              +0x888 = 0x1e400000
+VO VO_OSD4_ALP_ADDR0              +0x88c = 0x1e400000
+VO VO_OSD4_VLU_ADDR1              +0x890 = 0x1e400000
+VO VO_OSD4_ALP_ADDR1              +0x894 = 0x1e400000
+VO VO_OSD4_DMA_CTRL               +0x898 = 0x0000004f
+VO VO_OSD4_STRIDE                 +0x89c = 0x0000008e
+VO VO_OSD4_ADDR_SEL_MODE          +0x8a0 = 0x00001100
+DSI PWR_UP                         +0x004 = 0x00000001
+DSI DPI_COLOR_CODING               +0x010 = 0x00000105
+DSI MODE_CFG                       +0x034 = 0x00000000
+DSI VID_MODE_CFG                   +0x038 = 0x0000bf02
+DSI VID_PKT_SIZE                   +0x03c = 0x00000238
+DSI VID_NUM_CHUNKS                 +0x040 = 0x00000000
+DSI VID_NULL_SIZE                  +0x044 = 0x00000000
+DSI VID_HSA_TIME                   +0x048 = 0x0000003c
+DSI VID_HBP_TIME                   +0x04c = 0x0000003c
+DSI VID_HLINE_TIME                 +0x050 = 0x00000462
+DSI VID_VSA_LINES                  +0x054 = 0x00000010
+DSI VID_VBP_LINES                  +0x058 = 0x00000010
+DSI VID_VFP_LINES                  +0x05c = 0x00000004
+DSI VID_VACTIVE_LINES              +0x060 = 0x000004d0
+REPEAT_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

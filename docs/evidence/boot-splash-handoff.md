@@ -92,8 +92,9 @@ All sampled registers match except the framebuffer address and
 while the logo boot reads `0x0100`. The framebuffer addresses are `0x1e300000`
 and `0x1e200000`, respectively, and can vary with allocation. Both snapshots
 have RGB565 format `2`, stride `0x8e`, DMA control `0x4f`, and identical sampled
-DSI timing values. This narrows the investigation but does not establish that
-the address-selection difference causes the physical defect; the probe samples
+DSI timing values. Later repeated control reads found both address-selection values during a
+correctly rendered session (see the phase diagnostic below). The single-pair
+difference does not establish a cause of the physical defect; the probe samples
 only a subset of registers, and no corrective write was attempted.
 
 The [restoration transcript](splash-handoff/register-restore.txt) restores the
@@ -126,3 +127,99 @@ No corrective register write is justified from these snapshots alone.
 global conversion controls. It remains read-only. Collect it at the retained
 stage-1 frame, immediately after the first Linux atomic commit, and steady
 Sway to distinguish a hardware/latch transition from a software writer.
+
+
+## Separate retained-logo, Linux-owner and compositor phases
+
+The 2026-09-22 follow-up uses the verified daily image from
+[daily-shell-image.md](daily-shell-image.md), source image commit `7a83afa`,
+system `n5lqa24jxmlw5sn1q89y58js3ag7p859`. It adds only temporary boot arguments
+`iomem=relaxed systemd.mask=shell.service`, the known immutable logo copied to
+`/boot/logo.xrgb`, and read-only/runtime diagnostic tools. No flash, kernel
+replacement, home restoration, or MMIO write probe was involved.
+
+The extended read-only probe is
+`/nix/store/a3mf5xjpvxyg6imsjycgpaznz74d1gzc-k230-vo-registers-riscv64-unknown-linux-gnu-0.1/bin/vo-registers`.
+The [control snapshot](splash-phases/control-registers.txt) and
+[four repeated reads](splash-phases/control-repeat.txt) establish that
+`VO_OSD4_ADDR_SEL_MODE` changes between `0x100` and `0x1100` during normal,
+correct display operation with the same framebuffer address. This invalidates
+the earlier single-pair address-mode hypothesis; no forced register write is
+justified.
+
+The [retained U-Boot frame snapshot](splash-phases/retained-logo-registers.txt)
+and [first Linux owner commit](splash-phases/owner-registers.txt) show:
+
+| Register group | Retained stage 1 | Linux RG16 owner |
+| --- | --- | --- |
+| VO and OSD4 Y window | `04df0010` | `04e00011` |
+| RGB-to-YUV / YUV-to-RGB | `0` / `0` | `00010101` / `1` |
+| OSD4 format / stride | `3` / `11c` | `2` / `8e` |
+| OSD4 DMA | `40` | `4f` |
+| Buffer addresses | all `10000000` | all `1e300000` |
+| Sampled DSI video timing | identical | identical |
+
+The first Linux commit still logs two PHY status timeouts (`1529 != 1fbd`),
+then reports successful RG16 framebuffer 49 scanout. These samples cannot
+establish internal panel state or the cause of a visual defect.
+
+The diagnostic owner uses the repository's unchanged `drm-splash.c`, built
+with only `DEFAULT_ASSET=/tmp/logo.xrgb` to make the same source logo available
+on the daily image. Its output is
+`/nix/store/hk73za1q6bc327lv4zx4d524xxxrq2s0-k230-drm-splash-riscv64-unknown-linux-gnu-0.1`.
+The [25-second first-owner recording](splash-phases/20260922T205934Z-logo-to-drm-owner.mp4)
+shows the logo, but camera startup raced the serial start; it is not proof of
+uninterrupted first-modeset continuity.
+
+The subsequent [owner-to-Sway recording](splash-phases/20260922T210027Z-drm-owner-to-sway.mp4)
+starts four seconds before the serial handoff command. The
+[console and registers](splash-phases/sway-registers.txt) show the owner dropping
+DRM master, retaining framebuffer 49, detecting its replacement, and exiting.
+The physical panel shows Apps, Windows, Keyboard, System in the same order and
+colors as the [native screenshot](splash-phases/sway-native.png). The earlier
+direct-to-Sway wrapped-control defect is absent in this trial. This is a
+manually staged warm-boot diagnostic, not yet an automatic image-service or
+power-on handoff proof.
+
+Source reinspection also corrects the original design's first-enable reset
+claim: in the pinned prepared `drivers/gpu/drm/canaan/canaan_vo.c`,
+`canaan_vo_enable_crtc()` initializes VO and timing without calling
+`k230_display_rst()`. The explicit block reset is in `canaan_vo_disable_crtc()`.
+The `drm_atomic_helper_commit_tail_rpm` path enables modesets before updating
+planes; DSI/PHY reprogramming still occurs during encoder enable. A bypass of
+that initialization is not justified by the successful staged-owner trial.
+
+
+### Controlled repeat: the geometry fault is intermittent
+
+A [second warm boot](splash-phases/repeat-boot.txt) repeated the same owner and
+Sway commands with the camera given four seconds to start. The
+[40-second recording](splash-phases/20260922T210255Z-retained-logo-owner-sway-repeat.mp4)
+shows a correct retained logo initially, a wrapped logo after the first Linux
+owner modeset, and a wrapped/color-shifted Sway display. Extracted frames show
+[retained stage 1 at 0.5 seconds](splash-phases/repeat-retained-logo.jpg),
+[Linux owner at 10 seconds](splash-phases/repeat-owner.jpg), and
+[Sway at 35 seconds](splash-phases/repeat-sway.jpg). Compare the earlier
+[correct physical Sway frame](splash-phases/sway-first-physical.jpg).
+The camera has glare and an oblique angle; it clearly distinguishes these
+large geometry changes but does not establish calibrated color accuracy.
+
+The [repeat console](splash-phases/repeat-registers.txt) reports successful
+owner scanout and successor replacement, while the
+[native screenshot](splash-phases/repeat-sway-native.png) is correct.
+Software success and a correct compositor buffer therefore do not prove
+correct physical scanout. The owner route is **not a fix**: first-mode takeover
+can succeed or fail without a source/image change. No seamless-handoff task is
+closed and no dark-frame-duration claim is made.
+
+The daily boot arguments were [restored](splash-phases/restore.txt) and the
+temporary logo removed. The experimental service copy exists only under
+`/run` and disappears on reboot. The next diagnostic is a source-isolated,
+first-enable preservation trial; it is not part of the daily image.
+
+
+The [recovery boot](splash-phases/recovery-boot.txt),
+[inspection](splash-phases/recovery.txt), and
+[physical frame](splash-phases/20260922T210603Z-phase-normal-recovery.jpg)
+confirm the restored normal configuration: no diagnostic arguments, no logo or
+splash flag, `/dev/fb0` present, and shell, seatd and firewall active.
