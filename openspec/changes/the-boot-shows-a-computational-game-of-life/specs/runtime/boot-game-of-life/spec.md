@@ -22,8 +22,8 @@ use it as a cross-boot backup.
 #### Scenario: Linux receives valid state
 
 - **WHEN** Linux finds a valid versioned state from the same boot
-- **THEN** it can render the recorded state or continue the simulation using the
-  shared rules without depending on a second CPU core
+- **THEN** it resumes the same grid and generation using the shared rules
+  without depending on a second CPU core
 
 ### Requirement: The animation depends on a repaired static handoff
 
@@ -33,13 +33,13 @@ feature SHALL document that U-Boot-to-Linux ownership can include a visible
 pause while Linux initializes; it SHALL NOT promise uninterrupted motion during
 kernel boot.
 
-#### Scenario: The prerequisite is still broken
+#### Scenario: The prerequisite is still broken <!-- UNVERIFIED: physical handoff repair is future board evidence. -->
 
 - **WHEN** the static handoff still wraps or swaps colors on the physical panel
 - **THEN** the Game of Life change is not marked complete and no animation
   continuity claim is made
 
-#### Scenario: Linux takes over after a pause
+#### Scenario: Linux takes over after a pause <!-- UNVERIFIED: timing and physical continuity require board evidence. -->
 
 - **WHEN** Linux starts rendering after stage 1 has stopped updating
 - **THEN** the panel may show a documented pause, followed by a valid frame or
@@ -52,7 +52,7 @@ location SHALL add a glider or equivalent documented pattern and SHALL leave the
 simulation usable when the touch device is absent. Physical touch proof is
 UNVERIFIED until recorded on the board.
 
-#### Scenario: A user drops a glider
+#### Scenario: A user drops a glider <!-- UNVERIFIED: physical Linux touch behavior requires board evidence. -->
 
 - **WHEN** the user taps the running Linux animation at a valid location
 - **THEN** a glider appears at that location and subsequent generations use the
@@ -66,13 +66,13 @@ UNVERIFIED until recorded on the board.
 
 ### Requirement: Optional U-Boot touch remains bounded
 
-U-Boot MAY accept touch input through a separately investigated port or
-adaptation of the source-built vendor-derived U-Boot Goodix support, only as an
+U-Boot MAY accept touch input through a separately investigated port into
+U-Boot, using the existing Linux Goodix driver as a reference, only as an
 explicit optional path. It SHALL not be required for the shared state contract,
 Linux handoff, or acceptance of the default animation. <!-- UNVERIFIED: a
 U-Boot Goodix port and physical touch behavior are not proven. -->
 
-#### Scenario: U-Boot touch is not available
+#### Scenario: U-Boot touch is not available <!-- UNVERIFIED: U-Boot input feasibility is future research. -->
 
 - **WHEN** the U-Boot touch port is absent, unsupported, or fails to probe
 - **THEN** the default animation and Linux handoff continue without touch input

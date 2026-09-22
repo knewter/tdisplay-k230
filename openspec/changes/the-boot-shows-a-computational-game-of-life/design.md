@@ -57,17 +57,18 @@ images and recovery boots comparable. Any user interaction is transient and
 same-boot only; it never changes the fresh-home defaults.
 
 **Treat touch in layers.** Linux touch dropping a glider is the first required
-interaction. U-Boot touch is an optional later investigation that may require a
-port or adaptation of source-built vendor-derived U-Boot Goodix support, with
-separate evidence and no dependency on it. Wayland
+interaction. U-Boot touch is an optional later investigation that may require
+porting Goodix input into U-Boot using the existing Linux driver as a reference,
+with separate evidence and no dependency on it. Wayland
 continuation is optional and must preserve the existing shell controls.
 
 ## Risks / Trade-offs
 
 - [The static handoff remains physically wrong] → block implementation acceptance
   and keep this proposal at zero completed tasks.
-- [Reserved RAM overlaps a boot or kernel allocation] → derive and inspect the
-  memory map before writing; reject the experiment if ownership is ambiguous.
+- [Reserved RAM overlaps a boot or kernel allocation] → decompile the compiled
+  DTB and check explicit U-Boot, kernel, initrd, and reserved-memory intervals
+  before writing; reject the experiment if ownership is ambiguous.
 - [Stage 1 and Linux disagree on state layout] → reject the record by magic,
   version, length, and checksum and render the deterministic default.
 - [The panel is unavailable during Linux startup] → document the pause and test

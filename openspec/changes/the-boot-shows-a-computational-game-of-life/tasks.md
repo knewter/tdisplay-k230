@@ -2,7 +2,7 @@
 
 - [ ] 1.1 Consume the separate static splash-to-Linux repair result as a prerequisite and record its before/after physical evidence; verify the prior wrapped/color-swapped first-modeset case is absent before enabling animation, without modifying that repair in this change.
 - [ ] 1.2 Implement the portable C Game of Life rules, deterministic seed, glider insertion, and versioned state/checksum ABI; verify reproducible frame hashes with `cc -std=c11 -Wall -Wextra -Werror -I src tests/test_game_of_life.c src/game_of_life.c -o /tmp/test-game-of-life && /tmp/test-game-of-life` and retain the test output under `docs/evidence/game-of-life/host-engine.txt`.
-- [ ] 1.3 Define the reserved-RAM ownership and address from the actual image memory map, including invalidation and fallback behavior; verify no overlap with stage 1, kernel, initrd, or shell allocations using `nix build --impure --expr 'let f = builtins.getFlake (toString ./.); in f.nixosConfigurations.k230.config.system.build.sdImage'` plus `fdisk -l`/`strings` inspection recorded in `docs/evidence/game-of-life/memory-map.txt`.
+- [ ] 1.3 Define the reserved-RAM ownership and address from the compiled DTB and actual boot layout, including invalidation and fallback behavior; implement `tools/check-boot-life-memory.py` to decompile the DTB with `dtc`, read the reserved-memory node, collect U-Boot load/relocation addresses and kernel/initrd ranges, and reject overlapping intervals; verify its report in `docs/evidence/game-of-life/memory-map.txt`.
 
 ## 2. Stage handoff
 
@@ -13,7 +13,7 @@
 ## 3. Touch and optional continuation
 
 - [ ] 3.1 Add Linux touch glider insertion with no-touch fallback; verify injected touch drops a glider and the animation remains recoverable when the input device is absent.
-- [ ] 3.2 Investigate a U-Boot Goodix port or adaptation from the source-built vendor-derived U-Boot only as an optional experiment; verify separately with a board serial transcript and camera evidence whether probe, coordinates, and glider insertion work, leaving this task unchecked when hardware proof is unavailable.
+- [ ] 3.2 Investigate feasibility of porting Goodix input into U-Boot using the existing Linux driver as a reference; verify with a source/ABI feasibility note and, only if pursued, separate board serial/camera evidence for probe, coordinates, and glider insertion. This optional task does not gate archive on a successful port.
 - [ ] 3.3 Add optional Wayland continuation without removing persistent shell controls; verify Apps, Keyboard, Windows/Home, System, and recovery remain reachable in a shell capture.
 
 ## 4. Review
