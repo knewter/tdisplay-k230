@@ -371,11 +371,11 @@ const initSeq = `panel-init-sequence = [
             panel is shot at an oblique angle whose perspective magnification is
             5.6&times; across the same strip, in the same direction. Uniform
             shift and accumulation are not distinguished by that footage, so
-            neither is claimed &mdash; and rectifying it does not help, because
-            a homography redistributes resolution rather than creating it: at
-            the far end of that frame one camera pixel spans about ten panel
-            rows, which puts the whole effect under the noise. It needs a
-            square&#8209;on camera, not more analysis.
+            neither is claimed. Warping the frames into true panel space would
+            remove the perspective term and is the current attempt; the first
+            try produced a neatly rectified photograph of the worktop, and the
+            second had the near and far ends of the panel the wrong way round.
+            Both are written up, which is the useful part.
           </p>
         </div>
       </div>
