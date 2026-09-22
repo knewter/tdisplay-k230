@@ -64,6 +64,29 @@ needed. `--rotate180` changes only the recorded presentation; omit it to keep
 the camera's raw view. `--dry-run` writes only the manifest and prints the
 command, without opening the camera.
 
+### Sampled screen clips without a network link
+
+When the board is reachable only through serial and U-Boot UMS,
+`tools/sample-grim-frames.sh` records finite PNG samples on the board with
+Grim's Wayland screencopy client. It writes actual boot-relative monotonic
+start and end timestamps for every capture to `frames.tsv`; it does not assume
+the requested sampling interval was achieved. Run it as the `shell` session
+user, then copy the resulting directory off the board using the UMS volume.
+
+```sh
+./tools/sample-grim-frames.sh keyboard-show --duration 20 --interval 0.5 \
+  --provenance injected --description 'Open and dismiss the on-screen keyboard'
+
+./tools/encode-grim-samples.py grim-samples/20260922T000000Z-keyboard-show \
+  --output docs/evidence/video/keyboard-show-sampled.mp4 --provenance injected \
+  --description 'Sampled compositor output while the on-screen keyboard opens'
+```
+
+The host encoder gives each frame its measured interval through FFmpeg's concat
+input and writes a manifest alongside the H.264 MP4. These clips show sampled
+compositor output. They are not smoothness or performance evidence and their
+provenance does not prove real touch.
+
 ## Planning
 
 All planning goes through [OpenSpec](https://openspec.dev). Read
