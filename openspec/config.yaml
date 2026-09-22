@@ -103,9 +103,9 @@ operations:
     guidance:
       - Say which capability files the delta touched.
       - Fast-forward the shared checkout before you finish, since changes
-        are applied in per-change worktrees and the shared directory's main
+        are applied in per-change worktrees and the shared directory's master
         is never pulled by anybody. From the shared checkout run
-        `git fetch origin && git merge --ff-only origin/main`.
+        `git fetch origin && git merge --ff-only origin/master`.
       # Quoted for the same reason as above.
       - "`--ff-only` rather than `pull`, because that checkout usually holds
         another agent's uncommitted work. It refuses instead of clobbering,

@@ -79,7 +79,7 @@ jobs:
           path: stage1.tar.gz
 
       - name: Publish a release when the recipe changed
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: stage1-${{ github.sha }}
