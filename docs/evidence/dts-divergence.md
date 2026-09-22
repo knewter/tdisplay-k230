@@ -47,3 +47,14 @@ set pin functions.
   LT9611, so there is no collision. Anyone merging HDMI support back in
   must resolve it.
 - Nothing here has been booted.
+
+## Stage 1 logo timing, pending its build
+
+`nix/patches/uboot-k230/0004-rm69a10-logo-port.patch` carries only the four
+LILYGO logo files and the RM69A10 Kconfig symbols after the SDK overlay. Its
+stage-1 connector table deliberately differs from LILYGO: pixel clock/lane
+rate `49.5 MHz`/`594 Mbps`, PLL `{3, 97, 0x17}`, `hs_freq 0x87`, and pixel
+clock divider `11`; `VID_MODE_CFG=0xbf02` and `DPI_COLOR_CODING=0x105` match
+Linux. The partial-area `31/30/12` sequence is replaced by `13 00`, as in
+`display-rm69a10-568x1232.dtsi`. The port has not been built or run; these
+are source choices, not panel evidence.

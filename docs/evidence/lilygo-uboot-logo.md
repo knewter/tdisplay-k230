@@ -1186,3 +1186,13 @@ AI-authored and that its commit messages misdescribe several hunks (the
 comment). The diff above is what the code does; the messages are not
 evidence of anything. What is evidence is that LILYGO ships release images
 built from this tree that light this panel from U-Boot — on their numbers.
+
+## Port boundary on this project
+
+The project patch `nix/patches/uboot-k230/0004-rm69a10-logo-port.patch` is
+based on the four logo files above and a minimal Kconfig addition. It does
+not take LILYGO's `board/canaan/common/k230_board_common.c`, board file,
+defconfig, environment layout, or GPIO52 keyboard-backlight change. Its
+framebuffer address is supplied by `nix/boot-splash.nix` as `0x10000000`,
+the address selected in `docs/evidence/stage1-memory-map.md`; LILYGO's
+`0x1f000000` remains rejected because it lies in this system's CMA region.

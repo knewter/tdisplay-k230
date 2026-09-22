@@ -39,6 +39,7 @@
 
 let
   overlay = "${k230Sdk}/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay";
+  splash = import ./boot-splash.nix;
   stdenv' = if useGcc13 then overrideCC stdenv buildPackages.gcc13 else stdenv;
 in
 (buildUBoot {
@@ -57,7 +58,12 @@ in
   # The fragment records the historical host-off A1 and current A2 intent.
   # buildUBoot appends this after `make defconfig`;
   # Kconfig's syncconfig then takes the later value for a symbol set twice.
-  extraConfig = builtins.readFile ./uboot-k230-ums.config;
+  extraConfig = (builtins.readFile ./uboot-k230-ums.config) + ''
+    # RM69A10 logo path; its framebuffer address comes from nix/boot-splash.nix.
+    CONFIG_K230_BARE_DISP_LOGO=y
+    CONFIG_K230_BARE_DISP_LOGO_RM69A10=y
+    CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=${splash.framebufferAddress}
+  '';
   # Turning USB_GADGET on makes a dozen previously-hidden symbols visible
   # (USB_FUNCTION_FASTBOOT, USB_GADGET_MANUFACTURER, ...), and a non-
   # interactive `make` then dies in syncconfig with "Error in reading or

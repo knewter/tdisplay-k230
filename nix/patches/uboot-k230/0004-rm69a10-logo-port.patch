@@ -1,0 +1,566 @@
+diff -urN a/arch/riscv/cpu/k230/Kconfig b/arch/riscv/cpu/k230/Kconfig
+--- a/arch/riscv/cpu/k230/Kconfig	2026-09-22 12:59:56.138165141 -0500
++++ b/arch/riscv/cpu/k230/Kconfig	2026-09-22 13:00:45.521185500 -0500
+@@ -56,6 +56,20 @@
+ 	help
+ 	  df screen
+ 
++config K230_BARE_DISP_LOGO_RM69A10
++	bool "RM69A10 screen"
++	depends on K230_BARE_DISP_LOGO
++	help
++	  LILYGO T-Display K230 RM69A10 AMOLED screen
++
++config K230_BARE_DISP_LOGO_FB_ADDR
++	hex "RM69A10 logo framebuffer address"
++	depends on K230_BARE_DISP_LOGO_RM69A10
++	default 0x0
++	help
++	  Physical address reserved for the RM69A10 XRGB8888 scanout.
++	  The project Nix fragment supplies the nonzero board address.
++
+ config K230_HDMI_LCD_I2C_BUS
+ 	int "k230 hdmi lcd i2c bus"
+ 	default 3
+diff -urN a/board/canaan/common/logo/display_logo.c b/board/canaan/common/logo/display_logo.c
+--- a/board/canaan/common/logo/display_logo.c	2026-09-22 12:59:56.127141651 -0500
++++ b/board/canaan/common/logo/display_logo.c	2026-09-22 13:00:45.521067567 -0500
+@@ -119,6 +119,7 @@
+ {
+ 
+     writel(0x1, DSI_BASE_ADDR + MODE_CFG);              // set lp cmd mode
++/* Match canaan_dsi.c: burst video mode. */
+     writel(0xbf02, DSI_BASE_ADDR + VID_MODE_CFG);
+     writel(0x10f7f01, DSI_BASE_ADDR + CMD_MODE_CFG);
+     writel(0x1c, DSI_BASE_ADDR + PCKHDL_CFG);
+@@ -131,6 +132,7 @@
+ void dwc_dsi_set_color_coding(void)
+ {
+     // set color 24-bit , vo 24 bits passed
++/* Match canaan_dsi.c: 24-bit RGB DPI coding. */
+     writel(0x105, DSI_BASE_ADDR + DPI_COLOR_CODING);
+ }
+ 
+@@ -201,20 +203,14 @@
+     {
+         while (len)
+         {
+-            if (len < pld_data_bytes)            // 0 1
+-            {
++            uint32_t copy_len = (len < pld_data_bytes) ? len : pld_data_bytes;
+ 
+-                memcpy(&word, buf, pld_data_bytes);
+-                writel(word, DSI_BASE_ADDR + GEN_PLD_DATA);
+-                len = 0;
+-            }
+-            else
+-            {
+-                memcpy(&word, buf, pld_data_bytes);
+-                writel(word, DSI_BASE_ADDR + GEN_PLD_DATA);
+-                buf += pld_data_bytes;
+-                len -= pld_data_bytes;
+-            }
++            word = 0;
++            memcpy(&word, buf, copy_len);
++            writel(word, DSI_BASE_ADDR + GEN_PLD_DATA);
++
++            buf += copy_len;
++            len -= copy_len;
+         }
+ 
+         hdr_val = 0x39;//0x37;//(0x05) + (0x3 << 6) + (cmd_len << 8);  // long package
+@@ -236,13 +232,35 @@
+     return 0;
+ }
+ 
++uint32_t kd_dwc_lpdt_send_short_pkg(uint8_t *buf, uint32_t cmd_len)
++{
++    uint32_t hdr_val = 0;
++
++    if (cmd_len == 1) {
++        hdr_val = 0x05 | (buf[0] << 8);
++    } else if (cmd_len == 2) {
++        hdr_val = 0x15 | (buf[0] << 8) | (buf[1] << 16);
++    } else {
++        return kd_dwc_lpdt_send_pkg(buf, cmd_len);
++    }
++
++    writel(hdr_val, DSI_BASE_ADDR + GEN_HDR);
++    msleep(3);
++
++    return 0;
++}
++
+ 
+ void k230_display_rst(void)
+ {
+-    //uint32_t rdata = 0;
+-
+     writel(0x0, (volatile void __iomem* )0x91101090);
+-    writel(0x1, (volatile void __iomem* )0x91101090);
++    msleep(20);
++    writel(0xffffffff, (volatile void __iomem* )0x91101090);
++
++    msleep(20);
++    writel(0x0f, VO_BASE_ADDR + VO_SOFT_RST_CTL);
++    writel(0x00, VO_BASE_ADDR + VO_DMA_SW_CTL);
++    writel(0x00, VO_BASE_ADDR + VO_REG_LOAD_CTL);
+ 
+     msleep(10);
+ }
+@@ -374,14 +392,22 @@
+     reg = 4 + (5 << 4) + (6 << 8) + (7 << 12) + (8 << 16) + (9 << 20) + (10 << 24) + (11 << 28);
+     writel(reg, VO_BASE_ADDR + 0x950);
+ 
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    writel(0x0, VO_BASE_ADDR + VO_DISP_YUV2RGB_CTL);
++#else
+     // config csc
+     writel(0x1, VO_BASE_ADDR + VO_DISP_YUV2RGB_CTL);
++#endif
+     // disp gamma enable
+     writel(0x0, VO_BASE_ADDR + VO_DISP_CLUT_CTL);
+     // disp dith enable
+     writel(0x1, VO_BASE_ADDR + VO_DISP_DITH_CTL);
+ 
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    writel(0x00000000, VO_BASE_ADDR + VO_OSD_RGB2YUV_CTL);
++#else
+     writel(0x11111111, VO_BASE_ADDR + VO_OSD_RGB2YUV_CTL);
++#endif
+ 
+     writel(0xff, VO_BASE_ADDR + VO_DISP_MIX_LAYER_GLB_EN);
+ 
+@@ -651,6 +677,48 @@
+ 	writel(reg, VO_BASE_ADDR + VO_DISP_ENABLE);
+ }
+ #define YUV_PIC_ADD k230_display_logo_get_pic_mem_addr()
++
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++#define RM69A10_LOGO_WIDTH 568
++#define RM69A10_LOGO_HEIGHT 1232
++#define RM69A10_LOGO_OSD 4
++
++void vo_osd4_logo_test(k_connector_info *info)
++{
++    uint32_t reg = 0;
++    uint32_t start_w = readl(VO_BASE_ADDR + VO_DISP_XZONE_CTL) & 0x1fff;
++    uint32_t start_h = readl(VO_BASE_ADDR + VO_DISP_YZONE_CTL) & 0x1fff;
++    uint32_t addr = YUV_PIC_ADD;
++
++    writel(0x03, VO_BASE_ADDR + VO_OSD_INFOR(RM69A10_LOGO_OSD));
++
++    reg = RM69A10_LOGO_WIDTH | (RM69A10_LOGO_HEIGHT << 16);
++    writel(reg, VO_BASE_ADDR + VO_OSD_SIZE(RM69A10_LOGO_OSD));
++
++    reg = ((start_w + RM69A10_LOGO_WIDTH - 1) << 16) + start_w;
++    writel(reg, VO_BASE_ADDR + VO_DISP_OSD_XCTL(RM69A10_LOGO_OSD));
++
++    reg = ((start_h + RM69A10_LOGO_HEIGHT - 1) << 16) + start_h;
++    writel(reg, VO_BASE_ADDR + VO_DISP_OSD_YCTL(RM69A10_LOGO_OSD));
++
++    writel(addr, VO_BASE_ADDR + VO_OSD_VLU_ADDR0(RM69A10_LOGO_OSD));
++    writel(addr, VO_BASE_ADDR + VO_OSD_ALP_ADDR0(RM69A10_LOGO_OSD));
++    writel(addr, VO_BASE_ADDR + VO_OSD_VLU_ADDR1(RM69A10_LOGO_OSD));
++    writel(addr, VO_BASE_ADDR + VO_OSD_ALP_ADDR1(RM69A10_LOGO_OSD));
++
++    writel((RM69A10_LOGO_WIDTH * 4) / 8,
++           VO_BASE_ADDR + VO_OSD_STRIDE(RM69A10_LOGO_OSD));
++    writel(0x40, VO_BASE_ADDR + VO_OSD_DMA_CTRL(RM69A10_LOGO_OSD));
++    writel(0x1100, VO_BASE_ADDR + VO_OSD_ADDR_SEL_MODE(RM69A10_LOGO_OSD));
++
++    reg = readl(VO_BASE_ADDR + VO_DISP_ENABLE);
++    reg |= BIT_MASK(8);
++    writel(reg, VO_BASE_ADDR + VO_DISP_ENABLE);
++
++    writel(0x11, VO_BASE_ADDR + VO_REG_LOAD_CTL);
++}
++#endif
++
+ void vo_layer1_test(k_connector_info *info)
+ {
+     uint32_t reg = 0;
+@@ -788,7 +856,7 @@
+     reg = (reg & ~(BIT_MASK(10))) | (1 << 10);
+     writel(reg, TXPHY_BASE_ADDR + TXDPHY_PLL_CFG1);
+ 
+-    msleep(1);
++    msleep(20);
+ 
+     reg = (reg & ~(BIT_MASK(10))) | (0 << 10);
+     writel(reg, TXPHY_BASE_ADDR + TXDPHY_PLL_CFG1);
+@@ -839,6 +907,7 @@
+ void k230_dsi_phy1_config(uint8_t hsfreq)
+ {
+     uint32_t reg = 0;
++    uint32_t count = 0;
+ 
+     // select1
+     writel(0x400000, TXPHY_BASE_ADDR + TXDPHY_CFG1);
+@@ -846,7 +915,7 @@
+     // printf("0x400000 is %x \n", readl(TXPHY_BASE_ADDR + TXDPHY_CFG1));
+ 
+     writel(0x1, DSI_BASE_ADDR + PHY_TST_CTRL0);
+-    msleep(1);
++    msleep(20);
+     writel(0x0, DSI_BASE_ADDR + PHY_TST_CTRL0);
+ 
+     // SET TEST CLR TO LOW
+@@ -893,7 +962,9 @@
+     while (readl(DSI_BASE_ADDR + PHY_TST_CTRL1) != 0x580)  //0x580
+     {
+         k230_dsi_write_phy_reg(0x03, 0x80);
+-        msleep(1);
++        msleep(20);
++        if (++count >= 1000)
++            break;
+     }
+ 
+     // printf("phy1 config done \n");
+@@ -933,6 +1004,46 @@
+ 
+ }
+ 
++void k230_dsi_config_2lan_phy(uint32_t m, uint32_t n, uint8_t vco, uint8_t hsfreq)
++{
++    uint32_t reg = 0;
++    uint32_t timeout = 0;
++
++    k230_dsi_phy0_config(m, n, vco, hsfreq);
++    k230_dsi_phy1_config(hsfreq);
++
++    reg = readl(TXPHY_BASE_ADDR + TXDPHY_CFG1);
++    writel(0x0, TXPHY_BASE_ADDR + TXDPHY_CFG1);
++    writel(0x5, DSI_BASE_ADDR + PHY_RSTZ);
++    writel(0x7, DSI_BASE_ADDR + PHY_RSTZ);
++
++    while (readl(DSI_BASE_ADDR + PHY_STATUS) != 0x1fbd) {
++        if (++timeout > 100000) {
++            printf("DSI 2-lane PHY_STATUS timeout: got 0x%04x\n",
++                   readl(DSI_BASE_ADDR + PHY_STATUS));
++            break;
++        }
++        udelay(10);
++    }
++
++    msleep(20);
++    writel(0x1, DSI_BASE_ADDR + LPCLK_CTRL);
++
++    reg = readl(TXPHY_BASE_ADDR + TXDPHY_CFG1);
++    writel(0x400000, TXPHY_BASE_ADDR + TXDPHY_CFG1);
++
++    timeout = 0;
++    while (readl(DSI_BASE_ADDR + PHY_STATUS) != 0x1fbd) {
++        if (++timeout > 100000) {
++            printf("DSI 2-lane PHY_STATUS(2) timeout: got 0x%04x\n",
++                   readl(DSI_BASE_ADDR + PHY_STATUS));
++            break;
++        }
++        udelay(10);
++    }
++
++    reg = readl(DSI_BASE_ADDR + PHY_STATUS);
++}
+ 
+ 
+ uint32_t dwc_mipi_phy_config(k_vo_mipi_phy_attr *phy)
+@@ -949,7 +1060,10 @@
+ 
+     writel(0x0, DSI_BASE_ADDR + 0xc);
+ 
+-    k230_dsi_config_4lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
++    if (phy->phy_lan_num == K_DSI_2LAN)
++        k230_dsi_config_2lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
++    else
++        k230_dsi_config_4lan_phy(phy->m, phy->n, phy->voc, phy->hs_freq);
+ #endif
+     return 0;
+ }
+diff -urN a/board/canaan/common/logo/display_logo.h b/board/canaan/common/logo/display_logo.h
+--- a/board/canaan/common/logo/display_logo.h	2026-09-22 12:59:56.129593014 -0500
++++ b/board/canaan/common/logo/display_logo.h	2026-09-22 12:59:56.131153966 -0500
+@@ -523,11 +523,14 @@
+ uint32_t vo_init(void);
+ void kd_vo_set_layer(k_connector_info *info, uint32_t width, uint32_t height, uint32_t pos_x , uint32_t pos_y , k_vo_rotation rotation, uint32_t addr);
+ void vo_layer1_test(k_connector_info *info);
++void vo_osd4_logo_test(k_connector_info *info);
++unsigned long k230_display_logo_get_pic_mem_addr(void);
+ 
+ 
+ // dsi
+ uint32_t kd_dsi_set_attr(k_vo_dsi_attr *attr);
+ uint32_t kd_dwc_lpdt_send_pkg(uint8_t *buf, uint32_t cmd_len);
++uint32_t kd_dwc_lpdt_send_short_pkg(uint8_t *buf, uint32_t cmd_len);
+ 
+ // clk
+ void k230_set_pixclk(uint32_t div);
+@@ -540,6 +543,4 @@
+ int st7701_init(k_connector_info *info);
+ uint32_t dwc_dsi_enable(uint32_t enable);
+ void kd_vo_set_vtth_intr(bool status, uint32_t vpos);
+-uint32_t kd_dwc_lpdt_send_pkg(uint8_t *buf, uint32_t cmd_len);
+-unsigned long k230_display_logo_get_pic_mem_addr(void);
+ #endif
+diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230_logo.c
+--- a/board/canaan/common/logo/k230_logo.c	2026-09-22 12:59:56.132452521 -0500
++++ b/board/canaan/common/logo/k230_logo.c	2026-09-22 12:59:56.257214793 -0500
+@@ -193,24 +193,90 @@
+ }
+ #define BACKGROUND_BLACK_COLOR                            (0x808000)
+ #define BACKGROUND_PINK_COLOR                             (0xffffff)
++#define RM69A10_LOGO_WIDTH                                568
++#define RM69A10_LOGO_HEIGHT                               1232
++#define RM69A10_LOGO_XRGB_SIZE                            (RM69A10_LOGO_WIDTH * RM69A10_LOGO_HEIGHT * 4)
+ unsigned long k230_display_logo_get_pic_mem_addr(void)
+ {
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    return CONFIG_K230_BARE_DISP_LOGO_FB_ADDR;
++#else
+     return env_get_bootm_size(); //预留1M 给logo；
++#endif
+ }
+-int _k230_display_logo_load_pic()
++
++int _k230_display_logo_load_pic(void)
+ {
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    char cmd[160];
++    const char *mmc_dev = env_get("mmc_boot_dev_num");
++    unsigned long add = k230_display_logo_get_pic_mem_addr();
++    unsigned long size;
++    int ret;
++
++    invalidate_dcache_range(add, add + ROUND(RM69A10_LOGO_XRGB_SIZE, CONFIG_SYS_CACHELINE_SIZE));
++    if (mmc_dev && *mmc_dev)
++        sprintf(cmd, "ext4load mmc %s:1 0x%lx /logo.xrgb", mmc_dev, add);
++    else
++        sprintf(cmd, "ext4load mmc 1:1 0x%lx /logo.xrgb", add);
++    printf("cmd=%s\n", cmd);
++    ret = run_command(cmd, 0);
++    if (ret) {
++        sprintf(cmd, "ext4load mmc 0:1 0x%lx /logo.xrgb", add);
++        printf("cmd=%s\n", cmd);
++        ret = run_command(cmd, 0);
++    }
++    if (ret) {
++        printf("logo.xrgb load failed, skip U-Boot logo\n");
++        return ret;
++    }
++
++    size = env_get_ulong("filesize", 16, 0);
++    if (size != RM69A10_LOGO_XRGB_SIZE) {
++        printf("logo.xrgb size mismatch: got %lu, expected %u\n",
++               size, RM69A10_LOGO_XRGB_SIZE);
++        return -1;
++    }
++    flush_cache(add, ROUND(RM69A10_LOGO_XRGB_SIZE, CONFIG_SYS_CACHELINE_SIZE));
++    printf("RM69A10 direct XRGB8888 logo.xrgb full-screen OSD4\n");
++
++    return 0;
++#else
+     char cmd[128];
++    const char *mmc_dev = env_get("mmc_boot_dev_num");
+     unsigned long add = k230_display_logo_get_pic_mem_addr();
+     unsigned long size = 0x100000;
++    int ret;
+ 
+-    sprintf(cmd, "ext4load mmc ${mmc_boot_dev_num}:1 0x1000000 /logo.yuv ");
++    if (mmc_dev && *mmc_dev)
++        sprintf(cmd, "ext4load mmc %s:1 0x1000000 /logo.yuv", mmc_dev);
++    else
++        sprintf(cmd, "ext4load mmc 1:1 0x1000000 /logo.yuv");
+     printf("cmd=%s\n", cmd);
+-    run_command(cmd, 0);
++    ret = run_command(cmd, 0);
++    if (ret) {
++        sprintf(cmd, "ext4load mmc 0:1 0x1000000 /logo.yuv");
++        printf("cmd=%s\n", cmd);
++        ret = run_command(cmd, 0);
++    }
++    if (ret) {
++        printf("logo.yuv load failed, skip U-Boot logo\n");
++        return ret;
++    }
+ 
+     size = env_get_ulong("filesize", 16,0x100000);
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    if (size != RM69A10_LOGO_SIZE) {
++        printf("logo.yuv size mismatch: got %lu, expected %u\n",
++               size, RM69A10_LOGO_SIZE);
++        return -1;
++    }
++#endif
++    invalidate_dcache_range(0x1000000, 0x1000000 + ROUND(size, CONFIG_SYS_CACHELINE_SIZE));
+     memcpy((void*)add, (void*)0x1000000, size);
+     flush_cache(add, ROUND(size, CONFIG_SYS_CACHELINE_SIZE));//
+     return 0;
++#endif
+ }
+ int k230_display_logo(void)
+ {
+@@ -246,6 +312,21 @@
+                   8, 48, 52, 1402,
+                    1280, 6, 16, 100 },
+     };
++#elif defined(CONFIG_K230_BARE_DISP_LOGO_RM69A10)
++    info = (k_connector_info){
++        0,
++        BACKGROUND_PINK_COLOR,
++        10,
++        11,
++        1,
++        K_DSI_2LAN,
++        K_BURST_MODE,
++        K_VO_LP_MODE,
++        { 3, 97, 0x17, 0x87 },
++        { 49500, 594000, 748, 568,
++                  40, 40, 100, 1268,
++                  1232, 16, 16, 4 },
++    };
+ #else
+     info = (k_connector_info){
+         0,
+@@ -261,7 +342,8 @@
+     };
+ #endif
+ 
+-    _k230_display_logo_load_pic();
++    if (_k230_display_logo_load_pic())
++        return -1;
+ 
+     sysctl_pwr_set_power(SYSCTL_PD_DISP, true);
+     st7701_init(&info);
+@@ -289,15 +371,15 @@
+ 
+ /*
+ usb start;dhcp;
+-tftp 0x1000000 192.168.1.2:wjx/disney_800x480_nv12.yuv ;
+-tftp 0x100000 192.168.1.2:wjx/display_logo.bin;cp.b 0x100000 0x80200000 0x100000;
++tftp 0x1000000 10.10.1.94:wjx/disney_800x480_nv12.yuv ;
++tftp 0x100000 10.10.1.94:wjx/display_logo.bin;cp.b 0x100000 0x80200000 0x100000;
+ boot_baremetal 0 0x80200000 0x100000
+ 
+ 
+ 
+-usb start;dhcp; tftp 0x100000 192.168.1.2:wjx/u-boot.bin;cp.b 0x100000 0 0x100000;
++usb start;dhcp; tftp 0x100000 10.10.1.94:wjx/u-boot.bin;cp.b 0x100000 0 0x100000;
+ go 0;
+-usb start;dhcp;  tftp 0x30000000 192.168.1.2:wjx/disney_800x480_nv12.yuv ; cp.b 0x30000000   0x3ff00000 0x100000;k230_logo;
++usb start;dhcp;  tftp 0x30000000 10.10.1.94:wjx/disney_800x480_nv12.yuv ; cp.b 0x30000000   0x3ff00000 0x100000;k230_logo;
+ k230_logo;
+ uboot下更新vmlinux;更新设备树：
+ 
+diff -urN a/board/canaan/common/logo/st7701.c b/board/canaan/common/logo/st7701.c
+--- a/board/canaan/common/logo/st7701.c	2026-09-22 12:59:56.134902883 -0500
++++ b/board/canaan/common/logo/st7701.c	2026-09-22 12:59:56.257315854 -0500
+@@ -27,7 +27,11 @@
+ static void st7701_hardware_init(void)
+ {
+ 
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++	#define GPIO_RST_PIN			22
++#else
+ 	#define GPIO_RST_PIN			24
++#endif
+ 	#define GPIO_LCD_BACKLIGHT_EN   25
+     char high = 1,low = 0;
+ 
+@@ -68,6 +72,37 @@
+ 
+ }
+ 
++static void rm69a10_568x1232_init(void)
++{
++    uint8_t param1[] = {0xFE, 0xFD};
++    uint8_t param2[] = {0x80, 0xFC};
++    uint8_t param3[] = {0xFE, 0x00};
++    uint8_t param4[] = {0x2A, 0x00, 0x00, 0x02, 0x37};
++    uint8_t param5[] = {0x2B, 0x00, 0x00, 0x04, 0xCF};
++    /* The vendor's 31/30/12 partial-area block glitches a full-frame VO
++     * scanout. Match the system DTS: ENTER_NORMAL_MODE (13 00). */
++    uint8_t param6[] = {0x13, 0x00};
++    uint8_t param7[] = {0x35, 0x00};
++    uint8_t param8[] = {0x51, 0xFE};
++    uint8_t param9[] = {0x11};
++    uint8_t param10[] = {0x29};
++    uint8_t param11[] = {0x3A, 0x77};
++
++    kd_dwc_lpdt_send_pkg(param1, sizeof(param1));
++    kd_dwc_lpdt_send_pkg(param2, sizeof(param2));
++    kd_dwc_lpdt_send_pkg(param3, sizeof(param3));
++    kd_dwc_lpdt_send_pkg(param4, sizeof(param4));
++    kd_dwc_lpdt_send_pkg(param5, sizeof(param5));
++    kd_dwc_lpdt_send_short_pkg(param6, sizeof(param6));
++    kd_dwc_lpdt_send_short_pkg(param7, sizeof(param7));
++    kd_dwc_lpdt_send_short_pkg(param8, sizeof(param8));
++    kd_dwc_lpdt_send_pkg(param9, sizeof(param9));
++    msleep(120);
++    kd_dwc_lpdt_send_pkg(param10, sizeof(param10));
++    msleep(10);
++    kd_dwc_lpdt_send_short_pkg(param11, sizeof(param11));
++}
++
+ 
+ void st7701_480x640_init(void)
+ {
+@@ -755,10 +790,14 @@
+ 	st7701_480x640_init();
+     #elif defined(CONFIG_K230_BARE_DISP_LOGO_ILI9881)
+     ili9881_800x1280_init();
++    #elif defined(CONFIG_K230_BARE_DISP_LOGO_RM69A10)
++    rm69a10_568x1232_init();
+     #else
+ 	st7701_480x800_init();
+     #endif
++#ifndef CONFIG_K230_BARE_DISP_LOGO_RM69A10
+     dwc_dsi_enable(1);
++#endif
+ 
+     return 0;
+ }
+@@ -784,9 +823,10 @@
+     return 0;
+ }
+ 
+-static int st7701_set_phy_freq(k_connectori_phy_attr *phy_attr)
++static int st7701_set_phy_freq(k_connector_info *info)
+ {
+     k_vo_mipi_phy_attr mipi_phy_attr;
++    k_connectori_phy_attr *phy_attr = &info->phy_attr;
+ 
+     memset(&mipi_phy_attr, 0, sizeof(k_vo_mipi_phy_attr));
+ 
+@@ -794,7 +834,7 @@
+     mipi_phy_attr.n = phy_attr->n;
+     mipi_phy_attr.hs_freq = phy_attr->hs_freq;
+     mipi_phy_attr.voc = phy_attr->voc;
+-    mipi_phy_attr.phy_lan_num = K_DSI_4LAN;
++    mipi_phy_attr.phy_lan_num = info->lan_num;
+ 
+     dwc_mipi_phy_config(&mipi_phy_attr);
+ 
+@@ -816,14 +856,22 @@
+     if(info->pixclk_div != 0)
+         k230_set_pixclk(info->pixclk_div);
+ 
+-    ret |= st7701_set_phy_freq(&info->phy_attr);
++    ret |= st7701_set_phy_freq(info);
+ 
+     ret |= st7701_dsi_resolution_init(info);
+ 
+     ret |= st7701_vo_resolution_init(&info->resolution, info->bg_color, info->intr_line);
+ 
+-	// kd_vo_set_layer(info, 320, 240, 0 , 0 , K_ROTATION_90, 0x13000000);
++		// kd_vo_set_layer(info, 320, 240, 0 , 0 , K_ROTATION_90, 0x13000000);
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++	vo_osd4_logo_test(info);
++#else
+ 	vo_layer1_test(info);
++#endif
++
++#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    dwc_dsi_enable(1);
++#endif
+ 
+     return ret;
+ }
