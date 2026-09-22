@@ -10,12 +10,18 @@ diff -urN a/board/canaan/common/k230_board_common.c b/board/canaan/common/k230_b
  //weak
  int mmc_get_env_dev(void)
  {
-@@ -584,6 +586,22 @@
+@@ -584,6 +586,28 @@
  	size = env_get_bootm_size();
  
  	fdt_fixup_memory(blob, (u64)base, (u64)size);
 +
 +#ifdef CONFIG_K230_BARE_DISP_LOGO_RM69A10
++    /* Also clear a stale property if this FDT is reused after a failed attempt. */
++    if (!k230_display_logo_is_ready()) {
++        int chosen = fdt_path_offset(blob, "/chosen");
++        if (chosen >= 0)
++            fdt_delprop(blob, chosen, "canaan,stage1-splash");
++    }
 +    if (k230_display_logo_is_ready()) {
 +        int chosen = fdt_find_or_add_subnode(blob, 0, "chosen");
 +        int ret;
@@ -133,6 +139,15 @@ diff -urN a/board/canaan/common/logo/display_logo.h b/board/canaan/common/logo/d
  
  
  // dsi
+@@ -538,7 +539,7 @@
+ void k230_set_pixclk(uint32_t div);
+ 
+ // phy
+-uint32_t dwc_mipi_phy_config(k_vo_mipi_phy_attr *phy);
++int dwc_mipi_phy_config(k_vo_mipi_phy_attr *phy);
+ 
+ //reset
+ void k230_display_rst(void);
 diff -urN a/board/canaan/common/logo/k230_logo.c b/board/canaan/common/logo/k230_logo.c
 --- a/board/canaan/common/logo/k230_logo.c	2026-09-22 13:14:00.429054661 -0500
 +++ b/board/canaan/common/logo/k230_logo.c	2026-09-22 13:15:54.500818767 -0500
