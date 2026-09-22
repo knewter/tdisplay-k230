@@ -56,7 +56,7 @@ binary any more.
       — or, if the compressed image defeats `strings`, grep the U-Boot map
       or `.config` in the build output instead. Done when the `ums` command
       is demonstrably in the binary.
-- [ ] 2.5 Confirm the image still assembles at the sizes `nix/sd-image.nix`
+- [x] 2.5 Confirm the image still assembles at the sizes `nix/sd-image.nix`
       enforces — `fn_ug_u-boot.bin` has a 1 MiB slot and the gadget code
       grows it. **No board needed.**
       `nix build .#sdImage`
@@ -94,7 +94,7 @@ binary any more.
 
 ## 4. Make it the default loop
 
-- [ ] 4.1 Teach `tools/flash-latest.sh` a `ums` target, keeping the card
+- [x] 4.1 Teach `tools/flash-latest.sh` a `ums` target, keeping the card
       reader as the fallback and keeping `flash.sh`'s by-id refusal intact.
       Done when the reader path still works unchanged.
 - [ ] 4.2 Flash a rebuilt image end to end with the card never leaving the
@@ -147,7 +147,7 @@ Optional, and only after group 3 has settled whether it is needed.
 
 ## 7. Record what changed
 
-- [ ] 7.1 Record the built stage 1's hashes in the evidence and note in
+- [x] 7.1 Record the built stage 1's hashes in the evidence and note in
       `docs/blob-inventory.md` that the configuration changed rather than the
       sources — nothing enters or leaves the inventory. (Rewritten 2026-09-22:
       there is no committed binary or PROVENANCE hash to refresh any more.)
@@ -158,3 +158,4 @@ Optional, and only after group 3 has settled whether it is needed.
       `./scripts/build_site.py`
       Done when the site build is green and every `docs/` path cited by a
       requirement is committed.
+      - Not ticked, 2026-09-22: `docs/uboot-ums.md` §9 folds in everything observed so far and `./scripts/build_site.py` is green (108 s), but the measured write rate (3.5) and the settled D3 after-half (3.2) do not exist yet — both need the ums stage 1 on the card.

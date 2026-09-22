@@ -514,6 +514,20 @@ cold boot is different (`docs/evidence/boot-from-source-cold.txt`): the
 bridge loses power with the board and the prompt is unreachable from the
 host until it re-enumerates.
 
+**A caution for Route C, from LilyGO's own BSP** (reported by the agent
+reading it for `the-screen-lights-before-linux`; their evidence file is
+`docs/evidence/lilygo-uboot-logo.md` once that branch lands). LilyGO's
+U-Boot overlay *deletes* `enter_to_usb_burn_mode()` from
+`board/canaan/common/k230_board_common.c` and moves the environment to
+offset `0x1e0000`, size `0x10000`. Neither is in the stage 1 this project
+builds, which takes Canaan's SDK overlay and keeps the environment at 3 MiB
+/ 3.5 MiB (`nix/sd-image.nix`) — which is why 1.1 found `k230_dfu` present,
+as the SDK source says it should be. So if the BootROM/USB recovery path
+behaves differently from what §5 reads out of the SDK, the first thing to
+ask is which U-Boot was on the card; the characterisation in §5's tasks must
+be made against *our* stage 1, and the RT-Smart image LilyGO shipped is not
+evidence about it either way.
+
 **Not yet observed.** Any gadget enumerating on J3; `ums` presenting the
 card; Route C. Those are the hardware tasks that remain, and they start with
 the new stage 1 on a card.

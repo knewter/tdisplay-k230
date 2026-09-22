@@ -105,3 +105,32 @@ nix build .#stage1 -> /nix/store/7s8fkshr67s6impk0syb9y2dl7xsfm54-k230-stage1
   (805bd543... -> bd562f2bcff46ba9...). fn_ug_u-boot.bin is 350046 bytes against its 1 MiB slot.
   $ xxd -s 596 -l 4 result-stage1/fn_ug_u-boot.bin      (gzip magic, CM 09 -- the packaging is unchanged)
     00000254: 1f8b 0900                                ....
+
+nix build .#sdImage (pure) -> /nix/store/8jpkdpxmhyysafqv5gk8vcimw347ikqq-k230-sd-image.img  (task 2.5)
+-----------------------------------------------------------------------------------------
+  Built without failing nix/sd-image.nix's slot checks. The three raw files against their slots:
+    fn_u-boot-spl.bin      223348 bytes  in a  524288-byte slot
+    fn_ug_u-boot.bin       350046 bytes  in a 1048576-byte slot
+    env.env                  8192 bytes  in a  131072-byte slot
+  (fn_ug_u-boot.bin is 350 046 bytes -- smaller than the 361 896 without the gadget, because
+  USB host and its Ethernet class drivers left the binary with CONFIG_USB_DWC2.)
+  $ sha256 over each slot of the image, for the file's length:
+    0x100000  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954  = fn_u-boot-spl.bin (the SPL the board booted)
+    0x200000  bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e  = fn_ug_u-boot.bin (new: ums)
+    0x300000  cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352  = env.env
+  This is the image task 3.1 would write to the card. Not written, not booted.
+
+tools/flash-latest.sh --ums  (task 4.1), dry runs only
+-------------------------------------------------------
+  $ ./tools/flash-latest.sh --dry-run                         # the reader path, unchanged
+    image: /nix/store/8jpkdpxmhyysafqv5gk8vcimw347ikqq-k230-sd-image.img
+    stage 1: built from source by this flake (nix/stage1.nix)
+    dry run: not flashing /dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1     rc=0
+  $ ./tools/flash-latest.sh --ums /dev/disk/by-id/whatever    # --ums discovers its own target
+    error: --ums finds its own target; do not pass one     rc=1
+  $ ./tools/flash.sh <image> /dev/sdz                         # flash.sh's guardrail, still there
+    error: refusing a bare device node.     rc=1
+  What --ums does when it is used for real (not exercised: no gadget has enumerated yet): snapshot
+  /dev/disk/by-id/usb-* whole disks, build, wait up to 300 s for exactly one new entry, hand that by-id
+  path to tools/flash.sh. flash.sh then prints the target's contents and asks for the path's last 12
+  characters, as it does for a reader.
