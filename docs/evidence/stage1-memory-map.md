@@ -70,7 +70,7 @@ force_dtb`, 17 bytes, visible as the first line after the countdown in
   `docs/evidence/uboot-usb-host-coexist.txt`; `bootm` reports a 27 295 054-byte
   payload after the 64-byte legacy header. The earlier 27 306 661-byte image
   in the cold-boot capture is historical only.
-- **Current loaded extent: `0x09000000 .. 0x0aa07d4e`.** It overlaps
+- **Current loaded extent: `0x09000000 .. 0x0aa07d8e`.** It overlaps
   `ramdisk_addr` and `fdt_high` from the env (both `0xa100000`); neither is a
   problem because `bootm` has already relocated both the FDT and the initrd
   (§2.2) before anything reads them, but it means `0x0a100000` is *not* a
@@ -209,7 +209,7 @@ the candidate image, is the one used for the address decision.
 | `0x07000000` | `0x070000d3` | `bootargs.txt` | scratch (consumed by `env import`) | §1.1 |
 | `0x08000000` | `0x080421d8` | OpenSBI uImage as loaded | scratch after `bootm` copies it to `0x0` | §1.1 |
 | `0x08400000` | `0x08411682` | DTB as loaded | scratch after relocation | §1.1 |
-| `0x09000000` | `0x0aa07d4e` | current `initrd.uimg` as loaded | scratch after relocation | §1.3 |
+| `0x09000000` | `0x0aa07d8e` | current `initrd.uimg` as loaded | scratch after relocation | §1.3 |
 | `0x0a0eb000` | `0x0a0ff681` | DTB, relocated; handed to the kernel | relocated | §2.2 |
 | `0x0c000000` | — | `CONFIG_SYS_LOAD_ADDR` / `loadaddr` | default target of an address-less load; unused by `blinux` | §1.5 |
 | `0x15000000` | `0x15000011` | `force_dtb` probe | scratch | §1.1 |
@@ -255,8 +255,10 @@ not. **It fails on the kernel side instead:**
 in every current row of the table: 86 MiB above the loaded initrd's end,
 above `loadaddr` (`0x0c000000`) but clear of it, below the `force_dtb`
 scratch address, 764 MiB below U-Boot's exact LMB reservation, and below
-CMA. It leaves `0x10400000..0x3e12f000` = 733 MiB for CMA, so the pool stays
-at `0x1e000000` and the kernel's memory layout does not change. The
+CMA. It leaves `0x10400000..0x3e12f000` = 733 MiB for CMA, so source
+analysis predicts that the existing pool can remain at `0x1e000000` without
+changing the kernel's layout. That prediction requires the reserved-memory
+DTS build and a board boot before it becomes an observed result. The
 `reserved-memory` node becomes `framebuffer@10000000`; one flake constant
 must carry this value to both `CONFIG_K230_BARE_DISP_LOGO_FB_ADDR` and the
 DTS.

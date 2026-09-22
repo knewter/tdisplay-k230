@@ -185,13 +185,14 @@ address is not guaranteed and `dma_alloc_wc` zeroes it anyway. Layer:
 recorded map — candidate `0x10000000`, 4 MiB
 (`0x10000000..0x10400000`).** `docs/evidence/stage1-memory-map.md` now
 records the physical-board `bdinfo` and the candidate image's `bootm` lines:
-the range is 86 MiB above the loaded initrd end (`0x0aa07d4e`), above but
+the range is 86 MiB above the loaded initrd end (`0x0aa07d8e`), above but
 clear of `loadaddr` (`0x0c000000`), below the `force_dtb` scratch address,
 and 764 MiB below U-Boot's exact LMB reservation beginning at `0x3fb37920`.
 The current initrd relocates to `0x3e12f000`, leaving
-`0x10400000..0x3e12f000` = 733 MiB for CMA. The 512 MiB CMA pool therefore
-stays at the logged `0x1e000000`, leaving the kernel's memory layout
-unchanged. **Rejected:
+`0x10400000..0x3e12f000` = 733 MiB for CMA. Source analysis therefore
+predicts that the 512 MiB CMA pool can remain at the logged `0x1e000000`;
+a reserved-memory DTS build and board boot must verify that the kernel layout
+is unchanged. **Rejected:
 `0x1f000000`, LILYGO's number.** It is clear of everything stage 1 loads
 or relocates, but it is *inside* the CMA pool the kernel places at
 `0x1e000000..0x3e000000`. A `no-map` reservation there is excluded from
