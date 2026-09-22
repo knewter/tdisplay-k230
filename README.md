@@ -62,9 +62,9 @@ requirements are still unverified. Live.
 To watch it being built rather than read the result:
 **<https://github.com/knewter/tdisplay-k230/actions/workflows/spec-site.yml>**
 — one run per push to `main`, each with the page count, byte size and the
-render assertions. The stage 1 firmware has its own workflow alongside it,
-`stage1.yml`, which publishes the `.bin` artifacts instead of committing
-them.
+render assertions. That build also runs `tools/blob-scan.py`, which fails it
+if a binary file exists anywhere in the tree that `docs/blob-inventory.md`
+does not account for.
 
 Locally:
 
@@ -115,7 +115,20 @@ nix build .#nixosConfigurations.k230.config.system.build.toplevel
 CAPTURE=120 ./tools/qemu-k230.sh > boot.txt     # ...and record the boot
 
 # The board device tree on its own -- seconds, no kernel rebuild.
-K230_STAGE1_DIR="$PWD/firmware/stage1" nix build --impure .#deviceTree
+nix build .#deviceTree
+
+# Stage 1 -- U-Boot SPL, U-Boot 2022.10, OpenSBI 1.4 and the environment --
+# built from source by the flake. nix/stage1.nix says how; nothing in it is
+# a committed or downloaded binary except the 32 KiB of DDR training
+# firmware that arrives as C, which docs/blob-inventory.md names.
+nix build .#uboot-k230 .#opensbi-k230     # the two compilers' worth
+nix build .#stage1                        # the five files the card carries
+
+# The card image. Pure builds carry the stage 1 above. Until a stage 1 this
+# flake compiled has been booted (docs/evidence/stage1-from-source.txt will
+# say), the known-good card was written from the vendor-compiled binaries
+# tools/gen-stage1.sh leaves in firmware/stage1/, selected like this:
+K230_STAGE1_DIR="$PWD/firmware/stage1" nix build --impure .#sdImage
 ```
 
 Editing `nix/dts/` does **not** rebuild the kernel. The DTB is a separate
