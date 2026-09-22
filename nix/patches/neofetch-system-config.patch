@@ -1,0 +1,13 @@
+--- a/neofetch
++++ b/neofetch
+@@ -4580,6 +4580,10 @@ get_user_config() {
+         source "${XDG_CONFIG_HOME}/neofetch/config"
+         err "Config: Sourced user config.    (${XDG_CONFIG_HOME}/neofetch/config)"
+ 
++    elif [[ -f /etc/neofetch/config.conf ]]; then
++        source /etc/neofetch/config.conf
++        err "Config: Sourced system config. (/etc/neofetch/config.conf)"
++
+     elif [[ -z "$no_config" ]]; then
+         config_file="${XDG_CONFIG_HOME}/neofetch/config.conf"
+ 

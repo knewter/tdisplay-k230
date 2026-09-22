@@ -76,6 +76,12 @@ sway, plus `docs/evidence/shell-session.txt`.
 
 - [x] 5.6 Run the user-requested original Neofetch through Nix on the board and show it in a panel terminal. Verify with its Nix build/store path, console transcript, and screenshot/video. The final image must initialize its Nix store database automatically; verify `nix-store -q --requisites /run/current-system` after a fresh boot without a manual database load.
 
+- [ ] 5.7 Ship the portrait Foot, htop and Neofetch defaults in NixOS rather
+  than restoring home-directory state. Build the system and verify plain
+  application launches on the board with a fresh home, recording the immutable
+  config paths and panel screenshots. A preserved private backup is not an
+  implementation dependency.
+
 **Proves group 5 — hardware claim.** Photographs of a command typed on the
 panel and its output, plus real-glass touch-bar evidence, committed under
 `docs/evidence/`. Injection evidence is diagnostic and does not substitute for

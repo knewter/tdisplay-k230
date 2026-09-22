@@ -11,6 +11,9 @@ context: |
   desktop-entry app discovery, window switching and system controls. Preserve
   USB flashing and recovery; complete the boot splash after the shell works.
   AtomVM and the Dozer core are later work, outside this implementation goal.
+  Application defaults belong in this repo and the NixOS image. Fresh homes
+  must provide the usable starting point; never rely on restoring home-directory
+  state to preserve settings developed during bring-up.
 
   Terms specs should use:
     - stage 1        BootROM, U-Boot SPL with its DDR PMU training blob,

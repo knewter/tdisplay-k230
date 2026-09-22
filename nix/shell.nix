@@ -262,6 +262,12 @@ in
       };
     };
 
+    # Fresh homes get the same portrait defaults as menu-launched applications.
+    # User configuration may still override these normal system-wide defaults.
+    environment.etc."htoprc".source = monitorHtopConfig;
+    environment.etc."xdg/foot/foot.ini".source = terminalFootConfig;
+    environment.etc."neofetch/config.conf".source = ./neofetch.conf;
+
     users.groups.shell = { };
     users.users.shell = {
       isNormalUser = true;
