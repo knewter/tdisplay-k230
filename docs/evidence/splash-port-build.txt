@@ -1,0 +1,71 @@
+Stage-1 splash port build (build-host evidence only)
+====================================================
+
+This record is source-build evidence only.  It does not say the splash has
+been put on a card, flashed, or shown on the panel.
+
+Source and build limits
+-----------------------
+
+The asset, U-Boot and stage-1 builds used the clean integration commit
+`cc3c37c` (`Accept ImageMagick channel depth suffix`) with:
+
+```
+NIX_CONFIG='substituters = https://cache.nixos.org/' \
+  nix build <attribute> --max-jobs 2 --cores 8 --print-build-logs
+```
+
+`bootSplashImage` built one derivation in 3 seconds. `uboot-k230` built one
+derivation in 20 seconds. `stage1` built two packaging derivations in 3
+seconds, reusing that U-Boot result.
+
+Asset
+-----
+
+```
+/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+2799104 bytes = 568 * 1232 * 4
+sha256 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af
+first bytes (B,G,R,X): 32 16 10 255
+```
+
+The result README names `assets/boot-splash.png` and
+`nix/boot-splash-image.nix`; the derivation validates 568x1232 sRGB input,
+exact byte count, and the declared B,G,R,X word.
+
+U-Boot and stage 1
+-----------------
+
+```
+U-Boot:  /nix/store/plnycfiqkxnjy5c52vwwsk3sh0sp1rhi-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10
+stage 1: /nix/store/h6qr8zh51g6si8xyy9dd41si8p0ika4d-k230-stage1
+```
+
+The built `.config` has `CONFIG_K230_BARE_DISP_LOGO=y`,
+`CONFIG_K230_BARE_DISP_LOGO_RM69A10=y`, and
+`CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=0x10000000`.  `strings u-boot` contains
+the `k230_display_logo` symbols, exact `/logo.xrgb` lookup, size precheck,
+bounded `ext4load`, and the RM69A10 XRGB8888 OSD4 description.
+
+The SPL is 223348 bytes, leaving 300940 bytes in its 524288-byte raw slot.
+The new U-Boot image is 385766 bytes, leaving 662810 bytes in its
+1048576-byte raw slot:
+
+```
+fn_u-boot-spl.bin  fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+fn_ug_u-boot.bin   fc59edb7057bd3ec7b6cda045bbad1545fb31a7bc19ade6cd8e7063e19f76d16
+```
+
+Compared with the USB + portrait recovery stage 1
+`/nix/store/bsv0h6hx9w90iyzv3d7imzb5dbafw503-k230-stage1`, the SPL,
+environment and OpenSBI payloads are byte-identical:
+
+```
+fn_u-boot-spl.bin          fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
+env.env                    cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+fw_jump.bin                74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9
+fw_jump_add_uboot_head.bin 9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99
+```
+
+Only `fn_ug_u-boot.bin` changed, from 380911 to 385766 bytes, for the splash
+port.
