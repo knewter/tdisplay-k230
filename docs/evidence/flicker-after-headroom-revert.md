@@ -61,3 +61,34 @@ Photograph the panel **perpendicular**, not obliquely. That removes the
 perspective term entirely, at which point the camera-pixel gradient
 means what it appears to mean. Until then the accumulation hypothesis is
 unsupported rather than disproven.
+
+## Why the oblique footage cannot be rescued computationally
+
+Deskewing was tried properly before concluding this, because
+"just unskew it" is the obvious objection and it is usually right.
+
+Four fiducial squares were drawn at known panel coordinates
+(cols 80/488, rows 120/1112) so a homography could be fitted and every
+frame warped into true panel space. Detection needed a dark-surround
+test to stop it locking onto specular highlights on the worktop, which
+it initially did -- the first rectified frame was a warped picture of
+the table.
+
+With that fixed, only the two NEAR fiducials are ever found. The reason
+is visible in `panel-photos/`: the far squares were drawn **116 panel px**
+and the near ones **36**, and on the sensor the far ones are ~14 px while
+the near ones are ~130. That is a magnification ratio near **30x**, not
+the ~3.5x assumed. The panel is viewed at a grazing angle.
+
+At the far end one camera pixel therefore covers roughly 10 panel rows,
+so the ~3 row motion under investigation subtends about 0.3 px -- below
+the noise floor. A homography redistributes resolution, it does not
+create it, so no rectification recovers the far half of the panel from
+this footage. This also explains the earlier failures: pattern
+registration plateaued at corr 0.39 whether the model was linear,
+quadratic or projective.
+
+The limitation is the viewing geometry, not the analysis. A camera
+looking square at the panel fixes it outright; the same 4-fiducial
+homography then works and the top-versus-bottom question becomes
+directly measurable.
