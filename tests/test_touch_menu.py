@@ -2,6 +2,7 @@
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import time
@@ -30,18 +31,21 @@ class TouchMenuTest(unittest.TestCase):
             )
             for name in ("foot", "pkill", "sudo"):
                 path = root / name
-                path.write_text("#!/bin/sh\nprintf '%s %s\\n' \"$0\" \"$*\" >> \"$K230_TEST_LOG\"\n")
+                exit_status = 'exit "${K230_TEST_SUDO_STATUS:-0}"\n' if name == "sudo" else ""
+                path.write_text("#!/bin/sh\nprintf '%s %s\\n' \"$0\" \"$*\" >> \"$K230_TEST_LOG\"\n" + exit_status)
                 path.chmod(0o755)
             swaymsg.chmod(0o755)
             env = os.environ | {
                 "K230_SWAYMSG": str(swaymsg), "K230_FOOT": str(root / "foot"),
-                "K230_HTOP": "/mock/htop", "K230_JQ": "/usr/bin/jq",
-                "K230_SED": "/usr/bin/sed", "K230_PKILL": str(root / "pkill"),
+                "K230_HTOP": "/mock/htop", "K230_JQ": shutil.which("jq"),
+                "K230_SED": shutil.which("sed"), "K230_PKILL": str(root / "pkill"),
                 "K230_SUDO": str(root / "sudo"), "K230_SYSTEMCTL": "/mock/systemctl",
                 "K230_TERMINAL_CONFIG": "/mock/terminal.ini",
                 "K230_MONITOR_CONFIG": "/mock/monitor.ini",
                 "K230_TEST_TREE": tree, "K230_TEST_LOG": str(log),
             }
+            self.assertIsNotNone(env["K230_JQ"], "jq is required by the tested menu")
+            self.assertIsNotNone(env["K230_SED"], "sed is required by the tested menu")
             result = subprocess.run(["bash", str(MENU)], input="\n".join(events) + "\n",
                                     text=True, capture_output=True, env=env, check=True)
             # The production launcher intentionally backgrounds foot. Give the
@@ -74,6 +78,17 @@ class TouchMenuTest(unittest.TestCase):
         self.assertEqual([block["name"] for block in frames[1]], ["window:42", "home", "next-windows", "back"])
         self.assertIn('swaymsg [con_id=42] focus', actions)
 
+    def test_window_paging_wraps_and_empty_windows_are_explicit(self):
+        stream, _ = self.run_menu(['{"name":"windows"}', '{"name":"next-windows"}', '{"name":"next-windows"}', '{"name":"next-windows"}'])
+        frames = self.frames(stream)
+        self.assertEqual(frames[1][0]["name"], "window:42")
+        self.assertEqual(frames[2][0]["name"], "window:43")
+        self.assertEqual(frames[3][0]["name"], "window:44")
+        self.assertEqual(frames[4][0]["name"], "window:42")
+        empty = json.dumps({"type": "root", "nodes": []})
+        stream, _ = self.run_menu(['{"name":"windows"}'], empty)
+        self.assertEqual([block["name"] for block in self.frames(stream)[1]], ["no-windows", "home", "back"])
+
     def test_existing_app_focus_and_missing_app_recovery(self):
         _, actions = self.run_menu(['{"name":"apps"}', '{"name":"terminal"}'])
         self.assertIn('swaymsg [app_id="k230-terminal"] focus', actions)
@@ -86,6 +101,24 @@ class TouchMenuTest(unittest.TestCase):
         self.assertNotIn('sudo', actions)
         _, actions = self.run_menu(['{"name":"system"}', '{"name":"poweroff"}', '{"name":"confirm-poweroff"}'])
         self.assertIn('sudo -n /mock/systemctl poweroff', actions)
+
+    def test_failed_or_out_of_context_confirmation_keeps_menu_recoverable(self):
+        stream, actions = self.run_menu(['{"name":"confirm-reboot"}'])
+        self.assertNotIn('sudo', actions)
+        self.assertEqual(self.frames(stream)[1][0]["name"], "apps")
+        old_status = os.environ.get("K230_TEST_SUDO_STATUS")
+        os.environ["K230_TEST_SUDO_STATUS"] = "1"
+        try:
+            stream, actions = self.run_menu(['{"name":"system"}', '{"name":"reboot"}', '{"name":"confirm-reboot"}', '{"name":"back"}'])
+        finally:
+            if old_status is None:
+                del os.environ["K230_TEST_SUDO_STATUS"]
+            else:
+                os.environ["K230_TEST_SUDO_STATUS"] = old_status
+        self.assertIn('sudo -n /mock/systemctl reboot', actions)
+        frames = self.frames(stream)
+        self.assertEqual(frames[3][0]["name"], "retry-system")
+        self.assertEqual(frames[4][0]["name"], "apps")
 
 
 if __name__ == "__main__":

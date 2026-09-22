@@ -115,7 +115,11 @@ for swaybar's text padding, in a 56-pixel
 bar give Apps, Windows/Home, Keyboard, and System visible targets. Apps starts
 or focuses a readable `foot` terminal and a `htop` monitor. Windows pages
 through actual sway containers and has Home, which uses the terminal presence
-check so closing every terminal does not strand the user.
+check so closing every terminal does not strand the user. Window paging wraps,
+and an empty workspace says so while retaining Home and Back. A system command
+is run synchronously after its matching confirmation (never by `exec`); if
+sudo denies it, the menu stays up with a failure page and a path to retry or
+return Home.
 System changes to a confirmation page before its narrowly-authorized
 `systemctl reboot` or `systemctl poweroff`, and Cancel returns to the main
 page. This is SXMO-inspired interaction, not SXMO packaging.

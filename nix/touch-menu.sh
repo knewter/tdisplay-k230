@@ -18,7 +18,7 @@ set -u
 page=home
 window_offset=0
 
-window_blocks() {
+windows_json() {
   "$K230_SWAYMSG" -t get_tree -r | "$K230_JQ" -c --argjson offset "$window_offset" '
     [recurse(.nodes[]?, .floating_nodes[]?)
      | select(.type == "con" and (.app_id? != null or .pid? != null))
@@ -26,7 +26,7 @@ window_blocks() {
          full_text: ((.name // .app_id // "Window")[0:12]),
          min_width: 128, align: "center", separator: false,
          separator_block_width: 0 }]
-    | .[$offset:($offset + 1)]
+    | .
   ' 2>/dev/null || printf '[]\n'
 }
 
@@ -39,23 +39,32 @@ emit() {
       printf '%s\n' '[{"name":"terminal","full_text":"Terminal","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"monitor","full_text":"Monitor","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
       ;;
     windows)
-      blocks=$(window_blocks)
-      "$K230_JQ" -cn --argjson blocks "$blocks" --arg next "Next" '
-        $blocks + [
-          {name: "home", full_text: "Home", min_width: 128, align: "center", separator: false, separator_block_width: 0},
-          {name: "next-windows", full_text: $next, min_width: 128, align: "center", separator: false, separator_block_width: 0},
-          {name: "back", full_text: "Back", min_width: 128, align: "center", separator: false, separator_block_width: 0}
-        ]
-      ' | "$K230_SED" 's/$/,/'
+      all_windows=$(windows_json)
+      window_count=$(printf '%s\n' "$all_windows" | "$K230_JQ" 'length')
+      if [ "$window_count" -eq 0 ]; then
+        printf '%s\n' '[{"name":"no-windows","full_text":"No windows","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"home","full_text":"Home","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
+      else
+        window_offset=$((window_offset % window_count))
+        "$K230_JQ" -cn --argjson windows "$all_windows" --argjson offset "$window_offset" '
+          $windows[$offset:($offset + 1)] + [
+            {name: "home", full_text: "Home", min_width: 128, align: "center", separator: false, separator_block_width: 0},
+            {name: "next-windows", full_text: "Next", min_width: 128, align: "center", separator: false, separator_block_width: 0},
+            {name: "back", full_text: "Back", min_width: 128, align: "center", separator: false, separator_block_width: 0}
+          ]
+        ' | "$K230_SED" 's/$/,/'
+      fi
       ;;
     system)
       printf '%s\n' '[{"name":"reboot","full_text":"Reboot","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"poweroff","full_text":"Power off","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
       ;;
     confirm-reboot)
-      printf '%s\n' '[{"name":"confirm-reboot","full_text":"Confirm","min_width":270,"align":"center","separator":false,"separator_block_width":0},{"name":"cancel","full_text":"Cancel","min_width":270,"align":"center","separator":false,"separator_block_width":0}],'
+      printf '%s\n' '[{"name":"confirm-reboot","full_text":"Reboot now","min_width":270,"align":"center","separator":false,"separator_block_width":0},{"name":"cancel","full_text":"Cancel","min_width":270,"align":"center","separator":false,"separator_block_width":0}],'
       ;;
     confirm-poweroff)
-      printf '%s\n' '[{"name":"confirm-poweroff","full_text":"Confirm","min_width":270,"align":"center","separator":false,"separator_block_width":0},{"name":"cancel","full_text":"Cancel","min_width":270,"align":"center","separator":false,"separator_block_width":0}],'
+      printf '%s\n' '[{"name":"confirm-poweroff","full_text":"Power off","min_width":270,"align":"center","separator":false,"separator_block_width":0},{"name":"cancel","full_text":"Cancel","min_width":270,"align":"center","separator":false,"separator_block_width":0}],'
+      ;;
+    system-error)
+      printf '%s\n' '[{"name":"retry-system","full_text":"Action failed","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"system","full_text":"Try again","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
       ;;
   esac
 }
@@ -71,6 +80,14 @@ present_or_start() {
     "$K230_FOOT" --config "$config" -e "$K230_HTOP" >/dev/null 2>&1 &
   else
     "$K230_FOOT" --config "$config" >/dev/null 2>&1 &
+  fi
+}
+
+run_system_action() {
+  if "$K230_SUDO" -n "$K230_SYSTEMCTL" "$1" >/dev/null 2>&1; then
+    page=home
+  else
+    page=system-error
   fi
 }
 
@@ -97,11 +114,16 @@ while IFS= read -r line; do
       esac
       page=home
       ;;
-    next-windows) window_offset=$((window_offset + 1)) ;;
+    next-windows)
+      if [ "$window_count" -gt 0 ]; then
+        window_offset=$(((window_offset + 1) % window_count))
+      fi
+      ;;
     reboot) page=confirm-reboot ;;
     poweroff) page=confirm-poweroff ;;
-    confirm-reboot) exec "$K230_SUDO" -n "$K230_SYSTEMCTL" reboot ;;
-    confirm-poweroff) exec "$K230_SUDO" -n "$K230_SYSTEMCTL" poweroff ;;
+    confirm-reboot) [ "$page" = confirm-reboot ] && run_system_action reboot ;;
+    confirm-poweroff) [ "$page" = confirm-poweroff ] && run_system_action poweroff ;;
+    retry-system) [ "$page" = system-error ] && page=system ;;
     back|cancel) page=home ;;
   esac
   emit

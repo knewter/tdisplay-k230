@@ -187,10 +187,13 @@ and System controls. Its visible targets SHALL be at least 56 pixels high and
 the primary controls SHALL each be at least 128 pixels wide on the 568-pixel
 panel. Apps SHALL start or focus a readable terminal and a system monitor
 without a physical keyboard. Windows SHALL page through running sway windows,
-and its Home control SHALL return to a running terminal or start one when it
-was closed. Keyboard SHALL summon or dismiss the on-screen keyboard. System
-SHALL offer reboot and power-off only after a second
-confirmation page that includes Cancel.
+wrap after the last window, and show an explicit no-windows state while keeping
+Home and Back available. Its Home control SHALL return to a running terminal or
+start one when it was closed. Keyboard SHALL summon or dismiss the on-screen
+keyboard. System SHALL offer reboot and power-off only after a second
+confirmation page that names the action and includes Cancel. A failed or denied
+system action SHALL return a visible failure state with a route back to System
+or Home; it SHALL NOT terminate the touch menu.
 
 The session user SHALL have authority only for those two explicit `systemctl`
 operations; no general passwordless command or root shell is part of the
@@ -209,6 +212,12 @@ control.
 - **WHEN** the user taps System, then Reboot or Power off
 - **THEN** the bar presents a distinct confirmation and Cancel target before
   invoking the corresponding operation
+
+#### Scenario: A system action is denied
+
+- **WHEN** the confirmed `systemctl` command fails or is denied
+- **THEN** the bar remains available, reports the failure, and lets the user
+  return to System or Home
 
 #### Scenario: The menu is tested with injected input
 
