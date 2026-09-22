@@ -6,21 +6,80 @@ vendored, and how control reaches the system we built.
 
 ## Requirements
 
-### Requirement: Stage 1 is a pinned vendored artifact
+### Requirement: Stage 1 is built from source this project can read
 
-The boot chain before our kernel SHALL be a vendored binary, pinned by content
-hash, with its origin recorded — which SDK, which board configuration, and how
-it was produced. It SHALL NOT be built from source by this project.
+The boot chain before our kernel — U-Boot SPL, U-Boot 2022.10 and its
+environment — SHALL be produced by this project from source, pinned by the
+hash of that source rather than of the binary, and SHALL NOT be carried in
+the repository as a committed binary. The packaging steps that turn the
+compiled output into what the BootROM will load SHALL be expressed in the
+flake rather than in a shell script run by hand.
 
-*Grounding: `docs/rtsmart-boot-log.txt` records the chain on this board:
-`U-Boot SPL 2022.10`, the DDR PMU training messages, `U-Boot 2022.10`, and
-`OpenSBI v0.9`. Canaan wraps these in a custom header with compression
-(`image: uboot load to 20000000 compress =1`).*
+This reverses the previous requirement, which held that stage 1 SHALL NOT be
+built from source. The reason it held was a belief that the source was
+unavailable or the build unreasonable. Both are false: the source is open and
+on disk, and every packaging step has been reproduced with stock tools.
+
+*Grounding: `docs/blob-inventory.md` §A1–A2 and §D. The sources are U-Boot
+2022.10 upstream, sha256
+`50b4482a505bc281ba8470c399a3c26e145e29b23500bc35c50debd7fa46bdf8`, plus
+Canaan's rsync overlay applied by `UBOOT_OVERLAY_DIRS` in the SDK's
+`buildroot-overlay/boot/uboot/uboot.mk`, both open. Measured 2026-09-20:
+nixpkgs `ubootTools` reproduces the committed `env.env` byte for byte, and
+nixpkgs `gzip` plus `mkimage` plus the U-Boot tree's own
+`firmware_gen_no_securiy.py` reproduce both committed firmware images byte for
+byte from the compiled U-Boot. `readelf -A` reports the compiled SPL as
+`rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0` — no vendor ISA — and
+the T-Head cache operations are hand-encoded as `.long` words, so the vendor
+toolchain is not required to assemble them. Built 2026-09-22 and recorded in
+`docs/evidence/stage1-from-nix.txt`: `nix build .#uboot-k230` compiles
+U-Boot and its SPL with nixpkgs GCC 15.3.0 (SPL 222 816 bytes against the
+524 288-byte `CONFIG_SPL_SIZE_LIMIT`; `readelf -A` reports
+`rv64i2p1_m2p0_a2p1_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0`,
+no vendor extension; zero `th.` mnemonics), `nix build .#opensbi-k230`
+compiles OpenSBI 1.4 with the overlay under a GCC 13 pin, and `nix build
+.#stage1` wraps both into the five files the card carries, with the `K230`
+magic, a CM byte of `0x09`, and the environment's `mkenvimage` step
+reproducing the SDK default byte for byte
+(`f522ba13aa8a2e643e61e4fde9f2babb604e86b2f38a487be37c7bdc0b14c957`).
+One deliberate departure from the vendor's build: the vendor's OpenSBI is
+compiled with `FW_JUMP_FDT_ADDR = FW_TEXT_START + 0x2200000`, so `fw_jump`
+copies the device tree to `0x2200000` — inside the kernel image loaded at
+`0x200000`, in its `.BTF` section, as
+`docs/evidence/opensbi-fdt-lands-in-kernel-image.md` reads back from
+`/sys/kernel/btf/vmlinux` on the board. The OpenSBI this project builds
+leaves `FW_JUMP_FDT_ADDR` undefined and passes the device tree through where
+`bootm` placed it; `docs/evidence/opensbi-fdt-passthrough.txt` is the
+`fw_next_arg1` disassembly before and after.*
+
+*Grounding, on hardware: `docs/evidence/stage1-from-source.txt`. On
+2026-09-22 the board booted the pure `nix build .#sdImage` to the NixOS
+login prompt with no panic and no emergency shell, and hashed its own
+card's raw slots from Linux: SPL at 1 MiB `fe3d537f…`, U-Boot at 2 MiB
+`805bd543…`, `/boot/fw_jump_add_uboot_head.bin` `9627edbe…` — the bytes
+`result-stage1/SHA256SUMS` lists for this flake's output. The BootROM ran
+this SPL, it trained the DRAM and ran this U-Boot, and U-Boot ran this
+OpenSBI; nothing vendor-compiled was on that card.
+`docs/evidence/boot-from-source-cold.txt` is a second capture from power-on:
+bootm's `Loading Device Tree to 000000000a0eb000` followed by this flake's
+OpenSBI banner reporting `Platform Name : LILYGO T-Display-K230` and
+`Domain0 Next Arg1 : 0x000000000a0eb000` — the device tree handed on where
+`bootm` put it, not at `0x2200000`. What neither transcript holds: the SPL's
+`PMU Major Msg:` lines and the `U-Boot 2022.10` banner. The CH342 console
+bridge loses power with the board and takes about 3.4 s to re-enumerate,
+and stage 1 prints inside that window; the cold capture's `--- port lost`
+/ `--- port opened` markers at 10.7 s and 14.1 s bracket it. The boot is
+observed; the banners are inferred from it.*
+
+#### Scenario: Someone needs to change how the board boots
+
+- **WHEN** a person wants the boot command, a memory timing, or the environment to be different
+- **THEN** the thing they edit is a file in this repository, and the change reaches the card by rebuilding
 
 #### Scenario: The vendored firmware is inspected
 
 - **WHEN** someone asks where the bootloader on the card came from
-- **THEN** the flake names its source, its board configuration, and its hash
+- **THEN** the flake names its sources and their hashes, and the build that turns them into what the card carries is the flake's own
 
 ### Requirement: Stage 1 hands control to our kernel
 
@@ -61,3 +120,61 @@ written expectation rather than from memory.
 
 - **WHEN** the two paths disagree
 - **THEN** the recorded differences are the first place to look, and they are specific enough to be checked one at a time
+
+### Requirement: What stays opaque inside stage 1 is named
+
+Building stage 1 from source SHALL NOT be treated as making it transparent.
+The parts of it that remain unreadable SHALL be listed by name, size and
+sha256, with their location inside the produced binary, so that compiling
+them ourselves does not remove them from view.
+
+*Grounding: `docs/rtsmart-boot-log.txt` records this board's SPL printing
+`PMU Major Msg: End of CA training` through `Firmware run has completed` —
+the Synopsys DDR PHY training firmware running before anything else. It has no
+source: it reaches us transliterated into 16 384 `reg_write()` calls in
+Canaan's `lpddr4_init_32_swap_2667.c`, which the SDK's `ddr.sh` turns back
+into an array at build time. Measured 2026-09-20 and recorded in
+`docs/blob-inventory.md` §A5–A6: that image is 32 768 bytes of instruction
+memory, sha256
+`517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b`, plus 1 660
+bytes of data memory, and it sits verbatim at offset `0x1fc74` of the
+vendor-compiled SPL — 15.9 % of it. In the SPL this flake compiles the same
+bytes, same hashes, sit at `0x23f80` of `u-boot-spl.bin` and `0x24184` of
+`fn_u-boot-spl.bin` — 14.7 % of a 222 816-byte SPL — measured 2026-09-22 and
+recorded in `docs/evidence/stage1-from-nix.txt`. Compiling it moved it; it
+did not shrink it.*
+
+#### Scenario: A reader asks whether stage 1 is now fully open
+
+- **WHEN** stage 1 is built from source
+- **THEN** the answer is "all but the memory training firmware", and that firmware is named, sized, hashed and located rather than described as "a blob inside SPL"
+
+### Requirement: No vendor executable runs in the firmware build
+
+Producing anything that goes on the card SHALL NOT require executing a binary
+this project cannot read. Where the vendor's own build does so, the project
+SHALL substitute a readable equivalent and record the evidence that the
+substitution changes nothing.
+
+*Grounding: `docs/blob-inventory.md` §A4. The SDK's
+`buildroot-overlay/board/canaan/k230-soc/post-image.sh` runs
+`tools/k230_priv_gzip`, a stripped x86-64 ELF, to compress U-Boot. Its strings
+identify it as GNU gzip 1.6 — the FSF copyright, `Written by Jean-loup
+Gailly.`, `bug-gzip@gnu.org`, and gzip's unmodified option table
+`ab:cdfhH?klLmMnNqrS:tvVZ123456789`, in which `-n8` is the ordinary `-n -8`.
+Measured 2026-09-20 on the SDK's own 693 576-byte `u-boot.bin`: nixpkgs gzip
+1.14 produces output identical to the vendor binary at every level the SDK
+falls back through — `docs/evidence/gzip-equivalence.txt` is that
+measurement, re-run 2026-09-22 with both sha256 sets at levels 4 through 9.
+What is actually vendor-specific is a one-byte `sed` on the following line,
+flipping the gzip header's CM field to `0x09` so that the SPL's
+`k230_priv_unzip()` uses the SoC's hardware decompressor; `nix/stage1.nix`
+carries that `sed`, and `docs/evidence/stage1-from-nix.txt` records the
+packaging over the vendor-compiled U-Boot reproducing the on-card
+`fn_ug_u-boot.bin` and `fn_u-boot-spl.bin` byte for byte with nixpkgs tools
+alone, and exactly which 40 bytes the `sed` changes.*
+
+#### Scenario: The firmware build is audited
+
+- **WHEN** someone asks what code ran to produce the bytes on the card
+- **THEN** every program involved is one whose source is available, and the vendor binary that used to run is recorded as replaced rather than merely unused
