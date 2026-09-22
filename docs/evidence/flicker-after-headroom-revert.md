@@ -17,29 +17,42 @@ shear. 30 s of webcam video at 30 fps, **manual exposure** (`auto_exposure=1`,
 The user's report, "brightness flickers sometimes", matches 2 events in
 30 s. This is the single clearest improvement.
 
-## Vertical motion: real, magnitude ~3 panel rows, mechanism NOT established
+## Vertical motion: a uniform whole-frame shift, ~2.8 panel rows
 
-There is residual vertical movement; the user sees it directly and
-describes the bands as moving "up and down in unison", with no tearing.
-Scale is roughly 3 panel rows out of 1232 (~0.25%).
+**Settled by rectification.** Four fiducials at known panel coordinates
+give a homography; fitted ONCE from median positions over 900 frames and
+applied fixed to every frame, so it corrects geometry without absorbing
+the motion being measured. Displacement is then in real panel rows.
 
-**What I could not establish, and why.** Apparent displacement measured
-in camera pixels grows steeply toward the bottom of the frame -- 0.67 px
-std at the top to 6.28 px at the bottom, 9.3x, R^2 = 0.97 after removing
-slow brightness variation. That looks exactly like timing error
-accumulating down the frame from a vsync anchor.
+| region | std | span |
+| --- | --- | --- |
+| near half, panel rows 240..620 | 2.76 rows | 26.5 |
+| far half, panel rows 620..1000 | 2.76 rows | 27.2 |
 
-It is not safe to conclude that. The board is photographed at a steep
-oblique angle, and registering the known pattern against the image gives
-a perspective magnification of **5.6x** across the same strip, in the
-same direction. A perfectly uniform shift would therefore *also* appear
-to grow toward the bottom. 5.6x against 9.3x is the same order, the
-pattern-registration correlation is only 0.44, and once local scale is
-divided out the remaining trend is not significant (R^2 = 0.13).
+Ratio **1.00**, correlation between halves **0.959**, mean absolute
+difference 1.26 rows. The two halves move together by the same amount.
 
-So the honest state is: uniform whole-frame shift and
-accumulate-down-the-frame are **not distinguished** by this footage. The
-direct observation of unison motion favours the uniform explanation.
+**Therefore: a uniform whole-frame vertical shift.** Not accumulation
+down the frame, not tearing, not shear. The whole image is placed at a
+slightly different vertical offset from frame to frame, by about 2.8
+rows RMS out of 1232 (0.2%), occasionally up to ~27 rows peak-to-peak.
+This matches the direct observation of the bands moving "in unison".
+
+Brightness over the rectified panel area is flat: min 95%, max 101% of
+mean, std 0.68.
+
+### Hypothesis for the mechanism, not yet tested
+
+A frame-level offset that varies while line timing stays consistent
+points at frame start timing rather than pixel or line timing. The init
+sequence issues `35 00` (SET_TEAR_ON), but nothing in the driver
+consumes the TE signal, so if the panel is refreshing from its own GRAM
+on its own oscillator, the phase between our frame writes and its scan
+is free to walk. That is precisely a uniform positional offset that
+varies per frame.
+
+Untested. Distinguishing it needs either TE wired into the VO or a
+deliberate change of frame rate to see whether the jitter tracks it.
 
 ## Methodology notes, because two earlier attempts were wrong
 
@@ -55,12 +68,20 @@ direct observation of unison motion favours the uniform explanation.
 3. Auto-exposure must be off, or the camera's own gain control is
    measured instead of the panel.
 
-## What would settle it
+## What settled it
 
-Photograph the panel **perpendicular**, not obliquely. That removes the
-perspective term entirely, at which point the camera-pixel gradient
-means what it appears to mean. Until then the accumulation hypothesis is
-unsupported rather than disproven.
+Not a better camera position -- a homography. The panel need not be
+photographed square-on if four points of known panel coordinates are
+visible, because the rectification can be computed. The requirement is
+that the fiducials be **sized for their own end** of the panel: the
+camera views the device from its top edge, so panel row 0 is nearest and
+row 1232 furthest, at roughly 1.05 against 0.39 camera px per panel px.
+Drawing the far ones ~2.7x larger makes all four detectable at once.
+
+Fit the homography ONCE, from median fiducial positions across the whole
+recording, and apply it fixed. Re-fitting per frame would let the
+fiducials -- which are themselves on the moving display -- absorb the
+motion and report zero.
 
 ## Deskewing: first attempt was botched by inverting near and far
 
