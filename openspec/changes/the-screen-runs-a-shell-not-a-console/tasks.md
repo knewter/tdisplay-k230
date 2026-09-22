@@ -31,7 +31,7 @@ shell, which is a different change.
 
 ## 2. The stack cross-builds, and costs what we said it would
 
-- [ ] 2.1 Add a Nix module for the shell stack — sway built with `enableXWayland = false`, plus `foot`, an on-screen keyboard and `seatd` — behind an option that is off by default, so the existing minimal closure is unaffected until it is switched on. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath` succeeding with the option off and with it on
+- [x] 2.1 Add a Nix module for the shell stack — sway built with `enableXWayland = false`, plus `foot`, an on-screen keyboard and `seatd` — behind an option that is off by default, so the existing minimal closure is unaffected until it is switched on. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath` succeeding with the option off and with it on
 - [ ] 2.2 Cross-build sway alone before the rest, because it is the derivation most likely to fail. Verify with `nix build .#shell-compositor` and record the store path
 - [ ] 2.3 Cross-build the whole closure with the shell enabled and measure it. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`, and commit the wall-clock time, the derivations-built count and the resulting closure size to `docs/evidence/shell-build.txt` against the 89-derivation / 875 MiB estimate in `docs/display-environment-options.md`
 - [ ] 2.4 Record any derivation that refused to cross-compile and what was done about it. Verify by extending `docs/evidence/shell-build.txt`; if the list is empty, say so explicitly rather than leaving the section out

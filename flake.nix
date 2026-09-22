@@ -35,9 +35,26 @@
       });
 
       nixosConfigurations = {
+        # The board, with the shell on. runtime/shell: sway on Pixman, foot,
+        # wvkbd, seatd. Switched on here rather than in nix/shell.nix so the
+        # module's default stays off and the decision is visible in one place.
+        # probes/debugLog are the bring-up settings for this change's
+        # evidence; they should leave with it.
         k230 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit (self) k230Kernel; };
-          modules = [ ./nix/k230.nix ./nix/hardware.nix ];
+          modules = [
+            ./nix/k230.nix
+            ./nix/hardware.nix
+            ./nix/shell.nix
+            { k230.shell = { enable = true; probes = true; debugLog = true; }; }
+          ];
+        };
+        # The same board with the shell off: the minimal closure
+        # system/nixos-config requires, kept evaluable so the shell's cost
+        # can be measured as a delta against it.
+        k230-console = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit (self) k230Kernel; };
+          modules = [ ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix ];
         };
         k230-qemu = nixpkgs.lib.nixosSystem {
           modules = [ ./nix/k230.nix ./nix/qemu.nix ];
@@ -53,6 +70,12 @@
       packages.${buildSystem} = {
         cross-hello = pkgsCross.hello;
         toplevel = self.nixosConfigurations.k230.config.system.build.toplevel;
+        toplevel-console = self.nixosConfigurations.k230-console.config.system.build.toplevel;
+
+        # The compositor alone, from the same package set the system uses,
+        # so it can be cross-built first (runtime/shell task 2.2) and its
+        # store path is the one the closure will contain.
+        shell-compositor = self.nixosConfigurations.k230.config.k230.shell.compositor;
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
 
         # What tools/qemu-k230.sh boots: a kernel with standard RISC-V PTE
