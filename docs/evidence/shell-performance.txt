@@ -83,3 +83,8 @@ Representative journal lines (minimum, middle, maximum; full log cited above):
 [ 1589.504125] nixos sway-frame-timing[874]: 00:02:22.927 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=714408 committed=1
 [ 1598.940200] nixos sway-frame-timing[874]: 00:02:32.367 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=14005185 committed=1
 [ 1599.974114] nixos sway-frame-timing[874]: 00:02:33.396 [INFO] [sway/desktop/output.c:342] K230_CPU_FRAME_WALL output=DSI-1 build_state_plus_commit_submission_ns=23253370 committed=1
+
+Host validation after committing measurement evidence:
+  openspec validate --all: 14 passed, 0 failed.
+  tools/blob-scan.py --no-vendor: all 74 binary files accounted for.
+  scripts/build_site.py: 55 pages, 1,099,242 bytes, 10.77 seconds; passed.

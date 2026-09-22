@@ -96,6 +96,6 @@ committed.
 ## 7. Ground the specs
 
 - [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the battery-only boot and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
-- [ ] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
+- [x] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
 - [x] 7.3 Record the measured final closure and build cost in the `runtime/shell` requirement, while retaining the historical candidate estimates for comparison. Verify with `openspec validate --all`
 - [x] 7.4 Record the user-requested feature evidence with FFmpeg: terminal use, keyboard show/hide and typing, app launching, window switching, terminal recovery, system controls, and Neofetch. Provide a screenshot and finite video for each feature, with a site-ready index and manifests identifying the capture source and real-touch versus injected interactions. Retain original camera footage when generating presentation copies; verify media with `ffprobe` and review the visible result.
