@@ -1,0 +1,51 @@
+--- a/drivers/usb/gadget/dwc2_udc_otg.c
++++ b/drivers/usb/gadget/dwc2_udc_otg.c
+@@ -1191,10 +1191,32 @@
+ 	{},
+ };
+ 
++/*
++ * Refuse, at bind time, any snps,dwc2 node whose dr_mode is not
++ * "peripheral" or "otg", so that lists_bind_fdt() (drivers/core/lists.c)
++ * moves on to the next matching driver -- the dwc2 host driver -- for a
++ * node marked dr_mode = "host". Without this, the same check in
++ * dwc2_udc_otg_of_to_plat() runs at probe, which is after binding has
++ * already claimed the node and stopped the search: on the K230 this
++ * driver took both usbotg0 and usbotg1 and the host stack went dark
++ * (docs/evidence/uboot-ums-enumerate.txt, `dm tree`). lists_bind_fdt()
++ * continues only on -ENODEV from a .bind, which is what this returns.
++ */
++static int dwc2_udc_otg_bind(struct udevice *dev)
++{
++	enum usb_dr_mode mode = usb_get_dr_mode(dev_ofnode(dev));
++
++	if (mode != USB_DR_MODE_PERIPHERAL && mode != USB_DR_MODE_OTG)
++		return -ENODEV;
++
++	return 0;
++}
++
+ U_BOOT_DRIVER(dwc2_udc_otg) = {
+ 	.name	= "dwc2-udc-otg",
+ 	.id	= UCLASS_USB_GADGET_GENERIC,
+ 	.of_match = dwc2_udc_otg_ids,
++	.bind = dwc2_udc_otg_bind,
+ 	.of_to_plat = dwc2_udc_otg_of_to_plat,
+ 	.probe = dwc2_udc_otg_probe,
+ 	.remove = dwc2_udc_otg_remove,
+--- a/arch/riscv/dts/k230_canmv_v3.dts
++++ b/arch/riscv/dts/k230_canmv_v3.dts
+@@ -54,8 +54,13 @@
+ 	status = "okay";
+ };
+ 
++/* usbotg1 carries the onboard RTL8152 Ethernet: a host port, and said so
++ * explicitly so the gadget driver's .bind refuses it and the dwc2 host
++ * driver gets it (design D3's follow-up).
++ */
+ &usbotg1 {
+ 	status = "okay";
++	dr_mode = "host";
+ };
+ 
+ /* The data USB-C, J3, is wired to usbotg0 (schematic: USB0_P/USB0_N to J3
