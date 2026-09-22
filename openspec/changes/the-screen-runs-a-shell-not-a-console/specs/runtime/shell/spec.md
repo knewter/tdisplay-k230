@@ -2,7 +2,7 @@
 
 Defines what owns this board's screen and touch panel once the system is up:
 the compositor that draws, how it draws with no GPU driver, how a person types
-with no cable, and what a touch actually does.
+without a host computer or external keyboard, and what a touch actually does.
 
 ## ADDED Requirements
 
@@ -103,12 +103,13 @@ at-spi2-core and dconf. Recorded in `docs/display-environment-options.md`.*
 
 ### Requirement: The shell starts at boot and owns the panel
 
-<!-- The compositor has been started and owns the panel. Battery-only boot is
-still unverified because the recorded startup retained USB cables. Grounding:
+<!-- The compositor has been started and owns the panel. Standalone boot from an external power supply is
+still unverified because the recorded startup retained host USB connections.
+No battery is available or required for acceptance. Grounding:
 docs/evidence/shell-first-light.md, docs/evidence/shell-session.txt, and
 docs/evidence/shell-features/startup/. -->
 
-The system SHALL start the compositor without a serial cable, a login prompt or
+The system SHALL start the compositor without a host computer, external keyboard, login prompt or
 a display manager, and the compositor SHALL take the panel at its native
 568x1232 in portrait, with no rotation and no scaling.
 
@@ -118,9 +119,9 @@ Wayland session can report a successful mode set and present nothing — the sam
 failure this board already produced once, when the Wi-Fi driver reported
 `start ap successs!` and transmitted nothing.
 
-#### Scenario: The board is powered on with nothing attached
+#### Scenario: The board is powered on without a host computer
 
-- **WHEN** the board boots with no cable connected
+- **WHEN** the board boots from a USB wall supply with no host/data connection or external keyboard
 - **THEN** the compositor is running with a terminal visible on the panel, photographed
 
 #### Scenario: The compositor log is read
@@ -128,7 +129,7 @@ failure this board already produced once, when the Wi-Fi driver reported
 - **WHEN** the compositor's startup log is examined
 - **THEN** it names the software renderer and the dumb-buffer allocator it selected, and reports no failed attempt to open a render node as an error
 
-### Requirement: A person can type on the board with no cable attached
+### Requirement: A person can type on the board without an external keyboard
 
 <!-- The user typed `ls` and its output was recorded on the panel; the feature
 gallery also records injected keyboard show/hide and typing. Whether a real
@@ -139,7 +140,7 @@ The shell SHALL present an on-screen keyboard that a person can summon and
 dismiss by touch, and characters typed on it SHALL reach the focused
 application.
 
-#### Scenario: Someone types a command with no cable attached
+#### Scenario: Someone types a command without an external keyboard
 
 - **WHEN** a person summons the keyboard and types a command into the terminal on the panel
 - **THEN** the command runs and its output appears on the panel, photographed
@@ -177,7 +178,7 @@ invalidate only one of them.
 - **WHEN** a finger is dragged from one end of the panel to the other
 - **THEN** the shell follows the finger in the same direction, and this is shown rather than asserted
 
-### Requirement: The cable-free session has practical touch controls
+### Requirement: The standalone session has practical touch controls
 
 <!-- The menu workflow is demonstrated by injected uinput, including launch,
 window switching, keyboard, recovery, and cancelled system confirmations.

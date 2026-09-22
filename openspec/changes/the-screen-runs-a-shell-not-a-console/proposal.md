@@ -24,13 +24,13 @@ evidence.
   choosing a fast compositor and accepting slow frames — it decides which
   compositors can start at all. wlroots has a Pixman software renderer and a
   DRM dumb-buffer allocator, so it needs neither Mesa nor a render node.
-- **An on-screen keyboard, so the board is usable with no cable.**
+- **An on-screen keyboard, so the board is usable without a host computer or external keyboard.**
   `the-screen-comes-up-under-linux` removed the need for a serial cable to
   *read*. This removes it to *type*.
 - **Touch drives the shell, not just the input subsystem.** A touch already
   producing `evtest` output is not a touch that activates a button. That is a
   separate claim and it gets separate evidence.
-- **The cable-free session has practical touch controls.** A persistent,
+- **The standalone session has practical touch controls.** A persistent,
   finger-sized bar exposes Apps, Windows/Home, Keyboard, and System. Its
   launcher can start or return to the terminal and a system monitor; System
   makes reboot and power-off deliberate two-tap operations with Cancel. This

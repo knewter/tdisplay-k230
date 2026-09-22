@@ -1,5 +1,10 @@
 ## Context
 
+Standalone use means no host computer or external keyboard. The board has no
+battery available for this work; a USB wall supply and its power cable are
+allowed. Power-on acceptance records an actual start from power-off using
+that supply, rather than substituting a serial reboot.
+
 See proposal.md — Why. The full comparison, with every measurement and every
 source citation, is `docs/display-environment-options.md`; this document
 records only what shapes the approach.
@@ -50,7 +55,7 @@ What constrains the approach:
 **Non-Goals (design level, beyond the proposal's):**
 
 - Broad desktop customization. The bounded touch bar is part of making the
-  cable-free session usable: Apps, Windows/Home, Keyboard, and System only.
+  standalone session usable: Apps, Windows/Home, Keyboard, and System only.
   Keybinding suites, gesture bindings, theming, notifications, and a general
   application catalogue remain follow-on work.
 - Packaging SXMO. It is absent from nixpkgs and its scripts assume a
@@ -220,7 +225,7 @@ degrees off" report.
 
 ## Open Questions
 
-- Whether the remaining first-boot and battery-only paths stay reliable across
+- Whether the remaining first-boot and standalone externally powered paths stay reliable across
   the final image defaults, including firewall activation and the unresolved
   splash-to-Linux handoff geometry/color issue.
 - Whether a later application shell should draw the product experience on this

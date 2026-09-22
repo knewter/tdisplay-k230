@@ -59,14 +59,14 @@ anything else is attempted.
 
 ## 4. sway owns the panel
 
-- [ ] 4.1 Switch the module on, start sway at boot with no getty prompt and no display manager, with `WLR_RENDERER=pixman` set explicitly. Verify with a photograph of the board booting unattended to a sway session with a terminal, no cable attached
+- [ ] 4.1 Switch the module on, start sway at boot with no getty prompt and no display manager, with `WLR_RENDERER=pixman` set explicitly. Verify with a photograph of the board booting unattended to a sway session with a terminal, powered by a USB wall supply with no host/data connection or external keyboard. A power cable is allowed; no battery is required
 - [x] 4.2 Configure the output as 568x1232, `transform normal`, scale 1, and confirm sway agrees. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_outputs"` committed to `docs/evidence/shell-session.txt`
 - [x] 4.3 Record whether sway's built-in touch auto-mapping fired — whether the output is named `DSI-1` and whether the GT9895's `ID_PATH` starts with `platform-` — and add an explicit `map_to_output` regardless. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_inputs"` appended to `docs/evidence/shell-session.txt`, showing the touch device mapped to the panel
 
 **Proves group 4 — hardware claim.** A photograph of an unattended boot into
 sway, plus `docs/evidence/shell-session.txt`.
 
-## 5. A person can use the board with no cable
+## 5. A person can use the board without a host computer or external keyboard
 
 - [ ] 5.1 Add the on-screen keyboard as a layer-shell client that can be summoned and dismissed by touch. Verify with a photograph of the keyboard over the terminal and a second photograph with it dismissed and the terminal fully visible
 - [x] 5.2 Type a command entirely on the panel and show its output on the panel. Verify with a photograph of the typed command and its result — this task is not complete on a keyboard that appears; it is complete on a command that ran
@@ -106,7 +106,7 @@ committed.
 
 ## 7. Ground the specs
 
-- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the battery-only boot and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
+- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the standalone external-power boot and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
 - [x] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
 - [x] 7.3 Record the measured final closure and build cost in the `runtime/shell` requirement, while retaining the historical candidate estimates for comparison. Verify with `openspec validate --all`
 - [x] 7.4 Record the user-requested feature evidence with FFmpeg: terminal use, keyboard show/hide and typing, app launching, window switching, terminal recovery, system controls, and Neofetch. Provide a screenshot and finite video for each feature, with a site-ready index and manifests identifying the capture source and real-touch versus injected interactions. Retain original camera footage when generating presentation copies; verify media with `ffprobe` and review the visible result.
