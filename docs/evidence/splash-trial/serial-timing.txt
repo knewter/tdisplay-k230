@@ -1,0 +1,2 @@
+Reboot scheduling start UTC: 2026-09-22T18:32:01.392545+00:00
+capture-boot invocation UTC: 2026-09-22T18:32:03.014767+00:00

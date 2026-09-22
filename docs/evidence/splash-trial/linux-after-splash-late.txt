@@ -1,0 +1,24 @@
+[   0.006] --- capture start, waiting for /dev/ttyACM0 ---
+[   0.007] --- port opened ---
+[   0.447] --- settle window clean, nothing discarded ---
+
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [   0.648] --- sending: export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; cat /sys/devices/system/cpu/online; cat /proc/meminfo | head -6; ls /sys/firmware/devicetree/base/reserved-memory; dmesg | rg "cma:|framebuffer@10000000" ---
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl is-active shell; cat /sys/devices/system/cpu/online; cat /proc/meminfo | head -6; ls /sys/firmware/devicetree/base/reserved-memory; dmesg | rg "cma:|framebuffer@10000000"
+[?2004lactive
+0
+MemTotal:         953804 kB
+MemFree:          720092 kB
+MemAvailable:     775820 kB
+Buffers:           15072 kB
+Cached:           104724 kB
+SwapCached:            0 kB
+'#address-cells'        [0m[01;34mmmode_resv0@40000[0m   name    '#size-cells'
+ [01;34mframebuffer@10000000[0m   [01;34mmmode_resv1@0[0m       ranges
+-bash: rg: command not found
+[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l[?2004h
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m [  35.155] --- capture end ---

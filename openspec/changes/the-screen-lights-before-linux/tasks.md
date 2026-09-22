@@ -38,9 +38,12 @@ this change**: its `k230` machine models neither stage 1 nor a display.
 - [ ] 3.7 **Hardware.** Measure the U-Boot-lit image with `tools/panel-measure.py` exactly as `dsi-hsfreqrange-hardcoded.md` measured the Linux one. If it rolls or is dark, fall back to LILYGO's full table (39.6 MHz / `0x96`) to prove the path, then change one parameter at a time until our mode is stable, recording each step. Verify by committing the measurement table to `docs/evidence/boot-splash.md` with motion figures at or below the `0x87` row of the earlier document, and releasing the board — hardware claim
 
 Build-host tasks 3.1, 3.2, 3.3 and 3.5 passed on 2026-09-22; see
-`docs/evidence/splash-port-build.txt`. No stage-1 splash has yet been tested
-on the physical panel. Image contents and both console choices still need
-their full-image builds.
+`docs/evidence/splash-port-build.txt`. A narrow same-card trial subsequently proved the stage-1 splash on glass
+while held at U-Boot; `docs/evidence/boot-splash.md` records the photograph,
+video, USB regression pass and a physical Linux handoff defect. The logo is
+left disabled pending that fix. Task 3.6 remains unchecked because the
+prescribed second-card/full-image procedure has not been performed. Image
+contents and both console choices still need their full-image builds.
 
 **Proves group 3 — hardware claim.** A photograph plus a timestamped console capture showing the splash before `Starting kernel`, and a measurement showing no roll. The laptop half is `nix build .#uboot-k230 .#bootSplashImage .#deviceTree .#sdImage`.
 

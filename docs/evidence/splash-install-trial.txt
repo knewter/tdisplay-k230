@@ -1,0 +1,13 @@
+
+===== > bash /tmp/splash-install-trial.sh =====
+bash /tmp/splash-install-trial.sh
+[?2004l
+GUARDS PASS: identified root/boot card, full previous slot and all inputs; backups verified
+INSTALL VERIFIED: full U-Boot slot f0c68fed7a6eec61576f8c8f7586a80b1aa4cf5326a56057ae12d8859110edfe, DTB and logo readback; no reboot issued
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

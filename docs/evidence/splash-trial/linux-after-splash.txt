@@ -1,0 +1,668 @@
+[   0.007] --- capture start, waiting for /dev/ttyACM0 ---
+[   0.007] --- port opened ---
+[   0.448] --- settle window clean, nothing discarded ---
+
+bootcmd=run blinux;
+K230# 
+bootcmd=run blinux;
+K230# [   0.649] --- sending: run blinux ---
+run blinux
+ext4load mmc ${mmc_boot_dev_num}:1 0x15000000 force_dtb
+17 bytes read in 1 ms (16.6 KiB/s)
+211 bytes read in 1 ms (206.1 KiB/s)
+270808 bytes read in 11 ms (23.5 MiB/s)
+60351488 bytes read in 2130 ms (27 MiB/s)
+71307 bytes read in 4 ms (17 MiB/s)
+27295118 bytes read in 1130 ms (23 MiB/s)
+## Booting kernel from Legacy Image at 08000000 ...
+   Image Name:   linux
+   Created:      2023-11-14  22:13:20 UTC
+   Image Type:   RISC-V Linux Kernel Image (uncompressed)
+   Data Size:    270744 Bytes = 264.4 KiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 09000000 ...
+   Image Name:   initrd
+   Created:      1980-01-01   0:00:00 UTC
+   Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+   Data Size:    27295054 Bytes = 26 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 08400000
+   Booting using the fdt blob at 0x8400000
+   Loading Kernel Image
+   Loading Ramdisk to 3e12d000, end 3fb34d4e ... OK
+   Loading Device Tree to 000000000a0eb000, end 000000000a0ff68a ... OK
+g_bootmod = 3, bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd/init
+
+Starting kernel ...
+
+
+OpenSBI v1.4
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name             : LILYGO T-Display-K230
+Platform Features         : medeleg
+Platform HART Count       : 1
+Platform IPI Device       : aclint-mswi
+Platform Timer Device     : aclint-mtimer @ 27000000Hz
+Platform Console Device   : uart8250
+Platform HSM Device       : ---
+Platform PMU Device       : thead,c900-pmu
+Platform Reboot Device    : ---
+Platform Shutdown Device  : ---
+Platform Suspend Device   : system-suspend-test
+Platform CPPC Device      : ---
+Firmware Base             : 0x0
+Firmware Size             : 323 KB
+Firmware RW Offset        : 0x40000
+Firmware RW Size          : 67 KB
+Firmware Heap Offset      : 0x48000
+Firmware Heap Size        : 35 KB (total), 2 KB (reserved), 9 KB (used), 23 KB (free)
+Firmware Scratch Size     : 4096 B (total), 328 B (used), 3768 B (free)
+Runtime SBI Version       : 2.0
+
+Domain0 Name              : root
+Domain0 Boot HART         : 0
+Domain0 HARTs             : 0*
+Domain0 Region00          : 0x0000000091400000-0x0000000091400fff M: (I,R,W) S/U: (R,W)
+Domain0 Region01          : 0x0000000f04008000-0x0000000f0400bfff M: (I,R,W) S/U: ()
+Domain0 Region02          : 0x0000000f04000000-0x0000000f04007fff M: (I,R,W) S/U: ()
+Domain0 Region03          : 0x0000000000040000-0x000000000005ffff M: (R,W) S/U: ()
+Domain0 Region04          : 0x0000000000000000-0x000000000003ffff M: (R,X) S/U: ()
+Domain0 Region05          : 0x0000000f00000000-0x0000000f03ffffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06          : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address      : 0x0000000000200000
+Domain0 Next Arg1         : 0x000000000a0eb000
+Domain0 Next Mode         : S-mode
+Domain0 SysReset          : yes
+Domain0 SysSuspend        : yes
+
+Boot HART ID              : 0
+Boot HART Domain          : root
+Boot HART Priv Version    : v1.12
+Boot HART Base ISA        : rv64imafdcbvx
+Boot HART ISA Extensions  : sstc,zicntr,zihpm,zicboz,zicbom,svpbmt
+Boot HART PMP Reserved    : 2
+Boot HART PMP Count       : 64
+Boot HART PMP Granularity : 12 bits
+Boot HART PMP Address Bits: 38
+Boot HART MHPM Info       : 16 (0x0007fff8)
+Boot HART MIDELEG         : 0x0000000000020222
+Boot HART MEDELEG         : 0x000000000000b109
+[    0.000000] Linux version 6.6.36 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980
+[    0.000000] Machine model: LILYGO T-Display-K230
+[    0.000000] SBI specification v2.0 detected
+[    0.000000] SBI implementation ID=0x1 Version=0x10004
+[    0.000000] SBI TIME extension detected
+[    0.000000] SBI IPI extension detected
+[    0.000000] SBI RFENCE extension detected
+[    0.000000] efi: UEFI not found.
+[    0.000000] OF: reserved mem: 0x0000000000000000..0x000000000003ffff (256 KiB) nomap non-reusable mmode_resv1@0
+[    0.000000] OF: reserved mem: 0x0000000000040000..0x000000000005ffff (128 KiB) nomap non-reusable mmode_resv0@40000
+[    0.000000] OF: reserved mem: 0x0000000010000000..0x00000000103fffff (4096 KiB) nomap non-reusable framebuffer@10000000
+[    0.000000] cma: Reserved 512 MiB at 0x000000001e000000 on node -1
+[    0.000000] NUMA: No NUMA configuration found
+[    0.000000] NUMA: Faking a node at [mem 0x0000000000000000-0x000000003fffffff]
+[    0.000000] NUMA: NODE_DATA [mem 0x3fd9f100-0x3fda0fff]
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000000000000-0x000000003fffffff]
+[    0.000000]   Normal   empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000000000000-0x000000000005ffff]
+[    0.000000]   node   0: [mem 0x0000000000060000-0x000000000fffffff]
+[    0.000000]   node   0: [mem 0x0000000010000000-0x00000000103fffff]
+[    0.000000]   node   0: [mem 0x0000000010400000-0x000000003fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x000000003fffffff]
+[    0.000000] SBI HSM extension detected
+[    0.000000] riscv: base ISA extensions acdfimv
+[    0.000000] riscv: ELF capabilities acdfim
+[    0.000000] percpu: cpu 0 has no node -1 or node-local memory
+[    0.000000] percpu: Embedded 51 pages/cpu s82104 r8192 d118600 u208896
+[    0.000000] Kernel command line: console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/07qjn49hhr8m57x4afiapaxdxngl44zp-nixos-system-nixos-26.11.20260919.20b1ddd/init
+[    0.000000] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.000000] Fallback order for Node 0: 0 
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 258048
+[    0.000000] Policy zone: DMA32
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]       fixmap : 0xffffffc6fea00000 - 0xffffffc6ff000000   (6144 kB)
+[    0.000000]       pci io : 0xffffffc6ff000000 - 0xffffffc700000000   (  16 MB)
+[    0.000000]      vmemmap : 0xffffffc700000000 - 0xffffffc800000000   (4096 MB)
+[    0.000000]      vmalloc : 0xffffffc800000000 - 0xffffffd800000000   (  64 GB)
+[    0.000000]      modules : 0xffffffff03a25000 - 0xffffffff80000000   (1989 MB)
+[    0.000000]       lowmem : 0xffffffd800000000 - 0xffffffd840000000   (1024 MB)
+[    0.000000]       kernel : 0xffffffff80000000 - 0xffffffffffffffff   (2047 MB)
+[    0.000000] Memory: 394344K/1048576K available (14780K kernel code, 9455K rwdata, 24576K rodata, 8521K init, 598K bss, 129944K reserved, 524288K cma-reserved)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] ftrace: allocating 51213 entries in 201 pages
+[    0.000000] ftrace: allocated 201 pages with 4 groups
+[    0.000000] trace event string verifier disabled
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=1.
+[    0.000000] rcu: 	RCU debug extended QS entry/exit.
+[    0.000000] 	Rude variant of Tasks RCU enabled.
+[    0.000000] 	Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.000000] plic: interrupt-controller@f00000000: mapped 208 interrupts with 1 handlers for 2 contexts.
+[    0.000000] riscv: providing IPIs using SBI IPI extension
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x63a1e71a3, max_idle_ns: 440795203123 ns
+[    0.000000] sched_clock: 64 bits at 27MHz, resolution 37ns, wraps every 4398046511093ns
+[    0.000918] kfence: initialized - using 2097152 bytes for 255 objects at 0x(____ptrval____)-0x(____ptrval____)
+[    0.001168] Console: colour dummy device 80x25
+[    0.001182] printk: console [tty0] enabled
+[    0.003038] Calibrating delay loop (skipped), value calculated using timer frequency.. 54.00 BogoMIPS (lpj=108000)
+[    0.003069] pid_max: default: 32768 minimum: 301
+[    0.005045] LSM: initializing lsm=capability,landlock,yama,bpf,integrity
+[    0.008326] landlock: Up and running.
+[    0.008344] Yama: becoming mindful.
+[    0.008376] LSM support for eBPF active
+[    0.009066] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.009099] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.013992] RCU Tasks Rude: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1.
+[    0.014197] RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1.
+[    0.014354] riscv: ELF compat mode supported
+[    0.014409] ASID allocator using 16 bits (65536 entries)
+[    0.014636] rcu: Hierarchical SRCU implementation.
+[    0.014658] rcu: 	Max phase no-delay instances is 1000.
+[    0.015558] EFI services will not be available.
+[    0.015841] smp: Bringing up secondary CPUs ...
+[    0.015888] smp: Brought up 1 node, 1 CPU
+[    0.017151] devtmpfs: initialized
+[    0.032239] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.032291] futex hash table entries: 256 (order: 2, 16384 bytes, linear)
+[    0.044383] pinctrl core: initialized pinctrl subsystem
+[    0.046374] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.047698] DMA: preallocated 128 KiB GFP_KERNEL pool for atomic allocations
+[    0.047885] DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.048010] audit: initializing netlink subsys (disabled)
+[    0.049089] thermal_sys: Registered thermal governor 'fair_share'
+[    0.049102] thermal_sys: Registered thermal governor 'bang_bang'
+[    0.049127] thermal_sys: Registered thermal governor 'step_wise'
+[    0.049140] thermal_sys: Registered thermal governor 'user_space'
+[    0.049216] audit: type=2000 audit(0.044:1): state=initialized audit_enabled=0 res=1
+[    0.049272] cpuidle: using governor ladder
+[    0.049303] cpuidle: using governor menu
+[    0.072527] cpu0: Ratio of byte access time to unaligned word access is 6.32, unaligned accesses are fast
+[    0.080132] platform soc: Fixed dependency cycle(s) with /soc/interrupt-controller@f00000000
+[    0.164847] platform 90840000.vo: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    0.165066] platform 90840000.vo: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    0.165165] platform 90850000.dsi: Fixed dependency cycle(s) with /soc/dsi@90850000/panel@0
+[    0.165195] platform 90850000.dsi: Fixed dependency cycle(s) with /soc/vo@90840000
+[    0.174929] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[    0.174958] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[    0.174974] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.174986] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.184065] fbcon: Taking over console
+[    0.184162] ACPI: Interpreter disabled.
+[    0.184699] k230-powerdomain 91103000.sysctl_power: powerdomain init ok
+[    0.189671] iommu: Default domain type: Translated
+[    0.189708] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.190501] SCSI subsystem initialized
+[    0.191119] usbcore: registered new interface driver usbfs
+[    0.191190] usbcore: registered new interface driver hub
+[    0.191255] usbcore: registered new device driver usb
+[    0.193120] mc: Linux media interface: v0.10
+[    0.193248] videodev: Linux video capture interface: v2.00
+[    0.197996] Advanced Linux Sound Architecture Driver Initialized.
+[    0.199065] vgaarb: loaded
+[    0.199673] clocksource: Switched to clocksource riscv_clocksource
+[    0.204730] pnp: PnP ACPI: disabled
+[    0.231223] NET: Registered PF_INET protocol family
+[    0.232474] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    0.235238] tcp_listen_portaddr_hash hash table entries: 512 (order: 2, 16384 bytes, linear)
+[    0.235343] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.235394] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.235525] TCP bind hash table entries: 8192 (order: 7, 524288 bytes, linear)
+[    0.237106] TCP: Hash tables configured (established 8192 bind 8192)
+[    0.237570] MPTCP token hash table entries: 1024 (order: 3, 49152 bytes, linear)
+[    0.237836] UDP hash table entries: 512 (order: 3, 49152 bytes, linear)
+[    0.237937] UDP-Lite hash table entries: 512 (order: 3, 49152 bytes, linear)
+[    0.238468] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.239927] NET: Registered PF_XDP protocol family
+[    0.239975] PCI: CLS 0 bytes, default 64
+[    0.240267] Unpacking initramfs...
+[    0.247206] Initialise system trusted keyrings
+[    0.247585] workingset: timestamp_bits=44 max_order=18 bucket_order=0
+[    0.247729] zbud: loaded
+[    0.270847] fuse: init (API version 7.39)
+[    0.277934] 9p: Installing v9fs 9p2000 file system support
+[    0.362033] NET: Registered PF_ALG protocol family
+[    0.362075] Key type asymmetric registered
+[    0.362089] Asymmetric key parser 'x509' registered
+[    0.362180] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 241)
+[    0.365545] io scheduler mq-deadline registered
+[    0.365577] io scheduler kyber registered
+[    0.415019] [K230_RESET]:sysctl reset phy addr 0x91101000
+[    0.415032] [K230_RESET]: ok!
+[    0.586833] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    0.595899] printk: console [ttyS0] disabled
+[    0.616500] 91400000.serial: ttyS0 at MMIO 0x91400000 (irq = 79, base_baud = 3125000) is a 16550A
+[    0.637519] printk: console [ttyS0] enabled
+[    2.562143] 91403000.serial: ttyS3 at MMIO 0x91403000 (irq = 80, base_baud = 3125000) is a 16550A
+[    2.601672] SuperH (H)SCI(F) driver initialized
+[    2.626793] random: crng init done
+[    2.630519] k230-rng 91213000.trng: K230 TRNG driver register!
+[    2.646342] canaan-vo 90840000.vo: probe
+[    2.668575] canaan-mipi-dsi 90850000.dsi: Fixed dependency cycle(s) with /soc/dsi@90850000/panel@0
+[    2.688576] mipi-dsi 90850000.dsi.0: Fixed dependency cycle(s) with /soc/dsi@90850000
+[    3.124353] canaan-mipi-dsi 90850000.dsi: Attached device universal
+[    3.141809] canaan-vo 90840000.vo: background color is ffffff
+[    3.156074] canaan-drm soc:display-subsystem: bound 90840000.vo (ops 0xffffffff83696c38)
+[    3.171834] canaan-drm soc:display-subsystem: bound 90850000.dsi (ops 0xffffffff83697130)
+[    3.192580] [drm] Initialized canaan-drm 1.0.0 20230501 for soc:display-subsystem on minor 0
+[    3.216451] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 594000 kbps, voc 0x17, hsfreqrange 0x87
+[    3.571605] Freeing initrd memory: 26652K
+[    3.953949] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+[    4.398021] canaan-mipi-dsi 90850000.dsi: PHY_STATUS 0x1529 != 0x1fbd after 2001 tries, continuing
+[    4.398037] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1
+[    4.739705] canaan-panel-dsi 90850000.dsi.0: RDDID (0x04) failed: -22
+[    4.759922] canaan-mipi-dsi 90850000.dsi: DCS read 0x0a: panel did not answer (status 0x50015)
+[    4.759932] canaan-panel-dsi 90850000.dsi.0: RDDPM (0x0A) failed: -110
+[    4.767988] Console: switching to colour frame buffer device 71x77
+[    4.858118] canaan-drm soc:display-subsystem: [drm] fb0: canaan-drmdrmfb frame buffer device
+[    4.866721] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] Canaan K230 DRM driver register successfully
+[    4.886273] loop: module loaded
+[    4.914976] misc mmz: registered.
+[    4.923292] e1000e: Intel(R) PRO/1000 Network Driver
+[    4.928397] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    4.936092] usbcore: registered new device driver r8152-cfgselector
+[    4.942603] usbcore: registered new interface driver r8152
+[    4.949331] dwc2 91500000.usb: supply vusb_d not found, using dummy regulator
+[    4.956839] dwc2 91500000.usb: supply vusb_a not found, using dummy regulator
+[    5.083790] dwc2 91500000.usb: EPs: 7, dedicated fifos, 3016 entries in SPRAM
+[    5.091327] dwc2 91500000.usb: DWC OTG Controller
+[    5.096293] dwc2 91500000.usb: new USB bus registered, assigned bus number 1
+[    5.103547] dwc2 91500000.usb: irq 85, io mem 0x91500000
+[    5.109157] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.06
+[    5.117545] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    5.124829] usb usb1: Product: DWC OTG Controller
+[    5.129574] usb usb1: Manufacturer: Linux 6.6.36 dwc2_hsotg
+[    5.135198] usb usb1: SerialNumber: 91500000.usb
+[    5.140675] hub 1-0:1.0: USB hub found
+[    5.144659] hub 1-0:1.0: 1 port detected
+[    5.149777] dwc2 91540000.usb: supply vusb_d not found, using dummy regulator
+[    5.157361] dwc2 91540000.usb: supply vusb_a not found, using dummy regulator
+[    5.283790] dwc2 91540000.usb: EPs: 7, dedicated fifos, 3016 entries in SPRAM
+[    5.301430] dwc2 91540000.usb: DWC OTG Controller
+[    5.306374] dwc2 91540000.usb: new USB bus registered, assigned bus number 2
+[    5.318208] dwc2 91540000.usb: irq 86, io mem 0x91540000
+[    5.326657] usb usb2: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.06
+[    5.338687] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    5.349697] usb usb2: Product: DWC OTG Controller
+[    5.356302] usb usb2: Manufacturer: Linux 6.6.36 dwc2_hsotg
+[    5.363796] usb usb2: SerialNumber: 91540000.usb
+[    5.372023] hub 2-0:1.0: USB hub found
+[    5.378724] hub 2-0:1.0: 1 port detected
+[    5.386799] usbcore: registered new interface driver usb-storage
+[    5.396005] usbcore: registered new interface driver usbserial_generic
+[    5.407304] usbserial: USB Serial support registered for generic
+[    5.416536] mousedev: PS/2 mouse device common for all mice
+[    5.425596] goodix-berlin-i2c 1-005d: supply avdd not found, using dummy regulator
+[    5.438103] goodix-berlin-i2c 1-005d: supply iovdd not found, using dummy regulator
+[    5.585741] input: Goodix Berlin Capacitive TouchScreen as /devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+[    5.603209] i2c_dev: i2c /dev entries driver
+[    5.613120] MVX dev: Linlon v5276 identified. cores=1, nlsid=4, id=0. (mvx_dev.c:416)
+[    5.626098] usbcore: registered new interface driver uvcvideo
+[    5.666635] sdhci: Secure Digital Host Controller Interface driver
+[    5.674721] sdhci: Copyright(c) Pierre Ossman
+[    5.682667] sdhci-pltfm: SDHCI platform and OF driver helper
+[    5.695490] Kendryte crypto driver probe!
+[    5.702476] usb 2-1: new high-speed USB device number 2 using dwc2
+[    5.711260] Kendryte sha256 driver probe!
+[    5.719069] Kendryte RSA driver probe!
+[    5.725893] hid: raw HID events driver (C) Jiri Kosina
+[    5.733998] mmc0: SDHCI controller on 91580000.sdhci0 [91580000.sdhci0] using ADMA
+[    5.746312] mmc1: SDHCI controller on 91581000.sdhci1 [91581000.sdhci1] using ADMA
+[    5.758808] usbcore: registered new interface driver usbhid
+[    5.766242] usbhid: USB HID core driver
+[    5.776043] sdhci-dwcmshc-kendryte 91580000.sdhci0: card claims to support voltages below defined range
+[    5.789778] riscv-pmu-sbi: SBI PMU extension is available
+[    5.797152] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[    5.813943] mmc0: new high speed SDIO card at address 0001
+[    5.843846] mmc1: new high speed SDXC card at address 5048
+[    5.851990] mmcblk1: mmc1:5048 SD128 119 GiB
+[    5.861166]  mmcblk1: p1 p2
+[    5.924512] usb 2-1: New USB device found, idVendor=0bda, idProduct=8152, bcdDevice=20.00
+[    5.936302] usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[    5.947060] usb 2-1: Product: USB 10/100 LAN
+[    5.953153] usb 2-1: Manufacturer: Realtek
+[    5.959022] usb 2-1: SerialNumber: 000000000000
+[    6.150131] drop_monitor: Initializing network drop monitor service
+[    6.159348] r8152-cfgselector 2-1: reset high-speed USB device number 2 using dwc2
+[    6.510789] r8152 2-1:1.0: skip request firmware
+[    6.517466] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Invalid ether addr 00:00:00:00:00:00
+[    6.530136] r8152 2-1:1.0 (unnamed net_device) (uninitialized): Random ether addr c6:5f:0a:f1:54:f9
+[    6.566165] NET: Registered PF_INET6 protocol family
+[    6.597904] Segment Routing with IPv6
+[    6.605017] In-situ OAM (IOAM) with IPv6
+[    6.612834] r8152 2-1:1.0 eth0: v1.12.13
+[    6.620220] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    6.630197] NET: Registered PF_PACKET protocol family
+[    6.638296] 9pnet: Installing 9P2000 support
+[    6.645467] Key type dns_resolver registered
+[    6.669617] registered taskstats version 1
+[    6.677873] Loading compiled-in X.509 certificates
+[    6.701377] debug_vm_pgtable: [debug_vm_pgtable         ]: Validating architecture page table helpers
+[    6.715614] Key type .fscrypt registered
+[    6.722354] Key type fscrypt-provisioning registered
+[    6.730361] ima: No TPM chip found, activating TPM-bypass!
+[    6.738613] ima: Allocated hash algorithm: sha1
+[    6.745972] ima: No architecture policies found
+[    6.765927] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[    6.789032] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+[    6.798296] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+[    6.810250] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+[    6.822591] clk: Disabling unused clocks
+[    6.828393] cfg80211: failed to load regulatory.db
+[    6.835126] ALSA device list:
+[    6.840973]   #0: K230_I2S_INNO
+[    6.854620] Freeing unused kernel image (initmem) memory: 8520K
+[    6.863373] Run /init as init process
+[    6.892807] systemd[1]: System time advanced to built-in epoch: Tue 2026-03-17 19:55:52 UTC
+P+q6E616D65\[    7.254455] systemd[1]: Successfully made /usr/ read-only.
+[18t7[32766;32766H[6n8[!p]104\[0m[?7h[1G[0J[    7.943837] systemd[1]: systemd 261.2 running in system mode (+PAM +AUDIT -SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF -XKBCOMMON +UTMP +LIBARCHIVE)
+[    7.986376] systemd[1]: Detected architecture riscv64.
+[    7.994378] systemd[1]: Running in initrd.
+[0;1;39mBooting initrd of [0m[0;38;2;126;186;228mNixOS 26.11 (Zokor) (Initrd)[0m[0;1;39m.[0m
+[    8.020312] systemd[1]: Initializing machine ID from random generator.
+[    8.031952] systemd[1]: Hostname set to <nixos>.
+]3008;start=58791a32523840e9bd67358a4039735b;user=root;hostname=nixos;machineid=74424ee5d8ac4743b30eb7d55f93ff52;bootid=80548a2360f94de1a4177977f3069341;pid=1;comm=systemd;type=boot\[    8.683200] systemd[1]: bpf-restrict-fs: Failed to link program; assuming BPF LSM is not available.
+[    9.018759] systemd[1]: Queued start job for default target Initrd Default Target.
+[    9.051381] systemd[1]: Created slice Slice /system/modprobe.
+[[0;32m  OK  [0m] Created slice [0;1;39mSlice /system/modprobe[0m.
+[    9.076330] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.
+[[0;32m  OK  [0m] Started [0;1;39mDispatch Password Requests to Console Directory Watch[0m.
+[    9.108010] systemd[1]: Expecting device /dev/disk/by-label/NIXOS_SD...
+         Expecting device [0;1;39m/dev/disk/by-label/NIXOS_SD[0m...
+[    9.135996] systemd[1]: Reached target Path Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mPath Units[0m.
+[    9.159967] systemd[1]: Reached target Slice Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mSlice Units[0m.
+[    9.183984] systemd[1]: Reached target Swaps.
+[[0;32m  OK  [0m] Reached target [0;1;39mSwaps[0m.
+[    9.207966] systemd[1]: Reached target Timer Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mTimer Units[0m.
+[    9.232476] systemd[1]: Listening on D-Bus System Message Bus Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mD-Bus System Message Bus Socket[0m.
+[    9.260582] systemd[1]: Listening on Journal Socket (/dev/log).
+[[0;32m  OK  [0m] Listening on [0;1;39mJournal Socket (/dev/log)[0m.
+[    9.284605] systemd[1]: Listening on Journal Sockets.
+[[0;32m  OK  [0m] Listening on [0;1;39mJournal Sockets[0m.
+[    9.308607] systemd[1]: Listening on udev Control Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mudev Control Socket[0m.
+[    9.332385] systemd[1]: Listening on udev Kernel Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mudev Kernel Socket[0m.
+[    9.355992] systemd[1]: Reached target Socket Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mSocket Units[0m.
+[    9.380164] systemd[1]: Create List of Static Device Nodes skipped, unmet condition check ConditionFileNotEmpty=/lib/modules/6.6.36/modules.devname
+[    9.408617] systemd[1]: Starting Load Kernel Module configfs...
+         Starting [0;1;39mLoad Kernel Module configfs[0m...
+[    9.460688] systemd[1]: Starting Journal Service...
+         Starting [0;1;39mJournal Service[0m...
+[    9.517840] systemd[1]: Starting Load Kernel Modules...
+         Starting [0;1;39mLoad Kernel Modules[0m...
+[    9.580684] systemd[1]: Starting Create Static Device Nodes in /dev gracefully...
+         Starting [0;1;39mCreate Static Device Nodes in /dev gracefully[0m...
+[    9.648234] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    9.708726] systemd[1]: Starting Coldplug All udev Devices...
+         Starting [0;1;39mColdplug All udev Devices[0m...
+[    9.789911] systemd-journald[97]: Collecting audit messages is disabled.
+[    9.818363] systemd[1]: modprobe@configfs.service: Deactivated successfully.
+[    9.851976] systemd[1]: Finished Load Kernel Module configfs.
+[[0;32m  OK  [0m] Finished [0;1;39mLoad Kernel Module configfs[0m.
+[    9.904624] systemd[1]: Finished Load Kernel Modules.
+[[0;32m  OK  [0m] Finished [0;1;39mLoad Kernel Modules[0m.
+[    9.948434] systemd[1]: Finished Create Static Device Nodes in /dev gracefully.
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Static Device Nodes in /dev gracefully[0m.
+[    9.998581] systemd[1]: Kernel Configuration File System skipped, unmet condition check ConditionPathExists=/sys/kernel/config
+[   10.076664] systemd[1]: Starting Apply Kernel Variables...
+         Starting [0;1;39mApply Kernel Variables[0m...
+[   10.180676] systemd[1]: Starting Create Static Device Nodes in /dev...
+         Starting [0;1;39mCreate Static Device Nodes in /dev[0m...
+[   10.270125] systemd[1]: Started Journal Service.
+[[0;32m  OK  [0m] Started [0;1;39mJournal Service[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mApply Kernel Variables[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Static Device Nodes in /dev[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mPreparation for Local File Systems[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mLocal File Systems[0m.
+         Starting [0;1;39mCreate System Files and Directories[0m...
+         Starting [0;1;39mRule-based Manager for Device Events and Files[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mCreate System Files and Directories[0m.
+[[0;32m  OK  [0m] Started [0;1;39mRule-based Manager for Device Events and Files[0m.
+[[0m[0;31m*     [0m] (1 of 2) A start job is running for…g All udev Devices (4s / no limit)
+M[K[[0;1;31m*[0m[0;31m*    [0m] (1 of 2) A start job is running for…g All udev Devices (4s / no limit)
+M[K[[0;32m  OK  [0m] Finished [0;1;39mColdplug All udev Devices[0m.
+[K[[0;32m  OK  [0m] Reached target [0;1;39mSystem Initialization[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mBasic System[0m.
+[   15.871250] r8152 2-1:1.0 enu1: renamed from eth0
+[[0;32m  OK  [0m] Found device [0;1;39m/dev/disk/by-label/NIXOS_SD[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mInitrd Root Device[0m.
+         Starting [0;1;39mFile System Check on /dev/disk/by-label/NIXOS_SD[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mFile System Check on /dev/disk/by-label/NIXOS_SD[0m.
+         Mounting [0;1;39m/sysroot[0m...
+[   16.638469] EXT4-fs (mmcblk1p2): mounted filesystem 44444444-4444-4444-8888-888888888888 r/w with ordered data mode. Quota mode: disabled.
+[[0;32m  OK  [0m] Mounted [0;1;39m/sysroot[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mInitrd Root File System[0m.
+         Mounting [0;1;39m/sysroot/run[0m...
+         Starting [0;1;39mFind NixOS closure[0m...
+         Starting [0;1;39mMountpoints Configured in the Real Root[0m...
+[[0;32m  OK  [0m] Mounted [0;1;39m/sysroot/run[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mFind NixOS closure[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mMountpoints Configured in the Real Root[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mInitrd File Systems[0m.
+         Starting [0;1;39mCreate Volatile Files and Directories in the Real Root[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Volatile Files and Directories in the Real Root[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mInitrd Default Target[0m.
+         Starting [0;1;39mCleaning Up and Shutting Down Daemons[0m...
+[[0;32m  OK  [0m] Stopped target [0;1;39mInitrd Default Target[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mBasic System[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mInitrd Root Device[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mPath Units[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mDispatch Password Requests to Console Directory Watch[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSlice Units[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSocket Units[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSystem Initialization[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSwaps[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mTimer Units[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mD-Bus System Message Bus Socket[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mFind NixOS closure[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mApply Kernel Variables[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mLoad Kernel Modules[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate Volatile Files and Directories in the Real Root[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate System Files and Directories[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mLocal File Systems[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mPreparation for Local File Systems[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mColdplug All udev Devices[0m.
+         Stopping [0;1;39mRule-based Manager for Device Events and Files[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mCleaning Up and Shutting Down Daemons[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mRule-based Manager for Device Events and Files[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mudev Control Socket[0m.
+         Starting [0;1;39mCleanup udev Database[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate Static Device Nodes in /dev[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate Static Device Nodes in /dev gracefully[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mCleanup udev Database[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mSwitch Root[0m.
+         Starting [0;1;39mNixOS Activation[0m...
+[[0;31m*[0;1;31m*[0m[0;31m*   [0m] A start job is running for NixOS Activation (2s / no limit)
+M[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A start job is running for NixOS Activation (3s / no limit)
+M[K[[0;32m  OK  [0m] Finished [0;1;39mNixOS Activation[0m.
+[K         Starting [0;1;39mSwitch Root[0m...
+[   22.689182] systemd-journald[97]: Received SIGTERM from PID 1 (systemd).
+[   23.164726] systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Tue 2026-03-17 21:00:03 UTC
+P+q6E616D65\[18t7[32766;32766H[6n8[!p]104\[0m[?7h[1G[0J[   24.383857] systemd[1]: systemd 261.2 running in system mode (+PAM +AUDIT -SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF -XKBCOMMON +UTMP +LIBARCHIVE)
+[   24.426783] systemd[1]: Detected architecture riscv64.
+
+[0;1;39mWelcome to [0m[0;38;2;126;186;228mNixOS 26.11 (Zokor)[0m[0;1;39m![0m
+
+]3008;start=4d800f09f0d54d9ba545cb40030d930d;user=root;hostname=nixos;machineid=eace25c569cb4157bd7b1bf1bf49ecb1;bootid=80548a2360f94de1a4177977f3069341;pid=1;comm=systemd;type=boot\[   25.191974] systemd[1]: bpf-restrict-fs: Failed to link program; assuming BPF LSM is not available.
+[   27.118134] systemd[1]: initrd-switch-root.service: Deactivated successfully.
+[   27.131132] systemd[1]: Stopped initrd-switch-root.service.
+[[0;32m  OK  [0m] Stopped [0;1;39minitrd-switch-root.service[0m.
+[   27.162283] systemd[1]: systemd-journald.service: Scheduled restart job, restart counter is at 1.
+[   27.182170] systemd[1]: Created slice Slice /system/serial-getty.
+[[0;32m  OK  [0m] Created slice [0;1;39mSlice /system/serial-getty[0m.
+[   27.211508] systemd[1]: Created slice Slice /system/systemd-fsck.
+[[0;32m  OK  [0m] Created slice [0;1;39mSlice /system/systemd-fsck[0m.
+[   27.239262] systemd[1]: Created slice User and Session Slice.
+[[0;32m  OK  [0m] Created slice [0;1;39mUser and Session Slice[0m.
+[   27.264386] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.
+[[0;32m  OK  [0m] Started [0;1;39mDispatch Password Requests to Console Directory Watch[0m.
+[   27.296398] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+[[0;32m  OK  [0m] Started [0;1;39mForward Password Requests to Wall Directory Watch[0m.
+[   27.327999] systemd[1]: Expecting device /dev/disk/by-label/K230_BOOT...
+         Expecting device [0;1;39m/dev/disk/by-label/K230_BOOT[0m...
+[   27.355892] systemd[1]: Expecting device /dev/ttyS0...
+         Expecting device [0;1;39m/dev/ttyS0[0m...
+[   27.379925] systemd[1]: Reached target Local Encrypted Volumes.
+[[0;32m  OK  [0m] Reached target [0;1;39mLocal Encrypted Volumes[0m.
+[   27.403977] systemd[1]: Stopped target initrd-fs.target.
+[[0;32m  OK  [0m] Stopped target [0;1;39minitrd-fs.target[0m.
+[   27.427903] systemd[1]: Stopped target initrd-root-fs.target.
+[[0;32m  OK  [0m] Stopped target [0;1;39minitrd-root-fs.target[0m.
+[   27.452016] systemd[1]: Stopped target initrd-switch-root.target.
+[[0;32m  OK  [0m] Stopped target [0;1;39minitrd-switch-root.target[0m.
+[   27.475992] systemd[1]: Reached target Virtual Machines and Containers.
+[[0;32m  OK  [0m] Reached target [0;1;39mVirtual Machines and Containers[0m.
+[   27.504052] systemd[1]: Reached target Path Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mPath Units[0m.
+[   27.528011] systemd[1]: Reached target Remote File Systems.
+[[0;32m  OK  [0m] Reached target [0;1;39mRemote File Systems[0m.
+[   27.551976] systemd[1]: Reached target Slice Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mSlice Units[0m.
+[   27.576023] systemd[1]: Reached target Swaps.
+[[0;32m  OK  [0m] Reached target [0;1;39mSwaps[0m.
+[   27.612485] systemd[1]: Listening on Query the User Interactively for a Password.
+[[0;32m  OK  [0m] Listening on [0;1;39mQuery the User Interactively for a Password[0m.
+[   27.653532] systemd[1]: Listening on Process Core Dump Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mProcess Core Dump Socket[0m.
+[   27.687151] systemd[1]: Listening on Credential Encryption/Decryption.
+[[0;32m  OK  [0m] Listening on [0;1;39mCredential Encryption/Decryption[0m.
+[   27.725715] systemd[1]: Listening on Factory Reset Management.
+[[0;32m  OK  [0m] Listening on [0;1;39mFactory Reset Management[0m.
+[   27.752497] systemd[1]: Listening on Hostname Service Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mHostname Service Socket[0m.
+[   27.788640] systemd[1]: Starting Journal Log Access Socket...
+         Starting [0;1;39mJournal Log Access Socket[0m...
+[   27.813344] systemd[1]: Listening on Journal Audit Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mJournal Audit Socket[0m.
+[   27.849699] systemd[1]: Listening on Console Output Muting Service Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mConsole Output Muting Service Socket[0m.
+[   27.880969] systemd[1]: Listening on Userspace Out-Of-Memory (OOM) Killer Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mUserspace Out-Of-Memory (OOM) Killer Socket[0m.
+[   27.912211] systemd[1]: TPM PCR Measurements skipped, unmet condition check ConditionSecurity=measured-os
+[   27.926550] systemd[1]: Make TPM PCR Policy skipped, unmet condition check ConditionSecurity=measured-uki
+[   27.955831] systemd[1]: Listening on Disk Repartitioning Service Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mDisk Repartitioning Service Socket[0m.
+[   27.984538] systemd[1]: Listening on udev Control Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mudev Control Socket[0m.
+[   28.008650] systemd[1]: Listening on udev Varlink Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mudev Varlink Socket[0m.
+[   28.041326] systemd[1]: Mounting Huge Pages File System...
+         Mounting [0;1;39mHuge Pages File System[0m...
+[   28.087425] systemd[1]: Mounting POSIX Message Queue File System...
+         Mounting [0;1;39mPOSIX Message Queue File System[0m...
+[   28.141452] systemd[1]: Mounting Kernel Debug File System...
+         Mounting [0;1;39mKernel Debug File System[0m...
+[   28.194644] systemd[1]: Mounting Kernel Trace File System...
+         Mounting [0;1;39mKernel Trace File System[0m...
+[   28.260813] systemd[1]: Starting Create List of Static Device Nodes...
+         Starting [0;1;39mCreate List of Static Device Nodes[0m...
+[   28.364786] systemd[1]: Starting Load Kernel Module configfs...
+         Starting [0;1;39mLoad Kernel Module configfs[0m...
+[   28.412092] systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+[   28.432238] systemd[1]: Load Kernel Module efi_pstore skipped, unmet condition check ConditionKernelModuleLoaded=!efi_pstore
+[   28.464157] systemd[1]: Load Kernel Module fuse skipped, unmet condition check ConditionKernelModuleLoaded=!fuse
+[   28.492235] systemd[1]: Mounting FUSE Control File System...
+         Mounting [0;1;39mFUSE Control File System[0m...
+[   28.524348] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+[   28.573997] systemd[1]: Starting Journal Service...
+         Starting [0;1;39mJournal Service[0m...
+[   28.627419] systemd[1]: Starting Load Kernel Modules...
+         Starting [0;1;39mLoad Kernel Modules[0m...
+[   28.712738] systemd[1]: Starting Userspace Out-Of-Memory (OOM) Killer...
+         Starting [0;1;39mUserspace Out-Of-Memory (OOM) Killer[0m...
+[   28.829139] systemd[1]: Starting Remount Root and Kernel File Systems...
+         Starting [0;1;39mRemou[   28.875009] systemd-journald[275]: Collecting audit messages is enabled.
+nt Root and Kernel File Systems[0m...
+[   28.896232] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[   28.980810] systemd[1]: Starting Coldplug All udev Devices...
+         Starting [0;1;39mColdplug All udev Devices[0m...
+[   29.108111] systemd[1]: Started Journal Service.
+[[0;32m  OK  [0m] Started [0;1;39mJournal Ser[   29.132276] EXT4-fs (mmcblk1p2): re-mounted 44444444-4444-4444-8888-888888888888 r/w. Quota mode: disabled.
+vice[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mJournal Log Access Socket[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39mHuge Pages File System[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39mPOSIX Message Queue File System[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39mKernel Debug File System[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39mKernel Trace File System[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mCreate List of Static Device Nodes[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mLoad Kernel Module configfs[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39mFUSE Control File System[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mLoad Kernel Modules[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mRemount Root and Kernel File Systems[0m.
+[[0;32m  OK  [0m] Started [0;1;39mUserspace Out-Of-Memory (OOM) Killer[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mDisk Image Download Service Socket[0m.
+         Starting [0;1;39mFirewall[0m...
+         Starting [0;1;39mFlush Journal to Persistent Storage[0m...
+         Starting [0;1;39mLoad/Save OS Random Seed[0m...
+         Starting [0;1;39mApply Kernel Variables[0m...
+[   29.875012] systemd-journald[275]: Received client request to flush runtime journal.
+         Starting [0;1;39mNetwork Time Synchronization[0m...
+[   30.000060] systemd-journald[275]: /var/log/journal/eace25c569cb4157bd7b1bf1bf49ecb1/system.journal: Realtime clock jumped backwards relative to last journal entry, rotating.
+         Starting [0;1;39mCreate Static Device Nodes in /dev gracefully[0m...
+[   30.111853] systemd-journald[275]: Rotating system journal.
+[[0;32m  OK  [0m] Finished [0;1;39mLoad/Save OS Random Seed[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mApply Kernel Variables[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Static Device Nodes in /dev gracefully[0m.
+         Starting [0;1;39mCreate Static Device Nodes in /dev[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mFlush Journal to Persistent Storage[0m.
+[[0;1;31mFAILED[0m] Failed to start [0;1;39mFirewall[0m.
+See 'systemctl status firewall.service' for details.
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Static Device Nodes in /dev[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mPreparation for Local File Systems[0m.
+         Mounting [0;1;39m/run/wrappers[0m...
+         Starting [0;1;39mRule-based Manager for Device Events and Files[0m...
+[[0;32m  OK  [0m] Started [0;1;39mNetwork Time Synchronization[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mSystem Time Set[0m.
+[[0;32m  OK  [0m] Mounted [0;1;39m/run/wrappers[0m.
+         Starting [0;1;39mCreate SUID/SGID Wrappers[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mCreate SUID/SGID Wrappers[0m.
+[[0;32m  OK  [0m] Started [0;1;39mRule-based Manager for Device Events and Files[0m.
+[[0m[0;31m*     [0m] (1 of 3) A start job is running for…by-label/K230_BOOT (8s / 1min 30s)
+M[K[[0;1;31m*[0m[0;31m*    [0m] (1 of 3) A start job is running for…by-label/K230_BOOT (9s / 1min 30s)
+M[K[[0;31m*[0;1;31m*[0m[0;31m*   [0m] (1 of 3) A start job is running for…by-label/K230_BOOT (9s / 1min 30s)
+M[K[[0;32m  OK  [0m] Finished [0;1;39mColdplug All udev Devices[0m.
+[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] (2 of 2) A start job is running for /dev/ttyS0 (12s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] (2 of 2) A start job is running for /dev/ttyS0 (12s / 1min 30s)
+M[K[   [0;31m*[0;1;31m*[0m[0;31m*[0m] (2 of 2) A start job is running for /dev/ttyS0 (13s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] (1 of 2) A start job is running for…y-label/K230_BOOT (13s / 1min 30s)
+M[K[     [0;31m*[0m] (1 of 2) A start job is running for…y-label/K230_BOOT (14s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] (1 of 2) A start job is running for…y-label/K230_BOOT (14s / 1min 30s)
+M[K[[0;32m  OK  [0m] Reached target [0;1;39mSound Card[0m.
+[K         Starting [0;1;39mVirtual Console Setup[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mVirtual Console Setup[0m.
+         Starting [0;1;39mVirtual Console Setup[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mVirtual Console Setup[0m.
+         Starting [0;1;39mFile System Check on /dev/disk/by-label/K230_BOOT[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mFile System Check on /dev/disk/by-label/K230_BOOT[0m.
+         Mounting [0;1;39m/boot[0m...
+[[0;32m  OK  [0m] Mounted [0;1;39m/boot[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mLocal File Systems[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mBoot Loader Control Service Socket[0m.
+[  50.154] --- capture end ---

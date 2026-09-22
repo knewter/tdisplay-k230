@@ -1,0 +1,12 @@
+
+===== > test "$(sha256sum /boot/logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && test ! -e /boot/logo.xrgb.disabled-first-trial && mv /boot/logo.xrgb /boot/logo.xrgb.disabled-first-trial && sync && echo LOGO_DISABLED_FOR_HANDOFF_COMPARISON && (sleep 4; reboot) >/tmp/splash-reboot.log 2>&1 & =====
+test "$(sha256sum /boot/logo.xrgb | cut -d' ' -f1)" = 6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af && test ! -e /boot/logo.xrgb.disabled-first-trial && mv /boot/logo.xrgb /boot/logo.xrgb.disabled-first-trial && sync && echo LOGO_DISABLED_FOR_HANDOFF_COMPARISON && (sleep 4; reboot) >/tmp/splash-reboot.log 2>&1 &
+[?2004l
+[1] 740
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m LOGO_DISABLED_FOR_HANDOFF_COMPARISON
