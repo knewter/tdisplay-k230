@@ -172,5 +172,11 @@ Task 2.3 — the whole closure with the shell on
   thrown away and ~45 are hooks and patches. The 875 MiB "to fetch" figure
   was build-time inputs, not closure, and is not comparable to +110 MiB.
 
-  Mesa: absent. `grep -iE 'mesa|llvm|libgbm'` over the shell closure's
-  560 paths matches nothing, as in the baseline.
+  Mesa: `grep -iE 'mesa|llvm|libgbm'` over the shell closure's 560 paths
+  matches exactly one, mesa-libgbm-26.1.3 -- Mesa's generic buffer
+  manager split out as its own package, which wlroots links for the GBM
+  allocator it does not use here (allocator.c only reaches GBM when the
+  renderer has WLR_BUFFER_CAP_DMABUF; Pixman does not). No Mesa GL or
+  Vulkan driver, no llvmpipe, no LLVM: none of those names appears. The
+  baseline has none of the four. A first draft of this file said "absent"
+  outright, which was wrong by one library and is corrected here.
