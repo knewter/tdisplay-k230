@@ -60,24 +60,22 @@ fi
 # rebuild ~950 derivations from source because riscv64 has no binary cache.
 # result-sd-image is gitignored and keeps the image and its closure alive.
 #
-# --max-jobs, and deliberately NOT --cores.
+# Keep the image build deliberately bounded.  The cross closure has enough
+# independent packages to make progress in parallel, but letting every job
+# claim every host core makes a concurrent build swap itself to death.  Callers
+# may raise these explicitly once they know the machine is otherwise idle.
 #
-# nix defaults to max-jobs = 1: one derivation at a time, each handed the
-# whole machine. The kernel is big-parallel and genuinely uses all 32
-# cores, but the riscv64 closure is a long tail of small packages that use
-# about one core each, so a full rebuild's tail runs effectively
-# single-threaded on a 32-core box. 8 concurrent jobs fixes that.
+# The local attic cache has also been intermittently unavailable.  It must not
+# turn an image build into a timeout, so select the official cache for these
+# build commands only; do not change the user's global Nix configuration.
 #
-# cores stays 0 (= all cores per job) on purpose. Pinning it to 32/8 = 4
-# would fill the machine neatly during a full rebuild, but the common case
-# here is "the kernel changed, rebuild the kernel and the image" -- a
-# single big-parallel derivation, which would then get make -j4 instead of
-# -j32 and take roughly eight times as long. Oversubscription when several
-# small packages run at once costs far less than that.
+MAX_JOBS="${K230_MAX_JOBS:-2}"
+CORES="${K230_CORES:-2}"
+NIX_IMAGE_ARGS=(--option substituters https://cache.nixos.org/ --max-jobs "$MAX_JOBS" --cores "$CORES")
 case "${K230_STAGE1:-source}" in
   source)
     echo "building the image from the current tree (stage 1 from source)..." >&2
-    nix build --max-jobs 8 --cores 0 \
+    nix build "${NIX_IMAGE_ARGS[@]}" \
       --out-link result-sd-image .#packages.x86_64-linux.sdImage
     ;;
   vendor)
@@ -87,7 +85,7 @@ case "${K230_STAGE1:-source}" in
     done
     echo "building the image from the current tree (VENDOR-COMPILED stage 1 from $DIR)..." >&2
     K230_STAGE1_DIR="$DIR" \
-      nix build --impure --max-jobs 8 --cores 0 \
+      nix build --impure "${NIX_IMAGE_ARGS[@]}" \
         --out-link result-sd-image-vendor-stage1 .#packages.x86_64-linux.sdImage
     ;;
   *)
