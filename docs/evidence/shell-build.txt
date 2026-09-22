@@ -180,3 +180,26 @@ Task 2.3 — the whole closure with the shell on
   Vulkan driver, no llvmpipe, no LLVM: none of those names appears. The
   baseline has none of the four. A first draft of this file said "absent"
   outright, which was wrong by one library and is corrected here.
+
+Task 2.5 — touch-menu and screenshot probes, final image
+----------------------------------------------------------
+The final combined image added the touch-menu's `htop`, `jq` and `gnused`
+dependencies, its sudo rule and the probe-only `grim` screenshot utility.
+The image build recorded 22 derivations (the two new target packages were
+`htop` and `grim`; the rest were regenerated NixOS configuration and image
+derivations) and six fetched paths, 8.0 MiB unpacked. Its complete, source
+stage-1 image is `/nix/store/bfjzna9z1b5n5h1kx2qm543q5hkaisip-k230-sd-image.img`.
+
+Immediately afterwards, with no other full closure/image build running:
+
+  $ time nix build --option substituters https://cache.nixos.org/ \
+      --max-jobs 2 --cores 8 .#toplevel
+  wall 0.052 s; 0 derivations built
+  -> /nix/store/n8hhaw7ncrqpb3dic8kc2ini8wsl6kq9-nixos-system-nixos-26.11.20260919.20b1ddd
+
+`nix path-info --closure-size` reports 1,280,320,680 bytes (1221.0 MiB)
+for that final enabled closure. The final closure contains riscv64 `htop`,
+`jq`, `sudo`, `evemu` and `grim`; the menu invokes the installed `htop` and
+`jq` store paths and `/run/wrappers/bin/sudo`, rather than relying on a
+terminal's ambient PATH. No package refused to cross-compile in this final
+increment.

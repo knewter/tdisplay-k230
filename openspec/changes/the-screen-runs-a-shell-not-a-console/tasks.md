@@ -37,7 +37,7 @@ shell, which is a different change.
 - [x] 2.2 Cross-build sway alone before the rest, because it is the derivation most likely to fail. Verify with `nix build .#shell-compositor` and record the store path
 - [x] 2.3 Cross-build the whole closure with the shell enabled and measure it. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`, and commit the wall-clock time, the derivations-built count and the resulting closure size to `docs/evidence/shell-build.txt` against the 89-derivation / 875 MiB estimate in `docs/display-environment-options.md`
 - [x] 2.4 Record any derivation that refused to cross-compile and what was done about it. Verify by extending `docs/evidence/shell-build.txt`; if the list is empty, say so explicitly rather than leaving the section out
-- [ ] 2.5 Remeasure the enabled closure after adding the touch-menu utilities (`htop`, `jq`, and `gnused`). Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and append the wall-clock time, derivation count, and closure size to `docs/evidence/shell-build.txt`. This is a build-host claim only; do not run it concurrently with another full closure/image build.
+- [x] 2.5 Remeasure the enabled closure after adding the touch-menu utilities (`htop`, `jq`, and `gnused`). Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and append the wall-clock time, derivation count, and closure size to `docs/evidence/shell-build.txt`. This is a build-host claim only; do not run it concurrently with another full closure/image build.
 
 **Proves group 2 — build-host claim.** `nix build
 .#nixosConfigurations.k230.config.system.build.toplevel` on `solomon`, with the
