@@ -32,3 +32,6 @@ __pycache__/
 /firmware/stage1/*.bin
 /firmware/stage1/*.env
 result-sd-image
+
+# Per-worktree nix out-links for probes (drm_info etc.)
+/.scratch/

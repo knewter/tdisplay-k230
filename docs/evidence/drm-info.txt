@@ -1,0 +1,437 @@
+DRM device evidence — runtime/shell task group 1
+================================================
+
+Captured 2026-09-22 on the board over the CH342 console (/dev/ttyACM0,
+115200 8N1), running the closure described in docs/evidence/panel-lit.md
+plus the hsfreqrange fix (commit 754511d). Nothing here was produced under
+QEMU: its k230 machine has no display pipeline.
+
+How drm_info got onto the board
+-------------------------------
+drm_info is not in the system closure. It was cross-built on the host
+(pkgsCross.riscv64.drm_info, 20 s, one derivation) and pushed over the
+console with tools/push-file.py together with the two libraries it links
+that the board's store lacks (libdisplay-info.so.4, libpci.so.3); libdrm,
+json-c and glibc were already present at the same store paths. It ran from
+/tmp with LD_LIBRARY_PATH; the board's /nix/store was not written to.
+
+    [root@nixos:~]# LD_LIBRARY_PATH=/tmp/drm_info/lib /tmp/drm_info/drm_info > /tmp/drm-info.txt 2>&1
+    [root@nixos:~]# wc -lc /tmp/drm-info.txt
+      300 16480 /tmp/drm-info.txt
+    [root@nixos:~]# md5sum /tmp/drm-info.txt
+    fc597f606f422e981064d3ccbe8d18b5  /tmp/drm-info.txt
+
+The 300 lines below are that file, with the shell's terminal escapes
+stripped and nothing else changed.
+
+Task 1.1 — driver, render node, dumb buffers (answers, then the dump)
+----------------------------------------------------------------------
+  driver                  canaan-drm ("Canaan K230 DRM driver") 1.0.0 20230501,
+                          platform device /soc/display-subsystem
+  /dev/dri/renderD*       NONE. "Available nodes: primary". ls /dev/dri shows
+                          only card0 (226,0) and by-path/.
+  DRM_CAP_DUMB_BUFFER     = 1
+  DRM_CAP_PRIME           = 3 (import and export), so a dumb buffer can be
+                          handed around as a dma-buf fd, which is how
+                          wlroots' DRM backend imports its own dumb buffers
+                          (backend/drm/fb.c: drmPrimeFDToHandle).
+  DRM_CAP_ADDFB2_MODIFIERS = 1, DRM_CLIENT_CAP_ATOMIC supported.
+  connector               object 48, type DSI, connected, 44x95 mm, one mode
+                          568x1232@52.19 (preferred). sysfs name card0-DSI-1,
+                          so the compositor will see an output named DSI-1.
+  CRTC                    object 46, ACTIVE = 1, the same mode.
+
+Task 1.2 — primary plane formats
+--------------------------------
+Plane 1 (object 33, type Primary, the only primary plane, currently
+scanning out fbcon's FB 49 at 568x1232 RGB565) advertises exactly:
+
+  ARGB8888  AR24   present
+  ARGB4444  AR12   present
+  ARGB1555  AR15   present
+  RGB888    RG24   present
+  RGB565    RG16   present
+  BGR888    BG24   present
+  XRGB8888  XR24   ABSENT
+
+Verdict: XR24 (XRGB8888), wlroots' default render format, is NOT available
+on the primary plane; AR24 (ARGB8888) and RG16 (RGB565) are. The same six
+formats appear on the cursor plane (35) and the two RGB overlays (37, 39);
+planes 31, 41 and 43 are NV12/NV21/NV16/NV61 video planes and the last one
+carries the only "rotation" property. The vendor documentation's list
+(docs/display-environment-options.md section 3) was right about AR24 and
+RG16 and omitted AR12/AR15/RG24/BG24; it is now superseded by this dump.
+
+What that means for a wlroots compositor, read in wlroots-0.20.2
+(the pinned nixpkgs wlroots source, meson.build:4):
+
+  - types/output/output.c:354 initialises every output with
+    .render_format = DRM_FORMAT_XRGB8888.
+  - render/allocator/drm_dumb.c:224-225 gives the dumb allocator the caps
+    WLR_BUFFER_CAP_DATA_PTR | WLR_BUFFER_CAP_DMABUF, so
+    backend/drm/drm.c:1296-1308 drm_connector_get_primary_formats() does
+    NOT return NULL (that early return needs the DMABUF cap to be absent)
+    and hands back the real primary-plane format list.
+  - types/output/render.c:147-190 output_pick_format() then looks the
+    render format up in that list; when it is missing it logs "Output
+    doesn't support format 0x34325258" and fails, and output.c:644-646
+    turns that into "Failed to pick primary buffer format for output".
+    There is no fallback to another format in that path.
+  - backend/drm/fb.c:161-175 substitutes an OPAQUE format for an alpha one
+    (opaque_substitute) at framebuffer import; it never goes the other way,
+    so XRGB8888 is not rescued by ARGB8888 being present.
+  - sway's `output <name> render_bit_depth 6` sets DRM_FORMAT_RGB565
+    (sway/config/output.c:548-556, bit_depth_from_format at 453-462), and
+    render/pixman/pixel_format.c:76 lists RGB565 among the Pixman
+    renderer's formats, added with both MOD_INVALID and MOD_LINEAR at
+    render/pixman/renderer.c:338-341, which intersects the plane's
+    MOD_LINEAR. RGB565 is also what fbcon is scanning out today.
+
+So: a wlroots compositor left at its default WILL fail to commit a frame on
+this device, and the fix is a sway config line, not a kernel change.
+Whether that prediction holds is a group 3/4 hardware claim; this file only
+records the plane list and the source it was checked against. cage has no
+equivalent option (cage-0.3.1 output.c sets only the mode), so an unpatched
+cage is expected to fail here for this reason.
+
+Task 1.3 — a dumb buffer scans out, with no compositor involved
+---------------------------------------------------------------
+modetest -s allocates its framebuffer with DRM_IOCTL_MODE_CREATE_DUMB
+(libdrm tests/modetest/buffers.c bo_create) and sets the mode with it. The
+default format is XR24; run against this plane it fails exactly as 1.2
+predicts, and AR24 and RG16 both succeed:
+
+    [root@nixos:~]# modetest -M canaan-drm -s 48@46:568x1232 < /dev/null
+    opened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 20230501)
+    failed to add fb (568x1232): Invalid argument
+
+    [root@nixos:~]# sleep 25 | modetest -M canaan-drm -s 48@46:568x1232@AR24
+    opened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 20230501)
+    setting mode 568x1232-52.19Hz on connectors 48, crtc 46
+
+    [root@nixos:~]# sleep 25 | modetest -M canaan-drm -s 48@46:568x1232@RG16
+    opened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 20230501)
+    setting mode 568x1232-52.19Hz on connectors 48, crtc 46
+
+(`sleep 25 |` gives modetest a stdin that closes after 25 s, so it holds
+the mode long enough to photograph and then exits without a keypress.)
+
+Photographs, webcam at the device's top edge looking down the panel, so
+the panel's columns run left-right in the frame:
+
+    panel-photos/09-modetest-AR24.jpg   SMPTE colour bars, ARGB8888 dumb buffer
+    panel-photos/09-modetest-RG16.jpg   the same bars, RGB565 dumb buffer
+
+Both show the seven bars (white, yellow, cyan, green, magenta, red, blue
+reading from the bottom edge of the frame, i.e. from panel column 0) and
+the smaller lower-third bars, replacing the ArUco registration pattern
+fbcon had been showing. When modetest exited, the panel returned to
+fbcon's content on its own; dmesg gained nothing during either run.
+
+That closes the design's first risk: the driver supports dumb buffers,
+they scan out, and the kernel lets a userspace process take the CRTC away
+from fbcon and give it back. The second risk (no XR24) is real and is
+handled above.
+
+Appendix — drm_info, verbatim
+-----------------------------
+Node: /dev/dri/card0
+├───Driver: canaan-drm (Canaan K230 DRM driver) version 1.0.0 (20230501)
+│   ├───DRM_CLIENT_CAP_STEREO_3D supported
+│   ├───DRM_CLIENT_CAP_UNIVERSAL_PLANES supported
+│   ├───DRM_CLIENT_CAP_ATOMIC supported
+│   ├───DRM_CLIENT_CAP_ASPECT_RATIO supported
+│   ├───DRM_CLIENT_CAP_WRITEBACK_CONNECTORS supported
+│   ├───DRM_CLIENT_CAP_CURSOR_PLANE_HOTSPOT not supported
+│   ├───DRM_CLIENT_CAP_PLANE_COLOR_PIPELINE not supported
+│   ├───DRM_CAP_DUMB_BUFFER = 1
+│   ├───DRM_CAP_VBLANK_HIGH_CRTC = 1
+│   ├───DRM_CAP_DUMB_PREFERRED_DEPTH = 0
+│   ├───DRM_CAP_DUMB_PREFER_SHADOW = 0
+│   ├───DRM_CAP_PRIME = 3
+│   ├───DRM_CAP_TIMESTAMP_MONOTONIC = 1
+│   ├───DRM_CAP_ASYNC_PAGE_FLIP = 0
+│   ├───DRM_CAP_CURSOR_WIDTH = 64
+│   ├───DRM_CAP_CURSOR_HEIGHT = 64
+│   ├───DRM_CAP_ADDFB2_MODIFIERS = 1
+│   ├───DRM_CAP_PAGE_FLIP_TARGET = 0
+│   ├───DRM_CAP_CRTC_IN_VBLANK_EVENT = 1
+│   ├───DRM_CAP_SYNCOBJ = 0
+│   ├───DRM_CAP_SYNCOBJ_TIMELINE = 0
+│   └───DRM_CAP_ATOMIC_ASYNC_PAGE_FLIP not supported
+├───Device: platform canaan,display-subsystem
+│   ├───Bus: /soc/display-subsystem
+│   └───Available nodes: primary
+├───Framebuffer size
+│   ├───Width: [16, 4096]
+│   └───Height: [16, 4096]
+├───Connectors
+│   └───Connector 0
+│       ├───Object ID: 48
+│       ├───Type: DSI
+│       ├───Status: connected
+│       ├───Physical size: 44×95 mm
+│       ├───Subpixel: unknown
+│       ├───Encoders: {0}
+│       ├───Modes
+│       │   └───568×1232@52.19 preferred driver
+│       └───Properties
+│           ├───"EDID" (immutable): blob = 0
+│           ├───"DPMS": enum {On, Standby, Suspend, Off} = On
+│           ├───"link-status": enum {Good, Bad} = Good
+│           ├───"non-desktop" (immutable): range [0, 1] = 0
+│           ├───"TILE" (immutable): blob = 0
+│           └───"CRTC_ID" (atomic): object CRTC = 46
+├───Encoders
+│   └───Encoder 0
+│       ├───Object ID: 47
+│       ├───Type: DSI
+│       ├───CRTCS: {0}
+│       └───Clones: {0}
+├───CRTCs
+│   └───CRTC 0
+│       ├───Object ID: 46
+│       ├───Legacy info
+│       │   ├───Mode: 568×1232@52.19 preferred driver
+│       │   └───Gamma size: 256
+│       └───Properties
+│           ├───"ACTIVE" (atomic): range [0, 1] = 1
+│           ├───"MODE_ID" (atomic): blob = 50
+│           │   └───568×1232@52.19 preferred driver
+│           ├───"OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│           ├───"VRR_ENABLED": range [0, 1] = 0
+│           ├───"GAMMA_LUT": blob = 0
+│           └───"GAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 256
+└───Planes
+    ├───Plane 0
+    │   ├───Object ID: 31
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───NV21 (0x3132564e)
+    │   │       ├───NV16 (0x3631564e)
+    │   │       └───NV61 (0x3136564e)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       └───"IN_FORMATS" (immutable): blob = 32
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───NV12 (0x3231564e)
+    │               ├───NV21 (0x3132564e)
+    │               ├───NV16 (0x3631564e)
+    │               └───NV61 (0x3136564e)
+    ├───Plane 1
+    │   ├───Object ID: 33
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 49
+    │   │   │   ├───Object ID: 49
+    │   │   │   ├───Size: 568×1232
+    │   │   │   ├───Format: RGB565 (0x36314752)
+    │   │   │   ├───Modifier: DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │   │   │   └───Planes:
+    │   │   │       └───Plane 0: offset = 0, pitch = 1136 bytes
+    │   │   └───Formats:
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───ARGB4444 (0x32315241)
+    │   │       ├───ARGB1555 (0x35315241)
+    │   │       ├───RGB888 (0x34324752)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       └───BGR888 (0x34324742)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Primary
+    │       ├───"FB_ID" (atomic): object framebuffer = 49
+    │       │   ├───Object ID: 49
+    │       │   ├───Size: 568×1232
+    │       │   ├───Format: RGB565 (0x36314752)
+    │       │   ├───Modifier: DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │   └───Planes:
+    │       │       └───Plane 0: offset = 0, pitch = 1136 bytes
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 46
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 568
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 1232
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 568
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 1232
+    │       └───"IN_FORMATS" (immutable): blob = 34
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───ARGB8888 (0x34325241)
+    │               ├───ARGB4444 (0x32315241)
+    │               ├───ARGB1555 (0x35315241)
+    │               ├───RGB888 (0x34324752)
+    │               ├───RGB565 (0x36314752)
+    │               └───BGR888 (0x34324742)
+    ├───Plane 2
+    │   ├───Object ID: 35
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───ARGB4444 (0x32315241)
+    │   │       ├───ARGB1555 (0x35315241)
+    │   │       ├───RGB888 (0x34324752)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       └───BGR888 (0x34324742)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Cursor
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       └───"IN_FORMATS" (immutable): blob = 36
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───ARGB8888 (0x34325241)
+    │               ├───ARGB4444 (0x32315241)
+    │               ├───ARGB1555 (0x35315241)
+    │               ├───RGB888 (0x34324752)
+    │               ├───RGB565 (0x36314752)
+    │               └───BGR888 (0x34324742)
+    ├───Plane 3
+    │   ├───Object ID: 37
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───ARGB4444 (0x32315241)
+    │   │       ├───ARGB1555 (0x35315241)
+    │   │       ├───RGB888 (0x34324752)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       └───BGR888 (0x34324742)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       └───"IN_FORMATS" (immutable): blob = 38
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───ARGB8888 (0x34325241)
+    │               ├───ARGB4444 (0x32315241)
+    │               ├───ARGB1555 (0x35315241)
+    │               ├───RGB888 (0x34324752)
+    │               ├───RGB565 (0x36314752)
+    │               └───BGR888 (0x34324742)
+    ├───Plane 4
+    │   ├───Object ID: 39
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───ARGB4444 (0x32315241)
+    │   │       ├───ARGB1555 (0x35315241)
+    │   │       ├───RGB888 (0x34324752)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       └───BGR888 (0x34324742)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       └───"IN_FORMATS" (immutable): blob = 40
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───ARGB8888 (0x34325241)
+    │               ├───ARGB4444 (0x32315241)
+    │               ├───ARGB1555 (0x35315241)
+    │               ├───RGB888 (0x34324752)
+    │               ├───RGB565 (0x36314752)
+    │               └───BGR888 (0x34324742)
+    ├───Plane 5
+    │   ├───Object ID: 41
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───NV21 (0x3132564e)
+    │   │       ├───NV16 (0x3631564e)
+    │   │       └───NV61 (0x3136564e)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       └───"IN_FORMATS" (immutable): blob = 42
+    │           └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │               ├───NV12 (0x3231564e)
+    │               ├───NV21 (0x3132564e)
+    │               ├───NV16 (0x3631564e)
+    │               └───NV61 (0x3136564e)
+    └───Plane 6
+        ├───Object ID: 43
+        ├───CRTCs: {0}
+        ├───Legacy info
+        │   ├───FB ID: 0
+        │   └───Formats:
+        │       ├───NV12 (0x3231564e)
+        │       ├───NV21 (0x3132564e)
+        │       ├───NV16 (0x3631564e)
+        │       └───NV61 (0x3136564e)
+        └───Properties
+            ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+            ├───"FB_ID" (atomic): object framebuffer = 0
+            ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+            ├───"CRTC_ID" (atomic): object CRTC = 0
+            ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+            ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+            ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+            ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+            ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+            ├───"IN_FORMATS" (immutable): blob = 44
+            │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+            │       ├───NV12 (0x3231564e)
+            │       ├───NV21 (0x3132564e)
+            │       ├───NV16 (0x3631564e)
+            │       └───NV61 (0x3136564e)
+            └───"rotation": bitmask {rotate-0, rotate-90, rotate-270, reflect-x, reflect-y} = (rotate-0)

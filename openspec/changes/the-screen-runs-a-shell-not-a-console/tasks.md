@@ -20,9 +20,9 @@ The compositor choice rests on dumb buffers existing and the primary plane
 speaking a format Pixman speaks. Both are currently assumptions. Answer them
 before building anything.
 
-- [ ] 1.1 Capture the full DRM capability dump from the booted board: driver name, whether a `/dev/dri/renderD*` node exists, and the `DRM_CAP_DUMB_BUFFER` capability. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "drm_info"` and commit the output to `docs/evidence/drm-info.txt`
-- [ ] 1.2 Record the pixel formats the primary plane advertises, and state explicitly whether `XR24` (XRGB8888) and `AR24` (ARGB8888) are among them. Verify by extending `docs/evidence/drm-info.txt` with the plane format list and a one-line verdict on whether wlroots' preferred format is available
-- [ ] 1.3 Confirm a dumb buffer can actually be allocated and scanned out, independently of any compositor. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "modetest -M <driver> -s <connector>:568x1232"` plus a photograph of the test pattern, both committed
+- [x] 1.1 Capture the full DRM capability dump from the booted board: driver name, whether a `/dev/dri/renderD*` node exists, and the `DRM_CAP_DUMB_BUFFER` capability. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "drm_info"` and commit the output to `docs/evidence/drm-info.txt`
+- [x] 1.2 Record the pixel formats the primary plane advertises, and state explicitly whether `XR24` (XRGB8888) and `AR24` (ARGB8888) are among them. Verify by extending `docs/evidence/drm-info.txt` with the plane format list and a one-line verdict on whether wlroots' preferred format is available
+- [x] 1.3 Confirm a dumb buffer can actually be allocated and scanned out, independently of any compositor. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "modetest -M <driver> -s <connector>:568x1232"` plus a photograph of the test pattern, both committed
 
 **Proves group 1 — hardware claim.** `drm_info` and a photographed `modetest`
 pattern, committed under `docs/evidence/`. If 1.1 shows no dumb buffer support,
