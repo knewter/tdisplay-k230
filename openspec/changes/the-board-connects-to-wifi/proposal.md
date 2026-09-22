@@ -1,14 +1,16 @@
 ## Why
 
 The board has no usable network path. The current system exposes the SDIO
-radio to the kernel but no wireless interface, and its image does not carry
-the tools needed to inspect or join a network. A person cannot use the board
-away from the serial cable or transfer evidence without removing the card.
+radio to the kernel but no wireless interface, and its image lacks the tools
+needed to inspect or join a network. Evidence can be recovered through U-Boot
+UMS, but that card-transfer workflow and the host tether do not provide a
+usable network path for the board itself.
 
-This is timely because a private board preflight found an SDIO function but no
-wireless driver binding. That observation is not committed evidence and does
-not establish that the radio works; the first hardware task records a
-credential-free version before changing the system.
+This is timely because the committed, sanitized
+`docs/evidence/wifi-preflight.txt` records an SDIO function without a wireless
+driver binding. That evidence establishes a missing bring-up path, not that
+the radio works; the first hardware task records the driver decision before
+changing the system.
 
 ## What Changes
 
@@ -50,6 +52,7 @@ None.
 
 - Likely kernel configuration or an out-of-tree, source-built RTL8189 SDIO
   module; the exact source and compatibility decision follow the audit.
-- NixOS package selection for `iw`, WPA supplicant, DHCP, and regulatory data.
+- NixOS package selection for `iw`, WPA supplicant, and regulatory data; the
+  existing DHCP client remains part of the connection path.
 - A runtime-only secret handoff owned by the board operator, plus sanitized
   evidence under `docs/evidence/` after a real attempt.

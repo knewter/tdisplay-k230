@@ -4,8 +4,8 @@ The board routes its RTL8189FTV radio through SDIO. The current Xuantie 6.6.36
 kernel configuration has generic wireless and MMC support, but its source and
 module set do not include an RTL8189 SDIO driver. A private physical-board
 preflight observed an SDIO function with no bound driver, no `ieee80211`
-object, no wireless interface, no wireless command-line tools, and no
-regulatory database. The sanitized evidence added with this proposal records
+object, no wireless interface, no `iw` or WPA command-line tools, and no
+regulatory database. The existing DHCP client is present and runs. The sanitized evidence added with this proposal records
 that gap. It is not proof of association or connectivity.
 
 The device tree enables the SDIO controller but declares no separate radio
@@ -62,10 +62,10 @@ before any association attempt.
 The board operator creates the protected network configuration by a private
 runtime procedure and makes its file readable only by root. Tracked commands
 refer only to `RUNTIME_SECRET_FILE` and `YOUR_SSID`; they never show a real
-network identifier or secret-file contents. The procedure must avoid putting a
-secret in shell history, argv, system configuration, the Nix store, or a
-captured terminal log. `wpa_supplicant` receives the file from `/run` after
-its permissions are checked.
+network identifier or secret-file contents. The procedure must avoid putting secret contents in shell history, command
+arguments, system configuration, the Nix store, or a captured terminal log.
+A harmless pathname can name `RUNTIME_SECRET_FILE`; `wpa_supplicant` receives
+the protected file from `/run` after its permissions are checked.
 
 The initial connection is deliberately imperative so that driver and network
 failures are visible separately. A later persistent option is chosen only
@@ -81,6 +81,8 @@ install -m 0600 "$RUNTIME_SECRET_FILE" /run/wpa-supplicant-board.conf
 wpa_supplicant -B -i "$WIFI_IFACE" -c /run/wpa-supplicant-board.conf
 dhcpcd -4 -w "$WIFI_IFACE"
 ip route show default dev "$WIFI_IFACE"
+RESOLVER_IP="$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf)"
+ip route get "$RESOLVER_IP" | grep -F "dev $WIFI_IFACE"
 getent ahostsv4 "$TEST_DNS_NAME"
 ping -4 -c 3 -I "$WIFI_IFACE" "$TEST_IP"
 ```
@@ -93,10 +95,12 @@ supplicant and removes the copied `/run` file.
 ### Validate in stages and redact evidence before committing it
 
 The operator validates an associated interface in this order: interface and
-association state, IPv4 address, default route bound to that interface, a DNS
-lookup of an operator-supplied test name, and a reachability probe bound to
-the interface and aimed at an operator-supplied test IP. This separates a
-radio failure from DHCP, routing, DNS, and upstream failure.
+association state, IPv4 address, default route bound to that interface, a
+route lookup for the selected resolver that resolves through that interface, a
+DNS lookup of an operator-supplied test name, and a reachability probe bound
+to the interface and aimed at an operator-supplied test IP. This prevents a
+second interface from masking Wi-Fi DNS failure and separates radio failure
+from DHCP, routing, DNS, and upstream failure.
 
 Raw scans, WPA logs, status output carrying network names or BSSIDs, secret
 files, and DHCP output with local addressing are not evidence artifacts.
@@ -125,6 +129,8 @@ is evidence of that failure only; it never becomes a connectivity claim.
    board image/update process.
 3. Run the staged physical-board checks, then perform one protected runtime
    connection.
-4. If any board stage fails, stop the connection service, remove its `/run`
-   file, and roll back to the prior system generation. No persistent network
-   configuration is introduced before a successful live validation.
+4. If any board stage fails, stop the connection service and remove its `/run`
+   file. Restore the known-good image through the established recovery
+   procedure for the custom hard-coded-DTB boot path; do not assume NixOS
+   generation rollback is available. No persistent network configuration is
+   introduced before a successful live validation.

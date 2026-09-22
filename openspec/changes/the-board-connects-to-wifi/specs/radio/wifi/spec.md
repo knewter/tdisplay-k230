@@ -41,14 +41,15 @@ arguments, or committed evidence.
 ### Requirement: The system proves each connectivity stage separately
 <!-- UNVERIFIED: no physical-board address, route, DNS lookup, or packet delivery has been recorded. -->
 After association, the system SHALL let an operator verify address assignment,
-default routing through the wireless interface, DNS resolution, and an
+default routing through the wireless interface, confirmation that the selected
+resolver routes through that interface, DNS resolution, and an
 interface-bound outbound reachability check as distinct stages. Physical-board
 evidence MUST redact access-point identifiers and locally assigned addresses
 before it is committed.
 
 #### Scenario: The network supplies usable service
 - **WHEN** association completes and the operator runs the staged validation on the physical board
-- **THEN** sanitized evidence records successful address, route, DNS, and outbound-reachability stages without disclosing network-specific identifiers
+- **THEN** sanitized evidence records successful address, route, resolver-route, DNS, and outbound-reachability stages without disclosing network-specific identifiers
 
 #### Scenario: One connectivity stage fails
 - **WHEN** association completes but address assignment, routing, DNS, or outbound reachability fails
