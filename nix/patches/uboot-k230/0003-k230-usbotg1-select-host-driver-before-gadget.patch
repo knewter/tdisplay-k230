@@ -1,0 +1,18 @@
+--- a/drivers/usb/host/dwc2.c
++++ b/drivers/usb/host/dwc2.c
+@@ -1489,5 +1489,6 @@ struct dm_usb_ops dwc2_usb_ops = {
+ 
+ static const struct udevice_id dwc2_usb_ids[] = {
++	{ .compatible = "canaan,k230-usbotg-host" },
+ 	{ .compatible = "brcm,bcm2835-usb" },
+ 	{ .compatible = "brcm,bcm2708-usb" },
+ 	{ .compatible = "snps,dwc2" },
+--- a/arch/riscv/dts/k230_canmv_v3.dts
++++ b/arch/riscv/dts/k230_canmv_v3.dts
+@@ -54,5 +54,6 @@
+ 
+ &usbotg1 {
+ 	status = "okay";
++	compatible = "canaan,k230-usbotg-host", "snps,dwc2";
+ 	dr_mode = "host";
+ };

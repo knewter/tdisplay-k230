@@ -1,19 +1,20 @@
 --- a/drivers/usb/gadget/dwc2_udc_otg.c
 +++ b/drivers/usb/gadget/dwc2_udc_otg.c
-@@ -1191,10 +1191,32 @@
+@@ -1191,10 +1191,33 @@
  	{},
  };
  
 +/*
 + * Refuse, at bind time, any snps,dwc2 node whose dr_mode is not
-+ * "peripheral" or "otg", so that lists_bind_fdt() (drivers/core/lists.c)
-+ * moves on to the next matching driver -- the dwc2 host driver -- for a
-+ * node marked dr_mode = "host". Without this, the same check in
++ * "peripheral" or "otg". This prevents the gadget from claiming a generic
++ * host node. lists_bind_fdt() (drivers/core/lists.c) advances to the next
++ * compatible string after -ENODEV, not the next driver; the K230-specific
++ * host compatible in the following patch selects the host driver first.
++ * Without this, the same check in
 + * dwc2_udc_otg_of_to_plat() runs at probe, which is after binding has
 + * already claimed the node and stopped the search: on the K230 this
 + * driver took both usbotg0 and usbotg1 and the host stack went dark
-+ * (docs/evidence/uboot-ums-enumerate.txt, `dm tree`). lists_bind_fdt()
-+ * continues only on -ENODEV from a .bind, which is what this returns.
++ * (docs/evidence/uboot-ums-enumerate.txt, `dm tree`).
 + */
 +static int dwc2_udc_otg_bind(struct udevice *dev)
 +{
@@ -39,9 +40,9 @@
  	status = "okay";
  };
  
-+/* usbotg1 carries the onboard RTL8152 Ethernet: a host port, and said so
-+ * explicitly so the gadget driver's .bind refuses it and the dwc2 host
-+ * driver gets it (design D3's follow-up).
++/* usbotg1 carries the onboard RTL8152 Ethernet: a host port. The following
++ * patch gives it the host driver's K230-specific compatible; this mode lets
++ * the gadget bind guard reject the generic fallback (design D3's follow-up).
 + */
  &usbotg1 {
  	status = "okay";
