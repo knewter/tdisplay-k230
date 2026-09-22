@@ -1,9 +1,3 @@
-## Purpose
-
-Provides a bounded set of useful offline applications and an on-device guide for
-the portrait shell, so a person can learn and use the image without a network,
-installer, or physical keyboard.
-
 ## ADDED Requirements
 
 ### Requirement: The shell exposes a bounded offline application set
@@ -63,4 +57,3 @@ from host or injected checks.
 - **THEN** the record distinguishes package/build and injected workflow checks
   from physical-touch, reboot, and final-panel checks, and names any failed or
   unverified check
-

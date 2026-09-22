@@ -12,7 +12,7 @@ candidate needs measured cross-build and runtime evidence.
 
 - Reuse the existing catalog, GLib launch path, Foot profile, and launcher
   paging rather than adding a second application model.
-- Evaluate `nano` as the first editor candidate and `lf` as the first file
+- Evaluate `nano` as the first editor candidate and compare `lf` (Go) with the lighter C-based `nnn` as a file
   browser candidate, with an already-present terminal utility as fallback when
   either candidate fails the riscv64 or closure checks.
 - Generate simple visible desktop entries for selected terminal applications,
@@ -33,8 +33,9 @@ candidate needs measured cross-build and runtime evidence.
 
 ## Decisions
 
-**Keep selection bounded and evidence driven.** Start with `nano` and `lf`
-because they are terminal-oriented candidates with a small interaction surface;
+**Keep selection bounded and evidence driven.** Start with `nano` as the editor
+candidate; measure the Go closure of `lf` against the lighter C-based `nnn`
+before selecting either file browser;
 confirm their actual pinned riscv64 derivations and closure costs before choosing
 them. If either fails, retain the existing shell and select only a package that
 already satisfies the measured budget. This avoids committing to a Python or GUI

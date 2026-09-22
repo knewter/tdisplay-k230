@@ -1,6 +1,6 @@
 ## 1. Candidate evaluation
 
-- [ ] 1.1 Evaluate `nano` and `lf` against the pinned riscv64 package set, record desktop IDs, package derivations, and whether each builds without adding an unsupported toolchain; verify with the narrow Nix evaluation command and saved JSON evidence.
+- [ ] 1.1 Evaluate `nano`, `lf`, and `nnn` against the pinned riscv64 package set, record desktop IDs, package derivations, and whether each builds without adding an unsupported toolchain; verify with the narrow Nix evaluation command and saved JSON evidence.
 - [ ] 1.2 Measure each candidate's NAR/closure delta against the current shell image and record startup and memory observations; verify with the named derivation closure commands and an evidence file that labels estimates versus measured values.
 - [ ] 1.3 Select zero, one, or both candidates from the recorded results and write the rejection reason for every omitted candidate; verify the selected set is no larger than the approved bounded list and does not add a network installer or general desktop suite.
 
