@@ -117,7 +117,7 @@ while IFS= read -r line; do
   name=$(printf '%s\n' "$line" | "$K230_SED" -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   case "$name" in
     apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=home ;;
-    windows) page=windows; window_offset=0 ;;
+    windows) "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
     keyboard) "$K230_PKILL" -RTMIN -x wvkbd-mobintl ;;
     system) page=system ;;
     terminal|home) present_or_start k230-terminal "$K230_TERMINAL_CONFIG"; page=home ;;

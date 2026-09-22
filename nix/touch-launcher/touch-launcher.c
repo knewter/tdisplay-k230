@@ -21,7 +21,7 @@ struct button { enum action action; const char *label; int y, h; uint32_t color;
 static struct button buttons[] = {
   { ACT_TERMINAL, "TERMINAL", 150, 178, 0xff276749 },
   { ACT_MONITOR, "MONITOR", 346, 178, 0xff1f5e78 },
-  { ACT_NEW_TERMINAL, "NEW TERM", 542, 178, 0xff3f765a },
+  { ACT_NEW_TERMINAL, "NEW TERMINAL", 542, 178, 0xff3f765a },
   { ACT_BACK, "BACK", 0, 112, 0xff374151 },
 };
 static struct wl_display *display;
@@ -80,7 +80,7 @@ static void draw(void) {
   text("APPS", width/2, 42, 7, 0xffffffff);
   text("TOUCH A CARD", width/2, 104, 3, 0xffcbd5e1);
   if (height < 900) {
-    int gap = 14, top = 120, back_h = 86, back_y = height - back_h - 24;
+    int gap = 14, top = 144, back_h = 86, back_y = height - back_h - 24;
     int app_h = (back_y - top - 3 * gap) / 3;
     for (int i = 0; i < 3; i++) { buttons[i].y = top + i * (app_h + gap); buttons[i].h = app_h; }
     buttons[3].y = back_y; buttons[3].h = back_h;
@@ -139,7 +139,7 @@ static void layer_configure(void *d, struct zwlr_layer_surface_v1 *ls, uint32_t 
 static void layer_closed(void *d, struct zwlr_layer_surface_v1 *ls) { running=false; }
 static const struct zwlr_layer_surface_v1_listener layer_listener = { .configure=layer_configure, .closed=layer_closed };
 static void pointer_enter(void*d,struct wl_pointer*p,uint32_t s,struct wl_surface*sf,wl_fixed_t x,wl_fixed_t y) { press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); }
-static void pointer_leave(void*d,struct wl_pointer*p,uint32_t s,struct wl_surface*sf) {}
+static void pointer_leave(void*d,struct wl_pointer*p,uint32_t s,struct wl_surface*sf) { pointer_pressed=false; pointer_card=-1; }
 static void pointer_motion(void*d,struct wl_pointer*p,uint32_t t,wl_fixed_t x,wl_fixed_t y) { press_x=wl_fixed_to_int(x); press_y=wl_fixed_to_int(y); if (pointer_pressed && card_at(press_x,press_y) != pointer_card) pointer_card=-1; }
 static void pointer_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint32_t b,uint32_t state) {
   if (state == WL_POINTER_BUTTON_STATE_PRESSED && b == 0x110) { pointer_pressed=true; pointer_button_code=b; pointer_card=card_at(press_x,press_y); }
@@ -155,7 +155,7 @@ static const struct wl_touch_listener touch_listener = { .down=touch_down,.up=to
 static void seat_caps(void*d,struct wl_seat*s,uint32_t caps) { if ((caps&WL_SEAT_CAPABILITY_POINTER) && !pointer) { pointer=wl_seat_get_pointer(s); wl_pointer_add_listener(pointer,&pointer_listener,NULL); } if ((caps&WL_SEAT_CAPABILITY_TOUCH) && !touch) { touch=wl_seat_get_touch(s); wl_touch_add_listener(touch,&touch_listener,NULL); } }
 static void seat_name(void*d,struct wl_seat*s,const char*n) {}
 static const struct wl_seat_listener seat_listener = { .capabilities=seat_caps,.name=seat_name };
-static void global_add(void*d,struct wl_registry*r,uint32_t n,const char*i,uint32_t v) { if(!strcmp(i,wl_compositor_interface.name)) compositor=wl_registry_bind(r,n,&wl_compositor_interface,4); else if(!strcmp(i,wl_shm_interface.name)) shm=wl_registry_bind(r,n,&wl_shm_interface,1); else if(!strcmp(i,wl_seat_interface.name)) { seat=wl_registry_bind(r,n,&wl_seat_interface,1); wl_seat_add_listener(seat,&seat_listener,NULL); } else if(!strcmp(i,zwlr_layer_shell_v1_interface.name)) layer_shell=wl_registry_bind(r,n,&zwlr_layer_shell_v1_interface,1); }
+static void global_add(void*d,struct wl_registry*r,uint32_t n,const char*i,uint32_t v) { if(!strcmp(i,wl_compositor_interface.name)) { if (v < 4) return; compositor=wl_registry_bind(r,n,&wl_compositor_interface,4); } else if(!strcmp(i,wl_shm_interface.name)) shm=wl_registry_bind(r,n,&wl_shm_interface,1); else if(!strcmp(i,wl_seat_interface.name)) { seat=wl_registry_bind(r,n,&wl_seat_interface,1); wl_seat_add_listener(seat,&seat_listener,NULL); } else if(!strcmp(i,zwlr_layer_shell_v1_interface.name)) layer_shell=wl_registry_bind(r,n,&zwlr_layer_shell_v1_interface,1); }
 static void global_remove(void*d,struct wl_registry*r,uint32_t n) {}
 static const struct wl_registry_listener registry_listener = { .global=global_add,.global_remove=global_remove };
 int main(int argc,char**argv) {
@@ -171,6 +171,6 @@ int main(int argc,char**argv) {
  struct wl_registry*r=wl_display_get_registry(display); wl_registry_add_listener(r,&registry_listener,NULL); wl_display_roundtrip(display);
  if(!compositor||!shm||!layer_shell) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, and layer-shell\n"); return 1; }
  surface=wl_compositor_create_surface(compositor); layer_surface=zwlr_layer_shell_v1_get_layer_surface(layer_shell,surface,NULL,ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,"k230-launcher"); zwlr_layer_surface_v1_add_listener(layer_surface,&layer_listener,NULL);
- zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,56,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
+ zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,0,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
  while(running && wl_display_dispatch(display)>=0) {} return 0;
 }

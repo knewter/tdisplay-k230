@@ -24,7 +24,10 @@ fourth 128-pixel block cannot present an attractive handheld launcher. See
 ## Decisions
 
 **Use a local Wayland SHM layer-shell client.** The client creates an overlay
-surface with a 56-pixel top margin, so Sway's persistent bar remains visible.
+surface with exclusive zone zero and no extra top margin. Sway already
+subtracts the persistent bar's 56-pixel exclusive area; adding another margin
+would expose a second strip of the underlying app, as the first board trial
+showed.
 It draws a title and four high-contrast portrait cards into one ARGB SHM
 buffer and listens for both `wl_touch` and `wl_pointer` release events. This
 uses `wayland-client` and protocol XML already available through the pinned

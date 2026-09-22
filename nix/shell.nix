@@ -67,6 +67,7 @@ let
   terminalFootConfig = pkgs.writeText "k230-terminal-foot.ini" ''
     font=DejaVu Sans Mono:size=15
     app-id=k230-terminal
+    login-shell=yes
   '';
   monitorHtopConfig = pkgs.writeText "k230-monitor.htoprc" (builtins.readFile ./k230-monitor.htoprc);
   monitorFootConfig = pkgs.writeText "k230-monitor-foot.ini" ''
