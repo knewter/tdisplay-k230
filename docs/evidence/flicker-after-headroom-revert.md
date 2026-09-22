@@ -62,33 +62,35 @@ perspective term entirely, at which point the camera-pixel gradient
 means what it appears to mean. Until then the accumulation hypothesis is
 unsupported rather than disproven.
 
-## Why the oblique footage cannot be rescued computationally
+## Deskewing: first attempt was botched by inverting near and far
 
-Deskewing was tried properly before concluding this, because
-"just unskew it" is the obvious objection and it is usually right.
+Four fiducial squares were drawn at known panel coordinates (cols
+80/488, rows 120/1112) to fit a homography and warp every frame into
+true panel space. Two things went wrong, both mine.
 
-Four fiducial squares were drawn at known panel coordinates
-(cols 80/488, rows 120/1112) so a homography could be fitted and every
-frame warped into true panel space. Detection needed a dark-surround
-test to stop it locking onto specular highlights on the worktop, which
-it initially did -- the first rectified frame was a warped picture of
-the table.
+**Blob detection locked onto the worktop.** Specular highlights on the
+bright table passed the size and squareness filters, and the first
+rectified frame was a neatly warped picture of the table. Fixed with a
+dark-surround test: a real fiducial sits on black panel, so the ring
+around it must be much darker than the blob.
 
-With that fixed, only the two NEAR fiducials are ever found. The reason
-is visible in `panel-photos/`: the far squares were drawn **116 panel px**
-and the near ones **36**, and on the sensor the far ones are ~14 px while
-the near ones are ~130. That is a magnification ratio near **30x**, not
-the ~3.5x assumed. The panel is viewed at a grazing angle.
+**Near and far were inverted.** The camera looks at the panel from the
+TOP of the device; the USB cable, visible in frame, is at the BOTTOM.
+So panel row 0 is NEAREST the camera and row 1232 is furthest. I had it
+backwards, drew the near fiducials large (116 px) and the far ones small
+(36 px), and so compensated the wrong end -- which is why the far pair
+was never detected.
 
-At the far end one camera pixel therefore covers roughly 10 panel rows,
-so the ~3 row motion under investigation subtends about 0.3 px -- below
-the noise floor. A homography redistributes resolution, it does not
-create it, so no rectification recovers the far half of the panel from
-this footage. This also explains the earlier failures: pattern
-registration plateaued at corr 0.39 whether the model was linear,
-quadratic or projective.
+Measured correctly from that same footage:
 
-The limitation is the viewing geometry, not the analysis. A camera
-looking square at the panel fixes it outright; the same 4-fiducial
-homography then works and the top-versus-bottom question becomes
-directly measurable.
+| panel end | drawn | rendered | scale |
+| --- | --- | --- | --- |
+| row 120, near | 116 px | ~122 px | 1.05 camera px per panel px |
+| row 1112, far | 36 px | ~14 px | 0.39 camera px per panel px |
+
+The magnification ratio is therefore about **2.7x**, not the 30x a first
+pass suggested by comparing rendered sizes without accounting for the
+different drawn sizes. At the far end one camera pixel spans ~2.6 panel
+rows, so the ~3 row motion subtends a bit over 1 px: marginal but
+measurable. Rectification is viable; it needs the fiducial sizes
+compensated the correct way round.
