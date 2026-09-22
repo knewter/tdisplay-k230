@@ -10,7 +10,7 @@
 # Layer: Nix and userspace only. Nothing here touches the kernel or the
 # device tree; if the shell turns out to need either, that belongs to
 # display/panel or display/touch and gets fixed there.
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, bootSplashImage, ... }:
 
 let
   cfg = config.k230.shell;
@@ -34,7 +34,22 @@ let
     enableXWayland = false;
     sway-unwrapped = swayFrameTimingUnwrapped;
   };
-  sway = if cfg.frameTiming then swayFrameTiming else swayBase;
+  # The initial-logo variant is an opt-in handoff experiment. It reads the
+  # same immutable B,G,R,X asset used by the boot owner before Sway's first
+  # forced output commit; the ordinary package remains byte-for-byte the
+  # unpatched swayBase selection.
+  swayInitialSplashUnwrapped = (pkgs.sway-unwrapped.override {
+    enableXWayland = false;
+  }).overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-initial-splash.patch ];
+  });
+  swayInitialSplash = pkgs.sway.override {
+    enableXWayland = false;
+    sway-unwrapped = swayInitialSplashUnwrapped;
+  };
+  sway = if cfg.initialSplash then swayInitialSplash
+    else if cfg.frameTiming then swayFrameTiming
+    else swayBase;
   wlroots = pkgs.wlroots_0_20.override { enableXWayland = false; };
 
   # cage is the first-light probe (tasks 3.1/3.2), not the shell: it has no
@@ -209,6 +224,19 @@ in
       '';
     };
 
+    initialSplash = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Use the experimental Sway scene seed for the immutable 568x1232 XRGB
+        boot logo. It is created before the first forced output commit and is
+        removed only after a non-null toplevel plus top-layer shell scene state
+        commits and wlroots reports the matching compositor present event. This
+        does not claim physical no-black-frame
+        continuity until hardware evidence exists.
+      '';
+    };
+
     keyboardHeight = lib.mkOption {
       type = lib.types.int;
       default = 400;
@@ -235,9 +263,22 @@ in
       readOnly = true;
       description = "Sway with opt-in K230 CPU frame timing instrumentation.";
     };
+
+    initialSplashCompositor = lib.mkOption {
+      type = lib.types.package;
+      default = swayInitialSplash;
+      readOnly = true;
+      description = "Sway with the opt-in immutable K230 initial-logo scene.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !(cfg.initialSplash && cfg.frameTiming);
+        message = "k230.shell.initialSplash and frameTiming patch the same Sway commit path; enable one diagnostic at a time.";
+      }
+    ];
     # seatd owns the seat: it opens /dev/dri/card0 and /dev/input/* on the
     # compositor's behalf and puts the active VT into KD_GRAPHICS, which is
     # what stops fbcon drawing over the compositor. The shell user only needs
@@ -319,6 +360,11 @@ in
         SWAYSOCK = "/run/shell/sway-ipc.sock";
       } // lib.optionalAttrs cfg.frameTiming {
         SWAY_K230_CPU_FRAME_TIMING = "1";
+      } // lib.optionalAttrs cfg.initialSplash {
+        # The derivation validates the fixed raw B,G,R,X asset before adding
+        # it above layer-shell backgrounds. It is absent from the daily service.
+        SWAY_K230_INITIAL_SPLASH = "${bootSplashImage}/logo.xrgb";
+        SWAY_K230_INITIAL_SPLASH_OUTPUT = "DSI-1";
       };
       # systemd services do not inherit the login PATH.  Sway starts
       # dbus-daemon, swaybar and `exec` commands by bare name, so retain the
