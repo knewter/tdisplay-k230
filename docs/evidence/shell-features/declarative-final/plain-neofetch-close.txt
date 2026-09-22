@@ -1,0 +1,11 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] kill' =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] kill'
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

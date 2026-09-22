@@ -829,6 +829,14 @@ DATA 12952974027f08df9207bda91573473558c634c2b1f0ed1e723b2b12b529c101  docs/evid
 DATA 1c2d1699ac6fa4bcf01587b352eb1cae6f133134ac8408c211e18a9370c927e4  docs/evidence/shell-features/declarative-defaults/plain-htop.png
 DATA def0e4061cae1ca35d53d65d11fd06afe6e1b68062e3a0aa6b3de45ccf6de576  docs/evidence/shell-features/declarative-defaults/plain-neofetch-physical.jpg
 DATA 898b022c0097eaaab30a6b522758abb40451aa26858dc98877d07e3be7a8081a  docs/evidence/shell-features/declarative-defaults/plain-neofetch.png
+DATA 1001b534fc142f12b1d79ca1eaa58631a2a8a7bb60154d57681f7595d90e0368  docs/evidence/shell-features/declarative-final/20260922T204210Z-declarative-final-startup.mp4
+DATA 793193d7ea51c310f93d2a6066bcd0a1a1371c5860518a31e23d4cfba74cf47e  docs/evidence/shell-features/declarative-final/20260922T204419Z-plain-neofetch.mp4
+DATA 59ad78cbf928009a34861c864dcd61d6098c7c5a87aadaba9356f45859eacda1  docs/evidence/shell-features/declarative-final/20260922T204441Z-plain-htop.mp4
+DATA 03a8b4015fe2878ae661d40baa52226245fe4539580f4765f48241aab756bc3d  docs/evidence/shell-features/declarative-final/plain-htop-physical.jpg
+DATA e8b36be194f16abf621ea67fd633e2919fb21be08718849ed549780d9a118e2c  docs/evidence/shell-features/declarative-final/plain-htop.png
+DATA ecb6ea5d43be2ff34ed4420f4a499bad6c3f626d43687b24541e2fe39661d04b  docs/evidence/shell-features/declarative-final/plain-neofetch-physical.jpg
+DATA 06f0648371ab08b2b2ec6b7b903c9d8d22c3ad33626baee09f678317feb4e35a  docs/evidence/shell-features/declarative-final/plain-neofetch.png
+DATA fe941c83dd2d5e36ecc13b376f605aecad623279d46b5d6cf448d7f25c162845  docs/evidence/shell-features/declarative-final/startup-physical.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

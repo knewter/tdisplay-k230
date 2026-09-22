@@ -159,8 +159,14 @@ See [docs/findings.md](docs/findings.md).
 - Serial console working
 - Shipped RT-Smart firmware boots; display and touch work
 - **Wi-Fi is broken in the shipped firmware** — a LilyGO defect, see findings
-- NixOS port under way — the cross toolchain works and the closure builds;
-  see `docs/evidence/cross-build.txt`
+- Source-built NixOS boots into a Sway touchscreen shell with Foot, keyboard,
+  installed-app discovery, window controls, and system controls.
+- Plain Foot, htop and Neofetch use repository-managed defaults on a fresh home;
+  IPv4/IPv6 firewall startup and installed rules are verified.
+- [Current daily image and evidence](docs/evidence/daily-shell-image.md).
+  The complete real-finger workflow, battery-only startup and BootROM recovery
+  remain open. The experimental splash handoff still has a display defect and
+  is disabled in the daily image.
 
 ## Building
 

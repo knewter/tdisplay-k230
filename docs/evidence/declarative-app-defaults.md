@@ -31,3 +31,10 @@ The complete daily image subsequently built successfully from source `6b59f33`:
 (2,308,689,920 bytes). [Build metadata](declarative-daily-build.json) records the
 command and elapsed time, including the wait for the shared kernel build.
 Fresh-image board verification remains pending.
+
+
+Final fresh-image verification passed after committing the portrait gap/distro
+layout correction in `7a83afa`. [Evidence](shell-features/declarative-final/README.md)
+contains plain-launch screenshots and camera clips, an initially empty home,
+immutable config links, 577 automatically registered closure paths, and no
+Neofetch-generated user config. Shell task 5.7 is complete.

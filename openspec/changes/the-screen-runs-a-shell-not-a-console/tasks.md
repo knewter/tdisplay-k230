@@ -76,11 +76,11 @@ sway, plus `docs/evidence/shell-session.txt`.
 
 - [x] 5.6 Run the user-requested original Neofetch through Nix on the board and show it in a panel terminal. Verify with its Nix build/store path, console transcript, and screenshot/video. The final image must initialize its Nix store database automatically; verify `nix-store -q --requisites /run/current-system` after a fresh boot without a manual database load.
 
-- [ ] 5.7 Ship the portrait Foot, htop and Neofetch defaults in NixOS rather
+- [x] 5.7 Ship the portrait Foot, htop and Neofetch defaults in NixOS rather
   than restoring home-directory state. Build the system and verify plain
   application launches on the board with a fresh home, recording the immutable
   config paths and panel screenshots. A preserved private backup is not an
-  implementation dependency.
+  implementation dependency. Evidence: `docs/evidence/shell-features/declarative-final/README.md`.
 
 - [x] 5.8 Fix the observed firewall startup failure without disabling the
   firewall. Verify the current generated IPv4/IPv6 rules against the kernel

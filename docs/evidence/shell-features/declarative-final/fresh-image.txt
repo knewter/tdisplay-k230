@@ -1,0 +1,31 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; systemctl is-active shell seatd firewall; systemctl show shell -p DropInPaths; ls -la /home/shell; for f in /etc/htoprc /etc/xdg/foot/foot.ini /etc/neofetch/config.conf; do readlink -f "$f"; sha256sum "$f"; done; test ! -e /home/shell/.config/htop/htoprc && echo NO_USER_HTOP_CONFIG; test ! -e /home/shell/.config/neofetch/config.conf && echo NO_USER_NEOFETCH_CONFIG; test ! -e /home/shell/.config/foot/foot.ini && echo NO_USER_FOOT_CONFIG; nix-store -q --requisites /run/current-system | wc -l; echo FRESH_IMAGE_CHECK_DONE =====
+export SYSTEMD_PAGER=cat PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; systemctl is-active shell seatd firewall; systemctl show shell -p DropInPaths; ls -la /home/shell; for f in /etc/htoprc /etc/xdg/foot/foot.ini /etc/neofetch/config.conf; do readlink -f "$f"; sha256sum "$f"; done; test ! -e /home/shell/.config/htop/htoprc && echo NO_USER_HTOP_CONFIG; test ! -e /home/shell/.config/neofetch/config.conf && echo NO_USER_NEOFETCH_CONFIG; test ! -e /home/shell/.config/foot/foot.ini && echo NO_USER_FOOT_CONFIG; nix-store -q --requisites /run/current-system | wc -l; echo FRESH_IMAGE_CHECK_DONE
+[?2004l
+/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd/init
+active
+active
+active
+DropInPaths=
+total 8
+drwx------ 2 shell shell 4096 Mar 17 19:56 [0m[01;34m.[0m
+drwxr-xr-x 3 root  root  4096 Mar 17 19:56 [01;34m..[0m
+/nix/store/9l7x6r7fqfdbbhjln3sh0g5hs44i4pwr-k230-monitor.htoprc
+7041f8121b461ec5723813344dec9bd5f1bd75dd31c40fd099a6ae57098de123  /etc/htoprc
+/nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini
+7651da9800e395e457b4efc60219c117193edd3ceef9df0a4a4005b360da1a0f  /etc/xdg/foot/foot.ini
+/nix/store/cwa1vl4ywry0wlmwrpvzicaw8hbd7b8r-neofetch.conf
+35eee3ef439f85722288bfa9a5c4a9d0315995d7f0e859ecbd0af36be85c7c0f  /etc/neofetch/config.conf
+NO_USER_HTOP_CONFIG
+NO_USER_NEOFETCH_CONFIG
+NO_USER_FOOT_CONFIG
+577
+FRESH_IMAGE_CHECK_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,0 +1,11 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg exec 'foot -e bash -lc '"'"'neofetch; exec bash'"'"'' =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg exec 'foot -e bash -lc '"'"'neofetch; exec bash'"'"''
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
