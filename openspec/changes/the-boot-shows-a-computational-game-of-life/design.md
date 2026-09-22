@@ -2,8 +2,8 @@
 
 The latest splash handoff evidence shows that stage 1 can keep a static logo
 visible to the Linux prompt, while the first Sway modeset still has physical
-wrap and color defects. Register comparison is not yet available because the
-read-only probe was rejected by the running kernel. See
+wrap and color defects. Read-only VO/DSI comparison is now possible, but the
+observed register difference does not establish the cause. See
 `docs/evidence/boot-splash-handoff.md`. This proposal therefore treats the
 static handoff repair as a prerequisite rather than hiding it inside the
 animation work.
@@ -57,8 +57,9 @@ images and recovery boots comparable. Any user interaction is transient and
 same-boot only; it never changes the fresh-home defaults.
 
 **Treat touch in layers.** Linux touch dropping a glider is the first required
-interaction. U-Boot touch is an optional later experiment using the existing
-Goodix port, with separate evidence and no dependency on it. Wayland
+interaction. U-Boot touch is an optional later investigation that may require a
+port or adaptation of source-built vendor-derived U-Boot Goodix support, with
+separate evidence and no dependency on it. Wayland
 continuation is optional and must preserve the existing shell controls.
 
 ## Risks / Trade-offs

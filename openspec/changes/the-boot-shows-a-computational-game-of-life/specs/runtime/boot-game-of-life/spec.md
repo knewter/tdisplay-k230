@@ -66,9 +66,10 @@ UNVERIFIED until recorded on the board.
 
 ### Requirement: Optional U-Boot touch remains bounded
 
-U-Boot MAY accept touch input through the existing Goodix port only as an
+U-Boot MAY accept touch input through a separately investigated port or
+adaptation of the source-built vendor-derived U-Boot Goodix support, only as an
 explicit optional path. It SHALL not be required for the shared state contract,
-Linux handoff, or acceptance of the default animation. <!-- UNVERIFIED: the
+Linux handoff, or acceptance of the default animation. <!-- UNVERIFIED: a
 U-Boot Goodix port and physical touch behavior are not proven. -->
 
 #### Scenario: U-Boot touch is not available

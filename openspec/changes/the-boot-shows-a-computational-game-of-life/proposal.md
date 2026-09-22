@@ -12,7 +12,7 @@ promising uninterrupted animation during kernel startup.
 - Store a versioned state and last rendered frame in reserved RAM so the next owner can continue from known state when the handoff is valid.
 - Render a deterministic default pattern and seed; permit transient same-boot state only, never home-directory backup or cross-boot user state.
 - Let Linux touch input drop a glider into the simulation once the touch driver and renderer are active.
-- Define an optional U-Boot touch path behind the existing Goodix port, marked hardware-unverified and not required for the first implementation.
+- Investigate an optional U-Boot touch path by porting or adapting the source-built vendor-derived U-Boot Goodix support, marked hardware-unverified and not required for the first implementation.
 - Allow an optional Wayland continuation after the shell starts, with the shell retaining ownership of normal controls.
 - Require the current static splash geometry/color handoff defect to be fixed before this change is accepted.
 - Document the expected apparent pause between U-Boot exit and Linux rendering; strict uninterrupted motion during kernel boot is out of scope.
