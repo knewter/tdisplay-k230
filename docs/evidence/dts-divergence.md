@@ -58,3 +58,13 @@ clock divider `11`; `VID_MODE_CFG=0xbf02` and `DPI_COLOR_CODING=0x105` match
 Linux. The partial-area `31/30/12` sequence is replaced by `13 00`, as in
 `display-rm69a10-568x1232.dtsi`. The port has not been built or run; these
 are source choices, not panel evidence.
+
+## Stage-1 framebuffer reservation, pending its build
+
+`nix/dts/k230-tdisplay.dts` now adds
+`/reserved-memory/framebuffer@10000000`: a 4 MiB `no-map` region for the
+stage-1 XRGB scanout. `nix/device-tree.nix` passes its address, size, and
+unit-address token as DTS preprocessor definitions from `nix/boot-splash.nix`;
+the same address attribute feeds U-Boot's Kconfig fragment. The DTS has not
+yet been built into a DTB, so the node's encoded `reg` and its kernel effect
+remain unverified.

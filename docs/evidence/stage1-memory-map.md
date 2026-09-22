@@ -275,3 +275,15 @@ Tasks 2.1 and 2.3 are complete: the `bdinfo` transcript confirms the
 U-Boot-side bound and the current `bootm` lines confirm that this range is
 not a load or relocation target. This decision does not prove that a future
 U-Boot logo can drive the panel; that remains task 3 hardware work.
+
+### 2.5 Linux `no-map` reservation source (task 3.5, build pending)
+
+The DTS source now declares `/reserved-memory/framebuffer@10000000` with
+`reg = <0x0 0x10000000 0x0 0x00400000>` and `no-map`. Its address, 4 MiB
+size, and unit address are preprocessor definitions derived by
+`nix/device-tree.nix` from `nix/boot-splash.nix`; U-Boot uses that same
+address attribute for its Kconfig framebuffer symbol. This is source review,
+not DTB or hardware evidence: task 3.5 remains open until `.#deviceTree` and
+`fdtget` confirm the encoded node. The existing CMA placement at
+`0x1e000000` remains a prediction until a physical boot shows the kernel's
+reservation and CMA lines.

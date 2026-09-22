@@ -41,6 +41,21 @@
 		reg = <0x0 0x0 0x0 0x40000000>;
 	};
 
+	// DIVERGENCE: stage 1 scans this XRGB buffer until Linux owns the panel.
+	// The values come from nix/boot-splash.nix through device-tree.nix's
+	// preprocessor definitions, shared with U-Boot's Kconfig fragment.
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		splash_framebuffer: framebuffer@K230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS {
+			reg = <0x0 K230_SPLASH_FRAMEBUFFER_ADDRESS
+			       0x0 K230_SPLASH_FRAMEBUFFER_SIZE>;
+			no-map;
+		};
+	};
+
 	sound {
 		status                      = "okay";
 		compatible                  = "canaan,k230-audio-inno";

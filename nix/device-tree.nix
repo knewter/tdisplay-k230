@@ -45,6 +45,7 @@
 , dtc
 , kernelSrc      # nix/kernel-src.nix -- the pinned tree, for headers only
 , dtbName ? "k230-tdisplay.dtb"
+, bootSplashConfig ? import ./boot-splash.nix
 }:
 
 runCommandCC dtbName
@@ -74,7 +75,11 @@ runCommandCC dtbName
     # $(HOSTCC) -E too.
     $CC -E -nostdinc \
       -I ${kernelSrc}/scripts/dtc/include-prefixes \
-      -undef -D__DTS__ -x assembler-with-cpp \
+      -undef -D__DTS__ \
+      -DK230_SPLASH_FRAMEBUFFER_ADDRESS=${bootSplashConfig.framebufferAddress} \
+      -DK230_SPLASH_FRAMEBUFFER_SIZE=${bootSplashConfig.framebufferSize} \
+      -DK230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS=${bootSplashConfig.framebufferUnitAddress} \
+      -x assembler-with-cpp \
       -o k230-tdisplay.dts.pre k230-tdisplay.dts
 
     mkdir -p $out
