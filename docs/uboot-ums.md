@@ -256,6 +256,10 @@ Less than the round trip suggests, and more than throughput suggests.
 The current image is **2.21 GB** (`k230-sd-image.img` in the store). U-Boot
 `ums` over DWC2 high-speed realistically moves 5–20 MB/s, so a *full* image
 write is 2–7 minutes — not obviously faster than a card reader.
+**Measured 2026-09-22** (`docs/evidence/uboot-ums-write.txt`,
+`uboot-ums-enumerate.txt` session 8): **12.6 MB/s written**, 175 s for
+2 210 918 400 bytes, `dd bs=4M oflag=sync conv=fsync`; **12.0 MB/s read**,
+184 s. Three minutes either way, with nobody at the desk.
 
 The win is not bandwidth, it is:
 
@@ -577,5 +581,14 @@ differ are all inside the two mounted filesystems, none in the gaps. The
 transport is proven for reads; task 3.4's literal `cmp` check needs
 rewording to say so.
 
-**Not yet observed.** A write over `ums` and its rate (3.5); a boot of an
-image written that way (4.2); Route C.
+**Written through, and booted (session 9,
+`docs/evidence/uboot-ums-write.txt`).** The same image flashed onto the
+card in the board by `tools/flash.sh` against the gadget's by-id path,
+12.6 MB/s, 175 s; `reset`; the board came up to the login prompt and hashed
+its own SPL and U-Boot slots to the image's bytes. The reset also put the
+from-source SPL banner and the whole `PMU Major Msg` training sequence on
+the record, which a cold boot never could. The loop this document was
+written for exists: `./tools/flash-latest.sh --ums` with the board at
+`ums 0 mmc 1`.
+
+**Not yet observed.** Route C; USB host and gadget in one binary (A2).

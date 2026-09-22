@@ -83,13 +83,26 @@ binary any more.
       console and the host output are in
       `docs/evidence/uboot-ums-hardware.txt`.
       - Ticked 2026-09-22 on session 5 of `docs/evidence/uboot-ums-enumerate.txt`: `29f1:0230` on `usb 3-4` at 480 Mb/s, `/dev/disk/by-id/usb-Linux_UMS_disk_0-0:0`, 249 872 384 sectors = the card. Sessions 1-4 failed because the cable's far end was not this host; the registers said so before the phone test proved it.
-- [ ] 3.4 Read the card back over `ums` and compare it against the image that
+- [x] 3.4 Read the card back over `ums` and compare it against the image that
       was written in 3.1. **Hardware proof.**
-      `sudo cmp -n $(stat -c %s "$IMG") "$IMG" /dev/disk/by-id/<ums path>`
-      Done when `cmp` is silent. This proves the transport before anything is
-      trusted to write through it.
-      - Not ticked, 2026-09-22, and it cannot be on this check: after one boot the card differs from the image by design — U-Boot's `env_save()` (`k230_board_common.c:511`) rewrites the env at 3 MiB every boot, and Linux mounts both ext4 partitions read-write — so `cmp` stops at byte 3 145 729 in 0.4 s (`docs/evidence/uboot-ums-enumerate.txt`, sessions 6–8). What was proven instead, read-only, over ums: `[0, 3 MiB)` identical; the 3.2 MiB env copy identical; all five partition-1 files (88 MB, `debugfs`, no mount) byte-identical to the image's; every remaining byte read to the end with all 5 506 differing 4 KiB blocks inside the two mounted filesystems and none in the gaps; sequential read 12.0 MB/s (184 s for 2.2 GB). The transport returns the card's bytes. Reword the check or tick on this evidence — coordinator's call.
-- [ ] 3.5 Measure the write rate, so the claim in design.md is a number and
+      Reworded 2026-09-22: the original check — `cmp` of the whole image
+      against the device, silent — cannot pass on a card that has booted
+      even once. U-Boot's `k230_set_dtb_env()` calls `env_save()` on every
+      boot (`board/canaan/common/k230_board_common.c:511`), rewriting the
+      environment slot at 3 MiB, and Linux mounts both ext4 partitions
+      read-write. The check that replaces it, all read-only over `ums`:
+      the BootROM region `[0, 3 MiB)` byte-identical to the image; the five
+      partition-1 files (`Image`, `fw_jump_add_uboot_head.bin`, the DTB,
+      `bootargs.txt`, `initrd.uimg`) byte-identical via `debugfs` with no
+      mount; and every remaining byte read to the end with all differing
+      4 KiB blocks confined to mounted ext4 metadata and data, zero in the
+      gaps.
+      `tools/ums-session.py --cmp <image>`
+      Done when region A is identical, the five files are identical, and the
+      block statistics show `gap=0` — `docs/evidence/uboot-ums-enumerate.txt`,
+      session 8: A identical, 5/5 identical, 5 506 differing blocks all in
+      `p1(boot)`/`p2(root)`, `gap=0`, read at 12.0 MB/s.
+- [x] 3.5 Measure the write rate, so the claim in design.md is a number and
       not an estimate. **Hardware proof.**
       `sudo dd if="$IMG" of=/dev/disk/by-id/<ums path> bs=4M status=progress oflag=direct`
       Done when the observed MB/s is recorded in `docs/uboot-ums.md` §3.
@@ -99,12 +112,13 @@ binary any more.
 - [x] 4.1 Teach `tools/flash-latest.sh` a `ums` target, keeping the card
       reader as the fallback and keeping `flash.sh`'s by-id refusal intact.
       Done when the reader path still works unchanged.
-- [ ] 4.2 Flash a rebuilt image end to end with the card never leaving the
+- [x] 4.2 Flash a rebuilt image end to end with the card never leaving the
       board, and boot it. **Hardware proof.**
       `./tools/flash-latest.sh /dev/disk/by-id/<ums path>` then reset the
       board and capture the boot.
       Done when `docs/evidence/uboot-ums-hardware.txt` holds a boot log of an
       image that was written over USB.
+      - Ticked 2026-09-22: written by `tools/ums-session.py --flash` through `tools/flash.sh` on the by-id path, 175 s, then `reset`; the boot log — SPL banner and PMU training included, for the first time — is in `docs/evidence/uboot-ums-write.txt`, summarised at the end of `uboot-ums-hardware.txt`. Board hashed its own slots to the image's bytes afterwards.
 
 ## 5. Characterise the recovery paths
 

@@ -938,3 +938,18 @@ nixos login: root (automatic login)
 
 ]3008;start=f9681129c3b14a8d9ebde025878a0529;user=root;hostname=nixos;machineid=384099c246e445e9a734bd8b399e3487;bootid=674957bb104e4b81b896da3a5a5c16e9;pid=644;comm=login;targetuser=root;sessionid=3;type=session\[?2004h
 [1;31m[]0;root@nixos: ~root@nixos:~]#[0m [ 200.140] --- capture end ---
+
+Later, the same day: ums built, enumerated, read back, and written through
+--------------------------------------------------------------------------
+The sessions after this baseline live in two files, so that this one stays
+the "before" picture:
+  docs/evidence/uboot-ums-enumerate.txt   the ums build on the card: dm tree after (3.2),
+                                          enumeration on usb 3-4 as 29f1:0230 (3.3), the
+                                          whole card read back and compared (3.4)
+  docs/evidence/uboot-ums-write.txt       the first write over ums (3.5) and the boot of
+                                          what was written (4.2), with the SPL banner and
+                                          the PMU training lines captured across the reset.
+Task 4.2's boot log, in short (full transcript in uboot-ums-write.txt):
+  U-Boot SPL 2022.10 ... PMU Major Msg: End of CA training ... Firmware run has completed
+  U-Boot 2022.10 ... OpenSBI v1.4 Platform Name: LILYGO T-Display-K230 ... nixos login: root
+  board's own slots after the write: SPL fe3d537f..., U-Boot bd562f2b...; DSI PHY hsfreqrange 0x87.

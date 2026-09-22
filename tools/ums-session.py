@@ -156,6 +156,13 @@ def main():
                          "region (the IMAGE's length, from offset 0) against the "
                          "gadget disk, read-only, and record dd's throughput. "
                          "The console keeps being read while it runs")
+    ap.add_argument("--flash", default=None, metavar="IMAGE",
+                    help="after the gadget appears, WRITE IMAGE to it with the "
+                         "project's own tools/flash.sh (by-id path, its "
+                         "print-and-confirm step answered by this tool), time "
+                         "it, then reset the board and verify the boot: login "
+                         "prompt, the board hashing its own stage-1 slots, the "
+                         "DSI PHY line. Only with explicit authorisation")
     ap.add_argument("--regs", action="store_true",
                     help="dump usbotg0's DWC2 OTG/device registers with md.l "
                          "before ums and again right after Ctrl-C. GOTGCTL "
@@ -341,6 +348,39 @@ def main():
             s.host(["lsusb"])
             status = 3
 
+        wrote = False
+        if args.flash and len(new) == 1:
+            byid = f"/dev/disk/by-id/{sorted(new)[0]}"
+            size = os.path.getsize(args.flash)
+            s.note(f"WRITE: tools/flash.sh {args.flash} {byid} ({size} bytes); confirmation = last 12 chars of the by-id path, supplied by this tool")
+            proc = subprocess.Popen(["./tools/flash.sh", args.flash, byid], stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            proc.stdin.write(byid[-12:] + "\n"); proc.stdin.flush(); proc.stdin.close()
+            t0 = time.time(); last = 0.0; chunks = []
+            os.set_blocking(proc.stdout.fileno(), False)
+            while proc.poll() is None:
+                s.pump()
+                try:
+                    data = proc.stdout.read()
+                except (BlockingIOError, TypeError):
+                    data = None
+                if data:
+                    chunks.append(data)
+                    tail = data.replace("\r", "\n").strip().splitlines()
+                    if tail and time.time() - last > 20:
+                        last = time.time(); s.note("flash.sh: " + tail[-1][:120])
+                time.sleep(0.05)
+            rest = proc.stdout.read() or ""
+            out = "".join(chunks) + rest
+            s.log.write(out.replace("\r", "\n").encode("utf-8", "replace")); sys.stdout.write(out); sys.stdout.flush()
+            elapsed = time.time() - t0
+            s.note(f"flash.sh exit status {proc.returncode}; {size} bytes in {elapsed:.1f} s = {size / elapsed / 1e6:.1f} MB/s end to end (including flash.sh's own confirm step and final sync)")
+            wrote = proc.returncode == 0
+            if not wrote:
+                s.note("WRITE FAILED -- stopping here; the board is left at the U-Boot prompt in ums for the coordinator")
+                status = 1
+                return
+
         # 4. Out of ums.
         s.note("sending Ctrl-C to leave ums")
         s.buf = b""
@@ -357,12 +397,25 @@ def main():
             time.sleep(0.5)
         s.note("host: gadget disk " + ("gone after Ctrl-C" if gone_at else "STILL PRESENT 10 s after Ctrl-C"))
 
-        # 5. Back to Linux.
-        s.send_line("boot")
-        if s.wait_for(LOGIN, 180):
+        # 5. Back to Linux. After a write, `reset` rather than `boot`, so the
+        #    SPL and U-Boot that run are the ones just written to the card.
+        s.send_line("reset" if wrote else "boot")
+        if s.wait_for(LOGIN, 240):
             s.note("Linux login prompt reached; the board is back in Linux")
+            if wrote:
+                time.sleep(6); s.pump()
+                s.note("post-write checks on the board: the card's own stage-1 slots and the DSI PHY line")
+                for c in ("dd if=/dev/mmcblk1 bs=1 skip=$((0x100000)) count=223348 2>/dev/null | sha256sum",
+                          "dd if=/dev/mmcblk1 bs=1 skip=$((0x200000)) count=350046 2>/dev/null | sha256sum",
+                          "dmesg | grep -m1 hsfreqrange",
+                          "dmesg | grep -c 'BTF mismatch'",
+                          "uptime"):
+                    s.send_line(c)
+                    end = time.time() + 12
+                    while time.time() < end:
+                        s.pump(); time.sleep(0.05)
         else:
-            s.note("Linux login prompt NOT seen within 180 s -- the board may not be in Linux")
+            s.note("Linux login prompt NOT seen within 240 s -- the board may not be in Linux")
             status = 1
     finally:
         s.note(f"ums session end, status {status}")

@@ -138,6 +138,17 @@ exist under the exact name, and this delta carries neither.
 So this change adds requirements about what stage 1 *offers*, and states its
 dependency instead of re-litigating how stage 1 is produced.
 
+### A note for `image/sd-layout`, learned while reading the card back
+
+The SDK's `genimage.cfg` writes the environment twice, at 3 MiB and at
+3.2 MiB, and `nix/sd-image.nix` reproduces that. Only the first copy is
+live: `k230_canmv_v3_defconfig` sets `CONFIG_ENV_OFFSET=0x300000` and has no
+`CONFIG_ENV_OFFSET_REDUND`, so this U-Boot never reads or writes the copy at
+3.2 MiB — observed 2026-09-22 (`docs/evidence/uboot-ums-enumerate.txt`,
+session 8): after boots, the 3 MiB copy holds the saved live environment and
+the 3.2 MiB copy is still byte-identical to the image. Not a requirement of
+this change; recorded so nobody relies on the second copy as a backup.
+
 ## Risks / Trade-offs
 
 - **The dwc2 gadget does not enumerate on first try.** → The usual cause is
