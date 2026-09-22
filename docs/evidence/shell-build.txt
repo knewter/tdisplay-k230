@@ -267,3 +267,16 @@ byte-compare against that exact built stage-1 output at their raw offsets:
   fn_u-boot-spl.bin fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954
   fn_ug_u-boot.bin  bd562f2bcff46ba9352061b08074f19df2f17dd0ca080293b47c20e3f5a6e50e
   env.env            cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352
+
+2026-09-22 declarative-defaults/firewall checkpoint (source 7a83afa):
+  system: /nix/store/n5lqa24jxmlw5sn1q89y58js3ag7p859-nixos-system-nixos-26.11.20260919.20b1ddd
+  command: nix path-info -S <system-path>
+  system closure: 1,280,479,704 bytes (1221.2 MiB)
+  image: /nix/store/mc8di5pz0miia3fs27bqn1l9f7xx0a3w-k230-sd-image.img
+  image file: 2,308,689,920 bytes
+  image SHA-256: d6dacd7d4bfcc9233b78fd3fead6ca80e54dc679b9b4365fc9a1b915cbb585eb
+  final portrait-config rebuild: six derivations, all succeeded; no kernel rebuild
+  preceding kernel/system build: 734.86 seconds including shared-kernel wait
+  (docs/evidence/declarative-daily-build.json).
+The system closure excludes the SD image file. The image-output closure is
+a distinct larger host-side measurement and is not installed userspace size.

@@ -1,7 +1,8 @@
 # Daily shell image build — 3f397a6
 
-Build-host evidence only. This image has not been deployed or tested on the
-board.
+This is the original build-host record. The image was subsequently deployed;
+[launcher evidence](shell-features/desktop-launcher/README.md) records its fresh
+boot and application checks.
 
 ## Source and command
 
@@ -21,7 +22,9 @@ board.
   `797d3fdf1e9901c6cf5d219a75c902e0cae12b951c9582514042535837d4b0a6`.
 - Toplevel:
   `/nix/store/mp5llx58dcpnikfdwn455pyrygdvggbg-nixos-system-nixos-26.11.20260919.20b1ddd`.
-- Nix closure size: `3590915736` bytes.
+- Closure of the **image output**, including the image file: `3590915736` bytes.
+- System toplevel closure: `1280743192` bytes (`nix path-info -S`), separate
+  from the image-output closure above.
 
 The generated MBR has a 112 MiB boot partition at sectors `8192..237567` and
 the root partition at sectors `262144..4507111`. Extracting the boot partition
