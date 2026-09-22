@@ -69,6 +69,16 @@ const { unverified, undeclared } = t;
             board, or vendor source was read and cited by path &mdash; never because a
             datasheet says so.
           </p>
+          {unverified === 0 && undeclared === 0 && (
+            <p class="lede caveat">
+              <strong>Zero unverified is not zero unknown.</strong> A capability
+              appears in this list when a change is archived, and only what has
+              been archived is counted &mdash; the display, radio and runtime
+              groups have nothing here yet, while the work behind them is under
+              way. What has been observed and not yet made into a requirement is
+              in the bands and notes below, and is not counted anywhere.
+            </p>
+          )}
         </>
       )
     }

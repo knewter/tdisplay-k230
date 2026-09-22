@@ -159,6 +159,17 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
   color: var(--ink-2);
   font-size: 15.5px;
 }
+/* The caveat that has to sit next to a clean count: what the count leaves
+   out. Styled quieter than .alarm -- it is not a fault, it is a scope. */
+.caveat {
+  margin-top: 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 15.5px;
+}
+.caveat strong { color: var(--ink); }
+
 .alarm {
   margin: 18px 0 0;
   max-width: 62ch;

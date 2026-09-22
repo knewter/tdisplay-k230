@@ -156,10 +156,17 @@ A build that fails SHALL NOT be published. The count on the URL is only worth
 reading if it could not have been published while the specs were in a state
 the build rejects.
 
-<!-- UNVERIFIED: the workflow builds the site in CI, but the deployment step
-has not yet succeeded: GitHub Pages is not enabled on the repository, and the
-Actions token was refused when the workflow tried to enable it. Grounded once
-a deployment has completed and the URL serves the page. -->
+*Grounding: observed from a machine that is not the build host, over one
+push. Before: `https://knewter.github.io/tdisplay-k230/` served
+"generated 2026-09-21 02:55 UTC" and "1 of 11 requirements is unverified".
+Commit `e70934a` was pushed to `main` at 2026-09-22 00:21 UTC. Fifty-odd
+seconds later the same URL served "generated 2026-09-22 00:21 UTC", "1 of 18
+requirements is unverified" and six capability pages, with nothing else done
+by anyone. Recorded in `docs/evidence/spec-site-build.txt`, which also
+records that the previous day's failing builds were not published — the URL
+served the last good build across five pushes while the tree was in a state
+the build rejects — as an inference from what the URL served rather than
+from the CI logs, which were not read.*
 
 #### Scenario: A change is archived and pushed
 

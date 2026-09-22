@@ -125,3 +125,57 @@ To finish it, once:
 Until a deployment completes, the requirement 'The published site is
 current without anyone maintaining it' stays UNVERIFIED. That is the
 correct output, and it is what the site itself says on its own page.
+
+
+=====================================================================
+2026-09-22 00:22 UTC: the deployment completed, and a push moved it
+=====================================================================
+
+Pages was enabled on the repository after the note above was written, and
+the URL has been serving since. What had never been observed is the part
+the requirement actually asks for: that a push to main moves what the URL
+says, with nobody doing anything else.
+
+Observed over one push, from a machine that is not the build host, with
+curl:
+
+  before   HTTP 200
+           "generated 2026-09-21 02:55 UTC"
+           "1 of 11 requirements is unverified"
+           3 capability links
+
+  push     e70934a to origin/main at 2026-09-22 00:21 UTC
+
+  after    HTTP 200  (last-modified: Tue, 22 Sep 2026 00:22:01 GMT)
+           "generated 2026-09-22 00:21 UTC"
+           "1 of 18 requirements is unverified"
+           6 capability links
+
+Under a minute from push to served page, and the count moved because the
+spec tree moved. Also checked live, all 200:
+
+  /hardware/panel-lit/
+  /hardware/touch-reports/
+  /evidence/docs-evidence-panel-photos-05-console-on-panel-jpg/
+  /evidence/docs-evidence-flicker-after-headroom-revert-md/
+  /c/system-console/
+  /evidence/docs-evidence-panel-photos-05-console-on-panel-jpg.jpg
+      26667 bytes, image/jpeg -- byte-identical in size to the committed
+      docs/evidence/panel-photos/05-console-on-panel.jpg
+
+The other half of the requirement -- "a build that fails SHALL NOT be
+published" -- was demonstrated in the least welcome way available, and is
+recorded here as an INFERENCE rather than an observation because the
+Actions logs were not read.
+
+The 02:55 UTC build above is the one the URL served for the whole of
+2026-09-21, across five pushes to main. From 77d65e1 onward the tree held
+six capabilities and eighteen requirements, and the served page said three
+and eleven. Running the same command locally on that tree exits 2: two
+requirements opened "*Grounded on hardware. ...*" rather than
+"*Grounding: ...*", which classifies as undeclared. A non-zero build step
+stops the upload step after it, so no artifact was uploaded and Pages kept
+serving the last good one. The behaviour is what the requirement asks for.
+The cost of it -- a day of a published count that was correct-when-written
+and wrong-by-then, with nothing on the page to say so -- is recorded here
+because it is the argument anyone reopening that decision will need.
