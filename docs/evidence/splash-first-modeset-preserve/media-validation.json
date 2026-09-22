@@ -1,0 +1,27 @@
+{
+  "method": "FFprobe metadata, SHA-256 and visual review of sampled frames. Serial-controlled diagnostics; no physical touch proof. See README.md and video-audit.md for limitations.",
+  "videos": [
+    {
+      "path": "20260922T225553Z-preserved-first-owner-to-sway.mp4",
+      "sha256": "b914704003bd4f7f2fef7e6293888a90bbd9cf72549c5b323c73e23f6788b59c",
+      "bytes": 6370153,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "65.000000",
+          "size": "6370153"
+        }
+      }
+    }
+  ]
+}

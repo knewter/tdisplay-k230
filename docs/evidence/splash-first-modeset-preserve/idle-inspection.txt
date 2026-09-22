@@ -1,0 +1,71 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell k230-drm-splash seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; cat /sys/kernel/debug/dri/0/clients; modetest -h; echo FIRST_MODE_IDLE_INSPECTED =====
+export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell k230-drm-splash seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; cat /sys/kernel/debug/dri/0/clients; modetest -h; echo FIRST_MODE_IDLE_INSPECTED
+[?2004l
+/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=k230-drm-splash.service
+/proc/device-tree/chosen/canaan,stage1-splash
+ls: cannot access '/dev/fb0': No such file or directory
+inactive
+inactive
+active
+active
+[    2.807108] canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+             command  tgid dev master a   uid      magic
+usage: modetest [-acDdefMoPpsCvrw]
+
+ Query options:
+
+	-c	list connectors
+	-e	list encoders
+	-f	list framebuffers
+	-p	list CRTCs and planes (pipes)
+
+ Test options:
+
+	-P <plane_id>@<crtc_id>:<w>x<h>[+<x>+<y>][*<scale>][@<format>]	set a plane, see 'plane-topology'
+	-s <connector_id>[,<connector_id>][@<crtc_id>]:mode[@<format>]	set a mode, see 'mode-topology'
+		where mode can be specified as:
+		<hdisp>x<vdisp>[-<vrefresh>]
+		<hdisp>,<hss>,<hse>,<htot>,<vdisp>,<vss>,<vse>,<vtot>-<vrefresh>
+		#<mode index>
+	-C	test hw cursor
+	-v	test vsynced page flipping
+	-r	set the preferred mode for all connectors
+	-w <obj_id>:<prop_name>:<value>	set property, see 'property'
+	-a 	use atomic API
+	-F pattern1,pattern2	specify fill patterns
+	-S <random seed>	specify seed of noise patterns
+	-o <desired file path> 	 Dump writeback output buffer to file
+
+ Generic options:
+
+	-d	drop master after mode set
+	-M module	use the given driver
+	-D device	use the given device
+
+	Default is to dump all info.
+
+Plane Topology is defined as:
+	plane-topology	::= plane-id '@' crtc-id ':' width 'x' height ( <plane-offsets> )? ;
+	plane-offsets	::= '+' x-offset '+' y-offset ( <plane-scale> )? ;
+	plane-scale	::= '*' scale ( <plane-format> )? ;
+	plane-format	::= '@' format ;
+
+Mode Topology is defined as:
+	mode-topology	::= connector-id ( ',' connector-id )* ( '@' crtc-id )? ':' <mode-selection> ( '@' format )? ;
+	mode-selection	::=  <indexed-mode> | <named-mode> | <custom-mode> ;
+	indexed-mode	::=  '#' mode-index ;
+	named-mode	::=  width 'x' height ( '-' vrefresh )? ;
+	custom-mode	::=  hdisplay ',' hsyncstart ',' hsyncend ',' htotal ',' vdisplay ',' vsyncstart ',' vsyncend ',' vtotal '-' vrefresh ;
+
+Property is defined as:
+	property	::= object-id ':' property-name ':' value ;
+FIRST_MODE_IDLE_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -20,9 +20,11 @@ LILYGO's BSP overlay carries the RM69A10 case of it —
 of `Xinyuan-LilyGO/T-Display-K230`, read 2026-09-22. Neither is enabled in
 the `k230_canmv_v3_defconfig` this project builds.*
 
-<!-- UNVERIFIED on this project's stage 1: grounded once
-docs/evidence/ records the splash photographed and the console capture
-showing it before "Starting kernel". -->
+<!-- UNVERIFIED in full: docs/evidence/boot-splash.md and
+ docs/evidence/splash-uboot-motion/README.md record this project's source-built
+ stage 1 displaying its asset before Starting kernel, including a held U-Boot
+ prompt. These are USB-attached warm-reset trials. The specified second-card
+ and power-on acceptance procedure remains open. -->
 
 #### Scenario: The boot partition is inspected
 
@@ -60,10 +62,10 @@ so far, from `firmware/stage1/tdisplay.env` and
 is 1 GiB and the kernel's CMA is half of it (`k230_defconfig`,
 `CONFIG_CMA_SIZE_PERCENTAGE=50`).*
 
-<!-- UNVERIFIED: U-Boot's relocation address, heap and the initrd's
-post-relocation address have not been read from the board. Grounded once
-docs/evidence/stage1-memory-map.md carries a `bdinfo` transcript and the
-`bootm` load messages from a real boot. -->
+*Grounding: `docs/evidence/stage1-memory-map.md` §§2.1–2.4 records physical
+`bdinfo`, U-Boot relocation/LMB/malloc/stack ranges, actual `bootm` initrd and
+DTB relocation messages, and the resulting splash address decision. The map
+classifies loaded, relocated, scratch, U-Boot, and kernel-time ranges.*
 
 #### Scenario: A new load address is needed
 
@@ -91,9 +93,12 @@ the kernel's behaviour on a static `canaan,preserve-boot-splash` instead;
 that design leaves the panel dark on any boot where the logo failed to
 load.*
 
-<!-- UNVERIFIED: not implemented. Grounded once
-/proc/device-tree/chosen on the running board shows the property after a
-boot with the splash and not after a boot without it. -->
+*Grounding: `docs/evidence/splash-initial-scene-ready/inspection.txt` records
+`/chosen/canaan,stage1-splash` present on the splash boot;
+`docs/evidence/splash-preserve-trial/no-logo-inspection.txt` records
+`NO_SPLASH_FLAG` when the logo is absent. The same captures show the
+corresponding no-fbdev and full-initialization/fbdev paths. These are physical
+serial-initiated warm boots; they do not claim battery-only operation.*
 
 #### Scenario: The running device tree is read after a splash boot
 

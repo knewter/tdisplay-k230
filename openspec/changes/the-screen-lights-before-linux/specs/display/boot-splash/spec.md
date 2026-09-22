@@ -40,11 +40,11 @@ Their U-Boot returns `-1` and skips the logo when the load fails
 (`k230_logo.c`, `_k230_display_logo_load_pic`). The vendored `k230_canmv_v3`
 configuration this project builds does not enable any of it.*
 
-<!-- UNVERIFIED: no stage 1 built by this project has lit this panel. LILYGO
-ships images in which their path does, but on their PHY numbers (39.6 MHz,
-hsfreqrange 0x96), not ours. Grounded once docs/evidence/ holds a photograph
-of the splash together with a timestamped console capture in which the
-photograph's moment precedes "Starting kernel". -->
+<!-- UNVERIFIED in full: docs/evidence/boot-splash.md and
+ docs/evidence/splash-uboot-motion/README.md record this project's source-built
+ U-Boot displaying the asset on glass while stopped at K230#, before Starting
+ kernel. The required second-card power-on procedure remains open; these
+ recordings are USB-attached, serial-initiated warm resets. -->
 
 #### Scenario: The board is powered on
 
@@ -74,11 +74,13 @@ the panel, `0x87` is stable to 0.02 px over 30 s;*
 475 Mbps with* `0x96`*, which sits inside the band that value calibrates for
 and is why it works for them.*
 
-<!-- UNVERIFIED: 0x87 has only been measured through the Linux driver's PHY
-programming. U-Boot's PHY routine (LILYGO's k230_dsi_config_2lan_phy) differs
-in its waits and reset ordering, and the PLL m/n/voc for 594 Mbps have not
-been derived for it. Grounded once the U-Boot-lit image is measured with the
-same rig and shows no roll. -->
+<!-- UNVERIFIED: docs/evidence/dsi-hsfreqrange-hardcoded.md now derives the
+ 594 Mbps PLL encodings from the Linux clock routine, and the U-Boot table
+ carries those values. Source agreement does not prove physical stability.
+ The target registration attempt in docs/evidence/splash-uboot-motion/README.md
+ failed, so a calibrated U-Boot motion result remains open. A comparison must
+ use matching measurement units and rig geometry, not equate panel rows with
+ the historical raw-camera-pixel table. -->
 
 #### Scenario: The splash is measured
 
@@ -122,22 +124,23 @@ logo failed to load would then never be lit at all.* `ft_board_setup()` *in*
 already edits the device tree before boot, and is where a runtime flag can be
 written.*
 
-<!-- UNVERIFIED: skipping panel reset and init is necessary but may not be
-sufficient. canaan_vo_enable_crtc() (canaan_vo.c:652) performs VO
-initialization and timing setup, while commit_tail_rpm enables the CRTC before
-programming planes; the explicit display-block reset writes are in the disable path
-(canaan_vo.c:666), not at the start of canaan_vo_enable_crtc. The encoder path
-also reprograms the DSI controller and PHY. Whether an RM69A10 left in
-display-on holds its image across the first modeset, shows black, or needs
-re-initialising is not known and cannot be known from source. Grounded once a
-webcam capture across the first modeset is committed; if it shows a dark
-interval, the fallback in design.md applies and this requirement is restated to
-what was measured. -->
+<!-- UNVERIFIED in full: the historical unpreserved first-mode trials in
+ docs/evidence/boot-splash-handoff.md showed intermittent geometry/color
+ failures. The carried exact-mode first-enable VO/DSI preservation and Sway
+ initial scene have newer physical warm-boot evidence in
+ docs/evidence/splash-preserve-trial/README.md and
+ docs/evidence/splash-initial-scene-ready/README.md. The controlled first-mode
+ audit in docs/evidence/splash-first-modeset-preserve/README.md observes no
+ captured dark frame around first-owner startup or shell takeover. The matching
+ kernel journal records the prepare skip. Those trials also exercise
+ missing-logo initialization and later display off/on. They do not complete
+ the separate second-card and power-on acceptance procedure. Keep the
+ first-modeset fallback decision tied to the physical recording. -->
 
 #### Scenario: The kernel boots behind a splash
 
 - **WHEN** stage 1 lit the panel and the kernel boots to a serial prompt with nothing yet opening the display device
-- **THEN** the splash is still on the panel at the prompt, the kernel log shows the panel driver noting that it left the panel as stage 1 set it, and no `dcs` write from the init sequence appears in the log
+- **THEN** the splash is still on the panel at the prompt, the kernel log records `stage 1 splash: leaving fbdev unset`, no panel prepare/init occurs before a DRM client starts, and the first later DRM prepare logs that it left the panel as stage 1 set it
 
 #### Scenario: Stage 1 did not light the panel
 
@@ -164,15 +167,16 @@ measured build cost rather than assumed.
 
 *Grounding for the shape of the problem: userspace starts about 22 s into
 the kernel boot on this board (*`docs/evidence/panel-probe.txt`*,
-`[   22.947804] systemd[1]`), so a splash that is only carried by the main
-system leaves a static frame on the glass for twenty seconds before anything
-can animate; whatever owns the transition therefore has to be able to run
-from the initrd.*
+`[   22.947804] systemd[1]`), so an owner that starts in the main system first carries forward a static
+stage-1 frame. The measured build-cost decision in
+`docs/evidence/boot-splash-owner.md` selects the minimal main-system DRM owner;
+this change does not implement animation during that initial interval.*
 
-<!-- UNVERIFIED in full. No userspace splash has run on this board and no
-transition has been filmed. Grounded once docs/evidence/ holds a webcam
-capture of a complete boot in which no frame is dark between the splash
-appearing and the shell's first frame, with the frame timings recorded. -->
+<!-- UNVERIFIED in full: docs/evidence/splash-initial-scene-ready/README.md
+ and its camera audit record warm-boot samples without an observed dark frame
+ around the corrected handoff, plus physical keyboard show/hide and display
+ off/on. Task 5.4 still requires the complete power-on recording and frame
+ timings. Camera samples do not prove uninterrupted electrical scanout. -->
 
 #### Scenario: A complete boot is filmed
 
@@ -201,9 +205,13 @@ every diagnosis in* `docs/evidence/` *since the panel lit has depended on
 seeing the kernel's messages, and a splash that hides them would make the
 next panel regression harder to see, not easier.*
 
-<!-- UNVERIFIED: the option does not exist yet. Grounded once both
-configurations are built from the same flake and the console one is
-photographed showing the console. -->
+<!-- UNVERIFIED in full: nix/panel-console.nix defines k230.panelConsole
+ with a module default of false, but flake.nix explicitly selects true for the
+ daily configuration. docs/evidence/splash-initial-scene-ready/default-config.json
+ confirms that effective choice. Splash-enabled image builds and missing-logo
+ console evidence exist. docs/evidence/splash-option-acceptance/README.md
+ now records paired toplevel evaluations and current console-image inspection.
+ The final effective default promotion in task 6.1 remains open. -->
 
 #### Scenario: The default configuration boots
 

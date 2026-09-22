@@ -1,0 +1,19 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; journalctl --list-boots --no-pager | tail -n 3; journalctl -b -1 -k --no-pager | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; echo PREVIOUS_KERNEL_CAPTURED =====
+export PAGER=cat SYSTEMD_PAGER=cat; journalctl --list-boots --no-pager | tail -n 3; journalctl -b -1 -k --no-pager | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; echo PREVIOUS_KERNEL_CAPTURED
+[?2004l
+ -2 c521a3fa7c674647ab733f8fc1ffc727 Tue 2026-03-17 19:55:54 UTC Tue 2026-03-17 20:19:49 UTC
+ -1 581861b66ba74a00ad7d227226e3e99b Tue 2026-03-17 19:55:54 UTC Tue 2026-03-17 20:22:18 UTC
+  0 ddcacaa5635d43548ae03b1ca90b6c8b Tue 2026-03-17 19:55:54 UTC Tue 2026-03-17 20:23:17 UTC
+Mar 17 19:55:54 nixos kernel: canaan-drm soc:display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+Mar 17 20:21:13 nixos kernel: canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update
+Mar 17 20:21:13 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it
+Mar 17 20:21:14 nixos kernel: canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update
+PREVIOUS_KERNEL_CAPTURED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

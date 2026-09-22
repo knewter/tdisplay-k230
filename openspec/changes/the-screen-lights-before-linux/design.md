@@ -377,3 +377,18 @@ The pinned Swaybar uses `ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM` with namespace
 `panel` in normal dock mode (`swaybar/bar.c:105`), not the top layer.
 The readiness predicate must follow this actual surface; the first diagnostic
 image seeded the logo but never retired it because it checked the wrong layer.
+
+### Same-image first-modeset procedure
+
+The pinned `modetest` exposes built-in `-F` patterns and an output writeback
+file, but no input image file. The same-logo test therefore uses the unchanged
+immutable `k230-drm-splash`: it validates the B,G,R,X asset, converts it to
+RG16, verifies primary-plane support and calls `drmModeSetCrtc` once. This
+corrects the proposed test tool without weakening the same-image requirement
+or the physical dark-frame/fallback decision.
+
+Both automatic display units are command-line masked for the controlled idle
+boot. Copies under temporary alternate unit names allow the first owner and
+Sway to start in a deliberate order without bypassing regenerated masks.
+The next-boot arguments are restored before the display experiment; a final
+normal reboot removes the runtime units and verifies automatic startup.

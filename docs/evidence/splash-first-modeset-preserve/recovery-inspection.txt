@@ -1,0 +1,30 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; cat /proc/cmdline; systemctl is-active shell seatd firewall; systemctl show shell k230-drm-splash -p LoadState -p FragmentPath; test ! -e /run/systemd/system/first-modeset-shell.service && echo TEST_UNITS_GONE; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep "K230 initial splash"; echo FIRST_MODE_RECOVERED =====
+export PAGER=cat SYSTEMD_PAGER=cat; cat /proc/cmdline; systemctl is-active shell seatd firewall; systemctl show shell k230-drm-splash -p LoadState -p FragmentPath; test ! -e /run/systemd/system/first-modeset-shell.service && echo TEST_UNITS_GONE; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep "K230 initial splash"; echo FIRST_MODE_RECOVERED
+[?2004l
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd/init
+active
+active
+active
+LoadState=loaded
+FragmentPath=/etc/systemd/system/shell.service
+
+LoadState=loaded
+FragmentPath=/etc/systemd/system/k230-drm-splash.service
+TEST_UNITS_GONE
+Mar 17 20:22:41 nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+Mar 17 20:22:41 nixos k230-drm-splash[525]: k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+Mar 17 20:22:43 nixos k230-drm-splash[525]: k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+Mar 17 20:22:47 nixos k230-drm-splash[525]: k230-drm-splash: successor replaced fb 49; releasing owner
+Mar 17 20:22:47 nixos systemd[1]: k230-drm-splash.service: Deactivated successfully.
+Mar 17 20:22:47 nixos systemd[1]: k230-drm-splash.service: Consumed 74ms CPU time over 6.383s wall clock time, 5.9M memory peak, 2.8M read from disk.
+Mar 17 20:22:47 nixos sway[699]: 00:00:01.084 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 20:22:48 nixos sway[699]: 00:00:02.565 [INFO] [sway/tree/output.c:415] K230 initial splash removed output=DSI-1 commit_seq=7
+FIRST_MODE_RECOVERED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

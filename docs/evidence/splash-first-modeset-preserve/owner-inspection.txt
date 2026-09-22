@@ -1,0 +1,5 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; cp /etc/systemd/system/k230-drm-splash.service /run/systemd/system/first-modeset-owner.service; cp /etc/systemd/system/shell.service /run/systemd/system/first-modeset-shell.service; systemctl daemon-reload; systemctl start first-modeset-owner; sleep 2; cat /run/k230-drm-splash/state; systemctl is-active first-modeset-owner; journalctl -b -u first-modeset-owner --no-pager; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; echo FIRST_OWNER_INSPECTED =====
+export PAGER=cat SYSTEMD_PAGER=cat; cp /etc/systemd/system/k230-drm-splash.service /run/systemd/system/first-modeset-owner.service; cp /etc/systemd/system/shell.service /run/systemd/system/first-modeset-shell.service; systemctl daemon-reload; systemctl start first-modeset-owner; sleep 2; cat /run/k230-drm-splash/state; systemctl is-active first-modeset-owner; journalctl -b -u first 
+-modeset-owner --no-pager; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; echo FIRST_OWNER_INSPECTED
+[?2004l

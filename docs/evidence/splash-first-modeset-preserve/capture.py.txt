@@ -1,0 +1,30 @@
+from pathlib import Path
+import sys,subprocess,time
+sys.path.insert(0,'/tmp');from k230_demo import ROOT,console,screenshot
+out=ROOT/'docs/evidence/splash-first-modeset-preserve';out.mkdir(exist_ok=True)
+if (out/'prepare.txt').exists():raise RuntimeError('Existing transcript; refuse overwrite')
+cam=None; prepared=False
+try:
+ s=console('test ! -e /boot/bootargs.before-first-modeset.txt && test -f /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-first-modeset.txt && sha256sum /boot/bootargs.before-first-modeset.txt /boot/logo.xrgb && sed -i "s/$/ systemd.mask=shell.service systemd.mask=k230-drm-splash.service/" /boot/bootargs.txt && sync && cat /boot/bootargs.txt && echo FIRST_MODE_PREPARED',3,out/'prepare.txt')
+ print(s,flush=True)
+ if '\nFIRST_MODE_PREPARED\n' not in s:raise RuntimeError('Preparation failed')
+ prepared=True
+ subprocess.run(['flock','-w','5','/tmp/k230-board.lock','python3','tools/capture-boot.py','--out',str(out/'idle-boot.txt'),'--seconds','100','--kick','--expect','root@nixos','--send','reboot'],cwd=ROOT,stdout=open('/tmp/k230-first-modeset-idle-boot.log','w'),stderr=subprocess.STDOUT,check=True)
+ print(console('export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; cat /proc/cmdline; ls /proc/device-tree/chosen/canaan,stage1-splash; ls /dev/fb0; systemctl is-active shell k230-drm-splash seatd firewall; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; cat /sys/kernel/debug/dri/0/clients; modetest -h; echo FIRST_MODE_IDLE_INSPECTED',4,out/'idle-inspection.txt'),flush=True)
+ # Restore the next boot before starting the runtime-only experiment.
+ print(console('test -f /boot/bootargs.before-first-modeset.txt && cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && cmp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt && sync && sha256sum /boot/bootargs.txt && echo FIRST_MODE_BOOTARGS_RESTORED',3,out/'bootargs-restored.txt'),flush=True)
+ subprocess.run(['python3','tools/capture-feature.py','first-modeset-idle-logo','--output-dir',str(out),'--still','--video-size','1920x1080','--rotate180','--provenance','unknown','--description','Retained U-Boot logo at Linux serial prompt before any DRM client, shell and owner masked. Same diagnostic image, warm boot with USB.'],cwd=ROOT,stdout=open('/tmp/k230-first-modeset-still.log','w'),stderr=subprocess.STDOUT,check=True)
+ cam=subprocess.Popen(['python3','tools/capture-feature.py','preserved-first-owner-to-sway','--output-dir',str(out),'--duration','65','--video-size','1920x1080','--rotate180','--provenance','injected','--description','Controlled first Linux modeset using unchanged immutable RG16 DRM logo owner, then Sway initial-scene successor. Serial-started alternate runtime units; no real touch or power-on claim.'],cwd=ROOT,stdout=open('/tmp/k230-first-modeset-camera.log','w'),stderr=subprocess.STDOUT)
+ time.sleep(4)
+ print(console('export PAGER=cat SYSTEMD_PAGER=cat; cp /etc/systemd/system/k230-drm-splash.service /run/systemd/system/first-modeset-owner.service; cp /etc/systemd/system/shell.service /run/systemd/system/first-modeset-shell.service; systemctl daemon-reload; systemctl start first-modeset-owner; sleep 2; cat /run/k230-drm-splash/state; systemctl is-active first-modeset-owner; journalctl -b -u first-modeset-owner --no-pager; dmesg | grep -E "stage 1|canaan_panel_prepare|PHY_STATUS"; echo FIRST_OWNER_INSPECTED',5,out/'owner-inspection.txt'),flush=True)
+ time.sleep(8)
+ print(console('export PAGER=cat SYSTEMD_PAGER=cat; systemctl kill --kill-whom=main --signal=USR1 first-modeset-owner; sleep 1; cat /run/k230-drm-splash/state; systemctl start first-modeset-shell; sleep 4; systemctl is-active first-modeset-shell seatd firewall; journalctl -b -u first-modeset-owner --no-pager; journalctl -b -u first-modeset-shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo FIRST_MODE_SWAY_INSPECTED',8,out/'sway-inspection.txt'),flush=True)
+ screenshot(out/'sway-native.png')
+ cam.wait(timeout=75)
+ if cam.returncode:raise RuntimeError('camera failed')
+finally:
+ if cam and cam.poll() is None:cam.wait(timeout=75)
+ if prepared:
+  print(console('if test -f /boot/bootargs.before-first-modeset.txt; then cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt; fi; sync; cat /boot/bootargs.txt; echo FIRST_MODE_RECOVERY_CONFIG',3,out/'recovery-config.txt'),flush=True)
+  subprocess.run(['flock','-w','5','/tmp/k230-board.lock','python3','tools/capture-boot.py','--out',str(out/'recovery-boot.txt'),'--seconds','100','--kick','--expect','root@nixos','--send','reboot'],cwd=ROOT,stdout=open('/tmp/k230-first-modeset-recovery.log','w'),stderr=subprocess.STDOUT,check=True)
+  print(console('export PAGER=cat SYSTEMD_PAGER=cat; cat /proc/cmdline; systemctl is-active shell seatd firewall; systemctl show shell k230-drm-splash -p LoadState -p FragmentPath; test ! -e /run/systemd/system/first-modeset-shell.service && echo TEST_UNITS_GONE; journalctl -b -u k230-drm-splash --no-pager; journalctl -b -u shell --no-pager | grep "K230 initial splash"; echo FIRST_MODE_RECOVERED',4,out/'recovery-inspection.txt'),flush=True)

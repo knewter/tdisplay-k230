@@ -1,0 +1,13 @@
+
+===== > if test -f /boot/bootargs.before-first-modeset.txt; then cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt; fi; sync; cat /boot/bootargs.txt; echo FIRST_MODE_RECOVERY_CONFIG =====
+if test -f /boot/bootargs.before-first-modeset.txt; then cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt; fi; sync; cat /boot/bootargs.txt; echo FIRST_MODE_RECOVERY_CONFIG
+[?2004l
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd/init
+FIRST_MODE_RECOVERY_CONFIG
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

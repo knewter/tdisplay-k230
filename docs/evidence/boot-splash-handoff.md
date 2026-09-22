@@ -251,3 +251,27 @@ camera focus, without claiming finger accuracy or complete label readability.
 The [U-Boot motion measurement attempt](splash-uboot-motion/README.md) was
 rejected by the existing registration tool because only two markers were
 usable. No calibrated motion figure or task 3.7 completion is claimed.
+
+## Controlled first modeset with preservation enabled
+
+The [controlled trial](splash-first-modeset-preserve/README.md) separates an
+idle Linux boot from the first DRM owner and the later Sway start. At the
+idle prompt, the physical logo remains visible, fbdev is absent and the DRM
+client table is empty. Starting the unchanged immutable logo owner produces
+an RG16 scanout on connector 48 / CRTC 46; the matching boot's kernel journal
+records first VO/DSI preservation and the one-shot panel-prepare skip.
+The owner retains its framebuffer until Sway replaces it, and Sway records
+both initial-scene seed and retirement.
+
+The [camera audit](splash-first-modeset-preserve/video-audit.md) supplies the
+physical transition result and its limits: all 420 captured frames from
+2–16 seconds retain the logo during first-owner startup. All 18 frames from
+22.45–23.05 seconds cover the later shell handoff, with the last logo-only
+frame at approximately 22.82 seconds and the first shell bar at 22.85 seconds.
+Neither interval contains a captured dark frame. The matching kernel log
+records the prepare skip rather than full panel initialization, and the
+panel remains usable. Task 4.4 is complete; its dark-interval fallback is
+not triggered by this result. This is a same-card warm-boot
+experiment, not the outstanding second-card or complete power-on procedure.
+The saved boot arguments were restored before the display experiment, and a
+normal reboot removed the temporary units and returned automatic shell startup.

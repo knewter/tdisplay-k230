@@ -1,0 +1,11 @@
+{
+  "image": "/nix/store/f6jmd7j7iqmxmhch010ff88nx8p6liqb-k230-sd-image.img",
+  "bytes": 2308689920,
+  "sha256": "1991b8235b5a8e60c2c391ba7aae0a898d060398ead9da2f859987f9f976b98d",
+  "partitionOffsetBytes": 4194304,
+  "partitionLengthBytes": 117440512,
+  "listing": "      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 .\n      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 ..\n     11   40700 (2)      0      0   12288 31-Dec-1979 18:00 lost+found\n     13  100444 (1)      0      0   60426752 31-Dec-1979 18:00 Image\n     14  100644 (1)      0      0     211 31-Dec-1979 18:00 bootargs.txt\n     15  100644 (1)      0      0      17 31-Dec-1979 18:00 force_dtb\n     16  100444 (1)      0      0   270808 31-Dec-1979 18:00 fw_jump_add_uboot_head.bin\n     17  100644 (1)      0      0      17 31-Dec-1979 18:00 hdmi_dtb\n     18  100644 (1)      0      0   27302624 31-Dec-1979 18:00 initrd.uimg\n     19  100644 (1)      0      0   71532 31-Dec-1979 18:00 k230-tdisplay.dtb\n     20  100644 (1)      0      0      17 31-Dec-1979 18:00 lcd_dtb\n\ndebugfs 1.47.4 (6-Mar-2025)\n",
+  "bootargs": "bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/8ax8wxzj24p4vlyrfcx88aqnxkv3k5ik-nixos-system-nixos-26.11.20260919.20b1ddd/init\ndebugfs 1.47.4 (6-Mar-2025)\n",
+  "logoStat": "debugfs 1.47.4 (6-Mar-2025)\n/logo.xrgb: File not found by ext2_lookup \n",
+  "result": "PASS: console image omits logo and selects console=tty0"
+}

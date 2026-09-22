@@ -1,0 +1,25 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; systemctl kill --kill-whom=main --signal=USR1 first-modeset-owner; sleep 1; cat /run/k230-drm-splash/state; systemctl start first-modeset-shell; sleep 4; systemctl is-active first-modeset-shell seatd firewall; journalctl -b -u first-modeset-owner --no-pager; journalctl -b -u first-modeset-shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo FIRST_MODE_SWAY_INSPECTED =====
+export PAGER=cat SYSTEMD_PAGER=cat; systemctl kill --kill-whom=main --signal=USR1 first-modeset-owner; sleep 1; cat /run/k230-drm-splash/state; systemctl start first-modeset-shell; sleep 4; systemctl is-active first-modeset-shell seatd firewall; journalctl -b -u first-modeset-owner --no-pager; journalctl -b -u first-modeset-shell --no-pager | grep -E "K230 initial splash|Page-flip failed"; echo FIRST_MODE_SWAY_INSPECTED
+[?2004l
+master-dropped
+active
+active
+active
+Mar 17 20:21:13 nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+Mar 17 20:21:14 nixos k230-drm-splash[794]: k230-drm-splash: scanout fb 49 on connector 48 crtc 46 as RG16
+Mar 17 20:21:23 nixos systemd[1]: first-modeset-owner.service: Sent signal SIGUSR1 to main process 794 (k230-drm-splash) on client request.
+Mar 17 20:21:23 nixos k230-drm-splash[794]: k230-drm-splash: DRM master dropped; retaining fb 49 for successor
+Mar 17 20:21:26 nixos k230-drm-splash[794]: k230-drm-splash: successor replaced fb 49; releasing owner
+Mar 17 20:21:26 nixos systemd[1]: first-modeset-owner.service: Deactivated successfully.
+Mar 17 20:21:26 nixos systemd[1]: first-modeset-owner.service: Consumed 75ms CPU time over 12.779s wall clock time, 5.8M memory peak, 2.7M read from disk.
+Mar 17 20:21:26 nixos sway[822]: 00:00:00.736 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 20:21:27 nixos sway[822]: 00:00:01.615 [INFO] [sway/tree/output.c:415] K230 initial splash removed output=DSI-1 commit_seq=7
+FIRST_MODE_SWAY_INSPECTED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

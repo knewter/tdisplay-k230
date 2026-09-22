@@ -1,0 +1,15 @@
+Host validation, 2026-09-22, before committing this evidence set.
+
+openspec validate --all
+Exit 0: 17 passed, 0 failed.
+
+python3 scripts/build_site.py
+Exit 0: includes blob inventory scan and site assertions.
+58 pages, 1,145,509 bytes, 9.09 seconds.
+
+git diff --cached --check -- '*.md' '*.json' '*.py' '*.sh'
+Exit 0. Raw serial .txt captures retain their original control characters.
+
+No implementation source changed in this evidence commit.
+The separate current-console image build/inspection is recorded in
+../splash-option-acceptance/README.md.

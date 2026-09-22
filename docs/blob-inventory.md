@@ -906,6 +906,12 @@ DATA d411b25e783eae3d63736a1bca1acf3c8f6e5c5479c035173134e90d615e7406  docs/evid
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-initial-scene-ready/keyboard-visible-restored-native.png
 DATA 0fd988037536dd0b6d21f9e1abfab558fe913cbcc666f74ce83bd363a85c9bcb  docs/evidence/splash-initial-scene-ready/keyboard-visible-hidden.png
 DATA 69b610fa9249b2b6fcd89235641829e83a63687cab97d5e7f73806e322013741  docs/evidence/splash-initial-scene-ready/keyboard-visible-shown.png
+DATA 14439fa6bff4714efb1e15073ec2aae890e8bca546f1567db46d71c389a819a3  docs/evidence/splash-first-modeset-preserve/20260922T225553Z-first-modeset-idle-logo.jpg
+DATA b914704003bd4f7f2fef7e6293888a90bbd9cf72549c5b323c73e23f6788b59c  docs/evidence/splash-first-modeset-preserve/20260922T225553Z-preserved-first-owner-to-sway.mp4
+DATA 122fc85a77830ab38e0a3da1ab3cd2d3d23afb2c78f8c11034f11afd4917f1c0  docs/evidence/splash-first-modeset-preserve/20260922T230013Z-first-modeset-recovery-shell.jpg
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-first-modeset-preserve/sway-native.png
+DATA 8d32feee01660f8828efb7fb638ca9544fee143d5da836b661089543131f53ac  docs/evidence/splash-first-modeset-preserve/preserved-owner-logo.png
+DATA cf1b9a2acb27341bed769554ddd762f79057d31e85e5205c379dfc9d7b7f2203  docs/evidence/splash-first-modeset-preserve/preserved-sway-shell.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

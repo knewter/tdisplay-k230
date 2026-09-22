@@ -1,0 +1,13 @@
+
+===== > test -f /boot/bootargs.before-first-modeset.txt && cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && cmp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt && sync && sha256sum /boot/bootargs.txt && echo FIRST_MODE_BOOTARGS_RESTORED =====
+test -f /boot/bootargs.before-first-modeset.txt && cp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && cmp /boot/bootargs.before-first-modeset.txt /boot/bootargs.txt && rm /boot/bootargs.before-first-modeset.txt && sync && sha256sum /boot/bootargs.txt && echo FIRST_MODE_BOOTARGS_RESTORED
+[?2004l
+90d0b406f88fe6cba2b175569f2a4402c5fe46e4e5db9549cb50cf7eb24a703e  /boot/bootargs.txt
+FIRST_MODE_BOOTARGS_RESTORED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

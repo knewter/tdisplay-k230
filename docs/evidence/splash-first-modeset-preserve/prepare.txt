@@ -1,0 +1,15 @@
+
+===== > test ! -e /boot/bootargs.before-first-modeset.txt && test -f /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-first-modeset.txt && sha256sum /boot/bootargs.before-first-modeset.txt /boot/logo.xrgb && sed -i "s/$/ systemd.mask=shell.service systemd.mask=k230-drm-splash.service/" /boot/bootargs.txt && sync && cat /boot/bootargs.txt && echo FIRST_MODE_PREPARED =====
+test ! -e /boot/bootargs.before-first-modeset.txt && test -f /boot/logo.xrgb && cp /boot/bootargs.txt /boot/bootargs.before-first-modeset.txt && sha256sum /boot/bootargs.before-first-modeset.txt /boot/logo.xrgb && sed -i "s/$/ systemd.mask=shell.service systemd.mask=k230-drm-splash.service/" /boot/bootargs.txt && sync && cat /boot/bootargs.txt && echo FIRST_MODE_PREPARED
+[?2004l
+90d0b406f88fe6cba2b175569f2a4402c5fe46e4e5db9549cb50cf7eb24a703e  /boot/bootargs.before-first-modeset.txt
+6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af  /boot/logo.xrgb
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=k230-drm-splash.service
+FIRST_MODE_PREPARED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
