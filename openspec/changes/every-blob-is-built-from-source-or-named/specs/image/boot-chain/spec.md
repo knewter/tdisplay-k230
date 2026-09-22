@@ -58,10 +58,17 @@ card's raw slots from Linux: SPL at 1 MiB `fe3d537f…`, U-Boot at 2 MiB
 `805bd543…`, `/boot/fw_jump_add_uboot_head.bin` `9627edbe…` — the bytes
 `result-stage1/SHA256SUMS` lists for this flake's output. The BootROM ran
 this SPL, it trained the DRAM and ran this U-Boot, and U-Boot ran this
-OpenSBI; nothing vendor-compiled was on that card. What that transcript does
-not hold: the SPL's `PMU Major Msg:` lines and the `U-Boot 2022.10` banner,
-because the serial capture opened after stage 1 had scrolled by. The boot
-is observed; the banner is inferred from it.*
+OpenSBI; nothing vendor-compiled was on that card.
+`docs/evidence/boot-from-source-cold.txt` is a second capture from power-on:
+bootm's `Loading Device Tree to 000000000a0eb000` followed by this flake's
+OpenSBI banner reporting `Platform Name : LILYGO T-Display-K230` and
+`Domain0 Next Arg1 : 0x000000000a0eb000` — the device tree handed on where
+`bootm` put it, not at `0x2200000`. What neither transcript holds: the SPL's
+`PMU Major Msg:` lines and the `U-Boot 2022.10` banner. The CH342 console
+bridge loses power with the board and takes about 3.4 s to re-enumerate,
+and stage 1 prints inside that window; the cold capture's `--- port lost`
+/ `--- port opened` markers at 10.7 s and 14.1 s bracket it. The boot is
+observed; the banners are inferred from it.*
 
 #### Scenario: Someone needs to change how the board boots
 
