@@ -40,21 +40,35 @@ let
 
   wlfps = pkgs.callPackage ./wlfps { wlroots_0_20 = wlroots; };
 
-  # The on-screen keyboard toggle. swaybar delivers a touch tap to a status
-  # block's click handler (swaybar/input.c wl_touch_up -> process_hotspots ->
-  # block_hotspot_callback) but never to a `bindsym` mouse binding, which
-  # only pointer buttons reach. So the summon/dismiss control is an i3bar
-  # status block, and this is the status command: it prints one block and
-  # then turns each click on it into SIGRTMIN, which wvkbd treats as toggle
-  # (wvkbd main.c: SIGUSR1 hide, SIGUSR2 show, SIGRTMIN toggle_visibility).
-  keyboardToggle = pkgs.writeShellScript "k230-keyboard-toggle" ''
-    printf '{"version":1,"click_events":true}\n[\n'
-    printf '[{"name":"kbd","full_text":"  [ keyboard ]  ","separator":false}],\n'
-    while IFS= read -r line; do
-      case "$line" in
-        *'"name":"kbd"'*) ${pkgs.procps}/bin/pkill -RTMIN -x wvkbd-mobintl ;;
-      esac
-    done
+  # swaybar delivers a touch tap to a status block's click handler
+  # (swaybar/input.c wl_touch_up -> process_hotspots ->
+  # block_hotspot_callback), but not to a `bindsym` mouse binding.  This
+  # little, deliberately boring, state machine is therefore the board's
+  # touch launcher. Four 128 px primary controls plus swaybar's normal text
+  # padding fit inside 568 px; each is 56 px high. It needs no gesture daemon,
+  # physical buttons, or touch-hostile launcher.
+  terminalFootConfig = pkgs.writeText "k230-terminal-foot.ini" ''
+    font=DejaVu Sans Mono:size=15
+    app-id=k230-terminal
+  '';
+  monitorFootConfig = pkgs.writeText "k230-monitor-foot.ini" ''
+    font=DejaVu Sans Mono:size=15
+    app-id=k230-monitor
+  '';
+  touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
+    export K230_SWAYMSG=${sway}/bin/swaymsg
+    export K230_FOOT=${pkgs.foot}/bin/foot
+    export K230_HTOP=${pkgs.htop}/bin/htop
+    export K230_JQ=${pkgs.jq}/bin/jq
+    export K230_SED=${pkgs.gnused}/bin/sed
+    export K230_PKILL=${pkgs.procps}/bin/pkill
+    # NixOS makes sudo setuid only in this wrapper directory. A store path is
+    # deliberately non-setuid and cannot perform the confirmed system action.
+    export K230_SUDO=/run/wrappers/bin/sudo
+    export K230_SYSTEMCTL=${pkgs.systemd}/bin/systemctl
+    export K230_TERMINAL_CONFIG=${terminalFootConfig}
+    export K230_MONITOR_CONFIG=${monitorFootConfig}
+    exec ${pkgs.bash}/bin/bash ${./touch-menu.sh}
   '';
 
   # 568x1232 portrait, transform normal, scale 1: the panel's native mode
@@ -76,15 +90,21 @@ let
     input type:touch map_to_output DSI-1
 
     default_border none
-    font pango:DejaVu Sans Mono 11
+    font pango:DejaVu Sans Mono 15
     focus_follows_mouse no
+    # A 568 px panel cannot make two tiled terminals useful. New applications
+    # share a tabbed workspace; the touch menu can still focus any container.
+    workspace_layout tabbed
 
     bar {
       position top
-      height 44
-      font pango:DejaVu Sans Mono 13
-      status_command ${keyboardToggle}
-      workspace_buttons yes
+      height 56
+      font pango:DejaVu Sans Mono 16
+      # swaybar starts status_command with the Wayland display inherited from
+      # sway, so foot launched by the menu joins this session rather than a
+      # system service environment with no WAYLAND_DISPLAY.
+      status_command ${touchMenu}/bin/k230-touch-menu
+      workspace_buttons no
       colors {
         statusline #ffffff
         background #202020
@@ -94,7 +114,7 @@ let
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
     exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
-    exec ${pkgs.foot}/bin/foot
+    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig}
   '';
 in
 {
@@ -169,6 +189,20 @@ in
       description = "owns the panel";
     };
 
+    # The touch menu can ask PID 1 only for these two explicit state changes.
+    # A second menu page requires an affirmative tap and offers Cancel before
+    # either command is run. No general root shell or passwordless command is
+    # granted to the session user.
+    security.sudo.extraRules = [
+      {
+        users = [ "shell" ];
+        commands = [
+          { command = "${pkgs.systemd}/bin/systemctl reboot"; options = [ "NOPASSWD" ]; }
+          { command = "${pkgs.systemd}/bin/systemctl poweroff"; options = [ "NOPASSWD" ]; }
+        ];
+      }
+    ];
+
     # No login prompt on the panel. The serial getty (serial-getty@ttyS0)
     # is untouched and stays the console. The VT getty is what
     # services.getty.autologinUser was landing on; masking it here means
@@ -194,7 +228,7 @@ in
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
       };
-      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils ];
+      path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.jq pkgs.gnused ];
 
       serviceConfig = {
         User = "shell";
@@ -228,6 +262,7 @@ in
       pkgs.foot.terminfo
       pkgs.wvkbd
       pkgs.seatd
+      pkgs.htop
     ] ++ lib.optionals cfg.probes [
       cage
       cage-rgb565

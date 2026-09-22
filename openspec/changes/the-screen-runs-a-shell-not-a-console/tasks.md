@@ -1,8 +1,10 @@
 # Tasks
 
-**This change cannot start until `the-screen-comes-up-under-linux` is done.**
-It needs `/dev/dri/card0` with a mode set on a real panel, and touch events
-with coordinates. Neither exists today.
+**`the-screen-comes-up-under-linux` is archived.** It supplied `/dev/dri/card0`
+with a real-panel mode and touch events with coordinates; the committed
+evidence is `docs/evidence/drm-info.txt` and `docs/evidence/touch-evtest.txt`.
+This change consumes those capabilities but still needs its own compositor and
+real-glass interaction evidence.
 
 Group 2 is the only **build-host claim** here — it can be answered on
 `solomon` with the board in pieces. Everything else is a **hardware claim**:
@@ -35,6 +37,7 @@ shell, which is a different change.
 - [x] 2.2 Cross-build sway alone before the rest, because it is the derivation most likely to fail. Verify with `nix build .#shell-compositor` and record the store path
 - [x] 2.3 Cross-build the whole closure with the shell enabled and measure it. Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel`, and commit the wall-clock time, the derivations-built count and the resulting closure size to `docs/evidence/shell-build.txt` against the 89-derivation / 875 MiB estimate in `docs/display-environment-options.md`
 - [x] 2.4 Record any derivation that refused to cross-compile and what was done about it. Verify by extending `docs/evidence/shell-build.txt`; if the list is empty, say so explicitly rather than leaving the section out
+- [ ] 2.5 Remeasure the enabled closure after adding the touch-menu utilities (`htop`, `jq`, and `gnused`). Verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and append the wall-clock time, derivation count, and closure size to `docs/evidence/shell-build.txt`. This is a build-host claim only; do not run it concurrently with another full closure/image build.
 
 **Proves group 2 — build-host claim.** `nix build
 .#nixosConfigurations.k230.config.system.build.toplevel` on `solomon`, with the
@@ -69,9 +72,12 @@ sway, plus `docs/evidence/shell-session.txt`.
 - [ ] 5.2 Type a command entirely on the panel and show its output on the panel. Verify with a photograph of the typed command and its result — this task is not complete on a keyboard that appears; it is complete on a command that ran
 - [ ] 5.3 Confirm a press lands on the key that was pressed, not a neighbour and not its mirror. Verify by typing a string that distinguishes the four rotations and mirrorings of the layout, photographed, with the string and the reasoning recorded in `docs/evidence/shell-session.txt`
 - [ ] 5.4 If the axes are wrong, fix them in the device tree rather than in the compositor, and record which layer the fix landed in. Verify by stating in `docs/evidence/shell-session.txt` whether a `touchscreen-swapped-x-y`/`touchscreen-inverted-*` property, a libinput calibration matrix, or nothing at all was needed — and confirm that no more than one of them is in force
+- [ ] 5.5 Exercise the persistent Apps, Windows/Home, Keyboard, and System touch bar. Verify first with an `evemu`/uinput event and record it explicitly as injected-input evidence; then photograph or record real glass taps that launch/focus Terminal and Monitor, page to and focus another sway window, recover Terminal with Home after closing it, toggle the keyboard, cancel one system confirmation, and confirm the other. The latter is the hardware claim and is required before this task is checked.
 
 **Proves group 5 — hardware claim.** Photographs of a command typed on the
-panel and its output, committed under `docs/evidence/`.
+panel and its output, plus real-glass touch-bar evidence, committed under
+`docs/evidence/`. Injection evidence is diagnostic and does not substitute for
+the photograph or recording.
 
 ## 6. Find out whether it is fast enough
 
