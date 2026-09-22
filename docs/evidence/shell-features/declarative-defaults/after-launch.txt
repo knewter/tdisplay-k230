@@ -1,0 +1,15 @@
+
+===== > test ! -e /home/shell/.config/neofetch/config.conf && echo NEOFETCH_DID_NOT_CREATE_USER_CONFIG; ps -eo user,pid,args | grep -E "[f]oot|[h]top"; echo DEFAULTS_CAPTURE_DONE =====
+test ! -e /home/shell/.config/neofetch/config.conf && echo NEOFETCH_DID_NOT_CREATE_USER_CONFIG; ps -eo user,pid,args | grep -E "[f]oot|[h]top"; echo DEFAULTS_CAPTURE_DONE
+[?2004l
+NEOFETCH_DID_NOT_CREATE_USER_CONFIG
+shell        913 foot -e htop
+shell        914 -htop
+DEFAULTS_CAPTURE_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

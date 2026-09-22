@@ -1,0 +1,11 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] kill'; swaymsg exec 'foot -e bash -lc '"'"'neofetch --gap 1 --distro_shorthand on; exec bash'"'"'' =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg '[app_id="k230-terminal"] kill'; swaymsg exec 'foot -e bash -lc '"'"'neofetch --gap 1 --distro_shorthand on; exec bash'"'"''
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

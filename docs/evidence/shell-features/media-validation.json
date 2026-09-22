@@ -957,6 +957,52 @@
           "size": "2477744"
         }
       }
+    },
+    {
+      "path": "declarative-defaults/20260922T203440Z-plain-neofetch.mp4",
+      "site_presentation": false,
+      "bytes": 1695372,
+      "sha256": "7ea86c8411dbfb252ab761567291ceb1256772964fa75b71c1662a59c108406f",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "18.000000",
+          "size": "1695372"
+        }
+      }
+    },
+    {
+      "path": "declarative-defaults/20260922T203502Z-plain-htop.mp4",
+      "site_presentation": false,
+      "bytes": 1791535,
+      "sha256": "bc760c98a6f6f0333bd42a56c623b218b803bcebe0407db170187215d5ff0ac2",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "18.000000",
+          "size": "1791535"
+        }
+      }
     }
   ]
 }

@@ -822,6 +822,13 @@ DATA 570881146f0b409a3b82504cacf91d6a4d98afb87d324761b2ab4ac10fefcaef  docs/evid
 DATA 9927be9097bab6bf8a316cc9ec512f45ce8fe9e061f33449c39c0de1278cc648  docs/evidence/shell-features/desktop-launcher/image-apps.png
 DATA 1e2c1e90e7c2fe2bc85366ea926e1e7773744bd5d4be613ba5d3e16714009c65  docs/evidence/shell-features/desktop-launcher/20260922T195137Z-desktop-image-launcher.mp4
 DATA 45ca6eeb078eb2ec7ab66990fa23060a5510cef35d20b13f9a16c8a72a304659  docs/evidence/shell-features/desktop-launcher/20260922T193941Z-desktop-image-boot.mp4
+DATA 7ea86c8411dbfb252ab761567291ceb1256772964fa75b71c1662a59c108406f  docs/evidence/shell-features/declarative-defaults/20260922T203440Z-plain-neofetch.mp4
+DATA bc760c98a6f6f0333bd42a56c623b218b803bcebe0407db170187215d5ff0ac2  docs/evidence/shell-features/declarative-defaults/20260922T203502Z-plain-htop.mp4
+DATA 444ddf0f49d5bf7b0280f35543c8c84cf0bdb9bad133b8603ed237fc3d8c5723  docs/evidence/shell-features/declarative-defaults/neofetch-layout-trial.png
+DATA 12952974027f08df9207bda91573473558c634c2b1f0ed1e723b2b12b529c101  docs/evidence/shell-features/declarative-defaults/plain-htop-physical.jpg
+DATA 1c2d1699ac6fa4bcf01587b352eb1cae6f133134ac8408c211e18a9370c927e4  docs/evidence/shell-features/declarative-defaults/plain-htop.png
+DATA def0e4061cae1ca35d53d65d11fd06afe6e1b68062e3a0aa6b3de45ccf6de576  docs/evidence/shell-features/declarative-defaults/plain-neofetch-physical.jpg
+DATA 898b022c0097eaaab30a6b522758abb40451aa26858dc98877d07e3be7a8081a  docs/evidence/shell-features/declarative-defaults/plain-neofetch.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
