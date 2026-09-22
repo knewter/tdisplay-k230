@@ -1,0 +1,118 @@
+# evtest: touches land where they are drawn (display/touch task 4.3)
+
+2026-09-21. Captured on the corrected image (headroom reverted), with
+the device tree declaring interrupts = <23 IRQ_TYPE_LEVEL_LOW>.
+
+METHOD. A drag proves coordinates move; it does not prove they move the
+RIGHT WAY. So a single white block was drawn at a known place in the
+framebuffer and tapped, twice, at opposite corners. Predictions were
+written down BEFORE reading the result. Digitizer is 1024x2400, panel is
+568x1232, so panel (col,row) maps to (col*1024/568, row*2400/1232).
+
+CORNER 1 -- block at panel rows 0..240, cols 0..240, centre (120,120).
+  predicted, axes correct : x  216   y  234
+  predicted, axes swapped : x  100   y  507
+  OBSERVED                : x ~250   y ~208     -> matches "correct"
+
+  The block is deliberately NOT square in normalised terms (0.42 of the
+  width, 0.195 of the height), which is what makes a swap detectable
+  from one corner at all.
+
+CORNER 2 -- block at panel rows 992..1232, cols 328..568, centre (448,1112).
+  predicted, axes correct   : x  807   y 2166
+  predicted, X mirrored     : x  216   y 2166
+  predicted, Y mirrored     : x  807   y  233
+  predicted, axes swapped   : x  924   y 1892
+  OBSERVED                  : x ~850   y ~2130  -> matches "correct"
+
+CONCLUSION. Both corners match the unmirrored, unswapped mapping to
+within ~4% of full scale, consistent with a fingertip not landing dead
+centre. The axes are neither swapped nor mirrored.
+
+NOTE. Reported X was observed reaching 1058 during free touching, above
+the 1023 implied by touchscreen-size-x = <1024>. The controller's native
+X range is therefore slightly wider than the device tree declares. This
+does not affect orientation but means a consumer must clamp.
+
+
+===== > echo "=== CORNER 1: white block panel rows 0-240, cols 0-240 (top-left) ==="; sed -n "/Testing/,\$p" /tmp/c1.log | head -34; echo; echo "=== CORNER 2: white block panel rows 992-1232, cols 328-568 (bottom-right) ==="; sed -n "/Testing/,\$p" /tmp/c2.log | head -34 =====
+echo "=== CORNER 1: white block panel rows 0-240, cols 0-240 (top-left) ==="; sed -n "/Testing/,\$p" /tmp/c1.log | head -34; echo; echo "=== CORNER 2: white block panel rows 992-1232, cols 328-568 (bottom-right) ==="; sed -n "/Testing/,\$p" /tmp/c2.log | head -34
+[?2004l
+=== CORNER 1: white block panel rows 0-240, cols 0-240 (top-left) ===
+Testing ... (interrupt to exit)
+Event: time 1773779236.582918, type 3 (EV_ABS), code 47 (ABS_MT_SLOT), value 0
+Event: time 1773779236.582918, type 3 (EV_ABS), code 57 (ABS_MT_TRACKING_ID), value 51
+Event: time 1773779236.582918, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 230
+Event: time 1773779236.582918, type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 368
+Event: time 1773779236.582918, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 6
+Event: time 1773779236.582918, type 1 (EV_KEY), code 330 (BTN_TOUCH), value 1
+Event: time 1773779236.582918, type 3 (EV_ABS), code 0 (ABS_X), value 230
+Event: time 1773779236.582918, type 3 (EV_ABS), code 1 (ABS_Y), value 368
+Event: time 1773779236.582918, -------------- SYN_REPORT ------------
+Event: time 1773779236.591103, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 7
+Event: time 1773779236.591103, -------------- SYN_REPORT ------------
+Event: time 1773779236.607387, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 8
+Event: time 1773779236.607387, -------------- SYN_REPORT ------------
+Event: time 1773779236.648012, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 9
+Event: time 1773779236.648012, -------------- SYN_REPORT ------------
+Event: time 1773779236.696828, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 233
+Event: time 1773779236.696828, type 3 (EV_ABS), code 0 (ABS_X), value 233
+Event: time 1773779236.696828, -------------- SYN_REPORT ------------
+Event: time 1773779236.704991, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 238
+Event: time 1773779236.704991, type 3 (EV_ABS), code 0 (ABS_X), value 238
+Event: time 1773779236.704991, -------------- SYN_REPORT ------------
+Event: time 1773779236.713119, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 244
+Event: time 1773779236.713119, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 8
+Event: time 1773779236.713119, type 3 (EV_ABS), code 0 (ABS_X), value 244
+Event: time 1773779236.713119, -------------- SYN_REPORT ------------
+Event: time 1773779236.721204, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 252
+Event: time 1773779236.721204, type 3 (EV_ABS), code 0 (ABS_X), value 252
+Event: time 1773779236.721204, -------------- SYN_REPORT ------------
+Event: time 1773779236.729420, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 259
+Event: time 1773779236.729420, type 3 (EV_ABS), code 0 (ABS_X), value 259
+Event: time 1773779236.729420, -------------- SYN_REPORT ------------
+Event: time 1773779236.737511, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 264
+Event: time 1773779236.737511, type 3 (EV_ABS), code 0 (ABS_X), value 264
+
+=== CORNER 2: white block panel rows 992-1232, cols 328-568 (bottom-right) ===
+Testing ... (interrupt to exit)
+Event: time 1773779335.075573, type 3 (EV_ABS), code 57 (ABS_MT_TRACKING_ID), value 60
+Event: time 1773779335.075573, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 872
+Event: time 1773779335.075573, type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 2146
+Event: time 1773779335.075573, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 4
+Event: time 1773779335.075573, type 1 (EV_KEY), code 330 (BTN_TOUCH), value 1
+Event: time 1773779335.075573, type 3 (EV_ABS), code 0 (ABS_X), value 872
+Event: time 1773779335.075573, type 3 (EV_ABS), code 1 (ABS_Y), value 2146
+Event: time 1773779335.075573, -------------- SYN_REPORT ------------
+Event: time 1773779335.083783, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 5
+Event: time 1773779335.083783, -------------- SYN_REPORT ------------
+Event: time 1773779335.100024, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 6
+Event: time 1773779335.100024, -------------- SYN_REPORT ------------
+Event: time 1773779335.132563, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 7
+Event: time 1773779335.132563, -------------- SYN_REPORT ------------
+Event: time 1773779335.189430, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 871
+Event: time 1773779335.189430, type 3 (EV_ABS), code 0 (ABS_X), value 871
+Event: time 1773779335.189430, -------------- SYN_REPORT ------------
+Event: time 1773779335.197621, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 870
+Event: time 1773779335.197621, type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 2145
+Event: time 1773779335.197621, type 3 (EV_ABS), code 0 (ABS_X), value 870
+Event: time 1773779335.197621, type 3 (EV_ABS), code 1 (ABS_Y), value 2145
+Event: time 1773779335.197621, -------------- SYN_REPORT ------------
+Event: time 1773779335.205764, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 867
+Event: time 1773779335.205764, type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 2143
+Event: time 1773779335.205764, type 3 (EV_ABS), code 0 (ABS_X), value 867
+Event: time 1773779335.205764, type 3 (EV_ABS), code 1 (ABS_Y), value 2143
+Event: time 1773779335.205764, -------------- SYN_REPORT ------------
+Event: time 1773779335.213884, type 3 (EV_ABS), code 53 (ABS_MT_POSITION_X), value 864
+Event: time 1773779335.213884, type 3 (EV_ABS), code 54 (ABS_MT_POSITION_Y), value 2141
+Event: time 1773779335.213884, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), value 6
+Event: time 1773779335.213884, type 3 (EV_ABS), code 0 (ABS_X), value 864
+Event: time 1773779335.213884, type 3 (EV_ABS), code 1 (ABS_Y), value 2141
+Event: time 1773779335.213884, -------------- SYN_REPORT ------------
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

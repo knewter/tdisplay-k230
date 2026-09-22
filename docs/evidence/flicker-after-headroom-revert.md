@@ -41,7 +41,26 @@ This matches the direct observation of the bands moving "in unison".
 Brightness over the rectified panel area is flat: min 95%, max 101% of
 mean, std 0.68.
 
-### Hypothesis for the mechanism, not yet tested
+### The image WRAPS, which narrows the mechanism sharply
+
+Observed directly while a single white block was displayed at the far
+corner for the touch axis test: as the image drifts down, the block
+reappears at the **opposite end** of the panel. Content pushed off one
+edge re-enters at the other.
+
+That is a whole-frame **roll**, modulo 1232 rows -- not a shift that
+leaves blanking behind, and not a picture being pushed off the glass.
+A roll means the panel is displaying a full frame every time and only
+the **origin** moves: something is reading the frame starting from a
+row offset that varies, and wrapping.
+
+This rules out several otherwise-plausible causes. It is not lost or
+dropped lines, which would shorten the frame rather than rotate it. It
+is not the VO emitting the wrong number of lines, which would tear or
+roll progressively rather than settle. It is a phase difference between
+whoever writes the frame and whoever scans it out.
+
+### Hypothesis for the mechanism, consistent with the wrap
 
 A frame-level offset that varies while line timing stays consistent
 points at frame start timing rather than pixel or line timing. The init
@@ -51,8 +70,13 @@ on its own oscillator, the phase between our frame writes and its scan
 is free to walk. That is precisely a uniform positional offset that
 varies per frame.
 
-Untested. Distinguishing it needs either TE wired into the VO or a
-deliberate change of frame rate to see whether the jitter tracks it.
+The wrap is what makes this more than a guess: a free-running phase
+between a GRAM write pointer and a scan pointer produces exactly a
+modulo-height roll, which is what is on the glass.
+
+Still untested as a fix. Distinguishing it properly needs either TE
+wired into the VO, or a deliberate frame-rate change to see whether the
+roll rate tracks it.
 
 ## Methodology notes, because two earlier attempts were wrong
 

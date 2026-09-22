@@ -6,21 +6,25 @@ Defines what the board does when a person touches the screen.
 
 ### Requirement: Touches are reported as input events
 
-<!-- PARTIALLY RESOLVED. Reporting is now grounded; orientation is not.
+<!-- RESOLVED.
 
-Grounded: the controller reports touches. Changing only the device tree
-interrupt type, same kernel, IRQ_TYPE_EDGE_FALLING gives 0 interrupts and
-IRQ_TYPE_LEVEL_LOW gives 2173 in a 45 s capture, with tracking IDs,
-BTN_TOUCH, ABS_MT_TOUCH_MAJOR ramping, and a continuous slot-0 trajectory
-spanning X 86..728 and Y 765..1765. See docs/evidence/touch-reports.md.
-That settles "binding is not reporting": it reports.
+Reporting: changing only the device tree interrupt type, same kernel,
+IRQ_TYPE_EDGE_FALLING gives 0 interrupts and IRQ_TYPE_LEVEL_LOW gives
+2173 in a 45 s capture, with tracking IDs, BTN_TOUCH, ABS_MT_TOUCH_MAJOR
+ramping, and a continuous slot-0 trajectory spanning X 86..728 and
+Y 765..1765. docs/evidence/touch-reports.md.
 
-STILL UNVERIFIED: that the axes are neither swapped nor mirrored. A drag
-proves the coordinates move, not that they move the right way, and every
-capture so far was of undirected movement. Deciding it needs a touch at a
-KNOWN screen position -- tools/touch-axis-test.py draws four coloured
-corner targets and reports which corner each contact fell in by its
-reported coordinates. This marker stays until that transcript exists. -->
+Orientation: settled by tapping a drawn target at two opposite corners,
+with the predictions for correct / swapped / X-mirrored / Y-mirrored
+written down before the result was read. Observed (250,208) and
+(850,2130) against (216,234) and (807,2166) predicted for the
+unmirrored unswapped mapping; the three competing hypotheses are out by
+240 to 1900 units. docs/evidence/touch-evtest.txt.
+
+One caveat recorded rather than smoothed over: reported X was seen to
+reach 1058, above the 1023 implied by touchscreen-size-x = <1024>, so
+the controller's native range is slightly wider than the device tree
+declares and a consumer must clamp. -->
 
 The GT9895 controller SHALL be probed and SHALL report touches as standard
 Linux input events, over the digitizer's native 1024x2400 range declared via
