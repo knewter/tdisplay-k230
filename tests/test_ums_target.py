@@ -1,4 +1,5 @@
 """The unattended writer must never accept a newly plugged-in reader."""
+import hashlib
 import importlib.util
 import io
 from pathlib import Path
@@ -7,6 +8,7 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "ums-session.py"
 spec = importlib.util.spec_from_file_location("ums_session", SCRIPT)
@@ -66,6 +68,65 @@ class ReadbackTests(unittest.TestCase):
                                               note=lambda message: None)
                     self.assertEqual(ums.verify_written_image(session, image, target),
                                      expected, session.log.getvalue())
+
+
+class PullTests(unittest.TestCase):
+    def test_pull_arguments_refuse_missing_target_guards_before_serial_access(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = str(Path(directory) / "capture.tar")
+            cases = (
+                ("missing-sectors", ["--pull", "/var/lib/capture.tar",
+                                     "--pull-output", output], "--expected-sectors"),
+                ("relative-remote", ["--pull", "var/lib/capture.tar",
+                                    "--pull-output", output, "--expected-sectors", "249872384"],
+                 "absolute debugfs-safe path"),
+                ("missing-output", ["--pull", "/var/lib/capture.tar",
+                                    "--expected-sectors", "249872384"], "--pull-output"),
+                ("orphan-output", ["--pull-output", output], "require --pull"),
+            )
+            for name, args, message in cases:
+                with self.subTest(name=name):
+                    result = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--out", "/dev/null",
+                         "--dev", "/does-not-exist", *args],
+                        capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertIn(message, result.stderr)
+                    self.assertNotIn("SerialException", result.stderr)
+
+    def test_pull_hash_requires_nonempty_matching_output(self):
+        payload = b"prepared png sample archive\n"
+        expected = hashlib.sha256(payload).hexdigest()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "capture.tar"
+            with self.assertRaises(ValueError):
+                ums.validate_pull_result(output, expected)
+            output.write_bytes(b"")
+            with self.assertRaises(ValueError):
+                ums.validate_pull_result(output, expected)
+            output.write_bytes(payload)
+            self.assertEqual(ums.validate_pull_result(output, expected), expected)
+            with self.assertRaises(ValueError):
+                ums.validate_pull_result(output, "0" * 64)
+
+    def test_pull_uses_only_partition_two_and_debugfs_without_write_mode(self):
+        payload = b"prepared archive"
+        expected = hashlib.sha256(payload).hexdigest()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "capture.tar"
+            output.write_bytes(payload)
+            session = SimpleNamespace(log=io.BytesIO(), note=lambda message: None)
+            completed = SimpleNamespace(returncode=0, stdout="", stderr="")
+            with mock.patch.object(ums.os.path, "exists", return_value=True), \
+                 mock.patch.object(ums.subprocess, "run", return_value=completed) as run:
+                self.assertTrue(ums.pull_root_file(
+                    session, "/dev/disk/by-id/" + ums.UMS_DISK,
+                    "/var/lib/shell/capture.tar", str(output), expected))
+            argv = run.call_args.args[0]
+            self.assertEqual(argv[0], "debugfs")
+            self.assertNotIn("-w", argv)
+            self.assertTrue(argv[-1].endswith("-part2"))
+            self.assertTrue(argv[2].startswith("dump -p "))
 
 
 if __name__ == "__main__":

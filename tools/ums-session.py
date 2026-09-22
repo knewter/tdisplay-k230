@@ -26,7 +26,7 @@ host command and its output. Exit status: 0 when the gadget enumerated and
 Linux came back, 3 when it did not enumerate but Linux came back, 1 when
 the board was not returned to Linux (say so loudly; the board is shared).
 """
-import argparse, hashlib, os, subprocess, sys, time
+import argparse, hashlib, os, re, shlex, subprocess, sys, time
 from pathlib import Path
 
 KILL_LINE = b"\x15"
@@ -205,6 +205,95 @@ def sha256_range(path, offset, length):
     return h.hexdigest()
 
 
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def validate_pull_arguments(pull, pull_output, expected_sectors, expected_sha256):
+    """Validate paths before opening the serial port or a UMS disk.
+
+    debugfs receives its command as one string.  Refuse whitespace and quote
+    characters rather than trying to grow a second shell quoting language
+    around a board-provided path.
+    """
+    if pull is None:
+        if pull_output or expected_sha256:
+            raise ValueError("--pull-output and --pull-sha256 require --pull")
+        return None
+    if expected_sectors is None or expected_sectors <= 0:
+        raise ValueError("--pull requires a positive --expected-sectors from the board")
+    if not pull_output:
+        raise ValueError("--pull requires --pull-output")
+    output = str(Path(pull_output).resolve())
+    safe_path = re.compile(r"/[^\s'\"\\]*$")
+    if not safe_path.fullmatch(pull):
+        raise ValueError("--pull must be an absolute debugfs-safe path (no whitespace or quotes)")
+    if any(char.isspace() or char in "'\"\\" for char in output):
+        raise ValueError("--pull-output must not contain whitespace or quotes")
+    if expected_sha256 and not re.fullmatch(r"[0-9a-fA-F]{64}", expected_sha256):
+        raise ValueError("--pull-sha256 must be a 64-character hexadecimal SHA-256")
+    return output
+
+
+def validate_pull_result(output, expected_sha256=None):
+    """Require debugfs to have produced a nonempty, optionally hashed file."""
+    if not os.path.isfile(output) or os.path.getsize(output) == 0:
+        raise ValueError("debugfs produced no nonempty output file")
+    digest = sha256_file(output)
+    if expected_sha256 and digest.lower() != expected_sha256.lower():
+        raise ValueError(f"pulled SHA-256 {digest} != expected {expected_sha256}")
+    return digest
+
+
+def pull_root_file(session, byid, remote, output, expected_sha256=None):
+    """Read one rootfs file through the UMS by-id partition with debugfs."""
+    partition = byid + "-part2"
+    if not os.path.exists(partition):
+        session.note(f"PULL FAILED: expected root partition {partition} did not appear")
+        return False
+    # No -w: debugfs opens the ext4 filesystem read-only.  `dump -p` writes
+    # only the explicit host output file, never the UMS card.
+    command = f"dump -p {shlex.quote(remote)} {shlex.quote(output)}"
+    session.note(f"PULL: debugfs read-only {partition}: {remote} -> {output}")
+    try:
+        proc = subprocess.run(["debugfs", "-R", command, partition],
+                              capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError) as exc:
+        session.note(f"PULL FAILED: debugfs could not run: {exc}")
+        return False
+    transcript = proc.stdout + proc.stderr
+    session.log.write(transcript.encode("utf-8", "replace"))
+    sys.stdout.write(transcript); sys.stdout.flush()
+    if proc.returncode:
+        session.note(f"PULL FAILED: debugfs exit status {proc.returncode}")
+        return False
+    try:
+        digest = validate_pull_result(output, expected_sha256)
+    except (OSError, ValueError) as exc:
+        session.note(f"PULL FAILED: {exc}")
+        return False
+    session.note(f"PULL PASS: {os.path.getsize(output)} bytes, sha256 {digest}")
+    return True
+
+
+def validated_ums_byid(disks, expected_sectors):
+    """Return the exact UMS by-id target only after all identity checks pass."""
+    byid = f"/dev/disk/by-id/{UMS_DISK}"
+    properties = subprocess.run(
+        ["udevadm", "info", "--query=property", "--name", byid],
+        check=True, capture_output=True, text=True, timeout=10)
+    props = dict(line.split("=", 1) for line in properties.stdout.splitlines()
+                 if "=" in line)
+    real = os.path.realpath(byid)
+    sectors = int(Path(f"/sys/class/block/{os.path.basename(real)}/size").read_text())
+    validate_flash_target(disks, props, sectors, expected_sectors)
+    return byid
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dev", default="/dev/ttyACM0")
@@ -227,8 +316,15 @@ def main():
                          "it, verify every byte with direct readback, then "
                          "reset and capture the Linux boot and DSI diagnostics. "
                          "Only with explicit authorisation")
+    ap.add_argument("--pull", metavar="REMOTE_ABSOLUTE_PATH",
+                    help="while the exact UMS gadget is present, read one prepared "
+                         "absolute rootfs path with read-only debugfs dump, then boot Linux")
+    ap.add_argument("--pull-output", metavar="HOST_FILE",
+                    help="host destination for --pull; debugfs writes only this host file")
+    ap.add_argument("--pull-sha256", metavar="SHA256",
+                    help="optional expected SHA-256 for the nonempty --pull output")
     ap.add_argument("--expected-sectors", type=int,
-                    help="required with --flash: card size previously observed on the board")
+                    help="required with --flash or --pull: card size previously observed on the board")
     ap.add_argument("--regs", action="store_true",
                     help="dump usbotg0's DWC2 OTG/device registers with md.l "
                          "before ums and again right after Ctrl-C. GOTGCTL "
@@ -236,11 +332,18 @@ def main():
                          "whether the PHY sees VBUS from the cable. DCTL bit 1 "
                          "is soft-disconnect: whether D+ was ever pulled up")
     args = ap.parse_args()
+    if args.flash and args.pull:
+        ap.error("--flash and --pull are mutually exclusive")
     if args.flash:
         if not args.expected_sectors or args.expected_sectors <= 0:
             ap.error("--flash requires a positive --expected-sectors from the board")
         if not os.path.isfile(args.flash) or os.path.getsize(args.flash) == 0:
             ap.error("--flash requires an existing, nonempty image")
+    try:
+        args.pull_output = validate_pull_arguments(
+            args.pull, args.pull_output, args.expected_sectors, args.pull_sha256)
+    except ValueError as exc:
+        ap.error(str(exc))
 
     s = Session(args.dev, args.baud, args.out)
     status = 1
@@ -341,6 +444,22 @@ def main():
                         s.note(f"sha256 = {digest}")
                     except OSError as exc:
                         s.note(f"could not read {dev} unprivileged: {exc}")
+            status = 0
+            validated_byid = None
+            if args.flash or args.pull:
+                try:
+                    validated_byid = validated_ums_byid(new, args.expected_sectors)
+                except (ValueError, OSError, subprocess.SubprocessError) as exc:
+                    action = "WRITE" if args.flash else "PULL"
+                    s.note(f"{action} REFUSED: {exc}; target was not accessed")
+                    status = 1
+                    if args.flash:
+                        s.note("board remains in ums, nothing written")
+                        return
+            if args.pull and validated_byid:
+                if not pull_root_file(s, validated_byid, args.pull, args.pull_output,
+                                      args.pull_sha256):
+                    status = 1
             if args.cmp and len(new) == 1:
                 byid = f"/dev/disk/by-id/{sorted(new)[0]}"
                 size = os.path.getsize(args.cmp)
@@ -413,7 +532,6 @@ def main():
                 files_ok = out.count(" IDENTICAL") == 5
                 c_done = "region C read complete" in out
                 s.note(f"image cmp: region A {'IDENTICAL' if a_ok else 'DIFFERENT'}; partition-1 files {'all 5 IDENTICAL' if files_ok else 'NOT all identical'}; region C {'read to the end, block statistics above' if c_done else 'NOT completed'}; region B is the saved environment, shown above")
-            status = 0
         else:
             s.note("no new usb disk appeared on the host")
             s.host(["lsusb"])
@@ -421,19 +539,7 @@ def main():
 
         wrote = False
         if args.flash:
-            byid = f"/dev/disk/by-id/{UMS_DISK}"
-            try:
-                properties = subprocess.run(
-                    ["udevadm", "info", "--query=property", "--name", byid],
-                    check=True, capture_output=True, text=True, timeout=10)
-                props = dict(line.split("=", 1) for line in properties.stdout.splitlines() if "=" in line)
-                real = os.path.realpath(byid)
-                sectors = int(Path(f"/sys/class/block/{os.path.basename(real)}/size").read_text())
-                validate_flash_target(new, props, sectors, args.expected_sectors)
-            except (ValueError, OSError, subprocess.SubprocessError) as exc:
-                s.note(f"WRITE REFUSED: {exc}; board remains in ums, nothing written")
-                status = 1
-                return
+            byid = validated_byid
             size = os.path.getsize(args.flash)
             s.note(f"WRITE: tools/flash.sh {args.flash} {byid} ({size} bytes); confirmation = last 12 chars of the by-id path, supplied by this tool")
             proc = subprocess.Popen(["./tools/flash.sh", args.flash, byid], stdin=subprocess.PIPE,
