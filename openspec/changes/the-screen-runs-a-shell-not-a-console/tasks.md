@@ -84,7 +84,7 @@ the photograph or recording.
 There is no prior art for Pixman composite throughput on a C908. The number
 does not gate this change; not having it does.
 
-- [ ] 6.1 Measure the compositor's frame time at 568x1232 under a representative load — a terminal scrolling and the keyboard shown. Verify by committing the measurement and the method to `docs/evidence/shell-performance.txt`
+- [ ] 6.1 Measure the compositor's CPU-side frame work at 568x1232 under a representative load — a terminal scrolling and the keyboard shown. Enable `k230.shell.frameTiming`, then record `K230_CPU_FRAME` journal lines in `docs/evidence/shell-performance.txt`. Each successful sample is `CLOCK_MONOTONIC` elapsed time from immediately before `wlr_scene_output_build_state()` through `wlr_output_commit_state()` returning: scene build, Pixman submission, and KMS commit submission. It is not a vblank, presentation, or physical scanout measurement. Verify by committing the measurement and method to `docs/evidence/shell-performance.txt`
 - [ ] 6.2 Record resident memory for the whole session against the board's 1 GiB. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "free -m; ps aux --sort=-rss | head -15"` appended to `docs/evidence/shell-performance.txt`
 - [ ] 6.3 State a verdict in `docs/display-environment-options.md`: whether a compositor is viable on this board, or whether a direct DRM/KMS shell with no compositor is now the recommendation. Verify by the document saying one or the other in a sentence, with the measurement cited
 

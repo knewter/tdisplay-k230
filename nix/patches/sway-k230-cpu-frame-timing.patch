@@ -1,0 +1,70 @@
+--- a/sway/desktop/output.c
++++ b/sway/desktop/output.c
+@@ -1,4 +1,6 @@
+ #include <assert.h>
++#include <inttypes.h>
++#include <stdint.h>
+ #include <stdlib.h>
+ #include <strings.h>
+ #include <time.h>
+@@ -267,5 +269,20 @@ static bool output_can_tear(struct sway_output *output) {
+ 	return false;
+ }
+ 
++static bool k230_cpu_frame_timing_enabled(void) {
++	static int enabled = -1;
++	if (enabled == -1) {
++		const char *value = getenv("SWAY_K230_CPU_FRAME_TIMING");
++		enabled = value != NULL && strcmp(value, "1") == 0;
++	}
++	return enabled;
++}
++
++static int64_t k230_elapsed_ns(const struct timespec *start,
++		const struct timespec *end) {
++	return (int64_t)(end->tv_sec - start->tv_sec) * 1000000000LL
++		+ end->tv_nsec - start->tv_nsec;
++}
++
+ static int output_repaint_timer_handler(void *data) {
+ 	struct sway_output *output = data;
+@@ -289,8 +304,19 @@ static int output_repaint_timer_handler(void *data) {
+ 	}
+ 
+ 	struct wlr_output_state pending;
++	bool cpu_timing = k230_cpu_frame_timing_enabled();
++	struct timespec cpu_start, cpu_end;
++	if (cpu_timing) {
++		// Starts immediately before wlroots builds the scene and submits Pixman.
++		clock_gettime(CLOCK_MONOTONIC, &cpu_start);
++	}
+ 	wlr_output_state_init(&pending);
+ 	if (!wlr_scene_output_build_state(output->scene_output, &pending, &opts)) {
++		if (cpu_timing) {
++			clock_gettime(CLOCK_MONOTONIC, &cpu_end);
++			sway_log(SWAY_INFO, "K230_CPU_FRAME output=%s build_state_failed_ns=%" PRId64,
++				output->wlr_output->name, k230_elapsed_ns(&cpu_start, &cpu_end));
++		}
+ 		wlr_output_state_finish(&pending);
+ 		return 0;
+ 	}
+@@ -306,9 +332,18 @@ static int output_repaint_timer_handler(void *data) {
+ 		}
+ 	}
+ 
+-	if (!wlr_output_commit_state(output->wlr_output, &pending)) {
++	bool committed = wlr_output_commit_state(output->wlr_output, &pending);
++	if (!committed) {
+ 		sway_log(SWAY_ERROR, "Page-flip failed on output %s", output->wlr_output->name);
+ 	}
++	if (cpu_timing) {
++		clock_gettime(CLOCK_MONOTONIC, &cpu_end);
++		// This ends when DRM accepts or rejects the commit. It does not wait for
++		// a vblank, panel scanout, or a presentation event.
++		sway_log(SWAY_INFO,
++			"K230_CPU_FRAME output=%s build_state_plus_commit_submission_ns=%" PRId64 " committed=%d",
++			output->wlr_output->name, k230_elapsed_ns(&cpu_start, &cpu_end), committed);
++	}
+ 	wlr_output_state_finish(&pending);
+ 	return 0;
+ }

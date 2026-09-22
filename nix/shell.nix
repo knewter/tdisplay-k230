@@ -18,7 +18,14 @@ let
   # Xwayland off: 55 fewer riscv64 derivations and no GTK 3 / CUPS / Avahi
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
-  sway = pkgs.sway.override { enableXWayland = false; };
+  swayBase = pkgs.sway.override { enableXWayland = false; };
+  # Built only when frameTiming is selected. The patch measures CPU elapsed
+  # time across wlroots scene building/Pixman submission and KMS commit
+  # submission; it neither waits for nor claims panel scanout.
+  swayFrameTiming = swayBase.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-cpu-frame-timing.patch ];
+  });
+  sway = if cfg.frameTiming then swayFrameTiming else swayBase;
   wlroots = pkgs.wlroots_0_20.override { enableXWayland = false; };
 
   # cage is the first-light probe (tasks 3.1/3.2), not the shell: it has no
@@ -141,6 +148,18 @@ in
       '';
     };
 
+    frameTiming = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Use the diagnostic sway build and set SWAY_K230_CPU_FRAME_TIMING=1.
+        It logs CLOCK_MONOTONIC elapsed time from immediately before
+        wlr_scene_output_build_state through wlr_output_commit_state returning.
+        This includes CPU scene/Pixman work and commit submission, not vblank
+        or physical panel scanout.
+      '';
+    };
+
     keyboardHeight = lib.mkOption {
       type = lib.types.int;
       default = 400;
@@ -152,6 +171,13 @@ in
       default = sway;
       readOnly = true;
       description = "The compositor package, exposed so it can be built alone.";
+    };
+
+    frameTimingCompositor = lib.mkOption {
+      type = lib.types.package;
+      default = swayFrameTiming;
+      readOnly = true;
+      description = "Sway with opt-in K230 CPU frame timing instrumentation.";
     };
   };
 
@@ -227,6 +253,8 @@ in
         # A fixed IPC socket so `swaymsg` from the serial console needs no
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
+      } // lib.optionalAttrs cfg.frameTiming {
+        SWAY_K230_CPU_FRAME_TIMING = "1";
       };
       path = [ pkgs.foot pkgs.wvkbd pkgs.procps pkgs.coreutils pkgs.htop pkgs.jq pkgs.gnused ];
 
