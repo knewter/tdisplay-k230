@@ -1,0 +1,82 @@
+
+===== > export SYSTEMD_PAGER=cat PAGER=cat; systemctl status firewall --no-pager; iptables -S; iptables -t mangle -S; ip6tables -S; ip6tables -t mangle -S; journalctl -b -u firewall --no-pager; echo FIREWALL_CHECK_DONE =====
+export SYSTEMD_PAGER=cat PAGER=cat; systemctl status firewall --no-pager; iptables -S; iptables -t mangle -S; ip6tables -S; ip6tables -t mangle -S; journalctl -b -u firewall --no-pager; echo FIREWALL_CHECK_DONE
+[?2004l
+[0;1;32m●[0m firewall.service - Firewall
+     Loaded: loaded (]8;;file://nixos/etc/systemd/system/firewall.service\/etc/systemd/system/firewall.service]8;;\; [0;1;32menabled[0m; preset: ignored)
+     Active: [0;1;32mactive (exited)[0m since Tue 2026-03-17 19:56:19 UTC; 1min 41s ago
+ Invocation: 47537ef339c24afd96f2920fb7d8a56e
+    Process: 292 ExecStart=firewall-start (code=exited, status=0/SUCCESS)
+   Main PID: 292 (code=exited, status=0/SUCCESS)
+         IP: 0B in, 0B out
+         IO: 1.1M read, 0B written
+   Mem peak: 2.3M
+        CPU: 844ms
+
+Mar 17 19:56:15 nixos systemd[1]: Starting Firewall...
+Mar 17 19:56:19 nixos systemd[1]: Finished Firewall.
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-N nixos-fw
+-N nixos-fw-accept
+-N nixos-fw-log-refuse
+-N nixos-fw-refuse
+-A INPUT -j nixos-fw
+-A nixos-fw -i lo -j nixos-fw-accept
+-A nixos-fw -m conntrack --ctstate RELATED,ESTABLISHED -j nixos-fw-accept
+-A nixos-fw -p icmp -m icmp --icmp-type 8 -j nixos-fw-accept
+-A nixos-fw -j nixos-fw-log-refuse
+-A nixos-fw-accept -j ACCEPT
+-A nixos-fw-log-refuse -m pkttype ! --pkt-type unicast -j nixos-fw-refuse
+-A nixos-fw-log-refuse -j nixos-fw-refuse
+-A nixos-fw-refuse -j DROP
+-P PREROUTING ACCEPT
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-P POSTROUTING ACCEPT
+-N nixos-fw-rpfilter
+-A PREROUTING -j nixos-fw-rpfilter
+-A nixos-fw-rpfilter -m rpfilter --loose --validmark -j RETURN
+-A nixos-fw-rpfilter -p udp -m udp --sport 67 --dport 68 -j RETURN
+-A nixos-fw-rpfilter -s 0.0.0.0/32 -d 255.255.255.255/32 -p udp -m udp --sport 68 --dport 67 -j RETURN
+-A nixos-fw-rpfilter -j DROP
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-N nixos-fw
+-N nixos-fw-accept
+-N nixos-fw-log-refuse
+-N nixos-fw-refuse
+-A INPUT -j nixos-fw
+-A nixos-fw -i lo -j nixos-fw-accept
+-A nixos-fw -m conntrack --ctstate RELATED,ESTABLISHED -j nixos-fw-accept
+-A nixos-fw -p ipv6-icmp -m icmp6 --icmpv6-type 137 -j DROP
+-A nixos-fw -p ipv6-icmp -m icmp6 --icmpv6-type 139 -j DROP
+-A nixos-fw -p ipv6-icmp -j nixos-fw-accept
+-A nixos-fw -d fe80::/64 -p udp -m udp --dport 546 -j nixos-fw-accept
+-A nixos-fw -j nixos-fw-log-refuse
+-A nixos-fw-accept -j ACCEPT
+-A nixos-fw-log-refuse -m pkttype ! --pkt-type unicast -j nixos-fw-refuse
+-A nixos-fw-log-refuse -j nixos-fw-refuse
+-A nixos-fw-refuse -j DROP
+-P PREROUTING ACCEPT
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-P POSTROUTING ACCEPT
+-N nixos-fw-rpfilter
+-A PREROUTING -j nixos-fw-rpfilter
+-A nixos-fw-rpfilter -m rpfilter --loose --validmark -j RETURN
+-A nixos-fw-rpfilter -j DROP
+Mar 17 19:56:15 nixos systemd[1]: Starting Firewall...
+Mar 17 19:56:19 nixos systemd[1]: Finished Firewall.
+FIREWALL_CHECK_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

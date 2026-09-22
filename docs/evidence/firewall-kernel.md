@@ -32,6 +32,5 @@ Output: `/nix/store/5y0acf2qzdicdlscn474jfp0xf0807cj-linux-config-riscv64-unknow
 All 23 requested selections resolve exactly to `y`. No nonexistent NFT_COUNTER
 symbol is requested; counter support is part of nftables core in this tree.
 The kernel and complete daily image builds passed; see
-[build metadata](declarative-daily-build.json). Actual firewall start/rules
-verification on the new image is still pending.
+[build metadata](declarative-daily-build.json). Fresh-image hardware verification passed: [service and rules](shell-features/declarative-defaults/firewall.txt) show active firewall startup, IPv4/IPv6 filter chains with DROP refusal, conntrack acceptance, and mangle reverse-path checks. [Fresh-image state](shell-features/declarative-defaults/fresh-image.txt) records system `whskfvcll29493mgj4lz51mqn23328fa` and no shell service drop-ins. This is installed-policy evidence, not a network packet test.
 No firewall policy was disabled or relaxed.
