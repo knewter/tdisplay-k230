@@ -96,3 +96,9 @@ later still records the shell. These are coarse video-relative observations,
 not power-on latency or calibrated refresh measurements. Camera glare and
 focus limit readability. See the [U-Boot timeline](splash-trial/timeline-uboot.jpg)
 and [Linux timeline](splash-trial/timeline-linux.jpg).
+
+The board configuration now explicitly sets `k230.panelConsole = true` so
+subsequent daily shell images omit `logo.xrgb`. This carries the observed
+no-logo workaround into reproducible image builds. The splash package and
+runtime handoff work remain available for an explicit experimental build;
+changing the default back requires physical handoff evidence.

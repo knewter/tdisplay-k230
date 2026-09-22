@@ -55,7 +55,13 @@
             ./nix/k230.nix
             ./nix/hardware.nix
             ./nix/shell.nix
-            { k230.shell = { enable = true; probes = true; debugLog = true; }; }
+            {
+              k230.shell = { enable = true; probes = true; debugLog = true; };
+              # The logo is proven in U-Boot, but its Linux handoff currently
+              # corrupts physical scanout. Keep the daily shell image usable
+              # until both owners pass the recorded handoff test.
+              k230.panelConsole = true;
+            }
           ];
         };
         # The same board with the shell off: the minimal closure
