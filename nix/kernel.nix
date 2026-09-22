@@ -138,6 +138,45 @@ EOM
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'panel_simple_sleep(120);' drivers/gpu/drm/panel/panel-canaan-universal.c
 
+      # Preserve a panel that this boot's stage 1 successfully initialized.
+      #
+      # U-Boot writes the empty boolean canaan,stage1-splash in /chosen only
+      # after it has loaded logo.xrgb and completed the RM69A10 init path.
+      # This is deliberately read at runtime: absent or failed stage 1 means
+      # the ordinary probe/reset/init/fbdev path stays intact.  Do not turn it
+      # into a static board-DT property.
+      #
+      # The reset GPIO needs GPIOD_ASIS in that successful-stage-1 case. The
+      # vendor's GPIOD_OUT_LOW request immediately drives GPIO22 and would
+      # extinguish the image before prepare() can decide to preserve it.
+      sed -i 's|#include <linux/of_device.h>|#include <linux/of_device.h>\n#include <linux/of.h>|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q '#include <linux/of.h>' drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i 's|\tu32 init_set_v1_flag;|\tu32 init_set_v1_flag;\n\tbool stage1_splash;|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'bool stage1_splash;' drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i 's|\tctx->reset = devm_gpiod_get(&dsi->dev, "dsi_reset", GPIOD_OUT_LOW);|\tctx->stage1_splash = of_property_read_bool(of_chosen, "canaan,stage1-splash");\n\n\tctx->reset = devm_gpiod_get(&dsi->dev, "dsi_reset",\n\t\t\t\t    ctx->stage1_splash ? GPIOD_ASIS : GPIOD_OUT_LOW);|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'ctx->stage1_splash = of_property_read_bool(of_chosen, "canaan,stage1-splash");' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i '/ctx->reset = devm_gpiod_get/,/ctx->power_on =/ s|^\t} else {$|\t} else if (!ctx->stage1_splash) {|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'else if (!ctx->stage1_splash)' drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i '/static int canaan_panel_prepare/,/\/\/ set power on/ s|\tstruct canaan_panel \*p = panel_to_canaan_panel(panel);|\tstruct canaan_panel *p = panel_to_canaan_panel(panel);\n\n\tif (p->stage1_splash) {\n\t\tdev_info(panel->dev, "canaan_panel_prepare: left as stage 1 set it\\n");\n\t\tp->stage1_splash = false;\n\t\treturn 0;\n\t}|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan_panel_prepare: left as stage 1 set it' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # fbdev's initial hotplug/modeset allocates a zeroed buffer and would
+      # overwrite the preserved U-Boot scanout. This is also keyed only to
+      # this boot's /chosen flag; a boot without it still creates fb0.
+      sed -i 's|#include <linux/of_graph.h>|#include <linux/of_graph.h>\n#include <linux/of.h>|' \
+        drivers/gpu/drm/canaan/canaan_drv.c
+      grep -q '#include <linux/of.h>' drivers/gpu/drm/canaan/canaan_drv.c
+      sed -i 's|\tdrm_fbdev_generic_setup(drm_dev, 16);|\tif (of_property_read_bool(of_chosen, "canaan,stage1-splash"))\n\t\tDRM_DEV_INFO(dev, "stage 1 splash: leaving fbdev unset\\n");\n\telse\n\t\tdrm_fbdev_generic_setup(drm_dev, 16);|' \
+        drivers/gpu/drm/canaan/canaan_drv.c
+      grep -q 'stage 1 splash: leaving fbdev unset' drivers/gpu/drm/canaan/canaan_drv.c
+
       # Bound the thermal sensor read loop.
       #
       # canaan_get_temp() busy-polls TS_DATA in "while (1)" with no timeout,

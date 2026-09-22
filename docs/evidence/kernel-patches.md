@@ -157,3 +157,39 @@ this panel with the unpatched driver.
 **Drop when:** the vendor driver either advertises `XR24` on its RGB planes
 or stops hardcoding 32 in the fbdev setup call. Worth re-checking on any
 kernel bump, since a one-line constant is easy for upstream to change.
+
+## Stage-1 splash preservation
+
+The U-Boot handoff patch supplies an empty runtime `/chosen` property,
+`canaan,stage1-splash`, only after its image load and RM69A10 initialization
+succeed. The kernel does not treat that as a board property: an absent flag
+keeps the ordinary reset, initialization, and fbdev setup path.
+
+`panel-canaan-universal.c` reads the flag at probe into per-panel state. On a
+flagged boot it requests `dsi_reset` with `GPIOD_ASIS`, leaving GPIO22 at the
+stage-1 level instead of the vendor driver's `GPIOD_OUT_LOW`. Its first
+`prepare()` logs `canaan_panel_prepare: left as stage 1 set it`, clears that
+per-panel state, and returns before both the project reset pulses and the DCS
+init sequence. A later prepare therefore runs the complete existing reset and
+init path. The change is one-shot and does not persist through any later boot.
+
+`canaan_drv.c` reads the same runtime property and skips
+`drm_fbdev_generic_setup()` only when it is present. That avoids the initial
+fbdev hotplug/modeset from scanning out a zeroed buffer over the U-Boot frame;
+`/dev/fb0` is consequently absent on a flagged boot. A boot with no stage-1
+success flag still creates the existing RGB565 fbdev console.
+
+The source was checked before making this change. In the pinned tree,
+`canaan_vo_enable_crtc()` initializes VO, programs timing/background, and
+enables register load; it does **not** call the display reset. The
+`0x91101090` write of zero then `0xffffffff` is in
+`canaan_vo_disable_crtc()` only. Earlier text that placed that reset on the
+enable path was wrong. This task intentionally does not change VO reset or
+DSI/VO reprogramming; the first-modeset hardware task decides whether either
+still causes a visible dark interval.
+
+**Drop when:** stage 1 no longer owns a pre-kernel panel image, or a later
+kernel handoff implementation adopts the running display state without the
+fbdev modeset and has hardware evidence for both splash and no-splash boots.
+If the first-modeset measurement shows a dark interval, restore the reset and
+init work in `prepare()` as task 4.4 requires; do not hide that fallback.
