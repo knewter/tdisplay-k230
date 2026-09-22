@@ -62,6 +62,7 @@
               # with the immutable DRM owner and automatic shell handoff.
               # Do not promote this default without physical repeat evidence.
               k230.panelConsole = false;
+              k230.shell.initialSplash = true;
             }
           ];
         };
@@ -99,6 +100,9 @@
         # the image builder is idle, then enable k230.shell.frameTiming on a
         # board image to log CPU scene-build plus KMS-commit submission time.
         shell-compositor-frame-timing = self.nixosConfigurations.k230.config.k230.shell.frameTimingCompositor;
+        # Opt-in only: carries the immutable logo scene before Sway's first
+        # output commit. The daily configuration keeps initialSplash false.
+        shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
         # Native asset conversion; the U-Boot and Linux owners share this image.
