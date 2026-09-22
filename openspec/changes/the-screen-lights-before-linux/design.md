@@ -79,11 +79,10 @@ See proposal.md — Why. What shapes the approach:
   register pokes with no uclass; wrapping it as a `video` driver so that
   `bmp display` and `fdt_simplefb` work would be a rewrite of code we did
   not write, for no visible benefit.
-- Making the kernel adopt the running hardware state (a "no-op modeset"
-  when U-Boot's mode matches). That would require a careful change to the VO
-  initialization/timing path, encoder setup, and CRTC/plane commit ordering.
-  Considered and deferred: the measurement in task 4.4 decides whether it is
-  even needed.
+- General framebuffer adoption or arbitrary inherited-mode support. The
+  measured first-modeset defect now warrants a narrow, flag-gated preservation
+  path for the exact stage-1 mode, with normal initialization after disable
+  or mismatch. It still programs Linux plane buffers.
 - Continuity in the strict sense of one scanout buffer never touched. See the
   decision below; the design carries the *image* across, not the buffer.
 
@@ -342,3 +341,34 @@ is how they are tested before the U-Boot side lands.
   the wait visible. Out of scope here and noted for
   `the-card-is-flashed-over-usb-from-u-boot`, which is the change that needs
   the prompt.
+
+## Diagnostic first-scene implementation refinement
+
+The preserve-image trial isolates first-enable VO/DSI reprogramming and shows
+correct automatic shell geometry, visible successive color updates, no-logo
+console recovery and display off/on recovery. Its code remains on
+`diagnostic/preserve-splash-image`, separate from the daily default. The
+remaining dark gap is independently visible in the camera recording.
+
+Pinned Sway and wlroots source explains an initial empty scene before the bar
+and deferred terminal commands start; see
+`docs/evidence/splash-preserve-trial/compositor-startup.md`. An owner-service
+delay cannot put the logo into the compositor's first framebuffer. Add an
+opt-in Sway scene seed using the existing immutable 568x1232 BGRX asset,
+constructed in an enabled scene layer before the first backend commit. Output
+layers initially live under disabled staging, so merely creating it in an
+output layer before `request_modeset()` is insufficient.
+
+Place the placeholder above background clients and below normal shell content.
+Keep it until an actual toplevel buffer and the top-layer bar are included in
+a successful output commit and the matching presentation event is observed.
+A mapped descriptor, background-only frame, successful TEST_ONLY call or an
+unrelated presentation does not meet this condition. Presentation events are
+software evidence; camera footage remains required for the physical claim.
+
+Validate asset type and exact size, handle read/allocation failures, release
+buffer resources on teardown, and leave the existing compositor selected when
+the option is disabled. Missing or invalid assets must log a clear error and
+allow the ordinary shell to start. Do not depend on home state. Cold boot,
+normal no-logo shell, display re-enable and touch acceptance remain required;
+a draft or passing cross-build does not enable the new default.

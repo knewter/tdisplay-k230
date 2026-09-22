@@ -77,6 +77,12 @@ exceeded by 22.3 MiB, selecting task 5.3 rather than 5.2. This is an
 incremental dry-run cost, not installed closure size; see
 `docs/evidence/boot-splash-owner.md`.
 
+## 5a. Close the measured first-compositor-frame gap
+
+- [ ] 5a.1 Carry the exact-mode, runtime-flag-gated first VO/DSI enable preservation into the candidate, retaining normal initialization on mismatch and after disable. Build the kernel and record physical missing-logo and off/on regressions. The existing diagnostic image is evidence for the candidate only until its code is integrated and documented.
+- [ ] 5a.2 Add an opt-in Sway initial logo scene before its first real output commit, above background clients, using the immutable asset. Retire it only after a toplevel plus bar replacement commit is presented; handle invalid assets and teardown, and leave the daily compositor unchanged when disabled. Verify `nix build .#shell-compositor-initial-splash`, source review of initial staging/commit order, and recorded invalid-asset behavior.
+- [ ] 5a.3 Build the image with both diagnostic paths enabled and film the automatic boot, first shell content, keyboard visibility and display off/on. Record whether any dark frame remains. Only the physical no-dark-frame result may close 5.4; a compositor presentation log or native screenshot alone is insufficient.
+
 ## 6. The switch, and the specs
 
 - [ ] 6.1 Add `k230.panelConsole` (default false) to the NixOS module: true keeps `console=tty0` and omits `logo.xrgb` from the boot partition; false does the reverse. Verify with `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath` succeeding with the option in both states, and `nix build .#sdImage` with it true producing a boot partition without `logo.xrgb` — laptop claim

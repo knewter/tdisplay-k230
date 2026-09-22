@@ -76,8 +76,9 @@ Changing U-Boot's `bootdelay` — the splash appears before the countdown, so
 the countdown delays the kernel, not the picture, and shortening it is a
 separate decision that affects `the-card-is-flashed-over-usb-from-u-boot`.
 Brightness or backlight control beyond the `51 FE` the init sequence already
-sends. Touch during boot. HDMI. Any change to which shell the board runs or
-how the shell draws — this change ends where the shell's first frame begins.
+sends. Touch during boot. HDMI. Changing which shell the board runs. A narrow opt-in Sway initial-scene patch
+is now included because the measured startup black frame violates the handoff
+requirement; general shell rendering changes remain out of scope.
 Shrinking the boot itself: userspace starts around 22 s after the kernel
 does today and this change hides that, it does not fix it.
 
@@ -160,3 +161,17 @@ and LILYGO's `Xinyuan-LilyGO/T-Display-K230` at
 plus its Linux patches `0027`, `0038` and `0051`. The first task records the
 LILYGO diff under `docs/evidence/` so that the grounding does not depend on a
 GitHub repository staying where it is.
+
+## Measured handoff refinement (2026-09-22)
+
+The diagnostic preservation image at `671d404` boots to a correctly arranged
+shell and visibly updates content; it also preserves the no-logo console and
+normal display re-enable path. It still has an approximately 1.1–1.2 second
+camera-visible startup dark gap. Evidence and limits are in
+`docs/evidence/splash-preserve-trial/README.md`.
+
+The implementation scope now includes narrowly preserving the matching
+stage-1 VO/DSI state on the first enable and seeding Sway's first scene with
+the same immutable logo. These are required to pursue the existing continuous
+handoff behavior, not a relaxation of it. Both remain diagnostic until their
+physical acceptance checks pass. No animation is implemented by this change.
