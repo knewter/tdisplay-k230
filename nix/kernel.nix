@@ -253,6 +253,36 @@ EOM
       # brightness dips in 30 s) is real and still unfixed. Whatever
       # fixes it has to keep the two clocks locked.
 
+      # Make the DSI PHY hsfreqrange settable from the device tree.
+      #
+      # canaan_dsi.c passes a literal 0x96 -- the driver's own
+      # TXPHY_445_5_HS_FREQ -- as hsfreqrange, while computing voc from
+      # the requested frequency. In a DWC D-PHY that register selects the
+      # HS timing calibration (T_hs-prepare, T_hs-zero, T_hs-trail) and
+      # must track the real lane rate. Ours never moves, so the link runs
+      # 33% outside its calibration at our 594 Mbps and degrades
+      # monotonically above it: 682 Mbps freezes the panel, 742 blanks it.
+      # docs/evidence/dsi-hsfreqrange-hardcoded.md.
+      #
+      # The vendor does not hardcode it -- its U-Boot passes
+      # phy->hs_freq from a per-panel struct.
+      #
+      # The right value is NOT known: the driver exposes three points and
+      # they do not interpolate (445.5 -> 0x96, 891 -> 0x96, 475 -> 0xa3).
+      # Guessing PHY timing is how the panel got blanked once already, so
+      # this does not guess -- it reads the value from the device tree and
+      # keeps 0x96 as the default. Candidates then cost an 11 second
+      # push-file.py DTB push instead of a 20 minute rebuild each, the
+      # same trick that made the panel init sequence tractable. The
+      # dev_info prints the live lane rate beside the value used, so a
+      # boot log says what was actually tried.
+      # The braces matter: a bare "u32 hsfr" here would be a declaration
+      # after a statement, and 6.6 builds with -Wdeclaration-after-statement
+      # and CONFIG_WERROR=y, so it would fail the build twenty minutes in.
+      sed -i 's|^\tk230_dsi_config_4lan_phy(dsi, m - 2, n - 1, voc, 0x96);$|\t{\n\t\tu32 hsfr = 0x96;\n\t\tof_property_read_u32(dsi->dev->of_node, "canaan,hsfreqrange", \&hsfr);\n\t\tdev_info(dsi->dev, "DSI PHY: lane %u kbps, voc 0x%x, hsfreqrange 0x%x\\n", phy_clk_freq * 2, voc, hsfr);\n\t\tk230_dsi_config_4lan_phy(dsi, m - 2, n - 1, voc, (uint8_t)hsfr);\n\t}|' \
+        drivers/gpu/drm/canaan/canaan_dsi.c
+      grep -q 'canaan,hsfreqrange' drivers/gpu/drm/canaan/canaan_dsi.c
+
     '';
   };
 
