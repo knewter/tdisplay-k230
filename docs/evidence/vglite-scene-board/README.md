@@ -87,3 +87,10 @@ pixel helper from `docs/evidence/launcher-gestures/metadata-budget/check.py`
 This is an installed-image recovery regression, not physical-finger acceptance
 or a measured UI latency trial. The initial helper's CPU-heavy PNG processing
 time is not a response-time measurement.
+
+## Follow-up: actual GPU submission with padded pitch
+
+The later [padded scene trial](padded/README.md) reached 196 GPU frames and zero
+CPU replays. Its forced-Pixman comparison uses the same allocation. Source
+colors differ by a quantization step, and no speedup is accepted. The original
+zero-GPU records above remain unchanged.

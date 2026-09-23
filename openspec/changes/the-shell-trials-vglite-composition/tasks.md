@@ -23,7 +23,7 @@ separate board gate, recorded in `docs/evidence/vglite-renderer-host.md`.
 
 ## 3. Board-only trial and decision
 
-- [ ] 3.1 Verify opt-in Sway uses the forked renderer for a real scene render pass while the same Sway/wlroots DRM backend keeps master and scanout ownership. Capture selection, fallback and output evidence. Hardware proof only.
+- [x] 3.1 Verify opt-in Sway uses the forked renderer for a real scene render pass while the same Sway/wlroots DRM backend keeps master and scanout ownership. Capture selection, fallback and output evidence. Hardware proof only.
 - [ ] 3.2 Compare repeated full-panel scenes with the same Pixman scene, recording wall, process CPU and available system/interrupt metrics. Cite committed CPU-validation evidence and state its limits. Hardware proof only.
 - [ ] 3.3 Run touch, keyboard, Apps, Back/Home, Terminal, Monitor and system controls under GPU and forced-Pixman frames; capture recovery without a second DRM owner or display takeover. Hardware proof only.
 - [ ] 3.4 Record target/source formats, clip/blend/damage behavior, completion/cache behavior, fallback rate and benchmark results. Run `openspec validate the-shell-trials-vglite-composition --strict` and `./tools/blob-scan.py --no-vendor`.
@@ -35,5 +35,9 @@ Board scene trials and fixed-schema decisions: `docs/evidence/vglite-scene-board
 The instrumented trial produced zero GPU frames and 224 Pixman replays; normal
 shell recovery passed. Ordinary color metadata and 1136-byte target stride
 were observed rejection reasons. Source/host default-color handling is now
-tested separately; actual GPU submission, format/cache correctness, normal-service
-access, and matched performance/interaction gates remain open.
+tested separately. The later padded-buffer trial in
+`docs/evidence/vglite-scene-board/padded/README.md` completes 3.1: 196 actual GPU
+frames with zero replays, versus 576 replays when explicitly forced to Pixman
+on the same allocation. Captures reveal an RGB565 color-step mismatch;
+format/cache correctness, normal-service access, and matched performance/
+interaction gates remain open.

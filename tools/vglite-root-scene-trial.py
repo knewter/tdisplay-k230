@@ -72,7 +72,7 @@ def trusted_program(value):
 
 
 class Trial:
-    def __init__(self, directory, compositor, client, seconds, shell_gid, commands=None, token=None):
+    def __init__(self, directory, compositor, client, seconds, shell_gid, commands=None, token=None, force_pixman=False):
         self.directory = Path(directory)
         self.control = self.directory / "control"
         self.display = self.directory / "display"
@@ -89,6 +89,7 @@ class Trial:
         self.watchdog = "k230-vglite-recovery-" + suffix
         self.python = sys.executable
         self.restored = False
+        self.force_pixman = force_pixman
 
     def prepare(self):
         self.directory.mkdir(mode=0o711)
@@ -132,7 +133,7 @@ else:
                 "--setenv=HOME=" + str(self.control), "--setenv=XDG_RUNTIME_DIR=" + str(self.display),
                 "--setenv=SWAYSOCK=" + str(self.control / "sway-ipc.sock"),
                 "--setenv=WLR_BACKENDS=drm", "--setenv=LIBSEAT_BACKEND=seatd", "--setenv=XDG_SEAT=seat0",
-                "--setenv=WLR_RENDERER=vglite", "--setenv=K230_VGLITE_ALLOW_UNPROVEN_CACHE=1",
+                "--setenv=WLR_RENDERER=vglite", "--setenv=K230_VGLITE_ALLOW_UNPROVEN_CACHE=" + ("0" if self.force_pixman else "1"),
                 self.compositor, "-d", "-c", str(self.control / "sway.conf")]
 
     def client_command(self, wayland_socket):
@@ -195,6 +196,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compositor", required=True, help="imported opt-in Sway executable in /nix/store")
     parser.add_argument("--seconds", type=int, default=20, help="client maximum lifetime, 1–120 seconds")
+    parser.add_argument("--force-pixman", action="store_true", help="replay on the CPU while retaining the opt-in padded allocator")
     parser.add_argument("client", nargs=argparse.REMAINDER, help="-- followed by trusted Wayland probe and arguments")
     args = parser.parse_args()
     client = args.client[1:] if args.client[:1] == ["--"] else args.client
@@ -213,7 +215,7 @@ def main():
     signal.signal(signal.SIGTERM, interrupted)
     signal.signal(signal.SIGINT, interrupted)
     directory = Path("/run") / ("k230-vglite-trial-" + uuid.uuid4().hex[:12])
-    Trial(directory, compositor, client, args.seconds, shell_gid).run()
+    Trial(directory, compositor, client, args.seconds, shell_gid, force_pixman=args.force_pixman).run()
 
 
 if __name__ == "__main__":

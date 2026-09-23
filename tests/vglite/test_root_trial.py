@@ -83,6 +83,17 @@ class Manager:
 
 
 class RootTrial(unittest.TestCase):
+    def test_cpu_comparison_preserves_renderer_allocator_and_isolation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial=self.make_trial(Path(temp)/'trial',Manager())
+            self.assertIn('--setenv=K230_VGLITE_ALLOW_UNPROVEN_CACHE=1',trial.compositor_command())
+            trial.force_pixman=True
+            command=trial.compositor_command()
+            self.assertIn('--setenv=WLR_RENDERER=vglite',command)
+            self.assertIn('--setenv=K230_VGLITE_ALLOW_UNPROVEN_CACHE=0',command)
+            self.assertNotIn('--setenv=K230_VGLITE_ALLOW_UNPROVEN_CACHE=1',command)
+            self.assertIn('--property=PrivateDevices=yes',trial.client_command(trial.display/'wayland-1'))
+
     def make_trial(self, path, manager):
         return module.Trial(path, "/nix/store/test/bin/sway", ["/nix/store/test/bin/probe", "--seconds", "1"], 1, 999,
                             commands=manager, token="hosttest")

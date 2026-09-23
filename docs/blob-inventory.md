@@ -1073,6 +1073,10 @@ DATA a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7  docs/evid
 DATA 2a7363bebeb3345d5fac2e2ff8f8ba80809ee63c2b017435e53b681135543222  docs/evidence/card-shell/injected/two-live.png
 DATA 5a5ea9a36814f394bec4137494059f71a9f4106c77bc3a69f95351683d7cb4c7  docs/evidence/card-shell/injected/unavailable.png
 DATA 92f8189e77044d6b77979b8fccbaded362022db1531e030ea9ab6588b0d92365  docs/evidence/card-shell/injected/windows.png
+DATA 7005dee79977230539647f191250859fdde0b1dba6fd6b8be4e23cf04668f26d  docs/evidence/vglite-scene-board/padded/gpu/scene-first.png
+DATA 48e8bf258f444730dbe827d5f73e83b16a558a5447b00332cef396fa534d1977  docs/evidence/vglite-scene-board/padded/gpu/scene-later.png
+DATA 8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b  docs/evidence/vglite-scene-board/padded/pixman/scene-first.png
+DATA 4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457  docs/evidence/vglite-scene-board/padded/pixman/scene-later.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1331,3 +1335,10 @@ Native screenshots of synthetic live cards and the existing shell controls.
 The reviewed interaction repeat passes; performance and physical-finger
 acceptance remain open. DATA provenance, exact package and limitations:
 `docs/evidence/card-shell/injected/README.md`.
+
+### Padded live-scene GPU diagnostic
+
+Synthetic scene captures on real RGB565 scanout with padded pitch, in GPU and
+forced-Pixman modes. Actual submission succeeds, but sampled colors differ.
+Provenance and unaccepted correctness/performance gates:
+`docs/evidence/vglite-scene-board/padded/README.md`.
