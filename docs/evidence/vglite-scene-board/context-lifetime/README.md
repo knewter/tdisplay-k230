@@ -49,8 +49,8 @@ pairs on the same boot, with the same animated SHM parent/child client, native
 45-second watchdog and 30-second client commands. Each `round-N` directory
 contains original fixed-schema cost/decision logs, exact executable and system
 identities, two native captures per mode, parser summaries and a palette check.
-The first 20 frames are excluded from timing aggregates; each run retains more
-than 470 measured frames. All six runs returned zero, observed one Sway process
+The first 20 frames are excluded from timing aggregates; each run retains at least
+470 measured frames. All six runs returned zero, observed one Sway process
 and restored both normal shell and seatd. GPU runs had zero Pixman replays.
 
 | Round | GPU frames | Pixman frames | GPU mean wall/pass | Pixman mean wall/pass | GPU mean process CPU/pass | Pixman mean process CPU/pass |
