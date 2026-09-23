@@ -1,0 +1,9 @@
+{
+  "requested_at_utc": "2026-09-23T22:52:07.173747+00:00",
+  "status": "PASS",
+  "physical_intervention": false,
+  "normal_login_observed": true,
+  "limits": [
+    "Login observation only; separate root-growth recovery capture verifies normal identity and shell/network."
+  ]
+}
