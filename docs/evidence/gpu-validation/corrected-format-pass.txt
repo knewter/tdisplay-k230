@@ -1,0 +1,155 @@
+GPU_VALIDATION_BEGIN
+4f33a8c4-5824-4998-913c-c1307defa6c5
+active
+active
+active
+
+1fb51c12225d4dbab91751ff5e765b2f
+
+7d5ae8808e21418db31b90e8f9c023d1
+
+b8c33f9db2b748d2a36dc20350fb5cae
+
+TEST=rgb565
+VGLITE_VALIDATION_BEGIN mode=rgb565
+RGB565_BEGIN
+rgb565-source x=0 y=0 rgb565=0xf800
+rgb565-source x=63 y=0 rgb565=0xf800
+rgb565-source x=64 y=0 rgb565=0x07e0
+rgb565-source x=127 y=0 rgb565=0x07e0
+rgb565-source x=0 y=63 rgb565=0xf800
+rgb565-source x=63 y=63 rgb565=0xf800
+rgb565-source x=64 y=63 rgb565=0x07e0
+rgb565-source x=127 y=63 rgb565=0x07e0
+rgb565-source x=0 y=64 rgb565=0x001f
+rgb565-source x=63 y=64 rgb565=0x001f
+rgb565-source x=64 y=64 rgb565=0x0000
+rgb565-source x=127 y=64 rgb565=0x0000
+rgb565-source x=0 y=127 rgb565=0x001f
+rgb565-source x=63 y=127 rgb565=0x001f
+rgb565-source x=64 y=127 rgb565=0x0000
+rgb565-source x=127 y=127 rgb565=0x0000
+rgb565-target x=0 y=0 rgb565=0xf800
+rgb565-target x=127 y=0 rgb565=0xf800
+rgb565-target x=128 y=0 rgb565=0x07e0
+rgb565-target x=255 y=0 rgb565=0x07e0
+rgb565-target x=0 y=127 rgb565=0xf800
+rgb565-target x=127 y=127 rgb565=0xf800
+rgb565-target x=128 y=127 rgb565=0x07e0
+rgb565-target x=255 y=127 rgb565=0x07e0
+rgb565-target x=0 y=128 rgb565=0x001f
+rgb565-target x=127 y=128 rgb565=0x001f
+rgb565-target x=128 y=128 rgb565=0x0000
+rgb565-target x=255 y=128 rgb565=0x0000
+rgb565-target x=0 y=255 rgb565=0x001f
+rgb565-target x=127 y=255 rgb565=0x001f
+rgb565-target x=128 y=255 rgb565=0x0000
+rgb565-target x=255 y=255 rgb565=0x0000
+RGB565_PASS exact multi-row 2x quadrants
+RGB565_END
+VGLITE_VALIDATION_PASS
+TEST_EXIT=0
+TEST=alpha
+VGLITE_VALIDATION_BEGIN mode=alpha
+ALPHA_BEGIN
+ALPHA_SAMPLE source=0x80402010 target-initial=0xff203040 target-src-over=0xff503830
+ALPHA_MODEL straight=28:28:30:ff premult=30:38:50:ff observed=30:38:50:ff
+ALPHA_PASS premultiplied model
+ALPHA_END
+VGLITE_VALIDATION_PASS
+TEST_EXIT=0
+TEST=dmabuf
+VGLITE_VALIDATION_BEGIN mode=dmabuf
+DMABUF_BEGIN
+dmabuf-cpu-map x=0 y=0 rgb565=0xf800
+dmabuf-cpu-map x=255 y=0 rgb565=0xf800
+dmabuf-cpu-map x=0 y=255 rgb565=0xf800
+dmabuf-cpu-map x=255 y=255 rgb565=0xf800
+DMABUF_PASS original CPU mapping exact full red
+DMABUF_DETAILS node=/dev/dri/card0 handle=1 pitch=512 size=131072
+DMABUF_END
+VGLITE_VALIDATION_PASS
+TEST_EXIT=0
+TEST=benchmark
+VGLITE_VALIDATION_BEGIN mode=benchmark
+BENCHMARK_BEGIN
+bench-gpu x=0 y=0 rgb565=0xf800
+bench-gpu x=127 y=0 rgb565=0xf800
+bench-gpu x=128 y=0 rgb565=0x07e0
+bench-gpu x=255 y=0 rgb565=0x07e0
+bench-gpu x=0 y=127 rgb565=0xf800
+bench-gpu x=127 y=127 rgb565=0xf800
+bench-gpu x=128 y=127 rgb565=0x07e0
+bench-gpu x=255 y=127 rgb565=0x07e0
+bench-gpu x=0 y=128 rgb565=0x001f
+bench-gpu x=127 y=128 rgb565=0x001f
+bench-gpu x=128 y=128 rgb565=0x0000
+bench-gpu x=255 y=128 rgb565=0x0000
+bench-gpu x=0 y=255 rgb565=0x001f
+bench-gpu x=127 y=255 rgb565=0x001f
+bench-gpu x=128 y=255 rgb565=0x0000
+bench-gpu x=255 y=255 rgb565=0x0000
+bench-pixman x=0 y=0 rgb565=0xf800
+bench-pixman x=127 y=0 rgb565=0xf800
+bench-pixman x=128 y=0 rgb565=0x07e0
+bench-pixman x=255 y=0 rgb565=0x07e0
+bench-pixman x=0 y=127 rgb565=0xf800
+bench-pixman x=127 y=127 rgb565=0xf800
+bench-pixman x=128 y=127 rgb565=0x07e0
+bench-pixman x=255 y=127 rgb565=0x07e0
+bench-pixman x=0 y=128 rgb565=0x001f
+bench-pixman x=127 y=128 rgb565=0x001f
+bench-pixman x=128 y=128 rgb565=0x0000
+bench-pixman x=255 y=128 rgb565=0x0000
+bench-pixman x=0 y=255 rgb565=0x001f
+bench-pixman x=127 y=255 rgb565=0x001f
+bench-pixman x=128 y=255 rgb565=0x0000
+bench-pixman x=255 y=255 rgb565=0x0000
+BENCHMARK geometry=128x128-to-256x256 finish_ns_per_op=185587 batch_ns_per_op=157891 pixman_ns_per_op=171140
+bench-gpu x=0 y=0 rgb565=0xf800
+bench-gpu x=283 y=0 rgb565=0xf800
+bench-gpu x=284 y=0 rgb565=0x07e0
+bench-gpu x=567 y=0 rgb565=0x07e0
+bench-gpu x=0 y=615 rgb565=0xf800
+bench-gpu x=283 y=615 rgb565=0xf800
+bench-gpu x=284 y=615 rgb565=0x07e0
+bench-gpu x=567 y=615 rgb565=0x07e0
+bench-gpu x=0 y=616 rgb565=0x001f
+bench-gpu x=283 y=616 rgb565=0x001f
+bench-gpu x=284 y=616 rgb565=0x0000
+bench-gpu x=567 y=616 rgb565=0x0000
+bench-gpu x=0 y=1231 rgb565=0x001f
+bench-gpu x=283 y=1231 rgb565=0x001f
+bench-gpu x=284 y=1231 rgb565=0x0000
+bench-gpu x=567 y=1231 rgb565=0x0000
+bench-pixman x=0 y=0 rgb565=0xf800
+bench-pixman x=283 y=0 rgb565=0xf800
+bench-pixman x=284 y=0 rgb565=0x07e0
+bench-pixman x=567 y=0 rgb565=0x07e0
+bench-pixman x=0 y=615 rgb565=0xf800
+bench-pixman x=283 y=615 rgb565=0xf800
+bench-pixman x=284 y=615 rgb565=0x07e0
+bench-pixman x=567 y=615 rgb565=0x07e0
+bench-pixman x=0 y=616 rgb565=0x001f
+bench-pixman x=283 y=616 rgb565=0x001f
+bench-pixman x=284 y=616 rgb565=0x0000
+bench-pixman x=567 y=616 rgb565=0x0000
+bench-pixman x=0 y=1231 rgb565=0x001f
+bench-pixman x=283 y=1231 rgb565=0x001f
+bench-pixman x=284 y=1231 rgb565=0x0000
+bench-pixman x=567 y=1231 rgb565=0x0000
+BENCHMARK geometry=284x616-to-568x1232 finish_ns_per_op=1969291 batch_ns_per_op=1875733 pixman_ns_per_op=1950200
+BENCHMARK_END pass
+VGLITE_VALIDATION_PASS
+TEST_EXIT=0
+active
+active
+active
+
+1fb51c12225d4dbab91751ff5e765b2f
+
+7d5ae8808e21418db31b90e8f9c023d1
+
+b8c33f9db2b748d2a36dc20350fb5cae
+
+GPU_VALIDATION_END

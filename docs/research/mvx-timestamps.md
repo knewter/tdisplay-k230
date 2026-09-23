@@ -119,8 +119,7 @@ than changing playback timing globally.
 
 ## Physical boundary result and candidate FFmpeg correction
 
-The board trace collected after this investigation is retained outside this
-worktree at `docs/evidence/network-video/mvx-ioctl-boundary.log`. It changes the
+The board trace collected after this investigation is committed at `docs/evidence/network-video/mvx-ioctl-boundary.log`. It changes the
 working diagnosis:
 
 * It contains 297 `OUTPUT_MPLANE QBUF` records, with submitted timestamps from
@@ -153,12 +152,13 @@ coordinator's current `nix/video-probe.nix` resolves to
 ```sh
 nix build --impure --option max-jobs 1 --option cores 4 --print-out-paths --expr '
 let
-  f = builtins.getFlake (toString /tmp/k230-goal-video);
+  root = builtins.toPath (builtins.getEnv "PWD");
+  f = builtins.getFlake (toString root);
   pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux.pkgsCross.riscv64;
-  probe = import /tmp/k230-goal-video/nix/video-probe.nix { inherit pkgs; };
+  probe = import (root + /nix/video-probe.nix) { inherit pkgs; };
   ffmpeg = probe.ffmpeg.overrideAttrs (old: {
     patches = (old.patches or []) ++ [
-      /tmp/k230-mvx-timestamp-audit/nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch
+      (root + /nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch)
     ];
   });
 in ffmpeg
