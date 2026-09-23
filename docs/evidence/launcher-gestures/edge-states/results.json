@@ -1,0 +1,25 @@
+{
+  "interaction": "injected-uinput",
+  "at_utc": "2026-09-23T06:00:59.291125+00:00",
+  "base": "/nix/store/lrir8irpf6q81ffcgqr2r73zxpgvjf32-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-touch-launcher",
+  "phases": [
+    {
+      "phase": "empty",
+      "overview_stayed_open": true,
+      "first_back_stayed_open": true,
+      "second_back_closed": true
+    },
+    {
+      "phase": "stale",
+      "owned_window_removed": true,
+      "selection_kept_overview": true,
+      "focus_command_count": 0,
+      "first_back_stayed_open": true,
+      "second_back_closed": true,
+      "existing_processes_unchanged": true
+    }
+  ],
+  "native_review": "required separately",
+  "fixture_con_id": 27,
+  "result": "process-and-input-checks-pass"
+}

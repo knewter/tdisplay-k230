@@ -24,7 +24,7 @@
 ## 5. Board validation
 
 - [ ] 5.1 Build and flash the integrated image only after host tests pass; verify the normal shell, Apps, Help, keyboard, Terminal, Monitor, and Home controls still work on the board.
-- [ ] 5.2 Exercise 20 injected swipes in both directions plus tap, Back, overview focus, stale/empty state, and button fallbacks; verify console/native evidence labels injected input separately from physical-finger proof.
+- [x] 5.2 Exercise 20 injected swipes in both directions plus tap, Back, overview focus, stale/empty state, and button fallbacks; verify console/native evidence labels injected input separately from physical-finger proof.
 - [ ] 5.3 Capture a concise physical camera trial showing a real left swipe, right swipe, overview entry/exit, card tap, and Back with the display sharply focused; verify no legs/private scene content and retain physical-glass/readability limitations.
 
 ## 6. Review and integration

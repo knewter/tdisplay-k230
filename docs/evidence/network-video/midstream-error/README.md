@@ -34,5 +34,13 @@ python3 -m unittest tests.test_video_session
 
 The classifier is deliberately limited to the verified pinned HTTP diagnostic.
 It does not claim to detect all malformed media or unknown-length live-stream
-interruptions. Board validation of the corrected controller and final-image
-regression remain open.
+interruptions. The corrected controller was then built and imported as
+`/nix/store/izf7j0kyv5sqjjv0698v2vm8rglnd6dp-k230-video-session` (source `972a397`).
+The same board trial passed: after IPC media time exceeded two seconds, HTTP
+closed at 1,310,720 of 5,089,683 advertised bytes; the controller returned 2 and
+removed the player group, state, socket and runtime playlist before safety Stop
+(`after-board.json`). `check-board.py` is the executed procedure. Its no-EOF-log
+field is not independent proof for private inputs, whose diagnostics are not
+persisted; the deliberately incomplete response, observed progress, exit 2 and
+cleanup establish this case. The pre-existing image stayed installed. Final-image
+regression remains open.

@@ -1187,3 +1187,14 @@ Native compositor captures; see `docs/evidence/launcher-gestures/preflight.md`.
 | --- | ---: | --- | --- |
 | `docs/evidence/launcher-gestures/preflight-apps-page-2.png` | 37632 | DATA | `1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903` |
 | `docs/evidence/launcher-gestures/preflight-overview.png` | 31697 | DATA | `27a6acc3f1428c79ae7345632052b46d41911ccde6f60c060e8bcd93648e445a` |
+
+## Launcher empty/stale board evidence
+
+Native grim captures; provenance in `docs/evidence/launcher-gestures/edge-states/README.md`.
+
+| Blob | Bytes | Class | sha256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/launcher-gestures/edge-states/empty-overview.png` | 28569 | DATA | `81a2ca6124a20845272f6762e8aaca7a47d60ab31f39b5b651e4fc1a7f71a9b5` |
+| `docs/evidence/launcher-gestures/edge-states/stale-after-close.png` | 27341 | DATA | `20ab1b0d089d37cc5fe05746fede71c2b768a3995b916a90a4ebadc90659e986` |
+| `docs/evidence/launcher-gestures/edge-states/stale-back-apps.png` | 38398 | DATA | `b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e` |
+| `docs/evidence/launcher-gestures/edge-states/stale-before-close.png` | 26130 | DATA | `a72a13b46a2df3201dd53082527aca2fc8bec74c38074735192de8502f0af16a` |
