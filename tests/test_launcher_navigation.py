@@ -150,7 +150,7 @@ static void drain_catalog(void) {
   assert(catalog.pid == 0);
 }
 int main(int argc, char **argv) {
-  assert(argc == 5);
+  assert(argc == 6);
   GPtrArray *parsed = parse_window_catalog(
     "17\tTerminal\tfoot\tfocused\nnot-an-id\tbad\tbad\tnormal\n");
   assert(parsed->len == 1);
@@ -162,6 +162,22 @@ int main(int argc, char **argv) {
   parsed = parse_window_catalog("");
   assert(parsed->len == 0);
   g_ptr_array_unref(parsed);
+
+  /* A second contact rejects the whole sequence until every contact lifts. */
+  width=568; height=1232; touch_id=-1; touch_contact_count=0; touch_rejected=false;
+  touch_down(NULL,NULL,0,0,NULL,7,0,0);
+  touch_down(NULL,NULL,0,0,NULL,8,0,0);
+  assert(touch_rejected && touch_contact_count==2);
+  touch_up(NULL,NULL,0,0,7);
+  assert(touch_rejected && touch_contact_count==1 && touch_id==-1);
+  touch_down(NULL,NULL,0,0,NULL,9,0,0);
+  assert(touch_rejected && touch_contact_count==2 && touch_id==-1);
+  touch_up(NULL,NULL,0,0,8);
+  touch_up(NULL,NULL,0,0,9);
+  assert(!touch_rejected && touch_contact_count==0);
+  touch_down(NULL,NULL,0,0,NULL,10,0,0);
+  assert(touch_id==10);
+  touch_cancel(NULL,NULL);
 
   windows = g_ptr_array_new_with_free_func(free_window_card);
   struct window_card *old = g_new0(struct window_card, 1);
@@ -198,6 +214,18 @@ int main(int argc, char **argv) {
   assert(launch_error && !strcmp(launch_error, "Window overview refresh exceeded 200 ms"));
   assert(windows->len == 0);
   drain_catalog();
+
+  setenv("K230_WINDOW_CATALOG", argv[5], 1);
+  assert(catalog_start(CATALOG_OPEN, NULL));
+  for (int i = 0; catalog.output_fd >= 0 && i < 100; i++) {
+    catalog_poll();
+    pause_ms(2);
+  }
+  assert(catalog.output_fd == -1 && catalog.term_sent);
+  int64_t flood_deadline=catalog.deadline_ms;
+  catalog_poll();
+  assert(catalog.deadline_ms == flood_deadline);
+  drain_catalog();
   return 0;
 }
 '''
@@ -218,6 +246,9 @@ int main(int argc, char **argv) {
             hung = path / 'hung.sh'
             hung.write_text('#!/bin/sh\ntrap "" TERM\nwhile :; do :; done\n')
             hung.chmod(0o755)
+            flood = path / 'flood.sh'
+            flood.write_text('#!/bin/sh\ntrap "" TERM\nwhile :; do printf "9\ttoo much\tapp\tnormal\n"; done\n')
+            flood.chmod(0o755)
             focus = path / 'focus.sh'
             record = path / 'focus-record'
             focus.write_text('#!/bin/sh\nprintf "%s\n%s\n" "$1" "$2" > "$RECORD"\n')
@@ -231,7 +262,7 @@ int main(int argc, char **argv) {
                             str(ROOT / 'nix/touch-launcher/catalog.c'),
                             str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
                             str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags], check=True)
-            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record)],
+            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood)],
                            check=True, timeout=3, env=os.environ | {'RECORD': str(record)})
 
 

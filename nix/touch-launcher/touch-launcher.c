@@ -53,7 +53,7 @@ struct page_transition {
   enum transition_direction direction;
   uint32_t *source, *destination;
   size_t bytes;
-  int64_t started_ms;
+  int64_t release_ms, started_ms;
   struct wl_callback *callback;
 };
 static struct page_transition transition;
@@ -74,6 +74,8 @@ static struct zwlr_layer_surface_v1 *layer_surface;
 struct shm_buffer { struct wl_buffer *buffer; uint32_t *pixels; int size; };
 static struct shm_buffer *current;
 static uint32_t *pixels;
+static uint32_t *last_frame;
+static size_t last_frame_bytes;
 static int width, height, stride, mapped_size;
 static int lock_fd = -1;
 static bool running = true, configured;
@@ -84,7 +86,8 @@ static void redraw_if_configured(void) {
 }
 static uint32_t pointer_button_code;
 static int pointer_card = -1, touch_card = -1;
-static bool touch_from_card, gestures_enabled;
+static int touch_contact_count;
+static bool touch_from_card, touch_rejected, gestures_enabled;
 
 static void rect(int x, int y, int w, int h, uint32_t c) {
   if (x < 0) { w += x; x = 0; } if (y < 0) { h += y; y = 0; }
@@ -209,6 +212,19 @@ static void catalog_signal(int signal_number) {
     (void)kill(-catalog.pid, signal_number);
   }
 }
+static void catalog_cancel(void) {
+  if (!catalog.pid) return;
+  g_clear_pointer(&catalog.focus_id,g_free);
+  catalog.purpose=CATALOG_IDLE;
+  catalog.reported_failure=true;
+  if (catalog.output_fd >= 0) close(catalog.output_fd);
+  catalog.output_fd=-1;
+  if (!catalog.term_sent) {
+    catalog_signal(SIGTERM);
+    catalog.term_sent=true;
+    catalog.deadline_ms=monotonic_ms()+20;
+  }
+}
 static bool catalog_start(enum catalog_purpose purpose, const char *focus_id) {
   const char *helper=getenv("K230_WINDOW_CATALOG");
   char *argv[]={(char *)helper,NULL};
@@ -303,9 +319,13 @@ static void catalog_poll(void) {
   while ((count=read(catalog.output_fd,chunk,sizeof chunk)) > 0) {
     if (catalog.output->len + (gsize)count > WINDOW_CATALOG_MAX_BYTES) {
       catalog_fail("Window overview output is too large");
-      catalog_signal(SIGTERM);
-      catalog.term_sent=true;
-      catalog.deadline_ms=monotonic_ms()+20;
+      if (catalog.output_fd >= 0) close(catalog.output_fd);
+      catalog.output_fd=-1;
+      if (!catalog.term_sent) {
+        catalog_signal(SIGTERM);
+        catalog.term_sent=true;
+        catalog.deadline_ms=monotonic_ms()+20;
+      }
       return;
     }
     g_string_append_len(catalog.output,chunk,count);
@@ -442,7 +462,7 @@ static void focus_window_card(int item) {
 }
 static void run_action(int action) {
   if (overview.open) {
-    if (action==ACT_BACK) { overview_close(&overview); g_clear_pointer(&launch_error,g_free); redraw(); return; }
+    if (action==ACT_BACK) { catalog_cancel(); overview_close(&overview); g_clear_pointer(&launch_error,g_free); redraw(); return; }
     if (action==ACT_PREVIOUS || action==ACT_NEXT) { overview_page(&overview,action==ACT_NEXT?1:-1,windows?(int)windows->len:0); redraw(); return; }
     if (action>=ACT_WINDOW_BASE) { focus_window_card(action-ACT_WINDOW_BASE); return; }
     return;
@@ -492,8 +512,19 @@ static struct shm_buffer *make_buffer(void) {
   }
   return out;
 }
+static bool save_last_frame(const uint32_t *source) {
+  if (last_frame_bytes != (size_t)mapped_size) {
+    uint32_t *replacement=realloc(last_frame,(size_t)mapped_size);
+    if (!replacement) return false;
+    last_frame=replacement;
+    last_frame_bytes=(size_t)mapped_size;
+  }
+  memcpy(last_frame,source,last_frame_bytes);
+  return true;
+}
 static void redraw(void) {
   current=make_buffer(); pixels=current->pixels; draw();
+  (void)save_last_frame(pixels);
   wl_surface_attach(surface,current->buffer,0,0);
   wl_surface_damage_buffer(surface,0,0,width,height); wl_surface_commit(surface);
 }
@@ -509,9 +540,16 @@ static void transition_trace(int64_t render_ms, int64_t elapsed_ms, bool settled
   if (!path || !*path) return;
   FILE *metrics=fopen(path,"a");
   if (!metrics) return;
-  fprintf(metrics,"transition render_ms=%lld elapsed_ms=%lld extra_bytes=%zu settled=%d\n",
+  fprintf(metrics,"transition render_wall_ms=%lld elapsed_ms=%lld extra_bytes=%zu settled=%d\n",
     (long long)render_ms,(long long)elapsed_ms,transition.bytes*2,settled ? 1 : 0);
   fclose(metrics);
+}
+static void transition_settle(void) {
+  if (!transition.active) return;
+  int64_t elapsed=monotonic_ms()-transition.started_ms;
+  transition_trace(0,elapsed,true);
+  transition_cleanup();
+  redraw();
 }
 static void transition_compose(uint32_t *out, int progress) {
   if (transition.direction==TRANSITION_LEFT) {
@@ -540,9 +578,7 @@ static void transition_frame_done(void *unused, struct wl_callback *callback, ui
   if (!transition.active) return;
   int64_t elapsed=monotonic_ms()-transition.started_ms;
   if (elapsed>=120 || elapsed>=transition_budget_ms) {
-    transition_trace(0,elapsed,true);
-    transition_cleanup();
-    redraw();
+    transition_settle();
     return;
   }
   transition_present();
@@ -558,6 +594,7 @@ static void transition_present(void) {
   current=make_buffer();
   pixels=current->pixels;
   transition_compose(pixels,progress);
+  (void)save_last_frame(pixels);
   transition.callback=wl_surface_frame(surface);
   wl_callback_add_listener(transition.callback,&transition_frame_listener,NULL);
   wl_surface_attach(surface,current->buffer,0,0);
@@ -566,24 +603,30 @@ static void transition_present(void) {
   transition_trace(monotonic_ms()-render_started,elapsed,false);
 }
 static bool transition_prepare(void) {
-  if (!configured || !current || transition.active || mapped_size<=0) return false;
-  transition.source=malloc((size_t)mapped_size);
+  if (!configured || !last_frame || transition.active || mapped_size<=0 ||
+      last_frame_bytes != (size_t)mapped_size) return false;
+  transition.source=malloc(last_frame_bytes);
   if (!transition.source) return false;
-  memcpy(transition.source,current->pixels,(size_t)mapped_size);
-  transition.bytes=(size_t)mapped_size;
+  memcpy(transition.source,last_frame,last_frame_bytes);
+  transition.bytes=last_frame_bytes;
   return true;
 }
 static void transition_begin(enum transition_direction direction) {
   if (!transition.source) { redraw_if_configured(); return; }
   transition.destination=malloc(transition.bytes);
   if (!transition.destination) { transition_cleanup(); redraw_if_configured(); return; }
+  /* Include destination pre-rendering in the release-to-settle budget. */
+  transition.direction=direction;
+  transition.started_ms=transition.release_ms ? transition.release_ms : monotonic_ms();
+  transition.active=true;
   uint32_t *saved=pixels;
   pixels=transition.destination;
   draw();
   pixels=saved;
-  transition.direction=direction;
-  transition.started_ms=monotonic_ms();
-  transition.active=true;
+  if (monotonic_ms()-transition.started_ms>=transition_budget_ms) {
+    transition_settle();
+    return;
+  }
   transition_present();
 }
 static void layer_configure(void *d,struct zwlr_layer_surface_v1 *ls,uint32_t serial,uint32_t w,uint32_t h) {
@@ -633,6 +676,8 @@ static void overview_with_transition(int delta, enum transition_direction direct
 }
 static void apply_gesture(enum gesture_direction direction) {
   if (!gestures_enabled || transition.active || direction==GESTURE_NONE || direction==GESTURE_CANCELLED) return;
+  /* The transition budget starts on release, before any page pre-rendering. */
+  transition.release_ms=monotonic_ms();
   if (overview.open) {
     if (direction==GESTURE_DOWN) {
       bool animate=transition_prepare();
@@ -647,19 +692,27 @@ static void apply_gesture(enum gesture_direction direction) {
   else if (direction==GESTURE_UP && !navigation.help) begin_overview();
 }
 static void touch_down(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,struct wl_surface*sf,int32_t id,wl_fixed_t x,wl_fixed_t y) {
-  if (transition.active) return;
-  if (touch_id != -1) { gesture_reject(&gesture); return; }
+  touch_contact_count++;
+  if (transition.active || touch_rejected) return;
+  if (touch_id != -1) {
+    gesture_reject(&gesture);
+    touch_rejected=true;
+    return;
+  }
   touch_id=id; touch_x=wl_fixed_to_int(x); touch_y=wl_fixed_to_int(y); touch_card=card_at(touch_x,touch_y);
   /* Gesture starts are limited to cards; footer controls retain tap semantics. */
   touch_from_card=touch_card>=0 && touch_y<height-110;
   gesture_begin(&gesture,id,touch_x,touch_y);
 }
 static void touch_up(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,int32_t id) {
-  if(id==touch_id) { enum gesture_direction direction=gesture_release(&gesture,id);
-    if(touch_from_card && direction!=GESTURE_NONE) apply_gesture(direction);
-    else if(direction==GESTURE_NONE && touch_card==card_at(touch_x,touch_y)) activate_card(touch_card);
+  if(id==touch_id) {
+    enum gesture_direction direction=gesture_release(&gesture,id);
+    if (!touch_rejected && touch_from_card && direction!=GESTURE_NONE) apply_gesture(direction);
+    else if(!touch_rejected && direction==GESTURE_NONE && touch_card==card_at(touch_x,touch_y)) activate_card(touch_card);
     touch_id=-1; touch_card=-1; touch_from_card=false;
   }
+  if (touch_contact_count>0) touch_contact_count--;
+  if (!touch_contact_count) touch_rejected=false;
 }
 static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixed_t x,wl_fixed_t y) {
   if(id==touch_id) {
@@ -669,7 +722,10 @@ static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixe
     gesture_motion(&gesture,id,touch_x,touch_y);
   }
 }
-static void touch_frame(void*d,struct wl_touch*t) {} static void touch_cancel(void*d,struct wl_touch*t) { gesture_reject(&gesture); touch_id=-1; touch_card=-1; touch_from_card=false; }
+static void touch_frame(void*d,struct wl_touch*t) {} static void touch_cancel(void*d,struct wl_touch*t) {
+  gesture_reject(&gesture); touch_id=-1; touch_card=-1; touch_contact_count=0;
+  touch_rejected=false; touch_from_card=false;
+}
 static const struct wl_touch_listener touch_listener = { .down=touch_down,.up=touch_up,.motion=touch_motion,.frame=touch_frame,.cancel=touch_cancel };
 static void seat_caps(void*d,struct wl_seat*s,uint32_t caps) { if ((caps&WL_SEAT_CAPABILITY_POINTER) && !pointer) { pointer=wl_seat_get_pointer(s); wl_pointer_add_listener(pointer,&pointer_listener,NULL); } if ((caps&WL_SEAT_CAPABILITY_TOUCH) && !touch) { touch=wl_seat_get_touch(s); wl_touch_add_listener(touch,&touch_listener,NULL); } }
 static void seat_name(void*d,struct wl_seat*s,const char*n) {}
@@ -694,21 +750,29 @@ int main(int argc,char**argv) {
  surface=wl_compositor_create_surface(compositor); layer_surface=zwlr_layer_shell_v1_get_layer_surface(layer_shell,surface,NULL,ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,"k230-launcher"); zwlr_layer_surface_v1_add_listener(layer_surface,&layer_listener,NULL);
  zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,0,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
  while(running) {
-   if (!catalog.pid) {
-     if (wl_display_dispatch(display)<0) break;
-     continue;
-   }
    (void)wl_display_dispatch_pending(display);
    (void)wl_display_flush(display);
+   int64_t deadline=-1;
+   if (catalog.pid) deadline=catalog.deadline_ms;
+   if (transition.active) {
+     int64_t transition_deadline=transition.started_ms+120;
+     if (deadline<0 || transition_deadline<deadline) deadline=transition_deadline;
+   }
+   int timeout=-1;
+   if (deadline>=0) {
+     int64_t until=deadline-monotonic_ms();
+     timeout=(int)(until>0 ? until : 0);
+   }
    struct pollfd fds[2] = {
      { .fd=wl_display_get_fd(display), .events=POLLIN },
      { .fd=catalog.output_fd, .events=POLLIN|POLLHUP },
    };
-   int64_t until=catalog.deadline_ms-monotonic_ms();
-   int timeout=(int)(until>0 ? (until<20 ? until : 20) : 0);
-   (void)poll(fds,2,timeout);
+   (void)poll(fds,catalog.pid ? 2 : 1,timeout);
    catalog_poll();
+   if (transition.active && monotonic_ms()-transition.started_ms>=120)
+     transition_settle();
    if (fds[0].revents & POLLIN && wl_display_dispatch(display)<0) break;
  }
+
  return 0;
 }
