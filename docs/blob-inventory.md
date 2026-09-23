@@ -1052,6 +1052,27 @@ DATA 5036a2e6526606ff1d08ca9238de11afe1fe9a9456992770a83a646f0eca63f7  docs/evid
 DATA acff27e72f64374414f5df4e99d07b67021352cc1c7847d8cf54370a17774e73  docs/evidence/card-shell/board-first-trial/two-live.png
 DATA 5a5ea9a36814f394bec4137494059f71a9f4106c77bc3a69f95351683d7cb4c7  docs/evidence/card-shell/board-first-trial/unavailable.png
 DATA ecd7c8e4a8d937dfbe107b9b620b83bdf4564602dd50ec28c8928a72b31fa99b  docs/evidence/card-shell/board-first-trial/windows.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/card-shell/injected/apps.png
+DATA 848228ed337b3505ab12cd2d7026c9ce5c8ecd7bf677c0cc8f20f45625d563b8  docs/evidence/card-shell/injected/cards-back.png
+DATA 95baac46ad5ac66b710085f68f8b2408a04f86163b3f57e2ca2b3716c03f185f  docs/evidence/card-shell/injected/close-exit.png
+DATA e4c7d4838047f85ee826d6169010b6bb796f22bcd2d9cb7df274d8cf5548b94d  docs/evidence/card-shell/injected/close-timeout.png
+DATA f0d52c7cbe10e5eb27635483aed5254b182811c22774dde2f5cb3eae15a7a76a  docs/evidence/card-shell/injected/closing.png
+DATA 4ab8e0a3d0a91b5d561c603a2fbc3b10ac1898b57c2abc210e9b1969f5f3563c  docs/evidence/card-shell/injected/during-drag.png
+DATA cb69afd5d822285d22ec985af29b24b76ebe273fa838af432f70aa7984519971  docs/evidence/card-shell/injected/expanded.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/card-shell/injected/help-back.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/card-shell/injected/help.png
+DATA bc63727a810fa797ef7984e89b487e7ba43e658a1c4fa678327eded0bfcdc49a  docs/evidence/card-shell/injected/home.png
+DATA 7d79b3e5329568460b47a71d34f0ef6606b403ed74bb7c1eb7ee5769501f3e0e  docs/evidence/card-shell/injected/keyboard.png
+DATA 715e20363af08e957489bd79dcda9ada9c82c1c49774896664e1b5b9f092a093  docs/evidence/card-shell/injected/monitor.png
+DATA a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7  docs/evidence/card-shell/injected/normal.png
+DATA 74ad8be305999e8d4ad3e57c6f9005ce6d5c77dbf2c07bc55eb289df7253d517  docs/evidence/card-shell/injected/one-live.png
+DATA 9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d  docs/evidence/card-shell/injected/private.png
+DATA bc63727a810fa797ef7984e89b487e7ba43e658a1c4fa678327eded0bfcdc49a  docs/evidence/card-shell/injected/system-back.png
+DATA a8d0ceda4be290060e487e62e4491677f83e06a22925112873322a5a660559a8  docs/evidence/card-shell/injected/system.png
+DATA a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7  docs/evidence/card-shell/injected/terminal.png
+DATA 2a7363bebeb3345d5fac2e2ff8f8ba80809ee63c2b017435e53b681135543222  docs/evidence/card-shell/injected/two-live.png
+DATA 5a5ea9a36814f394bec4137494059f71a9f4106c77bc3a69f95351683d7cb4c7  docs/evidence/card-shell/injected/unavailable.png
+DATA 92f8189e77044d6b77979b8fccbaded362022db1531e030ea9ab6588b0d92365  docs/evidence/card-shell/injected/windows.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1303,3 +1324,10 @@ Native captures of synthetic app surfaces, privacy placeholders and shell
 controls from a temporary Pixman session. These are diagnostic DATA, not
 firmware or an accepted feature demo. Failed assertions, parser rejection,
 source artifact, and limits: `docs/evidence/card-shell/board-first-trial/README.md`.
+
+### Product cards: injected board interactions
+
+Native screenshots of synthetic live cards and the existing shell controls.
+The reviewed interaction repeat passes; performance and physical-finger
+acceptance remain open. DATA provenance, exact package and limitations:
+`docs/evidence/card-shell/injected/README.md`.

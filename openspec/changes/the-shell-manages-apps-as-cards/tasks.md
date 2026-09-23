@@ -23,7 +23,7 @@
 ## 5. Integration and board acceptance
 
 - [ ] 5.1 Add the `--card-shell-smoke` mode to the existing `tools/qemu-k230.sh`, then build the selected component and integrate it into a system image only after host tests pass; verify the system closure with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and run `tools/qemu-k230.sh --card-shell-smoke`. QEMU does not prove panel, touch, or live presentation.
-- [ ] 5.2 On the physical board, record native captures and injected-touch evidence for two eligible cards, horizontal deck movement, tap-to-expand, unavailable/private state, close refusal, timeout recovery, and every persistent control route; verify with the proposed-to-create `python3 tools/card-shell-acceptance.py --execute --provenance injected-touch --output docs/evidence/card-shell/injected`.
+- [x] 5.2 On the physical board, record native captures and injected-touch evidence for two eligible cards, horizontal deck movement, tap-to-expand, unavailable/private state, close refusal, timeout recovery, and every persistent control route; verify with the proposed-to-create `python3 tools/card-shell-acceptance.py --execute --provenance injected-touch --output docs/evidence/card-shell/injected`.
 - [ ] 5.3 On the physical board, capture a focused real-finger trial of shrink, horizontal deck drag, expand, upward throw, and recovery; verify with `python3 tools/capture-feature.py card-shell --provenance real-touch --duration 30 --description 'Real-finger card entry, drag, expand, close and recovery' --output-dir docs/evidence/card-shell/real-touch` plus a committed audit that distinguishes camera visibility from native state evidence.
 
 ## 6. Proposal validation
@@ -37,3 +37,11 @@ checks) and the independent native Wayland receiver pairing suite (7 checks).
 Review and exact artifacts: `docs/evidence/card-shell/coordinator-review.md`.
 Budget declaration/parser and actual producer integration complete 4.1; the
 recorded headless cadence failure and all board cost/physical gates remain open.
+
+Task 5.2: `docs/evidence/card-shell/injected/README.md` records thirteen observed
+injected interaction checks and coordinator review of native captures from the
+opt-in product package on DSI-1 RGB565. Both live parent/child surfaces are
+visible during a held drag, expansion/privacy/close recovery and persistent
+controls are covered, and normal-shell restoration passed. The first failed
+trial remains committed. The repeat uses the old telemetry producer, so cost
+parsing still rejects it; tasks 4.2, 5.1 and 5.3 remain open.

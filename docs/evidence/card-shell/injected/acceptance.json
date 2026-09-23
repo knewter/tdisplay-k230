@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "status": "CAPTURED_REQUIRES_REVIEW",
+  "evidence_class": "board-injected",
+  "provenance": "injected-touch",
+  "created_at": "2026-09-23T16:07:09.274523+00:00",
+  "package_store_path": "/nix/store/ii5g7635wldnk7jsrfp18ism634w5y70-k230-card-shell",
+  "source_revision": "935e02155cac7374de10b5db6e642d9479c500b3",
+  "physical_touch": "UNVERIFIED",
+  "optical_latency": "UNVERIFIED",
+  "visual_privacy_and_control_review": "REQUIRED",
+  "cases": [
+    {
+      "capture": "normal.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7",
+      "monotonic_ns": 34618016416089
+    },
+    {
+      "case": "live-root-and-child-1-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 34623314078358
+    },
+    {
+      "capture": "one-live.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "74ad8be305999e8d4ad3e57c6f9005ce6d5c77dbf2c07bc55eb289df7253d517",
+      "monotonic_ns": 34623780964666
+    },
+    {
+      "case": "live-root-and-child-2-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 34637575764782
+    },
+    {
+      "case": "live-root-and-child-2-two",
+      "status": "OBSERVED",
+      "monotonic_ns": 34637998170611
+    },
+    {
+      "capture": "two-live.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "2a7363bebeb3345d5fac2e2ff8f8ba80809ee63c2b017435e53b681135543222",
+      "monotonic_ns": 34638514255734
+    },
+    {
+      "capture": "during-drag.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "4ab8e0a3d0a91b5d561c603a2fbc3b10ac1898b57c2abc210e9b1969f5f3563c",
+      "monotonic_ns": 34639838194154
+    },
+    {
+      "capture": "expanded.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "cb69afd5d822285d22ec985af29b24b76ebe273fa838af432f70aa7984519971",
+      "monotonic_ns": 34644827620086
+    },
+    {
+      "case": "actual-rgb565-pixman-session",
+      "status": "OBSERVED",
+      "monotonic_ns": 34648332930222
+    },
+    {
+      "capture": "private.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d",
+      "monotonic_ns": 34650574718904
+    },
+    {
+      "capture": "unavailable.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "5a5ea9a36814f394bec4137494059f71a9f4106c77bc3a69f95351683d7cb4c7",
+      "monotonic_ns": 34651292218655
+    },
+    {
+      "capture": "closing.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "f0d52c7cbe10e5eb27635483aed5254b182811c22774dde2f5cb3eae15a7a76a",
+      "monotonic_ns": 34653488433170
+    },
+    {
+      "case": "upward-throw-close-request",
+      "status": "OBSERVED",
+      "monotonic_ns": 34653498580412
+    },
+    {
+      "case": "client-explicit-refusal",
+      "status": "OBSERVED",
+      "monotonic_ns": 34653507953022
+    },
+    {
+      "capture": "close-timeout.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "e4c7d4838047f85ee826d6169010b6bb796f22bcd2d9cb7df274d8cf5548b94d",
+      "monotonic_ns": 34655667647296
+    },
+    {
+      "case": "separate-timeout-card-retained",
+      "status": "OBSERVED",
+      "monotonic_ns": 34655951714992
+    },
+    {
+      "case": "accepted-close-source-exits",
+      "status": "OBSERVED",
+      "monotonic_ns": 34659157000712
+    },
+    {
+      "capture": "close-exit.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "95baac46ad5ac66b710085f68f8b2408a04f86163b3f57e2ca2b3716c03f185f",
+      "monotonic_ns": 34659585068589
+    },
+    {
+      "capture": "cards-back.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "848228ed337b3505ab12cd2d7026c9ce5c8ecd7bf677c0cc8f20f45625d563b8",
+      "monotonic_ns": 34661662875146
+    },
+    {
+      "capture": "apps.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e",
+      "monotonic_ns": 34663690242877
+    },
+    {
+      "capture": "help.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3",
+      "monotonic_ns": 34665530755219
+    },
+    {
+      "capture": "help-back.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e",
+      "monotonic_ns": 34667483806831
+    },
+    {
+      "case": "terminal-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 34669097205947
+    },
+    {
+      "capture": "terminal.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7",
+      "monotonic_ns": 34669333432553
+    },
+    {
+      "case": "monitor-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 34672537237585
+    },
+    {
+      "capture": "monitor.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "715e20363af08e957489bd79dcda9ada9c82c1c49774896664e1b5b9f092a093",
+      "monotonic_ns": 34672833752997
+    },
+    {
+      "capture": "windows.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "92f8189e77044d6b77979b8fccbaded362022db1531e030ea9ab6588b0d92365",
+      "monotonic_ns": 34676413870767
+    },
+    {
+      "case": "windows-home-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 34678018399135
+    },
+    {
+      "capture": "home.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "bc63727a810fa797ef7984e89b487e7ba43e658a1c4fa678327eded0bfcdc49a",
+      "monotonic_ns": 34678250074201
+    },
+    {
+      "capture": "keyboard.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "7d79b3e5329568460b47a71d34f0ef6606b403ed74bb7c1eb7ee5769501f3e0e",
+      "monotonic_ns": 34680145514962
+    },
+    {
+      "case": "keyboard-reserves-content",
+      "status": "OBSERVED",
+      "monotonic_ns": 34680148306464
+    },
+    {
+      "capture": "system.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "a8d0ceda4be290060e487e62e4491677f83e06a22925112873322a5a660559a8",
+      "monotonic_ns": 34685183034889
+    },
+    {
+      "capture": "system-back.png",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "sha256": "bc63727a810fa797ef7984e89b487e7ba43e658a1c4fa678327eded0bfcdc49a",
+      "monotonic_ns": 34687026237144
+    },
+    {
+      "case": "normal-controls-recover-focus",
+      "status": "OBSERVED",
+      "monotonic_ns": 34687031463127
+    }
+  ]
+}
