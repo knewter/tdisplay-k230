@@ -18,14 +18,14 @@
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 
-enum action { ACT_TERMINAL=-1, ACT_MONITOR=-2, ACT_NEW_TERMINAL=-3,
-  ACT_BACK=-4, ACT_PREVIOUS=-5, ACT_NEXT=-6, ACT_HELP=-7 };
+#include "navigation.h"
+
 struct button { int action, x, y, w, h; const char *label, *hint; uint32_t color; };
 static struct button buttons[8];
-static int button_count, page, page_size=4;
+static int button_count;
+static struct launcher_navigation navigation = { .page_size = 4 };
 static GPtrArray *apps;
 static char *launch_error;
-static bool help_page;
 static void redraw(void);
 static struct wl_display *display;
 static struct wl_compositor *compositor;
@@ -52,7 +52,7 @@ static void rect(int x, int y, int w, int h, uint32_t c) {
   if (x + w > width) w = width - x; if (y + h > height) h = height - y;
   for (int yy = y; yy < y + h; yy++) for (int xx = x; xx < x + w; xx++) pixels[yy * width + xx] = c;
 }
-static void text(const char *value, int x, int y, int w, int h, int size, uint32_t color) {
+static void text_layout(const char *value, int x, int y, int w, int h, int size, uint32_t color, bool wrap) {
   cairo_surface_t *cs=cairo_image_surface_create_for_data((unsigned char *)pixels,
     CAIRO_FORMAT_ARGB32,width,height,stride);
   cairo_t *cr=cairo_create(cs);
@@ -63,7 +63,8 @@ static void text(const char *value, int x, int y, int w, int h, int size, uint32
   pango_layout_set_font_description(layout,font);
   pango_layout_set_text(layout,value,-1);
   pango_layout_set_width(layout,w*PANGO_SCALE);
-  pango_layout_set_height(layout,-1);
+  pango_layout_set_height(layout,wrap?h*PANGO_SCALE:-1);
+  pango_layout_set_wrap(layout,PANGO_WRAP_WORD_CHAR);
   pango_layout_set_ellipsize(layout,PANGO_ELLIPSIZE_END);
   pango_layout_set_alignment(layout,PANGO_ALIGN_CENTER);
   int th; pango_layout_get_pixel_size(layout,NULL,&th);
@@ -73,35 +74,55 @@ static void text(const char *value, int x, int y, int w, int h, int size, uint32
   pango_font_description_free(font); g_object_unref(layout);
   cairo_destroy(cr); cairo_surface_destroy(cs);
 }
+static void text(const char *value, int x, int y, int w, int h, int size, uint32_t color) {
+  text_layout(value,x,y,w,h,size,color,false);
+}
+static const struct { const char *label, *hint; } help_topics[HELP_TOPIC_COUNT] = {
+  {"Apps", "Open installed tools or return to a running app."},
+  {"Keyboard", "Show or hide the keyboard for the focused app."},
+  {"Windows / Home", "Pick a window. Home returns to Terminal or opens it."},
+  {"System", "Reboot or power off. Confirm the action, or tap Cancel."},
+  {"Terminal", "Type commands. New terminal opens another window."},
+  {"Monitor", "See running programs and memory use."},
+  {"Back", "Leave Help for Apps, or close Apps to return to your work."},
+  {"Previous / Next", "Turn pages in Apps and Help."},
+};
 static void add_button(int action,const char *label,const char *hint,int x,int y,int w,int h,uint32_t color) {
   buttons[button_count++]=(struct button){action,x,y,w,h,label,hint,color};
 }
 static void draw(void) {
-  if(help_page){ rect(0,0,width,height,0xff111827); text("Help",24,22,width-48,64,42,0xfff8fafc); const char *t[]={"Apps: launch tools","Keyboard: show or hide","Windows/Home: focus or recover","System: confirm actions","Terminal and Monitor","Previous/Next: more apps"}; button_count=0; int h=(height-250)/6; for(int i=0;i<6;i++) add_button(ACT_HELP,t[i],NULL,24,110+i*h,width-48,h-8,0xff243547); add_button(ACT_BACK,"Back",NULL,24,height-110,width-48,86,0xff374151); for(int i=0;i<button_count;i++){struct button*b=&buttons[i];rect(b->x,b->y,b->w,b->h,b->color);text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);} return; }
-  int count=4+(int)apps->len;
-  page_size=height<900?3:4;
-  int pages=(count+page_size-1)/page_size;
-  if(page>=pages) page=pages-1;
+  navigation.page_size=height<900?3:4;
+  int page_size=navigation.page_size;
+  int count=navigation.help?HELP_TOPIC_COUNT:BUILTIN_COUNT+(int)apps->len;
+  int pages=launcher_pages(&navigation,(int)apps->len);
+  int *current_page=navigation.help?&navigation.help_page:&navigation.page;
+  if(*current_page>=pages) *current_page=pages-1;
+  int page=launcher_current_page(&navigation);
   rect(0,0,width,height,0xff111827);
-  text("Applications",24,22,width-48,64,42,0xfff8fafc);
+  text(navigation.help?"Help":"Applications",24,22,width-48,64,42,0xfff8fafc);
   char subtitle[100];
-  snprintf(subtitle,sizeof subtitle,"%u installed · Page %d of %d",apps->len,page+1,pages);
-  text(launch_error?launch_error:subtitle,24,90,width-48,44,22,
-    launch_error?0xfffca5a5:0xffcbd5e1);
+  if(navigation.help) snprintf(subtitle,sizeof subtitle,"Shell controls · Page %d of %d",page+1,pages);
+  else snprintf(subtitle,sizeof subtitle,"%u installed · Page %d of %d",apps->len,page+1,pages);
+  bool show_error=launch_error && !navigation.help;
+  text(show_error?launch_error:subtitle,24,90,width-48,44,22,
+    show_error?0xfffca5a5:0xffcbd5e1);
   int top=150,gap=14,footer=height-110;
   int bh=(footer-top-24-(page_size-1)*gap)/page_size;
   button_count=0;
   for(int row=0;row<page_size;row++) {
     int item=page*page_size+row;
     if(item>=count) break;
-    if(item<3) {
+    if(navigation.help) {
+      add_button(ACT_NONE,help_topics[item].label,help_topics[item].hint,
+        24,top+row*(bh+gap),width-48,bh,0xff243547);
+    } else if(item<3) {
       const char *labels[]={"Terminal","Monitor","New terminal"};
       const char *hints[]={"Resume or open a terminal","Resume or open system monitor","Open another terminal"};
-      add_button(-item-1,labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,0xff24495a);
+      add_button(launcher_item_action(item),labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,0xff24495a);
     } else if(item==3) { add_button(ACT_HELP,"Help","How to use this shell",24,top+row*(bh+gap),width-48,bh,0xff3f556b);
     } else {
-      GAppInfo *app=g_ptr_array_index(apps,item-4);
-      add_button(item-4,g_app_info_get_display_name(app),"Installed application",24,
+      GAppInfo *app=g_ptr_array_index(apps,item-BUILTIN_COUNT);
+      add_button(launcher_item_action(item),g_app_info_get_display_name(app),"Installed application",24,
         top+row*(bh+gap),width-48,bh,0xff243547);
     }
   }
@@ -112,7 +133,10 @@ static void draw(void) {
   for(int i=0;i<button_count;i++) {
     struct button *b=&buttons[i];
     rect(b->x,b->y,b->w,b->h,b->color);
-    if(b->hint) {
+    if(navigation.help && b->hint) {
+      text(b->label,b->x+12,b->y+8,b->w-24,40,28,0xffffffff);
+      text_layout(b->hint,b->x+16,b->y+48,b->w-32,b->h-56,20,0xffcbd5e1,true);
+    } else if(b->hint) {
       text(b->label,b->x+12,b->y+b->h/2-42,b->w-24,52,32,0xffffffff);
       text(b->hint,b->x+12,b->y+b->h/2+10,b->w-24,30,18,0xffcbd5e1);
     } else text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);
@@ -126,14 +150,10 @@ static int card_at(int x,int y) {
   return -1;
 }
 static void run_action(int action) {
-  if(action==ACT_BACK) { if(help_page){help_page=false;redraw();}else running=false; return; }
-  if(action==ACT_HELP) { help_page=true; redraw(); return; }
-  if(action==ACT_PREVIOUS || action==ACT_NEXT) {
-    int pages=(4+(int)apps->len+page_size-1)/page_size;
-    int next=page+(action==ACT_NEXT?1:-1);
-    if(next>=0 && next<pages) { page=next; g_clear_pointer(&launch_error,g_free); redraw(); }
-    return;
-  }
+  int navigation_result=launcher_navigate(&navigation,action,(int)apps->len);
+  if(navigation_result==2) { running=false; return; }
+  if(navigation_result==1) { redraw(); return; }
+  if(action>=0 && (unsigned)action>=apps->len) return;
   GError *error=NULL;
   gboolean ok=FALSE;
   if(action>=0) {

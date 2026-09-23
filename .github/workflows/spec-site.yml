@@ -52,6 +52,9 @@ jobs:
       - name: Check touch-menu protocol and actions
         run: python3 tests/test_touch_menu.py
 
+      - name: Check launcher Help and application navigation
+        run: python3 tests/test_launcher_navigation.py
+
       - name: Check unattended flash target refusals
         run: python3 -m unittest discover -s tests -p 'test_ums_target.py'
 
