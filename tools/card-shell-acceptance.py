@@ -218,7 +218,10 @@ class Acceptance:
         if count==1:live()
         else:self.inject(284,450,114,450,held=live,settle=.3)
         if count==2:self.inject(100,1200,settle=.3)
-        for index in range(6):
+        # Fast native input is coalesced by the compositor. Collect enough
+        # independent submitted frames and tracking intervals for the fixed
+        # benchmark coverage minima; input-event count alone is insufficient.
+        for index in range(24):
             start,end=(384,184) if index%2==0 else (184,384)
             self.inject(start,450,end,450,capture='during-drag' if count==2 and index==0 else None,settle=.3)
         self.inject(284,450)

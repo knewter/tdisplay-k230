@@ -174,6 +174,10 @@ python3 tools/card-shell-benchmark.py --board \
   --output docs/evidence/card-shell/pixman.json
 ```
 
+The workload now uses 24 drags per card count. The first six-drag native run
+produced too few independent frames after input coalescing, despite sufficient
+input events. Coverage minima and performance thresholds are unchanged.
+
 Preserve parser `FAIL` or `INCOMPLETE` results. The input script's actual event
 cadence and the board's actual samples may fail budget or coverage gates; do
 not infer latency or memory from requested delays. The prior headless cadence
