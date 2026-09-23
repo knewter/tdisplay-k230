@@ -44,7 +44,7 @@ collect() {
     test -r "$log"
     # Positive field allowlist: never copy arbitrary journal strings, paths,
     # environment, titles, network state or key contents into shared evidence.
-    "$jq_bin" -c 'with_entries(select(.key == "event" or .key == "uptime_s" or .key == "cpu_ns" or .key == "memory_bytes"))' "$log"
+    "$jq_bin" -c 'with_entries(select(.key | IN("event","uptime_s","cpu_ns","memory_bytes","compositor_cpu_seconds","compositor_rss_bytes")))' "$log"
     for file in "$runtime"/session/client-{one,two}.jsonl; do
         [[ -r $file ]] || continue
         "$jq_bin" -c 'select(.app_id == "k230.card.one" or .app_id == "k230.card.two") | with_entries(select(.key | IN("event","app_id","elapsed_ms","frames","callbacks","releases","child_frames","child_callbacks","child_releases","callback_age_ms","child_callback_age_ms","max_callback_gap_ms","child_max_callback_gap_ms","width","height","stride","format","subsurface","presentation","key_presses")))' "$file"
@@ -133,7 +133,7 @@ CONFIG
         invocation=$(systemctl show "$unit" --property=InvocationID --value)
         [[ $invocation =~ ^[a-f0-9]{32}$ ]]
         printf '%s\n' "$invocation" >"$runtime/invocation"
-        # Samples report raw cgroup CPU time and resident memory, not invented FPS.
+        # Report cgroup totals separately from Sway CPU seconds and RSS.
         deadline=$((SECONDS+duration))
         while systemctl is-active --quiet "$unit"; do
             if (( SECONDS >= deadline )); then
@@ -144,7 +144,11 @@ CONFIG
             cpu=$(systemctl show "$unit" --property=CPUUsageNSec --value 2>/dev/null || true)
             memory=$(systemctl show "$unit" --property=MemoryCurrent --value 2>/dev/null || true)
             if [[ $cpu =~ ^[0-9]+$ && $memory =~ ^[0-9]+$ ]]; then
-                printf '{"event":"resources","cpu_ns":%s,"memory_bytes":%s}\n' "$cpu" "$memory" >>"$log"
+                printf '{"event":"resources","uptime_s":%s,"cpu_ns":%s,"memory_bytes":%s}\n' "$(cut -d' ' -f1 /proc/uptime)" "$cpu" "$memory" >>"$log"
+            fi
+            if read -r process_cpu rss_kib < <(ps -C sway -o cputimes=,rss=) &&
+                [[ $process_cpu =~ ^[0-9]+$ && $rss_kib =~ ^[0-9]+$ ]]; then
+                printf '{"event":"compositor_resources","uptime_s":%s,"compositor_cpu_seconds":%s,"compositor_rss_bytes":%s}\n' "$(cut -d' ' -f1 /proc/uptime)" "$process_cpu" "$((rss_kib * 1024))" >>"$log"
             fi
             sleep 1
         done
