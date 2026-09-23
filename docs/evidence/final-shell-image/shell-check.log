@@ -1,0 +1,14 @@
+PASS normal_services_active
+PASS apps_next_previous
+PASS help_back_returns_apps
+PASS terminal_app
+PASS monitor_app
+PASS keyboard_toggle_preserves_apps
+PASS overview_up_down_back
+PASS system_confirmation_cancel_apps
+PASS forced_render_allocation_failure_apps_buttons_back_recovery
+Traceback (most recent call last):
+  File "/run/final-shell-check-v2.py", line 113, in <module>
+    if isinstance(state.get(key),int):assert not pathlib.Path('/proc/'+str(state[key])).exists()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

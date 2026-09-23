@@ -1,0 +1,9 @@
+Wed Sep 23 06:44:55 AM UTC 2026
+/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/izf7j0kyv5sqjjv0698v2vm8rglnd6dp-k230-video-session/bin/k230-video-session
+/nix/store/fajixpwc8gvsz1h4pf4c4hksyjqzjasg-k230-touch-launcher/bin/k230-touch-launcher
+active
+active
+active
+Goodix Berlin Capacitive TouchScreen
+9407bae0-fe1a-4a05-8062-edbe8a110859

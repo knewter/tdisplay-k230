@@ -7,9 +7,7 @@ able to launch the documented player, stop or leave it with Back/Home, and retur
 the existing shell controls without an external keyboard. A failed launch, closed
 stream, or network error SHALL leave a usable recovery path.
 
-<!-- UNVERIFIED: the existing shell has Apps, Back, Home, and terminal recovery,
-but the integrated video entry and its network-error path are not yet implemented
-or physically exercised. -->
+*Grounding: `docs/evidence/final-shell-image/README.md` records Apps launch, advancing playback, Stop/Back/Home and final control regression on the installed image. `docs/evidence/network-video/installed-controls/README.md` covers EOF; `recovery-fixed/README.md` and `midstream-error/README.md` in that evidence tree cover decoder fallback, startup errors and an actual interrupted stream. Final control checks use injected touch on the physical board; they do not establish a new real-finger or audio claim.*
 
 #### Scenario: A user starts video
 

@@ -1,0 +1,46 @@
+{
+  "provenance": "injected-touch on physical board; no real-finger claim",
+  "at_utc": "2026-09-23T06:42:44.933111+00:00",
+  "checks": {
+    "normal_services_active": true,
+    "apps_next_previous": true,
+    "help_back_returns_apps": true,
+    "terminal_app": true,
+    "monitor_app": true,
+    "keyboard_toggle_preserves_apps": true,
+    "overview_up_down_back": true,
+    "system_confirmation_cancel_apps": true,
+    "forced_render_allocation_failure_apps_buttons_back_recovery": true,
+    "video_apps_launch_stop_cleanup": true,
+    "video_apps_launch_back_cleanup": true,
+    "video_apps_launch_home_cleanup": true,
+    "post_video_apps_back_services": true
+  },
+  "system": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "resumed_video_only": true,
+  "video_sessions": {
+    "stop": {
+      "uid": 1000,
+      "controller": 3226,
+      "controller_start": 82606,
+      "child": 3235,
+      "child_start": 82695
+    },
+    "back": {
+      "uid": 1000,
+      "controller": 3430,
+      "controller_start": 84757,
+      "child": 3439,
+      "child_start": 84843
+    },
+    "home": {
+      "uid": 1000,
+      "controller": 3635,
+      "controller_start": 86902,
+      "child": 3644,
+      "child_start": 86990
+    }
+  },
+  "result": "pass"
+}

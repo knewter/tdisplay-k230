@@ -7,7 +7,7 @@ software playback, optional MVX hardware decoding, audio, and physical presentat
 
 ### Requirement: The image provides a reproducible software video baseline
 
-<!-- UNVERIFIED: the source-built probe runs on the board, but a player has not yet been integrated into the default image. -->
+*Grounding: `docs/evidence/network-video/integration-host.md` records the pinned player and source boundary. `docs/evidence/final-shell-image/README.md` records the flashed default image, installed player wrapper and successful Apps playback/cleanup; `docs/evidence/network-video/midstream-error/README.md` records interrupted-stream recovery.*
 
 The Nix image SHALL provide a version-pinned player and FFmpeg path that can open
 a runtime-supplied HTTP(S) or DASH media URL with software H.264 decoding and the
@@ -32,9 +32,7 @@ baseline. Hardware decoding MUST be enabled only when the device, format, and ou
 path are verified on the board; a failed or unsupported MVX attempt SHALL fall back
 to the known software path without claiming hardware acceleration.
 
-<!-- UNVERIFIED: MVX decode and bounded network playback are recorded in
-docs/evidence/video-acceleration/README.md; integrated automatic fallback and
-general timestamp correctness remain unaccepted. -->
+*Grounding: `docs/evidence/network-video/recovery-fixed/README.md` records a forced MVX initialization failure followed by a distinct software child with advancing media time. `docs/evidence/network-video/strict-comparison/README.md` records strict MVX selection and over 30 seconds of steady playback/presentation. The experiment remains limited to the documented known-30-fps source; general MVX timestamps and seek smoothness remain UNVERIFIED, and software remains the default.*
 
 #### Scenario: MVX playback is attempted
 

@@ -8,7 +8,7 @@
 
 - [x] 2.1 Add a visible Terminal video desktop entry through the existing Apps/Foot bridge with the documented player profile; verify `k230-desktop-catalog list` discovers it and `launch ID` returns a successful process launch with the expected terminal environment.
 - [x] 2.2 Define and implement stop, Back/Home return, EOF, network-error, and failed-decoder recovery without leaving an orphan player or runtime secret; verify launcher tests cover success, failure, return, and empty/error states.
-- [ ] 2.3 Boot the resulting image and exercise launch, stop, Back/Home, and recovery with injected input; verify the existing Apps, Help, Keyboard, Terminal, Monitor, and System controls remain usable and record injected versus physical interaction explicitly.
+- [x] 2.3 Boot the resulting image and exercise launch, stop, Back/Home, and recovery with injected input; verify the existing Apps, Help, Keyboard, Terminal, Monitor, and System controls remain usable and record injected versus physical interaction explicitly.
 
 ## 3. Software playback baseline
 
@@ -27,7 +27,7 @@
 
 - [x] 5.1 Add a synchronized presentation-timing method that distinguishes decoded frames from actual compositor/panel presentation, then run it for at least 30 seconds at the selected source cadence; verify timestamps, sample count, and limitations are recorded and no current hardware counter is treated as valid without checking its reset/units behavior.
 - [x] 5.2 Measure audio separately with an explicit enabled configuration, or record audio as unverified when the board path cannot establish physical output; verify video acceptance does not inherit an audio claim.
-- [ ] 5.3 Run the final shell regression after playback and cleanup; verify serial access, touch/display services, keyboard, Apps/Back/Home, and removal of temporary player/network state.
+- [x] 5.3 Run the final shell regression after playback and cleanup; verify serial access, touch/display services, keyboard, Apps/Back/Home, and removal of temporary player/network state.
 
 ## 6. Review and integration
 
@@ -52,3 +52,5 @@ JSON record cover package/image builds, closure deltas, runtime source boundary
 and lifecycle tests. They do not close the final-image board acceptance tasks.
 
 Tasks 2.1 and 3.4: `docs/evidence/network-video/installed-app/README.md` records catalog discovery, an injected Apps launch through Foot on the flashed image, 100 seconds of IPC/process observation with advancing playback, native/physical captures, and Back cleanup. Stop/Home/EOF/error/MVX/final regression remain separately open.
+
+Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction is distinct from the still-open focused real-finger gesture capture.

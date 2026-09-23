@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/final-shell-image/after-render-failure.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/final-shell-image/help-header.png
+DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/final-shell-image/keyboard-visible.png
 DATA ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102  docs/evidence/card-composition-headless/cards.png
 DATA 0aa7c1d4c919b21ac233ce996df62a7ed9e7fa342a1dd18f71e212560acad6e9  docs/evidence/video-acceleration/360p-native.png
 DATA 0de84cf54feadaaaeff344d62d5764700fdfcb02eadf54f2d71485e164d5341b  docs/evidence/video-acceleration/360p-physical.jpg
@@ -1213,3 +1216,14 @@ board. Command and limitations: `docs/evidence/card-composition-headless/README.
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/card-composition-headless/cards.png` | 5075 | DATA | `ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102` |
+
+## Final installed shell regression captures
+
+Native grim frames from the board; source, procedure, rejected trials and limits
+are in `docs/evidence/final-shell-image/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/final-shell-image/after-render-failure.png` | 38398 | DATA | `b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e` |
+| `docs/evidence/final-shell-image/help-header.png` | 48044 | DATA | `237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3` |
+| `docs/evidence/final-shell-image/keyboard-visible.png` | 48872 | DATA | `eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8` |

@@ -14,7 +14,7 @@
 
 - [x] 3.1 Keep Previous, Next, Back, Apps, Windows/Home, Keyboard, Help, Terminal, Monitor, and System actions available across launcher and overview transitions; verify `python3 tests/test_touch_menu.py` and existing launcher/catalog tests pass.
 - [x] 3.2 Ensure the launcher releases or closes before focusing a selected window and does not steal the terminal keyboard path; verify a scripted Sway-tree fixture shows focus/return without duplicate terminal or monitor processes.
-- [ ] 3.3 Record a rollback switch or safe failure path that disables gestures/overview while preserving tap and button navigation; verify a forced render/input failure returns to usable Apps and Back state.
+- [x] 3.3 Record a rollback switch or safe failure path that disables gestures/overview while preserving tap and button navigation; verify a forced render/input failure returns to usable Apps and Back state.
 
 ## 4. Rendering and resource checks
 
@@ -23,7 +23,7 @@
 
 ## 5. Board validation
 
-- [ ] 5.1 Build and flash the integrated image only after host tests pass; verify the normal shell, Apps, Help, keyboard, Terminal, Monitor, and Home controls still work on the board.
+- [x] 5.1 Build and flash the integrated image only after host tests pass; verify the normal shell, Apps, Help, keyboard, Terminal, Monitor, and Home controls still work on the board.
 - [x] 5.2 Exercise 20 injected swipes in both directions plus tap, Back, overview focus, stale/empty state, and button fallbacks; verify console/native evidence labels injected input separately from physical-finger proof.
 - [ ] 5.3 Capture a concise physical camera trial showing a real left swipe, right swipe, overview entry/exit, card tap, and Back with the display sharply focused; verify no legs/private scene content and retain physical-glass/readability limitations.
 
@@ -37,3 +37,5 @@ Task 1.3: `docs/evidence/launcher-gestures/integrated-injected/README.md` record
 Task 4.1: the integrated-injected evidence includes 40 keyboard-hidden Apps transitions, a two-window overview, and ten keyboard-visible transitions, with elapsed/process CPU median/p95, buffer/snapshot counters and before/after RSS/PSS. These are CPU-side measurements, not optical timing.
 
 Task 3.2: `docs/evidence/launcher-gestures/metadata-budget/README.md` records the production-client host ordering fixture plus an injected Monitor-to-Terminal selection on the board: launcher closed, Terminal focused, existing Foot/htop process sets unchanged. The same report records 20 keyboard-visible two-card overview refreshes using the separated metadata deadline; final-image and physical-finger acceptance remain distinct.
+
+Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction is distinct from the still-open focused real-finger gesture capture.
