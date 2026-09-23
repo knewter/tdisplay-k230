@@ -107,12 +107,66 @@ The trace is diagnostic only. It cannot see the opaque firmware's internal
 association and must not be used as a claim that timestamps are physically
 presented on the display.
 
-## Next implementation decision
+## Initial decision before the physical boundary trace
 
-No source patch is warranted until the trace identifies a broken boundary. If
+No source patch was warranted until the trace identified a broken boundary. If
 valid QBUF tags are replaced by capture-buffer tags on DQBUF, add a narrowly
 reviewed kernel trace at the two documented `user_data` assignments and compare
 the firmware completion message. If QBUF is wrong, repair the packet timestamp
 source or FFmpeg mapping instead. If both boundaries are correct, retain the
 trace with the FFmpeg log and investigate the `AVFrame` conversion path rather
 than changing playback timing globally.
+
+## Physical boundary result and candidate FFmpeg correction
+
+The board trace collected after this investigation is retained outside this
+worktree at `docs/evidence/network-video/mvx-ioctl-boundary.log`. It changes the
+working diagnosis:
+
+* It contains 297 `OUTPUT_MPLANE QBUF` records, with submitted timestamps from
+  `0.000000` through `9.866667` in the observed sequence.
+* It contains 302 `CAPTURE_MPLANE DQBUF` records. The first 20 have
+  `bytesused=0`, `timestamp=0.000000`, and flags `0x00004001`; the remaining
+  282 have `bytesused=230400` and valid ascending timestamps through
+  `9.366667` in the observed capture sequence.
+* The FFmpeg log records `Reinit context to 640x368, pix_fmt: yuv420p` before
+  those completions. The trace alone does not prove why MVX returns the empty
+  buffers. Together with FFmpeg's current dequeue code, it provides a concrete
+  mechanism for the earlier repeated output-frame PTS without implicating the
+  timestamps on nonempty completions; an exact frame-by-frame map still needs a
+  patched repeat.
+
+Pinned FFmpeg only recognizes an empty capture DQBUF as completion while
+`draining` (`libavcodec/v4l2_context.c:399-410`). Outside draining it wraps the
+buffer as an `AVFrame`, even though raw capture data has zero payload. The
+candidate [source patch](../../nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch)
+requeues an empty, non-draining, non-`LAST` capture buffer and returns no frame.
+It deliberately leaves the current drain/EOS path and existing `LAST` behavior
+unchanged. Requeueing is required: simply dropping the buffer would shrink the
+capture pool and can deadlock an M2M decoder.
+
+The patch applies cleanly to the pinned FFmpeg source. It has not yet been
+built or run on hardware. A review-only derivation evaluation against the
+coordinator's current `nix/video-probe.nix` resolves to
+`/nix/store/18dqh3l0kjqahh1h584mdny817ii0q82-ffmpeg-riscv64-unknown-linux-gnu-9.0.1.drv`:
+
+```sh
+nix build --impure --option max-jobs 1 --option cores 4 --print-out-paths --expr '
+let
+  f = builtins.getFlake (toString /tmp/k230-goal-video);
+  pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux.pkgsCross.riscv64;
+  probe = import /tmp/k230-goal-video/nix/video-probe.nix { inherit pkgs; };
+  ffmpeg = probe.ffmpeg.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      /tmp/k230-mvx-timestamp-audit/nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch
+    ];
+  });
+in ffmpeg
+'
+```
+
+Before accepting it, build that temporary derivation, repeat the same bounded
+300-frame local clip with the observer, and verify that no zero-payload capture
+buffer becomes a decoder frame while normal timestamps and end-of-stream remain
+intact. The patch must remain a local video-probe override until that evidence
+exists.
