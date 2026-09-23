@@ -502,6 +502,16 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
   border: 1px solid var(--rule);
   border-radius: 3px;
 }
+.ev-media {
+  margin-top: 26px;
+  max-width: 66ch;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+}
+.ev-media p { margin: 0 0 14px; }
+.media-link { font-family: var(--mono); }
 
 /* ---- footer ---- */
 .footer {

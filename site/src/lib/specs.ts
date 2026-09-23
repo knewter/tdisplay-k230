@@ -42,9 +42,10 @@ export interface EvidenceFile {
   slug: string;
   name: string;
   bytes: number;
-  kind: "text" | "image";
+  kind: "text" | "image" | "video";
   text?: string;
   asset?: string;
+  mediaUrl?: string;
   /**
    * Whether a requirement in the ledger rests on this file, or only a
    * hand-authored note. The distinction is the site's whole subject and is

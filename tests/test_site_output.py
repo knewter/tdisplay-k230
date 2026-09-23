@@ -10,6 +10,7 @@ runs them as its last step; by hand:
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -114,6 +115,18 @@ class TestBuiltSite(unittest.TestCase):
                 (DIST / "evidence" / slug / "index.html").is_file(),
                 f"{path} is cited but has no evidence page",
             )
+
+    def test_video_evidence_links_to_pinned_raw_media_without_a_site_copy(self) -> None:
+        """Recordings must remain evidence without inflating the static bundle."""
+        data = json.loads((REPO / "site" / "src" / "data" / "specs.json").read_text())
+        videos = [entry for entry in data["evidence"] if entry["kind"] == "video"]
+        self.assertTrue(videos, "the video classification needs a built-site check")
+        for video in videos:
+            page = (DIST / "evidence" / video["slug"] / "index.html").read_text()
+            self.assertIn('href="' + video["mediaUrl"] + '"', page)
+            self.assertIn("Open the pinned raw video", page)
+        copied = sorted(path.relative_to(DIST) for path in DIST.rglob("*.mp4"))
+        self.assertEqual(copied, [], f"video evidence leaked into the static site: {copied}")
 
     def test_nothing_from_an_in_flight_proposal_is_published(self) -> None:
         ids = sorted(

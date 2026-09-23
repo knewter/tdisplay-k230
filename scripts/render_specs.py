@@ -31,11 +31,13 @@ import html
 import json
 import re
 import shutil
+import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 # --------------------------------------------------------------------------
 # Budgets.
@@ -85,6 +87,13 @@ TEXT_SUFFIXES = {
     ".c", ".h", ".py", ".sh", ".nix", ".rs", ".conf", ".cfg", ".toml",
 }
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+VIDEO_SUFFIXES = {".mp4", ".m4v", ".mov", ".webm"}
+
+# Video recordings are evidence, but duplicating them into the static site
+# makes the published site grow with every camera capture.  This is the
+# canonical public remote for this repository; each URL below also names the
+# commit that the site was built from, rather than a moving branch.
+RAW_MEDIA_ORIGIN = "https://raw.githubusercontent.com/knewter/tdisplay-k230"
 
 # The taxonomy in .skills/k230-spec-change/SKILL.md, in the order the board
 # comes up: what produces an image, what boots, what a person sees, what talks,
@@ -603,7 +612,28 @@ def tally_dict(counts: dict[str, int]) -> dict[str, int]:
     return {status: counts[status] for status in STATUS_ORDER}
 
 
-def build_data(repo_root: Path, asset_dir: Path | None = None) -> tuple[dict, Report]:
+def source_revision(repo_root: Path) -> str:
+    """Return the commit whose committed media the generated site describes."""
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def pinned_media_url(revision: str, path: str) -> str:
+    """The immutable raw-media URL for one committed video evidence file."""
+    return f"{RAW_MEDIA_ORIGIN}/{revision}/{quote(path, safe='/')}"
+
+
+def build_data(
+    repo_root: Path,
+    asset_dir: Path | None = None,
+    source_revision_value: str | None = None,
+) -> tuple[dict, Report]:
     caps, defects = load_capabilities(repo_root)
     report = Report(capabilities=caps, defects=defects)
     link = Linker(repo_root)
@@ -661,6 +691,7 @@ def build_data(repo_root: Path, asset_dir: Path | None = None) -> tuple[dict, Re
             )
 
     evidence = []
+    revision = source_revision_value
     for path, slug in sorted(link.wanted.items()):
         source = repo_root / path
         entry = {
@@ -681,6 +712,14 @@ def build_data(repo_root: Path, asset_dir: Path | None = None) -> tuple[dict, Re
                 target = asset_dir / asset
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(source.read_bytes())
+        elif source.suffix.lower() in VIDEO_SUFFIXES:
+            # Do not decode or copy recordings.  A video evidence page links
+            # to its exact committed bytes on the canonical remote, while the
+            # inventory remains the source of its SHA-256 provenance.
+            if revision is None:
+                revision = source_revision(repo_root)
+            entry["kind"] = "video"
+            entry["mediaUrl"] = pinned_media_url(revision, path)
         else:
             entry["kind"] = "text"
             entry["text"] = printable(

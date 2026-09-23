@@ -271,6 +271,32 @@ class TestData(unittest.TestCase):
             self.assertEqual(data["evidence"][0]["kind"], "text")
             self.assertIn("U-Boot SPL 2022.10", data["evidence"][0]["text"])
 
+    def test_video_evidence_is_pinned_external_media_not_decoded_or_copied(self) -> None:
+        """A recording must not turn into HTML text or static-site payload."""
+        with TempRepo() as root:
+            video = root / "docs" / "evidence" / "capture.mp4"
+            video.parent.mkdir(parents=True)
+            video.write_bytes(b"\x00\xffnot UTF-8 video bytes")
+            write_spec(
+                root,
+                "display/panel",
+                "### Requirement: Recording\n\nThe board SHALL show it.\n\n"
+                "*Grounding: `docs/evidence/capture.mp4` records it.*\n",
+            )
+            assets = root / "site-public"
+            data, _ = render_specs.build_data(
+                root, assets, source_revision_value="0123456789abcdef"
+            )
+            entry = data["evidence"][0]
+            self.assertEqual(entry["kind"], "video")
+            self.assertEqual(
+                entry["mediaUrl"],
+                "https://raw.githubusercontent.com/knewter/tdisplay-k230/"
+                "0123456789abcdef/docs/evidence/capture.mp4",
+            )
+            self.assertNotIn("text", entry)
+            self.assertFalse(assets.exists(), "video bytes must not enter site/public")
+
     def test_the_data_pass_reads_openspec_specs_and_nothing_else(self) -> None:
         with TempRepo() as root:
             (root / "openspec" / "changes" / "a-change" / "specs" / "x" / "y").mkdir(

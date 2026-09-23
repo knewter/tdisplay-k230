@@ -32,6 +32,14 @@ const { file } = Astro.props;
       <div class="ev-image">
         <img src={url(file.asset!)} alt={file.path} />
       </div>
+    ) : file.kind === "video" ? (
+      <section class="ev-media">
+        <p>
+          This recording stays outside the static-site bundle. Its committed bytes and SHA-256
+          remain recorded in <code>docs/blob-inventory.md</code>.
+        </p>
+        <a class="media-link" href={file.mediaUrl}>Open the pinned raw video</a>
+      </section>
     ) : (
       <pre class="ev-text">{file.text}</pre>
     )
