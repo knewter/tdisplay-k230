@@ -107,3 +107,65 @@ The sibling architecture decision must resolve the composition boundary and
 which live-surface classes are available. The UX audit must resolve the
 applicable card hierarchy and motion contract. Those questions change the
 implementation route, so they are explicit gates rather than assumptions.
+
+## Accepted implementation boundary and UX contract (2026-09-23)
+
+The coordinator reviewed and landed the opt-in source-built Sway probe in
+`801af92`. The selected owner is pinned Sway 1.12, with wlroots 0.20.2
+scene-surface mirrors inside its single DRM/KMS and Pixman presentation path.
+The committed architecture contract is
+`docs/research/card-composition-architecture.md`; actual cross-built Sway,
+independent subsurfaces, input/focus lifecycle and failure tests are recorded in
+`docs/evidence/card-composition-headless/README.md`. These are headless QEMU user
+emulation and injected-input results, not board proof. The architecture change's
+entire physical evidence group 3 remains open. This decision permits the next
+separate opt-in product package; default image integration and physical product
+acceptance remain gated by the named board checks.
+
+The product adapter consumes the separate host-testable C policy in
+`nix/card-shell-policy/`. Sway owns stable container IDs and live-view
+revalidation, client-buffer references, scene lifetime, global touch routing,
+keyboard focus and graceful close dispatch. The policy owns horizontal deck
+selection, direct finger offsets, entry recognition, normalized recovery states
+and bounded close waiting. The adapter must consume actual complete-stream
+touch cancellation separately from a locally rejected gesture that still has
+pending hardware releases. An unmap is a source-removal observation, not proof
+that a process exited; a still-mapped timeout is not a protocol refusal reply.
+
+The bounded initial product package enumerates mapped XDG toplevels dynamically,
+not the probe's two-app allowlist. Only source-audited, supported SHM surface
+trees may be shown live. Unsupported/unavailable sources receive a non-live
+card. A session exclusion (`SWAY_K230_CARD_PRIVATE_APP_IDS`, exact app IDs
+separated by colons) or compositor mark `k230_card_private` produces a fixed
+private placeholder, without reading/rendering that app's title or pixels.
+`k230_card_unavailable` provides an explicit unavailable state. A caller must
+classify an unknown source as unavailable rather than assume it is live; no
+unimplemented protected-content protocol is claimed. Privacy changes must
+release existing mirror references before the next composed frame. No private
+or unavailable card may display another app's pixels. Only graceful XDG close
+is allowed; timeout/refusal retains the source and existing recovery controls.
+
+The coordinator's accepted UX audit is archived at
+`openspec/changes/archive/2026-09-23-the-handheld-has-a-coherent-ux-plan/` and its
+synced capability is `openspec/specs/docs/handheld-ux-plan/spec.md`. The applicable
+accepted contract and review are `docs/research/handheld-ux/interaction-contract.md`
+and `docs/research/handheld-ux/design-review.md`. Their adopted product constraints
+are: preserve the existing 56px top bar; title role 40–44px, card title 30–34px
+and state/hint 19–22px; at least 24px content inset and 56px control height;
+selected/pressed/error states have visible non-color cues; reserve actual
+keyboard space and keep Back above it. Use direct finger tracking and immediate
+stable endpoints; reduced motion must preserve live cards, selection, expansion,
+close/refusal and button recovery. The card deck is horizontal. Entry has an
+upward edge gesture and a persistent Cards/Back button; Previous/Next and Close
+buttons provide alternatives to browsing and throwing. Existing top-bar control
+touches first restore normal Sway routing, so Apps, Windows/Home, Keyboard,
+System, Help, terminal, monitor and Back keep their current command owners.
+The launcher mapping also returns the card surface to normal application state.
+
+The shared policy's initial edge, tap and throw constants are provisional source
+values, not measured physical thresholds. The adapter and runtime fixtures must
+use the same constants. The accepted audit's 200ms settled-release ceiling does
+not replace the separate finger-tracking/input/frame/memory budget declaration
+or the physical review. The product remains opt-in, Pixman-only and independent
+of the separate VGLite renderer experiment. Failure disables/restores only the
+card scene; the known normal shell package is unchanged.

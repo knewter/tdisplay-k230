@@ -1,7 +1,7 @@
 ## 1. Decisions and interaction contract
 
-- [ ] 1.1 Land and review the composition-boundary decision from `the-shell-has-a-card-composition-plan`; record the chosen owner, live-surface eligibility, input/focus handoff, privacy behavior, and failure boundary in this change before implementing live capture or composition; verify with `openspec validate the-shell-has-a-card-composition-plan --strict` and review its committed evidence.
-- [ ] 1.2 After `the-handheld-has-a-coherent-ux-plan` lands, read its applicable findings and record the accepted card hierarchy, direct-manipulation behavior, and throw-close feedback in this change; verify the resulting interaction contract with `openspec validate the-handheld-has-a-coherent-ux-plan --strict`. This does not wait for all audit successor changes.
+- [x] 1.1 Land and review the composition-boundary decision from `the-shell-has-a-card-composition-plan`; record the chosen owner, live-surface eligibility, input/focus handoff, privacy behavior, and failure boundary in this change before implementing live capture or composition; verify with `openspec validate the-shell-has-a-card-composition-plan --strict` and review its committed evidence.
+- [x] 1.2 Read the landed and archived `the-handheld-has-a-coherent-ux-plan` findings and record the accepted card hierarchy, direct-manipulation behavior, and throw-close feedback in this change; verify the resulting interaction contract with `openspec validate docs/handheld-ux-plan --type spec --strict` and the committed coordinator review in `docs/research/handheld-ux/design-review.md`. This does not wait for all audit successor changes.
 
 ## 2. Card state and recovery model
 
