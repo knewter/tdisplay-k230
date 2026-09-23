@@ -1,0 +1,422 @@
+{
+  "pair": 2,
+  "policy": "auto",
+  "measurement_complete": true,
+  "boot_id": "1c77d4e2-2539-47d6-b279-c680dfb02908",
+  "current_system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/lgpv6h5j0d7yiwilnfamnvxrh6m4cgpm-k230-card-shell",
+  "client_sha256": "6a3ab8c5d5b7237770d74de89c4c604ccf24a70ffabadec3f303df939f71a88f",
+  "producer_sha256": "f4d4a24b9224ce44a58326fb691b03a5db883910719a5aa6d4c12e74ff976efe",
+  "library_sha256": "983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56",
+  "environment_before": {
+    "online_cpus": "0",
+    "cpu0_frequency_khz": null,
+    "thermal_millidegrees": {
+      "thermal_zone0": 7220
+    }
+  },
+  "started_at_utc": "2026-09-23T22:44:01.534368+00:00",
+  "producer_files_sha256": {
+    "card-shell-rvv-benchmark.py": "270d6abb1bace2c9462c1ce442c5d2b1f9919073fedb45406b34402f2868a122",
+    "card-shell-board-session.py": "e1ca81bd38751373233b0910309c7121e201541d18abc56ef4eba4d296cff8b2",
+    "card-shell-acceptance.py": "904c4534567db3c4d273fc01667300ccb752c05cfe7c23577a2d9cc33197deaa",
+    "card-shell-benchmark.py": "ce547d2d675de8cc858c08223685eb0669815de963d544439a886771482be4a0"
+  },
+  "runtime": {
+    "pid": 1694,
+    "executable": "/nix/store/9brnyamw2hcfb7yx5zajf0aqcgfsdyyv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "pixman_policy": "auto",
+    "pixman_disable": "",
+    "mapped_pixman_files": [
+      "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4"
+    ],
+    "mapping_and_policy_verified": true,
+    "limit": "Uninstrumented renderer: mapped library and process policy observed; callback counters belong to the separate pixel test."
+  },
+  "interaction_exit_code": 1,
+  "interaction_failures": [
+    "upward-throw-close-request"
+  ],
+  "budget": {
+    "board_budget_gate": "FAIL",
+    "workloads": {
+      "2": {
+        "status": "FAIL",
+        "submitted_frames": 146,
+        "metrics": {
+          "frame_update_cpu_ms": {
+            "count": 146,
+            "min": 11.538964,
+            "median": 19.779706999999998,
+            "p95": 22.757497000000001,
+            "max": 24.266529999999999,
+            "budget": {
+              "p95": 16.667000000000002,
+              "max": 33.334000000000003
+            },
+            "status": "FAIL"
+          },
+          "motion_to_submit_ms": {
+            "count": 509,
+            "min": 16.714103999999999,
+            "median": 29.336091,
+            "p95": 43.973014999999997,
+            "max": 52.858438,
+            "budget": {
+              "p95": 50.0,
+              "max": 100.0
+            },
+            "status": "PASS"
+          },
+          "motion_to_present_ms": {
+            "count": 509,
+            "min": 19.018709999999999,
+            "median": 39.987886000000003,
+            "p95": 54.955725000000001,
+            "max": 67.995109999999997,
+            "budget": {
+              "p95": 66.667000000000002,
+              "max": 133.334
+            },
+            "status": "PASS"
+          },
+          "tracking_present_interval_ms": {
+            "count": 95,
+            "min": 19.16,
+            "median": 38.32,
+            "p95": 57.478999999999999,
+            "max": 76.641000000000005,
+            "budget": {
+              "p95": 33.334000000000003,
+              "max": 100.0
+            },
+            "status": "FAIL"
+          },
+          "release_to_final_submit_ms": {
+            "count": 28,
+            "min": 18.859173999999999,
+            "median": 24.500374000000001,
+            "p95": 32.708831000000004,
+            "max": 33.649599000000002,
+            "budget": {
+              "max": 200.0
+            },
+            "status": "PASS"
+          },
+          "release_to_present_ms": {
+            "count": 28,
+            "min": 23.976040000000001,
+            "median": 31.664059999999999,
+            "p95": 37.308114000000003,
+            "max": 46.303365999999997,
+            "budget": {
+              "max": 266.66699999999997
+            },
+            "status": "PASS"
+          },
+          "release_to_first_submit_ms": {
+            "count": 28,
+            "min": 18.859173999999999,
+            "median": 24.500374000000001,
+            "p95": 32.708831000000004,
+            "max": 33.649599000000002,
+            "budget": null,
+            "status": "PASS"
+          },
+          "release_to_first_present_ms": {
+            "count": 28,
+            "min": 23.976040000000001,
+            "median": 31.664059999999999,
+            "p95": 37.308114000000003,
+            "max": 46.303365999999997,
+            "budget": null,
+            "status": "PASS"
+          },
+          "incremental_session_memory_bytes": {
+            "count": 1,
+            "min": 393216,
+            "median": 393216,
+            "p95": 393216,
+            "max": 393216,
+            "budget": {
+              "max": 67108864
+            },
+            "status": "PASS"
+          }
+        },
+        "resources": {
+          "compositor": {
+            "baseline": {
+              "count": 4,
+              "span_ms": 3041.6003019999998,
+              "status": "PASS",
+              "first_t_ns": 388816514854,
+              "last_t_ns": 391858115156,
+              "first_cpu_ns": 11649369209,
+              "last_cpu_ns": 12928600590,
+              "median_memory_bytes": 33992704,
+              "peak_memory_bytes": 33992704,
+              "cpu_percent": 42.057839754909388
+            },
+            "active": {
+              "count": 17,
+              "span_ms": 16244.024697000001,
+              "status": "PASS",
+              "first_t_ns": 392880053964,
+              "last_t_ns": 409124078661,
+              "first_cpu_ns": 13429277739,
+              "last_cpu_ns": 21941048545,
+              "median_memory_bytes": 34480128,
+              "peak_memory_bytes": 34480128,
+              "cpu_percent": 52.399395868758937
+            },
+            "restored": {
+              "count": 5,
+              "span_ms": 4026.9454890000002,
+              "status": "PASS",
+              "first_t_ns": 410153257137,
+              "last_t_ns": 414180202626,
+              "first_cpu_ns": 22387829336,
+              "last_cpu_ns": 24020244959,
+              "median_memory_bytes": 34480128,
+              "peak_memory_bytes": 35790848,
+              "cpu_percent": 40.537316123575664
+            }
+          },
+          "session": {
+            "baseline": {
+              "count": 4,
+              "span_ms": 3041.6003019999998,
+              "status": "PASS",
+              "first_t_ns": 388816514854,
+              "last_t_ns": 391858115156,
+              "first_cpu_ns": 19639975000,
+              "last_cpu_ns": 22292340000,
+              "median_memory_bytes": 27234304,
+              "peak_memory_bytes": 27234304,
+              "cpu_percent": 87.202943735110139
+            },
+            "active": {
+              "count": 17,
+              "span_ms": 16244.024697000001,
+              "status": "PASS",
+              "first_t_ns": 392880053964,
+              "last_t_ns": 409124078661,
+              "first_cpu_ns": 23052642000,
+              "last_cpu_ns": 34677927000,
+              "median_memory_bytes": 27619328,
+              "peak_memory_bytes": 27627520,
+              "cpu_percent": 71.566531182059805
+            },
+            "restored": {
+              "count": 5,
+              "span_ms": 4026.9454890000002,
+              "status": "PASS",
+              "first_t_ns": 410153257137,
+              "last_t_ns": 414180202626,
+              "first_cpu_ns": 35496344000,
+              "last_cpu_ns": 38831476000,
+              "median_memory_bytes": 27471872,
+              "peak_memory_bytes": 28884992,
+              "cpu_percent": 82.820391016224164
+            }
+          },
+          "restored_session_delta_bytes": 237568
+        }
+      },
+      "1": {
+        "status": "FAIL",
+        "submitted_frames": 142,
+        "metrics": {
+          "frame_update_cpu_ms": {
+            "count": 142,
+            "min": 12.134252,
+            "median": 14.835978000000001,
+            "p95": 16.049220999999999,
+            "max": 109.986069,
+            "budget": {
+              "p95": 16.667000000000002,
+              "max": 33.334000000000003
+            },
+            "status": "FAIL"
+          },
+          "motion_to_submit_ms": {
+            "count": 489,
+            "min": 14.063928000000001,
+            "median": 23.886979,
+            "p95": 29.128688,
+            "max": 64.669390000000007,
+            "budget": {
+              "p95": 50.0,
+              "max": 100.0
+            },
+            "status": "PASS"
+          },
+          "motion_to_present_ms": {
+            "count": 489,
+            "min": 18.605180000000001,
+            "median": 27.928450000000002,
+            "p95": 38.816724000000001,
+            "max": 71.26661,
+            "budget": {
+              "p95": 66.667000000000002,
+              "max": 133.334
+            },
+            "status": "PASS"
+          },
+          "tracking_present_interval_ms": {
+            "count": 84,
+            "min": 19.157,
+            "median": 38.317999999999998,
+            "p95": 57.478999999999999,
+            "max": 57.481999999999999,
+            "budget": {
+              "p95": 33.334000000000003,
+              "max": 100.0
+            },
+            "status": "FAIL"
+          },
+          "release_to_final_submit_ms": {
+            "count": 26,
+            "min": 16.156814000000001,
+            "median": 26.795864000000002,
+            "p95": 29.850106,
+            "max": 128.07504800000001,
+            "budget": {
+              "max": 200.0
+            },
+            "status": "PASS"
+          },
+          "release_to_present_ms": {
+            "count": 26,
+            "min": 18.944621000000001,
+            "median": 30.618361,
+            "p95": 38.933368999999999,
+            "max": 136.185643,
+            "budget": {
+              "max": 266.66699999999997
+            },
+            "status": "PASS"
+          },
+          "release_to_first_submit_ms": {
+            "count": 26,
+            "min": 16.156814000000001,
+            "median": 26.795864000000002,
+            "p95": 29.850106,
+            "max": 128.07504800000001,
+            "budget": null,
+            "status": "PASS"
+          },
+          "release_to_first_present_ms": {
+            "count": 26,
+            "min": 18.944621000000001,
+            "median": 30.618361,
+            "p95": 38.933368999999999,
+            "max": 136.185643,
+            "budget": null,
+            "status": "PASS"
+          },
+          "incremental_session_memory_bytes": {
+            "count": 1,
+            "min": 458752,
+            "median": 458752,
+            "p95": 458752,
+            "max": 458752,
+            "budget": {
+              "max": 67108864
+            },
+            "status": "PASS"
+          }
+        },
+        "resources": {
+          "compositor": {
+            "baseline": {
+              "count": 4,
+              "span_ms": 3035.1853970000002,
+              "status": "PASS",
+              "first_t_ns": 365780930060,
+              "last_t_ns": 368816115457,
+              "first_cpu_ns": 492552634,
+              "last_cpu_ns": 1766173524,
+              "median_memory_bytes": 27000832,
+              "peak_memory_bytes": 27000832,
+              "cpu_percent": 41.961881183892636
+            },
+            "active": {
+              "count": 14,
+              "span_ms": 13163.577273000001,
+              "status": "PASS",
+              "first_t_ns": 369843981184,
+              "last_t_ns": 383007558457,
+              "first_cpu_ns": 2282668662,
+              "last_cpu_ns": 9047777573,
+              "median_memory_bytes": 27439104,
+              "peak_memory_bytes": 27439104,
+              "cpu_percent": 51.392632646112169
+            },
+            "restored": {
+              "count": 5,
+              "span_ms": 4034.1597040000001,
+              "status": "PASS",
+              "first_t_ns": 384053958520,
+              "last_t_ns": 388088118224,
+              "first_cpu_ns": 9634160837,
+              "last_cpu_ns": 11357286746,
+              "median_memory_bytes": 27439104,
+              "peak_memory_bytes": 27439104,
+              "cpu_percent": 42.713378632270427
+            }
+          },
+          "session": {
+            "baseline": {
+              "count": 4,
+              "span_ms": 3035.1853970000002,
+              "status": "PASS",
+              "first_t_ns": 365780930060,
+              "last_t_ns": 368816115457,
+              "first_cpu_ns": 2335061000,
+              "last_cpu_ns": 4953066000,
+              "median_memory_bytes": 19226624,
+              "peak_memory_bytes": 19771392,
+              "cpu_percent": 86.255192272197135
+            },
+            "active": {
+              "count": 14,
+              "span_ms": 13163.577273000001,
+              "status": "PASS",
+              "first_t_ns": 369843981184,
+              "last_t_ns": 383007558457,
+              "first_cpu_ns": 5723676000,
+              "last_cpu_ns": 14715141000,
+              "median_memory_bytes": 19681280,
+              "peak_memory_bytes": 19685376,
+              "cpu_percent": 68.30563465785643
+            },
+            "restored": {
+              "count": 5,
+              "span_ms": 4034.1597040000001,
+              "status": "PASS",
+              "first_t_ns": 384053958520,
+              "last_t_ns": 388088118224,
+              "first_cpu_ns": 15467727000,
+              "last_cpu_ns": 19004865000,
+              "median_memory_bytes": 19685376,
+              "peak_memory_bytes": 19685376,
+              "cpu_percent": 87.679672088658592
+            }
+          },
+          "restored_session_delta_bytes": 458752
+        }
+      }
+    }
+  },
+  "restored_shell_and_seatd": true,
+  "environment_after": {
+    "online_cpus": "0",
+    "cpu0_frequency_khz": null,
+    "thermal_millidegrees": {
+      "thermal_zone0": 7219
+    }
+  },
+  "finished_at_utc": "2026-09-23T22:45:48.270389+00:00"
+}

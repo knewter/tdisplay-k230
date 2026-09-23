@@ -1,0 +1,37 @@
+{
+  "source_revision": "678afb77805ef43d7d5e552dc331efadac9f6c08",
+  "repeats": 3,
+  "sequence": [
+    [
+      1,
+      "no-rvv"
+    ],
+    [
+      1,
+      "auto"
+    ],
+    [
+      2,
+      "auto"
+    ],
+    [
+      2,
+      "no-rvv"
+    ],
+    [
+      3,
+      "no-rvv"
+    ],
+    [
+      3,
+      "auto"
+    ]
+  ],
+  "system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/lgpv6h5j0d7yiwilnfamnvxrh6m4cgpm-k230-card-shell",
+  "config": "/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf",
+  "client": "/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "workload": "unchanged card-shell-acceptance.py: one/two live cards, 24 drags each, thirteen interaction checks",
+  "capture_provenance": "injected-touch; native captures remain private and unreviewed",
+  "default_image_changed": false
+}

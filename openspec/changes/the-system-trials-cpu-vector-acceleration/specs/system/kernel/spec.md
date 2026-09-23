@@ -35,7 +35,7 @@ The optional vector path SHALL require the kernel's runtime capability report an
 
 ### Requirement: A vector rendering decision includes correctness and matched cost evidence
 
-<!-- UNVERIFIED: paired card workloads and the final performance decision remain open. -->
+*Grounding: physical-board comparison in `docs/evidence/card-shell/kernel-rvv/card-cost/README.md`, `run1/result.json` and `comparison.json` record six matched physical runs with unchanged budgets. CPU-cost changes are small and mixed; every workload fails overall acceptance, four upward-throw checks fail, and the decision retains the ordinary image. This is injected-input measurement, not real-finger or optical proof.*
 *Partial physical grounding: `docs/evidence/card-shell/pixman-rvv/pixel-trial/board/result.json` records 192 exact byte comparisons, real RVV callback counts and a detected one-byte corruption control. This proves only its declared pixel cases, not card costs.*
 
 The optional userspace renderer trial SHALL compare its declared pixel cases against the scalar reference and measure the same live-card workload with vector dispatch enabled and disabled on the same trial kernel. It SHALL retain frame/update, input-latency, CPU and memory measurements and all existing card interaction budgets. A compiled vector path, isolated instruction test or faster synthetic operation SHALL NOT be presented as a card-shell speedup. The recorded decision SHALL preserve negative results and distinguish an optional experiment from a default image change.

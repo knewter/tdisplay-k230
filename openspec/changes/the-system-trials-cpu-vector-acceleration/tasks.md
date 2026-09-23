@@ -28,8 +28,8 @@ Requires 2.3 PASS. Proposed commands in this section must be implemented before 
 
 Requires physical context and pixel correctness. The comparison must use the same trial kernel, scene, panel format, input sequence and measurement producer. Keep native capture, injected input and real-glass observations distinct.
 
-- [ ] 4.1 Add and run a bounded paired workload driver, proposed `python3 tools/card-shell-rvv-benchmark.py --board --repeats 3 --revision BENCHMARK_SOURCE_REV --output /var/lib/k230/rvv-benchmark-NEW_NAME` on the reserved board with its sibling scripts staged, measuring identical live-card interactions with vector dispatch on/off. Commit each run's frame/update timing, input latency, CPU and memory costs, producer/artifact identity and comparison against unchanged card budgets.
-- [ ] 4.2 Record the measured decision, including negative results and remaining compatibility limits, in `docs/evidence/card-shell/kernel-rvv/`; restore and reverify the normal system using the recovery command in 2.4 after the final rendering trial. A successful experiment does not promote the default image; any promotion requires a separate reviewed proposal.
+- [x] 4.1 Add and run a bounded paired workload driver, proposed `python3 tools/card-shell-rvv-benchmark.py --board --repeats 3 --revision BENCHMARK_SOURCE_REV --output /var/lib/k230/rvv-benchmark-NEW_NAME` on the reserved board with its sibling scripts staged, measuring identical live-card interactions with vector dispatch on/off. Commit each run's frame/update timing, input latency, CPU and memory costs, producer/artifact identity and comparison against unchanged card budgets.
+- [x] 4.2 Record the measured decision, including negative results and remaining compatibility limits, in `docs/evidence/card-shell/kernel-rvv/`; restore and reverify the normal system using the recovery command in 2.4 after the final rendering trial. A successful experiment does not promote the default image; any promotion requires a separate reviewed proposal.
 - [ ] 4.3 Publish the evidence and proposal status without claiming unperformed proof; validate with `openspec validate the-system-trials-cpu-vector-acceleration --strict` and `python3 scripts/build_site.py`, then verify the pushed revision's CI and published site. Archive only after every task and physical evidence gate is complete.
 
 Physical tasks 2.2–2.4: `docs/evidence/card-shell/kernel-rvv/board-trial/README.md`
@@ -44,3 +44,13 @@ one-byte corruption control, normal recovery and the built optional card
 package. The package uses recursive dependency-reference replacement with the
 ABI-identical library; a default promotion requires a fully rebuilt graph.
 No card performance result is claimed by these tasks.
+
+Task 4.1: `docs/evidence/card-shell/kernel-rvv/card-cost/README.md` records six
+matched physical runs and exact host reconstruction of their budgets. Every
+workload still fails frame CPU and tracking cadence; four runs miss the upward
+throw. Complete measurement does not mean accepted card performance.
+
+Task 4.2: the same card-cost record retains the negative promotion decision;
+`normal-reboot.json` and `normal-recovery.json` prove serial return without
+physical intervention, the ordinary system, preserved boot/root data and
+shell/Wi-Fi HTTPS recovery after the final rendering trial.

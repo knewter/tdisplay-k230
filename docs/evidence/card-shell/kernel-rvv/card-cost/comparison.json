@@ -1,0 +1,300 @@
+{
+  "source_revision": "678afb77805ef43d7d5e552dc331efadac9f6c08",
+  "boot_id": "1c77d4e2-2539-47d6-b279-c680dfb02908",
+  "measurement_status": "COMPLETE",
+  "all_card_budgets_pass": false,
+  "all_interaction_checks_observed": false,
+  "runs": [
+    {
+      "pair": 1,
+      "policy": "no-rvv",
+      "cards": 1,
+      "frames": 139,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.681602,
+      "frame_cpu_max_ms": 50.002316,
+      "motion_to_present_p95_ms": 39.187735,
+      "tracking_interval_p95_ms": 57.447,
+      "compositor_active_cpu_percent": 52.88332976946455,
+      "session_active_cpu_percent": 69.88133151227888,
+      "incremental_memory_bytes": 630784,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 1,
+      "policy": "no-rvv",
+      "cards": 2,
+      "frames": 141,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 23.295234,
+      "frame_cpu_max_ms": 24.231381,
+      "motion_to_present_p95_ms": 55.216957,
+      "tracking_interval_p95_ms": 57.463,
+      "compositor_active_cpu_percent": 53.154137712196494,
+      "session_active_cpu_percent": 72.47192222692674,
+      "incremental_memory_bytes": 405504,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 1,
+      "policy": "auto",
+      "cards": 1,
+      "frames": 146,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.475135,
+      "frame_cpu_max_ms": 48.228477,
+      "motion_to_present_p95_ms": 40.979386,
+      "tracking_interval_p95_ms": 57.48,
+      "compositor_active_cpu_percent": 51.77389530277341,
+      "session_active_cpu_percent": 68.61798191362057,
+      "incremental_memory_bytes": 466944,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 1,
+      "policy": "auto",
+      "cards": 2,
+      "frames": 149,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 23.109309,
+      "frame_cpu_max_ms": 24.094234,
+      "motion_to_present_p95_ms": 54.171769,
+      "tracking_interval_p95_ms": 57.476,
+      "compositor_active_cpu_percent": 52.595231096571055,
+      "session_active_cpu_percent": 71.89931685229523,
+      "incremental_memory_bytes": 401408,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 2,
+      "policy": "auto",
+      "cards": 1,
+      "frames": 142,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.049221,
+      "frame_cpu_max_ms": 109.986069,
+      "motion_to_present_p95_ms": 38.816724,
+      "tracking_interval_p95_ms": 57.479,
+      "compositor_active_cpu_percent": 51.39263264611217,
+      "session_active_cpu_percent": 68.30563465785643,
+      "incremental_memory_bytes": 458752,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 2,
+      "policy": "auto",
+      "cards": 2,
+      "frames": 146,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 22.757497,
+      "frame_cpu_max_ms": 24.26653,
+      "motion_to_present_p95_ms": 54.955725,
+      "tracking_interval_p95_ms": 57.479,
+      "compositor_active_cpu_percent": 52.39939586875894,
+      "session_active_cpu_percent": 71.5665311820598,
+      "incremental_memory_bytes": 393216,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 2,
+      "policy": "no-rvv",
+      "cards": 1,
+      "frames": 147,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.414848,
+      "frame_cpu_max_ms": 110.103648,
+      "motion_to_present_p95_ms": 41.281037,
+      "tracking_interval_p95_ms": 57.503,
+      "compositor_active_cpu_percent": 51.8536256480195,
+      "session_active_cpu_percent": 68.86768901510192,
+      "incremental_memory_bytes": 466944,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 2,
+      "policy": "no-rvv",
+      "cards": 2,
+      "frames": 148,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 23.361054,
+      "frame_cpu_max_ms": 25.346783,
+      "motion_to_present_p95_ms": 55.266827,
+      "tracking_interval_p95_ms": 57.495,
+      "compositor_active_cpu_percent": 52.729368269687704,
+      "session_active_cpu_percent": 72.03786166168845,
+      "incremental_memory_bytes": 397312,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "no-rvv",
+      "cards": 1,
+      "frames": 138,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.672033,
+      "frame_cpu_max_ms": 110.78306,
+      "motion_to_present_p95_ms": 39.621524,
+      "tracking_interval_p95_ms": 57.487,
+      "compositor_active_cpu_percent": 52.71528089117381,
+      "session_active_cpu_percent": 69.6090729920742,
+      "incremental_memory_bytes": 454656,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "no-rvv",
+      "cards": 2,
+      "frames": 150,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 23.172741,
+      "frame_cpu_max_ms": 24.572954,
+      "motion_to_present_p95_ms": 53.941432,
+      "tracking_interval_p95_ms": 57.482,
+      "compositor_active_cpu_percent": 52.66943456878265,
+      "session_active_cpu_percent": 71.85024071703182,
+      "incremental_memory_bytes": 397312,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "auto",
+      "cards": 1,
+      "frames": 142,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 16.449202,
+      "frame_cpu_max_ms": 111.08608,
+      "motion_to_present_p95_ms": 47.402569,
+      "tracking_interval_p95_ms": 57.484,
+      "compositor_active_cpu_percent": 50.33616560579298,
+      "session_active_cpu_percent": 66.75187927807771,
+      "incremental_memory_bytes": 475136,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "auto",
+      "cards": 2,
+      "frames": 154,
+      "budget": "FAIL",
+      "frame_cpu_p95_ms": 23.293745,
+      "frame_cpu_max_ms": 26.089633,
+      "motion_to_present_p95_ms": 57.716313,
+      "tracking_interval_p95_ms": 57.482,
+      "compositor_active_cpu_percent": 52.1238238932839,
+      "session_active_cpu_percent": 71.37603583959321,
+      "incremental_memory_bytes": 393216,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    }
+  ],
+  "paired_changes": [
+    {
+      "pair": 1,
+      "cards": 1,
+      "frame_cpu_p95_change_percent": -1.2376928786575814,
+      "compositor_cpu_change_percentage_points": -1.109434466691141
+    },
+    {
+      "pair": 1,
+      "cards": 2,
+      "frame_cpu_p95_change_percent": -0.7981246292696698,
+      "compositor_cpu_change_percentage_points": -0.558906615625439
+    },
+    {
+      "pair": 2,
+      "cards": 1,
+      "frame_cpu_p95_change_percent": -2.227416300169216,
+      "compositor_cpu_change_percentage_points": -0.46099300190733317
+    },
+    {
+      "pair": 2,
+      "cards": 2,
+      "frame_cpu_p95_change_percent": -2.583603462412265,
+      "compositor_cpu_change_percentage_points": -0.32997240092876723
+    },
+    {
+      "pair": 3,
+      "cards": 1,
+      "frame_cpu_p95_change_percent": -1.3365556558099345,
+      "compositor_cpu_change_percentage_points": -2.379115285380834
+    },
+    {
+      "pair": 3,
+      "cards": 2,
+      "frame_cpu_p95_change_percent": 0.5221825074556374,
+      "compositor_cpu_change_percentage_points": -0.5456106754987502
+    }
+  ],
+  "interaction_failures": [
+    {
+      "pair": 1,
+      "policy": "no-rvv",
+      "cases": [
+        "upward-throw-close-request"
+      ]
+    },
+    {
+      "pair": 2,
+      "policy": "auto",
+      "cases": [
+        "upward-throw-close-request"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "no-rvv",
+      "cases": [
+        "upward-throw-close-request"
+      ]
+    },
+    {
+      "pair": 3,
+      "policy": "auto",
+      "cases": [
+        "upward-throw-close-request"
+      ]
+    }
+  ],
+  "limits": [
+    "Three pairs are a small serial comparison, not a confidence interval.",
+    "Input is injected; presentation feedback is not optical measurement or real-finger acceptance.",
+    "A complete measurement may still fail every product performance budget.",
+    "Per-run p95 values are reported separately; no pooled percentile or statistical confidence claim.",
+    "CPU percentage points compare active sampled intervals, not cumulative time for an identical frame count."
+  ]
+}
