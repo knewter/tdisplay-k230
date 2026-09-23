@@ -88,6 +88,34 @@ class VideoSessionTest(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((root / "video.pid").exists())
 
+    def test_startup_deadline_escalates_when_player_ignores_term(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root, "trap '' TERM\nsleep 30\n")
+            result = self.run_session(root, player, "run", K230_VIDEO_DEADLINE="1")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / "video.pid").exists())
+
+    def test_user_stop_of_mvx_does_not_start_software_fallback(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root, "sleep 30\n")
+            env = self.env(root, player, FAKE_ARGS=str(root / "args"))
+            process = subprocess.Popen(["bash", str(SCRIPT), "run-mvx"], env=env)
+            try:
+                for _ in range(30):
+                    if (root / "video.pid").exists(): break
+                    time.sleep(0.05)
+                subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
+                process.wait(timeout=5)
+                lines = (root / "args").read_text().splitlines()
+                self.assertEqual(len(lines), 1)
+                self.assertIn("h264_v4l2m2m", lines[0])
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
+                    process.wait(timeout=5)
+
     def test_player_failure_is_returned_and_state_is_clean(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)

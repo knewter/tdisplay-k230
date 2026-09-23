@@ -12,6 +12,7 @@ set -u
 : "${K230_VIDEO_FLOCK:=flock}"
 : "${K230_VIDEO_TIMEOUT_FILE:=$K230_VIDEO_RUNTIME_DIR/k230-video-timeout}"
 : "${K230_VIDEO_CANCEL_FILE:=$K230_VIDEO_RUNTIME_DIR/k230-video-cancel}"
+: "${K230_VIDEO_IPC_SOCKET:=$K230_VIDEO_RUNTIME_DIR/k230-video.sock}"
 
 usage() { echo "usage: k230-video-session {run|run-mvx|stop|status}" >&2; exit 2; }
 pid_starttime() {
@@ -60,7 +61,7 @@ validate_source() {
   else printf '%s\n' "$K230_VIDEO_PUBLIC_URL"; fi
 }
 run_once() {
-  local mode=$1 source=$2 geometry track app_id public_demo=0
+  local mode=$1 source=$2 geometry track app_id public_demo=0 output_log
   local -a decoder extra media_args
   case "$mode" in
     software) decoder=(--vd=h264); geometry=480x270; track=6; extra=(); app_id=k230-video-software ;;
@@ -70,19 +71,23 @@ run_once() {
   esac
   if [[ "$source" == /* ]]; then media_args=("--playlist=$source"); else media_args=("$source"); public_demo=1; fi
   if [ "$public_demo" -eq 0 ]; then track=auto; extra=(); fi
+  output_log=$K230_VIDEO_LOG
+  [ "$public_demo" -eq 0 ] && output_log=/dev/null
+  rm -f "$K230_VIDEO_IPC_SOCKET"
   "$K230_VIDEO_PLAYER" --no-config --vo=wlshm --profile=sw-fast --hwdec=no \
     "${decoder[@]}" --audio=no --cache=yes --demuxer-readahead-secs=30 \
     --network-timeout=10 --title=k230-video --force-window=yes \
     --geometry="$geometry" --vid="$track" --wayland-app-id="$app_id" \
+    --input-ipc-server="$K230_VIDEO_IPC_SOCKET" \
     --wayland-internal-vsync=auto "${extra[@]}" "${media_args[@]}" \
-    >>"$K230_VIDEO_LOG" 2>&1 &
+    9>&- >>"$output_log" 2>&1 &
   video_pid=$!; video_starttime=$(pid_starttime "$video_pid" 2>/dev/null || true)
   if [ -z "$video_starttime" ]; then wait "$video_pid"; return $?; fi
   printf '%s %s %s %s %s\n' "$controller_pid" "$controller_starttime" "$video_pid" "$video_starttime" "${UID:-$(id -u)}" > "$K230_VIDEO_PID_FILE"
-  # Run the timer in its own process group so its sleep cannot survive an
-  # early EOF or MVX fallback.
-  setsid bash -c 'sleep "$1"; printf "%s\\n" "$2" >"$3"; kill -TERM "$2" 2>/dev/null || true; sleep 2; kill -KILL "$2" 2>/dev/null || true' _ \
-    "$K230_VIDEO_DEADLINE" "$video_pid" "$K230_VIDEO_TIMEOUT_FILE" & watchdog_pid=$!
+  # Bound startup only. Once mpv creates its IPC socket, healthy playback may
+  # run until EOF or an explicit Stop; mpv's network timeout handles stalls.
+  setsid bash -c 'exec 9>&-; for i in $(seq 1 "$1"); do [ -S "$2" ] && exit 0; sleep 1; done; printf "%s\\n" "$3" >"$4"; kill -TERM "$3" 2>/dev/null || true; sleep 2; kill -KILL "$3" 2>/dev/null || true' _ \
+    "$K230_VIDEO_DEADLINE" "$K230_VIDEO_IPC_SOCKET" "$video_pid" "$K230_VIDEO_TIMEOUT_FILE" & watchdog_pid=$!
   wait "$video_pid"; local rc=$?
   kill -- "-$watchdog_pid" 2>/dev/null || kill "$watchdog_pid" 2>/dev/null || true
   wait "$watchdog_pid" 2>/dev/null || true
