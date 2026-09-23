@@ -58,6 +58,7 @@ patched decoding, timestamps and EOF are physically verified.
 
 ## Planned, not implemented
 
+- `the-shell-trials-vglite-composition`: opt-in actual Sway/wlroots renderer trial, with whole-pass Pixman fallback and explicit board acceptance gates; proposal only.
 - `touch-launcher-gestures-overview`: client-side swipe paging and window cards;
   metadata-only overview first, preserving the current keyboard and buttons.
 - `characterise-bootrom-usb-recovery`: no-card/SW3 entry and conditional vendor
@@ -67,11 +68,28 @@ patched decoding, timestamps and EOF are physically verified.
 - [Latest U-Boot](research/latest-uboot-feasibility.md) is landed feasibility
   research, not a completed upgrade or an implementation proposal.
 
+## Proposal coverage and parallel work
+
+The active proposals cover network video, touch gestures/window overview, the
+VG-Lite compositor trial, remaining static splash acceptance, computational boot
+Game of Life, and BootROM USB recovery. The GPU validation is already archived.
+Latest U-Boot and further second-core enablement have research records but no
+active implementation proposals; their next bounded implementation scope still
+needs a proposal before execution.
+
+Network video and touch gestures are the current independent implementation
+tracks. The compositor trial is a third possible track, initially restricted to
+host work in its own worktree. The coordinator owns shared shell/Nix integration
+and serializes all board sessions. Static splash work can proceed separately at
+the source level but its physical tests share the same board. Game of Life
+acceptance depends on static splash acceptance. BootROM recovery is lower
+priority and is unrelated to already-working U-Boot USB flashing.
+
 ## Next execution order
 
 1. Finish usable network video. Decoder work and host lifecycle fixes can run
    in parallel; one coordinator owns final board tests and image integration.
-2. Use the completed GPU validation to plan a bounded compositor experiment;
+2. Implement the proposed `the-shell-trials-vglite-composition` as a separate opt-in compositor experiment when scheduled;
    process-CPU offload is promising, but elapsed time did not improve and
    complete buffer/synchronization/color/scanout gates remain.
 3. Start cards/gestures implementation independently of decoder work if desired.
