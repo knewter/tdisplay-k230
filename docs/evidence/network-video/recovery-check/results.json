@@ -1,0 +1,41 @@
+{
+  "provenance": "physical board; production controller; root fault injection; shell UID player",
+  "cases": [
+    {
+      "case": "network-error",
+      "spontaneous_exit": 2,
+      "cleanup": {
+        "state_absent": true,
+        "socket_absent": true,
+        "groups_absent": true
+      },
+      "playlist_removed": true,
+      "identities": [
+        {
+          "uid": 1000,
+          "controller": 14069,
+          "controller_start": 356989,
+          "child": 14070,
+          "child_start": 357063
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "case": "mvx-init-fallback",
+      "mvx_seen": true,
+      "software_seen": false,
+      "result": "fail",
+      "error": "fallback playback not proven",
+      "identities": [
+        {
+          "uid": 1000,
+          "controller": 14078,
+          "controller_start": 357206,
+          "child": 14079,
+          "child_start": 357280
+        }
+      ]
+    }
+  ]
+}
