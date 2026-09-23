@@ -1,0 +1,139 @@
+--- a/video/out/vo_wlshm.c
++++ b/video/out/vo_wlshm.c
+@@ -17,6 +17,8 @@
+ 
+ #include <errno.h>
+ #include <fcntl.h>
++#include <inttypes.h>
++#include <stdlib.h>
+ #include <sys/mman.h>
+ #include <time.h>
+ #include <unistd.h>
+@@ -29,6 +31,7 @@
+ #include "video/sws_utils.h"
+ #include "vo.h"
+ #include "wayland_common.h"
++#include "presentation-time.h"
+ 
+ #define IMGFMT_WL_RGB MP_SELECT_LE_BE(IMGFMT_BGR0, IMGFMT_0RGB)
+ 
+@@ -47,6 +50,60 @@
+     struct mp_rect src;
+     struct mp_rect dst;
+     struct mp_osd_res osd;
++    uint64_t trace_frame_id, trace_serial;
++    double trace_pts;
++    bool trace_attached;
++};
++
++/* Opt-in diagnostic: one feedback object per actual video-buffer commit.
++ * This records compositor presentation, not photons or decoder completion.
++ * No tracing or extra protocol objects are created in normal playback. */
++struct k230_feedback {
++    struct vo *vo;
++    uint64_t serial, frame_id, submitted_ns;
++    double pts;
++};
++
++static uint64_t k230_monotonic_ns(void)
++{
++    struct timespec ts;
++    clock_gettime(CLOCK_MONOTONIC, &ts);
++    return (uint64_t)ts.tv_sec * 1000000000 + ts.tv_nsec;
++}
++
++static void k230_sync_output(void *data, struct wp_presentation_feedback *feedback,
++                             struct wl_output *output)
++{
++}
++
++static void k230_presented(void *data, struct wp_presentation_feedback *feedback,
++                           uint32_t hi, uint32_t lo, uint32_t ns, uint32_t refresh,
++                           uint32_t seq_hi, uint32_t seq_lo, uint32_t flags)
++{
++    struct k230_feedback *f = data;
++    uint64_t presented_ns = (((uint64_t)hi << 32) | lo) * 1000000000 + ns;
++    uint64_t sequence = ((uint64_t)seq_hi << 32) | seq_lo;
++    MP_INFO(f->vo, "K230_PRESENT serial=%" PRIu64 " frame=%" PRIu64
++        " pts=%.9f submit_mono_ns=%" PRIu64 " presented_ns=%" PRIu64
++        " receive_mono_ns=%" PRIu64 " refresh_ns=%u sequence=%" PRIu64
++        " flags=%u\n", f->serial, f->frame_id, f->pts, f->submitted_ns,
++        presented_ns, k230_monotonic_ns(), refresh, sequence, flags);
++    wp_presentation_feedback_destroy(feedback);
++    talloc_free(f);
++}
++
++static void k230_discarded(void *data, struct wp_presentation_feedback *feedback)
++{
++    struct k230_feedback *f = data;
++    MP_INFO(f->vo, "K230_DISCARD serial=%" PRIu64 " frame=%" PRIu64
++        " pts=%.9f receive_mono_ns=%" PRIu64 "\n", f->serial, f->frame_id,
++        f->pts, k230_monotonic_ns());
++    wp_presentation_feedback_destroy(feedback);
++    talloc_free(f);
++}
++
++static const struct wp_presentation_feedback_listener k230_listener = {
++    k230_sync_output, k230_presented, k230_discarded,
+ };
+ 
+ static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
+@@ -246,6 +303,7 @@
+     struct mp_image *src = frame->current;
+     struct buffer *buf;
+ 
++    p->trace_attached = false;
+     bool render = vo_wayland_check_visible(vo);
+     if (!render)
+         return VO_FALSE;
+@@ -290,6 +348,9 @@
+         osd_draw_on_image(vo->osd, p->osd, 0, 0, &buf->mpi);
+     }
+     wl_surface_attach(wl->surface, buf->buffer, 0, 0);
++    p->trace_frame_id = src ? frame->frame_id : 0;
++    p->trace_pts = src ? src->pts : MP_NOPTS_VALUE;
++    p->trace_attached = src != NULL;
+ 
+ done:
+     return VO_TRUE;
+@@ -301,6 +362,27 @@
+ 
+     wl_surface_damage_buffer(wl->surface, 0, 0, vo->dwidth,
+                              vo->dheight);
++    struct priv *p = vo->priv;
++    const char *trace = getenv("K230_PRESENTATION_TRACE");
++    if (p->trace_attached && trace && strcmp(trace, "1") == 0) {
++        if (wl->presentation) {
++            struct k230_feedback *f = talloc_zero(wl, struct k230_feedback);
++            f->vo = vo;
++            f->serial = ++p->trace_serial;
++            f->frame_id = p->trace_frame_id;
++            f->pts = p->trace_pts;
++            f->submitted_ns = k230_monotonic_ns();
++            struct wp_presentation_feedback *feedback =
++                wp_presentation_feedback(wl->presentation, wl->surface);
++            wp_presentation_feedback_add_listener(feedback, &k230_listener, f);
++            MP_INFO(vo, "K230_SUBMIT serial=%" PRIu64 " frame=%" PRIu64
++                " pts=%.9f mono_ns=%" PRIu64 "\n", f->serial, f->frame_id,
++                f->pts, f->submitted_ns);
++        } else {
++            MP_WARN(vo, "K230_PRESENTATION_UNAVAILABLE\n");
++        }
++    }
++    p->trace_attached = false;
+     wl_surface_commit(wl->surface);
+ 
+     if (wl->opts->wl_internal_vsync)
+--- a/video/out/wayland_common.c
++++ b/video/out/wayland_common.c
+@@ -2444,6 +2444,10 @@
+                                      uint32_t clockid)
+ {
+     struct vo_wayland_state *wl = data;
++
++    const char *trace = getenv("K230_PRESENTATION_TRACE");
++    if (trace && strcmp(trace, "1") == 0)
++        MP_INFO(wl, "K230_PRESENT_CLOCK clock_id=%u\n", clockid);
+ 
+     if (clockid == CLOCK_MONOTONIC || clockid == CLOCK_MONOTONIC_RAW)
+         wl->present_clock = true;

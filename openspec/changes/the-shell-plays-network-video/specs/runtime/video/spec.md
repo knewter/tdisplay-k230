@@ -32,8 +32,9 @@ baseline. Hardware decoding MUST be enabled only when the device, format, and ou
 path are verified on the board; a failed or unsupported MVX attempt SHALL fall back
 to the known software path without claiming hardware acceleration.
 
-<!-- UNVERIFIED: the current MVX audit establishes the V4L2 device and driver
-interface, but no successful end-to-end network playback through MVX is recorded. -->
+<!-- UNVERIFIED: MVX decode and bounded network playback are recorded in
+docs/evidence/video-acceleration/README.md; integrated automatic fallback and
+general timestamp correctness remain unaccepted. -->
 
 #### Scenario: MVX playback is attempted
 

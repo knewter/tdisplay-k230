@@ -1,4 +1,4 @@
-# Narrow, temporary playback probe. Not part of the default system closure.
+# Minimal CPU-Wayland video stack, shared by the image and bounded probes.
 { pkgs }:
 let
   ffmpeg = (pkgs.ffmpeg.override {
@@ -54,6 +54,7 @@ let
     buildInputs = [ pkgs.bash ffmpeg pkgs.freetype pkgs.libass placebo
       pkgs.libpthread-stubs pkgs.libuchardet pkgs.alsa-lib pkgs.wayland
       pkgs.wayland-protocols pkgs.libxkbcommon ];
+    patches = (old.patches or [ ]) ++ [ ./patches/mpv-k230-presentation-trace.patch ];
     postFixup = "rm -f $out/bin/umpv $out/bin/mpv_identify.sh";
     mesonFlags = old.mesonFlags ++ [ "-Dlibmpv=false" "-Dgl=disabled" "-Dvulkan=disabled" "-Dwayland=enabled" "-Dlua=disabled" ];
   });

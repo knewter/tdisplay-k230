@@ -1,11 +1,13 @@
 ## Context
 
 The existing shell is Sway/Pixman at 568x1232 with Foot, a native Apps launcher,
-an on-screen keyboard, and root-controlled persistent Wi-Fi credentials delivered at runtime. The committed BBB trial
-shows that the target can decode H.264 in software through `wlshm`, but 480x270
-recorded 106 video-output drops and 640x360 recorded 509; these are useful baselines,
-not smooth-playback claims. `docs/evidence/mvx-v4l2-audit.md` identifies the MVX V4L2
-boundary, while no complete MVX-to-panel playback is yet grounded.
+an on-screen keyboard, and root-controlled persistent Wi-Fi credentials delivered at runtime. The initial BBB trial
+recorded substantial output drops. The follow-up in
+`docs/evidence/video-acceleration/README.md` establishes unscaled 480x270
+software playback at zero reported drops and 640x360 MVX playback with CPU
+point scaling at 0–2 output drops per 30 seconds. MVX still needs a known-CFR
+workaround and showed a teardown stall; neither general timestamps nor
+presentation cadence nor integrated recovery is accepted yet.
 
 ## Goals / Non-Goals
 
@@ -36,8 +38,9 @@ Wayland player would duplicate focus and return behavior.
 
 2. **Ship a software baseline first.** Pin the mpv/FFmpeg derivations and explicit
 `wlshm`, software-H.264, and audio settings. The 480x270 BBB representation is the
-initial reproducible baseline because the supplied trial measured it; 640x360 remains
-a comparison profile with its observed drops.
+initial reproducible baseline with native media timestamps. The improved 640x360
+MVX profile remains explicit and limited to the known silent 30-fps demo until
+its timestamp and recovery behavior is established.
 
 3. **Keep MVX opt-in and evidence-gated.** Add a separate command/profile that
 selects the audited V4L2 decoder only after device discovery, format negotiation, and
