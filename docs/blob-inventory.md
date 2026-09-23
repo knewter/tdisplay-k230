@@ -657,6 +657,7 @@ DATA 3eb27a069ff2f1b7bae9c991229a73086ddaccb8a00c12de2b8b9110e8cc49fa  docs/evid
 DATA 2a633a028f8e10ea939c9c5b17994ce0a0cefb7f923604c28bdbe7fa9ee7b439  docs/evidence/big-buck-bunny/270p-native.png
 DATA 92b33c778c720a23b87bae0da2d1b05a0a7e27f76134100020a1d833eb3fb29c  docs/evidence/big-buck-bunny/270p-physical-clip.mp4
 DATA 7b18cca3cdb439ef572de0f46f48351f9ce4faf20aa56459893d654e987b4780  docs/evidence/big-buck-bunny/270p-physical-frame.jpg
+DATA 7c8c6558a8bce911d9660d2afea92b64ce416d80f6340ea305ca7b1ce9558775  docs/evidence/network-video/mvx-patched-traces.tar.gz
 # class  sha256                                                            path
 #
 # --- this project's own tree ---------------------------------------------
