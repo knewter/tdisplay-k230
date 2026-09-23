@@ -35,7 +35,8 @@ whole-shell UX successor.
 1. **Gate the composition boundary, not the whole change.** The sibling
 architecture proposal must land with a decision and evidence before code that
 captures or composes live application content is integrated. It can select a
-Wayland, compositor, or direct-display boundary, but must establish ownership,
+Wayland-client or compositor boundary within the single-owner display path,
+and must establish ownership,
 input/focus semantics, source availability, privacy, and failure behavior.
 State-machine tests, deck policy, and recovery contracts can proceed without
 that choice.
