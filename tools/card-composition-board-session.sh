@@ -6,6 +6,7 @@ runtime=${K230_CARD_RUNTIME:-/run/k230-card-composition}
 unit=k230-card-composition-probe.service
 user=${K230_CARD_USER:-shell}
 duration=${K230_CARD_DURATION:-120}
+jq_bin=${K230_CARD_JQ:-jq}
 usage() { echo 'usage: card-composition-board-session.sh --probe /nix/store/.../bin/card-composition-probe --restore-shell | --restore-shell | --collect | --verify-restored' >&2; exit 64; }
 [[ $# -gt 0 ]] || usage
 mode=$1; shift
@@ -43,10 +44,10 @@ collect() {
     test -r "$log"
     # Positive field allowlist: never copy arbitrary journal strings, paths,
     # environment, titles, network state or key contents into shared evidence.
-    jq -c 'with_entries(select(.key == "event" or .key == "uptime_s" or .key == "cpu_ns" or .key == "memory_bytes"))' "$log"
+    "$jq_bin" -c 'with_entries(select(.key == "event" or .key == "uptime_s" or .key == "cpu_ns" or .key == "memory_bytes"))' "$log"
     for file in "$runtime"/session/client-{one,two}.jsonl; do
         [[ -r $file ]] || continue
-        jq -c 'select(.app_id == "k230.card.one" or .app_id == "k230.card.two") | with_entries(select(.key | IN("event","app_id","elapsed_ms","frames","callbacks","releases","child_frames","child_callbacks","child_releases","callback_age_ms","child_callback_age_ms","max_callback_gap_ms","child_max_callback_gap_ms","width","height","stride","format","subsurface","presentation","key_presses")))' "$file"
+        "$jq_bin" -c 'select(.app_id == "k230.card.one" or .app_id == "k230.card.two") | with_entries(select(.key | IN("event","app_id","elapsed_ms","frames","callbacks","releases","child_frames","child_callbacks","child_releases","callback_age_ms","child_callback_age_ms","max_callback_gap_ms","child_max_callback_gap_ms","width","height","stride","format","subsurface","presentation","key_presses")))' "$file"
     done
     if [[ -r $runtime/invocation ]]; then
         invocation=$(cat "$runtime/invocation")
@@ -104,6 +105,7 @@ case "$mode" in
         config=$runtime/session/sway.conf
         cat >"$config" <<CONFIG
 output * bg #17202b solid_color
+output * scale 1
 # Sway's selector is per-channel depth; 6 selects RGB565 on this board.
 output * render_bit_depth 6
 input type:touch map_to_output DSI-1
