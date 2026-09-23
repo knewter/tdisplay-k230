@@ -30,7 +30,7 @@ Requires physical context and pixel correctness. The comparison must use the sam
 
 - [x] 4.1 Add and run a bounded paired workload driver, proposed `python3 tools/card-shell-rvv-benchmark.py --board --repeats 3 --revision BENCHMARK_SOURCE_REV --output /var/lib/k230/rvv-benchmark-NEW_NAME` on the reserved board with its sibling scripts staged, measuring identical live-card interactions with vector dispatch on/off. Commit each run's frame/update timing, input latency, CPU and memory costs, producer/artifact identity and comparison against unchanged card budgets.
 - [x] 4.2 Record the measured decision, including negative results and remaining compatibility limits, in `docs/evidence/card-shell/kernel-rvv/`; restore and reverify the normal system using the recovery command in 2.4 after the final rendering trial. A successful experiment does not promote the default image; any promotion requires a separate reviewed proposal.
-- [ ] 4.3 Publish the evidence and proposal status without claiming unperformed proof; validate with `openspec validate the-system-trials-cpu-vector-acceleration --strict` and `python3 scripts/build_site.py`, then verify the pushed revision's CI and published site. Archive only after every task and physical evidence gate is complete.
+- [x] 4.3 Publish the evidence and proposal status without claiming unperformed proof; validate with `openspec validate the-system-trials-cpu-vector-acceleration --strict` and `python3 scripts/build_site.py`, then verify the pushed revision's CI and published site. Archive only after every task and physical evidence gate is complete.
 
 Physical tasks 2.2–2.4: `docs/evidence/card-shell/kernel-rvv/board-trial/README.md`
 links the actual one-time boot, verified running-system/configuration identity,
@@ -54,3 +54,10 @@ Task 4.2: the same card-cost record retains the negative promotion decision;
 `normal-reboot.json` and `normal-recovery.json` prove serial return without
 physical intervention, the ordinary system, preserved boot/root data and
 shell/Wi-Fi HTTPS recovery after the final rendering trial.
+
+Task 4.3: source/evidence revision `a27a08941fddf9ed8a0d7560654f329a990a482e`
+passed strict change validation and the 141-page site build (4,231,164 bytes,
+17.32 seconds), then CI/deployment run `35931039551`. The actual handheld and
+paired-evidence URLs returned HTTP 200 with the new result/failure text;
+`docs/evidence/card-shell/kernel-rvv/card-cost/publication.json` records the
+observation. Archive publication is verified separately after its final push.
