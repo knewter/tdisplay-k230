@@ -1342,3 +1342,17 @@ Synthetic scene captures on real RGB565 scanout with padded pitch, in GPU and
 forced-Pixman modes. Actual submission succeeds, but sampled colors differ.
 Provenance and unaccepted correctness/performance gates:
 `docs/evidence/vglite-scene-board/padded/README.md`.
+
+
+### RGB565 upload correction scene captures
+
+Native synthetic-scene DATA on real scanout; exact sampled palettes now match
+Pixman. Performance and normal-service acceptance remain open. Provenance:
+`docs/evidence/vglite-scene-board/color-upload/README.md`.
+
+| File | Bytes | Kind | SHA256 |
+| --- | --- | --- | --- |
+| `docs/evidence/vglite-scene-board/color-upload/scene/gpu/scene-first.png` | 4886 | DATA | `8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b` |
+| `docs/evidence/vglite-scene-board/color-upload/scene/gpu/scene-later.png` | 4888 | DATA | `0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a` |
+| `docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-first.png` | 4886 | DATA | `066ce3d3c67319949aafb77776ab08bf13bc22a90ffba9ca1339a3978bf857ed` |
+| `docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-later.png` | 4905 | DATA | `ed2d3814ca804d3a21c29762a80f2227cde0db92df0db19268a844d9398fb93c` |
