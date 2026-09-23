@@ -1,15 +1,49 @@
---- a/sway/main.c
-+++ b/sway/main.c
-@@ -56,0 +57,10 @@
-+static void k230_card_composition_probe_log(void) {
-+	const char *enabled = getenv("SWAY_K230_CARD_COMPOSITION_PROBE");
-+	if (enabled != NULL && strcmp(enabled, "1") == 0) {
-+		/* This marks an opt-in build/session; it does not enable card UX. */
-+		sway_log(SWAY_INFO,
-+			"K230_CARD_PROBE route=sway-scene-seat renderer=%s live_scale=UNVERIFIED",
-+			getenv("WLR_RENDERER") ?: "auto");
-+	}
+--- a/sway/tree/view.c
++++ b/sway/tree/view.c
+@@ -972,0 +973 @@
++	view_k230_card_mirror_destroy(view);
+@@ -1289,0 +1291,29 @@
 +}
 +
-@@ -307,0 +318 @@
-+	k230_card_composition_probe_log();
++struct k230_card_mirror_data { struct wlr_scene_tree *tree; double scale; };
++static void k230_card_mirror_buffer(struct wlr_scene_buffer *buffer, int sx, int sy, void *data) {
++	struct k230_card_mirror_data *mirror = data;
++	if (buffer->buffer == NULL) return;
++	struct wlr_scene_buffer *copy = wlr_scene_buffer_create(mirror->tree, buffer->buffer);
++	if (copy == NULL) return;
++	int width = buffer->dst_width ? buffer->dst_width : buffer->buffer->width;
++	int height = buffer->dst_height ? buffer->dst_height : buffer->buffer->height;
++	wlr_scene_buffer_set_source_box(copy, &buffer->src_box);
++	wlr_scene_buffer_set_dest_size(copy, width * mirror->scale, height * mirror->scale);
++	wlr_scene_buffer_set_filter_mode(copy, buffer->filter_mode);
++	wlr_scene_node_set_position(&copy->node, sx * mirror->scale, sy * mirror->scale);
++}
++void view_k230_card_mirror_destroy(struct sway_view *view) {
++	if (view->k230_card_mirror) { wlr_scene_node_destroy(&view->k230_card_mirror->node); view->k230_card_mirror = NULL; }
++	if (view->content_tree) wlr_scene_node_set_enabled(&view->content_tree->node, true);
++}
++void view_k230_card_mirror_update(struct sway_view *view) {
++	if (getenv("SWAY_K230_CARD_COMPOSITION_PROBE") == NULL || view->content_tree == NULL) return;
++	view_k230_card_mirror_destroy(view);
++	view->k230_card_mirror = wlr_scene_tree_create(root->layers.shell_overlay);
++	if (!view->k230_card_mirror) return;
++	struct k230_card_mirror_data data = { .tree = view->k230_card_mirror, .scale = 0.5 };
++	wlr_scene_node_for_each_buffer(&view->content_tree->node, k230_card_mirror_buffer, &data);
++	wlr_scene_node_set_position(&view->k230_card_mirror->node, 24, 96);
++	wlr_scene_node_set_enabled(&view->content_tree->node, false);
++	sway_log(SWAY_INFO, "K230_CARD_MIRROR view=%p scale=0.5 commit=live", view);
+--- a/include/sway/tree/view.h
++++ b/include/sway/tree/view.h
+@@ -73,0 +74,3 @@
++	/* Opt-in live card mirror; destroyed before view/container teardown. */
++	struct wlr_scene_tree *k230_card_mirror;
++
+@@ -320,0 +324,2 @@
++void view_k230_card_mirror_update(struct sway_view *view);
++void view_k230_card_mirror_destroy(struct sway_view *view);
+--- a/sway/desktop/xdg_shell.c
++++ b/sway/desktop/xdg_shell.c
+@@ -312,0 +313,3 @@
++	/* Rebuild mirror on every root-surface commit; child commits are in content_tree too. */
++	view_k230_card_mirror_update(view);
++
