@@ -6,7 +6,7 @@
 
 ## 2. Conditional selected-route probe
 
-- [ ] 2.1 If task 1 selects a client route, add the proposed `.#card-composition-probe` package exposing `bin/card-composition-probe`; if it selects Sway, expose the same executable and attribute using a source-built opt-in Sway package; verify `nix build .#card-composition-probe --max-jobs 1 --cores 8` and `python3 tests/test_card_composition_probe.py --mode selected` without adding either route to the default image.
+- [x] 2.1 If task 1 selects a client route, add the proposed `.#card-composition-probe` package exposing `bin/card-composition-probe`; if it selects Sway, expose the same executable and attribute using a source-built opt-in Sway package; verify `nix build .#card-composition-probe --max-jobs 1 --cores 8` and `python3 tests/test_card_composition_probe.py --mode selected` without adding either route to the default image.
 - [ ] 2.2 Implement the selected route's two-app live-surface scene and continuous touch motion with map/unmap/destroy, format/stride, and buffer-release logs; verify `python3 tests/test_card_composition_probe.py --case two-app-drag --case stale-destroy --case disabled` and source checks show no DRM node open.
 - [ ] 2.3 Implement selected/expand and dismissal request/refusal/exit behavior with focus and keyboard restoration; verify `python3 tests/test_card_composition_probe.py --case select --case close-refused --case app-exit --case keyboard-return` leaves no scene node or focus orphan.
 

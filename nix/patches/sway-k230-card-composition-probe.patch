@@ -1,0 +1,15 @@
+--- a/sway/main.c
++++ b/sway/main.c
+@@ -56,0 +57,10 @@
++static void k230_card_composition_probe_log(void) {
++	const char *enabled = getenv("SWAY_K230_CARD_COMPOSITION_PROBE");
++	if (enabled != NULL && strcmp(enabled, "1") == 0) {
++		/* This marks an opt-in build/session; it does not enable card UX. */
++		sway_log(SWAY_INFO,
++			"K230_CARD_PROBE route=sway-scene-seat renderer=%s live_scale=UNVERIFIED",
++			getenv("WLR_RENDERER") ?: "auto");
++	}
++}
++
+@@ -307,0 +318 @@
++	k230_card_composition_probe_log();

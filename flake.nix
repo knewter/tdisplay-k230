@@ -104,6 +104,12 @@
         shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
+        # Source-built route checkpoint for card-composition investigation. It
+        # is intentionally outside the system closure and starts no session.
+        card-composition-probe = pkgsCross.callPackage ./nix/card-composition-probe.nix {
+          sway = pkgsCross.sway;
+          swayUnwrapped = pkgsCross.sway-unwrapped;
+        };
         # Narrow builds use the same pinned packages as the shell image.
         video-player = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).player;
         video-ffmpeg = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).ffmpeg;
