@@ -1,0 +1,153 @@
+{
+  "schema": "card-repaint-cpu-stages-v1",
+  "frame_profile": {
+    "schema": "card-frame-cpu-diagnostic-v1",
+    "runs": [
+      {
+        "run": "14077196684348",
+        "cards": 2,
+        "frames": 104,
+        "stages": {
+          "total": {
+            "p95_ms": 13.128947,
+            "max_ms": 16.885233,
+            "mean_ms": 9.981649355769232,
+            "percent_of_total_cpu": 100.0
+          },
+          "render": {
+            "p95_ms": 12.42911,
+            "max_ms": 15.313908,
+            "mean_ms": 8.896559423076923,
+            "percent_of_total_cpu": 89.12915196660217
+          },
+          "input": {
+            "p95_ms": 1.514038,
+            "max_ms": 6.02618,
+            "mean_ms": 0.9034369326923077,
+            "percent_of_total_cpu": 9.050978455480765
+          },
+          "other": {
+            "p95_ms": 0.265069,
+            "max_ms": 0.336941,
+            "mean_ms": 0.181653,
+            "percent_of_total_cpu": 1.8198695779170757
+          }
+        }
+      }
+    ],
+    "limits": [
+      "Diagnostic CPU subdivision only; not an acceptance decision.",
+      "Render includes scene preparation, renderer and output commit.",
+      "Additional instrumentation has measurement overhead."
+    ]
+  },
+  "runs": [
+    {
+      "run": 14077196684348,
+      "cards": 2,
+      "frames": 104,
+      "stages": {
+        "prepare": {
+          "mean_ms": 0.45620929807692306,
+          "p95_ms": 1.355934,
+          "max_ms": 1.539456,
+          "percent_of_render_cpu": 5.127929533000755
+        },
+        "build": {
+          "mean_ms": 8.361230596153847,
+          "p95_ms": 11.207247,
+          "max_ms": 14.629484,
+          "percent_of_render_cpu": 93.98274319919138
+        },
+        "commit": {
+          "mean_ms": 0.07911952884615385,
+          "p95_ms": 0.068418,
+          "max_ms": 3.639404,
+          "percent_of_render_cpu": 0.8893272678078727
+        }
+      },
+      "attempts": 104,
+      "uncommitted_attempts": 0,
+      "hottest_frames": [
+        {
+          "run": 14077196684348,
+          "frame_id": 310,
+          "render_cpu_ns": 15313908,
+          "prepare_cpu_ns": 646683,
+          "build_cpu_ns": 14629484,
+          "commit_cpu_ns": 37741,
+          "attempts": 1,
+          "failed_attempts": 0,
+          "input_kinds": [
+            "motion"
+          ],
+          "total_cpu_ns": 16885233
+        },
+        {
+          "run": 14077196684348,
+          "frame_id": 364,
+          "render_cpu_ns": 13964117,
+          "prepare_cpu_ns": 221676,
+          "build_cpu_ns": 13686076,
+          "commit_cpu_ns": 56365,
+          "attempts": 1,
+          "failed_attempts": 0,
+          "input_kinds": [
+            "motion"
+          ],
+          "total_cpu_ns": 15191669
+        },
+        {
+          "run": 14077196684348,
+          "frame_id": 378,
+          "render_cpu_ns": 13181612,
+          "prepare_cpu_ns": 1355934,
+          "build_cpu_ns": 11782778,
+          "commit_cpu_ns": 42900,
+          "attempts": 1,
+          "failed_attempts": 0,
+          "input_kinds": [
+            "motion"
+          ],
+          "total_cpu_ns": 13901881
+        },
+        {
+          "run": 14077196684348,
+          "frame_id": 386,
+          "render_cpu_ns": 12864273,
+          "prepare_cpu_ns": 1334874,
+          "build_cpu_ns": 11486168,
+          "commit_cpu_ns": 43231,
+          "attempts": 1,
+          "failed_attempts": 0,
+          "input_kinds": [
+            "motion"
+          ],
+          "total_cpu_ns": 13771304
+        },
+        {
+          "run": 14077196684348,
+          "frame_id": 385,
+          "render_cpu_ns": 12547912,
+          "prepare_cpu_ns": 1471369,
+          "build_cpu_ns": 11015849,
+          "commit_cpu_ns": 60694,
+          "attempts": 1,
+          "failed_attempts": 0,
+          "input_kinds": [
+            "motion"
+          ],
+          "total_cpu_ns": 13675527
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Diagnostic CPU breakdown; no acceptance decision or optical timing.",
+    "Prepare includes output scene configuration and card preparation.",
+    "Build includes wlroots output-state construction, painting and any tearing test; it is not pure Pixman time.",
+    "Commit measures output commit CPU, not time until light output.",
+    "Uncommitted attempts include no-frame early returns as well as failures.",
+    "Extra clocks/logging have overhead; per-stage p95 values are not additive."
+  ]
+}

@@ -14,6 +14,8 @@ void card_bench_input_end(bool consumed, bool final);
 void card_bench_work_begin(void);
 void card_bench_work_end(void);
 void card_bench_render_begin(struct sway_output *output);
+enum card_bench_render_stage { CARD_BENCH_PREPARE, CARD_BENCH_BUILD, CARD_BENCH_COMMIT };
+void card_bench_render_stage(struct sway_output *output, enum card_bench_render_stage stage);
 void card_bench_commit_begin(struct sway_output *output);
 void card_bench_render_end(struct sway_output *output, bool success);
 void card_bench_present(struct sway_output *output, struct wlr_output_event_present *event);

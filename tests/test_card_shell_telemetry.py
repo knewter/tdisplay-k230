@@ -95,11 +95,14 @@ int main(void) {
     assert(card_bench_arm(&o,"injected",1)); card_bench_phase(true,1);
     card_bench_input_begin(1,"motion",true); cpu+=7; card_bench_input_end(true,false);
     card_bench_work_begin(); cpu+=3; card_bench_work_end();
-    card_bench_render_begin(&o); cpu+=10; card_bench_commit_begin(&o);
+    card_bench_render_begin(&o); cpu+=2; card_bench_render_stage(&o,CARD_BENCH_BUILD);
+    cpu+=5; card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
     card_bench_input_begin(1,"release",true); cpu+=2; card_bench_input_end(true,true);
-    card_bench_render_begin(&o); cpu+=5; card_bench_render_end(&o,false);
-    card_bench_render_begin(&o); cpu+=6; w.commit_seq=2; card_bench_commit_begin(&o);
+    card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
+    cpu+=4; card_bench_render_end(&o,false);
+    card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
+    cpu+=2; w.commit_seq=2; card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
     card_bench_stop();
 }
@@ -115,8 +118,27 @@ int main(void) {
             for record,expected in zip(profiles,((1,20,10,7),(2,13,11,2))):
                 self.assertEqual(tuple(int(record[k]) for k in
                     ('frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns')),expected)
+            stages=[dict(field.split('=') for field in line.split()[2:])
+                    for line in output.splitlines() if line.startswith('K230_CARD_SHELL repaint-cost ')]
+            self.assertEqual(len(stages),2)
+            for record,expected in zip(stages,((1,10,2,5,3,1,0),(2,11,2,6,3,2,1))):
+                self.assertEqual(tuple(int(record[k]) for k in
+                    ('frame_id','render_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts')),expected)
             rows,ignored=parser.parse_rows(output.encode())
-            self.assertEqual(ignored,2)
+            self.assertEqual(ignored,4)
             self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
+            spec=importlib.util.spec_from_file_location('repaint_profile',ROOT/'docs/evidence/card-shell/repaint-stages/analyze.py')
+            repaint=importlib.util.module_from_spec(spec);spec.loader.exec_module(repaint)
+            result=repaint.analyze(output.encode())['runs'][0]
+            self.assertEqual((result['frames'],result['attempts'],result['uncommitted_attempts']),(2,3,1))
+            self.assertAlmostEqual(result['stages']['build']['percent_of_render_cpu'],100*11/21)
+            diagnostic=next(line for line in output.splitlines() if line.startswith('K230_CARD_SHELL repaint-cost '))
+            for corrupted in (output.replace(diagnostic+'\n',''),output+diagnostic+'\n',
+                              output.replace('prepare_cpu_ns=2','prepare_cpu_ns=3',1),
+                              output.replace('attempts=1 failed_attempts=0','attempts=2 failed_attempts=0',1),
+                              output.replace('render_cpu_ns=10 prepare_cpu_ns=2','render_cpu_ns=11 prepare_cpu_ns=3',1)):
+                with self.subTest(corrupted=corrupted):
+                    with self.assertRaises(ValueError):repaint.analyze(corrupted.encode())
+
 
 if __name__=='__main__':unittest.main()

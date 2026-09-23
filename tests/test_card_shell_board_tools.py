@@ -61,6 +61,13 @@ class SessionTests(unittest.TestCase):
         row='K230_CARD_SHELL frame-cost run=1 frame_id=2 total_cpu_ns=20 render_cpu_ns=10 input_cpu_ns=7'
         raw='prefix '+row+'\n'+row.replace('render_cpu_ns=10','render_cpu_ns=private-token')+'\n'+row+' secret=secret\n'+row.replace(' input_cpu_ns=7','')+'\n'
         self.assertEqual(H.normalized_journal(raw),row+'\n')
+    def test_repaint_export_rejects_missing_extra_duplicate_and_nonnumeric_fields(self):
+        row='K230_CARD_SHELL repaint-cost run=1 frame_id=2 render_cpu_ns=10 prepare_cpu_ns=2 build_cpu_ns=5 commit_cpu_ns=3 attempts=2 failed_attempts=1'
+        rejected=[row+' secret=private',row.replace(' build_cpu_ns=5',''),
+                  row.replace('build_cpu_ns=5','build_cpu_ns=private-token'),
+                  row.replace('build_cpu_ns=5','prepare_cpu_ns=5'),
+                  row.replace('build_cpu_ns=5','build_cpu_ns=-5')]
+        self.assertEqual(H.normalized_journal('prefix '+row+'\n'+'\n'.join(rejected)),row+'\n')
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(prefix='board-tools-');self.root=Path(self.temp.name);self.runtime=self.root/'run';self.runtime.mkdir()
         self.account=patch.object(H.pwd,'getpwnam',return_value=types.SimpleNamespace(pw_uid=os.getuid(),pw_gid=os.getgid(),pw_dir=str(self.root)))

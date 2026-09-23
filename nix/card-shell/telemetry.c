@@ -23,6 +23,9 @@ static struct {
 	unsigned work_depth;
 	uint64_t work_cpu;
 	uint64_t input_cpu_start, input_cpu, render_cpu_start, render_cpu;
+	bool in_render;
+	enum card_bench_render_stage render_stage;
+	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
 	uint64_t submit_time;
 	uint64_t run, next_input, input_time, input_gesture, charged_cpu,
 		last_resource;
@@ -205,19 +208,39 @@ void card_bench_render_begin(struct sway_output *output) {
 	if (bench.armed && bench.output == output) {
 		card_bench_work_begin();
 		bench.render_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
+		bench.in_render = true;
+		bench.render_stage = CARD_BENCH_PREPARE;
+		bench.stage_cpu_start = bench.render_cpu_start;
+		bench.render_attempts++;
 	}
 }
+void card_bench_render_stage(struct sway_output *output, enum card_bench_render_stage stage) {
+	if (!bench.armed || bench.output != output || !bench.in_render ||
+		stage < bench.render_stage || stage > CARD_BENCH_COMMIT)
+		return;
+	uint64_t now = stamp(CLOCK_PROCESS_CPUTIME_ID);
+	bench.stage_cpu[bench.render_stage] += now - bench.stage_cpu_start;
+	bench.stage_cpu_start = now;
+	bench.render_stage = stage;
+}
 void card_bench_commit_begin(struct sway_output *output) {
-	if (bench.armed && bench.output == output)
+	if (bench.armed && bench.output == output) {
+		card_bench_render_stage(output, CARD_BENCH_COMMIT);
 		bench.submit_time = stamp(CLOCK_MONOTONIC);
+	}
 }
 void card_bench_render_end(struct sway_output *output, bool success) {
 	if (!bench.armed || bench.output != output)
 		return;
-	bench.render_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.render_cpu_start;
+	uint64_t end = stamp(CLOCK_PROCESS_CPUTIME_ID);
+	bench.render_cpu += end - bench.render_cpu_start;
+	bench.stage_cpu[bench.render_stage] += end - bench.stage_cpu_start;
+	bench.in_render = false;
 	card_bench_work_end();
-	if (!success)
+	if (!success) {
+		bench.failed_attempts++;
 		return;
+	}
 	uint64_t now = bench.submit_time, frame = output->wlr_output->commit_seq;
 	for (size_t i = 0; i < bench.count; i++)
 		sway_log(SWAY_INFO,
@@ -235,10 +258,21 @@ void card_bench_render_end(struct sway_output *output, bool success) {
 			"K230_CARD_SHELL frame-cost run=%" PRIu64 " frame_id=%" PRIu64
 			" total_cpu_ns=%" PRIu64 " render_cpu_ns=%" PRIu64 " input_cpu_ns=%" PRIu64,
 			bench.run, frame, bench.charged_cpu, bench.render_cpu, bench.input_cpu);
+	if (bench.count)
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL repaint-cost run=%" PRIu64 " frame_id=%" PRIu64
+			" render_cpu_ns=%" PRIu64 " prepare_cpu_ns=%" PRIu64
+			" build_cpu_ns=%" PRIu64 " commit_cpu_ns=%" PRIu64
+			" attempts=%" PRIu64 " failed_attempts=%" PRIu64,
+			bench.run, frame, bench.render_cpu, bench.stage_cpu[CARD_BENCH_PREPARE],
+			bench.stage_cpu[CARD_BENCH_BUILD], bench.stage_cpu[CARD_BENCH_COMMIT],
+			bench.render_attempts, bench.failed_attempts);
 	bench.count = 0;
 	bench.charged_cpu = 0;
 	bench.render_cpu = 0;
 	bench.input_cpu = 0;
+	memset(bench.stage_cpu, 0, sizeof(bench.stage_cpu));
+	bench.render_attempts = bench.failed_attempts = 0;
 }
 void card_bench_present(struct sway_output *output, struct wlr_output_event_present *event) {
 	if (!bench.armed || bench.output != output)
