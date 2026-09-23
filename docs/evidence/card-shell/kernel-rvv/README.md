@@ -1,9 +1,20 @@
-# Kernel vector trial: physical context proof, rendering benefit open
+# Kernel vector trial: correctness passes, card budgets still fail
 
-The build checkpoints below retain their original limits. The latest physical
-trial now passes the representative vector context probe; see
-[trial boot and vector evidence](board-trial/README.md). No rendering speedup is
-claimed.
+The physical trial passes representative vector context preservation and 192
+scalar-reference pixel comparisons. Six matched live-card runs show small,
+mixed CPU-cost changes and fail the unchanged frame CPU and tracking cadence
+budgets in both modes. Keep the trial optional; the ordinary image remains the
+baseline. Normal system, shell and Wi-Fi recovery passed after the final trial.
+
+- [Trial boot and vector context evidence](board-trial/README.md)
+- [Physical pixel comparisons and optional package](../pixman-rvv/pixel-trial/README.md)
+- [Paired card measurements, failures and decision](card-cost/README.md)
+
+## Original build checkpoints
+
+The checkpoints below preserve what was known at each build stage. Their
+unverified board/rendering limits describe those earlier checkpoints; the
+linked physical reports above record the later observations.
 
 The normal kernel reports `v` in the ISA string but omits V from the standard
 hwprobe response; see [the read-only board probe](../pixman-rvv/README.md).
