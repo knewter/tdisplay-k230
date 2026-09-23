@@ -117,7 +117,10 @@ class Session:
     def args(self, mode, source):
         public = not source.startswith('/')
         if mode == 'mvx':
-            decoder, geometry, app, extras = '--vd=h264_v4l2m2m', '568x320', 'k230-video-mvx', ['--correct-pts=no', '--container-fps-override=30', '--sws-scaler=point']
+            # mpv v0.41 mp_select_decoders treats a standalone comma entry '-'
+            # as the stop marker; a trailing hyphen is an unknown decoder and
+            # silently re-enables the remaining decoder list.
+            decoder, geometry, app, extras = '--vd=h264_v4l2m2m,-', '568x320', 'k230-video-mvx', ['--correct-pts=no', '--container-fps-override=30', '--sws-scaler=point']
         else:
             decoder, geometry, app, extras = '--vd=h264', '480x270', 'k230-video-software', []
         args = [PLAYER, '--no-config', '--vo=wlshm', '--profile=sw-fast', '--hwdec=no', decoder,

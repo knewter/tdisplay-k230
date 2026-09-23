@@ -3,6 +3,7 @@ import os
 import json
 import signal
 import pathlib
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -55,12 +56,28 @@ class VideoSessionTest(unittest.TestCase):
             result = self.run_session(root, player, "run", K230_VIDEO_MODE="mvx")
             self.assertEqual(result.returncode, 0, result.stderr)
             args = (root / "args").read_text()
-            self.assertIn("--vd=h264_v4l2m2m", args)
+            self.assertIn("--vd=h264_v4l2m2m,-", args)
             self.assertIn("--correct-pts=no", args)
             self.assertIn("--container-fps-override=30", args)
             self.assertIn("--sws-scaler=point", args)
             self.assertIn("--geometry=568x320", args)
             self.assertIn("--audio=no", args)
+
+    @unittest.skipUnless(os.environ.get("K230_VIDEO_MPV_DECODER_PROBE"),
+                         "set K230_VIDEO_MPV_DECODER_PROBE to an H.264 sample for the real mpv parser check")
+    def test_real_mpv_strict_mvx_selection_does_not_fallback(self):
+        sample = pathlib.Path(os.environ["K230_VIDEO_MPV_DECODER_PROBE"])
+        mpv = shutil.which("mpv")
+        if mpv is None or not sample.is_file():
+            self.skipTest("mpv or probe sample unavailable")
+        result = subprocess.run(
+            [mpv, "--no-config", "--vo=null", "--ao=null", "--frames=1",
+             "--vd=h264_v4l2m2m,-", str(sample)],
+            text=True, capture_output=True, timeout=15)
+        output = result.stdout + result.stderr
+        self.assertIn("Excluding codecs", output)
+        self.assertIn("Decoder init failed for h264_v4l2m2m", output)
+        self.assertIn("No video or audio streams selected", output)
 
     def test_mvx_failure_restarts_with_software_profile(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -78,7 +95,7 @@ class VideoSessionTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             invocations = (root / "args").read_text().splitlines()
             self.assertEqual(len(invocations), 2)
-            self.assertIn("--vd=h264_v4l2m2m", invocations[0])
+            self.assertIn("--vd=h264_v4l2m2m,-", invocations[0])
             self.assertIn("--vd=h264", invocations[1])
             self.assertNotIn("--container-fps-override=30", invocations[1])
 
@@ -126,7 +143,7 @@ class VideoSessionTest(unittest.TestCase):
                 process.wait(timeout=5)
                 lines = (root / "args").read_text().splitlines()
                 self.assertEqual(len(lines), 1)
-                self.assertIn("h264_v4l2m2m", lines[0])
+                self.assertIn("h264_v4l2m2m,-", lines[0])
             finally:
                 if process.poll() is None:
                     subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
