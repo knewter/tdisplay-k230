@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/videodev2.h>
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include <unistd.h>
 
 /* Exercises the observer's QBUF formatting with an intentionally invalid fd. */
-int main(void)
+int main(int argc, char **argv)
 {
 	struct v4l2_buffer buffer;
 	struct v4l2_plane plane;
@@ -25,7 +26,13 @@ int main(void)
 	buffer.timestamp.tv_sec = 12;
 	buffer.timestamp.tv_usec = 345678;
 	plane.bytesused = 99;
-	(void)ioctl(fd, VIDIOC_QBUF, &buffer);
+	if (argc == 2 && strcmp(argv[1], "--closed-stderr") == 0)
+		close(STDERR_FILENO);
+	if (ioctl(fd, VIDIOC_QBUF, &buffer) != -1 || errno != ENOTTY) {
+		close(fd);
+		return 2;
+	}
 	close(fd);
 	return 0;
 }
+#include <errno.h>

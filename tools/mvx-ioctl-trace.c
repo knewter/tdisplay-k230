@@ -71,7 +71,7 @@ static unsigned int bytesused(const struct v4l2_buffer *buffer)
 }
 
 static void trace_buffer(const char *phase, int fd,
-			 const struct v4l2_buffer *buffer, int result)
+			 const struct v4l2_buffer *buffer, int result, int syscall_errno)
 {
 	char path[64];
 	char line[320];
@@ -86,7 +86,7 @@ static void trace_buffer(const char *phase, int fd,
 		phase, path, type_name(buffer->type), buffer->index,
 		(long long)buffer->timestamp.tv_sec,
 		(long long)buffer->timestamp.tv_usec, buffer->flags,
-		bytesused(buffer), result, result < 0 ? errno : 0);
+		bytesused(buffer), result, result < 0 ? syscall_errno : 0);
 	if (length > 0) {
 		written = write(STDERR_FILENO, line,
 				(size_t)length < sizeof(line) ? (size_t)length : sizeof(line) - 1);
@@ -100,7 +100,9 @@ int ioctl(int fd, unsigned long request, ...)
 	static ioctl_fn real_ioctl;
 	void *argument;
 	va_list args;
+	int caller_errno = errno;
 	int result;
+	int syscall_errno;
 
 	if (real_ioctl == NULL)
 		real_ioctl = (ioctl_fn)dlsym(RTLD_NEXT, "ioctl");
@@ -108,6 +110,8 @@ int ioctl(int fd, unsigned long request, ...)
 		errno = ENOSYS;
 		return -1;
 	}
+	/* dlsym/readlink/logging must not alter the application's ioctl errno. */
+	errno = caller_errno;
 
 	/* The two intercepted requests always carry struct v4l2_buffer *. */
 	if (request != VIDIOC_QBUF && request != VIDIOC_DQBUF) {
@@ -121,11 +125,14 @@ int ioctl(int fd, unsigned long request, ...)
 	argument = va_arg(args, void *);
 	va_end(args);
 	if (request == VIDIOC_QBUF)
-		trace_buffer("QBUF", fd, argument, 0);
+		trace_buffer("QBUF", fd, argument, 0, 0);
+	errno = caller_errno;
 	result = real_ioctl(fd, request, argument);
+	syscall_errno = errno;
 	if (request == VIDIOC_QBUF)
-		trace_buffer("QBUF_RESULT", fd, argument, result);
+		trace_buffer("QBUF_RESULT", fd, argument, result, syscall_errno);
 	else if (result == 0)
-		trace_buffer("DQBUF", fd, argument, result);
+		trace_buffer("DQBUF", fd, argument, result, syscall_errno);
+	errno = syscall_errno;
 	return result;
 }

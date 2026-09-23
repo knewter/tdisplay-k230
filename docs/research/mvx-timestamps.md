@@ -67,7 +67,13 @@ The included host fixture builds the library and sends a deliberately invalid
 `OUTPUT_MPLANE QBUF` to `/dev/null` through the exact-path selector. It verifies
 that the pre-call record carries `index=7`, `timestamp=12.345678`, and
 `bytesused=99`, followed by the real `ENOTTY` result. It tests observation and
-formatting only; a successful DQBUF requires the board's MVX node.
+formatting only; a successful DQBUF requires the board's MVX node. Its second
+mode closes stderr before QBUF and verifies that the real `ENOTTY` errno is
+still returned, so failed tracing cannot change FFmpeg's ioctl behaviour.
+
+This is intentionally a narrow observer for the current FFmpeg V4L2 call
+pattern, whose ioctls carry an argument. It is not a general-purpose `ioctl`
+interposer for applications that use no-argument requests.
 
 After transferring its single `.so` to the board, run the existing bounded
 local decode with the same FFmpeg binary and add the environment variable:
