@@ -170,7 +170,10 @@ static bool gpu_pass(struct vglite_pass *p) {
 		vg_lite_finish();
 		wlr_log(WLR_ERROR, "VG-Lite pass failed; drained queued work before Pixman replay");
 	}
-	if (target.handle) vg_lite_unmap(&target); vg_lite_close();
+	if (target.handle) {
+		vg_lite_unmap(&target);
+	}
+	vg_lite_close();
 	return ok;
 }
 
@@ -193,7 +196,8 @@ static const struct wlr_render_pass_impl pass_impl = { .submit = submit, .add_re
 
 static struct wlr_render_pass *begin(struct wlr_renderer *base, struct wlr_buffer *b, const struct wlr_buffer_pass_options *o) {
 	struct vglite_renderer *r = renderer_from_base(base); struct vglite_pass *p = calloc(1, sizeof(*p));
-	if (!p) return NULL; wlr_render_pass_init(&p->base, &pass_impl); p->renderer = r; p->buffer = b;
+	if (!p) return NULL;
+	wlr_render_pass_init(&p->base, &pass_impl); p->renderer = r; p->buffer = b;
 	p->gpu_eligible = o && !o->color_transform && !o->signal_timeline; if (o) p->options = *o; return &p->base;
 }
 static bool refresh_shm_pixels(struct vglite_texture *t) {
