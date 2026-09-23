@@ -25,7 +25,7 @@
 
 ## 5. Presentation and audio acceptance
 
-- [ ] 5.1 Add a synchronized presentation-timing method that distinguishes decoded frames from actual compositor/panel presentation, then run it for at least 30 seconds at the selected source cadence; verify timestamps, sample count, and limitations are recorded and no current hardware counter is treated as valid without checking its reset/units behavior.
+- [x] 5.1 Add a synchronized presentation-timing method that distinguishes decoded frames from actual compositor/panel presentation, then run it for at least 30 seconds at the selected source cadence; verify timestamps, sample count, and limitations are recorded and no current hardware counter is treated as valid without checking its reset/units behavior.
 - [x] 5.2 Measure audio separately with an explicit enabled configuration, or record audio as unverified when the board path cannot establish physical output; verify video acceptance does not inherit an audio claim.
 - [ ] 5.3 Run the final shell regression after playback and cleanup; verify serial access, touch/display services, keyboard, Apps/Back/Home, and removal of temporary player/network state.
 
@@ -41,3 +41,8 @@ results; package/image integration and presentation acceptance remain open.
 Task 4.1: `docs/evidence/video-acceleration/v4l2-capabilities.txt` records the
 live MVX H.264 capability; `mvx-decode-300.txt` proves real decoded frames.
 MVX timing, automatic fallback and integrated controls remain unaccepted.
+
+Task 5.1: `docs/evidence/network-video/README.md` and the software/MVX
+presentation logs record >30-second hardware-signalled compositor feedback,
+unique submitted/presented frame IDs, clock/sequence validation and limitations.
+Final-image lifecycle regression remains separate.

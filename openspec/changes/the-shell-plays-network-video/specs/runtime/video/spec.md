@@ -48,8 +48,7 @@ report decoder and output-drop counters, and include at least 30 seconds of timi
 samples that distinguish decoded frames from actual presentation or scanout. A native
 compositor screenshot alone MUST NOT be treated as proof of sustained presentation.
 
-<!-- UNVERIFIED: existing BBB evidence has software decoder/output counters and
-physical/native frames, but not a synchronized 30-second presentation-timing proof. -->
+*Grounding: `docs/evidence/network-video/README.md` records >30-second per-frame presentation feedback, declared clock, event flags and kernel IRQ path, separately from decoder/output counters and physical photographs.*
 
 #### Scenario: A playback trial is accepted
 

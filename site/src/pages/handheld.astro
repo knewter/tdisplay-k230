@@ -64,6 +64,7 @@ const groups = [
     <section>
       <h2>Big Buck Bunny over Wi-Fi</h2>
       <p>The board streams 640×360 Big Buck Bunny over Wi-Fi using its hardware video decoder. Point scaling and a video-sized window reduced reported output drops to zero in a 30-second trial; a repeat with screenshot capture reported two. This is a silent, fixed-30-fps experiment with a timing workaround, not yet the default video app. The shell still renders on the CPU; the separate 2.5D GPU is under investigation.</p>
+      <p>New 35-second timing trials recorded about 29.96 presented updates per second for software 270p and 29.74 for hardware-decoded 360p. These use hardware-signalled compositor feedback; panel light output was not independently timed. <a href={evidenceUrl("docs/evidence/network-video/README.md")}>Presentation measurements and limits</a>.</p>
       <div class="media-grid">
         <figure><video controls preload="none" playsinline aria-label="Big Buck Bunny playing on the physical board"
           poster={evidenceAsset("docs/evidence/video-acceleration/360p-physical.jpg")}

@@ -37,8 +37,9 @@ machine so the gesture and overview share current launch/error/Back behavior. A
 separate overview client would duplicate input and lifecycle handling before live
 thumbnails are even available.
 
-2. **Use fixed geometry thresholds.** The 48 logical-pixel threshold is large enough
-to distinguish an intentional drag from finger jitter on this panel. Require a 1.25
+2. **Use fixed geometry thresholds.** Start with a 48 logical-pixel threshold
+as an explicit tuning assumption, to be accepted or adjusted from new gesture
+evidence on the panel. It is not yet a measured finger-jitter boundary. Require a 1.25
 horizontal/vertical dominance ratio. Once the threshold is crossed, cancel tap
 activation permanently for that touch. Reject multi-touch and compositor cancellation.
 
