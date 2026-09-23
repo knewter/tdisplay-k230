@@ -28,6 +28,9 @@ static pixman_bool_t test_copy(pixman_region32_t *d, const pixman_region32_t *s)
 #undef realloc
 #undef pixman_region32_copy
 
+static unsigned broker_calls;
+bool k230_vglite_broker_acquire(const char *path) { assert(strcmp(path, "/test/broker") == 0); broker_calls++; return false; }
+
 struct test_buffer {
 	struct wlr_buffer base;
 	struct wlr_dmabuf_attributes attr;
@@ -167,7 +170,7 @@ static void buffer_init(struct test_buffer *b, int w, int h, uint32_t format, bo
 }
 static void buffer_finish(struct test_buffer *b) { assert(!b->base.n_locks && !b->accessing); pixman_image_unref(b->pixman.image); free(b->data); }
 static void reset_gpu(void) {
-	assert(!queued); gpu_disabled=false; gpu_init_calls=gpu_commands=gpu_finishes=gpu_frees=gpu_closes=pixman_passes=0;
+	assert(!queued); gpu_disabled=false; broker_attempted=false; broker_calls=0; unsetenv("K230_VGLITE_BROKER"); gpu_init_calls=gpu_commands=gpu_finishes=gpu_frees=gpu_closes=pixman_passes=0;
 	fail_init=fail_map=fail_allocate=fail_command=fail_finish=fail_alloc=fail_clip=0;
 	setenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE","1",1);
 }
@@ -307,7 +310,19 @@ static void completion_quarantine(void) {
 	assert(gpu_disabled && b.base.n_locks==1 && b.accessing && gpu_finishes==1 && !gpu_frees && !gpu_closes && !pixman_passes && queued==2);
 	/* Child exits without reclaiming resources the GPU might still own. */
 }
+static void denied_broker(void) {
+	reset_gpu(); setenv("K230_VGLITE_BROKER", "/test/broker", 1);
+	struct test_buffer b; buffer_init(&b,8,8,DRM_FORMAT_RGB565,true);
+	for (int i=0;i<2;i++) {
+		struct wlr_renderer *r=wlr_vglite_renderer_create(); assert(r);
+		struct wlr_render_pass *p=begin(r,&b.base,NULL); add_rect(p,&bg); assert(submit(p));
+		wlr_renderer_destroy(r);
+	}
+	assert(broker_calls==1 && gpu_disabled && !gpu_init_calls && pixman_passes==2);
+	buffer_finish(&b); reset_gpu();
+}
 int main(void) {
+	denied_broker();
 	comparison(true,false,false,false,false);
 	comparison(true,true,false,false,false);
 	comparison(true,true,true,false,false);

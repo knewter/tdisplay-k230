@@ -15,7 +15,7 @@ Source/host evidence: `docs/evidence/vglite-renderer-host.md`. No physical claim
 - [ ] 2.3 Implement and test premultiplied `SRC_OVER`, `NONE`, pixman clip translation, and damage behavior against pinned wlroots render-pass fields. Use Pixman for unsupported clip, transform, filter, color or partial-damage cases until proven.
 - [ ] 2.4 Serialize VG-Lite submission, call `vg_lite_finish`, prove C908 cache ownership in each CPU/GPU direction, and determine whether wlroots timeline fields can be honored. Reject timeline operations until then.
 
-- [ ] 2.5 Establish compositor-only VG-Lite device access for the normal `shell` service without exposing the vendor API to ordinary clients sharing its UID. The separate root scene diagnostic does not satisfy this gate.
+- [ ] 2.5 Establish compositor-only VG-Lite device access for the normal `shell` service without exposing the vendor API to ordinary clients sharing its UID. The separate root scene diagnostic does not satisfy this gate. Source implementation and host tests: `docs/research/vglite-service-access.md` and `docs/evidence/vglite-service-access-host.md`; actual privileged broker/service and board device proof remain open.
 
 Host operation proof: the same sanitizer-backed renderer test above, comparing
 against the pinned wlroots Pixman pass. Physical format/cache proof remains a

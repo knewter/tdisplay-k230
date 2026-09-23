@@ -1,0 +1,178 @@
+--- a/VGLiteKernel/linux/vg_lite_ioctl.c
++++ b/VGLiteKernel/linux/vg_lite_ioctl.c
+@@ -52,7 +52,12 @@
+ *
+ *****************************************************************************/
+ 
++#define _GNU_SOURCE
++#include <stdbool.h>
++#include <pthread.h>
++#include <sys/stat.h>
+ #include <stdint.h>
++#include "k230_vg_lite.h"
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <sys/mman.h>
+@@ -60,11 +65,91 @@
+ #include "vg_lite_kernel.h"
+ #include "vg_lite_ioctl.h"
+ 
+-static int device = 0;
++static int device = -1;
++static bool adopted, child_blocked, unsafe_mapping;
++static pthread_mutex_t device_lock = PTHREAD_MUTEX_INITIALIZER;
++static pthread_once_t fork_once = PTHREAD_ONCE_INIT;
++static int fork_status = -1;
+ static uint32_t length = 0;
+ static void * mapped = NULL;
+ 
+-vg_lite_error_t vg_lite_kernel(vg_lite_kernel_command_t command, void * data)
++/* Children must not inherit an ioctl capability even before exec.
++ * MADV_DONTFORK below excludes the GPU mapping from their address space. */
++static void revoke_in_child(void)
++{
++    if (device >= 0) close(device);
++    device = -1;
++    mapped = NULL;
++    child_blocked = true;
++    /* A failed allocation ioctl may have left an unknown driver mapping.
++     * Do not execute any app child until this process has been restarted. */
++    if (unsafe_mapping) _exit(127);
++    pthread_mutex_unlock(&device_lock);
++}
++
++static void before_fork(void) { pthread_mutex_lock(&device_lock); }
++static void after_fork(void) { pthread_mutex_unlock(&device_lock); }
++static void register_fork_handler(void)
++{
++    fork_status = pthread_atfork(before_fork, after_fork, revoke_in_child);
++}
++static bool install_fork_handler(void)
++{
++    return pthread_once(&fork_once, register_fork_handler) == 0 && fork_status == 0;
++}
++
++vg_lite_error_t k230_vg_lite_adopt_device_fd(int fd)
++{
++    struct stat info;
++    vg_lite_error_t result = VG_LITE_INVALID_ARGUMENT;
++    if (!install_fork_handler()) return VG_LITE_GENERIC_IO;
++    pthread_mutex_lock(&device_lock);
++    int flags = fcntl(fd, F_GETFL);
++    if (child_blocked || device >= 0 || mapped != NULL || flags < 0 ||
++        (flags & O_ACCMODE) != O_RDWR || fstat(fd, &info) != 0 ||
++        !S_ISCHR(info.st_mode)) goto out;
++    int duplicate = fcntl(fd, F_DUPFD_CLOEXEC, 3);
++    if (duplicate < 0) { result = VG_LITE_GENERIC_IO; goto out; }
++    device = duplicate;
++    adopted = true;
++    result = VG_LITE_SUCCESS;
++out:
++    pthread_mutex_unlock(&device_lock);
++    return result;
++}
++
++static bool protect_mapping(void *memory, size_t bytes)
++{
++    if (!bytes) return true;
++    if (!memory) return false;
++    long page = sysconf(_SC_PAGESIZE);
++    if (page <= 0) return false;
++    uintptr_t address = (uintptr_t)memory;
++    size_t offset = address % (size_t)page;
++    if (bytes > SIZE_MAX - offset) return false;
++    return madvise((void *)(address - offset), bytes + offset, MADV_DONTFORK) == 0;
++}
++
++static bool protect_result(vg_lite_kernel_command_t command, void *data)
++{
++    if (command == VG_LITE_INITIALIZE) {
++        vg_lite_kernel_initialize_t *init = data;
++        for (unsigned i = 0; i < CMDBUF_COUNT; i++)
++            if (!protect_mapping(init->command_buffer[i], init->command_buffer_size)) return false;
++        if (!protect_mapping(init->logical_addr, (size_t)init->tessbuf_size + init->countbuf_size)) return false;
++        if (init->context && init->context->power_context_logical &&
++            !protect_mapping(init->context->power_context_logical, init->context->power_context_size)) return false;
++    } else if (command == VG_LITE_ALLOCATE) {
++        vg_lite_kernel_allocate_t *allocation = data;
++        return protect_mapping(allocation->memory, allocation->bytes);
++    } else if (command == VG_LITE_MAP_MEMORY) {
++        vg_lite_kernel_map_memory_t *mapping = data;
++        return protect_mapping(mapping->logical, mapping->bytes);
++    }
++    return true;
++}
++
++static vg_lite_error_t kernel_locked(vg_lite_kernel_command_t command, void * data)
+ {
+     struct ioctl_data to_kernel;
+     static const uint32_t bytes[] = {
+@@ -91,11 +176,14 @@
+         sizeof(vg_lite_kernel_export_memory_t),
+     };
+ 
+-    if (device == 0) {
+-        device = open("/dev/vg_lite", O_RDWR);
+-        if (device == -1)
+-            return VG_LITE_GENERIC_IO;
+-
++    if (child_blocked || (unsigned)command >= sizeof(bytes) / sizeof(bytes[0]))
++        return VG_LITE_INVALID_ARGUMENT;
++    if (device < 0) {
++        if (adopted) return VG_LITE_GENERIC_IO;
++        device = open("/dev/vg_lite", O_RDWR | O_CLOEXEC);
++        if (device < 0) return VG_LITE_GENERIC_IO;
++    }
++    if (mapped == NULL) {
+         /* Default contiguous mapping size. */
+         length = MAX_CONTIGUOUS_SIZE;
+ 
+@@ -103,7 +191,15 @@
+         if ((mapped == NULL) ||
+             (mapped == (char *)-1)) {
+             close(device);
+-            device = 0;
++            device = -1;
++            mapped = NULL;
++            return VG_LITE_GENERIC_IO;
++        }
++        if (madvise(mapped, length, MADV_DONTFORK) != 0) {
++            munmap(mapped, length);
++            mapped = NULL;
++            close(device);
++            device = -1;
+             return VG_LITE_GENERIC_IO;
+         }
+     }
+@@ -112,8 +208,27 @@
+     to_kernel.buffer = data;
+     to_kernel.bytes = bytes[command];
+ 
+-    if (ioctl(device, VG_LITE_IOCTL, &to_kernel) < 0)
++    bool creates_mapping = command == VG_LITE_INITIALIZE || command == VG_LITE_ALLOCATE || command == VG_LITE_MAP_MEMORY;
++    if (ioctl(device, VG_LITE_IOCTL, &to_kernel) < 0) {
++        if (creates_mapping) unsafe_mapping = true;
+         return VG_LITE_GENERIC_IO;
+-
+-    return to_kernel.error;
+-}
++    }
++    if (to_kernel.error != VG_LITE_SUCCESS) {
++        if (creates_mapping) unsafe_mapping = true;
++        return to_kernel.error;
++    }
++    if (!protect_result(command, data)) {
++        unsafe_mapping = true;
++        return VG_LITE_GENERIC_IO;
++    }
++    return VG_LITE_SUCCESS;
++}
++
++vg_lite_error_t vg_lite_kernel(vg_lite_kernel_command_t command, void * data)
++{
++    if (!install_fork_handler()) return VG_LITE_GENERIC_IO;
++    pthread_mutex_lock(&device_lock);
++    vg_lite_error_t result = kernel_locked(command, data);
++    pthread_mutex_unlock(&device_lock);
++    return result;
++}

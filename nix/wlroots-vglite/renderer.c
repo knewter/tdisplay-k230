@@ -14,12 +14,13 @@
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_buffer.h>
 #include <wlr/util/log.h>
+#include "client.h"
 
 /* The vendor library owns one process-global context, including across renderer
  * instances. A failed finish permanently disables it: close is not a reset or a
  * completion guarantee in the pinned SDK. */
 static pthread_mutex_t gpu_lock = PTHREAD_MUTEX_INITIALIZER;
-static bool gpu_disabled;
+static bool gpu_disabled, broker_attempted;
 struct vglite_renderer { struct wlr_renderer base; struct wlr_renderer *pixman; };
 struct vglite_texture {
 	struct wlr_texture base;
@@ -388,6 +389,17 @@ static int drm_fd(struct wlr_renderer *b) { return wlr_renderer_get_drm_fd(((str
 static void destroy(struct wlr_renderer *b) { struct vglite_renderer *r = (struct vglite_renderer *)b; wlr_renderer_destroy(r->pixman); free(r); }
 static const struct wlr_renderer_impl renderer_impl = { .get_texture_formats = texture_formats, .get_render_formats = render_formats, .destroy = destroy, .get_drm_fd = drm_fd, .texture_from_buffer = from_buffer, .begin_buffer_pass = begin };
 struct wlr_renderer *wlr_vglite_renderer_create(void) {
+	const char *broker = getenv("K230_VGLITE_BROKER");
+	const char *allow = getenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE");
+	pthread_mutex_lock(&gpu_lock);
+	if (broker && allow && strcmp(allow, "1") == 0 && !broker_attempted && !gpu_disabled) {
+		broker_attempted = true;
+		if (!k230_vglite_broker_acquire(broker)) {
+			gpu_disabled = true;
+			wlr_log(WLR_ERROR, "VG-Lite broker denied access; retaining Pixman for this process");
+		}
+	}
+	pthread_mutex_unlock(&gpu_lock);
 	struct vglite_renderer *r = calloc(1, sizeof(*r)); if (!r) return NULL;
 	r->pixman = wlr_pixman_renderer_create(); if (!r->pixman) { free(r); return NULL; }
 	wlr_renderer_init(&r->base, &renderer_impl, WLR_BUFFER_CAP_DMABUF | WLR_BUFFER_CAP_DATA_PTR); return &r->base;

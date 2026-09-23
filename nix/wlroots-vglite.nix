@@ -10,6 +10,8 @@ wlroots_0_20.overrideAttrs (old: {
   postPatch = (old.postPatch or "") + ''
     mkdir -p render/vglite include/wlr/render
     cp ${./wlroots-vglite/renderer.c} render/vglite/renderer.c
+    cp ${./vglite-access/client.c} render/vglite/client.c
+    cp ${./vglite-access/client.h} render/vglite/client.h
     cp ${./wlroots-vglite/meson.build} render/vglite/meson.build
     cp ${./wlroots-vglite/include/wlr/render/vglite.h} include/wlr/render/vglite.h
     substituteInPlace render/vglite/meson.build \

@@ -64,8 +64,11 @@ root-private IPC and externally launched unprivileged Wayland probes. Only its
 Wayland socket is shared. Transient cgroup lifetime, a pre-armed recovery timer,
 and verified restoration of the normal shell bound the trial. It is sufficient
 only to investigate actual scene passes; it does not replace normal-session
-access or interaction requirements. The normal-service descriptor/broker design
-and physical acceptance remain open. Source analysis and the required privileged
+access or interaction requirements. The normal-service source implementation now uses a root socket broker granting
+only the authenticated systemd MainPID a CLOEXEC descriptor, with non-dumpability,
+Yama startup protection, child fd revocation and DONTFORK mappings; see
+`docs/research/vglite-service-access.md`. Its opt-in defaults false and its
+privileged integration/physical acceptance remain open. Source analysis and the required privileged
 credential test are in `docs/research/vglite-diagnostic-access.md`.
 
 ### Completion and cache ownership

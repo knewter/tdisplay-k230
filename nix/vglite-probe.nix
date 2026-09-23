@@ -19,11 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   sourceRoot = "source/buildroot-overlay/package/vg_lite";
+  patches = [ ./patches/vglite-broker-device.patch ];
 
   # The pinned SDK Makefile hard-codes a vendor GCC spelling unsupported by
   # this pinned cross compiler. Retain the compiler's normal riscv64 target
   # ABI; the separately documented cache helper retains its C908 operation.
   postPatch = ''
+    cp ${./vglite-access/k230_vg_lite.h} inc/k230_vg_lite.h
     substituteInPlace VGLite/Makefile --replace-fail "-mcpu=c908v " ""
     cat > inc/thead.h <<'EOF'
     #ifndef _THEAD_H_
@@ -71,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 drivers/libvg_lite.so "$out/lib/libvg_lite.so"
     install -Dm755 k230-vglite-probe "$out/bin/k230-vglite-probe"
     install -Dm644 inc/vg_lite.h "$out/include/vg_lite.h"
+    install -Dm644 inc/k230_vg_lite.h "$out/include/k230_vg_lite.h"
     install -Dm644 test/LICENSE.txt "$out/share/licenses/k230-vglite-probe/LICENSE.txt"
     runHook postInstall
   '';

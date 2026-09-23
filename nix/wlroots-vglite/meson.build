@@ -3,4 +3,4 @@ vglite_dep = declare_dependency(
   link_args: ['-L@VGLITE_LIB@', '-lvg_lite'],
 )
 wlr_deps += vglite_dep
-wlr_files += files('renderer.c')
+wlr_files += files('renderer.c', 'client.c')

@@ -47,19 +47,20 @@ let
     enableXWayland = false;
     sway-unwrapped = swayInitialSplashUnwrapped;
   };
-  sway = if cfg.initialSplash then swayInitialSplash
+  sway = if cfg.vgliteAccessTrial then swayVgliteMainPid
+    else if cfg.initialSplash then swayInitialSplash
     else if cfg.frameTiming then swayFrameTiming
     else swayBase;
   wlroots = pkgs.wlroots_0_20.override { enableXWayland = false; };
   # Opt-in diagnostic compositor only. The normal shell keeps the pinned
-  # Pixman wlroots package above; this package is exposed by the flake and is
-  # never selected by the system service.
+  # Pixman wlroots package above; only vgliteAccessTrial selects this package
+  # in the system service. It is also exposed separately by the flake.
   vgliteProbe = pkgs.callPackage ./vglite-probe.nix { };
   wlrootsVglite = pkgs.callPackage ./wlroots-vglite.nix {
     wlroots_0_20 = wlroots;
     inherit vgliteProbe;
   };
-  swayVgliteUnwrapped = pkgs.sway-unwrapped.overrideAttrs (old: {
+  swayVgliteUnwrapped = (pkgs.sway-unwrapped.override { enableXWayland = false; }).overrideAttrs (old: {
     buildInputs = map (dep:
       if (dep.pname or "") == "wlroots" then wlrootsVglite else dep
     ) old.buildInputs;
@@ -68,6 +69,23 @@ let
     enableXWayland = false;
     sway-unwrapped = swayVgliteUnwrapped;
   };
+
+  # The ordinary wrapper may make dbus-run-session the systemd MainPID.
+  # Start its bus first, then exec the exact unwrapped Sway so the
+  # broker can authenticate the actual compositor PID, never any descendant.
+  swayVgliteMainPid = pkgs.writeShellScriptBin "sway" ''
+    set -eu
+    if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+      if [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+      else
+        bus_address="$(${lib.getExe' pkgs.dbus "dbus-daemon"} --session --fork --print-address=1)"
+        export DBUS_SESSION_BUS_ADDRESS="$bus_address"
+      fi
+    fi
+    export XDG_CURRENT_DESKTOP=sway
+    exec ${swayVgliteUnwrapped}/bin/sway "$@"
+  '';
 
   # cage is the first-light probe (tasks 3.1/3.2), not the shell: it has no
   # layer-shell and so can never host the keyboard. Two variants, because
@@ -274,6 +292,16 @@ in
       '';
     };
 
+    vgliteAccessTrial = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Unsupported opt-in VG-Lite service trial with a root descriptor broker.
+        Requires root-private /dev/vg_lite, active Yama startup protection and
+        unverified GPU/cache gates. Normal Pixman remains the default.
+      '';
+    };
+
     frameTiming = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -321,6 +349,13 @@ in
       description = "Opt-in Sway package using the guarded VG-Lite wlroots renderer.";
     };
 
+
+    vgliteServiceCompositor = lib.mkOption {
+      type = lib.types.package;
+      default = swayVgliteMainPid;
+      readOnly = true;
+      description = "Opt-in compositor wrapper that preserves the systemd MainPID.";
+    };
 
     launcher = lib.mkOption {
       type = lib.types.package;
@@ -411,12 +446,48 @@ in
     systemd.services."getty@tty1".enable = false;
     systemd.services."autovt@tty1".enable = false;
 
+    systemd.sockets.k230-vglite-broker = lib.mkIf cfg.vgliteAccessTrial {
+      description = "Private compositor VG-Lite descriptor endpoint";
+      socketConfig = {
+        ListenStream = "/run/k230-vglite-broker.sock";
+        SocketUser = "root";
+        SocketGroup = "shell";
+        SocketMode = "0660";
+        RemoveOnStop = true;
+      };
+    };
+    systemd.services.k230-vglite-broker = lib.mkIf cfg.vgliteAccessTrial {
+      description = "VG-Lite descriptor grant to the exact shell compositor MainPID";
+      requires = [ "k230-vglite-broker.socket" ];
+      path = [ pkgs.systemd ];
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 ${./vglite-access/broker.py} --unit shell.service --executable ${swayVgliteUnwrapped}/bin/sway --user shell";
+        User = "root";
+        Group = "root";
+        NoNewPrivileges = true;
+        CapabilityBoundingSet = [ "CAP_SYS_PTRACE" ];
+        DevicePolicy = "closed";
+        DeviceAllow = [ "/dev/vg_lite rw" ];
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateTmp = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectControlGroups = true;
+        RestrictNamespaces = true;
+        RestrictAddressFamilies = [ "AF_UNIX" ];
+        SystemCallFilter = [ "~@debug" ];
+        UMask = "0077";
+      };
+    };
+
     systemd.services.shell = {
       description = "sway on the panel";
       wantedBy = [ "multi-user.target" ];
-      requires = [ "seatd.service" ];
+      requires = [ "seatd.service" ] ++ lib.optional cfg.vgliteAccessTrial "k230-vglite-broker.socket";
       wants = lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
       after = [ "seatd.service" "systemd-udev-settle.service" ]
+        ++ lib.optional cfg.vgliteAccessTrial "k230-vglite-broker.socket"
         ++ lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
 
       environment = {
@@ -426,10 +497,13 @@ in
         # wlroots would choose Pixman on its own on a card with no render
         # node (render/wlr_renderer.c:268); naming it makes the choice a
         # stated intention that fails loudly if the device ever changes.
-        WLR_RENDERER = "pixman";
+        WLR_RENDERER = if cfg.vgliteAccessTrial then "vglite" else "pixman";
         # A fixed IPC socket so `swaymsg` from the serial console needs no
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
+      } // lib.optionalAttrs cfg.vgliteAccessTrial {
+        K230_VGLITE_BROKER = "/run/k230-vglite-broker.sock";
+        K230_VGLITE_ALLOW_UNPROVEN_CACHE = "1";
       } // lib.optionalAttrs cfg.frameTiming {
         SWAY_K230_CPU_FRAME_TIMING = "1";
       } // lib.optionalAttrs cfg.initialSplash {
