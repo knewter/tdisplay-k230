@@ -94,5 +94,8 @@ recorded in `trial-image-evaluation.json`.
 nix build .#sdImage-rvv-trial --max-jobs 1 --cores 8 --no-link --print-out-paths
 ```
 
-The trial image build is in progress. No card has been flashed or rebooted with
-it. Preserve the known ordinary image as the recovery artifact before a trial.
+The trial image build passes. `trial-image-build.json` records the image hash
+and a host inspection of its boot partition: Image matches the trial kernel,
+the wrapped initrd matches the trial system and has valid U-Boot CRCs, and
+bootargs selects that same system. No card has been flashed or rebooted with it.
+Preserve the known ordinary image as the recovery artifact before a trial.
