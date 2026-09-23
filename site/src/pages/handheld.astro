@@ -3,17 +3,18 @@ import Base from "../layouts/Base.astro";
 import { evidenceAsset, evidenceUrl, url } from "../lib/specs";
 
 // Full camera recordings stay in the repository; the static site carries posters.
-const media = "https://raw.githubusercontent.com/knewter/tdisplay-k230/5f9642f1411085fb0b96fb098e33c507a3519997/docs/evidence/";
+const media = "https://raw.githubusercontent.com/knewter/tdisplay-k230/17e3a6a/docs/evidence/";
 const groups = [
   {
     title: "Type on the glass",
     note: "The operator entered echo 1qazoplm and confirmed the output. The native screenshot retains the initial exho typo and its successful correction. A follow-up camera clip shows finger interaction and the keyboard appearing; the operator confirmed the full visibility sequence.",
     limit: "The hide transition is not resolved in the recording. A deliberate full-panel drag has not been recorded.",
     native: "docs/evidence/shell-real-touch-keyboard/after-test-native.png",
-    poster: "docs/evidence/shell-real-touch-keyboard/physical-keyboard-shown-56s.png",
+    poster: "docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg",
     notes: "docs/evidence/shell-real-touch-keyboard/README.md",
     audit: "docs/evidence/shell-real-touch-keyboard/visibility-followup-audit.md",
-    video: "shell-real-touch-keyboard/20260923T001007Z-keyboard-visibility-real-touch.mp4",
+    video: "shell-real-touch-keyboard/keyboard-toggle-cropped.mp4",
+    caption: "Keyboard toggle · 5.5 seconds · cropped to the device",
     extra: "shell-real-touch-keyboard/20260923T000200Z-keyboard-real-touch.mp4",
   },
   {
@@ -60,7 +61,7 @@ const groups = [
               poster={evidenceAsset(group.poster)} src={media + group.video}>
               <a href={media + group.video}>Download camera recording</a>
             </video>
-            <figcaption>Physical camera recording · <a href={media + group.video}>original video</a></figcaption>
+            <figcaption>{group.caption ?? "Physical camera recording"} · <a href={media + group.video}>video file</a></figcaption>
           </figure>
           <figure>
             <a href={evidenceUrl(group.native)}><img loading="lazy"

@@ -934,6 +934,8 @@ DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evid
 DATA c4ef2ed1c0d302148e97350183116b889a00892b90fe68b9936d57f57225e294  docs/evidence/shell-real-touch-system/system-boot-logo.png
 DATA 378020ceb726f240276649c34bfc646c22b9f141386ed2be3e8a68d90fd36493  docs/evidence/shell-real-touch-system/system-post-reboot.png
 DATA d8323e6e649fe56333be64aab1ed9c36ce8884ac8651b1aeca5f0917dcf71f79  docs/evidence/shell-real-touch-system/system-pre-touch.png
+DATA fc258d16b77e22de46ea70d6a614818ef085cf5cb242af4d69381168605a3ce3  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.mp4
+DATA 92d34deb2afd707e52cae6bd747edc2f3f6d34fa328e0244d3004d5262add5a4  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1090,13 +1092,3 @@ copies the device tree to `0x2200000`, inside the kernel's `.BTF` section
 (`docs/evidence/opensbi-fdt-lands-in-kernel-image.md`); the OpenSBI built
 here passes it through, and the board's `/sys/kernel/btf/vmlinux` now reads
 BTF bytes where it used to read an FDT header.
-
-## Keyboard toggle presentation edit
-
-Trimmed and cropped from the real-touch follow-up; transformation and source hash
-are recorded in `docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.json`.
-
-```text
-DATA fc258d16b77e22de46ea70d6a614818ef085cf5cb242af4d69381168605a3ce3  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.mp4
-DATA 92d34deb2afd707e52cae6bd747edc2f3f6d34fa328e0244d3004d5262add5a4  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg
-```
