@@ -1163,3 +1163,12 @@ assets.
 | `docs/evidence/big-buck-bunny/270p-native.png` | 210067 | DATA | `2a633a028f8e10ea939c9c5b17994ce0a0cefb7f923604c28bdbe7fa9ee7b439` |
 | `docs/evidence/big-buck-bunny/270p-physical-frame.jpg` | 18221 | DATA | `7b18cca3cdb439ef572de0f46f48351f9ce4faf20aa56459893d654e987b4780` |
 | `docs/evidence/big-buck-bunny/270p-physical-clip.mp4` | 265203 | DATA | `92b33c778c720a23b87bae0da2d1b05a0a7e27f76134100020a1d833eb3fb29c` |
+
+## Launcher gesture preflight evidence
+
+Native compositor captures; see `docs/evidence/launcher-gestures/preflight.md`.
+
+| Blob | Bytes | Class | sha256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/launcher-gestures/preflight-apps-page-2.png` | 37632 | DATA | `1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903` |
+| `docs/evidence/launcher-gestures/preflight-overview.png` | 31697 | DATA | `27a6acc3f1428c79ae7345632052b46d41911ccde6f60c060e8bcd93648e445a` |

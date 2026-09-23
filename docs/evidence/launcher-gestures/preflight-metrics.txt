@@ -1,0 +1,6 @@
+transition render_wall_ms=24 release_to_submit_wall_ms=24 extra_bytes=5343744 settled=0
+transition render_wall_ms=12 release_to_submit_wall_ms=71 extra_bytes=5343744 settled=0
+transition render_wall_ms=13 release_to_submit_wall_ms=101 extra_bytes=5343744 settled=0
+transition render_wall_ms=17 release_to_submit_wall_ms=137 extra_bytes=5343744 settled=1
+transition render_wall_ms=32 release_to_submit_wall_ms=65 extra_bytes=5343744 settled=0
+transition render_wall_ms=32 release_to_submit_wall_ms=152 extra_bytes=5343744 settled=1

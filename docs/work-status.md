@@ -51,7 +51,7 @@ fallback; healthy playback has no arbitrary duration cutoff. Host tests cover
 startup/fallback cancellation, private runtime input and process cleanup. Those
 checks do not replace the final-image physical tests above.
 
-A preliminary transferred launcher ran on the existing board image and visibly
+A [preliminary transferred launcher](evidence/launcher-gestures/preflight.md) ran on the existing board image and visibly
 paged Apps and opened a two-window overview. Its two transitions submitted final
 frames after 137 and 152 ms. This small preflight is not the 20-swipe matrix,
 resource comparison, final-image acceptance or real-finger proof.

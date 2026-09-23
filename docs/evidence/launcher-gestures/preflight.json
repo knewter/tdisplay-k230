@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-23 UTC",
+  "source_revision": "1d38571d244a4a822c7fbffb2d8ac5edada2c400",
+  "launcher": "/nix/store/9sbl0z7py0hpgkzjkc1s3b8vbarbf6w7-k230-touch-launcher",
+  "running_system": "/nix/store/0sbdslp3na1y1bkjm30wdz24ivcn6rgd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "4f33a8c4-5824-4998-913c-c1307defa6c5",
+  "files": [
+    {
+      "path": "docs/evidence/launcher-gestures/preflight-apps-page-2.png",
+      "bytes": 37632,
+      "sha256": "1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903",
+      "capture": "grim on physical board; injected touch; native compositor image, not camera"
+    },
+    {
+      "path": "docs/evidence/launcher-gestures/preflight-overview.png",
+      "bytes": 31697,
+      "sha256": "27a6acc3f1428c79ae7345632052b46d41911ccde6f60c060e8bcd93648e445a",
+      "capture": "grim on physical board; injected touch; native compositor image, not camera"
+    }
+  ]
+}
