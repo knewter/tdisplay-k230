@@ -1,0 +1,72 @@
+{
+  "source": "installed production Apps/Foot/controller",
+  "cases": [
+    {
+      "case": "stop",
+      "catalog_launch_exit": 0,
+      "initial_state": {
+        "uid": 1000,
+        "controller": 13695,
+        "controller_start": 319189,
+        "child": 13701,
+        "child_start": 319273
+      },
+      "initial_media_time": 0.13333300000000001,
+      "next_media_time": 2.1666669999999999,
+      "cleanup": {
+        "state_absent": true,
+        "process_group_absent": true,
+        "socket_absent": true
+      },
+      "result": "pass"
+    },
+    {
+      "case": "home",
+      "catalog_launch_exit": 0,
+      "initial_state": {
+        "uid": 1000,
+        "controller": 13824,
+        "controller_start": 321177,
+        "child": 13830,
+        "child_start": 321262
+      },
+      "initial_media_time": 0.0,
+      "next_media_time": 2.0666669999999998,
+      "cleanup": {
+        "state_absent": true,
+        "process_group_absent": true,
+        "socket_absent": true
+      },
+      "focused_apps": [
+        "k230-terminal"
+      ],
+      "result": "pass"
+    },
+    {
+      "case": "eof",
+      "catalog_launch_exit": 0,
+      "initial_state": {
+        "uid": 1000,
+        "controller": 13959,
+        "controller_start": 323227,
+        "child": 13965,
+        "child_start": 323311
+      },
+      "initial_media_time": 0.0,
+      "next_media_time": 2.0333329999999998,
+      "duration": 634.0,
+      "seek": {
+        "data": null,
+        "request_id": 1,
+        "error": "success"
+      },
+      "natural_eof_marker": true,
+      "cleanup": {
+        "state_absent": true,
+        "process_group_absent": true,
+        "socket_absent": true
+      },
+      "result": "pass"
+    }
+  ]
+}
