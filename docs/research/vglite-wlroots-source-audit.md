@@ -1,7 +1,6 @@
 # Opt-in VG-Lite compositor checkpoint
 
-Date: 2026-09-23. This checkpoint is deliberately a full-pass Pixman fallback;
-it does not claim that VG-Lite is rendering a Sway frame.
+Date: 2026-09-23. This checkpoint contains an opt-in renderer with a real VG-Lite RGB565 rectangle submission route and a complete Pixman replay fallback. It does not claim board acceptance or texture/GPU coverage beyond the guarded route.
 
 ## Pinned interface audit
 
@@ -16,11 +15,7 @@ signal fields.
 
 `render/wlr_renderer.c` selects the renderer from `WLR_RENDERER` and the
 existing Pixman implementation begins a pass against the wlroots-provided
-`wlr_buffer`. The checkpoint patch adds only the explicit `vglite` selection
-branch and calls `wlr_pixman_renderer_create()`. It does not open DRM, acquire
-master, allocate a competing scanout buffer, modeset, commit, import dma-buf,
-or call the vendor library. `WLR_RENDERER=pixman` and the normal `auto` path are
-unchanged.
+`wlr_buffer`. The checkpoint adds an explicit `vglite` selection branch and a compiled render-pass implementation. Supported full passes use the supplied single-plane linear DRM RGB565 dma-buf, map it as `VG_LITE_BGR565`, issue rectangle clears, and call `vg_lite_finish`; unsupported textures, clips, transforms, metadata, timelines, formats, modifiers, cache state, or failures replay the complete pass through Pixman. `WLR_RENDERER=pixman` and the normal `auto` path are unchanged.
 
 The patch applies cleanly to the pinned source and is intentionally named a
 fallback. It is a safe integration seam for an experimental Sway package while
