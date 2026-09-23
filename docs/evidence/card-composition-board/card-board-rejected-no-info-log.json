@@ -1,0 +1,58 @@
+{
+  "evidence_class": "board-injected",
+  "source_revision": "310dbf131e81bcb5f455299a61baf4ad19a1ea53",
+  "probe": "/nix/store/wjzw7jw21p8qq4dsbc8b3fky9233pgqq-k230-card-composition-probe",
+  "at_utc": "2026-09-23T07:12:59.915456+00:00",
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "checks": {
+    "sole_opt_in_compositor": true,
+    "atomic_allocation_fallback": true,
+    "both_parent_and_subsurface_live": {
+      "before": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          5,
+          4,
+          0
+        ]
+      ],
+      "after": [
+        [
+          81,
+          65,
+          0
+        ],
+        [
+          49,
+          48,
+          0
+        ]
+      ]
+    }
+  },
+  "limits": [
+    "IPC-injected touch, no real-finger proof",
+    "Virtual keyboard, not physical OSK",
+    "Native captures do not prove optical cadence"
+  ],
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "scale": 2.0,
+      "transform": "normal"
+    }
+  ],
+  "status": "FAIL",
+  "error": "AssertionError: "
+}

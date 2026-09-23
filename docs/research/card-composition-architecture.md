@@ -12,9 +12,11 @@ or to touch before Sway dispatches it, while pinned Sway owns views, scene
 trees, touch seat operations, focus, and close dispatch.
 
 This is a selected **experiment boundary**, not card-feature delivery. The
-route has no board proof yet. It must demonstrate actual app pixels and a
-complete interaction before `the-shell-manages-apps-as-cards` may claim visual
-cards.
+route now has board-injected capability proof in
+[`card-composition-board/README.md`](../evidence/card-composition-board/README.md):
+live parent/subsurface content, drag, expand, close/refusal, keyboard focus and
+normal-shell restoration. Real-finger and optical proof remain open; product
+card UX and cost acceptance are separate requirements.
 
 ## Route comparison
 

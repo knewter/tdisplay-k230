@@ -651,6 +651,12 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA d2b360a3dc612952c203e35e2559a82af40a7c3b7979bf768a077d4cb1bf71ca  docs/evidence/card-composition-board/after-close.png
+DATA e2133dce11201eab18e59a4686cbe1c44d3f3ceb1b9998cc525b081f0482a0fe  docs/evidence/card-composition-board/card-during-drag.png
+DATA 688ce8b11f991fdb18f2f908f43c2bfb85382b7cbe6dc96e714574bad3ffdf9b  docs/evidence/card-composition-board/expanded-second.png
+DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/card-composition-board/restore/keyboard-visible.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/card-composition-board/restore/terminal.png
+DATA 20afc0d92b0f7e131441401c2d0c675fe1c33ce642f7c53a66cb26631a0da362  docs/evidence/card-composition-board/two-live-cards.png
 DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/final-shell-image/after-render-failure.png
 DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/final-shell-image/help-header.png
 DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/final-shell-image/keyboard-visible.png
@@ -1237,3 +1243,17 @@ are in `docs/evidence/final-shell-image/README.md`.
 Four locally generated `grim` captures of synthetic repository clients under
 headless QEMU/Pixman. No board or user application content. Provenance, commands
 and limits: `docs/evidence/card-shell/headless/README.md`. Hashes are in MANIFEST.
+
+## Card composition board captures
+
+Native board captures from synthetic fixtures and the restored normal shell.
+Commands and limits: `docs/evidence/card-composition-board/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-composition-board/after-close.png` | 4956 | DATA | `d2b360a3dc612952c203e35e2559a82af40a7c3b7979bf768a077d4cb1bf71ca` |
+| `docs/evidence/card-composition-board/card-during-drag.png` | 5675 | DATA | `e2133dce11201eab18e59a4686cbe1c44d3f3ceb1b9998cc525b081f0482a0fe` |
+| `docs/evidence/card-composition-board/expanded-second.png` | 4994 | DATA | `688ce8b11f991fdb18f2f908f43c2bfb85382b7cbe6dc96e714574bad3ffdf9b` |
+| `docs/evidence/card-composition-board/restore/keyboard-visible.png` | 48872 | DATA | `eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8` |
+| `docs/evidence/card-composition-board/restore/terminal.png` | 16517 | DATA | `2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7` |
+| `docs/evidence/card-composition-board/two-live-cards.png` | 5639 | DATA | `20afc0d92b0f7e131441401c2d0c675fe1c33ce642f7c53a66cb26631a0da362` |

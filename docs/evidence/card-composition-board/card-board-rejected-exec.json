@@ -1,0 +1,15 @@
+{
+  "evidence_class": "board-injected",
+  "source_revision": "54e1740b014719f9c939d286adff7639f3e7c927",
+  "probe": "/nix/store/fpakj8gqzvmaifw6h6nkj7k8g66i8650-k230-card-composition-probe",
+  "at_utc": "2026-09-23T07:10:37.355788+00:00",
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "checks": {},
+  "limits": [
+    "IPC-injected touch, no real-finger proof",
+    "Virtual keyboard, not physical OSK",
+    "Native captures do not prove optical cadence"
+  ],
+  "status": "FAIL",
+  "error": "AssertionError: condition timed out"
+}

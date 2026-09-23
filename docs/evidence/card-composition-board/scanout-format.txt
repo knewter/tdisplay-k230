@@ -1,0 +1,1 @@
+		format=RG16 little-endian (0x36314752)

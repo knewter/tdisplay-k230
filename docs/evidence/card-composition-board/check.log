@@ -1,0 +1,10 @@
+PASS sole_opt_in_compositor
+PASS atomic_allocation_fallback
+PASS both_parent_and_subsurface_live
+PASS second_contact_cancel
+PASS touch_cancel
+PASS continuous_injected_motion
+PASS adjacent_expand_and_keyboard_focus
+PASS refused_close_recovers_focus
+PASS accepted_close_exit_focus_fallback
+PASS presentation_signal_recorded

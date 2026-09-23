@@ -16,7 +16,7 @@
 
 ## 4. Cost decision
 
-- [ ] 4.1 Declare card interaction frame/update, input-to-visible-update, and incremental-memory budgets before acceptance; implement the proposed-to-create `tools/card-shell-benchmark.py` and verify its parser with `python3 tools/card-shell-benchmark.py --self-test`.
+- [x] 4.1 Declare card interaction frame/update, input-to-visible-update, and incremental-memory budgets before acceptance; implement the proposed-to-create `tools/card-shell-benchmark.py` and verify its parser with `python3 tools/card-shell-benchmark.py --self-test`.
 - [ ] 4.2 Measure the default Pixman composition path at 568x1232 RGB565 with one and multiple eligible cards; verify on hardware with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --output docs/evidence/card-shell/pixman.json`. Record a reduced-refresh behavior or independently measured optimization only when every required core card interaction remains live and direct; otherwise leave this change open or request explicit authorization for a successor.
 - [ ] 4.3 Decide and record whether to pursue the optional VGLite path. If pursued, measure it against the same workload without making it a prerequisite for Pixman acceptance; verify with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --renderer vglite --output docs/evidence/card-shell/vglite.json`. If not pursued, record that decision in the Pixman evidence so this optional path does not remain an archive gate.
 
@@ -31,3 +31,9 @@
 - [ ] 6.1 Validate this change and preserve all unresolved hardware requirements as unverified until their named evidence exists; verify with `openspec validate the-shell-manages-apps-as-cards --strict`.
 
 Host implementation evidence for tasks 2.2 and 3.1–3.3: `docs/evidence/card-shell/headless/README.md`. Actual compositor runtime and narrow build pass; diagnostic headless frame-interval budget fails and isolated session memory is incomplete. Product board cost, every physical control route, image integration, and real-finger acceptance remain open in groups 4–5.
+
+Coordinator reran the final adapter through actual wlroots touch routing (17
+checks) and the independent native Wayland receiver pairing suite (7 checks).
+Review and exact artifacts: `docs/evidence/card-shell/coordinator-review.md`.
+Budget declaration/parser and actual producer integration complete 4.1; the
+recorded headless cadence failure and all board cost/physical gates remain open.

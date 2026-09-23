@@ -1,0 +1,191 @@
+{"event":"reservation_acquired","uptime_s":3198.33}
+{"event":"normal_shell_stopped","uptime_s":3199.24}
+{"event":"opt_in_starting","uptime_s":3199.32}
+{"event":"resources","uptime_s":3199.95,"cpu_ns":160697000,"memory_bytes":2367488}
+{"event":"compositor_resources","uptime_s":3200.07,"compositor_cpu_seconds":0,"compositor_rss_bytes":11927552}
+{"event":"resources","uptime_s":3201.45,"cpu_ns":1094771000,"memory_bytes":18128896}
+{"event":"compositor_resources","uptime_s":3201.56,"compositor_cpu_seconds":0,"compositor_rss_bytes":29491200}
+{"event":"resources","uptime_s":3202.93,"cpu_ns":2203391000,"memory_bytes":18128896}
+{"event":"compositor_resources","uptime_s":3203.04,"compositor_cpu_seconds":1,"compositor_rss_bytes":29491200}
+{"event":"resources","uptime_s":3204.60,"cpu_ns":3262910000,"memory_bytes":19550208}
+{"event":"compositor_resources","uptime_s":3204.71,"compositor_cpu_seconds":2,"compositor_rss_bytes":29593600}
+{"event":"resources","uptime_s":3206.23,"cpu_ns":4224056000,"memory_bytes":18149376}
+{"event":"compositor_resources","uptime_s":3206.34,"compositor_cpu_seconds":2,"compositor_rss_bytes":29593600}
+{"event":"resources","uptime_s":3207.76,"cpu_ns":5091680000,"memory_bytes":18190336}
+{"event":"compositor_resources","uptime_s":3207.90,"compositor_cpu_seconds":3,"compositor_rss_bytes":29593600}
+{"event":"resources","uptime_s":3209.42,"cpu_ns":6031788000,"memory_bytes":12079104}
+{"event":"compositor_resources","uptime_s":3209.64,"compositor_cpu_seconds":3,"compositor_rss_bytes":24354816}
+{"event":"resources","uptime_s":3211.08,"cpu_ns":6975479000,"memory_bytes":10665984}
+{"event":"compositor_resources","uptime_s":3211.19,"compositor_cpu_seconds":4,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3212.56,"cpu_ns":7846503000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3212.68,"compositor_cpu_seconds":4,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3214.06,"cpu_ns":8715893000,"memory_bytes":10665984}
+{"event":"compositor_resources","uptime_s":3214.17,"compositor_cpu_seconds":5,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3215.55,"cpu_ns":9587816000,"memory_bytes":10665984}
+{"event":"compositor_resources","uptime_s":3215.67,"compositor_cpu_seconds":5,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3217.05,"cpu_ns":10466303000,"memory_bytes":10665984}
+{"event":"compositor_resources","uptime_s":3217.16,"compositor_cpu_seconds":5,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3218.54,"cpu_ns":11332764000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3218.65,"compositor_cpu_seconds":6,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3220.04,"cpu_ns":12212708000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3220.16,"compositor_cpu_seconds":6,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3221.55,"cpu_ns":13064945000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3221.65,"compositor_cpu_seconds":7,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3223.03,"cpu_ns":13940096000,"memory_bytes":10674176}
+{"event":"compositor_resources","uptime_s":3223.15,"compositor_cpu_seconds":7,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3224.53,"cpu_ns":14815783000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3224.65,"compositor_cpu_seconds":8,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3226.04,"cpu_ns":15695760000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3226.15,"compositor_cpu_seconds":8,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3227.54,"cpu_ns":16567714000,"memory_bytes":10670080}
+{"event":"compositor_resources","uptime_s":3227.65,"compositor_cpu_seconds":8,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3229.03,"cpu_ns":17446717000,"memory_bytes":10674176}
+{"event":"compositor_resources","uptime_s":3229.14,"compositor_cpu_seconds":9,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3230.53,"cpu_ns":18313406000,"memory_bytes":10678272}
+{"event":"compositor_resources","uptime_s":3230.65,"compositor_cpu_seconds":9,"compositor_rss_bytes":22994944}
+{"event":"resources","uptime_s":3232.03,"cpu_ns":19190705000,"memory_bytes":10674176}
+{"event":"compositor_resources","uptime_s":3232.15,"compositor_cpu_seconds":10,"compositor_rss_bytes":22994944}
+{"event":"normal_services_active","uptime_s":3234.47}
+{"event":"shell_restored","uptime_s":3234.51}
+{"event":"normal_services_active","uptime_s":3249.74}
+{"event":"start","app_id":"k230.card.one","elapsed_ms":0,"frames":0,"callbacks":0,"releases":0,"child_frames":0,"child_callbacks":0,"child_releases":0,"callback_age_ms":0,"child_callback_age_ms":0,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.one","elapsed_ms":6,"frames":0,"callbacks":0,"releases":0,"child_frames":0,"child_callbacks":0,"child_releases":0,"callback_age_ms":6,"child_callback_age_ms":6,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"child_commit","app_id":"k230.card.one","elapsed_ms":7,"frames":0,"callbacks":0,"releases":0,"child_frames":1,"child_callbacks":0,"child_releases":0,"callback_age_ms":7,"child_callback_age_ms":7,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"commit","app_id":"k230.card.one","elapsed_ms":30,"frames":1,"callbacks":0,"releases":0,"child_frames":1,"child_callbacks":0,"child_releases":0,"callback_age_ms":30,"child_callback_age_ms":30,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.one","elapsed_ms":54,"frames":2,"callbacks":1,"releases":0,"child_frames":2,"child_callbacks":1,"child_releases":0,"callback_age_ms":16,"child_callback_age_ms":1,"max_callback_gap_ms":38,"child_max_callback_gap_ms":53,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.one","elapsed_ms":55,"frames":2,"callbacks":1,"releases":0,"child_frames":2,"child_callbacks":1,"child_releases":0,"callback_age_ms":17,"child_callback_age_ms":2,"max_callback_gap_ms":38,"child_max_callback_gap_ms":53,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":1055,"frames":23,"callbacks":22,"releases":21,"child_frames":17,"child_callbacks":16,"child_releases":15,"callback_age_ms":51,"child_callback_age_ms":1,"max_callback_gap_ms":181,"child_max_callback_gap_ms":171,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":2065,"frames":43,"callbacks":42,"releases":42,"child_frames":37,"child_callbacks":36,"child_releases":36,"callback_age_ms":43,"child_callback_age_ms":24,"max_callback_gap_ms":181,"child_max_callback_gap_ms":171,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":3081,"frames":57,"callbacks":56,"releases":56,"child_frames":51,"child_callbacks":50,"child_releases":50,"callback_age_ms":40,"child_callback_age_ms":27,"max_callback_gap_ms":181,"child_max_callback_gap_ms":171,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":4086,"frames":69,"callbacks":68,"releases":67,"child_frames":63,"child_callbacks":62,"child_releases":61,"callback_age_ms":69,"child_callback_age_ms":0,"max_callback_gap_ms":195,"child_max_callback_gap_ms":211,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":5135,"frames":81,"callbacks":80,"releases":79,"child_frames":73,"child_callbacks":72,"child_releases":71,"callback_age_ms":42,"child_callback_age_ms":1,"max_callback_gap_ms":196,"child_max_callback_gap_ms":243,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":6146,"frames":88,"callbacks":87,"releases":86,"child_frames":77,"child_callbacks":76,"child_releases":76,"callback_age_ms":33,"child_callback_age_ms":455,"max_callback_gap_ms":344,"child_max_callback_gap_ms":243,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":7168,"frames":102,"callbacks":101,"releases":100,"child_frames":88,"child_callbacks":87,"child_releases":86,"callback_age_ms":51,"child_callback_age_ms":1,"max_callback_gap_ms":344,"child_max_callback_gap_ms":740,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.one","elapsed_ms":8217,"frames":113,"callbacks":112,"releases":111,"child_frames":98,"child_callbacks":97,"child_releases":96,"callback_age_ms":46,"child_callback_age_ms":67,"max_callback_gap_ms":344,"child_max_callback_gap_ms":740,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"close_requested","app_id":"k230.card.one","elapsed_ms":8217,"frames":113,"callbacks":112,"releases":111,"child_frames":98,"child_callbacks":97,"child_releases":97,"callback_age_ms":46,"child_callback_age_ms":67,"max_callback_gap_ms":344,"child_max_callback_gap_ms":740,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"close_accepted","app_id":"k230.card.one","elapsed_ms":8217,"frames":113,"callbacks":112,"releases":111,"child_frames":98,"child_callbacks":97,"child_releases":97,"callback_age_ms":46,"child_callback_age_ms":67,"max_callback_gap_ms":344,"child_max_callback_gap_ms":740,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"exit","app_id":"k230.card.one","elapsed_ms":8217,"frames":113,"callbacks":112,"releases":111,"child_frames":98,"child_callbacks":97,"child_releases":97,"callback_age_ms":46,"child_callback_age_ms":67,"max_callback_gap_ms":344,"child_max_callback_gap_ms":740,"width":520,"height":1040,"stride":2080,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"start","app_id":"k230.card.two","elapsed_ms":0,"frames":0,"callbacks":0,"releases":0,"child_frames":0,"child_callbacks":0,"child_releases":0,"callback_age_ms":0,"child_callback_age_ms":0,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.two","elapsed_ms":2,"frames":0,"callbacks":0,"releases":0,"child_frames":0,"child_callbacks":0,"child_releases":0,"callback_age_ms":2,"child_callback_age_ms":2,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"child_commit","app_id":"k230.card.two","elapsed_ms":2,"frames":0,"callbacks":0,"releases":0,"child_frames":1,"child_callbacks":0,"child_releases":0,"callback_age_ms":2,"child_callback_age_ms":2,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"commit","app_id":"k230.card.two","elapsed_ms":21,"frames":1,"callbacks":0,"releases":0,"child_frames":1,"child_callbacks":0,"child_releases":0,"callback_age_ms":21,"child_callback_age_ms":21,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.two","elapsed_ms":36,"frames":1,"callbacks":0,"releases":0,"child_frames":1,"child_callbacks":0,"child_releases":0,"callback_age_ms":36,"child_callback_age_ms":36,"max_callback_gap_ms":0,"child_max_callback_gap_ms":0,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"configure","app_id":"k230.card.two","elapsed_ms":302,"frames":2,"callbacks":1,"releases":0,"child_frames":2,"child_callbacks":1,"child_releases":0,"callback_age_ms":39,"child_callback_age_ms":0,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"keyboard_enter","app_id":"k230.card.two","elapsed_ms":408,"frames":4,"callbacks":3,"releases":2,"child_frames":3,"child_callbacks":2,"child_releases":1,"callback_age_ms":36,"child_callback_age_ms":22,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":1026,"frames":13,"callbacks":12,"releases":11,"child_frames":12,"child_callbacks":11,"child_releases":10,"callback_age_ms":18,"child_callback_age_ms":0,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":2054,"frames":37,"callbacks":36,"releases":35,"child_frames":36,"child_callbacks":35,"child_releases":34,"callback_age_ms":7,"child_callback_age_ms":0,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":3069,"frames":53,"callbacks":52,"releases":51,"child_frames":52,"child_callbacks":51,"child_releases":50,"callback_age_ms":7,"child_callback_age_ms":0,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":4146,"frames":67,"callbacks":66,"releases":65,"child_frames":66,"child_callbacks":65,"child_releases":64,"callback_age_ms":130,"child_callback_age_ms":107,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":5160,"frames":83,"callbacks":82,"releases":82,"child_frames":82,"child_callbacks":81,"child_releases":81,"callback_age_ms":82,"child_callback_age_ms":59,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":0,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"key_press","app_id":"k230.card.two","elapsed_ms":5928,"frames":87,"callbacks":86,"releases":86,"child_frames":86,"child_callbacks":85,"child_releases":85,"callback_age_ms":309,"child_callback_age_ms":261,"max_callback_gap_ms":263,"child_max_callback_gap_ms":302,"width":480,"height":720,"stride":1920,"key_presses":1,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":6180,"frames":91,"callbacks":90,"releases":90,"child_frames":90,"child_callbacks":89,"child_releases":89,"callback_age_ms":44,"child_callback_age_ms":26,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":1,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"close_requested","app_id":"k230.card.two","elapsed_ms":6390,"frames":95,"callbacks":94,"releases":94,"child_frames":94,"child_callbacks":93,"child_releases":93,"callback_age_ms":42,"child_callback_age_ms":25,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":1,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"close_refused","app_id":"k230.card.two","elapsed_ms":6390,"frames":95,"callbacks":94,"releases":94,"child_frames":94,"child_callbacks":93,"child_releases":93,"callback_age_ms":42,"child_callback_age_ms":25,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":1,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":7191,"frames":107,"callbacks":106,"releases":106,"child_frames":106,"child_callbacks":105,"child_releases":105,"callback_age_ms":71,"child_callback_age_ms":41,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":1,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"key_press","app_id":"k230.card.two","elapsed_ms":8076,"frames":118,"callbacks":117,"releases":117,"child_frames":117,"child_callbacks":116,"child_releases":116,"callback_age_ms":163,"child_callback_age_ms":145,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":2,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":8201,"frames":120,"callbacks":119,"releases":118,"child_frames":119,"child_callbacks":118,"child_releases":117,"callback_age_ms":35,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":2,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"key_press","app_id":"k230.card.two","elapsed_ms":8464,"frames":130,"callbacks":129,"releases":128,"child_frames":129,"child_callbacks":128,"child_releases":127,"callback_age_ms":21,"child_callback_age_ms":7,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":9203,"frames":155,"callbacks":154,"releases":153,"child_frames":154,"child_callbacks":153,"child_releases":152,"callback_age_ms":10,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"keyboard_leave","app_id":"k230.card.two","elapsed_ms":9400,"frames":162,"callbacks":161,"releases":160,"child_frames":161,"child_callbacks":160,"child_releases":159,"callback_age_ms":20,"child_callback_age_ms":7,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"keyboard_leave","app_id":"k230.card.two","elapsed_ms":9400,"frames":162,"callbacks":161,"releases":160,"child_frames":161,"child_callbacks":160,"child_releases":159,"callback_age_ms":20,"child_callback_age_ms":7,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":10218,"frames":203,"callbacks":202,"releases":201,"child_frames":202,"child_callbacks":201,"child_releases":200,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":11234,"frames":248,"callbacks":247,"releases":246,"child_frames":247,"child_callbacks":246,"child_releases":245,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":12236,"frames":292,"callbacks":291,"releases":290,"child_frames":291,"child_callbacks":290,"child_releases":289,"callback_age_ms":15,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":13245,"frames":345,"callbacks":344,"releases":343,"child_frames":344,"child_callbacks":343,"child_releases":342,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":14260,"frames":390,"callbacks":389,"releases":388,"child_frames":389,"child_callbacks":388,"child_releases":387,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":15264,"frames":434,"callbacks":433,"releases":432,"child_frames":433,"child_callbacks":432,"child_releases":431,"callback_age_ms":7,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":16282,"frames":487,"callbacks":486,"releases":485,"child_frames":486,"child_callbacks":485,"child_releases":484,"callback_age_ms":10,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":17288,"frames":532,"callbacks":531,"releases":530,"child_frames":531,"child_callbacks":530,"child_releases":529,"callback_age_ms":7,"child_callback_age_ms":1,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":18303,"frames":577,"callbacks":576,"releases":575,"child_frames":576,"child_callbacks":575,"child_releases":574,"callback_age_ms":7,"child_callback_age_ms":1,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":19330,"frames":629,"callbacks":628,"releases":627,"child_frames":628,"child_callbacks":627,"child_releases":626,"callback_age_ms":10,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":20333,"frames":675,"callbacks":674,"releases":673,"child_frames":674,"child_callbacks":673,"child_releases":672,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":21349,"frames":718,"callbacks":717,"releases":716,"child_frames":717,"child_callbacks":716,"child_releases":715,"callback_age_ms":7,"child_callback_age_ms":1,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":22349,"frames":768,"callbacks":767,"releases":766,"child_frames":767,"child_callbacks":766,"child_releases":765,"callback_age_ms":13,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":23360,"frames":815,"callbacks":814,"releases":813,"child_frames":814,"child_callbacks":813,"child_releases":812,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":24376,"frames":860,"callbacks":859,"releases":858,"child_frames":859,"child_callbacks":858,"child_releases":857,"callback_age_ms":7,"child_callback_age_ms":1,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":25381,"frames":910,"callbacks":909,"releases":908,"child_frames":909,"child_callbacks":908,"child_releases":907,"callback_age_ms":9,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":26387,"frames":957,"callbacks":956,"releases":955,"child_frames":956,"child_callbacks":955,"child_releases":954,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":27402,"frames":1002,"callbacks":1001,"releases":1000,"child_frames":1001,"child_callbacks":1000,"child_releases":999,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":28427,"frames":1052,"callbacks":1051,"releases":1050,"child_frames":1051,"child_callbacks":1050,"child_releases":1049,"callback_age_ms":11,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":29433,"frames":1099,"callbacks":1098,"releases":1097,"child_frames":1098,"child_callbacks":1097,"child_releases":1096,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":30448,"frames":1144,"callbacks":1143,"releases":1142,"child_frames":1143,"child_callbacks":1142,"child_releases":1141,"callback_age_ms":6,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":31466,"frames":1193,"callbacks":1192,"releases":1191,"child_frames":1192,"child_callbacks":1191,"child_releases":1190,"callback_age_ms":10,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"heartbeat","app_id":"k230.card.two","elapsed_ms":32479,"frames":1242,"callbacks":1241,"releases":1240,"child_frames":1241,"child_callbacks":1240,"child_releases":1239,"callback_age_ms":7,"child_callback_age_ms":0,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+{"event":"signal_exit","app_id":"k230.card.two","elapsed_ms":32970,"frames":1262,"callbacks":1261,"releases":1260,"child_frames":1261,"child_callbacks":1260,"child_releases":1259,"callback_age_ms":42,"child_callback_age_ms":28,"max_callback_gap_ms":337,"child_max_callback_gap_ms":310,"width":480,"height":720,"stride":1920,"key_presses":3,"format":"XRGB8888","subsurface":"desynchronized","presentation":"unmeasured"}
+K230_CARD map card=0 container=5
+K230_CARD map card=1 container=6
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=scene-setup commits=0 samples=0 frame-done=0 output-presented=0
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD live commits=168 sampled=220 frame-done=220 output-presented=55
+K230_CARD dragging card=0 contact=10
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=second-contact commits=240 samples=328 frame-done=328 output-presented=82
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=touch-cancel commits=242 samples=328 frame-done=328 output-presented=82
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD dragging card=1 contact=1
+K230_CARD dragging card=1 contact=2
+K230_CARD selected-expanded card=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=selected-expanded commits=298 samples=428 frame-done=428 output-presented=107
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD dragging card=1 contact=3
+K230_CARD dismissal-requested card=1
+K230_CARD live commits=304 sampled=444 frame-done=444 output-presented=111
+K230_CARD close-refused card=1 basis=still-mapped-after-1500ms
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=close-refused commits=382 samples=556 frame-done=556 output-presented=139
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD dragging card=0 contact=4
+K230_CARD dismissal-requested card=0
+K230_CARD app-exit card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=app-exit commits=386 samples=568 frame-done=568 output-presented=142
+K230_CARD unmap card=1
+{"event":"evidence_limits","class":"board-session-telemetry","renderer_requested":"pixman","client_format":"XRGB8888","physical_touch":"UNVERIFIED","normal_apps_keyboard_terminal":"UNVERIFIED","frame_callback_is_presentation":false}

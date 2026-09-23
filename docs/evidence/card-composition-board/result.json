@@ -1,0 +1,65 @@
+{
+  "evidence_class": "board-injected",
+  "source_revision": "310dbf131e81bcb5f455299a61baf4ad19a1ea53",
+  "harness_revision": "260197de09edfed54cc451a46ac815cad229b00c",
+  "probe": "/nix/store/wjzw7jw21p8qq4dsbc8b3fky9233pgqq-k230-card-composition-probe",
+  "at_utc": "2026-09-23T07:22:21.479289+00:00",
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "checks": {
+    "sole_opt_in_compositor": true,
+    "atomic_allocation_fallback": true,
+    "both_parent_and_subsurface_live": {
+      "before": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          4,
+          3,
+          0
+        ]
+      ],
+      "after": [
+        [
+          57,
+          51,
+          0
+        ],
+        [
+          53,
+          52,
+          0
+        ]
+      ]
+    },
+    "second_contact_cancel": true,
+    "touch_cancel": true,
+    "continuous_injected_motion": true,
+    "adjacent_expand_and_keyboard_focus": true,
+    "refused_close_recovers_focus": true,
+    "accepted_close_exit_focus_fallback": true,
+    "presentation_signal_recorded": true
+  },
+  "limits": [
+    "IPC-injected touch, no real-finger proof",
+    "Virtual keyboard, not physical OSK",
+    "Native captures do not prove optical cadence"
+  ],
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "scale": 1.0,
+      "transform": "normal"
+    }
+  ],
+  "status": "PASS"
+}
