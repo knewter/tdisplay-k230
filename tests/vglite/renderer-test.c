@@ -140,7 +140,7 @@ vg_lite_error_t vg_lite_map(vg_lite_buffer_t *b, vg_lite_map_flag_t f, vg_lite_i
 vg_lite_error_t vg_lite_unmap(vg_lite_buffer_t *b) { assert(!queued && b->handle); b->handle = NULL; return VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_close(void) { assert(!queued); gpu_closes++; return VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_allocate(vg_lite_buffer_t *b) {
-	if (fail_allocate) return VG_LITE_OUT_OF_MEMORY;
+	if (fail_allocate && !--fail_allocate) return VG_LITE_OUT_OF_MEMORY;
 	b->stride = (b->width * 4 + 63) & ~63; b->memory = calloc(b->height, b->stride); assert(b->memory); b->handle = b->memory; return VG_LITE_SUCCESS;
 }
 vg_lite_error_t vg_lite_free(vg_lite_buffer_t *b) { assert(!queued); gpu_frees++; free(b->memory); b->handle = NULL; return VG_LITE_SUCCESS; }
@@ -337,6 +337,56 @@ static void completion_quarantine(void) {
 	assert(gpu_disabled && b.base.n_locks==1 && b.accessing && gpu_finishes==1 && !gpu_frees && !gpu_closes && !pixman_passes && queued==2);
 	/* Child exits without reclaiming resources the GPU might still own. */
 }
+static void clipped_scene(int kind) {
+	reset_gpu(); struct test_buffer a,b,src;
+	buffer_init(&a,568,16,DRM_FORMAT_RGB565,true); buffer_init(&b,568,16,DRM_FORMAT_RGB565,true);
+	assert(a.stride==1152); buffer_init(&src,590,22,DRM_FORMAT_ARGB8888,false);
+	for(int y=0;y<22;y++) for(int x=0;x<590;x++) {
+		uint32_t pixel=0xff000000u|((uint32_t)(x*37)&255)<<16|((uint32_t)(y*51)&255)<<8|((uint32_t)(x^y)&255);
+		memcpy(src.data+y*src.stride+x*4,&pixel,4);
+	}
+	struct wlr_renderer *r=wlr_vglite_renderer_create(); struct vglite_renderer *vr=(struct vglite_renderer *)r;
+	struct wlr_texture *t=wlr_texture_from_buffer(r,&src.base),*ref=wlr_texture_from_buffer(vr->pixman,&src.base);
+	struct wlr_render_pass *p=begin(r,&a.base,NULL),*q=wlr_renderer_begin_buffer_pass(vr->pixman,&b.base,NULL);
+	pixman_region32_t clip,hole,empty;
+	pixman_region32_init_rect(&clip,kind==4 ? -3 : 0,kind==4 ? -2 : 0,kind==4 ? 574 : 568,kind==4 ? 20 : 16);
+	pixman_region32_init_rect(&hole,100,4,101,8); pixman_region32_init(&empty);
+	assert(pixman_region32_subtract(&clip,&clip,&hole));
+	assert(pixman_region32_n_rects(&clip)==4);
+	if(kind==1) { pixman_region32_t damage; pixman_region32_init_rect(&damage,1,0,567,16);
+		assert(pixman_region32_intersect(&clip,&clip,&damage)); pixman_region32_fini(&damage); }
+	struct wlr_render_rect_options clear=bg; clear.clip=kind==3 ? NULL : &empty;
+	add_rect(p,&clear); wlr_render_pass_add_rect(q,&clear);
+	struct wlr_color_primaries primaries; wlr_color_primaries_from_named(&primaries,WLR_COLOR_NAMED_PRIMARIES_SRGB);
+	struct wlr_render_texture_options o={.texture=t,.src_box={11,3,kind==2 ? 284 : 568,kind==2 ? 8 : 16},
+		.dst_box={0,0,568,16},.clip=kind==3 ? &empty : &clip,
+		.filter_mode=kind==2 ? WLR_SCALE_FILTER_NEAREST : WLR_SCALE_FILTER_BILINEAR,
+		.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22,.primaries=&primaries};
+	add_texture(p,&o); o.texture=ref; wlr_render_pass_add_texture(q,&o);
+	struct wlr_render_rect_options child={.box={100,4,101,8},.color={.b=1,.a=1}};
+	add_rect(p,&child); wlr_render_pass_add_rect(q,&child);
+	if(kind==5) fail_allocate=3; /* two uploaded pieces already queued */
+	if(kind==6) fail_allocate=1; /* no GPU command submitted yet */
+	if(kind==7) fail_finish=1;
+	bool ok=submit(p); assert(wlr_render_pass_submit(q));
+	if(kind==7) {
+		assert(!ok && gpu_disabled && queued==5 && gpu_frees==0 && gpu_finishes==1);
+		assert(a.base.n_locks==1 && a.accessing); _exit(0); /* process-lifetime quarantine */
+	}
+	if(kind==5) {
+		assert(!ok && gpu_disabled && gpu_commands==2 && gpu_finishes==1 && gpu_frees==2 && pixman_passes==1);
+	} else {
+		assert(ok); assert_same(&a,&b);
+		if(kind==1 || kind==2 || kind==6) assert(!gpu_commands && pixman_passes==2);
+		else assert(gpu_commands==(kind==3 ? 2 : 5) && gpu_frees==(kind==3 ? 0 : 4) && gpu_finishes==1 && pixman_passes==1);
+		if(kind==1) assert(strstr(decision_log,"reason=incomplete_coverage "));
+		if(kind==2) assert(strstr(decision_log,"reason=texture_clip_scaled "));
+	}
+	wlr_texture_destroy(t); wlr_texture_destroy(ref); wlr_renderer_destroy(r);
+	pixman_region32_fini(&clip); pixman_region32_fini(&hole); pixman_region32_fini(&empty);
+	buffer_finish(&a); buffer_finish(&b); buffer_finish(&src);
+}
+
 static void scene_color_pixel_matrix(void) {
 	/* All 256 input values for each RGB channel, plus mixed colors. Compile
 	 * and call the real pinned color/Pixman code; do not emulate its metadata. */
@@ -441,6 +491,11 @@ static void denied_broker(void) {
 	buffer_finish(&b); reset_gpu();
 }
 int main(void) {
+	for(int i=0;i<7;i++) clipped_scene(i);
+	pid_t clipped_child=fork(); assert(clipped_child>=0);
+	if(!clipped_child) { clipped_scene(7); _exit(99); }
+	int clipped_status; assert(waitpid(clipped_child,&clipped_status,0)==clipped_child &&
+		WIFEXITED(clipped_status) && WEXITSTATUS(clipped_status)==0);
 	scene_color_pixel_matrix();
 	scene_default_diagnostics();
 	denied_broker();

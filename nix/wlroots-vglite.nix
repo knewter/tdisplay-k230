@@ -5,7 +5,7 @@
 # fails submission and disables the GPU instead of committing a partial frame.
 wlroots_0_20.overrideAttrs (old: {
   pname = "wlroots-vglite-full-pass-fallback";
-  patches = (old.patches or []) ++ [ ./patches/wlroots-vglite-full-pass-pixman.patch ./patches/wlroots-vglite-meson.patch ];
+  patches = (old.patches or []) ++ [ ./patches/wlroots-vglite-full-pass-pixman.patch ./patches/wlroots-vglite-meson.patch ./patches/wlroots-vglite-dumb-stride.patch ];
   buildInputs = (old.buildInputs or []) ++ [ vgliteProbe ];
   postPatch = (old.postPatch or "") + ''
     mkdir -p render/vglite include/wlr/render

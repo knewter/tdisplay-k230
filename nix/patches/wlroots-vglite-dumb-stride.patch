@@ -1,0 +1,47 @@
+--- a/render/allocator/drm_dumb.c
++++ b/render/allocator/drm_dumb.c
+@@ -2,6 +2,7 @@
+ #include <assert.h>
+ #include <drm_fourcc.h>
+ #include <fcntl.h>
++#include <limits.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/mman.h>
+@@ -49,6 +50,16 @@
+ 		return NULL;
+ 	}
+ 
++	/* Only the opt-in renderer requests padded RGB565 storage. Keep wlroots'
++	 * logical dimensions and the existing DRM owner/commit path unchanged.
++	 * The Canaan driver returns width * bpp / 8 as its pitch. */
++	uint32_t allocation_width = width;
++	const char *renderer = getenv("WLR_RENDERER");
++	if (renderer && strcmp(renderer, "vglite") == 0 && format->format == DRM_FORMAT_RGB565) {
++		if (width <= 0 || width > INT_MAX - 31) return NULL;
++		allocation_width = ((uint32_t)width + 31) & ~31u;
++	}
++
+ 	struct wlr_drm_dumb_buffer *buffer = calloc(1, sizeof(*buffer));
+ 	if (buffer == NULL) {
+ 		return NULL;
+@@ -59,7 +70,7 @@
+ 	buffer->drm_fd = alloc->drm_fd;
+ 
+ 	uint32_t bpp = 8 * info->bytes_per_block;
+-	if (drmModeCreateDumbBuffer(alloc->drm_fd, width, height, bpp, 0,
++	if (drmModeCreateDumbBuffer(alloc->drm_fd, allocation_width, height, bpp, 0,
+ 			&buffer->handle, &buffer->stride, &buffer->size) != 0) {
+ 		wlr_log_errno(WLR_ERROR, "Failed to create DRM dumb buffer");
+ 		goto create_destroy;
+@@ -102,8 +113,8 @@
+ 		.fd[0] = prime_fd,
+ 	};
+ 
+-	wlr_log(WLR_DEBUG, "Allocated %"PRIu32"x%"PRIu32" DRM dumb buffer",
+-			buffer->width, buffer->height);
++	wlr_log(WLR_DEBUG, "Allocated %"PRIu32"x%"PRIu32" DRM dumb buffer (storage_width=%"PRIu32" stride=%"PRIu32")",
++			buffer->width, buffer->height, allocation_width, buffer->stride);
+ 
+ 	return buffer;
+ 

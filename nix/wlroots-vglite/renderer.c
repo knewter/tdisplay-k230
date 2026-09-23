@@ -45,7 +45,7 @@ struct vglite_pass {
 	struct vglite_renderer *renderer;
 	struct wlr_buffer *buffer;
 	struct vglite_op *ops;
-	size_t len, cap;
+	size_t len, cap, source_count;
 	bool gpu_eligible, failed;
 	const char *reason;
 	size_t reason_op;
@@ -258,9 +258,17 @@ static bool gpu_preflight(struct vglite_pass *p) {
 				fmod(d.width, s.width) == 0 && fmod(d.height, s.height) == 0;
 			pixman_box32_t full = {d.x, d.y, (int64_t)d.x + d.width, (int64_t)d.y + d.height};
 			if (!ok) reject_gpu(p, "texture_geometry", i);
-			if (ok && pixman_region32_contains_rectangle(&region, &full) != PIXMAN_REGION_IN) {
-				ok = false; reject_gpu(p, "texture_clip", i);
+			if (ok && pixman_region32_contains_rectangle(&region, &full) != PIXMAN_REGION_IN &&
+				(s.width != d.width || s.height != d.height)) {
+				ok = false; reject_gpu(p, "texture_clip_scaled", i);
 			}
+			/* Unscaled clips map each integer destination rectangle exactly to
+			 * a source crop. Keep one GPU allocation per nonoverlapping region
+			 * rectangle; all remain alive through completion. */
+			size_t count = pixman_region32_n_rects(&region);
+			if (count > SIZE_MAX / sizeof(vg_lite_buffer_t) - p->source_count) {
+				ok = false; reject_gpu(p, "source_count_overflow", i);
+			} else p->source_count += count;
 		}
 		/* Every eligible operation is an opaque replacement. Require a complete
 		 * redraw so the trial never relies on unproved target preservation. */
@@ -316,7 +324,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	/* Keep every allocation alive until finish, including after an API error.
 	 * Source storage is padded to the SDK allocation stride; upload_buffer in
 	 * this SDK copies destination stride bytes per row, not the source stride. */
-	vg_lite_buffer_t *sources = calloc(p->len, sizeof(*sources));
+	vg_lite_buffer_t *sources = calloc(p->source_count ? p->source_count : 1, sizeof(*sources));
 	if (!sources) { reject_gpu(p, "source_allocation", SIZE_MAX); return GPU_FALLBACK; }
 	/* vg_lite_map requires a real CPU mapping even for a dma-buf. Obtain it
 	 * from the supplied wlroots buffer and keep that access alive through
@@ -336,6 +344,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	}
 	bool ok = gpu_call(p, vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]), "target_map", SIZE_MAX);
 	bool started = false;
+	size_t source_index = 0;
 	for (size_t i = 0; ok && i < p->len; i++) {
 		struct vglite_op *op = &p->ops[i];
 		pixman_region32_t region;
@@ -352,27 +361,38 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 				started = true; ok = gpu_call(p, vg_lite_clear(&target, &r, color), "gpu_clear", i);
 			}
 		} else {
-			vg_lite_buffer_t *s = &sources[i];
-			struct wlr_fbox src = op->texture.src_box; struct wlr_box dst = op->texture.dst_box;
-			s->width = src.width; s->height = src.height;
-			s->format = VG_LITE_RGBA8888;
-			ok = gpu_call(p, vg_lite_allocate(s), "gpu_allocate", i);
-			if (ok) {
-				ok = s->memory && s->stride >= s->width * 4 && s->height == (int)src.height;
-				if (!ok) reject_gpu(p, "upload_layout", i);
-				if (ok) {
-					memset(s->memory, 0, (size_t)s->stride * s->height);
-					for (int y = 0; y < s->height; y++) memcpy((uint8_t *)s->memory + (size_t)y * s->stride,
-						op->pixels + ((size_t)y + (size_t)src.y) * op->stride + (size_t)src.x * 4, (size_t)s->width * 4);
+			struct wlr_fbox src = op->texture.src_box;
+			struct wlr_box dst = op->texture.dst_box;
+			int n; pixman_box32_t *boxes = pixman_region32_rectangles(&region, &n);
+			for (int j = 0; ok && j < n; j++) {
+				assert(source_index < p->source_count);
+				vg_lite_buffer_t *s = &sources[source_index++];
+				struct wlr_fbox crop = src;
+				struct wlr_box piece = dst;
+				if (src.width == dst.width && src.height == dst.height) {
+					crop.x += boxes[j].x1 - dst.x; crop.y += boxes[j].y1 - dst.y;
+					crop.width = boxes[j].x2 - boxes[j].x1; crop.height = boxes[j].y2 - boxes[j].y1;
+					piece = (struct wlr_box){boxes[j].x1, boxes[j].y1, crop.width, crop.height};
 				}
-			}
-			if (ok) {
-				/* Crop during the CPU upload. Pinned blit() cleans the source cache;
-				 * blit_rect() omits that operation. The matrix maps this crop's
-				 * local origin to dst, without scaling the destination translation. */
-				vg_lite_matrix_t m = {{{dst.width / src.width, 0, dst.x}, {0, dst.height / src.height, dst.y}, {0, 0, 1}}};
-				started = true;
-				ok = gpu_call(p, vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "gpu_blit", i);
+				s->width = crop.width; s->height = crop.height;
+				s->format = VG_LITE_RGBA8888;
+				ok = gpu_call(p, vg_lite_allocate(s), "gpu_allocate", i);
+				if (ok) {
+					ok = s->memory && s->stride >= s->width * 4 && s->height == (int)crop.height;
+					if (!ok) reject_gpu(p, "upload_layout", i);
+					if (ok) {
+						memset(s->memory, 0, (size_t)s->stride * s->height);
+						for (int y = 0; y < s->height; y++) memcpy((uint8_t *)s->memory + (size_t)y * s->stride,
+							op->pixels + ((size_t)y + (size_t)crop.y) * op->stride + (size_t)crop.x * 4, (size_t)s->width * 4);
+					}
+				}
+				if (ok) {
+					/* CPU crop avoids SDK scissor state changes and their internal
+					 * unchecked finish. blit() also cleans the uploaded source cache. */
+					vg_lite_matrix_t m = {{{piece.width / crop.width, 0, piece.x}, {0, piece.height / crop.height, piece.y}, {0, 0, 1}}};
+					started = true;
+					ok = gpu_call(p, vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "gpu_blit", i);
+				}
 			}
 		}
 		pixman_region32_fini(&region);
@@ -388,7 +408,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 		wlr_log(WLR_ERROR, "VG-Lite completion failed; target quarantined, GPU disabled; restart session to recover resources");
 		return GPU_FAILED;
 	}
-	for (size_t i = 0; i < p->len; i++) if (sources[i].handle && !gpu_call(p, vg_lite_free(&sources[i]), "gpu_free", i)) ok = false;
+	for (size_t i = 0; i < source_index; i++) if (sources[i].handle && !gpu_call(p, vg_lite_free(&sources[i]), "gpu_free", SIZE_MAX)) ok = false;
 	free(sources);
 	if (target.handle && !gpu_call(p, vg_lite_unmap(&target), "target_unmap", SIZE_MAX)) ok = false;
 	if (!gpu_call(p, vg_lite_close(), "gpu_close", SIZE_MAX)) ok = false;
