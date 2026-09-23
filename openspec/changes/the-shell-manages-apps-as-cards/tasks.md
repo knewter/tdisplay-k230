@@ -5,7 +5,7 @@
 
 ## 2. Card state and recovery model
 
-- [ ] 2.1 Implement a host-testable card-deck state model for enter, shrink, horizontal drag, release/expand, unavailable/private state, graceful-close request, refusal, timeout, and restore; verify with the proposed-to-create `python3 tests/test_card_shell_state.py`.
+- [x] 2.1 Implement a host-testable card-deck state model for enter, shrink, horizontal drag, release/expand, unavailable/private state, graceful-close request, refusal, timeout, and restore; verify with `python3 tests/test_card_shell_state.py`. Coordinator proof: `docs/evidence/card-shell-policy-host.md`.
 - [ ] 2.2 Implement global edge-gesture entry from an arbitrary eligible running application and a persistent button entry/recovery route, while retaining Apps, Windows/Home, Keyboard, System, Help, terminal, monitor, and Back semantics; verify with the proposed-to-create `python3 tests/test_card_shell_recovery.py` plus existing `python3 tests/test_touch_menu.py`.
 
 ## 3. Selected live composition boundary
