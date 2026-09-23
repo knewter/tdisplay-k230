@@ -1,0 +1,8 @@
+Running as unit: k230-vglite-client-b45c2f3e527a.service
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 747ms
+             CPU time consumed: 375ms
+                   Memory peak: 5.1M (swap: 0B)
+Failed to stop k230-vglite-client-b45c2f3e527a.service: Unit k230-vglite-client-b45c2f3e527a.service not loaded.
+PASS: actual systemd client credentials, capabilities, private IPC/GPU/proc-fd denial, shared Wayland socket {'uid': 1000, 'gid': 995, 'private_resources': 'denied', 'NoNewPrivs': 1, 'CapEff': 0}

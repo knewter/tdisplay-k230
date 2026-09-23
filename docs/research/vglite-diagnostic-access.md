@@ -100,6 +100,12 @@ this check returned `SKIP` (77). Subordinate-UID namespace mappings also failed.
 check as root on a suitable host, or as the reserved board operator, before the
 diagnostic compositor trial. A skipped check is not a pass.
 
+The coordinator subsequently ran this exact isolation prerequisite as root on
+the reserved board and it passed. See
+`docs/evidence/vglite-isolation/README.md` and its actual output. This supplies
+the missing multi-UID observation; GPU and compositor-session tests remain
+separate and unverified.
+
 ## Operator command after the isolation prerequisite
 
 Import the opt-in Sway and a trusted, self-terminating Wayland probe into the
