@@ -1,0 +1,10 @@
+/nix/store/n6h8qfjwppv9y5radx5vrdl9vjb9737q-lf-riscv64-unknown-linux-gnu-42/share/applications/lf.desktop
+[Desktop Entry]
+Type=Application
+Name=lf
+Comment=Launches the lf file manager
+Icon=utilities-terminal
+Terminal=true
+Exec=lf
+Categories=ConsoleOnly;System;FileTools;FileManager
+MimeType=inode/directory;
