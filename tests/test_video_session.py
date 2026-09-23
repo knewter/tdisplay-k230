@@ -70,11 +70,18 @@ class VideoSessionTest(unittest.TestCase):
         mpv = shutil.which("mpv")
         if mpv is None or not sample.is_file():
             self.skipTest("mpv or probe sample unavailable")
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root, "exit 0\n")
+            self.assertEqual(self.run_session(root, player, "run-mvx").returncode, 0)
+            decoder = next(arg for arg in (root / "args").read_text().split()
+                           if arg.startswith("--vd="))
         result = subprocess.run(
-            [mpv, "--no-config", "--vo=null", "--ao=null", "--frames=1",
-             "--vd=h264_v4l2m2m,-", str(sample)],
+            [mpv, "--no-config", "--vo=null", "--audio=no", "--frames=1",
+             decoder, str(sample)],
             text=True, capture_output=True, timeout=15)
         output = result.stdout + result.stderr
+        self.assertNotEqual(result.returncode, 0)
         self.assertIn("Excluding codecs", output)
         self.assertIn("Decoder init failed for h264_v4l2m2m", output)
         self.assertIn("No video or audio streams selected", output)
