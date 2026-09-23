@@ -285,7 +285,18 @@ static struct wlr_box clip_box(void) {
 							cfg->height - cfg->top_reserved - cfg->bottom_reserved -
 								cfg->title_height - cfg->footer_height};
 }
-static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y) {
+/* Mirror traversal follows source paint order. Place each node immediately
+ * after its predecessor instead of cycling every node through the top. The
+ * wlroots operations are no-ops when sibling order is already correct. */
+static void order_mirror(struct wlr_scene_node **previous, struct wlr_scene_buffer *copy) {
+	if (*previous)
+		wlr_scene_node_place_above(&copy->node, *previous);
+	else
+		wlr_scene_node_lower_to_bottom(&copy->node);
+	*previous = &copy->node;
+}
+static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
+		struct wlr_scene_node **previous) {
 	if (!node->enabled)
 		return true;
 	x += node->x;
@@ -293,7 +304,7 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y)
 	if (node->type == WLR_SCENE_NODE_TREE) {
 		struct wlr_scene_node *n;
 		struct wlr_scene_tree *t = wlr_scene_tree_from_node(node);
-		wl_list_for_each(n, &t->children, link) if (!sync_node(c, n, x, y)) return false;
+		wl_list_for_each(n, &t->children, link) if (!sync_node(c, n, x, y, previous)) return false;
 		return true;
 	}
 	if (node->type != WLR_SCENE_NODE_BUFFER)
@@ -318,7 +329,7 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y)
 	pixman_region32_fini(&empty);
 	card_clip_buffer(copy, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
 					 clip_box());
-	wlr_scene_node_raise_to_top(&copy->node);
+	order_mirror(previous, copy);
 	return true;
 }
 static bool label_update(struct wlr_scene_tree *parent, struct wlr_scene_buffer **node,
@@ -399,9 +410,10 @@ static bool sync_card(struct card *c, size_t index) {
 		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
 		struct mirror *m, *tmp;
 		wl_list_for_each(m, &c->mirrors, link) m->seen = false;
+		struct wlr_scene_node *previous = NULL;
 		struct wlr_scene_node *n;
 		wl_list_for_each(n, &c->view->content_tree->children,
-						 link) if (!sync_node(c, n, 0, 0)) return false;
+						 link) if (!sync_node(c, n, 0, 0, &previous)) return false;
 		wl_list_for_each_safe(m, tmp, &c->mirrors, link) if (!m->seen) free_mirror(m);
 		if (wl_list_empty(&c->mirrors))
 			return false;
