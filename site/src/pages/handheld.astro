@@ -5,9 +5,9 @@ import { evidenceAsset, evidenceUrl, url } from "../lib/specs";
 // Full camera recordings stay in the repository; the static site carries posters.
 const media = "https://raw.githubusercontent.com/knewter/tdisplay-k230/17e3a6a/docs/evidence/";
 const offline = [
-  ["Help", "help.png", "The built-in Help page on a fresh image."],
-  ["Editor", "editor.png", "Nano launched from the offline app set."],
-  ["Files", "nnn.png", "The nnn file browser launched from the offline app set."],
+  ["Help", "docs/evidence/offline-wifi-image/help.png", "The built-in Help page on a fresh image."],
+  ["Editor", "docs/evidence/offline-wifi-image/editor.png", "Nano launched from the offline app set."],
+  ["Files", "docs/evidence/offline-wifi-image/nnn.png", "The nnn file browser launched from the offline app set."],
 ];
 const groups = [
   {
@@ -58,7 +58,7 @@ const groups = [
     <section>
       <h2>Offline tools and Wi-Fi</h2>
       <p>These are native screenshots from a fresh-image boot exercised with injected board input, not physical-finger camera evidence. Help, nano and nnn are available offline. Wi-Fi association, DHCP, DNS routing over Wi-Fi and an outbound ping are proven with runtime credentials only; automatic reconnection is not configured.</p>
-      <div class="media-grid">{offline.map(([title, file, caption]) => <figure><a href={evidenceUrl(`docs/evidence/offline-wifi-image/${file}`)}><img loading="lazy" src={evidenceAsset(`docs/evidence/offline-wifi-image/${file}`)} alt={caption} /></a><figcaption><b>{title}</b> · native screenshot</figcaption></figure>)}</div>
+      <div class="media-grid">{offline.map(([title, file, caption]) => <figure><a href={evidenceUrl(file)}><img loading="lazy" src={evidenceAsset(file)} alt={caption} /></a><figcaption><b>{title}</b> · native screenshot</figcaption></figure>)}</div>
       <p><a href={evidenceUrl("docs/evidence/offline-wifi-image/README.md")}>Fresh-image evidence notes</a></p>
     </section>
     {groups.map((group) => (

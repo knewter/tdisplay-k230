@@ -10,8 +10,8 @@ country 99: DFS-UNSET
 REGDB_RECHECK_DONE
 
 
-[root@nixos:~]# 
+[root@nixos:~]#
 
 
 
-[root@nixos:~]# 
+[root@nixos:~]#

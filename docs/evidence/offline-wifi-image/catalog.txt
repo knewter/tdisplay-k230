@@ -16,8 +16,8 @@ nnn.desktop	nnn	1
 SETUP_DONE
 
 
-[root@nixos:~]# 
+[root@nixos:~]#
 
 
 
-[root@nixos:~]# 
+[root@nixos:~]#
