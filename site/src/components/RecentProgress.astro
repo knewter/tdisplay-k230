@@ -1,0 +1,54 @@
+---
+import { evidenceUrl, url } from "../lib/specs";
+---
+
+<section class="recent-progress" aria-labelledby="recent-progress-heading">
+  <p class="eyebrow">Progress · September 23, 2026</p>
+  <h2 id="recent-progress-heading">What has changed lately</h2>
+  <div class="progress-grid">
+    <article>
+      <p class="status">Installed and verified</p>
+      <h3>Room for apps and updates</h3>
+      <p>The system expanded its compact root filesystem on the physical 128 GB
+        card, leaving about 119 GB free. A second boot preserved the capacity,
+        boot files, shell and Wi-Fi.</p>
+      <a href={evidenceUrl("docs/evidence/storage-capacity/README.md")}>Storage evidence</a>
+    </article>
+    <article>
+      <p class="status">Experimental shell · fix landed</p>
+      <h3>More reliable card throws</h3>
+      <p>A gesture fix passed all 13 injected interaction checks in each of three
+        board runs. The live-card shell still misses performance targets and
+        needs real-finger acceptance before joining the default image.</p>
+      <a href={evidenceUrl("docs/evidence/card-shell/throw-sampling/README.md")}>Gesture checks and limits</a>
+    </article>
+    <article>
+      <p class="status">Experiment complete</p>
+      <h3>CPU vectors tested on the board</h3>
+      <p>Vector state and 192 pixel comparisons passed. Card performance gains
+        were small and mixed, so the optional vector kernel was not promoted
+        to the normal image.</p>
+      <a href={evidenceUrl("docs/evidence/card-shell/kernel-rvv/card-cost/README.md")}>Measured decision</a>
+    </article>
+  </div>
+  <p class="next"><strong>Next:</strong> reduce card repaint cost, verify the feel
+    with a finger, and refine the shell, launcher, settings and notifications
+    into a coherent webOS-inspired interface. That interface is still in development.</p>
+  <p class="publication">The requirement count tracks archived specifications.
+    This progress summary and the <a href={url("handheld/")}>feature demonstrations</a>
+    also report verified work in changes that remain open. Landing a proposal
+    does not make it an installed feature.</p>
+</section>
+
+<style>
+  .recent-progress { max-width: 1080px; margin: 3rem auto; padding: 1.5rem; border-block: 1px solid var(--ink-2); }
+  h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: .6rem 0 1.5rem; }
+  .progress-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+  article { min-width: 0; }
+  h3 { font-size: 1.3rem; margin: .5rem 0; }
+  p { line-height: 1.65; }
+  .status { font-family: var(--mono); font-size: .75rem; margin: 0; }
+  .next { margin-top: 1.8rem; }
+  .publication { font-size: .9rem; }
+  @media (max-width: 720px) { .progress-grid { grid-template-columns: 1fr; } }
+</style>
