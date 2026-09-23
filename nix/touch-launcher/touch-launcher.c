@@ -54,7 +54,7 @@ struct page_transition {
   enum transition_direction direction;
   uint32_t *source, *destination;
   size_t bytes;
-  int64_t release_ms, started_ms;
+  int64_t release_ms, started_ms, release_cpu_ns;
   struct wl_callback *callback;
 };
 static struct page_transition transition;
@@ -74,6 +74,7 @@ static struct wl_surface *surface;
 static struct zwlr_layer_surface_v1 *layer_surface;
 struct shm_buffer { struct wl_buffer *buffer; uint32_t *pixels; int size; };
 static struct shm_buffer *current;
+static unsigned live_buffers;
 static uint32_t *pixels;
 static uint32_t *last_frame;
 static size_t last_frame_bytes;
@@ -152,6 +153,11 @@ static int64_t monotonic_ms(void) {
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
   return (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+static int64_t process_cpu_ns(void) {
+  struct timespec now;
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &now);
+  return (int64_t)now.tv_sec * 1000000000 + now.tv_nsec;
 }
 static void catalog_child_setup(gpointer unused) {
   (void)unused;
@@ -498,7 +504,7 @@ static void activate_card(int card) {
   if (!transition.active && card>=0 && card<button_count) run_action(buttons[card].action);
 }
 static void buffer_release(void *d, struct wl_buffer *b) {
-  struct shm_buffer *old = d; munmap(old->pixels, old->size); wl_buffer_destroy(b); free(old);
+  struct shm_buffer *old = d; live_buffers--; munmap(old->pixels, old->size); wl_buffer_destroy(b); free(old);
 }
 static const struct wl_buffer_listener buffer_listener = { .release = buffer_release };
 static struct shm_buffer *make_buffer(void) {
@@ -515,6 +521,7 @@ static struct shm_buffer *make_buffer(void) {
   if(!out->buffer || wl_buffer_add_listener(out->buffer,&buffer_listener,out)<0) {
     if(out->buffer) wl_buffer_destroy(out->buffer); munmap(out->pixels,out->size); free(out); exit(1);
   }
+  live_buffers++;
   return out;
 }
 static bool save_last_frame(const uint32_t *source) {
@@ -546,8 +553,11 @@ static void transition_trace(int64_t render_ms, int64_t elapsed_ms, bool settled
   if (!path || !*path) return;
   FILE *metrics=fopen(path,"a");
   if (!metrics) return;
-  fprintf(metrics,"transition render_wall_ms=%lld release_to_submit_wall_ms=%lld extra_bytes=%zu settled=%d\n",
-    (long long)render_ms,(long long)elapsed_ms,transition.bytes*2,settled ? 1 : 0);
+  fprintf(metrics,"transition render_wall_ms=%lld release_to_submit_wall_ms=%lld extra_bytes=%zu settled=%d release_to_submit_cpu_ms=%.3f buffers=%u page=%d overview=%d direction=%d\n",
+    (long long)render_ms,(long long)elapsed_ms,transition.bytes*2,settled ? 1 : 0,
+    (process_cpu_ns()-transition.release_cpu_ns)/1000000.0,live_buffers,
+    overview.open ? overview.page : launcher_current_page(&navigation),
+    overview.open ? 1 : 0,(int)transition.direction);
   fclose(metrics);
 }
 static void transition_settle(void) {
@@ -694,6 +704,7 @@ static void apply_gesture(enum gesture_direction direction) {
   if (!gestures_enabled || transition.active || direction==GESTURE_NONE || direction==GESTURE_CANCELLED) return;
   /* The transition budget starts on release, before any page pre-rendering. */
   transition.release_ms=monotonic_ms();
+  transition.release_cpu_ns=process_cpu_ns();
   if (overview.open) {
     if (direction==GESTURE_DOWN) {
       bool animate=transition_prepare();
