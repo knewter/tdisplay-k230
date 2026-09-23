@@ -1,0 +1,83 @@
+K230_CARD_BENCH v=1 run=223037097200638 event=resource phase=baseline t_ns=223037097273706 cpu_ns=818214246 memory_bytes=56160256 scope=compositor
+K230_CARD_BENCH v=1 run=223037097200638 event=session t_ns=223037098617633 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=injected cards=2
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=24 t_ns=223037111590215 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=input input_id=1 gesture_id=9 kind=motion t_ns=223037112289064 source=injected
+K230_CARD_BENCH v=1 run=223037097200638 event=submit input_id=1 frame_id=25 t_ns=223037133379503 update_cpu_ns=6212572 final=0
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=25 t_ns=223037133549033 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=26 t_ns=223037149620766 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=27 t_ns=223037165794842 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=input input_id=2 gesture_id=9 kind=release t_ns=223037172966783 source=injected
+K230_CARD_BENCH v=1 run=223037097200638 event=submit input_id=2 frame_id=28 t_ns=223037188362670 update_cpu_ns=7036969 final=1
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=28 t_ns=223037188482356 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=29 t_ns=223037204746082 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=30 t_ns=223037220886134 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037097200638 event=present frame_id=31 t_ns=223037238774577 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=resource phase=baseline t_ns=223037348445284 cpu_ns=852921252 memory_bytes=56168448 scope=compositor
+K230_CARD_BENCH v=1 run=223037348432239 event=session t_ns=223037348912185 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=physical cards=2
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=32 t_ns=223037362290934 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=input input_id=1 gesture_id=10 kind=motion t_ns=223037363111844 source=physical
+K230_CARD_BENCH v=1 run=223037348432239 event=submit input_id=1 frame_id=33 t_ns=223037384834747 update_cpu_ns=6968929 final=0
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=33 t_ns=223037384981934 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=34 t_ns=223037401295294 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=35 t_ns=223037417546376 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=input input_id=2 gesture_id=10 kind=release t_ns=223037423893439 source=physical
+K230_CARD_BENCH v=1 run=223037348432239 event=submit input_id=2 frame_id=36 t_ns=223037440292770 update_cpu_ns=7191717 final=1
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=36 t_ns=223037440418107 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=37 t_ns=223037456673557 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=38 t_ns=223037473084000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037348432239 event=present frame_id=39 t_ns=223037491058355 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=resource phase=baseline t_ns=223037599527694 cpu_ns=890097728 memory_bytes=56168448 scope=compositor
+K230_CARD_BENCH v=1 run=223037599514779 event=session t_ns=223037600023850 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=injected cards=2
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=40 t_ns=223037613050595 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=input input_id=1 gesture_id=11 kind=motion t_ns=223037613673611 source=physical
+K230_CARD_BENCH v=1 run=223037599514779 event=submit input_id=1 frame_id=41 t_ns=223037635499498 update_cpu_ns=6811153 final=0
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=41 t_ns=223037635620737 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=42 t_ns=223037651716255 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=43 t_ns=223037667870664 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=input input_id=2 gesture_id=11 kind=release t_ns=223037674301986 source=physical
+K230_CARD_BENCH v=1 run=223037599514779 event=submit input_id=2 frame_id=44 t_ns=223037690279391 update_cpu_ns=6754351 final=1
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=44 t_ns=223037690387636 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=45 t_ns=223037706500326 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=46 t_ns=223037722663662 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037599514779 event=present frame_id=47 t_ns=223037740548048 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=resource phase=baseline t_ns=223037849828618 cpu_ns=924877718 memory_bytes=56168448 scope=compositor
+K230_CARD_BENCH v=1 run=223037849819451 event=session t_ns=223037850297042 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=physical cards=2
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=48 t_ns=223037863712981 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=input input_id=1 gesture_id=12 kind=motion t_ns=223037864428252 source=physical
+K230_CARD_BENCH v=1 run=223037849819451 event=submit input_id=1 frame_id=49 t_ns=223037886424360 update_cpu_ns=7049261 final=0
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=49 t_ns=223037886588711 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=50 t_ns=223037902860531 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=51 t_ns=223037919119528 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=input input_id=2 gesture_id=12 kind=release t_ns=223037925125688 source=physical
+K230_CARD_BENCH v=1 run=223037849819451 event=submit input_id=2 frame_id=52 t_ns=223037941835796 update_cpu_ns=7262351 final=1
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=52 t_ns=223037941971643 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=53 t_ns=223037958251890 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=54 t_ns=223037974646603 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=55 t_ns=223037990943721 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=56 t_ns=223038007329778 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=input input_id=3 gesture_id=13 kind=motion t_ns=223038017924751 source=injected
+K230_CARD_BENCH v=1 run=223037849819451 event=submit input_id=3 frame_id=57 t_ns=223038031301286 update_cpu_ns=8544334 final=0
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=57 t_ns=223038031454264 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=58 t_ns=223038047839089 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=59 t_ns=223038064201631 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=input input_id=4 gesture_id=13 kind=release t_ns=223038078905832 source=injected
+K230_CARD_BENCH v=1 run=223037849819451 event=submit input_id=4 frame_id=60 t_ns=223038088056930 update_cpu_ns=8451282 final=1
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=60 t_ns=223038088228754 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=61 t_ns=223038104404724 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=62 t_ns=223038120586715 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=63 t_ns=223038136747557 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223037849819451 event=present frame_id=64 t_ns=223038154590795 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=resource phase=baseline t_ns=223038254434037 cpu_ns=984037452 memory_bytes=56168448 scope=compositor
+K230_CARD_BENCH v=1 run=223038254426112 event=session t_ns=223038254758189 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=injected cards=2
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=65 t_ns=223038267211851 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=input input_id=1 gesture_id=14 kind=motion t_ns=223038267891795 source=injected
+K230_CARD_BENCH v=1 run=223038254426112 event=submit input_id=1 frame_id=66 t_ns=223038289548052 update_cpu_ns=6720214 final=0
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=66 t_ns=223038289683037 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=67 t_ns=223038305793433 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=68 t_ns=223038321969513 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=input input_id=2 gesture_id=14 kind=release t_ns=223038328687396 source=injected
+K230_CARD_BENCH v=1 run=223038254426112 event=submit input_id=2 frame_id=69 t_ns=223038344076932 update_cpu_ns=6451208 final=1
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=69 t_ns=223038344205054 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=70 t_ns=223038360615386 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=71 t_ns=223038376919097 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=223038254426112 event=present frame_id=72 t_ns=223038394688375 presented=1 clock=monotonic

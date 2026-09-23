@@ -37,9 +37,18 @@ bool card_shell_test_input(struct sway_output *output, int argc, char **argv) {
 	if (!env || strcmp(env, "1") || !output ||
 		!wlr_backend_is_headless(output->wlr_output->backend) || argc < 1)
 		return false;
-	if (argc == 1 && !strcmp(argv[0], "init")) {
+	if ((argc == 1 || argc == 2) && !strcmp(argv[0], "init")) {
+		const char *name = "Card shell headless fixture";
+		if (argc == 2) {
+			if (!strcmp(argv[1], "injected-device"))
+				name = "K230 injected touchscreen";
+			else if (!strcmp(argv[1], "physical-label-fixture"))
+				name = "Card shell physical-label fixture";
+			else
+				return false;
+		}
 		if (!initialized) {
-			wlr_touch_init(&touch, &impl, "Card shell headless fixture");
+			wlr_touch_init(&touch, &impl, name);
 			initialized = true;
 			wl_signal_emit_mutable(&server.backend->events.new_input, &touch.base);
 		}

@@ -29,6 +29,7 @@
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_scene.h>
+#include <wlr/types/wlr_touch.h>
 struct card;
 struct mirror {
 	struct wl_list link;
@@ -922,22 +923,31 @@ bool card_shell_cancel(struct sway_seat *seat) {
 		chrome();
 	return consumed;
 }
-bool card_shell_down(struct sway_seat *seat, int32_t id, double x, double y) {
+bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y) {
 	bool consumed = input_down(seat, id, x, y);
 	if (consumed)
 		shell.gesture_seq++;
 	return consumed;
 }
-bool card_shell_motion(struct sway_seat *seat, int32_t id, double x, double y) {
+/* Device identity is per event, independent of the benchmark's declared source.
+ * The board harness additionally verifies the exact named device is uinput via
+ * its virtual sysfs path. This label alone never attests a real finger. */
+static bool injected_touch(const struct wlr_touch *touch) {
+	const char *name = touch ? touch->base.name : NULL;
+	return shell.injecting || (name &&
+		(!strcmp(name, "K230 injected touchscreen") ||
+		 !strcmp(name, "Card shell headless fixture")));
+}
+bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y) {
 	bool active = shell.active;
-	card_bench_input_begin(shell.gesture_seq, "motion", shell.injecting);
+	card_bench_input_begin(shell.gesture_seq, "motion", injected_touch(touch));
 	bool consumed = input_motion(seat, id, x, y);
 	card_bench_input_end(consumed && (active || shell.active), false);
 	return consumed;
 }
-bool card_shell_up(struct sway_seat *seat, int32_t id) {
+bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id) {
 	bool active = shell.active;
-	card_bench_input_begin(shell.gesture_seq, "release", shell.injecting);
+	card_bench_input_begin(shell.gesture_seq, "release", injected_touch(touch));
 	bool consumed = input_up(seat, id);
 	card_bench_input_end(consumed && (active || shell.active), shell.policy.mode != CS_DRAGGING);
 	return consumed;
@@ -950,9 +960,7 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 	struct sway_seat *seat = config->handler_context.seat;
 	bool accepted = false;
 	if (argc >= 2 && strcmp(argv[0], "test-touch") == 0) {
-		shell.injecting = true;
 		accepted = card_shell_test_input(shell.output, argc - 1, argv + 1);
-		shell.injecting = false;
 	} else if (argc == 2 && strcmp(argv[0], "benchmark") == 0 && !shell.active) {
 		snapshot();
 		accepted = card_bench_arm(shell.output, argv[1], shell.policy.count);
@@ -979,7 +987,7 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		if (*end || id < 0 || id > INT32_MAX)
 			return cmd_results_new(CMD_INVALID, "invalid contact");
 		shell.injecting = true;
-		accepted = card_shell_up(seat, id);
+		accepted = card_shell_up(seat, NULL, id);
 		shell.injecting = false;
 	} else if (argc == 4 && (strcmp(argv[0], "down") == 0 || strcmp(argv[0], "motion") == 0)) {
 		char *end;
@@ -993,8 +1001,8 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		if (*end || !isfinite(y))
 			return cmd_results_new(CMD_INVALID, "invalid y");
 		shell.injecting = true;
-		accepted = strcmp(argv[0], "down") == 0 ? card_shell_down(seat, id, x, y)
-												: card_shell_motion(seat, id, x, y);
+		accepted = strcmp(argv[0], "down") == 0 ? card_shell_down(seat, NULL, id, x, y)
+												: card_shell_motion(seat, NULL, id, x, y);
 		shell.injecting = false;
 	} else
 		return cmd_results_new(

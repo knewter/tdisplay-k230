@@ -5,6 +5,7 @@ Compiles the native receiver, runs Sway under QEMU if needed, and emits real
 wlr_touch device events via the explicitly guarded test hook. No board access.
 """
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -53,7 +54,7 @@ def build_receiver(directory):
     return binary
 
 
-def run(sway, qemu, output):
+def run(sway, qemu, output, check_provenance=False):
     output.mkdir(parents=True, exist_ok=True)
     output.chmod(0o700)
     receiver = build_receiver(output)
@@ -167,17 +168,77 @@ def run(sway, qemu, output):
         select_card(31)
         ipc('card_shell enter');ipc('card_shell back')
         paired(bar_log, 32, 20, 20)
+        provenance_results = []
+        if check_provenance:
+            spec = importlib.util.spec_from_file_location('card_benchmark', ROOT/'tools/card-shell-benchmark.py')
+            benchmark = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(benchmark)
+
+            def device(kind):
+                ready_count = sum(r['event'] == 'touch_ready' for r in records(bar_log))
+                native('remove')
+                wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_removed', 'source device removed')
+                native('init '+kind)
+                wait_for(lambda: sum(r['event'] == 'touch_ready' for r in records(bar_log)) > ready_count,
+                         'source device rebound')
+
+            def gesture(touch_id, direct=False):
+                send = (lambda command: ipc('card_shell '+command)) if direct else native
+                send(f'down {touch_id} 284 450')
+                send(f'motion {touch_id} 244 450')
+                time.sleep(.06)
+                send(f'up {touch_id}')
+                time.sleep(.06)
+
+            def scenario(name, declared, kinds, expected_sources, reject=False, direct=False):
+                ipc('card_shell back')
+                device(kinds[0])
+                ipc('card_shell benchmark '+declared)
+                ipc('card_shell enter')
+                for index, kind in enumerate(kinds):
+                    if index:
+                        device(kind)
+                    gesture(100+index, direct)
+                ipc('card_shell back')
+                time.sleep(.08)
+                ipc('card_shell benchmark-stop')
+                # Parse source-emitted records. A deliberate mismatched/mixed
+                # run MUST remain invalid rather than be relabeled on arming.
+                rows, _ = benchmark.parse_rows((output/'sway.log').read_bytes())
+                run_id = next(r['run'] for r in reversed(rows) if r['event'] == 'session')
+                selected = [r for r in rows if r['run'] == run_id]
+                inputs = [r for r in selected if r['event'] == 'input']
+                assert [r['source'] for r in inputs] == expected_sources, inputs
+                assert [r['kind'] for r in inputs] == ['motion', 'release'] * len(kinds), inputs
+                try:
+                    benchmark.analyze_run(run_id, selected)
+                except benchmark.InvalidEvidence as error:
+                    assert reject and str(error) == 'mixed input provenance within a run', str(error)
+                else:
+                    assert not reject, 'mismatched provenance accepted'
+                provenance_results.append({'case': name, 'declared': declared,
+                                           'observed_sources': expected_sources,
+                                           'parser': 'rejected-mixed-provenance' if reject else 'schema-accepted'})
+
+            scenario('named-uinput-device', 'injected', ['injected-device'], ['injected']*2)
+            scenario('native-physical-label-fixture', 'physical', ['physical-label-fixture'], ['physical']*2)
+            scenario('arm-does-not-relabel-native-input', 'injected', ['physical-label-fixture'], ['physical']*2, reject=True)
+            scenario('mixed-native-devices', 'physical', ['physical-label-fixture', 'injected-device'],
+                     ['physical']*2+['injected']*2, reject=True)
+            scenario('direct-ipc-stays-injected', 'injected', ['physical-label-fixture'], ['injected']*2, direct=True)
         for path in (one_log, two_log, bar_log):
             rows = records(path)
             assert not any(r['event'].startswith(('invalid_', 'unpaired_')) for r in rows), rows
             assert rows[-1]['active'] == 0, rows
-        result = {'evidence_class': 'native-wayland-receiver-headless-injected-device',
+        result = {'provenance': provenance_results,
+                  'evidence_class': 'native-wayland-receiver-headless-injected-device',
                   'passed': ['launcher-footer-pairing', 'hidden-card-button-pairing',
                              'second-contact-bar-drain', 'second-contact-keyboard-drain',
                              'normal-app-touch-pairing',
                              'cancel-without-up', 'device-removal-without-up'],
                   'limits': ['No physical panel or finger evidence.',
-                             'Input originates from a test wlr_touch device, not direct card handlers.']}
+                             'Routing input originates from a test wlr_touch device.',
+                             'Provenance fixtures simulate device names; physical labels do not prove a real finger.']}
     finally:
         # Close clients while Sway is still alive; server disconnect must not
         # masquerade as receiver protocol failure or suppress final assertions.
@@ -199,11 +260,12 @@ if __name__ == '__main__':
     parser.add_argument('--sway', required=True)
     parser.add_argument('--qemu', default='/usr/bin/qemu-riscv64-static')
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--provenance', action='store_true', help='also verify native device source labels and parser rejection')
     arguments = parser.parse_args()
     if arguments.output:
         if arguments.output.exists() and any(arguments.output.iterdir()):
             parser.error('--output must be new or empty')
-        run(arguments.sway, arguments.qemu, arguments.output.resolve())
+        run(arguments.sway, arguments.qemu, arguments.output.resolve(), arguments.provenance)
     else:
         with tempfile.TemporaryDirectory(prefix='card-touch-routing-') as directory:
-            run(arguments.sway, arguments.qemu, Path(directory))
+            run(arguments.sway, arguments.qemu, Path(directory), arguments.provenance)
