@@ -1,8 +1,8 @@
 
 ===== > kill -TERM 1248; cd /home/shell; export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/nnn-launch.log 2>&1 < /dev/null & sleep 1; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; grim /run/k230-help-test/nnn-card.png; date +%s%N; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 284 520; sleep .2; date +%s%N; ps -C .nnn-wrapped -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/nnn-running.png; cat /run/k230-help-test/nnn-launch.log; echo NNN_TEST_DONE =====
-kill -TERM 1248; cd /home/shell; export XDG_RUNTIME_DI 
+kill -TERM 1248; cd /home/shell; export XDG_RUNTIME_DI
 R=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/nnn-launch.log 2>&1 < /dev/null & sleep 1; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; grim /run/k230-help-test/nnn-card.png; date +%s%N; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 284 520; sleep .2; date +%s%N; ps -C .nnn-wrapped -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/nnn-running.png; cat /run/k230-help-test/nnn-launch.log; echo NNN_TEST_DONE
-[?2004l
+
 [2] 1259
 1773786076711529491
 [2]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/nnn-launch.log 2>&1 < /dev/null
@@ -10,10 +10,10 @@ R=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; runuse
    1324  2688       0 .nnn-wrapped
 warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
 NNN_TEST_DONE
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
-[?2004l
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#

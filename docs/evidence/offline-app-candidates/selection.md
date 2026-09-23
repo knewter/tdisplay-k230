@@ -30,4 +30,3 @@ through the existing Foot bridge in the final-image trial.
 Final-image boot, desktop discovery and injected Help/app evidence are recorded
 separately in [the image trial](../offline-wifi-image/README.md). No physical-finger
 or final-glass claim is inferred from those injected checks.
-

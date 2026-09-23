@@ -1,7 +1,7 @@
 
 ===== > cd /home/shell; export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-home.log 2>&1 < /dev/null & sleep 1; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; date +%s%N; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 284 295; sleep .2; date +%s%N; ps -C nano -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/editor-running-home.png; cat /run/k230-help-test/editor-home.log; echo EDITOR_HOME_DONE =====
 cd /home/shell; export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-home.log 2>&1 < /dev/null & sleep 1; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 460 1165; date +%s%N; /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 284 295; sleep .2; date +%s%N; ps -C nano -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/editor-running-home.png; cat /run/k230-help-test/editor-home.log; echo EDITOR_HOME_DONE
-[?2004l
+
 [2] 1202
 1773786027387465706
 [2]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-home.log 2>&1 < /dev/null
@@ -9,10 +9,10 @@ cd /home/shell; export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAY
    1248  3968       0 nano
 warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
 EDITOR_HOME_DONE
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
-[?2004l
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#
