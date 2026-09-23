@@ -153,6 +153,23 @@ class VideoSessionTest(unittest.TestCase):
             self.assertIn("--playlist=" + str(url_file), args)
             self.assertNotIn("secret-token", args)
 
+    def test_private_playlist_outside_runtime_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as outside:
+            root = pathlib.Path(temp); url_file = pathlib.Path(outside) / "private.playlist"
+            url_file.write_text("https://private.invalid/x\n"); url_file.chmod(0o600)
+            player = self.fake_player(root, "exit 0\n")
+            result = self.run_session(root, player, "run", K230_VIDEO_URL_FILE=str(url_file))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(url_file.exists())
+
+    def test_malformed_state_is_rejected_and_removed_by_stop(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); player = self.fake_player(root, "exit 0\n")
+            (root / "video.pid").write_text('{"uid": 0, "child": "bad"}\n')
+            result = self.run_session(root, player, "stop")
+            self.assertEqual(result.returncode, 0)
+            self.assertFalse((root / "video.pid").exists())
+
     def test_stop_only_kills_owned_child_and_cleans_state(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
@@ -225,6 +242,28 @@ class VideoSessionTest(unittest.TestCase):
                 process.wait(timeout=6)
                 self.assertFalse((root / "video.pid").exists())
                 self.assertEqual(subprocess.run(["pgrep", "-P", str(process.pid)], capture_output=True).returncode, 1)
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
+                    process.wait(timeout=6)
+
+    def test_stop_kills_actual_ignoring_term_descendant(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); desc = root / "descendant.pid"
+            player = self.fake_player(root, "(trap '' TERM; sleep 30) & echo $! > \"$DESC\"\ntrap 'exit 143' TERM\nwait\n")
+            env = self.env(root, player, FAKE_ARGS=str(root / "args"), DESC=str(desc))
+            process = subprocess.Popen(["bash", str(SCRIPT), "run"], env=env)
+            try:
+                for _ in range(40):
+                    if desc.exists(): break
+                    time.sleep(0.05)
+                descendant = int(desc.read_text())
+                subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
+                process.wait(timeout=6)
+                for _ in range(20):
+                    if not pathlib.Path(f"/proc/{descendant}").exists(): break
+                    time.sleep(0.05)
+                self.assertFalse(pathlib.Path(f"/proc/{descendant}").exists())
             finally:
                 if process.poll() is None:
                     subprocess.run(["bash", str(SCRIPT), "stop"], env=env)

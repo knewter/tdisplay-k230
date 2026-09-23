@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, fcntl, json, os, signal, socket, stat, subprocess, sys, time
+import argparse, ctypes, fcntl, json, os, signal, stat, subprocess, sys, time
 from pathlib import Path
 
 PUBLIC = os.environ.get('K230_VIDEO_PUBLIC_URL', 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd')
@@ -23,7 +23,9 @@ def starttime(pid):
 def owned_state(data):
     if not isinstance(data, dict): return False
     fields = ('uid', 'controller', 'controller_start', 'child', 'child_start')
-    if any(not isinstance(data.get(k), int) or data[k] <= 0 for k in fields): return False
+    pid_fields = ('controller', 'controller_start', 'child', 'child_start')
+    if any(not isinstance(data.get(k), int) or data[k] <= 0 for k in pid_fields): return False
+    if not isinstance(data.get('uid'), int) or data['uid'] < 0: return False
     return (data['uid'] == UID and data['controller_start'] == starttime(data['controller'])
             and data['child_start'] == starttime(data['child']))
 
@@ -51,15 +53,30 @@ def kill_group(proc, sig):
     except ProcessLookupError:
         pass
 
+def reap_children():
+    for _ in range(40):
+        reaped = False
+        while True:
+            try: pid, _ = os.waitpid(-1, os.WNOHANG)
+            except ChildProcessError: return
+            if pid == 0: break
+            reaped = True
+        if not reaped: time.sleep(0.05)
+
 
 def validate_playlist(explicit):
-    path = Path(explicit) if explicit else RUNTIME / 'k230-video.playlist'
+    runtime = RUNTIME.resolve()
+    path = Path(explicit).expanduser() if explicit else RUNTIME / 'k230-video.playlist'
+    if explicit and not path.is_absolute():
+        raise RuntimeError('video URL file must be an absolute runtime path')
     if path.is_symlink():
         raise RuntimeError('video URL file must not be a symlink')
     if explicit and not path.exists():
         raise RuntimeError('video URL file is absent')
     if not path.exists():
         return PUBLIC, None
+    try: path.resolve().relative_to(runtime)
+    except ValueError: raise RuntimeError('video URL file must be under the protected runtime directory')
     if not path.is_file():
         raise RuntimeError('video URL file must be a regular non-symlink file')
     mode = stat.S_IMODE(path.stat().st_mode)
@@ -80,7 +97,7 @@ class Session:
 
     def signal(self, _signum, _frame):
         self.cancelled = True
-        self.cancel_deadline = time.monotonic() + 2
+        if self.cancel_deadline is None: self.cancel_deadline = time.monotonic() + 2
         if self.child is not None:
             kill_group(self.child, signal.SIGTERM)
 
@@ -128,11 +145,13 @@ class Session:
         finally:
             if self.child is not None:
                 kill_group(self.child, signal.SIGTERM)
-                try: self.child.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    kill_group(self.child, signal.SIGKILL); self.child.wait()
+                end = time.monotonic() + 2
+                while self.child.poll() is None and time.monotonic() < end: time.sleep(.05)
+                kill_group(self.child, signal.SIGKILL)
+                self.child.wait()
             if self.child is not None:
                 self.child.wait()
+            reap_children()
             if hasattr(output, 'close'): output.close()
             try: self.socket.unlink()
             except FileNotFoundError: pass
@@ -145,6 +164,8 @@ class Session:
 
     def run(self):
         RUNTIME.mkdir(parents=True, exist_ok=True); os.umask(0o077)
+        try: ctypes.CDLL(None).prctl(36, 1, 0, 0, 0)  # PR_SET_CHILD_SUBREAPER
+        except (AttributeError, OSError): pass
         LOG.touch(exist_ok=True); os.chmod(LOG, 0o600)
         self.lock = open(LOCK, 'a+')
         os.chmod(LOCK, 0o600)
