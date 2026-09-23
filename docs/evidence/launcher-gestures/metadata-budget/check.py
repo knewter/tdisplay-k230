@@ -322,7 +322,9 @@ def phase_rollback(args, directory):
         raise RuntimeError("launcher was not started with K230_LAUNCHER_GESTURES=0")
     apps = screen(args.grim, directory, "rollback-apps.png")
     before = hashlib.sha256(canvas_bytes(apps)).hexdigest()
-    inject(args.inject_script, args.device, (430, 320), (130, 320))
+    # End outside the card so legacy tap tracking also cancels activation.
+    # With gestures enabled, this same horizontal drag advances a page.
+    inject(args.inject_script, args.device, (430, 320), (15, 320))
     after = screen(args.grim, directory, "rollback-after-swipe.png")
     if hashlib.sha256(canvas_bytes(after)).hexdigest() != before:
         raise RuntimeError("disabled-gesture swipe changed Apps")
