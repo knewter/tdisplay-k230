@@ -203,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
         "launcher_resources_after": resource_snapshot(args.launcher_pid) if args.execute else {"status": "planned-only"},
         "metrics_copy": metrics_status,
         "steps": plan,
-        "metrics_note": "Set K230_LAUNCHER_METRICS before launching the native client, then copy that file into this directory. The client records wall-clock render and release-to-submit intervals, not process CPU time or scanout timing.",
+        "metrics_note": "Set K230_LAUNCHER_METRICS before launching the native client, then copy that file into this directory. The client records wall-clock render and release-to-submit intervals, process CPU since release, buffer count and observed page; none establishes scanout timing.",
         "real_finger_gate": "Open after this injected acceptance: capture a separate focused camera trial with actual left/right/up/down gestures and a card tap."
     }
     (output / "acceptance.json").write_text(json.dumps(report, indent=2) + "\n")
