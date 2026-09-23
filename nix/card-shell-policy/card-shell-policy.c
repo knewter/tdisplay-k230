@@ -197,6 +197,7 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
     /* Do not recenter on down: the adjacent card stays under the finger. */
     p->pressed_id=p->cards[index].id;
     p->down_x=p->last_x=x;p->down_y=p->last_y=y;p->last_time_ms=time_ms;
+    p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
     p->dx=p->dy=p->velocity_y=0;p->axis=CS_AXIS_NONE;
     p->message=card_message(p);
     return result(p,CS_REDRAW,true);
@@ -213,7 +214,18 @@ struct cs_result cs_motion(struct cs_policy *p,int32_t contact_id,double x,doubl
     if (p->axis==CS_AXIS_NONE && hypot(dx,dy)>p->config.tap_slop)
         p->axis=fabs(dx)>=fabs(dy) ? CS_AXIS_HORIZONTAL : CS_AXIS_VERTICAL;
     uint64_t elapsed=time_ms-p->last_time_ms;
-    p->velocity_y=elapsed ? (y-p->last_y)/(double)elapsed : 0;
+    if (elapsed) {
+        p->velocity_origin_y=p->last_y;p->velocity_origin_ms=p->last_time_ms;
+    } else if (y>p->last_y) {
+        /* A same-time downward reversal has no measurable speed. Never
+         * carry the preceding upward velocity through it into a close. */
+        p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
+    }
+    /* Coalesce equal-millisecond samples against the preceding distinct
+     * timestamp. A duplicate endpoint does not mean the finger stopped.
+     * All motion in a single timestamp remains unmeasurable and cannot throw. */
+    elapsed=time_ms-p->velocity_origin_ms;
+    p->velocity_y=elapsed ? (y-p->velocity_origin_y)/(double)elapsed : 0;
     p->last_x=x;p->last_y=y;p->last_time_ms=time_ms;p->dx=dx;p->dy=dy;
     return result(p,CS_REDRAW,true);
 }

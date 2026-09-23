@@ -1,0 +1,14 @@
+{
+  "status": "EXPECTED_FAILURE",
+  "evidence_class": "host-policy-and-headless-qemu",
+  "old_policy_base": "4ba9f58a23a59e1d0838ac144c8b5bedd1b20bbf",
+  "policy_test": "python3 tests/test_card_shell_state.py",
+  "policy_result": "23 cases: repeated-timestamp-throw fails, other 22 pass",
+  "runtime_test_sha256": "72602faa75d84b99c2ee1677f0c399fea3d184c09d82a013e0048d3a66f29078",
+  "old_sway": "/nix/store/bggwbi2nx72c494xpjvgyi98yxz3w3c0-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "runtime_result": "Timed out waiting for the first same-millisecond motion throw close request, after the prior source-time checks passed",
+  "runtime_exit_code": 1,
+  "limits": [
+    "Independent reproduction of the timestamp defect; not attribution of prior board failures."
+  ]
+}

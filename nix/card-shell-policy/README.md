@@ -65,6 +65,11 @@ is performed: reduced-motion mode has identical direct tracking and outcomes.
    and recent upward velocity; a slow drag, downward release or long-held
    position never requests close. The close button uses the same request path
    without requiring a gesture. Repeated requests while pending dispatch nothing.
+   Motion samples sharing a millisecond timestamp use the preceding distinct
+   timestamp for velocity. A duplicate endpoint does not invent a stop; a
+   same-time downward reversal or entirely zero-duration motion cannot close.
+   A stationary sample at a later timestamp and the held-release cutoff still
+   reject throws.
 7. For `CS_CLOSE`, resolve `close_id` against a still-current live container
    and invoke Sway's graceful `view_close` exactly once. Never kill a process.
    Arm the deadline and call `cs_tick`; classify an explicit refusal or failed
@@ -100,7 +105,7 @@ Run from the repository root:
 python3 tests/test_card_shell_state.py
 ```
 
-Twenty-one compiled scenarios cover shrink/expand, horizontal movement, adjacent
+Twenty-three compiled scenarios cover shrink/expand, horizontal movement, adjacent
 identity, private/unavailable classification and changes during/after drag,
 close deadlines/refusal/failure, source loss, recovery transitions, multiple
 contacts, edge entry, keyboard/bar geometry, changed IDs, more than two cards,

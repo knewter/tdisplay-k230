@@ -167,6 +167,26 @@ def main():
             wait_for(lambda:close_count()==before+1)
             wait_for(lambda:'message=6' in logs())
             assert time.monotonic()-requested_at>=1.3, 'timeout must start at close dispatch'
+            for contact,duplicate in ((42,False),(43,True)):
+                command('back');ipc('[app_id="k230.card.one"] focus');command('enter')
+                before=close_count();base=int(time.monotonic()*1000)-3000
+                timeouts=logs().count('message=6')
+                command(f'down {contact} 284 500 {stamp(base)}')
+                command(f'motion {contact} 284 400 {stamp(base+100)}')
+                command(f'motion {contact} 284 350 {stamp(base+120)}')
+                command(f'motion {contact} 284 {350 if duplicate else 325} {stamp(base+120)}')
+                command(f'up {contact} {stamp(base+121)}')
+                wait_for(lambda:close_count()==before+1)
+                wait_for(lambda:logs().count('message=6')>timeouts)
+            for contact,reversal in ((44,True),(45,False)):
+                command('back');ipc('[app_id="k230.card.one"] focus');command('enter')
+                before=close_count();base=int(time.monotonic()*1000)-3000
+                command(f'down {contact} 284 500 {stamp(base)}')
+                command(f'motion {contact} 284 325 {stamp(base+100)}')
+                command(f'motion {contact} 284 {350 if reversal else 325} {stamp(base+100)}')
+                command(f'up {contact} {stamp(base+(101 if reversal else 251))}')
+                time.sleep(.2)
+                assert close_count()==before, 'repeated timestamp must not turn reversal or held release into close'
         else:
             command('down 40 284 500');time.sleep(.03);command('motion 40 284 420');time.sleep(.03);command('motion 40 284 300');command('up 40')
             wait_for(lambda:'message=6' in logs())
@@ -241,7 +261,8 @@ def main():
         before_keys=keys('k230.card.one');keyboard.press();wait_for(lambda:keys('k230.card.one')>before_keys)
         assert sway.poll() is None
         results={'evidence_class':'headless-qemu-injected-input',
-          'source_time_checks': ['slow-source-no-close','paused-source-no-close','delayed-fast-source-close','full-dispatch-timeout'] if args.delayed_touch else [],
+          'source_time_checks': ['slow-source-no-close','paused-source-no-close','delayed-fast-source-close','full-dispatch-timeout',
+                                 'same-ms-motion-close','same-ms-duplicate-close','same-ms-reversal-no-close','same-ms-held-no-close'] if args.delayed_touch else [],
           'passed':['horizontal-live-deck','expand-focus-keyboard','close-timeout-retains','close-exit','private-placeholder','unavailable-placeholder','live-privacy-transition','three-dynamic-views','popup-normal-fallback','topbar-restores-normal','cancel-no-up-return','multi-contact-drain','output-loss-restores','upward-throw-close','global-edge-entry','persistent-button'],
           'limits':['no physical touch or panel proof','no on-board cost acceptance']}
     finally:

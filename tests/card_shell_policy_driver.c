@@ -127,6 +127,44 @@ static void slow_drag(void) {
     assert(!(cs_up(&p,1,5101).actions&CS_CLOSE));
     cs_finish(&p);
 }
+static void repeated_timestamp_throw(void) {
+    /* Millisecond timestamps can repeat without the finger stopping. */
+    for (unsigned duplicate=0;duplicate<2;duplicate++) {
+        struct cs_policy p=setup();cs_enter(&p,101);down(&p,1000);
+        double x=p.down_x,y=p.down_y;
+        cs_motion(&p,1,x,y-100,1100);
+        cs_motion(&p,1,x,y-150,1120);
+        cs_motion(&p,1,x,y-(duplicate ? 150 : 175),1120);
+        assert(cs_card_rect(&p,0).y==cs_card_rect(&p,1).y-(duplicate ? 150 : 175));
+        struct cs_result r=cs_up(&p,1,1121);
+        assert((r.actions&CS_CLOSE) && r.close_id==101);
+        cs_finish(&p);
+    }
+}
+static void repeated_timestamp_rejection(void) {
+    for (unsigned scenario=0;scenario<5;scenario++) {
+        struct cs_policy p=setup();cs_enter(&p,101);down(&p,1000);
+        double x=p.down_x,y=p.down_y;
+        if (scenario==0) {
+            /* No elapsed interval exists at all. */
+            cs_motion(&p,1,x,y-100,1000);cs_motion(&p,1,x,y-175,1000);
+        } else if (scenario==1) {
+            /* A later stationary sample really does describe a stop. */
+            cs_motion(&p,1,x,y-175,1100);cs_motion(&p,1,x,y-175,1120);
+        } else if (scenario==2) {
+            /* Do not carry upward speed through a same-time reversal. */
+            cs_motion(&p,1,x,y-175,1100);cs_motion(&p,1,x,y-150,1100);
+        } else if (scenario==3) {
+            cs_motion(&p,1,x,y-100,2000);cs_motion(&p,1,x,y-175,3000);
+            cs_motion(&p,1,x,y-175,3000); /* slow with duplicate endpoint */
+        } else {
+            cs_motion(&p,1,x,y-175,1100);cs_motion(&p,1,x,y-175,1100);
+        }
+        assert(!(cs_up(&p,1,scenario==3 ? 3001 : scenario==4 ? 1251 : 1121).actions&CS_CLOSE));
+        assert(p.mode==CS_DECK && cs_can_mirror(&p,101));
+        cs_finish(&p);
+    }
+}
 static void source_loss(void) {
     struct cs_policy p=setup();cs_enter(&p,101);throw_card(&p,1);
     const struct cs_card remaining[]={{202,CS_LIVE,true,true}};
@@ -323,6 +361,8 @@ int main(int argc,char **argv) {
         {"enter-expand",enter_expand},{"horizontal",horizontal},{"adjacent-tap",adjacent_tap},
         {"adjacent-throw",adjacent_throw},{"privacy",privacy},{"privacy-transition",privacy_transition},
         {"close-recovery",close_recovery},{"slow-drag",slow_drag},{"source-loss",source_loss},
+        {"repeated-timestamp-throw",repeated_timestamp_throw},
+        {"repeated-timestamp-rejection",repeated_timestamp_rejection},
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},
