@@ -67,6 +67,9 @@ jobs:
       - name: Check sampled-frame video encoding
         run: python3 tests/test_grim_samples.py
 
+      - name: Check video lifecycle and presentation evidence
+        run: python3 -m unittest discover -s tests -p 'test_video_*.py'
+
       - name: Build the site
         run: python3 scripts/build_site.py
 
