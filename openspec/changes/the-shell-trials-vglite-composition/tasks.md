@@ -41,3 +41,11 @@ frames with zero replays, versus 576 replays when explicitly forced to Pixman
 on the same allocation. Captures reveal an RGB565 color-step mismatch;
 format/cache correctness, normal-service access, and matched performance/
 interaction gates remain open.
+
+
+The RGB565 upload correction in
+`docs/evidence/vglite-scene-board/color-upload/README.md` now matches the actual
+parent/child scene palettes against forced Pixman without tolerance. The board
+records 182 GPU frames with no replays and successful normal-shell restoration.
+This resolves that observed color discrepancy; remaining format/scale/cache,
+normal-service, control and performance gates in groups 2–3 stay open.

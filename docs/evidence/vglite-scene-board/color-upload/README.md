@@ -53,5 +53,36 @@ source crops, scales, padded rows, metadata rejection and failure/quarantine.
 passes with ASan/UBSan. `nix build .#shell-compositor-vglite --max-jobs 1
 --cores 8 --no-link --print-out-paths` passes, producing
 `/nix/store/rfqwba7pf9mcbwrkx2ypdaidy7bmwp0m-sway-1.12`.
-Actual compositor captures using this correction remain pending. Conversion
-adds CPU work; a speedup is not assumed.
+Actual compositor results are recorded below. Conversion adds CPU work; a
+speedup is not assumed.
+
+
+## Corrected compositor captures
+
+On 2026-09-23 at 19:01:46 UTC (GPU) and 19:03:03 UTC (forced Pixman), the
+bounded root scene harness ran renderer source
+`d46333f2b838a3440c9ee87ac05dd940cf153284` on the unchanged board. Both trials
+completed successfully and restored the normal shell and seatd. Each observed
+one Sway process and DRM RGB565 scanout with the same padded allocator.
+`scene/scene-check.py` records the actual executable/client paths and invocation;
+the two `scene/*/result.json` files retain artifacts, timestamps and recovery.
+
+| Mode | GPU frames | Pixman replays | Recovery |
+| --- | --- | --- | --- |
+| RGB565 upload | 182 | 0 | Normal shell active |
+| Forced Pixman, same allocator | 0 | 573 | Normal shell active |
+
+`python3 docs/evidence/vglite-scene-board/color-upload/scene/analyze-palette.py`
+passes without a tolerance: both captures per mode have exactly matching
+parent and child palettes. The formerly differing bright colors now read
+(33, 113, 181) and (231, 146, 33) in both modes. Root and independent child
+counters advance in both. The coordinator visually inspected the two later
+captures: both show the expected blue parent and orange child bands.
+
+This resolves the observed palette discrepancy for this scene. Different
+animation frames prevent a full-image equality claim. This is native capture
+and synthetic-client evidence, not a camera or finger interaction test. Frame
+totals still show fewer completions under GPU; startup/capture/animation
+sequences differ, so this is not the matched performance benchmark. Scaling,
+bounds, broader cache proof, normal-service access and all control routes still
+need their named board evidence. No GPU task is marked complete by this sample.
