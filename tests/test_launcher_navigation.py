@@ -148,7 +148,7 @@ static void drain_catalog(void) {
   assert(catalog.pid == 0);
 }
 int main(int argc, char **argv) {
-  assert(argc == 6);
+  assert(argc == 7);
   GPtrArray *parsed = parse_window_catalog(
     "17\tTerminal\tfoot\tfocused\nnot-an-id\tbad\tbad\tnormal\n");
   assert(parsed->len == 1);
@@ -224,6 +224,14 @@ int main(int argc, char **argv) {
   catalog_poll();
   assert(catalog.deadline_ms == flood_deadline);
   drain_catalog();
+
+  unlink(argv[4]);
+  setenv("K230_WINDOW_CATALOG", argv[6], 1);
+  assert(catalog_start(CATALOG_FOCUS, "18"));
+  catalog_cancel();
+  drain_catalog();
+  pause_ms(120);
+  assert(access(argv[4], F_OK) != 0);
   return 0;
 }
 '''
@@ -247,6 +255,9 @@ int main(int argc, char **argv) {
             flood = path / 'flood.sh'
             flood.write_text('#!/bin/sh\ntrap "" TERM\nwhile :; do printf "9\ttoo much\tapp\tnormal\n"; done\n')
             flood.chmod(0o755)
+            slow = path / 'slow.sh'
+            slow.write_text('#!/bin/sh\nsleep 0.1\nprintf "18\tLate\tnew.app\tnormal\n"\n')
+            slow.chmod(0o755)
             focus = path / 'focus.sh'
             record = path / 'focus-record'
             focus.write_text('#!/bin/sh\nprintf "%s\n%s\n" "$1" "$2" > "$RECORD"\n')
@@ -260,7 +271,7 @@ int main(int argc, char **argv) {
                             str(ROOT / 'nix/touch-launcher/catalog.c'),
                             str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
                             str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags], check=True)
-            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood)],
+            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow)],
                            check=True, timeout=3, env=os.environ | {'RECORD': str(record)})
 
 

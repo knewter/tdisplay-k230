@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <signal.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +80,7 @@ static size_t last_frame_bytes;
 static int width, height, stride, mapped_size;
 static int lock_fd = -1;
 static bool running = true, configured;
+static volatile sig_atomic_t shutdown_requested;
 static int press_x, press_y, touch_x, touch_y, touch_id = -1;
 static bool pointer_pressed;
 static void redraw_if_configured(void) {
@@ -540,16 +542,24 @@ static void transition_trace(int64_t render_ms, int64_t elapsed_ms, bool settled
   if (!path || !*path) return;
   FILE *metrics=fopen(path,"a");
   if (!metrics) return;
-  fprintf(metrics,"transition render_wall_ms=%lld elapsed_ms=%lld extra_bytes=%zu settled=%d\n",
+  fprintf(metrics,"transition render_wall_ms=%lld release_to_submit_wall_ms=%lld extra_bytes=%zu settled=%d\n",
     (long long)render_ms,(long long)elapsed_ms,transition.bytes*2,settled ? 1 : 0);
   fclose(metrics);
 }
 static void transition_settle(void) {
   if (!transition.active) return;
-  int64_t elapsed=monotonic_ms()-transition.started_ms;
-  transition_trace(0,elapsed,true);
+  int64_t render_started=monotonic_ms();
+  /* Submit the destination prepared at release; do not redraw it here. */
+  current=make_buffer();
+  pixels=current->pixels;
+  memcpy(pixels,transition.destination,transition.bytes);
+  (void)save_last_frame(pixels);
+  wl_surface_attach(surface,current->buffer,0,0);
+  wl_surface_damage_buffer(surface,0,0,width,height);
+  wl_surface_commit(surface);
+  transition_trace(monotonic_ms()-render_started,
+    monotonic_ms()-transition.started_ms,true);
   transition_cleanup();
-  redraw();
 }
 static void transition_compose(uint32_t *out, int progress) {
   if (transition.direction==TRANSITION_LEFT) {
@@ -681,7 +691,7 @@ static void apply_gesture(enum gesture_direction direction) {
   if (overview.open) {
     if (direction==GESTURE_DOWN) {
       bool animate=transition_prepare();
-      overview_close(&overview); g_clear_pointer(&launch_error,g_free);
+      catalog_cancel(); overview_close(&overview); g_clear_pointer(&launch_error,g_free);
       if (animate) transition_begin(TRANSITION_DOWN); else redraw();
     } else if (direction==GESTURE_LEFT) overview_with_transition(1,TRANSITION_LEFT);
     else if (direction==GESTURE_RIGHT) overview_with_transition(-1,TRANSITION_RIGHT);
@@ -733,6 +743,10 @@ static const struct wl_seat_listener seat_listener = { .capabilities=seat_caps,.
 static void global_add(void*d,struct wl_registry*r,uint32_t n,const char*i,uint32_t v) { if(!strcmp(i,wl_compositor_interface.name)) { if (v < 4) return; compositor=wl_registry_bind(r,n,&wl_compositor_interface,4); } else if(!strcmp(i,wl_shm_interface.name)) shm=wl_registry_bind(r,n,&wl_shm_interface,1); else if(!strcmp(i,wl_seat_interface.name)) { seat=wl_registry_bind(r,n,&wl_seat_interface,1); wl_seat_add_listener(seat,&seat_listener,NULL); } else if(!strcmp(i,zwlr_layer_shell_v1_interface.name)) layer_shell=wl_registry_bind(r,n,&zwlr_layer_shell_v1_interface,1); }
 static void global_remove(void*d,struct wl_registry*r,uint32_t n) {}
 static const struct wl_registry_listener registry_listener = { .global=global_add,.global_remove=global_remove };
+static void request_shutdown(int signal_number) {
+  (void)signal_number;
+  shutdown_requested=1;
+}
 int main(int argc,char**argv) {
  if(argc==2 && !strcmp(argv[1],"--layout")) { puts("Portrait application catalogue: 4 cards per page, 3 with keyboard; Previous / Back / Next; gestures settle immediately within 200 ms"); return 0; }
  if(argc!=1) { fprintf(stderr,"usage: k230-touch-launcher [--layout]\n"); return 2; }
@@ -744,13 +758,20 @@ int main(int argc,char**argv) {
  if(lock_fd < 0) { perror("k230-touch-launcher lock"); return 1; }
  if(flock(lock_fd,LOCK_EX|LOCK_NB) < 0) return 0; /* Existing surface stays usable. */
  apps=k230_app_catalog();
+ signal(SIGTERM,request_shutdown);
+ signal(SIGINT,request_shutdown);
  display=wl_display_connect(NULL); if(!display) { fprintf(stderr,"k230-touch-launcher: cannot connect to Wayland\n"); return 1; }
  struct wl_registry*r=wl_display_get_registry(display); wl_registry_add_listener(r,&registry_listener,NULL); wl_display_roundtrip(display);
  if(!compositor||!shm||!layer_shell||!seat) { fprintf(stderr,"k230-touch-launcher: need wl_compositor, wl_shm, layer-shell, and a seat\n"); return 1; }
  surface=wl_compositor_create_surface(compositor); layer_surface=zwlr_layer_shell_v1_get_layer_surface(layer_shell,surface,NULL,ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,"k230-launcher"); zwlr_layer_surface_v1_add_listener(layer_surface,&layer_listener,NULL);
  zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,0,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
- while(running) {
-   (void)wl_display_dispatch_pending(display);
+ while(running || catalog.pid) {
+   if (shutdown_requested) {
+     running=false;
+     catalog_cancel();
+   }
+   if (wl_display_dispatch_pending(display)<0) break;
+   if (!running && !catalog.pid) break;
    (void)wl_display_flush(display);
    int64_t deadline=-1;
    if (catalog.pid) deadline=catalog.deadline_ms;
@@ -767,12 +788,15 @@ int main(int argc,char**argv) {
      { .fd=wl_display_get_fd(display), .events=POLLIN },
      { .fd=catalog.output_fd, .events=POLLIN|POLLHUP },
    };
-   (void)poll(fds,catalog.pid ? 2 : 1,timeout);
+   int poll_result=poll(fds,catalog.pid ? 2 : 1,timeout);
+   if (poll_result<0 && errno!=EINTR) break;
    catalog_poll();
    if (transition.active && monotonic_ms()-transition.started_ms>=120)
      transition_settle();
+   if (fds[0].revents & (POLLERR|POLLHUP|POLLNVAL)) break;
    if (fds[0].revents & POLLIN && wl_display_dispatch(display)<0) break;
  }
+ if (catalog.pid) catalog_cancel();
 
  return 0;
 }
