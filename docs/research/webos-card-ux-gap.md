@@ -70,7 +70,8 @@ capability boundary in the existing Sway/wlroots architecture:
    refusal/exit, and restore a usable deck?
 
 Only those answers can define whether the work remains a client extension, needs a
-wlroots/Sway integration, or needs a new rendering path. No broader card-UX proposal
-has been created yet. The existing `touch-launcher-gestures-overview` change remains
+wlroots/Sway integration, or needs a new rendering path. The follow-up proposals are now `the-shell-has-a-card-composition-plan`,
+`the-shell-manages-apps-as-cards`, and the general design review
+`the-handheld-has-a-coherent-ux-plan`. They are planned work, not delivered UX. The existing `touch-launcher-gestures-overview` change remains
 its own bounded metadata-overview work; its requirements, tasks, and status are not
 changed by this research note.

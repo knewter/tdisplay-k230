@@ -1,6 +1,6 @@
 ## Context
 
-The shell is a portrait Sway/Pixman session on a 568x1232 panel with Foot, a persistent touch bar, wvkbd, desktop-entry discovery, and native launcher/window controls. Repository evidence shows a visible shell handoff around 72.6–72.7 seconds in one camera audit, a 568x1232 Sway tree, injected Apps/overview matrices, keyboard show/hide and Home recovery, and installed video playback with injected Back/Stop/Home/EOF checks. Those artifacts also state their limits: injected input is not real-finger proof, native images are not optical readability proof, and orientation/latency/continuity claims require narrower evidence.
+The shell is a portrait Sway/Pixman session on a 568x1232 panel with Foot, a persistent touch bar, wvkbd, desktop-entry discovery, and native launcher/window controls. Repository evidence shows a visible shell handoff around recording timestamp 72.6–72.7 seconds in one camera audit (not a measured power-on duration), a 568x1232 Sway tree, injected Apps/overview matrices, keyboard show/hide and Home recovery, and installed video playback with injected Back/Stop/Home/EOF checks. Those artifacts also state their limits: injected input is not real-finger proof, native images are not optical readability proof, and orientation/latency/continuity claims require narrower evidence.
 
 The existing `touch-launcher-gestures-overview` proposal owns gesture classification and metadata-card behavior. The active `the-shell-has-a-card-composition-plan` and `the-shell-manages-apps-as-cards` work own card architecture and app lifecycle respectively. This plan supplies the cross-surface contract and routes work to those owners rather than duplicating their implementation.
 
@@ -32,7 +32,7 @@ The existing `touch-launcher-gestures-overview` proposal owns gesture classifica
 
 5. **Treat transient states as first-class screens.** Loading, empty, stale, launch failure, network failure, EOF, cancellation, and cleanup each need a visible status and a bounded recovery path. The network-video proposal owns player lifecycle; this plan owns whether the resulting state is understandable and returns to the shell.
 
-6. **Budget motion for Pixman.** Existing feasibility evidence reports restrained scene-build/KMS timings and recommends solid cards, limited buffers, and short transitions. The card proposal owns implementation and performance measurements; this plan requires a fixed duration/frame budget, immediate settle fallback, and a board camera check before calling motion usable.
+6. **Budget motion for Pixman.** Existing feasibility evidence reports restrained scene-build/KMS timings and recommends solid cards, limited buffers, and short transitions. The card proposal owns implementation and performance measurements; this plan defines distinct budgets for release animations and continuous finger tracking, reduced-motion behavior, and a board camera check before calling motion usable; immediate settling cannot replace required direct manipulation.
 
 7. **Use Palm webOS as a comparison lens.** Evaluate continuity of cards, reversible navigation, and visible state transitions against the benchmark, while retaining this shell's Sway, layer-shell, keyboard, and persistent-bar constraints. Do not import webOS-specific assumptions about gestures, thumbnails, or compositor ownership.
 
@@ -42,43 +42,27 @@ The existing `touch-launcher-gestures-overview` proposal owns gesture classifica
 - [Injected tests overstate touch usability] → require focused physical-finger camera evidence for gestures and reachability and keep injected results separately labelled.
 - [Visual tokens conflict with card implementation] → publish the shared contract first; card architecture and app lifecycle owners consume it through explicit dependencies.
 - [More visible state text consumes the small portrait surface] → measure keyboard-visible layouts and prefer short labels, stable placement, and existing bar controls before adding overlays.
-- [Animating beyond CPU budget] → cap motion and use an immediate final frame; defer thumbnails, blur, and compositor changes until measured.
+- [Animating beyond CPU budget] → measure motion and preserve every required core interaction; leave unsupported effects deferred and route live-card composition to its existing architecture owner.
 - [First-boot or rotation gaps are mistaken for completed features] → retain `UNVERIFIED` markers and require board evidence for boot timing, optical readability, orientation, and real-finger behavior.
 
 ## Migration Plan
 
 1. Land this planning change and its evidence ledger on master.
 2. Run host source/fixture checks and reconcile the ledger with the existing card composition and app-card proposals.
-3. Create successor proposals for P0 onboarding/recovery and visual/state consistency; allow host-only source and fixture work in parallel with card model work.
+3. Derive severity from the audit, reuse existing proposal owners, and create successors only for uncovered issues; allow host-only source and fixture work in parallel with card model work.
 4. Reserve serialized board sessions for final boot, optical readability, touch reachability, keyboard/focus, and motion captures. If a successor regresses, retain the persistent bar and disable only the new surface or gesture path.
 
 ## Open Questions
 
 - Which existing onboarding/splash proposal should own the first-boot instructional copy after the ledger identifies its exact gap?
-- Whether a future overview needs compositor screencopy remains deferred until metadata cards and measured Pixman cost are accepted.
+- The parallel card architecture investigation selects the live-content boundary; this audit does not require that investigation to wait for metadata-overview acceptance.
 
 ## Visual comparison sheets
 
 The follow-up audit should include two low-cost, implementation-neutral sheets under `docs/research/handheld-ux/`: (1) a current-versus-recommended portrait shell frame showing the persistent bar, title/action hierarchy, card bounds, keyboard occlusion, and empty/error treatment; and (2) a navigation storyboard showing Apps → card/overview → selected app → Back/Home/Stop recovery. These are annotated wireframes or native-frame overlays, not claims that new pixels have shipped. Compare each recommendation against the current native capture and the 568x1232 geometry, then record contrast, target size, focus, and state-label changes. Keep thumbnails, blur, and GPU effects out of the baseline comparison unless a later owner proves their cost.
 
-## Current user-flow matrix and issue ledger
+## Completion boundary
 
-The first planning pass records these flows as the review baseline; completion is not implied by the evidence labels.
+The audit may complete with evidence-labelled unknowns and proposed acceptance tests. It does not need to prove every future usability improvement before producing its plan. Existing physical keyboard and Home acceptance remains valid; inspect those reports before requesting another operator trial. Use new physical observation only for an unresolved finding that cannot be answered from existing artifacts. A missing observation remains unknown rather than becoming either a fabricated defect or a pass.
 
-| Flow | Person-facing task | Current evidence | Open acceptance |
-|---|---|---|---|
-| Boot to shell | See a continuous handoff and identify the first action | Camera audit brackets shell appearance at about 72.6–72.7 s; portrait shell native frame exists in `docs/evidence/splash-initial-scene-ready/video-audit.md` | `UNVERIFIED`: fresh power-on continuity, first-use instruction, optical readability |
-| Discover and launch | Open Apps, understand desktop-entry labels, launch and return | Installed Apps/video report records injected catalog launch; launcher tests cover catalog/navigation | `UNVERIFIED`: real-finger discovery, label hierarchy, reachability |
-| Switch and recover | Use Windows/overview, Back/Home, and retain bar controls | Card proposal and injected matrices describe controls; video controls report injected Stop/Home/Back/EOF cleanup | `UNVERIFIED`: physical card gesture, focus clarity, stale/empty visual states |
-| Type and focus | Show/hide keyboard without losing focus or shell recovery | Keyboard show/hide and Home recovery reports plus launcher/menu tests | `UNVERIFIED`: finger reachability, readable keyboard-visible content, focus indication |
-| Watch and recover | Observe loading/progress, stop, EOF, network failure, and return | Installed video evidence proves sustained software playback and injected controls; network/MVX gates remain separate | `UNVERIFIED`: final image network failure messaging, MVX fallback presentation, error comprehension |
-
-| Priority | Issue | Evidence / gap | Recommended owner and next proof |
-|---|---|---|---|
-| P0 | No single first-use contract joins boot handoff, primary action, Apps, Help, and recovery | Splash and shell evidence are separate; no first-use camera task is claimed | New onboarding/recovery proposal; host flow review, then one board camera session |
-| P0 | State vocabulary and recovery affordances need one cross-surface contract | Video evidence has cleanup controls, while catalog/keyboard/card states have separate paths | New visual/state consistency proposal; fixture matrix, then injected and physical error capture |
-| P1 | Card navigation needs shared visual/focus/motion rules | Existing `touch-launcher-gestures-overview` and card proposals own mechanics/architecture | Existing card owners consume this contract; host model tests, then focused finger capture |
-| P1 | Touch target, typography, contrast, and keyboard-visible reachability lack optical proof | Native 568x1232 geometry exists; injected tests do not prove glass usability | Visual-system successor; native measurements, then camera/real-finger acceptance |
-| P1 | Orientation and advanced effects are not evidenced | Current evidence is portrait; feasibility warns against unmeasured GPU/full-screen effects | Keep `UNVERIFIED`; no implementation until source/board evidence justifies it |
-
-This ledger is intentionally a planning artifact. It does not convert the existing injected video, launcher, keyboard, or splash captures into real-finger acceptance.
+The resulting issue ledger must derive severity from observed user impact. Do not preassign onboarding, boot, or visual inconsistency as P0, or create duplicate successors for work already owned by an active change. A validator checks fields and links, not whether a design judgment is sound: a named coordinator review of the findings and visual comparisons is still required.

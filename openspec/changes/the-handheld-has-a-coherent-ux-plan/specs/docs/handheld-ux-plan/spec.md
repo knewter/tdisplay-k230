@@ -26,11 +26,11 @@ The plan SHALL define an observable first-use path: boot feedback into the portr
 
 #### Scenario: New user reaches an application
 - **WHEN** a person follows the documented first-use flow from a completed boot
-- **THEN** they can identify the shell's primary action, open Apps, distinguish app labels from controls, and return through Back or Home without losing the usable shell
+- **THEN** the plan records whether they can identify the primary action, open Apps, distinguish labels from controls, and return through Back or Home, with explicit unknowns where observation is absent
 
 #### Scenario: Catalog or app launch is unavailable
 - **WHEN** the catalog is empty, stale, or an application fails to launch
-- **THEN** the visible state explains what happened and offers a usable recovery path such as Back, Home, Help, or a retained system control
+- **THEN** the plan records the current visible feedback and specifies a recovery path such as Back, Home, Help, or a retained system control
 
 ### Requirement: The plan SHALL define a coherent portrait visual and touch system
 
@@ -44,7 +44,7 @@ The plan SHALL provide measurable guidance for hierarchy, type, spacing, color c
 
 #### Scenario: Person touches a control near an edge
 - **WHEN** a real-finger acceptance capture exercises a primary control with and without the keyboard visible
-- **THEN** the control is reachable without an accidental neighboring action, provides visible focus/pressed feedback, and the result records panel orientation and camera limitations
+- **THEN** the audit records whether the control was reachable without an accidental neighboring action and provided visible feedback, with panel orientation, camera limitations, and unresolved findings
 
 ### Requirement: Navigation and transient states SHALL have consistent recovery semantics
 
@@ -62,13 +62,13 @@ The plan SHALL define how Apps, Windows/overview, cards, Back, Home, Keyboard, S
 
 #### Scenario: Person encounters a delayed or failed operation
 - **WHEN** loading stalls, a network source fails, media reaches EOF, or a catalog/window becomes empty
-- **THEN** the UI communicates the state, avoids an orphaned or indefinitely blocked surface, and offers a bounded recovery action without requiring a hidden keyboard command
+- **THEN** the plan evaluates the visible feedback and recovery, records any orphaned or blocked surface, and specifies a bounded recovery contract without requiring a hidden keyboard command
 
 ### Requirement: The plan SHALL define measurable acceptance and an ordered successor backlog
 
 <!-- UNVERIFIED: priorities and successor boundaries must be derived from the completed audit ledger. -->
 
-The plan SHALL maintain a severity-ranked issue ledger, user-flow/task matrix, P0/P1 successor proposals, dependencies, and parallel ownership. Each successor SHALL have host and board gates where applicable, and all proposals SHALL be intended to land on master before implementation is treated as integrated.
+The plan SHALL maintain a severity-ranked issue ledger, user-flow/task matrix, P0/P1 successor proposals, dependencies, and parallel ownership. Each successor SHALL have host and board gates where applicable, and all resulting proposals SHALL be validated, merged and pushed to master before implementation is treated as integrated.
 
 #### Scenario: Team schedules parallel work
 - **WHEN** the team selects the next UX issue

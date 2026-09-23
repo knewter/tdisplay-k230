@@ -7,7 +7,7 @@ The current launcher is a Wayland client and can render only its own SHM surface
 **Goals:**
 - Establish whether an existing protocol client or a narrowly patched, opt-in Sway can safely make live cards.
 - Specify the handoff contract a later product change consumes without depending on the general UX audit.
-- Make failure leave the unchanged Pixman Sway session usable.
+- Make failure restore the known normal Pixman Sway session.
 
 **Non-Goals:**
 - No product card implementation, GPU rewrite, second DRM client, MPV/video integration, general UX policy, or default renderer change.
@@ -19,7 +19,7 @@ The current launcher is a Wayland client and can render only its own SHM surface
 
 2. **Keep the renderer and DRM owner fixed.** Sway remains the only KMS/DRM owner, `WLR_RENDERER=pixman` remains default, and the experiment is an explicit opt-in package/session. The existing VG-Lite CPU result justifies measuring an alternative later, not selecting it here.
 
-3. **Use a capability prototype before product work.** It exposes only two eligible app surfaces, an in-compositor card scene, continuous single-finger motion, selection/expand, and a close request. It records per-surface lifecycle: mapped -> captured/scene-attached -> dragging -> selected or dismissal-requested -> restored/destroyed. A client buffer is referenced only while wlroots owns the surface; destruction, unmap, output leave and close/refusal cancel the card and restore focus safely.
+3. **Use a capability prototype before product work.** It exposes only two eligible app surfaces, a card scene at the selected boundary, continuous single-finger motion, selection/expand, and a close request. It records per-surface lifecycle: mapped -> captured/scene-attached -> dragging -> selected or dismissal-requested -> restored/destroyed. A client buffer is referenced only while wlroots owns the surface; destruction, unmap, output leave and close/refusal cancel the card and restore focus safely.
 
 4. **Treat formats and completion as observed contracts.** The probe logs Pixman buffer format, dimensions/stride, damage/commit and frame/presentation signals. It does not promise dma-buf, RGB565 texture import, or GPU cache/fence behavior. Any unsupported format, capture policy, or renderer operation ends the experiment and returns the normal session.
 
@@ -27,7 +27,7 @@ The current launcher is a Wayland client and can render only its own SHM surface
 
 ## Interface contract for the consuming product change
 
-The architecture experiment must publish: an opt-in entry condition; eligible-surface policy; compositor-owned card IDs; lifecycle events; touch/focus ownership during drag; exact close request/refusal/exit states; fallback/abort behavior; renderer/format and completion observations; and evidence paths. The product change may request card behavior only through those published events, never by opening DRM, copying private application data, or assuming thumbnails, GPU, or zero-copy.
+The architecture experiment must publish: an opt-in entry condition; eligible-surface policy; stable card IDs owned by the selected boundary; lifecycle events; touch/focus ownership during drag; exact close request/refusal/exit states; fallback/abort behavior; renderer/format and completion observations; and evidence paths. The product change may request card behavior only through those published events, never by opening DRM, copying private application data, or assuming thumbnails, GPU, or zero-copy.
 
 ## Risks / Trade-offs
 
