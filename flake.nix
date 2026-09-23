@@ -109,6 +109,9 @@
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.
+        card-shell = pkgsCross.callPackage ./nix/card-shell.nix {
+          swayUnwrapped = pkgsCross.sway-unwrapped;
+        };
         card-composition-probe = pkgsCross.callPackage ./nix/card-composition-probe.nix {
           sway = pkgsCross.sway;
           swayUnwrapped = pkgsCross.sway-unwrapped;

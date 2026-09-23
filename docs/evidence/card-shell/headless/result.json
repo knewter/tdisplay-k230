@@ -1,0 +1,25 @@
+{
+  "evidence_class": "headless-qemu-injected-input",
+  "passed": [
+    "horizontal-live-deck",
+    "expand-focus-keyboard",
+    "close-timeout-retains",
+    "close-exit",
+    "private-placeholder",
+    "unavailable-placeholder",
+    "live-privacy-transition",
+    "three-dynamic-views",
+    "topbar-restores-normal",
+    "cancel-no-up-return",
+    "multi-contact-drain",
+    "output-loss-restores",
+    "upward-throw-close",
+    "global-edge-entry",
+    "persistent-button",
+    "clean-compositor-teardown"
+  ],
+  "limits": [
+    "no physical touch or panel proof",
+    "no on-board cost acceptance"
+  ]
+}

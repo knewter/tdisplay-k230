@@ -1,0 +1,770 @@
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=baseline t_ns=221189752898398 cpu_ns=650965084 memory_bytes=68272128 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=32 t_ns=221189756154282 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=33 t_ns=221189773486699 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=34 t_ns=221189791075722 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=35 t_ns=221189808669854 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=36 t_ns=221189826345420 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=37 t_ns=221189844089846 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=38 t_ns=221189861718113 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=39 t_ns=221189879443834 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=40 t_ns=221189897083552 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=41 t_ns=221189914677214 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=42 t_ns=221189932257109 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=43 t_ns=221189949760449 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=44 t_ns=221189967295670 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=45 t_ns=221189984910091 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=46 t_ns=221190002469157 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=47 t_ns=221190019964663 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=48 t_ns=221190037576037 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=49 t_ns=221190055132328 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=50 t_ns=221190072730027 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=51 t_ns=221190090291567 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=52 t_ns=221190107891010 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=53 t_ns=221190125469402 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=54 t_ns=221190143024000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=55 t_ns=221190160541577 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=56 t_ns=221190178169443 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=57 t_ns=221190195739330 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=58 t_ns=221190213345344 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=59 t_ns=221190230970215 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=60 t_ns=221190248526154 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=61 t_ns=221190266098646 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=62 t_ns=221190283675185 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=63 t_ns=221190301258807 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=64 t_ns=221190318836207 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=65 t_ns=221190336432654 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=66 t_ns=221190354251942 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=67 t_ns=221190371886641 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=68 t_ns=221190389498727 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=69 t_ns=221190407172129 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=70 t_ns=221190424744330 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=71 t_ns=221190442323604 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=72 t_ns=221190459861239 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=73 t_ns=221190477392853 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=74 t_ns=221190494958441 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=75 t_ns=221190512500174 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=76 t_ns=221190530125836 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=77 t_ns=221190547728404 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=78 t_ns=221190565392168 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=79 t_ns=221190582986631 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=80 t_ns=221190600574060 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=81 t_ns=221190618241732 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=82 t_ns=221190635821326 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=83 t_ns=221190653414847 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=84 t_ns=221190671008939 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=85 t_ns=221190688817337 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=86 t_ns=221190706352086 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=87 t_ns=221190723992687 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=88 t_ns=221190741547514 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=89 t_ns=221190759164941 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=baseline t_ns=221190759265040 cpu_ns=769183068 memory_bytes=68284416 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=90 t_ns=221190776681536 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=91 t_ns=221190794243337 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=92 t_ns=221190811836207 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=93 t_ns=221190829443334 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=94 t_ns=221190846982612 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=95 t_ns=221190864521450 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=96 t_ns=221190882054627 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=97 t_ns=221190899641966 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=98 t_ns=221190917165134 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=99 t_ns=221190934711526 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=100 t_ns=221190952530484 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=101 t_ns=221190970091142 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=102 t_ns=221190987672530 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=103 t_ns=221191005273335 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=104 t_ns=221191022853010 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=105 t_ns=221191040458724 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=106 t_ns=221191058126977 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=107 t_ns=221191075811189 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=108 t_ns=221191093526089 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=109 t_ns=221191111253483 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=110 t_ns=221191128807289 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=111 t_ns=221191146400360 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=112 t_ns=221191164169723 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=113 t_ns=221191181724320 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=114 t_ns=221191199274209 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=115 t_ns=221191216813047 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=116 t_ns=221191234405375 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=117 t_ns=221191251972406 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=118 t_ns=221191269547302 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=119 t_ns=221191287053949 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=120 t_ns=221191304584521 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=121 t_ns=221191322100355 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=122 t_ns=221191339722530 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=123 t_ns=221191357269784 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=124 t_ns=221191375402805 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=125 t_ns=221191393127243 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=126 t_ns=221191410777151 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=127 t_ns=221191428331538 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=128 t_ns=221191445707497 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=129 t_ns=221191463189548 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=130 t_ns=221191480688711 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=131 t_ns=221191498220224 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=132 t_ns=221191515534127 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=133 t_ns=221191533124392 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=134 t_ns=221191550437783 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=135 t_ns=221191567858598 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=136 t_ns=221191585223066 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=137 t_ns=221191602516299 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=138 t_ns=221191619969556 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=139 t_ns=221191637330627 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=140 t_ns=221191654825732 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=141 t_ns=221191672400358 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=142 t_ns=221191689963040 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=143 t_ns=221191707558044 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=144 t_ns=221191724889320 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=145 t_ns=221191742182653 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=146 t_ns=221191759642512 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=baseline t_ns=221191759720709 cpu_ns=880873521 memory_bytes=68284416 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=147 t_ns=221191776901090 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=148 t_ns=221191794315221 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=149 t_ns=221191811650685 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=150 t_ns=221191828922027 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=151 t_ns=221191846361437 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=152 t_ns=221191863692532 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=153 t_ns=221191881012195 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=154 t_ns=221191898221921 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=155 t_ns=221191915447647 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=156 t_ns=221191932787468 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=157 t_ns=221191950089899 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=158 t_ns=221191967490445 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=159 t_ns=221191984841458 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=160 t_ns=221192002038740 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=161 t_ns=221192019349677 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=162 t_ns=221192036659622 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=163 t_ns=221192054041664 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=164 t_ns=221192071360946 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=165 t_ns=221192088773385 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=166 t_ns=221192106248072 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=167 t_ns=221192123533831 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=168 t_ns=221192140926873 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=169 t_ns=221192158338801 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=170 t_ns=221192175624881 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=171 t_ns=221192193120086 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=172 t_ns=221192210454708 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=173 t_ns=221192227726360 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=174 t_ns=221192245127257 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=175 t_ns=221192262477088 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=176 t_ns=221192279787584 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=177 t_ns=221192297184734 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=178 t_ns=221192314528453 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=179 t_ns=221192331835412 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=180 t_ns=221192349245476 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=181 t_ns=221192366622909 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=182 t_ns=221192383920310 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=183 t_ns=221192401348659 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=184 t_ns=221192418744647 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=185 t_ns=221192436249751 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=186 t_ns=221192453616734 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=187 t_ns=221192470960833 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=188 t_ns=221192488279104 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=189 t_ns=221192505504049 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=190 t_ns=221192522860031 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=191 t_ns=221192540252011 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=192 t_ns=221192557662756 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=193 t_ns=221192575039698 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=194 t_ns=221192592363479 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=195 t_ns=221192609801446 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=196 t_ns=221192626998648 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=197 t_ns=221192644338790 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=198 t_ns=221192661624179 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=199 t_ns=221192679009366 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=200 t_ns=221192696323900 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=201 t_ns=221192713610090 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=202 t_ns=221192731056032 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=203 t_ns=221192748480724 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=204 t_ns=221192765932668 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=baseline t_ns=221192766022818 cpu_ns=974396900 memory_bytes=68284416 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=205 t_ns=221192783285554 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=206 t_ns=221192800607642 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=207 t_ns=221192818166568 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=208 t_ns=221192835826394 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=209 t_ns=221192853436396 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=session t_ns=221192854622177 clock=monotonic backend=headless renderer=pixman width=568 height=1232 output_format=XRGB8888 input=injected cards=2
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=210 t_ns=221192995279774 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=1 gesture_id=1 kind=motion t_ns=221192996705208 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=1 frame_id=211 t_ns=221193019065808 update_cpu_ns=10079207 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=211 t_ns=221193019429285 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=212 t_ns=221193045115521 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=213 t_ns=221193070317161 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=214 t_ns=221193095438700 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=215 t_ns=221193120667722 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=216 t_ns=221193145867128 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=217 t_ns=221193171132478 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=218 t_ns=221193196233057 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=219 t_ns=221193221268894 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=220 t_ns=221193246452049 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=221 t_ns=221193271537319 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=222 t_ns=221193296493545 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=223 t_ns=221193321796427 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=224 t_ns=221193347182134 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=225 t_ns=221193372763522 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=226 t_ns=221193398319762 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=227 t_ns=221193423790191 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=228 t_ns=221193449128970 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=229 t_ns=221193474469522 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=230 t_ns=221193499748759 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=231 t_ns=221193524878082 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=232 t_ns=221193552128254 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=233 t_ns=221193577928325 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=234 t_ns=221193603037861 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=235 t_ns=221193628362443 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=236 t_ns=221193653393802 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=237 t_ns=221193680714827 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=238 t_ns=221193707626800 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=239 t_ns=221193734568097 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=240 t_ns=221193761577815 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=241 t_ns=221193788488865 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=active t_ns=221193788782060 cpu_ns=1469373752 memory_bytes=69111808 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=242 t_ns=221193815481110 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=243 t_ns=221193842327749 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=244 t_ns=221193869153508 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=245 t_ns=221193896058237 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=246 t_ns=221193923218709 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=247 t_ns=221193950191567 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=248 t_ns=221193977358771 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=249 t_ns=221194004679226 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=250 t_ns=221194035931381 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=251 t_ns=221194058692118 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=2 gesture_id=1 kind=release t_ns=221194061293665 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=2 frame_id=252 t_ns=221194082217059 update_cpu_ns=11916742 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=252 t_ns=221194082576498 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=253 t_ns=221194106053359 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=254 t_ns=221194129840215 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=255 t_ns=221194153501363 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=3 gesture_id=2 kind=motion t_ns=221194169107659 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=3 frame_id=256 t_ns=221194176369123 update_cpu_ns=7484909 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=256 t_ns=221194176706490 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=257 t_ns=221194200272910 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=4 gesture_id=2 kind=motion t_ns=221194207148875 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=4 frame_id=258 t_ns=221194223146670 update_cpu_ns=7812264 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=258 t_ns=221194223487174 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=5 gesture_id=2 kind=motion t_ns=221194238122694 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=5 frame_id=259 t_ns=221194246231740 update_cpu_ns=7803417 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=259 t_ns=221194246571442 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=260 t_ns=221194270270843 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=6 gesture_id=2 kind=motion t_ns=221194270605245 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=6 frame_id=261 t_ns=221194293604492 update_cpu_ns=7997342 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=261 t_ns=221194293923325 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=7 gesture_id=2 kind=motion t_ns=221194301310637 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=7 frame_id=262 t_ns=221194316778530 update_cpu_ns=7853351 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=262 t_ns=221194317100379 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=8 gesture_id=2 kind=motion t_ns=221194332317057 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=8 frame_id=263 t_ns=221194341085690 update_cpu_ns=8951630 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=263 t_ns=221194341470708 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=264 t_ns=221194365959671 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=9 gesture_id=2 kind=motion t_ns=221194371979418 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=9 frame_id=265 t_ns=221194390350879 update_cpu_ns=9879871 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=265 t_ns=221194390791912 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=10 gesture_id=2 kind=motion t_ns=221194403409980 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=10 frame_id=266 t_ns=221194414605269 update_cpu_ns=9606697 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=266 t_ns=221194414994915 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=267 t_ns=221194439774618 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=11 gesture_id=2 kind=motion t_ns=221194440168933 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=11 frame_id=268 t_ns=221194464293557 update_cpu_ns=9638947 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=268 t_ns=221194464696379 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=12 gesture_id=2 kind=motion t_ns=221194471147641 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=12 frame_id=269 t_ns=221194488674166 update_cpu_ns=9518511 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=269 t_ns=221194489087607 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=13 gesture_id=2 kind=motion t_ns=221194502651873 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=13 frame_id=270 t_ns=221194512880625 update_cpu_ns=9543968 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=270 t_ns=221194513292132 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=271 t_ns=221194537988858 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=14 gesture_id=2 kind=motion t_ns=221194538400667 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=14 frame_id=272 t_ns=221194563350881 update_cpu_ns=10386694 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=272 t_ns=221194563756959 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=15 gesture_id=2 kind=motion t_ns=221194569368935 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=15 frame_id=273 t_ns=221194588211657 update_cpu_ns=10049067 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=273 t_ns=221194588681706 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=16 gesture_id=2 kind=motion t_ns=221194600873157 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=16 frame_id=274 t_ns=221194613125243 update_cpu_ns=10979646 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=274 t_ns=221194613760914 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=275 t_ns=221194639026415 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=17 gesture_id=2 kind=motion t_ns=221194639584019 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=17 frame_id=276 t_ns=221194664649992 update_cpu_ns=11118985 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=276 t_ns=221194665233816 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=18 gesture_id=2 kind=motion t_ns=221194671795026 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=18 frame_id=277 t_ns=221194690122685 update_cpu_ns=11172936 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=277 t_ns=221194690619874 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=19 gesture_id=2 kind=motion t_ns=221194703771070 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=19 frame_id=278 t_ns=221194715031561 update_cpu_ns=10569949 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=278 t_ns=221194715520185 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=279 t_ns=221194741235375 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=20 gesture_id=2 kind=motion t_ns=221194741740700 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=20 frame_id=280 t_ns=221194767353528 update_cpu_ns=11756869 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=280 t_ns=221194767915871 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=21 gesture_id=2 kind=motion t_ns=221194774279417 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=21 frame_id=281 t_ns=221194792850265 update_cpu_ns=11153727 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=281 t_ns=221194793352715 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=active t_ns=221194793630951 cpu_ns=1923880254 memory_bytes=69300224 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=22 gesture_id=2 kind=motion t_ns=221194806229121 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=22 frame_id=282 t_ns=221194817930486 update_cpu_ns=10889223 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=282 t_ns=221194818422897 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=283 t_ns=221194844164958 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=23 gesture_id=2 kind=motion t_ns=221194844727050 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=23 frame_id=284 t_ns=221194870546318 update_cpu_ns=11808436 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=284 t_ns=221194871039630 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=24 gesture_id=2 kind=motion t_ns=221194877040431 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=24 frame_id=285 t_ns=221194896249385 update_cpu_ns=11414787 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=285 t_ns=221194896752536 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=25 gesture_id=2 kind=motion t_ns=221194908931063 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=25 frame_id=286 t_ns=221194921540514 update_cpu_ns=10969392 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=286 t_ns=221194921981578 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=287 t_ns=221194948766420 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=26 gesture_id=2 kind=motion t_ns=221194949210519 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=26 frame_id=288 t_ns=221194974831652 update_cpu_ns=11527871 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=288 t_ns=221194975312331 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=27 gesture_id=2 kind=motion t_ns=221194981499404 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=27 frame_id=289 t_ns=221195000312400 update_cpu_ns=11128883 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=289 t_ns=221195000767490 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=28 gesture_id=2 kind=motion t_ns=221195013364828 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=28 frame_id=290 t_ns=221195025915639 update_cpu_ns=11291519 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=290 t_ns=221195026387511 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=291 t_ns=221195052234390 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=29 gesture_id=2 kind=motion t_ns=221195052659594 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=29 frame_id=292 t_ns=221195078092651 update_cpu_ns=11392848 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=292 t_ns=221195078547841 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=30 gesture_id=2 kind=motion t_ns=221195084815658 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=30 frame_id=293 t_ns=221195103509558 update_cpu_ns=11238126 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=293 t_ns=221195103933670 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=31 gesture_id=2 kind=motion t_ns=221195116805537 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=31 frame_id=294 t_ns=221195128938407 update_cpu_ns=11229684 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=294 t_ns=221195129371716 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=295 t_ns=221195155408555 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=32 gesture_id=2 kind=motion t_ns=221195155836754 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=32 frame_id=296 t_ns=221195181366565 update_cpu_ns=11514103 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=296 t_ns=221195181809672 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=33 gesture_id=2 kind=release t_ns=221195187147159 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=34 gesture_id=3 kind=motion t_ns=221195188914710 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=33 frame_id=297 t_ns=221195205818628 update_cpu_ns=10161898 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=34 frame_id=297 t_ns=221195205818628 update_cpu_ns=10161898 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=297 t_ns=221195206305117 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=35 gesture_id=3 kind=motion t_ns=221195219644719 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=35 frame_id=298 t_ns=221195229263387 update_cpu_ns=8267315 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=298 t_ns=221195229618048 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=299 t_ns=221195253747832 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=36 gesture_id=3 kind=motion t_ns=221195254133391 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=36 frame_id=300 t_ns=221195277216717 update_cpu_ns=8202235 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=300 t_ns=221195277541721 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=37 gesture_id=3 kind=motion t_ns=221195284871725 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=37 frame_id=301 t_ns=221195300538314 update_cpu_ns=7985890 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=301 t_ns=221195300872706 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=38 gesture_id=3 kind=motion t_ns=221195315912711 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=38 frame_id=302 t_ns=221195323732380 update_cpu_ns=7941266 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=302 t_ns=221195324052254 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=303 t_ns=221195347678226 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=39 gesture_id=3 kind=motion t_ns=221195348029300 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=39 frame_id=304 t_ns=221195371707030 update_cpu_ns=8906354 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=304 t_ns=221195372086196 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=40 gesture_id=3 kind=motion t_ns=221195378977901 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=40 frame_id=305 t_ns=221195396031803 update_cpu_ns=9422215 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=305 t_ns=221195396424164 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=41 gesture_id=3 kind=motion t_ns=221195410380541 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=41 frame_id=306 t_ns=221195420212854 update_cpu_ns=9393520 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=306 t_ns=221195420594264 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=307 t_ns=221195445032852 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=42 gesture_id=3 kind=motion t_ns=221195445437978 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=42 frame_id=308 t_ns=221195468580687 update_cpu_ns=8616153 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=308 t_ns=221195468902154 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=43 gesture_id=3 kind=motion t_ns=221195476490526 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=43 frame_id=309 t_ns=221195491867828 update_cpu_ns=8225059 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=309 t_ns=221195492168326 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=44 gesture_id=3 kind=motion t_ns=221195507720970 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=44 frame_id=310 t_ns=221195515502477 update_cpu_ns=7976581 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=310 t_ns=221195515888116 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=311 t_ns=221195538943439 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=45 gesture_id=3 kind=motion t_ns=221195546383541 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=45 frame_id=312 t_ns=221195561952385 update_cpu_ns=8356084 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=312 t_ns=221195562236572 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=46 gesture_id=3 kind=motion t_ns=221195577752136 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=46 frame_id=313 t_ns=221195585670952 update_cpu_ns=8102054 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=313 t_ns=221195586125501 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=314 t_ns=221195609519295 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=47 gesture_id=3 kind=motion t_ns=221195616507191 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=47 frame_id=315 t_ns=221195632478106 update_cpu_ns=8541175 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=315 t_ns=221195632748787 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=48 gesture_id=3 kind=motion t_ns=221195647967360 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=48 frame_id=316 t_ns=221195656074953 update_cpu_ns=8355803 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=316 t_ns=221195656528119 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=317 t_ns=221195680023474 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=49 gesture_id=3 kind=motion t_ns=221195686943924 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=49 frame_id=318 t_ns=221195703038402 update_cpu_ns=8553964 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=318 t_ns=221195703305587 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=50 gesture_id=3 kind=motion t_ns=221195718365108 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=50 frame_id=319 t_ns=221195726643635 update_cpu_ns=8523161 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=319 t_ns=221195727085470 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=320 t_ns=221195750697555 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=51 gesture_id=3 kind=motion t_ns=221195757508247 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=51 frame_id=321 t_ns=221195774092170 update_cpu_ns=9120154 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=321 t_ns=221195774391456 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=52 gesture_id=3 kind=motion t_ns=221195789064197 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=52 frame_id=322 t_ns=221195797384882 update_cpu_ns=8590193 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=322 t_ns=221195797684168 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=active t_ns=221195797886731 cpu_ns=2359512592 memory_bytes=69300224 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=323 t_ns=221195821568909 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=53 gesture_id=3 kind=motion t_ns=221195828059266 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=53 frame_id=324 t_ns=221195845330447 update_cpu_ns=9329830 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=324 t_ns=221195845680158 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=54 gesture_id=3 kind=motion t_ns=221195859755210 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=54 frame_id=325 t_ns=221195869588454 update_cpu_ns=9857196 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=325 t_ns=221195870022885 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=326 t_ns=221195894867881 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=55 gesture_id=3 kind=motion t_ns=221195895335905 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=55 frame_id=327 t_ns=221195918992385 update_cpu_ns=9494339 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=327 t_ns=221195919359429 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=56 gesture_id=3 kind=motion t_ns=221195927226878 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=56 frame_id=328 t_ns=221195942851318 update_cpu_ns=9252074 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=328 t_ns=221195943149561 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=57 gesture_id=3 kind=motion t_ns=221195958773560 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=57 frame_id=329 t_ns=221195967506715 update_cpu_ns=8986576 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=329 t_ns=221195967984057 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=330 t_ns=221195992220413 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=58 gesture_id=3 kind=motion t_ns=221195998397878 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=58 frame_id=331 t_ns=221196015832890 update_cpu_ns=9311513 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=331 t_ns=221196016212958 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=59 gesture_id=3 kind=motion t_ns=221196030120192 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=59 frame_id=332 t_ns=221196040347872 update_cpu_ns=9999126 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=332 t_ns=221196040693786 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=333 t_ns=221196065164594 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=60 gesture_id=3 kind=motion t_ns=221196065533902 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=60 frame_id=334 t_ns=221196089694775 update_cpu_ns=9742567 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=334 t_ns=221196090029227 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=61 gesture_id=3 kind=motion t_ns=221196096597421 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=61 frame_id=335 t_ns=221196113676019 update_cpu_ns=9487615 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=335 t_ns=221196113969864 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=62 gesture_id=3 kind=motion t_ns=221196128216279 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=62 frame_id=336 t_ns=221196137457274 update_cpu_ns=9351859 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=336 t_ns=221196137729158 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=337 t_ns=221196161920669 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=63 gesture_id=3 kind=motion t_ns=221196162245964 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=63 frame_id=338 t_ns=221196186171873 update_cpu_ns=9417905 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=338 t_ns=221196186438116 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=64 gesture_id=3 kind=release t_ns=221196194065391 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=65 gesture_id=4 kind=motion t_ns=221196195685794 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=64 frame_id=339 t_ns=221196208741529 update_cpu_ns=8024604 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=65 frame_id=339 t_ns=221196208741529 update_cpu_ns=8024604 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=339 t_ns=221196208974198 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=340 t_ns=221196231264296 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=66 gesture_id=4 kind=motion t_ns=221196231524668 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=66 frame_id=341 t_ns=221196253303288 update_cpu_ns=6495632 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=341 t_ns=221196253491163 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=67 gesture_id=4 kind=motion t_ns=221196262061481 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=67 frame_id=342 t_ns=221196275442941 update_cpu_ns=6634614 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=342 t_ns=221196275660212 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=343 t_ns=221196298181777 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=68 gesture_id=4 kind=motion t_ns=221196298462718 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=68 frame_id=344 t_ns=221196320327060 update_cpu_ns=6619585 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=344 t_ns=221196320527439 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=69 gesture_id=4 kind=motion t_ns=221196329060646 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=69 frame_id=345 t_ns=221196342568145 update_cpu_ns=6814639 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=345 t_ns=221196342786448 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=346 t_ns=221196365203405 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=70 gesture_id=4 kind=motion t_ns=221196365477242 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=70 frame_id=347 t_ns=221196388269709 update_cpu_ns=7722367 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=347 t_ns=221196388579434 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=71 gesture_id=4 kind=motion t_ns=221196396321537 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=71 frame_id=348 t_ns=221196411601435 update_cpu_ns=8398983 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=348 t_ns=221196411974480 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=72 gesture_id=4 kind=motion t_ns=221196427612104 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=72 frame_id=349 t_ns=221196435249038 update_cpu_ns=7897525 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=349 t_ns=221196435657550 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=350 t_ns=221196458464043 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=73 gesture_id=4 kind=motion t_ns=221196466065149 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=73 frame_id=351 t_ns=221196481074907 update_cpu_ns=7849881 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=351 t_ns=221196481308418 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=352 t_ns=221196504579670 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=74 gesture_id=4 kind=motion t_ns=221196504903171 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=74 frame_id=353 t_ns=221196527999662 update_cpu_ns=8252139 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=353 t_ns=221196528302906 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=75 gesture_id=4 kind=motion t_ns=221196535769407 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=75 frame_id=354 t_ns=221196551244544 update_cpu_ns=8241097 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=354 t_ns=221196551502752 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=76 gesture_id=4 kind=motion t_ns=221196566975986 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=76 frame_id=355 t_ns=221196574768664 update_cpu_ns=7962612 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=355 t_ns=221196575149764 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=356 t_ns=221196598039945 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=77 gesture_id=4 kind=motion t_ns=221196605530011 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=77 frame_id=357 t_ns=221196620890632 update_cpu_ns=8140742 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=357 t_ns=221196621172345 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=78 gesture_id=4 kind=motion t_ns=221196636802836 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=78 frame_id=358 t_ns=221196644863460 update_cpu_ns=8317819 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=358 t_ns=221196645314021 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=359 t_ns=221196668818324 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=79 gesture_id=4 kind=motion t_ns=221196675697916 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=79 frame_id=360 t_ns=221196691861965 update_cpu_ns=8622321 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=360 t_ns=221196692146813 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=80 gesture_id=4 kind=motion t_ns=221196707134009 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=80 frame_id=361 t_ns=221196715263593 update_cpu_ns=8380121 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=361 t_ns=221196715540396 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=362 t_ns=221196739273240 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=81 gesture_id=4 kind=motion t_ns=221196745949809 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=81 frame_id=363 t_ns=221196762904763 update_cpu_ns=9208613 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=363 t_ns=221196763265234 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=82 gesture_id=4 kind=motion t_ns=221196777558167 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=82 frame_id=364 t_ns=221196786184160 update_cpu_ns=8691334 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=364 t_ns=221196786458869 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=365 t_ns=221196810174360 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=active t_ns=221196810400237 cpu_ns=2758747628 memory_bytes=69300224 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=83 gesture_id=4 kind=motion t_ns=221196810635291 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=83 frame_id=366 t_ns=221196834088317 update_cpu_ns=9084239 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=366 t_ns=221196834375990 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=84 gesture_id=4 kind=motion t_ns=221196841637124 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=84 frame_id=367 t_ns=221196857490536 update_cpu_ns=8812818 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=367 t_ns=221196857759885 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=85 gesture_id=4 kind=motion t_ns=221196873220745 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=85 frame_id=368 t_ns=221196881880832 update_cpu_ns=8909730 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=368 t_ns=221196882377241 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=369 t_ns=221196906292089 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=86 gesture_id=4 kind=motion t_ns=221196912811991 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=86 frame_id=370 t_ns=221196929727731 update_cpu_ns=9144573 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=370 t_ns=221196930036214 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=87 gesture_id=4 kind=motion t_ns=221196944369373 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=87 frame_id=371 t_ns=221196953138396 update_cpu_ns=8711217 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=371 t_ns=221196953404990 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=372 t_ns=221196977309969 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=88 gesture_id=4 kind=motion t_ns=221196977631146 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=88 frame_id=373 t_ns=221197001433472 update_cpu_ns=9204102 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=373 t_ns=221197001733218 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=89 gesture_id=4 kind=motion t_ns=221197008681280 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=89 frame_id=374 t_ns=221197025203857 update_cpu_ns=9104307 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=374 t_ns=221197025537627 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=90 gesture_id=4 kind=motion t_ns=221197040228042 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=90 frame_id=375 t_ns=221197049367264 update_cpu_ns=9401763 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=375 t_ns=221197049687540 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=376 t_ns=221197074144172 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=91 gesture_id=4 kind=motion t_ns=221197080109396 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=91 frame_id=377 t_ns=221197097852249 update_cpu_ns=9517961 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=377 t_ns=221197098140353 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=92 gesture_id=4 kind=motion t_ns=221197111724126 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=92 frame_id=378 t_ns=221197121870442 update_cpu_ns=9448153 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=378 t_ns=221197122156843 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=379 t_ns=221197146855944 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=93 gesture_id=4 kind=motion t_ns=221197147244548 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=93 frame_id=380 t_ns=221197171610669 update_cpu_ns=9962944 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=380 t_ns=221197171989836 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=94 gesture_id=4 kind=motion t_ns=221197179253003 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=94 frame_id=381 t_ns=221197195774027 update_cpu_ns=9821821 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=381 t_ns=221197196075166 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=95 gesture_id=4 kind=release t_ns=221197211052703 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=95 frame_id=382 t_ns=221197218717379 update_cpu_ns=7927880 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=382 t_ns=221197218959977 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=383 t_ns=221197244614383 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=384 t_ns=221197263942011 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=96 gesture_id=5 kind=motion t_ns=221197266952461 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=96 frame_id=385 t_ns=221197285782809 update_cpu_ns=6336013 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=385 t_ns=221197285976065 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=97 gesture_id=5 kind=motion t_ns=221197287416086 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=97 frame_id=386 t_ns=221197308977777 update_cpu_ns=7943949 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=386 t_ns=221197309240764 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=98 gesture_id=5 kind=motion t_ns=221197309527025 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=98 frame_id=387 t_ns=221197332923683 update_cpu_ns=8580766 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=387 t_ns=221197333264888 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=99 gesture_id=5 kind=motion t_ns=221197333613477 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=99 frame_id=388 t_ns=221197357705239 update_cpu_ns=9653516 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=388 t_ns=221197358033420 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=100 gesture_id=5 kind=motion t_ns=221197358369284 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=100 frame_id=389 t_ns=221197382888014 update_cpu_ns=10109193 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=389 t_ns=221197383283071 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=390 t_ns=221197411447851 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=391 t_ns=221197433783965 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=392 t_ns=221197459517811 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=101 gesture_id=5 kind=motion t_ns=221197460070225 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=101 frame_id=393 t_ns=221197484839347 update_cpu_ns=11122708 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=393 t_ns=221197485252288 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=102 gesture_id=5 kind=motion t_ns=221197485653166 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=102 frame_id=394 t_ns=221197510830530 update_cpu_ns=10918768 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=394 t_ns=221197511186302 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=103 gesture_id=5 kind=motion t_ns=221197511549048 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=103 frame_id=395 t_ns=221197536890582 update_cpu_ns=11156462 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=395 t_ns=221197537373785 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=104 gesture_id=5 kind=motion t_ns=221197537780975 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=104 frame_id=396 t_ns=221197563363274 update_cpu_ns=11638458 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=396 t_ns=221197563830297 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=105 gesture_id=5 kind=motion t_ns=221197564226536 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=105 frame_id=397 t_ns=221197588930756 update_cpu_ns=10626247 final=0
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=397 t_ns=221197589267382 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=106 gesture_id=5 kind=release t_ns=221197589664883 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=input input_id=107 gesture_id=6 kind=release t_ns=221197593659713 source=injected
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=106 frame_id=398 t_ns=221197606967043 update_cpu_ns=7575469 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=submit input_id=107 frame_id=398 t_ns=221197606967043 update_cpu_ns=7575469 final=1
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=398 t_ns=221197607113480 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=399 t_ns=221197624717501 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=400 t_ns=221197642122135 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=401 t_ns=221197659729773 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=402 t_ns=221197677006395 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=403 t_ns=221197694315097 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=404 t_ns=221197712159202 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=405 t_ns=221197729973059 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=406 t_ns=221197747398573 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=407 t_ns=221197765136346 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=408 t_ns=221197782504982 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=409 t_ns=221197799776685 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=410 t_ns=221197817240771 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=restored t_ns=221197817322536 cpu_ns=3131560501 memory_bytes=69361664 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=411 t_ns=221197834699267 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=412 t_ns=221197852318647 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=413 t_ns=221197869664931 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=414 t_ns=221197887250056 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=415 t_ns=221197904796849 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=416 t_ns=221197922305689 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=417 t_ns=221197940017203 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=418 t_ns=221197957399986 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=419 t_ns=221197974774523 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=420 t_ns=221197992238590 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=421 t_ns=221198009571037 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=422 t_ns=221198027053959 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=423 t_ns=221198044464735 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=424 t_ns=221198061809736 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=425 t_ns=221198079251240 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=426 t_ns=221198096703183 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=427 t_ns=221198113977951 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=428 t_ns=221198131440675 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=429 t_ns=221198148842704 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=430 t_ns=221198166061187 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=431 t_ns=221198183543317 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=432 t_ns=221198200865926 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=433 t_ns=221198218155583 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=434 t_ns=221198235657591 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=435 t_ns=221198252984778 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=436 t_ns=221198270315623 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=437 t_ns=221198287730717 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=438 t_ns=221198305098992 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=439 t_ns=221198322354835 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=440 t_ns=221198339737116 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=441 t_ns=221198357305931 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=442 t_ns=221198374907326 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=443 t_ns=221198392506237 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=444 t_ns=221198410198996 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=445 t_ns=221198427691817 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=446 t_ns=221198445106209 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=447 t_ns=221198462522445 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=448 t_ns=221198479948219 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=449 t_ns=221198497415511 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=450 t_ns=221198514667617 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=451 t_ns=221198531942967 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=452 t_ns=221198549378860 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=453 t_ns=221198566764638 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=454 t_ns=221198584180874 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=455 t_ns=221198601592231 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=456 t_ns=221198618972539 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=457 t_ns=221198636387783 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=458 t_ns=221198653706785 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=459 t_ns=221198671145273 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=460 t_ns=221198688594351 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=461 t_ns=221198706153577 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=462 t_ns=221198723636649 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=463 t_ns=221198740917920 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=464 t_ns=221198758255568 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=465 t_ns=221198775478107 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=466 t_ns=221198792924520 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=467 t_ns=221198810268780 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=468 t_ns=221198827727787 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=restored t_ns=221198827789453 cpu_ns=3233343583 memory_bytes=69361664 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=469 t_ns=221198845081094 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=470 t_ns=221198862411247 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=471 t_ns=221198879856939 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=472 t_ns=221198897542704 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=473 t_ns=221198915073717 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=474 t_ns=221198932595051 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=475 t_ns=221198949917320 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=476 t_ns=221198967456969 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=477 t_ns=221198984875118 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=478 t_ns=221199002305120 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=479 t_ns=221199019664549 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=480 t_ns=221199037024308 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=481 t_ns=221199054356395 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=482 t_ns=221199071698060 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=483 t_ns=221199089170702 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=484 t_ns=221199106575527 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=485 t_ns=221199123873910 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=486 t_ns=221199141234992 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=487 t_ns=221199158582508 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=488 t_ns=221199175945483 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=489 t_ns=221199193423946 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=490 t_ns=221199210908441 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=491 t_ns=221199228386033 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=492 t_ns=221199245761462 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=493 t_ns=221199263069333 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=494 t_ns=221199280528510 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=495 t_ns=221199297943644 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=496 t_ns=221199315212762 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=497 t_ns=221199332741991 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=498 t_ns=221199350159449 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=499 t_ns=221199367633605 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=500 t_ns=221199384925415 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=501 t_ns=221199402377699 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=502 t_ns=221199419854730 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=503 t_ns=221199437218978 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=504 t_ns=221199454534083 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=505 t_ns=221199471943085 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=506 t_ns=221199489367476 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=507 t_ns=221199506666020 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=508 t_ns=221199523985292 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=509 t_ns=221199541318732 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=510 t_ns=221199558616454 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=511 t_ns=221199576060713 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=512 t_ns=221199593428537 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=513 t_ns=221199610712894 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=514 t_ns=221199628272410 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=515 t_ns=221199645633231 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=516 t_ns=221199662933679 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=517 t_ns=221199680365664 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=518 t_ns=221199697734991 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=519 t_ns=221199715022213 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=520 t_ns=221199732456203 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=521 t_ns=221199749785024 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=522 t_ns=221199767090580 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=523 t_ns=221199784547042 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=524 t_ns=221199801911450 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=525 t_ns=221199819188784 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=526 t_ns=221199836644204 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=resource phase=restored t_ns=221199836703466 cpu_ns=3331754084 memory_bytes=69361664 scope=compositor
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=527 t_ns=221199854067894 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=528 t_ns=221199871436540 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=529 t_ns=221199888931624 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=530 t_ns=221199906209258 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=531 t_ns=221199923471754 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=532 t_ns=221199940926693 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=533 t_ns=221199958254562 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=534 t_ns=221199975512508 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=535 t_ns=221199992927322 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=536 t_ns=221200010259529 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=537 t_ns=221200027482399 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=538 t_ns=221200044914295 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=539 t_ns=221200062262793 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=540 t_ns=221200079547871 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=541 t_ns=221200096970469 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=542 t_ns=221200114338964 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=543 t_ns=221200131634141 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=544 t_ns=221200149046289 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=545 t_ns=221200166394497 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=546 t_ns=221200183690405 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=547 t_ns=221200200996974 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=548 t_ns=221200218376160 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=549 t_ns=221200235696484 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=550 t_ns=221200252965212 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=551 t_ns=221200270412526 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=552 t_ns=221200287742659 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=553 t_ns=221200305039600 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=554 t_ns=221200322513144 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=555 t_ns=221200339898041 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=556 t_ns=221200357243062 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=557 t_ns=221200374635663 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=558 t_ns=221200392194148 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=559 t_ns=221200409595746 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=560 t_ns=221200427022782 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=561 t_ns=221200444356492 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=562 t_ns=221200462076973 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=563 t_ns=221200479419289 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=564 t_ns=221200496960562 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=565 t_ns=221200514312927 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=566 t_ns=221200532064577 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=567 t_ns=221200549426310 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=568 t_ns=221200566705126 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=569 t_ns=221200584178309 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=570 t_ns=221200601571411 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=571 t_ns=221200618879533 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=572 t_ns=221200636124816 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=573 t_ns=221200653433989 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=574 t_ns=221200670817884 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=221189752834017 event=present frame_id=575 t_ns=221200688196449 presented=1 clock=monotonic

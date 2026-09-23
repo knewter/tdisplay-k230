@@ -6,13 +6,13 @@
 ## 2. Card state and recovery model
 
 - [x] 2.1 Implement a host-testable card-deck state model for enter, shrink, horizontal drag, release/expand, unavailable/private state, graceful-close request, refusal, timeout, and restore; verify with `python3 tests/test_card_shell_state.py`. Coordinator proof: `docs/evidence/card-shell-policy-host.md`.
-- [ ] 2.2 Implement global edge-gesture entry from an arbitrary eligible running application and a persistent button entry/recovery route, while retaining Apps, Windows/Home, Keyboard, System, Help, terminal, monitor, and Back semantics; verify with the proposed-to-create `python3 tests/test_card_shell_recovery.py` plus existing `python3 tests/test_touch_menu.py`.
+- [x] 2.2 Implement global edge-gesture entry from an arbitrary eligible running application and a persistent button entry/recovery route, while retaining Apps, Windows/Home, Keyboard, System, Help, terminal, monitor, and Back semantics; verify with the proposed-to-create `python3 tests/test_card_shell_recovery.py` plus existing `python3 tests/test_touch_menu.py`.
 
 ## 3. Selected live composition boundary
 
-- [ ] 3.1 Implement the live-content source and card compositor chosen by task 1.1, including explicit eligibility and a non-live private/unavailable card; verify with the proposed-to-create `python3 tests/test_card_shell_composition.py` using eligible and denied fixture surfaces.
-- [ ] 3.2 Implement direct finger-following deck movement, tap-to-expand, and upward graceful-close request with bounded refusal/timeout recovery; verify with the proposed-to-create `python3 tests/test_card_shell_gestures.py` and native test surface traces.
-- [ ] 3.3 Package only the chosen userspace component and its declared dependencies; verify the proposed-to-create narrow derivation with `nix build .#card-shell` and record its closure difference from the current system.
+- [x] 3.1 Implement the live-content source and card compositor chosen by task 1.1, including explicit eligibility and a non-live private/unavailable card; verify with the proposed-to-create `python3 tests/test_card_shell_composition.py` using eligible and denied fixture surfaces.
+- [x] 3.2 Implement direct finger-following deck movement, tap-to-expand, and upward graceful-close request with bounded refusal/timeout recovery; verify with the proposed-to-create `python3 tests/test_card_shell_gestures.py` and native test surface traces.
+- [x] 3.3 Package only the chosen userspace component and its declared dependencies; verify the proposed-to-create narrow derivation with `nix build .#card-shell` and record its closure difference from the current system.
 
 ## 4. Cost decision
 
@@ -29,3 +29,5 @@
 ## 6. Proposal validation
 
 - [ ] 6.1 Validate this change and preserve all unresolved hardware requirements as unverified until their named evidence exists; verify with `openspec validate the-shell-manages-apps-as-cards --strict`.
+
+Host implementation evidence for tasks 2.2 and 3.1–3.3: `docs/evidence/card-shell/headless/README.md`. Actual compositor runtime and narrow build pass; diagnostic headless frame-interval budget fails and isolated session memory is incomplete. Product board cost, every physical control route, image integration, and real-finger acceptance remain open in groups 4–5.

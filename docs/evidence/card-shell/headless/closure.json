@@ -1,0 +1,17 @@
+{
+  "package": "/nix/store/vv68a0gg1wv63dnvx58q1a0x9pihh402-k230-card-shell",
+  "normal_system": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package_paths": 104,
+  "package_nar_bytes": 204459080,
+  "normal_paths": 602,
+  "normal_nar_bytes": 1314406800,
+  "additional_paths": {
+    "/nix/store/11i799jqyx5043spjyyj6i9fwpzklhkz-sway-1.12": 13816,
+    "/nix/store/cr22m8r2rq2h89mjxk1pv4sya1p1ha3s-sway-unwrapped-riscv64-unknown-linux-gnu-1.12": 6115840,
+    "/nix/store/jvkm7zbfn6grdj09yj642i4i6k1fyirn-sway": 1504,
+    "/nix/store/vv68a0gg1wv63dnvx58q1a0x9pihh402-k230-card-shell": 13920,
+    "/nix/store/w96100hgam5wxm47jb0qj9l9gzm2hcrf-card-shell": 1912
+  },
+  "additional_nar_bytes": 6146992,
+  "limits": "NAR closure sizes, not compressed download sizes or runtime memory; normal system remains unchanged"
+}

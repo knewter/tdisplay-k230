@@ -655,6 +655,10 @@ DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evid
 DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/final-shell-image/help-header.png
 DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/final-shell-image/keyboard-visible.png
 DATA ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102  docs/evidence/card-composition-headless/cards.png
+DATA 2e56b5aeb46b748a6cbd192352d7c3a985fe705ffedb1a1fe38d6f6bacc0e7a3  docs/evidence/card-shell/headless/during-drag.png
+DATA 38cb6ab82eeedb0154574a7f126380b3c1cf52e62f88bb0228db208a89f35ed3  docs/evidence/card-shell/headless/private.png
+DATA cd0ff6f6b75552bf4f5a891395e36f12b6366ab844d15afcf4e7fabdb97077f8  docs/evidence/card-shell/headless/two-live.png
+DATA 5975a8e3a946701df1ca30d1dd01e2946a7b42d15dab8ed88ce4350f071eb55f  docs/evidence/card-shell/headless/unavailable.png
 DATA 0aa7c1d4c919b21ac233ce996df62a7ed9e7fa342a1dd18f71e212560acad6e9  docs/evidence/video-acceleration/360p-native.png
 DATA 0de84cf54feadaaaeff344d62d5764700fdfcb02eadf54f2d71485e164d5341b  docs/evidence/video-acceleration/360p-physical.jpg
 DATA 3eb27a069ff2f1b7bae9c991229a73086ddaccb8a00c12de2b8b9110e8cc49fa  docs/evidence/video-acceleration/360p-physical.mp4
@@ -1227,3 +1231,9 @@ are in `docs/evidence/final-shell-image/README.md`.
 | `docs/evidence/final-shell-image/after-render-failure.png` | 38398 | DATA | `b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e` |
 | `docs/evidence/final-shell-image/help-header.png` | 48044 | DATA | `237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3` |
 | `docs/evidence/final-shell-image/keyboard-visible.png` | 48872 | DATA | `eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8` |
+
+## Card shell host captures
+
+Four locally generated `grim` captures of synthetic repository clients under
+headless QEMU/Pixman. No board or user application content. Provenance, commands
+and limits: `docs/evidence/card-shell/headless/README.md`. Hashes are in MANIFEST.

@@ -1,0 +1,6 @@
+Headless evidence: /mnt/MediaVolume/card-tests/card-shell-recovery-ah94bz4k
+{"evidence_class": "headless-qemu-injected-input", "passed": ["horizontal-live-deck", "expand-focus-keyboard", "close-timeout-retains", "close-exit", "private-placeholder", "unavailable-placeholder", "live-privacy-transition", "three-dynamic-views", "topbar-restores-normal", "cancel-no-up-return", "multi-contact-drain", "output-loss-restores", "upward-throw-close", "global-edge-entry", "persistent-button", "clean-compositor-teardown"], "limits": ["no physical touch or panel proof", "no on-board cost acceptance"]}
+Headless evidence: /mnt/MediaVolume/card-tests/card-shell-disabled-kfz8h206
+PASS disabled product adapter
+PASS recovery: actual Sway/Wayland protocol runtime; physical acceptance remains open
+PASS disabled: actual Sway/Wayland protocol runtime; physical acceptance remains open
