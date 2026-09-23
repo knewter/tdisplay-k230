@@ -68,12 +68,30 @@ It requires a packaged vendor library/header, a wlroots renderer and texture
 implementation, RGB565 correctness, cache/fence validation, and measurement.
 It is a compositor-development project, not an FFmpeg or environment flag.
 
+## Physical offscreen investigation
+
+The optional [source-built probe](../research/vglite-offscreen-probe.md) now
+runs against the live Linux driver using private allocations, without opening
+DRM or changing display ownership. The [initial RGBA result](video-acceleration/vglite-initial.txt)
+placed the scaled boundary correctly on all sampled rows, but failed its exact
+color comparison: a channel changed from requested 208 to 207 on clear and
+206 after blit. This is retained as a failed strict RGBA test, not a claim of
+color-correct composition. Shell, seatd, and Wi-Fi stayed active.
+
+The separate [opaque RGBX test](video-acceleration/vglite-rgbx.txt) passed
+with exact saturated red and black RGB values on both sides of the scaled
+boundary at four sampled rows. It ignores only the format's unused X byte.
+This demonstrates offscreen clear, blit, and 2x scaling through the real GPU;
+it does not establish general RGBA color fidelity, blending, RGB565 output,
+dma-buf interoperability, display scanout, or throughput. No display buffer or
+DRM ownership was touched. The source-built package remains optional.
+
 ## Next action
 
 Keep the measured finite-window [playback configurations](video-acceleration/README.md)
 as the current solution: unscaled 270p software decoding, or 360p MVX decoding
-with CPU point scaling and the known-CFR workaround. Before implementing any accelerated renderer, run a small privileged
-VGLite smoke test that imports an exported RGB565 dumb-buffer dma-buf, clears or
+with CPU point scaling and the known-CFR workaround. Next prove RGB565 and alpha/color behavior in private buffers. Before
+implementing an accelerated renderer, run a small privileged VGLite smoke test that imports an exported RGB565 dumb-buffer dma-buf, clears or
 blits it, completes the GPU work, and scans it out. Verify the result visually
 and measure wall-clock submit-to-fence time. Only after that passes should a
 VGLite wlroots renderer be scoped. Separately, test a Canaan NV12 overlay with

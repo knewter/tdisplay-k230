@@ -110,8 +110,10 @@ chip lacks graphics acceleration: [the live GPU preflight](gpu-preflight.txt)
 records `CONFIG_GPU_VGLITE=y` and a root-only `/dev/vg_lite` device. DRM exposes
 `card0` but no render node. The VG-Lite 2.5D engine is a different integration
 path from a Mesa/OpenGL renderer; it is not used by the current shell or these
-wlshm playback tests. An offscreen blit/scale test and integration audit are
-separate from the proven VPU decode result above.
+wlshm playback tests. The separate [offscreen RGBX blit/scale test](vglite-rgbx.txt) passed; the
+[GPU integration audit](../vglite-compositor-audit.md) records the initial RGBA
+color mismatch and the remaining display-buffer work. This is separate from
+the proven VPU decode result above.
 
 ## Captured repeat
 

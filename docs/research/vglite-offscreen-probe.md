@@ -44,8 +44,9 @@ isolates this diagnostic from alpha-channel premultiplication. The previous
 RGBA trial's partially saturated, blue-dominant literal (`0xffd02020`, memory
 bytes `20:20:d0:ff`) lost a channel value on each render pass. That observation
 is consistent with the SDK's configured premultiplication path, but this source
-audit does not establish that path as the cause of the quantization. It was not
-an appropriate exact scale assertion.
+audit does not establish that path as the cause of the quantization. The RGBA
+color-preservation test remains failed; this RGBX test separately checks opaque
+blitting and scale geometry.
 
 The probe requires exact RGB values: source red is `ff:00:00`, source black is
 `00:00:00`, and the same colors must appear on both sides of the 2x-scaled
@@ -72,3 +73,11 @@ active, run the resulting `bin/k230-vglite-probe` as root. A zero exit status
 and its `offscreen RGBX 2x blit-scale completed` line prove the requested private
 buffer operation. Any open, ioctl, allocation, finish, or zero-output failure
 is a failed diagnostic; do not fall back to DRM or modify display ownership.
+
+## Physical result
+
+The [RGBX run](../evidence/video-acceleration/vglite-rgbx.txt) passed on the
+physical board. The [initial RGBA run](../evidence/video-acceleration/vglite-initial.txt)
+remains a failed exact-color test. See the [integration audit](../evidence/vglite-compositor-audit.md)
+for the limits and next display-buffer experiment. Neither result enables GPU
+rendering in Sway or measures its performance.

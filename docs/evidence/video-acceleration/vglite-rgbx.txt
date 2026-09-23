@@ -1,0 +1,38 @@
+Date: 2026-09-22 America/Chicago (2026-09-23 UTC)
+Diagnostic build: /nix/store/33f4vyr1sxij2ysgibjc0jsycwrggcpc-k230-vglite-probe-riscv64-unknown-linux-gnu-0-1104236db4d1e47873bd68924f912747b820228c
+Private RGBX buffers only; no display access.
+Service status order: shell, seatd, k230-wifi.
+
+VGLITE_TEST_BEGIN
+source x=0 y=0 raw=0xff0000ff bytes=ff:00:00:ff
+source x=127 y=0 raw=0x00000000 bytes=00:00:00:00
+target x=0 y=0 raw=0xff0000ff bytes=ff:00:00:ff
+target x=126 y=0 raw=0xff0000ff bytes=ff:00:00:ff
+target x=127 y=0 raw=0xff0000ff bytes=ff:00:00:ff
+target x=128 y=0 raw=0xff000000 bytes=00:00:00:ff
+target x=129 y=0 raw=0xff000000 bytes=00:00:00:ff
+target x=255 y=0 raw=0xff000000 bytes=00:00:00:ff
+target x=0 y=63 raw=0xff0000ff bytes=ff:00:00:ff
+target x=126 y=63 raw=0xff0000ff bytes=ff:00:00:ff
+target x=127 y=63 raw=0xff0000ff bytes=ff:00:00:ff
+target x=128 y=63 raw=0xff000000 bytes=00:00:00:ff
+target x=129 y=63 raw=0xff000000 bytes=00:00:00:ff
+target x=255 y=63 raw=0xff000000 bytes=00:00:00:ff
+target x=0 y=127 raw=0xff0000ff bytes=ff:00:00:ff
+target x=126 y=127 raw=0xff0000ff bytes=ff:00:00:ff
+target x=127 y=127 raw=0xff0000ff bytes=ff:00:00:ff
+target x=128 y=127 raw=0xff000000 bytes=00:00:00:ff
+target x=129 y=127 raw=0xff000000 bytes=00:00:00:ff
+target x=255 y=127 raw=0xff000000 bytes=00:00:00:ff
+target x=0 y=255 raw=0xff0000ff bytes=ff:00:00:ff
+target x=126 y=255 raw=0xff0000ff bytes=ff:00:00:ff
+target x=127 y=255 raw=0xff0000ff bytes=ff:00:00:ff
+target x=128 y=255 raw=0xff000000 bytes=00:00:00:ff
+target x=129 y=255 raw=0xff000000 bytes=00:00:00:ff
+target x=255 y=255 raw=0xff000000 bytes=00:00:00:ff
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+PROBE_STATUS=0
+active
+active
+active
+VGLITE_TEST_END
