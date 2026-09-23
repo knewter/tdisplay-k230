@@ -24,6 +24,8 @@
  * completion guarantee in the pinned SDK. */
 static pthread_mutex_t gpu_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool gpu_disabled, broker_attempted;
+static bool gpu_context_ready, gpu_quarantined;
+static size_t gpu_renderer_owners;
 struct vglite_renderer { struct wlr_renderer base; struct wlr_renderer *pixman; };
 struct vglite_texture {
 	struct wlr_texture base;
@@ -386,9 +388,14 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	struct cost_stamp stamp = profile_now(p);
 	target_cache_to_gpu(target.memory, stride * target.height);
 	profile_mark(p, COST_CACHE, &stamp);
-	bool initialized = gpu_call(p, vg_lite_init(target.width, target.height), "gpu_init", SIZE_MAX);
+	/* Only image blits and clears are admitted: no tessellation storage is
+	 * needed. The pinned SDK's image samples use init(0, 0), and set_render_target
+	 * updates target dimensions per pass. One process-global context remains
+	 * serialized by gpu_lock and lives until the last renderer is destroyed. */
+	if (!gpu_context_ready)
+		gpu_context_ready = gpu_call(p, vg_lite_init(0, 0), "gpu_init", SIZE_MAX);
 	profile_mark(p, COST_INIT, &stamp);
-	if (!initialized) {
+	if (!gpu_context_ready) {
 		gpu_disabled = true; wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
 	}
 	bool ok = gpu_call(p, vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]), "target_map", SIZE_MAX);
@@ -469,6 +476,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	if (!finished) {
 		log_decision(p, "failed");
 		gpu_disabled = true;
+		gpu_quarantined = true;
 		/* Deliberately quarantine the mapped target, source allocations and its
 		 * existing wlr_buffer lock and data access for process lifetime. Neither free, unmap nor
 		 * close in this SDK establishes quiescence after a failed finish. */
@@ -479,7 +487,6 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	for (size_t i = 0; i < source_index; i++) if (sources[i].handle && !gpu_call(p, vg_lite_free(&sources[i]), "gpu_free", SIZE_MAX)) ok = false;
 	free(sources);
 	if (target.handle && !gpu_call(p, vg_lite_unmap(&target), "target_unmap", SIZE_MAX)) ok = false;
-	if (!gpu_call(p, vg_lite_close(), "gpu_close", SIZE_MAX)) ok = false;
 	wlr_buffer_end_data_ptr_access(p->buffer);
 	profile_mark(p, COST_CLEANUP, &stamp);
 	if (!ok) {
@@ -559,7 +566,23 @@ static struct wlr_texture *from_buffer(struct wlr_renderer *base, struct wlr_buf
 static const struct wlr_drm_format_set *texture_formats(struct wlr_renderer *b, uint32_t c) { return wlr_renderer_get_texture_formats(((struct vglite_renderer *)b)->pixman, c); }
 static const struct wlr_drm_format_set *render_formats(struct wlr_renderer *b) { return wlr_renderer_get_texture_formats(((struct vglite_renderer *)b)->pixman, WLR_BUFFER_CAP_DATA_PTR); }
 static int drm_fd(struct wlr_renderer *b) { return wlr_renderer_get_drm_fd(((struct vglite_renderer *)b)->pixman); }
-static void destroy(struct wlr_renderer *b) { struct vglite_renderer *r = (struct vglite_renderer *)b; wlr_renderer_destroy(r->pixman); free(r); }
+static void destroy(struct wlr_renderer *b) {
+	struct vglite_renderer *r = (struct vglite_renderer *)b;
+	wlr_renderer_destroy(r->pixman);
+	pthread_mutex_lock(&gpu_lock);
+	assert(gpu_renderer_owners > 0);
+	if (--gpu_renderer_owners == 0 && gpu_context_ready && !gpu_quarantined) {
+		/* Every submitted GPU pass has finished before reaching this point.
+		 * Never close after a failed finish, even at last-owner destruction. */
+		if (vg_lite_close() == VG_LITE_SUCCESS) gpu_context_ready = false;
+		else {
+			gpu_disabled = gpu_quarantined = true;
+			wlr_log(WLR_ERROR, "VG-Lite context close failed; GPU disabled, context quarantined");
+		}
+	}
+	pthread_mutex_unlock(&gpu_lock);
+	free(r);
+}
 static const struct wlr_renderer_impl renderer_impl = { .get_texture_formats = texture_formats, .get_render_formats = render_formats, .destroy = destroy, .get_drm_fd = drm_fd, .texture_from_buffer = from_buffer, .begin_buffer_pass = begin };
 struct wlr_renderer *wlr_vglite_renderer_create(void) {
 	const char *broker = getenv("K230_VGLITE_BROKER");
@@ -575,5 +598,9 @@ struct wlr_renderer *wlr_vglite_renderer_create(void) {
 	pthread_mutex_unlock(&gpu_lock);
 	struct vglite_renderer *r = calloc(1, sizeof(*r)); if (!r) return NULL;
 	r->pixman = wlr_pixman_renderer_create(); if (!r->pixman) { free(r); return NULL; }
-	wlr_renderer_init(&r->base, &renderer_impl, WLR_BUFFER_CAP_DMABUF | WLR_BUFFER_CAP_DATA_PTR); return &r->base;
+	wlr_renderer_init(&r->base, &renderer_impl, WLR_BUFFER_CAP_DMABUF | WLR_BUFFER_CAP_DATA_PTR);
+	pthread_mutex_lock(&gpu_lock);
+	gpu_renderer_owners++;
+	pthread_mutex_unlock(&gpu_lock);
+	return &r->base;
 }
