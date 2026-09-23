@@ -1,0 +1,24 @@
+{
+  "command": [
+    "flock",
+    "/tmp/k230-board.lock",
+    "python3",
+    "tools/capture-boot.py",
+    "--out",
+    "PRIVATE_LOG",
+    "--seconds",
+    "150",
+    "--quiet-exit",
+    "30",
+    "--kick",
+    "--expect",
+    "root@nixos",
+    "--send",
+    "reboot"
+  ],
+  "exit_code": 0,
+  "raw_bytes": 60539,
+  "raw_sha256": "ae5e175a0fb48bc05fe45a733c114e9d2808cfc81b60fcb76017a22e6d03bc70",
+  "selection": "Exact lines for kernel, growth service, shell and automatic login; terminal color sequences removed. Complete raw console remains private. The post-boot checker also captures the current boot service journal JSON.",
+  "capture_does_not_prove_alone": "Login/startup messages alone are not growth completion or shell recovery; board-after.json proves those separately."
+}

@@ -2,8 +2,7 @@
 
 ### Requirement: The running system can use the card beyond the compact image
 
-<!-- UNVERIFIED -->
-*Grounding for the problem: `docs/evidence/storage-capacity/preflight.json` records a 127,934,660,608-byte physical card, a 2,173,693,952-byte root partition and only 77,070,336 available filesystem bytes. Automatic growth has not been implemented or observed.*
+*Grounding: `docs/evidence/storage-capacity/board-before.json`, `board-after.json` and `board-repeat.json` record two physical boots of the integrated image system and matching boot files on the existing compact root. The boot service grew ext4 from 2,173,693,952 to 127,800,422,400 bytes; the second boot reported no change. Shell and Wi-Fi recovered. `image-build.json` separately proves the downloadable image remains compact. No full-image reflash or manual resize was used for this trial.*
 
 On a card with the repository's supported layout and unallocated trailing space, the system SHALL grow its final root partition and ext4 filesystem during boot so that the trailing capacity becomes usable without a manual resize. The downloadable image SHALL remain compact. The system SHALL retain root contents, filesystem identity, and the fixed root start offset. Stage 1 SHALL not own this growth.
 
@@ -19,8 +18,7 @@ On a card with the repository's supported layout and unallocated trailing space,
 
 ### Requirement: Root growth preserves boot regions and refuses unsupported layouts
 
-<!-- UNVERIFIED -->
-*Grounding for the boundaries: the existing `image/sd-layout` hardware evidence fixes the raw stage-1 areas, boot partition and root start. `docs/evidence/storage-capacity/preflight.json` confirms the current two-partition ext4 card. Refusal and preservation during growth remain unverified.*
+*Grounding: physical first/repeat boot captures in `docs/evidence/storage-capacity/` preserve root/boot identities, the MBR boot code, firmware-gap hash, all eight selected boot-file hashes and a root-file sentinel. The actual disposable-system QEMU cases in `qemu/result.json` separately prove unsupported-layout refusal, tool-failure preservation and partition-only retry. Those negative cases are guest proof, not destructive tests on the physical card.*
 
 The system SHALL preserve raw stage-1 payloads, the boot partition's start, size and contents, and the root partition's start and identity. It SHALL grow only the positively identified mounted ext4 root in the supported final-partition layout. If the root device, labels, partition table or filesystem is unexpected, or any later partition exists, it SHALL refuse growth before writing and retain a bootable system with a recorded reason. A growth error SHALL not erase data or require root reformatting. A subsequent boot SHALL safely handle a partition already enlarged before filesystem growth completed.
 

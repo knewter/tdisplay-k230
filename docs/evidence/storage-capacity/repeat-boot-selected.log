@@ -1,0 +1,6 @@
+         Stopping sway on the panel...
+[  OK  ] Stopped sway on the panel.
+[  OK  ] Stopped Use the K230 card's traili…t capacity after layout validation.
+[    0.000000] Linux version 6.6.36 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980
+         Starting Use the K230 card's trail…capacity after layout validation...
+nixos login: root (automatic login)
