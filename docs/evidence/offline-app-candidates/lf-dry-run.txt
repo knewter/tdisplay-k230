@@ -1,0 +1,5 @@
+these 2 derivations will be built:
+  /nix/store/9np7kf59z6yka2snb5q40q96aclrsyjs-lf-42-go-modules-riscv64-unknown-linux-gnu.drv
+  /nix/store/bzkn9wjy9kx9i2b56gzc7iy11dxnz011-lf-riscv64-unknown-linux-gnu-42.drv
+this path will be fetched (176.5 KiB download, 756.1 KiB unpacked):
+  /nix/store/jiiqmshcbi1948gx3c4d0kn252n242cg-source

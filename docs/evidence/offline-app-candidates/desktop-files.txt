@@ -1,0 +1,1 @@
+/nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3/share/applications/nnn.desktop
