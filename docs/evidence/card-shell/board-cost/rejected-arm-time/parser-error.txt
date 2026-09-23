@@ -1,0 +1,3 @@
+Exit 2: card-shell-benchmark: memory baseline follows deck entry
+Input command: python3 tools/card-shell-benchmark.py --board --input telemetry.log --manifest manifest.json --output pixman.json
+No accepted cost report was generated.

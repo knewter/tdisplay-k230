@@ -17,7 +17,7 @@ struct input {
 	bool final;
 };
 static struct {
-	bool armed, ever_active, header_sent;
+	bool armed, ever_active, header_sent, in_input;
 	char backend[9], format[16], input[9];
 	struct sway_output *output;
 	unsigned work_depth;
@@ -141,12 +141,16 @@ void card_bench_phase(bool active, size_t cards) {
 		return;
 	if (active && !bench.header_sent) {
 		bench.header_sent = true;
+		/* Native entry begins inside input handling. Use that input's start,
+		 * keeping baseline resources before entry without a negative latency.
+		 * IPC entry has no current input and uses the current monotonic time. */
+		uint64_t entry = bench.in_input ? bench.input_time : stamp(CLOCK_MONOTONIC);
 		sway_log(SWAY_INFO,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=session t_ns=%" PRIu64
 				 " clock=monotonic backend=%s renderer=pixman width=%d height=%d "
 				 "output_format=%s "
 				 "input=%s cards=%zu",
-				 bench.run, bench.run, bench.backend, bench.output->width, bench.output->height,
+				 bench.run, entry, bench.backend, bench.output->width, bench.output->height,
 				 bench.format, bench.input, cards);
 	}
 	if (active)
@@ -162,12 +166,14 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 		return;
 	card_bench_work_begin();
 	bench.input_time = stamp(CLOCK_MONOTONIC);
+	bench.in_input = true;
 	bench.input_gesture = gesture;
 	bench.kind = kind;
 	bench.source = injected ? "injected" : "physical";
 }
 void card_bench_input_end(bool consumed, bool final) {
 	card_bench_work_end();
+	bench.in_input = false;
 	if (!bench.armed || !consumed)
 		return;
 	uint64_t id = ++bench.next_input;
