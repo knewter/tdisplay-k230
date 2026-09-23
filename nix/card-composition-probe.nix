@@ -1,4 +1,4 @@
-{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, callPackage, dbus }:
+{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, callPackage, dbus, bash, coreutils }:
 
 let
   client = callPackage ./card-composition-probe-client { };
@@ -33,7 +33,7 @@ EOF
         shift
         # Transient board sessions do not inherit shell.service's package PATH.
         # The wrapped Sway invokes dbus-run-session, which finds its daemon here.
-        export PATH=${lib.makeBinPath [ dbus ]}:"$PATH"
+        export PATH=${lib.makeBinPath [ dbus bash coreutils ]}:"$PATH"
         export SWAY_K230_CARD_COMPOSITION_PROBE=1
         export WLR_RENDERER=pixman
         exec ${patchedSway}/bin/sway "$@"
