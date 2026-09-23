@@ -36,7 +36,9 @@ struct window_card { char *id, *title, *app_id, *state; };
 static GPtrArray *apps, *windows;
 #define ACT_WINDOW_BASE 10000
 #define WINDOW_CATALOG_MAX_BYTES (64 * 1024)
+/* The metadata subprocess is asynchronous; it must not borrow the animation budget. */
 static const int transition_budget_ms = 200;
+static const int catalog_budget_ms = 500;
 enum catalog_purpose { CATALOG_IDLE, CATALOG_OPEN, CATALOG_FOCUS };
 struct catalog_request {
   GPid pid;
@@ -255,7 +257,7 @@ static bool catalog_start(enum catalog_purpose purpose, const char *focus_id) {
     return false;
   }
   catalog.output=g_string_sized_new(1024);
-  catalog.deadline_ms=monotonic_ms()+transition_budget_ms;
+  catalog.deadline_ms=monotonic_ms()+catalog_budget_ms;
   catalog.purpose=purpose;
   catalog.focus_id=g_strdup(focus_id);
   catalog.term_sent=false;
@@ -349,7 +351,7 @@ static void catalog_poll(void) {
   int64_t now=monotonic_ms();
   if (now < catalog.deadline_ms) return;
   if (!catalog.term_sent) {
-    catalog_fail("Window overview refresh exceeded 200 ms");
+    catalog_fail("Window overview metadata refresh exceeded deadline");
     catalog_signal(SIGTERM);
     catalog.term_sent=true;
     catalog.deadline_ms=now+20;

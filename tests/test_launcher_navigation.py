@@ -165,14 +165,14 @@ static void pause_ms(long ms) {
   nanosleep(&wait, NULL);
 }
 static void drain_catalog(void) {
-  for (int i = 0; catalog.pid && i < 100; i++) {
+  for (int i = 0; catalog.pid && i < 200; i++) {
     catalog_poll();
     pause_ms(5);
   }
   assert(catalog.pid == 0);
 }
 int main(int argc, char **argv) {
-  assert(argc == 8);
+  assert(argc == 9);
   GPtrArray *parsed = parse_window_catalog(
     "17\tTerminal\tfoot\tfocused\nnot-an-id\tbad\tbad\tnormal\n");
   assert(parsed->len == 1);
@@ -258,13 +258,24 @@ int main(int argc, char **argv) {
   assert(!strcmp(criterion, "[con_id=18]\n"));
   assert(!strcmp(command, "focus\n"));
 
-  setenv("K230_WINDOW_CATALOG", argv[2], 1);
+  /* Metadata is asynchronous: a valid 250 ms refresh must not consume the
+   * 200 ms animation budget. */
+  setenv("K230_WINDOW_CATALOG", argv[8], 1);
   assert(catalog_start(CATALOG_OPEN, NULL));
-  catalog.deadline_ms = monotonic_ms() - 1;
-  catalog_poll();
-  assert(launch_error && !strcmp(launch_error, "Window overview refresh exceeded 200 ms"));
-  assert(windows->len == 0);
+  assert(catalog.deadline_ms - monotonic_ms() >= catalog_budget_ms - 5);
   drain_catalog();
+  assert(windows->len == 1);
+  assert(!strcmp(((struct window_card *)g_ptr_array_index(windows, 0))->id, "20"));
+
+  /* A helper that ignores TERM exceeds the separate metadata deadline, then
+   * is killed and reaped without blocking the UI loop indefinitely. */
+  setenv("K230_WINDOW_CATALOG", argv[2], 1);
+  int64_t hung_started=monotonic_ms();
+  assert(catalog_start(CATALOG_OPEN, NULL));
+  drain_catalog();
+  assert(launch_error && !strcmp(launch_error, "Window overview metadata refresh exceeded deadline"));
+  assert(windows->len == 0);
+  assert(monotonic_ms()-hung_started < catalog_budget_ms*2);
 
   setenv("K230_WINDOW_CATALOG", argv[5], 1);
   assert(catalog_start(CATALOG_OPEN, NULL));
@@ -326,6 +337,9 @@ int main(int argc, char **argv) {
             slow = path / 'slow.sh'
             slow.write_text('#!/bin/sh\nsleep 0.1\nprintf "18\tLate\tnew.app\tnormal\n"\n')
             slow.chmod(0o755)
+            delayed = path / 'delayed.sh'
+            delayed.write_text('#!/bin/sh\nsleep 0.25\nprintf "20\tDelayed\tnew.app\tnormal\n"\n')
+            delayed.chmod(0o755)
             focus = path / 'focus.sh'
             record = path / 'focus-record'
             focus.write_text('#!/bin/sh\nprintf "%s\n%s\n" "$1" "$2" > "$RECORD"\n')
@@ -339,7 +353,7 @@ int main(int argc, char **argv) {
                             str(ROOT / 'nix/touch-launcher/catalog.c'),
                             str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
                             str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags], check=True)
-            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow), str(empty)],
+            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow), str(empty), str(delayed)],
                            check=True, timeout=3, env=os.environ | {'RECORD': str(record)})
 
 
