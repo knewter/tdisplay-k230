@@ -1,0 +1,5 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; tap() { /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 "$@"; }; tap 284 990; sleep 1; grim /run/k230-help-test/help-page-1.png; tap 460 1165; sleep 1; grim /run/k230-help-test/help-page-2.png; tap 388 28; sleep 1; tap 460 765; sleep 1; grim /run/k230-help-test/help-keyboard-page-3.png; tap 284 765; sleep 1; grim /run/k230-help-test/help-back-apps.png; tap 284 765; sleep 1; echo HELP_SEQUENCE_DONE; pgrep -x k230-touch-laun || true; cat /run/k230-help-test/launcher.log =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; tap() { /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 "$@"; }; tap 284 990; sleep 1; grim /run/k230-help-test/help-page 
+-1.png; tap 460 1165; sleep 1; grim /run/k230-help-test/help-page-2.png; tap 388 28; sleep 1; tap 460 765; sleep 1; grim /run/k230-help-test/help-keyboard-page-3.png; tap 284 765; sleep 1; grim /run/k230-help-test/help-back-apps.png; tap 284 765; sleep 1; echo HELP_SEQUENCE_DONE; pgrep -x k230-touch-laun || true; cat /run/k230-help-test/launcher.log
+[?2004l

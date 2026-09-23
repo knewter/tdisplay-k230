@@ -1,0 +1,21 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; tap() { /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 "$@"; }; tap 115 1165; tap 284 990; sleep 1; grim /run/k230-help-test/error-help.png; tap 284 1165; tap 284 1165; rm /run/k230-help-test/home/applications/k230-unavailable.desktop; printf "[Desktop Entry]\nType=Application\nName=Editor\nExec=/run/current-system/sw/bin/nano\nTerminal=true\n" > /run/k230-help-test/home/applications/k230-editor.desktop; cp /nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3/share/applications/nnn.desktop /run/k230-help-test/home/applications/nnn.desktop; sed -i "s@Exec=nnn@Exec=/nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3/bin/nnn@" /run/k230-help-test/home/applications/nnn.desktop; chown -R shell:shell /run/k230-help-test/home; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-launch.log 2>&1 < /dev/null & sleep 1; tap 460 1165; sleep 1; grim /run/k230-help-test/editor-card.png; date +%s%N; tap 284 295; sleep .2; date +%s%N; ps -C nano -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/editor-running.png; cat /run/k230-help-test/editor-launch.log; echo EDITOR_TEST_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; tap() { /run/k230-help-test/bin/inject-tap.sh /dev/input/event1 "$@"; }; tap 115 1165; tap 284 990; sleep 1; grim /run/k230-help-test/error-help.png; tap 284 1165; tap 284 1165; rm /run/k230-help-test/home/applications/k230-unavailable.desktop; printf "[Desktop Entry]\nType=Application\nName=Editor\nExec=/run/current-system/sw/bin/nano\nTerminal=true\n" > /run/k230-help-test/home/applications/k230-editor.desktop; cp /nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3/share/applications/nnn.desktop /run/k230-help-test/home/applications/nnn.desktop; sed -i "s@Exec=nnn@Exec=/nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3/bin/nnn@" /run/k230-help-test/home/applications/nnn.desktop; chown -R shell:shell /run/k230-help-test/home; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-launch.log 2>&1 < /dev/null & sleep 1; tap 460 1165; sleep 1; grim /run/k230-help-test/editor-card.png; date +%s%N; tap 284 295; sleep .2; date +%s%N; ps -C nano -o pid=,rss=,etimes=,comm=; grim /run/k230-help-test/editor-running.png; cat /run/k230-help-test/editor-launch.log; echo EDITOR_TEST_DONE
+[?2004l
+[2]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/launcher-error.log 2>&1 < /dev/null
+[2] 1145
+1773785955409921119
+[2]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock XDG_DATA_HOME=/run/k230-help-test/home XDG_DATA_DIRS=/run/k230-help-test/share /run/current-system/sw/bin/bash /run/k230-help-test/bin/launcher > /run/k230-help-test/editor-launch.log 2>&1 < /dev/null
+1773785956054780489
+warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+ err: slave.c:399: failed to change working directory to /root: Permission denied
+ err: slave.c:554: /run/current-system/sw/bin/nano: failed to execute: Permission denied
+ err: fdm.c:228: no such FD: 6
+EDITOR_TEST_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

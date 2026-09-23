@@ -936,6 +936,17 @@ DATA 378020ceb726f240276649c34bfc646c22b9f141386ed2be3e8a68d90fd36493  docs/evid
 DATA d8323e6e649fe56333be64aab1ed9c36ce8884ac8651b1aeca5f0917dcf71f79  docs/evidence/shell-real-touch-system/system-pre-touch.png
 DATA fc258d16b77e22de46ea70d6a614818ef085cf5cb242af4d69381168605a3ce3  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.mp4
 DATA 92d34deb2afd707e52cae6bd747edc2f3f6d34fa328e0244d3004d5262add5a4  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg
+DATA 1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903  docs/evidence/offline-help-injected/editor-card.png
+DATA 537c6cf93ae83dd7c254a64e9d07504231d68d9b71d9297dbd01f06cfb4c934d  docs/evidence/offline-help-injected/editor-running-home.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/offline-help-injected/editor-running.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/offline-help-injected/error-help.png
+DATA 755c39d0a82d53456d604af8d84133304b009e72aa3d6a66bd12a6dd5d9d5a12  docs/evidence/offline-help-injected/help-back-apps.png
+DATA fdb66d113c05ad36d3441268aa56e92d798f5504601d0f88ac0151d678508e1f  docs/evidence/offline-help-injected/help-keyboard-page-3.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/offline-help-injected/help-page-1.png
+DATA d30c3336ada6dc56522cc42a7e3015a87fd37c9d6a4e5eca1bb9d82334d23fd9  docs/evidence/offline-help-injected/help-page-2.png
+DATA 2e6790919b0d6dbe9e3469b042b0eea0ff38c84ce066ffc59f44c46818869a52  docs/evidence/offline-help-injected/launch-error.png
+DATA 099d87b6928bf49f107323a8f4f71d13d0df29e6ddb409cd59ac25dbaa216721  docs/evidence/offline-help-injected/nnn-card.png
+DATA c6427f6710ccde570d29e8ec2aba99f32193e802e88cb1f460dafeb8292b7b1a  docs/evidence/offline-help-injected/nnn-running.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

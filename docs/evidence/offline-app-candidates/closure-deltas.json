@@ -1,0 +1,32 @@
+{
+  "baseline": "/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "method": "nix path-info --recursive --json; sum narSize for package paths absent from baseline closure",
+  "candidates": {
+    "nano": {
+      "output": "/nix/store/r6vhwss7namz6kh9h4w2b2zx1v75hzxm-nano-riscv64-unknown-linux-gnu-9.2",
+      "closure_paths": 6,
+      "closure_nar_bytes": 51564232,
+      "new_paths": {},
+      "delta_nar_bytes": 0
+    },
+    "nnn": {
+      "output": "/nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3",
+      "closure_paths": 9,
+      "closure_nar_bytes": 51692184,
+      "new_paths": {
+        "/nix/store/x4lhz9qljs7159byrzjffzhaa8p2sxc0-nnn-riscv64-unknown-linux-gnu-5.3": 441408
+      },
+      "delta_nar_bytes": 441408
+    },
+    "lf": {
+      "output": "/nix/store/n6h8qfjwppv9y5radx5vrdl9vjb9737q-lf-riscv64-unknown-linux-gnu-42",
+      "closure_paths": 5,
+      "closure_nar_bytes": 41839520,
+      "new_paths": {
+        "/nix/store/9v00p4m9cdzn23gmy5m9d3a6c3gfwhl7-iana-etc-20251215": 571168,
+        "/nix/store/n6h8qfjwppv9y5radx5vrdl9vjb9737q-lf-riscv64-unknown-linux-gnu-42": 5217528
+      },
+      "delta_nar_bytes": 5788696
+    }
+  }
+}

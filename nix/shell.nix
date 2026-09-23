@@ -91,6 +91,16 @@ let
     locked-title=yes
     app-id=k230-monitor
   '';
+  # Nano is already in the baseline closure; expose it through the same
+  # desktop-entry bridge as other terminal apps. nnn supplies its own entry.
+  editorDesktop = pkgs.makeDesktopItem {
+    name = "k230-editor";
+    desktopName = "Editor";
+    comment = "Edit a text file with nano";
+    exec = "${pkgs.nano}/bin/nano";
+    terminal = true;
+    categories = [ "Utility" "TextEditor" ];
+  };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
@@ -459,6 +469,9 @@ in
       pkgs.wvkbd
       pkgs.seatd
       pkgs.htop
+      pkgs.nano
+      pkgs.nnn
+      editorDesktop
       touchLauncher
     ] ++ lib.optionals cfg.probes [
       cage
