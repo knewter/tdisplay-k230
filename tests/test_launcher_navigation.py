@@ -122,16 +122,14 @@ class WindowCatalogClient(unittest.TestCase):
         def first_existing(candidates):
             return next((candidate for candidate in candidates if candidate.exists()), None)
 
-        layer = first_existing([
-            Path('/usr/share/wlr-protocols/unstable/wlr-layer-shell-unstable-v1.xml'),
-            *Path('/nix/store').glob('*-source/protocol/wlr-layer-shell-unstable-v1.xml'),
-        ])
+        layer = ROOT / 'tests/fixtures/wayland/wlr-layer-shell-unstable-v1.xml'
         xdg = first_existing([
             Path('/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml'),
             *Path('/nix/store').glob('*-wayland-protocols-*/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml'),
         ])
-        if not shutil.which('wayland-scanner') or not layer or not xdg:
-            self.skipTest('Wayland protocol sources are unavailable for the production-client fixture')
+        self.assertTrue(shutil.which('wayland-scanner'), 'Install wayland-scanner for launcher fixtures')
+        self.assertTrue(layer.is_file(), 'Pinned layer-shell fixture is missing')
+        self.assertIsNotNone(xdg, 'Install wayland-protocols for launcher fixtures')
         source = r'''
 #define main launcher_program_main
 #include "TOUCH_LAUNCHER"
