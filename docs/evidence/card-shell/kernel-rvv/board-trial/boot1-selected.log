@@ -1,0 +1,18 @@
+211 bytes read in 3 ms (68.4 KiB/s)
+crc32 for 07000000 ... 070000d2 ==> 8f1867b4
+270808 bytes read in 11 ms (23.5 MiB/s)
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+60427776 bytes read in 2560 ms (22.5 MiB/s)
+crc32 for 00200000 ... 03ba0dff ==> 751c3e18
+71532 bytes read in 6 ms (11.4 MiB/s)
+crc32 for 08400000 ... 0841176b ==> 09c5773a
+27307568 bytes read in 1131 ms (23 MiB/s)
+crc32 for 09000000 ... 0aa0ae2f ==> 9bb180c7
+K230_RVV_ARGS_IMPORTED
+Starting kernel ...
+[    0.000000] Linux version 6.6.36 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980
+[    0.000000] riscv: base ISA extensions acdfimv
+[    0.000000] riscv: ELF capabilities acdfimv
+[    0.000000] riscv: providing IPIs using SBI IPI extension
+[    0.014478] riscv: ELF compat mode supported
+nixos login: root (automatic login)

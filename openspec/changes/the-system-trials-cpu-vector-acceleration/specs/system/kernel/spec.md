@@ -2,7 +2,7 @@
 
 ### Requirement: An optional vector system trial retains the normal recovery path
 
-<!-- UNVERIFIED: full physical vector-kernel boot and subsequent normal recovery remain open. -->
+*Physical grounding: `docs/evidence/card-shell/kernel-rvv/board-trial/boot1.json`, `vector-state1.json` and `trial-normal-recovery.json` record one-time trial boot, matching running identity and normal shell/Wi-Fi return with protected hashes unchanged. Earlier failed load reports and recovery are retained in the same directory.*
 *Grounding for the approach: the matching kernel/system/image builds and actual boot-artifact inspection are recorded in `docs/evidence/card-shell/kernel-rvv/`; storage first/repeat boot evidence is in `docs/evidence/storage-capacity/`. Host builds do not prove a trial kernel boots.*
 
 The system SHALL provide an explicitly selected CPU-vector trial with matching kernel, external modules, initrd and userspace. Trial preparation and one-time boot SHALL retain the known normal persistent boot selection and protected credential procedure. The operator SHALL verify artifact identity before loading the trial and verify the normal system, shell and Wi-Fi after returning. A failed load SHALL stop trial execution and attempt normal recovery while the bootloader remains available. Recovery requiring an operator reset SHALL be reported rather than claimed as automatic success.
@@ -19,7 +19,7 @@ The system SHALL provide an explicitly selected CPU-vector trial with matching k
 
 ### Requirement: Vector execution is gated by actual kernel and context support
 
-<!-- UNVERIFIED: the existing normal-board probe safely skips, but usable vector context support has not been observed on the physical trial kernel. -->
+*Physical grounding: `docs/evidence/card-shell/kernel-rvv/board-trial/vector-state1.json` records hwprobe value 63 and a two-process PASS with 2,000 checks per process across signals and scheduling. This is representative state proof, not exhaustive ISA coverage.*
 *Grounding: `docs/evidence/card-shell/pixman-rvv/kernel-probe.json` records successful hwprobe with value 59 and no standard V bit; `docs/evidence/card-shell/kernel-rvv/context-probe/board-skip.json` records safe SKIP/77. Full-system guest context and deliberate-corruption cases are separate diagnostic proof.*
 
 The optional vector path SHALL require the kernel's runtime capability report and physical vector computation with preserved state across asynchronous signals and process scheduling. A processor name, ISA string, successful cross-build or guest result SHALL NOT substitute for that physical evidence. If capability is absent or the state check fails, rendering SHALL retain scalar fallback and the failed or skipped result SHALL remain visible. The trial SHALL NOT force vector instructions merely to bypass a failed runtime gate.

@@ -1,4 +1,9 @@
-# Kernel vector compiler-probe correction: configuration verified, boot pending
+# Kernel vector trial: physical context proof, rendering benefit open
+
+The build checkpoints below retain their original limits. The latest physical
+trial now passes the representative vector context probe; see
+[trial boot and vector evidence](board-trial/README.md). No rendering speedup is
+claimed.
 
 The normal kernel reports `v` in the ISA string but omits V from the standard
 hwprobe response; see [the read-only board probe](../pixman-rvv/README.md).

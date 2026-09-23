@@ -79,8 +79,8 @@ and [provenance](load-check3-provenance.json) preserve this distinction.
 physical recovery checks: a fresh boot ID, the exact normal system, unchanged
 persistent boot-file/firmware hashes and root layout, successful no-op growth
 service, active shell/seatd, and Wi-Fi association plus HTTPS over `wlan0`.
-This proves read access from the expanded root and normal recovery. **The RVV
-kernel has still not booted; vector execution and rendering benefit are open.**
+This proves read access from the expanded root and normal recovery. At this load-only checkpoint, the trial kernel had not executed. The later
+physical vector result is recorded below; rendering benefit remains open.
 
 The next explicit operator trial uses the same controller with `--boot`:
 
@@ -96,3 +96,52 @@ log/output names because prior runs must not be overwritten. After an actual
 trial boot, verify the selected running system and kernel configuration, then
 run the scalar hwprobe gate and the context probe. Preserve the ordinary boot
 selection and verify its recovery again before treating the experiment as safe.
+
+## Physical trial boot and vector context
+
+The one-time trial now reached Linux login: [boot1.json](boot1.json),
+[selected boot lines](boot1-selected.log) and [raw-log provenance](boot1-provenance.json).
+The verified five loads were followed by volatile trial-argument import and
+`bootm`; no persistent selection command was used.
+
+[capture-vector-state.py](capture-vector-state.py) was transferred with matching
+MD5 and run through the serial console with isolated Python. It requires the
+physical device-tree model, exact trial `/run/current-system`, matching kernel
+command-line selection and all five expected vector configuration values.
+It then makes a scalar hwprobe query and invokes the immutable, capability-gated
+context diagnostic under a 15-second timeout.
+
+[vector-state1.json](vector-state1.json) and [its serial report](vector-state1.serial.log)
+record physical **PASS** at boot ID `3f80b720-c0e6-4f41-9437-e97aff248d28`:
+
+- Running system is the matching `fm8136…` trial; all five vector settings are enabled.
+- Standard hwprobe succeeds with value 63, including the standard V capability.
+- Both diagnostic processes complete 2,000 checks. The parent records 2,002
+  signals and 477 involuntary context switches; parent result, child status and
+  process exit are all zero.
+- Shell/seatd are active, Wi-Fi is associated and HTTPS succeeds over `wlan0`.
+- Persistent system profile and bootargs still select the normal `gnr36q…` system.
+
+The diagnostic verifies representative vector arithmetic/control state across
+signals and scheduling. It does not exhaustively test every instruction or
+register, establish Pixman pixel correctness, measure card performance, or prove
+real-finger interaction. The normal renderer remains unchanged.
+
+[Preparation reconciliation](preparation-reconciliation.json) maps the earlier
+build/full-guest/load checkpoints to proposal tasks with exact evidence hashes.
+The Pixman host detector test was rerun with its required pinned source
+environment variable; the initially bare invocation failed before running.
+
+## Normal recovery after executing vectors
+
+An ordinary serial `reboot` returned to the persistent normal selection without
+operator intervention. [trial-normal-recovery.json](trial-normal-recovery.json)
+and [its serial report](trial-normal-recovery.serial.log) pass the independent
+root-growth recovery checker: fresh normal boot, exact `gnr36q…` system,
+unchanged boot/firmware hashes and root layout, successful no-op growth service,
+active shell/seatd, protected credential permissions, Wi-Fi association and
+HTTPS over `wlan0`. No full-image flash or readback was performed.
+
+The proposal's build, guest, physical load, actual boot/context and subsequent
+normal recovery tasks are complete (9/14). Pixel comparison, optional renderer
+packaging, paired card costs, final decision and final publication remain open.

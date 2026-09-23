@@ -1,0 +1,43 @@
+{
+  "reviewed_at_utc": "2026-09-23T21:55:14.363870+00:00",
+  "landed_revision": "797253bd8646bd57518bd73222e031e41e08f5b0",
+  "tasks": {
+    "1.1": {
+      "docs/evidence/card-shell/kernel-rvv/kernel-build.json": "00870ed57f2a73ba63e8e3356a58857d0f00b5f7899148d6d8a6d05f8ecf4935",
+      "docs/evidence/card-shell/kernel-rvv/compiler-probes.json": "62c8fd3e41d9ceae7f940d1075b29c4986f77eecaae01f4683cbcaab9d3a771b",
+      "docs/evidence/card-shell/kernel-rvv/config.diff": "b61699957de1705001b36bf9c389137b584c918d35443f2561aef6a2718cdc1b"
+    },
+    "1.2": {
+      "docs/evidence/card-shell/pixman-rvv/README.md": "4b954a508408b42dacf2cc03e41c9ef008c79015e4be54df43242eb7706d7666",
+      "docs/evidence/card-shell/pixman-rvv/build-checks.txt": "ed9cbf8fb2054bca3d347692a1d283479c024d2b585ce2cc6429ecd90d6d3822",
+      "docs/evidence/card-shell/pixman-rvv/kernel-probe.json": "6e5b2d4e321d8e9b29782244b599657cfea914bcfe7b086caa4c7b3b8d019792"
+    },
+    "1.3": {
+      "docs/evidence/card-shell/kernel-rvv/board-trial/artifacts.json": "c8ba0c0c58367232a40bfd516396f08b12e924388bd206188d28e8eed9daa2b2"
+    },
+    "1.4": {
+      "docs/evidence/card-shell/kernel-rvv/board-trial/artifacts.json": "c8ba0c0c58367232a40bfd516396f08b12e924388bd206188d28e8eed9daa2b2"
+    },
+    "1.5": {
+      "docs/evidence/card-shell/kernel-rvv/context-probe/result.json": "5ed555180ab8881a42aa4088a67555e0608aa0e5951286f4c95f510269b21db3",
+      "docs/evidence/card-shell/kernel-rvv/context-probe/no-vector.log": "d286e68a959695f089cfec3a1857da960d8bfe068982a4e2b6908e822d0f85bc",
+      "docs/evidence/card-shell/kernel-rvv/context-probe/vector-128.log": "89cb9ca5cc9043405f085d0cdc3c6cf3b05b27b0e301b7d3deff7dd2baa5be04",
+      "docs/evidence/card-shell/kernel-rvv/context-probe/vector-256.log": "6097f0e34ea43c640d327d23d4efd12a1d35b27d593812fb3cc82883fd7d6724",
+      "docs/evidence/card-shell/kernel-rvv/context-probe/corrupt-vector.log": "fe76d90bc5ec0dda97bc7c9119c422f0cd8eb100b0ce15510ebe3cdb50a2cf46"
+    },
+    "2.1": {
+      "docs/evidence/card-shell/kernel-rvv/board-trial/load-check3.json": "0438a12277c6dfd60cf3f53f26f7a5ba6b255d2bc192224f343aa9c23f5c40de",
+      "docs/evidence/card-shell/kernel-rvv/board-trial/load-check3-selected.log": "058b5b06a262d6034766db4754d28a3dbe94b279c0dae99da6f0377c90f7936e",
+      "docs/evidence/card-shell/kernel-rvv/board-trial/load-normal-recovery.json": "58b566e679c8f5bf4d697395533ee8df3f9290896f59421fffc6e42a271bfb19"
+    }
+  },
+  "rerun_checks": {
+    "python3 tests/test_rvv_board_boot.py": "PASS: 5 tests",
+    "PIXMAN_SOURCE_TAR=/nix/store/s2cifkjf074cwcim1p9lij646fi3p3zy-pixman-0.46.4.tar.gz python3 tests/test_pixman_rvv_probe.py": "PASS: 1 sanitizer-backed runtime detection test"
+  },
+  "limits": [
+    "Tasks 1.1\u20131.5 reuse the exact committed build and full-guest checkpoints, not physical vector evidence.",
+    "Bare Pixman test invocation first failed because PIXMAN_SOURCE_TAR was missing; documented task invocation now includes the pinned source.",
+    "Task 2.1 proves physical loading and normal recovery only."
+  ]
+}
