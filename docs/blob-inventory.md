@@ -1090,3 +1090,13 @@ copies the device tree to `0x2200000`, inside the kernel's `.BTF` section
 (`docs/evidence/opensbi-fdt-lands-in-kernel-image.md`); the OpenSBI built
 here passes it through, and the board's `/sys/kernel/btf/vmlinux` now reads
 BTF bytes where it used to read an FDT header.
+
+## Keyboard toggle presentation edit
+
+Trimmed and cropped from the real-touch follow-up; transformation and source hash
+are recorded in `docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.json`.
+
+```text
+DATA fc258d16b77e22de46ea70d6a614818ef085cf5cb242af4d69381168605a3ce3  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.mp4
+DATA 92d34deb2afd707e52cae6bd747edc2f3f6d34fa328e0244d3004d5262add5a4  docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg
+```

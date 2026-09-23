@@ -52,3 +52,13 @@ is not a claim that every individual tap was error-free. No axis correction
 was needed or added: the fresh runtime matrix and source properties above
 show zero correction layers. A deliberate full-panel directional drag was
 not recorded in this session. Camera focus was restored to 90 afterward.
+
+## Short clip for the site
+
+The [keyboard-toggle clip](keyboard-toggle-cropped.mp4) retains source seconds
+50.5–56.0 at original speed. A fixed 700×830 crop at (700, 0) focuses on the
+screen and finger interaction, removing the surrounding legs from the presentation.
+The [poster](keyboard-toggle-cropped.jpg) comes from second 5 of the edited clip.
+The [edit manifest](keyboard-toggle-cropped.json) records the source hash, crop,
+encoding options and output hashes. The original recording remains the evidence
+source; this excerpt shows the keyboard appearing, not a complete show/hide cycle.

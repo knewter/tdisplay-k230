@@ -1,0 +1,59 @@
+{
+  "source": "20260923T001007Z-keyboard-visibility-real-touch.mp4",
+  "source_sha256": "f56be25c740014a5544f935c3716b748eda2afb016c9a8b5e3ed9edada47ded7",
+  "source_start_seconds": 50.5,
+  "duration_seconds": 5.5,
+  "crop": {
+    "x": 700,
+    "y": 0,
+    "width": 700,
+    "height": 830
+  },
+  "edits": "Temporal trim and fixed rectangular crop only; original timing, no injected input or reconstructed pixels. Poster taken at 5 seconds in the edited clip.",
+  "ffmpeg_video_options": [
+    "-ss",
+    "50.5",
+    "-t",
+    "5.5",
+    "-vf",
+    "crop=700:830:700:0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+  ],
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 700,
+        "height": 830,
+        "nb_frames": "165"
+      }
+    ],
+    "format": {
+      "duration": "5.500000"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.mp4",
+      "bytes": 512909,
+      "sha256": "fc258d16b77e22de46ea70d6a614818ef085cf5cb242af4d69381168605a3ce3"
+    },
+    {
+      "path": "docs/evidence/shell-real-touch-keyboard/keyboard-toggle-cropped.jpg",
+      "bytes": 25622,
+      "sha256": "92d34deb2afd707e52cae6bd747edc2f3f6d34fa328e0244d3004d5262add5a4"
+    }
+  ]
+}
