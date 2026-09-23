@@ -103,11 +103,11 @@ at-spi2-core and dconf. Recorded in `docs/display-environment-options.md`.*
 
 ### Requirement: The shell starts at boot and owns the panel
 
-<!-- The compositor has been started and owns the panel. Standalone boot from an external power supply is
-still unverified because the recorded startup retained host USB connections.
-No battery is available or required for acceptance. Grounding:
-docs/evidence/shell-first-light.md, docs/evidence/shell-session.txt, and
-docs/evidence/shell-features/startup/. -->
+*Grounding: `docs/evidence/shell-real-touch-system/README.md` records a
+physical touch-triggered reboot, automatic return to the terminal, the serial
+boot transcript, and active shell/seatd/firewall after startup. The user
+removed a separate wall-supply power-on trial from acceptance. This remains
+USB-connected warm-reboot evidence; no disconnected power-on is claimed.*
 
 The system SHALL start the compositor without a host computer, external keyboard, login prompt or
 a display manager, and the compositor SHALL take the panel at its native
@@ -119,9 +119,9 @@ Wayland session can report a successful mode set and present nothing — the sam
 failure this board already produced once, when the Wi-Fi driver reported
 `start ap successs!` and transmitted nothing.
 
-#### Scenario: The board is powered on without a host computer
+#### Scenario: The shell starts automatically after reboot
 
-- **WHEN** the board boots from a USB wall supply with no host/data connection or external keyboard
+- **WHEN** the user reboots from the touch controls with the available power connection and no host commands or external keyboard input to start the session
 - **THEN** the compositor is running with a terminal visible on the panel, photographed
 
 #### Scenario: The compositor log is read
@@ -131,10 +131,12 @@ failure this board already produced once, when the Wi-Fi driver reported
 
 ### Requirement: A person can type on the board without an external keyboard
 
-<!-- The user typed `ls` and its output was recorded on the panel; the feature
-gallery also records injected keyboard show/hide and typing. Whether a real
-finger can summon and dismiss the keyboard remains unverified. Grounding:
-docs/evidence/shell-first-light.md and docs/evidence/shell-features/. -->
+*Grounding: `docs/evidence/shell-real-touch-keyboard/README.md` combines
+real Goodix contacts, physical hidden/shown keyboard frames, native captures,
+and the operator's confirmation of the keyboard sequence and command output.
+The successful asymmetric argument is `1qazoplm` (letter o). The camera does
+not independently resolve the hide transition; that action is accepted on
+the direct operator report, not described as filmed.*
 
 The shell SHALL present an on-screen keyboard that a person can summon and
 dismiss by touch, and characters typed on it SHALL reach the focused
@@ -152,10 +154,17 @@ application.
 
 ### Requirement: A touch activates what is under the finger
 
-<!-- The controller is mapped and injected taps activate the menu, but full
-real-glass coordinate accuracy remains unverified. Grounding for the injected
-path: docs/evidence/shell-injected-pointer.txt and
-docs/evidence/shell-features/. -->
+*Grounding for key entry and axis decision:
+`docs/evidence/shell-real-touch-keyboard/README.md` and
+`docs/evidence/shell-session.txt` record the real-touch asymmetric command,
+operator-confirmed output, and fresh identity calibration matrix. Source
+contains no DT swap/invert correction; the panel uses native portrait and
+explicit output mapping. The initial `exho` typo remains documented. This is
+not a calibrated pixel-error or every-tap-perfect claim.*
+
+<!-- UNVERIFIED in part: the deliberate full-panel directional drag scenario
+has not been separately recorded. Completed task boxes for key entry and
+operator-confirmed controls do not supply that missing motion evidence. -->
 
 Touches SHALL be routed to the surface drawn at the touched location, in the
 panel's own 568x1232 coordinate space, with the axes neither swapped nor
@@ -180,11 +189,16 @@ invalidate only one of them.
 
 ### Requirement: The standalone session has practical touch controls
 
-<!-- The menu workflow is demonstrated by injected uinput, including launch,
-window switching, keyboard, recovery, and cancelled system confirmations.
-Those recordings do not prove a real GT9895/glass tap, so the full hardware
-claim remains unverified. Grounding: docs/evidence/shell-features/index.html,
-its adjacent manifests, and docs/evidence/shell-virtual-touch.txt. -->
+*Grounding: `docs/evidence/shell-real-touch-apps/README.md` records physical
+Apps/Terminal/Monitor interaction and the user's explicit Home recovery
+confirmation after the camera limitation was explained.
+`docs/evidence/shell-real-touch-system/README.md` records touch followed by
+reboot and automatic return to the shell. Exact confirmation labels and the
+cancel action are not legible in the camera view; acceptance combines the
+operator's completed procedure and overall confirmation with those recordings.
+Earlier injected menu/state/failure-path evidence remains separately labeled
+in `docs/evidence/shell-features/` and `docs/evidence/shell-virtual-touch.txt`.
+Do not describe operator-confirmed actions as individually camera-proven.*
 
 The shell SHALL keep a persistent touch bar with Apps, Windows/Home, Keyboard,
 and System controls. Its visible targets SHALL be at least 56 pixels high and

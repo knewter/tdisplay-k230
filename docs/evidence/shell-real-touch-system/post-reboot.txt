@@ -1,0 +1,19 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; cat /proc/sys/kernel/random/boot_id; readlink -f /run/current-system; systemctl is-active shell seatd firewall; journalctl -b -u shell --no-pager | grep "K230 initial splash"; echo REAL_TOUCH_REBOOT_RECOVERED =====
+export PAGER=cat SYSTEMD_PAGER=cat; cat /proc/sys/kernel/random/boot_id; readlink -f /run/current-system; systemctl is-active shell seatd firewall; journalctl -b -u shell --no-pager | grep "K230 initial splash"; echo REAL_TOUCH_REBOOT_RECOVERED
+[?2004l
+8915db67-9428-4b87-95fa-f83f075bc7cf
+/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+Mar 17 21:31:17 nixos sway[669]: 00:00:01.193 [INFO] [sway/tree/output.c:161] K230 initial splash seeded output=DSI-1 asset=/nix/store/lqpaili8fici45vd26cy27r0gfjk6v18-k230-boot-splash-image/logo.xrgb
+Mar 17 21:31:19 nixos sway[669]: 00:00:02.644 [INFO] [sway/tree/output.c:415] K230 initial splash removed output=DSI-1 commit_seq=7
+REAL_TOUCH_REBOOT_RECOVERED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

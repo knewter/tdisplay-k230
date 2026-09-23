@@ -1,0 +1,27 @@
+{
+  "method": "FFprobe metadata and SHA-256 of finalized media, plus independent camera review. User performed physical touch; native screenshots and serial logs are supporting evidence. Operator confirmations are recorded separately; see audits for what the camera resolves.",
+  "videos": [
+    {
+      "path": "20260923T000357Z-apps-windows-real-touch.mp4",
+      "sha256": "34db69480a48ba8b37dee547272d4454475f3486b81aeebe0e362e376377042e",
+      "bytes": 13631706,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "72.033008",
+          "size": "13631706"
+        }
+      }
+    }
+  ]
+}

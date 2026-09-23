@@ -1,0 +1,13 @@
+
+===== > test ! -e /tmp/k230-real-touch-event.pid && (nohup timeout 240 stdbuf -oL evtest /dev/input/event0 > /tmp/k230-real-touch-event.log 2>&1 < /dev/null & echo $! > /tmp/k230-real-touch-event.pid); cat /tmp/k230-real-touch-event.pid; echo REAL_TOUCH_OBSERVER_READY =====
+test ! -e /tmp/k230-real-touch-event.pid && (nohup timeout 240 stdbuf -oL evtest /dev/input/event0 > /tmp/k230-real-touch-event.log 2>&1 < /dev/null & echo $! > /tmp/k230-real-touch-event.pid); cat /tmp/k230-real-touch-event.pid; echo REAL_TOUCH_OBSERVER_READY
+[?2004l
+830
+REAL_TOUCH_OBSERVER_READY
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

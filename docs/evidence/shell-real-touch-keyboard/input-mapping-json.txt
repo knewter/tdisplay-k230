@@ -1,0 +1,43 @@
+
+===== > XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r -t get_inputs =====
+XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r -t get_inputs
+[?2004l
+[
+  {
+    "identifier": "0:0:wlr_virtual_keyboard_v1",
+    "name": "wlr_virtual_keyboard_v1",
+    "type": "keyboard",
+    "repeat_delay": 600,
+    "repeat_rate": 25,
+    "xkb_layout_names": [
+      "wvkbd"
+    ],
+    "xkb_active_layout_index": 0,
+    "xkb_active_layout_name": "wvkbd"
+  },
+  {
+    "identifier": "0:0:Goodix_Berlin_Capacitive_TouchScreen",
+    "name": "Goodix Berlin Capacitive TouchScreen",
+    "type": "touch",
+    "libinput": {
+      "send_events": "enabled",
+      "calibration_matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "vendor": 0,
+    "product": 0
+  }
+]
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

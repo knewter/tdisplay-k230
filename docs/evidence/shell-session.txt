@@ -376,3 +376,31 @@ swaymsg -t get_outputs -r; swaymsg -t get_inputs -r
 [?2004h
 
 [1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+
+
+2026-09-23 UTC: real-touch workflow on the unchanged initial-scene image
+
+Operator reported correct output for the asymmetric command. Native capture
+records an initial exho failure then echo 1qazoplm -> 1qazoplm (letter o).
+Camera captures and physical Goodix contacts: shell-real-touch-keyboard/.
+The focus-30 follow-up records hidden and shown physical keyboard states;
+the operator confirmed doing the keyboard sequence. The hide transition is
+not independently resolved by the camera.
+
+Calibration decision: no correction needed or applied. The current source
+has no touchscreen-swapped-x-y or touchscreen-inverted-* DT properties;
+Sway uses transform normal, scale 1, and map_to_output DSI-1. Fresh runtime
+get_inputs in shell-real-touch-keyboard/input-mapping-json.txt records the
+identity [1,0,0,0,1,0] matrix. Zero correction layers are in force.
+This is not a pixel-accuracy or error-free-every-tap claim.
+
+The Apps recording shows real touch, Terminal/Monitor and focus changes.
+Operator explicitly confirmed "home works too it's all good" after the
+missing camera view of Home recovery was explained. Home is user-confirmed,
+not a camera-proven recovery sequence. See shell-real-touch-apps/.
+
+The touch-triggered reboot returns automatically to the terminal. Camera,
+serial boot log and post-boot active shell/seatd/firewall checks are in
+shell-real-touch-system/. The user removed the separate wall-supply trial
+from shell acceptance; this remains USB-connected warm-reboot evidence.
+A deliberate full-panel directional drag was not recorded in this session.

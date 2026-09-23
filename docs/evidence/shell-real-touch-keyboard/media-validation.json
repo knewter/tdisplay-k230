@@ -1,0 +1,49 @@
+{
+  "method": "FFprobe metadata and SHA-256 of finalized media, plus independent camera review. User performed physical touch; native screenshots and serial logs are supporting evidence. Operator confirmations are recorded separately; see audits for what the camera resolves.",
+  "videos": [
+    {
+      "path": "20260923T000200Z-keyboard-real-touch.mp4",
+      "sha256": "891ff11bac41d4153ed044baf6d72cfab2f78437187d5590b84239255f5db27c",
+      "bytes": 14965991,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "85.033333",
+          "size": "14965991"
+        }
+      }
+    },
+    {
+      "path": "20260923T001007Z-keyboard-visibility-real-touch.mp4",
+      "sha256": "f56be25c740014a5544f935c3716b748eda2afb016c9a8b5e3ed9edada47ded7",
+      "bytes": 10199774,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv"
+          }
+        ],
+        "format": {
+          "duration": "90.000000",
+          "size": "10199774"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; journalctl --list-boots --no-pager | tail -n 2; journalctl -b -1 -u shell -o short-monotonic --no-pager | grep -E "Handling command|Executing|Destroying view" | tail -n 100; echo REAL_APPS_PREVIOUS_JOURNAL_DONE =====
+export PAGER=cat SYSTEMD_PAGER=cat; journalctl --list-boots --no-pager | tail -n 2; journalctl -b -1 -u shell -o short-monotonic --no-pager | grep -E "Handling command|Executing|Destroying view" | tail -n 100; echo REAL_APPS_PREVIOUS_JOURNAL_DONE
+[?2004l
+ -1 ddcacaa5635d43548ae03b1ca90b6c8b Tue 2026-03-17 19:55:54 UTC Tue 2026-03-17 21:30:50 UTC
+  0 8915db6794284b8795faf83f075bc7cf Tue 2026-03-17 19:55:54 UTC Tue 2026-03-17 21:37:14 UTC
+[   51.128165] nixos sway[699]: 00:00:01.169 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden'
+[   51.128165] nixos sway[699]: 00:00:01.169 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+[   51.153297] nixos sway[699]: 00:00:01.192 [INFO] [sway/commands.c:261] Handling command 'exec /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini'
+[   51.153297] nixos sway[699]: 00:00:01.192 [DEBUG] [sway/commands/exec_always.c:47] Executing /nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini
+[ 4031.596351] nixos sway[699]: 01:06:21.640 [INFO] [sway/commands.c:261] Handling command 'focus'
+[ 4042.544194] nixos sway[699]: 01:06:32.587 [INFO] [sway/commands.c:261] Handling command 'focus'
+REAL_APPS_PREVIOUS_JOURNAL_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

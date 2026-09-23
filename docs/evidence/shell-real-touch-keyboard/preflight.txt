@@ -1,0 +1,29 @@
+
+===== > export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; systemctl is-active shell seatd firewall; cat /proc/bus/input/devices; command -v evtest; pgrep -a wvkbd; echo HANDS_ON_PREFLIGHT_DONE =====
+export PAGER=cat SYSTEMD_PAGER=cat; readlink -f /run/current-system; systemctl is-active shell seatd firewall; cat /proc/bus/input/devices; command -v evtest; pgrep -a wvkbd; echo HANDS_ON_PREFLIGHT_DONE
+[?2004l
+/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+I: Bus=0018 Vendor=0000 Product=0000 Version=0000
+N: Name="Goodix Berlin Capacitive TouchScreen"
+P: Phys=input/ts
+S: Sysfs=/devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+U: Uniq=
+H: Handlers=mouse0 event0 
+B: PROP=2
+B: EV=b
+B: KEY=400 0 0 0 0 0
+B: ABS=261800000000003
+
+/run/current-system/sw/bin/evtest
+729 /nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl -H 400 --hidden
+HANDS_ON_PREFLIGHT_DONE
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -1,7 +1,9 @@
 # system/kernel Specification
 
 ## Purpose
-TBD - created by archiving change the-screen-comes-up-under-linux. Update Purpose after archive.
+Define the pinned Linux kernel and document the board-specific patches and
+device-tree differences needed to support the T-Display-K230 panel and touch
+controller, so kernel updates can preserve working hardware support.
 
 ## Requirements
 

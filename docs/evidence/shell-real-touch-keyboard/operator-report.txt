@@ -1,0 +1,8 @@
+Operator replied ready before capture.
+After the keyboard sequence: "done"
+Follow-up: "it was the correct output"
+These are operator reports, separately assessed against camera footage and native screenshots.
+
+After the focus-30 follow-up, the operator reported:
+"ok i just did th ekeyboard bit"
+Later overall workflow confirmation: "home works too it's all good".

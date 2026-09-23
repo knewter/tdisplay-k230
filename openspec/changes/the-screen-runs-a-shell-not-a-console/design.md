@@ -1,9 +1,11 @@
 ## Context
 
-Standalone use means no host computer or external keyboard. The board has no
-battery available for this work; a USB wall supply and its power cable are
-allowed. Power-on acceptance records an actual start from power-off using
-that supply, rather than substituting a serial reboot.
+Standalone use means the shell needs no host commands or external keyboard.
+The board has no battery available for this work, and a power cable is allowed.
+At the user's request, a separate USB wall-supply power-on trial is not an
+acceptance gate. Record automatic startup after a touch-triggered reboot on
+the available power connection; label USB-connected reboot evidence accurately
+and do not claim it proves a disconnected power-on test.
 
 See proposal.md — Why. The full comparison, with every measurement and every
 source citation, is `docs/display-environment-options.md`; this document
@@ -225,7 +227,7 @@ degrees off" report.
 
 ## Open Questions
 
-- Whether the remaining first-boot and standalone externally powered paths stay reliable across
+- Whether the automatic-startup paths stay reliable across
   the final image defaults, including firewall activation and the unresolved
   splash-to-Linux handoff geometry/color issue.
 - Whether a later application shell should draw the product experience on this

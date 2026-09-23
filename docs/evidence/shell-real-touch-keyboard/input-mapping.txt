@@ -1,0 +1,26 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_inputs; echo TOUCH_MAPPING_CAPTURED =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg -t get_inputs; echo TOUCH_MAPPING_CAPTURED
+[?2004l
+Input device: wlr_virtual_keyboard_v1
+  Type: Keyboard
+  Identifier: 0:0:wlr_virtual_keyboard_v1
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: wvkbd
+
+Input device: Goodix Berlin Capacitive TouchScreen
+  Type: Touch
+  Identifier: 0:0:Goodix_Berlin_Capacitive_TouchScreen
+  Product ID: 0
+  Vendor ID: 0
+  Libinput Send Events: enabled
+
+TOUCH_MAPPING_CAPTURED
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: ~root@nixos:~]#[0m 

@@ -13,10 +13,14 @@ network access.
 | Windows | With Terminal and Monitor running, tap **Windows**. Tap the displayed window title to focus it. Open **Windows** again and tap **Next** to page, then tap the next displayed title. Use **Home** or **Back** to leave the page. | Camera records each focus change and page; serial may preserve the Sway tree only as supporting evidence. Save under `switch/`. |
 | Terminal recovery | Focus Terminal, use the on-screen keyboard to type `exit`, and confirm that it closes. Tap **Windows**, then **Home** to exercise recovery; Home must start Terminal again when it was closed. | Camera captures the closed state, **Windows** page, **Home**, and restored terminal. Save under `terminal-recovery/`. |
 | Safe system controls | Tap **System**, **Power off**, then **Cancel** and confirm the shell remains usable. Then tap **System**, **Reboot**, and **Reboot now**. | Camera captures both confirmation pages. Coordinator records serial boot progress for the confirmed reboot. Save under `system-controls/` and `reboot/`. |
-| Standalone power-on | With the board fully powered off, disconnect host/data connections and any external keyboard. Apply power from a USB wall supply and wait for the shell. The power cable stays attached; no battery is required. | Camera records the power-on and terminal appearing without host input. Reconnect serial afterward if logs are needed; a serial reboot does not prove this check. Save under `startup/`. |
 
 The labels above are the current touch-menu labels in `nix/touch-menu.sh`:
 **Apps**, **Windows**, **Keyboard**, **System**, **Terminal**, **Monitor**,
 **Next**, **Home**, **Back**, **Power off**, **Cancel**, **Reboot**, and
 **Reboot now**. Record whether each interaction was actual glass touch; camera
 or serial evidence alone does not establish that.
+
+The user explicitly declined a separate wall-supply power-on trial. It is not
+a shell acceptance gate. Use the recorded touch-triggered reboot for automatic
+startup, and label its USB-connected provenance; do not describe it as a
+disconnected power-on test. No battery is required.

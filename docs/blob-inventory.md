@@ -912,6 +912,28 @@ DATA 122fc85a77830ab38e0a3da1ab3cd2d3d23afb2c78f8c11034f11afd4917f1c0  docs/evid
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/splash-first-modeset-preserve/sway-native.png
 DATA 8d32feee01660f8828efb7fb638ca9544fee143d5da836b661089543131f53ac  docs/evidence/splash-first-modeset-preserve/preserved-owner-logo.png
 DATA cf1b9a2acb27341bed769554ddd762f79057d31e85e5205c379dfc9d7b7f2203  docs/evidence/splash-first-modeset-preserve/preserved-sway-shell.png
+DATA 891ff11bac41d4153ed044baf6d72cfab2f78437187d5590b84239255f5db27c  docs/evidence/shell-real-touch-keyboard/20260923T000200Z-keyboard-real-touch.mp4
+DATA 8dfa332d6b5c5f2c207fcde9cf5ef70303715f53ebc9c9af748a7da0b2b800a9  docs/evidence/shell-real-touch-keyboard/after-test-native.png
+DATA 3da258b19965badf7fd6980a7014caf28b41ab12d947699b21e83ccf6f93a096  docs/evidence/shell-real-touch-keyboard/during-test-native.png
+DATA f56be25c740014a5544f935c3716b748eda2afb016c9a8b5e3ed9edada47ded7  docs/evidence/shell-real-touch-keyboard/20260923T001007Z-keyboard-visibility-real-touch.mp4
+DATA afc050c01a241c24d9be12a55a509bec7ab1db14ae57f57177d15aba554ce93e  docs/evidence/shell-real-touch-keyboard/20260923T001244Z-keyboard-after-followup.jpg
+DATA cb6db86340520a8a1ec7bf6efa76bc40ce6bca085080982a9237fe6858ecc70e  docs/evidence/shell-real-touch-keyboard/after-followup-native.png
+DATA d2c95c3e68203540cdac39b82f4531054ec9a54c85b860243e6a6478a3bd4ebe  docs/evidence/shell-real-touch-keyboard/physical-keyboard-hidden-49s.png
+DATA 699a0eb71ddfd1a16cc438ba9476960cd64da7da64474ba81705b5d8fec17534  docs/evidence/shell-real-touch-keyboard/physical-keyboard-hidden.png
+DATA dd1986ef7d2ea46e78b42e85aeaac344bc8e5dfa6a029eb6a94dab9a2b5b0e93  docs/evidence/shell-real-touch-keyboard/physical-keyboard-shown-56s.png
+DATA 6930b7368e408187b3d9a320f608909aee2b93f8bfb6653c639f1fe65295f3ca  docs/evidence/shell-real-touch-keyboard/physical-keyboard-shown.png
+DATA 7168cfc491aba317481d812179ef49c50ff4019a301c1002be40e843090035f9  docs/evidence/shell-real-touch-keyboard/physical-typed-output.png
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/shell-real-touch-keyboard/visibility-followup-native.png
+DATA 34db69480a48ba8b37dee547272d4454475f3486b81aeebe0e362e376377042e  docs/evidence/shell-real-touch-apps/20260923T000357Z-apps-windows-real-touch.mp4
+DATA 7073ea6fce87e7de71aee1555c2071dc31d5ac670aecb760de50595d7151b025  docs/evidence/shell-real-touch-apps/after-test-native.png
+DATA 4db0908c176349a92bb37262838ccb7bfee78f514261612c621512d3716972a5  docs/evidence/shell-real-touch-apps/physical-apps-menu-29s.png
+DATA da2f137f24175df5bd2f3f2b7940e927ab2696e2f1c2a20ccb513aec95a73a25  docs/evidence/shell-real-touch-apps/physical-monitor-30s.png
+DATA dd82c6f81ffc0af214253c8327b59c8bcc2b7515555146ae732f1ae1fa09a191  docs/evidence/shell-real-touch-apps/physical-terminal-exit-49s.png
+DATA 91880c8fa17a7933936e95327c51c5d6dc6820109864be059dc79eccd1271ebd  docs/evidence/shell-real-touch-system/20260923T000520Z-system-controls-real-touch.mp4
+DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/shell-real-touch-system/after-reboot-native.png
+DATA c4ef2ed1c0d302148e97350183116b889a00892b90fe68b9936d57f57225e294  docs/evidence/shell-real-touch-system/system-boot-logo.png
+DATA 378020ceb726f240276649c34bfc646c22b9f141386ed2be3e8a68d90fd36493  docs/evidence/shell-real-touch-system/system-post-reboot.png
+DATA d8323e6e649fe56333be64aab1ed9c36ce8884ac8651b1aeca5f0917dcf71f79  docs/evidence/shell-real-touch-system/system-pre-touch.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

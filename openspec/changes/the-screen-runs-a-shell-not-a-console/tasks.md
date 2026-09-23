@@ -59,7 +59,7 @@ anything else is attempted.
 
 ## 4. sway owns the panel
 
-- [ ] 4.1 Switch the module on, start sway at boot with no getty prompt and no display manager, with `WLR_RENDERER=pixman` set explicitly. Verify with a photograph of the board booting unattended to a sway session with a terminal, powered by a USB wall supply with no host/data connection or external keyboard. A power cable is allowed; no battery is required
+- [x] 4.1 Switch the module on, start sway at boot with no getty prompt and no display manager, with `WLR_RENDERER=pixman` set explicitly. Verify with a photograph of the board booting unattended to a sway session with a terminal after a touch-triggered reboot, with no host commands needed to start the session and no external keyboard. The existing USB power connection is allowed. The user explicitly removed a separate wall-supply power-on test from acceptance; no battery is required
 - [x] 4.2 Configure the output as 568x1232, `transform normal`, scale 1, and confirm sway agrees. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_outputs"` committed to `docs/evidence/shell-session.txt`
 - [x] 4.3 Record whether sway's built-in touch auto-mapping fired — whether the output is named `DSI-1` and whether the GT9895's `ID_PATH` starts with `platform-` — and add an explicit `map_to_output` regardless. Verify with `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg -t get_inputs"` appended to `docs/evidence/shell-session.txt`, showing the touch device mapped to the panel
 
@@ -68,11 +68,11 @@ sway, plus `docs/evidence/shell-session.txt`.
 
 ## 5. A person can use the board without a host computer or external keyboard
 
-- [ ] 5.1 Add the on-screen keyboard as a layer-shell client that can be summoned and dismissed by touch. Verify with a photograph of the keyboard over the terminal and a second photograph with it dismissed and the terminal fully visible
+- [x] 5.1 Add the on-screen keyboard as a layer-shell client that can be summoned and dismissed by touch. Verify with a photograph of the keyboard over the terminal and a second photograph with it dismissed and the terminal fully visible
 - [x] 5.2 Type a command entirely on the panel and show its output on the panel. Verify with a photograph of the typed command and its result — this task is not complete on a keyboard that appears; it is complete on a command that ran
-- [ ] 5.3 Confirm a press lands on the key that was pressed, not a neighbour and not its mirror. Verify by typing a string that distinguishes the four rotations and mirrorings of the layout, photographed, with the string and the reasoning recorded in `docs/evidence/shell-session.txt`
-- [ ] 5.4 If the axes are wrong, fix them in the device tree rather than in the compositor, and record which layer the fix landed in. Verify by stating in `docs/evidence/shell-session.txt` whether a `touchscreen-swapped-x-y`/`touchscreen-inverted-*` property, a libinput calibration matrix, or nothing at all was needed — and confirm that no more than one of them is in force
-- [ ] 5.5 Exercise the persistent Apps, Windows/Home, Keyboard, and System touch bar. Verify first with an `evemu`/uinput event and record it explicitly as injected-input evidence; then photograph or record real glass taps that launch/focus Terminal and Monitor, page to and focus another sway window, recover Terminal with Home after closing it, toggle the keyboard, cancel one system confirmation, and confirm the other. The latter is the hardware claim and is required before this task is checked.
+- [x] 5.3 Confirm a press lands on the key that was pressed, not a neighbour and not its mirror. Verify by typing a string that distinguishes the four rotations and mirrorings of the layout, photographed, with the string and the reasoning recorded in `docs/evidence/shell-session.txt`
+- [x] 5.4 If the axes are wrong, fix them in the device tree rather than in the compositor, and record which layer the fix landed in. Verify by stating in `docs/evidence/shell-session.txt` whether a `touchscreen-swapped-x-y`/`touchscreen-inverted-*` property, a libinput calibration matrix, or nothing at all was needed — and confirm that no more than one of them is in force
+- [x] 5.5 Exercise the persistent Apps, Windows/Home, Keyboard, and System touch bar. Verify first with an `evemu`/uinput event and record it explicitly as injected-input evidence; then photograph or record real glass taps that launch/focus Terminal and Monitor, page to and focus another sway window, recover Terminal with Home after closing it, toggle the keyboard, cancel one system confirmation, and confirm the other. The latter is the hardware claim and is required before this task is checked.
 
 - [x] 5.6 Run the user-requested original Neofetch through Nix on the board and show it in a panel terminal. Verify with its Nix build/store path, console transcript, and screenshot/video. The final image must initialize its Nix store database automatically; verify `nix-store -q --requisites /run/current-system` after a fresh boot without a manual database load.
 
@@ -106,7 +106,24 @@ committed.
 
 ## 7. Ground the specs
 
-- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the standalone external-power boot and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
+- [x] 7.1 Resolve the stale `UNVERIFIED` wording in `runtime/shell` against the committed photographs, logs and measurements, while retaining the recorded startup provenance and real-glass controls/calibration limitations. Verify with `openspec validate the-screen-runs-a-shell-not-a-console`
 - [x] 7.2 Confirm the spec site accepts every requirement — each declaring either a marker or a grounding citation, with every cited `docs/` path committed. Verify with `./scripts/build_site.py` exiting zero
 - [x] 7.3 Record the measured final closure and build cost in the `runtime/shell` requirement, while retaining the historical candidate estimates for comparison. Verify with `openspec validate --all`
 - [x] 7.4 Record the user-requested feature evidence with FFmpeg: terminal use, keyboard show/hide and typing, app launching, window switching, terminal recovery, system controls, and Neofetch. Provide a screenshot and finite video for each feature, with a site-ready index and manifests identifying the capture source and real-touch versus injected interactions. Retain original camera footage when generating presentation copies; verify media with `ffprobe` and review the visible result.
+
+2026-09-23 real-touch acceptance: tasks 4.1 and 5.1/5.3/5.4/5.5 use the
+physical recordings in `docs/evidence/shell-real-touch-keyboard/`,
+`shell-real-touch-apps/`, and `shell-real-touch-system/`, their native/serial
+corroboration, and direct operator reports in the adjacent files. The user
+confirmed the command output, completion of the keyboard sequence, and
+explicitly "home works too it's all good" after the Home camera limitation
+was explained. Accept the reported Home recovery without another retake.
+The successful asymmetric string is `1qazoplm` (letter o); its first exho
+attempt remains documented. No axis correction layer is in force.
+Camera limitations remain explicit: a hide transition and exact system
+button labels are not independently resolved, and Home is user-confirmed.
+The automatically returning shell after touch-triggered reboot satisfies
+the revised startup check; no disconnected power-on claim is made. A
+deliberate full-panel drag remains unrecorded, so these completed task boxes
+do not by themselves ground that separate spec scenario or authorize a
+claim that every physical scenario has been filmed.
