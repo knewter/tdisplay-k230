@@ -1,0 +1,19 @@
+{
+  "source_artifact": "/mnt/MediaVolume/home/jadams/k230-rvv-boot1-console-private.log",
+  "source_sha256": "ab691bdf8f00d75e954b8dee066e703bcc8bb6578197cac792e54d8cf733284f",
+  "selected_at_utc": "2026-09-23T21:54:30.612233+00:00",
+  "selection": "Exact matching size/CRC, argument import, kernel entry, RISC-V/vector and login lines; ANSI CSI and CR removed. Full raw console remains private.",
+  "patterns": [
+    "^\\d+ bytes read",
+    "^[Cc][Rr][Cc]32 for ",
+    "^K230_RVV_ARGS_IMPORTED$",
+    "^Starting kernel",
+    "^\\[\\s*[\\d.]+\\] Linux version ",
+    "^\\[\\s*[\\d.]+\\] riscv:",
+    "^\\[\\s*[\\d.]+\\].*[Vv]ector",
+    "^nixos login:"
+  ],
+  "limits": [
+    "Selected boot lines only; vector context is a separate capture."
+  ]
+}
