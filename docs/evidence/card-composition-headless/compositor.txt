@@ -1,0 +1,137 @@
+K230_CARD map card=0 container=5
+K230_CARD map card=1 container=6
+K230_CARD input=injected operation=fail-mirror accepted=1
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=scene-setup commits=0 samples=0 frame-done=0 output-presented=0
+K230_CARD input=injected operation=enter accepted=0
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD live commits=236 sampled=240 frame-done=240 output-presented=60
+K230_CARD dragging card=0 contact=10
+K230_CARD input=injected operation=down accepted=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=second-contact commits=340 samples=340 frame-done=340 output-presented=85
+K230_CARD input=injected operation=down accepted=1
+K230_CARD input=injected operation=up accepted=1
+K230_CARD input=injected operation=up accepted=1
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=touch-cancel commits=340 samples=340 frame-done=340 output-presented=85
+K230_CARD input=injected operation=cancel accepted=1
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD dragging card=1 contact=1
+K230_CARD input=injected operation=down accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD input=injected operation=up accepted=1
+K230_CARD dragging card=1 contact=2
+K230_CARD input=injected operation=down accepted=1
+K230_CARD selected-expanded card=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=selected-expanded commits=340 samples=340 frame-done=340 output-presented=85
+K230_CARD input=injected operation=up accepted=1
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD dragging card=0 contact=3
+K230_CARD input=injected operation=down accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD dismissal-requested card=0
+K230_CARD input=injected operation=up accepted=1
+K230_CARD live commits=476 sampled=480 frame-done=480 output-presented=120
+K230_CARD close-refused card=0 basis=still-mapped-after-1500ms
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=close-refused commits=588 samples=592 frame-done=592 output-presented=148
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=480 height=720 stride=1920 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD dragging card=1 contact=4
+K230_CARD input=injected operation=down accepted=1
+K230_CARD input=injected operation=motion accepted=1
+K230_CARD dismissal-requested card=1
+K230_CARD input=injected operation=up accepted=1
+K230_CARD app-exit card=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=app-exit commits=588 samples=592 frame-done=592 output-presented=148
+K230_CARD map card=1 container=7
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD dragging card=0 contact=5
+K230_CARD input=injected operation=down accepted=1
+K230_CARD unmap card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=unmap commits=588 samples=592 frame-done=592 output-presented=148
+K230_CARD input=injected operation=up accepted=1
+K230_CARD map card=0 container=8
+K230_CARD buffer-reference card=0 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=0 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=520 height=1040 stride=2080 owner=wlroots-scene-surface
+K230_CARD buffer-reference card=1 format=34325258 width=128 height=96 stride=512 owner=wlroots-scene-surface
+K230_CARD attached cards=2 renderer=pixman source=live-scene-surfaces
+K230_CARD input=injected operation=enter accepted=1
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=0
+K230_CARD mirror-release card=1
+K230_CARD mirror-release card=1
+K230_CARD focus-restored keyboard=seat-path
+K230_CARD restored reason=unsafe-scene-or-allocation commits=588 samples=592 frame-done=592 output-presented=148
+K230_CARD unmap card=1
+K230_CARD unmap card=0

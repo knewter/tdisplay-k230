@@ -1,0 +1,42 @@
+{
+  "evidence_class": "headless-qemu-injected-input",
+  "before_frames": [
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "after_frames": [
+    [
+      296,
+      176
+    ],
+    [
+      81,
+      80
+    ]
+  ],
+  "passed": [
+    "atomic-allocation-fallback",
+    "two-live-apps",
+    "second-contact-cancel",
+    "touch-cancel",
+    "continuous-motion",
+    "select-focus",
+    "close-refused",
+    "close-exit",
+    "unmap-during-drag",
+    "focus-fallback",
+    "virtual-keyboard-return",
+    "output-disable-fallback"
+  ],
+  "limits": [
+    "no physical touch or panel proof",
+    "virtual keyboard only; physical OSK remains unverified",
+    "headless output presentation only"
+  ]
+}

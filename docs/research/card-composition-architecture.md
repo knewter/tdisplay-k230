@@ -91,3 +91,42 @@ and restored normal Pixman shell. It must additionally show a content update
 while shrunken, proving live per-buffer scaling. Failure records the failed
 state and keeps this proposal open; it cannot be relabelled as metadata cards
 or as completed visual-card UX.
+
+## Implemented probe boundary (2026-09-23)
+
+The opt-in patch mirrors each enabled content/subsurface buffer with
+`wlr_scene_surface_create`, rather than a raw saved buffer. Pinned wlroots
+`types/scene/surface.c` owns independent commit handling, client-buffer locks,
+acquire/release synchronization, output sampling and presentation feedback.
+Sway's existing frame iterator recognizes these mirror scene surfaces, so
+hidden originals do not starve the clients. The mirror geometry pass copies
+source cropping, transform, opacity and color representation, applies one scale
+and coordinate translation to every descendant, and conservatively clears the
+opaque region. A before-render pass prevents an unscaled commit from being
+presented. A 16ms discovery timer finds new subsurfaces whose disabled original
+scene might not schedule a frame. That timer and conservative damage can cost
+CPU; neither is a performance claim.
+
+Only exact `SWAY_K230_CARD_COMPOSITION_PROBE=1` enables registration, and entry
+also verifies the renderer is Pixman. Only app IDs `k230.card.one` and
+`k230.card.two` are eligible; duplicate IDs, extra outputs and another workspace
+are outside this bounded experiment. Supported probe buffers are SHM XRGB8888,
+ARGB8888 and RGB565; other buffers abort. Both complete mirrors must exist before
+either original is hidden. Source-node/surface destruction removes listeners
+and releases mirror references; unmap, seat/output loss, lock and allocation
+failure return through the same cleanup path. The original Sway scene restores
+its previous enabled state and focus returns through the normal Sway seat API.
+
+After both apps map on the active workspace, touch the bottom 48 logical pixels
+to enter. The two live cards occupy separate vertical slots. Tap selects and
+expands; upward motion beyond 120 logical pixels requests close. A still-mapped
+client after 1500ms is classified `close-refused` (a timeout observation, not a
+protocol-level refusal reply). An observed unmap after the request is logged
+`app-exit`; client process exit must additionally be checked in client/session
+logs. A second contact aborts and consumes remaining contacts through release.
+
+`k230_card_probe enter|down ID X Y|motion ID X Y|up ID|cancel` is an explicit,
+opt-in IPC test interface using the same handlers and logging `input=injected`.
+`fail-mirror N` injects allocation failure after N new mirror allocations to
+exercise partial-setup rollback. Neither interface is evidence of physical
+finger interaction. The normal shell package contains none of these changes.

@@ -651,6 +651,7 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102  docs/evidence/card-composition-headless/cards.png
 DATA 0aa7c1d4c919b21ac233ce996df62a7ed9e7fa342a1dd18f71e212560acad6e9  docs/evidence/video-acceleration/360p-native.png
 DATA 0de84cf54feadaaaeff344d62d5764700fdfcb02eadf54f2d71485e164d5341b  docs/evidence/video-acceleration/360p-physical.jpg
 DATA 3eb27a069ff2f1b7bae9c991229a73086ddaccb8a00c12de2b8b9110e8cc49fa  docs/evidence/video-acceleration/360p-physical.mp4
@@ -1202,3 +1203,13 @@ Native grim captures; provenance in `docs/evidence/launcher-gestures/edge-states
 | `docs/evidence/launcher-gestures/edge-states/stale-after-close.png` | 27341 | DATA | `20ab1b0d089d37cc5fe05746fede71c2b768a3995b916a90a4ebadc90659e986` |
 | `docs/evidence/launcher-gestures/edge-states/stale-back-apps.png` | 38398 | DATA | `b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e` |
 | `docs/evidence/launcher-gestures/edge-states/stale-before-close.png` | 26130 | DATA | `a72a13b46a2df3201dd53082527aca2fc8bec74c38074735192de8502f0af16a` |
+## Card composition headless probe capture
+
+Generated locally by `grim` against the pinned, source-built opt-in Sway running
+under headless RISC-V user emulation. Both clients are built from repository
+source; this contains no user application data and is not a photograph of the
+board. Command and limitations: `docs/evidence/card-composition-headless/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-composition-headless/cards.png` | 5075 | DATA | `ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102` |
