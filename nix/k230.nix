@@ -14,7 +14,7 @@
 # Minimal on purpose: riscv64-linux has no binary cache, so every package here
 # is compiled on every clean build. See openspec/specs/system/nixos-config —
 # anything added needs a recorded reason it is needed to reach or use a prompt.
-{ config, lib, modulesPath, ... }:
+{ config, lib, modulesPath, pkgs, ... }:
 
 {
   imports = [ "${modulesPath}/profiles/minimal.nix" ];
@@ -44,6 +44,11 @@
   # Keeps the closure honest: without a cache, a firmware tree we cannot use
   # is pure compile time.
   hardware.enableRedistributableFirmware = false;
+
+  # cfg80211 requested regulatory.db during preflight and the image lacked it.
+  # Keep the automatic firmware set disabled, but install the one named
+  # regulatory database needed by the selected wireless path.
+  hardware.firmware = [ pkgs.wireless-regdb ];
 
   # make-ext4-fs writes this registration stream into the SD root image but,
   # unlike nixos/modules/installer/sd-card/sd-image.nix, our custom image

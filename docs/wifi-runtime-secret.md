@@ -24,6 +24,11 @@ trap removes the copied secret and, if the launched daemon wrote its PID file,
 terminates only that PID after confirming its command line names this exact
 `/run` configuration file. It cannot target an unrelated supplicant service.
 
+The source file itself must be owned by UID 0 and have mode `0600`. The setup
+also refuses existing runtime files before installing or trapping anything;
+the operator must explicitly complete or investigate a previous invocation
+rather than overwriting a possibly active connection.
+
 The supplicant reads only the copied `/run` file, so neither its command line
 nor its Nix closure carries the secret.
 
@@ -36,6 +41,7 @@ nor its Nix closure carries the secret.
   runtime_pid=/run/wpa-supplicant-board.pid
 
   cleanup_failed_start() {
+    trap - EXIT HUP INT TERM
     if test -r "$runtime_pid"; then
       board_pid=$(cat "$runtime_pid")
       case "$board_pid" in
@@ -52,10 +58,19 @@ nor its Nix closure carries the secret.
     rm -f "$runtime_pid" "$runtime_conf"
   }
 
-  trap 'cleanup_failed_start' EXIT HUP INT TERM
+  # Do not overwrite a live or stale board invocation. This check is before
+  # the trap, so a refusal cannot remove files this invocation does not own.
+  if test -e "$runtime_pid" || test -L "$runtime_pid" \
+    || test -e "$runtime_conf" || test -L "$runtime_conf"; then
+    echo "existing Wi-Fi runtime state; complete or investigate it first" >&2
+    exit 1
+  fi
+
+  trap 'cleanup_failed_start' EXIT
+  trap 'exit 1' HUP INT TERM
   test "$(id -u)" -eq 0
+  test "$(stat -c '%u' "$RUNTIME_SECRET_FILE")" -eq 0
   test "$(stat -c '%a' "$RUNTIME_SECRET_FILE")" = 600
-  rm -f "$runtime_pid" "$runtime_conf"
   install -o root -g root -m 0600 "$RUNTIME_SECRET_FILE" "$runtime_conf"
   wpa_supplicant -B -P "$runtime_pid" -i "$WIFI_IFACE" -c "$runtime_conf"
   trap - EXIT HUP INT TERM
@@ -69,7 +84,10 @@ record. The later DHCP and routing checks use the same `WIFI_IFACE`.
 On explicit completion, stop only the daemon recorded in the board procedure's
 PID file. The command-line check prevents a reused PID or another
 `wpa_supplicant` service from being killed. It then removes both root-owned
-runtime files:
+runtime files. If the recorded daemon already exited, the PID path has no
+`/proc` entry, so the procedure removes this invocation's runtime files
+without sending a signal. If a live PID does not name this configuration, it
+refuses to touch either file.
 
 ```sh
 (
@@ -81,9 +99,13 @@ runtime files:
   case "$board_pid" in
     *[!0-9]*|'') exit 1 ;;
   esac
-  test -r "/proc/$board_pid/cmdline"
-  tr '\0' ' ' < "/proc/$board_pid/cmdline" | grep -F -- "$runtime_conf" >/dev/null
-  kill "$board_pid"
+
+  if test -e "/proc/$board_pid"; then
+    test -r "/proc/$board_pid/cmdline"
+    tr '\0' ' ' < "/proc/$board_pid/cmdline" \
+      | grep -F -- "$runtime_conf" >/dev/null
+    kill "$board_pid" || true
+  fi
   rm -f "$runtime_pid" "$runtime_conf"
 )
 ```
