@@ -41,8 +41,8 @@ claiming a branch is current with the server.
 
 | Work | Already available | Remaining acceptance |
 | --- | --- | --- |
-| Network video | Pinned software player, Apps entry, reviewed lifecycle controller, measured probe paths and presentation tracing | Flash the integrated image; prove fallback, Stop/Home, EOF/error cleanup, final playback and cropped evidence |
-| Cards and gestures | Host-tested swipe classification, animated paging, async metadata cards, stale focus handling and rollback | Integrated-image injected matrix, resource measurements and focused real-finger capture |
+| Network video | Pinned software player, Apps entry, reviewed lifecycle controller, measured probe paths and presentation tracing | Integrated image flashed; Apps launch, 100-second playback and Back cleanup proved; finish Stop/Home, EOF/error, MVX comparison and final regression |
+| Cards and gestures | Host-tested swipe classification, animated paging, async metadata cards, stale focus handling and rollback | 20-pair injected matrix and keyboard-visible resource checks passed; real-finger excerpt captured; finish focus/recovery and camera sharpness acceptance |
 | Boot splash | Source-built U-Boot splash and opt-in kernel/compositor preservation, warm-boot and first-modeset evidence | Calibrated geometry, remaining power-on/second-card procedure, final default and specification acceptance |
 
 The player and gesture implementations have passed host review and cross-builds.
@@ -95,8 +95,8 @@ priority and is unrelated to already-working U-Boot USB flashing.
 2. Implement the proposed `the-shell-trials-vglite-composition` as a separate opt-in compositor experiment when scheduled;
    process-CPU offload is promising, but elapsed time did not improve and
    complete buffer/synchronization/color/scanout gates remain.
-3. Start cards/gestures implementation independently of decoder work if desired.
-   It does not require a GPU renderer or a second Linux CPU.
+3. Finish cards/gestures acceptance independently of decoder work. The integrated
+   matrix and real-finger excerpt are now recorded; focus/recovery gates remain.
 4. Return to static splash acceptance before the boot animation. Investigate
    second-core firmware/coherency prerequisites in parallel as source research;
    do not release/reset a core on assumptions.
@@ -132,3 +132,11 @@ running build. The workflow in [AGENTS.md](../AGENTS.md) requires early proposal
 publication, concrete handoffs, prompt integration, and verification of the
 pushed revision's CI/deployment. No archive may turn an unperformed test into a
 completed task.
+
+The integrated image flash and protected Wi-Fi reconnection are recorded in
+[board boot evidence](evidence/network-video/integration-board-boot.md).
+The [gesture matrix](evidence/launcher-gestures/integrated-injected/README.md)
+passed 20 left/right pairs within 163 ms, plus ten keyboard-visible transitions
+within 139 ms. A [23-second real-finger excerpt](evidence/launcher-gestures/real-finger/README.md)
+shows paging, overview, Monitor selection and return. Lower-screen camera
+sharpness and remaining recovery gates are still explicitly limited.

@@ -56,6 +56,22 @@ const groups = [
       confirmations are recorded alongside the camera evidence; the deliberate
       full-panel drag scenario remains explicitly unverified in the published spec. Captures are dated September 23 in UTC.</p>
     <section>
+      <h2>Swipe through apps and window cards</h2>
+      <p>Swipe between app pages, open a window overview, and tap a card to return to a running app. This short finger-driven session shows paging, window cards, selecting Monitor, and returning to Apps. The existing buttons remain available.</p>
+      <div class="media-grid">
+        <figure><video controls preload="none" playsinline aria-label="Finger gestures and window selection on the physical handheld"
+          poster={evidenceAsset("docs/evidence/launcher-gestures/real-finger/window-selection.jpg")}
+          src="https://raw.githubusercontent.com/knewter/tdisplay-k230/e14c269/docs/evidence/launcher-gestures/real-finger/gestures.mp4"></video>
+          <figcaption>Real finger interaction · 23 seconds · cropped around the device</figcaption></figure>
+        <figure><a href={evidenceUrl("docs/evidence/launcher-gestures/integrated-injected/overview.png")}><img loading="lazy"
+          src={evidenceAsset("docs/evidence/launcher-gestures/integrated-injected/overview.png")} alt="Window cards for Terminal and Monitor" /></a>
+          <figcaption>Native overview capture from a separate injected-input test</figcaption></figure>
+      </div>
+      <p>Twenty automated left/right pairs changed pages without misses or duplicates. Final-frame submission took 138 ms median and 163 ms at worst; a separate keyboard-visible run stayed within 139 ms. These measure launcher work, not screen light output. Final recovery checks remain in progress.</p>
+      <p class="limit">The camera angle leaves lower labels softer than the headings. The clip shows the workflow; it does not measure touch latency.</p>
+      <p><a href={evidenceUrl("docs/evidence/launcher-gestures/real-finger/README.md")}>Camera notes</a> · <a href={evidenceUrl("docs/evidence/launcher-gestures/integrated-injected/README.md")}>Injected tests and resource measurements</a></p>
+    </section>
+    <section>
       <h2>Offline tools and Wi-Fi</h2>
       <p>These are native screenshots from a fresh-image boot exercised with injected board input, not physical-finger camera evidence. Help, nano and nnn are available offline. Wi-Fi reconnects automatically after reboot. Association, DHCP, DNS routing over Wi-Fi and an outbound ping passed without manually restarting the connection. Credentials stay in a private root-owned file outside the image and Nix store.</p>
       <div class="media-grid">{offline.map(([title, file, caption]) => <figure><a href={evidenceUrl(file)}><img loading="lazy" src={evidenceAsset(file)} alt={caption} /></a><figcaption><b>{title}</b> · native screenshot</figcaption></figure>)}</div>
@@ -63,6 +79,7 @@ const groups = [
     </section>
     <section>
       <h2>Big Buck Bunny over Wi-Fi</h2>
+      <p>The installed Video app now opens the software 480×270 stream through Apps. A 100-second observation recorded advancing playback, zero decoder drops and one output drop; Back stopped the player and returned to the shell. <a href={evidenceUrl("docs/evidence/network-video/installed-app/README.md")}>Installed-app trial and captures</a>. Remaining Stop/Home, error and hardware-decoder recovery checks are still in progress.</p>
       <p>The board streams 640×360 Big Buck Bunny over Wi-Fi using its hardware video decoder. Point scaling and a video-sized window reduced reported output drops to zero in a 30-second trial; a repeat with screenshot capture reported two. This is a silent, fixed-30-fps experiment with a timing workaround, not yet the default video app. The shell still renders on the CPU. A separate 2.5D GPU probe now passes RGB565 and private DRM-buffer sharing checks. Its full-panel scale used about 94% less process CPU time but took 11% longer overall than Pixman; compositor integration remains future work.</p>
       <p>New 35-second timing trials recorded about 29.96 presented updates per second for software 270p and 29.74 for hardware-decoded 360p. These use hardware-signalled compositor feedback; panel light output was not independently timed. <a href={evidenceUrl("docs/evidence/network-video/README.md")}>Presentation measurements and limits</a>.</p>
       <div class="media-grid">
