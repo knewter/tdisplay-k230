@@ -1,7 +1,6 @@
 # Current and recommended portrait frames
 
-The left side describes the accepted native composition. The right side is a
-contract for successors; it is not an implementation preview.
+The diagrams are current schematics traced from the cited native captures, not screenshots. The proposed side is a contract for successors, not an implementation preview.
 
 ## Apps, keyboard hidden
 
@@ -22,8 +21,7 @@ CURRENT (native evidence)                 RECOMMENDED CONTRACT
 ```
 
 Reference: [Apps with keyboard](../../evidence/launcher-gestures/integrated-injected/keyboard-visible.png)
-shows the current title/card/footer hierarchy; the shown keyboard changes the
-usable height rather than proving every target is physically reachable.
+(captured 2026-09-23) shows the current title/card/footer hierarchy; the shown keyboard changes the usable height rather than proving every target is physically reachable.
 
 ## Overview / transient state
 
