@@ -32,13 +32,16 @@ specific vendor instruction set unconditionally. The resulting source is
 `/nix/store/l6jdpbzp53y5n24ky6602f41gzs6f6ik-linux-xuantie-k230-rvv-src` and config
 `/nix/store/yp5qydyrl86li5bmx25l6vaykn6yfj64-linux-config-riscv64-unknown-linux-gnu-6.6.36-xuantie`.
 
-Full kernel compilation is in progress. **No boot, vector execution, signal or
-context preservation, framebuffer correctness, speedup or image integration is
-verified.** The board remains on the previous normal image. Do not force RVV in
+The full kernel cross-build passes; `kernel-build.json` records the artifact,
+SHA256, finish time and final built configuration. The first build client was
+lost before producing a valid output; the resumed build completed successfully.
+**No boot, vector execution, signal or context preservation on the physical
+board, framebuffer correctness, speedup or image integration is verified.** The board remains on the previous normal image. Do not force RVV in
 userspace while the running kernel omits its support.
 
-Before integrating: finish the narrow kernel build; use a recoverable board
-trial; require hwprobe V, vector computation across scheduling/signals, normal
+Before integrating: build a matching system closure, including its external
+Wi-Fi module, rather than swapping the kernel beneath old modules; use a
+recoverable board trial; require hwprobe V, vector computation across scheduling/signals, normal
 shell/touch/Wi-Fi recovery and pixel comparisons; then compare the same live
 card workload with the corrected Pixman's RVV enabled and disabled. Preserve
 all existing interaction and frame-cost budgets. A kernel build alone does not
