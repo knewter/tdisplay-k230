@@ -41,3 +41,17 @@ headless/environment guard. Input traverses wlroots, cursor and seat routing.
 `headless.json` is the resulting report. This is not physical touch, panel,
 full-system QEMU, or board performance acceptance. Default image integration
 and real-finger review remain open.
+
+Negative control: a separate tree at `020c53d1` received only the new optional
+headless timestamp fixture (no adapter clock changes). Its cross-built package
+`/nix/store/1ybhm8fcrwmn0v5597xfy1a8nxs8wq05-k230-card-shell` fails the same runtime
+suite at `slow or paused source must not become a throw`: queued slow source
+input incorrectly dispatches a close. The production package above passes the
+identical test. This establishes an adapter timing defect independently of the
+specific board failure; it does not prove board throw repeatability by itself.
+
+The independent Wayland receiver suite also passes all seven pairing/cancellation
+checks and five provenance cases (`tests/test_card_touch_routing.py --provenance`,
+using the unwrapped Sway above). `routing.json` retains that report. The fake
+physical-label fixture is explicitly not a real-finger claim; mixed provenance
+still rejects, and arming the benchmark cannot relabel native input.

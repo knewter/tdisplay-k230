@@ -1,0 +1,66 @@
+{
+  "provenance": [
+    {
+      "case": "named-uinput-device",
+      "declared": "injected",
+      "observed_sources": [
+        "injected",
+        "injected"
+      ],
+      "parser": "schema-accepted"
+    },
+    {
+      "case": "native-physical-label-fixture",
+      "declared": "physical",
+      "observed_sources": [
+        "physical",
+        "physical"
+      ],
+      "parser": "schema-accepted"
+    },
+    {
+      "case": "arm-does-not-relabel-native-input",
+      "declared": "injected",
+      "observed_sources": [
+        "physical",
+        "physical"
+      ],
+      "parser": "rejected-mixed-provenance"
+    },
+    {
+      "case": "mixed-native-devices",
+      "declared": "physical",
+      "observed_sources": [
+        "physical",
+        "physical",
+        "injected",
+        "injected"
+      ],
+      "parser": "rejected-mixed-provenance"
+    },
+    {
+      "case": "direct-ipc-stays-injected",
+      "declared": "injected",
+      "observed_sources": [
+        "injected",
+        "injected"
+      ],
+      "parser": "schema-accepted"
+    }
+  ],
+  "evidence_class": "native-wayland-receiver-headless-injected-device",
+  "passed": [
+    "launcher-footer-pairing",
+    "hidden-card-button-pairing",
+    "second-contact-bar-drain",
+    "second-contact-keyboard-drain",
+    "normal-app-touch-pairing",
+    "cancel-without-up",
+    "device-removal-without-up"
+  ],
+  "limits": [
+    "No physical panel or finger evidence.",
+    "Routing input originates from a test wlr_touch device.",
+    "Provenance fixtures simulate device names; physical labels do not prove a real finger."
+  ]
+}
