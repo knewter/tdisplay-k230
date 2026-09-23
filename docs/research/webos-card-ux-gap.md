@@ -7,9 +7,9 @@ Date: 2026-09-23
 The target is a card-based application interaction, rather than a launcher that
 only labels windows. The reviewed visual reference is the Palm webOS user guide,
 pages 25–26: [Palm Pre User Guide (English PDF)](https://support.bell.ca/_web/guides/User-Guides/Mobile/PalmOne/Palm-EN/palm_pre_userguide_en(en).pdf).
-Those pages were reviewed as images by the project maintainer. This note records the
-resulting product intent; it does not claim that the current shell implements the
-reference interaction.
+The coordinator reviewed those pages as images. This note records the resulting
+product intent; it does not claim that the current shell implements the reference
+interaction.
 
 The desired interaction is:
 

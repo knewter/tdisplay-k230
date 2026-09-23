@@ -25,9 +25,10 @@ The current system already has the right seams:
 - Applications share a tabbed workspace, which gives an overview client a simple
   focus/return model.
 
-The current launcher is intentionally tap-oriented. Its touch motion handler cancels
-a card activation whenever the finger leaves the original card, so a directional
-drag has no action. That is a clean place for a bounded gesture prototype.
+The launcher architecture began tap-oriented: its original touch-motion handling
+cancelled a card activation when the finger left the original card. That provided a
+clean seam for the bounded, release-classified gesture prototype. It does not provide
+the continuous finger-tracked card motion required by the fuller target.
 
 ## Hardware and rendering limits
 
@@ -90,17 +91,20 @@ focus/return after an app exits, stale-container IDs, empty-window state, and a
 keyboard-visible layout. Those are manageable, but they make this a second proposal
 after the gesture spike.
 
-### 3. Fork or replace Sway: reject for this goal
+### 3. Fork or replace Sway: not selected for the first prototype
 
 A compositor fork would own gesture recognition, transitions, and card compositing, but
 it would also inherit DRM handoff, RGB565 format selection, Pixman behavior, input
 mapping, keyboard focus, layer-shell compatibility, and the project’s splash handoff.
-That adds a large regression surface without solving a demonstrated limitation.
+That adds a large regression surface. The first prototype therefore does not take
+that route, but the card-UX capability investigation must establish whether a later
+integration needs compositor work.
 
-Replacing Sway with a GPU-oriented compositor is a poor fit for this board. The
-existing shell deliberately selects wlroots Pixman and DRM dumb buffers because the
-board has no render node. A compositor designed around GLES would add build and
-runtime risk without improving the hardware path.
+Replacing Sway with a GPU-oriented compositor is not justified by the present
+evidence. The existing shell deliberately selects wlroots Pixman and DRM dumb buffers
+because the board has no render node. A future card UX must establish its actual
+buffer, synchronization, and composition requirements before choosing a renderer;
+neither a GPU rewrite nor a compositor fork is assumed here.
 
 ## Gesture and protocol notes
 
