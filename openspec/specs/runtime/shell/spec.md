@@ -80,11 +80,13 @@ and a usable Back control.
 - **THEN** the launcher reports the failure and lets the user return or choose
   another action without a physical keyboard
 
-### Requirement: The shell renders on the CPU, with no GPU driver and no software GL
+### Requirement: The shell renders on the CPU, with no Mesa/DRI driver and no software GL
 
 The compositor SHALL composite in software into DRM dumb buffers. It SHALL NOT
 require OpenGL, OpenGL ES, Vulkan, a GBM allocator, or a DRM render node, and
-the system SHALL NOT carry a Mesa GL or Vulkan runtime in order to run it.
+the system SHALL NOT carry a Mesa GL or Vulkan runtime in order to run it. This
+does not deny the separate VGLite 2D kernel driver; that driver is not a
+Mesa/DRI path and is not used by this compositor.
 
 *Grounding: `wlroots-0.20.2/render/wlr_renderer.c:220-228` lists `pixman` among
 the values of `WLR_RENDERER`, alongside `gles2` and `vulkan`, so the software
@@ -109,7 +111,7 @@ wlroots' default of XRGB8888 is refused by `output_pick_format()`
 #### Scenario: The rendering path is inspected
 
 - **WHEN** someone asks how pixels reach this panel
-- **THEN** the answer is a CPU rasteriser writing into a DRM dumb buffer, with no GL, no Vulkan, no GBM allocator and no render node anywhere in the path
+- **THEN** the answer is a CPU rasteriser writing into a DRM dumb buffer, with no GL, no Vulkan, no GBM allocator and no render node anywhere in the compositor path
 
 #### Scenario: The closure is inspected for a GPU stack
 

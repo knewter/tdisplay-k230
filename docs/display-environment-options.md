@@ -6,9 +6,9 @@ against the nixpkgs pin in `flake.lock`
 
 The question is which display environment this board can actually run, given
 that it has a 568x1232 portrait AMOLED, a touch panel, two C908 cores, 1 GiB of
-RAM, and **no GPU driver of any kind**. Josh named Hyprland first and SXMO as
-the fallback. Neither survives contact with the constraints, and the reasons
-are different for each.
+RAM, a working VGLite 2.5D kernel driver, and **no Mesa/DRI, EGL, OpenGL, or
+Vulkan stack**. Josh named Hyprland first and SXMO as the fallback. Neither
+survives contact with the constraints, and the reasons are different for each.
 
 Two kinds of claim appear below and they are not interchangeable:
 
@@ -35,6 +35,13 @@ remain separate verification gates.
 ---
 
 ## 1. The GPU situation, stated precisely
+
+The K230 has a VGLite driver for its GC8000UL 2.5D block, but it is not a
+Mesa/DRI driver and does not create a DRM render node, GBM device, EGL, GL, or
+Vulkan API. Its vendor API is a single-context `/dev/vg_lite` ioctl interface;
+the Canaan display driver remains a separate DRM/KMS device. The VGLite kernel
+path can import a dma-buf, but its export operation returns `VG_LITE_NOT_SUPPORT`,
+so it cannot presently provide wlroots with scanout-ready rendered buffers.
 
 The K230's "2.5D" block has no Mesa driver and no Vulkan driver. What the
 kernel will expose, if `the-screen-comes-up-under-linux` succeeds, is a DRM/KMS
@@ -189,7 +196,7 @@ driver — which is what the K230's is — offers no `renderD*` node, so the
 default path lands on Pixman with nothing set. Setting `WLR_RENDERER=pixman`
 explicitly is still worth doing, as a declaration rather than a workaround: it
 turns a silent fallback into a stated intention, and it fails loudly if someone
-later adds a GPU driver and changes the answer.
+later adds a Mesa/DRI render-node path and changes the answer.
 
 **Allocator selection**, `wlroots-0.20.2/render/allocator/allocator.c:98-152`.
 `wlr_allocator_autocreate()` tries GBM first, but only when

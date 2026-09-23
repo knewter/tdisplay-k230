@@ -26,7 +26,9 @@ drag has no action. That is a clean place for a bounded gesture prototype.
 ## Hardware and rendering limits
 
 The panel is 568x1232 at about 52.19 Hz, with RGB565 scanout and Pixman CPU
-rendering. The board has no render node or GPU path for this shell. Existing
+rendering. The board has no DRM render node or GL/Vulkan path for this shell. The
+enabled VGLite `/dev/vg_lite` driver is a separate single-context vendor 2D API,
+not a wlroots renderer or KMS buffer producer. Existing
 measurements are encouraging for restrained transitions:
 
 - Sway/Pixman scene-build plus KMS submission had a 14.0 ms median and 15.6 ms p95
