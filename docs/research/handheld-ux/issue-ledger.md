@@ -14,8 +14,16 @@ implementation boundary. The proposed successors below are bounded UX scopes; th
 | UX-06 | Camera evidence shows physical Apps hierarchy but is oblique and has glare; this is an evidence limitation, not by itself a visual implementation defect. | P2 | existing gesture evidence gate | capture geometry | camera, real-finger | `docs/evidence/shell-real-touch-apps/video-audit.md` | A later focused optical capture may assess sharpness without changing UI scope. | Uniform sharpness `UNVERIFIED`. |
 | UX-07 | Live card composition is proposed rather than shipped. | P1 | the-shell-has-a-card-composition-plan; the-shell-manages-apps-as-cards | app-content/security and compositor boundary | real-finger, injected | `docs/evidence/launcher-gestures/real-finger/README.md` | Card source must satisfy its own live-content, recovery, and physical acceptance gates. | `UNVERIFIED`. |
 | UX-08 | Rotation, blur, thumbnails, and advanced GPU effects lack source/board evidence. | Deferred | future visual effects decision | measured renderer budget | UNVERIFIED | UNVERIFIED | A later owner records source support, cost, and a rollback path before proposing them. | `UNVERIFIED`; explicitly deferred. |
-| UX-09 | Cold USB-powered boot and recovery have no accepted end-to-end UX timing evidence. | P1 | boot/onboarding successor: `UNVERIFIED` | coordinator selects existing splash owner or new narrow successor | camera, serial | `docs/evidence/shell-features/desktop-launcher/README.md` | Named operator run records cold USB-powered startup through usable shell. | `UNVERIFIED`. |
+| UX-09 | Cold USB-powered boot and recovery lack a separate end-to-end UX timing observation; this is an evidence gap, not an observed usability failure. | P2 | docs/handheld-ux-plan, future observation round | existing splash evidence and a scheduled observation | camera, serial | `docs/evidence/shell-features/desktop-launcher/README.md` | Named operator run records cold USB-powered startup through usable shell. | `UNVERIFIED`. |
 
 ## Routing decision
 
-UX-02 and UX-05 route to one bounded recovery-language successor; UX-01 and UX-03 route to one bounded catalog-curation successor. Neither owns card rendering, compositor policy, or video lifecycle. UX-09 stays with the existing boot/onboarding owner until that owner is selected. The coordinator must create, validate, merge, and push the two selected successor proposals before task 3.2 can close.
+UX-02 and UX-05 route to one bounded recovery-language successor; UX-01 and UX-03 route to one bounded catalog-curation successor. Neither owns card rendering, compositor policy, or video lifecycle. UX-09 is an observation gap owned by a future UX review, rather than an
+unobserved P1 product defect. It does not add a battery or USB-free acceptance
+requirement. The two selected successors are now concrete proposals:
+`the-launcher-explains-app-actions` (integration commit `e24741f`) and
+`the-shell-makes-recovery-routes-legible` (`19187d9`). Both can start host work in
+parallel with card composition; their launcher/bar edits must be reconciled with
+card integration, and board acceptance remains serialized. They preserve the
+existing card/video lifecycle ownership. Publication is recorded after master
+push; task 3.2 stays open until that step.
