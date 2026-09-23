@@ -658,6 +658,8 @@ DATA 2a633a028f8e10ea939c9c5b17994ce0a0cefb7f923604c28bdbe7fa9ee7b439  docs/evid
 DATA 92b33c778c720a23b87bae0da2d1b05a0a7e27f76134100020a1d833eb3fb29c  docs/evidence/big-buck-bunny/270p-physical-clip.mp4
 DATA 7b18cca3cdb439ef572de0f46f48351f9ce4faf20aa56459893d654e987b4780  docs/evidence/big-buck-bunny/270p-physical-frame.jpg
 DATA 7c8c6558a8bce911d9660d2afea92b64ce416d80f6340ea305ca7b1ce9558775  docs/evidence/network-video/mvx-patched-traces.tar.gz
+DATA 1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903  docs/evidence/launcher-gestures/preflight-apps-page-2.png
+DATA 27a6acc3f1428c79ae7345632052b46d41911ccde6f60c060e8bcd93648e445a  docs/evidence/launcher-gestures/preflight-overview.png
 # class  sha256                                                            path
 #
 # --- this project's own tree ---------------------------------------------
