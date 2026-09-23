@@ -189,4 +189,38 @@ class SessionTests(unittest.TestCase):
     def test_store_paths_reject_shell_text(self):
         for value in ('/tmp/probe',PLAN['package']+';reboot',PLAN['package']+'/../evil'):
             with self.assertRaises(ValueError):H.trusted(value)
+
+    def test_native_drag_batches_frames_and_releases_contact(self):
+        packets=[]
+        with patch.object(A,'verify_device') as verify, patch.object(A.os,'open',return_value=91), \
+             patch.object(A.os,'close') as close, patch.object(A.time,'sleep'), \
+             patch.object(A.os,'write',side_effect=lambda fd,data:packets.append(data) or len(data)):
+            A.native_touch('/dev/input/event9',284,500,284,250)
+        verify.assert_called_once_with('/dev/input/event9');close.assert_called_once_with(91)
+        event=A.struct.Struct('@llHHi')
+        frames=[[row[2:] for row in event.iter_unpack(packet)] for packet in packets]
+        self.assertEqual(len(frames),22)
+        self.assertTrue(all(frame[-1]==(0,0,0) for frame in frames))
+        self.assertIn((3,57,7),frames[0]);self.assertIn((1,330,1),frames[0])
+        self.assertIn((3,54,250*2400//1232),frames[-2])
+        self.assertEqual(frames[-1],[(3,57,-1),(1,330,0),(0,0,0)])
+
+    def test_native_failure_releases_and_closes(self):
+        writes=[]
+        def write(fd,data):
+            writes.append(data)
+            if len(writes)==2:raise OSError('injected write failure')
+            return len(data)
+        with patch.object(A,'verify_device'), patch.object(A.os,'open',return_value=91), \
+             patch.object(A.os,'close') as close, patch.object(A.time,'sleep'), \
+             patch.object(A.os,'write',side_effect=write):
+            with self.assertRaises(OSError):A.native_touch('/dev/input/event9',284,500,284,250)
+        close.assert_called_once_with(91)
+        self.assertEqual(list(A.struct.iter_unpack('@llHHi',writes[-1]))[-2][2:],(1,330,0))
+
+    def test_native_refuses_invalid_coordinates_before_open(self):
+        with patch.object(A,'verify_device'),patch.object(A.os,'open') as opened:
+            for point in ((-1,20),(568,20),(20,1232)):
+                with self.assertRaises(ValueError):A.native_touch('/dev/input/event9',*point)
+            opened.assert_not_called()
 if __name__=='__main__':unittest.main()

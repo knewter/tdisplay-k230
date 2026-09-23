@@ -78,7 +78,7 @@ These are artifact identities, not an assertion that either is installed.
 ## Coordinator board command
 
 After reserving the board/UART, import the declared closures and copy the two
-Python tools and existing `tools/inject-tap.sh` into a root-owned, non-writable
+Python tools into a root-owned, non-writable
 by other users `/run/card-tools/`. Keep the two Python tools together. The
 files themselves must be root-owned; when transferring a host-created tar
 archive, extract with `tar --no-same-owner` as root and verify the reviewed
@@ -107,7 +107,7 @@ recovery. Then execute:
 
 ```sh
 "$card_python" /run/card-tools/card-shell-acceptance.py --execute \
-  --provenance injected-touch --inject-script /run/card-tools/inject-tap.sh \
+  --provenance injected-touch \
   --output /run/card-evidence/acceptance
 ```
 
@@ -135,12 +135,22 @@ subsurfaces, measures one-card and two-card runs with the same mapped apps in
 baseline/active/restored phases, then exercises marked private/unavailable
 states, upward graceful close, explicit client refusal, separate compositor
 timeout, accepted source exit, and persistent normal control routes. Gestures
-call the existing `inject-tap.sh` against the verified virtual device. No
+use single-process native Linux input-event writes against the verified virtual
+device, with one SYN packet per step and absolute 10 ms deadlines. Actual
+compositor input timestamps, not requested delays, determine cadence. The
+optional `--inject-script` retains the legacy process-per-event helper only
+for reproducing earlier runs; it is unsuitable for gesture timing. No
 headless injection hook is used. Privacy marks and fixture launch use normal
 Sway IPC; user interactions use native uinput routing.
 
 Captured names cover live cards, mid-drag, expansion, placeholders, close
 states, Apps, Help/Back, Terminal, Monitor, Windows/Home, Keyboard, System/Back.
+The two-card liveness check holds the deck halfway between cards so both
+parent and child surfaces are actually visible; fully offscreen surfaces may
+correctly stop receiving frame callbacks. The hold is not a motion-cadence
+sample.
+Control-route taps allow 1.5 seconds for startup/transition before the next
+action; these waits are outside the timed drag and are not latency proof.
 Coordinates are for the reviewed native scale-one normal config. The routine
 never invokes Reboot or Power off. An observation failure is retained even if
 an independent recovery button subsequently works. Client counters and close

@@ -1,0 +1,5 @@
+Source package: /nix/store/ii5g7635wldnk7jsrfp18ism634w5y70-k230-card-shell
+Parser command: python3 tools/card-shell-benchmark.py --board --input telemetry.log --manifest manifest.json --output pixman.json
+Exit: 2
+card-shell-benchmark: input precedes session start
+No accepted benchmark report was generated; raw telemetry is unchanged.

@@ -141,13 +141,12 @@ void card_bench_phase(bool active, size_t cards) {
 		return;
 	if (active && !bench.header_sent) {
 		bench.header_sent = true;
-		uint64_t now = stamp(CLOCK_MONOTONIC);
 		sway_log(SWAY_INFO,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=session t_ns=%" PRIu64
 				 " clock=monotonic backend=%s renderer=pixman width=%d height=%d "
 				 "output_format=%s "
 				 "input=%s cards=%zu",
-				 bench.run, now, bench.backend, bench.output->width, bench.output->height,
+				 bench.run, bench.run, bench.backend, bench.output->width, bench.output->height,
 				 bench.format, bench.input, cards);
 	}
 	if (active)

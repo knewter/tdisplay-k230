@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "environment": "board",
+  "board_model": "LILYGO T-Display-K230",
+  "ownership": "coordinator-reserved",
+  "package_store_path": "/nix/store/ii5g7635wldnk7jsrfp18ism634w5y70-k230-card-shell",
+  "source_revision": "935e02155cac7374de10b5db6e642d9479c500b3",
+  "evidence_class": "board-injected",
+  "collected_at": "2026-09-23T15:48:24.666517+00:00"
+}

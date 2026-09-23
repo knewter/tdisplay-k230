@@ -2,6 +2,7 @@
 """Plan, execute, or collect product card acceptance. Execution uses verified uinput, never test-touch."""
 from __future__ import annotations
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import datetime as dt
 import hashlib
 import importlib.util
@@ -30,7 +31,7 @@ def plan():
             'provenance':'injected-touch','panel_requested':[568,1232],'renderer_requested':'pixman',
             'format_requested':'RGB565','steps':list(CAPTURES),
             'benchmark_workloads':[1,2],'baseline_and_restored_seconds':3.2,
-            'injection':'existing inject-tap.sh via a verified virtual input device',
+            'injection':'single-process native input_event writes to a verified virtual input device',
             'physical_touch':'UNVERIFIED','visual_acceptance':'requires captured board artifacts and separate review'}
 
 
@@ -42,6 +43,39 @@ def verify_device(device, sysroot=Path('/sys')):
         raise RuntimeError('input device is not the distinctly named injected fixture')
     if not str(path.resolve()).startswith(str(sysroot/'devices/virtual/input')+'/'):
         raise RuntimeError('refusing injection into a non-virtual input device')
+
+
+def native_touch(device, x, y, x2=None, y2=None, held=None):
+    """Write Linux input_event packets; kernel timestamps remain authoritative.
+
+    One write per SYN frame avoids starting five evemu processes per movement.
+    Absolute deadlines avoid accumulating process/sleep overhead. This is still
+    software input, not physical touch or a guaranteed delivery rate.
+    """
+    verify_device(device)
+    points=[(x,y)] if x2 is None else [(x,y),(x2,y2)]
+    if any(not (0<=px<568 and 0<=py<1232) for px,py in points):
+        raise ValueError('touch coordinates outside native panel')
+    event=struct.Struct('@llHHi')
+    def position(px,py):
+        dx=px*1024//568;dy=py*2400//1232
+        return [(3,53,dx),(3,54,dy),(3,0,dx),(3,1,dy)]
+    fd=os.open(device,os.O_WRONLY|os.O_CLOEXEC)
+    def frame(events):
+        packet=b''.join(event.pack(0,0,*values) for values in [*events,(0,0,0)])
+        if os.write(fd,packet)!=len(packet):raise OSError('short input-event write')
+    try:
+        frame([(3,47,0),(3,57,7),(3,48,3),(1,330,1),*position(x,y)])
+        start=time.monotonic()
+        if x2 is None:time.sleep(.08)
+        else:
+            for i in range(1,21):
+                time.sleep(max(0,start+i*.01-time.monotonic()))
+                frame(position(x+(x2-x)*i//20,y+(y2-y)*i//20))
+        if held:held()
+    finally:
+        try:frame([(3,57,-1),(1,330,0)])
+        finally:os.close(fd)
 
 
 CLIENT_EVENTS={'start','commit','child_commit','configure','close_requested','close_refused','close_accepted',
@@ -131,7 +165,16 @@ class Acceptance:
         self.records.append({'capture':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
                              'status':'CAPTURED_REQUIRES_VISUAL_REVIEW','monotonic_ns':time.monotonic_ns()})
 
-    def inject(self,x,y,x2=None,y2=None,capture=None):
+    def inject(self,x,y,x2=None,y2=None,capture=None,settle=1.5,held=None):
+        if self.injector is None:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future=pool.submit(native_touch,self.state['device'],x,y,x2,y2,held)
+                if capture:
+                    time.sleep(.1);self.capture(capture)
+                future.result(timeout=20)
+            time.sleep(settle)
+            return
+        if held:raise RuntimeError('legacy injector cannot prove held live surfaces')
         args=[self.state['tools']['sh'],str(self.injector),self.state['device'],str(x),str(y)]
         if x2 is not None:args.extend([str(x2),str(y2)])
         process=subprocess.Popen(args,env=self.environment,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -141,7 +184,7 @@ class Acceptance:
             if process.wait(timeout=20):raise RuntimeError('uinput injection failed')
         finally:
             if process.poll() is None:process.kill();process.wait()
-        time.sleep(.3)
+        time.sleep(settle)
 
     def client_events(self,name):
         path=self.session/('client-'+name+'.jsonl')
@@ -163,14 +206,21 @@ class Acceptance:
     def benchmark(self,count):
         self.ipc('card_shell benchmark injected');time.sleep(3.2)
         self.inject(284,1210,284,1090)
-        self.capture('one-live' if count==1 else 'two-live')
-        for name in ('one',) if count==1 else ('one','two'):
-            before=self.frames(name)
-            self.check('live-root-and-child-'+str(count)+'-'+name,
-                       self.wait(lambda:all(b>a for a,b in zip(before,self.frames(name))),2.5))
+        def live():
+            # Halfway between cards exposes both parent/child surfaces. Merely
+            # peeking an adjacent border does not make its client visible.
+            names=('one',) if count==1 else ('one','two')
+            before={name:self.frames(name) for name in names}
+            for name in names:
+                self.check('live-root-and-child-'+str(count)+'-'+name,
+                           self.wait(lambda:all(b>a for a,b in zip(before[name],self.frames(name))),2.5))
+            self.capture('one-live' if count==1 else 'two-live')
+        if count==1:live()
+        else:self.inject(284,450,114,450,held=live,settle=.3)
+        if count==2:self.inject(100,1200,settle=.3)
         for index in range(6):
             start,end=(384,184) if index%2==0 else (184,384)
-            self.inject(start,450,end,450,capture='during-drag' if count==2 and index==0 else None)
+            self.inject(start,450,end,450,capture='during-drag' if count==2 and index==0 else None,settle=.3)
         self.inject(284,450)
         if count==2:self.capture('expanded')
         time.sleep(3.2);self.ipc('card_shell benchmark-stop')
@@ -208,6 +258,17 @@ class Acceptance:
         self.inject(284,1200);self.inject(440,1200)
         self.check('accepted-close-source-exits',self.wait(lambda:all(n['app_id']!='k230.card.two' for n in self.apps())))
         self.capture('close-exit');self.inject(480,90);self.capture('cards-back')
+        # End our deliberately close-refusing fixture before normal controls.
+        # Otherwise its floating window can obscure a correctly focused tiled
+        # terminal. Verify both executable and owner before terminating it.
+        for node in self.apps():
+            if node['app_id']!='k230.card.one':continue
+            process=Path('/proc')/str(node['pid'])
+            if process.stat().st_uid!=self.account.pw_uid or (process/'exe').resolve()!=Path(self.state['client']).resolve():
+                raise RuntimeError('refusing cleanup of an unrecognized fixture process')
+            os.kill(node['pid'],signal.SIGTERM)
+        if not self.wait(lambda:all(n['app_id']!='k230.card.one' for n in self.apps())):
+            raise RuntimeError('refusing fixture remained over normal controls')
         # Existing controls are exercised by panel-coordinate uinput only.
         self.inject(120,28);self.capture('apps');self.inject(284,1000);self.capture('help')
         self.inject(284,1165);self.capture('help-back');self.inject(284,300)
@@ -301,7 +362,7 @@ def execute(state,runtime,injector,output):
     acceptance=None
     try:
         verify_device(state.get('device'))
-        if injector.is_symlink() or injector.stat().st_uid!=0 or injector.stat().st_mode & 0o022:
+        if injector is not None and (injector.is_symlink() or injector.stat().st_uid!=0 or injector.stat().st_mode & 0o022):
             raise RuntimeError('injector must be a reviewed root-owned script without group/other write access')
         acceptance=Acceptance(state,runtime,injector,output)
         try:acceptance.run()
@@ -320,7 +381,7 @@ def main(argv=None):
     modes.add_argument('--prepare',action='store_true')
     parser.add_argument('--provenance',choices=['injected-touch'],default='injected-touch')
     parser.add_argument('--runtime',type=Path,default=Path('/run/k230-card-shell'))
-    parser.add_argument('--inject-script',type=Path,default=HERE/'inject-tap.sh')
+    parser.add_argument('--inject-script',type=Path,help='optional legacy process-per-event injector (not suitable for gesture timing)')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args(argv)
     try:

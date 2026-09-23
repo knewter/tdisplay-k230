@@ -1,0 +1,13 @@
+{
+  "evidence_class": "board-injected preparation; no acceptance",
+  "attempts": [
+    {
+      "reason": "injector root ownership check refused host-owned tar member",
+      "correction": "reviewed hashes and root ownership; subsequent extraction uses --no-same-owner"
+    },
+    {
+      "reason": "runtime for_window command rejected due IPC comma splitting",
+      "correction": "14a60a9 installs restricted fixture rule in startup config"
+    }
+  ]
+}

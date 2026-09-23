@@ -1031,6 +1031,27 @@ DATA b3f3a62fd1b4d479b02a588bec7a91e924bd134cbf9a23cf31f45cf6bcee0aa7  docs/evid
 DATA 980450a82edfe5e1a218767be6329d55d4f118675a4e2dd5bb588ed24f95137b  docs/evidence/vglite-scene-board/diagnostic/scene-later.png
 DATA c0b5297def4c6933b592be976b8f75fdf950bb20a8ad2ff1b998d79d97857ddd  docs/evidence/vglite-scene-board/initial/scene-first.png
 DATA 4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457  docs/evidence/vglite-scene-board/initial/scene-later.png
+DATA bbfee295cb830d6eeb54ff3ae5df0161d224ce74c2b7133a3671a70bd7942784  docs/evidence/card-shell/board-first-trial/apps.png
+DATA 5de4285d05627ab6acc973d86a98cc12d0e992818adfd4f97df41f803450b212  docs/evidence/card-shell/board-first-trial/cards-back.png
+DATA 41b120bb9cc9685b22d8d58881dc259dcb874d424cd95113aafdffdd995617a3  docs/evidence/card-shell/board-first-trial/close-exit.png
+DATA a35c90014131cd838fdfadeed323c55c38a3c5f5f3ee5b3a4b4764324404b098  docs/evidence/card-shell/board-first-trial/close-timeout.png
+DATA f97d20b16871565dbf99789965849649af1767dd45aa14172ee6dc7551db0e96  docs/evidence/card-shell/board-first-trial/closing.png
+DATA a49bf1b809ce5c4030308ed8b721a4e78601d3aa94d4373daeb24a8c8b388071  docs/evidence/card-shell/board-first-trial/during-drag.png
+DATA 368209ce1658ea0b941b3836bd445a3f075cb8491ba970184a92dd90b90383f0  docs/evidence/card-shell/board-first-trial/expanded.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/card-shell/board-first-trial/help-back.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/card-shell/board-first-trial/help.png
+DATA be41861755173bddedd3d05b001c86d9c1ee26a576c37de93f35dec7a094cbfc  docs/evidence/card-shell/board-first-trial/home.png
+DATA 41ca39ab8dee0e58cffd6c5ef0f78ce3627040b464a3aca05c929b579f843a38  docs/evidence/card-shell/board-first-trial/keyboard.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/card-shell/board-first-trial/monitor.png
+DATA a287815a1ef46c57345d5491451f154e6b97dea5897cfac2f261bb66759e18f7  docs/evidence/card-shell/board-first-trial/normal.png
+DATA 4741c4e54be909b4b4f3935d3ea9785f5221a2468e06bc522b1cb6c58b6f721d  docs/evidence/card-shell/board-first-trial/one-live.png
+DATA 9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d  docs/evidence/card-shell/board-first-trial/private.png
+DATA e6c7b02ce60d06dc6ab3a93f9e3815c3c38c5853c87cb2e28acb76b2f480ae08  docs/evidence/card-shell/board-first-trial/system-back.png
+DATA 2655a66f615b47177559b60d2d7158281e257c65d57683a55d4f9c4ae5342e71  docs/evidence/card-shell/board-first-trial/system.png
+DATA 5036a2e6526606ff1d08ca9238de11afe1fe9a9456992770a83a646f0eca63f7  docs/evidence/card-shell/board-first-trial/terminal.png
+DATA acff27e72f64374414f5df4e99d07b67021352cc1c7847d8cf54370a17774e73  docs/evidence/card-shell/board-first-trial/two-live.png
+DATA 5a5ea9a36814f394bec4137494059f71a9f4106c77bc3a69f95351683d7cb4c7  docs/evidence/card-shell/board-first-trial/unavailable.png
+DATA ecd7c8e4a8d937dfbe107b9b620b83bdf4564602dd50ec28c8928a72b31fa99b  docs/evidence/card-shell/board-first-trial/windows.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1275,3 +1296,10 @@ Commands and interpretation: `docs/evidence/vglite-scene-board/README.md`.
 | `docs/evidence/vglite-scene-board/diagnostic/scene-later.png` | 4896 | DATA | `980450a82edfe5e1a218767be6329d55d4f118675a4e2dd5bb588ed24f95137b` |
 | `docs/evidence/vglite-scene-board/initial/scene-first.png` | 4887 | DATA | `c0b5297def4c6933b592be976b8f75fdf950bb20a8ad2ff1b998d79d97857ddd` |
 | `docs/evidence/vglite-scene-board/initial/scene-later.png` | 4894 | DATA | `4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457` |
+
+### Product card first board trial (not accepted)
+
+Native captures of synthetic app surfaces, privacy placeholders and shell
+controls from a temporary Pixman session. These are diagnostic DATA, not
+firmware or an accepted feature demo. Failed assertions, parser rejection,
+source artifact, and limits: `docs/evidence/card-shell/board-first-trial/README.md`.
