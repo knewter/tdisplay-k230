@@ -60,6 +60,11 @@ jobs:
       - name: Check recoverable RVV boot protocol
         run: python3 tests/test_rvv_board_boot.py
 
+      - name: Check paired card trial controls and evidence
+        run: |
+          python3 tests/test_card_shell_board_tools.py
+          python3 tests/test_card_shell_rvv_benchmark.py
+
       - name: Check booted-card-smoke proof protocol
         run: python3 tests/test_qemu_card_shell_smoke.py
 
