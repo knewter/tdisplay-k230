@@ -49,3 +49,10 @@ The [context probe](context-probe/README.md) now has passing full Linux guest
 checks at two vector lengths and a deliberate corruption control. The same
 compiled probe safely skips on the unchanged physical board. These validate
 the diagnostic and fallback; they do not verify the trial kernel on hardware.
+
+
+`default-identity.json` verifies the trial branch's ordinary system derivation
+still produces the exact `/run/current-system` store path observed on the
+physical board. The vector additions are separate package outputs; the ordinary
+image has not acquired either the trial kernel or the probe. This identity check
+is not verification of the optional kernel's full build or boot.
