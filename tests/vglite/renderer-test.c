@@ -48,6 +48,8 @@ static struct command queue[128];
 static size_t queued;
 
 static char decision_log[1024], operation_log[1024];
+static char cost_log[2048];
+static unsigned cost_logs;
 static unsigned attempt_logs;
 void _wlr_log(enum wlr_log_importance verbosity, const char *fmt, ...) {
 	(void)verbosity;
@@ -60,6 +62,8 @@ void _wlr_log(enum wlr_log_importance verbosity, const char *fmt, ...) {
 	}
 	const char *operation = strstr(message, "VG-Lite operation ");
 	if (operation) { assert(strlen(operation) < sizeof(operation_log)); strcpy(operation_log, operation); }
+	const char *cost = strstr(message, "VG-Lite cost ");
+	if (cost) { assert(strlen(cost) < sizeof(cost_log)); strcpy(cost_log, cost); cost_logs++; }
 }
 void wlr_renderer_init(struct wlr_renderer *r, const struct wlr_renderer_impl *impl, uint32_t caps) { r->WLR_PRIVATE.impl = impl; r->render_buffer_caps = caps; }
 struct wlr_buffer *wlr_buffer_lock(struct wlr_buffer *b) { b->n_locks++; return b; }
@@ -232,6 +236,25 @@ static void comparison(bool gpu, bool crop, bool alpha, bool partial_clip, bool 
 	if(gpu && !alpha && !partial_clip && !partial_damage) assert(gpu_commands==2 && gpu_finishes==1 && gpu_frees==1);
 	else assert(gpu_commands==0);
 	pixman_region32_fini(&clip); pixman_region32_fini(&full); wlr_renderer_destroy(r); buffer_finish(&src); buffer_finish(&a); buffer_finish(&b);
+}
+static void profile_reporting(void) {
+	const char *disabled[] = {"0", "01", "true"};
+	for(size_t i=0;i<sizeof(disabled)/sizeof(disabled[0]);i++) {
+		setenv("K230_VGLITE_PROFILE",disabled[i],1); cost_logs=0;
+		comparison(true,false,false,false,false,false); assert(cost_logs==0);
+	}
+	setenv("K230_VGLITE_PROFILE","1",1);
+	for(int gpu=0;gpu<2;gpu++) {
+		cost_logs=0; comparison(gpu,false,false,false,false,false); assert(cost_logs==1);
+		assert(strstr(cost_log,gpu ? "result=gpu ok=1" : "result=pixman ok=1"));
+		uint64_t wall=0,cpu=0,snapshot=0;
+		assert(sscanf(strstr(cost_log,"total_wall_ns="),"total_wall_ns=%" SCNu64 " total_cpu_ns=%" SCNu64,&wall,&cpu)==2);
+		assert(sscanf(strstr(cost_log,"snapshot_cpu_ns="),"snapshot_cpu_ns=%" SCNu64,&snapshot)==1);
+		assert(wall>0 && cpu>0 && snapshot>0 && snapshot<=cpu);
+		if(gpu) assert(strstr(cost_log,"replay_wall_ns=0 replay_cpu_ns=0"));
+		else assert(strstr(cost_log,"init_wall_ns=0 init_cpu_ns=0"));
+	}
+	unsetenv("K230_VGLITE_PROFILE");
 }
 static void failures(void) {
 	for(int kind=0;kind<7;kind++) {
@@ -492,6 +515,8 @@ static void denied_broker(void) {
 	buffer_finish(&b); reset_gpu();
 }
 int main(void) {
+	unsetenv("K230_VGLITE_PROFILE");
+	profile_reporting();
 	for(int i=0;i<7;i++) clipped_scene(i);
 	pid_t clipped_child=fork(); assert(clipped_child>=0);
 	if(!clipped_child) { clipped_scene(7); _exit(99); }
