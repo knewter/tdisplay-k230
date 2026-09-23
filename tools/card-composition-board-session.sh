@@ -127,7 +127,7 @@ CONFIG
           --setenv="XDG_RUNTIME_DIR=$runtime/session" --setenv=XDG_SEAT=seat0 \
           --setenv=LIBSEAT_BACKEND=seatd --setenv=WLR_RENDERER=pixman \
           --setenv="SWAYSOCK=$runtime/session/sway-ipc.sock" \
-          "$probe" --sway --config "$config"
+          "$probe" --sway --verbose --config "$config"
         invocation=$(systemctl show "$unit" --property=InvocationID --value)
         [[ $invocation =~ ^[a-f0-9]{32}$ ]]
         printf '%s\n' "$invocation" >"$runtime/invocation"
