@@ -228,6 +228,24 @@ class VideoSessionTest(unittest.TestCase):
                 unrelated.terminate()
                 unrelated.wait(timeout=3)
 
+    def test_stop_during_controller_startup_prevents_player_launch(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp); player = self.fake_player(root, "exit 0\n")
+            env = self.env(root, player, FAKE_ARGS=str(root / "args"), K230_VIDEO_TEST_START_DELAY="1")
+            process = subprocess.Popen(["bash", str(SCRIPT), "run"], env=env)
+            try:
+                for _ in range(30):
+                    if (root / "video.pid").exists(): break
+                    time.sleep(0.02)
+                subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
+                process.wait(timeout=5)
+                self.assertFalse((root / "args").exists())
+                self.assertFalse((root / "video.pid").exists())
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
+                    process.wait(timeout=5)
+
     def test_hup_controller_kills_group_descendant(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)

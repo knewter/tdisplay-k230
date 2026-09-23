@@ -23,11 +23,13 @@ def starttime(pid):
 def owned_state(data):
     if not isinstance(data, dict): return False
     fields = ('uid', 'controller', 'controller_start', 'child', 'child_start')
-    pid_fields = ('controller', 'controller_start', 'child', 'child_start')
+    pid_fields = ('controller', 'controller_start')
     if any(not isinstance(data.get(k), int) or data[k] <= 0 for k in pid_fields): return False
+    if not isinstance(data.get('child'), int) or not isinstance(data.get('child_start'), int): return False
+    if data['child'] < 0 or data['child_start'] < 0: return False
     if not isinstance(data.get('uid'), int) or data['uid'] < 0: return False
     return (data['uid'] == UID and data['controller_start'] == starttime(data['controller'])
-            and data['child_start'] == starttime(data['child']))
+            and (data['child'] == 0 or data['child_start'] == starttime(data['child'])))
 
 
 def read_state():
@@ -45,6 +47,12 @@ def write_state(child):
     temp.write_text(json.dumps(data) + '\n')
     os.chmod(temp, 0o600)
     os.replace(temp, STATE)
+
+def write_starting():
+    data = {'uid': UID, 'controller': os.getpid(), 'controller_start': starttime(os.getpid()),
+            'child': 0, 'child_start': 0}
+    temp = STATE.with_name(STATE.name + f'.{os.getpid()}.tmp')
+    temp.write_text(json.dumps(data) + '\n'); os.chmod(temp, 0o600); os.replace(temp, STATE)
 
 
 def kill_group(proc, sig):
@@ -155,12 +163,12 @@ class Session:
             if hasattr(output, 'close'): output.close()
             try: self.socket.unlink()
             except FileNotFoundError: pass
-            try:
-                if STATE.exists():
-                    state = json.loads(STATE.read_text())
-                    if isinstance(state, dict) and state.get('controller') == os.getpid(): STATE.unlink()
-            except (OSError, ValueError, TypeError): pass
             self.child = None
+            if STATE.exists():
+                try:
+                    data = json.loads(STATE.read_text())
+                    if isinstance(data, dict) and data.get('controller') == os.getpid(): write_starting()
+                except (OSError, ValueError, TypeError): pass
 
     def run(self):
         RUNTIME.mkdir(parents=True, exist_ok=True); os.umask(0o077)
@@ -171,10 +179,13 @@ class Session:
         os.chmod(LOCK, 0o600)
         try: fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError: print('video is already starting or running', file=sys.stderr); return 1
-        source, self.private_path = validate_playlist(self.explicit)
         old = [signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT)]
         for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT): signal.signal(s, self.signal)
+        write_starting()
         try:
+            if os.environ.get('K230_VIDEO_TEST_START_DELAY'):
+                time.sleep(float(os.environ['K230_VIDEO_TEST_START_DELAY']))
+            source, self.private_path = validate_playlist(self.explicit)
             if self.mode == 'mvx' and self.private_path is not None:
                 raise RuntimeError('MVX mode is limited to the public demo')
             if self.cancelled: return 143
@@ -188,6 +199,9 @@ class Session:
                 try: self.private_path.unlink()
                 except FileNotFoundError: pass
             for s, old_handler in zip((signal.SIGTERM, signal.SIGHUP, signal.SIGINT), old): signal.signal(s, old_handler)
+            try:
+                if STATE.exists() and json.loads(STATE.read_text()).get('controller') == os.getpid(): STATE.unlink()
+            except (OSError, ValueError, TypeError): pass
             self.lock.close()
 
 
@@ -200,6 +214,11 @@ def stop():
         return 0
     try: os.kill(data['controller'], signal.SIGTERM)
     except ProcessLookupError: pass
+    end = time.monotonic() + 4
+    while time.monotonic() < end:
+        current = read_state()
+        if current is None or current.get('controller') != data['controller']: break
+        time.sleep(.05)
     return 0
 
 
