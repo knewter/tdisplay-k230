@@ -57,9 +57,9 @@ static struct {
 	bool initialized, active, preparing, injecting;
 	uint64_t gesture_seq;
 	enum cs_message chrome_message;
-	bool chrome_active;
-	int chrome_pressed;
-	double chrome_w, chrome_h, chrome_top, chrome_bottom;
+	bool chrome_active, chrome_valid;
+	int chrome_pressed, chrome_x, chrome_y;
+	double chrome_w, chrome_h, chrome_top, chrome_bottom, chrome_footer;
 	struct sway_output *output;
 	struct sway_seat *seat;
 	struct wl_listener output_destroy, seat_destroy;
@@ -409,21 +409,8 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int width, const
 	wlr_scene_node_set_position(&label->node, x + 8, y + 9);
 	return true;
 }
-static bool chrome(void) {
+static bool rebuild_chrome(void) {
 	struct cs_config *cfg = &shell.policy.config;
-	int pressed = shell.button_down ? shell.pressed_button : 0;
-	if (shell.chrome && shell.chrome_message == shell.policy.message &&
-		shell.chrome_active == shell.active && shell.chrome_pressed == pressed &&
-		shell.chrome_w == cfg->width && shell.chrome_h == cfg->height &&
-		shell.chrome_top == cfg->top_reserved && shell.chrome_bottom == cfg->bottom_reserved)
-		return true;
-	shell.chrome_message = shell.policy.message;
-	shell.chrome_active = shell.active;
-	shell.chrome_pressed = pressed;
-	shell.chrome_w = cfg->width;
-	shell.chrome_h = cfg->height;
-	shell.chrome_top = cfg->top_reserved;
-	shell.chrome_bottom = cfg->bottom_reserved;
 	if (shell.chrome)
 		wlr_scene_node_destroy(&shell.chrome->node);
 	shell.chrome = wlr_scene_tree_create(shell.ui);
@@ -456,6 +443,34 @@ static bool chrome(void) {
 				  shell.button_down && shell.pressed_button == 3) &&
 		   button(shell.chrome, x + 392, footer, 152, "Close",
 				  shell.button_down && shell.pressed_button == 4);
+}
+/* Only a complete tree is reusable. Layout and feedback changes invalidate it;
+ * card motion alone does not recreate labels or buttons. */
+static bool chrome(void) {
+	struct cs_config *cfg = &shell.policy.config;
+	int pressed = shell.button_down ? shell.pressed_button : 0;
+	if (shell.chrome_valid && shell.chrome && shell.chrome_message == shell.policy.message &&
+		shell.chrome_active == shell.active && shell.chrome_pressed == pressed &&
+		shell.chrome_x == shell.output->lx && shell.chrome_y == shell.output->ly &&
+		shell.chrome_w == cfg->width && shell.chrome_h == cfg->height &&
+		shell.chrome_top == cfg->top_reserved && shell.chrome_bottom == cfg->bottom_reserved &&
+		shell.chrome_footer == cfg->footer_height)
+		return true;
+	shell.chrome_valid = false;
+	if (!rebuild_chrome())
+		return false;
+	shell.chrome_message = shell.policy.message;
+	shell.chrome_active = shell.active;
+	shell.chrome_pressed = pressed;
+	shell.chrome_x = shell.output->lx;
+	shell.chrome_y = shell.output->ly;
+	shell.chrome_w = cfg->width;
+	shell.chrome_h = cfg->height;
+	shell.chrome_top = cfg->top_reserved;
+	shell.chrome_bottom = cfg->bottom_reserved;
+	shell.chrome_footer = cfg->footer_height;
+	shell.chrome_valid = true;
+	return true;
 }
 static bool sync_scene(void) {
 	if (!shell.active)
