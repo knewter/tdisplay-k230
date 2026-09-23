@@ -65,6 +65,14 @@
             }
           ];
         };
+        # Isolated board-kernel trial. Rebuild external modules and the initrd
+        # against the vector kernel; do not combine it with the normal modules.
+        k230-rvv-trial = self.nixosConfigurations.k230.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor self.packages.${buildSystem}.kernel-rvv-trial;
+          modules = [ ({ pkgs, ... }: {
+            environment.systemPackages = [ (pkgs.callPackage ./nix/rvv-context-probe.nix { }) ];
+          }) ];
+        };
         # The same board with the shell off: the minimal closure
         # system/nixos-config requires, kept evaluable so the shell's cost
         # can be measured as a delta against it.
@@ -127,7 +135,8 @@
         inherit bootSplashImage;
         drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
-        kernel-rvv-trial = pkgsCross.callPackage ./nix/kernel-rvv-trial.nix {
+        kernel-rvv-trial = import ./nix/kernel-rvv-trial.nix {
+          inherit (pkgsCross) applyPatches lib;
           kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
         };
 
