@@ -32,7 +32,7 @@
 ## 6. Review and integration
 
 - [x] 6.1 Run relevant launcher/player tests and `openspec validate the-shell-plays-network-video --strict`; verify every requirement has grounded evidence or an explicit `UNVERIFIED` marker.
-- [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify all committed screenshots, clips, logs, and any media test assets have provenance, attribution, hashes, and DATA inventory rows.
+- [x] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify all committed screenshots, clips, logs, and any media test assets have provenance, attribution, hashes, and DATA inventory rows.
 
 Initial completed tasks are grounded in `docs/evidence/big-buck-bunny/README.md`
 and its committed 270p/360p logs and CPU sample. These are temporary-probe
@@ -54,3 +54,5 @@ and lifecycle tests. They do not close the final-image board acceptance tasks.
 Tasks 2.1 and 3.4: `docs/evidence/network-video/installed-app/README.md` records catalog discovery, an injected Apps launch through Foot on the flashed image, 100 seconds of IPC/process observation with advancing playback, native/physical captures, and Back cleanup. Stop/Home/EOF/error/MVX/final regression remain separately open.
 
 Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction is distinct from the still-open focused real-finger gesture capture.
+
+Final evidence validation: `python3 scripts/build_site.py` passed (123 pages, 4,029,541 bytes); `python3 tools/blob-scan.py --no-vendor` accounted for all 295 committed binaries; strict validation passed all 25 active specs/changes.

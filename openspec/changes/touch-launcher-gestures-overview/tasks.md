@@ -30,7 +30,7 @@
 ## 6. Review and integration
 
 - [x] 6.1 Run `openspec validate touch-launcher-gestures-overview --strict` and verify every new requirement has evidence or an explicit `UNVERIFIED` marker.
-- [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify any evidence images/video have provenance, hashes, and DATA inventory rows.
+- [x] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify any evidence images/video have provenance, hashes, and DATA inventory rows.
 
 Task 1.3: `docs/evidence/launcher-gestures/integrated-injected/README.md` records the flashed-image matrix: 20 exact left/right pairs, no new application window, and all 41 settled transitions within 163 ms. This is injected input; final-glass acceptance remains open.
 
@@ -39,3 +39,5 @@ Task 4.1: the integrated-injected evidence includes 40 keyboard-hidden Apps tran
 Task 3.2: `docs/evidence/launcher-gestures/metadata-budget/README.md` records the production-client host ordering fixture plus an injected Monitor-to-Terminal selection on the board: launcher closed, Terminal focused, existing Foot/htop process sets unchanged. The same report records 20 keyboard-visible two-card overview refreshes using the separated metadata deadline; final-image and physical-finger acceptance remain distinct.
 
 Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction is distinct from the still-open focused real-finger gesture capture.
+
+Final evidence validation: `python3 scripts/build_site.py` passed (123 pages, 4,029,541 bytes); `python3 tools/blob-scan.py --no-vendor` accounted for all 295 committed binaries; strict validation passed all 25 active specs/changes.
