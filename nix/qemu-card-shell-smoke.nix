@@ -16,6 +16,17 @@ let
       --keyboard-helper ${../tests/card_virtual_keyboard.py} "$@"
   '';
 in {
+  # The observed guest reaches multi-user with /dev/console output, but its
+  # ttyS0 device unit never activates, so serial-getty cannot start. Bind this
+  # explicit fixture's login to the existing kernel console instead.
+  systemd.services.console-getty = {
+    enable = true;
+    wantedBy = [ "multi-user.target" ];
+  };
+  systemd.services."serial-getty@ttyS0".enable = false;
+  # The netboot installation profile otherwise selects the nixos login.
+  # Only the supervisor needs root; compositor and fixtures remain card-smoke.
+  services.getty.autologinUser = lib.mkForce "root";
   users.groups.card-smoke = { };
   users.users.card-smoke = { isSystemUser = true; group = "card-smoke"; };
   environment.systemPackages = [ guest ];

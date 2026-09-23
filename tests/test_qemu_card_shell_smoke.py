@@ -28,6 +28,15 @@ class SmokeProofTests(unittest.TestCase):
             with self.subTest(selected=selected), self.assertRaises(RuntimeError):
                 smoke.check_reports(self.lines(selected), 'fresh')
 
+    def test_actual_shell_mode_prefix_keeps_report_but_echo_does_not(self):
+        reports = self.reports()
+        lines = self.lines(reports)
+        lines[0] = '\x1b[?2004l'+lines[0]
+        self.assertEqual(smoke.check_reports(lines, 'fresh'), reports)
+        for prefix in ('echo ', '[root@nixos:~]# ', 'untrusted '):
+            with self.subTest(prefix=prefix), self.assertRaises(RuntimeError):
+                smoke.check_reports([prefix+line for line in lines], 'fresh')
+
     def test_requires_nonroot_riscv_complete_runtime(self):
         for field, value in [('uid', 0), ('machine', 'x86_64'), ('passed', []),
                              ('evidence_class', 'headless-user-emulation')]:

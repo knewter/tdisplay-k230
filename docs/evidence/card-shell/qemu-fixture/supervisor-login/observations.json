@@ -1,0 +1,17 @@
+{
+  "status": "FAIL",
+  "raw_serial_sha256": "4d8e68c25981dded23d229663a5ab63355d99733f10b159856804bab8ad0c3bd",
+  "raw_serial_bytes": 34336,
+  "selected_serial_lines": [
+    "[  OK  ] Started Console Getty.",
+    "nixos login: nixos (automatic login)",
+    "runuser: may not be used by non-root users",
+    "Failed to stop card-shell-smoke.service: Access denied as the requested operation requires interactive authentication. However, interactive authentication has not been enabled by the calling program.",
+    "K230_CARD_GUEST_DONE 61f65d985e4447e2abae66a8a013e050 71"
+  ],
+  "runtime_reports": 0,
+  "limits": [
+    "Console repair reached login; supervisor privilege failed before interactions.",
+    "Original transcript retained privately; no default-image or physical proof."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "status": "HOST_PARSER_FAIL",
+  "raw_serial_sha256": "7ff3a932f4b88e4b9b645eea0d7403fe38a6e5d7d16e3a3c5acba9133e84d3ad",
+  "raw_serial_bytes": 31822,
+  "selected_serial_lines": [
+    "\u001b[?2004lK230_CARD_GUEST_RESULT {\"compositor\": \"/nix/store/x95yrya49qds0qzrxfyqp000b01pggsp-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway\", \"compositor_pid\": 634, \"evidence_class\": \"qemu-system-guest-headless-injected\", \"kernel\": \"6.18.52\", \"machine\": \"riscv64\", \"passed\": [\"two-live-root-and-subsurface-clients\", \"deck-drag-expand\", \"keyboard-focus-return\", \"close-refusal-timeout\", \"graceful-close\", \"cancel-back-recovery\"], \"run_id\": \"83aa69a6dbdd4fa3be725687e26e7b48\", \"system_toplevel\": \"/nix/store/xbs0ksf2vnbxzhf7ky3y90jzbp2h3992-nixos-system-nixos-kexec-26.11.20260919.20b1ddd\", \"uid\": 999}",
+    "K230_CARD_GUEST_RESULT {\"compositor\": \"/nix/store/x95yrya49qds0qzrxfyqp000b01pggsp-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway\", \"compositor_pid\": 1167, \"evidence_class\": \"qemu-system-guest-headless-injected\", \"kernel\": \"6.18.52\", \"machine\": \"riscv64\", \"passed\": [\"two-live-root-and-subsurface-clients\", \"deck-drag-expand\", \"keyboard-focus-return\", \"close-refusal-timeout\", \"graceful-close\", \"cancel-back-recovery\"], \"run_id\": \"83aa69a6dbdd4fa3be725687e26e7b48-restart\", \"system_toplevel\": \"/nix/store/xbs0ksf2vnbxzhf7ky3y90jzbp2h3992-nixos-system-nixos-kexec-26.11.20260919.20b1ddd\", \"uid\": 999}",
+    "K230_CARD_GUEST_DONE 83aa69a6dbdd4fa3be725687e26e7b48 0"
+  ],
+  "runtime_reports": 2,
+  "error": "missing fresh guest results before/after service restart",
+  "cause": "First report begins with ESC[?2004l, the shell bracketed-paste disable sequence.",
+  "limits": [
+    "Both guest runs reported their assertions and teardown status zero, but the invoked host command exited 1.",
+    "No default-image or physical proof; a fresh corrected verifier run is required."
+  ]
+}

@@ -29,7 +29,7 @@ def main():
     if os.getuid() == 0:
         raise RuntimeError('guest clients must be unprivileged')
     runtime = Path('/run/card-shell-smoke')
-    env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='wayland-0')
+    env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='wayland-1')
     processes = []
     keyboard = None
     compositor_pid = None
@@ -84,7 +84,7 @@ def main():
         wait_for(lambda: len(apps()) == 2, 'two mapped guest clients')
         spec = importlib.util.spec_from_file_location('virtual_keyboard', args.keyboard_helper)
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-        keyboard = module.Keyboard(runtime/'wayland-0')
+        keyboard = module.Keyboard(runtime/'wayland-1')
         ipc('[app_id="k230.card.one"] focus')
         command('enter')
         command('test-touch down 1 284 450'); command('test-touch motion 1 114 450')
