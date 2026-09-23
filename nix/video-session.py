@@ -131,6 +131,8 @@ class Session:
         return args
 
     def run_once(self, mode, source):
+        if self.cancelled:
+            return 143, False
         try: self.socket.unlink()
         except FileNotFoundError: pass
         output = subprocess.DEVNULL if source.startswith('/') else open(LOG, 'ab', buffering=0)
@@ -207,7 +209,9 @@ class Session:
                 except FileNotFoundError: pass
             for s, old_handler in zip((signal.SIGTERM, signal.SIGHUP, signal.SIGINT), old): signal.signal(s, old_handler)
             try:
-                if STATE.exists() and json.loads(STATE.read_text()).get('controller') == os.getpid(): STATE.unlink()
+                if STATE.exists():
+                    state = json.loads(STATE.read_text())
+                    if isinstance(state, dict) and state.get('controller') == os.getpid(): STATE.unlink()
             except (OSError, ValueError, TypeError): pass
             self.lock.close()
 

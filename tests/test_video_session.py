@@ -141,9 +141,16 @@ class VideoSessionTest(unittest.TestCase):
             env = self.env(root, player, FAKE_ARGS=str(root / "args"), K230_VIDEO_TEST_FALLBACK_DELAY="1")
             process = subprocess.Popen(["bash", str(SCRIPT), "run-mvx"], env=env)
             try:
-                for _ in range(40):
-                    if (root / "args").exists(): break
-                    time.sleep(0.03)
+                reached_gap = False
+                for _ in range(80):
+                    try:
+                        state = json.loads((root / "video.pid").read_text())
+                        reached_gap = (root / "args").exists() and state["child"] == 0
+                    except (OSError, ValueError):
+                        pass
+                    if reached_gap: break
+                    time.sleep(0.01)
+                self.assertTrue(reached_gap, "must cancel after MVX exit, before software launch")
                 subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
                 process.wait(timeout=6)
                 self.assertEqual(len((root / "args").read_text().splitlines()), 1)
