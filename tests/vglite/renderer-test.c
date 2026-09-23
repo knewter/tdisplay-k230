@@ -46,7 +46,20 @@ struct command { vg_lite_buffer_t *source; vg_lite_rectangle_t rect; vg_lite_mat
 static struct command queue[128];
 static size_t queued;
 
-void _wlr_log(enum wlr_log_importance verbosity, const char *fmt, ...) { (void)verbosity; (void)fmt; }
+static char decision_log[1024], operation_log[1024];
+static unsigned attempt_logs;
+void _wlr_log(enum wlr_log_importance verbosity, const char *fmt, ...) {
+	(void)verbosity;
+	char message[2048]; va_list args; va_start(args, fmt);
+	vsnprintf(message, sizeof(message), fmt, args); va_end(args);
+	const char *decision = strstr(message, "VG-Lite decision ");
+	if (decision) {
+		assert(strlen(decision) < sizeof(decision_log)); strcpy(decision_log, decision);
+		if (strstr(decision, "result=attempt ")) attempt_logs++;
+	}
+	const char *operation = strstr(message, "VG-Lite operation ");
+	if (operation) { assert(strlen(operation) < sizeof(operation_log)); strcpy(operation_log, operation); }
+}
 void wlr_renderer_init(struct wlr_renderer *r, const struct wlr_renderer_impl *impl, uint32_t caps) { r->WLR_PRIVATE.impl = impl; r->render_buffer_caps = caps; }
 struct wlr_buffer *wlr_buffer_lock(struct wlr_buffer *b) { b->n_locks++; return b; }
 void wlr_buffer_unlock(struct wlr_buffer *b) { assert(b->n_locks); b->n_locks--; }
@@ -170,7 +183,7 @@ static void buffer_init(struct test_buffer *b, int w, int h, uint32_t format, bo
 }
 static void buffer_finish(struct test_buffer *b) { assert(!b->base.n_locks && !b->accessing); pixman_image_unref(b->pixman.image); free(b->data); }
 static void reset_gpu(void) {
-	assert(!queued); gpu_disabled=false; broker_attempted=false; broker_calls=0; unsetenv("K230_VGLITE_BROKER"); gpu_init_calls=gpu_commands=gpu_finishes=gpu_frees=gpu_closes=pixman_passes=0;
+	assert(!queued); gpu_disabled=false; broker_attempted=false; broker_calls=0; unsetenv("K230_VGLITE_BROKER"); attempt_logs=0; decision_log[0]=operation_log[0]=0; gpu_init_calls=gpu_commands=gpu_finishes=gpu_frees=gpu_closes=pixman_passes=0;
 	fail_init=fail_map=fail_allocate=fail_command=fail_finish=fail_alloc=fail_clip=0;
 	setenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE","1",1);
 }
@@ -227,6 +240,12 @@ static void failures(void) {
 		bool ok=submit(p);
 		if(kind<=2) { assert(!ok && pixman_passes==0); if(kind<2) assert(!gpu_commands); }
 		else assert(ok && pixman_passes==1 && !gpu_commands);
+		if(kind>=2 && kind<=4) {
+			assert(attempt_logs==1);
+			assert(strstr(decision_log,kind==2 ? "reason=gpu_clear " : kind==3 ? "reason=gpu_init " : "reason=target_map "));
+			char status_field[40]; snprintf(status_field,sizeof(status_field),"vg_status=%d",VG_LITE_GENERIC_IO);
+			assert(strstr(decision_log,status_field));
+		}
 		if(kind==2) { assert(gpu_disabled && gpu_finishes==1); p=begin(r,&b.base,NULL); add_rect(p,&bg); assert(submit(p)); assert(pixman_passes==1); }
 		pixman_region32_fini(&clip); wlr_renderer_destroy(r); buffer_finish(&b);
 	}
@@ -310,6 +329,42 @@ static void completion_quarantine(void) {
 	assert(gpu_disabled && b.base.n_locks==1 && b.accessing && gpu_finishes==1 && !gpu_frees && !gpu_closes && !pixman_passes && queued==2);
 	/* Child exits without reclaiming resources the GPU might still own. */
 }
+static void scene_default_diagnostics(void) {
+	/* Pinned types/scene/surface.c:290 supplies GAMMA22 + SRGB for ordinary
+	 * wl_surfaces. These are deliberately still rejected in this diagnostic
+	 * change: expose the actual gate before broadening the GPU contract. */
+	for (int kind=0; kind<5; kind++) {
+		reset_gpu(); struct test_buffer b,src; buffer_init(&b,8,8,DRM_FORMAT_RGB565,true);
+		buffer_init(&src,8,8,DRM_FORMAT_XRGB8888,false);
+		struct wlr_renderer *r=wlr_vglite_renderer_create();
+		struct wlr_texture *t=wlr_texture_from_buffer(r,&src.base);
+		struct wlr_render_pass *p=begin(r,&b.base,NULL);
+		struct wlr_render_rect_options clear={.color={.a=kind==3 ? 0 : 1}};
+		add_rect(p,&clear);
+		struct wlr_color_primaries srgb={.red={.640,.330},.green={.300,.600},.blue={.150,.060},.white={.3127,.3290}};
+		float luminance=1;
+		struct wlr_render_texture_options o={.texture=t,.dst_box={0,0,8,8},
+			.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22,.primaries=&srgb,
+			.luminance_multiplier=&luminance,.filter_mode=WLR_SCALE_FILTER_BILINEAR};
+		if (kind==1) o.transfer_function=0;
+		if (kind<2) add_texture(p,&o);
+		if (kind==4) b.attr.stride[0]=65;
+		assert(submit(p));
+		const char *reason=kind==0 ? "texture_transfer" : kind==1 ? "texture_primaries" :
+			kind==3 ? "rect_alpha" : kind==4 ? "target_attributes" : "eligible";
+		char expected[80]; snprintf(expected,sizeof(expected),"reason=%s ",reason);
+		assert(strstr(decision_log,expected));
+		assert(strstr(decision_log,"v=1 result="));
+		assert(strstr(decision_log,"target=8x8 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride="));
+		assert(attempt_logs==(kind==2 ? 1u : 0u));
+		if (kind<2) {
+			assert(strstr(decision_log,"op=1 ops=2 "));
+			assert(strstr(operation_log,"kind=texture alpha=1 opaque=1 "));
+			assert(strstr(operation_log,"primaries=1 luminance=1 encoding=0 range=0 "));
+		}
+		wlr_texture_destroy(t); wlr_renderer_destroy(r); buffer_finish(&src); buffer_finish(&b);
+	}
+}
 static void denied_broker(void) {
 	reset_gpu(); setenv("K230_VGLITE_BROKER", "/test/broker", 1);
 	struct test_buffer b; buffer_init(&b,8,8,DRM_FORMAT_RGB565,true);
@@ -322,6 +377,7 @@ static void denied_broker(void) {
 	buffer_finish(&b); reset_gpu();
 }
 int main(void) {
+	scene_default_diagnostics();
 	denied_broker();
 	comparison(true,false,false,false,false);
 	comparison(true,true,false,false,false);

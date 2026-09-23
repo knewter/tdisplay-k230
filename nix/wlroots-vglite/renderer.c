@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <drm_fourcc.h>
 #include <limits.h>
+#include <inttypes.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -46,6 +47,11 @@ struct vglite_pass {
 	struct vglite_op *ops;
 	size_t len, cap;
 	bool gpu_eligible, failed;
+	const char *reason;
+	size_t reason_op;
+	bool has_dmabuf;
+	int vg_status;
+	struct wlr_dmabuf_attributes target_attributes;
 };
 static const struct wlr_renderer_impl renderer_impl;
 static const struct wlr_texture_impl texture_impl;
@@ -75,6 +81,38 @@ static void add_op(struct vglite_pass *p, struct vglite_op *op) {
 	if (p->failed) finish_op(op);
 	else p->ops[p->len++] = *op;
 }
+static void reject_gpu(struct vglite_pass *p, const char *reason, size_t op) {
+	p->gpu_eligible = false;
+	if (!p->reason) { p->reason = reason; p->reason_op = op; }
+}
+static bool gpu_call(struct vglite_pass *p, vg_lite_error_t status, const char *reason, size_t op) {
+	if (status == VG_LITE_SUCCESS) return true;
+	if (!p->reason) p->vg_status = status;
+	reject_gpu(p, reason, op); return false;
+}
+/* Fixed schema, no process addresses, fd numbers, client names or content.
+ * op=-1 means a pass/target condition rather than an operation condition. */
+static void log_decision(struct vglite_pass *p, const char *result) {
+	struct wlr_dmabuf_attributes *a = &p->target_attributes;
+	wlr_log(WLR_DEBUG, "VG-Lite decision v=1 result=%s reason=%s op=%zd ops=%zu target=%dx%d dmabuf=%d format=0x%08" PRIx32 " modifier=0x%016" PRIx64 " planes=%d stride=%" PRIu32 " offset=%" PRIu32 " vg_status=%d",
+		result, p->reason ? p->reason : "eligible", p->reason_op == SIZE_MAX ? (ssize_t)-1 : (ssize_t)p->reason_op,
+		p->len, p->buffer->width, p->buffer->height, p->has_dmabuf,
+		a->format, a->modifier, a->n_planes, a->stride[0], a->offset[0], p->vg_status);
+	if (p->reason_op < p->len) {
+		struct vglite_op *op = &p->ops[p->reason_op];
+		if (op->kind == OP_TEXTURE) {
+			struct wlr_render_texture_options *t = &op->texture;
+			wlr_log(WLR_DEBUG, "VG-Lite operation v=1 op=%zu kind=texture alpha=%g opaque=%d blend=%d filter=%d transform=%d transfer=%d primaries=%d luminance=%g encoding=%d range=%d src=%g,%g,%g,%g dst=%d,%d,%d,%d clip_rects=%d",
+				p->reason_op, (double)op->alpha, op->opaque, t->blend_mode, t->filter_mode, t->transform,
+				t->transfer_function, op->has_primaries, (double)op->luminance, t->color_encoding, t->color_range,
+				t->src_box.x,t->src_box.y,t->src_box.width,t->src_box.height,
+				t->dst_box.x,t->dst_box.y,t->dst_box.width,t->dst_box.height,
+				op->has_clip ? pixman_region32_n_rects(&op->clip) : -1);
+		} else wlr_log(WLR_DEBUG, "VG-Lite operation v=1 op=%zu kind=rect alpha=%g blend=%d clip_rects=%d",
+			p->reason_op, (double)op->rect.color.a, op->rect.blend_mode,
+			op->has_clip ? pixman_region32_n_rects(&op->clip) : -1);
+	}
+}
 static bool valid_color(struct wlr_render_color c) {
 	return isfinite(c.a) && c.a >= 0 && c.a <= 1 &&
 		isfinite(c.r) && c.r >= 0 && c.r <= c.a &&
@@ -90,7 +128,7 @@ static void add_rect(struct wlr_render_pass *base, const struct wlr_render_rect_
 	if (!valid_color(o->color) || (o->blend_mode != WLR_RENDER_BLEND_MODE_NONE &&
 			o->blend_mode != WLR_RENDER_BLEND_MODE_PREMULTIPLIED)) p->failed = true;
 	/* Alpha rectangles remain Pixman until RGB565 blending is board-proved. */
-	if (o->color.a != 1) p->gpu_eligible = false;
+	if (o->color.a != 1) reject_gpu(p, "rect_alpha", p->len);
 	add_op(p, &op);
 }
 static void add_texture(struct wlr_render_pass *base, const struct wlr_render_texture_options *o) {
@@ -136,15 +174,19 @@ static void add_texture(struct wlr_render_pass *base, const struct wlr_render_te
 			box.x < 0 || box.y < 0 || box.width <= 0 || box.height <= 0 ||
 			box.x + box.width > width || box.y + box.height > height) p->failed = true;
 	}
-	if (!t->cpu_rgb || o->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
-		(o->filter_mode != WLR_SCALE_FILTER_NEAREST &&
-		 !(o->filter_mode == WLR_SCALE_FILTER_BILINEAR && op.texture.src_box.width == op.texture.dst_box.width &&
-		   op.texture.src_box.height == op.texture.dst_box.height)) || op.alpha != 1 ||
-		o->color_encoding != WLR_COLOR_ENCODING_NONE || o->color_range != WLR_COLOR_RANGE_NONE ||
-		o->transfer_function != 0 || o->primaries || op.luminance != 1)
-		p->gpu_eligible = false;
+	if (!t->cpu_rgb) reject_gpu(p, "texture_source", p->len);
+	if (o->transform != WL_OUTPUT_TRANSFORM_NORMAL) reject_gpu(p, "texture_transform", p->len);
+	if (o->filter_mode != WLR_SCALE_FILTER_NEAREST &&
+		!(o->filter_mode == WLR_SCALE_FILTER_BILINEAR && op.texture.src_box.width == op.texture.dst_box.width &&
+		  op.texture.src_box.height == op.texture.dst_box.height)) reject_gpu(p, "texture_filter", p->len);
+	if (op.alpha != 1) reject_gpu(p, "texture_alpha", p->len);
+	if (o->color_encoding != WLR_COLOR_ENCODING_NONE || o->color_range != WLR_COLOR_RANGE_NONE)
+		reject_gpu(p, "texture_encoding", p->len);
+	if (o->transfer_function != 0) reject_gpu(p, "texture_transfer", p->len);
+	if (o->primaries) reject_gpu(p, "texture_primaries", p->len);
+	if (op.luminance != 1) reject_gpu(p, "texture_luminance", p->len);
 	/* SRC_OVER on the RGB565 imported target still needs hardware comparison. */
-	if (!op.opaque && o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) p->gpu_eligible = false;
+	if (!op.opaque && o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) reject_gpu(p, "texture_blend", p->len);
 	add_op(p, &op);
 }
 static void replay(struct vglite_pass *p, struct wlr_render_pass *dst) {
@@ -200,15 +242,21 @@ static bool gpu_preflight(struct vglite_pass *p) {
 				(int64_t)d.x + d.width <= p->buffer->width && (int64_t)d.y + d.height <= p->buffer->height &&
 				fmod(d.width, s.width) == 0 && fmod(d.height, s.height) == 0;
 			pixman_box32_t full = {d.x, d.y, (int64_t)d.x + d.width, (int64_t)d.y + d.height};
-			if (ok && pixman_region32_contains_rectangle(&region, &full) != PIXMAN_REGION_IN) ok = false;
+			if (!ok) reject_gpu(p, "texture_geometry", i);
+			if (ok && pixman_region32_contains_rectangle(&region, &full) != PIXMAN_REGION_IN) {
+				ok = false; reject_gpu(p, "texture_clip", i);
+			}
 		}
 		/* Every eligible operation is an opaque replacement. Require a complete
 		 * redraw so the trial never relies on unproved target preservation. */
 		if (ok) ok = pixman_region32_union(&coverage, &coverage, &region);
 		pixman_region32_fini(&region);
+		if (!ok && !p->reason) reject_gpu(p, "region_allocation", i);
 	}
 	pixman_box32_t full = {0, 0, p->buffer->width, p->buffer->height};
-	ok = ok && pixman_region32_contains_rectangle(&coverage, &full) == PIXMAN_REGION_IN;
+	if (ok && pixman_region32_contains_rectangle(&coverage, &full) != PIXMAN_REGION_IN) {
+		ok = false; reject_gpu(p, "incomplete_coverage", SIZE_MAX);
+	}
 	pixman_region32_fini(&coverage); return ok;
 }
 /* Same C908 clean/invalidate sequence as the source-built VG-Lite package.
@@ -235,41 +283,49 @@ static void target_cache_to_gpu(void *memory, size_t bytes) {
 }
 enum gpu_result { GPU_FALLBACK, GPU_OK, GPU_FAILED };
 static enum gpu_result gpu_pass(struct vglite_pass *p) {
+	p->has_dmabuf = wlr_buffer_get_dmabuf(p->buffer, &p->target_attributes);
 	const char *allow = getenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE");
-	if (gpu_disabled || !p->gpu_eligible || !allow || strcmp(allow, "1") || !gpu_preflight(p)) return GPU_FALLBACK;
-	struct wlr_dmabuf_attributes a = {0};
-	if (!wlr_buffer_get_dmabuf(p->buffer, &a) || a.n_planes != 1 ||
+	if (gpu_disabled) { p->reason = "gpu_disabled"; p->reason_op = SIZE_MAX; return GPU_FALLBACK; }
+	if (!allow || strcmp(allow, "1")) { p->reason = "opt_in_disabled"; p->reason_op = SIZE_MAX; return GPU_FALLBACK; }
+	if (!p->gpu_eligible || !gpu_preflight(p)) return GPU_FALLBACK;
+	struct wlr_dmabuf_attributes a = p->target_attributes;
+	if (!p->has_dmabuf || a.n_planes != 1 ||
 		a.width != p->buffer->width || a.height != p->buffer->height || a.fd[0] < 0 ||
 		a.format != DRM_FORMAT_RGB565 || a.modifier != DRM_FORMAT_MOD_LINEAR || a.offset[0] != 0 ||
 		a.stride[0] < (uint32_t)p->buffer->width * 2 || a.stride[0] > INT_MAX || a.stride[0] % 64 ||
-		(uint64_t)a.stride[0] * p->buffer->height > INT_MAX) return GPU_FALLBACK;
+		(uint64_t)a.stride[0] * p->buffer->height > INT_MAX) {
+		reject_gpu(p, "target_attributes", SIZE_MAX); return GPU_FALLBACK;
+	}
 	vg_lite_buffer_t target = { .width = p->buffer->width, .height = p->buffer->height,
 		.stride = a.stride[0], .format = VG_LITE_BGR565 };
 	/* Keep every allocation alive until finish, including after an API error.
 	 * Source storage is padded to the SDK allocation stride; upload_buffer in
 	 * this SDK copies destination stride bytes per row, not the source stride. */
 	vg_lite_buffer_t *sources = calloc(p->len, sizeof(*sources));
-	if (!sources) return GPU_FALLBACK;
+	if (!sources) { reject_gpu(p, "source_allocation", SIZE_MAX); return GPU_FALLBACK; }
 	/* vg_lite_map requires a real CPU mapping even for a dma-buf. Obtain it
 	 * from the supplied wlroots buffer and keep that access alive through
 	 * completion; never open DRM or invent a placeholder address. */
 	uint32_t format; size_t stride;
 	if (!wlr_buffer_begin_data_ptr_access(p->buffer,
 			WLR_BUFFER_DATA_PTR_ACCESS_READ | WLR_BUFFER_DATA_PTR_ACCESS_WRITE,
-			&target.memory, &format, &stride)) { free(sources); return GPU_FALLBACK; }
+			&target.memory, &format, &stride)) { reject_gpu(p, "target_cpu_access", SIZE_MAX); free(sources); return GPU_FALLBACK; }
 	if (!target.memory || format != a.format || stride != a.stride[0]) {
+		reject_gpu(p, "target_cpu_layout", SIZE_MAX);
 		wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
 	}
+	log_decision(p, "attempt");
 	target_cache_to_gpu(target.memory, stride * target.height);
-	if (vg_lite_init(target.width, target.height) != VG_LITE_SUCCESS) {
+	if (!gpu_call(p, vg_lite_init(target.width, target.height), "gpu_init", SIZE_MAX)) {
 		gpu_disabled = true; wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
 	}
-	bool ok = vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]) == VG_LITE_SUCCESS;
+	bool ok = gpu_call(p, vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]), "target_map", SIZE_MAX);
 	bool started = false;
 	for (size_t i = 0; ok && i < p->len; i++) {
 		struct vglite_op *op = &p->ops[i];
 		pixman_region32_t region;
 		ok = op_region(op, p->buffer, &region);
+		if (!ok) reject_gpu(p, "region_allocation", i);
 		if (!ok || !pixman_region32_not_empty(&region)) { pixman_region32_fini(&region); continue; }
 		if (op->kind == OP_RECT) {
 			struct wlr_render_color c = op->rect.color;
@@ -278,16 +334,17 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 			int n; pixman_box32_t *boxes = pixman_region32_rectangles(&region, &n);
 			for (int j = 0; ok && j < n; j++) {
 				vg_lite_rectangle_t r = {boxes[j].x1, boxes[j].y1, boxes[j].x2 - boxes[j].x1, boxes[j].y2 - boxes[j].y1};
-				started = true; ok = vg_lite_clear(&target, &r, color) == VG_LITE_SUCCESS;
+				started = true; ok = gpu_call(p, vg_lite_clear(&target, &r, color), "gpu_clear", i);
 			}
 		} else {
 			vg_lite_buffer_t *s = &sources[i];
 			struct wlr_fbox src = op->texture.src_box; struct wlr_box dst = op->texture.dst_box;
 			s->width = src.width; s->height = src.height;
 			s->format = VG_LITE_RGBA8888;
-			ok = vg_lite_allocate(s) == VG_LITE_SUCCESS;
+			ok = gpu_call(p, vg_lite_allocate(s), "gpu_allocate", i);
 			if (ok) {
 				ok = s->memory && s->stride >= s->width * 4 && s->height == (int)src.height;
+				if (!ok) reject_gpu(p, "upload_layout", i);
 				if (ok) {
 					memset(s->memory, 0, (size_t)s->stride * s->height);
 					for (int y = 0; y < s->height; y++) memcpy((uint8_t *)s->memory + (size_t)y * s->stride,
@@ -300,13 +357,14 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 				 * local origin to dst, without scaling the destination translation. */
 				vg_lite_matrix_t m = {{{dst.width / src.width, 0, dst.x}, {0, dst.height / src.height, dst.y}, {0, 0, 1}}};
 				started = true;
-				ok = vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT) == VG_LITE_SUCCESS;
+				ok = gpu_call(p, vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "gpu_blit", i);
 			}
 		}
 		pixman_region32_fini(&region);
 	}
 	/* blit/clear may auto-submit as the command buffer fills, even on error. */
-	if (started && vg_lite_finish() != VG_LITE_SUCCESS) {
+	if (started && !gpu_call(p, vg_lite_finish(), "gpu_finish", SIZE_MAX)) {
+		log_decision(p, "failed");
 		gpu_disabled = true;
 		/* Deliberately quarantine the mapped target, source allocations and its
 		 * existing wlr_buffer lock and data access for process lifetime. Neither free, unmap nor
@@ -315,16 +373,18 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 		wlr_log(WLR_ERROR, "VG-Lite completion failed; target quarantined, GPU disabled; restart session to recover resources");
 		return GPU_FAILED;
 	}
-	for (size_t i = 0; i < p->len; i++) if (sources[i].handle && vg_lite_free(&sources[i]) != VG_LITE_SUCCESS) ok = false;
+	for (size_t i = 0; i < p->len; i++) if (sources[i].handle && !gpu_call(p, vg_lite_free(&sources[i]), "gpu_free", i)) ok = false;
 	free(sources);
-	if (target.handle && vg_lite_unmap(&target) != VG_LITE_SUCCESS) ok = false;
-	if (vg_lite_close() != VG_LITE_SUCCESS) ok = false;
+	if (target.handle && !gpu_call(p, vg_lite_unmap(&target), "target_unmap", SIZE_MAX)) ok = false;
+	if (!gpu_call(p, vg_lite_close(), "gpu_close", SIZE_MAX)) ok = false;
 	wlr_buffer_end_data_ptr_access(p->buffer);
 	if (!ok) {
+		if (started) log_decision(p, "failed");
 		gpu_disabled = true;
 		wlr_log(WLR_ERROR, "VG-Lite failure; GPU disabled, frame %s", started ? "discarded" : "replayed with Pixman");
 		return started ? GPU_FAILED : GPU_FALLBACK;
 	}
+	log_decision(p, "gpu");
 	wlr_log(WLR_DEBUG, "VG-Lite full frame submitted (%zu operations)", p->len);
 	return GPU_OK;
 }
@@ -336,6 +396,7 @@ static bool submit(struct wlr_render_pass *base) {
 		pthread_mutex_unlock(&gpu_lock);
 		if (result == GPU_OK) ok = true;
 		else if (result == GPU_FALLBACK) {
+			log_decision(p, "pixman");
 			struct wlr_render_pass *fallback = wlr_renderer_begin_buffer_pass(p->renderer->pixman, p->buffer, NULL);
 			if (fallback) { replay(p, fallback); ok = wlr_render_pass_submit(fallback); }
 			wlr_log(WLR_DEBUG, "VG-Lite full pass replayed with Pixman (%zu operations)", p->len);
@@ -352,7 +413,7 @@ static struct wlr_render_pass *begin(struct wlr_renderer *base, struct wlr_buffe
 		b->width <= 0 || b->height <= 0 || b->width > 16384 || b->height > 16384) return NULL;
 	struct vglite_pass *p = calloc(1, sizeof(*p)); if (!p) return NULL;
 	wlr_render_pass_init(&p->base, &pass_impl);
-	p->renderer = (struct vglite_renderer *)base; p->buffer = wlr_buffer_lock(b); p->gpu_eligible = true;
+	p->renderer = (struct vglite_renderer *)base; p->buffer = wlr_buffer_lock(b); p->gpu_eligible = true; p->reason_op = SIZE_MAX;
 	return &p->base;
 }
 static bool cpu_rgb_buffer(struct wlr_buffer *b) {
