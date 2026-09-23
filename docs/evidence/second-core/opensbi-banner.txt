@@ -1,0 +1,14 @@
+Filtered OpenSBI banner from the previously captured persistent-Wi-Fi reboot.
+Source SHA256: 894f20f15823a3668dd45333736715a9bdc6ad8da9866d1a1cb9ef17a20bab4d
+Only the explicit platform/domain/boot-hart whitelist is published.
+
+OpenSBI v1.4
+Platform Name             : LILYGO T-Display-K230
+Platform HART Count       : 1
+Platform IPI Device       : aclint-mswi
+Platform Timer Device     : aclint-mtimer @ 27000000Hz
+Platform HSM Device       : ---
+Domain0 Name              : root
+Domain0 HARTs             : 0*
+Boot HART ID              : 0
+Boot HART Base ISA        : rv64imafdcbvx

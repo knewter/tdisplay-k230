@@ -1,0 +1,31 @@
+CORE_SNAPSHOT_BEGIN
+second-core-readiness v1
+captured-utc=2026-09-23T02:53:15Z
+source-root=/
+cpu_possible=0
+cpu_present=0
+cpu_online=0
+cpu_offline=
+cpu-node=cpu@0
+cpu@0.reg=00:00:00:00
+
+cpu@0.status=<unreadable>
+cpu@0.isa=rv64imafdcv_zba_zbb_zbc_zbs_zicbom_zicbop_zicboz_svpbmt
+plic_interrupts_extended=00:00:00:03:00:00:00:0b:00:00:00:03:00:00:00:09
+
+timer_interrupts_extended=00:00:00:03:00:00:00:03:00:00:00:03:00:00:00:07
+
+cpuinfo:
+processor	: 0
+hart		: 0
+isa		: rv64imafdcv_zicbom_zicboz_zicntr_zicsr_zifencei_zihpm_zba_zbb_zbs_svpbmt
+mmu		: sv39
+uarch		: thead,c908
+mvendorid	: 0x5b7
+marchid		: 0x8000000009140d00
+mimpid		: 0x50000
+sbi-and-smp-log:
+[    0.000000] SBI HSM extension detected
+[    0.015841] smp: Bringing up secondary CPUs ...
+[    0.015883] smp: Brought up 1 node, 1 CPU
+CORE_SNAPSHOT_END

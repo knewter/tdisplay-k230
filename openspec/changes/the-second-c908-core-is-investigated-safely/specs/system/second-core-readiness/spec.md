@@ -12,6 +12,8 @@ state, the live CPU and interrupt device-tree descriptions, and already emitted
 SBI/SMP kernel messages without writing MMIO, changing CPU online state, loading
 modules, or invoking a reset, power, mailbox, or HSM start operation.
 
+*Grounding: `docs/evidence/second-core/live-handoff.txt` records the physical read-only collection; `tools/second-core-readiness.sh` defines its operations.*
+
 #### Scenario: Coordinator collects a readiness snapshot
 
 - **WHEN** the coordinator runs the documented collection command on a known-good board
@@ -23,6 +25,8 @@ The project SHALL record whether stage 1 and the live device tree enumerate a
 second hart separately from vendor claims about two physical C908 cores. It
 MUST NOT identify a Linux logical hart with a physical core from CPU count alone
 or treat a compiled SBI HSM extension as proof that another hart can start.
+
+*Grounding: `docs/evidence/second-core/opensbi-banner.txt` and `docs/evidence/second-core/live-handoff.txt` separately record the firmware and live Linux handoff.*
 
 #### Scenario: One-hart firmware handoff is observed
 
@@ -37,6 +41,8 @@ protocol, OpenSBI domain/HSM behavior, local timer and IPI/PLIC routes, CPU ISA
 and cache description, and a CPU-to-CPU shared-memory coherency contract. A
 separate AMP path SHALL additionally define its firmware image, reserved memory,
 cache maintenance, mailbox protocol, and exclusive peripheral ownership.
+
+*Grounding: `docs/evidence/second-core/README.md` records the decision against each prerequisite; `docs/research/second-core-feasibility.md` traces the pinned firmware/kernel and vendor AMP sources.*
 
 #### Scenario: A prerequisite remains undocumented
 
