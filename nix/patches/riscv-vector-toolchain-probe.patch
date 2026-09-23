@@ -1,0 +1,13 @@
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -535,8 +535,8 @@
+ config TOOLCHAIN_HAS_V
+ 	bool
+ 	default y
+-	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
+-	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
++	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64imv)
++	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32imv)
+ 
+ config RISCV_ISA_V
+ 	bool "VECTOR extension support"

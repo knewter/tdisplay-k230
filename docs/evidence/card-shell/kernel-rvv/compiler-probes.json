@@ -1,0 +1,66 @@
+[
+  {
+    "command": [
+      "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+      "-Werror",
+      "-mabi=lp64",
+      "-march=rv64iv",
+      "-x",
+      "c",
+      "-c",
+      "-o",
+      "/dev/null",
+      "/dev/null"
+    ],
+    "exit_code": 1,
+    "stderr": "cc1: sorry, unimplemented: Currently the \u2018V\u2019 implementation requires the \u2018M\u2019 extension\n"
+  },
+  {
+    "command": [
+      "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+      "-Werror",
+      "-mabi=lp64",
+      "-march=rv64imv",
+      "-x",
+      "c",
+      "-c",
+      "-o",
+      "/dev/null",
+      "/dev/null"
+    ],
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+      "-Werror",
+      "-mabi=ilp32",
+      "-march=rv32iv",
+      "-x",
+      "c",
+      "-c",
+      "-o",
+      "/dev/null",
+      "/dev/null"
+    ],
+    "exit_code": 1,
+    "stderr": "cc1: sorry, unimplemented: Currently the \u2018V\u2019 implementation requires the \u2018M\u2019 extension\n"
+  },
+  {
+    "command": [
+      "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+      "-Werror",
+      "-mabi=ilp32",
+      "-march=rv32imv",
+      "-x",
+      "c",
+      "-c",
+      "-o",
+      "/dev/null",
+      "/dev/null"
+    ],
+    "exit_code": 0,
+    "stderr": ""
+  }
+]
