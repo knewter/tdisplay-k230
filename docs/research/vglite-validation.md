@@ -58,10 +58,12 @@ the display.
 
 `benchmark` uses the same nonuniform RGB565 source and nearest 2x transform in
 both GPU and Pixman paths, validates their output before timing, then measures
-128x128-to-256x256 and 284x616-to-568x1232 cases. It reports a per-operation
-GPU submit-plus-finish latency, a batched GPU throughput window ending in one
-finish, and Pixman CPU time. These are diagnostic timings, not a frame-time or
-speedup claim.
+128x128-to-256x256 and 284x616-to-568x1232 cases. After validation it emits
+three rounds, each reporting monotonic-wall and process-CPU time for
+per-operation GPU submit-plus-finish latency, batched GPU throughput ending in
+one finish, and Pixman. CPU time is required because comparable wall time can
+still conceal CPU released for decode. These are diagnostic timings, not a
+frame-time or speedup claim.
 
 ## Build and board procedure
 
@@ -99,4 +101,8 @@ Keep Pixman as the shell renderer unless all board evidence is present:
 
 Even a passing dma-buf test proves allocation/export/import only. It does not
 prove DRM scanout, display-buffer sharing with the live compositor, video
-buffer compatibility, or a compositor integration.
+buffer compatibility, or a compositor integration. If the three-round CPU
+results do not show a material and repeatable CPU reduction at panel geometry,
+retain Pixman and scope no renderer rewrite. If they do, the next proposal must
+still define cache/fence ownership, renderer texture operations, and a
+non-disruptive scanout proof before integration.

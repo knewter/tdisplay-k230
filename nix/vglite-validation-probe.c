@@ -13,12 +13,12 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-enum { SW = 128, SH = 128, DW = 256, DH = 256, ITERS = 200, FINISH_ITERS = 20 };
+enum { SW = 128, SH = 128, DW = 256, DH = 256, ITERS = 200, FINISH_ITERS = 20, ROUNDS = 3 };
 static const uint16_t quad[4] = {0xf800, 0x07e0, 0x001f, 0x0000};
 static const vg_lite_color_t qcolor[4] = {0xff0000ffu, 0xff00ff00u, 0xffff0000u, 0u};
-static uint64_t now_ns(void) {
+static uint64_t now_ns(clockid_t clock_id) {
   struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
+  clock_gettime(clock_id, &t);
   return (uint64_t)t.tv_sec * 1000000000ull + t.tv_nsec;
 }
 static int vg(vg_lite_error_t e, const char *s) {
@@ -253,7 +253,7 @@ static int bench(unsigned dw, unsigned dh) {
   uint16_t *ps = NULL, *pd = NULL;
   pixman_image_t *si = NULL, *di = NULL;
   pixman_transform_t t;
-  uint64_t a, finish, batch, pix;
+  uint64_t wall_start, cpu_start;
   int init = 0, rc = 1;
   ps = calloc((size_t)sw * sh, 2);
   pd = calloc((size_t)dw * dh, 2);
@@ -284,28 +284,45 @@ static int bench(unsigned dw, unsigned dh) {
     fputs("BENCHMARK_ASSERTION_FAILED matched nonuniform nearest output\n", stderr);
     goto out;
   }
-  a = now_ns();
-  for (int i = 0; i < FINISH_ITERS; i++) {
-    if (vg(vg_lite_blit(&d, &s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT),
-           "GPU latency blit") ||
-        vg(vg_lite_finish(), "GPU latency finish"))
+  for (unsigned round = 1; round <= ROUNDS; round++) {
+    uint64_t finish_wall, finish_cpu, batch_wall, batch_cpu, pix_wall, pix_cpu;
+
+    wall_start = now_ns(CLOCK_MONOTONIC);
+    cpu_start = now_ns(CLOCK_PROCESS_CPUTIME_ID);
+    for (int i = 0; i < FINISH_ITERS; i++) {
+      if (vg(vg_lite_blit(&d, &s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT),
+             "GPU latency blit") ||
+          vg(vg_lite_finish(), "GPU latency finish"))
+        goto out;
+    }
+    finish_wall = now_ns(CLOCK_MONOTONIC) - wall_start;
+    finish_cpu = now_ns(CLOCK_PROCESS_CPUTIME_ID) - cpu_start;
+
+    wall_start = now_ns(CLOCK_MONOTONIC);
+    cpu_start = now_ns(CLOCK_PROCESS_CPUTIME_ID);
+    for (int i = 0; i < ITERS; i++)
+      if (vg(vg_lite_blit(&d, &s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT),
+             "GPU batch blit"))
+        goto out;
+    if (vg(vg_lite_finish(), "GPU batch finish"))
       goto out;
+    batch_wall = now_ns(CLOCK_MONOTONIC) - wall_start;
+    batch_cpu = now_ns(CLOCK_PROCESS_CPUTIME_ID) - cpu_start;
+
+    wall_start = now_ns(CLOCK_MONOTONIC);
+    cpu_start = now_ns(CLOCK_PROCESS_CPUTIME_ID);
+    for (int i = 0; i < ITERS; i++)
+      pixman_image_composite32(PIXMAN_OP_SRC, si, NULL, di, 0, 0, 0, 0, 0, 0, dw, dh);
+    pix_wall = now_ns(CLOCK_MONOTONIC) - wall_start;
+    pix_cpu = now_ns(CLOCK_PROCESS_CPUTIME_ID) - cpu_start;
+
+    printf("BENCHMARK round=%u geometry=%ux%u-to-%ux%u "
+           "gpu_finish_wall_ns_per_op=%" PRIu64 " gpu_finish_cpu_ns_per_op=%" PRIu64 " "
+           "gpu_batch_wall_ns_per_op=%" PRIu64 " gpu_batch_cpu_ns_per_op=%" PRIu64 " "
+           "pixman_wall_ns_per_op=%" PRIu64 " pixman_cpu_ns_per_op=%" PRIu64 "\n",
+           round, sw, sh, dw, dh, finish_wall / FINISH_ITERS, finish_cpu / FINISH_ITERS,
+           batch_wall / ITERS, batch_cpu / ITERS, pix_wall / ITERS, pix_cpu / ITERS);
   }
-  finish = now_ns() - a;
-  a = now_ns();
-  for (int i = 0; i < ITERS; i++)
-    if (vg(vg_lite_blit(&d, &s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "GPU batch blit"))
-      goto out;
-  if (vg(vg_lite_finish(), "GPU batch finish"))
-    goto out;
-  batch = now_ns() - a;
-  a = now_ns();
-  for (int i = 0; i < ITERS; i++)
-    pixman_image_composite32(PIXMAN_OP_SRC, si, NULL, di, 0, 0, 0, 0, 0, 0, dw, dh);
-  pix = now_ns() - a;
-  printf("BENCHMARK geometry=%ux%u-to-%ux%u finish_ns_per_op=%" PRIu64 " batch_ns_per_op=%" PRIu64
-         " pixman_ns_per_op=%" PRIu64 "\n",
-         sw, sh, dw, dh, finish / FINISH_ITERS, batch / ITERS, pix / ITERS);
   rc = 0;
 out:
   if (di)
