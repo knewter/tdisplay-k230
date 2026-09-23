@@ -157,6 +157,9 @@
         # Optional source-built GPU diagnostic.  It is deliberately outside
         # the system closure until its /dev/vg_lite ABI is proven on hardware.
         k230-vglite-probe = pkgsCross.callPackage ./nix/vglite-probe.nix { };
+        k230-vglite-color-probe = pkgsCross.callPackage ./nix/vglite-color-probe.nix {
+          vgliteProbe = self.packages.${buildSystem}.k230-vglite-probe;
+        };
 
         # Board-only follow-up validation. It is outside the system closure and
         # deliberately does not provide a compositor or display-owner path.
