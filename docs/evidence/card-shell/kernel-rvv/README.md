@@ -59,3 +59,26 @@ still produces the exact `/run/current-system` store path observed on the
 physical board. The vector additions are separate package outputs; the ordinary
 image has not acquired either the trial kernel or the probe. This identity check
 is not verification of the optional kernel's full build or boot.
+
+
+## Matching system configuration
+
+`nixosConfigurations.k230-rvv-trial` extends the ordinary board configuration
+with the opt-in kernel and context probe. External modules and the initrd derive
+from that same selected kernel. `trial-system-evaluation.json` records the exact
+kernel, Wi-Fi module and system derivations: the selected kernel matches the
+already-built standalone trial, the Wi-Fi module changes, the renderer remains
+Pixman, and the ordinary system derivation stays unchanged.
+
+The kernel helper is imported directly to preserve the returned kernel's
+`override` API. Wrapping it in `callPackage` intercepted NixOS's kernel override
+arguments and caused an evaluation error for `features`.
+
+```sh
+nix build .#nixosConfigurations.k230-rvv-trial.config.system.build.toplevel \
+  --max-jobs 1 --cores 8 --no-link --print-out-paths
+```
+
+That system build is in progress; evaluation alone is not a completed closure
+or boot. No SD image selects this configuration yet. The board trial still
+requires matching boot artifacts, a known recovery route, and the checks above.

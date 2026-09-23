@@ -1,0 +1,30 @@
+{
+  "observed_at": "2026-09-23T18:50:29.661781+00:00",
+  "evidence_class": "host-nix-evaluation",
+  "normal": {
+    "kernel": "/nix/store/lqh4gn8gvkq4z3cf6620v8i3s5qk8mq4-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "modules": [
+      "/nix/store/rgn7mln78r6k1ib0yiyrczf3vrvd4g2v-k230-wifi-driver-riscv64-unknown-linux-gnu-94cc959d.drv"
+    ],
+    "system": "/nix/store/k37ci7bym5n0h1w594lizrzgs9k3xw7n-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  },
+  "trial": {
+    "kernel": "/nix/store/3krbnk0c49fkkm22s4w6aq40v9fcb60l-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "modules": [
+      "/nix/store/q8x5fmjy694nljp1j35db88prdb59cqp-k230-wifi-driver-riscv64-unknown-linux-gnu-94cc959d.drv"
+    ],
+    "renderer": "pixman",
+    "standalone_kernel": "/nix/store/3krbnk0c49fkkm22s4w6aq40v9fcb60l-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "system": "/nix/store/94yjdwyq4cpk6kjpaxakix0slrkh32kd-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  },
+  "checks": {
+    "trial_selects_built_kernel": true,
+    "external_module_derivation_changes": true,
+    "normal_system_derivation_unchanged": true,
+    "trial_retains_pixman": true
+  },
+  "limits": [
+    "System closure build is still running.",
+    "No trial-kernel board boot or hardware acceptance."
+  ]
+}
