@@ -13,7 +13,7 @@
 ## 3. Preserve shell controls
 
 - [x] 3.1 Keep Previous, Next, Back, Apps, Windows/Home, Keyboard, Help, Terminal, Monitor, and System actions available across launcher and overview transitions; verify `python3 tests/test_touch_menu.py` and existing launcher/catalog tests pass.
-- [ ] 3.2 Ensure the launcher releases or closes before focusing a selected window and does not steal the terminal keyboard path; verify a scripted Sway-tree fixture shows focus/return without duplicate terminal or monitor processes.
+- [x] 3.2 Ensure the launcher releases or closes before focusing a selected window and does not steal the terminal keyboard path; verify a scripted Sway-tree fixture shows focus/return without duplicate terminal or monitor processes.
 - [ ] 3.3 Record a rollback switch or safe failure path that disables gestures/overview while preserving tap and button navigation; verify a forced render/input failure returns to usable Apps and Back state.
 
 ## 4. Rendering and resource checks
@@ -35,3 +35,5 @@
 Task 1.3: `docs/evidence/launcher-gestures/integrated-injected/README.md` records the flashed-image matrix: 20 exact left/right pairs, no new application window, and all 41 settled transitions within 163 ms. This is injected input; final-glass acceptance remains open.
 
 Task 4.1: the integrated-injected evidence includes 40 keyboard-hidden Apps transitions, a two-window overview, and ten keyboard-visible transitions, with elapsed/process CPU median/p95, buffer/snapshot counters and before/after RSS/PSS. These are CPU-side measurements, not optical timing.
+
+Task 3.2: `docs/evidence/launcher-gestures/metadata-budget/README.md` records the production-client host ordering fixture plus an injected Monitor-to-Terminal selection on the board: launcher closed, Terminal focused, existing Foot/htop process sets unchanged. The same report records 20 keyboard-visible two-card overview refreshes using the separated metadata deadline; final-image and physical-finger acceptance remain distinct.

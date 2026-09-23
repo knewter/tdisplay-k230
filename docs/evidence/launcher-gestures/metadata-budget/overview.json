@@ -1,0 +1,31 @@
+{
+  "result": "pass",
+  "phase": "overview",
+  "interaction_provenance": "injected-touch",
+  "captured_at_utc": "2026-09-23T05:31:07.487441+00:00",
+  "overview_cycles": 20,
+  "catalog_row_counts": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "keyboard": "explicit SIGUSR2 show with 400-pixel reservation",
+  "rendered_two_cards_each": true
+}

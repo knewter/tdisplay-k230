@@ -1,0 +1,9 @@
+{
+  "result": "pass",
+  "phase": "focus",
+  "interaction_provenance": "injected-touch",
+  "captured_at_utc": "2026-09-23T05:32:26.835434+00:00",
+  "launcher_closed_and_terminal_focused": true,
+  "focused_app": "k230-terminal",
+  "terminal_monitor_process_sets_unchanged": true
+}
