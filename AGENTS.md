@@ -3,7 +3,10 @@
 Use one worktree and one branch for each change. Do not edit another agent's
 worktree, stage broad path sets, or repair unrelated dirt. State the worktree,
 base revision, owned paths, and any build-slot or board reservation when taking
-work. A single board and its serial port belong to one operator at a time.
+work. At task start and again before handoff, run
+`python3 tools/work-status.py`; it reads cached Git state only and never fetches
+or changes a worktree. A single board and its serial port belong to one
+operator at a time.
 
 ## Keep changes moving
 
