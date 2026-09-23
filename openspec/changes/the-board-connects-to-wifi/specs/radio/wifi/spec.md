@@ -6,7 +6,7 @@ physical board must demonstrate before it is treated as network-capable.
 ## ADDED Requirements
 
 ### Requirement: The system reports radio readiness without a network secret
-<!-- UNVERIFIED: private board preflight sees an SDIO function but no wireless interface; sanitized committed evidence records the gap, not a working radio. -->
+*Grounding: `docs/evidence/offline-wifi-image/final-readiness.txt` records bound RTL8189 SDIO radio, wlan0/wlan1 and regulatory state on the physical board.*
 The system SHALL provide the radio driver, regulatory data, and diagnostic
 commands needed for an operator at the console to determine whether the board
 has a wireless interface, its driver, and its regulatory state without
@@ -23,7 +23,7 @@ components.
 - **THEN** the console exposes a wireless interface and its regulatory state without disclosing access-point identifiers
 
 ### Requirement: The system joins a protected network from a runtime-only secret
-<!-- UNVERIFIED: no physical-board association has been recorded. -->
+*Grounding: `docs/evidence/offline-wifi-image/final-wifi-network.txt` records association COMPLETED; `docs/evidence/offline-wifi-image/README.md` records the root-only runtime handoff and `wifi-cleanup.txt` records cleanup.*
 The system SHALL allow the board operator to supply a protected-network
 configuration at runtime from a root-readable secret file and use it to
 associate. The system MUST NOT place a network name, passphrase, derived PSK,
@@ -39,7 +39,7 @@ arguments, or committed evidence.
 - **THEN** the operator can inspect a sanitized failure state and retry or remove the runtime secret without committing network-specific information
 
 ### Requirement: The system proves each connectivity stage separately
-<!-- UNVERIFIED: no physical-board address, route, DNS lookup, or packet delivery has been recorded. -->
+*Grounding: `docs/evidence/offline-wifi-image/final-wifi-network.txt` separately records DHCP, Wi-Fi default/resolver routes, DNS and interface-bound outbound ping on the physical board.*
 After association, the system SHALL let an operator verify address assignment,
 default routing through the wireless interface, confirmation that the selected
 resolver routes through that interface, DNS resolution, and an
@@ -56,7 +56,7 @@ before it is committed.
 - **THEN** the operator can identify the failed stage from credential-free command results and the system does not claim end-to-end connectivity
 
 ### Requirement: Persistent wireless setup keeps credentials outside the system closure
-<!-- UNVERIFIED: persistent reconnection has not been tested on the physical board. -->
+*Grounding: `docs/evidence/wifi-persistent/after-reboot-identity.txt` records a new boot and root-owned mode-0600 credential; `docs/evidence/wifi-persistent/after-reboot.txt` records automatic association, DHCP, Wi-Fi routing, DNS and bound ping without re-provisioning.*
 If the operator elects to persist wireless configuration after a successful
 live connection, the system SHALL consume the credential through a
 root-controlled runtime credential mechanism rather than embedding it in Nix

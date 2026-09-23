@@ -1,0 +1,14 @@
+/nix/store/0sbdslp3na1y1bkjm30wdz24ivcn6rgd-nixos-system-nixos-26.11.20260919.20b1ddd
+15818d0f-bd67-402d-9c03-7ab95c96cbad
+active
+active
+active
+
+ActiveState=inactive
+SubState=dead
+ConditionResult=no
+
+NO_CREDENTIAL_ON_FRESH_IMAGE
+0
+root 700
+root 700

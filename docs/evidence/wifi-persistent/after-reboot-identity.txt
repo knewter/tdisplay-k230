@@ -1,0 +1,9 @@
+4f33a8c4-5824-4998-913c-c1307defa6c5
+/nix/store/0sbdslp3na1y1bkjm30wdz24ivcn6rgd-nixos-system-nixos-26.11.20260919.20b1ddd
+root 600
+NO_RUNTIME_PROVISION_SOURCE
+ActiveState=active
+NRestarts=0
+LoadCredential=[unprintable]
+KEYBOARD_RUNNING
+0

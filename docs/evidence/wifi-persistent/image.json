@@ -1,0 +1,11 @@
+{
+  "sourceCommit": "45e5e1a",
+  "image": "/nix/store/y27kh6jb5dd9mi6vc26vrjbpw8g0naxm-k230-sd-image.img",
+  "sha256": "565dca887007f1d8275e5ef5b7c66b8321da23995b3e37348438527107846bd3",
+  "bytes": 2308751360,
+  "writeSeconds": 186.5,
+  "writeExitStatus": 0,
+  "fullReadback": false,
+  "flashHarnessExitStatus": 143,
+  "note": "Harness terminated while Linux was booting; independent console observation confirmed current-system and shell after boot."
+}

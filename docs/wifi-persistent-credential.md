@@ -65,13 +65,15 @@ supplicant in the foreground for systemd. It restarts after a process failure;
 the supplicant itself handles normal reassociation. It starts before
 `network-online.target`; `dhcpcd.service` starts independently and handles the
 interface after association. A reboot with the credential file present is the
-physical-board validation for task 4.2, not a result established here.
+physical-board validation for task 4.2; the successful test is recorded in
+[the reboot evidence](evidence/wifi-persistent/README.md).
 
 To query a sanitized state during that validation, use the service-specific
 control path and omit network names and BSSIDs from anything recorded:
 
 ```sh
-wpa_cli -p /run/k230-wifi/wpa_supplicant -i wlan0 status
+wpa_cli -s /run/k230-wifi/wpa_supplicant/client \
+  -p /run/k230-wifi/wpa_supplicant -i wlan0 status | sed -n '/^wpa_state=/p'
 ```
 
 To remove persistent access, stop the service before deleting its source
