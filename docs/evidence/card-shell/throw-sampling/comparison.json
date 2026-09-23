@@ -1,0 +1,90 @@
+{
+  "source_revision": "33962837dd8a6dfc20d2ee944f321d45808b11df",
+  "boot_id": "06b5701c-380d-46bc-b2f4-ba95aa08b6d6",
+  "interaction_checks_observed": 39,
+  "all_budget_reports_reproduced_from_telemetry": true,
+  "runs": [
+    {
+      "run": 1,
+      "cards": 1,
+      "frames": 144,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 16.574398,
+      "frame_cpu_max_ms": 49.312002,
+      "tracking_p95_ms": 57.475,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "run": 1,
+      "cards": 2,
+      "frames": 139,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 23.662844,
+      "frame_cpu_max_ms": 25.895918,
+      "tracking_p95_ms": 57.474,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "run": 2,
+      "cards": 1,
+      "frames": 138,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 16.510935,
+      "frame_cpu_max_ms": 49.611822,
+      "tracking_p95_ms": 57.478,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "run": 2,
+      "cards": 2,
+      "frames": 143,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 23.725522,
+      "frame_cpu_max_ms": 25.410691,
+      "tracking_p95_ms": 57.478,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "run": 3,
+      "cards": 1,
+      "frames": 142,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 16.309423,
+      "frame_cpu_max_ms": 48.920062,
+      "tracking_p95_ms": 57.477,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    },
+    {
+      "run": 3,
+      "cards": 2,
+      "frames": 150,
+      "status": "FAIL",
+      "frame_cpu_p95_ms": 23.842566,
+      "frame_cpu_max_ms": 26.93374,
+      "tracking_p95_ms": 57.478,
+      "failed_metrics": [
+        "frame_update_cpu_ms",
+        "tracking_present_interval_ms"
+      ]
+    }
+  ],
+  "limits": [
+    "Three injected repeats, not real-finger or statistical reliability proof.",
+    "No matched before/after board attribution or performance speedup claim."
+  ]
+}
