@@ -29,30 +29,34 @@ is C908-specific and not a portable library claim.
 ## Subtests and claims
 
 `rgb565` uses private source and destination GPU allocations. It clears an
-opaque red left half, point-scales by two, calls `vg_lite_finish`, and requires
-exact RGB565 `0xf800` / `0x0000` samples across the boundary. It proves only
-private RGB565 rendering.
+four nonuniform red/green/blue/black quadrants, point-scales by two, calls
+`vg_lite_finish`, and requires exact RGB565 samples at the outer corners and
+both sides of each horizontal and vertical boundary. It proves only private
+RGB565 rendering.
 
-`alpha` prints a source RGBA sample and an RGBA `SRC_OVER` result after
-`vg_lite_finish`. It intentionally has no exact color-pass assertion: the
-existing RGBA evidence demonstrated that partially saturated components need
-an investigated conversion contract. A successful command proves completion,
-not alpha-correct composition.
+`alpha` prints source, initial target, and `SRC_OVER` target RGBA samples after
+each required completion. It calculates both straight-alpha and premultiplied
+models from the observed source and initial target. It succeeds only when the
+observed blend matches one model exactly; a mismatch is an explicit renderer
+blocker, not a successful API-call result.
 
 `dmabuf` opens a board-provided DRM node and uses only dumb-create, PRIME
 handle export, dumb-map, and dumb-destroy. It maps the private dumb allocation
 on the CPU, passes its mapping plus PRIME fd to `vg_lite_map`, clears it, waits,
-and requires a CPU-visible `0xf800` RGB565 sample. The source has no
+and requires every pixel through the original CPU dumb-buffer mapping to be
+`0xf800` RGB565. The source has no
 `drmSetMaster`, `drmModeSetCrtc`, add-FB, plane, or atomic call. Prefer
 `/dev/dri/renderD128`; if the board has no render node, pass `/dev/dri/card0`
 as the explicit second argument. Opening card0 still does not request master,
 but this test must run only under the board coordinator while the shell owns
 the display.
 
-`benchmark` repeats the same 128x128-to-256x256 point-scale geometry 200
-times. GPU timing includes all submissions through a final `vg_lite_finish`;
-Pixman timing measures the equivalent RGB565 CPU composite loop. The output is
-diagnostic submit/completion timing, not frame timing or a speedup claim.
+`benchmark` uses the same nonuniform RGB565 source and nearest 2x transform in
+both GPU and Pixman paths, validates their output before timing, then measures
+128x128-to-256x256 and 284x616-to-568x1232 cases. It reports a per-operation
+GPU submit-plus-finish latency, a batched GPU throughput window ending in one
+finish, and Pixman CPU time. These are diagnostic timings, not a frame-time or
+speedup claim.
 
 ## Build and board procedure
 

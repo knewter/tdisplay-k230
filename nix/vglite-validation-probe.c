@@ -1,10 +1,4 @@
-/*
- * Bounded K230 VG-Lite validation.  This never calls drmSetMaster,
- * drmModeSetCrtc, framebuffer, plane, or atomic APIs.  It only creates a
- * private dumb buffer so that PRIME export/import can be observed while a
- * compositor continues to own live scanout.
- */
-#include <errno.h>
+/* Bounded VG-Lite validation: no DRM master, modeset, framebuffer or plane API. */
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -14,127 +8,30 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
-
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <pixman.h>
 #include "vg_lite.h"
 
-enum { SW = 128, SH = 128, DW = 256, DH = 256, ITERS = 200 };
+enum { SW = 128, SH = 128, DW = 256, DH = 256, ITERS = 200, FINISH_ITERS = 20 };
+static const uint16_t quad[4] = { 0xf800, 0x07e0, 0x001f, 0x0000 };
+static const vg_lite_color_t qcolor[4] = { 0xff0000ffu, 0xff00ff00u, 0xffff0000u, 0u };
+static uint64_t now_ns(void) { struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return (uint64_t)t.tv_sec * 1000000000ull + t.tv_nsec; }
+static int vg(vg_lite_error_t e, const char *s) { if (!e) return 0; fprintf(stderr, "%s: VG-Lite error %d\n", s, e); return -1; }
+static uint16_t get565(const void *p, uint32_t st, unsigned x, unsigned y) { uint16_t v; memcpy(&v, (const uint8_t *)p+y*st+x*2,2); return v; }
+static void show565(const char *n,const void*p,uint32_t s,unsigned x,unsigned y){printf("%s x=%u y=%u rgb565=0x%04"PRIx16"\n",n,x,y,get565(p,s,x,y));}
+static int alloc565(vg_lite_buffer_t*b,unsigned w,unsigned h){memset(b,0,sizeof*b);b->width=w;b->height=h;b->format=VG_LITE_RGB565;return vg(vg_lite_allocate(b),"allocate RGB565");}
+static int quads_gpu(vg_lite_buffer_t*b,unsigned w,unsigned h){vg_lite_rectangle_t r[4]={{0,0,w/2,h/2},{w/2,0,w-w/2,h/2},{0,h/2,w/2,h-h/2},{w/2,h/2,w-w/2,h-h/2}};for(unsigned i=0;i<4;i++)if(vg(vg_lite_clear(b,&r[i],qcolor[i]),"clear source quadrant"))return-1;return 0;}
+static int check_quads(const char*n,const void*p,uint32_t st,unsigned w,unsigned h){const unsigned xs[4]={0,w/2-1,w/2,w-1},ys[4]={0,h/2-1,h/2,h-1};int bad=0;for(unsigned y=0;y<4;y++)for(unsigned x=0;x<4;x++){unsigned q=(ys[y]>=h/2)*2+(xs[x]>=w/2),v=get565(p,st,xs[x],ys[y]);show565(n,p,st,xs[x],ys[y]);if(v!=quad[q])bad=1;}return bad;}
+static void quads_cpu(uint16_t*p,unsigned w,unsigned h){for(unsigned y=0;y<h;y++)for(unsigned x=0;x<w;x++)p[y*w+x]=quad[(y>=h/2)*2+(x>=w/2)];}
 
-static uint64_t now_ns(void) {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (uint64_t)ts.tv_sec * 1000000000ull + ts.tv_nsec;
-}
-static int vg(vg_lite_error_t e, const char *what) {
-  if (e == VG_LITE_SUCCESS) return 0;
-  fprintf(stderr, "%s: VG-Lite error %d\n", what, e); return -1;
-}
-static uint16_t p565(const vg_lite_buffer_t *b, unsigned x, unsigned y) {
-  uint16_t p; memcpy(&p, b->memory + y * b->stride + x * 2, sizeof p); return p;
-}
-static void show565(const char *tag, const vg_lite_buffer_t *b, unsigned x, unsigned y) {
-  printf("%s x=%u y=%u rgb565=0x%04" PRIx16 "\n", tag, x, y, p565(b, x, y));
-}
-static int alloc565(vg_lite_buffer_t *b, unsigned w, unsigned h) {
-  memset(b, 0, sizeof *b); b->width = w; b->height = h; b->format = VG_LITE_RGB565;
-  return vg(vg_lite_allocate(b), "vg_lite_allocate(RGB565)");
-}
-static int rgb565(void) {
-  vg_lite_buffer_t src, dst; vg_lite_matrix_t m;
-  vg_lite_rectangle_t left = { 0, 0, SW / 2, SH };
-  int rc = 1;
-  puts("RGB565_BEGIN");
-  if (vg_lite_init(DW, DH) || alloc565(&src, SW, SH) || alloc565(&dst, DW, DH)) goto out;
-  if (vg(vg_lite_clear(&src, NULL, 0), "clear source") ||
-      vg(vg_lite_clear(&src, &left, 0xff0000ffu), "clear red half") ||
-      vg(vg_lite_clear(&dst, NULL, 0xff804030u), "clear target") ||
-      vg(vg_lite_identity(&m), "identity") || vg(vg_lite_scale(2, 2, &m), "scale") ||
-      vg(vg_lite_blit(&dst, &src, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "blit") ||
-      vg(vg_lite_finish(), "finish")) goto out_free;
-  show565("source", &src, 0, 0); show565("source", &src, 127, 0);
-  show565("target", &dst, 127, 0); show565("target", &dst, 128, 0);
-  if (p565(&src, 0, 0) != 0xf800 || p565(&src, 127, 0) != 0 ||
-      p565(&dst, 127, 0) != 0xf800 || p565(&dst, 128, 0) != 0) {
-    fputs("RGB565_ASSERTION_FAILED exact red/black 2x boundary\n", stderr); goto out_free;
-  }
-  puts("RGB565_PASS exact 2x boundary"); rc = 0;
-out_free: vg_lite_free(&dst); vg_lite_free(&src);
-out: vg_lite_close(); puts("RGB565_END"); return rc;
-}
+static int rgb565(void){vg_lite_buffer_t s={0},d={0};vg_lite_matrix_t m;int init=0,rc=1;puts("RGB565_BEGIN");if(vg(vg_lite_init(DW,DH),"init RGB565"))goto out;init=1;if(alloc565(&s,SW,SH)||alloc565(&d,DW,DH)||quads_gpu(&s,SW,SH)||vg(vg_lite_clear(&d,NULL,0xff804030u),"clear target")||vg(vg_lite_identity(&m),"identity")||vg(vg_lite_scale(2,2,&m),"scale")||vg(vg_lite_blit(&d,&s,&m,VG_LITE_BLEND_NONE,0,VG_LITE_FILTER_POINT),"blit")||vg(vg_lite_finish(),"finish"))goto out;if(check_quads("rgb565-source",s.memory,s.stride,SW,SH)||check_quads("rgb565-target",d.memory,d.stride,DW,DH)){fputs("RGB565_ASSERTION_FAILED multi-row exact quadrants\n",stderr);goto out;}puts("RGB565_PASS exact multi-row 2x quadrants");rc=0;out:if(d.handle)vg_lite_free(&d);if(s.handle)vg_lite_free(&s);if(init)vg_lite_close();puts("RGB565_END");return rc;}
 
-static int alpha(void) {
-  vg_lite_buffer_t src = {0}, dst = {0}; vg_lite_matrix_t m; uint32_t a, b;
-  int rc = 1;
-  puts("ALPHA_BEGIN");
-  if (vg_lite_init(SW, SH)) goto out;
-  src.width=dst.width=SW; src.height=dst.height=SH;
-  src.format=dst.format=VG_LITE_RGBA8888;
-  if (vg(vg_lite_allocate(&src), "allocate alpha source") || vg(vg_lite_allocate(&dst), "allocate alpha target") ||
-      vg(vg_lite_clear(&src, NULL, 0x80402010u), "clear alpha source") ||
-      vg(vg_lite_clear(&dst, NULL, 0xff203040u), "clear alpha target") ||
-      vg(vg_lite_identity(&m), "identity") ||
-      vg(vg_lite_blit(&dst, &src, &m, VG_LITE_BLEND_SRC_OVER, 0, VG_LITE_FILTER_POINT), "alpha src-over") ||
-      vg(vg_lite_finish(), "finish alpha")) goto out_free;
-  memcpy(&a, src.memory, sizeof a); memcpy(&b, dst.memory, sizeof b);
-  printf("ALPHA_SAMPLE source=0x%08" PRIx32 " target-src-over=0x%08" PRIx32 "\n", a, b);
-  puts("ALPHA_COMPLETE diagnostic values only"); rc = 0;
-out_free: vg_lite_free(&dst); vg_lite_free(&src);
-out: vg_lite_close(); puts("ALPHA_END"); return rc;
-}
+static void bytes(uint32_t v,uint8_t o[4]){memcpy(o,&v,4);}static uint8_t over(uint8_t s,uint8_t d,uint8_t a){return(uint8_t)(s+((unsigned)d*(255-a)+127)/255);}
+static int alpha(void){vg_lite_buffer_t s={0},d={0};vg_lite_matrix_t m;uint32_t sv,d0,d1;uint8_t a[4],b[4],c[4],straight[4],premult[4];int init=0,rc=1;puts("ALPHA_BEGIN");if(vg(vg_lite_init(SW,SH),"init alpha"))goto out;init=1;s.width=d.width=SW;s.height=d.height=SH;s.format=d.format=VG_LITE_RGBA8888;if(vg(vg_lite_allocate(&s),"allocate alpha source")||vg(vg_lite_allocate(&d),"allocate alpha target")||vg(vg_lite_clear(&s,NULL,0x80402010u),"clear alpha source")||vg(vg_lite_clear(&d,NULL,0xff203040u),"clear alpha target")||vg(vg_lite_finish(),"finish alpha clears"))goto out;memcpy(&sv,s.memory,4);memcpy(&d0,d.memory,4);bytes(sv,a);bytes(d0,b);if(vg(vg_lite_identity(&m),"alpha identity")||vg(vg_lite_blit(&d,&s,&m,VG_LITE_BLEND_SRC_OVER,0,VG_LITE_FILTER_POINT),"alpha src-over")||vg(vg_lite_finish(),"finish alpha blend"))goto out;memcpy(&d1,d.memory,4);bytes(d1,c);for(unsigned i=0;i<3;i++){straight[i]=over(a[i],b[i],a[3]);premult[i]=a[i]+((unsigned)b[i]*(255-a[3])+127)/255;}straight[3]=over(a[3],b[3],a[3]);premult[3]=straight[3];printf("ALPHA_SAMPLE source=0x%08"PRIx32" target-initial=0x%08"PRIx32" target-src-over=0x%08"PRIx32"\n",sv,d0,d1);printf("ALPHA_MODEL straight=%02x:%02x:%02x:%02x premult=%02x:%02x:%02x:%02x observed=%02x:%02x:%02x:%02x\n",straight[0],straight[1],straight[2],straight[3],premult[0],premult[1],premult[2],premult[3],c[0],c[1],c[2],c[3]);if(!memcmp(c,straight,4)){puts("ALPHA_PASS straight model");rc=0;}else if(!memcmp(c,premult,4)){puts("ALPHA_PASS premultiplied model");rc=0;}else fputs("ALPHA_MODEL_MISMATCH blocker: neither expected model matched\n",stderr);out:if(d.handle)vg_lite_free(&d);if(s.handle)vg_lite_free(&s);if(init)vg_lite_close();puts("ALPHA_END");return rc;}
 
-static int dmabuf(const char *node) {
-  int fd=-1, prime=-1, rc=1; uint32_t handle=0, pitch=0; uint64_t size=0, offset=0;
-  void *map=MAP_FAILED; vg_lite_buffer_t b={0};
-  puts("DMABUF_BEGIN");
-  fd=open(node, O_RDWR|O_CLOEXEC); if (fd < 0) { perror(node); goto out; }
-  if (drmModeCreateDumbBuffer(fd, DW, DH, 16, 0, &handle, &pitch, &size)) { perror("drmModeCreateDumbBuffer"); goto out; }
-  if (drmPrimeHandleToFD(fd, handle, DRM_CLOEXEC|DRM_RDWR, &prime)) { perror("drmPrimeHandleToFD"); goto out; }
-  if (drmModeMapDumbBuffer(fd, handle, &offset)) { perror("drmModeMapDumbBuffer"); goto out; }
-  map=mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, offset);
-  if (map == MAP_FAILED) { perror("mmap dumb"); goto out; }
-  memset(map, 0, size);
-  b.width=DW; b.height=DH; b.stride=pitch; b.format=VG_LITE_RGB565; b.memory=map;
-  if (vg_lite_init(DW, DH) || vg(vg_lite_map(&b, VG_LITE_MAP_DMABUF, prime), "vg_lite_map(dmabuf)") ||
-      vg(vg_lite_clear(&b, NULL, 0xff0000ffu), "clear imported dumb") || vg(vg_lite_finish(), "finish imported dumb")) goto out_close_vg;
-  show565("dmabuf", &b, 0, 0);
-  if (p565(&b, 0, 0) != 0xf800) { fputs("DMABUF_ASSERTION_FAILED expected RGB565 red\n", stderr); goto out_unmap; }
-  printf("DMABUF_PASS node=%s handle=%" PRIu32 " pitch=%" PRIu32 " size=%" PRIu64 "\n", node, handle, pitch, size); rc=0;
-out_unmap: vg_lite_unmap(&b);
-out_close_vg: vg_lite_close();
-out: if (map != MAP_FAILED) munmap(map, size); if (prime >= 0) close(prime); if (handle && fd >= 0) drmModeDestroyDumbBuffer(fd, handle); if (fd >= 0) close(fd); puts("DMABUF_END"); return rc;
-}
+static int dmabuf(const char*n){int fd=-1,prime=-1,init=0,mapped=0,rc=1;uint32_t h=0,pitch=0;uint64_t size=0,off=0;void*cpu=MAP_FAILED;vg_lite_buffer_t b={0};puts("DMABUF_BEGIN");fd=open(n,O_RDWR|O_CLOEXEC);if(fd<0){perror(n);goto out;}if(drmModeCreateDumbBuffer(fd,DW,DH,16,0,&h,&pitch,&size)){perror("drmModeCreateDumbBuffer");goto out;}if(drmPrimeHandleToFD(fd,h,DRM_CLOEXEC|DRM_RDWR,&prime)){perror("drmPrimeHandleToFD");goto out;}if(drmModeMapDumbBuffer(fd,h,&off)){perror("drmModeMapDumbBuffer");goto out;}cpu=mmap(NULL,size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,off);if(cpu==MAP_FAILED){perror("mmap dumb");goto out;}memset(cpu,0,size);b.width=DW;b.height=DH;b.stride=pitch;b.format=VG_LITE_RGB565;b.memory=cpu;if(vg(vg_lite_init(DW,DH),"init dmabuf"))goto out;init=1;if(vg(vg_lite_map(&b,VG_LITE_MAP_DMABUF,prime),"map dmabuf"))goto out;mapped=1;if(vg(vg_lite_clear(&b,NULL,0xff0000ffu),"clear imported dumb")||vg(vg_lite_finish(),"finish imported dumb"))goto out;for(unsigned y=0;y<DH;y++)for(unsigned x=0;x<DW;x++)if(get565(cpu,pitch,x,y)!=0xf800){fputs("DMABUF_ASSERTION_FAILED original CPU mapping not full red\n",stderr);goto out;}show565("dmabuf-cpu-map",cpu,pitch,0,0);show565("dmabuf-cpu-map",cpu,pitch,DW-1,DH-1);puts("DMABUF_PASS original CPU mapping exact full red");printf("DMABUF_DETAILS node=%s handle=%"PRIu32" pitch=%"PRIu32" size=%"PRIu64"\n",n,h,pitch,size);rc=0;out:if(mapped)vg_lite_unmap(&b);if(init)vg_lite_close();if(cpu!=MAP_FAILED)munmap(cpu,size);if(prime>=0)close(prime);if(h&&fd>=0)drmModeDestroyDumbBuffer(fd,h);if(fd>=0)close(fd);puts("DMABUF_END");return rc;}
 
-static int benchmark(void) {
-  vg_lite_buffer_t src, dst; vg_lite_matrix_t m; uint64_t begin, gpu_ns, pix_ns; int rc=1;
-  uint16_t *ps=calloc(SW*SH,2), *pd=calloc(DW*DH,2); pixman_image_t *si=NULL,*di=NULL;
-  puts("BENCHMARK_BEGIN");
-  if (!ps || !pd || vg_lite_init(DW,DH) || alloc565(&src,SW,SH) || alloc565(&dst,DW,DH) ||
-      vg(vg_lite_clear(&src,NULL,0xff0000ffu),"bench clear") || vg(vg_lite_identity(&m),"bench identity") || vg(vg_lite_scale(2,2,&m),"bench scale")) goto out;
-  begin=now_ns(); for (int i=0;i<ITERS;i++) if (vg(vg_lite_blit(&dst,&src,&m,VG_LITE_BLEND_NONE,0,VG_LITE_FILTER_POINT),"bench blit")) goto out_gpu;
-  if (vg(vg_lite_finish(),"bench finish")) goto out_gpu;
-  gpu_ns=now_ns()-begin;
-  si=pixman_image_create_bits(PIXMAN_r5g6b5,SW,SH,(uint32_t *)ps,SW*2); di=pixman_image_create_bits(PIXMAN_r5g6b5,DW,DH,(uint32_t *)pd,DW*2);
-  if (!si || !di) { fputs("pixman image allocation failed\n",stderr); goto out_gpu; }
-  begin=now_ns();
-  for (int i=0;i<ITERS;i++)
-    pixman_image_composite32(PIXMAN_OP_SRC,si,NULL,di,0,0,0,0,0,0,DW,DH);
-  pix_ns=now_ns()-begin;
-  printf("BENCHMARK iterations=%d geometry=%dx%d-to-%dx%d gpu_submit_finish_ns=%" PRIu64 " gpu_ns_per_op=%" PRIu64 " pixman_ns=%" PRIu64 " pixman_ns_per_op=%" PRIu64 "\n", ITERS,SW,SH,DW,DH,gpu_ns,gpu_ns/ITERS,pix_ns,pix_ns/ITERS);
-  puts("BENCHMARK_COMPLETE diagnostic timing only"); rc=0;
-  pixman_image_unref(di); pixman_image_unref(si);
-out_gpu: vg_lite_free(&dst); vg_lite_free(&src); vg_lite_close();
-out: free(pd); free(ps); puts("BENCHMARK_END"); return rc;
-}
-
-int main(int argc, char **argv) {
-  const char *mode=argc>1?argv[1]:"all"; const char *node=argc>2?argv[2]:"/dev/dri/renderD128"; int bad=0;
-  printf("VGLITE_VALIDATION_BEGIN mode=%s\n",mode);
-  if (!strcmp(mode,"rgb565") || !strcmp(mode,"all")) bad |= rgb565();
-  if (!strcmp(mode,"alpha") || !strcmp(mode,"all")) bad |= alpha();
-  if (!strcmp(mode,"dmabuf") || !strcmp(mode,"all")) bad |= dmabuf(node);
-  if (!strcmp(mode,"benchmark") || !strcmp(mode,"all")) bad |= benchmark();
-  if (strcmp(mode,"all") && strcmp(mode,"rgb565") && strcmp(mode,"alpha") && strcmp(mode,"dmabuf") && strcmp(mode,"benchmark")) { fputs("usage: k230-vglite-validation [all|rgb565|alpha|dmabuf|benchmark] [drm-node]\n",stderr); bad=1; }
-  printf("VGLITE_VALIDATION_%s\n",bad?"FAIL":"PASS"); return !!bad;
-}
+static int bench(unsigned dw,unsigned dh){unsigned sw=dw/2,sh=dh/2;vg_lite_buffer_t s={0},d={0};vg_lite_matrix_t m;uint16_t*ps=NULL,*pd=NULL;pixman_image_t*si=NULL,*di=NULL;pixman_transform_t t;uint64_t a,finish,batch,pix;int init=0,rc=1;ps=calloc((size_t)sw*sh,2);pd=calloc((size_t)dw*dh,2);if(!ps||!pd)goto out;quads_cpu(ps,sw,sh);if(vg(vg_lite_init(dw,dh),"bench init"))goto out;init=1;if(alloc565(&s,sw,sh)||alloc565(&d,dw,dh)||quads_gpu(&s,sw,sh)||vg(vg_lite_identity(&m),"bench identity")||vg(vg_lite_scale(2,2,&m),"bench scale"))goto out;si=pixman_image_create_bits(PIXMAN_r5g6b5,sw,sh,(uint32_t*)ps,sw*2);di=pixman_image_create_bits(PIXMAN_r5g6b5,dw,dh,(uint32_t*)pd,dw*2);if(!si||!di){fputs("pixman allocation failed\n",stderr);goto out;}pixman_transform_init_scale(&t,pixman_double_to_fixed(.5),pixman_double_to_fixed(.5));pixman_image_set_transform(si,&t);pixman_image_set_filter(si,PIXMAN_FILTER_NEAREST,NULL,0);if(vg(vg_lite_blit(&d,&s,&m,VG_LITE_BLEND_NONE,0,VG_LITE_FILTER_POINT),"GPU warmup")||vg(vg_lite_finish(),"GPU warmup finish"))goto out;pixman_image_composite32(PIXMAN_OP_SRC,si,NULL,di,0,0,0,0,0,0,dw,dh);if(check_quads("bench-gpu",d.memory,d.stride,dw,dh)||check_quads("bench-pixman",pd,dw*2,dw,dh)){fputs("BENCHMARK_ASSERTION_FAILED matched nonuniform nearest output\n",stderr);goto out;}a=now_ns();for(int i=0;i<FINISH_ITERS;i++){if(vg(vg_lite_blit(&d,&s,&m,VG_LITE_BLEND_NONE,0,VG_LITE_FILTER_POINT),"GPU latency blit")||vg(vg_lite_finish(),"GPU latency finish"))goto out;}finish=now_ns()-a;a=now_ns();for(int i=0;i<ITERS;i++)if(vg(vg_lite_blit(&d,&s,&m,VG_LITE_BLEND_NONE,0,VG_LITE_FILTER_POINT),"GPU batch blit"))goto out;if(vg(vg_lite_finish(),"GPU batch finish"))goto out;batch=now_ns()-a;a=now_ns();for(int i=0;i<ITERS;i++)pixman_image_composite32(PIXMAN_OP_SRC,si,NULL,di,0,0,0,0,0,0,dw,dh);pix=now_ns()-a;printf("BENCHMARK geometry=%ux%u-to-%ux%u finish_ns_per_op=%"PRIu64" batch_ns_per_op=%"PRIu64" pixman_ns_per_op=%"PRIu64"\n",sw,sh,dw,dh,finish/FINISH_ITERS,batch/ITERS,pix/ITERS);rc=0;out:if(di)pixman_image_unref(di);if(si)pixman_image_unref(si);if(d.handle)vg_lite_free(&d);if(s.handle)vg_lite_free(&s);if(init)vg_lite_close();free(pd);free(ps);return rc;}
+static int benchmark(void){int rc;puts("BENCHMARK_BEGIN");rc=bench(DW,DH)|bench(568,1232);puts(rc?"BENCHMARK_END failure":"BENCHMARK_END pass");return rc;}
+int main(int ac,char**av){const char*m=ac>1?av[1]:"all",*n=ac>2?av[2]:"/dev/dri/renderD128";int bad=0;printf("VGLITE_VALIDATION_BEGIN mode=%s\n",m);if(!strcmp(m,"rgb565")||!strcmp(m,"all"))bad|=rgb565();if(!strcmp(m,"alpha")||!strcmp(m,"all"))bad|=alpha();if(!strcmp(m,"dmabuf")||!strcmp(m,"all"))bad|=dmabuf(n);if(!strcmp(m,"benchmark")||!strcmp(m,"all"))bad|=benchmark();if(strcmp(m,"all")&&strcmp(m,"rgb565")&&strcmp(m,"alpha")&&strcmp(m,"dmabuf")&&strcmp(m,"benchmark")){fputs("usage: k230-vglite-validation [all|rgb565|alpha|dmabuf|benchmark] [drm-node]\n",stderr);bad=1;}printf("VGLITE_VALIDATION_%s\n",bad?"FAIL":"PASS");return!!bad;}
