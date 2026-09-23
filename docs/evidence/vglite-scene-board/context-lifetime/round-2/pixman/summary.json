@@ -1,0 +1,125 @@
+{
+  "renderer": "pixman",
+  "observed_frames": 566,
+  "discarded_warmup_frames": 20,
+  "measured_frames": 546,
+  "costs": {
+    "snapshot_wall_ms": {
+      "median": 19.7304365,
+      "p95": 21.584904,
+      "mean": 20.089499994505495
+    },
+    "snapshot_cpu_ms": {
+      "median": 18.5076885,
+      "p95": 18.811088,
+      "mean": 18.505594743589743
+    },
+    "cache_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "cache_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "init_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "init_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "map_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "map_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "upload_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "upload_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "command_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "command_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "finish_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "finish_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "cleanup_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "cleanup_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "replay_wall_ms": {
+      "median": 13.093672,
+      "p95": 15.046704,
+      "mean": 13.372470624542125
+    },
+    "replay_cpu_ms": {
+      "median": 11.741507,
+      "p95": 11.911097,
+      "mean": 11.739853186813187
+    },
+    "total_wall_ms": {
+      "median": 36.009859,
+      "p95": 38.831384,
+      "mean": 36.6470873992674
+    },
+    "total_cpu_ms": {
+      "median": 32.619834499999996,
+      "p95": 33.110228,
+      "mean": 32.5938465989011
+    }
+  },
+  "phase_cpu_fraction": {
+    "snapshot": 0.567763448460657,
+    "cache": 0.0,
+    "init": 0.0,
+    "map": 0.0,
+    "upload": 0.0,
+    "command": 0.0,
+    "finish": 0.0,
+    "cleanup": 0.0,
+    "replay": 0.3601861827259442
+  },
+  "limits": [
+    "Instrumented render-pass costs, not frame cadence or optical latency.",
+    "Process CPU includes charged user/system time; excludes other processes and separately accounted interrupt work.",
+    "Capture and log overhead remain in the diagnostic environment.",
+    "No default-renderer performance acceptance from this profile alone."
+  ]
+}
