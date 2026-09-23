@@ -63,17 +63,17 @@ const groups = [
     </section>
     <section>
       <h2>Big Buck Bunny over Wi-Fi</h2>
-      <p>The board streamed H.264 video from the internet into the shell. In the first software-only trial, 480×270 video played with 106 video-output drops over 30 seconds; 640×360 dropped 509 over 40 seconds. The network buffer stayed ahead. Audio and hardware decoding were disabled for this baseline.</p>
+      <p>The board streams 640×360 Big Buck Bunny over Wi-Fi using its hardware video decoder. Point scaling and a video-sized window reduced reported output drops to zero in a 30-second trial; a repeat with screenshot capture reported two. This is a silent, fixed-30-fps experiment with a timing workaround, not yet the default video app.</p>
       <div class="media-grid">
         <figure><video controls preload="none" playsinline aria-label="Big Buck Bunny playing on the physical board"
-          poster={evidenceAsset("docs/evidence/big-buck-bunny/270p-physical-frame.jpg")}
-          src="https://raw.githubusercontent.com/knewter/tdisplay-k230/b8e4bbbdb0f54315f3ce3d076660f57394a755c9/docs/evidence/big-buck-bunny/270p-physical-clip.mp4"></video>
+          poster={evidenceAsset("docs/evidence/video-acceleration/360p-physical.jpg")}
+          src="https://raw.githubusercontent.com/knewter/tdisplay-k230/dd81cf6/docs/evidence/video-acceleration/360p-physical.mp4"></video>
           <figcaption>Physical camera · 4 seconds · cropped to the display</figcaption></figure>
-        <figure><a href={evidenceUrl("docs/evidence/big-buck-bunny/270p-native.png")}><img loading="lazy"
-          src={evidenceAsset("docs/evidence/big-buck-bunny/270p-native.png")} alt="Big Buck Bunny playing in the handheld shell" /></a>
+        <figure><a href={evidenceUrl("docs/evidence/video-acceleration/360p-native.png")}><img loading="lazy"
+          src={evidenceAsset("docs/evidence/video-acceleration/360p-native.png")} alt="Big Buck Bunny playing in the handheld shell" /></a>
           <figcaption>Native compositor screenshot</figcaption></figure>
       </div>
-      <p><a href={evidenceUrl("docs/evidence/big-buck-bunny/README.md")}>Measurements and trial notes</a> · Big Buck Bunny © 2008 Blender Foundation, <a href="https://peach.blender.org/about/">CC BY 3.0</a>.</p>
+      <p><a href={evidenceUrl("docs/evidence/video-acceleration/README.md")}>Measurements and trial notes</a> · <a href={evidenceUrl("docs/evidence/big-buck-bunny/README.md")}>Initial software baseline</a> · Big Buck Bunny © 2008 Blender Foundation, <a href="https://peach.blender.org/about/">CC BY 3.0</a>.</p>
     </section>
     {groups.map((group) => (
       <section>
