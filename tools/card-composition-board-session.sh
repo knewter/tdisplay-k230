@@ -104,7 +104,8 @@ case "$mode" in
         config=$runtime/session/sway.conf
         cat >"$config" <<CONFIG
 output * bg #17202b solid_color
-output * render_bit_depth 16
+# Sway's selector is per-channel depth; 6 selects RGB565 on this board.
+output * render_bit_depth 6
 input type:touch map_to_output DSI-1
 seat seat0 hide_cursor 100
 for_window [app_id="^k230.card.(one|two)$"] floating enable, border none, resize set 520 1040, move position 24 48

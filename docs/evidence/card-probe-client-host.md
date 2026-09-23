@@ -106,6 +106,18 @@ the complete probe cgroup before starting and checking normal shell and seatd;
 restoration errors remain errors. An independently detected competing Sway is
 left alone and blocks both startup and unsafe restoration.
 
+## Coordinator configuration correction
+
+Before board use, the coordinator found the generated config confused total
+RGB565 bits per pixel with Sway's per-channel depth selector. The original
+`render_bit_depth 16` is invalid; the installed normal configuration uses `6`.
+The harness now uses `output * render_bit_depth 6`. Real pinned native Sway
+`--validate --config FILE`, with `WLR_BACKENDS=headless` and
+`WLR_RENDERER=pixman`, returned 1 for selector 16 with
+`Invalid bit depth. Must be a value in (6|8|10)` and 0 for selector 6.
+All eight harness tests passed again after the correction. This is config
+validation, not physical RGB565 output proof.
+
 Session state is in `/run/k230-card-composition`, outside the normal shell's
 runtime directory. `--collect` selects the exact transient invocation's bounded
 journal and outputs only approved `K230_CARD` telemetry plus client JSON counts.
