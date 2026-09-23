@@ -35,32 +35,35 @@ claiming a branch is current with the server.
   CPU but 11% more elapsed time than Pixman. This supports an opt-in renderer
   experiment; the current Sway renderer remains Pixman.
 - [Cards and gestures planning](../openspec/changes/touch-launcher-gestures-overview/proposal.md),
-  ready for implementation with existing controls preserved.
+  implementation now includes bounded transitions and window metadata, with physical acceptance still open.
 
 ## Almost done or actively underway
 
 | Work | Already available | Remaining acceptance |
 | --- | --- | --- |
-| Network video | Pinned probe, measured software and MVX paths, presentation tracing, empty-capture diagnosis | Repair/review lifecycle implementation; integrate Apps and image; prove fallback, Stop/Home, EOF/error cleanup, final image and cropped evidence |
+| Network video | Pinned software player, Apps entry, reviewed lifecycle controller, measured probe paths and presentation tracing | Flash the integrated image; prove fallback, Stop/Home, EOF/error cleanup, final playback and cropped evidence |
+| Cards and gestures | Host-tested swipe classification, animated paging, async metadata cards, stale focus handling and rollback | Integrated-image injected matrix, resource measurements and focused real-finger capture |
 | Boot splash | Source-built U-Boot splash and opt-in kernel/compositor preservation, warm-boot and first-modeset evidence | Calibrated geometry, remaining power-on/second-card procedure, final default and specification acceptance |
 
-The player implementation is preserved on remote branch
-[`impl/video-lifecycle`](https://github.com/knewter/tdisplay-k230/tree/impl/video-lifecycle)
-and in `/tmp/k230-video-lifecycle`. It is **not on master** at this checkpoint.
-Review found an arbitrary 90-second healthy-playback cutoff and a controller
-signal path that can leave its watchdog alive. Host fake-player tests do not
-settle those issues or establish physical image acceptance.
+The player and gesture implementations have passed host review and cross-builds.
+The video controller owns player descendants through startup, Stop, EOF and
+fallback; healthy playback has no arbitrary duration cutoff. Host tests cover
+startup/fallback cancellation, private runtime input and process cleanup. Those
+checks do not replace the final-image physical tests above.
+
+A preliminary transferred launcher ran on the existing board image and visibly
+paged Apps and opened a two-window overview. Its two transitions submitted final
+frames after 137 and 152 ms. This small preflight is not the 20-swipe matrix,
+resource comparison, final-image acceptance or real-finger proof.
 
 The FFmpeg empty-capture candidate is committed as an **unapplied** patch for
 review. [The timestamp investigation](research/mvx-timestamps.md) retains the
 boundary trace and next experiment. No general timestamp fix is claimed until
-patched decoding, timestamps and EOF are physically verified.
+timestamp association is correct. The patched FFmpeg completes repeated decode/EOF trials but still propagates duplicate MVX capture timestamps; it remains diagnostic-only.
 
 ## Planned, not implemented
 
 - `the-shell-trials-vglite-composition`: opt-in actual Sway/wlroots renderer trial, with whole-pass Pixman fallback and explicit board acceptance gates; proposal only.
-- `touch-launcher-gestures-overview`: client-side swipe paging and window cards;
-  metadata-only overview first, preserving the current keyboard and buttons.
 - `characterise-bootrom-usb-recovery`: no-card/SW3 entry and conditional vendor
   recovery-tool proof. This is independent of working U-Boot USB flashing.
 - `the-boot-shows-a-computational-game-of-life`: computational animation and
@@ -120,7 +123,7 @@ nonidentical historical patches were reconciled as follows:
 | Initial handheld site `020dad7` | Replaced by current page and cropped media; the old draft contains a placeholder media revision |
 | MVX audit on `shell-usability` | Current firmware inventory and V4L2 audit supersede the earlier draft |
 | Original video proposal `613f4ab` | Same scope now maintained with measured progress on master; do not overwrite it with the stale all-unchecked copy |
-| Video lifecycle `d955a7d` | Unfinished remote branch with explicit review issues above |
+| Video lifecycle `d955a7d` | Superseded by the reviewed Python controller with startup/fallback cancellation and descendant cleanup; final-image physical acceptance remains open |
 
 Old worktrees are retained during reconciliation; none were reset, swept into
 commits, or deleted merely because a patch looked similar. Clean integrated
