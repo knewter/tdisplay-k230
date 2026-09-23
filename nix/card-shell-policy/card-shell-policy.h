@@ -1,0 +1,120 @@
+#ifndef K230_CARD_SHELL_POLICY_H
+#define K230_CARD_SHELL_POLICY_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+/* Product policy only: never stores a view, surface, buffer, title, or app text.
+ * IDs are compositor-owned, nonzero, and must not be reused during a session.
+ * Unknown classification must be CS_UNAVAILABLE, never inferred to be live. */
+enum cs_content { CS_UNAVAILABLE, CS_PRIVATE, CS_LIVE };
+struct cs_card {
+    uint64_t id;
+    enum cs_content content;
+    bool focusable;
+    bool closeable;
+};
+enum cs_mode { CS_NORMAL, CS_DECK, CS_DRAGGING, CS_CLOSING };
+enum cs_message {
+    CS_MESSAGE_NONE, CS_MESSAGE_EMPTY, CS_MESSAGE_PRIVATE,
+    CS_MESSAGE_UNAVAILABLE, CS_MESSAGE_CLOSING, CS_MESSAGE_CLOSE_REFUSED,
+    CS_MESSAGE_CLOSE_TIMEOUT, CS_MESSAGE_CLOSE_FAILED, CS_MESSAGE_CANCELLED,
+    CS_MESSAGE_SOURCE_GONE, CS_MESSAGE_FAILED
+};
+enum cs_actions {
+    CS_NO_ACTION = 0, CS_REDRAW = 1 << 0, CS_SHRINK = 1 << 1,
+    CS_EXPAND = 1 << 2, CS_RESTORE = 1 << 3, CS_CLOSE = 1 << 4,
+    CS_RECONCILE = 1 << 5
+};
+struct cs_result {
+    unsigned actions;
+    bool consumed;
+    uint64_t focus_id; /* 0 means focus a valid workspace, never a stale view. */
+    uint64_t close_id; /* Nonzero only alongside CS_CLOSE. Dispatch once. */
+    uint64_t source_gone_id; /* Unmap/removal is NOT process exit proof. */
+    enum cs_message message;
+};
+struct cs_rect { double x, y, width, height; };
+struct cs_config {
+    double width, height;
+    double top_reserved, bottom_reserved; /* bar and keyboard; never intercepted */
+    double inset, gap, title_height, footer_height;
+    double card_width, card_height;
+    double edge_band, entry_distance, tap_slop;
+    double select_fraction, throw_distance, throw_speed; /* logical pixels/ms */
+    uint64_t close_timeout_ms;
+    bool reduced_motion; /* Direct tracking/endpoints are identical either way. */
+};
+struct cs_policy {
+    struct cs_config config;
+    struct cs_card *cards;
+    size_t count, selected;
+    enum cs_mode mode;
+    enum cs_message message;
+    uint64_t saved_focus_id, pressed_id, closing_id, close_deadline_ms;
+    bool contact, blocked_until_up;
+    unsigned blocked_contacts;
+    int32_t contact_id;
+    double down_x, down_y, last_x, last_y, dx, dy, velocity_y;
+    uint64_t last_time_ms;
+    enum { CS_AXIS_NONE, CS_AXIS_HORIZONTAL, CS_AXIS_VERTICAL } axis;
+    struct {
+        bool tracking;
+        int32_t contact_id;
+        double x, y;
+        uint64_t time_ms;
+    } edge;
+};
+
+/* Defaults are provisional product constants, not measured hardware claims.
+ * Recompute card dimensions after changing keyboard reservation. */
+struct cs_config cs_default_config(double width, double height);
+bool cs_init(struct cs_policy *policy, const struct cs_config *config);
+void cs_finish(struct cs_policy *policy);
+/* Copies a complete caller snapshot. Any count is accepted subject to allocation.
+ * Duplicate/zero IDs or allocation failure abort to normal with FAILED feedback.
+ * Call before scene access on map/unmap/destroy/privacy/output changes. */
+struct cs_result cs_set_cards(struct cs_policy *policy,
+    const struct cs_card *cards, size_t count);
+struct cs_result cs_set_config(struct cs_policy *policy,
+    const struct cs_config *config);
+struct cs_result cs_enter(struct cs_policy *policy, uint64_t focused_id);
+struct cs_result cs_leave(struct cs_policy *policy);
+/* Persistent button equivalents; direction must be -1 or +1. */
+struct cs_result cs_step(struct cs_policy *policy, int direction);
+struct cs_result cs_request_close(struct cs_policy *policy, uint64_t id,
+    uint64_t time_ms);
+struct cs_result cs_down(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms);
+struct cs_result cs_motion(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms);
+struct cs_result cs_up(struct cs_policy *policy, int32_t contact_id,
+    uint64_t time_ms);
+struct cs_result cs_cancel(struct cs_policy *policy);
+struct cs_result cs_tick(struct cs_policy *policy, uint64_t time_ms);
+/* Only the adapter can know an explicit refusal or failed dispatch; otherwise
+ * tick reports timeout while the source remains present. Neither force-kills. */
+struct cs_result cs_close_result(struct cs_policy *policy, uint64_t id,
+    bool refused);
+
+/* Normal-mode edge recognition: reserve the bottom band, then enter only on an
+ * upward single-contact swipe. Passing an app's already delivered touch stream
+ * into this recognizer without cancelling that app stream is forbidden.
+ * The adapter must own/reserve the edge down from the start. */
+struct cs_result cs_edge_down(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms);
+struct cs_result cs_edge_motion(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms, uint64_t focused_id);
+struct cs_result cs_edge_up(struct cs_policy *policy, int32_t contact_id);
+void cs_edge_cancel(struct cs_policy *policy);
+
+bool cs_can_mirror(const struct cs_policy *policy, uint64_t id);
+struct cs_rect cs_content_rect(const struct cs_policy *policy);
+struct cs_rect cs_card_rect(const struct cs_policy *policy, size_t index);
+/* Returns SIZE_MAX outside cards/content clip. Adapter buttons are hit first. */
+size_t cs_hit_test(const struct cs_policy *policy, double x, double y);
+const char *cs_message_text(enum cs_message message);
+const char *cs_card_text(enum cs_content content); /* safe placeholder labels */
+
+#endif
