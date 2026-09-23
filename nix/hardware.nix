@@ -36,7 +36,8 @@ let
   splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
 in
 {
-  imports = [ ./panel-console.nix ];
+  imports = [ ./panel-console.nix ./root-growth-service.nix ];
+  k230.rootGrowth.enable = lib.mkDefault true;
   # Mainline cannot boot this SoC -- no K230 device tree, no
   # SOC_CANAAN_K230 -- so the board runs the Xuantie kernel, built from
   # source. See nix/kernel.nix.

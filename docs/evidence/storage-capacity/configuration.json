@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "evidence_class": "host-Nix-configuration-evaluation",
+  "configuration": {
+    "after": [
+      "local-fs.target"
+    ],
+    "before": [
+      "shell.service"
+    ],
+    "enabled": true,
+    "independentFilesystemGrowth": false,
+    "package": "/nix/store/6sca423wcjlq1v9ynjpbv4ai48jf53l9-k230-root-growth",
+    "qemuHasService": false,
+    "requiredBy": [],
+    "requires": [],
+    "rootDevice": "/dev/disk/by-label/NIXOS_SD",
+    "rvvEnabled": true,
+    "service": {
+      "ExecStart": "/nix/store/6sca423wcjlq1v9ynjpbv4ai48jf53l9-k230-root-growth/bin/k230-root-growth --apply",
+      "KillMode": "control-group",
+      "RemainAfterExit": true,
+      "TimeoutStartSec": "180s",
+      "Type": "oneshot",
+      "UMask": "0077"
+    },
+    "stockPartitionGrowth": false,
+    "wantedBy": [
+      "multi-user.target"
+    ]
+  }
+}

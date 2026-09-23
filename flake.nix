@@ -159,6 +159,8 @@
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.
+        root-growth = pkgsCross.callPackage ./nix/root-growth.nix { };
+        root-growth-guest = pkgsCross.callPackage ./nix/root-growth-guest.nix { };
         pixman-rvv = pkgsCross.callPackage ./nix/pixman-rvv.nix { };
         rvv-context-probe = pkgsCross.callPackage ./nix/rvv-context-probe.nix { };
         rvv-context-probe-corrupt = pkgsCross.callPackage ./nix/rvv-context-probe.nix { corrupt = true; };

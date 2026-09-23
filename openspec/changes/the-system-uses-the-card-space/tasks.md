@@ -1,14 +1,14 @@
 ## 1. Guarded system growth
 
-- [ ] 1.1 Implement a narrowly packaged root-layout guard and two-phase growth helper using pinned partition/ext4 tools; verify supported layout, wrong device/label/filesystem, later partition, full card and failed-tool decisions with the proposed `python3 tests/test_root_growth.py` and `nix build .#root-growth --no-link --print-out-paths`. Host policy/build proof only.
-- [ ] 1.2 Integrate a finitely bounded, repeatable NixOS boot service that gates both mutation phases and leaves the existing root/shell usable on growth failure; verify selected tools, target derivation, ordering and default-image inclusion with the proposed `python3 tools/check-root-growth-config.py`. Keep QEMU's unrelated netboot root outside board growth selection.
+- [x] 1.1 Implement a narrowly packaged root-layout guard and two-phase growth helper using pinned partition/ext4 tools; verify supported layout, wrong device/label/filesystem, later partition, full card and failed-tool decisions with the proposed `python3 tests/test_root_growth.py` and `nix build .#root-growth --no-link --print-out-paths`. Host policy/build proof only.
+- [x] 1.2 Integrate a finitely bounded, repeatable NixOS boot service that gates both mutation phases and leaves the existing root/shell usable on growth failure; verify selected tools, target derivation, ordering and default-image inclusion with the proposed `python3 tools/check-root-growth-config.py`. Keep QEMU's unrelated netboot root outside board growth selection.
 
 Narrow host proof: `python3 tests/test_root_growth.py`, `nix build .#root-growth --no-link --print-out-paths`, and `python3 tools/check-root-growth-config.py`. These do not prove real filesystem mutation.
 
 ## 2. Disposable-media preservation
 
-- [ ] 2.1 Add and run an isolated system-QEMU fixture against actual sparse disk images; verify first expansion, repeat no-op, an already-full disk, unsupported root identity/filesystem, a later partition, injected tool failure and retry after partition-only growth with the proposed `python3 tools/test-root-growth.py --qemu --output docs/evidence/storage-capacity/qemu`. Assert protected firmware/boot hashes, root start/identity, root-file sentinels, increased capacity and no writes on refusal. Record exact guest/tool artifacts and keep failed runs.
-- [ ] 2.2 Build the integrated board system and compact image after those checks pass; verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel --no-link --print-out-paths` followed by `nix build .#sdImage --no-link --print-out-paths`, recording image/system identities and unchanged initial boot/root offsets. This proves build/layout, not physical expansion.
+- [x] 2.1 Add and run an isolated system-QEMU fixture against actual sparse disk images; verify first expansion, repeat no-op, an already-full disk, unsupported root identity/filesystem, a later partition, injected tool failure and retry after partition-only growth with the proposed `python3 tools/test-root-growth.py --qemu --output docs/evidence/storage-capacity/qemu`. Assert protected firmware/boot hashes, root start/identity, root-file sentinels, increased capacity and no writes on refusal. Record exact guest/tool artifacts and keep failed runs.
+- [x] 2.2 Build the integrated board system and compact image after those checks pass; verify with `nix build .#nixosConfigurations.k230.config.system.build.toplevel --no-link --print-out-paths` followed by `nix build .#sdImage --no-link --print-out-paths`, recording image/system identities and unchanged initial boot/root offsets. This proves build/layout, not physical expansion.
 
 Proof: `python3 tools/test-root-growth.py --qemu --output docs/evidence/storage-capacity/qemu`, then the two narrow system/image builds above. QEMU is not K230 boot proof.
 
@@ -25,3 +25,5 @@ Physical proof: the named `tools/check-root-growth.py --board` captures plus ser
 - [ ] 4.1 Document compact image versus expanded runtime layout, refusal/recovery behavior, artifacts and every evidence limit; verify `openspec validate the-system-uses-the-card-space --strict`, `python3 scripts/build_site.py`, and `python3 tools/blob-scan.py --no-vendor`, then merge/push and inspect the deployed spec URL. Archive only after every preceding task and physical proof is complete.
 
 Proof: the three commands above and the published URL for the landed revision. Proposal publication alone is not a shipped expansion capability.
+
+Host policy, narrow package and evaluated service proof: `docs/evidence/storage-capacity/implementation.md`. The actual disposable RISC-V guest passes all seven filesystem/preservation cases in `docs/evidence/storage-capacity/qemu/result.json`. These complete tasks 1.1, 1.2 and 2.1. `docs/evidence/storage-capacity/image-build.json` records the matching system/image build and actual compact boot-partition inspection for 2.2. Physical first/repeat boots and final publication remain open.

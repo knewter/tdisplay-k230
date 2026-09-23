@@ -1,0 +1,39 @@
+{
+  "status": "FAIL",
+  "manifest": {
+    "command": [
+      "qemu-system-riscv64",
+      "-machine",
+      "virt",
+      "-m",
+      "2G",
+      "-nographic",
+      "-nic",
+      "none",
+      "-no-reboot",
+      "-kernel",
+      "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+      "-initrd",
+      "/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-01/guest.cpio.gz",
+      "-drive",
+      "file=/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-01/disk.img,format=raw,if=none,id=testdisk",
+      "-device",
+      "virtio-blk-device,drive=testdisk",
+      "-append",
+      "console=ttyS0 earlycon=sbi rdinit=/init panic=-1 k230.root_growth_guest=1"
+    ],
+    "package": "/nix/store/f468w59i4fl1jkbdlcd5vk1kxrpp2in9-k230-root-growth-guest",
+    "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "run_id": "4a8c492016c240dabb164e7440b39b8d",
+    "helper_sha256": "d61931d6c8e16acd6128d2b3e90f2030d2bb2a83ffdfe74f17b4ea4f61431c9e",
+    "qemu_version": "QEMU emulator version 11.1.0"
+  },
+  "error": "filesystem did not reach its partition capacity",
+  "observation": "Partition grew to 786399 sectors; ext4 header recorded 393196 blocks of 1024 bytes. The 3584-byte tail exceeds one filesystem block but fits the pinned resize2fs page alignment.",
+  "raw_serial_sha256": "80fc47a46e92d6f9f42f61fbc6e215b3aea86c74e684524bd369d29d6775d6ee",
+  "raw_serial_bytes": 19335,
+  "limits": [
+    "Failed host invocation is not relabeled as passing.",
+    "Original failed guest disk/header/transcript retained privately."
+  ]
+}
