@@ -57,6 +57,10 @@ The existing `touch-launcher-gestures-overview` proposal owns gesture classifica
 - Which existing onboarding/splash proposal should own the first-boot instructional copy after the ledger identifies its exact gap?
 - Whether a future overview needs compositor screencopy remains deferred until metadata cards and measured Pixman cost are accepted.
 
+## Visual comparison sheets
+
+The follow-up audit should include two low-cost, implementation-neutral sheets under `docs/research/handheld-ux/`: (1) a current-versus-recommended portrait shell frame showing the persistent bar, title/action hierarchy, card bounds, keyboard occlusion, and empty/error treatment; and (2) a navigation storyboard showing Apps → card/overview → selected app → Back/Home/Stop recovery. These are annotated wireframes or native-frame overlays, not claims that new pixels have shipped. Compare each recommendation against the current native capture and the 568x1232 geometry, then record contrast, target size, focus, and state-label changes. Keep thumbnails, blur, and GPU effects out of the baseline comparison unless a later owner proves their cost.
+
 ## Current user-flow matrix and issue ledger
 
 The first planning pass records these flows as the review baseline; completion is not implied by the evidence labels.

@@ -6,6 +6,8 @@ This capability gives the handheld a single, reviewable UX contract across boot,
 
 ### Requirement: The project SHALL maintain an evidence-labelled UX plan
 
+<!-- UNVERIFIED: this cross-surface plan is proposed; no single completed audit currently proves it. -->
+
 The plan SHALL describe the person-facing journey from boot to a recoverable application state and SHALL identify the owning layer or successor proposal for each issue. Every observation SHALL name its source artifact and SHALL distinguish host/native/injected evidence from physical-finger or optical evidence; unsupported current behavior SHALL be marked `UNVERIFIED`.
 
 #### Scenario: Reviewer separates evidence classes
@@ -17,6 +19,8 @@ The plan SHALL describe the person-facing journey from boot to a recoverable app
 - **THEN** the plan names the responsible existing or successor proposal and does not silently assign the work to an unrelated component
 
 ### Requirement: The shell UX plan SHALL cover first use and discovery
+
+<!-- UNVERIFIED: first-use and discovery coverage is a planning target, not current board acceptance. -->
 
 The plan SHALL define an observable first-use path: boot feedback into the portrait shell, a clear initial action, Apps discovery through desktop entries, Help or equivalent orientation, and a recoverable empty/error state. It SHALL preserve existing working bar controls while proposing consistent labels and focus behavior.
 
@@ -30,6 +34,8 @@ The plan SHALL define an observable first-use path: boot feedback into the portr
 
 ### Requirement: The plan SHALL define a coherent portrait visual and touch system
 
+<!-- UNVERIFIED: optical readability, reachability, and real-finger target separation remain open. -->
+
 The plan SHALL provide measurable guidance for hierarchy, type, spacing, color contrast, touch target geometry, reachability, keyboard-visible layout, and focus indication at the 568x1232 portrait panel. It SHALL treat rotation as unsupported until a source or board observation proves it, and SHALL not infer readability or reachability from injected input alone.
 
 #### Scenario: Reviewer evaluates a screen
@@ -42,17 +48,25 @@ The plan SHALL provide measurable guidance for hierarchy, type, spacing, color c
 
 ### Requirement: Navigation and transient states SHALL have consistent recovery semantics
 
+<!-- UNVERIFIED: the cross-surface action contract is proposed; existing evidence covers only selected paths. -->
+
 The plan SHALL define how Apps, Windows/overview, cards, Back, Home, Keyboard, System, and video controls compose; how focus changes; and how loading, empty, network failure, EOF, cancellation, and cleanup are exposed. Existing card proposals own card state and gesture mechanics; this capability owns cross-surface consistency and acceptance.
 
 #### Scenario: Person leaves an application
-- **WHEN** a person uses Back, Home, or an explicit Stop from a running app or video session
-- **THEN** the app's owned resources are cleaned up, the shell bar remains available, and focus returns to a predictable usable surface
+- **WHEN** a person uses Back or Home while an ordinary application is running
+- **THEN** the plan preserves the app/card according to the existing multitasking contract, keeps the shell bar available, and records the resulting focus surface
+
+#### Scenario: Person explicitly stops owned work
+- **WHEN** a person uses Stop or closes an owned video/session surface
+- **THEN** that owner cleans up its resources, the shell bar remains available, and focus returns to a predictable usable surface
 
 #### Scenario: Person encounters a delayed or failed operation
 - **WHEN** loading stalls, a network source fails, media reaches EOF, or a catalog/window becomes empty
 - **THEN** the UI communicates the state, avoids an orphaned or indefinitely blocked surface, and offers a bounded recovery action without requiring a hidden keyboard command
 
 ### Requirement: The plan SHALL define measurable acceptance and an ordered successor backlog
+
+<!-- UNVERIFIED: priorities and successor boundaries must be derived from the completed audit ledger. -->
 
 The plan SHALL maintain a severity-ranked issue ledger, user-flow/task matrix, P0/P1 successor proposals, dependencies, and parallel ownership. Each successor SHALL have host and board gates where applicable, and all proposals SHALL be intended to land on master before implementation is treated as integrated.
 
