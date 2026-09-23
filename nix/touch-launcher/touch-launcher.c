@@ -79,12 +79,15 @@ static uint32_t *last_frame;
 static size_t last_frame_bytes;
 static int width, height, stride, mapped_size;
 static int lock_fd = -1;
-static bool running = true, configured;
+static bool running = true, configured, redraw_pending;
 static volatile sig_atomic_t shutdown_requested;
 static int press_x, press_y, touch_x, touch_y, touch_id = -1;
 static bool pointer_pressed;
 static void redraw_if_configured(void) {
-  if (configured && surface && !transition.active) redraw();
+  if (configured && surface) {
+    if (transition.active) redraw_pending=true;
+    else redraw();
+  }
 }
 static uint32_t pointer_button_code;
 static int pointer_card = -1, touch_card = -1;
@@ -525,6 +528,7 @@ static bool save_last_frame(const uint32_t *source) {
   return true;
 }
 static void redraw(void) {
+  redraw_pending=false;
   current=make_buffer(); pixels=current->pixels; draw();
   (void)save_last_frame(pixels);
   wl_surface_attach(surface,current->buffer,0,0);
@@ -560,6 +564,8 @@ static void transition_settle(void) {
   transition_trace(monotonic_ms()-render_started,
     monotonic_ms()-transition.started_ms,true);
   transition_cleanup();
+  /* Metadata may finish while the pre-rendered Loading frame is moving. */
+  if (redraw_pending && running) redraw();
 }
 static void transition_compose(uint32_t *out, int progress) {
   if (transition.direction==TRANSITION_LEFT) {
@@ -779,10 +785,11 @@ int main(int argc,char**argv) {
      int64_t transition_deadline=transition.started_ms+120;
      if (deadline<0 || transition_deadline<deadline) deadline=transition_deadline;
    }
-   int timeout=-1;
+   /* Bound shutdown response if a signal arrives just before poll. */
+   int timeout=100;
    if (deadline>=0) {
      int64_t until=deadline-monotonic_ms();
-     timeout=(int)(until>0 ? until : 0);
+     timeout=(int)(until>0 ? (until<100 ? until : 100) : 0);
    }
    struct pollfd fds[2] = {
      { .fd=wl_display_get_fd(display), .events=POLLIN },
@@ -796,7 +803,18 @@ int main(int argc,char**argv) {
    if (fds[0].revents & (POLLERR|POLLHUP|POLLNVAL)) break;
    if (fds[0].revents & POLLIN && wl_display_dispatch(display)<0) break;
  }
- if (catalog.pid) catalog_cancel();
-
+ if (catalog.pid) {
+   catalog_cancel();
+   catalog_signal(SIGKILL);
+   int status;
+   int64_t reap_deadline=monotonic_ms()+200;
+   while (waitpid(catalog.pid,&status,WNOHANG)==0 && monotonic_ms()<reap_deadline) {
+     struct timespec pause={.tv_sec=0,.tv_nsec=1000000};
+     nanosleep(&pause,NULL);
+   }
+   catalog_reap();
+ }
+ transition_cleanup();
+ free(last_frame);
  return 0;
 }

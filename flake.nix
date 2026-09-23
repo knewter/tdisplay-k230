@@ -104,6 +104,9 @@
         shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
+        # Narrow builds use the same pinned packages as the shell image.
+        video-player = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).player;
+        video-ffmpeg = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).ffmpeg;
         # Native asset conversion; the U-Boot and Linux owners share this image.
         inherit bootSplashImage;
         drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };
