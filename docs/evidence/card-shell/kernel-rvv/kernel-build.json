@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "evidence_class": "cross-built-vendor-kernel",
+  "source_commit": "a134f2eb",
+  "derivation": "/nix/store/3krbnk0c49fkkm22s4w6aq40v9fcb60l-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+  "kernel": "/nix/store/2wzrs39r2rj9kzgv3s99if5r6b085kvb-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+  "finished_at": "2026-09-23T18:40:06.306614+00:00",
+  "command": [
+    "nix",
+    "build",
+    ".#kernel-rvv-trial",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "8",
+    "--no-link",
+    "--print-out-paths"
+  ],
+  "config": "/nix/store/1z4wy623qb967082ihb79mv78kr6g4xf-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie-dev/lib/modules/6.6.36/build/.config",
+  "vector_config": [
+    "CONFIG_ERRATA_THEAD_VECTOR=y",
+    "CONFIG_TOOLCHAIN_HAS_V=y",
+    "CONFIG_RISCV_ISA_V=y",
+    "CONFIG_RISCV_ISA_V_DEFAULT_ENABLE=y",
+    "CONFIG_DYNAMIC_SIGFRAME=y"
+  ],
+  "image_bytes": 60427776,
+  "image_sha256": "527e79b9b249eb8e3c6b7a46f9eec26800ed22e25d1ace41d715d6c214a6f628",
+  "limits": [
+    "No boot or vector execution of this kernel has occurred.",
+    "Requires matching system closure and kernel modules before board trial."
+  ]
+}
