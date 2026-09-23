@@ -9,6 +9,7 @@ let
     withXml2 = true;
     withZlib = true;
     withNetwork = true;
+    withV4l2M2m = true;
     withSafeBitstreamReader = true;
     buildAvcodec = true;
     buildAvdevice = true;
@@ -22,7 +23,7 @@ let
   }).overrideAttrs (old: {
     configureFlags = old.configureFlags ++ [
       "--disable-everything"
-      "--enable-decoder=h264,aac,mp3"
+      "--enable-decoder=h264,h264_v4l2m2m,aac,mp3"
       "--enable-encoder=wrapped_avframe,pcm_s16le"
       "--enable-parser=h264,aac,mpegaudio"
       "--enable-demuxer=mov,hls,mpegts,dash"
