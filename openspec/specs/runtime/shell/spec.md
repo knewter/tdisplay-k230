@@ -334,3 +334,74 @@ records the application-framework assessments as still open.*
 
 - **WHEN** someone proposes a way to draw the product experience on this board
 - **THEN** nothing in this capability forbids it, whether it is a Wayland client, a direct DRM/KMS renderer that replaces the compositor, or something else
+
+### Requirement: The shell exposes a bounded offline application set
+
+The shell SHALL expose Help and the existing Terminal action through the portrait
+Apps flow. It SHALL add only a small, explicitly reviewed set of portrait-usable
+desktop entries selected from packages that build for the pinned riscv64 image and
+fit the measured closure and startup budgets. An editor and a file browser are
+preferred candidates when an existing dependency satisfies those constraints;
+the image SHALL not gain a network installer, package manager UI, AtomVM, Dozer,
+or a general desktop suite for this capability.
+
+Package builds, measured closure differences, fresh-image discovery and injected
+launches are recorded in `docs/evidence/offline-wifi-image/README.md` and
+`docs/evidence/offline-app-candidates/selection.md`.
+
+#### Scenario: A user opens the offline app set
+
+- **WHEN** the user opens Apps with no network connection
+- **THEN** Help, Terminal, and every selected offline application appear as
+  readable touch targets and do not require network access to launch
+
+#### Scenario: A candidate fails the image checks
+
+- **WHEN** a proposed editor or file browser fails the pinned riscv64 build,
+  closure, startup, or portrait usability check
+- **THEN** it is omitted and the remaining Apps and Help flow remain usable
+
+### Requirement: Help explains the keyboard-free shell
+
+The shell SHALL provide an offline Help surface reachable from Apps and SHALL
+describe the purpose and action of Apps, Keyboard, Windows/Home, System, Back,
+paging, and the terminal and monitor actions. Help SHALL be readable at
+568x1232 in portrait mode, support touch navigation back to Apps, and avoid
+requiring a network, physical keyboard, or text entry. <!-- UNVERIFIED: final
+physical-finger readability and final-glass acceptance for the new Help pages
+remain separate from injected native screenshots. -->
+
+Injected paging, readable native portrait layout, Back and launch-error recovery
+are recorded in `docs/evidence/offline-wifi-image/README.md` and
+`docs/evidence/offline-help-injected/README.md`.
+
+#### Scenario: A new user reads the controls
+
+- **WHEN** the user taps Help and pages through its content
+- **THEN** each persistent control and launcher navigation action has a concise
+  visible explanation
+
+#### Scenario: A user leaves Help
+
+- **WHEN** the user taps Back from Help
+- **THEN** Help closes and the user returns to the launcher or persistent shell
+  controls without losing the existing touch actions
+
+### Requirement: Offline app additions are checked before image integration
+
+Before an app is added to the image, the project SHALL record its desktop ID,
+package source, riscv64 build result, closure delta, startup result, and injected
+portrait touch result. Physical finger accuracy, reboot persistence, and final
+glass readability SHALL remain separately labelled evidence rather than inferred
+from host or injected checks.
+
+The package comparison and hardware trials are recorded in
+`docs/evidence/offline-app-candidates/selection.md` and
+`docs/evidence/offline-wifi-image/README.md`.
+
+#### Scenario: A reviewer checks an app addition
+
+- **WHEN** a reviewer examines the app evidence
+- **THEN** the record distinguishes package/build and injected workflow checks
+  from physical-touch, reboot, and final-panel checks, and names any failed or
+  unverified check
