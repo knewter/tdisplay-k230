@@ -37,9 +37,13 @@ probe. It uses no vendor-built userspace object or prebuilt firmware.
 
 The probe initializes VG-Lite, allocates private 128x128 and 256x256
 `VG_LITE_RGBA8888` buffers, GPU-clears them, scales the first buffer by two,
-blits it into the second, calls `vg_lite_finish`, and checks that the first
-destination pixel is nonzero. The buffers come from `vg_lite_allocate`; there
-is no DRM import, KMS commit, scanout mapping, or panel interaction.
+blits it into the second, and calls `vg_lite_finish`. The source is black with
+a red left half and the target begins a distinct nonzero color. The probe then
+uses source pixels as its byte-order-independent reference and verifies both
+sides of the 2x-scaled target boundary at x=127/128 on rows 0, 63, 127, and
+255. This proves a completed blit and scale rather than only an initialized or
+cleared buffer. The buffers come from `vg_lite_allocate`; there is no DRM
+import, KMS commit, scanout mapping, or panel interaction.
 
 Build only the narrow diagnostic:
 

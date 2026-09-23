@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   sourceRoot = "source/buildroot-overlay/package/vg_lite";
 
   # The pinned SDK Makefile hard-codes a vendor GCC spelling unsupported by
-  # this pinned cross compiler.  The userspace sources use no C908-specific
-  # instructions, so retain the compiler's normal riscv64 target ABI.
+  # this pinned cross compiler. Retain the compiler's normal riscv64 target
+  # ABI; the separately documented cache helper retains its C908 operation.
   postPatch = ''
     substituteInPlace VGLite/Makefile --replace-fail "-mcpu=c908v " ""
     cat > inc/thead.h <<'EOF'

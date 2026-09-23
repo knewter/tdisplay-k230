@@ -21,6 +21,15 @@ static int check(vg_lite_error_t result, const char *operation)
   return 1;
 }
 
+static uint32_t pixel_at(const vg_lite_buffer_t *buffer, uint32_t x, uint32_t y)
+{
+  uint32_t pixel;
+  const uint8_t *address = buffer->memory + y * buffer->stride + x * 4;
+
+  memcpy(&pixel, address, sizeof(pixel));
+  return pixel;
+}
+
 int main(void)
 {
   enum { source_width = 128, source_height = 128,
@@ -29,7 +38,10 @@ int main(void)
   vg_lite_buffer_t source = { 0 };
   vg_lite_buffer_t target = { 0 };
   vg_lite_matrix_t matrix;
-  uint32_t first_pixel;
+  vg_lite_rectangle_t source_left = { 0, 0, source_width / 2, source_height };
+  uint32_t source_red;
+  uint32_t source_black;
+  static const uint32_t rows[] = { 0, 63, 127, 255 };
   int rc = 1;
 
   if (check(vg_lite_init(target_width, target_height), "vg_lite_init"))
@@ -47,9 +59,13 @@ int main(void)
   if (check(vg_lite_allocate(&target), "vg_lite_allocate(target)"))
     goto out_source;
 
-  if (check(vg_lite_clear(&source, NULL, red), "vg_lite_clear(source)"))
+  if (check(vg_lite_clear(&source, NULL, 0), "vg_lite_clear(source)"))
     goto out_target;
-  if (check(vg_lite_clear(&target, NULL, 0), "vg_lite_clear(target)"))
+  if (check(vg_lite_clear(&source, &source_left, red),
+            "vg_lite_clear(source left half)"))
+    goto out_target;
+  if (check(vg_lite_clear(&target, NULL, 0xff304080u),
+            "vg_lite_clear(target)"))
     goto out_target;
   if (check(vg_lite_identity(&matrix), "vg_lite_identity"))
     goto out_target;
@@ -61,14 +77,24 @@ int main(void)
   if (check(vg_lite_finish(), "vg_lite_finish"))
     goto out_target;
 
-  memcpy(&first_pixel, target.memory, sizeof(first_pixel));
-  if (first_pixel == 0) {
-    fprintf(stderr, "offscreen target remained zero after completed blit\n");
+  source_red = pixel_at(&source, 0, 0);
+  source_black = pixel_at(&source, source_width - 1, 0);
+  if (source_red == 0 || source_black != 0) {
+    fprintf(stderr, "source pattern did not contain red-left/black-right pixels\n");
     goto out_target;
   }
+  for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
+    uint32_t y = rows[i];
+    if (pixel_at(&target, 0, y) != source_red ||
+        pixel_at(&target, 127, y) != source_red ||
+        pixel_at(&target, 128, y) != source_black ||
+        pixel_at(&target, 255, y) != source_black) {
+      fprintf(stderr, "scaled boundary mismatch on target row %" PRIu32 "\n", y);
+      goto out_target;
+    }
+  }
 
-  printf("VG-Lite offscreen RGBA blit-scale completed (first pixel 0x%08" PRIx32 ")\n",
-         first_pixel);
+  printf("VG-Lite offscreen RGBA 2x blit-scale completed (boundary verified)\n");
   rc = 0;
 
 out_target:
