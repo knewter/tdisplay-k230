@@ -1,7 +1,7 @@
 
 ===== > cat /sys/devices/system/cpu/online; cat /sys/devices/system/cpu/present; tail -c 3000 /run/shell/bbb-270p-status.txt; stat -c %s /run/bbb-270p.png =====
 cat /sys/devices/system/cpu/online; cat /sys/devices/system/cpu/present; tail -c 3000 /run/shell/bbb-270p-status.txt; stat -c %s /run/bbb-270p.png
-[?2004l
+
 0
 0
  fps=30 decoder_drop=0 vo_drop=102 cache=94.6
@@ -56,10 +56,10 @@ pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97
 pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=96.9667
 Exiting... (End of file)
 210067
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
-[?2004l
-[?2004h
 
-[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#
