@@ -21,12 +21,11 @@ USB-gadget configuration for this SoC in the same U-Boot tree we build. See
   of to a card reader. The reader path stays; it is the recovery path.
 - The U-Boot configuration we build changes: USB gadget support on, the
   `ums` command on, and `usbotg0` enabled in the board device tree.
-- **BREAKING (within stage 1):** in the first variant, U-Boot's USB *host*
-  support is turned off, because in U-Boot 2022.10 the dwc2 host and gadget
-  drivers both claim `snps,dwc2` nodes and the gadget wins. The board's
-  onboard RTL8152 Ethernet therefore stops being reachable *from U-Boot*.
-  Nothing in the current boot path uses it — `bootcmd` is `run blinux`, which
-  touches only `mmc`. Linux is unaffected. A follow-up restores both.
+- **BREAKING (within the initial A1 stage-1 variant):** U-Boot's USB *host*
+  support was first turned off because the dwc2 host and gadget drivers both
+  claimed `snps,dwc2` nodes. The completed A2 follow-up now keeps host support
+  and uses the K230-specific binding/driver refusal so U-Boot host and UMS
+  coexist; current evidence covers that repaired variant. Linux is unaffected.
 - We record, as a property of this board rather than a hope, that the TF card
   is its only boot medium, so a stage 1 that does not boot is always
   recoverable in a reader.

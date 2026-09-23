@@ -5,15 +5,15 @@
 
 ## 2. Characterise BootROM entry
 
-- [ ] 2.1 Power off, remove the TF card, power through J3, and capture serial plus host USB evidence; record whether a BootROM device appears.
-- [ ] 2.2 Power off, reinstall the card, hold SW3/BOOT0 during power-on, and capture serial plus host USB evidence; record whether a BootROM device appears.
+- [ ] 2.1 Run `./tools/console.py /dev/ttyACM0 --wait=3 "help"` for the baseline, power off, remove the TF card, power through J3, and capture `lsusb -d 29f1:0230 -v`, `dmesg --since ...`, and serial output; record whether a BootROM device appears.
+- [ ] 2.2 Power off, reinstall the card, hold SW3/BOOT0 during power-on, and repeat `lsusb -d 29f1:0230 -v`, `dmesg --since ...`, and `./tools/console.py /dev/ttyACM0 --wait=3 "help"`; record whether a BootROM device appears.
 - [ ] 2.3 Review both raw captures and identify the observed VID/PID, interface, connector, and exact entry condition, or record a negative result.
 
 ## 3. Characterise the recovery tool conditionally
 
 - [ ] 3.1 If a BootROM device appears, pin and document the `k230_flash` source/tool version and inspect its help and target-selection behavior.
-- [ ] 3.2 Write a known-good disposable image only after confirming the target identity; record input hash, command, duration, and tool output.
-- [ ] 3.3 Reboot and verify serial boot plus image/hash evidence, or document why the write was not safe or possible.
+- [ ] 3.2 After confirming the target identity, copy the known-good image, deliberately make only the stage-1 region nonbootable, and write it with the pinned tool; record input hash, command, duration, and tool output. If safety prerequisites are absent, leave this task incomplete and record why.
+- [ ] 3.3 Reboot and verify serial boot plus image/hash evidence from the recovered card; a successful tool exit without a boot is insufficient. If the write was unsafe or unattempted, leave recovery verification incomplete.
 
 ## 4. Reconcile the specification
 

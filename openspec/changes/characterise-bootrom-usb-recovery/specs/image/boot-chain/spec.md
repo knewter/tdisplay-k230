@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: The BootROM's USB recovery path is characterised, not assumed
 
@@ -7,6 +7,13 @@ SHALL be established by observation and written down, including no-card entry,
 SW3/BOOT0 entry, host enumeration, and the tool or explicit reason recovery is
 unavailable. The result SHALL distinguish BootROM recovery from U-Boot UMS and
 shall not claim success from UMS evidence alone.
+
+<!-- UNVERIFIED: no-card and SW3 BootROM entry have not yet been observed. -->
+
+*Grounding for the test target: `docs/uboot-ums.md` §5 describes Canaan's
+`do_k230_dfu()` path and the `kendryte/k230_flash_py` host tool; the schematic
+places SW3 between BOOT0 and ground. These sources identify what must be tested
+but do not establish that this board enters BootROM recovery.*
 
 #### Scenario: No bootable card is present
 
@@ -21,7 +28,7 @@ shall not claim success from UMS evidence alone.
 #### Scenario: A BootROM device is observed
 
 - **WHEN** either entry test enumerates a BootROM device
-- **THEN** the documented `k230_flash` procedure writes a disposable known image and a later boot verifies the result, or the evidence records why writing was not attempted
+- **THEN** the documented `k230_flash` procedure writes a disposable deliberately nonbootable-stage1 card and a later boot verifies the result; an unsafe or unattempted write leaves this scenario incomplete and is recorded as such
 
 #### Scenario: BootROM entry does not work
 
