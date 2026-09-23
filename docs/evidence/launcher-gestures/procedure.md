@@ -10,15 +10,21 @@ The persistent bar controls `wvkbd-mobintl` with:
 pkill -RTMIN -x wvkbd-mobintl
 ```
 
-That signal is a toggle. Inspect the current native screen before each keyboard command and pass explicit `--keyboard-show-command` and `--keyboard-hide-command` values that produce the intended state. The helper deliberately has no default show/hide command.
+That signal is a toggle. The pinned wvkbd `main.c` signal handlers also define `SIGUSR2` as show and `SIGUSR1` as hide; use those explicit commands in automated runs. The helper deliberately has no default show/hide command.
+
+Copy this helper and `tools/inject-tap.sh` into `/run` first. The interpreter and
+metadata helper are closure dependencies referenced by the installed wrappers;
+they need not have their own system-profile symlinks.
 
 ```sh
-python3 tools/gesture-acceptance.py --execute \
+K230_TEST_PYTHON=$(sed -n 's/^exec \([^ ]*\/python3\) .*/\1/p' /run/current-system/sw/bin/k230-video-session)
+K230_TEST_WINDOW_CATALOG=$(sed -n 's/^export K230_WINDOW_CATALOG=//p' /run/current-system/sw/bin/k230-touch-launcher)
+"$K230_TEST_PYTHON" /run/gesture-acceptance.py --execute \
   --device /dev/input/eventN \
   --inject-script /path/to/inject-tap.sh \
-  --keyboard-show-command 'pkill -RTMIN -x wvkbd-mobintl' \
-  --keyboard-hide-command 'pkill -RTMIN -x wvkbd-mobintl' \
-  --window-catalog-command '/run/current-system/sw/bin/k230-window-catalog' \
+  --keyboard-show-command 'pkill -USR2 -x wvkbd-mobintl' \
+  --keyboard-hide-command 'pkill -USR1 -x wvkbd-mobintl' \
+  --window-catalog-command "$K230_TEST_WINDOW_CATALOG" \
   --launcher-pid "$(pidof k230-touch-launcher)" \
   --metrics-file /run/shell/launcher-metrics.txt \
   --output-dir docs/evidence/launcher-gestures/UTC-run
