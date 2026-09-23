@@ -79,6 +79,8 @@ nix build .#nixosConfigurations.k230-rvv-trial.config.system.build.toplevel \
   --max-jobs 1 --cores 8 --no-link --print-out-paths
 ```
 
-That system build is in progress; evaluation alone is not a completed closure
-or boot. No SD image selects this configuration yet. The board trial still
-requires matching boot artifacts, a known recovery route, and the checks above.
+The matching system cross-build passes. `trial-system-build.json` records its
+store path, boot-artifact links, rebuilt Wi-Fi module and context-probe closure
+members, plus the installed service’s Pixman selection. No SD image selects
+this configuration yet. The board trial still requires matching boot artifacts,
+a known recovery route, and the checks above; no board boot is claimed.

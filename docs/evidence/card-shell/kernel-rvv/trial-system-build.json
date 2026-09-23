@@ -1,0 +1,33 @@
+{
+  "evidence_class": "host-cross-built-system-closure",
+  "finished_at": "2026-09-23T18:58:16.896940+00:00",
+  "command": [
+    "nix",
+    "build",
+    ".#nixosConfigurations.k230-rvv-trial.config.system.build.toplevel",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "8",
+    "--no-link",
+    "--print-out-paths"
+  ],
+  "exit_code": 0,
+  "system": "/nix/store/jcf33nrqi7hfgbj7y8jlmayz4bssvvzc-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "links": {
+    "kernel-modules": "/nix/store/d0zai20zny96nnvvj9hw2rjg7ymqyvic-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie-modules",
+    "kernel": "/nix/store/2wzrs39r2rj9kzgv3s99if5r6b085kvb-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "initrd": "/nix/store/pf3ibh3s7vsxrzd4ayrmrjfjz5djpsjq-initrd-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/initrd",
+    "sw": "/nix/store/74g70a5a9mgwzchydyzn6ldy44w2f33n-system-path"
+  },
+  "required_closure_members": [
+    "/nix/store/2wzrs39r2rj9kzgv3s99if5r6b085kvb-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+    "/nix/store/libys7mbh8qmyqx3ipm606xdh40q3ja7-k230-wifi-driver-riscv64-unknown-linux-gnu-94cc959d",
+    "/nix/store/4gn2z5fi5szrnflhzjsr1kq3f1b39wqx-k230-rvv-context-probe-riscv64-unknown-linux-gnu-0.1"
+  ],
+  "renderer": "pixman",
+  "limits": [
+    "No physical trial-kernel boot, vector execution or rendering benefit.",
+    "No SD image currently selects this trial system."
+  ]
+}
