@@ -1,4 +1,4 @@
-# Minimal CPU-Wayland video stack, shared by the image and bounded probes.
+# Minimal CPU-Wayland video probe; default image integration remains in progress.
 { pkgs }:
 let
   ffmpeg = (pkgs.ffmpeg.override {

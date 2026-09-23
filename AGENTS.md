@@ -11,8 +11,9 @@ An OpenSpec proposal is a reviewable deliverable, not a private preface to a
 large implementation. Validate and commit it promptly, then hand it to the
 coordinator for an early merge to `master`. When the coordinator has authorized
 merging and pushing, do that rather than holding a proposal behind later source
-work. This lets concurrent implementation start from a shared scope and lets
-the spec site describe the current plan.
+work. This lets concurrent implementation start from a shared scope and makes
+the current plan available to every worktree. The public spec site describes
+accepted capabilities; landing a proposal does not make it a shipped feature.
 
 For an authorized implementation, continue through the bounded work rather
 than requesting routine approval between proposal, source, tests, and commit.
@@ -38,9 +39,12 @@ a reason to leave an otherwise ready change unreported.
 
 ## Close OpenSpec changes deliberately
 
-Archive only after the implemented scope is on `master`, all required task
-proof is committed, and hardware-dependent tasks have either passed with their
-stated evidence or remain explicitly open. Validate before archive, check that
+Archive only when every task in the change is complete and its required proof
+is committed. Implementation and archive may land together after review. Keep
+incomplete changes open; if the user authorizes a scope split, preserve every
+remaining requirement and task in an explicit successor proposal before closing
+the finished part. Never tick an unperformed test to make an archive pass.
+Validate before archive, check that
 the delta targets existing capability files, sync the resulting specs as the
 change requires, and commit/archive/push the result. The final handoff names
 the deployment or board verification still required; it never turns an
