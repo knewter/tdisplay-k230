@@ -30,3 +30,13 @@ and all 22 board-orchestrator tests pass.
 `nix build .#card-shell --max-jobs 1 --cores 8 --no-link --print-out-paths` passes:
 `/nix/store/5cxcjkfayy93zhyy2qybbrnad5rd3s6f-k230-card-shell`.
 This is instrumentation, not a performance fix or default-image acceptance.
+
+The cross-built Sway also passes all 17 native-input headless runtime checks
+with `tests/card_shell_runtime.py --native-touch --benchmark`. `headless.json`
+retains that result. The 105 actual diagnostic frame rows correlate exactly to
+the corresponding submission totals; deliberately removing profiles or changing
+a total is rejected. This is QEMU user-emulation evidence, not board profiling.
+
+`analyze.py --input <telemetry.log> --output <profile.json>` requires complete,
+unique frame coverage, matching acceptance totals and non-overlapping CPU
+subdivisions before summarizing. It produces no acceptance decision.
