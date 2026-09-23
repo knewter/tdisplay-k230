@@ -35,13 +35,14 @@ static int run_case(vg_lite_buffer_format_t format, const char *name,
   vg_lite_buffer_t source = { .width = WIDTH, .height = HEIGHT, .format = format };
   vg_lite_buffer_t target = { .width = WIDTH, .height = HEIGHT, .format = VG_LITE_BGR565 };
   uint32_t input[WIDTH * HEIGHT];
-  uint16_t expected[WIDTH * HEIGHT];
+  _Alignas(uint32_t) uint16_t expected[WIDTH * HEIGHT];
   pixman_image_t *cpu_source = NULL, *cpu_target = NULL;
   vg_lite_matrix_t matrix;
   int rc = 1;
   if (checked(vg_lite_allocate(&source), "allocate source") ||
       checked(vg_lite_allocate(&target), "allocate target")) goto out;
-  if (!source.memory || !target.memory || source.stride < WIDTH * 4 ||
+  unsigned source_bytes = format == VG_LITE_BGR565 ? 2 : 4;
+  if (!source.memory || !target.memory || source.stride < (int)(WIDTH * source_bytes) ||
       target.stride < WIDTH * 2 || source.height != HEIGHT || target.height != HEIGHT) {
     fprintf(stderr, "unexpected allocation layout\n");
     goto out;
@@ -49,7 +50,6 @@ static int run_case(vg_lite_buffer_format_t format, const char *name,
   memset(source.memory, 0, (size_t)source.stride * HEIGHT);
   for (unsigned y = 0; y < HEIGHT; y++) {
     for (unsigned x = 0; x < WIDTH; x++) input[y * WIDTH + x] = pixel(x, y, round, alpha);
-    memcpy((uint8_t *)source.memory + y * source.stride, input + y * WIDTH, WIDTH * 4);
   }
   memset(expected, 0, sizeof expected);
   cpu_source = pixman_image_create_bits_no_clear(PIXMAN_a8b8g8r8, WIDTH, HEIGHT, input, WIDTH * 4);
@@ -58,6 +58,11 @@ static int run_case(vg_lite_buffer_format_t format, const char *name,
   if (!cpu_source || !cpu_target) goto out;
   pixman_image_composite32(PIXMAN_OP_SRC, cpu_source, NULL, cpu_target,
                           0, 0, 0, 0, 0, 0, WIDTH, HEIGHT);
+  for (unsigned y = 0; y < HEIGHT; y++) {
+    const void *row = source_bytes == 2 ? (const void *)(expected + y * WIDTH) :
+                                          (const void *)(input + y * WIDTH);
+    memcpy((uint8_t *)source.memory + y * source.stride, row, WIDTH * source_bytes);
+  }
   /* SDK blit cleans the CPU-uploaded source; finish invalidates its target.
    * Never dirty the GPU target from the CPU before submission. */
   if (checked(vg_lite_identity(&matrix), "identity") ||
@@ -101,9 +106,10 @@ int main(void) {
   if (checked(vg_lite_init(WIDTH, HEIGHT), "init")) return 1;
   for (unsigned round = 0; round < ROUNDS; round++) {
     for (unsigned a = 0; a < sizeof alphas / sizeof alphas[0]; a++) {
-      for (unsigned format = 0; format < 2; format++) {
-        int rc = run_case(format ? VG_LITE_RGBX8888 : VG_LITE_RGBA8888,
-                          format ? "RGBX8888" : "RGBA8888", alphas[a], round, &mismatches);
+      for (unsigned format = 0; format < 3; format++) {
+        const vg_lite_buffer_format_t formats[] = {VG_LITE_RGBA8888, VG_LITE_RGBX8888, VG_LITE_BGR565};
+        const char *names[] = {"RGBA8888", "RGBX8888", "BGR565"};
+        int rc = run_case(formats[format], names[format], alphas[a], round, &mismatches);
         if (rc) {
           if (rc != 2) checked(vg_lite_close(), "close after failure");
           return rc;
@@ -112,6 +118,6 @@ int main(void) {
     }
   }
   if (checked(vg_lite_close(), "close")) return 1;
-  printf("{\"diagnostic\":\"completed\",\"cases\":18,\"total_mismatches\":%u}\n", mismatches);
+  printf("{\"diagnostic\":\"completed\",\"cases\":27,\"total_mismatches\":%u}\n", mismatches);
   return mismatches ? 3 : 0;
 }
