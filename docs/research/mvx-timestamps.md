@@ -144,6 +144,13 @@ It deliberately leaves the current drain/EOS path and existing `LAST` behavior
 unchanged. Requeueing is required: simply dropping the buffer would shrink the
 capture pool and can deadlock an M2M decoder.
 
+Source review confirms the placement preserves the established boundaries:
+`POLLPRI` source-change handling happens before this dequeue block, the
+existing draining-empty completion branch runs first, and a `LAST` buffer is
+excluded from this requeue path. Nonempty capture buffers, including their
+timestamps, bypass the candidate unchanged. This is a source-boundary review;
+the physical repeat still has to prove EOS behavior.
+
 The patch applies cleanly to the pinned FFmpeg source. It has not yet been
 built or run on hardware. A review-only derivation evaluation against the
 coordinator's current `nix/video-probe.nix` resolves to
@@ -153,12 +160,16 @@ coordinator's current `nix/video-probe.nix` resolves to
 nix build --impure --option max-jobs 1 --option cores 4 --print-out-paths --expr '
 let
   root = builtins.toPath (builtins.getEnv "PWD");
+  patch = builtins.path {
+    path = root + "/nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch";
+    name = "ffmpeg-v4l2-requeue-empty-capture.patch";
+  };
   f = builtins.getFlake (toString root);
   pkgs = f.inputs.nixpkgs.legacyPackages.x86_64-linux.pkgsCross.riscv64;
-  probe = import (root + /nix/video-probe.nix) { inherit pkgs; };
+  probe = import (root + "/nix/video-probe.nix") { inherit pkgs; };
   ffmpeg = probe.ffmpeg.overrideAttrs (old: {
     patches = (old.patches or []) ++ [
-      (root + /nix/patches/ffmpeg-v4l2-requeue-empty-capture.patch)
+      patch
     ];
   });
 in ffmpeg
@@ -169,4 +180,5 @@ Before accepting it, build that temporary derivation, repeat the same bounded
 300-frame local clip with the observer, and verify that no zero-payload capture
 buffer becomes a decoder frame while normal timestamps and end-of-stream remain
 intact. The patch must remain a local video-probe override until that evidence
-exists.
+exists. `builtins.path` is necessary: a direct impure worktree pathname is not
+available inside the Nix sandbox.
