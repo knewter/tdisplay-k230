@@ -1,0 +1,91 @@
+---
+import Base from "../layouts/Base.astro";
+import { evidenceAsset, evidenceUrl, url } from "../lib/specs";
+
+// Full camera recordings stay in the repository; the static site carries posters.
+const media = "https://raw.githubusercontent.com/knewter/tdisplay-k230/5f9642f1411085fb0b96fb098e33c507a3519997/docs/evidence/";
+const groups = [
+  {
+    title: "Type on the glass",
+    note: "The operator entered echo 1qazoplm and confirmed the output. The native screenshot retains the initial exho typo and its successful correction. A follow-up camera clip shows finger interaction and the keyboard appearing; the operator confirmed the full visibility sequence.",
+    limit: "The hide transition is not resolved in the recording. A deliberate full-panel drag has not been recorded.",
+    native: "docs/evidence/shell-real-touch-keyboard/after-test-native.png",
+    poster: "docs/evidence/shell-real-touch-keyboard/physical-keyboard-shown-56s.png",
+    notes: "docs/evidence/shell-real-touch-keyboard/README.md",
+    audit: "docs/evidence/shell-real-touch-keyboard/visibility-followup-audit.md",
+    video: "shell-real-touch-keyboard/20260923T001007Z-keyboard-visibility-real-touch.mp4",
+    extra: "shell-real-touch-keyboard/20260923T000200Z-keyboard-real-touch.mp4",
+  },
+  {
+    title: "Open apps and get home",
+    note: "The camera shows Applications, Monitor and Terminal during the finger-driven session. The operator separately confirmed that Home works. The launcher discovers installed desktop entries; Terminal and Monitor are available in the image.",
+    limit: "The recording does not resolve the named Windows Next action or the complete exit/Home sequence. Home acceptance comes from the operator's direct report.",
+    native: "docs/evidence/shell-real-touch-apps/after-test-native.png",
+    poster: "docs/evidence/shell-real-touch-apps/physical-apps-menu-29s.png",
+    notes: "docs/evidence/shell-real-touch-apps/README.md",
+    audit: "docs/evidence/shell-real-touch-apps/video-audit.md",
+    video: "shell-real-touch-apps/20260923T000357Z-apps-windows-real-touch.mp4",
+  },
+  {
+    title: "Reboot back into the shell",
+    note: "The host camera kept recording through the touch-triggered reboot. Serial logs record shutdown and boot, and the runtime check confirms that the shell, seatd and firewall returned automatically.",
+    limit: "This was a warm reboot on existing USB power. The camera does not make every confirmation label legible; the operator confirmed the workflow.",
+    native: "docs/evidence/shell-real-touch-system/after-reboot-native.png",
+    poster: "docs/evidence/shell-real-touch-system/system-post-reboot.png",
+    notes: "docs/evidence/shell-real-touch-system/README.md",
+    audit: "docs/evidence/shell-real-touch-system/video-audit.md",
+    video: "shell-real-touch-system/20260923T000520Z-system-controls-real-touch.mp4",
+  },
+];
+---
+<Base title="A handheld NixOS shell · K230" source="hand"
+  description="Real-touch videos and screenshots of the K230 handheld shell: keyboard, apps, Home and automatic return after reboot.">
+  <main class="handheld">
+    <p class="eyebrow"><a href={url("")}>K230 verification ledger</a> · September 22, 2026</p>
+    <h1>A touchscreen shell on the glass.</h1>
+    <p class="intro">NixOS boots into a portrait Sway session with an on-screen
+      keyboard, desktop application launcher, window controls and system actions.
+      These sessions were performed by hand on the board. No input was injected.</p>
+    <p>The launcher is archived. The broader shell change remains open, with
+      the operator's keyboard and Home confirmations recorded alongside the camera
+      evidence. Captures are dated September 23 in UTC.</p>
+    {groups.map((group) => (
+      <section>
+        <h2>{group.title}</h2>
+        <p>{group.note}</p>
+        <div class="media-grid">
+          <figure>
+            <video controls preload="none" playsinline
+              aria-label={`${group.title}: physical camera recording`}
+              poster={evidenceAsset(group.poster)} src={media + group.video}>
+              <a href={media + group.video}>Download camera recording</a>
+            </video>
+            <figcaption>Physical camera recording · <a href={media + group.video}>original video</a></figcaption>
+          </figure>
+          <figure>
+            <a href={evidenceUrl(group.native)}><img loading="lazy"
+              src={evidenceAsset(group.native)} alt={`${group.title}: native compositor screenshot`} /></a>
+            <figcaption>Native screenshot · compositor state</figcaption>
+          </figure>
+        </div>
+        <p class="limit">{group.limit}</p>
+        <p><a href={evidenceUrl(group.notes)}>Session notes</a> · <a href={evidenceUrl(group.audit)}>Camera audit</a>
+          {group.extra && <> · <a href={media + group.extra}>Original typing session</a></>}</p>
+      </section>
+    ))}
+  </main>
+</Base>
+<style>
+  .handheld { max-width: 1080px; margin: 4rem auto; padding: 0 1.5rem; }
+  h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; margin: 1.5rem 0; }
+  h2 { font-size: 2rem; }
+  p { max-width: 75ch; line-height: 1.65; }
+  .intro { font-size: 1.25rem; }
+  section { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid currentColor; }
+  .media-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+  figure { margin: 1rem 0; min-width: 0; }
+  img, video { display: block; width: 100%; max-height: 32rem; object-fit: contain; background: #111; }
+  figcaption { font-size: .85rem; margin-top: .6rem; }
+  .limit { font-size: .95rem; }
+  @media (max-width: 600px) { .media-grid { grid-template-columns: 1fr; } }
+</style>

@@ -73,9 +73,9 @@ const { unverified, undeclared } = t;
             <p class="lede caveat">
               <strong>Zero unverified is not zero unknown.</strong> A capability
               appears in this list when a change is archived, and only what has
-              been archived is counted &mdash; the display, radio and runtime
-              groups have nothing here yet, while the work behind them is under
-              way. What has been observed and not yet made into a requirement is
+              been archived is counted. Panel, touch and application-launcher
+              requirements are published; broader shell, radio and boot-splash
+              work remains in flight. What has been observed and not yet made into a requirement is
               in the bands and notes below, and is not counted anywhere.
             </p>
           )}
@@ -87,13 +87,28 @@ const { unverified, undeclared } = t;
     <Legend tally={t} />
   </section>
 
-  <!--
-    2026-09-21, and the newest thing here. It sits above the first-boot band
-    because the bands are a log and a log runs newest first. It is also the
-    one section on this page describing work that is NOT in the count above,
-    which is why it says so in its own body rather than leaving a reader to
-    reconcile "the screen works" with "no display requirement exists".
-  -->
+  <section class="milestone" aria-labelledby="handheld-h">
+    <p class="milestone-eyebrow">
+      <span class="live" aria-hidden="true"></span>
+      handheld shell &middot; 2026-09-22
+    </p>
+    <h2 id="handheld-h">The shell responds to a hand on the glass.</h2>
+    <p class="milestone-lede">
+      A portrait NixOS session with an on-screen keyboard, desktop application
+      launcher, window controls and system actions. Real-touch recordings now
+      show typing, application interaction and a reboot back into the shell.
+      Home recovery is confirmed by the operator. The launcher is archived;
+      the broader shell change is still in flight.
+    </p>
+    <div class="milestone-go">
+      <a href={url("handheld/")}>
+        <b>Keyboard, apps and reboot: screenshots and videos by feature</b>
+        <span>handheld demonstrations &rarr;</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Historical panel bring-up, followed by the first-boot milestone. -->
   <section class="milestone" aria-labelledby="screen-h">
     <p class="milestone-eyebrow">
       <span class="live" aria-hidden="true"></span>
@@ -151,10 +166,10 @@ const { unverified, undeclared } = t;
         </span>
       </li>
       <li>
-        <b>not in the count above</b>
+        <b>panel and touch requirements archived</b>
         <span>
-          Requirements enter the count when a change is archived. The display
-          work is in flight, and this site does not publish proposals.
+          Panel and touch bring-up are now included in the published ledger.
+          Boot-splash handoff remains a separate change in progress.
         </span>
       </li>
     </ul>
@@ -171,12 +186,7 @@ const { unverified, undeclared } = t;
     </div>
   </section>
 
-  <!--
-    2026-09-20. The single largest thing that has happened to this project,
-    and the only section on this page whose facts came off the board rather
-    than out of a file. It sits directly under the count because the count is
-    the site's product and this is its best entry.
-  -->
+  <!-- First boot, 2026-09-20. -->
   <section class="milestone" aria-labelledby="milestone-h">
     <p class="milestone-eyebrow">
       <span class="live live-past" aria-hidden="true"></span>
