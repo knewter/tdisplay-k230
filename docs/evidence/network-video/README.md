@@ -79,3 +79,12 @@ defines feedback per content submission and distinguishes hardware completion
 from a guessed timer. The actual decoded movie remains visually grounded by
 [prior native/camera captures](../video-acceleration/README.md); final-image
 controls, captures and regression evidence are still pending.
+
+## MVX empty-capture candidate
+
+The [patched FFmpeg trace audit](mvx-patched-trace-audit.md) retains three
+300-frame repeats and a 480-frame EOF run for the local empty-capture requeue
+candidate. All runs exit successfully and preserve EOF, but the raw trace also
+shows duplicated MVX capture timestamps propagated by FFmpeg. The candidate is
+therefore diagnostic-only; it is not enabled in the system or used to claim
+native timestamp correctness.
