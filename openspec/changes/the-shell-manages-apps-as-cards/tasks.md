@@ -50,3 +50,9 @@ Task 4.2 remains open: `docs/evidence/card-shell/board-cost/long-trace/README.md
 records adequate frame coverage but failed CPU/tracking budgets. Twelve repeated
 interaction checks were observed; upward throw missed once, so repeatability
 also remains unresolved despite the earlier successful task 5.2 evidence.
+
+The source-timestamp correction now has a failing old-adapter negative control,
+passing delayed-input/native-routing tests and one board repeat observing all
+13 interaction checks. `docs/evidence/card-shell/touch-timestamps/board/README.md`
+retains the repeat's still-failing frame costs. Tasks 4.2, 5.1 and 5.3 stay open;
+one injected repeat does not establish physical throw reliability.

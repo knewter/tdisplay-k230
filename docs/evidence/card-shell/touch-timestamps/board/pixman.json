@@ -1,0 +1,471 @@
+{
+  "board_budget_gate": "FAIL",
+  "budgets": {
+    "frame_update_cpu_ms": {
+      "max": 33.334,
+      "p95": 16.667
+    },
+    "incremental_session_memory_bytes": {
+      "max": 67108864
+    },
+    "motion_to_present_ms": {
+      "max": 133.334,
+      "p95": 66.667
+    },
+    "motion_to_submit_ms": {
+      "max": 100.0,
+      "p95": 50.0
+    },
+    "release_to_final_submit_ms": {
+      "max": 200.0
+    },
+    "release_to_present_ms": {
+      "max": 266.667
+    },
+    "tracking_present_interval_ms": {
+      "max": 100.0,
+      "p95": 33.334
+    }
+  },
+  "created_at": "2026-09-23T17:10:47.204478+00:00",
+  "ignored_non_benchmark_lines": 1201,
+  "limits": [
+    "Input times begin at compositor dispatch, not physical finger contact.",
+    "Presentation timestamps are backend feedback, not optical pixel visibility.",
+    "A native capture and real-finger optical review remain separate acceptance gates.",
+    "Board provenance is operator-attested; this parser does not contact or identify hardware.",
+    "Missing data, callbacks alone, or headless execution cannot prove board acceptance.",
+    "Memory is sampled cgroup memory.current; spikes between samples are unmeasured.",
+    "Physical input labels require operator provenance; telemetry cannot authenticate a human finger."
+  ],
+  "missing_evidence": [],
+  "optical_visibility": "UNVERIFIED",
+  "provenance": {
+    "board_model": "LILYGO T-Display-K230",
+    "collected_at": "2026-09-23T17:09:09.061611+00:00",
+    "environment": "board",
+    "evidence_class": "board-injected",
+    "ownership": "coordinator-reserved",
+    "package_store_path": "/nix/store/iyxcmrirznbl45ggzx6y4i42kp1wybzv-k230-card-shell",
+    "schema": 1,
+    "source_revision": "b88c4cc65af9274ea5ed0fb43619eefbf6a65396"
+  },
+  "real_finger_acceptance": "UNVERIFIED",
+  "renderer_requested": "pixman",
+  "runs": [
+    {
+      "coalesced_inputs": 399,
+      "excluded_input_pauses": 19,
+      "inputs": 537,
+      "metrics": {
+        "frame_update_cpu_ms": {
+          "budget": {
+            "max": 33.334,
+            "p95": 16.667
+          },
+          "count": 138,
+          "max": 26.188553,
+          "median": 20.862971,
+          "min": 11.267175,
+          "p95": 24.545558,
+          "status": "FAIL"
+        },
+        "incremental_session_memory_bytes": {
+          "budget": {
+            "max": 67108864
+          },
+          "count": 1,
+          "max": 393216,
+          "median": 393216,
+          "min": 393216,
+          "p95": 393216,
+          "status": "PASS"
+        },
+        "motion_to_present_ms": {
+          "budget": {
+            "max": 133.334,
+            "p95": 66.667
+          },
+          "count": 509,
+          "max": 98.59963,
+          "median": 41.176476,
+          "min": 19.484114,
+          "p95": 66.971494,
+          "status": "FAIL"
+        },
+        "motion_to_submit_ms": {
+          "budget": {
+            "max": 100.0,
+            "p95": 50.0
+          },
+          "count": 509,
+          "max": 83.766396,
+          "median": 30.901087,
+          "min": 17.962963,
+          "p95": 53.088154,
+          "status": "FAIL"
+        },
+        "release_to_final_submit_ms": {
+          "budget": {
+            "max": 200.0
+          },
+          "count": 28,
+          "max": 65.970734,
+          "median": 23.866285,
+          "min": 19.180792,
+          "p95": 39.649066,
+          "status": "PASS"
+        },
+        "release_to_first_present_ms": {
+          "budget": null,
+          "count": 28,
+          "max": 78.970384,
+          "median": 31.129063,
+          "min": 23.881325,
+          "p95": 51.781117,
+          "status": "PASS"
+        },
+        "release_to_first_submit_ms": {
+          "budget": null,
+          "count": 28,
+          "max": 65.970734,
+          "median": 23.866285,
+          "min": 19.180792,
+          "p95": 39.649066,
+          "status": "PASS"
+        },
+        "release_to_present_ms": {
+          "budget": {
+            "max": 266.667
+          },
+          "count": 28,
+          "max": 78.970384,
+          "median": 31.129063,
+          "min": 23.881325,
+          "p95": 51.781117,
+          "status": "PASS"
+        },
+        "tracking_present_interval_ms": {
+          "budget": {
+            "max": 100.0,
+            "p95": 33.334
+          },
+          "count": 90,
+          "max": 95.923,
+          "median": 38.37,
+          "min": 19.18,
+          "p95": 57.559,
+          "status": "FAIL"
+        }
+      },
+      "missing_evidence": [],
+      "resources": {
+        "compositor": {
+          "active": {
+            "count": 17,
+            "cpu_percent": 50.37253229640846,
+            "first_cpu_ns": 13052867338,
+            "first_t_ns": 38346030505109,
+            "last_cpu_ns": 21243731481,
+            "last_t_ns": 38362291081597,
+            "median_memory_bytes": 34349056,
+            "peak_memory_bytes": 34349056,
+            "span_ms": 16260.576488,
+            "status": "PASS"
+          },
+          "baseline": {
+            "count": 4,
+            "cpu_percent": 40.05396686922755,
+            "first_cpu_ns": 11365116539,
+            "first_t_ns": 38341983372904,
+            "last_cpu_ns": 12580004459,
+            "last_t_ns": 38345016500494,
+            "median_memory_bytes": 33992704,
+            "peak_memory_bytes": 33992704,
+            "span_ms": 3033.12759,
+            "status": "PASS"
+          },
+          "restored": {
+            "count": 5,
+            "cpu_percent": 37.44927487163396,
+            "first_cpu_ns": 21658692823,
+            "first_t_ns": 38363291749829,
+            "last_cpu_ns": 23168819475,
+            "last_t_ns": 38367324208821,
+            "median_memory_bytes": 34349056,
+            "peak_memory_bytes": 34349056,
+            "span_ms": 4032.458992,
+            "status": "PASS"
+          }
+        },
+        "restored_session_delta_bytes": 233472,
+        "session": {
+          "active": {
+            "count": 17,
+            "cpu_percent": 68.13791016681697,
+            "first_cpu_ns": 22270275000,
+            "first_t_ns": 38346030505109,
+            "last_cpu_ns": 33349892000,
+            "last_t_ns": 38362291081597,
+            "median_memory_bytes": 27627520,
+            "peak_memory_bytes": 27639808,
+            "span_ms": 16260.576488,
+            "status": "PASS"
+          },
+          "baseline": {
+            "count": 4,
+            "cpu_percent": 83.13089130549895,
+            "first_cpu_ns": 19040901000,
+            "first_t_ns": 38341983372904,
+            "last_cpu_ns": 21562367000,
+            "last_t_ns": 38345016500494,
+            "median_memory_bytes": 27246592,
+            "peak_memory_bytes": 27250688,
+            "span_ms": 3033.12759,
+            "status": "PASS"
+          },
+          "restored": {
+            "count": 5,
+            "cpu_percent": 76.45543342452918,
+            "first_cpu_ns": 34143924000,
+            "first_t_ns": 38363291749829,
+            "last_cpu_ns": 37226958000,
+            "last_t_ns": 38367324208821,
+            "median_memory_bytes": 27480064,
+            "peak_memory_bytes": 27484160,
+            "span_ms": 4032.458992,
+            "status": "PASS"
+          }
+        }
+      },
+      "run": "38341983231122",
+      "session": {
+        "backend": "drm",
+        "cards": 2,
+        "clock": "monotonic",
+        "event": "session",
+        "height": 1232,
+        "input": "injected",
+        "output_format": "RGB565",
+        "renderer": "pixman",
+        "run": "38341983231122",
+        "t_ns": 38345320242771,
+        "v": 1,
+        "width": 568
+      },
+      "status": "FAIL",
+      "submission_mappings": 537,
+      "submitted_frames": 138,
+      "unresolved": {}
+    },
+    {
+      "coalesced_inputs": 372,
+      "excluded_input_pauses": 27,
+      "inputs": 515,
+      "metrics": {
+        "frame_update_cpu_ms": {
+          "budget": {
+            "max": 33.334,
+            "p95": 16.667
+          },
+          "count": 143,
+          "max": 49.391238,
+          "median": 15.500585,
+          "min": 11.050497,
+          "p95": 16.963199,
+          "status": "FAIL"
+        },
+        "incremental_session_memory_bytes": {
+          "budget": {
+            "max": 67108864
+          },
+          "count": 1,
+          "max": 483328,
+          "median": 483328,
+          "min": 483328,
+          "p95": 483328,
+          "status": "PASS"
+        },
+        "motion_to_present_ms": {
+          "budget": {
+            "max": 133.334,
+            "p95": 66.667
+          },
+          "count": 489,
+          "max": 85.245389,
+          "median": 27.538478,
+          "min": 18.871963,
+          "p95": 51.420514,
+          "status": "PASS"
+        },
+        "motion_to_submit_ms": {
+          "budget": {
+            "max": 100.0,
+            "p95": 50.0
+          },
+          "count": 489,
+          "max": 70.210501,
+          "median": 23.767756,
+          "min": 14.724359,
+          "p95": 38.866535,
+          "status": "PASS"
+        },
+        "release_to_final_submit_ms": {
+          "budget": {
+            "max": 200.0
+          },
+          "count": 26,
+          "max": 39.089388,
+          "median": 25.133132,
+          "min": 15.194669,
+          "p95": 34.882786,
+          "status": "PASS"
+        },
+        "release_to_first_present_ms": {
+          "budget": null,
+          "count": 26,
+          "max": 51.298333,
+          "median": 29.272441,
+          "min": 18.860143,
+          "p95": 43.739271,
+          "status": "PASS"
+        },
+        "release_to_first_submit_ms": {
+          "budget": null,
+          "count": 26,
+          "max": 39.089388,
+          "median": 25.133132,
+          "min": 15.194669,
+          "p95": 34.882786,
+          "status": "PASS"
+        },
+        "release_to_present_ms": {
+          "budget": {
+            "max": 266.667
+          },
+          "count": 26,
+          "max": 51.298333,
+          "median": 29.272441,
+          "min": 18.860143,
+          "p95": 43.739271,
+          "status": "PASS"
+        },
+        "tracking_present_interval_ms": {
+          "budget": {
+            "max": 100.0,
+            "p95": 33.334
+          },
+          "count": 90,
+          "max": 76.64,
+          "median": 38.318,
+          "min": 19.156,
+          "p95": 57.565,
+          "status": "FAIL"
+        }
+      },
+      "missing_evidence": [],
+      "resources": {
+        "compositor": {
+          "active": {
+            "count": 14,
+            "cpu_percent": 50.57386667100616,
+            "first_cpu_ns": 2281885935,
+            "first_t_ns": 38322988507520,
+            "last_cpu_ns": 8948161132,
+            "last_t_ns": 38336169772145,
+            "median_memory_bytes": 27439104,
+            "peak_memory_bytes": 27439104,
+            "span_ms": 13181.264625,
+            "status": "PASS"
+          },
+          "baseline": {
+            "count": 4,
+            "cpu_percent": 39.120855062848044,
+            "first_cpu_ns": 587079971,
+            "first_t_ns": 38318909445499,
+            "last_cpu_ns": 1777402227,
+            "last_t_ns": 38321952125047,
+            "median_memory_bytes": 26869760,
+            "peak_memory_bytes": 26869760,
+            "span_ms": 3042.679548,
+            "status": "PASS"
+          },
+          "restored": {
+            "count": 5,
+            "cpu_percent": 40.02094777646751,
+            "first_cpu_ns": 9466854466,
+            "first_t_ns": 38337184148660,
+            "last_cpu_ns": 11091720756,
+            "last_t_ns": 38341244188165,
+            "median_memory_bytes": 27439104,
+            "peak_memory_bytes": 27439104,
+            "span_ms": 4060.039505,
+            "status": "PASS"
+          }
+        },
+        "restored_session_delta_bytes": 475136,
+        "session": {
+          "active": {
+            "count": 14,
+            "cpu_percent": 66.63639074008803,
+            "first_cpu_ns": 5604884000,
+            "first_t_ns": 38322988507520,
+            "last_cpu_ns": 14388403000,
+            "last_t_ns": 38336169772145,
+            "median_memory_bytes": 19705856,
+            "peak_memory_bytes": 19718144,
+            "span_ms": 13181.264625,
+            "status": "PASS"
+          },
+          "baseline": {
+            "count": 4,
+            "cpu_percent": 80.60737127615518,
+            "first_cpu_ns": 2409786000,
+            "first_t_ns": 38318909445499,
+            "last_cpu_ns": 4862410000,
+            "last_t_ns": 38321952125047,
+            "median_memory_bytes": 19234816,
+            "peak_memory_bytes": 19234816,
+            "span_ms": 3042.679548,
+            "status": "PASS"
+          },
+          "restored": {
+            "count": 5,
+            "cpu_percent": 82.2953076167174,
+            "first_cpu_ns": 15105048000,
+            "first_t_ns": 38337184148660,
+            "last_cpu_ns": 18446270000,
+            "last_t_ns": 38341244188165,
+            "median_memory_bytes": 19709952,
+            "peak_memory_bytes": 19709952,
+            "span_ms": 4060.039505,
+            "status": "PASS"
+          }
+        }
+      },
+      "run": "38318909290696",
+      "session": {
+        "backend": "drm",
+        "cards": 1,
+        "clock": "monotonic",
+        "event": "session",
+        "height": 1232,
+        "input": "injected",
+        "output_format": "RGB565",
+        "renderer": "pixman",
+        "run": "38318909290696",
+        "t_ns": 38322247272611,
+        "v": 1,
+        "width": 568
+      },
+      "status": "FAIL",
+      "submission_mappings": 515,
+      "submitted_frames": 143,
+      "unresolved": {}
+    }
+  ],
+  "schema": "card-shell-benchmark-v1",
+  "status": "FAIL",
+  "telemetry_bytes": 542408,
+  "telemetry_sha256": "92bb64957707dc52b6aba493bf4c4ab64700a5c688e490745a890c913aa25195"
+}
