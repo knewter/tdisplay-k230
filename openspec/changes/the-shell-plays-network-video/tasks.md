@@ -12,24 +12,32 @@
 
 ## 3. Software playback baseline
 
-- [ ] 3.1 Run the 480x270 software BBB trial for at least 30 seconds and record manifest, representation, source frame rate, `wlshm`, audio state, decoder drops, video-output drops, cache, and player exit reason in `docs/evidence/`.
-- [ ] 3.2 Run the 640x360 comparison trial with the same software path and record its counters and network/cache behavior; verify the report distinguishes the comparison from an accepted smoothness claim.
-- [ ] 3.3 Capture CPU samples with verified `CLK_TCK` and page size, and calculate only clearly labeled interval estimates; verify raw `/proc` transcripts and the calculation method are committed with no secret or unrelated terminal data.
+- [x] 3.1 Run the 480x270 software BBB trial for at least 30 seconds and record manifest, representation, source frame rate, `wlshm`, audio state, decoder drops, video-output drops, cache, and player exit reason in `docs/evidence/`.
+- [x] 3.2 Run the 640x360 comparison trial with the same software path and record its counters and network/cache behavior; verify the report distinguishes the comparison from an accepted smoothness claim.
+- [x] 3.3 Capture CPU samples with verified `CLK_TCK` and page size, and calculate only clearly labeled interval estimates; verify raw `/proc` transcripts and the calculation method are committed with no secret or unrelated terminal data.
 - [ ] 3.4 Capture a native decoded frame and a physical panel frame for the accepted software baseline; verify the report labels native screenshots, camera readability, decoder counters, and scanout/presentation evidence as separate claims.
 
 ## 4. MVX hardware decoder experiment
 
-- [ ] 4.1 Build or expose the MVX V4L2 probe/player path against the audited device interface; verify the device node, capabilities, negotiated H.264 format, and output format using a narrow board console probe before claiming decode.
+- [x] 4.1 Build or expose the MVX V4L2 probe/player path against the audited device interface; verify the device node, capabilities, negotiated H.264 format, and output format using a narrow board console probe before claiming decode.
 - [ ] 4.2 Attempt the same bounded network representation through MVX and record whether frames decode and reach the existing output; verify a failed negotiation falls back to software and leaves the shell recoverable.
 - [ ] 4.3 Compare software and MVX CPU, drop, cache, and presentation results over at least 30 seconds; verify the report names the actual decoder path and does not infer hardware acceleration from `/dev/video0` presence alone.
 
 ## 5. Presentation and audio acceptance
 
 - [ ] 5.1 Add a synchronized presentation-timing method that distinguishes decoded frames from actual compositor/panel presentation, then run it for at least 30 seconds at the selected source cadence; verify timestamps, sample count, and limitations are recorded and no current hardware counter is treated as valid without checking its reset/units behavior.
-- [ ] 5.2 Measure audio separately with an explicit enabled configuration, or record audio as unverified when the board path cannot establish physical output; verify video acceptance does not inherit an audio claim.
+- [x] 5.2 Measure audio separately with an explicit enabled configuration, or record audio as unverified when the board path cannot establish physical output; verify video acceptance does not inherit an audio claim.
 - [ ] 5.3 Run the final shell regression after playback and cleanup; verify serial access, touch/display services, keyboard, Apps/Back/Home, and removal of temporary player/network state.
 
 ## 6. Review and integration
 
 - [ ] 6.1 Run relevant launcher/player tests and `openspec validate the-shell-plays-network-video --strict`; verify every requirement has grounded evidence or an explicit `UNVERIFIED` marker.
 - [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify all committed screenshots, clips, logs, and any media test assets have provenance, attribution, hashes, and DATA inventory rows.
+
+Initial completed tasks are grounded in `docs/evidence/big-buck-bunny/README.md`
+and its committed 270p/360p logs and CPU sample. These are temporary-probe
+results; package/image integration and presentation acceptance remain open.
+
+Task 4.1: `docs/evidence/video-acceleration/v4l2-capabilities.txt` records the
+live MVX H.264 capability; `mvx-decode-300.txt` proves real decoded frames.
+MVX timing, automatic fallback and integrated controls remain unaccepted.

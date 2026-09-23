@@ -1,0 +1,30 @@
+
+===== > timeout 30 /nix/store/vr4r48cj2wlbzsqmkvgp35chngjidk3z-ffmpeg-riscv64-unknown-linux-gnu-9.0.1-bin/bin/ffmpeg -hide_banner -v verbose -debug_ts -c:v h264 -i /run/bbb-360p-sample.mp4 -frames:v 300 -an -benchmark -f null - > /run/local-h264.txt 2>&1; echo DECODE_STATUS=$?; tail -15 /run/local-h264.txt; echo PTS_SAMPLE; grep "decoder ->" /run/local-h264.txt | head -5 =====
+timeout 30 /nix/store/vr4r48cj2wlbzsqmkvgp35chngjidk3z
+-ffmpeg-riscv64-unknown-linux-gnu-9.0.1-bin/bin/ffmpeg -hide_banner -v verbose -debug_ts -c:v h264 -i /run/bbb-360p-sample.mp4 -frames:v 300 -an -benchmark -f null - > /run/local-h264.txt 2>&1; echo DECODE_STATUS=$?; tail -15 /run/local-h264.txt; echo PTS_SAMPLE; grep "decoder ->" /run/local-h264.txt | head -5
+
+DECODE_STATUS=0
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] Decoder returned EOF, finishing
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] Terminating thread with return code 0 (success)
+[out#0/null @ 0x3130a05ec0] Output file #0 (pipe:):
+[out#0/null @ 0x3130a05ec0]   Output stream #0:0 (video): 300 frames encoded; 300 packets muxed (127200 bytes);
+[out#0/null @ 0x3130a05ec0]   Total: 300 packets (127200 bytes) muxed
+[out#0/null @ 0x3130a05ec0] video:124KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=  300 fps= 77 q=-0.0 Lsize=N/A time=00:00:10.00 bitrate=N/A speed=2.58x elapsed=0:00:03.87
+bench: utime=3.502s stime=0.124s rtime=3.873s
+bench: maxrss=12132KiB
+[in#0/mov,mp4,m4a,3gp,3g2,mj2 @ 0x3130a03f60] Input file #0 (/run/bbb-360p-sample.mp4):
+[in#0/mov,mp4,m4a,3gp,3g2,mj2 @ 0x3130a03f60]   Input stream #0:0 (video): 310 packets read (1367533 bytes); 302 frames decoded; 0 decode errors;
+[in#0/mov,mp4,m4a,3gp,3g2,mj2 @ 0x3130a03f60]   Total: 310 packets (1367533 bytes) demuxed
+[AVIOContext @ 0x3130a0c6a0] Statistics: 1540248 bytes read, 6 seeks
+
+Exiting with exit code 0
+PTS_SAMPLE
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] decoder -> pts:0 pts_time:0 pkt_dts:0 pkt_dts_time:0 duration:1 duration_time:0.0333333 keyframe:1 frame_type:1 time_base:1/30
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] decoder -> pts:1 pts_time:0.0333333 pkt_dts:1 pkt_dts_time:0.0333333 duration:1 duration_time:0.0333333 keyframe:0 frame_type:2 time_base:1/30
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] decoder -> pts:2 pts_time:0.0666667 pkt_dts:2 pkt_dts_time:0.0666667 duration:1 duration_time:0.0333333 keyframe:0 frame_type:2 time_base:1/30
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] decoder -> pts:3 pts_time:0.1 pkt_dts:3 pkt_dts_time:0.1 duration:1 duration_time:0.0333333 keyframe:0 frame_type:2 time_base:1/30
+[vist#0:0/h264 @ 0x3130a069d0] [dec:h264 @ 0x3130a41680] decoder -> pts:4 pts_time:0.133333 pkt_dts:4 pkt_dts_time:0.133333 duration:1 duration_time:0.0333333 keyframe:0 frame_type:2 time_base:1/30
+
+
+[root@nixos:/home/shell]#

@@ -1,7 +1,7 @@
 ## Context
 
 The existing shell is Sway/Pixman at 568x1232 with Foot, a native Apps launcher,
-an on-screen keyboard, and runtime-only Wi-Fi credentials. The committed BBB trial
+an on-screen keyboard, and root-controlled persistent Wi-Fi credentials delivered at runtime. The committed BBB trial
 shows that the target can decode H.264 in software through `wlshm`, but 480x270
 recorded 106 video-output drops and 640x360 recorded 509; these are useful baselines,
 not smooth-playback claims. `docs/evidence/mvx-v4l2-audit.md` identifies the MVX V4L2
@@ -46,7 +46,7 @@ result as fallback. Do not make the default image depend on a successful MVX pat
 
 4. **Use runtime-only source configuration.** A public URL may be supplied by the
 operator or a documented test wrapper. Private network material stays in the existing
-root-owned `/run` procedure and never enters desktop files, Nix expressions, argv,
+root-controlled systemd credential or one-off `/run` procedure and never enters desktop files, Nix expressions, argv,
 or the store. The player entry must not become a general network installer.
 
 5. **Separate three evidence layers.** Host/Nix evidence proves derivations and

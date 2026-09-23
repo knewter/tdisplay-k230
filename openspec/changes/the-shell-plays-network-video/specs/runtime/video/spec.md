@@ -7,6 +7,8 @@ software playback, optional MVX hardware decoding, audio, and physical presentat
 
 ### Requirement: The image provides a reproducible software video baseline
 
+<!-- UNVERIFIED: the source-built probe runs on the board, but a player has not yet been integrated into the default image. -->
+
 The Nix image SHALL provide a version-pinned player and FFmpeg path that can open
 a runtime-supplied HTTP(S) or DASH media URL with software H.264 decoding and the
 existing CPU Wayland output. A protected network credential, URL, or derived secret
@@ -54,6 +56,8 @@ physical/native frames, but not a synchronized 30-second presentation-timing pro
 - **THEN** the report includes source and player provenance, decoded-frame correctness, presentation-timing evidence, CPU samples, cache behavior, and explicit limitations
 
 ### Requirement: Audio is measured separately from video
+
+*Grounding: `docs/evidence/big-buck-bunny/README.md` records explicit `--audio=no` video trials and makes no audio-output claim.*
 
 The player SHALL expose whether audio is disabled, decoded, or presented. Video
 acceptance MUST NOT imply audio acceptance when audio is disabled or lacks measured

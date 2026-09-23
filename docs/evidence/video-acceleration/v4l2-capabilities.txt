@@ -1,0 +1,89 @@
+
+===== > /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1 --library-path /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib /run/mvx-v4l2-probe /dev/video0 =====
+/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1 --library-path /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib /run/mvx-v4l2-probe /dev/video0
+
+device=/dev/video0
+driver=mvx
+card=Linlon Video device
+bus=platform:mvx
+capabilities=0x8420c000
+device_caps=0x0420c000
+output_mplane:
+  AVS1 compressedAVS
+  AVS2 compressedAVS2
+  H263 compressedH.263
+  H264 compressedH.264
+  M264 compressedH.264 MVC
+  AVC1 compressedH.264 (No Start Codes)
+  HEVC compressedHEVC
+  MPG2 compressedMPEG-2 ES
+  MPG4 compressedMPEG-4 Part 2 ES
+  VC1G compressedVC-1 (SMPTE 412M Annex G)
+  VC1L compressedVC-1 (SMPTE 412M Annex L)
+  VP80 compressedVP8
+  VP90 compressedVP9
+  AV10 compressedAV1
+  JPEG compressedJFIF JPEG
+  MJPG compressedMotion-JPEG
+  YM12Planar YUV 4:2:0 (N-C)
+  YU12Planar YUV 4:2:0
+  NV12Y/UV 4:2:0
+  NV21Y/VU 4:2:0
+  P01010-bit Y/UV 4:2:0
+  Y0YLYUV 4:2:0 Y0L2 (ARM format)
+  Y0ABYUV 4:2:0 AQB1 (ARM format)
+  YUYVYUYV 4:2:2
+  UYVYUYVY 4:2:2
+  Y21010-bit YUYV Packed
+  BA2432-bit ARGB 8-8-8-8
+  RGB432-bit A/XRGB 8-8-8-8
+  RA2432-bit ABGR 8-8-8-8
+  AB2432-bit RGBA 8-8-8-8
+  AR2432-bit BGRA 8-8-8-8
+  BGR432-bit BGRA/X 8-8-8-8
+  RGBM24-bit RGB 8-8-8 3PLANNER
+  GREY8-bit Greyscale
+  Y10L10-bit GREY 16BIT LSB 1PLANNER
+  YM24Planar YUV 4:4:4 (N-C)
+  Y4P310-bit YUV444 16BIT LSB 3PLANNE
+  Y0P210-bit YUV420 16BIT LSB 2PLANNE
+  Y2P110-bit YUV422 16BIT LSB 1PLANNE
+  Y0P310-bit YUV420 16BIT LSB 3PLANNE
+  entries=40
+capture_mplane:
+  H264 compressedH.264
+  M264 compressedH.264 MVC
+  AVC1 compressedH.264 (No Start Codes)
+  HEVC compressedHEVC
+  VP80 compressedVP8
+  VP90 compressedVP9
+  JPEG compressedJFIF JPEG
+  MJPG compressedMotion-JPEG
+  YM12Planar YUV 4:2:0 (N-C)
+  YU12Planar YUV 4:2:0
+  NV12Y/UV 4:2:0
+  NV21Y/VU 4:2:0
+  P01010-bit Y/UV 4:2:0
+  Y0YLYUV 4:2:0 Y0L2 (ARM format)
+  Y0ABYUV 4:2:0 AQB1 (ARM format)
+  YUYVYUYV 4:2:2
+  UYVYUYVY 4:2:2
+  Y21010-bit YUYV Packed
+  RGB324-bit RGB 8-8-8
+  BGR324-bit BGR 8-8-8
+  RGBM24-bit RGB 8-8-8 3PLANNER
+  GREY8-bit Greyscale
+  Y10L10-bit GREY 16BIT LSB 1PLANNER
+  YM24Planar YUV 4:4:4 (N-C)
+  Y4P310-bit YUV444 16BIT LSB 3PLANNE
+  Y0P210-bit YUV420 16BIT LSB 2PLANNE
+  Y2P110-bit YUV422 16BIT LSB 1PLANNE
+  entries=27
+h264_output_mplane=yes
+
+
+[root@nixos:~]#
+
+
+
+[root@nixos:~]#

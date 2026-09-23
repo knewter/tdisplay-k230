@@ -1,0 +1,25 @@
+{
+  "sourceVideo": "/tmp/k230-final-mvx360-camera.mp4",
+  "sourceVideoSha256": "70f6aa77544105cc41aae7af443ccd97b101dcc3247a3f939892f61342abfa17",
+  "sourceVideoSize": [
+    1920,
+    1080
+  ],
+  "sourceFilters": [
+    "hflip",
+    "vflip"
+  ],
+  "cameraFocus": "continuous autofocus enabled for capture",
+  "clipStartSeconds": 3,
+  "clipDurationSeconds": 4,
+  "crop": {
+    "width": 1000,
+    "height": 420,
+    "x": 650,
+    "y": 350
+  },
+  "audio": false,
+  "speed": 1,
+  "interaction": "automated player launch; no injected touchscreen interaction",
+  "nativeSource": "grim /run/final-video.png during same run"
+}

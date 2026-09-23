@@ -1,0 +1,75 @@
+
+===== > sleep 22; tail -c 2500 /run/shell/hw360point2-status.txt; echo DEBUG_SELECTION; grep -E "Using hardware|Selected codec|Video:|VO:|swscaler|v4l2|format" /run/shell/hw360point2-debug.log | tail -20 =====
+sleep 22; tail -c 2500 /run/shell/hw360point2-status.txt; echo DEBUG_SELECTION; grep -E "Using hardware|Selected codec|Video:|VO:|swscaler|v4l2|format" /run/shell/hw360point2-debug.log | tail -20
+
+[1]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 /nix/store/dpylynz13fl5kmkfksnvwgv9arqy0hpr-mpv-riscv64-unknown-linux-gnu-0.41.0/bin/mpv --correct-pts=no --container-fps-override=30 --no-config --vo=wlshm --profile=sw-fast --hwdec=no --vd=h264_v4l2m2m --audio=no --cache=yes --demuxer-readahead-secs=30 --start=45 --length=30 --title=k230-video-probe --force-window=yes --geometry=568x320 --terminal=yes --input-terminal=no --wayland-internal-vsync=auto '--demuxer-lavf-o=protocol_whitelist=[file,http,https,tcp,tls,crypto,data]' '--term-status-msg=pos=${time-pos} fps=${estimated-vf-fps} decoder_drop=${decoder-frame-drop-count} vo_drop=${frame-drop-count} cache=${demuxer-cache-duration}' --log-file=/run/shell/hw360point2-debug.log --vid=7 https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd --sws-scaler=point > /run/shell/hw360point2-status.txt 2>&1
+119.6
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=119.5333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=119.5667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=119.7667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=119.7
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=120.4667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=120.4
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=121.3333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=121.8
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.2667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.2
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.1667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.1
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.0333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=122.9333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=122.8667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=122.8
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=122.7333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=122.6667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=123.1667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=123.3333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=123.7333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=124.1333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=124.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=125.0667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.4
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.3333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.2667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.2
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.1333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.0667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=125.9333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=125.8667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=125.8
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=125.9
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.1333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=126.2667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=127.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=127.3667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=128.5333
+Exiting... (End of file)
+DEBUG_SELECTION
+[   0.014][v][cplayer]    libavformat     63.1.101
+[   0.014][v][cplayer] Command line options: '--correct-pts=no' '--container-fps-override=30' '--no-config' '--vo=wlshm' '--profile=sw-fast' '--hwdec=no' '--vd=h264_v4l2m2m' '--audio=no' '--cache=yes' '--demuxer-readahead-secs=30' '--start=45' '--length=30' '--title=k230-video-probe' '--force-window=yes' '--geometry=568x320' '--terminal=yes' '--input-terminal=no' '--wayland-internal-vsync=auto' '--demuxer-lavf-o=protocol_whitelist=[file,http,https,tcp,tls,crypto,data]' '--term-status-msg=pos=${time-pos} fps=${estimated-vf-fps} decoder_drop=${decoder-frame-drop-count} vo_drop=${frame-drop-count} cache=${demuxer-cache-duration}' '--log-file=/run/shell/hw360point2-debug.log' '--vid=7' 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd' '--sws-scaler=point'
+[   0.014][v][cplayer]    libavformat     63.1.101
+[   0.014][v][cplayer] Setting option 'vd' = 'h264_v4l2m2m' (flags = 8)
+[  11.386][v][lavf] avformat_find_stream_info() finished after 0 bytes.
+[  11.388][v][demux] Detected file format: dash (libavformat)
+[  11.457][v][vd]     h264_v4l2m2m (h264) - V4L2 mem2mem H.264 decoder wrapper
+[  11.457][v][vd]     h264_v4l2m2m (h264) - V4L2 mem2mem H.264 decoder wrapper
+[  11.457][v][vd] Opening decoder h264_v4l2m2m
+[  11.458][v][ffmpeg/video] h264_v4l2m2m: Using device /dev/video0
+[  11.459][v][ffmpeg/video] h264_v4l2m2m: driver 'mvx' on card 'Linlon Video device' in mplane mode
+[  11.459][v][ffmpeg/video] h264_v4l2m2m: requesting formats: output=H264/none capture=YU12/yuv420p
+[  11.462][v][vd] Selected decoder: h264_v4l2m2m - V4L2 mem2mem H.264 decoder wrapper
+[  14.606][v][vd] Decoder format: 640x360 yuv420p bt.709/bt.709/bt.1886/full/auto CL=mpeg2/4/h264 crop=640x360+0+0 A=none
+[  14.971][i][cplayer] VO: [wlshm] 640x360 yuv420p
+[  14.972][v][cplayer] VO: Description: Wayland SHM video output (software scaling)
+[  14.990][v][ffmpeg] swscaler: nearest neighbor / point scaler, from yuv420p to bgra using C
+[  14.991][d][ffmpeg] swscaler: 640x360 -> 568x320
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#

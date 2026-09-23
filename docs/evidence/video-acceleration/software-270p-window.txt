@@ -1,0 +1,67 @@
+
+===== > sleep 22; tail -c 2500 /run/shell/sw270remote-status.txt; echo DEBUG_SELECTION; grep -E "Using hardware|Selected codec|Video:|VO:|swscaler|v4l2|format" /run/shell/sw270remote-debug.log | tail -20 =====
+sleep 22; tail -c 2500 /run/shell/sw270remote-status.txt; echo DEBUG_SELECTION; grep -E "Using hardware|Selected codec|Video:|VO:|swsc
+aler|v4l2|format" /run/shell/sw270remote-debug.log | tail -20
+
+[1]+  Done                       runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 /nix/store/dpylynz13fl5kmkfksnvwgv9arqy0hpr-mpv-riscv64-unknown-linux-gnu-0.41.0/bin/mpv --no-config --vo=wlshm --profile=sw-fast --hwdec=no --vd=h264 --audio=no --cache=yes --demuxer-readahead-secs=30 --start=45 --length=30 --title=k230-video-probe --force-window=yes --geometry=480x270 --terminal=yes --input-terminal=no --wayland-internal-vsync=auto '--demuxer-lavf-o=protocol_whitelist=[file,http,https,tcp,tls,crypto,data]' '--term-status-msg=pos=${time-pos} fps=${estimated-vf-fps} decoder_drop=${decoder-frame-drop-count} vo_drop=${frame-drop-count} cache=${demuxer-cache-duration}' --log-file=/run/shell/sw270remote-debug.log --vid=6 https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd > /run/shell/sw270remote-status.txt 2>&1
+s=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.3333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.3
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.2667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.2333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.2
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.1667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.1333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.1
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.0667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166.0333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=166
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=165.9667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=0 cache=165.9333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=165.9
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=165.8667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=165.8333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=166.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=166.8667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=167.3667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=167.7333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=168.3667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.6333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.6
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.5667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.5333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.5
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.4667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.4333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.4
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.3667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.3333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.2667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.2333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.2
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.1667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.1333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.1
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.0667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169.0333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=169
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=0 cache=168.9667
+Exiting... (End of file)
+DEBUG_SELECTION
+[   0.013][v][cplayer]    libavformat     63.1.101
+[   0.013][v][cplayer]    libavformat     63.1.101
+[  11.387][v][lavf] avformat_find_stream_info() finished after 0 bytes.
+[  11.392][v][demux] Detected file format: dash (libavformat)
+[  11.441][v][vd]     h264_v4l2m2m (h264) - V4L2 mem2mem H.264 decoder wrapper
+[  14.983][v][vd] Decoder format: 480x270 yuv420p auto/auto/auto/auto/auto CL=mpeg2/4/h264 crop=480x270+0+0 A=none
+[  15.320][i][cplayer] VO: [wlshm] 480x270 yuv420p
+[  15.320][v][cplayer] VO: Description: Wayland SHM video output (software scaling)
+[  15.322][w][ffmpeg] swscaler: No accelerated colorspace conversion found from yuv420p to bgra.
+[  15.322][v][ffmpeg] swscaler: using unscaled yuv420p -> bgra special converter
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#

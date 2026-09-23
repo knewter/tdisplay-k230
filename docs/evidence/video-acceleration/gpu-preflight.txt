@@ -1,0 +1,25 @@
+
+===== > echo GPU_PREFLIGHT_BEGIN; ls -l /dev/vg_lite /dev/galcore /dev/dri /dev/video0 2>/dev/null; zcat /proc/config.gz | grep -E "CONFIG_GPU_VGLITE|CONFIG_VPU_CANAAN"; dmesg | grep -i -E "vglite|vg_lite|gc8000|gpu.*9080"; echo GPU_PREFLIGHT_END =====
+echo GPU_PREFLIGHT_BEGIN; ls -l /dev/vg_lite /dev/galc
+ore /dev/dri /dev/video0 2>/dev/null; zcat /proc/config.gz | grep -E "CONFIG_GPU_VGLITE|CONFIG_VPU_CANAAN"; dmesg | grep -i -E "vglite|vg_lite|gc8000|gpu.*9080"; echo GPU_PREFLIGHT_END
+
+GPU_PREFLIGHT_BEGIN
+crw------- 1 root root  239, 0 Sep 23 02:00 /dev/vg_lite
+crw-rw---- 1 root video  81, 0 Sep 23 01:59 /dev/video0
+
+/dev/dri:
+total 0
+drwxr-xr-x 2 root root      60 Sep 23 01:59 by-path
+crw-rw---- 1 root video 226, 0 Sep 23 01:59 card0
+CONFIG_VPU_CANAAN=y
+# CONFIG_VPU_CANAAN_FTRACE is not set
+CONFIG_VPU_CANAAN_PRINT_FILE=y
+CONFIG_GPU_VGLITE=y
+GPU_PREFLIGHT_END
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#
