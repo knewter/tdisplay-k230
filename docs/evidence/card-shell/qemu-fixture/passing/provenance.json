@@ -1,0 +1,21 @@
+{
+  "evidence_class": "qemu-system-guest-headless-injected",
+  "source_revision": "50707c5e",
+  "host_command": [
+    "python3",
+    "tools/qemu-card-shell-smoke.py",
+    "--fixture-image",
+    "--no-build",
+    "--output",
+    "/mnt/MediaVolume/home/jadams/k230-qemu-card-guest-local-06"
+  ],
+  "exit_code": 0,
+  "completed_at_utc": "2026-09-23T20:05:16.363249+00:00",
+  "raw_serial_sha256": "6e580db213721ecfc01d8f8f91fa37db0d9c1b99bb9b1cf837d095f92262fe6c",
+  "raw_serial_bytes": 35218,
+  "published_transcript": "Only runtime report and teardown lines; leading shell terminal-mode sequence removed if present. Original transcript retained privately.",
+  "limits": [
+    "No board boot, panel, real touch, optical or performance acceptance.",
+    "Fixture mode does not satisfy default system-image integration."
+  ]
+}

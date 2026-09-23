@@ -116,3 +116,22 @@ in command echoes or arbitrary prefixes. Seven host tests pass, including that
 captured failure pattern. Those protocol checks now run in CI too. A fresh
 system guest run, not retrospective relabeling of the failed command, supplies
 the final verifier result.
+
+
+## Passing full-system guest verification
+
+The fresh verifier run at source `50707c5e` returned zero. Its
+[committed result](../evidence/card-shell/qemu-fixture/passing/result.json),
+[provenance](../evidence/card-shell/qemu-fixture/passing/provenance.json), and
+[guest report lines](../evidence/card-shell/qemu-fixture/passing/guest-reports.log)
+record two complete runs in a booted RISC-V Linux 6.18.52 guest, with UID 999,
+matching exact system/compositor identities, different compositor PIDs across
+restart, all six named interaction assertions, and successful service teardown.
+The `--no-build` invocation used the already-realized matching artifacts from
+the preceding cross-build; it did not substitute a host or user-mode run.
+
+This completes the explicit fixture/tooling verification. The real board image
+and default QEMU configuration have not selected the component, and no physical
+card interaction or performance budget is proved. Task 5.1 remains unchecked
+until its selected-image build and non-fixture run are also complete. The three
+recorded failures remain evidence of the corrections, not passing executions.
