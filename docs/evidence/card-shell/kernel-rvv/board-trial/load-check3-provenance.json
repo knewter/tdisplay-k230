@@ -1,0 +1,19 @@
+{
+  "command": [
+    "python3",
+    "tools/rvv-board-boot.py",
+    "--manifest",
+    "HOST_TRIAL_MANIFEST",
+    "--private-log",
+    "PRIVATE_LOG",
+    "--output",
+    "docs/evidence/card-shell/kernel-rvv/board-trial/load-check3.json"
+  ],
+  "exit_code": 0,
+  "raw_bytes": 63900,
+  "raw_sha256": "ba76b8a75220464e27741695143f9e56f5cae07c18d19b662370afec4fc7567f",
+  "controller_sha256": "5ad02e4488e669a083a21c757d4f62739a2268c9c7a84628d83974ecf1e4b6b6",
+  "preflight_sha256": "c581680ef3885ef0934c52d5797e44e46d9ea0bdfd4b93f7a2fce1c9f79ce617",
+  "completed_at_utc": "2026-09-23T21:37:20.618084+00:00",
+  "selection": "Exact load commands, byte counts, memory CRCs, reset and Linux login observations; terminal color sequences removed. Full transcript remains private."
+}

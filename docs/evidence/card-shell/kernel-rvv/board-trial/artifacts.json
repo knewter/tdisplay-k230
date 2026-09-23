@@ -1,0 +1,76 @@
+{
+  "evidence_class": "host-built-matching-rvv-system-and-image",
+  "finished_at_utc": "2026-09-23T21:22:52.417241+00:00",
+  "base_revision": "648eab079e2dcea59820823dbb65ec8daa416c62",
+  "system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "image": "/nix/store/98vwl9br0lar3rflhng1f28kkmkx42x9-k230-sd-image.img",
+  "image_bytes": 2308960256,
+  "image_sha256": "e35bec2cf6ab3b5c0ff22d771539b0add1f956406750b93b63d6b15fdb1eea19",
+  "kernel": "/nix/store/2wzrs39r2rj9kzgv3s99if5r6b085kvb-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "kernel_sha256": "527e79b9b249eb8e3c6b7a46f9eec26800ed22e25d1ace41d715d6c214a6f628",
+  "initrd": "/nix/store/pf3ibh3s7vsxrzd4ayrmrjfjz5djpsjq-initrd-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/initrd",
+  "root_growth_service_included": true,
+  "initrd_payload_matches_system": true,
+  "uimage_crc_valid": true,
+  "bootargs_select_matching_system": true,
+  "boot_files": {
+    "Image": {
+      "bytes": 60427776,
+      "sha256": "527e79b9b249eb8e3c6b7a46f9eec26800ed22e25d1ace41d715d6c214a6f628",
+      "crc32": "751c3e18"
+    },
+    "initrd.uimg": {
+      "bytes": 27307568,
+      "sha256": "46c96c8c935edd8a4e1ee035932b72ad76548c185f158de20c074ff178ecd9f2",
+      "crc32": "9bb180c7"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "be88ce49d6876c0b70f3f298ba53e0cb3b7a0621093e12f4a17acfbda9d3ab2b",
+      "crc32": "8f1867b4"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 71532,
+      "sha256": "318eb5b72a503aa158df558db74f4e90832a9757b23bf4abe6644b80fee2a1e6",
+      "crc32": "09c5773a"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "commands": [
+    [
+      "nix",
+      "build",
+      ".#nixosConfigurations.k230-rvv-trial.config.system.build.toplevel",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8",
+      "--no-link",
+      "--print-out-paths"
+    ],
+    [
+      "nix",
+      "build",
+      ".#sdImage-rvv-trial",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8",
+      "--out-link",
+      "/mnt/MediaVolume/home/jadams/k230-rvv-growth-trial-image",
+      "--print-out-paths"
+    ]
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "limits": [
+    "Host build and inspection only; not yet booted on hardware.",
+    "Existing normal kernel selection unchanged."
+  ]
+}

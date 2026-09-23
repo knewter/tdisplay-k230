@@ -1,0 +1,29 @@
+K230_RVV_READY 6378798b40df45b0ae47fe0e18419f6a
+K230# [  36.671] --- sending: ext4load mmc 1:2 0x7000000 /var/lib/k230/rvv-trial/bootargs.txt ---
+211 bytes read in 3 ms (68.4 KiB/s)
+K230# [  36.825] --- sending: crc32 0x7000000 0xd3 ---
+crc32 for 07000000 ... 070000d2 ==> 8f1867b4
+K230# [  36.976] --- sending: ext4load mmc 1:1 0x8000000 /fw_jump_add_uboot_head.bin ---
+270808 bytes read in 11 ms (23.5 MiB/s)
+K230# [  37.127] --- sending: crc32 0x8000000 0x421d8 ---
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+K230# [  37.277] --- sending: ext4load mmc 1:2 0x200000 /nix/store/2wzrs39r2rj9kzgv3s99if5r6b085kvb-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image ---
+60427776 bytes read in 2560 ms (22.5 MiB/s)
+K230# [  39.939] --- sending: crc32 0x200000 0x39a0e00 ---
+crc32 for 00200000 ... 03ba0dff ==> 751c3e18
+K230# [  40.496] --- sending: ext4load mmc 1:2 0x8400000 /var/lib/k230/rvv-trial/k230-tdisplay.dtb ---
+71532 bytes read in 6 ms (11.4 MiB/s)
+K230# [  40.650] --- sending: crc32 0x8400000 0x1176c ---
+crc32 for 08400000 ... 0841176b ==> 09c5773a
+K230# [  40.801] --- sending: ext4load mmc 1:2 0x9000000 /var/lib/k230/rvv-trial/initrd.uimg ---
+27307568 bytes read in 1131 ms (23 MiB/s)
+K230# [  42.054] --- sending: crc32 0x9000000 0x1a0ae30 ---
+crc32 for 09000000 ... 0aa0ae2f ==> 9bb180c7
+K230# [  42.305] --- sending: reset ---
+17 bytes read in 1 ms (16.6 KiB/s)
+211 bytes read in 1 ms (206.1 KiB/s)
+270808 bytes read in 11 ms (23.5 MiB/s)
+60426752 bytes read in 2168 ms (26.6 MiB/s)
+71532 bytes read in 4 ms (17.1 MiB/s)
+27296834 bytes read in 1131 ms (23 MiB/s)
+nixos login: root (automatic login)

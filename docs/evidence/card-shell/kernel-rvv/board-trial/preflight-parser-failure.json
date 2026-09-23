@@ -1,0 +1,7 @@
+{
+  "failure": "load-check.json",
+  "controller_sha256": "382a4d5b3612e9e169dc42b98c98784a2cd75a741c77ecbda406d042f1326683",
+  "raw_serial_sha256": "d938151e23859a1c085d3868e6b59aa07bf0ab5e1166ba780dd9379a66ded034",
+  "cause": "The Linux shell prefixed the real successful preflight marker with ESC[?2004l and CR. The initial host parser rejected that line; no reboot or U-Boot load was attempted.",
+  "correction": "Strip only the known leading bracketed-paste/CR artifact and require a complete line; retain echoed-command and stale-token rejection."
+}

@@ -99,3 +99,17 @@ and a host inspection of its boot partition: Image matches the trial kernel,
 the wrapped initrd matches the trial system and has valid U-Boot CRCs, and
 bootargs selects that same system. No card has been flashed or rebooted with it.
 Preserve the known ordinary image as the recovery artifact before a trial.
+
+
+## Trial on the expanded root
+
+The storage-capacity change is now archived after two successful physical boots.
+The normal system is now the growth-enabled system recorded in
+`docs/evidence/storage-capacity/board-repeat.json`. The earlier ordinary-system
+identity comparisons above describe their original checkpoint.
+
+[The next trial artifacts](board-trial/artifacts.json) rebuild the complete RVV
+system and image on master `648eab07`, retaining the same trial kernel and its
+matching modules/initrd while including the verified root-growth service.
+Actual host boot-partition inspection passes again. This does not establish
+physical vector execution or improve any card performance acceptance result.

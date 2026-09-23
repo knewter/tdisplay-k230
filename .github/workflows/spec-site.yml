@@ -57,6 +57,9 @@ jobs:
           python3 tests/test_root_growth.py
           python3 tests/test_root_growth_board.py
 
+      - name: Check recoverable RVV boot protocol
+        run: python3 tests/test_rvv_board_boot.py
+
       - name: Check booted-card-smoke proof protocol
         run: python3 tests/test_qemu_card_shell_smoke.py
 
