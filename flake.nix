@@ -123,6 +123,10 @@
           kernel = self.k230Kernel.kernel;
         };
 
+        # Optional source-built GPU diagnostic.  It is deliberately outside
+        # the system closure until its /dev/vg_lite ABI is proven on hardware.
+        k230-vglite-probe = pkgsCross.callPackage ./nix/vglite-probe.nix { };
+
         # The board device tree, compiled WITHOUT the kernel, so that
         # iterating on the panel's DCS init sequence costs seconds instead
         # of a 20 minute cross-compile. See nix/device-tree.nix.
