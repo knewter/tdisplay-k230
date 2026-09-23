@@ -1,0 +1,14 @@
+{
+  "provenance": "injected-touch on physical board; no real-finger claim",
+  "at_utc": "2026-09-23T17:52:30.220870+00:00",
+  "checks": {
+    "normal_services_active": true,
+    "apps_next_previous": true,
+    "keyboard_toggle_preserves_apps": true,
+    "terminal_app": true,
+    "apps_back": true
+  },
+  "system": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "status": "PASS"
+}

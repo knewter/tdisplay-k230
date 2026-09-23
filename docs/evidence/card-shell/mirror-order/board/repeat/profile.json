@@ -1,0 +1,72 @@
+{
+  "schema": "card-frame-cpu-diagnostic-v1",
+  "runs": [
+    {
+      "run": "40540528485118",
+      "cards": 1,
+      "frames": 141,
+      "stages": {
+        "total": {
+          "p95_ms": 16.763165,
+          "max_ms": 48.703744,
+          "mean_ms": 15.438372106382976,
+          "percent_of_total_cpu": 100.0
+        },
+        "render": {
+          "p95_ms": 14.409058,
+          "max_ms": 15.302565,
+          "mean_ms": 13.778070319148936,
+          "percent_of_total_cpu": 89.24561621009515
+        },
+        "input": {
+          "p95_ms": 2.529704,
+          "max_ms": 33.166323,
+          "mean_ms": 1.420086134751773,
+          "percent_of_total_cpu": 9.198418880994842
+        },
+        "other": {
+          "p95_ms": 0.386186,
+          "max_ms": 1.040075,
+          "mean_ms": 0.2402156524822695,
+          "percent_of_total_cpu": 1.5559649089100047
+        }
+      }
+    },
+    {
+      "run": "40563581580240",
+      "cards": 2,
+      "frames": 134,
+      "stages": {
+        "total": {
+          "p95_ms": 25.060489,
+          "max_ms": 26.507205,
+          "mean_ms": 20.01704830597015,
+          "percent_of_total_cpu": 100.0
+        },
+        "render": {
+          "p95_ms": 20.143834,
+          "max_ms": 21.259505,
+          "mean_ms": 17.165431402985075,
+          "percent_of_total_cpu": 85.7540589431731
+        },
+        "input": {
+          "p95_ms": 4.912259,
+          "max_ms": 8.104367,
+          "mean_ms": 2.446000156716418,
+          "percent_of_total_cpu": 12.219584622708286
+        },
+        "other": {
+          "p95_ms": 1.072149,
+          "max_ms": 1.673926,
+          "mean_ms": 0.4056167462686567,
+          "percent_of_total_cpu": 2.026356434118612
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Diagnostic CPU subdivision only; not an acceptance decision.",
+    "Render includes scene preparation, renderer and output commit.",
+    "Additional instrumentation has measurement overhead."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "status": "CAPTURED_REQUIRES_REVIEW",
+  "evidence_class": "board-injected",
+  "provenance": "injected-touch",
+  "created_at": "2026-09-23T17:46:10.840694+00:00",
+  "package_store_path": "/nix/store/gk20p9l39pqs5xg3akgg3fxm4jc7cb5x-k230-card-shell",
+  "source_revision": "194f3357a18408456d819269500a6593c97dc41a",
+  "cases": [
+    {
+      "case": "live-root-and-child-1-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 40545574057861
+    },
+    {
+      "case": "live-root-and-child-2-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 40568959072671
+    },
+    {
+      "case": "live-root-and-child-2-two",
+      "status": "OBSERVED",
+      "monotonic_ns": 40569694762923
+    },
+    {
+      "case": "actual-rgb565-pixman-session",
+      "status": "OBSERVED",
+      "monotonic_ns": 40589818602953
+    },
+    {
+      "case": "upward-throw-close-request",
+      "status": "OBSERVED",
+      "monotonic_ns": 40594814477277
+    },
+    {
+      "case": "client-explicit-refusal",
+      "status": "OBSERVED",
+      "monotonic_ns": 40594827226724
+    },
+    {
+      "case": "separate-timeout-card-retained",
+      "status": "OBSERVED",
+      "monotonic_ns": 40597587419293
+    },
+    {
+      "case": "accepted-close-source-exits",
+      "status": "OBSERVED",
+      "monotonic_ns": 40600818484311
+    },
+    {
+      "case": "terminal-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 40610661852224
+    },
+    {
+      "case": "monitor-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 40614103177695
+    },
+    {
+      "case": "windows-home-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 40619551468914
+    },
+    {
+      "case": "keyboard-reserves-content",
+      "status": "OBSERVED",
+      "monotonic_ns": 40621633391349
+    },
+    {
+      "case": "normal-controls-recover-focus",
+      "status": "OBSERVED",
+      "monotonic_ns": 40628597636727
+    }
+  ],
+  "physical_touch": "UNVERIFIED",
+  "optical_latency": "UNVERIFIED",
+  "visual_privacy_and_control_review": "REQUIRED"
+}

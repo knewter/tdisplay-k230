@@ -34,3 +34,8 @@ runtime checks plus four delayed-source-time checks with
 native probe client. `headless.json` records live parent/child updates, drag,
 privacy transitions, focus, close recovery, output loss and teardown. This is
 headless evidence, not panel timing or physical-finger acceptance.
+
+The [board comparison](board/README.md) now includes two candidate runs and a
+repeat of the original package, with all interaction and restoration checks
+passing. Tracking and CPU budgets still fail; this is removal of redundant
+scene updates, not a measured smoothness improvement.
