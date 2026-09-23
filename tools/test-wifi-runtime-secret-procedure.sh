@@ -181,10 +181,17 @@ tail -f "$runtime_conf" >/dev/null &
 owned_pid=$!
 printf '%s\n' "$owned_pid" > "$runtime_pid"
 run_completion
+# SIGTERM is asynchronous. Give the owned child a bounded 2 s to exit before
+# declaring cleanup broken; do not apply this wait to the unrelated-PID case.
+for _ in $(seq 1 40); do
+  kill -0 "$owned_pid" 2>/dev/null || break
+  sleep 0.05
+done
 if kill -0 "$owned_pid" 2>/dev/null; then
   echo "owned PID was not stopped" >&2
   exit 1
 fi
+wait "$owned_pid" 2>/dev/null || true
 test ! -e "$runtime_conf"
 test ! -e "$runtime_pid"
 test ! -e "$runtime_ctrl"
