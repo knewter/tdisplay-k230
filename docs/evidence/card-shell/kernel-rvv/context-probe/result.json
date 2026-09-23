@@ -1,0 +1,143 @@
+{
+  "status": "PASS",
+  "evidence_class": "full-system-qemu-vector-context",
+  "package": "/nix/store/4gn2z5fi5szrnflhzjsr1kq3f1b39wqx-k230-rvv-context-probe-riscv64-unknown-linux-gnu-0.1",
+  "corrupt_package": "/nix/store/yalzjvz5njqm5bqr5bqap1xsnsyfi51s-k230-rvv-context-probe-corrupt-riscv64-unknown-linux-gnu-0.1",
+  "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+  "qemu_version": "QEMU emulator version 11.1.0",
+  "cases": [
+    {
+      "case": "no-vector",
+      "command": [
+        "qemu-system-riscv64",
+        "-machine",
+        "virt",
+        "-cpu",
+        "rv64,v=false",
+        "-m",
+        "1G",
+        "-nographic",
+        "-nic",
+        "none",
+        "-no-reboot",
+        "-kernel",
+        "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+        "-initrd",
+        "/mnt/MediaVolume/home/jadams/k230-rvv-full-guest-timer-fixed/normal.cpio.gz",
+        "-append",
+        "console=ttyS0 earlycon=sbi rdinit=/init panic=-1"
+      ],
+      "report": {
+        "status": "SKIP",
+        "hwprobe_result": 0,
+        "errno": 0,
+        "features": 255904807846412539
+      },
+      "check": "PASS"
+    },
+    {
+      "case": "vector-128",
+      "command": [
+        "qemu-system-riscv64",
+        "-machine",
+        "virt",
+        "-cpu",
+        "rv64,v=true,vlen=128,elen=64",
+        "-m",
+        "1G",
+        "-nographic",
+        "-nic",
+        "none",
+        "-no-reboot",
+        "-kernel",
+        "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+        "-initrd",
+        "/mnt/MediaVolume/home/jadams/k230-rvv-full-guest-timer-fixed/normal.cpio.gz",
+        "-append",
+        "console=ttyS0 earlycon=sbi rdinit=/init panic=-1"
+      ],
+      "report": {
+        "status": "PASS",
+        "processes": 2,
+        "required_iterations_per_process": 2000,
+        "parent_iterations": 2000,
+        "parent_signals": 2068,
+        "parent_involuntary_switches": 524,
+        "parent_result": 0,
+        "child_wait_status": 0
+      },
+      "check": "PASS"
+    },
+    {
+      "case": "vector-256",
+      "command": [
+        "qemu-system-riscv64",
+        "-machine",
+        "virt",
+        "-cpu",
+        "rv64,v=true,vlen=256,elen=64",
+        "-m",
+        "1G",
+        "-nographic",
+        "-nic",
+        "none",
+        "-no-reboot",
+        "-kernel",
+        "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+        "-initrd",
+        "/mnt/MediaVolume/home/jadams/k230-rvv-full-guest-timer-fixed/normal.cpio.gz",
+        "-append",
+        "console=ttyS0 earlycon=sbi rdinit=/init panic=-1"
+      ],
+      "report": {
+        "status": "PASS",
+        "processes": 2,
+        "required_iterations_per_process": 2000,
+        "parent_iterations": 2000,
+        "parent_signals": 2031,
+        "parent_involuntary_switches": 500,
+        "parent_result": 0,
+        "child_wait_status": 0
+      },
+      "check": "PASS"
+    },
+    {
+      "case": "corrupt-vector",
+      "command": [
+        "qemu-system-riscv64",
+        "-machine",
+        "virt",
+        "-cpu",
+        "rv64,v=true,vlen=128,elen=64",
+        "-m",
+        "1G",
+        "-nographic",
+        "-nic",
+        "none",
+        "-no-reboot",
+        "-kernel",
+        "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+        "-initrd",
+        "/mnt/MediaVolume/home/jadams/k230-rvv-full-guest-timer-fixed/corrupt.cpio.gz",
+        "-append",
+        "console=ttyS0 earlycon=sbi rdinit=/init panic=-1"
+      ],
+      "report": {
+        "status": "FAIL",
+        "processes": 2,
+        "required_iterations_per_process": 2000,
+        "parent_iterations": 0,
+        "parent_signals": 6,
+        "parent_involuntary_switches": 0,
+        "parent_result": 2,
+        "child_wait_status": 512
+      },
+      "check": "PASS"
+    }
+  ],
+  "limits": [
+    "Generic Linux guest only; no board or vendor-kernel claim.",
+    "Probe PID 1 exits after its report; the ensuing guest panic is expected.",
+    "Representative vector data/control state, not exhaustive ISA coverage."
+  ]
+}

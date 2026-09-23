@@ -1,0 +1,18 @@
+{
+  "evidence_class": "physical-board-safe-skip",
+  "date": "2026-09-23",
+  "package": "/nix/store/4gn2z5fi5szrnflhzjsr1kq3f1b39wqx-k230-rvv-context-probe-riscv64-unknown-linux-gnu-0.1",
+  "report": {
+    "status": "SKIP",
+    "hwprobe_result": 0,
+    "errno": 0,
+    "features": 59
+  },
+  "exit_code": 77,
+  "normal_services_active": true,
+  "boot_id": "9407bae0-fe1a-4a05-8062-edbe8a110859",
+  "limits": [
+    "Probe skipped; no physical vector execution or new kernel boot.",
+    "No boot files, image or system vector policy changed."
+  ]
+}
