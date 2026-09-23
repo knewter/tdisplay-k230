@@ -17,9 +17,12 @@ assert 'drmSetMaster' not in text and 'drmModeSetCrtc' not in text
 source = SOURCE.read_text()
 assert 'vg_lite_map' in source and 'vg_lite_finish' in source
 assert 'wlr_render_pass_add_texture' in source
+assert 'vg_lite_upload_buffer' in source
+assert 'VG_LITE_RGBA8888' in source
+assert 'vg_lite_blit_rect' in source
 assert 'K230_VGLITE_ALLOW_UNPROVEN_CACHE' in source
 nix = NIX.read_text()
 assert 'WLR_RENDERER=vglite' in nix
-assert 'no-gpu-claim' in nix
+assert 'real-rgb565-rect-shm-upload-route-with-pixman-fallback' in nix
 print("VGLITE_FALLBACK_CONTRACT=PASS")
-print("VGLITE_FALLBACK_SCOPE=record-pass-real-rect-route-with-fail-closed-texture-fallback")
+print("VGLITE_FALLBACK_SCOPE=real-rgb565-rect-shm-upload-route-with-fail-closed-full-pass-fallback")

@@ -17,6 +17,6 @@ wlroots_0_20.overrideAttrs (old: {
       --replace-fail '@VGLITE_LIB@' '${vgliteProbe}/lib'
   '';
   passthru = (old.passthru or {}) // {
-    k230VgliteStatus = "full-pass-pixman-fallback-no-gpu-claim";
+    k230VgliteStatus = "real-rgb565-rect-shm-upload-route-with-pixman-fallback";
   };
 })
