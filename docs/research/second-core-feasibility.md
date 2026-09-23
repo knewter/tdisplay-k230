@@ -240,3 +240,37 @@ complete DT routes, then enable Linux SMP. Its acceptance criteria begin with
 two OpenSBI harts, `smp: Brought up 1 node, 2 CPUs`, timer/IPI stress, and a
 shared-memory atomic test. Video benchmarking comes after correctness, not
 before it. No board experiment was performed for this update.
+
+## Vendor AMP source establishes a release contract, not SMP support
+
+A further source review found the vendor's concrete Linux-to-RT-Smart AMP path
+in [`k230-amp.c`](https://github.com/kendryte/k230_sdk/blob/main/src/little/linux/drivers/misc/canaan/k230-amp.c)
+and its [`amp_test`](https://github.com/kendryte/k230_sdk/blob/main/src/little/buildroot-ext/package/amp_app/src/amp_test.c)
+client. This is primary vendor source, but it is not part of this NixOS image.
+
+The client opens `/dev/k230-amp`, maps a device-tree-selected RT-Smart memory
+region, loads a firmware image there, then invokes `AMP_CMD_BOOT`. The driver
+writes that region back from the running Linux CPU's cache, programs the CPU1
+reset-vector register, and performs the CPU1 reset-control writes. Mapping the
+region first holds the large core in reset. The companion README calls this
+"small-core Linux controls big-core restart". That is direct evidence that the
+vendor AMP boundary requires an explicit firmware payload, memory reservation,
+cache maintenance, reset vector, and reset protocol.
+
+It does not establish Linux SMP. The driver hardcodes vendor addresses and does
+not create a Linux CPU, an OpenSBI domain, a PLIC/ACLINT route, or shared Linux
+page-table coherency. Its actual reset writes are why this project will not use
+it as a probe or copy it into the image.
+
+The vendor's generic OpenSBI platform independently counts harts by iterating
+`/cpus` in [`platform/generic/platform.c`](https://github.com/kendryte/k230_sdk/blob/main/src/common/opensbi/platform/generic/platform.c).
+The pinned handoff supplies only `cpu@0`, so the observed OpenSBI platform
+count of one follows from the handoff description. OpenSBI's generic HSM ecall
+handler being linked only means it can dispatch `HART_START` for an assigned,
+known hart; it does not manufacture CPU1 release support.
+
+The publicly documented DRAM RAW/WAR coherency guarantees apply to the memory
+controller interfaces and are conditional on configuration for AXI. They are
+not a documented CPU0/CPU1 cache-coherency or atomic-sharing contract. This
+remains a blocker for Linux SMP, while the AMP source shows cache maintenance
+must be part of any separately designed shared-buffer protocol.
