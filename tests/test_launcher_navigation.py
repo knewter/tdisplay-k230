@@ -177,6 +177,22 @@ int main(int argc, char **argv) {
   assert(touch_id==10);
   touch_cancel(NULL,NULL);
 
+  /* Disabled gestures retain old within-card drag/tap behavior. */
+  gestures_enabled=false;
+  touch_down(NULL,NULL,0,0,NULL,11,wl_fixed_from_int(100),wl_fixed_from_int(100));
+  touch_motion(NULL,NULL,0,11,wl_fixed_from_int(160),wl_fixed_from_int(100));
+  assert(gesture.direction==GESTURE_NONE);
+  touch_cancel(NULL,NULL);
+  /* Contacts first seen during an animation reject the complete sequence. */
+  transition.active=true;
+  touch_down(NULL,NULL,0,0,NULL,12,0,0);
+  transition.active=false;
+  touch_down(NULL,NULL,0,0,NULL,13,0,0);
+  assert(touch_rejected && touch_id==-1);
+  touch_up(NULL,NULL,0,0,12);
+  touch_up(NULL,NULL,0,0,13);
+  assert(!touch_rejected && touch_contact_count==0);
+
   windows = g_ptr_array_new_with_free_func(free_window_card);
   struct window_card *old = g_new0(struct window_card, 1);
   old->id = g_strdup("17");

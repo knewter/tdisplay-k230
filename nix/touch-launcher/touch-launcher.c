@@ -720,7 +720,8 @@ static void apply_gesture(enum gesture_direction direction) {
 }
 static void touch_down(void*d,struct wl_touch*t,uint32_t s,uint32_t tm,struct wl_surface*sf,int32_t id,wl_fixed_t x,wl_fixed_t y) {
   touch_contact_count++;
-  if (transition.active || touch_rejected) return;
+  if (transition.active) { touch_rejected=true; return; }
+  if (touch_rejected) return;
   if (touch_id != -1) {
     gesture_reject(&gesture);
     touch_rejected=true;
@@ -746,7 +747,7 @@ static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixe
     touch_x=wl_fixed_to_int(x);
     touch_y=wl_fixed_to_int(y);
     if (!gestures_enabled && card_at(touch_x,touch_y) != touch_card) touch_card=-1;
-    gesture_motion(&gesture,id,touch_x,touch_y);
+    if (gestures_enabled) gesture_motion(&gesture,id,touch_x,touch_y);
   }
 }
 static void touch_frame(void*d,struct wl_touch*t) {} static void touch_cancel(void*d,struct wl_touch*t) {

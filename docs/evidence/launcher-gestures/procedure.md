@@ -26,7 +26,7 @@ python3 tools/gesture-acceptance.py --execute \
 
 The execution mode refuses a catalog with fewer than two rows, so an empty or single-card overview is not accepted as a multi-card result. It retains only that row count: do not save or publish raw window titles or the catalog command output.
 
-Start the native launcher with `K230_LAUNCHER_METRICS=/run/shell/launcher-metrics.txt` before the run. The copied fields are CPU-side **wall-clock** render and release-to-submit intervals plus transient client bytes. They do not measure process CPU accounting, display scanout, or physical presentation.
+Start the native launcher with `K230_LAUNCHER_METRICS=/run/shell/launcher-metrics.txt` before the run. The fields distinguish **wall-clock** render and release-to-submit intervals from `CLOCK_PROCESS_CPUTIME_ID` CPU time since release. They also record transient snapshot bytes, live Wayland buffer count, direction, page and overview mode. These do not measure display scanout or physical presentation. Check settled page/direction records against all 40 requested swipes before claiming no missed or duplicate transition; the helper records requested actions, not that acceptance verdict.
 
 The default is plan-only: it writes a plan but makes no board, uinput, `grim`, or physical-touch claim. `--self-test` is a host-only mocked subprocess check of action order, the 42 injected drags, settle waits, and before/after resource snapshots.
 
