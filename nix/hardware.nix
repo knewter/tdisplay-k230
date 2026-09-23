@@ -72,6 +72,8 @@ in
   # board can attempt a bind; binding is still a physical-board check.
   boot.extraModulePackages = [ k230WifiDriver ];
   boot.kernelModules = [ "8189fs" ];
+  # Keep protected-network identifiers out of verbose Realtek kernel messages.
+  boot.extraModprobeConfig = "options 8189fs rtw_drv_log_level=0";
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = false;
