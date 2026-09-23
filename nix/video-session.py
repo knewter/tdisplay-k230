@@ -21,8 +21,11 @@ def starttime(pid):
 
 
 def owned_state(data):
-    return (data.get('uid') == UID and data.get('controller_start') == starttime(data.get('controller', -1))
-            and data.get('child_start') == starttime(data.get('child', -1)))
+    if not isinstance(data, dict): return False
+    fields = ('uid', 'controller', 'controller_start', 'child', 'child_start')
+    if any(not isinstance(data.get(k), int) or data[k] <= 0 for k in fields): return False
+    return (data['uid'] == UID and data['controller_start'] == starttime(data['controller'])
+            and data['child_start'] == starttime(data['child']))
 
 
 def read_state():
@@ -43,8 +46,6 @@ def write_state(child):
 
 
 def kill_group(proc, sig):
-    if proc.poll() is not None:
-        return
     try:
         os.killpg(proc.pid, sig)
     except ProcessLookupError:
@@ -53,11 +54,13 @@ def kill_group(proc, sig):
 
 def validate_playlist(explicit):
     path = Path(explicit) if explicit else RUNTIME / 'k230-video.playlist'
+    if path.is_symlink():
+        raise RuntimeError('video URL file must not be a symlink')
     if explicit and not path.exists():
         raise RuntimeError('video URL file is absent')
     if not path.exists():
         return PUBLIC, None
-    if path.is_symlink() or not path.is_file():
+    if not path.is_file():
         raise RuntimeError('video URL file must be a regular non-symlink file')
     mode = stat.S_IMODE(path.stat().st_mode)
     if mode != 0o600 or path.stat().st_uid != UID:
@@ -73,9 +76,11 @@ class Session:
         self.socket = RUNTIME / f'k230-video-{os.getpid()}.sock'
         self.private_path = None
         self.lock = None
+        self.cancel_deadline = None
 
     def signal(self, _signum, _frame):
         self.cancelled = True
+        self.cancel_deadline = time.monotonic() + 2
         if self.child is not None:
             kill_group(self.child, signal.SIGTERM)
 
@@ -111,6 +116,8 @@ class Session:
                     return rc, timed_out
                 if self.cancelled:
                     kill_group(self.child, signal.SIGTERM)
+                    if time.monotonic() >= self.cancel_deadline:
+                        kill_group(self.child, signal.SIGKILL)
                 elif not self.socket.exists() and time.monotonic() >= deadline:
                     timed_out = True
                     kill_group(self.child, signal.SIGTERM)
@@ -119,7 +126,7 @@ class Session:
                     except subprocess.TimeoutExpired: kill_group(self.child, signal.SIGKILL)
                 time.sleep(.05)
         finally:
-            if self.child is not None and self.child.poll() is None:
+            if self.child is not None:
                 kill_group(self.child, signal.SIGTERM)
                 try: self.child.wait(timeout=2)
                 except subprocess.TimeoutExpired:
@@ -130,8 +137,10 @@ class Session:
             try: self.socket.unlink()
             except FileNotFoundError: pass
             try:
-                if STATE.exists() and json.loads(STATE.read_text()).get('controller') == os.getpid(): STATE.unlink()
-            except (OSError, ValueError): pass
+                if STATE.exists():
+                    state = json.loads(STATE.read_text())
+                    if isinstance(state, dict) and state.get('controller') == os.getpid(): STATE.unlink()
+            except (OSError, ValueError, TypeError): pass
             self.child = None
 
     def run(self):
@@ -142,11 +151,12 @@ class Session:
         try: fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError: print('video is already starting or running', file=sys.stderr); return 1
         source, self.private_path = validate_playlist(self.explicit)
-        old = (signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT))
+        old = [signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT)]
         for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT): signal.signal(s, self.signal)
         try:
             if self.mode == 'mvx' and self.private_path is not None:
                 raise RuntimeError('MVX mode is limited to the public demo')
+            if self.cancelled: return 143
             rc, timed = self.run_once(self.mode, source)
             if self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled:
                 print('MVX decoder failed; falling back to software H.264', file=sys.stderr)

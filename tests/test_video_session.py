@@ -1,5 +1,7 @@
 """Lifecycle tests for the shell-owned video wrapper; no Nix or board required."""
 import os
+import json
+import signal
 import pathlib
 import stat
 import subprocess
@@ -196,7 +198,11 @@ class VideoSessionTest(unittest.TestCase):
             try:
                 stat_line = pathlib.Path(f"/proc/{unrelated.pid}/stat").read_text()
                 starttime = stat_line.rsplit(") ", 1)[1].split()[19]
-                (root / "video.pid").write_text(f"{unrelated.pid} {starttime} 999999\n")
+                controller_start = pathlib.Path(f"/proc/{os.getpid()}/stat").read_text().rsplit(") ", 1)[1].split()[19]
+                (root / "video.pid").write_text(json.dumps({
+                    "uid": os.getuid(), "controller": os.getpid(),
+                    "controller_start": int(controller_start), "child": unrelated.pid,
+                    "child_start": int(starttime) + 1}))
                 result = self.run_session(root, player, "stop")
                 self.assertEqual(result.returncode, 0)
                 self.assertIsNone(unrelated.poll())
@@ -204,6 +210,25 @@ class VideoSessionTest(unittest.TestCase):
             finally:
                 unrelated.terminate()
                 unrelated.wait(timeout=3)
+
+    def test_hup_controller_kills_group_descendant(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root, "trap '' TERM HUP\nsleep 30\n")
+            env = self.env(root, player, FAKE_ARGS=str(root / "args"), K230_VIDEO_DEADLINE="30")
+            process = subprocess.Popen(["bash", str(SCRIPT), "run"], env=env)
+            try:
+                for _ in range(30):
+                    if (root / "video.pid").exists(): break
+                    time.sleep(0.05)
+                os.kill(process.pid, signal.SIGHUP)
+                process.wait(timeout=6)
+                self.assertFalse((root / "video.pid").exists())
+                self.assertEqual(subprocess.run(["pgrep", "-P", str(process.pid)], capture_output=True).returncode, 1)
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
+                    process.wait(timeout=6)
 
 
 if __name__ == "__main__":
