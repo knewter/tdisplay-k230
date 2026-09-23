@@ -1,7 +1,8 @@
 { wlroots_0_20, vgliteProbe }:
 
 # Opt-in checkpoint: WLR_RENDERER=vglite selects the guarded VG-Lite route.
-# Every unsupported or failed pass is replayed completely through Pixman.
+# Unsupported passes replay completely through Pixman; a GPU command failure
+# fails submission and disables the GPU instead of committing a partial frame.
 wlroots_0_20.overrideAttrs (old: {
   pname = "wlroots-vglite-full-pass-fallback";
   patches = (old.patches or []) ++ [ ./patches/wlroots-vglite-full-pass-pixman.patch ./patches/wlroots-vglite-meson.patch ];

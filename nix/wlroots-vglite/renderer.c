@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <drm_fourcc.h>
+#include <limits.h>
+#include <math.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -13,15 +15,16 @@
 #include <wlr/types/wlr_buffer.h>
 #include <wlr/util/log.h>
 
-struct vglite_renderer;
+/* The vendor library owns one process-global context, including across renderer
+ * instances. A failed finish permanently disables it: close is not a reset or a
+ * completion guarantee in the pinned SDK. */
+static pthread_mutex_t gpu_lock = PTHREAD_MUTEX_INITIALIZER;
+static bool gpu_disabled;
+struct vglite_renderer { struct wlr_renderer base; struct wlr_renderer *pixman; };
 struct vglite_texture {
 	struct wlr_texture base;
 	struct wlr_texture *fallback;
-	uint8_t *pixels;
-	uint32_t stride;
-	/* This is deliberately an opt-in path until the K230 cache/import gate is
-	 * measured on the target.  Pixels are normalized to premultiplied RGBA. */
-	bool shm_upload_ready;
+	bool cpu_rgb;
 };
 enum op_kind { OP_RECT, OP_TEXTURE };
 struct vglite_op {
@@ -29,212 +32,363 @@ struct vglite_op {
 	struct wlr_render_rect_options rect;
 	struct wlr_render_texture_options texture;
 	pixman_region32_t clip;
-	bool has_clip;
+	float alpha, luminance;
+	struct wlr_color_primaries primaries;
+	bool has_clip, has_primaries, opaque;
+	uint8_t *pixels; /* immutable RGBA byte order, also owned through replay */
+	uint32_t stride;
 };
 struct vglite_pass {
 	struct wlr_render_pass base;
 	struct vglite_renderer *renderer;
 	struct wlr_buffer *buffer;
-	struct wlr_buffer_pass_options options;
 	struct vglite_op *ops;
 	size_t len, cap;
-	bool gpu_eligible;
+	bool gpu_eligible, failed;
 };
-struct vglite_renderer {
-	struct wlr_renderer base;
-	struct wlr_renderer *pixman;
-	pthread_mutex_t lock;
-};
-
 static const struct wlr_renderer_impl renderer_impl;
 static const struct wlr_texture_impl texture_impl;
 static const struct wlr_render_pass_impl pass_impl;
 
-static struct vglite_renderer *renderer_from_base(struct wlr_renderer *r) {
-	return (struct vglite_renderer *)r;
+static void finish_op(struct vglite_op *op) {
+	if (op->has_clip) pixman_region32_fini(&op->clip);
+	if (op->kind == OP_TEXTURE) wlr_texture_destroy(op->texture.texture);
+	free(op->pixels);
 }
-static struct vglite_texture *texture_from_base(struct wlr_texture *t) {
-	return (struct vglite_texture *)t;
+static bool copy_clip(struct vglite_op *op, const pixman_region32_t *src) {
+	op->has_clip = src != NULL;
+	if (!src) return true;
+	pixman_region32_init(&op->clip);
+	return pixman_region32_copy(&op->clip, src);
 }
-static struct vglite_pass *pass_from_base(struct wlr_render_pass *p) {
-	return (struct vglite_pass *)p;
-}
-
-static bool add_op(struct vglite_pass *p, struct vglite_op *op) {
-	if (p->len == p->cap) {
+static void add_op(struct vglite_pass *p, struct vglite_op *op) {
+	if (!p->failed && p->len == p->cap) {
 		size_t cap = p->cap ? p->cap * 2 : 16;
-		void *next = realloc(p->ops, cap * sizeof(*p->ops));
-		if (!next) { p->gpu_eligible = false; return false; }
-		p->ops = next; p->cap = cap;
+		if (cap < p->cap || cap > SIZE_MAX / sizeof(*p->ops)) p->failed = true;
+		else {
+			void *next = realloc(p->ops, cap * sizeof(*p->ops));
+			if (!next) p->failed = true;
+			else { p->ops = next; p->cap = cap; }
+		}
 	}
-	p->ops[p->len++] = *op;
-	return true;
+	if (p->failed) finish_op(op);
+	else p->ops[p->len++] = *op;
 }
-
-static void copy_clip(pixman_region32_t *dst, const pixman_region32_t *src, bool *has) {
-	*has = src != NULL;
-	if (src) pixman_region32_init(dst), pixman_region32_copy(dst, src);
+static bool valid_color(struct wlr_render_color c) {
+	return isfinite(c.a) && c.a >= 0 && c.a <= 1 &&
+		isfinite(c.r) && c.r >= 0 && c.r <= c.a &&
+		isfinite(c.g) && c.g >= 0 && c.g <= c.a &&
+		isfinite(c.b) && c.b >= 0 && c.b <= c.a;
 }
-
 static void add_rect(struct wlr_render_pass *base, const struct wlr_render_rect_options *o) {
-	struct vglite_pass *p = pass_from_base(base); struct vglite_op op = { .kind = OP_RECT, .rect = *o };
-	copy_clip(&op.clip, o->clip, &op.has_clip);
-	if (op.has_clip || o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) p->gpu_eligible = false;
-	if (!add_op(p, &op) && op.has_clip) pixman_region32_fini(&op.clip);
+	struct vglite_pass *p = (struct vglite_pass *)base;
+	if (p->failed) return;
+	struct vglite_op op = { .kind = OP_RECT, .rect = *o };
+	if (!copy_clip(&op, o->clip)) p->failed = true;
+	wlr_render_rect_options_get_box(o, p->buffer, &op.rect.box);
+	if (!valid_color(o->color) || (o->blend_mode != WLR_RENDER_BLEND_MODE_NONE &&
+			o->blend_mode != WLR_RENDER_BLEND_MODE_PREMULTIPLIED)) p->failed = true;
+	/* Alpha rectangles remain Pixman until RGB565 blending is board-proved. */
+	if (o->color.a != 1) p->gpu_eligible = false;
+	add_op(p, &op);
 }
 static void add_texture(struct wlr_render_pass *base, const struct wlr_render_texture_options *o) {
-	struct vglite_pass *p = pass_from_base(base); struct vglite_op op = { .kind = OP_TEXTURE, .texture = *o };
-	struct vglite_texture *t = texture_from_base(o->texture);
-	copy_clip(&op.clip, o->clip, &op.has_clip);
-	/* The first GPU texture contract is intentionally narrow: an exact full
-	 * SHM upload, normal orientation, opaque copy, and no clip. Everything
-	 * else is replayed by Pixman as one complete pass. */
-	if (!t->shm_upload_ready || op.has_clip || o->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
-		o->blend_mode != WLR_RENDER_BLEND_MODE_NONE || o->filter_mode != WLR_SCALE_FILTER_NEAREST ||
-		o->alpha != NULL || o->color_encoding != WLR_COLOR_ENCODING_NONE ||
-		o->wait_timeline != NULL)
+	struct vglite_pass *p = (struct vglite_pass *)base;
+	if (p->failed) return;
+	assert(o->texture->impl == &texture_impl);
+	struct vglite_texture *t = (struct vglite_texture *)o->texture;
+	struct vglite_op op = { .kind = OP_TEXTURE, .texture = *o,
+		.alpha = o->alpha ? *o->alpha : 1,
+		.luminance = o->luminance_multiplier ? *o->luminance_multiplier : 1,
+		.has_primaries = o->primaries != NULL };
+	op.texture.texture = NULL;
+	if (o->primaries) op.primaries = *o->primaries;
+	if (!copy_clip(&op, o->clip)) p->failed = true;
+	/* Neither this renderer nor paired Pixman implements explicit sync. Do not
+	 * read a source before its producer's unimplemented wait. */
+	if (o->wait_timeline || !isfinite(op.alpha) || op.alpha < 0 || op.alpha > 1 ||
+		(o->blend_mode != WLR_RENDER_BLEND_MODE_NONE &&
+		 o->blend_mode != WLR_RENDER_BLEND_MODE_PREMULTIPLIED)) p->failed = true;
+	uint32_t width = t->base.width, height = t->base.height;
+	if (!width || !height || width > INT_MAX / 4 || height > INT_MAX ||
+		(size_t)width * 4 > SIZE_MAX / height) p->failed = true;
+	if (!p->failed) {
+		op.stride = width * 4;
+		op.pixels = malloc((size_t)op.stride * height);
+		struct wlr_texture_read_pixels_options read = {
+			.data = op.pixels, .format = DRM_FORMAT_ABGR8888, .stride = op.stride,
+			.src_box = {0, 0, width, height},
+		};
+		if (!op.pixels || !wlr_texture_read_pixels(t->fallback, &read)) p->failed = true;
+	}
+	if (!p->failed) {
+		op.texture.texture = wlr_texture_from_pixels(p->renderer->pixman,
+			DRM_FORMAT_ABGR8888, op.stride, width, height, op.pixels);
+		if (!op.texture.texture) p->failed = true;
+		op.opaque = true;
+		for (size_t i = 3; i < (size_t)op.stride * height; i += 4)
+			if (op.pixels[i] != 255) { op.opaque = false; break; }
+		wlr_render_texture_options_get_src_box(o, &op.texture.src_box);
+		wlr_render_texture_options_get_dst_box(o, &op.texture.dst_box);
+		struct wlr_fbox box = op.texture.src_box;
+		if (!isfinite(box.x) || !isfinite(box.y) || !isfinite(box.width) || !isfinite(box.height) ||
+			box.x < 0 || box.y < 0 || box.width <= 0 || box.height <= 0 ||
+			box.x + box.width > width || box.y + box.height > height) p->failed = true;
+	}
+	if (!t->cpu_rgb || o->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+		(o->filter_mode != WLR_SCALE_FILTER_NEAREST &&
+		 !(o->filter_mode == WLR_SCALE_FILTER_BILINEAR && op.texture.src_box.width == op.texture.dst_box.width &&
+		   op.texture.src_box.height == op.texture.dst_box.height)) || op.alpha != 1 ||
+		o->color_encoding != WLR_COLOR_ENCODING_NONE || o->color_range != WLR_COLOR_RANGE_NONE ||
+		o->transfer_function != 0 || o->primaries || op.luminance != 1)
 		p->gpu_eligible = false;
-	if (!add_op(p, &op) && op.has_clip) pixman_region32_fini(&op.clip);
+	/* SRC_OVER on the RGB565 imported target still needs hardware comparison. */
+	if (!op.opaque && o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) p->gpu_eligible = false;
+	add_op(p, &op);
 }
-
 static void replay(struct vglite_pass *p, struct wlr_render_pass *dst) {
 	for (size_t i = 0; i < p->len; i++) {
 		struct vglite_op *op = &p->ops[i];
 		if (op->kind == OP_RECT) {
-			if (op->has_clip) op->rect.clip = &op->clip;
-			wlr_render_pass_add_rect(dst, &op->rect);
+			struct wlr_render_rect_options o = op->rect;
+			o.clip = op->has_clip ? &op->clip : NULL;
+			wlr_render_pass_add_rect(dst, &o);
 		} else {
-			struct vglite_texture *t = texture_from_base(op->texture.texture);
-			if (!t->fallback) continue;
 			struct wlr_render_texture_options o = op->texture;
-			o.texture = t->fallback; if (op->has_clip) o.clip = &op->clip;
+			o.clip = op->has_clip ? &op->clip : NULL;
+			o.alpha = &op->alpha; o.luminance_multiplier = &op->luminance;
+			o.primaries = op->has_primaries ? &op->primaries : NULL;
 			wlr_render_pass_add_texture(dst, &o);
 		}
 	}
 }
-
-static bool gpu_pass(struct vglite_pass *p) {
-	if (!p->gpu_eligible || !getenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE")) return false;
+/* Intersection in 64 bits avoids signed overflow from caller coordinates. */
+static bool clipped_box(struct wlr_box b, struct wlr_buffer *target, struct wlr_box *out) {
+	int64_t x1 = b.x > 0 ? b.x : 0, y1 = b.y > 0 ? b.y : 0;
+	int64_t x2 = (int64_t)b.x + b.width, y2 = (int64_t)b.y + b.height;
+	if (x2 > target->width) x2 = target->width;
+	if (y2 > target->height) y2 = target->height;
+	if (x2 <= x1 || y2 <= y1) return false;
+	*out = (struct wlr_box){x1, y1, x2 - x1, y2 - y1}; return true;
+}
+static bool op_region(struct vglite_op *op, struct wlr_buffer *buffer, pixman_region32_t *region) {
+	struct wlr_box box = op->kind == OP_RECT ? op->rect.box : op->texture.dst_box;
+	pixman_region32_init(region);
+	if (!clipped_box(box, buffer, &box)) return true;
+	if (!pixman_region32_union_rect(region, region, box.x, box.y, box.width, box.height)) return false;
+	return !op->has_clip || pixman_region32_intersect(region, region, &op->clip);
+}
+static bool gpu_preflight(struct vglite_pass *p) {
+	pixman_region32_t coverage; pixman_region32_init(&coverage);
+	bool ok = true;
+	for (size_t i = 0; ok && i < p->len; i++) {
+		struct vglite_op *op = &p->ops[i];
+		pixman_region32_t region;
+		ok = op_region(op, p->buffer, &region);
+		if (ok && op->kind == OP_TEXTURE && pixman_region32_not_empty(&region)) {
+			struct wlr_fbox s = op->texture.src_box;
+			struct wlr_box d = op->texture.dst_box;
+			/* Integer crops and integer upscales have unambiguous nearest samples.
+			 * General/downscale fractional rounding remains a Pixman operation. */
+			ok = isfinite(s.x) && isfinite(s.y) && isfinite(s.width) && isfinite(s.height) &&
+				s.x >= 0 && s.y >= 0 && s.width > 0 && s.height > 0 &&
+				s.x == floor(s.x) && s.y == floor(s.y) && s.width == floor(s.width) && s.height == floor(s.height) &&
+				s.width <= 16384 && s.height <= 16384 &&
+				s.x + s.width <= op->texture.texture->width && s.y + s.height <= op->texture.texture->height &&
+				d.x >= 0 && d.y >= 0 && d.width > 0 && d.height > 0 &&
+				(int64_t)d.x + d.width <= p->buffer->width && (int64_t)d.y + d.height <= p->buffer->height &&
+				fmod(d.width, s.width) == 0 && fmod(d.height, s.height) == 0;
+			pixman_box32_t full = {d.x, d.y, (int64_t)d.x + d.width, (int64_t)d.y + d.height};
+			if (ok && pixman_region32_contains_rectangle(&region, &full) != PIXMAN_REGION_IN) ok = false;
+		}
+		/* Every eligible operation is an opaque replacement. Require a complete
+		 * redraw so the trial never relies on unproved target preservation. */
+		if (ok) ok = pixman_region32_union(&coverage, &coverage, &region);
+		pixman_region32_fini(&region);
+	}
+	pixman_box32_t full = {0, 0, p->buffer->width, p->buffer->height};
+	ok = ok && pixman_region32_contains_rectangle(&coverage, &full) == PIXMAN_REGION_IN;
+	pixman_region32_fini(&coverage); return ok;
+}
+/* Same C908 clean/invalidate sequence as the source-built VG-Lite package.
+ * Clean CPU writes before transferring this imported target to the GPU. The
+ * SDK finish path handles GPU-to-CPU invalidation; physical correctness is
+ * still guarded by the explicitly unproven-cache trial flag. */
+static void target_cache_to_gpu(void *memory, size_t bytes) {
+#ifdef VGLITE_HOST_TEST
+	(void)memory; (void)bytes; /* no cache-coherency claim in the host device */
+#elif defined(__riscv)
+	register uintptr_t address __asm__("a0") = (uintptr_t)memory;
+	int64_t remaining = bytes + address % 64;
+	__asm volatile("fence iorw, iorw" ::: "memory");
+	while (remaining > 0) {
+		__asm volatile(".word 0x0275000b" : "+r"(address) :: "memory");
+		address += 64; remaining -= 64;
+	}
+	__asm volatile(".word 0x0190000b" ::: "memory");
+	__asm volatile("fence iorw, iorw" ::: "memory");
+	__asm volatile("fence.i" ::: "memory");
+#else
+#error "The experimental VG-Lite renderer requires the K230 C908 cache contract"
+#endif
+}
+enum gpu_result { GPU_FALLBACK, GPU_OK, GPU_FAILED };
+static enum gpu_result gpu_pass(struct vglite_pass *p) {
+	const char *allow = getenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE");
+	if (gpu_disabled || !p->gpu_eligible || !allow || strcmp(allow, "1") || !gpu_preflight(p)) return GPU_FALLBACK;
 	struct wlr_dmabuf_attributes a = {0};
 	if (!wlr_buffer_get_dmabuf(p->buffer, &a) || a.n_planes != 1 ||
-		a.format != DRM_FORMAT_RGB565 || a.modifier != DRM_FORMAT_MOD_LINEAR || a.offset[0] != 0)
-		return false;
-	vg_lite_buffer_t target = {0}; target.width = p->buffer->width; target.height = p->buffer->height;
-	target.stride = a.stride[0]; target.format = VG_LITE_BGR565;
-	if (vg_lite_init(target.width, target.height) != VG_LITE_SUCCESS) return false;
+		a.width != p->buffer->width || a.height != p->buffer->height || a.fd[0] < 0 ||
+		a.format != DRM_FORMAT_RGB565 || a.modifier != DRM_FORMAT_MOD_LINEAR || a.offset[0] != 0 ||
+		a.stride[0] < (uint32_t)p->buffer->width * 2 || a.stride[0] > INT_MAX || a.stride[0] % 64 ||
+		(uint64_t)a.stride[0] * p->buffer->height > INT_MAX) return GPU_FALLBACK;
+	vg_lite_buffer_t target = { .width = p->buffer->width, .height = p->buffer->height,
+		.stride = a.stride[0], .format = VG_LITE_BGR565 };
+	/* Keep every allocation alive until finish, including after an API error.
+	 * Source storage is padded to the SDK allocation stride; upload_buffer in
+	 * this SDK copies destination stride bytes per row, not the source stride. */
+	vg_lite_buffer_t *sources = calloc(p->len, sizeof(*sources));
+	if (!sources) return GPU_FALLBACK;
+	/* vg_lite_map requires a real CPU mapping even for a dma-buf. Obtain it
+	 * from the supplied wlroots buffer and keep that access alive through
+	 * completion; never open DRM or invent a placeholder address. */
+	uint32_t format; size_t stride;
+	if (!wlr_buffer_begin_data_ptr_access(p->buffer,
+			WLR_BUFFER_DATA_PTR_ACCESS_READ | WLR_BUFFER_DATA_PTR_ACCESS_WRITE,
+			&target.memory, &format, &stride)) { free(sources); return GPU_FALLBACK; }
+	if (!target.memory || format != a.format || stride != a.stride[0]) {
+		wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
+	}
+	target_cache_to_gpu(target.memory, stride * target.height);
+	if (vg_lite_init(target.width, target.height) != VG_LITE_SUCCESS) {
+		gpu_disabled = true; wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
+	}
 	bool ok = vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]) == VG_LITE_SUCCESS;
-	bool submitted = false;
+	bool started = false;
 	for (size_t i = 0; ok && i < p->len; i++) {
-		if (p->ops[i].kind == OP_RECT) {
-			struct wlr_render_rect_options *o = &p->ops[i].rect;
-			vg_lite_rectangle_t r = {o->box.x, o->box.y, o->box.width, o->box.height};
-			vg_lite_color_t c = ((vg_lite_color_t)(o->color.a * 255.0f) << 24) |
-				((vg_lite_color_t)(o->color.b * 255.0f) << 16) |
-				((vg_lite_color_t)(o->color.g * 255.0f) << 8) |
-				(vg_lite_color_t)(o->color.r * 255.0f);
-			submitted = true;
-			ok = vg_lite_clear(&target, &r, c) == VG_LITE_SUCCESS;
-			continue;
-		}
-		struct wlr_render_texture_options *o = &p->ops[i].texture;
-		struct vglite_texture *t = texture_from_base(o->texture);
-		vg_lite_buffer_t source = {0};
-		source.width = t->base.width; source.height = t->base.height;
-		source.stride = t->stride; source.format = VG_LITE_RGBA8888;
-		ok = vg_lite_allocate(&source) == VG_LITE_SUCCESS;
-		if (ok) {
-			vg_lite_uint8_t *planes[3] = {t->pixels, NULL, NULL};
-			vg_lite_uint32_t strides[3] = {t->stride, 0, 0};
-			ok = vg_lite_upload_buffer(&source, planes, strides) == VG_LITE_SUCCESS;
-		}
-		if (ok) {
-			struct wlr_fbox src = o->src_box;
-			if (src.width <= 0 || src.height <= 0) src = (struct wlr_fbox){0, 0, t->base.width, t->base.height};
-			struct wlr_box dst = o->dst_box;
-			if (dst.width <= 0 || dst.height <= 0) dst = (struct wlr_box){0, 0, t->base.width, t->base.height};
-			vg_lite_matrix_t matrix; vg_lite_identity(&matrix);
-			ok = vg_lite_scale((float)dst.width / src.width, (float)dst.height / src.height, &matrix) == VG_LITE_SUCCESS;
-			if (ok) ok = vg_lite_translate(dst.x, dst.y, &matrix) == VG_LITE_SUCCESS;
-			vg_lite_rectangle_t rect = {src.x, src.y, src.width, src.height};
+		struct vglite_op *op = &p->ops[i];
+		pixman_region32_t region;
+		ok = op_region(op, p->buffer, &region);
+		if (!ok || !pixman_region32_not_empty(&region)) { pixman_region32_fini(&region); continue; }
+		if (op->kind == OP_RECT) {
+			struct wlr_render_color c = op->rect.color;
+			vg_lite_color_t color = 0xff000000 | (((uint32_t)(c.b * 65535) >> 8) << 16) |
+				(((uint32_t)(c.g * 65535) >> 8) << 8) | ((uint32_t)(c.r * 65535) >> 8);
+			int n; pixman_box32_t *boxes = pixman_region32_rectangles(&region, &n);
+			for (int j = 0; ok && j < n; j++) {
+				vg_lite_rectangle_t r = {boxes[j].x1, boxes[j].y1, boxes[j].x2 - boxes[j].x1, boxes[j].y2 - boxes[j].y1};
+				started = true; ok = vg_lite_clear(&target, &r, color) == VG_LITE_SUCCESS;
+			}
+		} else {
+			vg_lite_buffer_t *s = &sources[i];
+			struct wlr_fbox src = op->texture.src_box; struct wlr_box dst = op->texture.dst_box;
+			s->width = src.width; s->height = src.height;
+			s->format = VG_LITE_RGBA8888;
+			ok = vg_lite_allocate(s) == VG_LITE_SUCCESS;
 			if (ok) {
-				submitted = true;
-				ok = vg_lite_blit_rect(&target, &source, &rect, &matrix, VG_LITE_BLEND_NONE, 0xffffffff, VG_LITE_FILTER_POINT) == VG_LITE_SUCCESS;
+				ok = s->memory && s->stride >= s->width * 4 && s->height == (int)src.height;
+				if (ok) {
+					memset(s->memory, 0, (size_t)s->stride * s->height);
+					for (int y = 0; y < s->height; y++) memcpy((uint8_t *)s->memory + (size_t)y * s->stride,
+						op->pixels + ((size_t)y + (size_t)src.y) * op->stride + (size_t)src.x * 4, (size_t)s->width * 4);
+				}
+			}
+			if (ok) {
+				/* Crop during the CPU upload. Pinned blit() cleans the source cache;
+				 * blit_rect() omits that operation. The matrix maps this crop's
+				 * local origin to dst, without scaling the destination translation. */
+				vg_lite_matrix_t m = {{{dst.width / src.width, 0, dst.x}, {0, dst.height / src.height, dst.y}, {0, 0, 1}}};
+				started = true;
+				ok = vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT) == VG_LITE_SUCCESS;
 			}
 		}
-		if (source.handle) vg_lite_free(&source);
+		pixman_region32_fini(&region);
 	}
-	if (ok) ok = vg_lite_finish() == VG_LITE_SUCCESS;
-	else if (submitted) {
-		/* A failed command may already be queued. Drain it before Pixman writes
-		 * the same mapped target, otherwise stale GPU work can race the replay. */
-		vg_lite_finish();
-		wlr_log(WLR_ERROR, "VG-Lite pass failed; drained queued work before Pixman replay");
+	/* blit/clear may auto-submit as the command buffer fills, even on error. */
+	if (started && vg_lite_finish() != VG_LITE_SUCCESS) {
+		gpu_disabled = true;
+		/* Deliberately quarantine the mapped target, source allocations and its
+		 * existing wlr_buffer lock and data access for process lifetime. Neither free, unmap nor
+		 * close in this SDK establishes quiescence after a failed finish. */
+		p->buffer = NULL;
+		wlr_log(WLR_ERROR, "VG-Lite completion failed; target quarantined, GPU disabled; restart session to recover resources");
+		return GPU_FAILED;
 	}
-	if (target.handle) {
-		vg_lite_unmap(&target);
-	}
-	vg_lite_close();
-	return ok;
-}
-
-static bool submit(struct wlr_render_pass *base) {
-	struct vglite_pass *p = pass_from_base(base); bool ok = false;
-	pthread_mutex_lock(&p->renderer->lock);
-	ok = gpu_pass(p);
-	pthread_mutex_unlock(&p->renderer->lock);
+	for (size_t i = 0; i < p->len; i++) if (sources[i].handle && vg_lite_free(&sources[i]) != VG_LITE_SUCCESS) ok = false;
+	free(sources);
+	if (target.handle && vg_lite_unmap(&target) != VG_LITE_SUCCESS) ok = false;
+	if (vg_lite_close() != VG_LITE_SUCCESS) ok = false;
+	wlr_buffer_end_data_ptr_access(p->buffer);
 	if (!ok) {
-		struct wlr_render_pass *fallback = wlr_renderer_begin_buffer_pass(
-			p->renderer->pixman, p->buffer, &p->options);
-		if (!fallback) goto out;
-		replay(p, fallback); ok = wlr_render_pass_submit(fallback);
+		gpu_disabled = true;
+		wlr_log(WLR_ERROR, "VG-Lite failure; GPU disabled, frame %s", started ? "discarded" : "replayed with Pixman");
+		return started ? GPU_FAILED : GPU_FALLBACK;
 	}
-out:
-	for (size_t i = 0; i < p->len; i++) if (p->ops[i].has_clip) pixman_region32_fini(&p->ops[i].clip);
+	wlr_log(WLR_DEBUG, "VG-Lite full frame submitted (%zu operations)", p->len);
+	return GPU_OK;
+}
+static bool submit(struct wlr_render_pass *base) {
+	struct vglite_pass *p = (struct vglite_pass *)base; bool ok = false;
+	if (!p->failed) {
+		pthread_mutex_lock(&gpu_lock);
+		enum gpu_result result = gpu_pass(p);
+		pthread_mutex_unlock(&gpu_lock);
+		if (result == GPU_OK) ok = true;
+		else if (result == GPU_FALLBACK) {
+			struct wlr_render_pass *fallback = wlr_renderer_begin_buffer_pass(p->renderer->pixman, p->buffer, NULL);
+			if (fallback) { replay(p, fallback); ok = wlr_render_pass_submit(fallback); }
+			wlr_log(WLR_DEBUG, "VG-Lite full pass replayed with Pixman (%zu operations)", p->len);
+		}
+	}
+	for (size_t i = 0; i < p->len; i++) finish_op(&p->ops[i]);
+	if (p->buffer) wlr_buffer_unlock(p->buffer);
 	free(p->ops); free(p); return ok;
 }
 static const struct wlr_render_pass_impl pass_impl = { .submit = submit, .add_rect = add_rect, .add_texture = add_texture };
-
 static struct wlr_render_pass *begin(struct wlr_renderer *base, struct wlr_buffer *b, const struct wlr_buffer_pass_options *o) {
-	struct vglite_renderer *r = renderer_from_base(base); struct vglite_pass *p = calloc(1, sizeof(*p));
-	if (!p) return NULL;
-	wlr_render_pass_init(&p->base, &pass_impl); p->renderer = r; p->buffer = b;
-	p->gpu_eligible = o && !o->color_transform && !o->signal_timeline; if (o) p->options = *o; return &p->base;
+	/* Pixman does not implement these contracts either; do not silently drop them. */
+	if ((o && (o->color_transform || o->signal_timeline || o->timer)) ||
+		b->width <= 0 || b->height <= 0 || b->width > 16384 || b->height > 16384) return NULL;
+	struct vglite_pass *p = calloc(1, sizeof(*p)); if (!p) return NULL;
+	wlr_render_pass_init(&p->base, &pass_impl);
+	p->renderer = (struct vglite_renderer *)base; p->buffer = wlr_buffer_lock(b); p->gpu_eligible = true;
+	return &p->base;
 }
-static bool refresh_shm_pixels(struct vglite_texture *t) {
-	free(t->pixels); t->pixels = NULL; t->shm_upload_ready = false;
-	t->stride = t->base.width * 4;
-	if (t->base.width == 0 || t->base.height == 0) return false;
-	t->pixels = calloc(t->base.height, t->stride);
-	if (!t->pixels) return false;
-	struct wlr_texture_read_pixels_options o = {
-		.data = t->pixels, .format = DRM_FORMAT_ARGB8888, .stride = t->stride,
-		.src_box = {0, 0, t->base.width, t->base.height},
-	};
-	if (!wlr_texture_read_pixels(t->fallback, &o)) { free(t->pixels); t->pixels = NULL; return false; }
-	t->shm_upload_ready = true;
-	return true;
+static bool cpu_rgb_buffer(struct wlr_buffer *b) {
+	struct wlr_dmabuf_attributes a;
+	if (wlr_buffer_get_dmabuf(b, &a)) return false;
+	void *data; uint32_t format; size_t stride;
+	if (!wlr_buffer_begin_data_ptr_access(b, WLR_BUFFER_DATA_PTR_ACCESS_READ, &data, &format, &stride)) return false;
+	bool ok = (format == DRM_FORMAT_XRGB8888 || format == DRM_FORMAT_ARGB8888) &&
+		b->width > 0 && stride >= (size_t)b->width * 4;
+	wlr_buffer_end_data_ptr_access(b); return ok;
 }
-static void destroy_texture(struct wlr_texture *base) { struct vglite_texture *t = texture_from_base(base); if (t->fallback) wlr_texture_destroy(t->fallback); free(t->pixels); free(t); }
+static void destroy_texture(struct wlr_texture *base) {
+	struct vglite_texture *t = (struct vglite_texture *)base;
+	wlr_texture_destroy(t->fallback); free(t);
+}
 static bool update_texture(struct wlr_texture *base, struct wlr_buffer *b, const pixman_region32_t *d) {
-	struct vglite_texture *t = texture_from_base(base);
+	struct vglite_texture *t = (struct vglite_texture *)base;
 	if (!wlr_texture_update_from_buffer(t->fallback, b, d)) return false;
-	return refresh_shm_pixels(t);
+	t->cpu_rgb = cpu_rgb_buffer(b); return true;
 }
-static bool read_texture(struct wlr_texture *base, const struct wlr_texture_read_pixels_options *o) { return wlr_texture_read_pixels(texture_from_base(base)->fallback, o); }
-static uint32_t preferred_texture_format(struct wlr_texture *base) { return wlr_texture_preferred_read_format(texture_from_base(base)->fallback); }
+static bool read_texture(struct wlr_texture *b, const struct wlr_texture_read_pixels_options *o) { return wlr_texture_read_pixels(((struct vglite_texture *)b)->fallback, o); }
+static uint32_t preferred_texture_format(struct wlr_texture *b) { return wlr_texture_preferred_read_format(((struct vglite_texture *)b)->fallback); }
 static const struct wlr_texture_impl texture_impl = { .update_from_buffer = update_texture, .read_pixels = read_texture, .preferred_read_format = preferred_texture_format, .destroy = destroy_texture };
 static struct wlr_texture *from_buffer(struct wlr_renderer *base, struct wlr_buffer *b) {
-	struct vglite_renderer *r = renderer_from_base(base); struct wlr_texture *fallback = wlr_texture_from_buffer(r->pixman, b); if (!fallback) return NULL;
+	struct vglite_renderer *r = (struct vglite_renderer *)base;
+	struct wlr_texture *fallback = wlr_texture_from_buffer(r->pixman, b); if (!fallback) return NULL;
 	struct vglite_texture *t = calloc(1, sizeof(*t)); if (!t) { wlr_texture_destroy(fallback); return NULL; }
-	wlr_texture_init(&t->base, base, &texture_impl, fallback->width, fallback->height); t->fallback = fallback;
-	refresh_shm_pixels(t); return &t->base;
+	wlr_texture_init(&t->base, base, &texture_impl, fallback->width, fallback->height);
+	t->fallback = fallback; t->cpu_rgb = cpu_rgb_buffer(b); return &t->base;
 }
-static const struct wlr_drm_format_set *texture_formats(struct wlr_renderer *b, uint32_t c) { return wlr_renderer_get_texture_formats(renderer_from_base(b)->pixman, c); }
-static const struct wlr_drm_format_set *render_formats(struct wlr_renderer *b) { return wlr_renderer_get_texture_formats(renderer_from_base(b)->pixman, WLR_BUFFER_CAP_DATA_PTR); }
-static int drm_fd(struct wlr_renderer *b) { return wlr_renderer_get_drm_fd(renderer_from_base(b)->pixman); }
-static void destroy(struct wlr_renderer *b) { struct vglite_renderer *r = renderer_from_base(b); wlr_renderer_destroy(r->pixman); pthread_mutex_destroy(&r->lock); free(r); }
+static const struct wlr_drm_format_set *texture_formats(struct wlr_renderer *b, uint32_t c) { return wlr_renderer_get_texture_formats(((struct vglite_renderer *)b)->pixman, c); }
+static const struct wlr_drm_format_set *render_formats(struct wlr_renderer *b) { return wlr_renderer_get_texture_formats(((struct vglite_renderer *)b)->pixman, WLR_BUFFER_CAP_DATA_PTR); }
+static int drm_fd(struct wlr_renderer *b) { return wlr_renderer_get_drm_fd(((struct vglite_renderer *)b)->pixman); }
+static void destroy(struct wlr_renderer *b) { struct vglite_renderer *r = (struct vglite_renderer *)b; wlr_renderer_destroy(r->pixman); free(r); }
 static const struct wlr_renderer_impl renderer_impl = { .get_texture_formats = texture_formats, .get_render_formats = render_formats, .destroy = destroy, .get_drm_fd = drm_fd, .texture_from_buffer = from_buffer, .begin_buffer_pass = begin };
 struct wlr_renderer *wlr_vglite_renderer_create(void) {
-	struct vglite_renderer *r = calloc(1, sizeof(*r)); if (!r) return NULL; r->pixman = wlr_pixman_renderer_create(); if (!r->pixman) { free(r); return NULL; }
-	pthread_mutex_init(&r->lock, NULL); wlr_renderer_init(&r->base, &renderer_impl, WLR_BUFFER_CAP_DMABUF | WLR_BUFFER_CAP_DATA_PTR); return &r->base;
+	struct vglite_renderer *r = calloc(1, sizeof(*r)); if (!r) return NULL;
+	r->pixman = wlr_pixman_renderer_create(); if (!r->pixman) { free(r); return NULL; }
+	wlr_renderer_init(&r->base, &renderer_impl, WLR_BUFFER_CAP_DMABUF | WLR_BUFFER_CAP_DATA_PTR); return &r->base;
 }
