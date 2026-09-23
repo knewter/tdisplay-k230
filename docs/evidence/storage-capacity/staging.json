@@ -1,0 +1,35 @@
+{
+  "evidence_class": "physical-board-serial-staging",
+  "initial_import": "FAIL: no free inodes while creating new system-path symlinks",
+  "initial_root_inodes": {
+    "total": 136816,
+    "used": 136816,
+    "available": 0
+  },
+  "initial_available_space": "69 MiB as reported by df -h",
+  "cleanup": {
+    "command": "nix-store --delete /nix/store/g40zabdg5pvib70yka0k2ykzycqzcfyx-system-path",
+    "scope": "only the failed partial import from this trial",
+    "store_paths_deleted": 1,
+    "reported_freed_kib": 124.8
+  },
+  "optimization": {
+    "command": "nix-store --optimise",
+    "exit_code": 0,
+    "files_hard_linked": 8599,
+    "reported_freed_mib": 92.1,
+    "scope": "share identical store files; retain installed store paths"
+  },
+  "retry": {
+    "command": "nix-store --import < /run/root-growth.export",
+    "exit_code": 0,
+    "export_bytes": 1219200,
+    "export_sha256": "e8385779ee5434090e5e1e9e69f951e99ed187d2db9079b09e11b06aaae1ea57",
+    "root_inodes_total": 136816,
+    "root_inodes_available": 7291
+  },
+  "limits": [
+    "Preparation only; no partition or filesystem resizing in these commands.",
+    "Store optimization is an operator staging action, not a new boot service or automatic garbage collection policy."
+  ]
+}

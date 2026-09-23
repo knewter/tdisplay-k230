@@ -1,0 +1,20 @@
+{
+  "old_system": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "selected_system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "installed_closure_paths": 607,
+  "boot_files_sha256": {
+    "Image": "ccd90d49c5257e65a1a71c2cca2f2b771046e56c5e5995de3e3f9677fd4eab75",
+    "initrd.uimg": "af0d80867767d4ff986ac594876964ee93fadcfbeb96bc494a8cf58166c70491",
+    "bootargs.txt": "7651604bc0f2d40b9e8dbe659a744080e03405ead60e6f9a20c09b6074a19c41",
+    "k230-tdisplay.dtb": "6072bb9186fb9f843197c01334a43328f1cfb535267ce0506051c05a8b004728",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "method": "complete image system closure imported; matching image boot files selected; existing compact root preserved",
+  "rebooted": false,
+  "script_sha256": "2658b4fc513ea07f088554c965829bcfdb0c9f572a75be31c28f85e2e836d11d",
+  "host_recorded_at_utc": "2026-09-23T21:02:03.672707+00:00",
+  "command": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /run/select-root-growth.py"
+}

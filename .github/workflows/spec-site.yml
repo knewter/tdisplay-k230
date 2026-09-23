@@ -53,7 +53,9 @@ jobs:
         run: python3 tests/test_touch_menu.py
 
       - name: Check root-growth guard and failure policy
-        run: python3 tests/test_root_growth.py
+        run: |
+          python3 tests/test_root_growth.py
+          python3 tests/test_root_growth_board.py
 
       - name: Check booted-card-smoke proof protocol
         run: python3 tests/test_qemu_card_shell_smoke.py
