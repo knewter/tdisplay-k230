@@ -1,0 +1,26 @@
+{
+  "image_kind": "explicit-fixture-image",
+  "artifacts": {
+    "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "initrd": "/nix/store/3q1mzr9myfps7rjgrkj1garb0sk3v8fx-initrd",
+    "toplevel": "/nix/store/xbs0ksf2vnbxzhf7ky3y90jzbp2h3992-nixos-system-nixos-kexec-26.11.20260919.20b1ddd"
+  },
+  "command": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "6G",
+    "-nographic",
+    "-kernel",
+    "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+    "-initrd",
+    "/nix/store/3q1mzr9myfps7rjgrkj1garb0sk3v8fx-initrd/initrd",
+    "-append",
+    "console=ttyS0,115200n8 nohibernate root=fstab loglevel=4 lsm=landlock,yama,bpf earlycon=sbi init=/nix/store/xbs0ksf2vnbxzhf7ky3y90jzbp2h3992-nixos-system-nixos-kexec-26.11.20260919.20b1ddd/init"
+  ],
+  "limits": [
+    "No board boot, panel, real touch, optical or performance acceptance.",
+    "Fixture mode does not satisfy default system-image integration."
+  ]
+}

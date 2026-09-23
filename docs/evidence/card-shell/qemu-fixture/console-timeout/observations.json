@@ -1,0 +1,18 @@
+{
+  "status": "FAIL",
+  "source_revision": "30f19ccec656",
+  "finished_at_utc": "2026-09-23T19:30:25.914855+00:00",
+  "raw_serial_sha256": "70cf58f3bc7b0a4539a3f1aff15670db2fc34fb91033d2c6d72d6f5d272d8ad1",
+  "raw_serial_bytes": 39707,
+  "selected_serial_lines": [
+    "[  OK  ] Started QEMU-only card shell userspace fixture.",
+    "[ TIME ] Timed out waiting for device /dev/ttyS0.",
+    "[DEPEND] Dependency failed for Serial Getty on ttyS0."
+  ],
+  "error": "guest smoke timed out; a boot prompt alone is not a pass",
+  "runtime_reports": 0,
+  "limits": [
+    "Selected serial observations only; original retained privately.",
+    "No interaction, default-image or physical proof."
+  ]
+}

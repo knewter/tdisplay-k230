@@ -52,6 +52,9 @@ jobs:
       - name: Check touch-menu protocol and actions
         run: python3 tests/test_touch_menu.py
 
+      - name: Check booted-card-smoke proof protocol
+        run: python3 tests/test_qemu_card_shell_smoke.py
+
       - name: Check window overview metadata
         run: python3 tests/test_window_catalog.py
 

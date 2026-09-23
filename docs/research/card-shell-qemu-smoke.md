@@ -75,3 +75,44 @@ The default selected-image invocation correctly rejected missing integration;
 fixture `--no-build` correctly rejected unrealized artifacts. The full explicit
 fixture build was still compiling its pinned Linux 6.18.52 kernel when this
 checkpoint was committed. No completed guest run is claimed.
+
+
+## First completed boot attempt and console repair
+
+The initial full build completed, but the guest verifier timed out at
+2026-09-23 19:30:25 UTC without any runtime report. The guest started its card
+fixture and reached userspace; its `/dev/ttyS0` device unit never activated,
+so serial-getty did not provide a login. The kernel has 8250 console and OF
+serial support built in; the precise device-unit cause remains unverified.
+[The failed attempt](../evidence/card-shell/qemu-fixture/console-timeout/observations.json)
+retains selected observations, original transcript hash and exact image
+artifact identities. It is not a card interaction pass.
+
+The explicit fixture now enables the standard `console-getty` on the existing
+kernel console and masks `serial-getty@ttyS0`. The supervisor also flushes its
+bounded transcript as it runs, so a stalled guest can be inspected before its
+deadline. Six host protocol checks still pass. A fresh actual guest retry is
+required; neither the console change nor host parsing tests prove that retry.
+
+
+The console retry reached an automatic login and failed explicitly with
+`runuser: may not be used by non-root users`; service teardown returned 71.
+[Its observations](../evidence/card-shell/qemu-fixture/supervisor-login/observations.json)
+preserve that failure. The installation-device profile selects `nixos`,
+overriding the board's default root login. The fixture now explicitly selects
+root for its supervisor; the compositor and all test clients still use the
+separate unprivileged `card-smoke` account. Pinned Sway's `sway/server.c`
+explicitly avoids `wayland-0` and selects from `wayland-1` onward; the isolated
+fixture verifier now targets its first socket, `wayland-1`.
+
+
+The next live guest produced two complete runtime reports with different
+compositor PIDs and a zero teardown status, but the host rejected the first
+report because the interactive shell prefixed it with `ESC[?2004l` (bracketed
+paste disable). The [original prefix observation](../evidence/card-shell/qemu-fixture/report-prefix/observations.json)
+records both reports and the failed host status. The parser now removes only
+known leading bracketed-paste mode toggles; it still rejects markers embedded
+in command echoes or arbitrary prefixes. Seven host tests pass, including that
+captured failure pattern. Those protocol checks now run in CI too. A fresh
+system guest run, not retrospective relabeling of the failed command, supplies
+the final verifier result.

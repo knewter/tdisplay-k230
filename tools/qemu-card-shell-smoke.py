@@ -30,9 +30,19 @@ def guest_command(token):
             f"printf '\\nK230_CARD_%s %s %s\\n' GUEST_DONE {token} \"$result\"\n")
 
 
+def wire_line(line):
+    # An interactive shell can disable bracketed paste immediately before the
+    # first report. Strip only these known leading terminal mode toggles;
+    # never search for a marker inside echoed commands or arbitrary text.
+    while line.startswith(('\x1b[?2004l', '\x1b[?2004h')):
+        line = line[8:]
+    return line
+
+
 def check_reports(lines, token):
     reports = []
     for line in lines:
+        line = wire_line(line)
         if line.startswith('K230_CARD_GUEST_RESULT '):
             report = json.loads(line.split(' ', 1)[1])
             if report.get('run_id') in (token, token+'-restart'):
@@ -51,6 +61,7 @@ def supervise(command, directory, timeout):
     token = uuid.uuid4().hex
     guest = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = bytearray()
+    transcript = (directory/'serial.log').open('wb')
     lines = []
     pending = ''
     sent = False
@@ -70,11 +81,13 @@ def supervise(command, directory, timeout):
                 if not chunk:
                     raise RuntimeError('QEMU exited before smoke completion')
                 output.extend(chunk)
+                transcript.write(chunk); transcript.flush()
                 if len(output) > 16*1024*1024:
                     raise RuntimeError('guest transcript exceeded 16 MiB bound')
                 pending += chunk.decode('utf-8', errors='replace').replace('\r', '')
                 while '\n' in pending:
                     line, pending = pending.split('\n', 1)
+                    line = wire_line(line)
                     lines.append(line)
                     if line == 'K230_CARD_READY_'+token and not sent:
                         guest.stdin.write(guest_command(token).encode()); guest.stdin.flush()
@@ -99,7 +112,7 @@ def supervise(command, directory, timeout):
                 stream.close()
             except OSError:
                 pass
-        (directory/'serial.log').write_bytes(output)
+        transcript.close()
 
 
 def configuration_expr(fixture):
