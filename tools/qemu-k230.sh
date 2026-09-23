@@ -22,6 +22,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [ "${1:-}" = "--card-shell-smoke" ]; then
+  shift
+  exec python3 tools/qemu-card-shell-smoke.py "$@"
+fi
+
 MACHINE="${MACHINE:-virt}"
 # Deliberately far above the board's 1 GiB. Under QEMU the entire system
 # lives in a ramdisk, so the guest needs room for the kernel plus the
