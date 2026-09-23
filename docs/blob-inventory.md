@@ -1077,6 +1077,12 @@ DATA 7005dee79977230539647f191250859fdde0b1dba6fd6b8be4e23cf04668f26d  docs/evid
 DATA 48e8bf258f444730dbe827d5f73e83b16a558a5447b00332cef396fa534d1977  docs/evidence/vglite-scene-board/padded/gpu/scene-later.png
 DATA 8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b  docs/evidence/vglite-scene-board/padded/pixman/scene-first.png
 DATA 4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457  docs/evidence/vglite-scene-board/padded/pixman/scene-later.png
+# RGB565 upload correction: native synthetic scene captures
+DATA 8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b  docs/evidence/vglite-scene-board/color-upload/scene/gpu/scene-first.png
+DATA 0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a  docs/evidence/vglite-scene-board/color-upload/scene/gpu/scene-later.png
+DATA 066ce3d3c67319949aafb77776ab08bf13bc22a90ffba9ca1339a3978bf857ed  docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-first.png
+DATA ed2d3814ca804d3a21c29762a80f2227cde0db92df0db19268a844d9398fb93c  docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-later.png
+
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
