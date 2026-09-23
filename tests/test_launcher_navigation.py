@@ -131,11 +131,35 @@ class WindowCatalogClient(unittest.TestCase):
         self.assertTrue(layer.is_file(), 'Pinned layer-shell fixture is missing')
         self.assertIsNotNone(xdg, 'Install wayland-protocols for launcher fixtures')
         source = r'''
+#define _POSIX_C_SOURCE 200809L
+#include <wayland-client.h>
+static void focus_surface_attach(struct wl_surface *, struct wl_buffer *, int32_t, int32_t);
+static void focus_surface_commit(struct wl_surface *);
+static int focus_display_flush(struct wl_display *);
+#define wl_surface_attach focus_surface_attach
+#define wl_surface_commit focus_surface_commit
+#define wl_display_flush focus_display_flush
 #define main launcher_program_main
 #include "TOUCH_LAUNCHER"
 #undef main
+#undef wl_surface_attach
+#undef wl_surface_commit
+#undef wl_display_flush
 #include <assert.h>
 #include <time.h>
+static int focus_handoff_step;
+static void focus_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer,
+                                 int32_t x, int32_t y) {
+  (void)surface; (void)buffer; (void)x; (void)y;
+  assert(!running); assert(focus_handoff_step == 0); focus_handoff_step = 1;
+}
+static void focus_surface_commit(struct wl_surface *surface) {
+  (void)surface; assert(!running); assert(focus_handoff_step == 1); focus_handoff_step = 2;
+}
+static int focus_display_flush(struct wl_display *display_arg) {
+  (void)display_arg; assert(!running); assert(focus_handoff_step == 2); focus_handoff_step = 3;
+  return 0;
+}
 static void pause_ms(long ms) {
   struct timespec wait = { .tv_sec = 0, .tv_nsec = ms * 1000000 };
   nanosleep(&wait, NULL);
@@ -148,7 +172,7 @@ static void drain_catalog(void) {
   assert(catalog.pid == 0);
 }
 int main(int argc, char **argv) {
-  assert(argc == 7);
+  assert(argc == 8);
   GPtrArray *parsed = parse_window_catalog(
     "17\tTerminal\tfoot\tfocused\nnot-an-id\tbad\tbad\tnormal\n");
   assert(parsed->len == 1);
@@ -175,7 +199,12 @@ int main(int argc, char **argv) {
   assert(!touch_rejected && touch_contact_count==0);
   touch_down(NULL,NULL,0,0,NULL,10,0,0);
   assert(touch_id==10);
+  /* A compositor input cancellation must discard the contact without closing Apps. */
+  running=true;
   touch_cancel(NULL,NULL);
+  assert(running && touch_id==-1 && touch_card==-1 && !touch_rejected &&
+         !touch_from_card && touch_contact_count==0 && !gesture.active && gesture.id==-1 &&
+         gesture.direction==GESTURE_NONE);
 
   /* Disabled gestures retain old within-card drag/tap behavior. */
   gestures_enabled=false;
@@ -203,6 +232,14 @@ int main(int argc, char **argv) {
   assert(windows->len == 1);
   assert(!strcmp(((struct window_card *)g_ptr_array_index(windows, 0))->id, "18"));
   assert(launch_error && !strcmp(launch_error, "Window closed; overview refreshed"));
+
+  /* A valid catalogue with no selectable windows must not invoke the focus helper. */
+  setenv("K230_WINDOW_CATALOG", argv[7], 1);
+  assert(catalog_start(CATALOG_FOCUS, "18"));
+  drain_catalog();
+  assert(windows->len == 0);
+  assert(launch_error && !strcmp(launch_error, "Window closed; overview refreshed"));
+  assert(access(argv[4], F_OK) != 0);
 
   struct window_card *current = g_new0(struct window_card, 1);
   current->id = g_strdup("18");
@@ -248,6 +285,18 @@ int main(int argc, char **argv) {
   drain_catalog();
   pause_ms(120);
   assert(access(argv[4], F_OK) != 0);
+
+  /* In the configured client, yield the layer before spawning Sway focus. */
+  configured=true;
+  surface=(struct wl_surface *)(uintptr_t)1;
+  display=(struct wl_display *)(uintptr_t)1;
+  running=true;
+  focus_handoff_step=0;
+  unlink(argv[4]);
+  finish_window_focus("18");
+  assert(!running && focus_handoff_step==3);
+  for (int i = 0; access(argv[4], F_OK) && i < 100; i++) pause_ms(5);
+  assert(access(argv[4], F_OK) == 0);
   return 0;
 }
 '''
@@ -271,6 +320,9 @@ int main(int argc, char **argv) {
             flood = path / 'flood.sh'
             flood.write_text('#!/bin/sh\ntrap "" TERM\nwhile :; do printf "9\ttoo much\tapp\tnormal\n"; done\n')
             flood.chmod(0o755)
+            empty = path / 'empty.sh'
+            empty.write_text('#!/bin/sh\nexit 0\n')
+            empty.chmod(0o755)
             slow = path / 'slow.sh'
             slow.write_text('#!/bin/sh\nsleep 0.1\nprintf "18\tLate\tnew.app\tnormal\n"\n')
             slow.chmod(0o755)
@@ -287,7 +339,7 @@ int main(int argc, char **argv) {
                             str(ROOT / 'nix/touch-launcher/catalog.c'),
                             str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
                             str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags], check=True)
-            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow)],
+            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow), str(empty)],
                            check=True, timeout=3, env=os.environ | {'RECORD': str(record)})
 
 

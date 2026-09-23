@@ -751,7 +751,9 @@ static void touch_motion(void*d,struct wl_touch*t,uint32_t tm,int32_t id,wl_fixe
   }
 }
 static void touch_frame(void*d,struct wl_touch*t) {} static void touch_cancel(void*d,struct wl_touch*t) {
-  gesture_reject(&gesture); touch_id=-1; touch_card=-1; touch_contact_count=0;
+  gesture_reject(&gesture);
+  (void)gesture_release(&gesture,gesture.id);
+  touch_id=-1; touch_card=-1; touch_contact_count=0;
   touch_rejected=false; touch_from_card=false;
 }
 static const struct wl_touch_listener touch_listener = { .down=touch_down,.up=touch_up,.motion=touch_motion,.frame=touch_frame,.cancel=touch_cancel };
