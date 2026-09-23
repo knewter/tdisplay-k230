@@ -1,0 +1,37 @@
+Diagnostic build: /nix/store/dsb033syp2z2jn6plsh5frc0y1hic1q4-k230-vglite-probe-riscv64-unknown-linux-gnu-0-1104236db4d1e47873bd68924f912747b820228c
+Private RGBA buffers only; no display access.
+Service status order: shell, seatd, k230-wifi.
+
+VGLITE_TEST_BEGIN
+source x=0 y=0 raw=0xffcf2020 bytes=20:20:cf:ff
+source x=127 y=0 raw=0x00000000 bytes=00:00:00:00
+target x=0 y=0 raw=0xffce2020 bytes=20:20:ce:ff
+target x=126 y=0 raw=0xffce2020 bytes=20:20:ce:ff
+target x=127 y=0 raw=0xffce2020 bytes=20:20:ce:ff
+target x=128 y=0 raw=0x00000000 bytes=00:00:00:00
+target x=129 y=0 raw=0x00000000 bytes=00:00:00:00
+target x=255 y=0 raw=0x00000000 bytes=00:00:00:00
+target x=0 y=63 raw=0xffce2020 bytes=20:20:ce:ff
+target x=126 y=63 raw=0xffce2020 bytes=20:20:ce:ff
+target x=127 y=63 raw=0xffce2020 bytes=20:20:ce:ff
+target x=128 y=63 raw=0x00000000 bytes=00:00:00:00
+target x=129 y=63 raw=0x00000000 bytes=00:00:00:00
+target x=255 y=63 raw=0x00000000 bytes=00:00:00:00
+target x=0 y=127 raw=0xffce2020 bytes=20:20:ce:ff
+target x=126 y=127 raw=0xffce2020 bytes=20:20:ce:ff
+target x=127 y=127 raw=0xffce2020 bytes=20:20:ce:ff
+target x=128 y=127 raw=0x00000000 bytes=00:00:00:00
+target x=129 y=127 raw=0x00000000 bytes=00:00:00:00
+target x=255 y=127 raw=0x00000000 bytes=00:00:00:00
+target x=0 y=255 raw=0xffce2020 bytes=20:20:ce:ff
+target x=126 y=255 raw=0xffce2020 bytes=20:20:ce:ff
+target x=127 y=255 raw=0xffce2020 bytes=20:20:ce:ff
+target x=128 y=255 raw=0x00000000 bytes=00:00:00:00
+target x=129 y=255 raw=0x00000000 bytes=00:00:00:00
+target x=255 y=255 raw=0x00000000 bytes=00:00:00:00
+scaled boundary mismatch on target row 0
+PROBE_STATUS=1
+active
+active
+active
+VGLITE_TEST_END

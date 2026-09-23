@@ -17,7 +17,8 @@ provides RGB565 and ARGB8888 buffers, clear, transformed/filtering blits,
 blending, and vector paths. See the vendor [GPU API reference](https://github.com/kendryte/k230_docs/blob/main/zh/01_software/board/mpp/K230_GPU_API%E5%8F%82%E8%80%83.md)
 and its SDK header
 [`vg_lite.h`](https://github.com/kendryte/k230_sdk/blob/main/src/big/mpp/userapps/api/vg_lite.h).
-The SDK supplies `libvg_lite.a`, not a Mesa driver or EGL/GBM implementation.
+The RT-Smart SDK supplies `libvg_lite.a`; the Linux SDK builds
+`libvg_lite.so`. Neither provides a Mesa driver or EGL/GBM implementation.
 The vendor reference also says that the kernel does not validate command-buffer
 physical addresses, so this device must remain inaccessible to untrusted desktop
 clients.
@@ -69,8 +70,9 @@ It is a compositor-development project, not an FFmpeg or environment flag.
 
 ## Next action
 
-Keep the measured finite-window software playback configuration as the current
-solution. Before implementing any accelerated renderer, run a small privileged
+Keep the measured finite-window [playback configurations](video-acceleration/README.md)
+as the current solution: unscaled 270p software decoding, or 360p MVX decoding
+with CPU point scaling and the known-CFR workaround. Before implementing any accelerated renderer, run a small privileged
 VGLite smoke test that imports an exported RGB565 dumb-buffer dma-buf, clears or
 blits it, completes the GPU work, and scans it out. Verify the result visually
 and measure wall-clock submit-to-fence time. Only after that passes should a

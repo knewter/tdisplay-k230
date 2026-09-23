@@ -86,8 +86,9 @@ playback. A first seek/duration-limited FFmpeg DASH trial was also discarded as
 a throughput benchmark in favor of the fixed-frame local comparison above.
 
 The software baseline uses an unscaled YUV-to-BGRA converter. The 360p output
-still uses CPU bilinear scaling; neither the VPU nor the KPU accelerates this
-Wayland SHM rendering path. Counters describe player behavior, not a measured
+still uses CPU scaling (bilinear in the first trials, point in the successful
+configuration); neither the VPU nor the KPU accelerates this Wayland SHM
+rendering path. Counters describe player behavior, not a measured
 panel scanout cadence. Physical/native captures and a presentation-timing
 acceptance remain separate evidence layers in the video proposal.
 
