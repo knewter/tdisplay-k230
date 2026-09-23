@@ -8,6 +8,7 @@ from pathlib import Path
 PATCH = Path(__file__).parents[1] / "nix/patches/wlroots-vglite-full-pass-pixman.patch"
 NIX = Path(__file__).parents[1] / "nix/wlroots-vglite.nix"
 text = PATCH.read_text()
+assert '\t\t"vglite",' in text
 assert 'strcmp(renderer_name, "vglite")' in text
 assert 'wlr_pixman_renderer_create()' in text
 assert 'full-pass Pixman fallback' in text

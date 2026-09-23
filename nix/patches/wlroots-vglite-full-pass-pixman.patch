@@ -1,12 +1,17 @@
 --- a/render/wlr_renderer.c
 +++ b/render/wlr_renderer.c
-@@ -224,6 +224,22 @@ static struct wlr_renderer *renderer_autocreate(struct wlr_backend *backend, int drm_fd) {
- 	const char *renderer_name = renderer_options[env_parse_switch("WLR_RENDERER", renderer_options)];
- 	bool is_auto = strcmp(renderer_name, "auto") == 0;
- 	struct wlr_renderer *renderer = NULL;
+@@ -222,6 +222,7 @@
+ 		"gles2",
+ 		"vulkan",
+ 		"pixman",
++		"vglite",
+ 		NULL
+ 	};
+ 
+@@ -231,6 +232,22 @@
  
  	bool own_drm_fd = false;
-+
+ 
 +	/*
 +	 * The K230 experiment is deliberately opt-in. This first package is a
 +	 * complete-pass Pixman fallback: it exercises renderer selection and the
@@ -22,5 +27,7 @@
 +		}
 +		log_creation_failure(false, "Failed to create the VG-Lite experiment fallback");
 +	}
- 
++
  	if ((is_auto && WLR_HAS_GLES2_RENDERER) || strcmp(renderer_name, "gles2") == 0) {
+ 		if (!open_preferred_drm_fd(backend, &drm_fd, &own_drm_fd)) {
+ 			log_creation_failure(is_auto, "Cannot create GLES2 renderer: no DRM FD available");
