@@ -234,7 +234,9 @@ class Session:
         account = pwd.getpwnam('shell')
         os.chown(session, account.pw_uid, account.pw_gid)
         config = session/'sway.conf'
-        config.write_text('include '+self.state['normal_config']+'\noutput DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6\ninput type:touch map_to_output DSI-1\n')
+        # IPC splits commas before for_window receives its command list.
+        # Keep this fixture-only rule in the configuration parsed at startup.
+        config.write_text('include '+self.state['normal_config']+'\noutput DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6\ninput type:touch map_to_output DSI-1\nfor_window [app_id="^k230[.]card[.](one|two)$"] floating enable, border none, resize set 520 1040, move position 24 96\n')
         config.chmod(0o644)
         environment = shlex.split(self.system.prop('shell.service','Environment'))
         path = next((item[5:] for item in environment if item.startswith('PATH=')), None)

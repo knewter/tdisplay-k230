@@ -22,8 +22,11 @@ A root timer is armed before normal-shell shutdown. The product runs as `shell`
 in `k230-card-shell.service` with `KillMode=control-group`, accounting, an
 independent runtime limit, and a private Wayland runtime. It includes the actual
 normal config, preserving its bar, launcher, terminal, monitor, help and
-keyboard programs. The only appended configuration selects DSI-1 native
-568x1232, scale one, `render_bit_depth 6` (RGB565), and touch mapping. Its child
+keyboard programs. The appended configuration selects DSI-1 native
+568x1232, scale one, `render_bit_depth 6` (RGB565), touch mapping, and a floating
+geometry rule restricted to the two synthetic card clients. The rule belongs in
+the startup config: runtime IPC splits its comma-separated commands before
+`for_window` can retain them for newly mapped clients. Its child
 apps and normal UI stay in the same accounting cgroup; only then is
 `SWAY_K230_CARD_BENCH_CGROUP=1` set.
 
@@ -77,6 +80,9 @@ These are artifact identities, not an assertion that either is installed.
 After reserving the board/UART, import the declared closures and copy the two
 Python tools and existing `tools/inject-tap.sh` into a root-owned, non-writable
 by other users `/run/card-tools/`. Keep the two Python tools together. The
+files themselves must be root-owned; when transferring a host-created tar
+archive, extract with `tar --no-same-owner` as root and verify the reviewed
+files' ownership and hashes. A root-owned parent alone is insufficient. The
 following runs only on the board, with the dependency PATH described above:
 
 ```sh

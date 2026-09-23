@@ -189,7 +189,6 @@ class Acceptance:
             raise RuntimeError('unexpected startup apps: refusing to close non-fixture work')
         for node in existing:self.ipc('[con_id='+str(node['id'])+'] kill')
         if not self.wait(lambda:not self.apps()):raise RuntimeError('fresh startup terminal did not close')
-        self.ipc('for_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 96')
         self.spawn('one',True);self.benchmark(1)
         self.spawn('two');self.ipc('[app_id="k230.card.one"] focus');self.benchmark(2)
         self.check('actual-rgb565-pixman-session','backend=drm renderer=pixman width=568 height=1232 output_format=RGB565 input=injected' in self.journal())
