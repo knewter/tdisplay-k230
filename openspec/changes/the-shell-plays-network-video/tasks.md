@@ -6,7 +6,7 @@
 
 ## 2. Apps entry and recovery controls
 
-- [ ] 2.1 Add a visible Terminal video desktop entry through the existing Apps/Foot bridge with the documented player profile; verify `k230-desktop-catalog list` discovers it and `launch ID` returns a successful process launch with the expected terminal environment.
+- [x] 2.1 Add a visible Terminal video desktop entry through the existing Apps/Foot bridge with the documented player profile; verify `k230-desktop-catalog list` discovers it and `launch ID` returns a successful process launch with the expected terminal environment.
 - [x] 2.2 Define and implement stop, Back/Home return, EOF, network-error, and failed-decoder recovery without leaving an orphan player or runtime secret; verify launcher tests cover success, failure, return, and empty/error states.
 - [ ] 2.3 Boot the resulting image and exercise launch, stop, Back/Home, and recovery with injected input; verify the existing Apps, Help, Keyboard, Terminal, Monitor, and System controls remain usable and record injected versus physical interaction explicitly.
 
@@ -15,7 +15,7 @@
 - [x] 3.1 Run the 480x270 software BBB trial for at least 30 seconds and record manifest, representation, source frame rate, `wlshm`, audio state, decoder drops, video-output drops, cache, and player exit reason in `docs/evidence/`.
 - [x] 3.2 Run the 640x360 comparison trial with the same software path and record its counters and network/cache behavior; verify the report distinguishes the comparison from an accepted smoothness claim.
 - [x] 3.3 Capture CPU samples with verified `CLK_TCK` and page size, and calculate only clearly labeled interval estimates; verify raw `/proc` transcripts and the calculation method are committed with no secret or unrelated terminal data.
-- [ ] 3.4 Capture a native decoded frame and a physical panel frame for the accepted software baseline; verify the report labels native screenshots, camera readability, decoder counters, and scanout/presentation evidence as separate claims.
+- [x] 3.4 Capture a native decoded frame and a physical panel frame for the accepted software baseline; verify the report labels native screenshots, camera readability, decoder counters, and scanout/presentation evidence as separate claims.
 
 ## 4. MVX hardware decoder experiment
 
@@ -50,3 +50,5 @@ Final-image lifecycle regression remains separate.
 Host integration proof: `docs/evidence/network-video/integration-host.md` and its
 JSON record cover package/image builds, closure deltas, runtime source boundary
 and lifecycle tests. They do not close the final-image board acceptance tasks.
+
+Tasks 2.1 and 3.4: `docs/evidence/network-video/installed-app/README.md` records catalog discovery, an injected Apps launch through Foot on the flashed image, 100 seconds of IPC/process observation with advancing playback, native/physical captures, and Back cleanup. Stop/Home/EOF/error/MVX/final regression remain separately open.

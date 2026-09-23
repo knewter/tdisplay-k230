@@ -668,6 +668,11 @@ DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evid
 DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/launcher-gestures/integrated-injected/keyboard-gesture.png
 DATA d40206f05d3b2f964da1f78b662c0176f67d2ab47d49ca3453f4cb5df5d694b7  docs/evidence/launcher-gestures/real-finger/gestures.mp4
 DATA 215d6123da8bf7ba7feb6a1977c88323974a6b54e07629fb594f4d83f871ab02  docs/evidence/launcher-gestures/real-finger/window-selection.jpg
+DATA 015319ae3a573239a20028df99a946834521bd36efb445d405ee038e2ce3e425  docs/evidence/network-video/installed-app/playing-camera.jpg
+DATA a425be3bc53c533bd2e3ba89ae40e7398cdf2c03ac15f2621b26f4913cb7748f  docs/evidence/network-video/installed-app/playing-camera.mp4
+DATA f744200109383fa83efa0f7828da34286818e7db670428b6c8661aace06131ca  docs/evidence/network-video/installed-app/controls-native.png
+DATA a092de30d81389838e6ad49182382d68accce152b2408ba605d24c2e39a97ece  docs/evidence/network-video/installed-app/playing-native.png
+DATA 9ee90f16fee33b2c87bdac94f7ba3e77efcccc8581b1b205508e806168086a4f  docs/evidence/network-video/installed-app/apps-entry.png
 # class  sha256                                                            path
 #
 # --- this project's own tree ---------------------------------------------

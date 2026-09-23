@@ -1,0 +1,45 @@
+{
+  "date_utc": "2026-09-23",
+  "system": "/nix/store/568vf3220mpvdmgjgfnz5ln0qn09934r-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "03cbade",
+  "interaction": "injected touch via /run/inject-tap.sh and /dev/input/event1",
+  "source_url": "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+  "representation": "vid=6,480x270,H.264,30fps",
+  "audio": "disabled",
+  "native_capture": "grim screenshot of installed mpv wlshm window",
+  "camera_capture": "Logitech C920 MJPEG1920x1080 30fps, hflip,vflip,crop=900:650:770:280, 8seconds,focus50,libx264 CRF21 yuv420p, noaudio",
+  "artifacts": {
+    "back-cleanup.txt": {
+      "bytes": 873,
+      "sha256": "82db73f352e818675203cb39557bebd512c32f177d06712d84ec901101dc8f41"
+    },
+    "playing-camera.jpg": {
+      "bytes": 21343,
+      "sha256": "015319ae3a573239a20028df99a946834521bd36efb445d405ee038e2ce3e425"
+    },
+    "playing-camera.mp4": {
+      "bytes": 855356,
+      "sha256": "a425be3bc53c533bd2e3ba89ae40e7398cdf2c03ac15f2621b26f4913cb7748f"
+    },
+    "controls-native.png": {
+      "bytes": 158496,
+      "sha256": "f744200109383fa83efa0f7828da34286818e7db670428b6c8661aace06131ca"
+    },
+    "playing-native.png": {
+      "bytes": 123008,
+      "sha256": "a092de30d81389838e6ad49182382d68accce152b2408ba605d24c2e39a97ece"
+    },
+    "apps-entry.png": {
+      "bytes": 32512,
+      "sha256": "9ee90f16fee33b2c87bdac94f7ba3e77efcccc8581b1b205508e806168086a4f"
+    },
+    "observation.json": {
+      "bytes": 33315,
+      "sha256": "c8a8156740ac94de90ae22f64ab996b9aa1e2e777af4852d04bea10259507f29"
+    },
+    "observe.py": {
+      "bytes": 1818,
+      "sha256": "1056639f33b49db2bc503a2387143a25aca1f275c14c276d11285d8d1e38f2d5"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+
+===== > /run/inject-tap.sh /dev/input/event1 510 25; sleep 5; if test ! -e /run/shell/k230-video.pid; then echo VIDEO_STATE_ABSENT; fi; if test ! -d /proc/12619 && test ! -d /proc/12625; then echo CONTROLLER_AND_PLAYER_GONE; fi; pgrep -x mpv || echo NO_MPV; find /run/shell -maxdepth 1 -name 'k230-video-*.sock' -printf '%f\n'; systemctl is-active shell seatd k230-wifi =====
+/run/inject-tap.sh /dev/input/event1 510 25; sleep 5; if test ! -e /run/shell/k230-video.pid; then echo VIDEO_STATE_ABSENT; fi; if tes
+t ! -d /proc/12619 && test ! -d /proc/12625; then echo CONTROLLER_AND_PLAYER_GON
+E; fi; pgrep -x mpv || echo NO_MPV; find /run/shell -maxdepth 1 -name 'k230-video-*.sock' -printf '%f\n'; systemctl is-active shell seatd k230-wifi
+
+VIDEO_STATE_ABSENT
+CONTROLLER_AND_PLAYER_GONE
+NO_MPV
+active
+active
+active
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#
