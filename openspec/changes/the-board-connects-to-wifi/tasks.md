@@ -19,7 +19,7 @@
 
 ## 4. Decide and verify persistent reconnection
 
-- [ ] 4.1 After a successful live connection, select a root-controlled runtime credential mechanism for persistence and document its ownership, permissions, service ordering, and removal path; verify source control and the Nix store still contain no protected-network configuration.
+- [x] 4.1 After a successful live connection, select a root-controlled runtime credential mechanism for persistence and document its ownership, permissions, service ordering, and removal path; verify source control and the Nix store still contain no protected-network configuration.
 - [ ] 4.2 On the physical board, reboot with the approved persistent mechanism and verify sanitized association, lease, route, resolver-route, DNS, and outbound-reachability results; if recovery is needed, use the established known-good image procedure for the custom hard-coded-DTB boot path rather than assuming generation rollback.
 
 2026-09-22: `docs/evidence/offline-wifi-image/README.md` records the first

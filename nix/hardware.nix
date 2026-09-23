@@ -158,6 +158,50 @@ in
     wireless-regdb
   ];
 
+  # A root operator may place a protected wpa_supplicant configuration at
+  # /var/lib/k230/wifi/wpa_supplicant.conf after deployment.  No credential is
+  # declared here: the condition makes the unit a no-op on a fresh image, and
+  # LoadCredential copies the operator file into this service's private
+  # credential directory instead of adding it to the Nix store.
+  systemd.tmpfiles.rules = [
+    "d /var/lib/k230 0700 root root -"
+    "d /var/lib/k230/wifi 0700 root root -"
+  ];
+  systemd.services.k230-wifi = {
+    description = "K230 persistent Wi-Fi supplicant";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "sys-subsystem-net-devices-wlan0.device" ];
+    bindsTo = [ "sys-subsystem-net-devices-wlan0.device" ];
+    after = [
+      "local-fs.target"
+      "sys-subsystem-net-devices-wlan0.device"
+    ];
+    before = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/var/lib/k230/wifi/wpa_supplicant.conf";
+    path = [ pkgs.coreutils ];
+    preStart = ''
+      install -d -o root -g root -m 0700 /run/k230-wifi/wpa_supplicant/client
+      install -o root -g root -m 0600 /dev/null /run/k230-wifi/wpa.log
+    '';
+    script = ''
+      exec ${pkgs.wpa_supplicant}/bin/wpa_supplicant \
+        -f /run/k230-wifi/wpa.log \
+        -i wlan0 \
+        -c "$CREDENTIALS_DIRECTORY/wpa_supplicant.conf"
+    '';
+    serviceConfig = {
+      Type = "simple";
+      LoadCredential = "wpa_supplicant.conf:/var/lib/k230/wifi/wpa_supplicant.conf";
+      RuntimeDirectory = "k230-wifi";
+      RuntimeDirectoryMode = "0700";
+      UMask = "0077";
+      StandardOutput = "null";
+      StandardError = "null";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+  };
+
   # The image owner only exists on splash boots.  The current daily image
   # selects panelConsole and therefore retains the verified console path.
   systemd.services.k230-drm-splash = lib.mkIf splashOwnerEnabled {
