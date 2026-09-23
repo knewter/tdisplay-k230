@@ -1,9 +1,9 @@
 # Tasks
 
-**Not startable until `every-blob-is-built-from-source-or-named` has landed.**
-Every stage 1 task below edits U-Boot source, Kconfig or the generated
-environment through `nix/uboot-k230.nix` and `nix/stage1.nix`; against the
-vendored binaries on `master` there is nothing to edit.
+**Dependency satisfied:** `every-blob-is-built-from-source-or-named` is
+archived on master. Stage 1 tasks edit source, Kconfig or the generated
+environment through `nix/uboot-k230.nix` and `nix/stage1.nix`. The remaining
+unchecked tasks below are the current acceptance gates.
 
 Groups 1, 3 (build half), 4 (build half), 5.1 and 6.1 are **laptop claims**.
 Everything that says *hardware* takes the board — say when you take

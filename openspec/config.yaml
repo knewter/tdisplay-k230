@@ -11,6 +11,9 @@ context: |
   desktop-entry app discovery, window switching and system controls. Preserve
   USB flashing and recovery; complete the boot splash after the shell works.
   AtomVM and the Dozer core are later work, outside this implementation goal.
+  Read AGENTS.md for the integration workflow. Run `python3 tools/work-status.py`
+  at task start and handoff; publish validated proposals on master early and
+  land reviewed, proved task groups without waiting for unrelated work.
   Application defaults belong in this repo and the NixOS image. Fresh homes
   must provide the usable starting point; never rely on restoring home-directory
   state to preserve settings developed during bring-up.
@@ -87,8 +90,10 @@ operations:
       - Capture the console output that proves a hardware task into
         docs/ rather than pasting it into a commit message. Boot logs are
         the evidence this project runs on.
-      - Push after each change lands. Work here is easy to lose to a
-        reflash.
+      - Push reviewed proposals and finished task groups to master promptly,
+        preserving unchecked tasks for unfinished behavior. Push unfinished
+        implementation branches as checkpoints after reviewing their contents;
+        a branch backup is not a landed feature. Follow AGENTS.md.
       - Work each change in its own git worktree, not in the shared
         checkout. Several agents run here at once and they have already
         swept each other's in-progress files into one another's commits.
@@ -111,6 +116,9 @@ operations:
   archive:
     guidance:
       - Say which capability files the delta touched.
+      - Push the archive and verify the exact revision in CI and Pages.
+        Report the commit, deployed URL, remaining open proposals, and any
+        separate image or physical verification still required.
       - Fast-forward the shared checkout before you finish, since changes
         are applied in per-change worktrees and the shared directory's master
         is never pulled by anybody. From the shared checkout run

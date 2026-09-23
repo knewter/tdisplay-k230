@@ -55,7 +55,7 @@ emulation beyond "U-Boot still compiles".
 
 **Modified Capabilities**
 
-- `image/boot-chain` — gains three requirements, about what stage 1 offers a
+- `image/boot-chain` — gains two requirements, about what stage 1 offers a
   host over USB and about how a stage 1 that does not boot is recovered. The
   capability is in `openspec/specs/` (introduced by
   `the-board-boots-what-we-built`, revised by

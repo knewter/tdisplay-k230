@@ -4,17 +4,23 @@ Bring-up work for the LILYGO T-Display-K230 — a Kendryte K230D (dual RISC-V
 C908 + KPU NPU) board with a 4.1" 568x1232 AMOLED, GT9895 touch, RTL8189FTV
 Wi-Fi, and an SX1262/LR2021 LoRa radio.
 
-Goal: replace the shipped RT-Smart firmware with **NixOS** on riscv64, then run
-[AtomVM](https://www.atomvm.net/) and the Dozer core on top.
+Current goal: a usable **NixOS touchscreen handheld** with a Sway shell,
+on-screen keyboard, installed-app launcher, persistent Wi-Fi, and reproducible
+video playback. AtomVM and the Dozer core are later work.
+
+See [work status and next steps](docs/work-status.md) and [the contribution and
+landing workflow](AGENTS.md).
 
 ## Shell demonstrations
 
 The [feature gallery](docs/evidence/shell-features/index.html) and
 [evidence index](docs/evidence/shell-features/README.md) contain native screen
 clips, screenshots, and FFmpeg camera recordings for ten shell workflows.
-They distinguish injected touch events from IPC launches; full real-touch
-verification remains separate. The gallery is portable and ready for site
-integration.
+They distinguish injected touch events, IPC launches, and recorded physical
+interaction. Accepted keyboard and Home checks are recorded with their
+evidence; newly added interactions need their own proof. The
+[handheld site](https://knewter.github.io/tdisplay-k230/handheld/) publishes
+short device-focused demonstrations.
 
 ## Connecting to the board
 
@@ -24,7 +30,7 @@ consoles. No driver is needed — the in-kernel `cdc-acm` handles it.
 
 | Device | CH342 ch | K230 UART | Purpose |
 | --- | --- | --- | --- |
-| `/dev/ttyACM0` | 0 | UART0 | RT-Thread `msh` console |
+| `/dev/ttyACM0` | 0 | UART0 | U-Boot and NixOS console (RT-Thread `msh` on factory firmware) |
 | `/dev/ttyACM1` | 1 | UART3 | Second console |
 
 115200 8N1, no flow control. Enumerates as `1a86:55d2` "USB Dual_Serial".
@@ -38,7 +44,7 @@ charge LED lights either way.
 
 | Script | Purpose |
 | --- | --- |
-| `tools/console.py` | Run commands on the RT-Thread `msh` console and capture output |
+| `tools/console.py` | Run serial-console commands and capture output |
 | `tools/probe.py` | Passively sniff a serial port, optionally poke it with CR/LF |
 | `tools/bootcap.py` | Send `reboot` and capture the full boot log |
 | `tools/snap.sh` | Snapshot USB/serial/block state for diffing |
@@ -47,7 +53,7 @@ charge LED lights either way.
 | `tools/kwatch.sh` | Follow the kernel log for USB events **including** failures |
 
 ```sh
-./tools/console.py /dev/ttyACM0 --wait=3 "wifi scan" "ifconfig"
+./tools/console.py /dev/ttyACM0 --wait=3 "uname -a"
 ```
 
 ### Camera evidence clips
@@ -154,19 +160,23 @@ python3 -m unittest discover -s tests -p 'test_render_specs.py'   # the data pas
 
 ## Status
 
-See [docs/findings.md](docs/findings.md).
+The shell, touch launcher, offline apps/Help, Wi-Fi with reboot persistence,
+and U-Boot USB flashing work on the physical board. Application defaults,
+including Foot, htop and Neofetch, are part of the repository/image. There is
+no battery requirement for this USB-powered setup.
 
-- Serial console working
-- Shipped RT-Smart firmware boots; display and touch work
-- **Wi-Fi is broken in the shipped firmware** — a LilyGO defect, see findings
-- Source-built NixOS boots into a Sway touchscreen shell with Foot, keyboard,
-  installed-app discovery, window controls, and system controls.
-- Plain Foot, htop and Neofetch use repository-managed defaults on a fresh home;
-  IPv4/IPv6 firewall startup and installed rules are verified.
-- [Current daily image and evidence](docs/evidence/daily-shell-image.md).
-  The complete real-finger workflow, battery-only startup and BootROM recovery
-  remain open. The experimental splash handoff still has a display defect and
-  is disabled in the daily image.
+Video streaming and MVX hardware decoding have measured board evidence;
+the installed player and recovery controls are still being integrated.
+Sway uses Pixman. GPU probes do not yet accelerate the compositor. Linux
+still has one CPU online; the second-core investigation records the gates
+needed before attempting bring-up.
+
+The experimental splash has improved warm-boot handoff evidence; full
+power-on/geometry acceptance and the final default remain open. BootROM
+recovery without a working bootloader is separate from proven U-Boot USB
+flashing. Historical factory-firmware findings are in
+[docs/findings.md](docs/findings.md); current work and evidence links are in
+[docs/work-status.md](docs/work-status.md).
 
 ## Building
 

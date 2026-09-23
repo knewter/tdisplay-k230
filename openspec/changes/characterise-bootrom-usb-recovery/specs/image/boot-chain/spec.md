@@ -28,7 +28,7 @@ but do not establish that this board enters BootROM recovery.*
 #### Scenario: A BootROM device is observed
 
 - **WHEN** either entry test enumerates a BootROM device
-- **THEN** the documented `k230_flash` procedure writes a disposable deliberately nonbootable-stage1 card and a later boot verifies the result; an unsafe or unattempted write leaves this scenario incomplete and is recorded as such
+- **THEN** the documented `k230_flash` procedure writes the known-good image onto a disposable card whose stage 1 was deliberately made nonbootable and a later boot verifies the result; an unsafe or unattempted write leaves this scenario incomplete and is recorded as such
 
 #### Scenario: BootROM entry does not work
 

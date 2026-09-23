@@ -130,10 +130,13 @@ delta has the shape it has:
   depends on the first, would have been two changes editing the same
   sentence in opposite directions.
 
-So the delta ADDs three requirements to the existing capability and touches
+So the delta ADDs two requirements to the existing capability and touches
 none of the five already there. `openspec archive` accepts ADDED against an
 existing capability; it is MODIFIED and RENAMED that need their target to
 exist under the exact name, and this delta carries neither.
+
+The BootROM requirement originally drafted here is preserved in
+`characterise-bootrom-usb-recovery`; it is not part of this archive.
 
 So this change adds requirements about what stage 1 *offers*, and states its
 dependency instead of re-litigating how stage 1 is produced.

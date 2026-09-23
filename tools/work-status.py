@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from collections import defaultdict
@@ -23,6 +24,7 @@ def git(root: Path, *args: str, allow_failure: bool = False) -> str:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
     )
     if result.returncode and not allow_failure:
         raise GitError(result.stderr.strip() or "git " + " ".join(args))
