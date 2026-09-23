@@ -1,0 +1,9 @@
+{"event":"touch_ready","role":"bar","id":-1,"active":0,"x":0.000,"y":0.000}
+{"event":"ready","role":"bar","id":-1,"active":0,"x":0.000,"y":0.000}
+{"event":"down","role":"bar","id":12,"active":1,"x":20.000,"y":20.000}
+{"event":"up","role":"bar","id":12,"active":0,"x":0.000,"y":0.000}
+{"event":"touch_removed","role":"bar","id":-1,"active":0,"x":0.000,"y":0.000}
+{"event":"touch_ready","role":"bar","id":-1,"active":0,"x":0.000,"y":0.000}
+{"event":"down","role":"bar","id":32,"active":1,"x":20.000,"y":20.000}
+{"event":"up","role":"bar","id":32,"active":0,"x":0.000,"y":0.000}
+{"event":"exit","role":"bar","id":-1,"active":0,"x":0.000,"y":0.000}

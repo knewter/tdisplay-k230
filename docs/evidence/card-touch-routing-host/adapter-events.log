@@ -1,0 +1,101 @@
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=0 actions=32 message=0 cards=1
+K230_CARD_SHELL map id=5 class=2
+K230_CARD_SHELL state mode=0 actions=32 message=0 cards=2
+K230_CARD_SHELL map id=6 class=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=8
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=0
+K230_CARD_SHELL input=injected operation=back accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=8
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=1 actions=1 message=8 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=0
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=0
+K230_CARD_SHELL input=injected operation=back accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=1 actions=1 message=8 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=2 actions=1 message=0 cards=2
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=0
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL mirror id=5 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL mirror id=6 format=34325258 width=520 height=1040 stride=2080
+K230_CARD_SHELL state mode=1 actions=35 message=0 cards=2
+K230_CARD_SHELL input=injected operation=enter accepted=1
+K230_CARD_SHELL mirror-release id=5
+K230_CARD_SHELL mirror-release id=6
+K230_CARD_SHELL restored focus=6 message=0
+K230_CARD_SHELL input=injected operation=back accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL input=injected operation=test-touch accepted=1
+K230_CARD_SHELL state mode=0 actions=32 message=0 cards=1
+K230_CARD_SHELL unmap id=6
+K230_CARD_SHELL state mode=0 actions=32 message=0 cards=0
+K230_CARD_SHELL unmap id=5
+K230_CARD_SHELL restored focus=0 message=0
