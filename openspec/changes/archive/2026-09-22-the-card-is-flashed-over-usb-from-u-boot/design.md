@@ -23,7 +23,7 @@ Three constraints shape everything below.
 - One U-Boot binary that boots normally *and* can be dropped into `ums`.
 - The change expressed as configuration, not as a fork: a defconfig fragment
   and a device-tree override that read as intent.
-- The recovery story written down and tested, not assumed.
+- The U-Boot UMS recovery story written down and tested, not assumed. BootROM recovery is a separate successor change.
 
 **Non-Goals**
 
@@ -195,6 +195,6 @@ board that survives it.
 - Which sequence number the gadget controller gets, i.e. whether the command
   is `ums 0 mmc 1`. Answered by `dm tree` on the first boot of the new
   stage 1; it does not change the specs, the approach or the tasks.
-- Whether Route C — the BootROM USB path via `k230_flash` — actually engages
-  on this board. Deliberately a task rather than an open question, because
-  the answer is written into a requirement either way.
+- BootROM USB recovery is deliberately outside this change. Its no-card and
+  SW3 tests, host enumeration, and `k230_flash` procedure are preserved in
+  successor change `characterise-bootrom-usb-recovery`.

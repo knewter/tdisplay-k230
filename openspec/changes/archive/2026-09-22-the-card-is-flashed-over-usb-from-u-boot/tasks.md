@@ -120,31 +120,13 @@ binary any more.
       image that was written over USB.
       - Ticked 2026-09-22: written by `tools/ums-session.py --flash` through `tools/flash.sh` on the by-id path, 175 s, then `reset`; the boot log — SPL banner and PMU training included, for the first time — is in `docs/evidence/uboot-ums-write.txt`, summarised at the end of `uboot-ums-hardware.txt`. Board hashed its own slots to the image's bytes afterwards.
 
-## 5. Characterise the recovery paths
+## 5. BootROM recovery (successor change)
 
-- [ ] 5.1 Test whether the BootROM falls through to USB boot with no bootable
-      card. Power off, remove the TF card, power on via J3. **Hardware
-      proof.**
-      `lsusb | grep -i 29f1`
-      Done when the evidence file records either `29f1:0230` appearing or
-      that it does not.
-- [ ] 5.2 Test whether holding `SW3` — the button wired to `BOOT0` — forces
-      the same state with the card in. **Hardware proof.**
-      Hold `SW3`, apply power, then `lsusb | grep -i 29f1`.
-      Done when the result is recorded either way.
-- [ ] 5.3 If 5.1 or 5.2 succeeded, write the card with Canaan's own tool and
-      confirm the board boots the result. **Hardware proof.**
-      `pip install k230-flash` then `k230-flash --help` and a write of the
-      current image.
-      Done when a board with a deliberately corrupted stage 1 is recovered
-      without a card reader — or when it is recorded that this does not work
-      here, which is equally useful.
-- [ ] 5.4 Update `openspec/changes/.../specs/image/boot-chain/spec.md` to
-      remove the two `<!-- UNVERIFIED -->` markers that 3.3 and 5.1 have
-      grounded, and cite `docs/evidence/uboot-ums-hardware.txt`.
-      `openspec validate --all`
-      Done when validation passes and no requirement grounded by this change
-      is still marked unverified.
+BootROM recovery was not tested and is not part of this completed UMS change.
+The four unperformed tests are preserved verbatim in the separate,
+implementation-ready OpenSpec change `characterise-bootrom-usb-recovery`:
+no-card fall-through, SW3/BOOT0 entry, conditional `k230_flash` recovery, and
+spec/evidence reconciliation. Nothing here claims that path works.
 
 ## 6. Follow-up: keep USB host as well
 

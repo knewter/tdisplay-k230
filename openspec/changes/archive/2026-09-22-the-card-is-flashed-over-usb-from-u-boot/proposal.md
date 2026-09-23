@@ -36,9 +36,9 @@ Non-goals, named because each is a tempting adjacent thing:
 - **Not** replacing vendor U-Boot with mainline. Mainline K230 support landed
   in v2025.04 but is U-Boot proper only — no SPL, no DDR init — and carries
   no gadget support either. Separate change, different payoff.
-- **Not** building the BootROM USB recovery path (`k230_flash`) into the
-  flake. This change only *records* whether it works, because that determines
-  how safely we can iterate on stage 1.
+- **Not** characterising the BootROM USB recovery path (`k230_flash`). That is
+  preserved in successor change `characterise-bootrom-usb-recovery`; this
+  change is complete on the U-Boot UMS path and makes no BootROM claim.
 - **Not** rewriting what we write. Making `flash-latest.sh` copy 60 MB into a
   mounted boot partition instead of dd-ing 2.21 GB is the larger speedup and
   it depends on this change, but it is not this change.
