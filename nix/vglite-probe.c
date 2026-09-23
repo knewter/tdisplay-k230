@@ -1,8 +1,8 @@
 /*
  * Source-built offscreen-only VG-Lite diagnostic for the K230.
  *
- * It opens only /dev/vg_lite through libvg_lite, allocates two private DMA
- * buffers, clears one, scales it into the other, waits for completion, and
+ * It opens only /dev/vg_lite through libvg_lite, allocates two private RGBX
+ * DMA buffers, clears one, scales it into the other, waits for completion, and
  * checks the destination changed.  It never opens /dev/dri, /dev/fb0, or a
  * display buffer.
  */
@@ -41,17 +41,25 @@ static void print_pixel(const char *name, const vg_lite_buffer_t *buffer,
          name, x, y, pixel, bytes[0], bytes[1], bytes[2], bytes[3]);
 }
 
+static int rgb_is(const vg_lite_buffer_t *buffer, uint32_t x, uint32_t y,
+                  uint8_t red, uint8_t green, uint8_t blue)
+{
+  uint32_t pixel = pixel_at(buffer, x, y);
+  const uint8_t *bytes = (const uint8_t *)&pixel;
+
+  return bytes[0] == red && bytes[1] == green && bytes[2] == blue;
+}
+
 int main(void)
 {
   enum { source_width = 128, source_height = 128,
          target_width = 256, target_height = 256 };
-  const vg_lite_color_t red = 0xffd02020u;
+  /* VG_LITE_RGBX8888 stores R:G:B:X in increasing-memory byte order. */
+  const vg_lite_color_t red = 0xff0000ffu;
   vg_lite_buffer_t source = { 0 };
   vg_lite_buffer_t target = { 0 };
   vg_lite_matrix_t matrix;
   vg_lite_rectangle_t source_left = { 0, 0, source_width / 2, source_height };
-  uint32_t source_red;
-  uint32_t source_black;
   static const uint32_t rows[] = { 0, 63, 127, 255 };
   int rc = 1;
 
@@ -60,13 +68,13 @@ int main(void)
 
   source.width = source_width;
   source.height = source_height;
-  source.format = VG_LITE_RGBA8888;
+  source.format = VG_LITE_RGBX8888;
   if (check(vg_lite_allocate(&source), "vg_lite_allocate(source)"))
     goto out_close;
 
   target.width = target_width;
   target.height = target_height;
-  target.format = VG_LITE_RGBA8888;
+  target.format = VG_LITE_RGBX8888;
   if (check(vg_lite_allocate(&target), "vg_lite_allocate(target)"))
     goto out_source;
 
@@ -75,7 +83,7 @@ int main(void)
   if (check(vg_lite_clear(&source, &source_left, red),
             "vg_lite_clear(source left half)"))
     goto out_target;
-  if (check(vg_lite_clear(&target, NULL, 0xff304080u),
+  if (check(vg_lite_clear(&target, NULL, 0xff804030u),
             "vg_lite_clear(target)"))
     goto out_target;
   if (check(vg_lite_identity(&matrix), "vg_lite_identity"))
@@ -88,8 +96,6 @@ int main(void)
   if (check(vg_lite_finish(), "vg_lite_finish"))
     goto out_target;
 
-  source_red = pixel_at(&source, 0, 0);
-  source_black = pixel_at(&source, source_width - 1, 0);
   print_pixel("source", &source, 0, 0);
   print_pixel("source", &source, source_width - 1, 0);
   for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
@@ -101,22 +107,23 @@ int main(void)
     print_pixel("target", &target, 129, y);
     print_pixel("target", &target, 255, y);
   }
-  if (source_red == 0 || source_black != 0) {
-    fprintf(stderr, "source pattern did not contain red-left/black-right pixels\n");
+  if (!rgb_is(&source, 0, 0, 0xff, 0, 0) ||
+      !rgb_is(&source, source_width - 1, 0, 0, 0, 0)) {
+    fprintf(stderr, "source pattern did not contain exact red-left/black-right RGB pixels\n");
     goto out_target;
   }
   for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
     uint32_t y = rows[i];
-    if (pixel_at(&target, 0, y) != source_red ||
-        pixel_at(&target, 127, y) != source_red ||
-        pixel_at(&target, 128, y) != source_black ||
-        pixel_at(&target, 255, y) != source_black) {
+    if (!rgb_is(&target, 0, y, 0xff, 0, 0) ||
+        !rgb_is(&target, 127, y, 0xff, 0, 0) ||
+        !rgb_is(&target, 128, y, 0, 0, 0) ||
+        !rgb_is(&target, 255, y, 0, 0, 0)) {
       fprintf(stderr, "scaled boundary mismatch on target row %" PRIu32 "\n", y);
       goto out_target;
     }
   }
 
-  printf("VG-Lite offscreen RGBA 2x blit-scale completed (boundary verified)\n");
+  printf("VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)\n");
   rc = 0;
 
 out_target:

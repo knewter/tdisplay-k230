@@ -36,14 +36,24 @@ probe. It uses no vendor-built userspace object or prebuilt firmware.
 ## What it does
 
 The probe initializes VG-Lite, allocates private 128x128 and 256x256
-`VG_LITE_RGBA8888` buffers, GPU-clears them, scales the first buffer by two,
+`VG_LITE_RGBX8888` buffers, GPU-clears them, scales the first buffer by two,
 blits it into the second, and calls `vg_lite_finish`. The source is black with
-a red left half and the target begins a distinct nonzero color. The probe then
-uses source pixels as its byte-order-independent reference and verifies both
-sides of the 2x-scaled target boundary at x=127/128 on rows 0, 63, 127, and
-255. This proves a completed blit and scale rather than only an initialized or
-cleared buffer. The buffers come from `vg_lite_allocate`; there is no DRM
-import, KMS commit, scanout mapping, or panel interaction.
+a fully saturated red left half (`0xff0000ff`, R:G:B:X memory bytes
+`ff:00:00:ff`) and the target begins a distinct nonzero color. The RGBX choice
+isolates this diagnostic from alpha-channel premultiplication. The previous
+RGBA trial's partially saturated, blue-dominant literal (`0xffd02020`, memory
+bytes `20:20:d0:ff`) lost a channel value on each render pass. That observation
+is consistent with the SDK's configured premultiplication path, but this source
+audit does not establish that path as the cause of the quantization. It was not
+an appropriate exact scale assertion.
+
+The probe requires exact RGB values: source red is `ff:00:00`, source black is
+`00:00:00`, and the same colors must appear on both sides of the 2x-scaled
+target boundary at x=127/128 on rows 0, 63, 127, and 255. It intentionally does
+not compare RGBX's unused X byte. This proves a completed blit and scale rather
+than only an initialized or cleared buffer. The buffers come from
+`vg_lite_allocate`; there is no DRM import, KMS commit, scanout mapping, or
+panel interaction.
 
 Before applying its strict boundary checks the probe prints raw and in-memory
 byte-order views of source x=0/127 plus target x=0/126/127/128/129/255 on each
@@ -59,6 +69,6 @@ nix build .#k230-vglite-probe --max-jobs 1 --cores 8
 
 On the board, after the integrator has confirmed no other VG-Lite user is
 active, run the resulting `bin/k230-vglite-probe` as root. A zero exit status
-and its `offscreen RGBA blit-scale completed` line prove the requested private
+and its `offscreen RGBX 2x blit-scale completed` line prove the requested private
 buffer operation. Any open, ioctl, allocation, finish, or zero-output failure
 is a failed diagnostic; do not fall back to DRM or modify display ownership.
