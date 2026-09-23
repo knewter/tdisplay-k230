@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 2a633a028f8e10ea939c9c5b17994ce0a0cefb7f923604c28bdbe7fa9ee7b439  docs/evidence/big-buck-bunny/270p-native.png
+DATA 92b33c778c720a23b87bae0da2d1b05a0a7e27f76134100020a1d833eb3fb29c  docs/evidence/big-buck-bunny/270p-physical-clip.mp4
+DATA 7b18cca3cdb439ef572de0f46f48351f9ce4faf20aa56459893d654e987b4780  docs/evidence/big-buck-bunny/270p-physical-frame.jpg
 # class  sha256                                                            path
 #
 # --- this project's own tree ---------------------------------------------
