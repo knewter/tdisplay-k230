@@ -1,25 +1,21 @@
 ## Why
 
-The shell can spend most of a panel-sized RGB565 scale operation in its own
-process even though GPU and Pixman have similar elapsed time. The measured
-GPU path reduced this process's CPU time from about 1.7 ms to 0.10 ms per
-completed panel-sized operation, which justifies a bounded renderer trial to
-learn whether that capacity can help decoding and interaction.
+The validated VG-Lite path used private buffers, not Sway's render pass. Its full-panel elapsed time was comparable to Pixman, so it does not justify a compositor rewrite on wall time alone. The committed validation record limits the result to RGB565, one premultiplied-alpha case, and private dma-buf import; it explicitly leaves live compositor integration unproven ([`docs/evidence/gpu-validation/README.md`](../../../docs/evidence/gpu-validation/README.md)).
+
+The three-round CPU transcript at [`docs/evidence/gpu-validation/cpu-timing-pass.txt`](../../../docs/evidence/gpu-validation/cpu-timing-pass.txt) may justify an experiment because panel-size GPU work used far less process CPU. It cannot establish system-wide offload: process CPU excludes kernel, interrupt, and whole-device cost.
 
 ## What Changes
 
-- Add an opt-in, client-side experimental VG-Lite composition path that can be
-  selected for a controlled Sway session while Pixman remains the default.
-- Import a private DRM dumb-buffer dma-buf into the single VG-Lite context and
-  prove RGB565 composition, ownership, cache synchronization, and scanout
-  behavior before measuring a session.
-- Define rollback, validation, and evidence gates for any future default.
+- Add a source-built **wlroots renderer fork** for an opt-in Sway package. It receives the actual Sway scene render passes; it is not a separate Wayland client or a private-buffer painter.
+- Keep Sway's existing wlroots DRM backend as the sole DRM master, swapchain allocator, and scanout committer. The renderer uses only the output buffer handed to `begin_buffer_pass`; it does not open a second DRM client or create a competing scanout path.
+- Record each wlroots render pass, run it wholly on VG-Lite only when every operation is supported, otherwise replay the whole pass through paired Pixman into that same wlroots-owned output buffer.
+- Define format, clipping, blend, damage, completion, cache, and board gates. Pixman remains the default session.
 
 ## Capabilities
 
 ### New Capabilities
-- `runtime/gpu-composition-trial`: An opt-in GPU composition experiment whose
-  activation and acceptance remain bounded by board evidence.
+
+- `runtime/gpu-composition-trial`: An opt-in actual Sway/wlroots renderer experiment with per-frame coherent fallback and board-evidence gates.
 
 ### Modified Capabilities
 
@@ -27,7 +23,4 @@ None.
 
 ## Impact
 
-Touches a new experimental userspace renderer path, a source-built VG-Lite
-library package, the shell launch configuration, tests, and board-only
-evidence. It does not change stage 1, device tree, system defaults, video
-decoder selection, or DRM ownership policy.
+This requires a maintained local fork of pinned wlroots 0.20.2 and an opt-in Sway package linked to it. It touches renderer, texture and render-pass code, not a desktop client. It does not alter stage 1, device tree, normal Sway, video decoder selection, or DRM ownership policy.

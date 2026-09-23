@@ -1,43 +1,43 @@
-## Purpose
-
-Provide an evidence-gated, opt-in GPU composition trial while preserving the
-working Pixman shell and the existing display owner's control of the panel.
-
 ## ADDED Requirements
 
-### Requirement: Opt-in composition trial
-The system SHALL keep Pixman as the default shell renderer. A VG-Lite
-composition trial SHALL require an explicit experimental selection and SHALL
-fall back to the existing Pixman session when its renderer initialization,
-buffer import, or completion check fails.
+### Requirement: Actual opt-in Sway renderer backend
+The system SHALL keep the current Pixman Sway session as the default. An experimental session SHALL be a Sway package built against a local wlroots renderer fork and SHALL receive the real wlroots scene render passes; a separate Wayland client or private-buffer painter does not meet this requirement.
 
 #### Scenario: Default shell launch
-- **WHEN** the shell starts without the experimental selection
+
+- **WHEN** the shell starts without the explicit experimental selection
 - **THEN** it uses the existing Pixman renderer and its existing DRM path.
 
-#### Scenario: Failed trial initialization
-- **WHEN** the experimental renderer cannot initialize its sole VG-Lite context
-  or import its private buffer
-- **THEN** the shell starts or returns through Pixman without changing the
-  current scanout configuration.
+#### Scenario: Experimental renderer selection fails
 
-### Requirement: Bounded shared-buffer proof
-The trial SHALL draw only into a private RGB565 DRM dumb-buffer dma-buf that
-the trial owns. It SHALL complete GPU work before CPU or DRM consumption and
-shall not import the live scanout buffer owned by another client.
+- **WHEN** the forked renderer cannot initialize its one VG-Lite context or validate the wlroots output-buffer format
+- **THEN** the selected session returns to Pixman without a modeset or a new DRM owner.
 
-#### Scenario: Private buffer composition
-- **WHEN** the experimental renderer draws a nonuniform validation scene
-- **THEN** captured samples and the displayed result establish the private
-  buffer's RGB565 content after GPU completion.
+### Requirement: Existing DRM owner retains output ownership
+The experimental renderer SHALL use only the `struct wlr_buffer` supplied by the existing wlroots output path for its render pass. Sway's existing wlroots DRM backend SHALL remain the sole DRM master, swapchain allocator and scanout committer.
+
+#### Scenario: Renderer obtains a target
+
+- **WHEN** wlroots begins a Sway output render pass
+- **THEN** the renderer may import dma-buf attributes of that supplied buffer but SHALL not open a second DRM master, allocate a competing scanout buffer, modeset, or commit a framebuffer itself.
+
+### Requirement: Coherent per-frame fallback
+The experimental renderer SHALL record a complete render pass before submitting GPU work. If target format, texture import, clipping, blending, transform, damage, color conversion, synchronization or cache requirements are not supported, it SHALL replay the complete pass through Pixman into the same wlroots-provided buffer.
+
+#### Scenario: Unsupported scene operation
+
+- **WHEN** one operation in a render pass is unsupported by the VG-Lite eligibility table
+- **THEN** no operation from that pass is submitted to VG-Lite and the whole pass is rendered by Pixman.
+
+#### Scenario: GPU submit failure
+
+- **WHEN** VG-Lite fails after the renderer has selected the GPU path
+- **THEN** the pass fails without committing the partially rendered buffer, and the next frame is forced through Pixman.
 
 ### Requirement: Evidence-gated promotion
-The project SHALL not make the trial default until board evidence establishes
-stable shell interaction, correct color/alpha behavior for used operations,
-frame completion ownership, and a measured benefit that survives a Pixman
-comparison.
+The project SHALL not make the experiment default until board evidence proves actual Sway render-pass use, exact target/source formats, clipping and blend semantics used by the shell, damage correctness, completion/cache ownership, stable interaction, and a repeatable benefit compared with the same Pixman scene. Process CPU evidence SHALL state that it excludes kernel, interrupt and whole-device cost.
 
-#### Scenario: Incomplete trial evidence
-- **WHEN** any required renderer, cache/fence, scanout, interaction, or
-  comparison evidence is absent or fails
-- **THEN** the documented recommendation retains Pixman as default.
+#### Scenario: Incomplete renderer evidence
+
+- **WHEN** any required output ownership, operation, cache/completion, interaction, or comparison evidence is absent or fails
+- **THEN** the documented recommendation retains Pixman as the default.
