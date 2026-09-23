@@ -6,5 +6,9 @@
 ## 2. Evidence and board procedure
 
 - [x] 2.1 Document the source/API boundary, private DRM constraints, exact board commands, output contract, and integration gate; verify `openspec validate validate-vglite-gpu-path --strict` and `git diff --check`.
-- [ ] 2.2 Board coordinator: run each validation subtest with the shell active, capture the transcript in `docs/evidence/`, and verify there was no modeset or service interruption. Hardware proof only; do not tick from a host build.
-- [ ] 2.3 Make an integration recommendation from the captured board evidence; verify the recommendation distinguishes private-buffer, dma-buf, and compositor/scanout claims. Hardware evidence required.
+- [x] 2.2 Board coordinator: run each validation subtest with the shell active, capture the transcript in `docs/evidence/`, and verify there was no modeset or service interruption. Hardware proof only; do not tick from a host build.
+- [x] 2.3 Make an integration recommendation from the captured board evidence; verify the recommendation distinguishes private-buffer, dma-buf, and compositor/scanout claims. Hardware evidence required.
+
+Tasks 2.2–2.3: `docs/evidence/gpu-validation/README.md` and
+`cpu-timing-pass.txt` record all four passed physical probes, unchanged service
+invocations, three timing rounds, and the evidence-bounded renderer decision.

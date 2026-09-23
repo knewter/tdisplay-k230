@@ -31,34 +31,34 @@ the one-context vendor API serialized and gives the board owner a compact
 transcript. Separate binaries were rejected because an accidental overlap of
 their VG-Lite contexts is explicitly unsupported by the kernel driver.
 
-### DRM render-node access without display ownership
+### Private DRM allocation without changing display ownership
 
-The dma-buf subtest opens `/dev/dri/renderD128` if present, otherwise opens the
-provided DRM node with `O_RDWR|O_CLOEXEC`; it calls only dumb-create, PRIME
-export, dumb-map, and dumb-destroy ioctls. The code contains no
-`drmSetMaster`, `drmModeSetCrtc`, add-framebuffer, plane, or atomic APIs. It
-maps the private dumb buffer on the CPU, supplies that mapping and exported fd
-to `vg_lite_map`, waits with `vg_lite_finish`, and checks CPU pixels. A render
-node is preferred because it cannot become DRM master. The primary-node
-fallback remains bounded to allocation/export and does not alter the live
-configuration.
+The dma-buf subtest opens the explicitly supplied DRM node with
+`O_RDWR|O_CLOEXEC`; on this board it is `/dev/dri/card0`, with the running shell
+already holding DRM master. It calls only dumb-create, PRIME export, dumb-map,
+and dumb-destroy ioctls. The code contains no `drmSetMaster`, modeset,
+add-framebuffer, plane, or atomic APIs. It maps the private dumb buffer on the
+CPU, supplies that mapping and exported fd to `vg_lite_map`, waits with
+`vg_lite_finish`, and checks every CPU-visible pixel. It must run with the
+shell active; it does not select or adopt a scanout buffer.
 
 ### RGB565 is exact; alpha is diagnostic
 
-The RGB565 test uses saturated red and black and exact 16-bit boundary samples,
-avoiding the already observed alpha quantization. The alpha test uses separate
-clear and blend samples and prints raw values; it fails only on API/completion
-failure, because its role is to measure the unresolved color behavior rather
-than encode an unsupported exactness assertion.
+The RGB565 test uses nonuniform red/green/blue/black quadrants and exact
+multi-row boundary samples. Vendor `VG_LITE_BGR565` is the memory layout that
+matches DRM/Pixman RGB565 on this board. The alpha test prints original and
+blended pixels and compares one sample against explicit straight and
+premultiplied source-over models; an unmatched result fails. Passing this
+sample does not resolve the previously observed general RGBA quantization.
 
 ### Comparable, limited timing
 
-Both paths perform the same repeated 128x128-to-256x256 point-scale geometry.
-The GPU window begins before submissions and ends after one final
-`vg_lite_finish`; the Pixman window begins before the first composite and ends
-after the last. The output includes iterations, dimensions, elapsed nanoseconds
-and ns/operation. This is a diagnostic, not a compositor-frame benchmark:
-CPU cache state, memory placement, and synchronization differ.
+Both paths perform identical nearest 2x scaling at 128x128-to-256x256 and
+284x616-to-568x1232. After output validation and warmups, three rounds measure
+monotonic elapsed and process-CPU time. GPU per-operation completion uses 20
+iterations; batched GPU work ending in one finish and Pixman use 200 each.
+This is not a compositor benchmark: cache state, memory placement,
+synchronization, interrupt work, and future buffer-import costs differ.
 
 ## Risks / Trade-offs
 
