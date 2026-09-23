@@ -1,0 +1,31 @@
+{
+  "capturedOn": "2026-09-22",
+  "scope": "host-side Nix evaluation and source inspection; a subsequent board boot must verify the early request succeeds",
+  "observation": {
+    "source": "fresh combined-image boot report",
+    "kernelMessage": "Direct firmware load for regulatory.db failed with error -2",
+    "timeSeconds": 5.73,
+    "interpretation": "the built-in cfg80211 request precedes the root filesystem firmware closure"
+  },
+  "configuration": {
+    "hardwareFirmware": "/nix/store/9fbmbmc1iqaxn43pndm6ca2clyaxb84p-firmware",
+    "initrdExtraFirmwarePaths": [
+      "regulatory.db",
+      "regulatory.db.p7s"
+    ],
+    "wirelessRegdbFilesInFirmwareClosure": [
+      "regulatory.db.zst",
+      "regulatory.db.p7s.zst"
+    ]
+  },
+  "implementationEvidence": {
+    "nixpkgsStage1": "nixos/modules/system/boot/stage-1.nix passes hardware.firmware and boot.initrd.extraFirmwarePaths to makeModulesClosure",
+    "nixpkgsModulesClosure": "pkgs/build-support/kernel/modules-closure.sh searches each requested path with direct, .xz, and .zst suffixes",
+    "kernelConfig": "CONFIG_CFG80211_REQUIRE_SIGNED_REGDB=y; include both database and signature"
+  },
+  "commands": [
+    "nix eval --json .#nixosConfigurations.k230.config.boot.initrd.extraFirmwarePaths",
+    "nix eval --json .#nixosConfigurations.k230.config.hardware.firmware",
+    "nix eval --raw .#nixosConfigurations.k230.config.system.build.initialRamdisk.drvPath"
+  ]
+}

@@ -56,6 +56,17 @@ in
   boot.initrd.availableKernelModules = lib.mkForce [ ];
   boot.initrd.kernelModules = lib.mkForce [ ];
 
+  # cfg80211 is built into the Xuantie kernel and requests regulatory.db
+  # before /init runs.  This board intentionally has no initrd modules, so
+  # the module-closure firmware walk has no dependency through which it can
+  # discover the database.  Copy the database and its signature explicitly;
+  # modules-closure accepts these uncompressed names and selects the .zst
+  # files supplied by wireless-regdb when it constructs the initrd.
+  boot.initrd.extraFirmwarePaths = [
+    "regulatory.db"
+    "regulatory.db.p7s"
+  ];
+
   # The preflight captured an enumerated RTL8189FTV SDIO function without a
   # driver. 8189fs.ko is built for this exact kernel and loaded at boot so the
   # board can attempt a bind; binding is still a physical-board check.
