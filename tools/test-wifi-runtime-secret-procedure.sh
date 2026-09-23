@@ -12,7 +12,7 @@ procedure="$repo_root/docs/wifi-runtime-secret.md"
 test "$(id -u)" -eq 0
 
 test_root=$(mktemp -d)
-trap 'kill "${unrelated_pid:-}" 2>/dev/null || true; rm -rf "$test_root"' EXIT
+trap 'kill "${unrelated_pid:-}" "${owned_pid:-}" 2>/dev/null || true; rm -rf "$test_root"' EXIT
 fake_bin="$test_root/bin"
 mkdir "$fake_bin"
 printf '%s\n' \
@@ -64,6 +64,21 @@ run_setup() {
         RUNTIME_SECRET_FILE="$source_file" WIFI_IFACE=test0 \
         WPA_FAKE_MODE="$1" WPA_FAKE_NONROOT_SOURCE="${2:-}" \
         WPA_EXPECT_CTRL="$runtime_ctrl" WPA_EXPECT_CLIENT="$runtime_client" bash
+}
+
+# A background shell child exists before exec changes its /proc identity.
+# Wait for the test process itself before exercising command-line ownership.
+wait_for_exec() {
+  local process_pid=$1 executable=$2
+  for _ in $(seq 1 40); do
+    if test "/proc/$process_pid/exe" -ef "$executable"; then
+      return 0
+    fi
+    kill -0 "$process_pid" 2>/dev/null || break
+    sleep 0.05
+  done
+  echo "test process did not finish exec" >&2
+  return 1
 }
 
 run_completion() {
@@ -155,6 +170,7 @@ rm -rf "$runtime_conf" "$runtime_pid" "$runtime_ctrl" "$runtime_log"
 # have its state removed by the explicit-completion block.
 sleep 600 &
 unrelated_pid=$!
+wait_for_exec "$unrelated_pid" "$(command -v sleep)"
 printf '%s\n' unrelated > "$runtime_conf"
 printf '%s\n' "$unrelated_pid" > "$runtime_pid"
 if run_completion; then
@@ -179,6 +195,7 @@ mkdir -m 700 "$runtime_client"
 printf '%s\n' owned-log > "$runtime_log"
 tail -f "$runtime_conf" >/dev/null &
 owned_pid=$!
+wait_for_exec "$owned_pid" "$(command -v tail)"
 printf '%s\n' "$owned_pid" > "$runtime_pid"
 run_completion
 # SIGTERM is asynchronous. Give the owned child a bounded 2 s to exit before
@@ -192,6 +209,7 @@ if kill -0 "$owned_pid" 2>/dev/null; then
   exit 1
 fi
 wait "$owned_pid" 2>/dev/null || true
+unset owned_pid
 test ! -e "$runtime_conf"
 test ! -e "$runtime_pid"
 test ! -e "$runtime_ctrl"
