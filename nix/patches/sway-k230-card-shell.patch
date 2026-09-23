@@ -151,12 +151,13 @@
  	}
 --- a/sway/meson.build
 +++ b/sway/meson.build
-@@ -1,4 +1,8 @@
+@@ -1,4 +1,9 @@
  sway_sources = files(
 +	'card_shell.c',
 +	'card-shell-policy.c',
 +	'card_shell_render.c',
 +	'card_shell_telemetry.c',
++	'card_shell_test_input.c',
  	'commands.c',
  	'config.c',
  	'criteria.c',
@@ -195,3 +196,9 @@
  	if (!sway_assert(output->enabled, "Expected an enabled output")) {
  		return;
  	}
+--- a/sway/server.c
++++ b/sway/server.c
+@@ -0,0 +1 @@
++#include "sway/card_shell_test_input.h"
+@@ -716,0 +718 @@
++	card_shell_test_input_finish();

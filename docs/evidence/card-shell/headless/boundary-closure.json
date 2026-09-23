@@ -1,0 +1,12 @@
+{
+  "package": "/nix/store/c41z2czaiana4dh8a7a2w6pwrqkawdgj-k230-card-shell",
+  "additional_nar_bytes": 6147424,
+  "additional_paths": {
+    "/nix/store/c41z2czaiana4dh8a7a2w6pwrqkawdgj-k230-card-shell": 13920,
+    "/nix/store/cy0qzxy518xi7hmcy88g26v6pk7l81dh-card-shell": 1912,
+    "/nix/store/mvy4kprm82qj21gn61k22xi65pvw97y6-sway": 1504,
+    "/nix/store/si3v2hvb8x69rx8lbhhixn1n2gh27ni0-sway-1.12": 13816,
+    "/nix/store/x95yrya49qds0qzrxfyqp000b01pggsp-sway-unwrapped-riscv64-unknown-linux-gnu-1.12": 6116272
+  },
+  "normal_system_unchanged": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd"
+}

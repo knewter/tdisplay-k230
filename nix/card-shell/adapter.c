@@ -4,6 +4,7 @@
 #include "sway/card_shell.h"
 #include "sway/card_shell_render.h"
 #include "sway/card_shell_telemetry.h"
+#include "sway/card_shell_test_input.h"
 #include "sway/commands.h"
 #include "sway/config.h"
 #include "sway/desktop/transaction.h"
@@ -627,6 +628,22 @@ static bool ensure_ui(struct sway_output *output) {
 	wl_event_source_timer_update(shell.timer, 16);
 	return true;
 }
+/* XDG/IME popups are a separate Sway root layer, not a view descendant.
+ * Until that boundary has complete composition support, return to normal
+ * before rendering any popup above a scaled or private card. */
+static bool visible_popup_node(struct wlr_scene_node *node) {
+	if (!node->enabled)
+		return false;
+	if (node->type == WLR_SCENE_NODE_BUFFER)
+		return wlr_scene_buffer_from_node(node)->buffer != NULL;
+	if (node->type == WLR_SCENE_NODE_TREE) {
+		struct wlr_scene_node *child;
+		struct wlr_scene_tree *tree = wlr_scene_tree_from_node(node);
+		wl_list_for_each(child, &tree->children, link) if (visible_popup_node(child)) return true;
+	}
+	return false;
+}
+static bool popup_mapped(void) { return visible_popup_node(&root->layers.popup->node); }
 static bool launcher_mapped(void) {
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
@@ -640,7 +657,8 @@ static void prepare_impl(struct sway_output *output) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
 	shell.preparing = true;
-	bool blocked = server.session_lock.lock || !output->enabled || launcher_mapped();
+	bool blocked =
+		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
 	if (blocked) {
 		if (shell.active)
 			handle_result(cs_leave(&shell.policy));
@@ -742,8 +760,8 @@ static bool select_seat(struct sway_seat *seat) {
 	return true;
 }
 static bool enter(struct sway_seat *seat) {
-	if (!enabled() || !shell.output || server.session_lock.lock ||
-		wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
+	if (!enabled() || !shell.output || server.session_lock.lock || launcher_mapped() ||
+		popup_mapped() || wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
 		seat->cursor->simulating_pointer_from_touch)
 		return false;
 	if (!snapshot() || !select_seat(seat))
@@ -787,6 +805,18 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y) {
 		chrome();
 		return true;
 	}
+	/* A second contact belongs to the already-owned card stream regardless of
+	 * coordinates. Never forward its down then consume an unrelated up. */
+	if (shell.policy.contact || shell.policy.edge.tracking) {
+		struct cs_result r = cs_down(&shell.policy, id, x, y, now_ms());
+		handle_result(r);
+		return r.consumed;
+	}
+	/* New ownership cannot steal a launcher/keyboard/application sequence. */
+	if (!shell.ui || !shell.ui->node.enabled || launcher_mapped() || popup_mapped() ||
+		wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
+		seat->cursor->simulating_pointer_from_touch)
+		return false;
 	if (shell.active && seat != shell.seat) {
 		handle_result(cs_leave(&shell.policy));
 		return false;
@@ -919,7 +949,11 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		return cmd_results_new(CMD_FAILURE, "card shell requires one Pixman output");
 	struct sway_seat *seat = config->handler_context.seat;
 	bool accepted = false;
-	if (argc == 2 && strcmp(argv[0], "benchmark") == 0 && !shell.active) {
+	if (argc >= 2 && strcmp(argv[0], "test-touch") == 0) {
+		shell.injecting = true;
+		accepted = card_shell_test_input(shell.output, argc - 1, argv + 1);
+		shell.injecting = false;
+	} else if (argc == 2 && strcmp(argv[0], "benchmark") == 0 && !shell.active) {
 		snapshot();
 		accepted = card_bench_arm(shell.output, argv[1], shell.policy.count);
 	} else if (argc == 1 && strcmp(argv[0], "benchmark-stop") == 0) {

@@ -34,8 +34,14 @@ The existing 56-pixel top bar remains protected. A top-bar touch restores
 normal app routing before the existing Apps, Windows/Home, Keyboard, System,
 Help, terminal, monitor, or Back path runs. Actual Sway usable-area reservations
 keep cards above the keyboard. Mapping the existing `k230-launcher` layer
-leaves cards. Second contacts cancel and drain; real stream cancellation and
-device removal use `cs_stream_cancel` and require no later up event. Output
+leaves cards. XDG and input-method popups occupy a separate Sway layer;
+while any popup is mapped, new card entry is rejected and an active deck
+returns to normal mode before rendering. Popups are an explicitly unsupported
+composition boundary in this slice. Second contacts over the card, top bar,
+or keyboard cancel the gesture; both contacts are consumed and drained.
+New card input is suppressed while the launcher owns the overlay or another
+application already owns a touch sequence. Device removal and stream
+cancellation use `cs_stream_cancel` and require no later up event. Output
 loss restores normal routing. Session lock suppresses card content.
 
 For host tests, first build this package and the native
@@ -72,3 +78,14 @@ and its test apps in their own cgroup v2 session; this additionally reads actual
 isolated session samples the memory gate is incomplete. Use the separately
 reviewed `tools/card-shell-benchmark.py` parser and contract. Headless timings,
 virtual keys, and injected input never establish physical latency or usability.
+
+The runtime suite builds `tests/card_popup_client.c` against native Wayland
+headers and the stable XDG protocol XML using `cc`, `pkg-config`, and
+`wayland-scanner`. A separate native routing test may opt in with exact
+`SWAY_K230_CARD_TEST_INPUT=1` under a headless backend and use
+`card_shell test-touch init|down ID X Y|motion ID X Y|up ID|cancel|remove`.
+This registers a real wlroots touch device and emits device signals through
+Sway's input manager, cursor, seat, and client protocol path. It is rejected on
+DRM even if the test environment variable is set. Device removal and compositor
+shutdown finish the fixture device normally. The production wrapper never
+sets this test variable.

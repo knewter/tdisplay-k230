@@ -16,6 +16,7 @@ import tempfile
 import time
 from card_virtual_keyboard import Keyboard
 from PIL import Image
+import shlex
 
 def wait_for(predicate, timeout=30):
     end=time.monotonic()+timeout
@@ -33,6 +34,7 @@ def main():
     ap.add_argument('--output',type=Path)
     ap.add_argument('--disabled',action='store_true')
     ap.add_argument('--benchmark',action='store_true')
+    ap.add_argument('--native-touch',action='store_true')
     args=ap.parse_args()
     runtime=args.output or Path(tempfile.mkdtemp(prefix='k230-card-headless-'))
     if args.output and runtime.exists() and any(runtime.iterdir()):
@@ -42,6 +44,7 @@ def main():
     config=runtime/'config'
     config.write_text('output HEADLESS-1 mode 568x1232\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',SWAY_K230_CARD_SHELL='0' if args.disabled else '1')
+    if args.native_touch: env['SWAY_K230_CARD_TEST_INPUT']='1'
     processes=[]
     keyboard=None
     log=(runtime/'sway.log').open('w')
@@ -64,7 +67,9 @@ def main():
         result=json.loads(read(length)); sock.close()
         if kind==0 and check: assert all(r['success'] for r in result),(command,result)
         return result
-    def command(s): return ipc('card_shell '+s)
+    def command(s):
+        if args.native_touch and s.split()[0] in ('down','motion','up','cancel'): s='test-touch '+s
+        return ipc('card_shell '+s)
     def tree_nodes(tree):
         yield tree
         for node in tree.get('nodes',[])+tree.get('floating_nodes',[]): yield from tree_nodes(node)
@@ -98,6 +103,7 @@ def main():
             print('PASS disabled product adapter',flush=True)
             return
         keyboard=Keyboard(runtime/env['WAYLAND_DISPLAY'])
+        if args.native_touch: command('test-touch init')
         time.sleep(.4)
         ipc('[app_id="k230.card.one"] focus')
         if args.benchmark:
@@ -166,6 +172,27 @@ def main():
         # Persistent button has release-on-same-target behavior.
         command('down 6 480 90'); command('up 6')
         command('down 7 480 90'); command('up 7')
+        # A real XDG popup is outside the mirrored view tree. A new popup
+        # must restore normal mode before rendering, and block deck reentry.
+        xml=Path('/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml')
+        if not xml.exists(): raise RuntimeError('native wayland-protocols XDG XML is required')
+        subprocess.run(['wayland-scanner','client-header',str(xml),str(runtime/'xdg-shell-client-protocol.h')],check=True)
+        subprocess.run(['wayland-scanner','private-code',str(xml),str(runtime/'xdg-shell-protocol.c')],check=True)
+        flags=shlex.split(subprocess.check_output(['pkg-config','--cflags','--libs','wayland-client'],text=True))
+        subprocess.run(['cc','-std=c11','-Wall','-Wextra','-Werror','-Wno-unused-parameter','-I'+str(runtime),str(Path(__file__).with_name('card_popup_client.c')),str(runtime/'xdg-shell-protocol.c'),'-o',str(runtime/'popup-client')]+flags,check=True)
+        popup_log=(runtime/'popup.txt').open('w')
+        popup=subprocess.Popen([str(runtime/'popup-client')],stdin=subprocess.PIPE,stdout=popup_log,stderr=popup_log,env=env)
+        processes.append(popup)
+        wait_for(lambda:any(n.get('app_id')=='k230.card.popup' for n in tree_nodes(ipc('',4))))
+        ipc('[app_id="k230.card.popup"] mark --add k230_card_private')
+        command('enter');before_restore=logs().count('restored focus=')
+        popup.stdin.write(b'x');popup.stdin.flush()
+        wait_for(lambda:'popup' in (runtime/'popup.txt').read_text())
+        wait_for(lambda:logs().count('restored focus=')>before_restore)
+        assert not ipc('card_shell enter',check=False)[0]['success']
+        popup.terminate();popup.wait();popup_log.close()
+        wait_for(lambda:all(n.get('app_id')!='k230.card.popup' for n in tree_nodes(ipc('',4))))
+        command('enter');command('back')
         # Dynamic stable IDs enumerate three actual mapped views, including duplicate app IDs.
         extra=start_client('k230.card.one',name='extra-one')
         third=start_client('k230.card.two',name='third-two')
@@ -184,7 +211,7 @@ def main():
         before_keys=keys('k230.card.one');keyboard.press();wait_for(lambda:keys('k230.card.one')>before_keys)
         assert sway.poll() is None
         results={'evidence_class':'headless-qemu-injected-input',
-          'passed':['horizontal-live-deck','expand-focus-keyboard','close-timeout-retains','close-exit','private-placeholder','unavailable-placeholder','live-privacy-transition','three-dynamic-views','topbar-restores-normal','cancel-no-up-return','multi-contact-drain','output-loss-restores','upward-throw-close','global-edge-entry','persistent-button'],
+          'passed':['horizontal-live-deck','expand-focus-keyboard','close-timeout-retains','close-exit','private-placeholder','unavailable-placeholder','live-privacy-transition','three-dynamic-views','popup-normal-fallback','topbar-restores-normal','cancel-no-up-return','multi-contact-drain','output-loss-restores','upward-throw-close','global-edge-entry','persistent-button'],
           'limits':['no physical touch or panel proof','no on-board cost acceptance']}
     finally:
         if keyboard: keyboard.close()
@@ -197,6 +224,7 @@ def main():
         assert sway.returncode == 0, ('compositor teardown', sway.returncode, logs()[-1500:])
         assert 'Segmentation fault' not in logs()
     results['passed'].append('clean-compositor-teardown')
+    results['input_route']='wlroots-touch-device-through-cursor-and-seat' if args.native_touch else 'direct-card-ipc'
     (runtime/'result.json').write_text(json.dumps(results,indent=2)+'\n')
     print(json.dumps(results),flush=True)
 if __name__=='__main__': main()

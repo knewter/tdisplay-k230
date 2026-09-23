@@ -4,6 +4,8 @@ let
     patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-card-shell.patch ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/adapter.c} sway/card_shell.c
+      cp ${./card-shell/test-input.c} sway/card_shell_test_input.c
+      cp ${./card-shell/test-input.h} include/sway/card_shell_test_input.h
       cp ${./card-shell/card-shell.h} include/sway/card_shell.h
       cp ${./card-shell/telemetry.c} sway/card_shell_telemetry.c
       cp ${./card-shell/telemetry.h} include/sway/card_shell_telemetry.h

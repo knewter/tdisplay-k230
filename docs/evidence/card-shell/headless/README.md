@@ -112,3 +112,40 @@ After an isolated session is installed, arm `card_shell benchmark physical` or
 then collect normalized telemetry and run the committed benchmark command with
 `--board` and its required provenance manifest. Do not reuse the architecture
 probe's package identity as product deployment evidence.
+
+## Popup and native-input review correction
+
+A follow-up to the initial implementation adds an explicit unsupported-popup
+boundary. Pinned Sway creates XDG popups under `root->layers.popup`, outside
+`view->content_tree`; they cannot safely be treated as mirrored descendants.
+Visible popups now reject card entry and restore an active deck before render.
+The actual XDG popup fixture maps a private parent, opens its popup during card
+mode, observes normal restoration, verifies entry rejection, then closes the
+popup and successfully enters again. `boundary-result.json` records seventeen
+passing assertions and clean compositor teardown; `boundary-compositor.txt`
+contains its normalized patch events. The fixture is compiled from committed C.
+
+The same correction gates new input while the launcher/hidden card UI or an
+existing app touch sequence owns the surface. A second contact while cards own
+the first is consumed before top-bar/keyboard bypass, and both contacts drain;
+this prevents forwarding a down whose up would later be consumed by cards.
+The separate `card_touch_receiver` review fixture validates actual protocol
+pairing through a registered wlroots touch device. Its evidence is a separate
+reviewed deliverable; direct card IPC alone does not prove client event pairing.
+
+Correction build PASS:
+`/nix/store/c41z2czaiana4dh8a7a2w6pwrqkawdgj-k230-card-shell`, unwrapped Sway
+`/nix/store/x95yrya49qds0qzrxfyqp000b01pggsp-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`.
+`boundary-closure.json` records its delta from the same unchanged normal system.
+The headless-only test device requires exact `SWAY_K230_CARD_TEST_INPUT=1` and
+is never enabled by the package wrapper or on a DRM backend. The original
+benchmark report remains an honest failed host diagnostic; this correction
+makes no board-cost or product deployment claim.
+
+The complete seventeen-assertion runtime also PASSes with `--native-touch` on
+the correction executable. `native-input-result.json` records
+`wlroots-touch-device-through-cursor-and-seat`; every down/motion/up/cancel
+travels through the real registered device, rather than direct card handlers.
+The input device is removed by normal compositor shutdown and exit remains
+zero. Client-level launcher/bar touch pairing is still independently checked
+by the companion routing fixture; these are complementary evidence classes.
