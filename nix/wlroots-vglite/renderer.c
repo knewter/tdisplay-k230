@@ -131,6 +131,20 @@ static void add_rect(struct wlr_render_pass *base, const struct wlr_render_rect_
 	if (o->color.a != 1) reject_gpu(p, "rect_alpha", p->len);
 	add_op(p, &op);
 }
+/* The pinned scene assigns this exact tuple to ordinary wl_surfaces. On the
+ * untransformed RGB565 target, pinned Pixman copies their encoded RGB values
+ * unchanged. This admits only that default tuple, not color management. */
+static bool default_scene_color(const struct wlr_render_texture_options *o, float luminance) {
+	if (o->transfer_function != WLR_COLOR_TRANSFER_FUNCTION_GAMMA22 || !o->primaries || luminance != 1)
+		return false;
+	struct wlr_color_primaries srgb;
+	wlr_color_primaries_from_named(&srgb, WLR_COLOR_NAMED_PRIMARIES_SRGB);
+	const struct wlr_color_primaries *p = o->primaries;
+	return p->red.x == srgb.red.x && p->red.y == srgb.red.y &&
+		p->green.x == srgb.green.x && p->green.y == srgb.green.y &&
+		p->blue.x == srgb.blue.x && p->blue.y == srgb.blue.y &&
+		p->white.x == srgb.white.x && p->white.y == srgb.white.y;
+}
 static void add_texture(struct wlr_render_pass *base, const struct wlr_render_texture_options *o) {
 	struct vglite_pass *p = (struct vglite_pass *)base;
 	if (p->failed) return;
@@ -182,8 +196,9 @@ static void add_texture(struct wlr_render_pass *base, const struct wlr_render_te
 	if (op.alpha != 1) reject_gpu(p, "texture_alpha", p->len);
 	if (o->color_encoding != WLR_COLOR_ENCODING_NONE || o->color_range != WLR_COLOR_RANGE_NONE)
 		reject_gpu(p, "texture_encoding", p->len);
-	if (o->transfer_function != 0) reject_gpu(p, "texture_transfer", p->len);
-	if (o->primaries) reject_gpu(p, "texture_primaries", p->len);
+	bool default_color = default_scene_color(o, op.luminance);
+	if (o->transfer_function != 0 && !default_color) reject_gpu(p, "texture_transfer", p->len);
+	if (o->primaries && !default_color) reject_gpu(p, "texture_primaries", p->len);
 	if (op.luminance != 1) reject_gpu(p, "texture_luminance", p->len);
 	/* SRC_OVER on the RGB565 imported target still needs hardware comparison. */
 	if (!op.opaque && o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) reject_gpu(p, "texture_blend", p->len);

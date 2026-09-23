@@ -7,10 +7,10 @@ set -euo pipefail
 repo=$(cd "$(dirname "$0")/.." && pwd)
 build=$(mktemp -d)
 trap 'rm -rf "$build"' EXIT
-cc -DWLR_USE_UNSTABLE -Wall -Wextra -Werror -g -fsanitize=address,undefined \
+cc -DWLR_USE_UNSTABLE -Wall -Wextra -Werror -g -fsanitize=address,undefined -ffunction-sections -fdata-sections -Wl,--gc-sections \
   $(pkg-config --cflags pixman-1 wayland-server libdrm) \
   -I"$repo/nix/vglite-access" -I"$WLROOTS_SOURCE/include" -I"$VGLITE_SOURCE/inc" -I"$repo/nix/wlroots-vglite/include" \
   "$repo/tests/vglite/renderer-test.c" "$WLROOTS_SOURCE/render/pass.c" \
-  "$WLROOTS_SOURCE/render/pixman/pass.c" "$WLROOTS_SOURCE/util/box.c" \
+  "$WLROOTS_SOURCE/render/pixman/pass.c" "$WLROOTS_SOURCE/render/color.c" "$WLROOTS_SOURCE/util/box.c" \
   $(pkg-config --libs pixman-1 wayland-server) -lpthread -lm -o "$build/renderer-test"
 "$build/renderer-test"

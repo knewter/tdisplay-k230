@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <render/pixman.h>
+#include <render/color.h>
 #include <vg_lite.h>
 
 static int fail_alloc, fail_clip;
@@ -196,7 +197,7 @@ static void assert_same(struct test_buffer *a, struct test_buffer *b) {
 		} abort();
 	}
 }
-static void comparison(bool gpu, bool crop, bool alpha, bool partial_clip, bool partial_damage) {
+static void comparison(bool gpu, bool crop, bool alpha, bool partial_clip, bool partial_damage, bool scene_color) {
 	reset_gpu(); if (!gpu) setenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE","0",1);
 	struct test_buffer a,b,src; buffer_init(&a,12,10,DRM_FORMAT_RGB565,true); buffer_init(&b,12,10,DRM_FORMAT_RGB565,true);
 	buffer_init(&src,5,4,DRM_FORMAT_ARGB8888,false);
@@ -212,12 +213,19 @@ static void comparison(bool gpu, bool crop, bool alpha, bool partial_clip, bool 
 	add_rect(p,&background); wlr_render_pass_add_rect(q,&background);
 	float opacity=alpha?.5:1;
 	struct wlr_render_texture_options o={.texture=t,.dst_box={2,2,10,8},.alpha=&opacity,.clip=&clip,.filter_mode=WLR_SCALE_FILTER_NEAREST};
+	struct wlr_color_primaries primaries;
+	wlr_color_primaries_from_named(&primaries,WLR_COLOR_NAMED_PRIMARIES_SRGB);
+	struct wlr_color_luminances from,to;
+	wlr_color_transfer_function_get_default_luminance(WLR_COLOR_TRANSFER_FUNCTION_GAMMA22,&from);
+	wlr_color_transfer_function_get_default_luminance(WLR_COLOR_TRANSFER_FUNCTION_SRGB,&to);
+	float luminance=(to.reference/from.reference)*(from.max/to.max); assert(luminance==1);
+	if(scene_color) { o.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22; o.primaries=&primaries; o.luminance_multiplier=&luminance; }
 	if(crop) { o.src_box=(struct wlr_fbox){1,1,3,2}; o.dst_box=(struct wlr_box){3,3,6,4}; }
 	if(partial_damage) o.dst_box=(struct wlr_box){3,3,4,4};
 	add_texture(p,&o); o.texture=ref; wlr_render_pass_add_texture(q,&o);
 	/* Mutate all caller-owned storage and destroy the original texture before
 	 * submitting: the renderer must have captured a complete immutable pass. */
-	opacity=0; pixman_region32_clear(&clip); pixman_region32_clear(&full); memset(src.data,0,(size_t)src.stride*4);
+	opacity=0; luminance=0; memset(&primaries,0,sizeof(primaries)); pixman_region32_clear(&clip); pixman_region32_clear(&full); memset(src.data,0,(size_t)src.stride*4);
 	wlr_texture_destroy(t); wlr_texture_destroy(ref);
 	assert(wlr_render_pass_submit(q)); assert(submit(p)); assert_same(&a,&b);
 	if(gpu && !alpha && !partial_clip && !partial_damage) assert(gpu_commands==2 && gpu_finishes==1 && gpu_frees==1);
@@ -329,10 +337,65 @@ static void completion_quarantine(void) {
 	assert(gpu_disabled && b.base.n_locks==1 && b.accessing && gpu_finishes==1 && !gpu_frees && !gpu_closes && !pixman_passes && queued==2);
 	/* Child exits without reclaiming resources the GPU might still own. */
 }
+static void scene_color_pixel_matrix(void) {
+	/* All 256 input values for each RGB channel, plus mixed colors. Compile
+	 * and call the real pinned color/Pixman code; do not emulate its metadata. */
+	for(int kind=0;kind<23;kind++) for(int blend=0;blend<2;blend++) {
+		reset_gpu(); struct test_buffer gpu,ref,src;
+		buffer_init(&gpu,256,4,DRM_FORMAT_RGB565,true); buffer_init(&ref,256,4,DRM_FORMAT_RGB565,true);
+		buffer_init(&src,256,4,blend ? DRM_FORMAT_XRGB8888 : DRM_FORMAT_ARGB8888,false);
+		for(int y=0;y<4;y++) for(int x=0;x<256;x++) {
+			uint32_t rgb=y==0 ? (uint32_t)x<<16 : y==1 ? (uint32_t)x<<8 : y==2 ? (uint32_t)x :
+				(uint32_t)x<<16 | (uint32_t)(255-x)<<8 | (uint32_t)(x^0x55);
+			uint32_t pixel=0xff000000u|rgb; memcpy(src.data+y*src.stride+x*4,&pixel,4);
+		}
+		struct wlr_renderer *r=wlr_vglite_renderer_create(); struct vglite_renderer *vr=(struct vglite_renderer *)r;
+		struct wlr_texture *t=wlr_texture_from_buffer(r,&src.base), *reference=wlr_texture_from_buffer(vr->pixman,&src.base);
+		struct wlr_render_pass *p=begin(r,&gpu.base,NULL), *q=wlr_renderer_begin_buffer_pass(vr->pixman,&ref.base,NULL);
+		add_rect(p,&bg); wlr_render_pass_add_rect(q,&bg);
+		struct wlr_color_primaries primaries;
+		wlr_color_primaries_from_named(&primaries,WLR_COLOR_NAMED_PRIMARIES_SRGB);
+		float luminance=1,alpha=1;
+		struct wlr_render_texture_options o={.texture=t,.dst_box={0,0,256,4},.alpha=&alpha,
+			.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22,.primaries=&primaries,
+			.luminance_multiplier=&luminance,.filter_mode=WLR_SCALE_FILTER_BILINEAR,
+			.blend_mode=blend ? WLR_RENDER_BLEND_MODE_NONE : WLR_RENDER_BLEND_MODE_PREMULTIPLIED};
+		switch(kind) {
+		case 1: o.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_SRGB; break;
+		case 2: o.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_ST2084_PQ; break;
+		case 3: o.primaries=NULL; break;
+		case 4: wlr_color_primaries_from_named(&primaries,WLR_COLOR_NAMED_PRIMARIES_BT2020); break;
+		case 5: luminance=.5; break;
+		case 6: luminance=NAN; break;
+		case 7: o.color_encoding=WLR_COLOR_ENCODING_BT709; break;
+		case 8: o.color_range=WLR_COLOR_RANGE_FULL; break;
+		case 9: alpha=.5; break;
+		case 10: o.transform=WL_OUTPUT_TRANSFORM_180; break;
+		case 11: o.transfer_function=0; break;
+		case 20: primaries.white.x=NAN; break;
+		case 21: luminance=nextafterf(1,2); break;
+		case 22: o.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22|WLR_COLOR_TRANSFER_FUNCTION_SRGB; break;
+		default:
+			if(kind>=12 && kind<=19) {
+				float *coordinates[]={&primaries.red.x,&primaries.red.y,&primaries.green.x,&primaries.green.y,
+					&primaries.blue.x,&primaries.blue.y,&primaries.white.x,&primaries.white.y};
+				*coordinates[kind-12]=nextafterf(*coordinates[kind-12],1);
+			}
+		}
+		add_texture(p,&o); o.texture=reference; wlr_render_pass_add_texture(q,&o);
+		assert(submit(p)); assert(wlr_render_pass_submit(q)); assert_same(&gpu,&ref);
+		assert(gpu_init_calls==(kind==0 ? 1 : 0));
+		assert(gpu_commands==(kind==0 ? 2 : 0));
+		assert(pixman_passes==(kind==0 ? 1 : 2)); /* explicit reference plus fallback */
+		wlr_texture_destroy(t); wlr_texture_destroy(reference); wlr_renderer_destroy(r);
+		buffer_finish(&src); buffer_finish(&gpu); buffer_finish(&ref);
+	}
+}
+
 static void scene_default_diagnostics(void) {
 	/* Pinned types/scene/surface.c:290 supplies GAMMA22 + SRGB for ordinary
-	 * wl_surfaces. These are deliberately still rejected in this diagnostic
-	 * change: expose the actual gate before broadening the GPU contract. */
+	 * wl_surfaces. Only this exact tuple is now eligible;
+	 * primaries without its transfer function remain rejected. */
 	for (int kind=0; kind<5; kind++) {
 		reset_gpu(); struct test_buffer b,src; buffer_init(&b,8,8,DRM_FORMAT_RGB565,true);
 		buffer_init(&src,8,8,DRM_FORMAT_XRGB8888,false);
@@ -341,7 +404,8 @@ static void scene_default_diagnostics(void) {
 		struct wlr_render_pass *p=begin(r,&b.base,NULL);
 		struct wlr_render_rect_options clear={.color={.a=kind==3 ? 0 : 1}};
 		add_rect(p,&clear);
-		struct wlr_color_primaries srgb={.red={.640,.330},.green={.300,.600},.blue={.150,.060},.white={.3127,.3290}};
+		struct wlr_color_primaries srgb;
+		wlr_color_primaries_from_named(&srgb,WLR_COLOR_NAMED_PRIMARIES_SRGB);
 		float luminance=1;
 		struct wlr_render_texture_options o={.texture=t,.dst_box={0,0,8,8},
 			.transfer_function=WLR_COLOR_TRANSFER_FUNCTION_GAMMA22,.primaries=&srgb,
@@ -350,14 +414,14 @@ static void scene_default_diagnostics(void) {
 		if (kind<2) add_texture(p,&o);
 		if (kind==4) b.attr.stride[0]=65;
 		assert(submit(p));
-		const char *reason=kind==0 ? "texture_transfer" : kind==1 ? "texture_primaries" :
+		const char *reason=kind==0 ? "eligible" : kind==1 ? "texture_primaries" :
 			kind==3 ? "rect_alpha" : kind==4 ? "target_attributes" : "eligible";
 		char expected[80]; snprintf(expected,sizeof(expected),"reason=%s ",reason);
 		assert(strstr(decision_log,expected));
 		assert(strstr(decision_log,"v=1 result="));
 		assert(strstr(decision_log,"target=8x8 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride="));
-		assert(attempt_logs==(kind==2 ? 1u : 0u));
-		if (kind<2) {
+		assert(attempt_logs==((kind==0 || kind==2) ? 1u : 0u));
+		if (kind==1) {
 			assert(strstr(decision_log,"op=1 ops=2 "));
 			assert(strstr(operation_log,"kind=texture alpha=1 opaque=1 "));
 			assert(strstr(operation_log,"primaries=1 luminance=1 encoding=0 range=0 "));
@@ -377,19 +441,26 @@ static void denied_broker(void) {
 	buffer_finish(&b); reset_gpu();
 }
 int main(void) {
+	scene_color_pixel_matrix();
 	scene_default_diagnostics();
 	denied_broker();
-	comparison(true,false,false,false,false);
-	comparison(true,true,false,false,false);
-	comparison(true,true,true,false,false);
-	comparison(true,false,false,true,false);
-	comparison(true,false,false,true,true);
-	comparison(false,true,false,false,false);
+	comparison(true,false,false,false,false,false);
+	comparison(true,false,false,false,false,true);
+	comparison(true,true,false,false,false,false);
+	comparison(true,true,false,false,false,true);
+	comparison(true,true,true,false,false,false);
+	comparison(true,true,true,false,false,true);
+	comparison(true,false,false,true,false,false);
+	comparison(true,false,false,true,false,true);
+	comparison(true,false,false,true,true,false);
+	comparison(true,false,false,true,true,true);
+	comparison(false,true,false,false,false,false);
+	comparison(false,true,false,false,false,true);
 	failures();
 	scene_regions();
 	texture_failures();
 	rejected_contracts();
 	pid_t child=fork(); assert(child>=0); if(!child) { completion_quarantine(); _exit(0); }
 	int status; assert(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
-	puts("PASS: production renderer snapshots, RGB channel order, padded upload, crop/scale translation, alpha/clip/partial-damage replay, exact opt-in, record/map/init/command/finish failures, completion quarantine; real pinned Pixman output comparison");
+	puts("PASS: exact scene-default color identity and rejected metadata matrix, production renderer snapshots, RGB channel order, padded upload, crop/scale translation, alpha/clip/partial-damage replay, exact opt-in, record/map/init/command/finish failures, completion quarantine; real pinned Pixman output comparison");
 }
