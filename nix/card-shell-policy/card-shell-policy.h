@@ -58,6 +58,8 @@ struct cs_policy {
     int32_t contact_id;
     double down_x, down_y, last_x, last_y, dx, dy, velocity_y;
     uint64_t last_time_ms;
+    double velocity_origin_y;
+    uint64_t velocity_origin_ms;
     enum { CS_AXIS_NONE, CS_AXIS_HORIZONTAL, CS_AXIS_VERTICAL } axis;
     struct {
         bool tracking;

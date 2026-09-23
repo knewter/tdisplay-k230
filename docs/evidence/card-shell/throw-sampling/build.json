@@ -1,0 +1,10 @@
+{
+  "package": "/nix/store/mp0bqh0gmq64jfhc2xdishdnd7jlzwln-k230-card-shell",
+  "sway": "/nix/store/d7pxj3jviq5ghax97hy98fnqlmhbiy0f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "policy_sha256": "2bda7f54e4f5697066c6a0b24e6b2b6b12eba2a82885909ab0cf52183766d94e",
+  "command": "TMPDIR=/mnt/MediaVolume/home/jadams nix build .#card-shell --max-jobs 1 --cores 8 --no-link --print-out-paths",
+  "status": "PASS",
+  "evidence_class": "host-cross-build",
+  "base_revision": "4ba9f58a23a59e1d0838ac144c8b5bedd1b20bbf",
+  "runtime_test_sha256": "72602faa75d84b99c2ee1677f0c399fea3d184c09d82a013e0048d3a66f29078"
+}
