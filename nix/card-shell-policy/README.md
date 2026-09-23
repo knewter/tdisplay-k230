@@ -50,6 +50,12 @@ is performed: reduced-motion mode has identical direct tracking and outcomes.
    `cs_content_rect`. Bar and keyboard regions pass through. Every accepted
    touch gets exactly one down and up: policy cancellation drains the owned
    stream; further contacts cannot accidentally activate the restored app.
+   This draining is for local rejection only (`cs_cancel`/`cs_edge_cancel`). A
+   compositor touch-cancel event or device removal may end the stream without
+   any up. In that case call **`cs_stream_cancel`**, which clears contact, edge
+   and blocked-contact state immediately, returns a dragging card to the stable
+   deck and permits the next stream. A pending graceful close keeps its separate
+   deadline. On output loss/session lock, follow with `cs_leave`.
    Forward `cs_motion` on every real motion, then use `cs_card_rect` for all
    card positions. The horizontal deck follows the same `dx`; a vertical
    throw moves only the actual touched card, including a visible adjacent card.
@@ -94,12 +100,14 @@ Run from the repository root:
 python3 tests/test_card_shell_state.py
 ```
 
-Nineteen compiled scenarios cover shrink/expand, horizontal movement, adjacent
+Twenty-one compiled scenarios cover shrink/expand, horizontal movement, adjacent
 identity, private/unavailable classification and changes during/after drag,
 close deadlines/refusal/failure, source loss, recovery transitions, multiple
 contacts, edge entry, keyboard/bar geometry, changed IDs, more than two cards,
 reduced-motion equivalence, invalid events, button equivalents, and 9,999
-mixed event transitions. They run with memory and undefined-behavior checks.
+mixed event transitions. Complete-stream cancellation is exercised with no later
+up, followed by a fresh successful gesture, including after a multi-contact
+abort. They run with memory and undefined-behavior checks.
 
 This module supplies task 2.1 only. It does not close global gesture/button
 integration (2.2), actual surface safety/rendering (3.1), native gestures (3.2),

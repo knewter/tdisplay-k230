@@ -9,7 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ('enter-expand horizontal adjacent-tap adjacent-throw privacy privacy-transition '
          'close-recovery slow-drag source-loss restore-gesture multi-contact edge '
-         'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons randomized').split()
+         'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons stream-cancel stream-cancel-multitouch randomized').split()
 
 
 class ProductPolicyTests(unittest.TestCase):

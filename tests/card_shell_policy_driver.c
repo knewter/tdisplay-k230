@@ -251,6 +251,49 @@ static void buttons(void) {
     assert(cs_up(&p,1,301).consumed && !p.blocked_until_up);
     cs_finish(&p);
 }
+static void stream_cancel(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);down(&p,1);
+    cs_motion(&p,1,p.down_x-180,p.down_y,100);
+    struct cs_result r=cs_stream_cancel(&p); /* no up follows this stream */
+    assert(r.consumed && (r.actions&CS_REDRAW) && p.mode==CS_DECK);
+    assert(!p.contact && !p.edge.tracking && !p.blocked_until_up && !p.blocked_contacts);
+    assert(p.dx==0 && p.dy==0 && p.selected==0);
+    down(&p,200);cs_motion(&p,1,p.down_x-180,p.down_y,300);cs_up(&p,1,301);
+    assert(p.selected==1 && p.mode==CS_DECK); /* fresh complete stream works */
+    down(&p,400);cs_cancel(&p);assert(p.blocked_until_up);
+    cs_stream_cancel(&p); /* device removal after locally rejected gesture */
+    down(&p,500);r=cs_up(&p,1,501);assert((r.actions&CS_EXPAND) && r.focus_id==202);
+    cs_edge_down(&p,2,200,1220,600);assert(p.edge.tracking);
+    cs_stream_cancel(&p);assert(!p.edge.tracking && !p.blocked_until_up);
+    cs_edge_down(&p,3,200,1220,700);
+    r=cs_edge_motion(&p,3,200,1100,800,101);assert(r.actions&CS_SHRINK);
+    cs_edge_up(&p,3);assert(!p.blocked_until_up);
+    r=cs_request_close(&p,101,900);assert(r.actions&CS_CLOSE);
+    cs_down(&p,4,200,400,901);assert(p.blocked_until_up);
+    r=cs_stream_cancel(&p);assert(!p.blocked_until_up && p.mode==CS_CLOSING);
+    assert(r.message==CS_MESSAGE_CLOSING && p.closing_id==101);
+    assert(cs_tick(&p,2400).message==CS_MESSAGE_CLOSE_TIMEOUT);
+    cs_finish(&p);
+}
+static void stream_cancel_multitouch(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);down(&p,1);
+    cs_down(&p,2,200,400,2);
+    assert(p.mode==CS_NORMAL && p.blocked_contacts==2);
+    cs_stream_cancel(&p); /* both contacts terminate without any up */
+    assert(!p.blocked_until_up && !p.blocked_contacts && !p.contact);
+    assert(!cs_down(&p,3,200,400,3).consumed); /* normal app routing restored */
+    cs_enter(&p,101);down(&p,10);
+    cs_motion(&p,1,p.down_x-180,p.down_y,110);cs_up(&p,1,111);
+    assert(p.selected==1 && p.mode==CS_DECK);
+    cs_leave(&p);cs_edge_down(&p,4,200,1220,200);
+    cs_edge_down(&p,5,100,500,201);assert(p.blocked_contacts==2);
+    cs_stream_cancel(&p);assert(!p.blocked_until_up && !p.edge.tracking);
+    cs_edge_down(&p,6,200,1220,300);
+    assert(cs_edge_motion(&p,6,200,1100,400,202).actions&CS_SHRINK);
+    cs_edge_up(&p,6);down(&p,500);
+    assert(cs_up(&p,1,501).actions&CS_EXPAND);
+    cs_finish(&p);
+}
 static void randomized(void) {
     struct cs_policy p=setup();unsigned seed=230;
     for (uint64_t i=1;i<10000;i++) {
@@ -283,7 +326,8 @@ int main(int argc,char **argv) {
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},
-        {"buttons",buttons},{"randomized",randomized}
+        {"buttons",buttons},{"stream-cancel",stream_cancel},
+        {"stream-cancel-multitouch",stream_cancel_multitouch},{"randomized",randomized}
     };
     assert(argc==2);
     for (size_t i=0;i<sizeof(cases)/sizeof(cases[0]);i++) if (!strcmp(argv[1],cases[i].name)) {

@@ -91,7 +91,12 @@ struct cs_result cs_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms);
 struct cs_result cs_up(struct cs_policy *policy, int32_t contact_id,
     uint64_t time_ms);
+/* Local rejection: swallow remaining hardware contacts through their ups. */
 struct cs_result cs_cancel(struct cs_policy *policy);
+/* Compositor touch_cancel/device removal: the entire stream has ended and no
+ * further up is guaranteed. Clear all contact, edge and drain state so the next
+ * stream can begin. Safe deck position is restored; pending close is separate. */
+struct cs_result cs_stream_cancel(struct cs_policy *policy);
 struct cs_result cs_tick(struct cs_policy *policy, uint64_t time_ms);
 /* Only the adapter can know an explicit refusal or failed dispatch; otherwise
  * tick reports timeout while the source remains present. Neither force-kills. */
@@ -107,6 +112,7 @@ struct cs_result cs_edge_down(struct cs_policy *policy, int32_t contact_id,
 struct cs_result cs_edge_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms, uint64_t focused_id);
 struct cs_result cs_edge_up(struct cs_policy *policy, int32_t contact_id);
+/* Local edge rejection only; for a complete stream use cs_stream_cancel. */
 void cs_edge_cancel(struct cs_policy *policy);
 
 bool cs_can_mirror(const struct cs_policy *policy, uint64_t id);

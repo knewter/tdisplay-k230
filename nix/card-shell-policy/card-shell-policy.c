@@ -293,6 +293,18 @@ struct cs_result cs_cancel(struct cs_policy *p) {
     p->message=CS_MESSAGE_CANCELLED;
     return result(p,p->mode==CS_NORMAL ? 0 : CS_REDRAW,owned);
 }
+struct cs_result cs_stream_cancel(struct cs_policy *p) {
+    bool owned=p->contact || p->edge.tracking || p->blocked_until_up;
+    reset_drag(p);
+    memset(&p->edge,0,sizeof(p->edge));
+    p->blocked_until_up=false;p->blocked_contacts=0;
+    p->contact_id=0;p->last_time_ms=0;
+    p->down_x=p->down_y=p->last_x=p->last_y=0;
+    if (p->mode==CS_DRAGGING) p->mode=CS_DECK;
+    /* A close request already dispatched is independent of the touch stream. */
+    if (p->mode!=CS_CLOSING && owned) p->message=CS_MESSAGE_CANCELLED;
+    return result(p,p->mode==CS_NORMAL ? 0 : CS_REDRAW,owned);
+}
 struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
     if (p->mode!=CS_CLOSING || time_ms<p->close_deadline_ms) return result(p,0,false);
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_DECK;
