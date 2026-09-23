@@ -1,0 +1,5 @@
+baseline /nix/store/1ww0yj6pxb7da8f48b46ixg0g4sm7p78-pixman-riscv64-unknown-linux-gnu-0.46.4.drv
+Checking if "RISC-V Vector Intrinsic Support" compiles: NO
+patched /nix/store/3vhbn7qrav9g876s4kd6snp3rx6hhyvv-pixman-riscv64-unknown-linux-gnu-0.46.4.drv
+Checking if "RISC-V Vector Intrinsic Support" compiles: YES
+[21/119] Compiling C object pixman/libpixman-rvv.a.p/pixman-rvv.c.o

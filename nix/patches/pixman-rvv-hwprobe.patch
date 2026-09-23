@@ -1,0 +1,22 @@
+--- a/meson.build
++++ b/meson.build
+@@ -386,7 +386,7 @@
+         #endif
+         int main() {
+             struct riscv_hwprobe pair = {RISCV_HWPROBE_KEY_IMA_EXT_0, 0};
+-            long result = sys_riscv_hwprobe (&pair, 1, 0, 0, 0);
++            long result = syscall (SYS_riscv_hwprobe, &pair, 1, 0, 0, 0);
+             vfloat32m1_t tmp1; /* added in gcc-13 */
+             vfloat32m1x4_t tmp2; /* added in gcc-14 */
+             return 0;
+--- a/pixman/pixman-riscv.c
++++ b/pixman/pixman-riscv.c
+@@ -39,7 +39,7 @@
+ is_rvv_1_0_available ()
+ {
+     struct riscv_hwprobe pair = {RISCV_HWPROBE_KEY_IMA_EXT_0, 0};
+-    if (sys_riscv_hwprobe (&pair, 1, 0, 0, 0) < 0)
++    if (syscall (SYS_riscv_hwprobe, &pair, 1, 0, 0, 0) < 0)
+     {
+ 	return 0;
+     }
