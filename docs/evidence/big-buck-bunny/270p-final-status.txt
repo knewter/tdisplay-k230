@@ -1,0 +1,65 @@
+
+===== > cat /sys/devices/system/cpu/online; cat /sys/devices/system/cpu/present; tail -c 3000 /run/shell/bbb-270p-status.txt; stat -c %s /run/bbb-270p.png =====
+cat /sys/devices/system/cpu/online; cat /sys/devices/system/cpu/present; tail -c 3000 /run/shell/bbb-270p-status.txt; stat -c %s /run/bbb-270p.png
+[?2004l
+0
+0
+ fps=30 decoder_drop=0 vo_drop=102 cache=94.6
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=102 cache=94.5667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=103 cache=94.5333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=103 cache=94.5
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=103 cache=94.4667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=103 cache=94.4333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=103 cache=94.4
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=104 cache=94.3667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=104 cache=94.3333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.3
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.2667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.2333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.2
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.1667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.1333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.1
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.0667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94.0333
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=94
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=93.9667
+pos=00:01:13 fps=30 decoder_drop=0 vo_drop=105 cache=93.9333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.9
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.8667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.8333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.8
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.7667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.7333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=93.7
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=94.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=96
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.6
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.5667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.5333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.5
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.4667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.4333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=105 cache=97.4
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.3667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.3333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.3
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.2667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.2333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.2
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.1667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.1333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.1
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.0667
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97.0333
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=97
+pos=00:01:14 fps=30 decoder_drop=0 vo_drop=106 cache=96.9667
+Exiting... (End of file)
+210067
+[?2004h
+
+[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: /home/shellroot@nixos:/home/shell]#[0m 
