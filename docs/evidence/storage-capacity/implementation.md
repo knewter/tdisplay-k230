@@ -73,9 +73,14 @@ NixOS service startup. Failure injection occurs before the named utility runs;
 it does not simulate power loss during a metadata write. A normal exit of its
 PID 1 produces the expected final kernel panic after the complete report; the
 host requires the fresh complete report and every assertion, not that panic.
-Physical K230 boot, live root expansion, Wi-Fi/shell recovery, and a second
-physical reboot remain unverified. Tasks 1.1, 1.2 and 2.1 are complete. The matching system and compact image
-also cross-build successfully; `image-build.json` records artifact hashes,
-unchanged initial partition offsets, exact kernel/initrd payloads, valid U-Boot
-CRCs and the matching system in bootargs, completing task 2.2. Physical
-first/repeat boots, live capacity and recovery remain separate gates.
+At the time of this host/guest checkpoint, physical K230 growth and recovery
+were still unverified. The matching system and compact image also cross-built;
+`image-build.json` records artifact hashes, unchanged initial offsets, exact
+kernel/initrd payloads, valid U-Boot CRCs and matching bootargs. Together these
+records completed tasks 1.1, 1.2, 2.1 and 2.2.
+
+Subsequent **physical** first and repeat boots now pass. See [the board evidence](README.md),
+`board-before.json`, `board-after.json` and `board-repeat.json` for automatic
+growth, preserved boot/root identities, available capacity, service results and
+shell/Wi-Fi recovery. Those separate observations complete the physical gates;
+they do not change the guest fixture's limits described above.

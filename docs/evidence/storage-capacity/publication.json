@@ -1,0 +1,14 @@
+{
+  "commit": "a20c04928bc3ed4f997d69c8fac0441f2fa45f36",
+  "ci_url": "https://github.com/knewter/tdisplay-k230/actions/runs/35921034930",
+  "ci_build": "success",
+  "ci_deploy": "success",
+  "published_url": "https://knewter.github.io/tdisplay-k230/handheld/",
+  "http_status": 200,
+  "body_sha256": "e9b6a4fe12c6108430e5d137d7d29eb57c83735c84aca6e95dc3d910248a10e9",
+  "checked_at_utc": "2026-09-23T21:15:19.482804+00:00",
+  "content_assertions": [
+    "Room for apps and updates",
+    "A second physical boot confirmed unchanged capacity and boundaries"
+  ]
+}
