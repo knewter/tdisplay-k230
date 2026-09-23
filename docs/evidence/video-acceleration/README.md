@@ -126,3 +126,11 @@ crop excludes the surrounding body/desk scene; [provenance](capture.json)
 records its coordinates, timing, source hash and autofocus setting. It is an
 oblique hand-held camera view, not a panel frame-rate measurement. The source
 recording remains private on the host; only selected derivatives are published.
+
+The captured repeat stopped advancing at the requested final frame but did not
+finish process teardown promptly. The coordinator terminated that identified
+mpv process; [cleanup](cleanup.txt) confirms no player remains and shell, seatd,
+and Wi-Fi stay active. The diagnostic wrapper therefore has a 90-second wall
+clock limit with a three-second termination grace period. This is a guard for
+the bounded probe, not a claim that integrated EOF/error recovery is solved.
+The earlier point-scaler run did return EOF normally.

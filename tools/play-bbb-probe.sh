@@ -17,7 +17,7 @@ case "$mode" in
   *) echo 'mode must be software or mvx' >&2; exit 2 ;;
 esac
 swaymsg 'for_window [title="k230-video-probe"] floating enable, border none, resize set '"$size"', move position center' >/dev/null
-exec "$mpv_path" --no-config --vo=wlshm --profile=sw-fast --hwdec=no \
+exec timeout --signal=TERM --kill-after=3s 90s "$mpv_path" --no-config --vo=wlshm --profile=sw-fast --hwdec=no \
   "${decoder[@]}" --audio=no --cache=yes --demuxer-readahead-secs=30 \
   --start=45 --length=30 --title=k230-video-probe --force-window=yes \
   --geometry="$geometry" --vid="$track" --wayland-internal-vsync=auto \

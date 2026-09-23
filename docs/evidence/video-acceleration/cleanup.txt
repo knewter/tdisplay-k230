@@ -1,0 +1,16 @@
+
+===== > test "$(cat /proc/1306/comm 2>/dev/null)" = mpv && kill -TERM 1306; sleep 2; if test "$(cat /proc/1306/comm 2>/dev/null)" = mpv; then kill -KILL 1306; fi; pgrep -x mpv >/dev/null || echo VIDEO_PROBE_STOPPED; systemctl is-active shell seatd k230-wifi =====
+test "$(cat /proc/1306/comm 2>/dev/null)" = mpv && kill -TERM 1306; sleep 2; if test "$(cat /proc/1306/comm 2>/dev/null)" = mpv; then kill -KILL 1306; fi; pgrep -x mpv >/dev/null || echo VIDEO_PROBE_STOPPED; systemctl is-active shell seatd k230-wifi
+
+[1]+  Exit 143                   runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 /nix/store/dpylynz13fl5kmkfksnvwgv9arqy0hpr-mpv-riscv64-unknown-linux-gnu-0.41.0/bin/mpv --correct-pts=no --container-fps-override=30 --no-config --vo=wlshm --profile=sw-fast --hwdec=no --vd=h264_v4l2m2m --audio=no --cache=yes --demuxer-readahead-secs=30 --start=45 --length=30 --title=k230-video-probe --force-window=yes --geometry=568x320 --terminal=yes --input-terminal=no --wayland-internal-vsync=auto '--demuxer-lavf-o=protocol_whitelist=[file,http,https,tcp,tls,crypto,data]' '--term-status-msg=pos=${time-pos} fps=${estimated-vf-fps} decoder_drop=${decoder-frame-drop-count} vo_drop=${frame-drop-count} cache=${demuxer-cache-duration}' --log-file=/run/shell/final-mvx360-debug.log --vid=7 https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd --sws-scaler=point > /run/shell/final-mvx360-status.txt 2>&1
+VIDEO_PROBE_STOPPED
+active
+active
+active
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#
