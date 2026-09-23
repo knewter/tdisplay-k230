@@ -1,0 +1,41 @@
+{
+  "evidence_class": "read-only physical-board storage preflight",
+  "at_utc": [
+    "2026-09-23T20:03:34+00:00",
+    "2026-09-23T20:07:04+00:00"
+  ],
+  "commands": [
+    "nix-store -qR /run/current-system",
+    "df -B1 / /run /boot",
+    "nix-store --gc --print-dead",
+    "du -sk /nix/store/*sway* /nix/store/*wlroots*",
+    "lsblk -b -o NAME,SIZE,TYPE,FSTYPE"
+  ],
+  "card_bytes": 127934660608,
+  "boot_partition_bytes": 117440512,
+  "root_partition_bytes": 2173693952,
+  "root_filesystem_bytes": 2063679488,
+  "root_available_bytes": 77070336,
+  "boot_available_bytes": 22749184,
+  "normal_closure_paths": 602,
+  "unrooted_store_paths_reported": 62,
+  "trial_closure_additional_paths": 16,
+  "trial_closure_additional_nar_bytes": 112720944,
+  "raw_transcripts": [
+    {
+      "sha256": "974544d580db8d28deee4ead918d506f0c8b03796e4a63f203c895dbe566eb5b",
+      "bytes": 664
+    },
+    {
+      "sha256": "746085b6e315d669d37e3c7dae41f106124d6e0f9bc7b1ef38693274df488e88",
+      "bytes": 4821
+    }
+  ],
+  "limits": [
+    "No partition or filesystem was changed.",
+    "No store path was deleted or new closure imported.",
+    "Closure difference is relative to the running normal system, not an exhaustive board-store inventory.",
+    "NAR size estimates do not exactly equal required filesystem blocks.",
+    "Boot expansion behavior remains unverified."
+  ]
+}
