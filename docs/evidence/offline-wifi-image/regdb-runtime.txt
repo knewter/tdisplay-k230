@@ -1,0 +1,17 @@
+
+===== > export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg exec "wvkbd-mobintl -H 400 --hidden"; iw reg set US; sleep 2; iw reg get | sed -n "/country/p"; dmesg | grep -iE "regulatory.*(fail|error)|firmware.*(fail|error)" | tail -4; pgrep -x wvkbd-mobintl; echo REGDB_RECHECK_DONE =====
+export SWAYSOCK=/run/shell/sway-ipc.sock; swaymsg exec "wvkbd-mobintl -H 400 --hidden"; iw reg set US; sleep 2; iw reg get | sed -n "/country/p"; dmesg | grep -iE "regulatory.*(fail|error)|firmware.*(fail|error)" | tail -4; pgrep -x wvkbd-mobintl; echo REGDB_RECHECK_DONE
+
+country US: DFS-FCC
+country 99: DFS-UNSET
+country 99: DFS-UNSET
+[    5.737837] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+1155
+REGDB_RECHECK_DONE
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# 

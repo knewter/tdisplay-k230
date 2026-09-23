@@ -6,15 +6,15 @@
 
 ## 2. Desktop entries and Help surface
 
-- [ ] 2.1 Add selected terminal applications as minimal visible desktop entries using `Terminal=true` and the existing Foot bridge; verify `k230-desktop-catalog list` discovers each ID and `k230-desktop-catalog launch ID` preserves the configured terminal environment.
+- [x] 2.1 Add selected terminal applications as minimal visible desktop entries using `Terminal=true` and the existing Foot bridge; verify `k230-desktop-catalog list` discovers each ID and `k230-desktop-catalog launch ID` preserves the configured terminal environment.
 - [x] 2.2 Add a built-in Help card/page to the existing portrait launcher with concise pages for Apps, Keyboard, Windows/Home, System, Terminal, Monitor, Back, and Previous/Next; verify the host launcher tests cover page bounds, Back, and empty-catalog behavior.
 - [x] 2.3 Keep Help and the existing built-ins available when no optional candidate is selected or a candidate launch fails; verify an injected launch-error workflow leaves a usable Back control.
 
 ## 3. Package and hardware validation
 
 - [x] 3.1 Build the launcher and each selected package separately for the pinned target and record the exact derivation outputs; verify with the narrow package build commands before attempting an image build.
-- [ ] 3.2 Build the shell image with the selected set and compare startup/closure evidence against the recorded baseline; verify the report distinguishes host/package proof from QEMU or hardware proof.
-- [ ] 3.3 Boot the resulting image and confirm startup, catalog discovery, Help rendering, and candidate launch/return using injected input; verify with the existing shell evidence workflow and label physical-finger, reboot, and final-glass checks as unverified until separately observed.
+- [x] 3.2 Build the shell image with the selected set and compare startup/closure evidence against the recorded baseline; verify the report distinguishes host/package proof from QEMU or hardware proof.
+- [x] 3.3 Boot the resulting image and confirm startup, catalog discovery, Help rendering, and candidate launch/return using injected input; verify with the existing shell evidence workflow and label physical-finger, reboot, and final-glass checks as unverified until separately observed.
 
 ## 4. Review and integration
 
@@ -34,5 +34,5 @@ a host process or QEMU cannot prove this panel workflow.
 are in `docs/evidence/offline-app-candidates/`; the injected physical-board Help,
 error recovery, nano and nnn trials are in `docs/evidence/offline-help-injected/`.
 Task 1.2 remains open because lf was rejected on closure size and has no board
-startup/RSS sample. Image integration and a boot of the new image remain separate
-checks. Navigation tests include `python3 tests/test_launcher_navigation.py`.
+startup/RSS sample. Fresh-image integration, boot, catalog discovery and injected launches are
+recorded in `docs/evidence/offline-wifi-image/README.md`. Navigation tests include `python3 tests/test_launcher_navigation.py`.

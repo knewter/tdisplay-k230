@@ -951,6 +951,13 @@ DATA d30c3336ada6dc56522cc42a7e3015a87fd37c9d6a4e5eca1bb9d82334d23fd9  docs/evid
 DATA 2e6790919b0d6dbe9e3469b042b0eea0ff38c84ce066ffc59f44c46818869a52  docs/evidence/offline-help-injected/launch-error.png
 DATA 099d87b6928bf49f107323a8f4f71d13d0df29e6ddb409cd59ac25dbaa216721  docs/evidence/offline-help-injected/nnn-card.png
 DATA c6427f6710ccde570d29e8ec2aba99f32193e802e88cb1f460dafeb8292b7b1a  docs/evidence/offline-help-injected/nnn-running.png
+DATA 1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903  docs/evidence/offline-wifi-image/editor-card.png
+DATA 3be4d8c8a8bdc63f93ef1e56821558857bd1cf337fa11190ba8c44c396355823  docs/evidence/offline-wifi-image/editor.png
+DATA d30c3336ada6dc56522cc42a7e3015a87fd37c9d6a4e5eca1bb9d82334d23fd9  docs/evidence/offline-wifi-image/help-2.png
+DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/offline-wifi-image/help.png
+DATA 099d87b6928bf49f107323a8f4f71d13d0df29e6ddb409cd59ac25dbaa216721  docs/evidence/offline-wifi-image/nnn-card.png
+DATA 4d16393ff67ea278621808d6c769116ef7719de2a1d8f741589b2dfefb72b460  docs/evidence/offline-wifi-image/nnn.png
+DATA 717c4f4ee0c143fe7e79ec9aa43cfcd2ec4c16c5bf305a0faa8bb42c068537e5  docs/evidence/offline-wifi-image/wifi-regression.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

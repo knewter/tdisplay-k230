@@ -1,0 +1,31 @@
+
+===== > readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; systemctl is-active shell seatd firewall; k230-desktop-catalog list; for d in /sys/bus/sdio/devices/*; do cat "$d/vendor" "$d/device"; readlink "$d/driver"; done; lsmod | grep 8189; iw dev | sed -n "/Interface/p;/type/p"; iw reg get | sed -n "/country/p"; dmesg | grep -iE "regulatory.*(fail|error)|firmware.*(fail|error)"; echo READY_CHECK_DONE =====
+readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; systemctl is-active shell seatd firewall; k230-desktop-catalog list; for d in /sys/bus/sdio/devices/*; do cat "$d/vendor" "$d/device"; readlink "$d/driver"; done; lsmod | grep 8189; iw dev | sed -n "/Interface/p;/type/p"; iw reg get | sed -n "/country/p"; dmesg | grep -iE "regulatory.*(fail|error)|firmware.*(fail|er 
+ror)"; echo READY_CHECK_DONE
+
+/nix/store/viq45iggfvfci11ggy6mj8x5ka0fdfzz-nixos-system-nixos-26.11.20260919.20b1ddd
+a45402f2-4c0c-44da-bfb1-8a7df1edd77e
+active
+active
+active
+-bash: k230-desktop-catalog: command not found
+0x024c
+0xf179
+../../../../../../../../bus/sdio/drivers/rtl8189fs
+8189fs               2551808  0
+	Interface wlan1
+		type managed
+	Interface wlan0
+		type managed
+country 00: DFS-UNSET
+country 99: DFS-UNSET
+country 99: DFS-UNSET
+[    5.737837] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+READY_CHECK_DONE
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# 

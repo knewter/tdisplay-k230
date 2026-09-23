@@ -1,0 +1,10 @@
+# Selected credential-free lines from the USB flash/boot transcript.
+g_bootmod = 3, bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/viq45iggfvfci11ggy6mj8x5ka0fdfzz-nixos-system-nixos-26.11.20260919.20b1ddd/init
+[    0.000000] Linux version 6.6.36 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980
+[    0.000000] Kernel command line: console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/viq45iggfvfci11ggy6mj8x5ka0fdfzz-nixos-system-nixos-26.11.20260919.20b1ddd/init
+[    3.208335] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 594000 kbps, voc 0x17, hsfreqrange 0x87
+[ 289.047] --- Linux login prompt reached; the board is back in Linux ---
+[ 295.148] --- post-write diagnostics; write succeeded; full readback not requested ---
+/nix/store/viq45iggfvfci11ggy6mj8x5ka0fdfzz-nixos-system-nixos-26.11.20260919.20b1ddd
+[    3.208335] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 594000 kbps, voc 0x17, hsfreqrange 0x87
+[root@nixos:~]# [ 343.422] --- ums session end, status 0 ---

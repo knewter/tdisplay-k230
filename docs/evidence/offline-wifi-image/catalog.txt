@@ -1,0 +1,23 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; chmod +x /run/inject-tap.sh; evemu-describe /dev/input/event0 > /run/touch.desc; evemu-device /run/touch.desc > /run/evemu.log 2>&1 & echo $! > /run/evemu.pid; sleep 1; cat /run/evemu.log; /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog list; dmesg | grep -iE "regulatory.*(fail|error|load)|certificate" | tail -8; echo SETUP_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; chmod +x /run/inject-tap.sh; evemu-describe /dev/input/event0 > /run/touch.desc; evemu-device /run/touch.desc > /run/evemu.log 2>&1 & echo $! > /run/evemu.pid; sleep 1; cat /run/evemu.log; /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog list; dmesg | grep -iE "regulatory.*(fail|error|load)|certificate" | tail -8; echo SETUP_DONE
+
+[1] 879
+Goodix Berlin Capacitive TouchScreen: /dev/input/event1
+k230-editor.desktop	Editor	1
+foot.desktop	Foot	0
+footclient.desktop	Foot Client	0
+foot-server.desktop	Foot Server	0
+htop.desktop	Htop	1
+nnn.desktop	nnn	1
+[    5.605638] Loading compiled-in X.509 certificates
+[    5.693684] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[    5.737837] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+SETUP_DONE
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# 

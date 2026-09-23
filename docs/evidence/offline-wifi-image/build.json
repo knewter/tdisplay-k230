@@ -1,0 +1,22 @@
+{
+  "source_commit": "eb3c4b849ff146a68f8ba5893f262e5c8650093c",
+  "command": [
+    "nix",
+    "build",
+    ".#sdImage",
+    "--out-link",
+    "result-offline-wifi",
+    "--print-out-paths",
+    "--option",
+    "max-jobs",
+    "1",
+    "--option",
+    "cores",
+    "8",
+    "--option",
+    "substituters",
+    "https://cache.nixos.org"
+  ],
+  "elapsed_seconds": 185.4245298099995,
+  "exit_code": 0
+}

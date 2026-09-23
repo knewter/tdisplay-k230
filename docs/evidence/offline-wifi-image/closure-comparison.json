@@ -1,0 +1,22 @@
+{
+  "baseline": {
+    "system": "/nix/store/24h4sb1msncgbasnwl3ckdlxqf9v2g6r-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "paths": 581,
+    "nar_bytes": 1283345040
+  },
+  "offline_only": {
+    "system": "/nix/store/5k6irq1jcf129nyb8wyhkxvbrsp18pc7-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "paths": 579,
+    "nar_bytes": 1280960640
+  },
+  "offline_wifi": {
+    "system": "/nix/store/viq45iggfvfci11ggy6mj8x5ka0fdfzz-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "paths": 584,
+    "nar_bytes": 1290518944
+  },
+  "previous_daily_console": {
+    "system": "/nix/store/8ax8wxzj24p4vlyrfcx88aqnxkv3k5ik-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "paths": 577,
+    "nar_bytes": 1280517168
+  }
+}
