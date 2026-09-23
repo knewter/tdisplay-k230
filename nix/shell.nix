@@ -147,8 +147,15 @@ let
   launcherFoot = pkgs.writeShellScriptBin "foot" ''
     exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig} "$@"
   '';
+  windowCatalog = pkgs.writeShellScriptBin "k230-window-catalog" ''
+    export K230_SWAYMSG=${sway}/bin/swaymsg
+    export K230_JQ=${pkgs.jq}/bin/jq
+    exec ${pkgs.bash}/bin/bash ${./window-catalog.sh}
+  '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
+    export K230_WINDOW_CATALOG=${windowCatalog}/bin/k230-window-catalog
+    export K230_SWAYMSG=${sway}/bin/swaymsg
     # Include Nix profiles because the systemd session does not run a login shell.
     export HTOPRC="''${HTOPRC:-${monitorHtopConfig}}"
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH

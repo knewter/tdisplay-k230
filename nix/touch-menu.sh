@@ -36,8 +36,8 @@ windows_json() {
     [recurse(.nodes[]?, .floating_nodes[]?)
      | select(.type == "con" and (.app_id? != null or .pid? != null))
      | { name: ("window:" + (.id | tostring)),
-         full_text: ((.name // .app_id // "Window")[0:12]),
-         min_width: 128, align: "center", separator: false,
+         full_text: ((.name // .app_id // "Window")[0:10]),
+         min_width: 108, align: "center", separator: false,
          separator_block_width: 0 }]
     | .
   ' 2>/dev/null || printf '[]\n'
@@ -55,14 +55,15 @@ emit() {
       all_windows=$(windows_json)
       window_count=$(printf '%s\n' "$all_windows" | "$K230_JQ" 'length')
       if [ "$window_count" -eq 0 ]; then
-        printf '%s\n' '[{"name":"no-windows","full_text":"No windows","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"home","full_text":"Home","min_width":178,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":178,"align":"center","separator":false,"separator_block_width":0}],'
+        printf '%s\n' '[{"name":"no-windows","full_text":"No windows","min_width":134,"align":"center","separator":false,"separator_block_width":0},{"name":"stop-video","full_text":"Stop","min_width":134,"align":"center","separator":false,"separator_block_width":0},{"name":"home","full_text":"Home","min_width":134,"align":"center","separator":false,"separator_block_width":0},{"name":"back","full_text":"Back","min_width":134,"align":"center","separator":false,"separator_block_width":0}],'
       else
         window_offset=$((window_offset % window_count))
         "$K230_JQ" -cn --argjson windows "$all_windows" --argjson offset "$window_offset" '
           $windows[$offset:($offset + 1)] + [
-            {name: "home", full_text: "Home", min_width: 128, align: "center", separator: false, separator_block_width: 0},
-            {name: "next-windows", full_text: "Next", min_width: 128, align: "center", separator: false, separator_block_width: 0},
-            {name: "back", full_text: "Back", min_width: 128, align: "center", separator: false, separator_block_width: 0}
+            {name: "stop-video", full_text: "Stop", min_width: 108, align: "center", separator: false, separator_block_width: 0},
+            {name: "home", full_text: "Home", min_width: 108, align: "center", separator: false, separator_block_width: 0},
+            {name: "next-windows", full_text: "Next", min_width: 108, align: "center", separator: false, separator_block_width: 0},
+            {name: "back", full_text: "Back", min_width: 108, align: "center", separator: false, separator_block_width: 0}
           ]
         ' | "$K230_SED" 's/$/,/'
       fi
@@ -121,7 +122,7 @@ while IFS= read -r line; do
   # the fixed control name while accepting compact or whitespace-formatted JSON.
   name=$(printf '%s\n' "$line" | "$K230_SED" -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   case "$name" in
-    apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=apps ;;
+    apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=home ;;
     windows) "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
     keyboard) "$K230_PKILL" -RTMIN -x wvkbd-mobintl ;;
     system) page=system ;;

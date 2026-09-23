@@ -72,7 +72,7 @@ class TouchMenuTest(unittest.TestCase):
         stream, actions = self.run_menu(['{"name": "apps"}', '{"name":"back"}', '{ "name" : "system" }'])
         frames = self.frames(stream)
         self.assertEqual([block["name"] for block in frames[0]], ["apps", "windows", "keyboard", "system"])
-        self.assertEqual([block["name"] for block in frames[1]], ["terminal", "monitor", "new-terminal", "stop-video", "back"])
+        self.assertEqual([block["name"] for block in frames[1]], ["apps", "windows", "keyboard", "system"])
         self.assertEqual([block["name"] for block in frames[2]], ["apps", "windows", "keyboard", "system"])
         self.assertEqual([block["name"] for block in frames[3]], ["reboot", "poweroff", "back"])
         self.assertEqual([block["background"] for block in frames[0]], ["#2f6b4f", "#2b547c", "#6b4f2b", "#5e3d61"])
@@ -82,10 +82,18 @@ class TouchMenuTest(unittest.TestCase):
             self.assertLessEqual(sum(block["min_width"] for block in frame), 540)
             self.assertTrue(all(block["separator_block_width"] == 0 for block in frame))
 
+    def test_video_stop_and_home_keep_the_shell_controls(self):
+        stream, actions = self.run_menu(['{"name":"windows"}', '{"name":"stop-video"}', '{"name":"apps"}', '{"name":"keyboard"}', '{"name":"home"}'])
+        frames = self.frames(stream)
+        self.assertIn("video stop", actions)
+        self.assertIn("-RTMIN -x wvkbd-mobintl", actions)
+        self.assertEqual([b["name"] for b in frames[2]], ["apps", "windows", "keyboard", "system"])
+        self.assertLessEqual(sum(b["min_width"] for b in frames[1]), 540)
+
     def test_actual_windows_and_focus(self):
         stream, actions = self.run_menu(['{"name":"windows"}', '{"name":"window:42"}'])
         frames = self.frames(stream)
-        self.assertEqual([block["name"] for block in frames[1]], ["window:42", "home", "next-windows", "back"])
+        self.assertEqual([block["name"] for block in frames[1]], ["window:42", "stop-video", "home", "next-windows", "back"])
         self.assertIn('swaymsg [con_id=42] focus', actions)
 
     def test_window_paging_wraps_and_empty_windows_are_explicit(self):
@@ -97,7 +105,7 @@ class TouchMenuTest(unittest.TestCase):
         self.assertEqual(frames[4][0]["name"], "window:42")
         empty = json.dumps({"type": "root", "nodes": []})
         stream, _ = self.run_menu(['{"name":"windows"}'], empty)
-        self.assertEqual([block["name"] for block in self.frames(stream)[1]], ["no-windows", "home", "back"])
+        self.assertEqual([block["name"] for block in self.frames(stream)[1]], ["no-windows", "stop-video", "home", "back"])
 
     def test_existing_app_focus_and_missing_app_recovery(self):
         _, actions = self.run_menu(['{"name":"terminal"}'])
