@@ -19,6 +19,12 @@ def starttime(pid):
     except (OSError, ValueError, IndexError):
         return None
 
+def running(pid):
+    try:
+        text = Path(f'/proc/{pid}/stat').read_text()
+        return text.rsplit(') ', 1)[1].split()[0] != 'Z'
+    except OSError: return False
+
 
 def owned_state(data):
     if not isinstance(data, dict): return False
@@ -28,8 +34,7 @@ def owned_state(data):
     if not isinstance(data.get('child'), int) or not isinstance(data.get('child_start'), int): return False
     if data['child'] < 0 or data['child_start'] < 0: return False
     if not isinstance(data.get('uid'), int) or data['uid'] < 0: return False
-    return (data['uid'] == UID and data['controller_start'] == starttime(data['controller'])
-            and (data['child'] == 0 or data['child_start'] == starttime(data['child'])))
+    return data['uid'] == UID and running(data['controller']) and data['controller_start'] == starttime(data['controller'])
 
 
 def read_state():
@@ -192,6 +197,8 @@ class Session:
             rc, timed = self.run_once(self.mode, source)
             if self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled:
                 print('MVX decoder failed; falling back to software H.264', file=sys.stderr)
+                if os.environ.get('K230_VIDEO_TEST_FALLBACK_DELAY'):
+                    time.sleep(float(os.environ['K230_VIDEO_TEST_FALLBACK_DELAY']))
                 rc, _ = self.run_once('software', source)
             return rc
         finally:
@@ -219,7 +226,13 @@ def stop():
         current = read_state()
         if current is None or current.get('controller') != data['controller']: break
         time.sleep(.05)
-    return 0
+    remaining = read_state()
+    if remaining is None:
+        try:
+            if STATE.is_file() and not STATE.is_symlink() and STATE.stat().st_uid == UID: STATE.unlink()
+        except OSError: pass
+        return 0
+    return 1
 
 
 def main():

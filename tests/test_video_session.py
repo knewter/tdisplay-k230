@@ -132,6 +132,27 @@ class VideoSessionTest(unittest.TestCase):
                     subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
                     process.wait(timeout=5)
 
+    def test_stop_during_mvx_fallback_gap_stops_controller(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = root / "fake-mpv"
+            player.write_text("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$FAKE_ARGS\"\ncase \"$*\" in *h264_v4l2m2m*) exit 9;; *) sleep 30;; esac\n")
+            player.chmod(0o755)
+            env = self.env(root, player, FAKE_ARGS=str(root / "args"), K230_VIDEO_TEST_FALLBACK_DELAY="1")
+            process = subprocess.Popen(["bash", str(SCRIPT), "run-mvx"], env=env)
+            try:
+                for _ in range(40):
+                    if (root / "args").exists(): break
+                    time.sleep(0.03)
+                subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
+                process.wait(timeout=6)
+                self.assertEqual(len((root / "args").read_text().splitlines()), 1)
+                self.assertFalse((root / "video.pid").exists())
+            finally:
+                if process.poll() is None:
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
+                    process.wait(timeout=6)
+
     def test_player_failure_is_returned_and_state_is_clean(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
@@ -211,13 +232,14 @@ class VideoSessionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
             player = self.fake_player(root, "sleep 30\n")
+            controller = subprocess.Popen(["sleep", "10"])
             unrelated = subprocess.Popen(["sleep", "10"])
             try:
                 stat_line = pathlib.Path(f"/proc/{unrelated.pid}/stat").read_text()
                 starttime = stat_line.rsplit(") ", 1)[1].split()[19]
-                controller_start = pathlib.Path(f"/proc/{os.getpid()}/stat").read_text().rsplit(") ", 1)[1].split()[19]
+                controller_start = pathlib.Path(f"/proc/{controller.pid}/stat").read_text().rsplit(") ", 1)[1].split()[19]
                 (root / "video.pid").write_text(json.dumps({
-                    "uid": os.getuid(), "controller": os.getpid(),
+                    "uid": os.getuid(), "controller": controller.pid,
                     "controller_start": int(controller_start), "child": unrelated.pid,
                     "child_start": int(starttime) + 1}))
                 result = self.run_session(root, player, "stop")
@@ -225,6 +247,8 @@ class VideoSessionTest(unittest.TestCase):
                 self.assertIsNone(unrelated.poll())
                 self.assertFalse((root / "video.pid").exists())
             finally:
+                controller.terminate()
+                controller.wait(timeout=3)
                 unrelated.terminate()
                 unrelated.wait(timeout=3)
 
