@@ -1,74 +1,70 @@
 ## Context
 
-The physical validation passes private RGB565, premultiplied alpha, and private
-DRM dumb-buffer import. At 568x1232, GPU completion wall time is about 1.97 ms
-versus Pixman's 1.78 ms, while process CPU time is about 0.10 ms versus 1.70
-ms. Process CPU time excludes interrupt, kernel, and whole-device work, and
-the validated dma-buf was not the live compositor buffer.
+The physical probe established exact private RGB565 composition using `VG_LITE_BGR565`, one premultiplied-alpha result, and private dumb-buffer dma-buf import. The committed record at [`docs/evidence/gpu-validation/README.md`](../../../docs/evidence/gpu-validation/README.md) also records that this is not live compositor or scanout proof. Three CPU-timing rounds are committed at [`docs/evidence/gpu-validation/cpu-timing-pass.txt`](../../../docs/evidence/gpu-validation/cpu-timing-pass.txt): at 568x1232, GPU finish used about 0.10 ms process CPU versus Pixman's 1.70 ms while wall time was about 1.97 ms versus 1.78 ms. Process CPU excludes kernel, interrupt, and whole-device cost.
+
+The current shell explicitly selects Pixman in [`nix/shell.nix`](../../../nix/shell.nix) and uses Sway with wlroots 0.20. The pinned wlroots source creates the output buffer in `types/output/render.c:wlr_output_begin_render_pass`, passes it to `wlr_renderer_begin_buffer_pass`, and commits the result from `types/scene/wlr_scene.c`. Scene rendering emits rectangles and textures through `wlr_render_pass_add_rect` and `wlr_render_pass_add_texture` in that file. The renderer and render-pass vtables are unstable compiled interfaces in `include/wlr/render/interface.h`; operation options, clipping, blend, filter, color and explicit-sync fields are in `include/wlr/render/pass.h`.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Test whether the measured process-CPU reduction survives a client renderer
-  operating on a private, compositor-owned dumb buffer.
-- Define one context, one buffer owner, explicit completion, cache/fence, and
-  failure fallback boundaries.
+- Test an actual VG-Lite `wlr_renderer` backend under the existing Sway scene and DRM backend.
+- Keep exactly one DRM master and exactly one serialized VG-Lite context.
+- Make every submitted frame coherent: entirely VG-Lite or entirely Pixman, never a partial mixture.
+- Establish the narrow operation, format, synchronization and damage contract before any default change.
 
 **Non-Goals:**
 
-- A default renderer, direct live-buffer import, independent GPU clients,
-  video overlay promotion, DMA fence invention, EGL/GBM, or a performance
-  guarantee.
+- A standalone Wayland client, a second DRM master or framebuffer owner, direct scanout, EGL/GBM, video-overlay promotion, a general dma-buf texture importer, invented fence APIs, or a performance guarantee.
 
 ## Decisions
 
-### Client-side experimental renderer
+### Fork wlroots, then rebuild the experimental Sway against it
 
-The trial is a wlroots/Sway client-side renderer implementation selected by an
-explicit shell option. It retains the existing DRM backend and master owner.
-Replacing Sway's DRM ownership or exposing `/dev/vg_lite` to desktop clients is
-rejected: the pinned kernel Kconfig requires a single context/submission
-thread, and the vendor driver does not validate command-buffer physical
-addresses.
+wlroots has no runtime loadable renderer plug-in interface: the renderer and render-pass vtables are compiled interfaces. The experiment therefore needs a local fork of pinned 0.20.2, adding a VG-Lite `struct wlr_renderer_impl`, `struct wlr_texture_impl`, and `struct wlr_render_pass_impl`, plus an opt-in Sway package built against that fork. Calling a separate painter “the renderer” would not exercise the Sway scene path and is insufficient.
 
-### One private dumb-buffer dma-buf
+The default package keeps `WLR_RENDERER=pixman`. The opt-in package may select the fork's VG-Lite renderer only after host and board gates pass. It must not expose `/dev/vg_lite` to ordinary Wayland clients.
 
-The renderer creates its own RGB565 dumb buffer through the existing DRM owner,
-exports it as PRIME, CPU maps it, and imports the same fd with
-`vg_lite_map(..., VG_LITE_MAP_DMABUF, fd)`. Board evidence selected
-`VG_LITE_BGR565` for little-endian DRM/Pixman RGB565 memory. The vendor SDK
-implements dma-buf map; its allocation-export path is not used. The experiment
-does not map an existing live scanout buffer.
+### Preserve the existing wlroots DRM owner
 
-### Explicit producer/consumer boundaries
+Sway and its existing wlroots DRM backend retain DRM master, output selection, swapchain allocation, and commit ownership. For every frame, `wlr_output_begin_render_pass` supplies the destination `struct wlr_buffer`. The VG-Lite backend may obtain dma-buf attributes with `wlr_buffer_get_dmabuf` and import that specific output buffer; it does not open a card node, allocate an independent scanout buffer, modeset, or commit. It returns after `wlr_render_pass_submit`, so the existing owner continues the normal commit path.
 
-VG-Lite submission ends with `vg_lite_finish` before CPU sampling or handing
-the buffer to DRM. The implementation must identify the DRM commit completion
-mechanism available in this kernel and record it; it must not infer an implicit
-shared dma-buf fence. CPU reads/writes use the vendor cache helper already
-grounded in the C908 kernel source. Every mapped buffer is unmapped before its
-DRM handle and fd are released.
+### Record then choose one renderer for the entire pass
 
-### Narrow formats and scene
+The forked render pass records immutable copies of each `add_rect` and `add_texture` operation until `submit`. At submit it selects one path:
 
-The first scene uses opaque RGB565 rectangles and point scales, then the
-already observed premultiplied RGBA SRC_OVER operation. YU12/NV12 video,
-textures, paths, and arbitrary client buffers are excluded until separate
-format and ownership proof exists.
+1. If the target buffer and every operation meet the VG-Lite contract, execute the complete list in the one serialized VG-Lite context, finish it, and return success.
+2. Otherwise replay the complete recorded list through a paired Pixman renderer targeting the *same wlroots-provided output buffer* and return that result.
+
+No command is sent to VG-Lite before path selection. This avoids a frame where one unsupported texture, clip, or blend leaves an incomplete GPU buffer that Pixman then tries to repair. A failure after GPU work starts fails `submit`, lets wlroots discard the frame/damage ring as it already does, and forces the next frame to Pixman; it must not commit a partial buffer.
+
+### Make operation support explicit
+
+The initial VG-Lite eligibility table must be implemented and tested before a board session:
+
+| wlroots render-pass input | Initial experimental handling |
+| --- | --- |
+| Destination | Only the wlroots-provided dma-buf proved to have a DRM format / VG-Lite mapping. The board result points to DRM RGB565 memory with `VG_LITE_BGR565`; every plane, stride and modifier must be checked. |
+| `add_rect` | Opaque and premultiplied rects after exact color conversion, with the supplied clip region. Unsupported color/clip makes the whole pass Pixman. |
+| `add_texture` | First establish `wlr_texture_from_buffer` and exact `WL_SHM` XRGB/ARGB mapping. Conversion/upload into a VG-Lite source allocation is permitted only after samples prove it. Arbitrary dma-buf textures, modifiers and YUV cause whole-pass Pixman replay. |
+| Scaling / transform | Nearest scale only after source/destination and bounds tests. Bilinear, non-identity output transforms and unsupported source boxes cause replay. |
+| Blend | Only observed premultiplied `SRC_OVER` and `NONE`, once matched to wlroots' premultiplied `wlr_render_color` contract. Any mismatch causes replay. |
+| Clip / damage | Translate every pixman clip only after region tests. Until then, any nontrivial clip or partial damage makes the entire pass Pixman. Full-frame GPU redraw may be enabled only after preservation of undamaged output is proved. |
+| Color / synchronization | Transfer functions, primaries, YCbCr fields, timeline waits/signals, and unproved cache transitions cause replay. |
+
+The table reflects fields actually carried by `wlr_render_texture_options` and `wlr_render_rect_options`, not a claimed VG-Lite feature set. `types/scene/wlr_scene.c` supplies damage-driven background and scene operations, so treating damage as ignorable would be incorrect.
+
+### Completion and cache ownership
+
+The sole submission thread calls `vg_lite_finish` before a successful VG-Lite `submit`. The fork must prove C908 cache clean/invalidate direction for the imported target and CPU-uploaded source, and identify how wlroots/DRM consumes the buffer and whether source timeline fields can be honored. Until that proof, it uses synchronous completion and rejects operations with timeline fields rather than claiming a fence.
 
 ## Risks / Trade-offs
 
-- [Wall time is slower than Pixman] → retain Pixman; process CPU reduction
-  alone does not promote the trial.
-- [Completion/cache ambiguity corrupts output] → stop the trial and retain
-  the buffer/trace evidence; do not reuse it for live scanout.
-- [Single-context contention] → serialize one renderer thread and reject a
-  second client rather than relaxing the kernel constraint.
-- [Renderer initialization fails] → explicit Pixman fallback with no modeset.
+- Comparable or worse elapsed time → retain the normal Pixman session even if one process spends less CPU time.
+- Unsupported scene command → replay the full pass in Pixman; do not mix output from two renderers.
+- DMA-buf format, stride, modifier, completion, or cache ambiguity → reject GPU for that pass and retain Pixman.
+- Fork maintenance burden or wlroots API change → keep the feature opt-in and do not present it as upstream integration.
 
 ## Migration Plan
 
-Ship no default configuration. Build and run the experimental option only on a
-separate board trial, capture evidence, then either remove it or propose a
-default change after every promotion gate passes.
+Ship no changed default. Build the fork and experimental Sway separately, run only board-coordinated trials, retain per-pass fallback logs and evidence, then either remove the experiment or open a separate default-change proposal after all readiness gates pass.
