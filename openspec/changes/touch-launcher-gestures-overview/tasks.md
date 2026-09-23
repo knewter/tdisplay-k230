@@ -1,25 +1,25 @@
 ## 1. Gesture state machine
 
-- [ ] 1.1 Add pure launcher gesture-state tests for 48-pixel threshold, horizontal 1.25 dominance, tap retention below threshold, and one-action-per-release behavior; verify with `python3 tests/test_launcher_navigation.py` or a focused gesture test.
-- [ ] 1.2 Implement single-touch tracking for threshold crossing, direction classification, multi-touch rejection, and compositor cancellation without changing existing tap actions; verify short taps, diagonal motion, and cancelled touches through the focused state tests.
+- [x] 1.1 Add pure launcher gesture-state tests for 48-pixel threshold, horizontal 1.25 dominance, tap retention below threshold, and one-action-per-release behavior; verify with `python3 tests/test_launcher_navigation.py` or a focused gesture test.
+- [x] 1.2 Implement single-touch tracking for threshold crossing, direction classification, multi-touch rejection, and compositor cancellation without changing existing tap actions; verify short taps, diagonal motion, and cancelled touches through the focused state tests.
 - [ ] 1.3 Add horizontal page transitions capped at 200 ms with immediate settle fallback; verify no missed/duplicate page changes across 20 injected left and right swipes and no card launch after a classified swipe.
 
 ## 2. Metadata window overview
 
-- [ ] 2.1 Add an overview mode reached by an upward classified gesture and exited by Back or a downward classified gesture; verify mode transitions and keyboard-non-interactive layer-shell behavior with launcher tests.
+- [x] 2.1 Add an overview mode reached by an upward classified gesture and exited by Back or a downward classified gesture; verify mode transitions and keyboard-non-interactive layer-shell behavior with launcher tests.
 - [ ] 2.2 Read current Sway window metadata into title/app-id/state cards without thumbnails or screencopy; verify cards render for multiple windows and an empty state remains usable using a deterministic IPC fixture.
 - [ ] 2.3 Revalidate a selected window identifier before focusing it and handle stale/closed windows without exiting; verify stale selection, empty overview, and successful focus paths through the fixture test.
 
 ## 3. Preserve shell controls
 
-- [ ] 3.1 Keep Previous, Next, Back, Apps, Windows/Home, Keyboard, Help, Terminal, Monitor, and System actions available across launcher and overview transitions; verify `python3 tests/test_touch_menu.py` and existing launcher/catalog tests pass.
+- [x] 3.1 Keep Previous, Next, Back, Apps, Windows/Home, Keyboard, Help, Terminal, Monitor, and System actions available across launcher and overview transitions; verify `python3 tests/test_touch_menu.py` and existing launcher/catalog tests pass.
 - [ ] 3.2 Ensure the launcher releases or closes before focusing a selected window and does not steal the terminal keyboard path; verify a scripted Sway-tree fixture shows focus/return without duplicate terminal or monitor processes.
 - [ ] 3.3 Record a rollback switch or safe failure path that disables gestures/overview while preserving tap and button navigation; verify a forced render/input failure returns to usable Apps and Back state.
 
 ## 4. Rendering and resource checks
 
 - [ ] 4.1 Measure launcher/overview transition update time and memory at 568x1232 RGB565/Pixman, including keyboard-visible and multiple-card states; verify median, p95, buffer count, and limitations are recorded in `docs/evidence/`.
-- [ ] 4.2 Keep the implementation client-only with no Sway/wlroots, GPU, VGLite, or screencopy dependency; verify the package diff and `nix build .#touch-launcher` show only the intended userspace closure.
+- [x] 4.2 Keep the implementation client-only with no Sway/wlroots, GPU, VGLite, or screencopy dependency; verify the package diff and `nix build .#touch-launcher` show only the intended userspace closure.
 
 ## 5. Board validation
 
@@ -29,5 +29,5 @@
 
 ## 6. Review and integration
 
-- [ ] 6.1 Run `openspec validate touch-launcher-gestures-overview --strict` and verify every new requirement has evidence or an explicit `UNVERIFIED` marker.
+- [x] 6.1 Run `openspec validate touch-launcher-gestures-overview --strict` and verify every new requirement has evidence or an explicit `UNVERIFIED` marker.
 - [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify any evidence images/video have provenance, hashes, and DATA inventory rows.

@@ -67,5 +67,52 @@ int main(void) {
             subprocess.run([str(path / "test")], check=True)
 
 
+class GesturesAndOverview(unittest.TestCase):
+    def test_threshold_dominance_cancellation_and_overview_bounds(self):
+        source = r'''
+#include <assert.h>
+#include "gesture.h"
+#include "overview.h"
+int main(void) {
+  struct launcher_gesture g={.id=-1};
+  gesture_begin(&g, 7, 100, 100);
+  gesture_motion(&g, 7, 147, 100); assert(g.direction==GESTURE_NONE);
+  assert(gesture_release(&g,7)==GESTURE_NONE);
+  gesture_begin(&g, 7, 100, 100); gesture_motion(&g,7,160,120);
+  assert(gesture_release(&g,7)==GESTURE_RIGHT);
+  gesture_begin(&g, 7, 100, 100); gesture_motion(&g,7,40,80);
+  assert(gesture_release(&g,7)==GESTURE_LEFT);
+  gesture_begin(&g, 7, 100, 100); gesture_motion(&g,7,130,160);
+  assert(gesture_release(&g,7)==GESTURE_DOWN);
+  gesture_begin(&g, 7, 100, 100); gesture_motion(&g,7,145,145);
+  assert(gesture_release(&g,7)==GESTURE_CANCELLED);
+  gesture_begin(&g, 7, 100, 100); gesture_reject(&g);
+  assert(gesture_release(&g,7)==GESTURE_CANCELLED);
+  /* A release consumes the gesture, so it cannot perform a second action. */
+  assert(gesture_release(&g,7)==GESTURE_CANCELLED);
+  gesture_begin(&g, 7, 100, 100);
+  /* A competing contact rejects the original tracked gesture. */
+  gesture_reject(&g);
+  assert(gesture_release(&g,7)==GESTURE_CANCELLED);
+  struct launcher_overview o={.page_size=3};
+  overview_open(&o); assert(o.open && o.page==0 && overview_pages(&o,0)==1);
+  overview_page(&o,1,0); assert(o.page==0);
+  overview_page(&o,1,7); assert(o.page==1);
+  overview_page(&o,9,7); assert(o.page==1);
+  overview_page(&o,1,7); assert(o.page==2);
+  overview_page(&o,-9,7); assert(o.page==2);
+  overview_close(&o); assert(!o.open && o.page==0);
+  return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)
+            (path / "gesture.c").write_text(source)
+            subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                            "-I", str(ROOT / "nix/touch-launcher"),
+                            str(path / "gesture.c"), "-o", str(path / "test")], check=True)
+            subprocess.run([str(path / "test")], check=True)
+
+
 if __name__ == "__main__":
     unittest.main()
