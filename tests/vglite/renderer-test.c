@@ -42,6 +42,7 @@ struct test_buffer {
 };
 static struct test_buffer *mapped;
 static int gpu_init_calls, gpu_commands, gpu_finishes, gpu_frees, gpu_closes, pixman_passes;
+static bool fail_close;
 static int fail_init, fail_map, fail_allocate, fail_command, fail_finish;
 struct command { vg_lite_buffer_t *source; vg_lite_rectangle_t rect; vg_lite_matrix_t matrix; uint32_t color; };
 static struct command queue[128];
@@ -136,13 +137,13 @@ struct wlr_render_pass *wlr_renderer_begin_buffer_pass(struct wlr_renderer *r, s
 	if (r->WLR_PRIVATE.impl == &renderer_impl) return begin(r, b, o);
 	pixman_passes++; return &begin_pixman_render_pass(&((struct test_buffer *)b)->pixman)->base;
 }
-vg_lite_error_t vg_lite_init(vg_lite_int32_t w, vg_lite_int32_t h) { assert(w>0 && h>0); gpu_init_calls++; return fail_init ? VG_LITE_GENERIC_IO : VG_LITE_SUCCESS; }
+vg_lite_error_t vg_lite_init(vg_lite_int32_t w, vg_lite_int32_t h) { assert(w==0 && h==0); gpu_init_calls++; return fail_init ? VG_LITE_GENERIC_IO : VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_map(vg_lite_buffer_t *b, vg_lite_map_flag_t f, vg_lite_int32_t fd) {
 	assert(f == VG_LITE_MAP_DMABUF && fd == 17 && b->memory == mapped->data); if (fail_map) return VG_LITE_GENERIC_IO;
 	b->handle = mapped; b->memory = mapped->data; return VG_LITE_SUCCESS;
 }
 vg_lite_error_t vg_lite_unmap(vg_lite_buffer_t *b) { assert(!queued && b->handle); b->handle = NULL; return VG_LITE_SUCCESS; }
-vg_lite_error_t vg_lite_close(void) { assert(!queued); gpu_closes++; return VG_LITE_SUCCESS; }
+vg_lite_error_t vg_lite_close(void) { assert(!queued); gpu_closes++; return fail_close ? VG_LITE_GENERIC_IO : VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_allocate(vg_lite_buffer_t *b) {
 	if (fail_allocate && !--fail_allocate) return VG_LITE_OUT_OF_MEMORY;
 	assert(b->format == VG_LITE_BGR565);
@@ -189,6 +190,8 @@ static void buffer_init(struct test_buffer *b, int w, int h, uint32_t format, bo
 }
 static void buffer_finish(struct test_buffer *b) { assert(!b->base.n_locks && !b->accessing); pixman_image_unref(b->pixman.image); free(b->data); }
 static void reset_gpu(void) {
+	assert(!gpu_context_ready && !gpu_quarantined && gpu_renderer_owners==0);
+	fail_close=false;
 	assert(!queued); gpu_disabled=false; broker_attempted=false; broker_calls=0; unsetenv("K230_VGLITE_BROKER"); attempt_logs=0; decision_log[0]=operation_log[0]=0; gpu_init_calls=gpu_commands=gpu_finishes=gpu_frees=gpu_closes=pixman_passes=0;
 	fail_init=fail_map=fail_allocate=fail_command=fail_finish=fail_alloc=fail_clip=0;
 	setenv("K230_VGLITE_ALLOW_UNPROVEN_CACHE","1",1);
@@ -359,7 +362,41 @@ static void completion_quarantine(void) {
 	struct wlr_render_texture_options o={.texture=t,.dst_box={0,0,8,8},.filter_mode=WLR_SCALE_FILTER_NEAREST}; add_texture(p,&o);
 	fail_finish=1; assert(!submit(p));
 	assert(gpu_disabled && b.base.n_locks==1 && b.accessing && gpu_finishes==1 && !gpu_frees && !gpu_closes && !pixman_passes && queued==2);
+	wlr_texture_destroy(t); wlr_renderer_destroy(r);
+	assert(gpu_renderer_owners==0 && gpu_context_ready && gpu_quarantined && !gpu_closes && !gpu_frees && queued==2);
 	/* Child exits without reclaiming resources the GPU might still own. */
+}
+static void context_frame(struct wlr_renderer *r, int size, bool blue) {
+	struct test_buffer output,reference;
+	buffer_init(&output,size,size,DRM_FORMAT_RGB565,true);
+	buffer_init(&reference,size,size,DRM_FORMAT_RGB565,true);
+	struct wlr_render_pass *p=begin(r,&output.base,NULL);
+	struct vglite_renderer *vr=(struct vglite_renderer *)r;
+	struct wlr_render_pass *q=wlr_renderer_begin_buffer_pass(vr->pixman,&reference.base,NULL);
+	struct wlr_render_rect_options rect={.color={.r=blue?0:1,.b=blue?1:0,.a=1}};
+	add_rect(p,&rect); wlr_render_pass_add_rect(q,&rect);
+	assert(submit(p) && wlr_render_pass_submit(q)); assert_same(&output,&reference);
+	buffer_finish(&output); buffer_finish(&reference);
+}
+static void context_lifetime(void) {
+	reset_gpu(); struct wlr_renderer *a=wlr_vglite_renderer_create(), *b=wlr_vglite_renderer_create();
+	assert(gpu_renderer_owners==2);
+	for(int i=0;i<4;i++) {
+		context_frame(i%2?a:b,8+i*4,i%2);
+		assert(gpu_init_calls==1 && gpu_finishes==i+1 && !gpu_closes);
+	}
+	wlr_renderer_destroy(a); assert(gpu_renderer_owners==1 && !gpu_closes);
+	context_frame(b,12,true); assert(gpu_init_calls==1);
+	wlr_renderer_destroy(b); assert(!gpu_renderer_owners && !gpu_context_ready && gpu_closes==1);
+	a=wlr_vglite_renderer_create(); context_frame(a,8,false);
+	assert(gpu_init_calls==2); wlr_renderer_destroy(a); assert(gpu_closes==2);
+}
+static void context_close_failure(void) {
+	reset_gpu(); struct wlr_renderer *r=wlr_vglite_renderer_create(); context_frame(r,8,false);
+	fail_close=true; wlr_renderer_destroy(r);
+	assert(gpu_disabled && gpu_quarantined && gpu_context_ready && gpu_closes==1);
+	r=wlr_vglite_renderer_create(); context_frame(r,8,true); wlr_renderer_destroy(r);
+	assert(gpu_init_calls==1 && gpu_closes==1 && !gpu_renderer_owners);
 }
 static void clipped_scene(int kind) {
 	reset_gpu(); struct test_buffer a,b,src;
@@ -516,6 +553,10 @@ static void denied_broker(void) {
 }
 int main(void) {
 	unsetenv("K230_VGLITE_PROFILE");
+	context_lifetime();
+	pid_t close_child=fork(); assert(close_child>=0);
+	if(!close_child) { context_close_failure(); _exit(0); }
+	int close_status; assert(waitpid(close_child,&close_status,0)==close_child && WIFEXITED(close_status) && WEXITSTATUS(close_status)==0);
 	profile_reporting();
 	for(int i=0;i<7;i++) clipped_scene(i);
 	pid_t clipped_child=fork(); assert(clipped_child>=0);
