@@ -116,6 +116,13 @@
 
         xuantie-kernel = self.k230Kernel.kernel;
 
+        # The RTL8189FTV SDIO module is intentionally exposed separately:
+        # building it verifies kernel API compatibility but does not claim a
+        # physical board has bound it or can use Wi-Fi.
+        k230-wifi-driver = pkgsCross.callPackage ./nix/k230-wifi-driver.nix {
+          kernel = self.k230Kernel.kernel;
+        };
+
         # The board device tree, compiled WITHOUT the kernel, so that
         # iterating on the panel's DCS init sequence costs seconds instead
         # of a 20 minute cross-compile. See nix/device-tree.nix.

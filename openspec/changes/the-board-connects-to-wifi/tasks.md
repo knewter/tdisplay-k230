@@ -1,8 +1,8 @@
 ## 1. Audit the missing radio path
 
-- [ ] 1.1 Compare the physical SDIO function in `docs/evidence/wifi-preflight.txt` with the exact 6.6.36 kernel source, configuration, loaded-module set, and the vendor RTL8189ES source; record the selected driver, compatible-ID support, license, immutable source revision, kernel API compatibility, and firmware requirement. Verify the audit cites each source and does not claim a bound board driver.
+- [x] 1.1 Compare the physical SDIO function in `docs/evidence/wifi-preflight.txt` with the exact 6.6.36 kernel source, configuration, loaded-module set, and the vendor RTL8189ES source; record the selected driver, compatible-ID support, license, immutable source revision, kernel API compatibility, and firmware requirement. Verify the audit cites each source and does not claim a bound board driver.
 - [ ] 1.2 Confirm whether the already-enumerated SDIO function needs an additional device-tree power control only after the driver audit; verify the conclusion against the board DTS and a credential-free board boot log rather than changing GPIOs by assumption.
-- [ ] 1.3 Expose a named, pinned `k230-wifi-driver` derivation for the audited driver and verify it with the narrow `nix build .#k230-wifi-driver`; coordinate any later system-image build separately, because a successful module build is not radio proof.
+- [x] 1.3 Expose a named, pinned `k230-wifi-driver` derivation for the audited driver and verify it with the narrow `nix build .#k230-wifi-driver`; coordinate any later system-image build separately, because a successful module build is not radio proof.
 
 ## 2. Make diagnosis and one-off association available
 
