@@ -1,0 +1,271 @@
+{
+  "status": "PASS",
+  "manifest": {
+    "command": [
+      "qemu-system-riscv64",
+      "-machine",
+      "virt",
+      "-m",
+      "2G",
+      "-nographic",
+      "-nic",
+      "none",
+      "-no-reboot",
+      "-kernel",
+      "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+      "-initrd",
+      "/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-03/guest.cpio.gz",
+      "-drive",
+      "file=/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-03/disk.img,format=raw,if=none,id=testdisk",
+      "-device",
+      "virtio-blk-device,drive=testdisk",
+      "-append",
+      "console=ttyS0 earlycon=sbi rdinit=/init panic=-1 k230.root_growth_guest=1"
+    ],
+    "package": "/nix/store/jap32ir5qlcrdscilbxm9p4w3k4wa8cp-k230-root-growth-guest",
+    "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "run_id": "045a68f234694c16bed39b30740d2a7d",
+    "helper_sha256": "f07ff91a1e4607b268aa5a25e6896d079e7f3422486a84cb21cb614237646b71",
+    "qemu_version": "QEMU emulator version 11.1.0"
+  },
+  "guest": {
+    "cases": [
+      {
+        "case": "growth-and-repeat",
+        "growth": {
+          "filesystem_bytes_after": 402632704,
+          "filesystem_bytes_before": 134217728,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "58dfbcef-8f3d-4919-bd05-2838754a57c5",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 262144,
+            "root_uuid": "2ce7067e-6754-4b81-a30b-84aff2994e7e",
+            "table_id": "0x075f311d"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786399,
+          "status": "grown"
+        },
+        "mutation_commands": [
+          "growpart",
+          "resize2fs",
+          "growpart",
+          "resize2fs"
+        ],
+        "protected_after": {
+          "boot_partition_sha256": "0bfee6760c0bc3c295102965f4f2c003b0cae07e8ec57a21a27143d66670c156",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "0bfee6760c0bc3c295102965f4f2c003b0cae07e8ec57a21a27143d66670c156",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "repeat": {
+          "filesystem_bytes_after": 402632704,
+          "filesystem_bytes_before": 402632704,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "58dfbcef-8f3d-4919-bd05-2838754a57c5",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 786399,
+            "root_uuid": "2ce7067e-6754-4b81-a30b-84aff2994e7e",
+            "table_id": "0x075f311d"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786399,
+          "status": "no-change"
+        },
+        "status": "PASS"
+      },
+      {
+        "case": "already-full",
+        "growth": {
+          "filesystem_bytes_after": 402653184,
+          "filesystem_bytes_before": 402653184,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "50f34708-ffc5-44d6-b30a-7b589b367f75",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 786432,
+            "root_uuid": "da83d1f0-9aa6-44ba-bfcc-e56f658f5741",
+            "table_id": "0x87b1a4d1"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786432,
+          "status": "no-change"
+        },
+        "mutation_commands": [
+          "growpart",
+          "resize2fs",
+          "growpart",
+          "resize2fs"
+        ],
+        "protected_after": {
+          "boot_partition_sha256": "34cb1ec161d52264488504dbdab0c6e2c179c733290cbba11ec71d52c9d22921",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "34cb1ec161d52264488504dbdab0c6e2c179c733290cbba11ec71d52c9d22921",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "repeat": {
+          "filesystem_bytes_after": 402653184,
+          "filesystem_bytes_before": 402653184,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "50f34708-ffc5-44d6-b30a-7b589b367f75",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 786432,
+            "root_uuid": "da83d1f0-9aa6-44ba-bfcc-e56f658f5741",
+            "table_id": "0x87b1a4d1"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786432,
+          "status": "no-change"
+        },
+        "status": "PASS"
+      },
+      {
+        "case": "wrong-label",
+        "mutation_commands": [],
+        "protected_after": {
+          "boot_partition_sha256": "f41515ceed8a51485aa46d20f7bf00cae146bd7ac73348358ace02fa7f2b9f85",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "f41515ceed8a51485aa46d20f7bf00cae146bd7ac73348358ace02fa7f2b9f85",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "refusal_or_failure": "root filesystem identity is unexpected",
+        "status": "PASS",
+        "unchanged_root_sha256": "d3362f086625481144bb789c91ecc8c9987253fc7f07c371f08831a8902d17ad"
+      },
+      {
+        "case": "later-partition",
+        "mutation_commands": [],
+        "protected_after": {
+          "boot_partition_sha256": "c44a02255630324f1186a8b5783df6f27d817dc25f3d3c7b18239d72331b155f",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "c44a02255630324f1186a8b5783df6f27d817dc25f3d3c7b18239d72331b155f",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "refusal_or_failure": "expected exactly two partitions",
+        "status": "PASS",
+        "unchanged_root_sha256": "fa5a3fe7d8114a623d12edbc1238f948f3709bb103735a8f90ac7379248e8cb5"
+      },
+      {
+        "case": "unsupported-filesystem",
+        "mutation_commands": [],
+        "protected_after": {
+          "boot_partition_sha256": "93b1e42093682fe6845f1c0030fd0595ec1f48c1566df217b7549ed288a16cb4",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "93b1e42093682fe6845f1c0030fd0595ec1f48c1566df217b7549ed288a16cb4",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "refusal_or_failure": "root filesystem identity is unexpected",
+        "status": "PASS",
+        "unchanged_root_sha256": "81cba39eadf3d6bd8a596b123e9408e2a96a5b2cb3aacba8fe0208bbd420a903"
+      },
+      {
+        "case": "partition-tool-failure",
+        "mutation_commands": [
+          "growpart"
+        ],
+        "protected_after": {
+          "boot_partition_sha256": "7d40a16021d91f3a7da279f120b730d3e60ddacbb98f6ad9643fe8f64232cab4",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "7d40a16021d91f3a7da279f120b730d3e60ddacbb98f6ad9643fe8f64232cab4",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "refusal_or_failure": "injected before growpart",
+        "status": "PASS",
+        "unchanged_root_sha256": "a1da6e5a285c48bd2cb3015a790be69d5de66332dc88b7ce893801903ca0f0be"
+      },
+      {
+        "case": "partition-only-retry",
+        "growth": {
+          "filesystem_bytes_after": 402632704,
+          "filesystem_bytes_before": 134217728,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "860808e8-04ef-47e7-b96f-e712b8649dca",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 786399,
+            "root_uuid": "afb60527-640b-4a62-8aec-1a0184845117",
+            "table_id": "0x20b6ed3d"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786399,
+          "status": "grown"
+        },
+        "injected_failure": "injected before resize2fs",
+        "mutation_commands": [
+          "growpart",
+          "resize2fs",
+          "growpart",
+          "resize2fs",
+          "growpart",
+          "resize2fs"
+        ],
+        "protected_after": {
+          "boot_partition_sha256": "ea96d0d80457f31ea62057ca51231827eac5e6b3e55ad53248237025a602ac8e",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "protected_before": {
+          "boot_partition_sha256": "ea96d0d80457f31ea62057ca51231827eac5e6b3e55ad53248237025a602ac8e",
+          "firmware_gap_sha256": "0fe1771466b2648105d8829c22102caf20931bee8a3d3247c5957ddf6865863c"
+        },
+        "repeat": {
+          "filesystem_bytes_after": 402632704,
+          "filesystem_bytes_before": 402632704,
+          "layout": {
+            "boot": "/dev/vda1",
+            "boot_uuid": "860808e8-04ef-47e7-b96f-e712b8649dca",
+            "disk": "/dev/vda",
+            "disk_bytes": 536870912,
+            "root": "/dev/vda2",
+            "root_sectors": 786399,
+            "root_uuid": "afb60527-640b-4a62-8aec-1a0184845117",
+            "table_id": "0x20b6ed3d"
+          },
+          "mutation_requested": true,
+          "root_sectors_after": 786399,
+          "status": "no-change"
+        },
+        "status": "PASS"
+      }
+    ],
+    "evidence_class": "qemu-system-disposable-ext4-disk",
+    "helper_sha256": "f07ff91a1e4607b268aa5a25e6896d079e7f3422486a84cb21cb614237646b71",
+    "kernel": "6.18.52",
+    "limits": [
+      "Mounted disposable /mnt/root-test, not production / or the boot service.",
+      "No physical K230 boot, flash, power-loss-during-write or shell proof.",
+      "Failure injection occurs before the named tool runs; retry proves the completed-partition/incomplete-filesystem boundary."
+    ],
+    "machine": "riscv64",
+    "run_id": "045a68f234694c16bed39b30740d2a7d",
+    "status": "PASS"
+  },
+  "limits": [
+    "Guest tests production helper logic against a mounted disposable filesystem.",
+    "No production boot-service integration, physical board or interrupted-write proof."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "command": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "2G",
+    "-nographic",
+    "-nic",
+    "none",
+    "-no-reboot",
+    "-kernel",
+    "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+    "-initrd",
+    "/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-03/guest.cpio.gz",
+    "-drive",
+    "file=/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-03/disk.img,format=raw,if=none,id=testdisk",
+    "-device",
+    "virtio-blk-device,drive=testdisk",
+    "-append",
+    "console=ttyS0 earlycon=sbi rdinit=/init panic=-1 k230.root_growth_guest=1"
+  ],
+  "package": "/nix/store/jap32ir5qlcrdscilbxm9p4w3k4wa8cp-k230-root-growth-guest",
+  "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+  "run_id": "045a68f234694c16bed39b30740d2a7d",
+  "helper_sha256": "f07ff91a1e4607b268aa5a25e6896d079e7f3422486a84cb21cb614237646b71",
+  "qemu_version": "QEMU emulator version 11.1.0"
+}

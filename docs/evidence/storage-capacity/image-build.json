@@ -1,0 +1,67 @@
+{
+  "evidence_class": "host-built-system-and-compact-image-inspection",
+  "finished_at_utc": "2026-09-23T20:41:59.574473+00:00",
+  "commands": [
+    [
+      "nix",
+      "build",
+      ".#nixosConfigurations.k230.config.system.build.toplevel",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8",
+      "--no-link",
+      "--print-out-paths"
+    ],
+    [
+      "nix",
+      "build",
+      ".#sdImage",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8",
+      "--no-link",
+      "--print-out-paths"
+    ]
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "image": "/nix/store/3pgkm0k1xnhblc5sbylm5k02am39xjcm-k230-sd-image.img",
+  "image_bytes": 2308960256,
+  "image_sha256": "fcbbf31b7fc2f9e2aefb622a4dd8cdd861302f3e46b9b2d9fae42a69176b84b7",
+  "partition_table": {
+    "label": "dos",
+    "id": "0xa99f0a5d",
+    "device": "/nix/store/3pgkm0k1xnhblc5sbylm5k02am39xjcm-k230-sd-image.img",
+    "unit": "sectors",
+    "sectorsize": 512,
+    "partitions": [
+      {
+        "node": "/nix/store/3pgkm0k1xnhblc5sbylm5k02am39xjcm-k230-sd-image.img1",
+        "start": 8192,
+        "size": 229376,
+        "type": "83"
+      },
+      {
+        "node": "/nix/store/3pgkm0k1xnhblc5sbylm5k02am39xjcm-k230-sd-image.img2",
+        "start": 262144,
+        "size": 4245496,
+        "type": "83"
+      }
+    ]
+  },
+  "kernel": "/nix/store/qd5d77dganzhzk1vj0kwzfy49nvc6aad-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "kernel_sha256": "ccd90d49c5257e65a1a71c2cca2f2b771046e56c5e5995de3e3f9677fd4eab75",
+  "initrd_payload_matches_system": true,
+  "uimage_header_and_payload_crc_valid": true,
+  "bootargs_select_matching_system": true,
+  "growth_package": "/nix/store/6sca423wcjlq1v9ynjpbv4ai48jf53l9-k230-root-growth",
+  "limits": [
+    "No image flash or physical first/repeat boot performed.",
+    "Image remains compact; capacity expansion requires the booted service."
+  ]
+}

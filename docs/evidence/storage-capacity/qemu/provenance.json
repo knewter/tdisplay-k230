@@ -1,0 +1,23 @@
+{
+  "command": [
+    "python3",
+    "tools/test-root-growth.py",
+    "--qemu",
+    "--package",
+    "/nix/store/jap32ir5qlcrdscilbxm9p4w3k4wa8cp-k230-root-growth-guest",
+    "--kernel",
+    "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "--output",
+    "/mnt/MediaVolume/home/jadams/k230-root-growth-qemu-03"
+  ],
+  "exit_code": 0,
+  "raw_serial_sha256": "b0c220b8cd3b942b22de4e6b9f67eb66bfd05a09204f7eb4dc5885cbea79eb1b",
+  "raw_serial_bytes": 29552,
+  "transcript_processing": "Removed ANSI presentation sequences and carriage returns; trimmed trailing whitespace.",
+  "helper_sha256": "f07ff91a1e4607b268aa5a25e6896d079e7f3422486a84cb21cb614237646b71",
+  "limits": [
+    "Guest tests production helper logic against a mounted disposable filesystem.",
+    "No production boot-service integration, physical board or interrupted-write proof."
+  ],
+  "host_verifier_sha256": "ca3d1c0e321bfe98f2cbec4f904ae5d2d25333032a3f22b3f8b069abf3fa3448"
+}
