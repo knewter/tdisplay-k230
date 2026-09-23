@@ -16,6 +16,7 @@ set -u
 : "${K230_TERMINAL_CONFIG:?K230_TERMINAL_CONFIG is required}"
 : "${K230_MONITOR_CONFIG:?K230_MONITOR_CONFIG is required}"
 : "${K230_LAUNCHER:?K230_LAUNCHER is required}"
+: "${K230_VIDEO_SESSION:=k230-video-session}"
 
 page=home
 window_offset=0
@@ -85,6 +86,10 @@ start_terminal() {
   "$K230_FOOT" --config "$K230_TERMINAL_CONFIG" >/dev/null 2>&1 &
 }
 
+stop_video() {
+  "$K230_VIDEO_SESSION" stop >/dev/null 2>&1 || true
+}
+
 present_or_start() {
   app_id="$1"
   config="$2"
@@ -117,13 +122,14 @@ while IFS= read -r line; do
   name=$(printf '%s\n' "$line" | "$K230_SED" -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   case "$name" in
     apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=home ;;
-    windows) "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
+    windows) stop_video; "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
     keyboard) "$K230_PKILL" -RTMIN -x wvkbd-mobintl ;;
     system) page=system ;;
-    terminal|home) present_or_start k230-terminal "$K230_TERMINAL_CONFIG"; page=home ;;
-    monitor) present_or_start k230-monitor "$K230_MONITOR_CONFIG"; page=home ;;
+    terminal|home) stop_video; present_or_start k230-terminal "$K230_TERMINAL_CONFIG"; page=home ;;
+    monitor) stop_video; present_or_start k230-monitor "$K230_MONITOR_CONFIG"; page=home ;;
     new-terminal) start_terminal; page=home ;;
     window:*)
+      stop_video
       con_id=${name#window:}
       case "$con_id" in
         *[!0-9]*|'') ;;
@@ -141,7 +147,7 @@ while IFS= read -r line; do
     confirm-reboot) [ "$page" = confirm-reboot ] && run_system_action reboot ;;
     confirm-poweroff) [ "$page" = confirm-poweroff ] && run_system_action poweroff ;;
     retry-system) [ "$page" = system-error ] && page=system ;;
-    back|cancel) page=home ;;
+    back|cancel) stop_video; page=home ;;
   esac
   emit
 done

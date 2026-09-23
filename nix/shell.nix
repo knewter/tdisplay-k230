@@ -70,6 +70,7 @@ let
   });
 
   wlfps = pkgs.callPackage ./wlfps { wlroots_0_20 = wlroots; };
+  videoProbe = pkgs.callPackage ./video-probe.nix { };
 
   # swaybar delivers a touch tap to a status block's click handler
   # (swaybar/input.c wl_touch_up -> process_hotspots ->
@@ -100,6 +101,26 @@ let
     exec = "${pkgs.nano}/bin/nano";
     terminal = true;
     categories = [ "Utility" "TextEditor" ];
+  };
+  # The desktop item starts the bounded session wrapper. Software 270p is the
+  # default; `k230-video-session run-mvx` opts into the measured MVX profile.
+  # A protected /run/shell/k230-video.playlist, when present, is passed by
+  # pathname so private URLs never appear in the player command line.
+  videoSession = pkgs.writeShellScriptBin "k230-video-session" ''
+    export K230_VIDEO_PLAYER=${videoProbe.player}/bin/mpv
+    export K230_VIDEO_RUNTIME_DIR=/run/shell
+    export K230_VIDEO_PID_FILE=/run/shell/k230-video.pid
+    export K230_VIDEO_LOG=/run/shell/k230-video.log
+    export K230_VIDEO_PUBLIC_URL=https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd
+    exec ${pkgs.bash}/bin/bash ${./video-session.sh} "$@"
+  '';
+  videoDesktop = pkgs.makeDesktopItem {
+    name = "k230-video";
+    desktopName = "Video";
+    comment = "Play the public network video demo";
+    exec = "${videoSession}/bin/k230-video-session run";
+    terminal = true;
+    categories = [ "AudioVideo" "Video" ];
   };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
@@ -148,6 +169,7 @@ let
     export K230_TERMINAL_CONFIG=${terminalFootConfig}
     export K230_MONITOR_CONFIG=${monitorFootConfig}
     export K230_LAUNCHER=${touchLauncher}/bin/k230-touch-launcher
+    export K230_VIDEO_SESSION=${videoSession}/bin/k230-video-session
     exec ${pkgs.bash}/bin/bash ${./touch-menu.sh}
   '';
 
@@ -472,6 +494,8 @@ in
       pkgs.nano
       pkgs.nnn
       editorDesktop
+      videoSession
+      videoDesktop
       touchLauncher
     ] ++ lib.optionals cfg.probes [
       cage
