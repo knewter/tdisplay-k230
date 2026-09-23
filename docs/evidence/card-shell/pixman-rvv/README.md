@@ -37,12 +37,13 @@ Therefore the patched Pixman would still select its fallback on this kernel.
 The previously recorded `v` in `/proc/cpuinfo` does not establish usable RVV
 through this API. Do not force RVV based on that text. The pinned Xuantie source
 checks `has_vector() && !has_xtheadvector()` in
-`arch/riscv/kernel/sys_riscv.c`; the reason for this board's absent bit still
-needs configuration/runtime investigation. No vector-enabled compositor trial,
+`arch/riscv/kernel/sys_riscv.c`; the [kernel configuration investigation](../kernel-rvv/README.md) now identifies
+a failing compiler probe and verifies the corrected configuration. A boot is
+still needed to verify the resulting capability. No vector-enabled compositor trial,
 board pixel comparison, speedup, kernel replacement or reboot is claimed.
 
-Next: identify the running kernel's vector configuration and kernel capability
-policy; only after it truthfully advertises usable RVV, compare actual Pixman
+Next: finish and boot-test the isolated kernel trial; only after it truthfully
+advertises usable RVV, compare actual Pixman
 pixels and the same instrumented card workload with RVV enabled/disabled.
 Retain scalar fallback and all existing cost/interaction gates. Card task 4.2
 and image/physical acceptance remain open.

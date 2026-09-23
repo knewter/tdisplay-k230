@@ -125,6 +125,9 @@
         inherit bootSplashImage;
         drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
+        kernel-rvv-trial = pkgsCross.callPackage ./nix/kernel-rvv-trial.nix {
+          kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
+        };
 
         # What tools/qemu-k230.sh boots: a kernel with standard RISC-V PTE
         # bits, and the whole system as a ramdisk.
