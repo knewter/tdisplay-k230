@@ -19,12 +19,13 @@
 #include "xdg-shell-client-protocol.h"
 
 enum action { ACT_TERMINAL=-1, ACT_MONITOR=-2, ACT_NEW_TERMINAL=-3,
-  ACT_BACK=-4, ACT_PREVIOUS=-5, ACT_NEXT=-6 };
+  ACT_BACK=-4, ACT_PREVIOUS=-5, ACT_NEXT=-6, ACT_HELP=-7 };
 struct button { int action, x, y, w, h; const char *label, *hint; uint32_t color; };
 static struct button buttons[8];
 static int button_count, page, page_size=4;
 static GPtrArray *apps;
 static char *launch_error;
+static bool help_page;
 static void redraw(void);
 static struct wl_display *display;
 static struct wl_compositor *compositor;
@@ -76,7 +77,8 @@ static void add_button(int action,const char *label,const char *hint,int x,int y
   buttons[button_count++]=(struct button){action,x,y,w,h,label,hint,color};
 }
 static void draw(void) {
-  int count=3+(int)apps->len;
+  if(help_page){ rect(0,0,width,height,0xff111827); text("Help",24,22,width-48,64,42,0xfff8fafc); const char *t[]={"Apps: launch tools","Keyboard: show or hide","Windows/Home: focus or recover","System: confirm actions","Terminal and Monitor","Previous/Next: more apps"}; button_count=0; int h=(height-250)/6; for(int i=0;i<6;i++) add_button(ACT_HELP,t[i],NULL,24,110+i*h,width-48,h-8,0xff243547); add_button(ACT_BACK,"Back",NULL,24,height-110,width-48,86,0xff374151); for(int i=0;i<button_count;i++){struct button*b=&buttons[i];rect(b->x,b->y,b->w,b->h,b->color);text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);} return; }
+  int count=4+(int)apps->len;
   page_size=height<900?3:4;
   int pages=(count+page_size-1)/page_size;
   if(page>=pages) page=pages-1;
@@ -96,8 +98,9 @@ static void draw(void) {
       const char *labels[]={"Terminal","Monitor","New terminal"};
       const char *hints[]={"Resume or open a terminal","Resume or open system monitor","Open another terminal"};
       add_button(-item-1,labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,0xff24495a);
+    } else if(item==3) { add_button(ACT_HELP,"Help","How to use this shell",24,top+row*(bh+gap),width-48,bh,0xff3f556b);
     } else {
-      GAppInfo *app=g_ptr_array_index(apps,item-3);
+      GAppInfo *app=g_ptr_array_index(apps,item-4);
       add_button(item-3,g_app_info_get_display_name(app),"Installed application",24,
         top+row*(bh+gap),width-48,bh,0xff243547);
     }
@@ -123,9 +126,10 @@ static int card_at(int x,int y) {
   return -1;
 }
 static void run_action(int action) {
-  if(action==ACT_BACK) { running=false; return; }
+  if(action==ACT_BACK) { if(help_page){help_page=false;redraw();}else running=false; return; }
+  if(action==ACT_HELP) { help_page=true; redraw(); return; }
   if(action==ACT_PREVIOUS || action==ACT_NEXT) {
-    int pages=(3+(int)apps->len+page_size-1)/page_size;
+    int pages=(4+(int)apps->len+page_size-1)/page_size;
     int next=page+(action==ACT_NEXT?1:-1);
     if(next>=0 && next<pages) { page=next; g_clear_pointer(&launch_error,g_free); redraw(); }
     return;
