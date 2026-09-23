@@ -54,6 +54,20 @@ The initial VG-Lite eligibility table must be implemented and tested before a bo
 
 The table reflects fields actually carried by `wlr_render_texture_options` and `wlr_render_rect_options`, not a claimed VG-Lite feature set. `types/scene/wlr_scene.c` supplies damage-driven background and scene operations, so treating damage as ignorable would be incorrect.
 
+### Bound the privileged diagnostic separately from the normal shell
+
+The vendor library directly opens `/dev/vg_lite`; the normal shell and its
+clients share one UID. Giving that UID device access would violate the client
+boundary. A separate root-owned diagnostic Sway may use the same DRM backend
+with a fixed no-exec/no-bar/no-Xwayland configuration, disabled swaybg/swaynag,
+root-private IPC and externally launched unprivileged Wayland probes. Only its
+Wayland socket is shared. Transient cgroup lifetime, a pre-armed recovery timer,
+and verified restoration of the normal shell bound the trial. It is sufficient
+only to investigate actual scene passes; it does not replace normal-session
+access or interaction requirements. The normal-service descriptor/broker design
+and physical acceptance remain open. Source analysis and the required privileged
+credential test are in `docs/research/vglite-diagnostic-access.md`.
+
 ### Completion and cache ownership
 
 The sole submission thread calls `vg_lite_finish` before a successful VG-Lite `submit`. The fork must prove C908 cache clean/invalidate direction for the imported target and CPU-uploaded source, and identify how wlroots/DRM consumes the buffer and whether source timeline fields can be honored. Until that proof, it uses synchronous completion and rejects operations with timeline fields rather than claiming a fence.

@@ -15,6 +15,8 @@ Source/host evidence: `docs/evidence/vglite-renderer-host.md`. No physical claim
 - [ ] 2.3 Implement and test premultiplied `SRC_OVER`, `NONE`, pixman clip translation, and damage behavior against pinned wlroots render-pass fields. Use Pixman for unsupported clip, transform, filter, color or partial-damage cases until proven.
 - [ ] 2.4 Serialize VG-Lite submission, call `vg_lite_finish`, prove C908 cache ownership in each CPU/GPU direction, and determine whether wlroots timeline fields can be honored. Reject timeline operations until then.
 
+- [ ] 2.5 Establish compositor-only VG-Lite device access for the normal `shell` service without exposing the vendor API to ordinary clients sharing its UID. The separate root scene diagnostic does not satisfy this gate.
+
 Host operation proof: the same sanitizer-backed renderer test above, comparing
 against the pinned wlroots Pixman pass. Physical format/cache proof remains a
 separate board gate, recorded in `docs/evidence/vglite-renderer-host.md`.
@@ -26,3 +28,5 @@ separate board gate, recorded in `docs/evidence/vglite-renderer-host.md`.
 - [ ] 3.3 Run touch, keyboard, Apps, Back/Home, Terminal, Monitor and system controls under GPU and forced-Pixman frames; capture recovery without a second DRM owner or display takeover. Hardware proof only.
 - [ ] 3.4 Record target/source formats, clip/blend/damage behavior, completion/cache behavior, fallback rate and benchmark results. Run `openspec validate the-shell-trials-vglite-composition --strict` and `./tools/blob-scan.py --no-vendor`.
 - [x] 3.5 Retain Pixman by default unless every gate passes and a separate default-change proposal is accepted; otherwise remove or keep the opt-in experiment as an explicitly unsupported diagnostic.
+
+Diagnostic access analysis and bounded harness: `docs/research/vglite-diagnostic-access.md`. Host lifecycle check: `python3 tests/vglite/test_root_trial.py`. Actual privileged credential isolation is a separate prerequisite: `python3 tests/vglite/check_root_trial_credentials.py --user shell` as root; exit 77 is not proof.
