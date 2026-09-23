@@ -660,6 +660,14 @@ DATA 7b18cca3cdb439ef572de0f46f48351f9ce4faf20aa56459893d654e987b4780  docs/evid
 DATA 7c8c6558a8bce911d9660d2afea92b64ce416d80f6340ea305ca7b1ce9558775  docs/evidence/network-video/mvx-patched-traces.tar.gz
 DATA 1abe57ed5618a0e755e972c8cba51ed3df2dc3aedfa977a31ccc96c2e4c89903  docs/evidence/launcher-gestures/preflight-apps-page-2.png
 DATA 27a6acc3f1428c79ae7345632052b46d41911ccde6f60c060e8bcd93648e445a  docs/evidence/launcher-gestures/preflight-overview.png
+DATA bb3c48a24804823a0f4b81f5313adf0bafe64aeadfa8d58d0af4643d54a28600  docs/evidence/launcher-gestures/integrated-injected/overview.png
+DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/launcher-gestures/integrated-injected/keyboard-visible.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/launcher-gestures/integrated-injected/apps-before.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/launcher-gestures/integrated-injected/after-back.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/launcher-gestures/integrated-injected/after-20-each.png
+DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/launcher-gestures/integrated-injected/keyboard-gesture.png
+DATA d40206f05d3b2f964da1f78b662c0176f67d2ab47d49ca3453f4cb5df5d694b7  docs/evidence/launcher-gestures/real-finger/gestures.mp4
+DATA 215d6123da8bf7ba7feb6a1977c88323974a6b54e07629fb594f4d83f871ab02  docs/evidence/launcher-gestures/real-finger/window-selection.jpg
 # class  sha256                                                            path
 #
 # --- this project's own tree ---------------------------------------------

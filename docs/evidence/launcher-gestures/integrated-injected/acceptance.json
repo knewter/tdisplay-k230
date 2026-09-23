@@ -1,0 +1,554 @@
+{
+  "captured_at_utc": "20260923T042726Z",
+  "interaction_provenance": "injected-touch",
+  "provenance_note": "uinput injection and native screencopy do not prove a physical finger touched the glass.",
+  "privacy_note": "Only the catalog row count is retained here; do not publish raw window titles or catalog output.",
+  "panel": {
+    "width": 568,
+    "height": 1232
+  },
+  "requested": {
+    "left_swipes": 20,
+    "right_swipes": 20,
+    "keyboard_capture": true,
+    "overview_capture": true,
+    "button_recovery_capture": true
+  },
+  "window_catalog_rows": 2,
+  "launcher_resources_before": {
+    "status": "VmHWM:\t   18176 kB\nVmRSS:\t   18176 kB",
+    "pid": "1099",
+    "smaps_rollup": "Rss:               18344 kB\nPss:                9748 kB"
+  },
+  "launcher_resources_after": {
+    "status": "VmHWM:\t   31364 kB\nVmRSS:\t   26244 kB",
+    "pid": "1099",
+    "smaps_rollup": "Rss:               26324 kB\nPss:               17252 kB"
+  },
+  "metrics_copy": "copied",
+  "steps": [
+    {
+      "step": "prepare",
+      "command": "operator opens Apps",
+      "provenance": "injected"
+    },
+    {
+      "step": "left-swipe",
+      "index": 1,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 1,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 2,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 2,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 3,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 3,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 4,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 4,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 5,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 5,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 6,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 6,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 7,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 7,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 8,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 8,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 9,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 9,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 10,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 10,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 11,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 11,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 12,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 12,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 13,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 13,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 14,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 14,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 15,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 15,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 16,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 16,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 17,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 17,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 18,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 18,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 19,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 19,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "left-swipe",
+      "index": 20,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "430",
+        "320",
+        "130",
+        "320"
+      ]
+    },
+    {
+      "step": "right-swipe",
+      "index": 20,
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "130",
+        "320",
+        "430",
+        "320"
+      ]
+    },
+    {
+      "step": "keyboard-visible",
+      "command": "pkill -USR2 -x wvkbd-mobintl"
+    },
+    {
+      "step": "keyboard-hide",
+      "command": "pkill -USR1 -x wvkbd-mobintl"
+    },
+    {
+      "step": "window-catalog",
+      "command": "/nix/store/mz995n6k6f69rv9k8ffzmc9fifpmz851-k230-window-catalog/bin/k230-window-catalog",
+      "exit_status": 0,
+      "row_count": 2
+    },
+    {
+      "step": "overview-up",
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "284",
+        "460",
+        "284",
+        "210"
+      ]
+    },
+    {
+      "step": "button-recovery-back",
+      "command": [
+        "/run/inject-tap.sh",
+        "/dev/input/event1",
+        "284",
+        "1165",
+        "284",
+        "1165"
+      ]
+    }
+  ],
+  "metrics_note": "Set K230_LAUNCHER_METRICS before launching the native client, then copy that file into this directory. The client records wall-clock render and release-to-submit intervals, process CPU since release, buffer count and observed page; none establishes scanout timing.",
+  "real_finger_gate": "Open after this injected acceptance: capture a separate focused camera trial with actual left/right/up/down gestures and a card tap."
+}

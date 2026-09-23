@@ -1,0 +1,26 @@
+{
+  "date_utc": "2026-09-23",
+  "interaction": "real-finger",
+  "operator_confirmation": "Operator replied done after the named gesture sequence. No injection was running during this take.",
+  "source_sha256": "891629bf113a3f2534cdb4635a6c1ae0d14ec6af4d07426a4d7289b45ae9fae8",
+  "source_duration_seconds": 49.533333,
+  "source": "Local camera capture; retained published excerpt below",
+  "camera": "Logitech C920 /dev/video0, MJPEG 1920x1080 at 30fps",
+  "capture_filter": "hflip,vflip,crop=1100:880:590:70",
+  "focus_absolute": 65,
+  "trim_start_seconds": 5,
+  "trim_duration_seconds": 23,
+  "encoding": "libx264 CRF23, yuv420p, faststart, no audio",
+  "installed_source": "03cbade",
+  "installed_launcher": "/nix/store/mmc9ag2dasrpp0ph3d890yq5mqcm0pcb-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1",
+  "artifacts": {
+    "window-selection.jpg": {
+      "bytes": 28240,
+      "sha256": "215d6123da8bf7ba7feb6a1977c88323974a6b54e07629fb594f4d83f871ab02"
+    },
+    "gestures.mp4": {
+      "bytes": 3806882,
+      "sha256": "d40206f05d3b2f964da1f78b662c0176f67d2ab47d49ca3453f4cb5df5d694b7"
+    }
+  }
+}

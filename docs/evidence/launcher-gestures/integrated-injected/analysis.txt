@@ -1,0 +1,6 @@
+Launcher transition metrics (CPU-side instrumentation; not scanout or presentation timing)
+records=197 settled=41 overview_settled=1
+release-to-submit wall: median=138ms p95=151ms max=163ms
+release-to-submit CPU: median=62.06ms p95=62.878ms max=69.644ms
+max_buffers=3 max_extra_bytes=5343744 release_wall_over_200ms=0
+Apps alternation: PASS: 20 left/page1 then right/page0 pairs

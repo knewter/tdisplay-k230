@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add pure launcher gesture-state tests for 48-pixel threshold, horizontal 1.25 dominance, tap retention below threshold, and one-action-per-release behavior; verify with `python3 tests/test_launcher_navigation.py` or a focused gesture test.
 - [x] 1.2 Implement single-touch tracking for threshold crossing, direction classification, multi-touch rejection, and compositor cancellation without changing existing tap actions; verify short taps, diagonal motion, and cancelled touches through the focused state tests.
-- [ ] 1.3 Add horizontal page transitions capped at 200 ms with immediate settle fallback; verify no missed/duplicate page changes across 20 injected left and right swipes and no card launch after a classified swipe.
+- [x] 1.3 Add horizontal page transitions capped at 200 ms with immediate settle fallback; verify no missed/duplicate page changes across 20 injected left and right swipes and no card launch after a classified swipe.
 
 ## 2. Metadata window overview
 
@@ -18,7 +18,7 @@
 
 ## 4. Rendering and resource checks
 
-- [ ] 4.1 Measure launcher/overview transition update time and memory at 568x1232 RGB565/Pixman, including keyboard-visible and multiple-card states; verify median, p95, buffer count, and limitations are recorded in `docs/evidence/`.
+- [x] 4.1 Measure launcher/overview transition update time and memory at 568x1232 RGB565/Pixman, including keyboard-visible and multiple-card states; verify median, p95, buffer count, and limitations are recorded in `docs/evidence/`.
 - [x] 4.2 Keep the implementation client-only with no Sway/wlroots, GPU, VGLite, or screencopy dependency; verify the package diff and `nix build .#touch-launcher` show only the intended userspace closure.
 
 ## 5. Board validation
@@ -31,3 +31,7 @@
 
 - [x] 6.1 Run `openspec validate touch-launcher-gestures-overview --strict` and verify every new requirement has evidence or an explicit `UNVERIFIED` marker.
 - [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify any evidence images/video have provenance, hashes, and DATA inventory rows.
+
+Task 1.3: `docs/evidence/launcher-gestures/integrated-injected/README.md` records the flashed-image matrix: 20 exact left/right pairs, no new application window, and all 41 settled transitions within 163 ms. This is injected input; final-glass acceptance remains open.
+
+Task 4.1: the integrated-injected evidence includes 40 keyboard-hidden Apps transitions, a two-window overview, and ten keyboard-visible transitions, with elapsed/process CPU median/p95, buffer/snapshot counters and before/after RSS/PSS. These are CPU-side measurements, not optical timing.
