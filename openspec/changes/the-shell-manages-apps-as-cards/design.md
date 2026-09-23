@@ -1,0 +1,100 @@
+## Context
+
+See `proposal.md` and the delta specs. The current shell is a Sway/Pixman
+session with a persistent touch bar, keyboard, and launcher. Its implemented
+window overview carries metadata only; it is not a live application surface.
+The physical panel is 568x1232 RGB565, and the default compositor path is CPU
+Pixman. Existing gesture timing is specific to launcher cards and cannot be
+reused as a live-composition result.
+
+This change is userspace work. It does not assign work to stage 1, the kernel,
+or the device tree. Nix owns packaging and image integration after an
+architecture decision; the shell owns its control handoff; the board owns
+acceptance of panel, touch, and live-content behavior.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Establish an implementable live-card interaction contract without reducing it
+to text metadata.
+- Keep the existing shell recoverable throughout a live-card failure or exit.
+- Make the default Pixman path a first-class acceptance path and measure it
+before selecting an optimization.
+
+**Non-Goals:**
+
+- Selecting the composition architecture here, bypassing the sibling
+`the-shell-has-a-card-composition-plan` decision.
+- Blocking early state-machine, eligibility, and recovery work on every future
+whole-shell UX successor.
+- Relying on a VGLite experiment, Mesa/GL, or an additional CPU core.
+
+## Decisions
+
+1. **Gate the composition boundary, not the whole change.** The sibling
+architecture proposal must land with a decision and evidence before code that
+captures or composes live application content is integrated. It can select a
+Wayland, compositor, or direct-display boundary, but must establish ownership,
+input/focus semantics, source availability, privacy, and failure behavior.
+State-machine tests, deck policy, and recovery contracts can proceed without
+that choice.
+
+2. **Consume the whole-shell UX audit as an interaction contract.** The
+`the-handheld-has-a-coherent-ux-plan` audit must supply its applicable visual
+and interaction findings before final card visual hierarchy, motion constants,
+and close gesture behavior are accepted. It is not a dependency on completing
+all of the audit's successor changes: the card deck remains a bounded core
+deliverable.
+
+3. **Use live content only where the selected boundary can represent it
+safely.** Eligibility is explicit. An unavailable or private surface gets a
+non-live card and recovery path; it is never replaced by another application's
+pixels. A text-only overview was rejected because it cannot meet the requested
+visual-card behavior.
+
+4. **Separate direct manipulation from decorative animation.** Finger position
+maps to the selected card while held; the deck is horizontal; release resolves
+to a card or returns to a stable deck. An upward throw requests graceful close.
+No springs, blur, thumbnail effects, or general animation framework belong in
+this change.
+
+5. **Make performance a decision gate.** The implementation declares its
+frame/update, input-to-visible-update, and additional-memory budgets before
+board acceptance. If the default Pixman implementation misses, the result is a
+recorded choice among reduced behavior, a specifically justified composition
+optimization, or rejection. An optional VGLite trial is measured separately;
+it does not change the default acceptance requirement.
+
+## Risks / Trade-offs
+
+- [The architecture cannot obtain safe live content] → retain the existing
+launcher/metadata routes and stop live-card integration until the sibling plan
+identifies an owned boundary.
+- [A protected or private application leaks pixels] → default it to a visible
+non-live state, test it explicitly, and preserve Apps/Windows/Home exit paths.
+- [The close gesture loses work] → use graceful close only, bound waiting, and
+restore the card plus recovery on refusal or failure.
+- [Pixman misses the interaction budget] → retain a stable deck rather than a
+half-transition and record the measured reduction or rejection.
+- [Injected input overstates touch usability] → label host/model, native,
+injected, and physical evidence separately; only a focused physical recording
+closes glass interaction tasks.
+
+## Migration Plan
+
+1. Land this proposal and the architecture/UX-audit proposals on master.
+2. Land host-side eligibility, deck-state, and recovery work behind the
+selected composition boundary without replacing current shell controls.
+3. Build the narrow userspace derivation, then the system/image only after its
+budget and integration checks pass.
+4. On the board, collect native, injected, and real-finger evidence separately.
+5. If the card surface fails, disable or remove only that surface and retain the
+current Apps, Windows/Home, Keyboard, System, and Help controls.
+
+## Open Questions
+
+The sibling architecture decision must resolve the composition boundary and
+which live-surface classes are available. The UX audit must resolve the
+applicable card hierarchy and motion contract. Those questions change the
+implementation route, so they are explicit gates rather than assumptions.
