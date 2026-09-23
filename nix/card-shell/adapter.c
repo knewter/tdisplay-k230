@@ -81,6 +81,20 @@ static uint64_t now_ms(void) {
 	clock_gettime(CLOCK_MONOTONIC, &t);
 	return (uint64_t)t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
+/* wlroots timestamps are monotonic milliseconds modulo 2^32. Recover the
+ * nearest epoch to dispatch without replacing device cadence with render time.
+ * Events older than half the 49.7-day wrap period are outside this contract. */
+static uint64_t event_time_ms(uint32_t time_msec) {
+	uint64_t dispatch = now_ms();
+	int64_t delta = (int64_t)time_msec - (int64_t)(uint32_t)dispatch;
+	if (delta > INT32_MAX)
+		delta -= INT64_C(4294967296);
+	else if (delta < INT32_MIN)
+		delta += INT64_C(4294967296);
+	if (delta < 0 && (uint64_t)(-delta) > dispatch)
+		return 0;
+	return delta < 0 ? dispatch - (uint64_t)(-delta) : dispatch + (uint64_t)delta;
+}
 static bool enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SHELL");
 	return s && strcmp(s, "1") == 0;
@@ -534,6 +548,11 @@ static void handle_result(struct cs_result r) {
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 	}
 	if (r.actions & CS_CLOSE) {
+		/* Gesture recognition uses device time, but give the client its full
+		 * response interval starting when we actually dispatch the close. */
+		uint64_t dispatch = now_ms(), timeout = shell.policy.config.close_timeout_ms;
+		shell.policy.close_deadline_ms = dispatch > UINT64_MAX - timeout ?
+			UINT64_MAX : dispatch + timeout;
 		struct card *c = find(r.close_id);
 		if (c && live(c->view) && c->content == CS_LIVE) {
 			view_close(c->view);
@@ -803,13 +822,13 @@ static int hit_button(double x, double y) {
 		return 4;
 	return 0;
 }
-static bool input_down(struct sway_seat *seat, int32_t id, double x, double y) {
+static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms) {
 	if (!enabled() || !shell.output || server.session_lock.lock)
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
 	if (shell.policy.blocked_until_up) {
-		struct cs_result r = cs_down(&shell.policy, id, x, y, now_ms());
+		struct cs_result r = cs_down(&shell.policy, id, x, y, event_ms);
 		handle_result(r);
 		return r.consumed;
 	}
@@ -824,7 +843,7 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y) {
 	/* A second contact belongs to the already-owned card stream regardless of
 	 * coordinates. Never forward its down then consume an unrelated up. */
 	if (shell.policy.contact || shell.policy.edge.tracking) {
-		struct cs_result r = cs_down(&shell.policy, id, x, y, now_ms());
+		struct cs_result r = cs_down(&shell.policy, id, x, y, event_ms);
 		handle_result(r);
 		return r.consumed;
 	}
@@ -863,20 +882,20 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y) {
 		return true;
 	}
 	if (shell.active) {
-		struct cs_result r = cs_down(&shell.policy, id, x, y, now_ms());
+		struct cs_result r = cs_down(&shell.policy, id, x, y, event_ms);
 		handle_result(r);
 		return r.consumed;
 	}
 	if (wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
 		seat->cursor->simulating_pointer_from_touch)
 		return false;
-	struct cs_result r = cs_edge_down(&shell.policy, id, x, y, now_ms());
+	struct cs_result r = cs_edge_down(&shell.policy, id, x, y, event_ms);
 	if (r.consumed)
 		select_seat(seat);
 	handle_result(r);
 	return r.consumed;
 }
-static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y) {
+static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms) {
 	if (!shell.initialized || !shell.output)
 		return false;
 	x -= shell.output->lx;
@@ -889,12 +908,12 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y)
 		return true;
 	}
 	struct cs_result r = shell.policy.mode == CS_NORMAL
-							 ? cs_edge_motion(&shell.policy, id, x, y, now_ms(), focus_id(seat))
-							 : cs_motion(&shell.policy, id, x, y, now_ms());
+							 ? cs_edge_motion(&shell.policy, id, x, y, event_ms, focus_id(seat))
+							 : cs_motion(&shell.policy, id, x, y, event_ms);
 	handle_result(r);
 	return r.consumed;
 }
-static bool input_up(struct sway_seat *seat, int32_t id) {
+static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
 	if (shell.button_down) {
@@ -918,7 +937,7 @@ static bool input_up(struct sway_seat *seat, int32_t id) {
 	}
 	struct cs_result r = shell.policy.mode == CS_NORMAL && !shell.policy.blocked_until_up
 							 ? cs_edge_up(&shell.policy, id)
-							 : cs_up(&shell.policy, id, now_ms());
+							 : cs_up(&shell.policy, id, event_ms);
 	handle_result(r);
 	if (!shell.active && !shell.policy.edge.tracking && shell.seat) {
 		wl_list_remove(&shell.seat_destroy.link);
@@ -938,8 +957,8 @@ bool card_shell_cancel(struct sway_seat *seat) {
 		chrome();
 	return consumed;
 }
-bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y) {
-	bool consumed = input_down(seat, id, x, y);
+bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
+	bool consumed = input_down(seat, id, x, y, event_time_ms(time_msec));
 	if (consumed)
 		shell.gesture_seq++;
 	return consumed;
@@ -953,17 +972,17 @@ static bool injected_touch(const struct wlr_touch *touch) {
 		(!strcmp(name, "K230 injected touchscreen") ||
 		 !strcmp(name, "Card shell headless fixture")));
 }
-bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y) {
+bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "motion", injected_touch(touch));
-	bool consumed = input_motion(seat, id, x, y);
+	bool consumed = input_motion(seat, id, x, y, event_time_ms(time_msec));
 	card_bench_input_end(consumed && (active || shell.active), false);
 	return consumed;
 }
-bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id) {
+bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, uint32_t time_msec) {
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "release", injected_touch(touch));
-	bool consumed = input_up(seat, id);
+	bool consumed = input_up(seat, id, event_time_ms(time_msec));
 	card_bench_input_end(consumed && (active || shell.active), shell.policy.mode != CS_DRAGGING);
 	return consumed;
 }
@@ -1002,7 +1021,7 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		if (*end || id < 0 || id > INT32_MAX)
 			return cmd_results_new(CMD_INVALID, "invalid contact");
 		shell.injecting = true;
-		accepted = card_shell_up(seat, NULL, id);
+		accepted = card_shell_up(seat, NULL, id, (uint32_t)now_ms());
 		shell.injecting = false;
 	} else if (argc == 4 && (strcmp(argv[0], "down") == 0 || strcmp(argv[0], "motion") == 0)) {
 		char *end;
@@ -1016,8 +1035,8 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		if (*end || !isfinite(y))
 			return cmd_results_new(CMD_INVALID, "invalid y");
 		shell.injecting = true;
-		accepted = strcmp(argv[0], "down") == 0 ? card_shell_down(seat, NULL, id, x, y)
-												: card_shell_motion(seat, NULL, id, x, y);
+		accepted = strcmp(argv[0], "down") == 0 ? card_shell_down(seat, NULL, id, x, y, (uint32_t)now_ms())
+												: card_shell_motion(seat, NULL, id, x, y, (uint32_t)now_ms());
 		shell.injecting = false;
 	} else
 		return cmd_results_new(

@@ -63,6 +63,17 @@ bool card_shell_test_input(struct sway_output *output, int argc, char **argv) {
 	struct timespec stamp;
 	clock_gettime(CLOCK_MONOTONIC, &stamp);
 	uint32_t now = (uint64_t)stamp.tv_sec * 1000 + stamp.tv_nsec / 1000000;
+	if ((argc == 3 && !strcmp(argv[0], "up")) ||
+		(argc == 5 && (!strcmp(argv[0], "down") || !strcmp(argv[0], "motion")))) {
+		char *end;
+		const char *text = argv[argc - 1];
+		errno = 0;
+		unsigned long long value = strtoull(text, &end, 10);
+		if (errno || !text[0] || text[0] == '-' || *end || value > UINT32_MAX)
+			return false;
+		now = value;
+		argc--;
+	}
 	if (argc == 1 && !strcmp(argv[0], "cancel")) {
 		struct wlr_touch_cancel_event event = {.touch = &touch, .time_msec = now, .touch_id = 0};
 		wl_signal_emit_mutable(&touch.events.cancel, &event);

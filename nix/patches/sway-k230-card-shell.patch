@@ -123,14 +123,14 @@
  
  void seatop_touch_motion(struct sway_seat *seat, struct wlr_touch_motion_event *event,
  		double lx, double ly) {
-+	if (card_shell_motion(seat, event->touch, event->touch_id, lx, ly)) return;
++	if (card_shell_motion(seat, event->touch, event->touch_id, lx, ly, event->time_msec)) return;
  	if (seat->seatop_impl->touch_motion) {
  		seat->seatop_impl->touch_motion(seat, event, lx, ly);
  	}
  }
  
  void seatop_touch_up(struct sway_seat *seat, struct wlr_touch_up_event *event) {
-+	if (card_shell_up(seat, event->touch, event->touch_id)) return;
++	if (card_shell_up(seat, event->touch, event->touch_id, event->time_msec)) return;
  	if (seat->seatop_impl->touch_up) {
  		seat->seatop_impl->touch_up(seat, event);
  	}
@@ -138,7 +138,7 @@
  
  void seatop_touch_down(struct sway_seat *seat, struct wlr_touch_down_event *event,
  		double lx, double ly) {
-+	if (card_shell_down(seat, event->touch, event->touch_id, lx, ly)) return;
++	if (card_shell_down(seat, event->touch, event->touch_id, lx, ly, event->time_msec)) return;
  	if (seat->seatop_impl->touch_down) {
  		seat->seatop_impl->touch_down(seat, event, lx, ly);
  	}

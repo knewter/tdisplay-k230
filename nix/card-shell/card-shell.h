@@ -13,8 +13,8 @@ void card_shell_output_disable(struct sway_output *output);
 void card_shell_prepare(struct sway_output *output);
 void card_shell_frame(struct wlr_scene_buffer *buffer);
 void card_shell_present(struct sway_output *output, bool presented);
-bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y);
-bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y);
-bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id);
+bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec);
+bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec);
+bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, uint32_t time_msec);
 bool card_shell_cancel(struct sway_seat *seat);
 #endif

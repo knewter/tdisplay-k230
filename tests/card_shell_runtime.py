@@ -35,7 +35,10 @@ def main():
     ap.add_argument('--disabled',action='store_true')
     ap.add_argument('--benchmark',action='store_true')
     ap.add_argument('--native-touch',action='store_true')
+    ap.add_argument('--delayed-touch',action='store_true',help='test source cadence independently of dispatch delay')
     args=ap.parse_args()
+    if args.delayed_touch and not args.native_touch:
+        ap.error('--delayed-touch requires --native-touch')
     runtime=args.output or Path(tempfile.mkdtemp(prefix='k230-card-headless-'))
     if args.output and runtime.exists() and any(runtime.iterdir()):
         ap.error('--output must be a new or empty directory')
@@ -138,8 +141,35 @@ def main():
         if args.benchmark:
             time.sleep(3.1);command('benchmark-stop')
         command('enter'); command('previous')
-        command('down 40 284 500');time.sleep(.03);command('motion 40 284 420');time.sleep(.03);command('motion 40 284 300');command('up 40')
-        wait_for(lambda:'message=6' in logs())
+        if args.delayed_touch:
+            # Identical geometry with independently controlled event time.
+            # Native wlroots -> cursor -> seat routing remains in use.
+            mask=(1<<32)-1
+            def stamp(value): return value & mask
+            def close_count(): return logs().count('K230_CARD_SHELL close-request')
+            for contact,slow,paused in ((38,True,False),(39,False,True)):
+                before=close_count(); base=int(time.monotonic()*1000)-3000
+                command(f'down {contact} 284 500 {stamp(base)}')
+                command(f'motion {contact} 284 420 {stamp(base+100)}')
+                final=base+(1100 if slow else 120)
+                command(f'motion {contact} 284 300 {stamp(final)}')
+                command(f'up {contact} {stamp(final+(200 if paused else 10))}')
+                time.sleep(.2)
+                assert close_count()==before, 'slow or paused source must not become a throw'
+                command('back');ipc('[app_id="k230.card.one"] focus');command('enter')
+            before=close_count();base=int(time.monotonic()*1000)-3000
+            command(f'down 40 284 500 {stamp(base)}')
+            command(f'motion 40 284 420 {stamp(base+100)}')
+            time.sleep(.45)  # dispatch says too slow; source reports a fast throw
+            command(f'motion 40 284 300 {stamp(base+120)}')
+            requested_at=time.monotonic()
+            command(f'up 40 {stamp(base+130)}')
+            wait_for(lambda:close_count()==before+1)
+            wait_for(lambda:'message=6' in logs())
+            assert time.monotonic()-requested_at>=1.3, 'timeout must start at close dispatch'
+        else:
+            command('down 40 284 500');time.sleep(.03);command('motion 40 284 420');time.sleep(.03);command('motion 40 284 300');command('up 40')
+            wait_for(lambda:'message=6' in logs())
         assert one.poll() is None
         subprocess.run(['grim',str(runtime/'close-timeout.png')],env=env,check=True)
         command('next'); command('down 41 440 1200'); command('up 41')
@@ -211,6 +241,7 @@ def main():
         before_keys=keys('k230.card.one');keyboard.press();wait_for(lambda:keys('k230.card.one')>before_keys)
         assert sway.poll() is None
         results={'evidence_class':'headless-qemu-injected-input',
+          'source_time_checks': ['slow-source-no-close','paused-source-no-close','delayed-fast-source-close','full-dispatch-timeout'] if args.delayed_touch else [],
           'passed':['horizontal-live-deck','expand-focus-keyboard','close-timeout-retains','close-exit','private-placeholder','unavailable-placeholder','live-privacy-transition','three-dynamic-views','popup-normal-fallback','topbar-restores-normal','cancel-no-up-return','multi-contact-drain','output-loss-restores','upward-throw-close','global-edge-entry','persistent-button'],
           'limits':['no physical touch or panel proof','no on-board cost acceptance']}
     finally:
