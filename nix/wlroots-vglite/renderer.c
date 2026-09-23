@@ -375,15 +375,25 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 					piece = (struct wlr_box){boxes[j].x1, boxes[j].y1, crop.width, crop.height};
 				}
 				s->width = crop.width; s->height = crop.height;
-				s->format = VG_LITE_RGBA8888;
+				/* The physical RGBA/RGBX -> RGB565 blit loses one code step
+				 * for some channels. Prequantize the immutable upload to the
+				 * target's exact Pixman SRC representation. This is valid only
+				 * for the already-admitted NONE or opaque SRC_OVER operations. */
+				s->format = VG_LITE_BGR565;
 				ok = gpu_call(p, vg_lite_allocate(s), "gpu_allocate", i);
 				if (ok) {
-					ok = s->memory && s->stride >= s->width * 4 && s->height == (int)crop.height;
+					ok = s->memory && s->stride >= s->width * 2 && s->height == (int)crop.height;
 					if (!ok) reject_gpu(p, "upload_layout", i);
 					if (ok) {
 						memset(s->memory, 0, (size_t)s->stride * s->height);
-						for (int y = 0; y < s->height; y++) memcpy((uint8_t *)s->memory + (size_t)y * s->stride,
-							op->pixels + ((size_t)y + (size_t)crop.y) * op->stride + (size_t)crop.x * 4, (size_t)s->width * 4);
+						for (int y = 0; y < s->height; y++) {
+							const uint8_t *row = op->pixels + ((size_t)y + (size_t)crop.y) * op->stride + (size_t)crop.x * 4;
+							for (int x = 0; x < s->width; x++) {
+								uint16_t rgb = ((uint16_t)(row[x * 4] >> 3) << 11) |
+									((uint16_t)(row[x * 4 + 1] >> 2) << 5) | (row[x * 4 + 2] >> 3);
+								memcpy((uint8_t *)s->memory + (size_t)y * s->stride + x * 2, &rgb, sizeof(rgb));
+							}
+						}
 					}
 				}
 				if (ok) {

@@ -141,7 +141,8 @@ vg_lite_error_t vg_lite_unmap(vg_lite_buffer_t *b) { assert(!queued && b->handle
 vg_lite_error_t vg_lite_close(void) { assert(!queued); gpu_closes++; return VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_allocate(vg_lite_buffer_t *b) {
 	if (fail_allocate && !--fail_allocate) return VG_LITE_OUT_OF_MEMORY;
-	b->stride = (b->width * 4 + 63) & ~63; b->memory = calloc(b->height, b->stride); assert(b->memory); b->handle = b->memory; return VG_LITE_SUCCESS;
+	assert(b->format == VG_LITE_BGR565);
+	b->stride = (b->width * 2 + 63) & ~63; b->memory = calloc(b->height, b->stride); assert(b->memory); b->handle = b->memory; return VG_LITE_SUCCESS;
 }
 vg_lite_error_t vg_lite_free(vg_lite_buffer_t *b) { assert(!queued); gpu_frees++; free(b->memory); b->handle = NULL; return VG_LITE_SUCCESS; }
 vg_lite_error_t vg_lite_clear(vg_lite_buffer_t *b, vg_lite_rectangle_t *r, vg_lite_color_t c) {
@@ -150,7 +151,7 @@ vg_lite_error_t vg_lite_clear(vg_lite_buffer_t *b, vg_lite_rectangle_t *r, vg_li
 	return fail_command == gpu_commands ? VG_LITE_GENERIC_IO : VG_LITE_SUCCESS;
 }
 vg_lite_error_t vg_lite_blit(vg_lite_buffer_t *d, vg_lite_buffer_t *s, vg_lite_matrix_t *m, vg_lite_blend_t blend, vg_lite_color_t c, vg_lite_filter_t f) {
-	(void)c; assert(d->format == VG_LITE_BGR565 && s->format == VG_LITE_RGBA8888);
+	(void)c; assert(d->format == VG_LITE_BGR565 && s->format == VG_LITE_BGR565);
 	assert(blend == VG_LITE_BLEND_NONE && f == VG_LITE_FILTER_POINT && queued < 128);
 	queue[queued++] = (struct command){.source=s, .matrix=*m}; gpu_commands++;
 	return fail_command == gpu_commands ? VG_LITE_GENERIC_IO : VG_LITE_SUCCESS;
@@ -164,11 +165,11 @@ vg_lite_error_t vg_lite_finish(void) {
 		if (c->source) { x=c->matrix.m[0][2]; y=c->matrix.m[1][2]; w=c->source->width*c->matrix.m[0][0]; h=c->source->height*c->matrix.m[1][1]; }
 		for (int row=0; row<h; row++) for (int col=0; col<w; col++) {
 			uint32_t v=c->color;
+			uint16_t pixel=rgb565(v&255, (v>>8)&255, (v>>16)&255);
 			if (c->source) {
 				int sx=floor((col+0.5)/c->matrix.m[0][0]), sy=floor((row+0.5)/c->matrix.m[1][1]);
-				memcpy(&v, (uint8_t *)c->source->memory+(size_t)sy*c->source->stride+sx*4, 4);
+				memcpy(&pixel, (uint8_t *)c->source->memory+(size_t)sy*c->source->stride+sx*2, 2);
 			}
-			uint16_t pixel=rgb565(v&255, (v>>8)&255, (v>>16)&255);
 			memcpy(mapped->data+(size_t)(y+row)*mapped->stride+(x+col)*2, &pixel, 2);
 		}
 	}
