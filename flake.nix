@@ -127,6 +127,10 @@
         # the system closure until its /dev/vg_lite ABI is proven on hardware.
         k230-vglite-probe = pkgsCross.callPackage ./nix/vglite-probe.nix { };
 
+        # Board-only follow-up validation. It is outside the system closure and
+        # deliberately does not provide a compositor or display-owner path.
+        k230-vglite-validation = pkgsCross.callPackage ./nix/vglite-validation.nix { };
+
         # The board device tree, compiled WITHOUT the kernel, so that
         # iterating on the panel's DCS init sequence costs seconds instead
         # of a 20 minute cross-compile. See nix/device-tree.nix.
