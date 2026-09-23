@@ -146,3 +146,97 @@ This would prove only that Linux can start a uniquely identified second hart
 after the coherency and ownership prerequisites are established. It would not
 prove RT-Smart AMP operation, display ownership, or the full vendor SDK. No
 board experiment was run for this audit.
+
+## 2026-09 evidence update and decision
+
+The primary [K230 Technical Reference Manual v0.3.1 (TRM)](https://kendryte-download.canaan-creative.com/developer/k230/HDK/K230%E7%A1%AC%E4%BB%B6%E6%96%87%E6%A1%A3/K230_Technical_Reference_Manual_V0.3.1_20241118.pdf)
+resolves part of the physical mapping which the earlier audit deliberately
+left open. Section 1.3.2 identifies CPU0 as the 800 MHz/128 KiB-L2 small core
+and CPU1 as the 1.6 GHz/256 KiB-L2 RVV big core. Section 1.4.1 says BootROM
+starts CPU0 after reset deassertion and CPU0 controls CPU1 reset deassertion.
+That establishes reset ownership, but it does **not** assign Linux hart IDs or
+describe a Linux secondary-hart release protocol.
+
+The current Linux hart reports RVV and a 256 KiB L2 while the TRM assigns both
+features to CPU1. This makes CPU1 execution a strong inference for the
+current Linux handoff. It remains an inference, not a basis to add a guessed
+`cpu@1`: the physical-core-to-hart mapping is not in the captured handoff.
+
+### What the vendor register map proves—and does not
+
+The TRM provides real CPU1 controls:
+
+- RMU is at `0x91101000`; `CPU1_RST_CTL` is offset `0x0c`. Its reset value is
+  `0x00002001`; bit 0 is `cpu1_reset_req` (one means reset). Bit 4 requests
+  an L2 flush and bits 12--13 are write-one-to-clear reset-done flags (TRM
+  section 2.1.4).
+- PWR is at `0x91103000`; CPU1 control/status are offsets `0x18`/`0x1c`
+  (TRM section 2.3.4). The CPU power-flow text requires a completed NOC
+  low-power handshake before a power transition (section 2.3.3).
+- The interrupt table lists distinct mailbox sources in both CPU0-to-CPU1 and
+  CPU1-to-CPU0 directions (TRM section 2.4).
+
+Those facts rule out a speculative register poke: a write would be an actual
+reset or power transition, and reads of the W1C-containing reset register must
+not be turned into read-modify-write operations. The TRM does not publish a
+CPU1 reset vector, physical hart ID, PLIC context mapping, ACLINT wiring, or
+an SBI HSM implementation for this device.
+
+It also does not establish the condition Linux SMP actually needs: coherent
+shared memory for page tables, spinlocks, and secondary-start data. The
+existing DT's `dma-noncoherent` property concerns DMA; it neither proves nor
+disproves CPU-to-CPU cache coherence. The TRM describes per-C908 cache control
+and an instruction-cache/data-cache snoop control, but contains no CPU0/CPU1
+coherency or shared-atomic contract. This is a blocking absence of evidence,
+not a demonstrated hardware impossibility.
+
+### Linux SMP is a different project from AMP
+
+The pinned Linux code makes the integration requirements concrete. Its
+[`cpu_ops_sbi.c`](https://github.com/ruyisdk/linux-xuantie-kernel/blob/7d4e1f444f461dbe3833bd99a4640e7b6c2cd529/arch/riscv/kernel/cpu_ops_sbi.c)
+starts a secondary with `SBI_EXT_HSM_HART_START`; its
+[`cpu.c`](https://github.com/ruyisdk/linux-xuantie-kernel/blob/7d4e1f444f461dbe3833bd99a4640e7b6c2cd529/arch/riscv/kernel/cpu.c)
+requires a valid ISA description for each DT CPU; and the K230 DTS supplies
+only one CPU interrupt controller to its PLIC and CLINT. Therefore Linux SMP
+needs a verified second hart, HSM start path, timer/IPI routes, CPU ISA/MMU and
+cache description, and coherency contract before a DT change is even useful.
+
+AMP has a different boundary: separate firmware images, mailbox notifications,
+explicitly managed shared buffers, and exclusive peripheral ownership. Canaan
+documents separate Linux little-core and RT-Smart big-core SDK images, which
+is evidence for an AMP model, not for Linux SMP. This image has neither the
+RT-Smart payload nor a Linux-side video-offload protocol, so AMP cannot yet
+improve the running video workload. A second core can help video only after a
+measured offload design exists; two cores alone do not improve a single-thread
+renderer or prove shared-memory safety.
+
+### Proposed safe next step: passive handoff audit
+
+No boot configuration, device tree, CPU online state, or MMIO register is
+changed by this proposal. The integration operator should collect the following
+from a known-good board when it is free; this investigation does not take the
+serial device.
+
+1. Preserve a cold-boot console capture containing OpenSBI platform HART
+   count, domain HART list, HSM/IPI/timer device lines, and Linux's `smp:`
+   result. This separates a firmware one-hart declaration from a Linux
+   secondary-start failure.
+2. Capture the live `cpus` DT subtree, PLIC/CLINT `interrupts-extended`,
+   `/sys/devices/system/cpu/{possible,present,online}`, and per-CPU ISA/cache
+   reports. These no-write facts identify the handoff Linux actually received.
+3. Only with the operator's established **read-only** MMIO capture method,
+   record values at `0x9110100c`, `0x91103018`, and `0x9110301c`. Do not use
+   a tool mode that writes, performs read-modify-write, clears W1C status, or
+   probes adjacent registers. These values may show reset/power state; they
+   cannot establish hart identity or coherency.
+4. Obtain a Canaan statement or shipped stage-1 source proving the CPU1
+   release sequence and vector, physical hart IDs, PLIC/ACLINT contexts, and
+   CPU-to-CPU coherency contract. An undocumented release sequence is a stop
+   condition.
+
+Only after step 4 should a separate rollback-card SMP proposal exist. It must
+first make OpenSBI enumerate and HSM-start both verified harts, then add the
+complete DT routes, then enable Linux SMP. Its acceptance criteria begin with
+two OpenSBI harts, `smp: Brought up 1 node, 2 CPUs`, timer/IPI stress, and a
+shared-memory atomic test. Video benchmarking comes after correctness, not
+before it. No board experiment was performed for this update.
