@@ -1,12 +1,12 @@
 ## 1. Decisions and interaction contract
 
 - [ ] 1.1 Land and review the composition-boundary decision from `the-shell-has-a-card-composition-plan`; record the chosen owner, live-surface eligibility, input/focus handoff, privacy behavior, and failure boundary in this change before implementing live capture or composition; verify with `openspec validate the-shell-has-a-card-composition-plan --strict` and review its committed evidence.
-- [ ] 1.2 Read the applicable findings from `the-handheld-has-a-coherent-ux-plan` and record the accepted card hierarchy, direct-manipulation behavior, and throw-close feedback in this change; verify the resulting interaction contract with `openspec validate the-handheld-has-a-coherent-ux-plan --strict`. This does not wait for all audit successor changes.
+- [ ] 1.2 After `the-handheld-has-a-coherent-ux-plan` lands, read its applicable findings and record the accepted card hierarchy, direct-manipulation behavior, and throw-close feedback in this change; verify the resulting interaction contract with `openspec validate the-handheld-has-a-coherent-ux-plan --strict`. This does not wait for all audit successor changes.
 
 ## 2. Card state and recovery model
 
 - [ ] 2.1 Implement a host-testable card-deck state model for enter, shrink, horizontal drag, release/expand, unavailable/private state, graceful-close request, refusal, timeout, and restore; verify with the proposed-to-create `python3 tests/test_card_shell_state.py`.
-- [ ] 2.2 Integrate existing Apps, Windows/Home, Keyboard, System, Help, terminal, monitor, and Back recovery routes into the model without changing their semantics; verify with the proposed-to-create `python3 tests/test_card_shell_recovery.py` plus existing `python3 tests/test_touch_menu.py`.
+- [ ] 2.2 Implement global edge-gesture entry from an arbitrary eligible running application and a persistent button entry/recovery route, while retaining Apps, Windows/Home, Keyboard, System, Help, terminal, monitor, and Back semantics; verify with the proposed-to-create `python3 tests/test_card_shell_recovery.py` plus existing `python3 tests/test_touch_menu.py`.
 
 ## 3. Selected live composition boundary
 
@@ -17,7 +17,7 @@
 ## 4. Cost decision
 
 - [ ] 4.1 Declare card interaction frame/update, input-to-visible-update, and incremental-memory budgets before acceptance; implement the proposed-to-create `tools/card-shell-benchmark.py` and verify its parser with `python3 tools/card-shell-benchmark.py --self-test`.
-- [ ] 4.2 Measure the default Pixman composition path at 568x1232 RGB565 with one and multiple eligible cards; verify on hardware with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --output docs/evidence/card-shell/pixman.json`. Record a reduced behavior, an independently measured optimization, or rejection when any declared budget is missed.
+- [ ] 4.2 Measure the default Pixman composition path at 568x1232 RGB565 with one and multiple eligible cards; verify on hardware with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --output docs/evidence/card-shell/pixman.json`. Record a reduced-refresh behavior or independently measured optimization only when every required core card interaction remains live and direct; otherwise leave this change open or request explicit authorization for a successor.
 - [ ] 4.3 If an optional VGLite path is proposed, measure it against the same workload without making it a prerequisite for Pixman acceptance; verify with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --renderer vglite --output docs/evidence/card-shell/vglite.json`.
 
 ## 5. Integration and board acceptance

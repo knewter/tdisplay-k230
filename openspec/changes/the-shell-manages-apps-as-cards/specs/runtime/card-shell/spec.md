@@ -1,9 +1,32 @@
 ## Purpose
 
 Defines a touch-first live-card surface that lets a handheld user see,
-rearrange, resume, and safely close eligible running applications.
+resume, and safely close eligible running applications.
 
 ## ADDED Requirements
+
+### Requirement: Card entry and recovery do not depend on the launcher
+
+<!-- UNVERIFIED: global entry and persistent control handoff have not been implemented or observed on the board. -->
+The card shell SHALL be enterable from an arbitrary eligible running
+application through a dedicated edge gesture. It SHALL also provide a
+persistent button route for entry or recovery, without requiring the Apps
+launcher to be open. While the card shell is active, dismissed, unavailable,
+or recovering from a close request, Apps, Windows/Home, Keyboard, System,
+Help, terminal, monitor, and Back SHALL remain usable through their existing
+shell routes.
+
+#### Scenario: A person enters cards from a running application
+
+- **WHEN** an eligible application is active and a person performs the card
+  entry edge gesture
+- **THEN** the card shell opens without first opening Apps or the launcher
+
+#### Scenario: Gesture entry is unavailable
+
+- **WHEN** card entry cannot proceed or a person chooses the persistent button
+- **THEN** the person can enter or recover from the card shell through the
+  persistent route and retain the existing shell controls
 
 ### Requirement: A person can manipulate a live application card deck
 
@@ -56,12 +79,16 @@ application state.
 The card shell SHALL record input-to-visible-update latency, frame/update cost,
 and incremental memory use at the panel's native portrait mode on the default
 Pixman path. If a declared interaction budget is missed, the implementation
-SHALL record the result and select an explicit reduced behavior, optimization,
-or rejection before it is accepted for the system.
+SHALL record the result. A reduced-refresh or optimized path is acceptable only
+when it still preserves live visual cards, finger-following, deck selection,
+tap-to-expand, and recoverable throw-close. If it cannot, the change SHALL
+remain open or move to an explicitly authorized successor; it SHALL NOT be
+archived as accepted card-shell behavior.
 
 #### Scenario: A card workload misses its declared budget
 
 - **WHEN** a measured card interaction exceeds its declared frame, input, or
   memory budget
-- **THEN** the evidence records the workload and measured result, and the
-  implementation does not present the missed budget as accepted performance
+- **THEN** the evidence records the workload and measured result, and any
+  accepted mitigation retains every required core card interaction; otherwise
+  the work remains open or moves to an explicitly authorized successor

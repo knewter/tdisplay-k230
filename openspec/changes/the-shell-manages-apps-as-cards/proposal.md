@@ -7,15 +7,16 @@ finger-following card interaction requested for the shell.
 
 ## What Changes
 
-- Add a full visual app-card surface: an eligible running application shrinks
-  into a live card, cards form a horizontal deck, follow a single finger, and a
-  tap expands the chosen card.
+- Add a full visual app-card surface entered from an eligible running
+  application: it shrinks into a live card, cards form a horizontal deck,
+  follow a single finger, and a tap expands the chosen card.
 - Let an upward throw request a graceful application close. A refusal, timeout,
   or close failure keeps or restores a usable card and exposes recovery rather
   than silently losing work.
-- Keep the persistent Apps, Windows/Home, Keyboard, System, Help, terminal,
-  monitor, and launcher routes available while the card surface is entered,
-  used, dismissed, or fails.
+- Provide an explicit global edge-gesture entry and a persistent button
+  recovery route, so card entry does not require opening Apps or the launcher.
+  Keep the existing persistent controls available while the card surface is
+  entered, used, dismissed, or fails.
 - Define explicit handling for application surfaces that cannot safely be
   presented live, including unavailable, protected, or private content.
 - Gate implementation and integration on the sibling
@@ -27,8 +28,9 @@ finger-following card interaction requested for the shell.
   requirement for the basic experience.
 
 **Non-goals:** boot work, a notification ecosystem, application search,
-multitasking policy beyond this deck, global gesture policy, and animation
-systems beyond direct shrink, drag, deck, expand, and throw-close behavior.
+multitasking policy beyond this deck, gestures beyond card entry/deck/close,
+and animation systems beyond direct shrink, drag, deck, expand, and
+throw-close behavior.
 
 ## Capabilities
 
@@ -39,8 +41,7 @@ systems beyond direct shrink, drag, deck, expand, and throw-close behavior.
 
 ### Modified Capabilities
 
-- `runtime/shell`: preserve the existing persistent controls, keyboard route,
-  launcher, and Home recovery while a card surface is active.
+None.
 
 ## Impact
 

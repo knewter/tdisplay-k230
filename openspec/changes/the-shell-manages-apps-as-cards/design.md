@@ -47,6 +47,10 @@ and close gesture behavior are accepted. It is not a dependency on completing
 all of the audit's successor changes: the card deck remains a bounded core
 deliverable.
 
+The UX audit has not yet arrived at proposal time; this is a gate on final
+card visual and motion acceptance, not a claim that its findings have been
+incorporated.
+
 3. **Use live content only where the selected boundary can represent it
 safely.** Eligibility is explicit. An unavailable or private surface gets a
 non-live card and recovery path; it is never replaced by another application's
@@ -63,8 +67,11 @@ this change.
 frame/update, input-to-visible-update, and additional-memory budgets before
 board acceptance. If the default Pixman implementation misses, the result is a
 recorded choice among reduced behavior, a specifically justified composition
-optimization, or rejection. An optional VGLite trial is measured separately;
-it does not change the default acceptance requirement.
+optimization, or rejection. Any reduction retains live visual cards, finger-following,
+deck selection, tap expand, and recoverable throw-close; otherwise the work
+stays open or becomes an explicitly authorized successor. An optional VGLite
+trial is measured separately; it does not change the default acceptance
+requirement.
 
 ## Risks / Trade-offs
 
@@ -76,7 +83,8 @@ non-live state, test it explicitly, and preserve Apps/Windows/Home exit paths.
 - [The close gesture loses work] → use graceful close only, bound waiting, and
 restore the card plus recovery on refusal or failure.
 - [Pixman misses the interaction budget] → retain a stable deck rather than a
-half-transition and record the measured reduction or rejection.
+half-transition; accept only a mitigation that keeps every core interaction,
+or leave the change open/seek authorization for a successor.
 - [Injected input overstates touch usability] → label host/model, native,
 injected, and physical evidence separately; only a focused physical recording
 closes glass interaction tasks.
