@@ -54,6 +54,24 @@ def archived_proposals(root: Path, revision: str) -> set[str]:
     return {archive_key(name) for name in names}
 
 
+def filesystem_proposals(path: Path) -> dict[str, set[str]]:
+    """Read proposal files visible in a worktree, including uncommitted ones."""
+    changes = path / "openspec" / "changes"
+    active: set[str] = set()
+    archived: set[str] = set()
+    if not changes.is_dir():
+        return {"active": active, "archived": archived}
+    for child in changes.iterdir():
+        if child.name != "archive" and (child / "proposal.md").is_file():
+            active.add(child.name)
+    archive = changes / "archive"
+    if archive.is_dir():
+        for child in archive.iterdir():
+            if (child / "proposal.md").is_file():
+                archived.add(archive_key(child.name))
+    return {"active": active, "archived": archived}
+
+
 def head(root: Path, revision: str) -> str:
     return git(root, "rev-parse", "--verify", revision).strip()
 
@@ -79,16 +97,34 @@ def worktrees(root: Path) -> list[dict[str, Any]]:
             key, _, value = line.partition(" ")
             values[key] = value
         path = Path(values["worktree"])
-        dirty = len(git(path, "status", "--porcelain=v1", "--untracked-files=all").splitlines())
         revision = values.get("HEAD", "HEAD")
         branch = values.get("branch", "(detached)").removeprefix("refs/heads/")
-        result.append({
+        item: dict[str, Any] = {
             "path": str(path),
             "branch": branch,
             "head": revision,
-            "dirty_paths": dirty,
-            "active_proposals": sorted(active_proposals(path, "HEAD")),
-        })
+            "head_active_proposals": sorted(active_proposals(root, revision)),
+            "head_archived_proposals": sorted(archived_proposals(root, revision)),
+            "available": False,
+            "dirty_paths": None,
+            "filesystem_active_proposals": [],
+            "filesystem_archived_proposals": [],
+        }
+        if not path.is_dir():
+            item["unavailable_reason"] = "worktree path is missing"
+            result.append(item)
+            continue
+        try:
+            item["dirty_paths"] = len(
+                git(path, "status", "--porcelain=v1", "--untracked-files=all").splitlines()
+            )
+            filesystem = filesystem_proposals(path)
+            item["filesystem_active_proposals"] = sorted(filesystem["active"])
+            item["filesystem_archived_proposals"] = sorted(filesystem["archived"])
+            item["available"] = True
+        except (GitError, OSError):
+            item["unavailable_reason"] = "worktree cannot be inspected"
+        result.append(item)
     return result
 
 
@@ -105,7 +141,15 @@ def snapshots(root: Path, tree: list[dict[str, Any]]) -> dict[str, list[str]]:
     found: dict[str, set[str]] = defaultdict(set)
     for label, revision in entries:
         for proposal in active_proposals(root, revision):
-            found[proposal].add(label)
+            found[proposal].add(f"{label} [active]")
+        for proposal in archived_proposals(root, revision):
+            found[proposal].add(f"{label} [archived]")
+    for item in tree:
+        label = f"worktree filesystem:{item['path']}"
+        for proposal in item["filesystem_active_proposals"]:
+            found[proposal].add(f"{label} [active]")
+        for proposal in item["filesystem_archived_proposals"]:
+            found[proposal].add(f"{label} [archived]")
     return {proposal: sorted(labels) for proposal, labels in found.items()}
 
 
@@ -115,7 +159,11 @@ def local_branches(root: Path) -> list[dict[str, Any]]:
     branches: list[dict[str, Any]] = []
     for record in records:
         name, _, upstream = record.partition("\0")
-        item: dict[str, Any] = {"branch": name, "upstream": upstream or None}
+        item: dict[str, Any] = {
+            "branch": name,
+            "upstream": upstream or None,
+            "publication_state": "upstream-known" if upstream else "no-upstream",
+        }
         if upstream:
             item["ahead"] = int(git(root, "rev-list", "--count", f"{upstream}..{name}").strip())
             item["behind"] = int(git(root, "rev-list", "--count", f"{name}..{upstream}").strip())
@@ -164,19 +212,21 @@ def print_human(data: dict[str, Any]) -> None:
     print("Worktrees:")
     for item in data["worktrees"]:
         print(f"  {item['path']}  branch={item['branch']} head={item['head'][:12]} "
-              f"dirty-paths={item['dirty_paths']} active-proposals={len(item['active_proposals'])}")
+              f"available={item['available']} dirty-paths={item['dirty_paths']} "
+              f"head-active={len(item['head_active_proposals'])} "
+              f"filesystem-active={len(item['filesystem_active_proposals'])}")
+        if not item["available"]:
+            print(f"    unavailable: {item['unavailable_reason']}")
     only = data["proposals_only_in_snapshots"]
-    print(f"Proposal IDs only in worktrees/ref snapshots: {len(only)}")
+    print(f"Proposal IDs only outside master (refs, worktree HEADs, and worktree filesystem): {len(only)}")
     for proposal, labels in sorted(only.items()):
         print(f"  {proposal}: {', '.join(labels)}")
-    print("Local branches with an upstream:")
-    any_upstream = False
+    print("Local branches:")
     for item in data["local_branches"]:
         if item["upstream"]:
-            any_upstream = True
             print(f"  {item['branch']} -> {item['upstream']} ahead={item['ahead']} behind={item['behind']}")
-    if not any_upstream:
-        print("  none")
+        else:
+            print(f"  {item['branch']} -> no upstream (publication unknown)")
 
 
 def main() -> int:
