@@ -1,0 +1,26 @@
+{
+  "capturedOn": "2026-09-22",
+  "scope": "host-side Nix evaluation; this does not prove a board bind or radio readiness",
+  "commands": [
+    "nix eval --json .#nixosConfigurations.k230.config.boot.kernelModules",
+    "nix eval --json .#nixosConfigurations.k230.config.boot.extraModulePackages",
+    "nix eval --json .#nixosConfigurations.k230.config.networking.dhcpcd.enable",
+    "nix eval --json .#nixosConfigurations.k230.config.environment.systemPackages"
+  ],
+  "results": {
+    "bootKernelModules": [
+      "8189fs",
+      "atkbd",
+      "loop"
+    ],
+    "extraModulePackages": [
+      "/nix/store/qpz5blyvb679sd9nxq2q53wmffh7l86z-k230-wifi-driver-riscv64-unknown-linux-gnu-94cc959d"
+    ],
+    "dhcpcdEnabled": true,
+    "radioToolPaths": {
+      "iw": "/nix/store/bsm73w03jszsya5794a0fvwfmm634i4x-iw-riscv64-unknown-linux-gnu-6.17",
+      "wpaSupplicantAndCli": "/nix/store/hzlrha7crjkfdvci99ip4qyd1s90vsz0-wpa_supplicant-riscv64-unknown-linux-gnu-2.11",
+      "wirelessRegdb": "/nix/store/5lxxgmy139a8b6bgynqp5f3hjvys1cz1-wireless-regdb-2026.09.03"
+    }
+  }
+}

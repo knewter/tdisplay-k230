@@ -19,30 +19,73 @@ history, a command line, source control, a Nix expression, terminal capture,
 or this file. Do not print the protected file.
 
 Before association, verify ownership and permissions, then copy it to the
-root-owned runtime filesystem. The supplicant reads only the copied `/run`
-file, so neither its command line nor its Nix closure carries the secret.
+root-owned runtime filesystem. Run this block as a root subshell. Its failure
+trap removes the copied secret and, if the launched daemon wrote its PID file,
+terminates only that PID after confirming its command line names this exact
+`/run` configuration file. It cannot target an unrelated supplicant service.
+
+The supplicant reads only the copied `/run` file, so neither its command line
+nor its Nix closure carries the secret.
 
 ```sh
-set -eu
-: "${RUNTIME_SECRET_FILE:?set RUNTIME_SECRET_FILE}"
-: "${WIFI_IFACE:?set WIFI_IFACE}"
-test "$(id -u)" -eq 0
-test "$(stat -c '%a' "$RUNTIME_SECRET_FILE")" = 600
-install -o root -g root -m 0600 "$RUNTIME_SECRET_FILE" \
-  /run/wpa-supplicant-board.conf
-wpa_supplicant -B -i "$WIFI_IFACE" -c /run/wpa-supplicant-board.conf
+(
+  set -eu
+  : "${RUNTIME_SECRET_FILE:?set RUNTIME_SECRET_FILE}"
+  : "${WIFI_IFACE:?set WIFI_IFACE}"
+  runtime_conf=/run/wpa-supplicant-board.conf
+  runtime_pid=/run/wpa-supplicant-board.pid
+
+  cleanup_failed_start() {
+    if test -r "$runtime_pid"; then
+      board_pid=$(cat "$runtime_pid")
+      case "$board_pid" in
+        *[!0-9]*|'') ;;
+        *)
+          if test -r "/proc/$board_pid/cmdline" \
+            && tr '\0' ' ' < "/proc/$board_pid/cmdline" \
+                 | grep -F -- "$runtime_conf" >/dev/null; then
+            kill "$board_pid" || true
+          fi
+          ;;
+      esac
+    fi
+    rm -f "$runtime_pid" "$runtime_conf"
+  }
+
+  trap 'cleanup_failed_start' EXIT HUP INT TERM
+  test "$(id -u)" -eq 0
+  test "$(stat -c '%a' "$RUNTIME_SECRET_FILE")" = 600
+  rm -f "$runtime_pid" "$runtime_conf"
+  install -o root -g root -m 0600 "$RUNTIME_SECRET_FILE" "$runtime_conf"
+  wpa_supplicant -B -P "$runtime_pid" -i "$WIFI_IFACE" -c "$runtime_conf"
+  trap - EXIT HUP INT TERM
+)
 ```
 
 The operator may inspect a sanitized association state with
 `wpa_cli -i "$WIFI_IFACE" status`, omitting network names and BSSIDs from any
 record. The later DHCP and routing checks use the same `WIFI_IFACE`.
 
-Stop the temporary connection and remove the copied runtime secret on failure
-or when finished:
+On explicit completion, stop only the daemon recorded in the board procedure's
+PID file. The command-line check prevents a reused PID or another
+`wpa_supplicant` service from being killed. It then removes both root-owned
+runtime files:
 
 ```sh
-wpa_cli -i "$WIFI_IFACE" terminate || true
-rm -f /run/wpa-supplicant-board.conf
+(
+  set -eu
+  runtime_conf=/run/wpa-supplicant-board.conf
+  runtime_pid=/run/wpa-supplicant-board.pid
+  test -r "$runtime_pid"
+  board_pid=$(cat "$runtime_pid")
+  case "$board_pid" in
+    *[!0-9]*|'') exit 1 ;;
+  esac
+  test -r "/proc/$board_pid/cmdline"
+  tr '\0' ' ' < "/proc/$board_pid/cmdline" | grep -F -- "$runtime_conf" >/dev/null
+  kill "$board_pid"
+  rm -f "$runtime_pid" "$runtime_conf"
+)
 ```
 
 `RUNTIME_SECRET_FILE` is operator-owned input and is not removed by this
