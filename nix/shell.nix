@@ -107,7 +107,9 @@ let
   # A protected /run/shell/k230-video.playlist, when present, is passed by
   # pathname so private URLs never appear in the player command line.
   videoSession = pkgs.writeShellScriptBin "k230-video-session" ''
+    export PATH=${pkgs.coreutils}/bin:${pkgs.util-linux}/bin:${pkgs.procps}/bin:$PATH
     export K230_VIDEO_PLAYER=${videoProbe.player}/bin/mpv
+    export K230_VIDEO_FLOCK=${pkgs.util-linux}/bin/flock
     export K230_VIDEO_RUNTIME_DIR=/run/shell
     export K230_VIDEO_PID_FILE=/run/shell/k230-video.pid
     export K230_VIDEO_LOG=/run/shell/k230-video.log
@@ -190,6 +192,10 @@ let
   swayConfig = pkgs.writeText "k230-sway.conf" ''
     output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
     input type:touch map_to_output DSI-1
+
+    # mpv's wlshm surface is explicitly floating so its profile geometry is
+    # honored by Sway on the portrait panel and remains touchable.
+    for_window [app_id="k230-video"] floating enable, resize set 568 px 320 px, move position center
 
     default_border none
     font pango:DejaVu Sans Mono 15

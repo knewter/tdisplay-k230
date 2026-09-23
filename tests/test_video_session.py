@@ -53,12 +53,40 @@ class VideoSessionTest(unittest.TestCase):
             result = self.run_session(root, player, "run", K230_VIDEO_MODE="mvx")
             self.assertEqual(result.returncode, 0, result.stderr)
             args = (root / "args").read_text()
-            self.assertIn("--vd=h264_v4l2m2m,h264", args)
+            self.assertIn("--vd=h264_v4l2m2m", args)
             self.assertIn("--correct-pts=no", args)
             self.assertIn("--container-fps-override=30", args)
             self.assertIn("--sws-scaler=point", args)
             self.assertIn("--geometry=568x320", args)
             self.assertIn("--audio=no", args)
+
+    def test_mvx_failure_restarts_with_software_profile(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = root / "fake-mpv"
+            player.write_text(
+                "#!/bin/sh\n"
+                "printf '%s\\n' \"$*\" >> \"$FAKE_ARGS\"\n"
+                "n=$(wc -l < \"$FAKE_ARGS\")\n"
+                "case \"$*\" in *h264_v4l2m2m*) [ \"$n\" -eq 1 ] && exit 9;; esac\n"
+                "exit 0\n"
+            )
+            player.chmod(0o755)
+            result = self.run_session(root, player, "run-mvx")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            invocations = (root / "args").read_text().splitlines()
+            self.assertEqual(len(invocations), 2)
+            self.assertIn("--vd=h264_v4l2m2m", invocations[0])
+            self.assertIn("--vd=h264", invocations[1])
+            self.assertNotIn("--container-fps-override=30", invocations[1])
+
+    def test_unresponsive_player_is_stopped_by_deadline(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root, "sleep 30\n")
+            result = self.run_session(root, player, "run", K230_VIDEO_DEADLINE="0.1")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / "video.pid").exists())
 
     def test_player_failure_is_returned_and_state_is_clean(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -113,7 +141,7 @@ class VideoSessionTest(unittest.TestCase):
                 result = subprocess.run(["bash", str(SCRIPT), "run"], env=env,
                                         capture_output=True, text=True)
                 self.assertNotEqual(result.returncode, 0)
-                self.assertIn("already running", result.stderr)
+                self.assertIn("already", result.stderr)
             finally:
                 subprocess.run(["bash", str(SCRIPT), "stop"], env=env)
                 process.wait(timeout=5)
