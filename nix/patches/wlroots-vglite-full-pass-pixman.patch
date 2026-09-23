@@ -1,0 +1,26 @@
+--- a/render/wlr_renderer.c
++++ b/render/wlr_renderer.c
+@@ -224,6 +224,22 @@ static struct wlr_renderer *renderer_autocreate(struct wlr_backend *backend, int drm_fd) {
+ 	const char *renderer_name = renderer_options[env_parse_switch("WLR_RENDERER", renderer_options)];
+ 	bool is_auto = strcmp(renderer_name, "auto") == 0;
+ 	struct wlr_renderer *renderer = NULL;
+ 
+ 	bool own_drm_fd = false;
++
++	/*
++	 * The K230 experiment is deliberately opt-in. This first package is a
++	 * complete-pass Pixman fallback: it exercises renderer selection and the
++	 * existing wlroots output owner without pretending that a VG-Lite context
++	 * or dma-buf import has been implemented.
++	 */
++	if (strcmp(renderer_name, "vglite") == 0) {
++		wlr_log(WLR_INFO,
++			"VG-Lite experiment selected; using full-pass Pixman fallback");
++		renderer = wlr_pixman_renderer_create();
++		if (renderer) {
++			goto out;
++		}
++		log_creation_failure(false, "Failed to create the VG-Lite experiment fallback");
++	}
+ 
+ 	if ((is_auto && WLR_HAS_GLES2_RENDERER) || strcmp(renderer_name, "gles2") == 0) {
