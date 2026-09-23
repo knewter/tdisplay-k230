@@ -35,6 +35,9 @@ class TouchMenuTest(unittest.TestCase):
                 htoprc = 'printf "HTOPRC=%s\\n" "${HTOPRC:-}" >> "$K230_TEST_LOG"\n' if name == "foot" else ""
                 path.write_text("#!/bin/sh\nprintf '%s %s\\n' \"$0\" \"$*\" >> \"$K230_TEST_LOG\"\n" + htoprc + exit_status)
                 path.chmod(0o755)
+            video = root / "video-session"
+            video.write_text("#!/bin/sh\nprintf 'video %s\\n' \"$*\" >> \"$K230_TEST_LOG\"\n")
+            video.chmod(0o755)
             swaymsg.chmod(0o755)
             env = os.environ | {
                 "K230_SWAYMSG": str(swaymsg), "K230_FOOT": str(root / "foot"),
@@ -44,6 +47,7 @@ class TouchMenuTest(unittest.TestCase):
                 "K230_TERMINAL_CONFIG": "/mock/terminal.ini",
                 "K230_MONITOR_CONFIG": "/mock/monitor.ini",
                 "K230_HTOPRC": "/mock/monitor.htoprc", "K230_LAUNCHER": str(root / "launcher"),
+                "K230_VIDEO_SESSION": str(video),
                 "K230_TEST_TREE": tree, "K230_TEST_LOG": str(log),
             }
             self.assertIsNotNone(env["K230_JQ"], "jq is required by the tested menu")
