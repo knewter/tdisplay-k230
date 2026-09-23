@@ -1,0 +1,9 @@
+{
+  "package": "/nix/store/1sc1733sagi7ifx4bxw4dz0yg3hw3amj-k230-pixman-rvv-pixel-probe-riscv64-unknown-linux-gnu-0.1",
+  "paths": [
+    "/nix/store/1sc1733sagi7ifx4bxw4dz0yg3hw3amj-k230-pixman-rvv-pixel-probe-riscv64-unknown-linux-gnu-0.1",
+    "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4"
+  ],
+  "export_bytes": 706520,
+  "export_sha256": "fd7cdeeb02542e7d34bd65dfb14cf35f4faa358b66f7b0e602bf2c047ead4e64"
+}

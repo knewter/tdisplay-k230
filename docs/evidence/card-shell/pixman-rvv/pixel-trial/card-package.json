@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "evidence_class": "host-built-optional-package",
+  "normal_package": "/nix/store/gk20p9l39pqs5xg3akgg3fxm4jc7cb5x-k230-card-shell",
+  "trial_package": "/nix/store/lgpv6h5j0d7yiwilnfamnvxrh6m4cgpm-k230-card-shell",
+  "pixman": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4",
+  "pixman_providers": 1,
+  "normal_closure_paths": 104,
+  "trial_closure_paths": 104,
+  "changed_paths": [
+    "/nix/store/6km45j4jl34byb72qgcvilg54zs55d7z-card-shell",
+    "/nix/store/9brnyamw2hcfb7yx5zajf0aqcgfsdyyv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+    "/nix/store/bjsxrl3c5b8qqmq7a9w3h2fwwl43ivsg-swaybg-riscv64-unknown-linux-gnu-1.2.2",
+    "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4",
+    "/nix/store/gag4s6adklqpvk50q400p48iahlpdijy-wlroots-riscv64-unknown-linux-gnu-0.20.2",
+    "/nix/store/hqa773svadsgsr0r8bp1m78i9s5hwd8v-pango-riscv64-unknown-linux-gnu-1.57.1",
+    "/nix/store/i0qnyilxa7kvgkpz625sk9iiaxjasv7b-gdk-pixbuf-loaders.cache",
+    "/nix/store/i26361ma28r3829b514mp4dixlmw49bh-librsvg-riscv64-unknown-linux-gnu-2.62.3",
+    "/nix/store/km0zhyn8i6wmcldgi9cvnmfzc0xhjs9k-sway-1.12",
+    "/nix/store/lgpv6h5j0d7yiwilnfamnvxrh6m4cgpm-k230-card-shell",
+    "/nix/store/qkdsc4fikybnbdqsyjj8kn0pj8h9jf32-cairo-riscv64-unknown-linux-gnu-1.18.4",
+    "/nix/store/rvpica1g4zc69l4f2g28qcvisdb2l7xd-sway"
+  ],
+  "preserved_code": {
+    "sway-unwrapped": {
+      "normal": "/nix/store/ky7xy6ngczkrc4ahmvqkwc5rjxxmxy1y-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+      "trial": "/nix/store/9brnyamw2hcfb7yx5zajf0aqcgfsdyyv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+      "text_dump_sha256": "f89de3455d422557d3523b33b9704371f6dc97a36653263e78c8684da1da9cfe",
+      "same_text": true
+    },
+    "wlroots": {
+      "normal": "/nix/store/chlwdl1dsp2zj9m0r9wjrzw5a71vigjm-wlroots-riscv64-unknown-linux-gnu-0.20.2",
+      "trial": "/nix/store/gag4s6adklqpvk50q400p48iahlpdijy-wlroots-riscv64-unknown-linux-gnu-0.20.2",
+      "text_dump_sha256": "cb8bbe14edfcb92ea4634b34a18dea9696baa9aedd47cfd7f00b1d9ef789b729",
+      "same_text": true
+    }
+  },
+  "command": [
+    "nix",
+    "build",
+    ".#card-shell-rvv",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "4",
+    "--no-link",
+    "--print-out-paths"
+  ],
+  "packaging": "Nixpkgs recursive replaceDependencies with an ABI-identical Pixman 0.46.4; references rewritten throughout dependent closure; ordinary packages remain immutable.",
+  "limits": [
+    "Host packaging proof only; card runtime/performance remains unverified.",
+    "Diagnostic closure substitution only; a default promotion requires a fully rebuilt and reviewed dependency graph."
+  ],
+  "recorded_at_utc": "2026-09-23T22:14:38.451301+00:00",
+  "qemu_user_link_smoke": {
+    "command": [
+      "/usr/bin/qemu-riscv64-static",
+      "-cpu",
+      "rv64,v=true,vlen=128,elen=64",
+      "/nix/store/9brnyamw2hcfb7yx5zajf0aqcgfsdyyv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout": "sway version 1.12\n",
+    "limit": "Loader/version check only; no compositor session or frame rendered."
+  }
+}

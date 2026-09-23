@@ -162,10 +162,24 @@
         root-growth = pkgsCross.callPackage ./nix/root-growth.nix { };
         root-growth-guest = pkgsCross.callPackage ./nix/root-growth-guest.nix { };
         pixman-rvv = pkgsCross.callPackage ./nix/pixman-rvv.nix { };
+        pixman-rvv-pixel-probe = pkgsCross.callPackage ./nix/pixman-rvv-pixel-probe.nix {
+          pixman = self.packages.${buildSystem}.pixman-rvv;
+        };
         rvv-context-probe = pkgsCross.callPackage ./nix/rvv-context-probe.nix { };
         rvv-context-probe-corrupt = pkgsCross.callPackage ./nix/rvv-context-probe.nix { corrupt = true; };
         card-shell = pkgsCross.callPackage ./nix/card-shell.nix {
           swayUnwrapped = pkgsCross.sway-unwrapped;
+        };
+        # Optional diagnostic closure: swap the ABI-identical Pixman build
+        # through every dependent store path, preserving the exact card source.
+        # Nixpkgs' recursive replacement avoids two Pixman SONAME providers.
+        # A default promotion must use a fully rebuilt/reviewed package graph.
+        card-shell-rvv = pkgs.replaceDependencies {
+          drv = self.packages.${buildSystem}.card-shell;
+          replacements = [{
+            oldDependency = pkgsCross.pixman;
+            newDependency = self.packages.${buildSystem}.pixman-rvv;
+          }];
         };
         card-composition-probe = pkgsCross.callPackage ./nix/card-composition-probe.nix {
           sway = pkgsCross.sway;

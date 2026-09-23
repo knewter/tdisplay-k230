@@ -21,8 +21,8 @@ Reserve the board and keep raw console output private until selecting secret-fre
 
 Requires 2.3 PASS. Proposed commands in this section must be implemented before invocation; their names are intended interfaces, not claims that tools already exist.
 
-- [ ] 3.1 Add a narrow, capability-gated Pixman comparison covering declared RGB565/ARGB copy, blend and scale cases including stride/edge conditions; verify scalar reference equality and a deliberately corrupted-output rejection on the physical trial using the proposed `python3 tools/pixman-rvv-compare.py --board --output NEW_PIXEL_OUTPUT`. Commit cases, exact library identities, actual dispatch evidence and results.
-- [ ] 3.2 Package the opt-in card compositor with the verified vector Pixman, preserving the normal renderer and image. Verify the proposed `nix build .#card-shell-rvv --no-link --print-out-paths` and record its dependency/dispatch identity; this build is host proof only.
+- [x] 3.1 Add a narrow, capability-gated Pixman comparison covering declared RGB565/ARGB copy, blend and scale cases including stride/edge conditions; verify scalar reference equality and a deliberately corrupted-output rejection on the physical trial using the proposed `python3 tools/pixman-rvv-compare.py --board --package /nix/store/1sc1733sagi7ifx4bxw4dz0yg3hw3amj-k230-pixman-rvv-pixel-probe-riscv64-unknown-linux-gnu-0.1 --output NEW_PIXEL_OUTPUT`. Commit cases, exact library identities, actual dispatch evidence and results.
+- [x] 3.2 Package the opt-in card compositor with the verified vector Pixman, preserving the normal renderer and image. Verify the proposed `nix build .#card-shell-rvv --no-link --print-out-paths` and record its dependency/dispatch identity; this build is host proof only.
 
 ## 4. Measure and publish the decision
 
@@ -37,3 +37,10 @@ links the actual one-time boot, verified running-system/configuration identity,
 scalar capability report, two-process context PASS and separate normal-recovery
 capture. The committed capture script invokes the bounded command in 2.3; this
 is physical-board evidence, not the earlier generic Linux guest result.
+
+Tasks 3.1–3.2: `docs/evidence/card-shell/pixman-rvv/pixel-trial/README.md`
+records 192 physical byte comparisons, executed RVV callback counts, the
+one-byte corruption control, normal recovery and the built optional card
+package. The package uses recursive dependency-reference replacement with the
+ABI-identical library; a default promotion requires a fully rebuilt graph.
+No card performance result is claimed by these tasks.
