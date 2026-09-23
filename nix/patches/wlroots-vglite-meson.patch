@@ -1,0 +1,10 @@
+--- a/render/meson.build
++++ b/render/meson.build
+@@ -61,6 +61,7 @@
+ endif
+ 
+ subdir('pixman')
++subdir('vglite')
+ 
+ subdir('allocator')
+ 

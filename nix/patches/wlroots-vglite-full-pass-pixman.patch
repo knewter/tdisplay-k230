@@ -1,6 +1,14 @@
 --- a/render/wlr_renderer.c
 +++ b/render/wlr_renderer.c
-@@ -222,6 +222,7 @@
+@@ -6,6 +6,7 @@
+ #include <wlr/backend.h>
+ #include <wlr/render/interface.h>
+ #include <wlr/render/pixman.h>
++#include <wlr/render/vglite.h>
+ #include <wlr/render/wlr_renderer.h>
+ #include <wlr/types/wlr_drm.h>
+ #include <wlr/types/wlr_linux_dmabuf_v1.h>
+@@ -222,6 +223,7 @@
  		"gles2",
  		"vulkan",
  		"pixman",
@@ -8,23 +16,17 @@
  		NULL
  	};
  
-@@ -231,6 +232,22 @@
+@@ -231,6 +233,16 @@
  
  	bool own_drm_fd = false;
  
-+	/*
-+	 * The K230 experiment is deliberately opt-in. This first package is a
-+	 * complete-pass Pixman fallback: it exercises renderer selection and the
-+	 * existing wlroots output owner without pretending that a VG-Lite context
-+	 * or dma-buf import has been implemented.
-+	 */
 +	if (strcmp(renderer_name, "vglite") == 0) {
-+		wlr_log(WLR_INFO,
-+			"VG-Lite experiment selected; using full-pass Pixman fallback");
++		wlr_log(WLR_INFO, "VG-Lite experiment selected");
++		renderer = wlr_vglite_renderer_create();
++		if (renderer) goto out;
++		wlr_log(WLR_ERROR, "VG-Lite renderer unavailable; using Pixman fallback");
 +		renderer = wlr_pixman_renderer_create();
-+		if (renderer) {
-+			goto out;
-+		}
++		if (renderer) goto out;
 +		log_creation_failure(false, "Failed to create the VG-Lite experiment fallback");
 +	}
 +

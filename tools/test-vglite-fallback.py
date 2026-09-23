@@ -7,14 +7,19 @@ scanout, or board behavior.
 from pathlib import Path
 PATCH = Path(__file__).parents[1] / "nix/patches/wlroots-vglite-full-pass-pixman.patch"
 NIX = Path(__file__).parents[1] / "nix/wlroots-vglite.nix"
+SOURCE = Path(__file__).parents[1] / "nix/wlroots-vglite/renderer.c"
 text = PATCH.read_text()
 assert '\t\t"vglite",' in text
 assert 'strcmp(renderer_name, "vglite")' in text
 assert 'wlr_pixman_renderer_create()' in text
-assert 'full-pass Pixman fallback' in text
+assert 'VG-Lite experiment selected' in text
 assert 'drmSetMaster' not in text and 'drmModeSetCrtc' not in text
+source = SOURCE.read_text()
+assert 'vg_lite_map' in source and 'vg_lite_finish' in source
+assert 'wlr_render_pass_add_texture' in source
+assert 'K230_VGLITE_ALLOW_UNPROVEN_CACHE' in source
 nix = NIX.read_text()
 assert 'WLR_RENDERER=vglite' in nix
 assert 'no-gpu-claim' in nix
 print("VGLITE_FALLBACK_CONTRACT=PASS")
-print("VGLITE_FALLBACK_SCOPE=selection-and-full-pass-pixman-only")
+print("VGLITE_FALLBACK_SCOPE=record-pass-real-rect-route-with-fail-closed-texture-fallback")
