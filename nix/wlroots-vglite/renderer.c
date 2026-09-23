@@ -5,8 +5,10 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <vg_lite.h>
 #include <wlr/render/dmabuf.h>
 #include <wlr/render/interface.h>
@@ -29,6 +31,9 @@ struct vglite_texture {
 	bool cpu_rgb;
 };
 enum op_kind { OP_RECT, OP_TEXTURE };
+enum cost_phase { COST_SNAPSHOT, COST_CACHE, COST_INIT, COST_MAP, COST_UPLOAD,
+	COST_COMMAND, COST_FINISH, COST_CLEANUP, COST_REPLAY, COST_TOTAL, COST_COUNT };
+struct cost_stamp { uint64_t wall, cpu; };
 struct vglite_op {
 	enum op_kind kind;
 	struct wlr_render_rect_options rect;
@@ -52,10 +57,48 @@ struct vglite_pass {
 	bool has_dmabuf;
 	int vg_status;
 	struct wlr_dmabuf_attributes target_attributes;
+	bool profile;
+	struct cost_stamp profile_begin, cost[COST_COUNT];
 };
 static const struct wlr_renderer_impl renderer_impl;
 static const struct wlr_texture_impl texture_impl;
 static const struct wlr_render_pass_impl pass_impl;
+
+/* Optional diagnostics. Process CPU includes charged user/system time, not
+ * other processes or separately accounted IRQ work. Wall is not optical time. */
+static struct cost_stamp profile_now(struct vglite_pass *p) {
+	struct timespec wall, cpu;
+	if (!p->profile) return (struct cost_stamp){0};
+	if (clock_gettime(CLOCK_MONOTONIC, &wall) || clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu)) {
+		p->profile = false;
+		return (struct cost_stamp){0};
+	}
+	return (struct cost_stamp){(uint64_t)wall.tv_sec * 1000000000 + wall.tv_nsec,
+		(uint64_t)cpu.tv_sec * 1000000000 + cpu.tv_nsec};
+}
+static void profile_mark(struct vglite_pass *p, enum cost_phase phase, struct cost_stamp *from) {
+	struct cost_stamp now = profile_now(p);
+	if (!p->profile) return;
+	if (now.wall < from->wall || now.cpu < from->cpu) { p->profile = false; return; }
+	p->cost[phase].wall += now.wall - from->wall;
+	p->cost[phase].cpu += now.cpu - from->cpu;
+	*from = now;
+}
+static void profile_log(struct vglite_pass *p, const char *result, bool ok) {
+	profile_mark(p, COST_TOTAL, &p->profile_begin);
+	if (!p->profile) return;
+	static const char *names[COST_COUNT] = {"snapshot", "cache", "init", "map", "upload",
+		"command", "finish", "cleanup", "replay", "total"};
+	char fields[2048]; size_t used = 0;
+	for (size_t i = 0; i < COST_COUNT; i++) {
+		int n = snprintf(fields + used, sizeof(fields) - used,
+			" %s_wall_ns=%" PRIu64 " %s_cpu_ns=%" PRIu64,
+			names[i], p->cost[i].wall, names[i], p->cost[i].cpu);
+		if (n < 0 || (size_t)n >= sizeof(fields) - used) return;
+		used += n;
+	}
+	wlr_log(WLR_INFO, "VG-Lite cost v=1 result=%s ok=%d ops=%zu%s", result, ok, p->len, fields);
+}
 
 static void finish_op(struct vglite_op *op) {
 	if (op->has_clip) pixman_region32_fini(&op->clip);
@@ -148,6 +191,7 @@ static bool default_scene_color(const struct wlr_render_texture_options *o, floa
 static void add_texture(struct wlr_render_pass *base, const struct wlr_render_texture_options *o) {
 	struct vglite_pass *p = (struct vglite_pass *)base;
 	if (p->failed) return;
+	struct cost_stamp stamp = profile_now(p);
 	assert(o->texture->impl == &texture_impl);
 	struct vglite_texture *t = (struct vglite_texture *)o->texture;
 	struct vglite_op op = { .kind = OP_TEXTURE, .texture = *o,
@@ -203,6 +247,7 @@ static void add_texture(struct wlr_render_pass *base, const struct wlr_render_te
 	/* SRC_OVER on the RGB565 imported target still needs hardware comparison. */
 	if (!op.opaque && o->blend_mode != WLR_RENDER_BLEND_MODE_NONE) reject_gpu(p, "texture_blend", p->len);
 	add_op(p, &op);
+	profile_mark(p, COST_SNAPSHOT, &stamp);
 }
 static void replay(struct vglite_pass *p, struct wlr_render_pass *dst) {
 	for (size_t i = 0; i < p->len; i++) {
@@ -338,11 +383,16 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 		wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
 	}
 	log_decision(p, "attempt");
+	struct cost_stamp stamp = profile_now(p);
 	target_cache_to_gpu(target.memory, stride * target.height);
-	if (!gpu_call(p, vg_lite_init(target.width, target.height), "gpu_init", SIZE_MAX)) {
+	profile_mark(p, COST_CACHE, &stamp);
+	bool initialized = gpu_call(p, vg_lite_init(target.width, target.height), "gpu_init", SIZE_MAX);
+	profile_mark(p, COST_INIT, &stamp);
+	if (!initialized) {
 		gpu_disabled = true; wlr_buffer_end_data_ptr_access(p->buffer); free(sources); return GPU_FALLBACK;
 	}
 	bool ok = gpu_call(p, vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]), "target_map", SIZE_MAX);
+	profile_mark(p, COST_MAP, &stamp);
 	bool started = false;
 	size_t source_index = 0;
 	for (size_t i = 0; ok && i < p->len; i++) {
@@ -358,7 +408,9 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 			int n; pixman_box32_t *boxes = pixman_region32_rectangles(&region, &n);
 			for (int j = 0; ok && j < n; j++) {
 				vg_lite_rectangle_t r = {boxes[j].x1, boxes[j].y1, boxes[j].x2 - boxes[j].x1, boxes[j].y2 - boxes[j].y1};
+				stamp = profile_now(p);
 				started = true; ok = gpu_call(p, vg_lite_clear(&target, &r, color), "gpu_clear", i);
+				profile_mark(p, COST_COMMAND, &stamp);
 			}
 		} else {
 			struct wlr_fbox src = op->texture.src_box;
@@ -380,6 +432,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 				 * target's exact Pixman SRC representation. This is valid only
 				 * for the already-admitted NONE or opaque SRC_OVER operations. */
 				s->format = VG_LITE_BGR565;
+				stamp = profile_now(p);
 				ok = gpu_call(p, vg_lite_allocate(s), "gpu_allocate", i);
 				if (ok) {
 					ok = s->memory && s->stride >= s->width * 2 && s->height == (int)crop.height;
@@ -396,19 +449,24 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 						}
 					}
 				}
+				profile_mark(p, COST_UPLOAD, &stamp);
 				if (ok) {
 					/* CPU crop avoids SDK scissor state changes and their internal
 					 * unchecked finish. blit() also cleans the uploaded source cache. */
 					vg_lite_matrix_t m = {{{piece.width / crop.width, 0, piece.x}, {0, piece.height / crop.height, piece.y}, {0, 0, 1}}};
 					started = true;
 					ok = gpu_call(p, vg_lite_blit(&target, s, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "gpu_blit", i);
+					profile_mark(p, COST_COMMAND, &stamp);
 				}
 			}
 		}
 		pixman_region32_fini(&region);
 	}
 	/* blit/clear may auto-submit as the command buffer fills, even on error. */
-	if (started && !gpu_call(p, vg_lite_finish(), "gpu_finish", SIZE_MAX)) {
+	stamp = profile_now(p);
+	bool finished = !started || gpu_call(p, vg_lite_finish(), "gpu_finish", SIZE_MAX);
+	profile_mark(p, COST_FINISH, &stamp);
+	if (!finished) {
 		log_decision(p, "failed");
 		gpu_disabled = true;
 		/* Deliberately quarantine the mapped target, source allocations and its
@@ -423,6 +481,7 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 	if (target.handle && !gpu_call(p, vg_lite_unmap(&target), "target_unmap", SIZE_MAX)) ok = false;
 	if (!gpu_call(p, vg_lite_close(), "gpu_close", SIZE_MAX)) ok = false;
 	wlr_buffer_end_data_ptr_access(p->buffer);
+	profile_mark(p, COST_CLEANUP, &stamp);
 	if (!ok) {
 		if (started) log_decision(p, "failed");
 		gpu_disabled = true;
@@ -435,20 +494,25 @@ static enum gpu_result gpu_pass(struct vglite_pass *p) {
 }
 static bool submit(struct wlr_render_pass *base) {
 	struct vglite_pass *p = (struct vglite_pass *)base; bool ok = false;
+	const char *path = "failed";
 	if (!p->failed) {
 		pthread_mutex_lock(&gpu_lock);
 		enum gpu_result result = gpu_pass(p);
 		pthread_mutex_unlock(&gpu_lock);
-		if (result == GPU_OK) ok = true;
+		if (result == GPU_OK) { ok = true; path = "gpu"; }
 		else if (result == GPU_FALLBACK) {
+			path = "pixman";
+			struct cost_stamp stamp = profile_now(p);
 			log_decision(p, "pixman");
 			struct wlr_render_pass *fallback = wlr_renderer_begin_buffer_pass(p->renderer->pixman, p->buffer, NULL);
 			if (fallback) { replay(p, fallback); ok = wlr_render_pass_submit(fallback); }
+			profile_mark(p, COST_REPLAY, &stamp);
 			wlr_log(WLR_DEBUG, "VG-Lite full pass replayed with Pixman (%zu operations)", p->len);
 		}
 	}
 	for (size_t i = 0; i < p->len; i++) finish_op(&p->ops[i]);
 	if (p->buffer) wlr_buffer_unlock(p->buffer);
+	profile_log(p, path, ok);
 	free(p->ops); free(p); return ok;
 }
 static const struct wlr_render_pass_impl pass_impl = { .submit = submit, .add_rect = add_rect, .add_texture = add_texture };
@@ -457,6 +521,9 @@ static struct wlr_render_pass *begin(struct wlr_renderer *base, struct wlr_buffe
 	if ((o && (o->color_transform || o->signal_timeline || o->timer)) ||
 		b->width <= 0 || b->height <= 0 || b->width > 16384 || b->height > 16384) return NULL;
 	struct vglite_pass *p = calloc(1, sizeof(*p)); if (!p) return NULL;
+	const char *profile = getenv("K230_VGLITE_PROFILE");
+	p->profile = profile && strcmp(profile, "1") == 0;
+	p->profile_begin = profile_now(p);
 	wlr_render_pass_init(&p->base, &pass_impl);
 	p->renderer = (struct vglite_renderer *)base; p->buffer = wlr_buffer_lock(b); p->gpu_eligible = true; p->reason_op = SIZE_MAX;
 	return &p->base;

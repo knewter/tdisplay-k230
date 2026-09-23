@@ -98,6 +98,14 @@ class RootTrial(unittest.TestCase):
         return module.Trial(path, "/nix/store/test/bin/sway", ["/nix/store/test/bin/probe", "--seconds", "1"], 1, 999,
                             commands=manager, token="hosttest")
 
+    def test_profile_is_explicit_and_compositor_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = self.make_trial(Path(temp) / "trial", Manager())
+            self.assertIn('--setenv=K230_VGLITE_PROFILE=0', trial.compositor_command())
+            trial.profile = True
+            self.assertIn('--setenv=K230_VGLITE_PROFILE=1', trial.compositor_command())
+            self.assertFalse(any('K230_VGLITE_PROFILE' in a for a in trial.client_command(trial.display/'wayland-1')))
+
     def test_lifetime_and_all_failure_stages_restore(self):
         for failure in [None, "watchdog", "compositor", "socket", "share", "client", "stop"]:
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temp:
