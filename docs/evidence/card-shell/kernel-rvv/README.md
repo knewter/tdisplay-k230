@@ -81,6 +81,18 @@ nix build .#nixosConfigurations.k230-rvv-trial.config.system.build.toplevel \
 
 The matching system cross-build passes. `trial-system-build.json` records its
 store path, boot-artifact links, rebuilt Wi-Fi module and context-probe closure
-members, plus the installed service’s Pixman selection. No SD image selects
-this configuration yet. The board trial still requires matching boot artifacts,
-a known recovery route, and the checks above; no board boot is claimed.
+members, plus the installed service’s Pixman selection. The board trial still requires matching boot artifacts, a known recovery route,
+and the checks above; no board boot is claimed.
+
+
+`sdImage-rvv-trial` packages that trial configuration with its matching kernel
+and initrd using the existing image layout and stage 1. The shared image helper
+preserves the ordinary `sdImage` derivation exactly; before/after evaluation is
+recorded in `trial-image-evaluation.json`.
+
+```sh
+nix build .#sdImage-rvv-trial --max-jobs 1 --cores 8 --no-link --print-out-paths
+```
+
+The trial image build is in progress. No card has been flashed or rebooted with
+it. Preserve the known ordinary image as the recovery artifact before a trial.

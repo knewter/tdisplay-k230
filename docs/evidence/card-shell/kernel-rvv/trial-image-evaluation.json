@@ -1,0 +1,11 @@
+{
+  "evidence_class": "host-nix-evaluation",
+  "observed_at": "2026-09-23T19:04:30.148500+00:00",
+  "normal_image_before": "/nix/store/6jdpn0jy3v290fpzjq8n0rpq3d5sxs0y-k230-sd-image.img.drv",
+  "normal_image_after": "/nix/store/6jdpn0jy3v290fpzjq8n0rpq3d5sxs0y-k230-sd-image.img.drv",
+  "trial_image": "/nix/store/b21fkxjl2amjc081mqba72dzgiz40z4f-k230-sd-image.img.drv",
+  "limits": [
+    "Trial image build is in progress.",
+    "No board boot or physical acceptance."
+  ]
+}

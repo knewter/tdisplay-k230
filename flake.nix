@@ -33,6 +33,47 @@
       # a fixed-output derivation lands on the same store path either way.
       kernelSrc = import ./nix/kernel-src.nix { inherit (pkgs) fetchFromGitHub; };
       bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
+      mkBoardImage = cfg: kernel:
+        let
+          rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
+            storePaths = [ cfg.system.build.toplevel ];
+            volumeLabel = "NIXOS_SD";
+            populateImageCommands = ''
+              mkdir -p ./files/nix/var/nix/profiles
+              ln -sf ${cfg.system.build.toplevel} ./files/nix/var/nix/profiles/system-1-link
+              ln -sf system-1-link ./files/nix/var/nix/profiles/system
+
+              # /sbin/init, because U-Boot discards our init=.
+              #
+              # Observed on hardware: the vendor board code sets its own
+              # bootargs and overwrites /chosen/bootargs from the DTB, so
+              # our init= never reaches the kernel and it falls back to
+              # /sbin/init, /etc/init, /bin/init, /bin/sh -- none of which
+              # exist on a NixOS root -- and panics with "No working init
+              # found". See docs/evidence/hardware-boot.txt.
+              #
+              # Pointing /sbin/init at the profile rather than at a store
+              # path means it follows the current system across updates.
+              mkdir -p ./files/sbin
+              ln -sf /nix/var/nix/profiles/system/init ./files/sbin/init
+            '';
+          };
+        in
+        pkgs.callPackage ./nix/sd-image.nix {
+          inherit stage1 rootfsImage;
+          splashImage = if cfg.k230.panelConsole then null else bootSplashImage;
+          initrd = "${cfg.system.build.toplevel}/initrd";
+          inherit kernel;
+          inherit (self.packages.${buildSystem}) deviceTree;
+          # Our own board, not the CanMV reference. A bare filename now:
+          # it names a file in ${deviceTree}, not a path under dtbs/.
+          dtbName = "k230-tdisplay.dtb";
+          # bootm passes only the DTB, so /chosen/bootargs is the kernel
+          # command line. Derived from the system so the two cannot drift.
+          bootargs =
+            builtins.concatStringsSep " " cfg.boot.kernelParams
+            + " init=${cfg.system.build.toplevel}/init";
+        };
     in
     {
       # Two systems on one base, because the boot paths genuinely differ.
@@ -191,48 +232,9 @@
         # The bootable card image: stage 1 at its raw offsets, a boot ext4
         # holding the three filenames U-Boot loads by name, and our root
         # filesystem.
-        sdImage =
-          let
-            cfg = self.nixosConfigurations.k230.config;
-            rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
-              storePaths = [ cfg.system.build.toplevel ];
-              volumeLabel = "NIXOS_SD";
-              populateImageCommands = ''
-                mkdir -p ./files/nix/var/nix/profiles
-                ln -sf ${cfg.system.build.toplevel} ./files/nix/var/nix/profiles/system-1-link
-                ln -sf system-1-link ./files/nix/var/nix/profiles/system
-
-                # /sbin/init, because U-Boot discards our init=.
-                #
-                # Observed on hardware: the vendor board code sets its own
-                # bootargs and overwrites /chosen/bootargs from the DTB, so
-                # our init= never reaches the kernel and it falls back to
-                # /sbin/init, /etc/init, /bin/init, /bin/sh -- none of which
-                # exist on a NixOS root -- and panics with "No working init
-                # found". See docs/evidence/hardware-boot.txt.
-                #
-                # Pointing /sbin/init at the profile rather than at a store
-                # path means it follows the current system across updates.
-                mkdir -p ./files/sbin
-                ln -sf /nix/var/nix/profiles/system/init ./files/sbin/init
-              '';
-            };
-          in
-          pkgs.callPackage ./nix/sd-image.nix {
-            inherit stage1 rootfsImage;
-            splashImage = if cfg.k230.panelConsole then null else bootSplashImage;
-            initrd = "${cfg.system.build.toplevel}/initrd";
-            kernel = self.k230Kernel.kernel;
-            inherit (self.packages.${buildSystem}) deviceTree;
-            # Our own board, not the CanMV reference. A bare filename now:
-            # it names a file in ${deviceTree}, not a path under dtbs/.
-            dtbName = "k230-tdisplay.dtb";
-            # bootm passes only the DTB, so /chosen/bootargs is the kernel
-            # command line. Derived from the system so the two cannot drift.
-            bootargs =
-              builtins.concatStringsSep " " cfg.boot.kernelParams
-              + " init=${cfg.system.build.toplevel}/init";
-          };
+        sdImage = mkBoardImage self.nixosConfigurations.k230.config self.k230Kernel.kernel;
+        sdImage-rvv-trial = mkBoardImage self.nixosConfigurations.k230-rvv-trial.config
+          self.nixosConfigurations.k230-rvv-trial.config.boot.kernelPackages.kernel;
       };
 
       # The stage-1 boundary, exposed so it can be inspected without reading
