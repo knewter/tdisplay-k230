@@ -1,6 +1,8 @@
 """Exercise the launcher's actual navigation model without a display server."""
 from pathlib import Path
 import subprocess
+import shutil
+import os
 import tempfile
 import unittest
 
@@ -112,6 +114,125 @@ int main(void) {
                             "-I", str(ROOT / "nix/touch-launcher"),
                             str(path / "gesture.c"), "-o", str(path / "test")], check=True)
             subprocess.run([str(path / "test")], check=True)
+
+
+class WindowCatalogClient(unittest.TestCase):
+    def test_parser_stale_focus_and_hung_helper_are_safe(self):
+        """Compile the production client helpers and exercise their child boundary."""
+        def first_existing(candidates):
+            return next((candidate for candidate in candidates if candidate.exists()), None)
+
+        layer = first_existing([
+            Path('/usr/share/wlr-protocols/unstable/wlr-layer-shell-unstable-v1.xml'),
+            *Path('/nix/store').glob('*-source/protocol/wlr-layer-shell-unstable-v1.xml'),
+        ])
+        xdg = first_existing([
+            Path('/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml'),
+            *Path('/nix/store').glob('*-wayland-protocols-*/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml'),
+        ])
+        if not shutil.which('wayland-scanner') or not layer or not xdg:
+            self.skipTest('Wayland protocol sources are unavailable for the production-client fixture')
+        source = r'''
+#define main launcher_program_main
+#include "TOUCH_LAUNCHER"
+#undef main
+#include <assert.h>
+#include <time.h>
+static void pause_ms(long ms) {
+  struct timespec wait = { .tv_sec = 0, .tv_nsec = ms * 1000000 };
+  nanosleep(&wait, NULL);
+}
+static void drain_catalog(void) {
+  for (int i = 0; catalog.pid && i < 100; i++) {
+    catalog_poll();
+    pause_ms(5);
+  }
+  assert(catalog.pid == 0);
+}
+int main(int argc, char **argv) {
+  assert(argc == 5);
+  GPtrArray *parsed = parse_window_catalog(
+    "17\tTerminal\tfoot\tfocused\nnot-an-id\tbad\tbad\tnormal\n");
+  assert(parsed->len == 1);
+  assert(!strcmp(((struct window_card *)g_ptr_array_index(parsed, 0))->id, "17"));
+  g_ptr_array_unref(parsed);
+  parsed = parse_window_catalog("18\tOne\tfirst\tnormal\n19\tTwo\tsecond\turgent\n");
+  assert(parsed->len == 2);
+  g_ptr_array_unref(parsed);
+  parsed = parse_window_catalog("");
+  assert(parsed->len == 0);
+  g_ptr_array_unref(parsed);
+
+  windows = g_ptr_array_new_with_free_func(free_window_card);
+  struct window_card *old = g_new0(struct window_card, 1);
+  old->id = g_strdup("17");
+  g_ptr_array_add(windows, old);
+  setenv("K230_WINDOW_CATALOG", argv[1], 1);
+  assert(catalog_start(CATALOG_FOCUS, "17"));
+  drain_catalog();
+  assert(windows->len == 1);
+  assert(!strcmp(((struct window_card *)g_ptr_array_index(windows, 0))->id, "18"));
+  assert(launch_error && !strcmp(launch_error, "Window closed; overview refreshed"));
+
+  struct window_card *current = g_new0(struct window_card, 1);
+  current->id = g_strdup("18");
+  g_ptr_array_add(windows, current);
+  setenv("K230_SWAYMSG", argv[3], 1);
+  setenv("K230_WINDOW_CATALOG", argv[1], 1);
+  assert(catalog_start(CATALOG_FOCUS, "18"));
+  drain_catalog();
+  for (int i = 0; access(argv[4], F_OK) && i < 100; i++) pause_ms(5);
+  assert(access(argv[4], F_OK) == 0);
+  FILE *record=fopen(argv[4], "r");
+  char criterion[64], command[16];
+  assert(record && fgets(criterion, sizeof criterion, record));
+  assert(fgets(command, sizeof command, record));
+  fclose(record);
+  assert(!strcmp(criterion, "[con_id=18]\n"));
+  assert(!strcmp(command, "focus\n"));
+
+  setenv("K230_WINDOW_CATALOG", argv[2], 1);
+  assert(catalog_start(CATALOG_OPEN, NULL));
+  catalog.deadline_ms = monotonic_ms() - 1;
+  catalog_poll();
+  assert(launch_error && !strcmp(launch_error, "Window overview refresh exceeded 200 ms"));
+  assert(windows->len == 0);
+  drain_catalog();
+  return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)
+            for mode, xml, name in [
+                ('client-header', layer, 'wlr-layer-shell-unstable-v1-client-protocol.h'),
+                ('private-code', layer, 'wlr-layer-shell-unstable-v1-protocol.c'),
+                ('client-header', xdg, 'xdg-shell-client-protocol.h'),
+                ('private-code', xdg, 'xdg-shell-protocol.c'),
+            ]:
+                subprocess.run(['wayland-scanner', mode, str(xml), str(path / name)], check=True)
+            client = (ROOT / 'nix/touch-launcher/touch-launcher.c').as_posix()
+            (path / 'client.c').write_text(source.replace('TOUCH_LAUNCHER', client))
+            fresh = path / 'fresh.sh'
+            fresh.write_text('#!/bin/sh\nprintf "18\\tNew title\\tnew.app\\tnormal\\n"\n')
+            fresh.chmod(0o755)
+            hung = path / 'hung.sh'
+            hung.write_text('#!/bin/sh\ntrap "" TERM\nwhile :; do :; done\n')
+            hung.chmod(0o755)
+            focus = path / 'focus.sh'
+            record = path / 'focus-record'
+            focus.write_text('#!/bin/sh\nprintf "%s\n%s\n" "$1" "$2" > "$RECORD"\n')
+            focus.chmod(0o755)
+            flags = subprocess.check_output(['pkg-config', '--cflags', '--libs',
+                                             'wayland-client', 'gio-unix-2.0', 'pangocairo'], text=True).split()
+            subprocess.run(['cc', '-std=c11', '-Wall', '-Wextra', '-Werror',
+                            '-Wno-unused-parameter', '-Wno-misleading-indentation',
+                            '-DK230_CATALOG_LIBRARY', '-I', str(path),
+                            '-I', str(ROOT / 'nix/touch-launcher'), str(path / 'client.c'),
+                            str(ROOT / 'nix/touch-launcher/catalog.c'),
+                            str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
+                            str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags], check=True)
+            subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record)],
+                           check=True, timeout=3, env=os.environ | {'RECORD': str(record)})
 
 
 if __name__ == "__main__":

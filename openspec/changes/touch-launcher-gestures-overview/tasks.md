@@ -7,8 +7,8 @@
 ## 2. Metadata window overview
 
 - [x] 2.1 Add an overview mode reached by an upward classified gesture and exited by Back or a downward classified gesture; verify mode transitions and keyboard-non-interactive layer-shell behavior with launcher tests.
-- [ ] 2.2 Read current Sway window metadata into title/app-id/state cards without thumbnails or screencopy; verify cards render for multiple windows and an empty state remains usable using a deterministic IPC fixture.
-- [ ] 2.3 Revalidate a selected window identifier before focusing it and handle stale/closed windows without exiting; verify stale selection, empty overview, and successful focus paths through the fixture test.
+- [x] 2.2 Read current Sway window metadata into title/app-id/state cards without thumbnails or screencopy; verify cards render for multiple windows and an empty state remains usable using a deterministic IPC fixture.
+- [x] 2.3 Revalidate a selected window identifier before focusing it and handle stale/closed windows without exiting; verify stale selection, empty overview, and successful focus paths through the fixture test.
 
 ## 3. Preserve shell controls
 
