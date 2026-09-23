@@ -6,8 +6,8 @@
 
 ## 2. Make diagnosis and one-off association available
 
-- [ ] 2.1 Add the selected wireless driver plus `iw`, `wpa_supplicant`, `wpa_cli`, and regulatory data while retaining the existing DHCP client to the system closure; verify their paths with a narrow Nix evaluation and inspect the closure for no protected-network material.
-- [ ] 2.2 Write the root-only runtime-secret procedure using `RUNTIME_SECRET_FILE`, `WIFI_IFACE`, and `YOUR_SSID` placeholders only; verify the procedure passes the configuration file from `/run` with mode `0600` and never places a secret in argv, source control, or Nix configuration.
+- [x] 2.1 Add the selected wireless driver plus `iw`, `wpa_supplicant`, `wpa_cli`, and regulatory data while retaining the existing DHCP client to the system closure; verify their paths with a narrow Nix evaluation and inspect the closure for no protected-network material.
+- [x] 2.2 Write the root-only runtime-secret procedure using `RUNTIME_SECRET_FILE`, `WIFI_IFACE`, and `YOUR_SSID` placeholders only; verify the procedure passes the configuration file from `/run` with mode `0600` and never places a secret in argv, source control, or Nix configuration.
 - [ ] 2.3 On the physical board, run credential-free readiness checks for SDIO enumeration, bound driver, `iw dev`, and regulatory state before any scan or connection attempt; commit only sanitized evidence and verify it omits MAC addresses, access-point identifiers, local addresses, and terminal control sequences.
 
 ## 3. Prove a live connection on the physical board

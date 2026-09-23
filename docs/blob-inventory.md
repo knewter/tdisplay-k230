@@ -420,10 +420,10 @@ readable files is fine. A fork is not.
 
 ## B. Blobs the Linux path would pull in
 
-None of these is on our path *today*. Each is one defconfig line away, and
-`k230_canmv_v3_defconfig` already sets most of those lines — so if we ever
-build the SDK's rootfs rather than our own NixOS closure, they arrive
-silently. That is exactly the accident this table exists to prevent.
+Except for B12, none of these is on our path *today*. Each is one defconfig
+line away, and `k230_canmv_v3_defconfig` already sets most of those lines —
+so if we ever build the SDK's rootfs rather than our own NixOS closure, they
+arrive silently. That is exactly the accident this table exists to prevent.
 
 | # | Blob | Count / size | Class | Scope | Note |
 | --- | --- | --- | --- | --- | --- |
@@ -438,6 +438,7 @@ silently. That is exactly the accident this table exists to prevent.
 | B9 | `package/rtl8733bs` downloads (wifi, bt, rtwpriv tarballs) | 3 downloads | **E2** | `BOARD` | Realtek *source* drops, not blobs, but pinned to `download.kendryte.com` |
 | B10 | `package/ai2d_kpu/{input,ai2d_input,result}.bin` | 3 files | **NP** | `CANAAN` | KPU test vectors, not firmware |
 | B11 | `package/audio_rec_play/audio.pcm`, `SourceHanSansSC-Normal-Min.ttf` | 2 files | **NP** | — | sample assets; listed only so the scan is complete |
+| B12 | `8189fs.ko` embedded RTL8188F firmware array | 1 module, 4 988 584 B | **IO** | `BOARD` | Realtek payload compiled from `hal/rtl8188f/hal8188f_fw.c`; module sha256 `a78f80fd9f04c9ed381cc786b26fa32d15b0e037a3ce4d9c376eb6361bf49fe1` |
 
 ### B1, B2 — the NPU runtime. The second-worst one.
 
@@ -468,7 +469,7 @@ stacks are GPUs with Mesa drivers. If the next device needs ML and needs to be
 auditable, plan to run on CPU or on a GPU Mesa supports, and treat any "TOPS"
 number in a datasheet as a closed-source number.
 
-### B3, B4 — radio firmware for radios this board does not have
+### B3, B4, B12 — radio firmware
 
 The defconfig sets `BR2_PACKAGE_AIC8800=y` and `BR2_PACKAGE_RTL8733BS=y`
 because `k230_canmv_v3_defconfig` targets Canaan's reference board.
@@ -476,12 +477,15 @@ because `k230_canmv_v3_defconfig` targets Canaan's reference board.
 (MMC1, enable on GPIO45). So 8.8 MB of AICSemi RF firmware and a Broadcom
 BCM43438 image are dead weight we would ship by inheritance.
 
-**The interesting part is what we need instead, and it is not a blob.**
+**The selected driver does not load a firmware file, but it is not blob-free.**
 `BR2_PACKAGE_RTL8189FS=y` resolves to buildroot's own package, which fetches
-`jwrdegoede/rtl8189ES_linux` at `94cc959d` — **GPL-2.0 source, built as a
-kernel module, no firmware file at all.** The RTL8189FTV keeps its MAC
-firmware on-chip. So the radio on this board is, unusually, blob-free under
-Linux; the obstacle is a driver build, not a licence.
+`jwrdegoede/rtl8189ES_linux` at `94cc959d`. Its GPL-noticed driver source
+builds a kernel module, while `hal/rtl8188f/hal8188f_fw.c` contributes an
+embedded prebuilt Realtek firmware array to that module. There is no separate
+firmware-file dependency and the source notices do not establish a license or
+redistributability conclusion for the payload. Its owner is **REALTEK**; its
+scope is `BOARD`, because choosing this radio causes the dependency. B12
+names and checksums the built module so the payload is not silent.
 
 **Next device.** `BOARD`. Wi-Fi is the one area where the part number decides
 everything and the SoC decides nothing. Ask, before buying: **is the radio
@@ -984,9 +988,10 @@ In descending order of how much pain each one caused here.
    ELF here turned out to be renamed GNU gzip hiding a one-byte `sed`. Read
    the post-image script before buying.
 3. **Is the Wi-Fi part supported in-tree?** An out-of-tree Realtek driver is a
-   forever tax. This board got lucky: its RTL8189FTV has a GPL driver and
-   needs no firmware file, while the *reference* board it shares a defconfig
-   with pulls 8.8 MB of AICSemi RF firmware.
+   forever tax. This board's RTL8189FTV has GPL-noticed driver source and no
+   separate firmware file, but its driver embeds an opaque Realtek firmware
+   payload; the *reference* board it shares a defconfig with instead pulls
+   8.8 MB of AICSemi RF firmware.
 4. **Accept the DDR PHY training firmware.** It is industry-wide on anything
    with LPDDR4. The only question is whether it is redistributable and how it
    is delivered; the only escape is a slower memory technology.

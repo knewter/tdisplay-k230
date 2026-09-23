@@ -30,6 +30,9 @@
 
 let
   drmSplash = pkgs.callPackage ./drm-splash { inherit bootSplashImage; };
+  k230WifiDriver = pkgs.callPackage ./k230-wifi-driver.nix {
+    kernel = config.boot.kernelPackages.kernel;
+  };
   splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
 in
 {
@@ -52,6 +55,12 @@ in
   boot.initrd.includeDefaultModules = false;
   boot.initrd.availableKernelModules = lib.mkForce [ ];
   boot.initrd.kernelModules = lib.mkForce [ ];
+
+  # The preflight captured an enumerated RTL8189FTV SDIO function without a
+  # driver. 8189fs.ko is built for this exact kernel and loaded at boot so the
+  # board can attempt a bind; binding is still a physical-board check.
+  boot.extraModulePackages = [ k230WifiDriver ];
+  boot.kernelModules = [ "8189fs" ];
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = false;
@@ -131,6 +140,11 @@ in
     libdrm
     evtest
     i2c-tools
+    # wpa_supplicant provides both wpa_supplicant and wpa_cli. dhcpcd is
+    # already enabled by the base NixOS networking configuration.
+    iw
+    wpa_supplicant
+    wireless-regdb
   ];
 
   # The image owner only exists on splash boots.  The current daily image

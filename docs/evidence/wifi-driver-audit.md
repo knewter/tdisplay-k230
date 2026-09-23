@@ -66,10 +66,14 @@ succeeded. The produced `8189fs.ko` reports `vermagic: 6.6.36 SMP mod_unload
 riscv`, `license: GPL`, and `alias: sdio:c*v024CdF179*`. This proves its
 build-time ABI and modalias metadata only; a board bind remains unverified.
 
-No separate firmware package is required for this driver. The selected
-RTL8188F configuration defines `LOAD_FW_HEADER_FROM_DRIVER` in
+No separate firmware package is loaded from the filesystem for this driver.
+The selected RTL8188F configuration defines `LOAD_FW_HEADER_FROM_DRIVER` in
 [`include/autoconf.h`](https://github.com/jwrdegoede/rtl8189ES_linux/blob/94cc959d56c1425fbca4f6e49e949cf58ec5dc8d/include/autoconf.h#L150),
 and the firmware array is compiled from
 [`hal/rtl8188f/hal8188f_fw.c`](https://github.com/jwrdegoede/rtl8189ES_linux/blob/94cc959d56c1425fbca4f6e49e949cf58ec5dc8d/hal/rtl8188f/hal8188f_fw.c#L20).
-`regulatory.db` remains a separate regulatory-data requirement for userspace
-and cfg80211, not RTL8189 firmware.
+That is an embedded prebuilt Realtek firmware payload, not source-built radio
+firmware. The source-file GPL notices do not establish a license or
+redistributability conclusion for the payload; it is recorded under Realtek
+ownership in [`blob-inventory.md`](../blob-inventory.md). `regulatory.db`
+remains a separate regulatory-data requirement for userspace and cfg80211,
+not RTL8189 firmware.
