@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "evidence_class": "cross-build",
+  "package": "/nix/store/1sc1733sagi7ifx4bxw4dz0yg3hw3amj-k230-pixman-rvv-pixel-probe-riscv64-unknown-linux-gnu-0.1",
+  "library": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4",
+  "command": [
+    "nix",
+    "build",
+    ".#pixman-rvv-pixel-probe",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "4",
+    "--no-link",
+    "--print-out-paths"
+  ],
+  "source_sha256": {
+    "nix/pixman-rvv-pixel-probe.c": "02150a95ed106a5ea5df10f650e9e9f3e8c6be657046907441400dd30f5f58f9",
+    "nix/pixman-rvv-pixel-probe.nix": "7974dd71fc7f6f02ee0bd24fef0d2cf26a340700146381ce89ee048ebfecb273",
+    "tools/pixman-rvv-compare.py": "5d7c572a7395fa64e2b76ce14dfbf54a5bd66fba62e624ad7acfac8865cf4916"
+  },
+  "build_log_sha256": "eb6033794c2fe7f5af6b124a236c28d83275716b98fad5d56428858c02832ba1",
+  "initial_build_failure": "Cross build first used unprefixed pkg-config and omitted the private-header TLS definition. Corrected to $PKG_CONFIG and TLS=__thread; the second build passes.",
+  "initial_harness_failure": "qemu-riscv64 was not on PATH; explicit installed /usr/bin/qemu-riscv64-static passes. No pixel case ran in the missing-command attempt.",
+  "recorded_at_utc": "2026-09-23T22:08:14.283858+00:00",
+  "qemu_version": "qemu-riscv64 version 11.1.1"
+}

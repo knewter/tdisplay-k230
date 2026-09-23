@@ -1,0 +1,10 @@
+{
+  "commit": "452508c1d8f725da0745ed83784429e2c07e275c",
+  "workflow": "https://github.com/knewter/tdisplay-k230/actions/runs/35925801972",
+  "ci_and_deployment": "success",
+  "checked_at_utc": "2026-09-23T22:06:08.482377+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/handheld/",
+  "http": 200,
+  "page_sha256": "6c1cad4a3be70dccf7c5b422185d5312969470731b3e56f67d15c1780a4418a5",
+  "vector_context_paragraph_present": true
+}
