@@ -1,0 +1,5 @@
+VO: [wlshm] 480x270 yuv420p
+[ffmpeg/video] h264_v4l2m2m: Could not find a valid device
+[ffmpeg/video] h264_v4l2m2m: can't configure decoder
+Decoder init failed for h264_v4l2m2m
+VO: [wlshm] 640x360 yuv420p
