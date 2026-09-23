@@ -63,7 +63,7 @@ const groups = [
     </section>
     <section>
       <h2>Big Buck Bunny over Wi-Fi</h2>
-      <p>The board streams 640×360 Big Buck Bunny over Wi-Fi using its hardware video decoder. Point scaling and a video-sized window reduced reported output drops to zero in a 30-second trial; a repeat with screenshot capture reported two. This is a silent, fixed-30-fps experiment with a timing workaround, not yet the default video app. The shell still renders on the CPU; the separate 2.5D GPU is under investigation.</p>
+      <p>The board streams 640×360 Big Buck Bunny over Wi-Fi using its hardware video decoder. Point scaling and a video-sized window reduced reported output drops to zero in a 30-second trial; a repeat with screenshot capture reported two. This is a silent, fixed-30-fps experiment with a timing workaround, not yet the default video app. The shell still renders on the CPU. A separate 2.5D GPU probe now passes RGB565 and private DRM-buffer sharing checks. Its full-panel scale used about 94% less process CPU time but took 11% longer overall than Pixman; compositor integration remains future work.</p>
       <p>New 35-second timing trials recorded about 29.96 presented updates per second for software 270p and 29.74 for hardware-decoded 360p. These use hardware-signalled compositor feedback; panel light output was not independently timed. <a href={evidenceUrl("docs/evidence/network-video/README.md")}>Presentation measurements and limits</a>.</p>
       <div class="media-grid">
         <figure><video controls preload="none" playsinline aria-label="Big Buck Bunny playing on the physical board"
@@ -74,7 +74,7 @@ const groups = [
           src={evidenceAsset("docs/evidence/video-acceleration/360p-native.png")} alt="Big Buck Bunny playing in the handheld shell" /></a>
           <figcaption>Native compositor screenshot</figcaption></figure>
       </div>
-      <p><a href={evidenceUrl("docs/evidence/video-acceleration/README.md")}>Measurements and trial notes</a> · <a href={evidenceUrl("docs/evidence/vglite-compositor-audit.md")}>2.5D GPU integration audit</a> · <a href={evidenceUrl("docs/evidence/big-buck-bunny/README.md")}>Initial software baseline</a> · Big Buck Bunny © 2008 Blender Foundation, <a href="https://peach.blender.org/about/">CC BY 3.0</a>.</p>
+      <p><a href={evidenceUrl("docs/evidence/video-acceleration/README.md")}>Measurements and trial notes</a> · <a href={evidenceUrl("docs/evidence/gpu-validation/README.md")}>2.5D GPU measurements and integration limits</a> · <a href={evidenceUrl("docs/evidence/big-buck-bunny/README.md")}>Initial software baseline</a> · Big Buck Bunny © 2008 Blender Foundation, <a href="https://peach.blender.org/about/">CC BY 3.0</a>.</p>
     </section>
     {groups.map((group) => (
       <section>

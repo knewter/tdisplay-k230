@@ -52,6 +52,9 @@ jobs:
       - name: Check touch-menu protocol and actions
         run: python3 tests/test_touch_menu.py
 
+      - name: Check window overview metadata
+        run: python3 tests/test_window_catalog.py
+
       - name: Check launcher Help and application navigation
         run: python3 tests/test_launcher_navigation.py
 

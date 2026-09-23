@@ -29,9 +29,11 @@ claiming a branch is current with the server.
   and 29.74 unique presentation events/second over more than 30 seconds,
   respectively. These are instrumented compositor feedback, not optical
   proof of perfect frame cadence or a completed player application.
-- [GPU validation evidence](evidence/gpu-validation/README.md): corrected
-  RGB565 memory layout, a premultiplied-alpha sample, and private DRM buffer
-  export/import. These experiments do not accelerate the current Sway renderer.
+- [GPU validation](evidence/gpu-validation/README.md), now complete and archived:
+  RGB565 layout, a premultiplied-alpha sample, private DRM buffer export/import,
+  and three-round timing passed. The full-panel probe used about 94% less process
+  CPU but 11% more elapsed time than Pixman. This supports an opt-in renderer
+  experiment; the current Sway renderer remains Pixman.
 - [Cards and gestures planning](../openspec/changes/touch-launcher-gestures-overview/proposal.md),
   ready for implementation with existing controls preserved.
 
@@ -40,7 +42,6 @@ claiming a branch is current with the server.
 | Work | Already available | Remaining acceptance |
 | --- | --- | --- |
 | Network video | Pinned probe, measured software and MVX paths, presentation tracing, empty-capture diagnosis | Repair/review lifecycle implementation; integrate Apps and image; prove fallback, Stop/Home, EOF/error cleanup, final image and cropped evidence |
-| GPU validation | Source-built probes and physical RGB565/alpha/private-buffer results | Run the three-round process-CPU benchmark; make the measured integration decision and record the concrete follow-up |
 | Boot splash | Source-built U-Boot splash and opt-in kernel/compositor preservation, warm-boot and first-modeset evidence | Calibrated geometry, remaining power-on/second-card procedure, final default and specification acceptance |
 
 The player implementation is preserved on remote branch
@@ -70,9 +71,9 @@ patched decoding, timestamps and EOF are physically verified.
 
 1. Finish usable network video. Decoder work and host lifecycle fixes can run
    in parallel; one coordinator owns final board tests and image integration.
-2. Run the remaining GPU CPU-time measurements in a separate board slot, then
-   decide whether an integration experiment is justified. Wall time alone has
-   not shown a useful speedup.
+2. Use the completed GPU validation to plan a bounded compositor experiment;
+   process-CPU offload is promising, but elapsed time did not improve and
+   complete buffer/synchronization/color/scanout gates remain.
 3. Start cards/gestures implementation independently of decoder work if desired.
    It does not require a GPU renderer or a second Linux CPU.
 4. Return to static splash acceptance before the boot animation. Investigate
