@@ -101,7 +101,7 @@ static void draw(void) {
     } else if(item==3) { add_button(ACT_HELP,"Help","How to use this shell",24,top+row*(bh+gap),width-48,bh,0xff3f556b);
     } else {
       GAppInfo *app=g_ptr_array_index(apps,item-4);
-      add_button(item-3,g_app_info_get_display_name(app),"Installed application",24,
+      add_button(item-4,g_app_info_get_display_name(app),"Installed application",24,
         top+row*(bh+gap),width-48,bh,0xff243547);
     }
   }
