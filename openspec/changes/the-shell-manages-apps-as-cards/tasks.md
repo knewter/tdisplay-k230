@@ -56,3 +56,10 @@ passing delayed-input/native-routing tests and one board repeat observing all
 13 interaction checks. `docs/evidence/card-shell/touch-timestamps/board/README.md`
 retains the repeat's still-failing frame costs. Tasks 4.2, 5.1 and 5.3 stay open;
 one injected repeat does not establish physical throw reliability.
+
+The repeated-millisecond velocity correction is independently reproduced against
+old policy/runtime and passes new sanitizer/native-routing checks. Three normal
+board repeats observe all 13 injected checks apiece; evidence and retained
+budget failures are in `docs/evidence/card-shell/throw-sampling/README.md`.
+This does not establish historical failure attribution or physical-finger
+reliability. Tasks 4.2, 5.1 and 5.3 remain open.

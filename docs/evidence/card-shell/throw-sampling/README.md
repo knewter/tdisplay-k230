@@ -50,6 +50,70 @@ This does not establish the cause of the four intermittent upward-throw misses
 in the [RVV comparison](../kernel-rvv/card-cost/README.md). Its input injector's
 absolute scheduling deadlines can produce bursts after a delay, but those runs
 did not retain the individual gesture source timestamps needed for attribution.
-An unchanged injected board workload repeat with this package is still needed.
+Three unchanged injected board workload repeats now observe all thirteen
+interaction checks apiece; see the physical report below.
 Real-finger acceptance, default-image integration and all failed card cost
 budgets remain open. The normal image has not changed.
+
+
+## Three physical-board repeats
+
+`board/result.json` records three unchanged `card-shell-acceptance.py` runs on
+normal system `gnr36q…`, using published fix revision
+`33962837dd8a6dfc20d2ee944f321d45808b11df` and package `mp0bqh…` from `build.json`.
+All **39/39 interaction checks were OBSERVED**, including each upward-throw
+request, refusal, timeout, accepted close and normal-control route. Each run
+verified the running Sway executable and restored normal shell/seatd. These
+are injected-input observations, not reviewed new pictures or physical fingers.
+
+The root-only bounded runner is committed as `run-board.py`. Stage it beside
+exactly the three published session, acceptance and budget tools; their hashes
+are in the board result. The actual command, within a transient root service
+with a 1,800-second outer deadline, was:
+
+```sh
+python3 /var/lib/k230/card-throw-tools-33962837/run-board.py \
+  --board --revision 33962837dd8a6dfc20d2ee944f321d45808b11df \
+  --output /var/lib/k230/card-throw-sampling-33962837
+```
+
+Each session had the independent root watchdog, a 540-second compositor limit,
+and a 480-second acceptance timeout. The three runs retain the same normal
+kernel, panel, Pixman renderer, configuration, client, 24 drags per card count,
+and existing benchmark producer. `transfer.json` records SHA256 verification
+of the 23 named text files; raw process logs and native pictures were excluded.
+
+All six workload budgets still **FAIL**. All reports were reconstructed exactly
+from committed telemetry, excluding only the newly generated report timestamp.
+`comparison.json` preserves the per-run summary without a speedup claim.
+
+| Repeat | Cards | Frames | Frame CPU p95 / max ms | Tracking p95 ms |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 1 | 144 | 16.574 / 49.312 | 57.475 |
+| 1 | 2 | 139 | 23.663 / 25.896 | 57.474 |
+| 2 | 1 | 138 | 16.511 / 49.612 | 57.478 |
+| 2 | 2 | 143 | 23.726 / 25.411 | 57.478 |
+| 3 | 1 | 142 | 16.309 / 48.920 | 57.477 |
+| 3 | 2 | 150 | 23.843 / 26.934 | 57.478 |
+
+The unchanged CPU limits are p95 16.667 ms / max 33.334 ms; tracking p95 is
+33.334 ms. Frame CPU and tracking fail in every workload; the other declared
+input/release/memory metrics pass. Reproduce each complete report with:
+
+```sh
+python3 tools/card-shell-benchmark.py --board \
+  --input docs/evidence/card-shell/throw-sampling/board/run-1/public/telemetry.log \
+  --manifest docs/evidence/card-shell/throw-sampling/board/run-1/public/manifest.json \
+  --output /tmp/card-throw-repeat-1-budget.json
+```
+
+Exit 1 is expected for the retained budget failure; repeat for runs 2 and 3.
+`normal-restoration.json` and its serial record independently check the normal
+system, shell, seatd, Wi-Fi HTTPS, protected boot/firmware hashes and root layout.
+Its `repeat` phase compares against the committed storage baseline; **no reboot
+or flash occurred during this trial**, and its boot ID matches the three runs.
+
+Three successful injected repeats support this fix but are not a reliability
+estimate or a matched before/after board attribution. The previous failures
+remain committed. Card tasks 4.2, 5.1 and 5.3 stay open: repaint/cadence cost,
+default-image integration and focused real-finger acceptance still need proof.
