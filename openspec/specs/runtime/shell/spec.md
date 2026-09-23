@@ -345,9 +345,9 @@ preferred candidates when an existing dependency satisfies those constraints;
 the image SHALL not gain a network installer, package manager UI, AtomVM, Dozer,
 or a general desktop suite for this capability.
 
-Package builds, measured closure differences, fresh-image discovery and injected
-launches are recorded in `docs/evidence/offline-wifi-image/README.md` and
-`docs/evidence/offline-app-candidates/selection.md`.
+*Grounding: Package builds, measured closure differences, fresh-image discovery
+and injected launches are recorded in `docs/evidence/offline-wifi-image/README.md`
+and `docs/evidence/offline-app-candidates/selection.md`.*
 
 #### Scenario: A user opens the offline app set
 
@@ -395,9 +395,9 @@ portrait touch result. Physical finger accuracy, reboot persistence, and final
 glass readability SHALL remain separately labelled evidence rather than inferred
 from host or injected checks.
 
-The package comparison and hardware trials are recorded in
+*Grounding: The package comparison and hardware trials are recorded in
 `docs/evidence/offline-app-candidates/selection.md` and
-`docs/evidence/offline-wifi-image/README.md`.
+`docs/evidence/offline-wifi-image/README.md`.*
 
 #### Scenario: A reviewer checks an app addition
 

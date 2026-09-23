@@ -133,7 +133,7 @@ lf started and rendered in Foot ([native screenshot](lf-trial.png)), with
 8,576 KiB observed RSS. The interval from before compositor exec through a
 0.2s wait was 0.297 seconds; the following process query confirmed it running.
 As with the other samples, this includes harness overhead and is not isolated
-startup or physical presentation latency. The lf process was then stopped.
+startup or physical presentation latency. The lf process was then stopped and its imported package output deleted.
 All three candidates now have build, closure, startup and memory observations.
 Nano + nnn remains the selected set: lf adds 5,788,696 NAR bytes versus nnn's
 441,408 and had higher RSS in these individual samples. These are single
