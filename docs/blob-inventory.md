@@ -418,6 +418,34 @@ four-release-old version is a process choice. Ask, before buying: **how far
 behind upstream is the vendor's OpenSBI, and what is in their delta?** Nine
 readable files is fine. A fork is not.
 
+### A11 — MVX codec microcode compiled into the kernel
+
+The running Linux kernel has another opaque-code boundary that was missing
+from the original table: the Canaan/Arm-China MVX V4L2 video codec driver.
+`nix/kernel-src.nix` pins the source and the pinned `k230_defconfig` sets
+`CONFIG_VPU_CANAAN=y`, so `drivers/media/platform/canaan/vpu/Makefile` links
+`amvx` into the running kernel. This is not an optional RT-Smart library and
+not a `/lib/firmware` lookup.
+
+`mvx_firmware_cache.c` selects six compiled-in microcode arrays: H.264 decode
+271,104 bytes (`fw_h264dec.c`), H.264 encode 361,472 (`fw_h264enc.c`), HEVC
+decode 219,392 (`fw_hevcdec.c`), HEVC encode 353,664 (`fw_hevcenc.c`), JPEG
+decode 184,192 (`fw_jpegdec.c`), and JPEG encode 277,760 (`fw_jpegenc.c`).
+They are opaque instruction/data words embedded in source arrays, so this
+codec path is **not blob-free**. Disabling the general redistributable firmware
+set does not remove them, and no external firmware package supplies them.
+
+The source notice needs qualification rather than a casual license claim: each
+array file carries Canaan Bright Sight BSD-3-style redistribution conditions
+and `SPDX-License-Identifier: GPL-2.0-only`; the surrounding MVX driver files
+also carry an Arm Technology (China) confidential/proprietary notice alongside
+GPL text. That is not a clean independent-redistribution conclusion. It needs
+vendor/legal review if the project distributes a rebuilt kernel containing the
+arrays. This correction does not add a manifest binary row: the payloads are
+compiled from the pinned kernel source, rather than files in this repository.
+See `docs/evidence/mvx-v4l2-audit.md` for source paths, the V4L2 capability
+contract, and a non-streaming live-board probe.
+
 ## B. Blobs the Linux path would pull in
 
 Except for B12, none of these is on our path *today*. Each is one defconfig
