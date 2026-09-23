@@ -1027,6 +1027,10 @@ DATA 81a2ca6124a20845272f6762e8aaca7a47d60ab31f39b5b651e4fc1a7f71a9b5  docs/evid
 DATA 20ab1b0d089d37cc5fe05746fede71c2b768a3995b916a90a4ebadc90659e986  docs/evidence/launcher-gestures/edge-states/stale-after-close.png
 DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/launcher-gestures/edge-states/stale-back-apps.png
 DATA a72a13b46a2df3201dd53082527aca2fc8bec74c38074735192de8502f0af16a  docs/evidence/launcher-gestures/edge-states/stale-before-close.png
+DATA b3f3a62fd1b4d479b02a588bec7a91e924bd134cbf9a23cf31f45cf6bcee0aa7  docs/evidence/vglite-scene-board/diagnostic/scene-first.png
+DATA 980450a82edfe5e1a218767be6329d55d4f118675a4e2dd5bb588ed24f95137b  docs/evidence/vglite-scene-board/diagnostic/scene-later.png
+DATA c0b5297def4c6933b592be976b8f75fdf950bb20a8ad2ff1b998d79d97857ddd  docs/evidence/vglite-scene-board/initial/scene-first.png
+DATA 4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457  docs/evidence/vglite-scene-board/initial/scene-later.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1257,3 +1261,17 @@ Commands and limits: `docs/evidence/card-composition-board/README.md`.
 | `docs/evidence/card-composition-board/restore/keyboard-visible.png` | 48872 | DATA | `eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8` |
 | `docs/evidence/card-composition-board/restore/terminal.png` | 16517 | DATA | `2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7` |
 | `docs/evidence/card-composition-board/two-live-cards.png` | 5639 | DATA | `20afc0d92b0f7e131441401c2d0c675fe1c33ce642f7c53a66cb26631a0da362` |
+
+## VG-Lite scene fallback captures
+
+Native captures of repository synthetic clients in bounded experimental compositor
+sessions. These show Pixman replay, not GPU acceleration. The diagnostic first
+capture is black before visible content; it is retained as a capture timing limit.
+Commands and interpretation: `docs/evidence/vglite-scene-board/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/vglite-scene-board/diagnostic/scene-first.png` | 2115 | DATA | `b3f3a62fd1b4d479b02a588bec7a91e924bd134cbf9a23cf31f45cf6bcee0aa7` |
+| `docs/evidence/vglite-scene-board/diagnostic/scene-later.png` | 4896 | DATA | `980450a82edfe5e1a218767be6329d55d4f118675a4e2dd5bb588ed24f95137b` |
+| `docs/evidence/vglite-scene-board/initial/scene-first.png` | 4887 | DATA | `c0b5297def4c6933b592be976b8f75fdf950bb20a8ad2ff1b998d79d97857ddd` |
+| `docs/evidence/vglite-scene-board/initial/scene-later.png` | 4894 | DATA | `4d5366204d74a455b767a10cbfbb74cee66fb41557d1c8a2f4bfaff84565e457` |

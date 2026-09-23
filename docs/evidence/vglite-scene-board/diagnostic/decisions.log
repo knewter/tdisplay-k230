@@ -1,0 +1,444 @@
+VG-Lite decision v=1 result=pixman reason=target_attributes op=-1 ops=1 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite decision v=1 result=pixman reason=target_attributes op=-1 ops=1 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite decision v=1 result=pixman reason=target_attributes op=-1 ops=1 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=texture_transfer op=1 ops=3 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0
+VG-Lite operation v=1 op=1 kind=texture alpha=1 opaque=1 blend=1 filter=1 transform=0 transfer=8 primaries=1 luminance=1 encoding=0 range=0 src=0,0,568,1232 dst=0,0,568,1232 clip_rects=4
+VG-Lite decision v=1 result=pixman reason=target_attributes op=-1 ops=1 target=568x1232 dmabuf=1 format=0x36314752 modifier=0x0000000000000000 planes=1 stride=1136 offset=0 vg_status=0

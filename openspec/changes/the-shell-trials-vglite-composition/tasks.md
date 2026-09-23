@@ -30,3 +30,10 @@ separate board gate, recorded in `docs/evidence/vglite-renderer-host.md`.
 - [x] 3.5 Retain Pixman by default unless every gate passes and a separate default-change proposal is accepted; otherwise remove or keep the opt-in experiment as an explicitly unsupported diagnostic.
 
 Diagnostic access analysis and bounded harness: `docs/research/vglite-diagnostic-access.md`. Host lifecycle check: `python3 tests/vglite/test_root_trial.py`. Actual privileged credential isolation is a separate prerequisite: `python3 tests/vglite/check_root_trial_credentials.py --user shell` as root; exit 77 is not proof.
+
+Board scene trials and fixed-schema decisions: `docs/evidence/vglite-scene-board/README.md`.
+The instrumented trial produced zero GPU frames and 224 Pixman replays; normal
+shell recovery passed. Ordinary color metadata and 1136-byte target stride
+were observed rejection reasons. Source/host default-color handling is now
+tested separately; actual GPU submission, format/cache correctness, normal-service
+access, and matched performance/interaction gates remain open.

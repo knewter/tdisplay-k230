@@ -45,3 +45,22 @@ FAIL/INCOMPLETE, never product acceptance. Default Pixman board cost, integrated
 controls, QEMU system-image smoke, physical gestures and optical review remain
 open in the product proposal. No timeout or card-count reduction substitutes
 for those requirements.
+
+## Native input provenance follow-up
+
+The coordinator reviewed `935e021` (integration `f514478`) and independently ran:
+
+```sh
+TMPDIR=/mnt/MediaVolume/home/jadams python3 tests/test_card_touch_routing.py \
+  --provenance \
+  --sway /nix/store/fwyx51499i8blppf5rghziaiwm1q3i2i-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
+  --output /mnt/MediaVolume/home/jadams/k230-root-provenance-review
+```
+
+PASS: seven native Wayland pairing/recovery cases and five provenance cases,
+including rejection of mixed or mismatched input sources. Benchmark arming
+does not rewrite actual device provenance. The physical-name fixture is still
+synthetic; a label alone never proves a real finger. Board acceptance must
+verify the injected device's exact name and virtual sysfs origin. The resulting
+opt-in package is `/nix/store/ii5g7635wldnk7jsrfp18ism634w5y70-k230-card-shell`.
+This follow-up does not close a board or image gate.
