@@ -18,6 +18,14 @@ name only as `YOUR_SSID`. Do not put the network name or key into shell
 history, a command line, source control, a Nix expression, terminal capture,
 or this file. Do not print the protected file.
 
+The same protected file must also contain this non-secret control directive,
+outside its `network` stanza. It gives the one-off daemon a root-only control
+socket directory; it does not persist a connection or disclose a network.
+
+```text
+ctrl_interface=DIR=/run/wpa_supplicant GROUP=root
+```
+
 Before association, verify ownership and permissions, then copy it to the
 root-owned runtime filesystem. Run this block as a root subshell. Its failure
 trap removes the copied secret and, if the launched daemon wrote its PID file,
@@ -39,6 +47,9 @@ nor its Nix closure carries the secret.
   : "${WIFI_IFACE:?set WIFI_IFACE}"
   runtime_conf=/run/wpa-supplicant-board.conf
   runtime_pid=/run/wpa-supplicant-board.pid
+  runtime_ctrl=/run/wpa_supplicant
+  runtime_client=$runtime_ctrl/client
+  runtime_log=/run/wpa-supplicant-board.log
 
   cleanup_failed_start() {
     trap - EXIT HUP INT TERM
@@ -55,13 +66,17 @@ nor its Nix closure carries the secret.
           ;;
       esac
     fi
-    rm -f "$runtime_pid" "$runtime_conf"
+    rm -rf "$runtime_ctrl"
+    rm -f "$runtime_pid" "$runtime_conf" "$runtime_log"
   }
 
   # Do not overwrite a live or stale board invocation. This check is before
   # the trap, so a refusal cannot remove files this invocation does not own.
   if test -e "$runtime_pid" || test -L "$runtime_pid" \
-    || test -e "$runtime_conf" || test -L "$runtime_conf"; then
+    || test -e "$runtime_conf" || test -L "$runtime_conf" \
+    || test -e "$runtime_ctrl" || test -L "$runtime_ctrl" \
+    || test -e "$runtime_client" || test -L "$runtime_client" \
+    || test -e "$runtime_log" || test -L "$runtime_log"; then
     echo "existing Wi-Fi runtime state; complete or investigate it first" >&2
     exit 1
   fi
@@ -72,19 +87,31 @@ nor its Nix closure carries the secret.
   test "$(stat -c '%u' "$RUNTIME_SECRET_FILE")" -eq 0
   test "$(stat -c '%a' "$RUNTIME_SECRET_FILE")" = 600
   install -o root -g root -m 0600 "$RUNTIME_SECRET_FILE" "$runtime_conf"
-  wpa_supplicant -B -P "$runtime_pid" -i "$WIFI_IFACE" -c "$runtime_conf"
+  grep -F -x -- "ctrl_interface=DIR=$runtime_ctrl GROUP=root" \
+    "$runtime_conf" >/dev/null
+  install -d -o root -g root -m 0700 "$runtime_ctrl"
+  # wpa_cli creates its local client socket below this path.  The pinned
+  # package does not create it, so create it before querying the daemon.
+  install -d -o root -g root -m 0700 "$runtime_client"
+  # The daemon can report network-specific state.  Keep its output off the
+  # console and in a root-only runtime log that cleanup removes.
+  install -o root -g root -m 0600 /dev/null "$runtime_log"
+  wpa_supplicant -B -f "$runtime_log" -P "$runtime_pid" \
+    -i "$WIFI_IFACE" -c "$runtime_conf"
   trap - EXIT HUP INT TERM
 )
 ```
 
 The operator may inspect a sanitized association state with
-`wpa_cli -i "$WIFI_IFACE" status`, omitting network names and BSSIDs from any
-record. The later DHCP and routing checks use the same `WIFI_IFACE`.
+`wpa_cli -p /run/wpa_supplicant -i "$WIFI_IFACE" status`, omitting network
+names and BSSIDs from any record. The explicit socket directory and its
+root-only `client` subdirectory avoid depending on a package default. The
+later DHCP and routing checks use the same `WIFI_IFACE`.
 
 On explicit completion, stop only the daemon recorded in the board procedure's
 PID file. The command-line check prevents a reused PID or another
-`wpa_supplicant` service from being killed. It then removes both root-owned
-runtime files. If the recorded daemon already exited, the PID path has no
+`wpa_supplicant` service from being killed. It then removes the root-owned
+runtime configuration, PID file, and control socket directory. If the recorded daemon already exited, the PID path has no
 `/proc` entry, so the procedure removes this invocation's runtime files
 without sending a signal. If a live PID does not name this configuration, it
 refuses to touch either file.
@@ -94,6 +121,8 @@ refuses to touch either file.
   set -eu
   runtime_conf=/run/wpa-supplicant-board.conf
   runtime_pid=/run/wpa-supplicant-board.pid
+  runtime_ctrl=/run/wpa_supplicant
+  runtime_log=/run/wpa-supplicant-board.log
   test -r "$runtime_pid"
   board_pid=$(cat "$runtime_pid")
   case "$board_pid" in
@@ -106,7 +135,8 @@ refuses to touch either file.
       | grep -F -- "$runtime_conf" >/dev/null
     kill "$board_pid" || true
   fi
-  rm -f "$runtime_pid" "$runtime_conf"
+  rm -rf "$runtime_ctrl"
+  rm -f "$runtime_pid" "$runtime_conf" "$runtime_log"
 )
 ```
 
