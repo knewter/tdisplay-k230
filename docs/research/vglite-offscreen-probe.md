@@ -45,6 +45,12 @@ sides of the 2x-scaled target boundary at x=127/128 on rows 0, 63, 127, and
 cleared buffer. The buffers come from `vg_lite_allocate`; there is no DRM
 import, KMS commit, scanout mapping, or panel interaction.
 
+Before applying its strict boundary checks the probe prints raw and in-memory
+byte-order views of source x=0/127 plus target x=0/126/127/128/129/255 on each
+sampled row. Those diagnostics are intended to distinguish a bad transform,
+format interpretation, or target-cache observation from an API failure. They
+do not relax the success condition.
+
 Build only the narrow diagnostic:
 
 ```sh

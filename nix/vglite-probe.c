@@ -30,6 +30,17 @@ static uint32_t pixel_at(const vg_lite_buffer_t *buffer, uint32_t x, uint32_t y)
   return pixel;
 }
 
+static void print_pixel(const char *name, const vg_lite_buffer_t *buffer,
+                        uint32_t x, uint32_t y)
+{
+  uint32_t pixel = pixel_at(buffer, x, y);
+  const uint8_t *bytes = (const uint8_t *)&pixel;
+
+  printf("%s x=%" PRIu32 " y=%" PRIu32 " raw=0x%08" PRIx32
+         " bytes=%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 "\n",
+         name, x, y, pixel, bytes[0], bytes[1], bytes[2], bytes[3]);
+}
+
 int main(void)
 {
   enum { source_width = 128, source_height = 128,
@@ -79,6 +90,17 @@ int main(void)
 
   source_red = pixel_at(&source, 0, 0);
   source_black = pixel_at(&source, source_width - 1, 0);
+  print_pixel("source", &source, 0, 0);
+  print_pixel("source", &source, source_width - 1, 0);
+  for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
+    uint32_t y = rows[i];
+    print_pixel("target", &target, 0, y);
+    print_pixel("target", &target, 126, y);
+    print_pixel("target", &target, 127, y);
+    print_pixel("target", &target, 128, y);
+    print_pixel("target", &target, 129, y);
+    print_pixel("target", &target, 255, y);
+  }
   if (source_red == 0 || source_black != 0) {
     fprintf(stderr, "source pattern did not contain red-left/black-right pixels\n");
     goto out_target;
