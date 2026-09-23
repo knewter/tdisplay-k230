@@ -651,6 +651,18 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA d9b9127bc6471222aa8a6c8cc99dd257b240e9c1a0a22e4f0504f889506dadbf  docs/evidence/vglite-scene-board/context-lifetime/round-1/gpu/scene-first.png
+DATA 8a535115024cf19364360ea89a99bc71746af6cc7384c724d0a1d2c636a10e2f  docs/evidence/vglite-scene-board/context-lifetime/round-1/gpu/scene-later.png
+DATA d9b9127bc6471222aa8a6c8cc99dd257b240e9c1a0a22e4f0504f889506dadbf  docs/evidence/vglite-scene-board/context-lifetime/round-1/pixman/scene-first.png
+DATA 33b91fb93eeb2e98a06437f817a8ac170550c88746991188827ee8bb33e3eed8  docs/evidence/vglite-scene-board/context-lifetime/round-1/pixman/scene-later.png
+DATA 0c22854140c93aa879eccc553e7ea85f1ac869b0ffce62b0f51e427f2a29d63d  docs/evidence/vglite-scene-board/context-lifetime/round-2/gpu/scene-first.png
+DATA 980450a82edfe5e1a218767be6329d55d4f118675a4e2dd5bb588ed24f95137b  docs/evidence/vglite-scene-board/context-lifetime/round-2/gpu/scene-later.png
+DATA 0c22854140c93aa879eccc553e7ea85f1ac869b0ffce62b0f51e427f2a29d63d  docs/evidence/vglite-scene-board/context-lifetime/round-2/pixman/scene-first.png
+DATA 77d40029a1007744b82a4e89446035a437a4253b8a507f20a634dc5c415c47fb  docs/evidence/vglite-scene-board/context-lifetime/round-2/pixman/scene-later.png
+DATA 8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b  docs/evidence/vglite-scene-board/context-lifetime/round-3/gpu/scene-first.png
+DATA 41c6cbda8d7f2c3bd02d5873ccac113e6fe965df2c653365c12c2b4fcbd3ea23  docs/evidence/vglite-scene-board/context-lifetime/round-3/gpu/scene-later.png
+DATA f32b82f2538d2babc2eda97464487e191d8de1a5e23b7ea76a086661ce225284  docs/evidence/vglite-scene-board/context-lifetime/round-3/pixman/scene-first.png
+DATA 328327f15e9fc51e3b0bc898d75af949ff5a47f0814178750e601f255ec8216d  docs/evidence/vglite-scene-board/context-lifetime/round-3/pixman/scene-later.png
 DATA d2b360a3dc612952c203e35e2559a82af40a7c3b7979bf768a077d4cb1bf71ca  docs/evidence/card-composition-board/after-close.png
 DATA e2133dce11201eab18e59a4686cbe1c44d3f3ceb1b9998cc525b081f0482a0fe  docs/evidence/card-composition-board/card-during-drag.png
 DATA 688ce8b11f991fdb18f2f908f43c2bfb85382b7cbe6dc96e714574bad3ffdf9b  docs/evidence/card-composition-board/expanded-second.png

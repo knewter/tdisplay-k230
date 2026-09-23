@@ -1,0 +1,159 @@
+{
+  "evidence_class": "offline analysis of native board captures",
+  "limit": "Different animation frames; this is a region-palette comparison, not full pixel equivalence.",
+  "captures": {
+    "gpu": {
+      "scene-first": {
+        "sha256": "8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b",
+        "parent_counter_low16": 3,
+        "child_counter_low8": 2,
+        "parent_palette": [
+          [
+            16,
+            56,
+            90
+          ],
+          [
+            33,
+            113,
+            181
+          ]
+        ],
+        "child_palette": [
+          [
+            115,
+            73,
+            16
+          ],
+          [
+            231,
+            146,
+            33
+          ]
+        ]
+      },
+      "scene-later": {
+        "sha256": "41c6cbda8d7f2c3bd02d5873ccac113e6fe965df2c653365c12c2b4fcbd3ea23",
+        "parent_counter_low16": 23,
+        "child_counter_low8": 22,
+        "parent_palette": [
+          [
+            16,
+            56,
+            90
+          ],
+          [
+            33,
+            113,
+            181
+          ]
+        ],
+        "child_palette": [
+          [
+            115,
+            73,
+            16
+          ],
+          [
+            231,
+            146,
+            33
+          ]
+        ]
+      }
+    },
+    "pixman": {
+      "scene-first": {
+        "sha256": "f32b82f2538d2babc2eda97464487e191d8de1a5e23b7ea76a086661ce225284",
+        "parent_counter_low16": 8,
+        "child_counter_low8": 7,
+        "parent_palette": [
+          [
+            16,
+            56,
+            90
+          ],
+          [
+            33,
+            113,
+            181
+          ]
+        ],
+        "child_palette": [
+          [
+            115,
+            73,
+            16
+          ],
+          [
+            231,
+            146,
+            33
+          ]
+        ]
+      },
+      "scene-later": {
+        "sha256": "328327f15e9fc51e3b0bc898d75af949ff5a47f0814178750e601f255ec8216d",
+        "parent_counter_low16": 32,
+        "child_counter_low8": 31,
+        "parent_palette": [
+          [
+            16,
+            56,
+            90
+          ],
+          [
+            33,
+            113,
+            181
+          ]
+        ],
+        "child_palette": [
+          [
+            115,
+            73,
+            16
+          ],
+          [
+            231,
+            146,
+            33
+          ]
+        ]
+      }
+    }
+  },
+  "differences": {
+    "parent_palette": {
+      "gpu_minus_pixman_rgb": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "equal": true
+    },
+    "child_palette": {
+      "gpu_minus_pixman_rgb": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "equal": true
+    }
+  },
+  "status": "PASS"
+}

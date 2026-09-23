@@ -1,0 +1,125 @@
+{
+  "renderer": "gpu",
+  "observed_frames": 495,
+  "discarded_warmup_frames": 20,
+  "measured_frames": 475,
+  "costs": {
+    "snapshot_wall_ms": {
+      "median": 19.6336,
+      "p95": 20.519037,
+      "mean": 19.919988909473684
+    },
+    "snapshot_cpu_ms": {
+      "median": 18.437253,
+      "p95": 18.635606,
+      "mean": 18.421417522105262
+    },
+    "cache_wall_ms": {
+      "median": 0.076774,
+      "p95": 0.085032,
+      "mean": 0.08361746315789474
+    },
+    "cache_cpu_ms": {
+      "median": 0.07037,
+      "p95": 0.07326,
+      "mean": 0.0710782147368421
+    },
+    "init_wall_ms": {
+      "median": 0.005222,
+      "p95": 0.41872,
+      "mean": 0.04720627578947369
+    },
+    "init_cpu_ms": {
+      "median": 0.004482,
+      "p95": 0.043667,
+      "mean": 0.008321547368421053
+    },
+    "map_wall_ms": {
+      "median": 0.039516,
+      "p95": 0.054257,
+      "mean": 0.04252464210526316
+    },
+    "map_cpu_ms": {
+      "median": 0.038852,
+      "p95": 0.044889,
+      "mean": 0.03835391789473684
+    },
+    "upload_wall_ms": {
+      "median": 16.628715,
+      "p95": 17.593923,
+      "mean": 16.871912397894736
+    },
+    "upload_cpu_ms": {
+      "median": 15.187213,
+      "p95": 15.413429,
+      "mean": 15.105697195789473
+    },
+    "command_wall_ms": {
+      "median": 0.230394,
+      "p95": 0.350834,
+      "mean": 0.2524521642105263
+    },
+    "command_cpu_ms": {
+      "median": 0.200037,
+      "p95": 0.230964,
+      "mean": 0.20123490315789475
+    },
+    "finish_wall_ms": {
+      "median": 2.37851,
+      "p95": 2.442839,
+      "mean": 2.3833052863157893
+    },
+    "finish_cpu_ms": {
+      "median": 0.10289,
+      "p95": 0.120259,
+      "mean": 0.10479727368421053
+    },
+    "cleanup_wall_ms": {
+      "median": 0.472347,
+      "p95": 0.64456,
+      "mean": 0.49744621052631577
+    },
+    "cleanup_cpu_ms": {
+      "median": 0.451408,
+      "p95": 0.509369,
+      "mean": 0.4560842105263158
+    },
+    "replay_wall_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "replay_cpu_ms": {
+      "median": 0.0,
+      "p95": 0.0,
+      "mean": 0.0
+    },
+    "total_wall_ms": {
+      "median": 43.43625,
+      "p95": 45.821689,
+      "mean": 43.95873927368421
+    },
+    "total_cpu_ms": {
+      "median": 37.119773,
+      "p95": 37.610394,
+      "mean": 37.04583077894737
+    }
+  },
+  "phase_cpu_fraction": {
+    "snapshot": 0.4972602080926715,
+    "cache": 0.0019186562493622053,
+    "init": 0.00022462844518390644,
+    "map": 0.001035309968444083,
+    "upload": 0.40775701011876975,
+    "command": 0.005432052647399495,
+    "finish": 0.002828854731576579,
+    "cleanup": 0.012311350587540397,
+    "replay": 0.0
+  },
+  "limits": [
+    "Instrumented render-pass costs, not frame cadence or optical latency.",
+    "Process CPU includes charged user/system time; excludes other processes and separately accounted interrupt work.",
+    "Capture and log overhead remain in the diagnostic environment.",
+    "No default-renderer performance acceptance from this profile alone."
+  ]
+}
