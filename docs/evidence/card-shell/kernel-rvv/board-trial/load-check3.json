@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "mode": "load-and-return",
+  "trial_system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "loads": [
+    {
+      "file": "bootargs.txt",
+      "partition": "1:2",
+      "bytes": 211,
+      "crc32": "8f1867b4"
+    },
+    {
+      "file": "fw_jump_add_uboot_head.bin",
+      "partition": "1:1",
+      "bytes": 270808,
+      "crc32": "99b89787"
+    },
+    {
+      "file": "Image",
+      "partition": "1:2",
+      "bytes": 60427776,
+      "crc32": "751c3e18"
+    },
+    {
+      "file": "k230-tdisplay.dtb",
+      "partition": "1:2",
+      "bytes": 71532,
+      "crc32": "09c5773a"
+    },
+    {
+      "file": "initrd.uimg",
+      "partition": "1:2",
+      "bytes": 27307568,
+      "crc32": "9bb180c7"
+    }
+  ],
+  "persistent_boot_selection_changed": false,
+  "vector_execution_verified": false,
+  "controller_sha256": "5ad02e4488e669a083a21c757d4f62739a2268c9c7a84628d83974ecf1e4b6b6",
+  "linux_login_observed": true
+}

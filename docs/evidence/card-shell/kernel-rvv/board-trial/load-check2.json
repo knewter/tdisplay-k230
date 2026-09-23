@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "mode": "load-and-return",
+  "trial_system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "loads": [],
+  "persistent_boot_selection_changed": false,
+  "vector_execution_verified": false,
+  "controller_sha256": "06a54c96356e6363f368e9887553c7cae0c59a3d785dbcdb4a9c2ca397bb877c",
+  "error": "loaded memory CRC mismatch or missing report",
+  "normal_recovery_login_observed": true
+}

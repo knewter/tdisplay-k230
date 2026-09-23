@@ -1,0 +1,10 @@
+{
+  "status": "FAIL",
+  "mode": "load-and-return",
+  "trial_system": "/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "loads": [],
+  "persistent_boot_selection_changed": false,
+  "vector_execution_verified": false,
+  "error": "staged trial preflight did not pass"
+}
