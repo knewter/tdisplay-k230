@@ -49,6 +49,50 @@ class VideoSessionTest(unittest.TestCase):
             self.assertIn("--audio=no", args)
             self.assertIn("https://example.invalid/public.mpd", args)
 
+    def test_truncated_runtime_stream_is_error_without_leaking_diagnostics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            playlist = root / "private.playlist"
+            playlist.write_text("https://example.invalid/private-token\n")
+            playlist.chmod(0o600)
+            player = self.fake_player(root,
+                "printf '%s\\n' 'https://example.invalid/private-token'\n"
+                "printf '%s' '[ffmpeg] http: Stream ends prema'\n"
+                "sleep .1\n"
+                "printf '%s\\n' 'turely at 1343488, should be 5089683' 'Exiting... (End of file)'\n"
+                "exit 0\n")
+            result = self.run_session(root, player, "run", "--url-file", str(playlist))
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("Video stream was interrupted", result.stderr)
+            self.assertNotIn("private-token", result.stdout + result.stderr)
+            self.assertEqual((root / "video.log").read_bytes(), b"")
+            self.assertFalse(playlist.exists())
+            self.assertFalse((root / "video.pid").exists())
+
+    def test_mvx_transport_error_does_not_trigger_decoder_fallback(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root,
+                "printf '%s\\n' '[ffmpeg] http: Stream ends prematurely at 100, should be 200'\nexit 0\n")
+            result = self.run_session(root, player, "run-mvx")
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("Video stream was interrupted", result.stderr)
+            self.assertNotIn("falling back", result.stderr)
+            self.assertEqual(len((root / "args").read_text().splitlines()), 1)
+
+    def test_runtime_eof_and_decode_warning_are_not_transport_errors(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            playlist = root / "private.playlist"
+            playlist.write_text("https://example.invalid/private-token\n")
+            playlist.chmod(0o600)
+            player = self.fake_player(root,
+                "printf '%s\\n' 'Error while decoding frame!' 'Exiting... (End of file)'\nexit 0\n")
+            result = self.run_session(root, player, "run", "--url-file", str(playlist))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual((root / "video.log").read_bytes(), b"")
+            self.assertFalse(playlist.exists())
+
     def test_mvx_is_opt_in_and_lists_software_fallback(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
@@ -133,7 +177,9 @@ class VideoSessionTest(unittest.TestCase):
                 "sleep 1\n"
             )
             player.chmod(0o755)
-            result = self.run_session(root, player, "run", K230_VIDEO_DEADLINE="0.1")
+            # Allow interpreter startup on a busy build host, while the fake
+            # player stays alive for twice the configured deadline.
+            result = self.run_session(root, player, "run", K230_VIDEO_DEADLINE="0.5")
             self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_user_stop_of_mvx_does_not_start_software_fallback(self):

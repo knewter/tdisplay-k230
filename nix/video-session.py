@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, ctypes, fcntl, json, os, signal, stat, subprocess, sys, time
+import argparse, ctypes, fcntl, json, os, re, signal, stat, subprocess, sys, time
 from pathlib import Path
 
 PUBLIC = os.environ.get('K230_VIDEO_PUBLIC_URL', 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd')
@@ -98,6 +98,46 @@ def validate_playlist(explicit):
     return str(path), path
 
 
+class PlayerOutput:
+    """Drain mpv without persisting runtime-source diagnostics or URLs.
+
+    Pinned FFmpeg reports an incomplete HTTP body at error level, but mpv can
+    still return success/EOF. Recognize that specific transport diagnostic;
+    ordinary decoding warnings and normal EOF are not transport failures.
+    """
+    premature = re.compile(
+        rb"(?:^|[\r\n])\[ffmpeg\] https?: Stream ends prematurely at ([0-9]+), should be ([0-9]+)[\r\n]")
+
+    def __init__(self, stream, public_log=None):
+        self.stream, self.public_log = stream, public_log
+        self.tail = b''
+        self.truncated_http = False
+        os.set_blocking(stream.fileno(), False)
+
+    def feed(self, data):
+        joined = self.tail + data
+        for match in self.premature.finditer(joined):
+            if int(match[1]) < int(match[2]):
+                self.truncated_http = True
+        # Bound retained diagnostics; never print this content for runtime URLs.
+        self.tail = joined[-512:]
+
+    def drain(self):
+        # Bound work per controller poll so Stop retains its deadline even if a
+        # player or descendant floods stderr. The pipe applies backpressure.
+        for _ in range(4):
+            try:
+                data = os.read(self.stream.fileno(), 65536)
+            except BlockingIOError:
+                return
+            if not data:
+                self.feed(b'\n')
+                return
+            if self.public_log is not None:
+                self.public_log.write(data)
+            self.feed(data)
+
+
 class Session:
     def __init__(self, mode, explicit):
         self.mode, self.explicit = mode, explicit
@@ -107,6 +147,7 @@ class Session:
         self.private_path = None
         self.lock = None
         self.cancel_deadline = None
+        self.transport_failed = False
 
     def signal(self, _signum, _frame):
         self.cancelled = True
@@ -134,20 +175,29 @@ class Session:
         return args
 
     def run_once(self, mode, source):
+        self.transport_failed = False
         if self.cancelled:
             return 143, False
         try: self.socket.unlink()
         except FileNotFoundError: pass
-        output = subprocess.DEVNULL if source.startswith('/') else open(LOG, 'ab', buffering=0)
+        output = None if source.startswith('/') else open(LOG, 'ab', buffering=0)
+        monitor = None
         try:
-            self.child = subprocess.Popen(self.args(mode, source), stdout=output, stderr=subprocess.STDOUT,
+            self.child = subprocess.Popen(self.args(mode, source), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                           start_new_session=True, close_fds=True)
+            monitor = PlayerOutput(self.child.stdout, output)
             write_state(self.child)
             deadline = time.monotonic() + DEADLINE
             timed_out = False
             while True:
+                monitor.drain()
                 rc = self.child.poll()
                 if rc is not None:
+                    monitor.drain()
+                    if monitor.truncated_http and not self.cancelled:
+                        self.transport_failed = True
+                        print('Video stream was interrupted before all data arrived; retry from Apps.', file=sys.stderr)
+                        return rc if rc != 0 else 2, timed_out
                     return rc, timed_out
                 if self.cancelled:
                     kill_group(self.child, signal.SIGTERM)
@@ -170,7 +220,8 @@ class Session:
             if self.child is not None:
                 self.child.wait()
             reap_children()
-            if hasattr(output, 'close'): output.close()
+            if monitor is not None: monitor.stream.close()
+            if output is not None: output.close()
             try: self.socket.unlink()
             except FileNotFoundError: pass
             self.child = None
@@ -200,7 +251,7 @@ class Session:
                 raise RuntimeError('MVX mode is limited to the public demo')
             if self.cancelled: return 143
             rc, timed = self.run_once(self.mode, source)
-            if self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled:
+            if self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled and not self.transport_failed:
                 print('MVX decoder failed; falling back to software H.264', file=sys.stderr)
                 if os.environ.get('K230_VIDEO_TEST_FALLBACK_DELAY'):
                     time.sleep(float(os.environ['K230_VIDEO_TEST_FALLBACK_DELAY']))

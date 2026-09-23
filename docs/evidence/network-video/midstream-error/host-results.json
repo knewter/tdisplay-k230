@@ -1,0 +1,25 @@
+{
+  "scope": "host real mpv with null output and 20x speed; no board or sustained playback claim",
+  "trials": [
+    {
+      "truncated": true,
+      "exit": 2,
+      "seconds": 0.608,
+      "state_absent": true,
+      "playlist_absent": true,
+      "socket_absent": true,
+      "private_log_empty": true,
+      "generic_error": true
+    },
+    {
+      "truncated": false,
+      "exit": 0,
+      "seconds": 1.714,
+      "state_absent": true,
+      "playlist_absent": true,
+      "socket_absent": true,
+      "private_log_empty": true,
+      "generic_error": false
+    }
+  ]
+}
