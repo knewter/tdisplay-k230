@@ -45,3 +45,8 @@ visible during a held drag, expansion/privacy/close recovery and persistent
 controls are covered, and normal-shell restoration passed. The first failed
 trial remains committed. The repeat uses the old telemetry producer, so cost
 parsing still rejects it; tasks 4.2, 5.1 and 5.3 remain open.
+
+Task 4.2 remains open: `docs/evidence/card-shell/board-cost/long-trace/README.md`
+records adequate frame coverage but failed CPU/tracking budgets. Twelve repeated
+interaction checks were observed; upward throw missed once, so repeatability
+also remains unresolved despite the earlier successful task 5.2 evidence.

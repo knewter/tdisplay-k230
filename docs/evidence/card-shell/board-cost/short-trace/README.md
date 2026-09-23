@@ -28,9 +28,9 @@ submission or presentation identifiers. This is not a passing cost gate.
 Coverage also needs extending. There were only 34/44 distinct submitted frames
 and 13/26 qualifying tracking intervals, below the 60/30 minima. Many native
 events coalesced. A numeric failure takes precedence over `INCOMPLETE` in each
-metric's status; the sample counts must still be reviewed. Seven/twelve-plus
-input gaps over 50 ms are excluded from the tracking-interval calculation as
-specified by the unchanged parser (exact counts: 13 for one card, 7 for two).
+metric's status; the sample counts must still be reviewed. The unchanged
+parser excludes input gaps over 50 ms from the tracking-interval calculation:
+13 gaps for one card and 7 for two.
 
 The harness now requests 24 drags per workload to obtain adequate independent
 frame samples. This changes coverage, not thresholds, the native gesture path,
