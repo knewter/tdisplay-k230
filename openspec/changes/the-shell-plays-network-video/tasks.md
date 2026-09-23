@@ -20,8 +20,8 @@
 ## 4. MVX hardware decoder experiment
 
 - [x] 4.1 Build or expose the MVX V4L2 probe/player path against the audited device interface; verify the device node, capabilities, negotiated H.264 format, and output format using a narrow board console probe before claiming decode.
-- [ ] 4.2 Attempt the same bounded network representation through MVX and record whether frames decode and reach the existing output; verify a failed negotiation falls back to software and leaves the shell recoverable.
-- [ ] 4.3 Compare software and MVX CPU, drop, cache, and presentation results over at least 30 seconds; verify the report names the actual decoder path and does not infer hardware acceleration from `/dev/video0` presence alone.
+- [x] 4.2 Attempt the same bounded network representation through MVX and record whether frames decode and reach the existing output; verify a failed negotiation falls back to software and leaves the shell recoverable.
+- [x] 4.3 Compare software and MVX CPU, drop, cache, and presentation results over at least 30 seconds; verify the report names the actual decoder path and does not infer hardware acceleration from `/dev/video0` presence alone.
 
 ## 5. Presentation and audio acceptance
 

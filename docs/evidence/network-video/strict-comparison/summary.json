@@ -1,0 +1,90 @@
+{
+  "clock_ticks": 100,
+  "page_size": 4096,
+  "trials": [
+    {
+      "mode": "software",
+      "window_media_start": 48.066667,
+      "window_media_end": 83.1,
+      "wall_seconds": 35.013,
+      "player_cpu_percent": 54.66540999057493,
+      "rss_bytes_first": 190865408,
+      "rss_bytes_last": 191127552,
+      "decoder_drop_delta": 0,
+      "output_drop_delta": 0,
+      "min_cache_seconds": 27.366667,
+      "paused_cache_seen": false,
+      "presentation": {
+        "clock_id": 1,
+        "submitted": 1051,
+        "presented": 1051,
+        "discarded": 0,
+        "unresolved_at_log_end": 0,
+        "unique_presented_video_frames": 1051,
+        "unique_presented_pts": 1051,
+        "presentation_span_s": 35.006541,
+        "presentation_events_per_s": 29.994394476163755,
+        "interval_ms": {
+          "median": 38.32,
+          "p95": 38.324,
+          "max": 57.482
+        },
+        "sequence_first": 162903,
+        "sequence_last": 164730,
+        "flags_counts": {
+          "7": 1051
+        },
+        "all_hardware_completion": true,
+        "submit_to_present_ms": {
+          "min": 2.823439,
+          "max": 28.016138,
+          "mean": 13.70588539581351
+        },
+        "evidence_level": "hardware-signalled compositor presentation",
+        "limitations": "Not a photon measurement. Rates count surface updates, not decoder throughput. Driver event correctness requires a separate source/hardware audit."
+      }
+    },
+    {
+      "mode": "mvx",
+      "window_media_start": 48.166667,
+      "window_media_end": 83.133333,
+      "wall_seconds": 34.999,
+      "player_cpu_percent": 50.31572330638018,
+      "rss_bytes_first": 200654848,
+      "rss_bytes_last": 200916992,
+      "decoder_drop_delta": 0,
+      "output_drop_delta": 6,
+      "min_cache_seconds": 20.233333,
+      "paused_cache_seen": false,
+      "presentation": {
+        "clock_id": 1,
+        "submitted": 1042,
+        "presented": 1042,
+        "discarded": 0,
+        "unresolved_at_log_end": 0,
+        "unique_presented_video_frames": 1042,
+        "unique_presented_pts": 1042,
+        "presentation_span_s": 34.891491,
+        "presentation_events_per_s": 29.83535441348723,
+        "interval_ms": {
+          "median": 38.32,
+          "p95": 57.476,
+          "max": 76.644
+        },
+        "sequence_first": 165617,
+        "sequence_last": 167438,
+        "flags_counts": {
+          "7": 1042
+        },
+        "all_hardware_completion": true,
+        "submit_to_present_ms": {
+          "min": 3.655584,
+          "max": 36.082782,
+          "mean": 15.357607505758157
+        },
+        "evidence_level": "hardware-signalled compositor presentation",
+        "limitations": "Not a photon measurement. Rates count surface updates, not decoder throughput. Driver event correctness requires a separate source/hardware audit."
+      }
+    }
+  ]
+}

@@ -88,3 +88,7 @@ candidate. All runs exit successfully and preserve EOF, but the raw trace also
 shows duplicated MVX capture timestamps propagated by FFmpeg. The candidate is
 therefore diagnostic-only; it is not enabled in the system or used to claim
 native timestamp correctness.
+
+The [strict decoder comparison](strict-comparison/README.md) records verified
+software/MVX profiles, steady presentation/CPU/cache counters and the separate
+MVX seek stall; software remains the default.
