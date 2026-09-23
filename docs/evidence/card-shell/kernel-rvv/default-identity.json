@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "date": "2026-09-23",
+  "trial_default_derivations": {
+    "kernel": "/nix/store/lqh4gn8gvkq4z3cf6620v8i3s5qk8mq4-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "system": "/nix/store/k37ci7bym5n0h1w594lizrzgs9k3xw7n-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  },
+  "trial_default_system_output": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "observed_board_current_system": "/nix/store/nz82q373yj1hp2k4qm85xa3c328jli8j-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limit": "Identical default system artifact, not a build or boot of the optional vector kernel."
+}
