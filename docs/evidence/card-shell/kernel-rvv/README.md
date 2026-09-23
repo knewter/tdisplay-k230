@@ -43,3 +43,9 @@ shell/touch/Wi-Fi recovery and pixel comparisons; then compare the same live
 card workload with the corrected Pixman's RVV enabled and disabled. Preserve
 all existing interaction and frame-cost budgets. A kernel build alone does not
 close card task 4.2 or any physical acceptance gate.
+
+
+The [context probe](context-probe/README.md) now has passing full Linux guest
+checks at two vector lengths and a deliberate corruption control. The same
+compiled probe safely skips on the unchanged physical board. These validate
+the diagnostic and fallback; they do not verify the trial kernel on hardware.

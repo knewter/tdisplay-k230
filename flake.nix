@@ -111,6 +111,8 @@
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.
         pixman-rvv = pkgsCross.callPackage ./nix/pixman-rvv.nix { };
+        rvv-context-probe = pkgsCross.callPackage ./nix/rvv-context-probe.nix { };
+        rvv-context-probe-corrupt = pkgsCross.callPackage ./nix/rvv-context-probe.nix { corrupt = true; };
         card-shell = pkgsCross.callPackage ./nix/card-shell.nix {
           swayUnwrapped = pkgsCross.sway-unwrapped;
         };
