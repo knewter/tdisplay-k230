@@ -1,0 +1,32 @@
+{
+  "evidence_class": "host-built-image-and-boot-partition-inspection",
+  "finished_at": "2026-09-23T19:05:27.764313+00:00",
+  "command": [
+    "nix",
+    "build",
+    ".#sdImage-rvv-trial",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "8",
+    "--no-link",
+    "--print-out-paths"
+  ],
+  "exit_code": 0,
+  "image": "/nix/store/d4hc731zcmkd25lacw760lmmyl9b6r8j-k230-sd-image.img",
+  "bytes": 2308960256,
+  "sha256": "fe4904055dab55365a14fcf03cfd82024567f6b8963ec799d6931cb2cb217e3b",
+  "partition_offsets_sectors": [
+    8192,
+    262144
+  ],
+  "kernel_sha256": "527e79b9b249eb8e3c6b7a46f9eec26800ed22e25d1ace41d715d6c214a6f628",
+  "initrd_payload_matches_system": true,
+  "uimage_header_and_payload_crc_valid": true,
+  "bootargs_select_matching_system": true,
+  "system": "/nix/store/jcf33nrqi7hfgbj7y8jlmayz4bssvvzc-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": [
+    "No image flash or board boot performed.",
+    "No physical vector context, touch, Wi-Fi or performance acceptance."
+  ]
+}
