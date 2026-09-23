@@ -95,6 +95,9 @@
         # so it can be cross-built first (runtime/shell task 2.2) and its
         # store path is the one the closure will contain.
         shell-compositor = self.nixosConfigurations.k230.config.k230.shell.compositor;
+        # Opt-in only: Sway linked against the guarded VG-Lite wlroots fork.
+        # This is deliberately outside the default shell and image closure.
+        shell-compositor-vglite = self.nixosConfigurations.k230.config.k230.shell.vgliteCompositor;
         # Diagnostic-only sway: task 6.1 can build this narrow derivation after
         # the image builder is idle, then enable k230.shell.frameTiming on a
         # board image to log CPU scene-build plus KMS-commit submission time.

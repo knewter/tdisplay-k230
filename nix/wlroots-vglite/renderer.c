@@ -123,6 +123,7 @@ static bool gpu_pass(struct vglite_pass *p) {
 	target.stride = a.stride[0]; target.format = VG_LITE_BGR565;
 	if (vg_lite_init(target.width, target.height) != VG_LITE_SUCCESS) return false;
 	bool ok = vg_lite_map(&target, VG_LITE_MAP_DMABUF, a.fd[0]) == VG_LITE_SUCCESS;
+	bool submitted = false;
 	for (size_t i = 0; ok && i < p->len; i++) {
 		if (p->ops[i].kind == OP_RECT) {
 			struct wlr_render_rect_options *o = &p->ops[i].rect;
@@ -131,6 +132,7 @@ static bool gpu_pass(struct vglite_pass *p) {
 				((vg_lite_color_t)(o->color.b * 255.0f) << 16) |
 				((vg_lite_color_t)(o->color.g * 255.0f) << 8) |
 				(vg_lite_color_t)(o->color.r * 255.0f);
+			submitted = true;
 			ok = vg_lite_clear(&target, &r, c) == VG_LITE_SUCCESS;
 			continue;
 		}
@@ -154,11 +156,20 @@ static bool gpu_pass(struct vglite_pass *p) {
 			ok = vg_lite_scale((float)dst.width / src.width, (float)dst.height / src.height, &matrix) == VG_LITE_SUCCESS;
 			if (ok) ok = vg_lite_translate(dst.x, dst.y, &matrix) == VG_LITE_SUCCESS;
 			vg_lite_rectangle_t rect = {src.x, src.y, src.width, src.height};
-			if (ok) ok = vg_lite_blit_rect(&target, &source, &rect, &matrix, VG_LITE_BLEND_NONE, 0xffffffff, VG_LITE_FILTER_POINT) == VG_LITE_SUCCESS;
+			if (ok) {
+				submitted = true;
+				ok = vg_lite_blit_rect(&target, &source, &rect, &matrix, VG_LITE_BLEND_NONE, 0xffffffff, VG_LITE_FILTER_POINT) == VG_LITE_SUCCESS;
+			}
 		}
 		if (source.handle) vg_lite_free(&source);
 	}
 	if (ok) ok = vg_lite_finish() == VG_LITE_SUCCESS;
+	else if (submitted) {
+		/* A failed command may already be queued. Drain it before Pixman writes
+		 * the same mapped target, otherwise stale GPU work can race the replay. */
+		vg_lite_finish();
+		wlr_log(WLR_ERROR, "VG-Lite pass failed; drained queued work before Pixman replay");
+	}
 	if (target.handle) vg_lite_unmap(&target); vg_lite_close();
 	return ok;
 }

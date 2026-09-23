@@ -51,6 +51,23 @@ let
     else if cfg.frameTiming then swayFrameTiming
     else swayBase;
   wlroots = pkgs.wlroots_0_20.override { enableXWayland = false; };
+  # Opt-in diagnostic compositor only. The normal shell keeps the pinned
+  # Pixman wlroots package above; this package is exposed by the flake and is
+  # never selected by the system service.
+  vgliteProbe = pkgs.callPackage ./vglite-probe.nix { };
+  wlrootsVglite = pkgs.callPackage ./wlroots-vglite.nix {
+    wlroots_0_20 = wlroots;
+    inherit vgliteProbe;
+  };
+  swayVgliteUnwrapped = pkgs.sway-unwrapped.overrideAttrs (old: {
+    buildInputs = map (dep:
+      if (dep.pname or "") == "wlroots" then wlrootsVglite else dep
+    ) old.buildInputs;
+  });
+  swayVglite = pkgs.sway.override {
+    enableXWayland = false;
+    sway-unwrapped = swayVgliteUnwrapped;
+  };
 
   # cage is the first-light probe (tasks 3.1/3.2), not the shell: it has no
   # layer-shell and so can never host the keyboard. Two variants, because
@@ -297,6 +314,14 @@ in
       description = "The compositor package, exposed so it can be built alone.";
     };
 
+    vgliteCompositor = lib.mkOption {
+      type = lib.types.package;
+      default = swayVglite;
+      readOnly = true;
+      description = "Opt-in Sway package using the guarded VG-Lite wlroots renderer.";
+    };
+
+
     launcher = lib.mkOption {
       type = lib.types.package;
       default = touchLauncher;
@@ -531,6 +556,7 @@ in
     ];
 
     # swaymsg from a root shell on the serial console reaches the session's
+    # socket without
     # socket without anyone having to remember the path.
     environment.variables.SWAYSOCK = "/run/shell/sway-ipc.sock";
   };
