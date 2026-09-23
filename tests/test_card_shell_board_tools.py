@@ -78,6 +78,23 @@ class SessionTests(unittest.TestCase):
         self.assertLess(trace.index(['systemctl','stop',H.INPUT_UNIT]),restart)
         self.assertEqual(session.state['phase'],'restored');self.assertFalse(fake.active(H.UNIT))
         log=(self.root/'export/telemetry.log').read_text();self.assertNotIn('SECRET',log);self.assertNotIn('token',log)
+    def test_pixman_policy_applies_only_to_transient_service(self):
+        for policy,value in [('auto',''),('no-rvv','rvv')]:
+            with self.subTest(policy=policy):
+                if (self.runtime/'state.json').exists():(self.runtime/'state.json').unlink()
+                session,fake=self.run_session()
+                session.execute({**PLAN,'pixman_policy':policy},self.root/policy)
+                starts=[x for x in fake.trace if x[0]=='systemd-run' and '--unit='+H.UNIT in x]
+                self.assertEqual(len(starts),1)
+                self.assertEqual([x for x in starts[0] if x.startswith('--setenv=PIXMAN_DISABLE=')],['--setenv=PIXMAN_DISABLE='+value])
+                self.assertEqual(json.loads((self.root/policy/'session.json').read_text())['pixman_policy'],policy)
+                self.assertTrue(fake.active('shell.service'))
+                self.assertFalse(any('set-environment' in x for x in fake.trace))
+    def test_invalid_pixman_policy_never_arms_or_stops_shell(self):
+        session,fake=self.run_session()
+        with self.assertRaises(ValueError):session.arm({**PLAN,'pixman_policy':'force-rvv'})
+        self.assertEqual(fake.trace,[])
+        self.assertTrue(fake.active('shell.service'))
     def test_partial_launch_and_input_failure_restore(self):
         for fail in ('launch','input','crash'):
             with self.subTest(fail=fail):

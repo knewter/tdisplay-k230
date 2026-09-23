@@ -33,6 +33,14 @@ def trusted(path: str) -> str:
     return path
 
 
+def pixman_policy_environment(policy):
+    if policy not in ('auto', 'no-rvv'):
+        raise ValueError('unknown Pixman dispatch policy')
+    # Empty explicitly clears any inherited disable list without bypassing
+    # Pixman's runtime hwprobe gate. Apply only to the transient compositor.
+    return '--setenv=PIXMAN_DISABLE='+('rvv' if policy == 'no-rvv' else '')
+
+
 def exec_identity(value: str) -> str:
     # systemctl includes mutable pid/start_time/stop_time/code/status fields in
     # ExecStart. Compare only the configured command, never that runtime state.
@@ -194,6 +202,7 @@ class Session:
         self.event('normal_services_restored')
 
     def arm(self, plan):
+        pixman_policy_environment(plan.get('pixman_policy', 'auto'))
         if not self.system.active('shell.service') or not self.system.active('seatd.service'):
             raise RuntimeError('normal shell and seatd must be active before reservation')
         if self.system.prop('shell.service','User') != 'shell':
@@ -261,6 +270,7 @@ class Session:
                           '--setenv=SWAYSOCK='+str(session/'sway-ipc.sock'),'--setenv=XDG_SEAT=seat0',
                           '--setenv=LIBSEAT_BACKEND=seatd','--setenv=WLR_RENDERER=pixman',
                           '--setenv=SWAY_K230_CARD_BENCH_CGROUP=1',
+                          pixman_policy_environment(self.state.get('pixman_policy', 'auto')),
                           self.state['package']+'/bin/card-shell','--sway','--debug','--config',str(config)])
         invocation = self.system.prop(UNIT,'InvocationID')
         if not re.fullmatch(r'[a-f0-9]{32}', invocation):
@@ -318,7 +328,7 @@ class Session:
             journal = self.system.call(['journalctl','_SYSTEMD_INVOCATION_ID='+invocation,'--no-pager','-o','cat','--grep=K230_CARD_(BENCH|SHELL)','-n','20000']).stdout
             (output/'telemetry.log').write_text(normalized_journal(journal[:16*1024*1024]))
         # Protect internal ExecStart, dependency environment and service state.
-        manifest = {key:self.state[key] for key in ('schema','package','source_revision','created_at','normal_config','phase','device','invocation') if key in self.state}
+        manifest = {key:self.state[key] for key in ('schema','package','source_revision','created_at','normal_config','phase','device','invocation','pixman_policy') if key in self.state}
         manifest.update(evidence_class='board-session-telemetry', physical_touch='UNVERIFIED', normal_controls='UNVERIFIED')
         atomic_json(output/'session.json', manifest)
         if (self.runtime/'session.jsonl').exists():
@@ -332,7 +342,9 @@ def plan_from(args):
         raise ValueError('duration must be 30–600 seconds')
     if not re.fullmatch(r'/dev/input/event[0-9]+', args.source_device):
         raise ValueError('source device must be an explicit input event device')
-    return {'package':trusted(args.package), 'normal_config':trusted(args.config), 'client':trusted(args.client),
+    policy = getattr(args, 'pixman_policy', 'auto')
+    pixman_policy_environment(policy)
+    return {'pixman_policy':policy, 'package':trusted(args.package), 'normal_config':trusted(args.config), 'client':trusted(args.client),
             'source_revision':args.revision, 'duration':args.duration, 'source_device':args.source_device}
 
 
@@ -350,6 +362,7 @@ def main(argv=None):
     parser.add_argument('--package');parser.add_argument('--config');parser.add_argument('--client')
     parser.add_argument('--revision');parser.add_argument('--duration',type=int,default=300)
     parser.add_argument('--source-device',default='/dev/input/event0')
+    parser.add_argument('--pixman-policy', choices=('auto','no-rvv'), default='auto')
     parser.add_argument('--output',type=Path,default=Path('card-shell-session'))
     args = parser.parse_args(argv)
     try:
