@@ -1083,6 +1083,12 @@ DATA 0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a  docs/evid
 DATA 066ce3d3c67319949aafb77776ab08bf13bc22a90ffba9ca1339a3978bf857ed  docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-first.png
 DATA ed2d3814ca804d3a21c29762a80f2227cde0db92df0db19268a844d9398fb93c  docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-later.png
 
+# Instrumented GPU/CPU baseline: native synthetic scene DATA
+DATA 8845f9437717a5c103ec30a9905bb64f62d0b41d414a4e0fe8299624831cab2b  docs/evidence/vglite-scene-board/cost-profile/baseline/gpu/scene-first.png
+DATA 0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a  docs/evidence/vglite-scene-board/cost-profile/baseline/gpu/scene-later.png
+DATA 0c22854140c93aa879eccc553e7ea85f1ac869b0ffce62b0f51e427f2a29d63d  docs/evidence/vglite-scene-board/cost-profile/baseline/pixman/scene-first.png
+DATA 77d40029a1007744b82a4e89446035a437a4253b8a507f20a634dc5c415c47fb  docs/evidence/vglite-scene-board/cost-profile/baseline/pixman/scene-later.png
+
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1362,3 +1368,10 @@ Pixman. Performance and normal-service acceptance remain open. Provenance:
 | `docs/evidence/vglite-scene-board/color-upload/scene/gpu/scene-later.png` | 4888 | DATA | `0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a` |
 | `docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-first.png` | 4886 | DATA | `066ce3d3c67319949aafb77776ab08bf13bc22a90ffba9ca1339a3978bf857ed` |
 | `docs/evidence/vglite-scene-board/color-upload/scene/pixman/scene-later.png` | 4905 | DATA | `ed2d3814ca804d3a21c29762a80f2227cde0db92df0db19268a844d9398fb93c` |
+
+
+### GPU render-pass cost baseline
+
+Native synthetic-scene DATA accompanying opt-in phase timings. Exact palettes
+match; no performance acceptance is claimed. Commands, artifacts and limits:
+`docs/evidence/vglite-scene-board/cost-profile/README.md`.
