@@ -39,8 +39,11 @@ static int alloc565(vg_lite_buffer_t *b, unsigned w, unsigned h) {
   memset(b, 0, sizeof *b);
   b->width = w;
   b->height = h;
-  b->format = VG_LITE_RGB565;
-  return vg(vg_lite_allocate(b), "allocate RGB565");
+  /* The SDK maps RGB565/BGR565 to distinct hardware formats (0x21/0x01).
+   * Board evidence shows BGR565 is the variant whose bytes are DRM/Pixman
+   * little-endian RGB565 (red 0xf800, blue 0x001f). */
+  b->format = VG_LITE_BGR565;
+  return vg(vg_lite_allocate(b), "allocate BGR565 for DRM RGB565 memory");
 }
 static int quads_gpu(vg_lite_buffer_t *b, unsigned w, unsigned h) {
   vg_lite_rectangle_t r[4] = {{0, 0, w / 2, h / 2},
@@ -201,7 +204,7 @@ static int dmabuf(const char *n) {
   b.width = DW;
   b.height = DH;
   b.stride = pitch;
-  b.format = VG_LITE_RGB565;
+  b.format = VG_LITE_BGR565;
   b.memory = cpu;
   if (vg(vg_lite_init(DW, DH), "init dmabuf"))
     goto out;
@@ -212,14 +215,16 @@ static int dmabuf(const char *n) {
   if (vg(vg_lite_clear(&b, NULL, 0xff0000ffu), "clear imported dumb") ||
       vg(vg_lite_finish(), "finish imported dumb"))
     goto out;
+  show565("dmabuf-cpu-map", cpu, pitch, 0, 0);
+  show565("dmabuf-cpu-map", cpu, pitch, DW - 1, 0);
+  show565("dmabuf-cpu-map", cpu, pitch, 0, DH - 1);
+  show565("dmabuf-cpu-map", cpu, pitch, DW - 1, DH - 1);
   for (unsigned y = 0; y < DH; y++)
     for (unsigned x = 0; x < DW; x++)
       if (get565(cpu, pitch, x, y) != 0xf800) {
         fputs("DMABUF_ASSERTION_FAILED original CPU mapping not full red\n", stderr);
         goto out;
       }
-  show565("dmabuf-cpu-map", cpu, pitch, 0, 0);
-  show565("dmabuf-cpu-map", cpu, pitch, DW - 1, DH - 1);
   puts("DMABUF_PASS original CPU mapping exact full red");
   printf("DMABUF_DETAILS node=%s handle=%" PRIu32 " pitch=%" PRIu32 " size=%" PRIu64 "\n", n, h,
          pitch, size);

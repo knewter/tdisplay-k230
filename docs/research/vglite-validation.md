@@ -28,7 +28,11 @@ is C908-specific and not a portable library claim.
 
 ## Subtests and claims
 
-`rgb565` uses private source and destination GPU allocations. It clears an
+`rgb565` uses private source and destination GPU allocations. The source names
+the API format `VG_LITE_BGR565`: vendor source maps it to hardware format
+`0x01`, distinct from `VG_LITE_RGB565` (`0x21`), and the physical initial run
+showed that this is the API variant required to produce DRM/Pixman
+little-endian RGB565 memory (`red = 0xf800`, `blue = 0x001f`). It clears an
 four nonuniform red/green/blue/black quadrants, point-scales by two, calls
 `vg_lite_finish`, and requires exact RGB565 samples at the outer corners and
 both sides of each horizontal and vertical boundary. It proves only private
@@ -42,8 +46,9 @@ blocker, not a successful API-call result.
 
 `dmabuf` opens a board-provided DRM node and uses only dumb-create, PRIME
 handle export, dumb-map, and dumb-destroy. It maps the private dumb allocation
-on the CPU, passes its mapping plus PRIME fd to `vg_lite_map`, clears it, waits,
-and requires every pixel through the original CPU dumb-buffer mapping to be
+on the CPU, passes its mapping plus PRIME fd to `vg_lite_map` using that same
+`VG_LITE_BGR565` format, clears it, waits,
+prints its four original CPU-mapping corners before requiring every pixel to be
 `0xf800` RGB565. The source has no
 `drmSetMaster`, `drmModeSetCrtc`, add-FB, plane, or atomic call. Prefer
 `/dev/dri/renderD128`; if the board has no render node, pass `/dev/dri/card0`
