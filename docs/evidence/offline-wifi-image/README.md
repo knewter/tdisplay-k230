@@ -49,8 +49,7 @@ The measured intervals around injected activation plus a deliberate 0.2s
 wait were 0.612s (nano) and 0.609s (nnn). These are observation upper bounds,
 not pure startup times or panel latency. Earlier baseline/injected measurements
 and package outputs are in [the candidate trial](../offline-help-injected/README.md).
-All three candidates cross-build; lf is rejected for its larger closure but
-still lacks a board startup/RSS observation, leaving candidate task 1.2 open.
+All three candidates cross-build; lf is rejected for its larger closure ; its later board observation below completes candidate task 1.2.
 
 The harness mistakenly used SIGRTMIN+2 to hide wvkbd; that signal terminates it.
 This did not affect the full-height app checks. The packaged keyboard was
@@ -92,3 +91,50 @@ The temporary supplicant was stopped after checking its PID/config identity,
 and both the operator source and copied runtime secret were removed
 ([cleanup result](wifi-cleanup.txt)). Serial console access continued.
 This proves a one-off live connection, not persistent automatic reconnection.
+
+## Final initrd fix and fresh boot
+
+[Final build](final-build.json) and [image hash](final-image.sha256) identify
+`/nix/store/b384ag314xp1gprqy3i5h7sbsci3fmm0-k230-sd-image.img`, built from
+`9b59fc005b331578c2cae32d743be45010dd051c` in 71.901 seconds. Signed regulatory
+data is included in the initrd as well as the root firmware closure.
+The image was written through UMS and booted successfully without a full
+readback. The [fresh readiness record](final-readiness.txt) shows system
+`/nix/store/x03zsq959aa1fifsibvchz8jqr7wzsxr-nixos-system-nixos-26.11.20260919.20b1ddd`,
+boot `23619819-9cc7-44a7-8674-dc193fd39857`, shell/seatd/firewall active,
+automatically started keyboard, bound radio, managed interfaces, and **zero**
+early regulatory.db load failures. Global country 00 and driver-local 99 are
+reported as observed; no runtime country override was needed for this trial.
+
+The corrected documented runtime procedure was then exercised with a newly
+supplied private configuration. Its client control directory and private log
+worked without the earlier setup error. [Sanitized final connection results](final-wifi-network.txt)
+again pass association, DHCP, Wi-Fi default/resolver routes, DNS and bound
+outbound ping. This connection is left running for the operator. The source
+copy was removed; the daemon's only protected configuration is root-owned
+mode 0600 under `/run`, cleared on reboot. This is a **manual fresh-boot
+reconnection**, not the unimplemented automatic reconnect/persistence tasks.
+
+## Completing candidate comparison on the final image
+
+The rejected lf candidate's exact built closure was transferred over Wi-Fi from
+an ephemeral host HTTP server, SHA-256 checked, and imported with nix-store.
+The server then stopped. lf was a temporary evaluation package; it was never
+added to the system profile or Apps catalog. This tested the pinned package,
+not an alternate implementation.
+
+[Final candidate console](final-candidates-console.txt) records both selected
+desktop IDs launched explicitly through `k230-desktop-catalog launch`, with
+exit status 0. Nano RSS was 3,840 KiB and nnn RSS 2,688 KiB in this trial.
+The [full Foot process arguments](final-app-environment.txt) show the shared
+`k230-terminal-foot.ini` configuration retained for both entries.
+
+lf started and rendered in Foot ([native screenshot](lf-trial.png)), with
+8,576 KiB observed RSS. The interval from before compositor exec through a
+0.2s wait was 0.297 seconds; the following process query confirmed it running.
+As with the other samples, this includes harness overhead and is not isolated
+startup or physical presentation latency. The lf process was then stopped.
+All three candidates now have build, closure, startup and memory observations.
+Nano + nnn remains the selected set: lf adds 5,788,696 NAR bytes versus nnn's
+441,408 and had higher RSS in these individual samples. These are single
+observations, not a statistical performance benchmark.

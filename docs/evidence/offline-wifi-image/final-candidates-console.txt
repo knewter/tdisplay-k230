@@ -1,0 +1,29 @@
+
+===== > export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; cd /home/shell; export PATH=/nix/store/xqq8bis4yn2099l1h1w2kdd2375vpvmp-xdg-terminal-exec/bin:/nix/store/y5lgjbwdzhp51x1kja5agixhln8qn7j8-foot/bin:$PATH; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 PATH="$PATH" /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog launch k230-editor.desktop; echo EDITOR_CLI_STATUS=$?; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 PATH="$PATH" /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog launch nnn.desktop; echo NNN_CLI_STATUS=$?; sleep 1; ps -C foot -o args; ps -C nano,.nnn-wrapped -o comm,rss; date +%s.%N; swaymsg exec "foot -e /nix/store/n6h8qfjwppv9y5radx5vrdl9vjb9737q-lf-riscv64-unknown-linux-gnu-42/bin/lf"; sleep 0.2; date +%s.%N; ps -C lf -o pid,comm,rss; sleep 1; grim /run/final-lf.png; echo FINAL_CANDIDATE_CHECK_DONE =====
+export XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 SWAYSOCK=/run/shell/sway-ipc.sock; cd /home/shell; export PATH=/nix/store/xqq8bis4yn2099l1h1w2kdd2375vpvmp-xdg-terminal-exec/bin:/nix/store/y5lgjbwdzhp51x1kja5agixhln8qn7j8-foot/bin:$PATH; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 PATH="$PATH" /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog launch k230-editor.desktop; echo EDITOR_CLI_STATUS=$?; runuser -u shell -- env XDG_RUN
+TIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 PATH="$PATH" /nix/store/jwgm6yid3y51ffvn85b7hy4fm80cjfn8-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1/bin/k230-desktop-catalog launch nnn.desktop; echo NNN_CLI_STATUS=$?; sleep 1; ps -C foot -o args; ps -C nano,.nnn-wrapped -o comm,rss; date +%s.%N; swaymsg exec "foot -e /nix/store/n6h8qfjwppv9y5radx5vrdl9vjb9737q-lf-riscv64-unknown-linux-gnu-42/bin/lf"; sleep 0.2; date +%s.%N; ps -C lf -o pid,comm,rss; sleep 1; grim /run/fin
+al-lf.png; echo FINAL_CANDIDATE_CHECK_DONE
+
+EDITOR_CLI_STATUS=0
+NNN_CLI_STATUS=0
+warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+COMMAND
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.
+COMMAND           RSS
+nano             3840
+.nnn-wrapped     2688
+1790126798.605699755
+1790126798.902224354
+    PID COMMAND           RSS
+   1123 lf               8576
+FINAL_CANDIDATE_CHECK_DONE
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#

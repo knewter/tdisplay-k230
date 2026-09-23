@@ -8,7 +8,11 @@ desktop entries selected from packages that build for the pinned riscv64 image a
 fit the measured closure and startup budgets. An editor and a file browser are
 preferred candidates when an existing dependency satisfies those constraints;
 the image SHALL not gain a network installer, package manager UI, AtomVM, Dozer,
-or a general desktop suite for this capability. <!-- UNVERIFIED: candidate package availability and final closure cost require host evaluation. -->
+or a general desktop suite for this capability.
+
+Package builds, measured closure differences, fresh-image discovery and injected
+launches are recorded in `docs/evidence/offline-wifi-image/README.md` and
+`docs/evidence/offline-app-candidates/selection.md`.
 
 #### Scenario: A user opens the offline app set
 
@@ -29,7 +33,12 @@ describe the purpose and action of Apps, Keyboard, Windows/Home, System, Back,
 paging, and the terminal and monitor actions. Help SHALL be readable at
 568x1232 in portrait mode, support touch navigation back to Apps, and avoid
 requiring a network, physical keyboard, or text entry. <!-- UNVERIFIED: final
-font size and physical-finger readability require board evidence. -->
+physical-finger readability and final-glass acceptance for the new Help pages
+remain separate from injected native screenshots. -->
+
+Injected paging, readable native portrait layout, Back and launch-error recovery
+are recorded in `docs/evidence/offline-wifi-image/README.md` and
+`docs/evidence/offline-help-injected/README.md`.
 
 #### Scenario: A new user reads the controls
 
@@ -50,6 +59,10 @@ package source, riscv64 build result, closure delta, startup result, and injecte
 portrait touch result. Physical finger accuracy, reboot persistence, and final
 glass readability SHALL remain separately labelled evidence rather than inferred
 from host or injected checks.
+
+The package comparison and hardware trials are recorded in
+`docs/evidence/offline-app-candidates/selection.md` and
+`docs/evidence/offline-wifi-image/README.md`.
 
 #### Scenario: A reviewer checks an app addition
 

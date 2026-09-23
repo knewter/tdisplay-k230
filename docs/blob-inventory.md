@@ -958,6 +958,7 @@ DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evid
 DATA 099d87b6928bf49f107323a8f4f71d13d0df29e6ddb409cd59ac25dbaa216721  docs/evidence/offline-wifi-image/nnn-card.png
 DATA 4d16393ff67ea278621808d6c769116ef7719de2a1d8f741589b2dfefb72b460  docs/evidence/offline-wifi-image/nnn.png
 DATA 717c4f4ee0c143fe7e79ec9aa43cfcd2ec4c16c5bf305a0faa8bb42c068537e5  docs/evidence/offline-wifi-image/wifi-regression.png
+DATA 44e881c144e5ff2ef02a43b7ce2dd585884cb655ac94b702df496af462e4ec65  docs/evidence/offline-wifi-image/lf-trial.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

@@ -1,7 +1,7 @@
 ## 1. Candidate evaluation
 
 - [x] 1.1 Evaluate `nano`, `lf`, and `nnn` against the pinned riscv64 package set, record desktop IDs, package derivations, and whether each builds without adding an unsupported toolchain; verify with the narrow Nix evaluation command and saved JSON evidence.
-- [ ] 1.2 Measure each candidate's NAR/closure delta against the current shell image and record startup and memory observations; verify with the named derivation closure commands and an evidence file that labels estimates versus measured values.
+- [x] 1.2 Measure each candidate's NAR/closure delta against the current shell image and record startup and memory observations; verify with the named derivation closure commands and an evidence file that labels estimates versus measured values.
 - [x] 1.3 Select at most one editor and one file browser from the recorded results and write the rejection reason for every omitted candidate; verify the selected set is no larger than the approved bounded list and does not add a network installer or general desktop suite.
 
 ## 2. Desktop entries and Help surface
@@ -33,6 +33,6 @@ a host process or QEMU cannot prove this panel workflow.
 2026-09-22 progress: host candidate outputs/desktop IDs and closure differences
 are in `docs/evidence/offline-app-candidates/`; the injected physical-board Help,
 error recovery, nano and nnn trials are in `docs/evidence/offline-help-injected/`.
-Task 1.2 remains open because lf was rejected on closure size and has no board
-startup/RSS sample. Fresh-image integration, boot, catalog discovery and injected launches are
+The final lf board trial records startup and 8,576 KiB RSS, completing task 1.2;
+it remains rejected in favor of nnn on closure size and observed memory. Fresh-image integration, boot, catalog discovery and injected launches are
 recorded in `docs/evidence/offline-wifi-image/README.md`. Navigation tests include `python3 tests/test_launcher_navigation.py`.

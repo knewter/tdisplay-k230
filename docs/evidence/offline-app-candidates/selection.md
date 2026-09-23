@@ -17,8 +17,9 @@ baseline.
 The selected image set is `nano` as the editor and `nnn` as the
 file browser. Together they add one new realized path and 441,408 NAR bytes to
 the stated baseline. `lf` is omitted because its recorded delta is much larger;
-all three candidates cross-build successfully. Its board startup/RSS sample
-remains outstanding, so candidate evaluation task 1.2 stays open.
+all three candidates cross-build successfully. Its final board sample recorded 8,576 KiB RSS; the observed startup window
+was 0.297s including a deliberate 0.2s wait and compositor dispatch overhead.
+The [final trial](../offline-wifi-image/README.md) completes task 1.2.
 
 The candidates do not all provide the same desktop-entry shape. `nano` has no
 upstream desktop entry, so the image supplies a project-owned

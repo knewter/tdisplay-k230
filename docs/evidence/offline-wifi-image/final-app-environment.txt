@@ -1,0 +1,19 @@
+
+===== > test "$(cat /proc/1123/comm)" = lf && kill 1123; sleep 1; ps -C foot -ww -o args; rm -f /run/lf.export /run/wifi-setup.sh; systemctl is-active shell seatd firewall; echo FINAL_APP_ENVIRONMENT_DONE =====
+test "$(cat /proc/1123/comm)" = lf && kill 1123; sleep 1; ps -C foot -ww -o args; rm -f /run/lf.export /run/wifi-setup.sh; systemctl is-active shell seatd firewall; echo FINAL_APP_ENVIRONMENT_DONE
+
+COMMAND
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini -e /nix/store/r6vhwss7namz6kh9h4w2b2zx1v75hzxm-nano-riscv64-unknown-linux-gnu-9.2/bin/nano
+/nix/store/spn1xzg7rfnffadkf4r3giv8vawgx2y3-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot --config /nix/store/vylvgxj2nchapslliximxw31bddkf8ng-k230-terminal-foot.ini -e nnn
+active
+active
+active
+FINAL_APP_ENVIRONMENT_DONE
+
+
+[root@nixos:/home/shell]#
+
+
+
+[root@nixos:/home/shell]#

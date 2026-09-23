@@ -1,0 +1,28 @@
+
+===== > readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; systemctl is-active shell seatd firewall; pgrep -x wvkbd-mobintl; for d in /sys/bus/sdio/devices/*; do readlink "$d/driver"; done; iw dev | sed -n "/Interface/p;/type/p"; iw reg get | sed -n "/country/p"; dmesg | grep -c "Direct firmware load for regulatory.db failed"; command -v curl; echo FINAL_BOOT_CHECK_DONE =====
+readlink /run/current-system; cat /proc/sys/kernel/random/boot_id; systemctl is-active shell seatd firewall; pgrep -x wvkbd-mobintl; for d in /sys/bus/sdio/devices/*; do readlink "$d/driver"; done; iw dev | sed -n "/Interface/p;/type/p"; iw reg get | sed -n "/country/p"; dmesg | grep -c "Direct firmware load for regulatory.db failed"; command -v curl; echo FINAL_BOOT_CHECK_DONE
+
+/nix/store/x03zsq959aa1fifsibvchz8jqr7wzsxr-nixos-system-nixos-26.11.20260919.20b1ddd
+23619819-9cc7-44a7-8674-dc193fd39857
+active
+active
+active
+745
+../../../../../../../../bus/sdio/drivers/rtl8189fs
+	Interface wlan1
+		type managed
+	Interface wlan0
+		type managed
+country 00: DFS-UNSET
+country 99: DFS-UNSET
+country 99: DFS-UNSET
+0
+/run/current-system/sw/bin/curl
+FINAL_BOOT_CHECK_DONE
+
+
+[root@nixos:~]#
+
+
+
+[root@nixos:~]#
