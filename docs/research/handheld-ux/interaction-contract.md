@@ -40,8 +40,9 @@ real-finger checks establish the separate optical and reachability gates.
 
 ## Review record
 
-See [design-review.md](design-review.md). The visual review is intentionally
-pending coordinator review; this host document cannot substitute for it.
+See [design-review.md](design-review.md) for the completed coordinator review
+of the native captures and proposed layouts. That review does not substitute
+for the physical readability and interaction gates listed above.
 
 ## Measurable review checks
 
