@@ -62,7 +62,7 @@ jobs:
         run: python3 tests/test_desktop_catalog.py
 
       - name: Check Wi-Fi runtime secret cleanup
-        run: bash tools/test-wifi-runtime-secret-procedure.sh
+        run: sudo bash tools/test-wifi-runtime-secret-procedure.sh
 
       - name: Check sampled-frame video encoding
         run: python3 tests/test_grim_samples.py
