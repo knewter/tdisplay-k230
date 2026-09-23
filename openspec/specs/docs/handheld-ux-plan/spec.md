@@ -1,12 +1,14 @@
+# Handheld UX Plan Specification
+
 ## Purpose
 
 This capability gives the handheld a single, reviewable UX contract across boot, discovery, touch navigation, application states, and recovery, while preserving evidence boundaries between host checks, injected input, native captures, and real-finger observations.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: The project SHALL maintain an evidence-labelled UX plan
 
-<!-- UNVERIFIED: this cross-surface plan is proposed; no single completed audit currently proves it. -->
+*Grounding: docs/research/handheld-ux/evidence-index.md and evidence-review.md link the reviewed source, native, injected and physical observations; unsupported observations remain explicit.*
 
 The plan SHALL describe the person-facing journey from boot to a recoverable application state and SHALL identify the owning layer or successor proposal for each issue. Every observation SHALL name its source artifact and SHALL distinguish host/native/injected evidence from physical-finger or optical evidence; unsupported current behavior SHALL be marked `UNVERIFIED`.
 
@@ -20,7 +22,7 @@ The plan SHALL describe the person-facing journey from boot to a recoverable app
 
 ### Requirement: The shell UX plan SHALL cover first use and discovery
 
-<!-- UNVERIFIED: first-use and discovery coverage is a planning target, not current board acceptance. -->
+*Grounding: docs/research/handheld-ux/flow-matrix.md records boot, discovery, keyboard, media and recovery journeys with their owners, evidence and open gates.*
 
 The plan SHALL define an observable first-use path: boot feedback into the portrait shell, a clear initial action, Apps discovery through desktop entries, Help or equivalent orientation, and a recoverable empty/error state. It SHALL preserve existing working bar controls while proposing consistent labels and focus behavior.
 
@@ -34,7 +36,7 @@ The plan SHALL define an observable first-use path: boot feedback into the portr
 
 ### Requirement: The plan SHALL define a coherent portrait visual and touch system
 
-<!-- UNVERIFIED: optical readability, reachability, and real-finger target separation remain open. -->
+*Grounding: docs/research/handheld-ux/interaction-contract.md, three annotated SVG sheets and design-review.md establish measurable planning criteria; physical readability and reachability remain UNVERIFIED.*
 
 The plan SHALL provide measurable guidance for hierarchy, type, spacing, color contrast, touch target geometry, reachability, keyboard-visible layout, and focus indication at the 568x1232 portrait panel. It SHALL treat rotation as unsupported until a source or board observation proves it, and SHALL not infer readability or reachability from injected input alone.
 
@@ -48,7 +50,7 @@ The plan SHALL provide measurable guidance for hierarchy, type, spacing, color c
 
 ### Requirement: Navigation and transient states SHALL have consistent recovery semantics
 
-<!-- UNVERIFIED: the cross-surface action contract is proposed; existing evidence covers only selected paths. -->
+*Grounding: docs/research/handheld-ux/interaction-contract.md and flow-matrix.md define visible routes and state ownership; runtime completion remains gated by the respective changes.*
 
 The plan SHALL define how Apps, Windows/overview, cards, Back, Home, Keyboard, System, and video controls compose; how focus changes; and how loading, empty, network failure, EOF, cancellation, and cleanup are exposed. Existing card proposals own card state and gesture mechanics; this capability owns cross-surface consistency and acceptance.
 
@@ -66,7 +68,7 @@ The plan SHALL define how Apps, Windows/overview, cards, Back, Home, Keyboard, S
 
 ### Requirement: The plan SHALL define measurable acceptance and an ordered successor backlog
 
-<!-- UNVERIFIED: priorities and successor boundaries must be derived from the completed audit ledger. -->
+*Grounding: docs/research/handheld-ux/issue-ledger.md maps P0/P1 findings to the two published successors and existing card/video owners; audit and proposals were pushed through master 7e4cc02.*
 
 The plan SHALL maintain a severity-ranked issue ledger, user-flow/task matrix, P0/P1 successor proposals, dependencies, and parallel ownership. Each successor SHALL have host and board gates where applicable, and all resulting proposals SHALL be validated, merged and pushed to master before implementation is treated as integrated.
 

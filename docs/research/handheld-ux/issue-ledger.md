@@ -25,5 +25,6 @@ requirement. The two selected successors are now concrete proposals:
 `the-shell-makes-recovery-routes-legible` (`19187d9`). Both can start host work in
 parallel with card composition; their launcher/bar edits must be reconciled with
 card integration, and board acceptance remains serialized. They preserve the
-existing card/video lifecycle ownership. Publication is recorded after master
-push; task 3.2 stays open until that step.
+existing card/video lifecycle ownership. Audit and both successor proposals were merged and pushed on master through
+`7e4cc02`; their strict validation and site build passed. The two implementation
+proposals remain open, with their physical gates unchanged.
