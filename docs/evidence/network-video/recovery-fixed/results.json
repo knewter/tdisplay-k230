@@ -1,0 +1,87 @@
+{
+  "session": "/nix/store/krqszp7x14mi9xyyz0k6bp2p3ywvhkyn-k230-video-session/bin/k230-video-session",
+  "provenance": "physical board; source-built transferred controller; root fault injection; shell UID player",
+  "cases": [
+    {
+      "case": "network-error",
+      "spontaneous_exit": 2,
+      "cleanup": {
+        "state_absent": true,
+        "socket_absent": true,
+        "groups_absent": true
+      },
+      "playlist_removed": true,
+      "identities": [
+        {
+          "uid": 1000,
+          "controller": 29092,
+          "controller_start": 507256,
+          "child": 29093,
+          "child_start": 507333
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "case": "mvx-init-fallback",
+      "mvx_seen": true,
+      "software_seen": true,
+      "media_times": [
+        0.0,
+        2.1333329999999999
+      ],
+      "video_params": {
+        "pixelformat": "yuv420p",
+        "average-bpp": 12,
+        "w": 480,
+        "h": 270,
+        "dw": 480,
+        "dh": 270,
+        "crop-x": 0,
+        "crop-y": 0,
+        "crop-w": 480,
+        "crop-h": 270,
+        "aspect": 1.7777780000000001,
+        "aspect-name": "16:9",
+        "par": 1.0,
+        "sar": 1.7777780000000001,
+        "sar-name": "16:9",
+        "colormatrix": "bt.601",
+        "colorlevels": "limited",
+        "primaries": "bt.709",
+        "gamma": "bt.1886",
+        "sig-peak": 0.0,
+        "light": "display",
+        "chroma-location": "mpeg2/4/h264",
+        "stereo-in": "mono",
+        "rotate": 0,
+        "alpha": "none"
+      },
+      "vid": 6,
+      "video_codec": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+      "cleanup": {
+        "state_absent": true,
+        "socket_absent": true,
+        "groups_absent": true
+      },
+      "fallback_marker": true,
+      "identities": [
+        {
+          "uid": 1000,
+          "controller": 29101,
+          "controller_start": 507472,
+          "child": 29102,
+          "child_start": 507545
+        },
+        {
+          "uid": 1000,
+          "controller": 29101,
+          "controller_start": 507472,
+          "child": 29112,
+          "child_start": 508814
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
