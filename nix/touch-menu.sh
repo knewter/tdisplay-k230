@@ -49,7 +49,7 @@ emit() {
       printf '%s\n' "[{\"name\":\"apps\",\"full_text\":\"Apps\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_apps\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"windows\",\"full_text\":\"Windows\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_windows\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"keyboard\",\"full_text\":\"Keyboard\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_keyboard\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"system\",\"full_text\":\"System\",\"min_width\":128,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_system\",\"separator\":false,\"separator_block_width\":0}],"
       ;;
     apps)
-      printf '%s\n' "[{\"name\":\"terminal\",\"full_text\":\"Terminal\",\"min_width\":113,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_apps\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"monitor\",\"full_text\":\"Monitor\",\"min_width\":113,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_monitor\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"new-terminal\",\"full_text\":\"New term\",\"min_width\":113,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_new_terminal\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"stop-video\",\"full_text\":\"Stop\",\"min_width\":113,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_system\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"back\",\"full_text\":\"Back\",\"min_width\":113,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_back\",\"separator\":false,\"separator_block_width\":0}],"
+      printf '%s\n' "[{\"name\":\"terminal\",\"full_text\":\"Terminal\",\"min_width\":108,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_apps\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"monitor\",\"full_text\":\"Monitor\",\"min_width\":108,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_monitor\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"new-terminal\",\"full_text\":\"New term\",\"min_width\":108,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_new_terminal\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"stop-video\",\"full_text\":\"Stop\",\"min_width\":108,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_system\",\"separator\":false,\"separator_block_width\":0},{\"name\":\"back\",\"full_text\":\"Back\",\"min_width\":108,\"align\":\"center\",\"color\":\"$menu_foreground\",\"background\":\"$menu_back\",\"separator\":false,\"separator_block_width\":0}],"
       ;;
     windows)
       all_windows=$(windows_json)
@@ -121,8 +121,8 @@ while IFS= read -r line; do
   # the fixed control name while accepting compact or whitespace-formatted JSON.
   name=$(printf '%s\n' "$line" | "$K230_SED" -n 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   case "$name" in
-    apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=home ;;
-    windows) stop_video; "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
+    apps) "$K230_LAUNCHER" >/dev/null 2>&1 & page=apps ;;
+    windows) "$K230_PKILL" -x k230-touch-laun || true; page=windows; window_offset=0 ;;
     keyboard) "$K230_PKILL" -RTMIN -x wvkbd-mobintl ;;
     system) page=system ;;
     terminal|home) stop_video; present_or_start k230-terminal "$K230_TERMINAL_CONFIG"; page=home ;;
@@ -130,7 +130,6 @@ while IFS= read -r line; do
     new-terminal) start_terminal; page=home ;;
     stop-video) stop_video; page=home ;;
     window:*)
-      stop_video
       con_id=${name#window:}
       case "$con_id" in
         *[!0-9]*|'') ;;

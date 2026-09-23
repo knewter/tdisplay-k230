@@ -195,7 +195,8 @@ let
 
     # mpv's wlshm surface is explicitly floating so its profile geometry is
     # honored by Sway on the portrait panel and remains touchable.
-    for_window [app_id="k230-video"] floating enable, resize set 568 px 320 px, move position center
+    for_window [app_id="k230-video-software"] floating enable, resize set 480 px 270 px, move position center
+    for_window [app_id="k230-video-mvx"] floating enable, resize set 568 px 320 px, move position center
 
     default_border none
     font pango:DejaVu Sans Mono 15

@@ -11,6 +11,7 @@ set -u
 : "${K230_VIDEO_DEADLINE:=90}"
 : "${K230_VIDEO_FLOCK:=flock}"
 : "${K230_VIDEO_TIMEOUT_FILE:=$K230_VIDEO_RUNTIME_DIR/k230-video-timeout}"
+: "${K230_VIDEO_CANCEL_FILE:=$K230_VIDEO_RUNTIME_DIR/k230-video-cancel}"
 
 usage() { echo "usage: k230-video-session {run|run-mvx|stop|status}" >&2; exit 2; }
 pid_starttime() {
@@ -23,12 +24,13 @@ pid_starttime() {
 }
 read_state() {
   [ -r "$K230_VIDEO_PID_FILE" ] || return 1
-  IFS=' ' read -r video_pid video_starttime video_owner < "$K230_VIDEO_PID_FILE" || return 1
-  [ -n "${video_pid:-}" ] && [ -n "${video_starttime:-}" ]
+  IFS=' ' read -r controller_pid controller_starttime video_pid video_starttime video_owner < "$K230_VIDEO_PID_FILE" || return 1
+  [ -n "${controller_pid:-}" ] && [ -n "${controller_starttime:-}" ] && [ -n "${video_pid:-}" ]
 }
 owned_alive() {
   read_state || return 1
   [ "$video_owner" = "${UID:-$(id -u)}" ] || return 1
+  [ "$(pid_starttime "$controller_pid" 2>/dev/null || true)" = "$controller_starttime" ] || return 1
   [ "$(pid_starttime "$video_pid" 2>/dev/null || true)" = "$video_starttime" ]
 }
 clear_state() { rm -f "$K230_VIDEO_PID_FILE"; }
@@ -58,27 +60,28 @@ validate_source() {
   else printf '%s\n' "$K230_VIDEO_PUBLIC_URL"; fi
 }
 run_once() {
-  local mode=$1 source=$2 geometry track
+  local mode=$1 source=$2 geometry track app_id public_demo=0
   local -a decoder extra media_args
   case "$mode" in
-    software) decoder=(--vd=h264); geometry=480x270; track=6; extra=() ;;
+    software) decoder=(--vd=h264); geometry=480x270; track=6; extra=(); app_id=k230-video-software ;;
     mvx) decoder=(--vd=h264_v4l2m2m); geometry=568x320; track=7
-      extra=(--correct-pts=no --container-fps-override=30 --sws-scaler=point) ;;
+      extra=(--correct-pts=no --container-fps-override=30 --sws-scaler=point); app_id=k230-video-mvx ;;
     *) echo "unknown video mode: $mode" >&2; return 2 ;;
   esac
-  if [[ "$source" == /* ]]; then media_args=("--playlist=$source"); else media_args=("$source"); fi
+  if [[ "$source" == /* ]]; then media_args=("--playlist=$source"); else media_args=("$source"); public_demo=1; fi
+  if [ "$public_demo" -eq 0 ]; then track=auto; extra=(); fi
   "$K230_VIDEO_PLAYER" --no-config --vo=wlshm --profile=sw-fast --hwdec=no \
     "${decoder[@]}" --audio=no --cache=yes --demuxer-readahead-secs=30 \
     --network-timeout=10 --title=k230-video --force-window=yes \
-    --geometry="$geometry" --vid="$track" --wayland-app-id=k230-video \
+    --geometry="$geometry" --vid="$track" --wayland-app-id="$app_id" \
     --wayland-internal-vsync=auto "${extra[@]}" "${media_args[@]}" \
     >>"$K230_VIDEO_LOG" 2>&1 &
   video_pid=$!; video_starttime=$(pid_starttime "$video_pid" 2>/dev/null || true)
   if [ -z "$video_starttime" ]; then wait "$video_pid"; return $?; fi
-  printf '%s %s %s\n' "$video_pid" "$video_starttime" "${UID:-$(id -u)}" > "$K230_VIDEO_PID_FILE"
+  printf '%s %s %s %s %s\n' "$controller_pid" "$controller_starttime" "$video_pid" "$video_starttime" "${UID:-$(id -u)}" > "$K230_VIDEO_PID_FILE"
   # Run the timer in its own process group so its sleep cannot survive an
   # early EOF or MVX fallback.
-  setsid bash -c 'sleep "$1"; printf "%s\\n" "$2" >"$3"; kill -TERM "$2" 2>/dev/null || true' _ \
+  setsid bash -c 'sleep "$1"; printf "%s\\n" "$2" >"$3"; kill -TERM "$2" 2>/dev/null || true; sleep 2; kill -KILL "$2" 2>/dev/null || true' _ \
     "$K230_VIDEO_DEADLINE" "$video_pid" "$K230_VIDEO_TIMEOUT_FILE" & watchdog_pid=$!
   wait "$video_pid"; local rc=$?
   kill -- "-$watchdog_pid" 2>/dev/null || kill "$watchdog_pid" 2>/dev/null || true
@@ -92,7 +95,10 @@ run_video() {
   "$K230_VIDEO_FLOCK" -n 9 || { echo "video is already starting or running" >&2; return 1; }
   if owned_alive; then echo "video is already running (pid $video_pid)" >&2; return 1; fi
   clear_state
+  controller_pid=$$; controller_starttime=$(pid_starttime "$controller_pid")
   rm -f "$K230_VIDEO_TIMEOUT_FILE"
+  rm -f "$K230_VIDEO_CANCEL_FILE"
+  trap 'printf "%s\n" cancel >"$K230_VIDEO_CANCEL_FILE"; stop_owned; exit 143' INT TERM HUP
   local source playlist_file rc
   source=$(validate_source) || return 1
   playlist_file=${K230_VIDEO_URL_FILE:-$K230_VIDEO_RUNTIME_DIR/k230-video.playlist}
@@ -100,7 +106,7 @@ run_video() {
     mvx)
       [ -z "$K230_VIDEO_URL_FILE" ] && [ ! -e "$playlist_file" ] || { echo "MVX mode is limited to the public demo" >&2; return 1; }
       run_once mvx "$source"; rc=$?
-      if [ "$rc" -ne 0 ]; then run_once software "$source"; rc=$?; fi
+      if [ "$rc" -ne 0 ] && [ ! -r "$K230_VIDEO_CANCEL_FILE" ] && [ ! -r "$K230_VIDEO_TIMEOUT_FILE" ]; then run_once software "$source"; rc=$?; fi
       return "$rc" ;;
     software) run_once software "$source" ;;
     *) echo "K230_VIDEO_MODE must be software or mvx" >&2; return 2 ;;
@@ -109,7 +115,7 @@ run_video() {
 case "${1:-}" in
   run) [ "$#" -eq 1 ] || usage; run_video ;;
   run-mvx) [ "$#" -eq 1 ] || usage; K230_VIDEO_MODE=mvx run_video ;;
-  stop) [ "$#" -eq 1 ] || usage; stop_owned ;;
+  stop) [ "$#" -eq 1 ] || usage; printf '%s\n' cancel >"$K230_VIDEO_CANCEL_FILE"; stop_owned ;;
   status) [ "$#" -eq 1 ] || usage; owned_alive ;;
   *) usage ;;
 esac
