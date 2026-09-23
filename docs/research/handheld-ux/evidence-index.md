@@ -2,7 +2,7 @@
 
 | ID | Task | Visible result | Severity | Owner | Dependency | Evidence class | Citation | Acceptance | Open gate |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| I-01 | Boot handoff | Shell appears after splash in the recorded trial | P1 | splash/initial scene | preserved splash path | camera, native | `docs/evidence/splash-initial-scene-ready/video-audit.md` | Camera/serial record names the scene handoff | Cold unattended boot `UNVERIFIED` |
+| I-01 | Boot handoff | Shell appears after splash in the recorded trial | P1 | splash/initial scene | preserved splash path | camera, native | `docs/evidence/splash-initial-scene-ready/video-audit.md` | Camera/serial record names the scene handoff | Cold USB-powered boot timing `UNVERIFIED` |
 | I-02 | Apps discovery | Catalog cards and Help pages are visible from a fresh image | P1 | launcher/catalog | desktop entry discovery | injected, native | `docs/evidence/offline-wifi-image/README.md` | Production catalog launch and Back are recorded | Real-finger readability `UNVERIFIED` |
 | I-03 | Keyboard input | Keyboard shown and asymmetric text entered | P0 | shell keyboard | wvkbd mapping | real-finger, native | `docs/evidence/shell-real-touch-keyboard/README.md` | Operator report plus native shown/hidden states | Drag coverage and uniform sharpness `UNVERIFIED` |
 | I-04 | Window recovery | Overview selection and Home recovery are available | P0 | touch-launcher-gestures-overview | catalog helper | real-finger, injected | `docs/evidence/launcher-gestures/real-finger/README.md` | Named workflow and selection capture | Empty/stale physical state `UNVERIFIED` |

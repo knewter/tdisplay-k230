@@ -15,7 +15,8 @@ TABLE_RULES = {
     "issue-ledger.md": {"finding", "severity", "owner", "dependency", "evidence class", "citation", "acceptance", "open gate"},
     "evidence-index.md": {"task", "visible result", "severity", "owner", "dependency", "evidence class", "citation", "acceptance", "open gate"},
 }
-REQUIRED_CONTRACT = ("Visual tokens", "Navigation ownership", "Motion and accessibility acceptance", "native", "real-finger", "UNVERIFIED")
+REQUIRED_CONTRACT = ("Visual tokens", "Navigation ownership", "Motion and accessibility acceptance", "Measurable review checks", "native", "real-finger", "UNVERIFIED")
+REQUIRED_SHEETS = ("apps-comparison.svg", "keyboard-comparison.svg", "live-card-overview.svg")
 PATH_RE = re.compile(r"(?:docs|openspec|tests|tools)/[A-Za-z0-9_./-]+")
 
 
@@ -74,6 +75,10 @@ def check_contract(path: Path) -> list[str]:
     for item in PATH_RE.findall(text):
         if not (ROOT / item.rstrip(".,;:)")).exists():
             errors.append(f"{path}: citation path does not exist: {item}")
+    for sheet in REQUIRED_SHEETS:
+        sheet_path = path.parent / sheet
+        if not sheet_path.exists() or "568" not in sheet_path.read_text():
+            errors.append(f"{path}: missing target-geometry SVG sheet: {sheet}")
     return errors
 
 

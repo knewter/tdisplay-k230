@@ -7,7 +7,7 @@ records provide the narrower physical observations named below.
 
 | ID | Surface | Evidence class | Citation | What it proves | Open gate |
 | --- | --- | --- | --- | --- | --- |
-| E-BOOT | Boot handoff | camera, native | `docs/evidence/splash-initial-scene-ready/video-audit.md` | A visible first Sway scene follows the preserved splash in the recorded trial. | Cold battery-only timing and optical continuity remain `UNVERIFIED`. |
+| E-BOOT | Boot handoff | camera, native | `docs/evidence/splash-initial-scene-ready/video-audit.md` | A visible first Sway scene follows the preserved splash in the recorded trial. | Cold USB-powered timing and optical continuity remain `UNVERIFIED`. |
 | E-BAR | Persistent controls | native, injected | `docs/evidence/launcher-gestures/integrated-injected/README.md` | Apps, Windows, Keyboard, and System remain visible while the launcher is open. | Full real-finger reachability for every bar action is `UNVERIFIED`. |
 | E-APPS | Catalog and Help | native, injected | `docs/evidence/offline-wifi-image/README.md` | Fresh-image desktop catalog, Help pagination, nano, and nnn were reached through production launcher cards. | These new cards lack focused real-finger/readability evidence. |
 | E-KEY | Keyboard | camera, real-finger, native | `docs/evidence/shell-real-touch-keyboard/README.md` | A user showed the keyboard and entered the asymmetric `1qazoplm` sequence; native states corroborate shown/hidden composition. | A deliberate full-panel drag and uniform optical sharpness remain `UNVERIFIED`. |

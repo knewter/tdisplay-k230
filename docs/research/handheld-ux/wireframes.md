@@ -45,3 +45,13 @@ The current two-card composition is visible in
 [overview.png](../../evidence/launcher-gestures/integrated-injected/overview.png).
 A future live-card surface follows the card proposals; it must not hide the
 persistent recovery route.
+
+## Reviewable SVG sheets
+
+- [Apps comparison](apps-comparison.svg) ties the generic endpoint/card finding
+  to UX-01 and UX-03.
+- [Keyboard-visible comparison](keyboard-comparison.svg) ties the reserved
+  lower viewport and recovery route to UX-04.
+- [Live-card overview comparison](live-card-overview.svg) ties global recovery
+  controls and normalized failure states to UX-02 and UX-05. Its right-hand
+  panel is conceptual and awaits the card architecture decision.

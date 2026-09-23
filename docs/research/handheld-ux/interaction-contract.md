@@ -25,7 +25,7 @@ real-finger checks establish the separate optical and reachability gates.
 | Windows / overview | touch-launcher-gestures-overview | Back/down returns to Apps; persistent Apps opens catalog | loading, empty, stale, helper failure | catalog helper; card architecture | Stale/empty board result `UNVERIFIED`. |
 | Cards | the-shell-manages-apps-as-cards | Button entry plus Back/Home recovery | unavailable/private content, refusal to close | card composition decision | Entire live-card route `UNVERIFIED`. |
 | Keyboard | shell keyboard | Keyboard control and Back/Home remain visible | shown, hidden, focused app exits | wvkbd and launcher viewport | Full drag/reach `UNVERIFIED`. |
-| System | shell system controls | Cancel returns to shell | confirmation, denial/failure, reboot return | privileged action helper | Cold standalone recovery `UNVERIFIED`. |
+| System | shell system controls | Cancel returns to shell | confirmation, denial/failure, reboot return | privileged action helper | Cold USB-powered recovery timing `UNVERIFIED`. |
 | Stop / EOF | the-shell-plays-network-video | Home/Apps after cleanup | Stop, EOF, network failure | video session controller | Network failure treatment `UNVERIFIED`. |
 | Help | launcher/catalog | Back returns to Apps | page bounds, empty catalog remains recoverable | launcher catalog | Focused real-finger Help test `UNVERIFIED`. |
 
@@ -42,3 +42,16 @@ real-finger checks establish the separate optical and reachability gates.
 
 See [design-review.md](design-review.md). The visual review is intentionally
 pending coordinator review; this host document cannot substitute for it.
+
+## Measurable review checks
+
+| Check | Baseline / threshold | Host review method | Physical gate |
+| --- | --- | --- | --- |
+| Text contrast | Current source colors calculate to 16.96:1 title (`#f8fafc`/`#111827`), 11.95:1 secondary (`#cbd5e1`/`#111827`), 9.65:1 card-title (`#ffffff`/`#24495a`), 6.50:1 card-hint (`#cbd5e1`/`#24495a`), and 9.35:1 error (`#fca5a5`/`#111827`). Successors must retain at least 4.5:1 for text over its actual fill. | Compute sRGB relative luminance from the source colors and keep the calculation with the source test. | Camera/glass review checks glare does not make the measured design contrast unusable. |
+| Focus | The selected window currently changes its card fill and adds the `focused` state text. A successor must use both a non-color state label and a visible shape/border/fill change. | State-machine fixture compares unfocused/focused render metadata and asserts the label/state change. | Real-finger selection capture. |
+| Pressed | Pressing a card must show a bounded visual response before launch/focus; cancellation must restore the original card without launch. | Pointer/touch fixture checks press, moved-out cancel, and release-on-same-card transitions. | Real-finger tap/cancel capture. |
+| Error and recovery | User-facing messages are short, avoid raw paths/GLib text, and name an available next action such as Back, Apps, Home, Retry, or Cancel. | Fixture asserts normalized state ID, copy key, and visible fallback for launch/helper/system/video states. | Integrated board state capture. |
+| Reduced motion | With motion reduced, no decorative interpolation is required, but page/card result, finger tracking, expansion, close/refusal, focus, and all button fallbacks remain. | Card/gesture state-machine fixtures run with animation duration zero and assert identical end state and recovery controls. | Physical preference/flag exercise once implemented. |
+
+The measurements above are source-color and host-state checks. They do not
+measure panel luminance, scanout, or camera exposure.

@@ -12,3 +12,13 @@
      before implementation is authorized?
 - **Evidence boundary:** This review can accept document coherence. It cannot
   close optical readability, physical reachability, motion, or cold-boot gates.
+
+## Prepared review set
+
+The review set now includes three parse-checked repository-native SVG sheets at
+the 568×1232 target geometry: `apps-comparison.svg`,
+`keyboard-comparison.svg`, and `live-card-overview.svg`. The first two compare
+accepted native composition with a proposed hierarchy. The third identifies
+current metadata cards and a conceptual live-card surface that remains blocked
+on the card architecture decision. See `webos-comparison.md` for explicit
+principle-level differences rather than a claim of webOS parity.

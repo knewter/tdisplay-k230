@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
+import xml.etree.ElementTree as ET
 import sys
 import tempfile
 from pathlib import Path
@@ -20,6 +21,13 @@ def test_self_test_and_documents():
     assert result.returncode == 0, result.stderr
 
 
+def test_svg_sheets_are_parseable_and_name_target_geometry():
+    for name in ("apps-comparison.svg", "keyboard-comparison.svg", "live-card-overview.svg"):
+        data = (DOCS / name).read_text()
+        ET.fromstring(data)
+        assert "568" in data and "proposed" in data.lower()
+
+
 def test_rejects_missing_owner_and_citation():
     with tempfile.TemporaryDirectory() as directory:
         path = Path(directory) / "issue-ledger.md"
@@ -32,5 +40,6 @@ def test_rejects_missing_owner_and_citation():
 
 if __name__ == "__main__":
     test_self_test_and_documents()
+    test_svg_sheets_are_parseable_and_name_target_geometry()
     test_rejects_missing_owner_and_citation()
     print("test_verify_ux_plan: ok")
