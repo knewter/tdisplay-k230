@@ -57,6 +57,10 @@ class Fake:
                 if self.fail=='input':raise RuntimeError('input failure')
         return subprocess.CompletedProcess(args,0,'','')
 class SessionTests(unittest.TestCase):
+    def test_frame_cost_export_accepts_only_complete_numeric_rows(self):
+        row='K230_CARD_SHELL frame-cost run=1 frame_id=2 total_cpu_ns=20 render_cpu_ns=10 input_cpu_ns=7'
+        raw='prefix '+row+'\n'+row.replace('render_cpu_ns=10','render_cpu_ns=private-token')+'\n'+row+' secret=secret\n'+row.replace(' input_cpu_ns=7','')+'\n'
+        self.assertEqual(H.normalized_journal(raw),row+'\n')
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(prefix='board-tools-');self.root=Path(self.temp.name);self.runtime=self.root/'run';self.runtime.mkdir()
         self.account=patch.object(H.pwd,'getpwnam',return_value=types.SimpleNamespace(pw_uid=os.getuid(),pw_gid=os.getgid(),pw_dir=str(self.root)))

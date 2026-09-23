@@ -23,8 +23,8 @@ INPUT_UNIT = 'k230-card-shell-input.service'
 STORE = re.compile(r'^/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._/-]+)?$')
 DEVICE_NAME = 'K230 injected touchscreen'
 BENCH_KEYS = {'v','run','event','t_ns','clock','backend','renderer','width','height','output_format','input','cards','input_id','gesture_id','kind','source','frame_id','update_cpu_ns','final','presented','phase','cpu_ns','memory_bytes','scope'}
-CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented'}
-CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live'}
+CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns'}
+CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost'}
 
 
 def trusted(path: str) -> str:
@@ -67,6 +67,10 @@ def normalized_journal(text: str) -> str:
                     continue
             allowed = BENCH_KEYS if prefix.endswith('BENCH ') else CARD_KEYS
             fields = [word.split('=', 1) for word in words]
+            if row.startswith('K230_CARD_SHELL frame-cost '):
+                expected = {'run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns'}
+                if len(fields) != len(expected) or {pair[0] for pair in fields} != expected or not all(len(pair) == 2 and re.fullmatch(r'[0-9]+', pair[1]) for pair in fields):
+                    continue
             if fields and all(len(pair) == 2 and pair[0] in allowed and re.fullmatch(r'[A-Za-z0-9_.:-]+', pair[1]) for pair in fields):
                 rows.append(row)
     return '\n'.join(rows) + ('\n' if rows else '')

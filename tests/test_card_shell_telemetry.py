@@ -78,4 +78,45 @@ int main(int argc, char **argv) {
                     # ordering must never be invalid in the real consumer.
                     parser.analyze_run(session['run'],rows)
 
+            # Deterministic CPU clock: real producer accounting must keep input,
+            # failed renders, successful render, and other charged work distinct.
+            put('profile.c', r'''#include "sway/output.h"
+#include "telemetry.h"
+#include <assert.h>
+#include <time.h>
+static unsigned long long cpu=100;
+int profile_clock(clockid_t clock, struct timespec *t) {
+    t->tv_sec=10; t->tv_nsec=clock==CLOCK_PROCESS_CPUTIME_ID ? cpu : 1000;
+    return 0;
+}
+int main(void) {
+    struct wlr_output w={.backend=(void*)1,.render_format=1,.commit_seq=1};
+    struct sway_output o={.wlr_output=&w,.width=568,.height=1232};
+    assert(card_bench_arm(&o,"injected",1)); card_bench_phase(true,1);
+    card_bench_input_begin(1,"motion",true); cpu+=7; card_bench_input_end(true,false);
+    card_bench_work_begin(); cpu+=3; card_bench_work_end();
+    card_bench_render_begin(&o); cpu+=10; card_bench_commit_begin(&o);
+    card_bench_render_end(&o,true);
+    card_bench_input_begin(1,"release",true); cpu+=2; card_bench_input_end(true,true);
+    card_bench_render_begin(&o); cpu+=5; card_bench_render_end(&o,false);
+    card_bench_render_begin(&o); cpu+=6; w.commit_seq=2; card_bench_commit_begin(&o);
+    card_bench_render_end(&o,true);
+    card_bench_stop();
+}
+''')
+            binary=root/'profile'
+            subprocess.run([os.environ.get('CC','cc'),'-std=gnu11','-Dclock_gettime=profile_clock',
+                '-I'+str(root),str(ROOT/'nix/card-shell/telemetry.c'),str(root/'profile.c'),
+                '-o',str(binary)],check=True)
+            output=subprocess.check_output([str(binary)],text=True)
+            profiles=[dict(field.split('=') for field in line.split()[2:])
+                      for line in output.splitlines() if line.startswith('K230_CARD_SHELL frame-cost ')]
+            self.assertEqual(len(profiles),2)
+            for record,expected in zip(profiles,((1,20,10,7),(2,13,11,2))):
+                self.assertEqual(tuple(int(record[k]) for k in
+                    ('frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns')),expected)
+            rows,ignored=parser.parse_rows(output.encode())
+            self.assertEqual(ignored,2)
+            self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
+
 if __name__=='__main__':unittest.main()

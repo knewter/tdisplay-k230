@@ -22,6 +22,7 @@ static struct {
 	struct sway_output *output;
 	unsigned work_depth;
 	uint64_t work_cpu;
+	uint64_t input_cpu_start, input_cpu, render_cpu_start, render_cpu;
 	uint64_t submit_time;
 	uint64_t run, next_input, input_time, input_gesture, charged_cpu,
 		last_resource;
@@ -166,12 +167,15 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 		return;
 	card_bench_work_begin();
 	bench.input_time = stamp(CLOCK_MONOTONIC);
+	bench.input_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
 	bench.in_input = true;
 	bench.input_gesture = gesture;
 	bench.kind = kind;
 	bench.source = injected ? "injected" : "physical";
 }
 void card_bench_input_end(bool consumed, bool final) {
+	if (bench.armed && bench.in_input)
+		bench.input_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.input_cpu_start;
 	card_bench_work_end();
 	bench.in_input = false;
 	if (!bench.armed || !consumed)
@@ -198,8 +202,10 @@ void card_bench_work_end(void) {
 		bench.charged_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.work_cpu;
 }
 void card_bench_render_begin(struct sway_output *output) {
-	if (bench.armed && bench.output == output)
+	if (bench.armed && bench.output == output) {
 		card_bench_work_begin();
+		bench.render_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
+	}
 }
 void card_bench_commit_begin(struct sway_output *output) {
 	if (bench.armed && bench.output == output)
@@ -208,6 +214,7 @@ void card_bench_commit_begin(struct sway_output *output) {
 void card_bench_render_end(struct sway_output *output, bool success) {
 	if (!bench.armed || bench.output != output)
 		return;
+	bench.render_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.render_cpu_start;
 	card_bench_work_end();
 	if (!success)
 		return;
@@ -218,8 +225,20 @@ void card_bench_render_end(struct sway_output *output, bool success) {
 				 " frame_id=%" PRIu64 " t_ns=%" PRIu64 " update_cpu_ns=%" PRIu64 " final=%d",
 				 bench.run, bench.pending[i].id, frame, now, bench.charged_cpu,
 				 bench.pending[i].final);
+	/* Diagnostic subdivision only: keep the acceptance rows and charged total
+	 * unchanged. Render includes scene preparation, Pixman and output commit;
+	 * input includes synchronous policy/scene updates. Other charged work is
+	 * chiefly timer/preparation outside those handlers. Failed renders remain
+	 * accumulated until the next successful frame, just like charged_cpu. */
+	if (bench.count)
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL frame-cost run=%" PRIu64 " frame_id=%" PRIu64
+			" total_cpu_ns=%" PRIu64 " render_cpu_ns=%" PRIu64 " input_cpu_ns=%" PRIu64,
+			bench.run, frame, bench.charged_cpu, bench.render_cpu, bench.input_cpu);
 	bench.count = 0;
 	bench.charged_cpu = 0;
+	bench.render_cpu = 0;
+	bench.input_cpu = 0;
 }
 void card_bench_present(struct sway_output *output, struct wlr_output_event_present *event) {
 	if (!bench.armed || bench.output != output)
