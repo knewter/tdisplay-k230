@@ -107,14 +107,14 @@ let
   # A protected /run/shell/k230-video.playlist, when present, is passed by
   # pathname so private URLs never appear in the player command line.
   videoSession = pkgs.writeShellScriptBin "k230-video-session" ''
-    export PATH=${pkgs.coreutils}/bin:${pkgs.util-linux}/bin:${pkgs.procps}/bin:$PATH
+    export PATH=${pkgs.coreutils}/bin:${pkgs.util-linux}/bin:${pkgs.procps}/bin:${pkgs.python3}/bin:$PATH
     export K230_VIDEO_PLAYER=${videoProbe.player}/bin/mpv
     export K230_VIDEO_FLOCK=${pkgs.util-linux}/bin/flock
     export K230_VIDEO_RUNTIME_DIR=/run/shell
     export K230_VIDEO_PID_FILE=/run/shell/k230-video.pid
     export K230_VIDEO_LOG=/run/shell/k230-video.log
     export K230_VIDEO_PUBLIC_URL=https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd
-    exec ${pkgs.bash}/bin/bash ${./video-session.sh} "$@"
+    exec ${pkgs.python3}/bin/python3 ${./video-session.py} "$@"
   '';
   videoDesktop = pkgs.makeDesktopItem {
     name = "k230-video";

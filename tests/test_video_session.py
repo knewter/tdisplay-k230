@@ -96,6 +96,20 @@ class VideoSessionTest(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((root / "video.pid").exists())
 
+    def test_healthy_socket_survives_startup_deadline(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = root / "fake-mpv"
+            player.write_text(
+                "#!/bin/sh\n"
+                "for a in \"$@\"; do case \"$a\" in --input-ipc-server=*) sock=${a#*=};; esac; done\n"
+                "python3 -c 'import socket,sys,time; s=socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.listen(1); time.sleep(2)' \"$sock\" &\n"
+                "sleep 1\n"
+            )
+            player.chmod(0o755)
+            result = self.run_session(root, player, "run", K230_VIDEO_DEADLINE="0.1")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_user_stop_of_mvx_does_not_start_software_fallback(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
