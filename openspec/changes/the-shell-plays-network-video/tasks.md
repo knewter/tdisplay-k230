@@ -1,13 +1,13 @@
 ## 1. Reproducible player configuration
 
-- [ ] 1.1 Add the pinned mpv/FFmpeg software playback derivations and the documented `wlshm`/software-H.264 profile to the Nix shell image; verify the narrow package evaluations and derivation paths succeed without private URLs or credentials.
-- [ ] 1.2 Add the public BBB test manifest, selected 480x270 baseline, explicit audio-disabled setting, and runtime URL boundary to the evidence/probe procedure without embedding a network secret; verify a source scan finds no protected-network material in source, desktop files, argv templates, or the Nix store.
-- [ ] 1.3 Build the affected riscv64 packages and image, record closure/path deltas and source hashes, and verify `nix build .#sdImage` plus the named package derivations succeed on the host.
+- [x] 1.1 Add the pinned mpv/FFmpeg software playback derivations and the documented `wlshm`/software-H.264 profile to the Nix shell image; verify the narrow package evaluations and derivation paths succeed without private URLs or credentials.
+- [x] 1.2 Add the public BBB test manifest, selected 480x270 baseline, explicit audio-disabled setting, and runtime URL boundary to the evidence/probe procedure without embedding a network secret; verify a source scan finds no protected-network material in source, desktop files, argv templates, or the Nix store.
+- [x] 1.3 Build the affected riscv64 packages and image, record closure/path deltas and source hashes, and verify `nix build .#sdImage` plus the named package derivations succeed on the host.
 
 ## 2. Apps entry and recovery controls
 
 - [ ] 2.1 Add a visible Terminal video desktop entry through the existing Apps/Foot bridge with the documented player profile; verify `k230-desktop-catalog list` discovers it and `launch ID` returns a successful process launch with the expected terminal environment.
-- [ ] 2.2 Define and implement stop, Back/Home return, EOF, network-error, and failed-decoder recovery without leaving an orphan player or runtime secret; verify launcher tests cover success, failure, return, and empty/error states.
+- [x] 2.2 Define and implement stop, Back/Home return, EOF, network-error, and failed-decoder recovery without leaving an orphan player or runtime secret; verify launcher tests cover success, failure, return, and empty/error states.
 - [ ] 2.3 Boot the resulting image and exercise launch, stop, Back/Home, and recovery with injected input; verify the existing Apps, Help, Keyboard, Terminal, Monitor, and System controls remain usable and record injected versus physical interaction explicitly.
 
 ## 3. Software playback baseline
@@ -31,7 +31,7 @@
 
 ## 6. Review and integration
 
-- [ ] 6.1 Run relevant launcher/player tests and `openspec validate the-shell-plays-network-video --strict`; verify every requirement has grounded evidence or an explicit `UNVERIFIED` marker.
+- [x] 6.1 Run relevant launcher/player tests and `openspec validate the-shell-plays-network-video --strict`; verify every requirement has grounded evidence or an explicit `UNVERIFIED` marker.
 - [ ] 6.2 Run `./scripts/build_site.py` and `./tools/blob-scan.py --no-vendor`; verify all committed screenshots, clips, logs, and any media test assets have provenance, attribution, hashes, and DATA inventory rows.
 
 Initial completed tasks are grounded in `docs/evidence/big-buck-bunny/README.md`
@@ -46,3 +46,7 @@ Task 5.1: `docs/evidence/network-video/README.md` and the software/MVX
 presentation logs record >30-second hardware-signalled compositor feedback,
 unique submitted/presented frame IDs, clock/sequence validation and limitations.
 Final-image lifecycle regression remains separate.
+
+Host integration proof: `docs/evidence/network-video/integration-host.md` and its
+JSON record cover package/image builds, closure deltas, runtime source boundary
+and lifecycle tests. They do not close the final-image board acceptance tasks.
