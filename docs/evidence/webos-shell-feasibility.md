@@ -4,10 +4,16 @@ Date: 2026-09-23
 
 ## Recommendation
 
-A webOS-like feel is feasible as a shell-level feature. The smallest useful step is a
-native overview surface that keeps Sway as the compositor and adds touch paging,
-window cards, and one-handed transitions. Do not replace Sway or fork wlroots for
-this goal.
+This document describes a first prototype, not the finished webOS target. A native
+overview surface that keeps Sway as the compositor can validate touch paging, window
+metadata cards, and one-handed transitions. It is deliberately smaller than the
+desired visual app-card experience and must not be presented as webOS-equivalent.
+
+The next design decision is a compositor-capability investigation: determine how the
+existing Sway/wlroots session could safely supply live application content, input
+routing, and lifecycle control to a card interaction before choosing an
+implementation. That investigation may show that a compositor change is necessary;
+it must not assume a GPU rewrite is either necessary or sufficient.
 
 The current system already has the right seams:
 
@@ -145,4 +151,3 @@ deferred.
 
 References: [Sway gesture bindings](https://github.com/swaywm/sway/blob/master/sway/sway.5.scd)
 and [wlr-layer-shell keyboard/input semantics](https://wayland.app/protocols/wlr-layer-shell-unstable-v1).
-
