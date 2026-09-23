@@ -107,8 +107,11 @@ the first allocation permits full replay; failed finish quarantines all four
 source uploads and the target. Earlier color, geometry and lifetime tests pass.
 
 The coordinator independently reran both sanitizer tests successfully. The
-full cross-build was still running when this source checkpoint was committed;
-no completed cross-build or new GPU board result is claimed here.
+first full cross-build ended with signal/exit 143 without a compiler diagnostic;
+a retry completed successfully using the cached dependencies:
+`/nix/store/iy08ig1xw3xhhh1ph31g5jy59lj04f19-sway-1.12`. The retry used
+`--max-jobs 1 --cores 4`. This is cross-build proof only; no new GPU board
+result is claimed here.
 
 ## Physical gate
 
