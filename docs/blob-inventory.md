@@ -1009,6 +1009,10 @@ DATA 099d87b6928bf49f107323a8f4f71d13d0df29e6ddb409cd59ac25dbaa216721  docs/evid
 DATA 4d16393ff67ea278621808d6c769116ef7719de2a1d8f741589b2dfefb72b460  docs/evidence/offline-wifi-image/nnn.png
 DATA 717c4f4ee0c143fe7e79ec9aa43cfcd2ec4c16c5bf305a0faa8bb42c068537e5  docs/evidence/offline-wifi-image/wifi-regression.png
 DATA 44e881c144e5ff2ef02a43b7ce2dd585884cb655ac94b702df496af462e4ec65  docs/evidence/offline-wifi-image/lf-trial.png
+DATA 81a2ca6124a20845272f6762e8aaca7a47d60ab31f39b5b651e4fc1a7f71a9b5  docs/evidence/launcher-gestures/edge-states/empty-overview.png
+DATA 20ab1b0d089d37cc5fe05746fede71c2b768a3995b916a90a4ebadc90659e986  docs/evidence/launcher-gestures/edge-states/stale-after-close.png
+DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evidence/launcher-gestures/edge-states/stale-back-apps.png
+DATA a72a13b46a2df3201dd53082527aca2fc8bec74c38074735192de8502f0af16a  docs/evidence/launcher-gestures/edge-states/stale-before-close.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
