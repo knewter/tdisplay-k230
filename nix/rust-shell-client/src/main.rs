@@ -467,6 +467,8 @@ struct WallpaperState {
     configured: bool,
     frame_pending: bool,
     dirty: bool,
+    recreate_after: Option<Instant>,
+    map_started: Option<Instant>,
 }
 
 impl ShellClient {
@@ -501,6 +503,7 @@ impl ShellClient {
         self.wallpaper.layer = Some(layer);
         self.wallpaper.configured = false;
         self.wallpaper.dirty = true;
+        self.wallpaper.map_started = Some(Instant::now());
         self.log("wallpaper-map-request");
         true
     }
@@ -896,7 +899,10 @@ impl LayerShellHandler for ShellClient {
             .as_ref()
             .is_some_and(|wallpaper| wallpaper.wl_surface() == layer.wl_surface())
         {
-            self.wallpaper = WallpaperState::default();
+            self.wallpaper = WallpaperState {
+                recreate_after: Some(Instant::now() + Duration::from_millis(500)),
+                ..WallpaperState::default()
+            };
             self.log("wallpaper-closed");
             return;
         }
@@ -925,6 +931,7 @@ impl LayerShellHandler for ShellClient {
             (self.wallpaper.width, self.wallpaper.height) = geometry;
             self.wallpaper.configured = true;
             self.wallpaper.dirty = true;
+            self.wallpaper.map_started = None;
             self.log(&format!("wallpaper-configure {width}x{height}"));
             self.draw_wallpaper(qh);
             return;
@@ -1174,6 +1181,32 @@ fn serve() -> Result<(), String> {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        if state.wallpaper.layer.is_none()
+            && state
+                .wallpaper
+                .recreate_after
+                .is_some_and(|when| Instant::now() >= when)
+        {
+            if state.ensure_wallpaper(&qh) {
+                state.wallpaper.recreate_after = None;
+            } else {
+                state.wallpaper.recreate_after = Some(Instant::now() + Duration::from_secs(1));
+                state.log("wallpaper-remap-deferred");
+            }
+        }
+        if state.wallpaper.layer.is_some()
+            && !state.wallpaper.configured
+            && state
+                .wallpaper
+                .map_started
+                .is_some_and(|when| when.elapsed() >= Duration::from_secs(3))
+        {
+            state.wallpaper = WallpaperState {
+                recreate_after: Some(Instant::now() + Duration::from_secs(1)),
+                ..WallpaperState::default()
+            };
+            state.log("wallpaper-configure-timeout");
+        }
         match appearance.receive() {
             Ok(Some(event)) => match event.phase {
                 AppearancePhase::Prepare => {

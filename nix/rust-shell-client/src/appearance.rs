@@ -487,6 +487,22 @@ fn load_snapshot(
     })
 }
 
+fn selected_snapshot(root: &Path) -> Option<AppearanceSnapshot> {
+    let pointer = root.join("active");
+    if !fs::symlink_metadata(&pointer)
+        .ok()?
+        .file_type()
+        .is_symlink()
+    {
+        return None;
+    }
+    let target = pointer.canonicalize().ok()?;
+    let id = target.file_name()?.to_str()?;
+    // The active pointer may select only an immutable generation within the
+    // private cache. Invalid/stale pointers fall back to the pinned default.
+    load_snapshot(&target, id, root, None).ok()
+}
+
 fn request_pair(
     value: &Value,
     generation_key: &str,
@@ -580,6 +596,7 @@ impl AppearanceReceiver {
         fs::set_permissions(&socket_path, fs::Permissions::from_mode(0o600))
             .map_err(|e| e.to_string())?;
         listener.set_nonblocking(true).map_err(|e| e.to_string())?;
+        let active = selected_snapshot(&generation_root).or(default_snapshot);
         Ok(Self {
             listener,
             peer: None,
@@ -590,7 +607,7 @@ impl AppearanceReceiver {
             generation_root,
             default_path,
             prepared: None,
-            active: default_snapshot,
+            active,
         })
     }
 

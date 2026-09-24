@@ -112,6 +112,79 @@ fn send(
 }
 
 #[test]
+fn restart_loads_selected_generation_and_bad_pointer_falls_back() {
+    let fixture = Fixture::new();
+    let selected = fixture.user_generation();
+    symlink(&selected, fixture.state.join("active")).unwrap();
+    let receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    assert_eq!(receiver.active().unwrap().path, selected);
+    drop(receiver);
+
+    fs::remove_file(fixture.state.join("active")).unwrap();
+    symlink("/tmp/foreign-generation", fixture.state.join("active")).unwrap();
+    let receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    assert_eq!(receiver.active().unwrap().path, fixture.default);
+}
+
+#[test]
+fn rollback_restores_state_after_commit_reply_is_lost() {
+    let fixture = Fixture::new();
+    let selected = fixture.user_generation();
+    let id = selected.file_name().unwrap().to_str().unwrap();
+    let default_id = fixture.default.file_name().unwrap().to_str().unwrap();
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    send(
+        &mut receiver,
+        &fixture.socket(),
+        json!({
+            "protocol":1,"phase":"prepare","generation":id,"path":selected,
+            "previous_generation":null,"previous_path":null
+        }),
+    );
+    let mut peer = UnixStream::connect(fixture.socket()).unwrap();
+    peer.write_all(
+        format!(
+            "{}\n",
+            json!({
+                "protocol":1,"phase":"commit","generation":id,"path":selected
+            })
+        )
+        .as_bytes(),
+    )
+    .unwrap();
+    receiver.accept().unwrap();
+    let event = receiver.receive().unwrap().unwrap();
+    peer.shutdown(std::net::Shutdown::Both).unwrap();
+    drop(peer);
+    let _ = receiver.respond(event, true);
+    assert_eq!(receiver.active().unwrap().path, selected);
+    let (_, reply) = send(
+        &mut receiver,
+        &fixture.socket(),
+        json!({
+            "protocol":1,"phase":"rollback","generation":default_id,"path":fixture.default
+        }),
+    );
+    assert_eq!(reply["status"], "ok");
+    assert_eq!(receiver.active().unwrap().path, fixture.default);
+}
+
+#[test]
 fn two_phase_ack_follows_typed_snapshot_adoption_and_rollback_is_idempotent() {
     let fixture = Fixture::new();
     let generation = fixture.user_generation();
