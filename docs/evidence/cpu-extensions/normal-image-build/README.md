@@ -47,6 +47,7 @@ that correction yields the unchanged, tested target RVV Pixman derivation
 `/nix/store/3vhbn7qrav9g876s4kd6snp3rx6hhyvv-pixman-riscv64-unknown-linux-gnu-0.46.4.drv`
 and native scalar Pixman derivation
 `/nix/store/c69ckksfgkwwdp84gxi33m9m1zc2cjlh-pixman-0.46.4.drv`.
+
 ## Corrected normal compositor: PASS
 
 ```sh
@@ -66,3 +67,22 @@ physical [pixel](../../card-shell/pixman-rvv/pixel-trial/README.md) and
 trials proved a scalar `PIXMAN_DISABLE=rvv` control and the runtime hwprobe
 gate for their trial kernel; this host build alone does not show which path
 the **new** ordinary image will select after boot.
+
+## Rebuilt card trial: PASS
+
+```sh
+nix build .#card-shell --max-jobs 1 --cores 4 --no-link --print-out-paths
+nix-store -q --requisites /nix/store/45lxhyx6887089d0yd9bx47rh753m1vg-k230-card-shell |
+  rg 'pixman.*riscv64|pixman-0.46'
+```
+
+The card package built from the board's overlaid package set with the charged
+input timing adapter source in the combined branch. It produced
+`/nix/store/45lxhyx6887089d0yd9bx47rh753m1vg-k230-card-shell`; the
+compatibility `card-shell-rvv` output evaluates to the same path. Its
+runtime closure contains exactly one target Pixman provider, the same
+`/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4`.
+The card's unwrapped Sway binary is
+`/nix/store/6cg9j8ximdm8s4dy0d7rbf83318lknlx-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`.
+This package remains an opt-in card experiment; building it does not place
+cards in the normal session or prove its physical runtime behavior.
