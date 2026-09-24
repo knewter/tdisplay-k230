@@ -1,0 +1,18 @@
+{
+  "status": "INCOMPLETE",
+  "revision": "b014cdef703701adaa630fa6aefe9fcd189031cb",
+  "boot_id": "06b5701c-380d-46bc-b2f4-ba95aa08b6d6",
+  "system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/xv8x9kbrlxpygk7v1lbxwncfzskvz28a-k230-card-shell",
+  "client": "/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "config": "/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf",
+  "evidence_class": "board-injected",
+  "runs": [],
+  "producer_sha256": {
+    "run-board.py": "a4afe1691cb0413f884875a732159e94d1979b62b6c7f2d18ac3da4046fa7927",
+    "card-shell-board-session.py": "17462351d8dad610c0138f8232661f940b2a99ac734afea1cf31bd6e09d04cdb",
+    "card-shell-acceptance.py": "2140a8771b0b5677cfc1dc348d47e6b0cd86cfb6e03c09fd049498320ce8e574",
+    "card-shell-benchmark.py": "ce547d2d675de8cc858c08223685eb0669815de963d544439a886771482be4a0"
+  },
+  "error": "RuntimeError: preserve previous runtime directory"
+}

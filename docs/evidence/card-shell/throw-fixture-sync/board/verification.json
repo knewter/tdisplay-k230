@@ -1,0 +1,18 @@
+{
+  "source_revision": "a3fecb7c8e9e5c209f8d129b31ec3ff5081f87e1",
+  "evidence_class": "physical-board-injected",
+  "budget_report_reproduced_except_created_at": true,
+  "producer_hashes_verified": true,
+  "interaction_checks_observed": 13,
+  "interaction_checks_failed": [],
+  "restoration": "PASS",
+  "same_boot": true,
+  "rebooted": false,
+  "flashed": false,
+  "cost_acceptance": "FAIL",
+  "limits": [
+    "One injected repeat; not physical-finger acceptance or universal reliability.",
+    "Native screenshots retained privately; no new visual acceptance claim.",
+    "Same compositor package; fixture change is not a speedup experiment."
+  ]
+}

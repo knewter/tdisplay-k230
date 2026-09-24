@@ -70,3 +70,11 @@ and attributes about 98% of repaint CPU to output-state construction/painting.
 budgets and a renewed upward-throw check failure (12/13 observed checks), with
 successful normal-system restoration. This diagnostic does not establish the
 failure's cause or accept performance; task 4.2 remains open.
+
+
+The corrected fixture now waits for live classification before starting its
+throw. `docs/evidence/card-shell/throw-fixture-sync/README.md` preserves two
+setup failures and the following same-package board run with all 13 checks
+observed, 277 fully correlated submitted frames, and independent normal-system
+restoration. Frame CPU and tracking budgets still fail; this supports the
+fixture-race diagnosis without completing performance or physical-touch gates.

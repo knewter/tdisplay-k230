@@ -1,0 +1,18 @@
+{
+  "status": "INCOMPLETE",
+  "revision": "d26ffab0b6257da53791d4050bf5a0300d0d968d",
+  "boot_id": "06b5701c-380d-46bc-b2f4-ba95aa08b6d6",
+  "system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/xv8x9kbrlxpygk7v1lbxwncfzskvz28a-k230-card-shell",
+  "client": "/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "config": "/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf",
+  "evidence_class": "board-injected",
+  "runs": [],
+  "producer_sha256": {
+    "run-board.py": "77589b3d5554abbbb36e6bd0da3c97b5db6087de369c5d90eb7c193487a12119",
+    "card-shell-board-session.py": "e53b9c7f52d8021c8233f77089cfa4cb0b32e0e6564f70d827458c110f2c7f47",
+    "card-shell-acceptance.py": "2140a8771b0b5677cfc1dc348d47e6b0cd86cfb6e03c09fd049498320ce8e574",
+    "card-shell-benchmark.py": "ce547d2d675de8cc858c08223685eb0669815de963d544439a886771482be4a0"
+  },
+  "error": "RuntimeError: missing compositor invocation identity"
+}

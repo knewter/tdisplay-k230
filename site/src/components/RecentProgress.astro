@@ -18,10 +18,11 @@ import { evidenceUrl, url } from "../lib/specs";
       <p class="status">Experimental shell · measured on board</p>
       <h3>Finding the card rendering cost</h3>
       <p>A new profile attributes about 98% of repaint CPU to constructing and
-        painting frames. Performance targets still fail, and this run missed
-        a throw check after three earlier clean runs. The cause is under review;
-        real-finger acceptance remains open.</p>
-      <a href={evidenceUrl("docs/evidence/card-shell/repaint-stages/README.md")}>Profile, failed check and next experiment</a>
+        painting frames. After correcting a test setup race, all 13 injected interaction checks
+        passed again. Performance targets still fail; a scaled-pixel cache
+        comparison is next, and real-finger acceptance remains open.</p>
+      <a href={evidenceUrl("docs/evidence/card-shell/repaint-stages/README.md")}>Repaint profile and remaining performance gates</a>
+      <a href={evidenceUrl("docs/evidence/card-shell/throw-fixture-sync/README.md")}>Corrected test and board repeat</a>
     </article>
     <article>
       <p class="status">Experiment complete</p>
