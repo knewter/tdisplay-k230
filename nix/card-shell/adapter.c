@@ -1104,6 +1104,8 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		return false;
 	}
 	if (touch_first() && y >= 0 && y < shell.policy.config.edge_band) {
+		if (shell.policy.mode == CS_EXPANDING)
+			handle_result(cs_cancel(&shell.policy));
 		card_shell_drawer_down(&shell.shade_gesture, id, x, y);
 		return true;
 	}
@@ -1119,6 +1121,8 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	if (touch_first() && shell.active &&
 		y >= shell.policy.config.height - shell.policy.config.bottom_reserved -
 			shell.policy.config.footer_height) {
+		if (shell.policy.mode == CS_EXPANDING)
+			handle_result(cs_cancel(&shell.policy));
 		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
 		return true;
 	}
