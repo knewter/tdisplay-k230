@@ -51,6 +51,23 @@ The system SHALL resolve `icons.theme` through installed freedesktop themes with
 - **WHEN** a clone names an icon theme that the image does not contain
 - **THEN** apps retain recognizable fallback icons and text labels and the missing icon dependency is identified
 
+### Requirement: The theme chooser shows each theme's own imagery
+
+<!-- UNVERIFIED -->
+The touch chooser SHALL show a thumbnail beside each catalog entry, matching Omarchy's own picker: sourced from that theme's own preview image when the source provides one, and otherwise a representative background image chosen by the same fallback rule Omarchy's picker uses (its first background asset, not a fabricated substitute). A theme with neither a preview image nor a background asset SHALL show no thumbnail rather than an invented one. The background chooser SHALL show the same per-row treatment for each background candidate.
+
+#### Scenario: A theme ships its own preview image
+- **WHEN** a theme's source directory contains a supported preview image
+- **THEN** the chooser's list row for that theme shows a thumbnail decoded from that exact file
+
+#### Scenario: A theme ships no preview image
+- **WHEN** a theme has no preview file but does have background images
+- **THEN** the chooser's list row shows a thumbnail derived from that theme's first background image, sorted the same way Omarchy's own picker selects one
+
+#### Scenario: A theme ships neither
+- **WHEN** a theme has no preview image and no background image
+- **THEN** its list row shows no thumbnail, and the row otherwise remains fully usable by touch
+
 ### Requirement: Theme activation is coordinated and recoverable
 
 <!-- UNVERIFIED -->
