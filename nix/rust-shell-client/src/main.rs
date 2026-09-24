@@ -15,7 +15,7 @@ use k230_shell_rust::{
     service_ui::{
         action_message, notification_max_scroll, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, Confirmation, PanelIntent, ServiceView,
+        panel_intent, Confirmation, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
     theme_ui::{ThemeIntent, ThemePage, ThemeView},
@@ -1385,10 +1385,25 @@ impl SeatHandler for ShellClient {
         if cap == Capability::Touch {
             self.touch_device.take();
             self.touch.cancel();
+            self.panel_start = None;
+            self.panel_scrolled = false;
+            self.panel_swipe_owned = false;
+            self.service_view.notification_swipe = None;
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
             self.log("touch-capability-lost");
         }
     }
-    fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {}
+    fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {
+        self.touch_device.take();
+        self.touch.cancel();
+        self.panel_start = None;
+        self.panel_scrolled = false;
+        self.panel_swipe_owned = false;
+        self.service_view.notification_swipe = None;
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
 }
 
 impl TouchHandler for ShellClient {
@@ -1492,9 +1507,11 @@ impl TouchHandler for ShellClient {
                             .is_some_and(|snapshot| !snapshot.events.is_empty());
                         if self.panel_swipe_owned {
                             if let Some(swipe) = swipe {
-                                if let Some(request) =
-                                    notification_swipe_release(&self.service_view, &swipe)
-                                {
+                                if let Some(request) = notification_swipe_release(
+                                    &self.service_view,
+                                    &swipe,
+                                    point.1 - start.1,
+                                ) {
                                     self.panel_action(qh, PanelIntent::Request(request));
                                 }
                             }
@@ -1587,7 +1604,9 @@ impl TouchHandler for ShellClient {
                 if let Some((start_id, start)) = self.panel_start {
                     let dy = pos.1 - start.1;
                     if start_id == id && self.service_view.notification_swipe.is_some() {
-                        if let Some(swipe) = &mut self.service_view.notification_swipe {
+                        if dy.abs() > SWIPE_VERTICAL_CANCEL {
+                            self.service_view.notification_swipe = None;
+                        } else if let Some(swipe) = &mut self.service_view.notification_swipe {
                             swipe.offset = notification_swipe_offset(start.0, pos.0);
                         }
                         self.renderer.set_services(self.service_view.clone());

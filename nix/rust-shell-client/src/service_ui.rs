@@ -87,6 +87,7 @@ pub const NOTIFICATION_ROW: f64 = 116.0;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
+pub const SWIPE_VERTICAL_CANCEL: f64 = 45.0;
 
 pub fn notification_max_scroll(count: usize, height: u32) -> f64 {
     let bottom = f64::from(height) * 0.65 - 24.0;
@@ -148,9 +149,12 @@ pub fn notification_swipe_valid(view: &ServiceView, swipe: &NotificationSwipe) -
 pub fn notification_swipe_release(
     view: &ServiceView,
     swipe: &NotificationSwipe,
+    vertical_delta: f64,
 ) -> Option<ServiceRequest> {
-    (swipe.offset.abs() >= SWIPE_COMMIT && notification_swipe_valid(view, swipe))
-        .then_some(ServiceRequest::NotificationDismiss(swipe.event_id))
+    (swipe.offset.abs() >= SWIPE_COMMIT
+        && vertical_delta.abs() <= SWIPE_VERTICAL_CANCEL
+        && notification_swipe_valid(view, swipe))
+    .then_some(ServiceRequest::NotificationDismiss(swipe.event_id))
 }
 
 /// Returns an intent only after the caller has paired a single real contact.
@@ -401,7 +405,7 @@ mod tests {
             offset: 110.0,
         };
         assert_eq!(
-            notification_swipe_release(&view, &swipe),
+            notification_swipe_release(&view, &swipe, 0.0),
             Some(ServiceRequest::NotificationDismiss(7))
         );
         assert_eq!(
@@ -410,10 +414,12 @@ mod tests {
                 &NotificationSwipe {
                     offset: 12.0,
                     ..swipe.clone()
-                }
+                },
+                0.0,
             ),
             None
         );
+        assert_eq!(notification_swipe_release(&view, &swipe, 220.0), None);
         assert_eq!(
             notification_swipe_start(start, (320.0, 350.0), 568, 1232, &view),
             None
@@ -424,14 +430,14 @@ mod tests {
             None
         );
         assert!(!notification_swipe_valid(&view, &swipe));
-        assert_eq!(notification_swipe_release(&view, &swipe), None);
+        assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);
         view.notifications.as_mut().unwrap().events[0].dismissible = true;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
         assert_eq!(
             notification_swipe_start(start, (400.0, 300.0), 568, 1232, &view),
             None
         );
-        assert_eq!(notification_swipe_release(&view, &swipe), None);
+        assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);
         view.notifications.as_mut().unwrap().events[0].id = 8;
         assert!(!notification_swipe_valid(&view, &swipe));
         view.notifications.as_mut().unwrap().events[0].id = 7;
