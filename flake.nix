@@ -166,6 +166,7 @@
         handheld-theme-default = pkgsCross.callPackage ./nix/handheld-theme-default { };
         handheld-settings = pkgsCross.callPackage ./nix/handheld-settings.nix { };
         handheld-notifications = self.nixosConfigurations.k230.pkgs.callPackage ./nix/handheld-notifications.nix { };
+        handheld-shell-rust-probe = pkgsCross.callPackage ./nix/rust-shell-probe { };
         # Opt-in command only; no normal service/default selection until the
         # shared theme consumers and physical rollback trial pass.
         handheld-theme-command = pkgsCross.callPackage ./nix/handheld-theme-command.nix {

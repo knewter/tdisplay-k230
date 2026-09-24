@@ -1,0 +1,11 @@
+[package]
+name = "k230-shell-rust-probe"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Opt-in K230 Wayland software-shell feasibility probe"
+
+[dependencies]
+libc = "=0.2.175"
+smithay-client-toolkit = { version = "=0.20.0", default-features = false }
+wayland-client = "=0.31.11"
