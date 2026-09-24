@@ -389,4 +389,33 @@ mod tests {
             Some("Theme applied; app reload failed")
         );
     }
+
+    #[test]
+    fn scroll_is_bounded_and_activation_cannot_be_cancelled_mid_transaction() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: (0..20).map(|_| preview().theme).collect(),
+                active: ActiveTheme {
+                    id: None,
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        };
+        assert!(view.scroll_from(0.0, -9000.0, 1232));
+        assert_eq!(view.scroll, view.max_scroll(1232));
+        assert_eq!(
+            view.hit((200.0, 242.0), (200.0, 242.0), 568, 1232),
+            Some(ThemeIntent::Theme(9))
+        );
+        assert_eq!(view.hit((200.0, 242.0), (200.0, 270.0), 568, 1232), None);
+        view.page = ThemePage::Preview;
+        view.preview = Some(preview());
+        let activation = view.apply_request().unwrap();
+        view.submitted(activation);
+        assert_eq!(view.back(), None);
+        assert_eq!(view.page, ThemePage::Preview);
+        assert_eq!(view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232), None);
+    }
 }

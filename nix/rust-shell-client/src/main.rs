@@ -16,6 +16,8 @@ use k230_shell_rust::{
         action_message, notification_max_scroll, panel_intent, Confirmation, PanelIntent,
         ServiceView,
     },
+    theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
+    theme_ui::{ThemeIntent, ThemePage, ThemeView},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
@@ -493,6 +495,10 @@ struct ShellClient {
     renderer: RendererCache,
     services: ServiceWorker,
     service_view: ServiceView,
+    themes: ThemeWorker,
+    theme_view: ThemeView,
+    theme_origin_scroll: f64,
+    theme_dragged: bool,
     panel_start: Option<(i32, (f64, f64))>,
     panel_origin_scroll: f64,
     panel_scrolled: bool,
@@ -517,6 +523,61 @@ struct WallpaperState {
 }
 
 impl ShellClient {
+    fn theme_dirty(&mut self) {
+        self.renderer.set_theme_view(self.theme_view.clone());
+        self.dirty = true;
+    }
+
+    fn submit_theme(&mut self, request: ThemeRequest) {
+        match self.themes.try_submit(request.clone()) {
+            Ok(()) => self.theme_view.submitted(request),
+            Err(error) => self.theme_view.failed_to_submit(error),
+        }
+        self.theme_dirty();
+    }
+
+    fn theme_reply(&mut self, reply: ThemeReply) {
+        if self.theme_view.accept(reply) {
+            self.theme_dirty();
+        }
+    }
+
+    fn theme_action(&mut self, intent: ThemeIntent) {
+        match intent {
+            ThemeIntent::Open => {
+                let request = self.theme_view.open();
+                self.submit_theme(request);
+            }
+            ThemeIntent::Back => {
+                if let Some(request) = self.theme_view.back() {
+                    self.submit_theme(request);
+                } else {
+                    self.theme_dirty();
+                }
+            }
+            ThemeIntent::Close => self.hide(),
+            ThemeIntent::Theme(index) => {
+                if let Some(request) = self.theme_view.preview_request(index) {
+                    self.submit_theme(request);
+                }
+            }
+            ThemeIntent::Background(index) => match self.theme_view.background_request(index) {
+                Ok(request) => self.submit_theme(request),
+                Err(error) => {
+                    self.theme_view.failed_to_submit(error);
+                    self.theme_dirty();
+                }
+            },
+            ThemeIntent::Apply => match self.theme_view.apply_request() {
+                Ok(request) => self.submit_theme(request),
+                Err(error) => {
+                    self.theme_view.failed_to_submit(error);
+                    self.theme_dirty();
+                }
+            },
+        }
+    }
+
     fn refresh_route(&mut self, route: Route) {
         let request = match route {
             Route::Shade => ServiceRequest::RefreshNotifications,
@@ -888,6 +949,8 @@ impl ShellClient {
     fn hide(&mut self) {
         self.touch.cancel();
         self.panel_start = None;
+        self.theme_view = ThemeView::default();
+        self.renderer.set_theme_view(self.theme_view.clone());
         self.nav = DrawerNavigation::default();
         self.reveal.clear();
         self.layer.take();
@@ -1179,12 +1242,15 @@ impl TouchHandler for ShellClient {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
                     self.panel_scrolled = false;
+                    self.theme_origin_scroll = self.theme_view.scroll;
+                    self.theme_dragged = false;
                 }
             } else {
                 self.log("touch-second-cancel");
                 self.nav.cancel();
                 self.panel_start = None;
                 self.panel_scrolled = false;
+                self.theme_dragged = false;
             }
             // The contact itself is invisible; only a changed scene paints.
         }
@@ -1222,6 +1288,25 @@ impl TouchHandler for ShellClient {
                             && shade_release_closes(start, point, list_has_rows, self.height)
                         {
                             self.hide();
+                        } else if self.route == Route::Settings {
+                            if !self.theme_dragged {
+                                if let Some(intent) =
+                                    self.theme_view.hit(start, point, self.width, self.height)
+                                {
+                                    self.theme_action(intent);
+                                } else if self.theme_view.page == ThemePage::Controls {
+                                    if let Some(intent) = panel_intent(
+                                        self.route,
+                                        start,
+                                        point,
+                                        self.width,
+                                        self.height,
+                                        &self.service_view,
+                                    ) {
+                                        self.panel_action(qh, intent);
+                                    }
+                                }
+                            }
                         } else if let Some(intent) = panel_intent(
                             self.route,
                             start,
@@ -1285,6 +1370,28 @@ impl TouchHandler for ShellClient {
                         self.panel_scrolled = true;
                     }
                 }
+            } else if self.route == Route::Settings
+                && self.input_ready
+                && self.theme_view.page != ThemePage::Controls
+            {
+                if let Some((start_id, start)) = self.panel_start {
+                    let y = start.1;
+                    let valid_list = match self.theme_view.page {
+                        ThemePage::List => y >= 204.0 && y < f64::from(self.height) - 64.0,
+                        ThemePage::Preview => y >= 662.0 && y < f64::from(self.height) - 152.0,
+                        ThemePage::Controls => false,
+                    };
+                    let dy = pos.1 - y;
+                    if start_id == id && valid_list && dy.abs() > 18.0 {
+                        self.theme_dragged = true;
+                        if self
+                            .theme_view
+                            .scroll_from(self.theme_origin_scroll, dy, self.height)
+                        {
+                            self.theme_dirty();
+                        }
+                    }
+                }
             }
             if self.dirty {
                 self.draw(qh);
@@ -1315,6 +1422,7 @@ impl TouchHandler for ShellClient {
         self.nav.cancel();
         self.panel_start = None;
         self.panel_scrolled = false;
+        self.theme_dragged = false;
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -1366,6 +1474,10 @@ fn serve() -> Result<(), String> {
         .map(PathBuf::from)
         .unwrap_or_default();
     let services = ServiceWorker::spawn(settings_command, notification_socket);
+    let theme_command = std::env::var_os("K230_THEME_COMMAND")
+        .map(PathBuf::from)
+        .unwrap_or_default();
+    let themes = ThemeWorker::spawn(theme_command);
     let mut state = ShellClient {
         compositor,
         layer_shell,
@@ -1403,6 +1515,10 @@ fn serve() -> Result<(), String> {
         renderer: RendererCache::default(),
         services,
         service_view: ServiceView::default(),
+        themes,
+        theme_view: ThemeView::default(),
+        theme_origin_scroll: 0.0,
+        theme_dragged: false,
         panel_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
@@ -1418,6 +1534,7 @@ fn serve() -> Result<(), String> {
     };
     state.renderer.set_appearance(appearance.active().cloned());
     state.renderer.set_services(state.service_view.clone());
+    state.renderer.set_theme_view(state.theme_view.clone());
     if !state.ensure_wallpaper(&qh) {
         return Err("wallpaper layer unavailable".into());
     }
@@ -1431,6 +1548,12 @@ fn serve() -> Result<(), String> {
                 break;
             };
             state.service_reply(reply);
+        }
+        for _ in 0..4 {
+            let Some(reply) = state.themes.try_recv() else {
+                break;
+            };
+            state.theme_reply(reply);
         }
         if state
             .service_view

@@ -7,6 +7,8 @@ use crate::{
     navigation::{list_top, ROW_HEIGHT, ROW_VISIBLE_HEIGHT},
     service_data::{Control, ControlValue},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
+    theme_catalog::BackgroundKind,
+    theme_ui::{ThemePage, ThemeView},
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
@@ -132,6 +134,204 @@ fn control_text(control: &Control) -> String {
     }
 }
 
+fn palette_rgb(value: &str) -> Option<u32> {
+    let hex = value.strip_prefix('#')?;
+    let rgb = match hex.len() {
+        6 => hex,
+        8 => &hex[2..],
+        _ => return None,
+    };
+    u32::from_str_radix(rgb, 16).ok()
+}
+
+fn paint_theme_chooser(
+    cr: &Context,
+    w: f64,
+    h: f64,
+    view: &ThemeView,
+    theme: Option<&AppearanceSnapshot>,
+) {
+    if let Some(brush) = theme_brush(theme, "image-picker", "background") {
+        let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
+    }
+    text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, 0x78d7cb);
+    text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, 0x78d7cb);
+    match view.page {
+        ThemePage::Controls => return,
+        ThemePage::List => {
+            text(cr, "Themes", 28.0, 112.0, w - 56.0, 36.0, 0xf4f7f8);
+            text(
+                cr,
+                "Tap to preview · swipe to browse",
+                28.0,
+                166.0,
+                w - 56.0,
+                18.0,
+                0xc8d7dd,
+            );
+            if let Some(list) = &view.list {
+                let _ = cr.save();
+                cr.rectangle(0.0, 204.0, w, (h - 268.0).max(0.0));
+                cr.clip();
+                let first = (view.scroll / 92.0).floor().max(0.0) as usize;
+                for (index, entry) in list.themes.iter().enumerate().skip(first).take(14) {
+                    let y = 204.0 + index as f64 * 92.0 - view.scroll;
+                    if y >= h - 64.0 {
+                        break;
+                    }
+                    service_card(cr, 24.0, y, w - 48.0, 82.0);
+                    text(cr, &entry.label, 42.0, y + 13.0, w - 86.0, 24.0, 0xf4f7f8);
+                    let status = if list.active.id.as_deref() == Some(entry.id.as_str()) {
+                        "Current theme"
+                    } else {
+                        match entry.origin {
+                            crate::theme_catalog::ThemeOrigin::Builtin => "Built in",
+                            crate::theme_catalog::ThemeOrigin::User => "User theme",
+                        }
+                    };
+                    text(cr, status, 42.0, y + 47.0, w - 86.0, 16.0, 0xc8d7dd);
+                }
+                let _ = cr.restore();
+                if list.themes.is_empty() {
+                    text(
+                        cr,
+                        "No themes available",
+                        28.0,
+                        226.0,
+                        w - 56.0,
+                        20.0,
+                        0xc8d7dd,
+                    );
+                }
+            } else {
+                text(cr, "Loading themes", 28.0, 226.0, w - 56.0, 20.0, 0xc8d7dd);
+            }
+        }
+        ThemePage::Preview => {
+            let Some(preview) = view.preview.as_ref() else {
+                return;
+            };
+            text(
+                cr,
+                &preview.theme.label,
+                28.0,
+                112.0,
+                w - 56.0,
+                34.0,
+                0xf4f7f8,
+            );
+            text(
+                cr,
+                if preview.activated {
+                    "Current theme"
+                } else {
+                    "Preview · no change applied"
+                },
+                28.0,
+                160.0,
+                w - 56.0,
+                18.0,
+                0xc8d7dd,
+            );
+            text(cr, "Palette", 28.0, 219.0, w - 56.0, 20.0, 0xc8d7dd);
+            for (index, (name, value)) in preview.palette.iter().take(5).enumerate() {
+                let x = 28.0 + index as f64 * ((w - 56.0) / 5.0);
+                rounded(cr, x, 257.0, 66.0, 66.0, 12.0);
+                color(cr, palette_rgb(value).unwrap_or(0x425661), 1.0);
+                let _ = cr.fill();
+                text(cr, name, x, 334.0, 86.0, 13.0, 0xc8d7dd);
+            }
+            text(
+                cr,
+                &format!(
+                    "{} supported · {} unavailable",
+                    preview.compatibility.applied.len(),
+                    preview.compatibility.unavailable.len()
+                ),
+                28.0,
+                408.0,
+                w - 56.0,
+                17.0,
+                0xc8d7dd,
+            );
+            text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, 0xf4f7f8);
+            let _ = cr.save();
+            cr.rectangle(0.0, 662.0, w, (h - 814.0).max(0.0));
+            cr.clip();
+            let first = (view.scroll / 78.0).floor().max(0.0) as usize;
+            for (index, background) in preview.backgrounds.iter().enumerate().skip(first).take(10) {
+                let y = 662.0 + index as f64 * 78.0 - view.scroll;
+                if y >= h - 152.0 {
+                    break;
+                }
+                service_card(cr, 24.0, y, w - 48.0, 70.0);
+                text(
+                    cr,
+                    &background.label,
+                    42.0,
+                    y + 9.0,
+                    w - 84.0,
+                    21.0,
+                    0xf4f7f8,
+                );
+                let status = if background.kind == BackgroundKind::Video {
+                    "Video unavailable"
+                } else if background.selected {
+                    "Selected still"
+                } else {
+                    "Tap to preview still"
+                };
+                text(
+                    cr,
+                    status,
+                    42.0,
+                    y + 39.0,
+                    w - 84.0,
+                    15.0,
+                    if background.kind == BackgroundKind::Video {
+                        0xf4b9a6
+                    } else {
+                        0xc8d7dd
+                    },
+                );
+            }
+            let _ = cr.restore();
+            service_card(cr, 24.0, h - 126.0, w - 48.0, 86.0);
+            text(
+                cr,
+                "Cancel",
+                48.0,
+                h - 101.0,
+                w / 2.0 - 50.0,
+                22.0,
+                0xc8d7dd,
+            );
+            text(
+                cr,
+                if preview.activated {
+                    "Apply again"
+                } else {
+                    "Apply"
+                },
+                w / 2.0 + 18.0,
+                h - 101.0,
+                w / 2.0 - 46.0,
+                22.0,
+                0x78d7cb,
+            );
+        }
+    }
+    if view.pending.is_some() {
+        text(cr, "Preparing…", 28.0, h - 167.0, w - 56.0, 18.0, 0xc8d7dd);
+    }
+    if let Some(error) = &view.error {
+        text(cr, error, 28.0, h - 167.0, w - 56.0, 17.0, 0xf4b9a6);
+    }
+    if let Some(message) = &view.message {
+        text(cr, message, 28.0, h - 167.0, w - 56.0, 17.0, 0xc8d7dd);
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct RenderParams {
     pub width: u32,
@@ -148,6 +348,7 @@ fn scene(
     icons: &mut IconCache,
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
+    chooser: Option<&ThemeView>,
 ) {
     let RenderParams {
         width,
@@ -207,7 +408,9 @@ fn scene(
         Route::Settings => "Settings",
         Route::Hide => return,
     };
-    text(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, 0xf4f7f8);
+    if !(route == Route::Settings && chooser.is_some_and(|view| view.page != ThemePage::Controls)) {
+        text(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, 0xf4f7f8);
+    }
     match route {
         Route::Drawer => {
             text(
@@ -429,8 +632,13 @@ fn scene(
             }
         }
         Route::Settings => {
+            if let Some(view) = chooser.filter(|view| view.page != ThemePage::Controls) {
+                paint_theme_chooser(cr, w, h, view, theme);
+                return;
+            }
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, 0x78d7cb);
             text(cr, "Device controls", 28.0, 112.0, w - 56.0, 19.0, 0xc8d7dd);
+            text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, 0x78d7cb);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 for (y, name, control) in [
                     (162.0, "Network link", &settings.network),
@@ -519,6 +727,7 @@ pub fn draw_shm(
         &mut IconCache::new(),
         None,
         None,
+        None,
     )
 }
 
@@ -529,6 +738,7 @@ fn draw_shm_with_icons(
     icons: &mut IconCache,
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
+    chooser: Option<&ThemeView>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -548,7 +758,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, params, apps, icons, theme, services);
+    scene(&cr, params, apps, icons, theme, services, chooser);
     drop(cr);
     surface.flush();
     Ok(())
@@ -577,6 +787,7 @@ pub fn export_png(
         &mut IconCache::new(),
         None,
         None,
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -599,9 +810,14 @@ pub struct RendererCache {
     scroll: f64,
     theme: Option<AppearanceSnapshot>,
     services: Option<ServiceView>,
+    chooser: Option<ThemeView>,
 }
 
 impl RendererCache {
+    pub fn set_theme_view(&mut self, view: ThemeView) {
+        self.chooser = Some(view);
+        self.invalidate();
+    }
     pub fn set_services(&mut self, services: ServiceView) {
         self.services = Some(services);
         self.invalidate();
@@ -702,6 +918,7 @@ impl RendererCache {
                 &mut self.icons,
                 self.theme.as_ref(),
                 self.services.as_ref(),
+                self.chooser.as_ref(),
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -742,7 +959,114 @@ mod tests {
         Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
         Priority, SettingsSnapshot,
     };
+    use crate::theme_catalog::{
+        ActiveTheme, BackgroundChoice, Compatibility, ThemeEntry, ThemeList, ThemeOrigin,
+        ThemePreview,
+    };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn theme_list_preview_and_scroll_paint_distinct_handheld_scenes() {
+        let mut renderer = RendererCache::default();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Settings,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let mut controls = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut controls, params, &[]).unwrap();
+        let entry = ThemeEntry {
+            id: "fixture-night".into(),
+            name: "Fixture Night".into(),
+            label: "Fixture Night".into(),
+            origin: ThemeOrigin::Builtin,
+        };
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: (0..18)
+                    .map(|index| ThemeEntry {
+                        id: format!("fixture-{index}"),
+                        label: format!("Fixture {index}"),
+                        ..entry.clone()
+                    })
+                    .collect(),
+                active: ActiveTheme {
+                    id: Some("fixture-0".into()),
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(view.clone());
+        let mut list = vec![0; controls.len()];
+        renderer.draw(&mut list, params, &[]).unwrap();
+        assert_ne!(list, controls);
+        view.scroll = 460.0;
+        renderer.set_theme_view(view.clone());
+        let mut scrolled = vec![0; controls.len()];
+        renderer.draw(&mut scrolled, params, &[]).unwrap();
+        assert_ne!(list, scrolled);
+        // Scrolling leaves the header unchanged while replacing visible rows.
+        assert_eq!(&list[..568 * 180 * 4], &scrolled[..568 * 180 * 4]);
+        view.page = ThemePage::Preview;
+        view.scroll = 0.0;
+        view.preview = Some(ThemePreview {
+            theme: entry,
+            generation: "fixture-generation".into(),
+            appearance_path: "/tmp/fixture-appearance.json".into(),
+            palette: BTreeMap::from([
+                ("background".into(), "#223344".into()),
+                ("accent".into(), "#88ccbb".into()),
+            ]),
+            icon_theme: Some("hicolor".into()),
+            backgrounds: vec![
+                BackgroundChoice {
+                    id: "fixture-still".into(),
+                    label: "Still scene".into(),
+                    kind: BackgroundKind::Image,
+                    path: "/tmp/fixture.png".into(),
+                    selected: true,
+                    decode_status: "unverified".into(),
+                },
+                BackgroundChoice {
+                    id: "fixture-motion".into(),
+                    label: "Motion scene".into(),
+                    kind: BackgroundKind::Video,
+                    path: "/tmp/fixture.webm".into(),
+                    selected: false,
+                    decode_status: "unverified".into(),
+                },
+            ],
+            compatibility: Compatibility {
+                applied: vec!["launcher".into()],
+                unavailable: vec![],
+                unknown: vec![],
+            },
+            activated: false,
+            app_appearance: None,
+        });
+        renderer.set_theme_view(view);
+        let mut preview = vec![0; controls.len()];
+        renderer.draw(&mut preview, params, &[]).unwrap();
+        assert_ne!(preview, list);
+        if let Ok(path) = std::env::var("K230_THEME_FIXTURE_PNG") {
+            let surface = unsafe {
+                ImageSurface::create_for_data_unsafe(
+                    preview.as_mut_ptr(),
+                    Format::ARgb32,
+                    568,
+                    1232,
+                    568 * 4,
+                )
+            }
+            .unwrap();
+            let mut file = File::create(path).unwrap();
+            surface.write_to_png(&mut file).unwrap();
+        }
+    }
 
     #[test]
     fn settings_power_rows_require_a_loaded_capability_snapshot() {
