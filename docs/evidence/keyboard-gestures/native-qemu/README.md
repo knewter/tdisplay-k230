@@ -64,9 +64,24 @@ popup ownership if it actually covers the grip.
 The machine-readable [positive result](result.json) and
 [failed-helper recovery result](fail-hide-result.json) retain numeric outcomes.
 
-The probe proves a delivered Wayland keyboard key event, not entered text in
-a real text field; that part of task 2.3 remains open. Remaining gates are
-the final integrated image build and exact installed
+An optional repeat with `--foot /nix/store/kv21hqgv043bmdfi5i1f791n9x7crwgg-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot`
+started the real RISC-V Foot terminal with a PTY-backed `/usr/bin/tee` child.
+After explicit Foot focus, two wvkbd touches entered the public letter `c`
+and Enter; the file contained exactly bytes `63 0a`. The
+[Foot capture](foot-typed.png) and [text result](text-entry-result.json) show
+the exact result. This closes native text ownership in task 2.3, without
+asserting real-finger text entry.
+
+With `--output-reset`, disabling the sole headless output caused wvkbd to exit
+after logging `Could not find config for output HEADLESS-1`; the compositor
+returned the app to height 1232. After an explicit restart of wvkbd (modeling
+a supervisor), a fresh two-finger show, grip hide and ordinary key check
+passed. [Output-restart result](output-restart-result.json) retains the action
+sequence. The installed coherent session currently starts wvkbd once from
+Sway configuration, so automatic resurrection remains an open task 1.2 gate.
+
+Remaining gates are automatic keyboard restart after output loss, the final
+integrated image build and exact installed
 identity, real two-finger and grip motion on glass, panel/camera observation,
 workload budgets, and user acceptance. These captures cannot establish touch
 reachability, physical smoothness, or installed theme appearance.

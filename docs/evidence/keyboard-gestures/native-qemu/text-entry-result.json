@@ -1,0 +1,8 @@
+{
+  "class": "headless-qemu-real-foot-pty-text",
+  "foot": "/nix/store/kv21hqgv043bmdfi5i1f791n9x7crwgg-foot-riscv64-unknown-linux-gnu-1.28.0/bin/foot",
+  "output_reset": false,
+  "physical_touch": false,
+  "panel_capture": false,
+  "typed_public_hex": "630a"
+}

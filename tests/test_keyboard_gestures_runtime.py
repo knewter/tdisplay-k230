@@ -29,6 +29,9 @@ def main():
     ap.add_argument('--qemu', default='/usr/bin/qemu-riscv64-static')
     ap.add_argument('--fail-hide', action='store_true',
                     help='exercise bounded recovery when the trusted hide helper fails')
+    ap.add_argument('--output-reset', action='store_true',
+                    help='disable and re-enable the output with the keyboard shown')
+    ap.add_argument('--foot', help='exact RISC-V Foot executable for a real PTY text-entry check')
     args = ap.parse_args()
     out = Path(args.output)
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
@@ -200,6 +203,28 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
         shown = capture('shown.png')
         assert abs(grip_edge(shown)-756) <= 2, grip_edge(shown)
         assert ImageChops.difference(baseline, shown).getbbox(), 'shown keyboard lacks pixels'
+        if args.output_reset:
+            ipc('output HEADLESS-1 disable')
+            ipc('output HEADLESS-1 enable')
+            wait_for(lambda: keyboard.poll() is not None)
+            wait_for(lambda: app_height() == 1232)
+            # wvkbd exits when its sole output disappears. The session
+            # supervisor must restart it; model that restart explicitly.
+            keyboard = launch('wvkbd-restarted', [args.qemu, args.keyboard,
+                                                 '-H', '420', '--hidden'])
+            (out/'keyboard.pid').write_text(str(keyboard.pid))
+            wait_for(lambda: 'Found 2 layers' in (out/'wvkbd-restarted.log').read_text())
+            stamp = int(time.monotonic()*1000) & 0xffffffff
+            touch('down', 15, 100, 1200, stamp)
+            touch('down', 16, 190, 1200, stamp+30)
+            touch('motion', 15, 100, 1100, stamp+55)
+            wait_for(lambda: (out/'keyboard-actions').read_text().count('show') >= 3)
+            touch('motion', 15, 100, 780, stamp+90)
+            touch('motion', 16, 190, 780, stamp+91)
+            touch('up', 15, stamp=stamp+180)
+            touch('up', 16, stamp=stamp+181)
+            wait_for(lambda: app_height() == 756)
+            assert keyboard.poll() is None and sway.poll() is None
         # Cancel a partly dragged grip: the same live keyboard and app must
         # return to shown geometry, and a fresh ordinary key touch must work.
         touch('down', 5, 100, 780, stamp+500)
@@ -236,12 +261,47 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
                              'shown':shown_height,'grip_held':grip_height,
                              'grip_reversed':grip_reverse_height,'hidden_final':1232},
                   'actions':(out/'keyboard-actions').read_text().splitlines(),
+                  'output_reset_with_keyboard_restart':args.output_reset,
                   'key_presses_after_cancel':key_presses(),
                   'screenshots':['hidden.png','held.png','paused.png','reverse.png',
                                  'hidden-again.png','shown.png','grip-held.png',
                                  'grip-reverse.png'],
                   'physical_touch':False,'panel_capture':False}
         (out/'result.json').write_text(json.dumps(result,indent=2)+'\n')
+        if args.foot:
+            client.terminate()
+            client.wait(timeout=5)
+            wait_for(lambda: app_height() is None)
+            typed = out/'typed.txt'
+            foot = launch('foot', [args.qemu, args.foot, '--app-id', 'k230.card.one',
+                                   '--override', 'resize-by-cells=no', '-e', '/usr/bin/tee', str(typed)])
+            foot_height = wait_for(lambda: app_height() if foot.poll() is None else None)
+            assert foot_height >= 100, (foot_height, foot.poll())
+            stamp = int(time.monotonic()*1000) & 0xffffffff
+            touch('down', 10, 100, 1200, stamp)
+            touch('down', 11, 190, 1200, stamp+30)
+            touch('motion', 10, 100, 1100, stamp+55)
+            wait_for(lambda: (out/'keyboard-actions').read_text().count('show') >=
+                     (4 if args.output_reset else 3))
+            touch('motion', 10, 100, 780, stamp+90)
+            touch('motion', 11, 190, 780, stamp+91)
+            touch('up', 10, stamp=stamp+180)
+            touch('up', 11, stamp=stamp+181)
+            time.sleep(.3)
+            capture('foot-shown.png')
+            ipc('[app_id="k230.card.one"] focus')
+            time.sleep(.1)
+            touch('down', 12, 255, 1128, stamp+500)  # public letter c
+            touch('up', 12, stamp=stamp+510)
+            touch('down', 13, 527, 1196, stamp+600)  # Enter
+            touch('up', 13, stamp=stamp+610)
+            wait_for(lambda: typed.exists() and typed.read_bytes() == b'c\n')
+            capture('foot-typed.png')
+            (out/'text-entry-result.json').write_text(json.dumps({
+                'class':'headless-qemu-real-foot-pty-text',
+                'foot':args.foot,'typed_public_hex':typed.read_bytes().hex(),
+                'output_reset':args.output_reset,
+                'physical_touch':False,'panel_capture':False},indent=2)+'\n')
         print('PASS native Sway/wvkbd chord, held/reversed pixels, grip and usable area; no physical proof')
     finally:
         for proc in reversed(processes):
