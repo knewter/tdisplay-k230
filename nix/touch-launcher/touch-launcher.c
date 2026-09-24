@@ -19,6 +19,7 @@
 #include <wayland-client.h>
 #include <pango/pangocairo.h>
 #include "catalog.h"
+#include "icon.h"
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 
@@ -127,6 +128,23 @@ static void text_layout(const char *value, int x, int y, int w, int h, int size,
 }
 static void text(const char *value, int x, int y, int w, int h, int size, uint32_t color) {
   text_layout(value,x,y,w,h,size,color,false);
+}
+static void app_icon(int action, int x, int y) {
+  GIcon *temporary=NULL, *icon=NULL;
+  if (action>=0 && apps && (guint)action<apps->len)
+    icon=g_app_info_get_icon(g_ptr_array_index(apps,action));
+  else if (action==ACT_TERMINAL || action==ACT_NEW_TERMINAL)
+    icon=temporary=g_themed_icon_new("foot");
+  else if (action==ACT_MONITOR)
+    icon=temporary=g_themed_icon_new("htop");
+  /* Help has no installed desktop entry, so it takes the named fallback. */
+  cairo_surface_t *cs=cairo_image_surface_create_for_data((unsigned char *)pixels,
+    CAIRO_FORMAT_ARGB32,width,height,stride);
+  cairo_t *cr=cairo_create(cs);
+  (void)k230_icon_draw(cr,icon,K230_ICON_DRAWER,x,y);
+  cairo_destroy(cr);
+  cairo_surface_destroy(cs);
+  g_clear_object(&temporary);
 }
 static const struct { const char *label, *hint; } help_topics[HELP_TOPIC_COUNT] = {
   {"Apps", "Open installed tools or return to a running app."},
@@ -441,8 +459,9 @@ static void draw(void) {
       text(b->label,b->x+12,b->y+8,b->w-24,40,28,0xffffffff);
       text_layout(b->hint,b->x+16,b->y+48,b->w-32,b->h-56,20,0xffcbd5e1,true);
     } else if(b->hint) {
-      text(b->label,b->x+12,b->y+b->h/2-42,b->w-24,52,32,0xffffffff);
-      text(b->hint,b->x+12,b->y+b->h/2+10,b->w-24,30,18,0xffcbd5e1);
+      app_icon(b->action,b->x+17,b->y+(b->h-48)/2);
+      text(b->label,b->x+78,b->y+b->h/2-42,b->w-90,52,32,0xffffffff);
+      text(b->hint,b->x+78,b->y+b->h/2+10,b->w-90,30,18,0xffcbd5e1);
     } else text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);
   }
 }

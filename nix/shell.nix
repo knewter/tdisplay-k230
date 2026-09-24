@@ -132,6 +132,7 @@ let
   editorDesktop = pkgs.makeDesktopItem {
     name = "k230-editor";
     desktopName = "Editor";
+    icon = "accessories-text-editor";
     comment = "Edit a text file with nano";
     exec = "${pkgs.nano}/bin/nano";
     terminal = true;
@@ -154,6 +155,7 @@ let
   videoDesktop = pkgs.makeDesktopItem {
     name = "k230-video";
     desktopName = "Video";
+    icon = "mpv";
     comment = "Play the public network video demo";
     exec = "${videoSession}/bin/k230-video-session run";
     terminal = true;
@@ -194,7 +196,9 @@ let
     # Include Nix profiles because the systemd session does not run a login shell.
     export HTOPRC="''${HTOPRC:-${monitorHtopConfig}}"
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-    export XDG_DATA_DIRS="''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    # Nix package icon trees are not necessarily merged into a profile's
+    # share/icons tree. Keep their desktop art reachable by themed name.
+    export XDG_DATA_DIRS="${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
   '';
