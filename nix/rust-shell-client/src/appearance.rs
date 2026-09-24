@@ -691,6 +691,24 @@ impl AppearanceReceiver {
     }
 
     pub fn receive(&mut self) -> Result<Option<AppearanceEvent>, String> {
+        // `PEER_DEADLINE` bounds how long a peer may take to finish sending
+        // one well-formed request; it is not a bound on how long the scene
+        // owner may take to act on a request already parsed. Once a request
+        // is pending, the caller (main.rs's event loop) legitimately keeps
+        // calling `receive()` every tick while it decodes/renders and waits
+        // for a free buffer -- a bounded but nonzero delay of its own,
+        // tracked independently by the caller. Checking the transport
+        // deadline here too would silently clear `peer`/`pending` out from
+        // under a commit/rollback that is still genuinely in progress, so
+        // the eventual `respond()` for that same event fails as a "stale
+        // appearance event" even though the peer never disconnected and the
+        // shell never gave up. Only a peer that has NOT yet delivered a
+        // complete request can be considered stalled here; once fully
+        // parsed and handed off, `respond()`'s own write-side deadline is
+        // what protects against a peer that stops reading the ack.
+        if self.pending.is_some() {
+            return Ok(None);
+        }
         if self
             .peer
             .as_ref()
@@ -699,9 +717,6 @@ impl AppearanceReceiver {
             self.peer = None;
             self.pending = None;
             return Err("appearance peer timed out".into());
-        }
-        if self.pending.is_some() {
-            return Ok(None);
         }
         let Some(peer) = self.peer.as_mut() else {
             return Ok(None);

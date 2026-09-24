@@ -739,3 +739,75 @@ fn oversized_request_is_closed_without_event_or_state_change() {
     assert!(receiver.prepared().is_none());
     assert_eq!(receiver.active().unwrap().path, fixture.default);
 }
+
+// Regression test for a board activation failure: `k230-theme activate`
+// against the installed shell returned {"error": "commit failed and fanout
+// rollback was not acknowledged"}, and shell-ui.service logged
+// `appearance-receive-failed appearance peer timed out` (twice) followed by
+// `appearance-ack-failed stale appearance event`.
+//
+// Once a complete, well-formed request has been parsed, the scene owner
+// (main.rs) still has to decode/render and wait for a free buffer before it
+// can call `respond()` -- a bounded but nonzero delay (up to ~1.4s for a
+// redraw slot, longer still when a still-wallpaper decode is a cache miss,
+// which the video-wallpaper commit's own decoder-slot gate stacks on top
+// of). `receive()` used to keep re-checking the same fixed, never-refreshed
+// `PEER_DEADLINE` on every call regardless of whether a request was already
+// pending, so a slow-but-still-in-progress commit/rollback could have its
+// `peer`/`pending` bookkeeping silently cleared out from under it. The
+// eventual `respond()` for that same event then failed with "stale
+// appearance event" even though the shell never gave up and the peer was
+// still connected and waiting.
+#[test]
+fn commit_ack_survives_bounded_render_delay_past_peer_deadline() {
+    let fixture = Fixture::new();
+    let generation = fixture.user_generation();
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    let id = generation.file_name().unwrap().to_str().unwrap();
+    send(
+        &mut receiver,
+        &fixture.socket(),
+        json!({"protocol":1,"phase":"prepare","generation":id,"path":generation,
+               "previous_generation":null,"previous_path":null}),
+    );
+    let mut peer = UnixStream::connect(fixture.socket()).unwrap();
+    peer.set_read_timeout(Some(Duration::from_millis(3500)))
+        .unwrap();
+    peer.write_all(
+        format!(
+            "{}\n",
+            json!({"protocol":1,"phase":"commit","generation":id,"path":generation})
+        )
+        .as_bytes(),
+    )
+    .unwrap();
+    receiver.accept().unwrap();
+    let event = receiver.receive().unwrap().unwrap();
+
+    // The scene owner is still legitimately rendering/waiting for a buffer;
+    // simulate that bounded delay running past the 2s transport deadline
+    // while the caller keeps polling `receive()` every loop tick, exactly as
+    // main.rs's event loop does even while a commit is deferred in
+    // `pending_appearance`.
+    std::thread::sleep(Duration::from_millis(2200));
+    assert!(
+        receiver.receive().unwrap().is_none(),
+        "receive() must not report a live peer as timed out once its request is pending"
+    );
+
+    receiver
+        .respond(event, true)
+        .expect("commit ack must still be deliverable after a bounded render delay");
+    assert_eq!(receiver.active().unwrap().generation, id);
+
+    let mut reply = String::new();
+    peer.read_to_string(&mut reply).unwrap();
+    let reply: Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(reply["status"], "ok");
+    assert_eq!(reply["generation"], id);
+}
