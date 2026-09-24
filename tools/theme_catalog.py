@@ -161,6 +161,8 @@ def main(argv=None):
     parser.add_argument("--builtins", type=Path)
     parser.add_argument("--state-root", type=Path, default=Path.home() / ".local/state/omarchy/current")
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
+    parser.add_argument("--rust-socket", type=Path)
+    parser.add_argument("--deck-socket", type=Path)
     actions = parser.add_subparsers(dest="action", required=True)
     listing = actions.add_parser("list")
     listing.add_argument("--json", action="store_true", help="JSON is also the default")
@@ -173,6 +175,8 @@ def main(argv=None):
             command.add_argument("--expected-generation", required=True,
                                  help="generation reviewed in preview; reject changed sources")
     args = parser.parse_args(argv)
+    if (args.rust_socket is None) != (args.deck_socket is None):
+        parser.error("--rust-socket and --deck-socket must be supplied together")
     try:
         entries = discover(args.user_themes, args.builtins)
         if args.action == "list":
@@ -191,7 +195,9 @@ def main(argv=None):
                                              explicit=args.background is not None)
                 result["app_appearance"] = activate_generation(
                     generation, state_root=args.state_root, endpoint=args.socket,
-                    preference=preference)
+                    preference=preference,
+                    endpoints=(args.rust_socket, args.deck_socket)
+                    if args.rust_socket is not None else None)
                 result["activated"] = True
         print(json.dumps(result, sort_keys=True))
         return 0

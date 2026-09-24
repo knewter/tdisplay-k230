@@ -107,7 +107,8 @@ def _public_links(root: Path) -> list[Path]:
 
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                         transport=exchange, lock_timeout: float = 2.0,
-                        preference=None, app_sync=None) -> dict:
+                        preference=None, app_sync=None,
+                        endpoints: tuple[Path, Path] | None = None) -> dict:
     """Publish one prepared generation only after phase-checked shell acks.
 
     The lock covers the whole transaction, including failure recovery. The
@@ -120,6 +121,12 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
     if (not generation.is_relative_to(generations.resolve(strict=True))
             or not (generation / "report.json").is_file()):
         raise TransactionError("generation is outside the prepared cache")
+    if endpoints is None:
+        targets = (endpoint,)
+    else:
+        if len(endpoints) != 2 or endpoints[0] == endpoints[1]:
+            raise TransactionError("fanout requires two distinct appearance endpoints")
+        targets = endpoints
     descriptor = os.open(state_root / ".activation.lock", os.O_CREAT | os.O_RDWR, 0o600)
     try:
         deadline = time.monotonic() + lock_timeout
@@ -135,14 +142,33 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
         missing_links = _public_links(state_root)
         if preference is not None:
             preference.guard()
-        transport(endpoint, "prepare", generation)
+        if len(targets) == 2:
+            def rollback_all():
+                failures = []
+                for target in targets:
+                    try:
+                        transport(target, "rollback", previous)
+                    except Exception as error:
+                        failures.append(error)
+                return failures
+
+            try:
+                for target in targets:
+                    transport(target, "prepare", generation)
+            except Exception as error:
+                if rollback_all():
+                    raise TransactionError("fanout prepare failed and rollback was not acknowledged") from error
+                raise TransactionError("fanout prepare failed; both receivers restored") from error
+        else:
+            transport(endpoint, "prepare", generation)
         created_links = []
         try:
             _swap_pointer(state_root, generation)
             for path in missing_links:
                 path.symlink_to("active/" + path.name)
                 created_links.append(path)
-            transport(endpoint, "commit", generation)
+            for target in targets:
+                transport(target, "commit", generation)
             if preference is not None:
                 preference.commit()
         except Exception as error:
@@ -160,10 +186,15 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                     preference.rollback()
                 except Exception as restore_error:
                     preference_error = restore_error
-            try:
-                transport(endpoint, "rollback", previous)
-            except Exception as rollback_error:
-                raise TransactionError("commit failed and shell rollback was not acknowledged") from rollback_error
+            if len(targets) == 2:
+                rollback_errors = rollback_all()
+                if rollback_errors:
+                    raise TransactionError("commit failed and fanout rollback was not acknowledged") from rollback_errors[0]
+            else:
+                try:
+                    transport(endpoint, "rollback", previous)
+                except Exception as rollback_error:
+                    raise TransactionError("commit failed and shell rollback was not acknowledged") from rollback_error
             if pointer_error is not None:
                 raise TransactionError("commit failed and pointer restoration failed") from pointer_error
             if preference_error is not None:

@@ -25,6 +25,114 @@ def prepared(root, name):
 
 
 class ThemeTransaction(unittest.TestCase):
+    def test_two_receivers_commit_before_app_sync(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            def ack(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+            def app_sync(_root, *, expected_generation):
+                self.assertEqual(tx._pointer(root), candidate)
+                self.assertEqual(expected_generation, candidate.name)
+                events.append(("app", "sync", candidate))
+            result = tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                            endpoints=(rust, deck), transport=ack,
+                                            app_sync=app_sync)
+            self.assertEqual(result, {"state": "applied", "generation": candidate.name})
+            self.assertEqual(events, [("rust.sock", "prepare", candidate),
+                                      ("deck.sock", "prepare", candidate),
+                                      ("rust.sock", "commit", candidate),
+                                      ("deck.sock", "commit", candidate),
+                                      ("app", "sync", candidate)])
+
+    def test_second_prepare_failure_rolls_back_both_without_publication(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            def fail(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+                if endpoint == deck and phase == "prepare":
+                    raise tx.TransactionError("deck rejected")
+            with self.assertRaisesRegex(tx.TransactionError, "prepare failed; both receivers restored"):
+                tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                       endpoints=(rust, deck), transport=fail,
+                                       app_sync=lambda *_args, **_kwargs: self.fail("app sync before ACK"))
+            self.assertIsNone(tx._pointer(root))
+            self.assertEqual([item[:2] for item in events],
+                             [("rust.sock", "prepare"), ("deck.sock", "prepare"),
+                              ("rust.sock", "rollback"), ("deck.sock", "rollback")])
+
+    def test_second_commit_failure_restores_pointer_and_both_receivers(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            old, candidate = prepared(root, "old"), prepared(root, "candidate")
+            (root / "active").symlink_to(old)
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            def fail(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+                if endpoint == deck and phase == "commit":
+                    raise tx.TransactionError("deck commit lost")
+            with self.assertRaisesRegex(tx.TransactionError, "previous generation restored"):
+                tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                       endpoints=(rust, deck), transport=fail,
+                                       app_sync=lambda *_args, **_kwargs: self.fail("app sync before both ACKs"))
+            self.assertEqual(tx._pointer(root), old)
+            self.assertEqual([item[:2] for item in events],
+                             [("rust.sock", "prepare"), ("deck.sock", "prepare"),
+                              ("rust.sock", "commit"), ("deck.sock", "commit"),
+                              ("rust.sock", "rollback"), ("deck.sock", "rollback")])
+
+    def test_rollback_failure_still_contacts_other_receiver(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            def fail(endpoint, phase, generation):
+                events.append((endpoint.name, phase))
+                if phase == "commit" and endpoint == deck:
+                    raise tx.TransactionError("commit failed")
+                if phase == "rollback" and endpoint == rust:
+                    raise tx.TransactionError("rust rollback failed")
+            with self.assertRaisesRegex(tx.TransactionError, "fanout rollback was not acknowledged"):
+                tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                       endpoints=(rust, deck), transport=fail)
+            self.assertIn(("deck.sock", "rollback"), events)
+            self.assertIsNone(tx._pointer(root))
+
+    def test_preference_failure_after_both_commits_rolls_back_every_surface(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            old, candidate = prepared(root, "old"), prepared(root, "candidate")
+            (root / "active").symlink_to(old)
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            class Preference:
+                def guard(self):
+                    events.append("guard")
+                def commit(self):
+                    events.append("preference-commit")
+                    raise OSError("injected preference write failure")
+                def rollback(self):
+                    events.append("preference-rollback")
+            def ack(endpoint, phase, _generation):
+                events.append(f"{endpoint.name}-{phase}")
+            with self.assertRaisesRegex(tx.TransactionError, "previous generation restored"):
+                tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                       endpoints=(rust, deck), transport=ack,
+                                       preference=Preference(),
+                                       app_sync=lambda *_args, **_kwargs: self.fail("app sync after failed preference"))
+            self.assertEqual(tx._pointer(root), old)
+            self.assertEqual(events, ["guard", "rust.sock-prepare", "deck.sock-prepare",
+                                      "rust.sock-commit", "deck.sock-commit",
+                                      "preference-commit", "preference-rollback",
+                                      "rust.sock-rollback", "deck.sock-rollback"])
+
     def test_commit_ack_publishes_and_repeat_is_idempotent(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

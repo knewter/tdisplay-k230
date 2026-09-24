@@ -270,7 +270,13 @@ def main():
     mode.add_argument("--prepare-only", action="store_true")
     mode.add_argument("--activate", action="store_true")
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
+    parser.add_argument("--rust-socket", type=Path,
+                        help="Rust shell appearance receiver (requires --deck-socket)")
+    parser.add_argument("--deck-socket", type=Path,
+                        help="Sway deck appearance receiver (requires --rust-socket)")
     args = parser.parse_args()
+    if (args.rust_socket is None) != (args.deck_socket is None):
+        parser.error("--rust-socket and --deck-socket must be supplied together")
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
                                   background_choice=args.background)
@@ -280,7 +286,9 @@ def main():
                                      report["selected_background"], report["backgrounds"],
                                      explicit=args.background is not None)
         app_status = activate_generation(destination, state_root=args.state_root, endpoint=args.socket,
-                                         preference=preference)
+                                         preference=preference,
+                                         endpoints=(args.rust_socket, args.deck_socket)
+                                         if args.rust_socket is not None else None)
     print(json.dumps({"generation_path": str(destination), "report": report,
                       "app_appearance": app_status}, indent=2, sort_keys=True))
 
