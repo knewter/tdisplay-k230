@@ -84,10 +84,11 @@
         "docs/evidence/coherent-shell/direct-carousel-qemu/README.md",
         "docs/evidence/coherent-shell/refined-installed/README.md",
         "docs/evidence/keyboard-gestures/installed-preview/README.md",
-        "docs/evidence/coherent-shell/boot-artifacts/README.md"
+        "docs/evidence/coherent-shell/boot-artifacts/README.md",
+        "docs/evidence/omarchy-themes/community-board-fixed/README.md"
       ],
-      "rationale": "Source dcfbdb0b is test-activated with a supervised keyboard and exact board process identity. The matching coherent SD image was built and inspected on the host at source 017125c8. Native board captures are committed; real touch acceptance, theme restoration after reboot and persistent boot remain open.",
-      "reviewRevision": "017125c89a1103c0371035f95544a801f41c14e0",
+      "rationale": "Source 3c502a37 is test-activated with portrait-crop theme preview and the community rgba parser fix. Dark, light and unchanged community themes passed live activation and restoration on this exact system. Notification motion is newer source work; the host SD image still targets the previous 48x70 preview. Physical touch and persistent boot gates remain open.",
+      "reviewRevision": "3c502a37540375a74685f70b21d73eaee28c40bc",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
