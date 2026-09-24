@@ -62,3 +62,20 @@ the CPU can execute the instruction):
   -o /tmp/k230-zb-toolchain.s - <<<'unsigned long f(unsigned long x) { return __builtin_popcountl(x); }'
 rg -n 'cpop|\\.attribute arch' /tmp/k230-zb-toolchain.s
 ```
+
+The same pinned GCC 15.3 also accepted the entire vendor DT extension string
+in an isolated assembly-only check:
+
+```sh
+/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc \
+  -march=rv64gc_zba_zbb_zbc_zbs_zicbom_zicbop_zicboz_svpbmt \
+  -mabi=lp64d -S -x c -o /tmp/k230-declared-isa-toolchain.s - \
+  <<<'unsigned long f(unsigned long x) { return __builtin_popcountl(x); }'
+rg -n 'attribute arch|cpop' /tmp/k230-declared-isa-toolchain.s
+```
+
+The emitted attribute listed Zba/Zbb/Zbc/Zbs, Zicbom/Zicbop/Zicboz and
+Svpbmt, and the sample emitted `cpop`. This establishes assembler/compiler
+syntax only. In particular it does **not** resolve the physical report's
+omission of Zbc and Zicbop, privilege policy, or the absence of an actual
+targeted library path for most of these extensions.

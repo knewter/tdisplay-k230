@@ -1,12 +1,12 @@
 ## 1. Normal kernel and renderer graph
 
-- [ ] 1.1 Move the tested vector compiler probe and kernel configuration into the normal kernel derivation, retain a diagnostic trial alias, and verify the normal kernel with `nix build .#kernel --max-jobs 1 --cores 4 --no-link --print-out-paths` (host cross-build only).
+- [x] 1.1 Move the tested vector compiler probe and kernel configuration into the normal kernel derivation, retain a diagnostic trial alias, and verify the normal kernel with `nix build .#kernel --max-jobs 1 --cores 4 --no-link --print-out-paths` (host cross-build only). See `docs/evidence/cpu-extensions/normal-image-build/README.md`.
 - [ ] 1.2 Enable the tested runtime-gated Pixman RVV build in the normal package graph, verify one Pixman provider and a scalar disable control, and run `nix build .#shell-compositor --max-jobs 1 --cores 4 --no-link --print-out-paths` (host cross-build only).
 - [ ] 1.3 Build and inspect the coherent normal kernel/modules/initrd/system closure with `nix build .#toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths` (host cross-build only).
 
 ## 2. Useful extension inventory
 
-- [ ] 2.1 Record a per-extension table from the pinned board DT, relevant stage 1 and kernel source/config, compiler/assembler support and physical runtime reports; explicitly classify privilege, version, selected userspace path and exclusions, then verify the table against the pinned source with `rg -n 'riscv,isa|riscv,isa-extensions' /nix/store/l6jdpbzp53y5n24ky6602f41gzs6f6ik-linux-xuantie-k230-rvv-src/arch/riscv/boot/dts/canaan/k230.dtsi` (source audit, not execution proof).
+- [x] 2.1 Record a per-extension table from the pinned board DT, relevant stage 1 and kernel source/config, compiler/assembler support and physical runtime reports; explicitly classify privilege, version, selected userspace path and exclusions, then verify the table against the pinned source with `rg -n 'riscv,isa|riscv,isa-extensions' /nix/store/l6jdpbzp53y5n24ky6602f41gzs6f6ik-linux-xuantie-k230-rvv-src/arch/riscv/boot/dts/canaan/k230.dtsi` (source audit, not execution proof). See `docs/evidence/cpu-extensions/README.md`; physical per-extension execution remains explicitly unverified.
 - [ ] 2.2 For each additional useful extension proposed for ordinary userspace, add a bounded targeted implementation and physical test or leave it explicitly UNVERIFIED; verify its host build with `nix build .#toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths` (host cross-build only).
 
 ## 3. Candidate execution and recovery
