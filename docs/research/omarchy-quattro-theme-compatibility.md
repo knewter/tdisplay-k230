@@ -22,6 +22,17 @@ Discovery used `gh api repos/omacom/omarchy/releases/latest`,
 and source reads. No upstream theme installer was executed. These checkouts
 are research inputs, not installed device configuration.
 
+A subsequent host-only check ran the pinned upstream
+`bash bin/omarchy-theme-color --file COMMUNITY/colors.toml --all` against the
+unchanged Fuchsblau checkout: **PASS**, 58 resolved keys, including its custom
+hairline, explicit selection foreground, ANSI blue, mode and legacy aliases.
+With the pinned upstream `bin` on the child process's PATH,
+`bash bin/omarchy-theme-osc COMMUNITY/colors.toml` emitted **21 expected OSC
+color sequences** captured in memory; none were delivered to a terminal.
+`git status --porcelain` on the community checkout remained empty. `COMMUNITY`
+means the sample revision above. This checks helper portability on the host,
+not full staging, shell activation, a Nix package, or board rendering.
+
 ## Which repository gets cloned?
 
 Omarchy's own themes are directories inside its
@@ -147,7 +158,8 @@ GNOME settings, desktop-app helpers and user hooks. Also, its `rm` then `mv`
 replacement leaves a reader gap and failed shell IPC is tolerated. Keep a
 narrow patch/adapter for generation publication and acknowledgement rather
 than claiming it already provides transactional rollback. Source inspection
-establishes feasibility, not a host execution or physical compatibility pass.
+and the narrow host helper check establish feasibility, not an end-to-end
+theme-swap or physical compatibility pass.
 
 ### Completion means usable themes
 
