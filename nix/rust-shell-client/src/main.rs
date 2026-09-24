@@ -20,6 +20,9 @@ use k230_shell_rust::{
     },
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
     theme_ui::{ThemeIntent, ThemePage, ThemeView},
+    video_status::{self, VideoStatus},
+    video_visibility,
+    video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
     wifi_ui::{self, Intent as WifiIntent, Page as WifiPage, WifiView},
     Route, TouchTrace,
@@ -122,6 +125,139 @@ fn appearance_renderable(
     cache
         .render(still, width, height, FitMode::Crop)
         .map(|_| ())
+}
+
+fn selected_video(snapshot: Option<&AppearanceSnapshot>, geometry: (u32, u32)) -> Option<VideoKey> {
+    let snapshot = snapshot?;
+    let choice = snapshot
+        .backgrounds
+        .iter()
+        .find(|choice| choice.selected && choice.is_video)?;
+    Some(VideoKey {
+        path: choice.staged_path.clone(),
+        width: geometry.0,
+        height: geometry.1,
+    })
+}
+
+fn fallback_still(snapshot: Option<&AppearanceSnapshot>) -> Option<PathBuf> {
+    snapshot.and_then(|snapshot| {
+        snapshot.background.clone().or_else(|| {
+            snapshot
+                .backgrounds
+                .iter()
+                .find(|choice| !choice.is_video)
+                .map(|choice| choice.staged_path.clone())
+        })
+    })
+}
+
+/// Which retained decoder slot, if any, already matches the display key.
+/// `Previous` is what a rollback needs: a transaction can settle onto a
+/// generation whose decoder was demoted (but kept paused, with its last
+/// frame) when the newer generation was committed, so restoring it does not
+/// need to wait for another decode.
+#[derive(Debug, Eq, PartialEq)]
+enum VideoSlot {
+    Active,
+    Candidate,
+    Previous,
+    None,
+}
+
+fn resolve_video_slot(
+    display: Option<&VideoKey>,
+    active: Option<&VideoKey>,
+    candidate: Option<&VideoKey>,
+    previous: Option<&VideoKey>,
+) -> VideoSlot {
+    let Some(display) = display else {
+        return VideoSlot::None;
+    };
+    if active == Some(display) {
+        VideoSlot::Active
+    } else if candidate == Some(display) {
+        VideoSlot::Candidate
+    } else if previous == Some(display) {
+        VideoSlot::Previous
+    } else {
+        VideoSlot::None
+    }
+}
+
+fn video_identity(snapshot: Option<&AppearanceSnapshot>) -> (Option<String>, Option<String>) {
+    let Some(snapshot) = snapshot else {
+        return (None, None);
+    };
+    let relative = snapshot
+        .backgrounds
+        .iter()
+        .find(|choice| choice.selected && choice.is_video)
+        .map(|choice| choice.relative.clone());
+    (Some(snapshot.generation.clone()), relative)
+}
+
+struct VideoPlayback {
+    decoder: VideoWallpaper,
+    frame: Option<Vec<u8>>,
+    error: Option<&'static str>,
+    paused: bool,
+    decoded_before_pause: u64,
+}
+
+impl VideoPlayback {
+    fn new(key: VideoKey, ffmpeg: &std::path::Path, ffprobe: &std::path::Path) -> Self {
+        Self {
+            decoder: VideoWallpaper::start(key, ffmpeg.to_path_buf(), ffprobe.to_path_buf()),
+            frame: None,
+            error: None,
+            paused: false,
+            decoded_before_pause: 0,
+        }
+    }
+    fn pause(&mut self) {
+        if !self.paused {
+            self.decoded_before_pause = self
+                .decoded_before_pause
+                .saturating_add(self.decoder.decoded());
+            self.decoder.stop();
+            self.paused = true;
+        }
+    }
+    fn resume(&mut self, ffmpeg: &std::path::Path, ffprobe: &std::path::Path) {
+        if self.paused {
+            self.decoder = VideoWallpaper::start(
+                self.decoder.key.clone(),
+                ffmpeg.to_path_buf(),
+                ffprobe.to_path_buf(),
+            );
+            self.paused = false;
+        }
+    }
+    fn decoded(&self) -> u64 {
+        self.decoded_before_pause
+            .saturating_add(self.decoder.decoded())
+    }
+    fn poll(&mut self) -> bool {
+        let mut changed = false;
+        while let Some(event) = self.decoder.try_recv() {
+            match event {
+                VideoEvent::Frame(frame) => {
+                    self.frame = Some(frame);
+                    changed = true;
+                }
+                VideoEvent::Error(category) => {
+                    self.error = Some(category);
+                    changed = true;
+                }
+            }
+        }
+        if self.error.is_none() {
+            self.error = self.decoder.failure();
+            changed |= self.error.is_some();
+        }
+        changed
+    }
 }
 
 fn poll_until(fd: i32, events: i16, deadline: Instant) -> Result<(), String> {
@@ -477,6 +613,27 @@ struct ShellClient {
     wallpaper: WallpaperState,
     background_cache: BackgroundCache,
     wallpaper_path: Option<PathBuf>,
+    video_source: Option<PathBuf>,
+    video_active: Option<VideoPlayback>,
+    video_candidate: Option<VideoPlayback>,
+    video_previous: Option<VideoPlayback>,
+    video_display: Option<VideoKey>,
+    video_ffmpeg: Option<PathBuf>,
+    video_ffprobe: Option<PathBuf>,
+    video_start_attempted: bool,
+    video_generation: Option<String>,
+    video_relative: Option<String>,
+    video_error: Option<&'static str>,
+    video_submitted: u64,
+    video_callbacks: u64,
+    video_last_decoded_ms: Option<u64>,
+    video_last_submitted_ms: Option<u64>,
+    video_last_callback_ms: Option<u64>,
+    video_status_last: Instant,
+    video_status_runtime: PathBuf,
+    video_cover_path: Option<PathBuf>,
+    video_cover_last: Instant,
+    video_covered: bool,
     touch_device: Option<wl_touch::WlTouch>,
     route: Route,
     touch: TouchTrace,
@@ -541,6 +698,20 @@ struct WallpaperState {
 }
 
 impl ShellClient {
+    fn start_video(&self, key: VideoKey) -> Result<VideoPlayback, String> {
+        let ffmpeg = self
+            .video_ffmpeg
+            .as_deref()
+            .ok_or("video decoder unavailable")?;
+        let ffprobe = self
+            .video_ffprobe
+            .as_deref()
+            .ok_or("video probe unavailable")?;
+        if !ffmpeg.is_absolute() || !ffprobe.is_absolute() {
+            return Err("video tools must be absolute".into());
+        }
+        Ok(VideoPlayback::new(key, ffmpeg, ffprobe))
+    }
     fn wifi_dirty(&mut self) {
         self.service_view.wifi = Some(self.wifi_view.public());
         self.renderer.set_services(self.service_view.clone());
@@ -1015,7 +1186,31 @@ impl ShellClient {
             self.wallpaper.buffers.push(buffer);
             (self.wallpaper.buffers.len() - 1, canvas)
         };
-        let rendered = if let Some(path) = self.wallpaper_path.as_deref() {
+        let video_pixels = self.video_display.as_ref().and_then(|key| {
+            self.video_candidate
+                .as_ref()
+                .filter(|video| video.decoder.key == *key)
+                .or_else(|| {
+                    self.video_active
+                        .as_ref()
+                        .filter(|video| video.decoder.key == *key)
+                })
+                .or_else(|| {
+                    self.video_previous
+                        .as_ref()
+                        .filter(|video| video.decoder.key == *key)
+                })
+                .and_then(|video| video.frame.as_deref())
+        });
+        let video_drawn = video_pixels.is_some();
+        let rendered = if let Some(pixels) = video_pixels {
+            if pixels.len() != canvas.len() {
+                Err("video frame size mismatch".into())
+            } else {
+                canvas.copy_from_slice(pixels);
+                Ok(())
+            }
+        } else if let Some(path) = self.wallpaper_path.as_deref() {
             self.background_cache
                 .render(path, width, height, FitMode::Crop)
                 .and_then(|pixels| {
@@ -1050,6 +1245,10 @@ impl ShellClient {
         layer.commit();
         self.wallpaper.frame_pending = true;
         self.wallpaper.dirty = false;
+        if video_drawn {
+            self.video_submitted = self.video_submitted.saturating_add(1);
+            self.video_last_submitted_ms = Some(video_status::monotonic_ms());
+        }
         self.log("wallpaper-commit");
         true
     }
@@ -1359,6 +1558,10 @@ impl CompositorHandler for ShellClient {
             .is_some_and(|l| l.wl_surface() == surface)
         {
             self.wallpaper.frame_pending = false;
+            if self.video_display.is_some() {
+                self.video_callbacks = self.video_callbacks.saturating_add(1);
+                self.video_last_callback_ms = Some(video_status::monotonic_ms());
+            }
             if self.wallpaper.dirty && !self.appearance_pending {
                 self.draw_wallpaper(qh);
             }
@@ -1440,6 +1643,13 @@ impl LayerShellHandler for ShellClient {
             if configure_size(&mut geometry, width, height).is_none() {
                 self.log("wallpaper-configure-rejected");
                 return;
+            }
+            if (self.wallpaper.width, self.wallpaper.height) != geometry {
+                self.video_active = None;
+                self.video_candidate = None;
+                self.video_previous = None;
+                self.video_display = None;
+                self.video_start_attempted = false;
             }
             (self.wallpaper.width, self.wallpaper.height) = geometry;
             self.wallpaper.configured = true;
@@ -1943,6 +2153,7 @@ fn serve() -> Result<(), String> {
     )?;
     let mut pending_appearance: Option<(AppearanceEvent, Instant, Option<AppearanceSnapshot>)> =
         None;
+    let mut pending_video_prepare: Option<(AppearanceEvent, Instant, VideoKey)> = None;
     let conn = Connection::connect_to_env().map_err(|e| e.to_string())?;
     let (globals, mut queue) = registry_queue_init(&conn).map_err(|e| e.to_string())?;
     let qh = queue.handle();
@@ -1978,9 +2189,36 @@ fn serve() -> Result<(), String> {
         layer: None,
         wallpaper: WallpaperState::default(),
         background_cache: BackgroundCache::new(),
-        wallpaper_path: appearance
-            .active()
-            .and_then(|snapshot| snapshot.background.clone()),
+        wallpaper_path: fallback_still(appearance.active()),
+        video_source: appearance.active().and_then(|snapshot| {
+            snapshot
+                .backgrounds
+                .iter()
+                .find(|choice| choice.selected && choice.is_video)
+                .map(|choice| choice.staged_path.clone())
+        }),
+        video_active: None,
+        video_candidate: None,
+        video_previous: None,
+        video_display: None,
+        video_ffmpeg: std::env::var_os("K230_WALLPAPER_FFMPEG").map(PathBuf::from),
+        video_ffprobe: std::env::var_os("K230_WALLPAPER_FFPROBE").map(PathBuf::from),
+        video_start_attempted: false,
+        video_generation: video_identity(appearance.active()).0,
+        video_relative: video_identity(appearance.active()).1,
+        video_error: None,
+        video_submitted: 0,
+        video_callbacks: 0,
+        video_last_decoded_ms: None,
+        video_last_submitted_ms: None,
+        video_last_callback_ms: None,
+        video_status_last: Instant::now() - Duration::from_secs(2),
+        video_status_runtime: std::env::var_os("XDG_RUNTIME_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_default(),
+        video_cover_path: std::env::var_os("K230_WALLPAPER_COVER_PATH").map(PathBuf::from),
+        video_cover_last: Instant::now() - Duration::from_secs(2),
+        video_covered: false,
         touch_device: None,
         route: Route::Drawer,
         touch: TouchTrace::default(),
@@ -2113,52 +2351,200 @@ fn serve() -> Result<(), String> {
             };
             state.log("wallpaper-configure-timeout");
         }
+        if state.video_cover_last.elapsed() >= Duration::from_millis(500) {
+            state.video_cover_last = Instant::now();
+            state.video_covered = state.video_cover_path.as_deref().is_some_and(|path| {
+                video_visibility::certified(
+                    path,
+                    state.wallpaper.width,
+                    state.wallpaper.height,
+                    video_status::monotonic_ms(),
+                )
+            });
+        }
+        if state.wallpaper.configured && !state.video_start_attempted {
+            if let Some(path) = state.video_source.clone() {
+                let key = VideoKey {
+                    path,
+                    width: state.wallpaper.width,
+                    height: state.wallpaper.height,
+                };
+                state.video_start_attempted = true;
+                state.video_display = Some(key.clone());
+                if !state.reduced_motion && !state.video_covered {
+                    match state.start_video(key) {
+                        Ok(video) => state.video_active = Some(video),
+                        Err(error) => {
+                            state.video_error = Some("decoder-unavailable");
+                            state.log(&format!("wallpaper-video-fallback {error}"));
+                        }
+                    }
+                }
+            }
+        }
+        if state.wallpaper.configured
+            && !state.video_covered
+            && !state.reduced_motion
+            && state.video_start_attempted
+            && state.video_active.is_none()
+            && state.video_error.is_none()
+        {
+            if let Some(key) = state.video_display.clone() {
+                match state.start_video(key) {
+                    Ok(video) => state.video_active = Some(video),
+                    Err(error) => {
+                        state.video_error = Some("decoder-unavailable");
+                        state.log(&format!("wallpaper-video-fallback {error}"));
+                    }
+                }
+            }
+        }
+        if let Some(video) = state.video_active.as_mut() {
+            if state.video_covered || state.reduced_motion {
+                video.pause();
+            } else if video.paused {
+                if let (Some(ffmpeg), Some(ffprobe)) = (&state.video_ffmpeg, &state.video_ffprobe) {
+                    video.resume(ffmpeg, ffprobe);
+                }
+            }
+        }
+        let active_changed = state.video_active.as_mut().is_some_and(VideoPlayback::poll);
+        let candidate_changed = state
+            .video_candidate
+            .as_mut()
+            .is_some_and(VideoPlayback::poll);
+        if active_changed || candidate_changed {
+            if active_changed {
+                state.video_last_decoded_ms = Some(video_status::monotonic_ms());
+            }
+            if state
+                .video_active
+                .as_ref()
+                .is_some_and(|video| video.error.is_some())
+            {
+                state.video_error = state.video_active.as_ref().and_then(|video| video.error);
+                state.log("wallpaper-video-fallback decoder-error");
+                state.video_active = None;
+                state.video_display = None;
+            }
+            if state.video_display.is_some() {
+                state.wallpaper.dirty = true;
+            }
+        }
+        if let Some((event, started, key)) = pending_video_prepare.take() {
+            let ready = state.video_candidate.as_ref().is_some_and(|video| {
+                video.decoder.key == key && video.frame.is_some() && video.error.is_none()
+            });
+            let error = state
+                .video_candidate
+                .as_ref()
+                .is_some_and(|video| video.error.is_some());
+            if ready || error || started.elapsed() >= Duration::from_millis(1450) {
+                if !ready {
+                    state.video_candidate = None;
+                } else if state.video_covered || state.reduced_motion {
+                    if let Some(video) = state.video_candidate.as_mut() {
+                        video.pause();
+                    }
+                }
+                if let Err(error) = appearance.respond(event, ready) {
+                    state.log(&format!("wallpaper-video-prepare-ack-failed {error}"));
+                }
+            } else {
+                pending_video_prepare = Some((event, started, key));
+            }
+        }
         match appearance.receive() {
-            Ok(Some(event)) => match event.phase {
-                AppearancePhase::Prepare => {
-                    let geometry = state
-                        .wallpaper
-                        .configured
-                        .then_some((state.wallpaper.width, state.wallpaper.height));
-                    let result = appearance_renderable(
-                        event.snapshot.as_ref(),
-                        &mut state.background_cache,
-                        geometry,
-                    );
-                    let accepted = result.is_ok();
-                    if let Err(error) = result {
-                        state.log(&format!("appearance-prepare-rejected {error}"));
+            Ok(Some(event)) => {
+                match event.phase {
+                    AppearancePhase::Prepare => {
+                        let geometry = state
+                            .wallpaper
+                            .configured
+                            .then_some((state.wallpaper.width, state.wallpaper.height));
+                        if let Some(key) =
+                            geometry.and_then(|size| selected_video(event.snapshot.as_ref(), size))
+                        {
+                            if state.video_active.as_ref().is_some_and(|video| {
+                                video.decoder.key == key && video.frame.is_some()
+                            }) {
+                                let _ = appearance.respond(event, true);
+                            } else {
+                                match state.start_video(key.clone()) {
+                                    Ok(video) => {
+                                        state.video_candidate = Some(video);
+                                        pending_video_prepare = Some((event, Instant::now(), key));
+                                    }
+                                    Err(error) => {
+                                        state.log(&format!(
+                                            "appearance-video-prepare-rejected {error}"
+                                        ));
+                                        let _ = appearance.respond(event, false);
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        let result = appearance_renderable(
+                            event.snapshot.as_ref(),
+                            &mut state.background_cache,
+                            geometry,
+                        );
+                        let accepted = result.is_ok();
+                        if let Err(error) = result {
+                            state.log(&format!("appearance-prepare-rejected {error}"));
+                        }
+                        if let Err(error) = appearance.respond(event, accepted) {
+                            state.log(&format!("appearance-prepare-ack-failed {error}"));
+                        }
                     }
-                    if let Err(error) = appearance.respond(event, accepted) {
-                        state.log(&format!("appearance-prepare-ack-failed {error}"));
+                    AppearancePhase::Commit | AppearancePhase::Rollback => {
+                        let previous = appearance.active().cloned();
+                        let geometry = state
+                            .wallpaper
+                            .configured
+                            .then_some((state.wallpaper.width, state.wallpaper.height));
+                        let video_key =
+                            geometry.and_then(|size| selected_video(event.snapshot.as_ref(), size));
+                        let video_ready = video_key.as_ref().is_none_or(|key| {
+                            state.video_candidate.as_ref().is_some_and(|video| {
+                                &video.decoder.key == key
+                                    && video.frame.is_some()
+                                    && video.error.is_none()
+                            }) || state.video_active.as_ref().is_some_and(|video| {
+                                &video.decoder.key == key
+                                    && video.frame.is_some()
+                                    && video.error.is_none()
+                            }) || state.video_previous.as_ref().is_some_and(|video| {
+                                &video.decoder.key == key && video.frame.is_some()
+                            })
+                        });
+                        let renderable = if !video_ready {
+                            Err("video frame unavailable".into())
+                        } else if video_key.is_some() {
+                            Ok(())
+                        } else {
+                            appearance_renderable(
+                                event.snapshot.as_ref(),
+                                &mut state.background_cache,
+                                geometry,
+                            )
+                        };
+                        if let Err(error) = renderable {
+                            state.log(&format!("appearance-commit-rejected {error}"));
+                            let _ = appearance.respond(event, false);
+                        } else {
+                            state.wallpaper_path = fallback_still(event.snapshot.as_ref());
+                            state.video_display = video_key;
+                            state.renderer.set_appearance(event.snapshot.clone());
+                            state.appearance_pending = true;
+                            state.dirty = true;
+                            state.wallpaper.dirty = true;
+                            pending_appearance = Some((event, Instant::now(), previous));
+                        }
                     }
                 }
-                AppearancePhase::Commit | AppearancePhase::Rollback => {
-                    let previous = appearance.active().cloned();
-                    let geometry = state
-                        .wallpaper
-                        .configured
-                        .then_some((state.wallpaper.width, state.wallpaper.height));
-                    if let Err(error) = appearance_renderable(
-                        event.snapshot.as_ref(),
-                        &mut state.background_cache,
-                        geometry,
-                    ) {
-                        state.log(&format!("appearance-commit-rejected {error}"));
-                        let _ = appearance.respond(event, false);
-                    } else {
-                        state.wallpaper_path = event
-                            .snapshot
-                            .as_ref()
-                            .and_then(|snapshot| snapshot.background.clone());
-                        state.renderer.set_appearance(event.snapshot.clone());
-                        state.appearance_pending = true;
-                        state.dirty = true;
-                        state.wallpaper.dirty = true;
-                        pending_appearance = Some((event, Instant::now(), previous));
-                    }
-                }
-            },
+            }
             Ok(None) => {}
             Err(error) => state.log(&format!("appearance-receive-failed {error}")),
         }
@@ -2233,12 +2619,57 @@ fn serve() -> Result<(), String> {
                     false
                 };
                 if !accepted {
-                    state.wallpaper_path = previous
-                        .as_ref()
-                        .and_then(|snapshot| snapshot.background.clone());
+                    state.wallpaper_path = fallback_still(previous.as_ref());
+                    state.video_display = selected_video(
+                        previous.as_ref(),
+                        (state.wallpaper.width, state.wallpaper.height),
+                    );
                     state.renderer.set_appearance(previous);
                     state.dirty = true;
                     state.wallpaper.dirty = true;
+                    state.video_candidate = None;
+                } else {
+                    state.video_source = state.video_display.as_ref().map(|key| key.path.clone());
+                    state.video_start_attempted = state.video_source.is_some();
+                    let identity = video_identity(event.snapshot.as_ref());
+                    state.video_generation = identity.0;
+                    state.video_relative = identity.1;
+                    state.video_error = None;
+                    state.video_submitted = 0;
+                    state.video_callbacks = 0;
+                    state.video_last_decoded_ms = None;
+                    state.video_last_submitted_ms = None;
+                    state.video_last_callback_ms = None;
+                    let slot = resolve_video_slot(
+                        state.video_display.as_ref(),
+                        state.video_active.as_ref().map(|video| &video.decoder.key),
+                        state
+                            .video_candidate
+                            .as_ref()
+                            .map(|video| &video.decoder.key),
+                        state
+                            .video_previous
+                            .as_ref()
+                            .map(|video| &video.decoder.key),
+                    );
+                    if slot != VideoSlot::Active {
+                        let mut former = state.video_active.take();
+                        if let Some(video) = former.as_mut() {
+                            video.pause();
+                        }
+                        state.video_active = match slot {
+                            VideoSlot::Candidate => state.video_candidate.take(),
+                            VideoSlot::Previous => state.video_previous.take(),
+                            VideoSlot::Active | VideoSlot::None => None,
+                        };
+                        state.video_previous = former;
+                    }
+                    if let Some(video) = state.video_active.as_mut() {
+                        if state.video_covered || state.reduced_motion {
+                            video.pause();
+                        }
+                    }
+                    state.video_candidate = None;
                 }
                 state.appearance_pending = false;
                 if let Err(error) = appearance.respond(event, accepted) {
@@ -2251,6 +2682,43 @@ fn serve() -> Result<(), String> {
         }
         if state.wallpaper.dirty && !state.wallpaper.frame_pending && pending_appearance.is_none() {
             state.draw_wallpaper(&qh);
+        }
+        if state.video_status_last.elapsed() >= Duration::from_secs(1) {
+            state.video_status_last = Instant::now();
+            let selected = state.video_relative.as_deref();
+            let playback = state.video_active.as_ref();
+            let status =
+                VideoStatus {
+                    schema: 1,
+                    generation: state.video_generation.as_deref(),
+                    background_fingerprint: state.video_generation.as_deref().zip(selected).map(
+                        |(generation, relative)| video_status::fingerprint(generation, relative),
+                    ),
+                    decoder_pid: playback.and_then(|video| video.decoder.decoder_pid()),
+                    state: if selected.is_none() {
+                        "still"
+                    } else if state.reduced_motion {
+                        "paused-reduced-motion"
+                    } else if state.video_covered {
+                        "paused-covered"
+                    } else if state.video_error.is_some() {
+                        "error"
+                    } else if playback.is_some_and(|video| video.frame.is_some()) {
+                        "playing"
+                    } else {
+                        "unsupported"
+                    },
+                    error_category: state.video_error,
+                    frames_decoded: playback.map_or(0, VideoPlayback::decoded),
+                    frames_submitted: state.video_submitted,
+                    frame_callbacks: state.video_callbacks,
+                    last_decoded_monotonic_ms: state.video_last_decoded_ms,
+                    last_submitted_monotonic_ms: state.video_last_submitted_ms,
+                    last_callback_monotonic_ms: state.video_last_callback_ms,
+                };
+            if let Err(error) = video_status::write_private(&state.video_status_runtime, &status) {
+                state.log(&format!("wallpaper-status-unavailable {error}"));
+            }
         }
         queue.flush().map_err(|e| e.to_string())?;
         let Some(read_guard) = queue.prepare_read() else {
@@ -2425,6 +2893,76 @@ mod route_tests {
         assert_eq!(
             panel_input_rect(Route::Shade, 600, 1200, true),
             Some((0, 0, 600, 780))
+        );
+    }
+
+    /// A rollback transaction can settle on a generation whose decoder was
+    /// demoted to `video_previous` (kept paused, with its last frame) when a
+    /// newer generation was committed. The resolved slot must be `Previous`
+    /// so that generation is restored immediately rather than waiting for a
+    /// fresh decode, and a display key matching nothing must resolve to
+    /// `None` rather than fabricating a match.
+    #[test]
+    fn rollback_resolves_to_retained_previous_decoder_without_new_decode() {
+        let generation_a = VideoKey {
+            path: PathBuf::from("/tmp/a.mp4"),
+            width: 568,
+            height: 1232,
+        };
+        let generation_b = VideoKey {
+            path: PathBuf::from("/tmp/b.mp4"),
+            width: 568,
+            height: 1232,
+        };
+        let unrelated = VideoKey {
+            path: PathBuf::from("/tmp/c.mp4"),
+            width: 568,
+            height: 1232,
+        };
+
+        // Committed generation B is active; A was demoted to `previous`
+        // (paused, with its last frame retained) rather than dropped.
+        let active = Some(&generation_b);
+        let candidate = None;
+        let previous = Some(&generation_a);
+
+        // A rollback now targets generation A: it must resolve to the
+        // retained previous slot, not `None` (which would force a fresh
+        // decode and stall restoration) and not `Active` (B is not A).
+        assert_eq!(
+            resolve_video_slot(Some(&generation_a), active, candidate, previous),
+            VideoSlot::Previous
+        );
+
+        // Re-committing the already-active generation keeps it in place.
+        assert_eq!(
+            resolve_video_slot(Some(&generation_b), active, candidate, previous),
+            VideoSlot::Active
+        );
+
+        // A generation matching none of the retained slots has nothing to
+        // restore from.
+        assert_eq!(
+            resolve_video_slot(Some(&unrelated), active, candidate, previous),
+            VideoSlot::None
+        );
+
+        // No selected video at all resolves to `None`.
+        assert_eq!(
+            resolve_video_slot(None, active, candidate, previous),
+            VideoSlot::None
+        );
+
+        // A prepared candidate takes priority over a stale previous slot
+        // when both happen to name the same generation.
+        assert_eq!(
+            resolve_video_slot(
+                Some(&generation_a),
+                active,
+                Some(&generation_a),
+                previous
+            ),
+            VideoSlot::Candidate
         );
     }
 

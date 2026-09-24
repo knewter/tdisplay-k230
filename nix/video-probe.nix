@@ -24,12 +24,12 @@ let
     configureFlags = old.configureFlags ++ [
       "--disable-everything"
       "--enable-decoder=h264,h264_v4l2m2m,aac,mp3"
-      "--enable-encoder=wrapped_avframe,pcm_s16le"
+      "--enable-encoder=wrapped_avframe,pcm_s16le,rawvideo"
       "--enable-parser=h264,aac,mpegaudio"
       "--enable-demuxer=mov,hls,mpegts,dash"
-      "--enable-muxer=null"
-      "--enable-protocol=file,http,https,tcp,tls,crypto,data"
-      "--enable-filter=scale,format,aresample,anull,null,aformat,volume"
+      "--enable-muxer=null,rawvideo"
+      "--enable-protocol=file,pipe,http,https,tcp,tls,crypto,data"
+      "--enable-filter=scale,crop,fps,format,aresample,anull,null,aformat,volume"
     ];
   });
   placebo = (pkgs.libplacebo.override { vulkanSupport = false; }).overrideAttrs (old: {

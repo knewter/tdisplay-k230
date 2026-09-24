@@ -329,6 +329,9 @@ let
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
+    export K230_WALLPAPER_FFMPEG=${videoProbe.ffmpeg}/bin/ffmpeg
+    export K230_WALLPAPER_FFPROBE=${videoProbe.ffmpeg}/bin/ffprobe
+    export K230_WALLPAPER_COVER_PATH=/run/shell/k230-wallpaper-cover.json
     exec ${rustShellBase}/bin/k230-shell-rust "$@"
   '';
   supervisedKeyboard = pkgs.writeShellScriptBin "k230-supervised-keyboard" ''
@@ -855,6 +858,7 @@ in
         SWAY_K230_CARD_SURFACE_SOCKET = "/run/shell/k230-shell-rust.sock";
         SWAY_K230_CARD_REVEAL_STREAM = "1";
         SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
+        SWAY_K230_WALLPAPER_COVER_PATH = "/run/shell/k230-wallpaper-cover.json";
         SWAY_K230_KEYBOARD_GESTURES = "1";
         K230_KEYBOARD_TOUCH_GESTURES = "1";
         SWAY_K230_KEYBOARD_HEIGHT = toString cfg.keyboardHeight;

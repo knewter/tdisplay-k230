@@ -24,6 +24,7 @@
 #include "sway/tree/workspace.h"
 #include <drm_fourcc.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -32,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include <wlr/render/pixman.h>
 #include <wlr/types/wlr_buffer.h>
 #include <wlr/types/wlr_compositor.h>
@@ -129,6 +131,95 @@ static uint64_t now_ms(void) {
 	struct timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
 	return (uint64_t)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
+
+/* Only wlroots-certified opaque pixels ABOVE the wallpaper can pause its
+ * decoder. Geometry-only Sway IPC would misclassify translucent apps. This
+ * deliberately undercounts transformed/cropped buffers rather than claiming
+ * coverage from a region whose coordinates we cannot prove equivalent. */
+struct wallpaper_cover {
+	struct sway_output *output;
+	pixman_region32_t opaque;
+};
+static bool wallpaper_above(struct sway_output *output, struct wlr_scene_node *node) {
+	for (; node; node = node->parent ? &node->parent->node : NULL) {
+		if (node == &output->layers.shell_background->node ||
+			node == &output->layers.shell_bottom->node) return false;
+		if (node == &output->layers.tiling->node ||
+			node == &output->layers.fullscreen->node ||
+			node == &output->layers.shell_top->node ||
+			node == &output->layers.shell_overlay->node) return true;
+	}
+	return false;
+}
+static void wallpaper_opaque_buffer(struct wlr_scene_buffer *buffer, int x, int y, void *data) {
+	struct wallpaper_cover *cover = data;
+	if (!wallpaper_above(cover->output, &buffer->node) || !buffer->buffer ||
+		buffer->opacity != 1 || buffer->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+		buffer->src_box.width > 0 || buffer->src_box.height > 0 ||
+		buffer->dst_width <= 0 || buffer->dst_height <= 0) return;
+	pixman_region32_t opaque;
+	pixman_region32_init(&opaque);
+	if (buffer->buffer_is_opaque)
+		pixman_region32_union_rect(&opaque, &opaque, x, y,
+			buffer->dst_width, buffer->dst_height);
+	else {
+		pixman_region32_copy(&opaque, &buffer->opaque_region);
+		pixman_region32_intersect_rect(&opaque, &opaque, 0, 0,
+			buffer->dst_width, buffer->dst_height);
+		pixman_region32_translate(&opaque, x, y);
+	}
+	pixman_region32_union(&cover->opaque, &cover->opaque, &opaque);
+	pixman_region32_fini(&opaque);
+}
+static void wallpaper_cover_publish(void) {
+	static uint64_t previous;
+	uint64_t now = now_ms();
+	if (!shell.output || !shell.output->scene_output || now - previous < 500) return;
+	previous = now;
+	const char *path = getenv("SWAY_K230_WALLPAPER_COVER_PATH");
+	if (!path || strncmp(path, "/run/shell/", 11) || strlen(path) > 200 ||
+		strstr(path, "..")) return;
+	struct wallpaper_cover cover = {.output = shell.output};
+	pixman_region32_init(&cover.opaque);
+	wlr_scene_output_for_each_buffer(shell.output->scene_output,
+		wallpaper_opaque_buffer, &cover);
+	pixman_box32_t frame = {.x1 = shell.output->lx, .y1 = shell.output->ly,
+		.x2 = shell.output->lx + shell.output->width,
+		.y2 = shell.output->ly + shell.output->height};
+	bool opaque_deck = false;
+	const struct cs_config *cfg = &shell.policy.config;
+	if (shell.active && shell.deck && shell.canvas &&
+		cfg->top_reserved == 0 && cfg->bottom_reserved == 0 &&
+		shell.canvas->node.enabled &&
+		(!shell.canvas_gradient || !shell.canvas_gradient->node.enabled)) {
+		float color[4];
+		if (shell.appearance_enabled)
+			card_brush_solid_color(&shell.appearance.canvas, color);
+		else memcpy(color, backdrop, sizeof(color));
+		opaque_deck = color[3] == 1 &&
+		(!shell.appearance_enabled || !shell.appearance.wallpaper ||
+			shell.appearance.canvas_authored);
+	}
+	bool covered = opaque_deck || (shell.output->width > 0 && shell.output->height > 0 &&
+		pixman_region32_contains_rectangle(&cover.opaque, &frame) == PIXMAN_REGION_IN);
+	pixman_region32_fini(&cover.opaque);
+	char temporary[256];
+	int length = snprintf(temporary, sizeof(temporary), "%s.tmp.%ld.%" PRIu64,
+		path, (long)getpid(), now);
+	if (length <= 0 || (size_t)length >= sizeof(temporary)) return;
+	int fd = open(temporary, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW, 0600);
+	if (fd < 0) return;
+	char payload[160];
+	length = snprintf(payload, sizeof(payload),
+		"{\"schema\":1,\"covered\":%s,\"monotonic_ms\":%" PRIu64
+		",\"width\":%d,\"height\":%d}\n", covered ? "true" : "false", now,
+		shell.output->width, shell.output->height);
+	bool okay = length > 0 && (size_t)length < sizeof(payload) &&
+		write(fd, payload, (size_t)length) == length && fsync(fd) == 0;
+	close(fd);
+	if (okay) okay = rename(temporary, path) == 0;
+	if (!okay) unlink(temporary);
 }
 /* wlroots timestamps are monotonic milliseconds modulo 2^32. Recover the
  * nearest epoch to dispatch without replacing device cadence with render time.
@@ -1259,6 +1350,7 @@ void card_shell_output_disable(struct sway_output *output) {
 static int tick_impl(void *data) {
 	if (!shell.output)
 		return 0;
+	wallpaper_cover_publish();
 	card_appearance_poll();
 	unsigned keyboard_tick = kg_tick(&shell.keyboard, now_ms());
 	if ((keyboard_tick & KG_HIDE) && !keyboard_signal("hide")) {

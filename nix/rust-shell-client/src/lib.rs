@@ -12,6 +12,9 @@ pub mod service_ui;
 pub mod theme_catalog;
 pub mod theme_thumbnails;
 pub mod theme_ui;
+pub mod video_status;
+pub mod video_visibility;
+pub mod video_wallpaper;
 pub mod wifi_settings;
 pub mod wifi_ui;
 
