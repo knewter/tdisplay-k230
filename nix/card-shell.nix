@@ -19,8 +19,12 @@ let
       cp ${./card-shell/scaled-cache.h} include/sway/card_shell_scaled_cache.h
       cp ${./card-shell-policy/card-shell-policy.c} sway/card-shell-policy.c
       cp ${./card-shell-policy/card-shell-policy.h} include/sway/card-shell-policy.h
+      cp ${./card-keyboard-policy/keyboard-gesture.c} sway/card-keyboard-gesture.c
+      cp ${./card-keyboard-policy/keyboard-gesture.h} include/sway/card-keyboard-gesture.h
       substituteInPlace sway/card-shell-policy.c \
         --replace-fail '#include "card-shell-policy.h"' '#include "sway/card-shell-policy.h"'
+      substituteInPlace sway/card-keyboard-gesture.c \
+        --replace-fail '#include "keyboard-gesture.h"' '#include "sway/card-keyboard-gesture.h"'
     '';
   });
   compositor = sway.override { enableXWayland = false; sway-unwrapped = unwrapped; };

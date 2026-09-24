@@ -6,8 +6,9 @@ import subprocess
 import tempfile
 import unittest
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ('early-chord', 'late-second', 'grip-keys', 'stale-velocity',
-         'surface-loss', 'overlay-isolation', 'reduced')
+CASES = ('early-chord', 'late-second', 'stationary-chord', 'grip-keys', 'stale-velocity',
+         'surface-loss', 'overlay-isolation', 'reduced', 'elapsed-cadence',
+         'contact-drain', 'map-timeout', 'many-contacts')
 class KeyboardGestureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -1,6 +1,7 @@
 /* Opt-in product adapter: Sway alone owns surfaces, input and presentation. */
 #include "log.h"
 #include "sway/card-shell-policy.h"
+#include "sway/card-keyboard-gesture.h"
 #include "sway/card_shell_appearance.h"
 #include "sway/card_shell.h"
 #include "sway/card_shell_render.h"
@@ -24,6 +25,7 @@
 #include <drm_fourcc.h>
 #include <inttypes.h>
 #include <math.h>
+#include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +37,7 @@
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_touch.h>
 #include <wlr/util/box.h>
+extern char **environ;
 struct card;
 struct mirror {
 	struct wl_list link;
@@ -100,6 +103,8 @@ static struct {
 	struct card_shell_drawer_gesture drawer_gesture;
 	struct card_shell_drawer_gesture shade_gesture;
 	struct card_shell_reveal_stream reveal;
+	struct kg_policy keyboard;
+	struct wlr_scene_rect *keyboard_grip, *keyboard_grip_line;
 } shell;
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
@@ -139,6 +144,24 @@ static bool touch_first(void) {
 	const char *s = getenv("SWAY_K230_CARD_TOUCH_FIRST");
 	return s && strcmp(s, "1") == 0;
 }
+static bool keyboard_gestures_enabled(void) {
+	const char *s = getenv("SWAY_K230_KEYBOARD_GESTURES");
+	return touch_first() && s && strcmp(s, "1") == 0;
+}
+static double keyboard_height(void) {
+	const char *s = getenv("SWAY_K230_KEYBOARD_HEIGHT");
+	if (!s || !*s) return 420;
+	char *end = NULL;
+	long n = strtol(s, &end, 10);
+	return *end || n < 128 || n > 1000 ? 420 : (double)n;
+}
+static bool keyboard_signal(const char *action) {
+	const char *path = getenv("SWAY_K230_KEYBOARD_SIGNAL");
+	if (!path || path[0] != '/' || !path[1]) return false;
+	char *const argv[] = {(char *)path, (char *)action, NULL};
+	pid_t pid;
+	return posix_spawn(&pid, path, NULL, NULL, argv, environ) == 0;
+}
 static void scaled_cache_log(void) {
 	if (scaled_cache_enabled())
 		sway_log(SWAY_INFO,
@@ -160,6 +183,7 @@ static bool sync_scene(void);
 static void handle_result(struct cs_result result);
 static bool snapshot(void);
 static bool chrome(void);
+static void keyboard_refresh(void);
 static bool appearance_canvas_refresh(void) {
 	if (!shell.canvas || !shell.deck || !shell.output) return true;
 	const struct cs_config *cfg = &shell.policy.config;
@@ -202,6 +226,13 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 	(void)data;
 	shell.appearance = *next;
 	shell.appearance_enabled = true;
+	if (shell.keyboard_grip && shell.keyboard_grip_line) {
+		float bg[4], line[4];
+		card_brush_solid_color(&next->card, bg);
+		card_brush_solid_color(&next->selected, line);
+		wlr_scene_rect_set_color(shell.keyboard_grip, bg);
+		wlr_scene_rect_set_color(shell.keyboard_grip_line, line);
+	}
 	if (!appearance_canvas_refresh()) return false;
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) {
@@ -967,6 +998,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	kg_cancel(&shell.keyboard);
 	card_appearance_stop();
 	card_shell_reveal_abort(&shell.reveal);
 	cs_stream_cancel(&shell.policy);
@@ -982,6 +1014,9 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	}
 	if (shell.ui)
 		wlr_scene_node_destroy(&shell.ui->node);
+	if (shell.keyboard_grip) wlr_scene_node_destroy(&shell.keyboard_grip->node);
+	if (shell.keyboard_grip_line) wlr_scene_node_destroy(&shell.keyboard_grip_line->node);
+	shell.keyboard_grip = shell.keyboard_grip_line = NULL;
 	shell.ui = NULL;
 	shell.deck = NULL;
 	shell.chrome = NULL;
@@ -1001,6 +1036,9 @@ static int tick_impl(void *data) {
 	if (!shell.output)
 		return 0;
 	card_appearance_poll();
+	unsigned keyboard_tick = kg_tick(&shell.keyboard, now_ms());
+	if (keyboard_tick & KG_HIDE) keyboard_signal("hide");
+	if (keyboard_tick & KG_DIRTY) keyboard_refresh();
 	if (shell.reveal.active && !card_shell_reveal_pump(&shell.reveal)) {
 		card_shell_drawer_cancel(&shell.drawer_gesture);
 		card_shell_drawer_cancel(&shell.shade_gesture);
@@ -1044,6 +1082,9 @@ static bool ensure_ui(struct sway_output *output) {
 	if (shell.ui)
 		return shell.output == output;
 	shell.output = output;
+	kg_init(&shell.keyboard, keyboard_height(),
+		getenv("SWAY_K230_CARD_REDUCED_MOTION") &&
+		strcmp(getenv("SWAY_K230_CARD_REDUCED_MOTION"), "1") == 0);
 	shell.ordinary_usable_valid = false;
 	shell.output_destroy.notify = handle_output_destroy;
 	wl_signal_add(&output->node.events.destroy, &shell.output_destroy);
@@ -1054,6 +1095,16 @@ static bool ensure_ui(struct sway_output *output) {
 		shell.canvas = wlr_scene_rect_create(shell.deck, output->width, output->height, backdrop);
 	if (shell.deck)
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
+	if (keyboard_gestures_enabled()) {
+		const float grip_bg[4] = {.10f, .14f, .19f, .95f};
+		const float grip_line[4] = {.60f, .78f, .80f, 1.f};
+		shell.keyboard_grip = wlr_scene_rect_create(output->layers.shell_overlay,
+			output->width, 56, grip_bg);
+		shell.keyboard_grip_line = wlr_scene_rect_create(output->layers.shell_overlay,
+			96, 7, grip_line);
+		if (shell.keyboard_grip) wlr_scene_node_set_enabled(&shell.keyboard_grip->node, false);
+		if (shell.keyboard_grip_line) wlr_scene_node_set_enabled(&shell.keyboard_grip_line->node, false);
+	}
 	shell.timer = wl_event_loop_add_timer(server.wl_event_loop, tick, NULL);
 	if (!shell.ui || !shell.deck || !shell.canvas || !shell.timer || !chrome()) {
 		handle_output_destroy(NULL, NULL);
@@ -1103,6 +1154,73 @@ static bool drawer_mapped(void) {
 			return true;
 	}
 	return false;
+}
+static struct sway_layer_surface *keyboard_layer(struct sway_output *output) {
+	if (!output) return NULL;
+	struct sway_layer_surface *layer;
+	wl_list_for_each(layer, &output->layer_surfaces, link) {
+		if (layer->mapped && layer->layer_surface->namespace &&
+			strcmp(layer->layer_surface->namespace, "wvkbd") == 0)
+			return layer;
+	}
+	return NULL;
+}
+/* Called after wlroots has configured the real layer surface. Only the
+ * pinned wvkbd geometry qualifies; an unrelated keyboard stays untouched. */
+void card_shell_keyboard_adjust_usable(struct sway_output *output, struct wlr_box *usable) {
+	if (!keyboard_gestures_enabled() || !shell.initialized || shell.output != output)
+		return;
+	struct sway_layer_surface *layer = keyboard_layer(output);
+	bool valid = layer && layer->layer_surface->current.exclusive_zone == (int)shell.keyboard.height &&
+		layer->layer_surface->current.desired_height == (uint32_t)shell.keyboard.height &&
+		layer->layer_surface->current.layer == ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY;
+	if (!valid) {
+		if (!layer) kg_surface(&shell.keyboard, false);
+		if (shell.keyboard_grip) wlr_scene_node_set_enabled(&shell.keyboard_grip->node, false);
+		if (shell.keyboard_grip_line) wlr_scene_node_set_enabled(&shell.keyboard_grip_line->node, false);
+		return;
+	}
+	kg_surface(&shell.keyboard, true);
+	double progress = shell.keyboard.progress;
+	int hidden = (int)lround(shell.keyboard.height * (1 - progress));
+	int grip = (int)lround(56 * progress);
+	if (usable->height + hidden - grip > 0)
+		usable->height += hidden - grip;
+	wlr_scene_node_set_position(&layer->scene->tree->node,
+		layer->scene->tree->node.x, layer->scene->tree->node.y + hidden);
+	if (shell.keyboard_grip && shell.keyboard_grip_line) {
+		int top = output->height - (int)lround(shell.keyboard.height * progress) - 56;
+		wlr_scene_node_set_position(&shell.keyboard_grip->node, output->lx, output->ly + top);
+		wlr_scene_node_set_position(&shell.keyboard_grip_line->node,
+			output->lx + (output->width - 96) / 2, output->ly + top + 24);
+		wlr_scene_node_place_above(&shell.keyboard_grip->node, &layer->scene->tree->node);
+		wlr_scene_node_place_above(&shell.keyboard_grip_line->node, &shell.keyboard_grip->node);
+		wlr_scene_node_set_enabled(&shell.keyboard_grip->node, progress > 0.01);
+		wlr_scene_node_set_enabled(&shell.keyboard_grip_line->node, progress > 0.01);
+	}
+}
+static void keyboard_refresh(void) {
+	if (shell.output) {
+		arrange_layers(shell.output);
+		wlr_output_schedule_frame(shell.output->wlr_output);
+	}
+}
+static bool keyboard_apply_action(unsigned action) {
+	if (!(action & KG_CONSUME)) return false;
+	if (action & KG_CANCEL_CARD) {
+		card_shell_reveal_cancel(&shell.reveal);
+		memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
+		memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
+		handle_result(cs_stream_cancel(&shell.policy));
+	}
+	if ((action & KG_SHOW) && !keyboard_signal("show")) {
+		sway_log(SWAY_INFO, "K230_KEYBOARD show helper unavailable");
+		kg_cancel(&shell.keyboard);
+	}
+	if ((action & KG_HIDE) && !keyboard_signal("hide"))
+		sway_log(SWAY_INFO, "K230_KEYBOARD hide helper unavailable");
+	if (action & KG_DIRTY) keyboard_refresh();
+	return true;
 }
 /* The Sway config marks only ordinary full-panel app containers. Floating
  * geometry otherwise ignores a layer-shell keyboard's usable-area height,
@@ -1316,6 +1434,13 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	if (keyboard_gestures_enabled()) {
+		unsigned action = kg_down(&shell.keyboard, id, x, y, event_ms,
+			shell.output->height, keyboard_layer(shell.output) != NULL,
+			shell.policy.mode == CS_DRAGGING || shell.policy.edge.tracking,
+			launcher_mapped() || drawer_mapped() || popup_mapped());
+		if (keyboard_apply_action(action)) return true;
+	}
 	if (shell.policy.blocked_until_up) {
 		struct cs_result r = cs_down(&shell.policy, id, x, y, event_ms);
 		handle_result(r);
@@ -1425,6 +1550,9 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	if (keyboard_gestures_enabled() &&
+		keyboard_apply_action(kg_motion(&shell.keyboard, id, x, y, event_ms)))
+		return true;
 	/* Reveal progress spans the actual Rust panel travel (drawer 81%, shade
 	 * 65%). The separate entry_distance is only a release decision threshold;
 	 * using a shorter travel here amplifies movement under the finger. */
@@ -1466,6 +1594,9 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
+	if (keyboard_gestures_enabled() &&
+		keyboard_apply_action(kg_up(&shell.keyboard, id, event_ms)))
+		return true;
 	if (shell.drawer_gesture.contacts) {
 		bool launch = card_shell_drawer_up(&shell.drawer_gesture, id);
 		if (card_shell_reveal_enabled()) {
@@ -1519,7 +1650,11 @@ bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
 	card_shell_reveal_cancel(&shell.reveal);
+	unsigned keyboard_cancel = kg_cancel(&shell.keyboard);
+	if (keyboard_cancel & KG_HIDE) keyboard_signal("hide");
+	if (keyboard_cancel & KG_DIRTY) keyboard_refresh();
 	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
+			keyboard_cancel != KG_NONE || shell.keyboard.owned_count != 0 ||
 			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||
 					shell.policy.mode == CS_ENTERING;
