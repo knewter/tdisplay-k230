@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Run matched card workloads ON the reserved board; --prepare is host-only.
 
-Stage this file with card-shell-board-session.py, card-shell-acceptance.py and
-card-shell-benchmark.py. The ordinary session is restored after every run;
-the operator separately returns from the trial kernel after collecting evidence.
+Stage this file with rvv-candidate-identity.py, the exact candidate manifest,
+card-shell-board-session.py, card-shell-acceptance.py and card-shell-benchmark.py.
+The ordinary session is restored after every run; recovery is checked separately.
 """
 import argparse
 import datetime
@@ -21,20 +21,17 @@ import sys
 import time
 
 HERE=Path(__file__).resolve().parent
-SYSTEM='/nix/store/fm8136gg0mfqywdz0hqnxlr8kq2wqflr-nixos-system-nixos-26.11.20260919.20b1ddd'
-PACKAGE='/nix/store/lgpv6h5j0d7yiwilnfamnvxrh6m4cgpm-k230-card-shell'
-CONFIG='/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf'
-CLIENT='/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client'
-CONTEXT='/nix/store/4gn2z5fi5szrnflhzjsr1kq3f1b39wqx-k230-rvv-context-probe-riscv64-unknown-linux-gnu-0.1/bin/k230-rvv-context-probe'
-LIBRARY='/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4'
-SWAY='/nix/store/9brnyamw2hcfb7yx5zajf0aqcgfsdyyv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway'
-FILES=('card-shell-rvv-benchmark.py','card-shell-board-session.py','card-shell-acceptance.py','card-shell-benchmark.py')
+IDENTITY_FILE=HERE/'rvv-candidate-identity.py'
+FILES=('card-shell-rvv-benchmark.py','card-shell-board-session.py','card-shell-acceptance.py',
+       'card-shell-benchmark.py','rvv-candidate-identity.py')
 
 
 def load(name,file):
     spec=importlib.util.spec_from_file_location(name,HERE/file)
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
+
+identity=load('rvv_candidate_identity','rvv-candidate-identity.py')
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -62,21 +59,21 @@ def environment():
     return result
 
 
-def observe_runtime(system,runtime,policy):
+def observe_runtime(system,runtime,policy,candidate):
     deadline=time.monotonic()+30
     while time.monotonic()<deadline:
         pids=system.sway_pids()
         if len(pids)==1 and (runtime/'wayland/sway-ipc.sock').is_socket():
             proc=Path('/proc')/str(pids[0])
-            if str((proc/'exe').resolve())!=SWAY:raise RuntimeError('unexpected compositor executable')
+            if str((proc/'exe').resolve())!=candidate['sway_executable']:raise RuntimeError('unexpected compositor executable')
             env=dict(item.split(b'=',1) for item in (proc/'environ').read_bytes().split(b'\0') if b'=' in item)
             expected=b'rvv' if policy=='no-rvv' else b''
             if env.get(b'PIXMAN_DISABLE')!=expected:raise RuntimeError('compositor dispatch policy differs from requested policy')
             group=system.prop('k230-card-shell.service','ControlGroup')
             if '0::'+group not in (proc/'cgroup').read_text().splitlines():raise RuntimeError('compositor is outside the trial cgroup')
-            mapped=sorted({line.split()[-1] for line in (proc/'maps').read_text().splitlines() if '/libpixman-1.so' in line})
-            if mapped and all(p.startswith(LIBRARY+'/lib/') for p in mapped):
-                return {'pid':pids[0],'executable':SWAY,'pixman_policy':policy,
+            mapped=identity.require_mapped_library((proc/'maps').read_text(),candidate)
+            if mapped:
+                return {'pid':pids[0],'executable':candidate['sway_executable'],'pixman_policy':policy,
                         'pixman_disable':expected.decode(),'mapped_pixman_files':mapped,
                         'mapping_and_policy_verified':True,
                         'limit':'Uninstrumented renderer: mapped library and process policy observed; callback counters belong to the separate pixel test.'}
@@ -98,7 +95,8 @@ def compact_budget(report):
 def summarize(runs,repeats):
     expected=order(repeats)
     if [(r['pair'],r['policy']) for r in runs]!=expected:raise RuntimeError('missing, duplicated or reordered comparison run')
-    for key in ('boot_id','current_system','package','client_sha256','producer_sha256','library_sha256'):
+    for key in ('boot_id','current_system','package','client_sha256','producer_sha256','library_sha256',
+                'candidate_manifest_sha256','kernel_image_sha256'):
         if len({r[key] for r in runs})!=1:raise RuntimeError('comparison identity changed: '+key)
     if not all(r['measurement_complete'] and r['restored_shell_and_seatd'] for r in runs):raise RuntimeError('incomplete run or restoration')
     for run in runs:
@@ -118,6 +116,9 @@ def summarize(runs,repeats):
 
 def one_run(args,pair,policy,modules,boot_id):
     session_module,analyzer=modules
+    candidate=args.candidate
+    if sha(args.manifest)!=args.manifest_sha256:
+        raise RuntimeError('candidate manifest changed during comparison')
     target=args.output/f'pair-{pair}-{policy}';target.mkdir()
     public=target/'public';public.mkdir()
     runtime=Path('/run/k230-card-shell-rvv'+str(pair)+policy.replace('-',''))
@@ -127,19 +128,20 @@ def one_run(args,pair,policy,modules,boot_id):
     # account must traverse this parent to its separately owned Wayland dir.
     runtime.chmod(0o711)
     system=session_module.System();session=session_module.Session(runtime,system)
-    plan={'package':PACKAGE,'normal_config':CONFIG,'client':CLIENT,'source_revision':args.revision,
+    plan={'package':candidate['card_package'],'normal_config':candidate['normal_config'],'client':candidate['client'],'source_revision':args.revision,
           'duration':540,'source_device':'/dev/input/event0','pixman_policy':policy}
     observation={'pair':pair,'policy':policy,'measurement_complete':False,'boot_id':boot_id,
-                 'current_system':SYSTEM,'package':PACKAGE,'client_sha256':sha(CLIENT),
+                 'current_system':candidate['system'],'package':candidate['card_package'],'client_sha256':sha(candidate['client']),
+                 'candidate_manifest_sha256':args.manifest_sha256,'kernel_image_sha256':candidate['sha256']['kernel_image'],
                  'producer_sha256':{file:sha(HERE/file) for file in FILES},
-                 'library_sha256':sha(Path(LIBRARY)/'lib/libpixman-1.so'),
+                 'library_sha256':sha(candidate['pixman_library']),
                  'environment_before':environment(),'started_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
     observation['producer_files_sha256']=observation['producer_sha256']
     observation['producer_sha256']=hashlib.sha256(json.dumps(observation['producer_files_sha256'],sort_keys=True).encode()).hexdigest()
     token=None
     try:
         token=session.arm(plan);session.start();session.input_device()
-        observation['runtime']=observe_runtime(system,runtime,policy)
+        observation['runtime']=observe_runtime(system,runtime,policy,candidate)
         time.sleep(1.5)
         command=[sys.executable,str(HERE/'card-shell-acceptance.py'),'--execute','--provenance','injected-touch','--runtime',str(runtime),'--output',str(target/'raw')]
         with (target/'acceptance-process-private.log').open('w') as log:
@@ -169,6 +171,7 @@ def one_run(args,pair,policy,modules,boot_id):
             observation['finished_at_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
             write(public/'run.json',observation)
     if Path('/proc/sys/kernel/random/boot_id').read_text().strip()!=boot_id:raise RuntimeError('board rebooted during comparison')
+    if sha(args.manifest)!=args.manifest_sha256:raise RuntimeError('candidate manifest changed during comparison')
     return observation
 
 
@@ -179,13 +182,20 @@ def main(argv=None):
     modes.add_argument('--prepare',action='store_true')
     parser.add_argument('--repeats',type=int,default=3)
     parser.add_argument('--revision',required=True)
+    parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args(argv)
+    args.candidate=identity.load(args.manifest)
+    args.manifest_sha256=sha(args.manifest)
+    candidate=args.candidate
     sequence=order(args.repeats)
     if not re.fullmatch('[a-f0-9]{40}',args.revision):parser.error('requires full source revision')
     if args.output.exists():parser.error('use a new output directory; preserve previous runs')
     plan={'source_revision':args.revision,'repeats':args.repeats,'sequence':sequence,
-          'system':SYSTEM,'package':PACKAGE,'config':CONFIG,'client':CLIENT,
+          'system':candidate['system'],'kernel':candidate['kernel'],'package':candidate['card_package'],
+          'config':candidate['normal_config'],'client':candidate['client'],
+          'candidate_manifest_sha256':args.manifest_sha256,
+          'kernel_identity_limit':'kernel/Image hash binds the bootspec artifact; one-time boot preserves /boot/Image, so reconcile the separate load record and boot ID for running-kernel provenance',
           'workload':'unchanged card-shell-acceptance.py: one/two live cards, 24 drags each, thirteen interaction checks',
           'capture_provenance':'injected-touch; native captures remain private and unreviewed',
           'default_image_changed':False}
@@ -195,8 +205,9 @@ def main(argv=None):
         return 0
     if os.geteuid()!=0 or not platform.machine().startswith('riscv'):raise RuntimeError('--board runs only on the reserved physical RISC-V board as root')
     if not re.fullmatch(r'/var/lib/k230/rvv-benchmark-[a-z0-9-]+',str(args.output)):raise RuntimeError('use a new protected /var/lib/k230/rvv-benchmark-NAME directory')
-    if os.path.realpath('/run/current-system')!=SYSTEM:raise RuntimeError('matching trial system is not running')
-    if Path('/sys/firmware/devicetree/base/model').read_bytes().rstrip(b'\0')!=b'LILYGO T-Display-K230':raise RuntimeError('wrong physical model')
+    identity.require_board(candidate)
+    if os.path.realpath('/proc/self/exe')!=os.path.realpath(candidate['python']):
+        raise RuntimeError('benchmark Python differs from candidate')
     os.umask(0o077)
     with open('/run/k230-rvv-benchmark.lock','a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -205,7 +216,7 @@ def main(argv=None):
         boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip()
         result={'measurement_status':'INCOMPLETE','plan':plan,'boot_id':boot_id,'runs':[]}
         try:
-            c=subprocess.run(['timeout','--kill-after=3s','15s',CONTEXT],capture_output=True,text=True,timeout=22)
+            c=subprocess.run(['timeout','--kill-after=3s','15s',candidate['context_probe']],capture_output=True,text=True,timeout=22)
             result['context']=json.loads(c.stdout)
             if c.returncode or result['context']['status']!='PASS':raise RuntimeError('physical vector context gate did not pass')
             modules=(load('rvv_session','card-shell-board-session.py'),load('rvv_budget','card-shell-benchmark.py'))
