@@ -80,8 +80,11 @@ passed. [Output-restart result](output-restart-result.json) retains the action
 sequence. The installed coherent session currently starts wvkbd once from
 Sway configuration, so automatic resurrection remains an open task 1.2 gate.
 
-Remaining gates are automatic keyboard restart after output loss, the final
-integrated image build and exact installed
-identity, real two-finger and grip motion on glass, panel/camera observation,
+The later [guarded installed preview](../installed-preview/README.md) records
+the actual system identity and a keyboard shown on the board by `USR2`. That
+separate observation does not turn these QEMU contacts into real fingers; it
+also predates the supervised keyboard and high-contrast grip source.
+Remaining gates for the new source are automatic restart in the installed
+unit, real two-finger and grip motion on glass, panel/camera observation,
 workload budgets, and user acceptance. These captures cannot establish touch
-reachability, physical smoothness, or installed theme appearance.
+reachability or physical smoothness.
