@@ -10,7 +10,7 @@
 - [x] 2.3 Add a viewport-sized media modal/gallery with contain sizing, swipe/keyboard navigation, video controls, Escape/close and restoration of the underlying card position/focus. Verify with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`; extend the committed evidence record.
 - [x] 2.4 Open evidence files in document modals with rendered Markdown or bounded text, original-file access, Escape/close and position/focus restoration. Verify header and inline file links on desktop/mobile with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`.
 
-- [ ] 2.5 Start videos when opened or selected in the viewer and make Space toggle play/pause without activating Close; verify desktop/mobile with `python3 tests/work_card_media_browser.py`.
+- [x] 2.5 Start videos when opened or selected in the viewer and make Space toggle play/pause without activating Close; verify desktop/mobile with `python3 tests/work_card_media_browser.py`.
 
 ## 3. Publish and reconcile
 

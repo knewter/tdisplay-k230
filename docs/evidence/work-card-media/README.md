@@ -78,3 +78,18 @@ recorded separately after CI.
 ![Largest-fit desktop gallery](gallery-desktop.png)
 
 ![Rendered Markdown in the mobile document modal](file-mobile.png)
+
+## Viewer playback update
+
+At source `28cc0fbde32475f59a00f5e48737faa6c9a4c183`, the viewer starts
+video playback when a reader opens or selects a video. Card previews remain
+paused. Space toggles playback with focus on Close or on native video
+controls, without dismissing the gallery or toggling twice. Native controls,
+Escape/Close, stop-on-close, and card focus restoration remain available.
+This supersedes the earlier no-autoplay viewer behavior above.
+
+`python3 scripts/build_site.py` passed: 239 pages, 8,060,379 bytes, 28.60s.
+`python3 -u tests/work_card_media_browser.py` passed desktop and mobile,
+including automatic video advance, Space pause/resume from Close and native
+video focus, and all prior media/document modal checks. Browser autoplay
+restrictions may still require pressing Play; controls remain usable.
