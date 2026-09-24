@@ -11,7 +11,7 @@ PASS: `/nix/store/lxi2zx8n8mp7z1dl1i3dz7hjlbhl7f6l-nixos-system-nixos-26.11.2026
 
 The installed Rust executable is `/nix/store/1xh02gcry343haprfrg3513r5mf18sch-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`; Sway is `/nix/store/lmgq4hj6fxc37vp98hy1x93wnz589iyn-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`.
 
-- [Terminal fills the panel](terminal.png): native 568×1232 capture; the coherent Foot wrapper includes `--override resize-by-cells=no`.
+- [Terminal fills the panel](terminal.png): native 568×1232 capture; [Sway tree geometry](terminal-geometry.json) confirms both client and container at x=0, y=0, width=568, height=1232; the coherent Foot wrapper includes `--override resize-by-cells=no`.
 - [Installed launcher grid](drawer.png): Editor, Files, Monitor, Terminal and Video come from actual GIO desktop discovery, with real icons. Upstream Foot client/server IDs remain installed but use normal `NoDisplay` overrides. The grid removes the previous repeated “Installed app” labels and underlay text bleed.
 
 Capture procedure: as `shell`, use the active `XDG_RUNTIME_DIR=/run/shell`, Wayland socket and Sway IPC socket; run `swaymsg card_shell enter`, the exact installed Rust executable with `--surface drawer`, then `grim`. Images were visually reviewed before publication; only public packaged app names and a clean terminal prompt appear. Raw serial output remains private.
