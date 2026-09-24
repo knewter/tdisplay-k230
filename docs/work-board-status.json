@@ -45,11 +45,11 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Package and fixture-test the pinned Omarchy helpers, then connect generated appearance data to the real shell and clients.",
+      "next": "Finish source and section-override fixtures for the packaged Omarchy helpers, then connect generated appearance data to the real shell and clients.",
       "dependencies": ["the-handheld-presents-a-coherent-shell"],
       "evidence": [],
-      "rationale": "An implementation workstream is active, but no theme task or device result is committed as complete in this snapshot.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+      "rationale": "The pinned helper package and its isolated build are committed as task 1.1; theme application and device results remain open.",
+      "reviewRevision": "5f89026e1591145cfb9143ae8787d6489aaeed69"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
@@ -65,11 +65,11 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "not-applicable",
-      "next": "Complete the committed data pass and responsive page, then verify built HTML and the published URL at the landed revision.",
+      "next": "Review and land the built work board, then verify the published URL at the exact deployed revision.",
       "dependencies": [],
       "evidence": [],
-      "rationale": "The proposal has landed; site implementation and deployment proof are underway and remain unchecked.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+      "rationale": "The generator, responsive page and host checks are committed; publication and archive tasks remain open.",
+      "reviewRevision": "f2be698a01ea85e4812ca900c8d7ed1e76c6be7e"
     }
   }
 }
