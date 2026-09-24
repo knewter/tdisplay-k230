@@ -13,4 +13,12 @@ cargo clippy --manifest-path nix/rust-shell-client/Cargo.toml --locked --all-tar
 git diff --check
 ```
 
-All completed successfully on 2026-09-23. The Rust unit tests include split socket writes, mid-drag reversal, cancellation, premature EOF, completed-finish EOF, input progress, renderer cache reuse, and geometry bounds. Target build and paired compositor integration still require exact source artifacts; on-glass gesture, latency, and visual proof remain open.
+All completed successfully on 2026-09-23. The Rust unit tests include split socket writes, mid-drag reversal, cancellation, premature EOF, completed-finish EOF, input progress, renderer cache reuse, and geometry bounds.
+
+The exact committed source `a8fa5d3283e679724a554d9db52203b98f90ce0e` was built with:
+
+```sh
+nix build "git+file://$PWD?rev=a8fa5d3283e679724a554d9db52203b98f90ce0e#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+The target derivation was `/nix/store/f7kn0zqldgh9bkj48k2pjx2b966wd3k4-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv`; output `/nix/store/kn3x90rplwfrf83z1nk0jjpa0whigrk1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. `file` reports ELF64 RISC-V LP64D. `nix path-info -S` reports an 86,450,072-byte recursive closure. This is package proof only. Paired QEMU pixels/input routing and physical board observations remain open.
