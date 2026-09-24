@@ -52,6 +52,18 @@ popup elsewhere on the output initially blocked the grip because the old guard
 was global; the final source checks popup overlap at the contact and retains
 popup ownership if it actually covers the grip.
 
+| State | Committed capture |
+| --- | --- |
+| Hidden keyboard and full-height live app | [hidden.png](hidden.png) |
+| Two-finger held reveal | [held.png](held.png) |
+| Two-finger reverse | [reverse.png](reverse.png) |
+| Settled keyboard and usable area | [shown.png](shown.png) |
+| Grip held at 210 px travel | [grip-held.png](grip-held.png) |
+| Grip reversed by 40 px | [grip-reverse.png](grip-reverse.png) |
+
+The machine-readable [positive result](result.json) and
+[failed-helper recovery result](fail-hide-result.json) retain numeric outcomes.
+
 The probe proves a delivered Wayland keyboard key event, not entered text in
 a real text field; that part of task 2.3 remains open. Remaining gates are
 the final integrated image build and exact installed
