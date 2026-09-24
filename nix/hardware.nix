@@ -37,6 +37,15 @@ let
 in
 {
   imports = [ ./panel-console.nix ./root-growth-service.nix ];
+  # Build the actual board closure against the tested RVV Pixman recipe.
+  # Its hwprobe gate retains scalar dispatch when the kernel omits V or
+  # PIXMAN_DISABLE=rvv is set. The overlay is board-only; QEMU keeps its
+  # existing userspace package graph.
+  nixpkgs.overlays = [
+    (final: prev: {
+      pixman = prev.callPackage ./pixman-rvv.nix { pixman = prev.pixman; };
+    })
+  ];
   k230.rootGrowth.enable = lib.mkDefault true;
   # Mainline cannot boot this SoC -- no K230 device tree, no
   # SOC_CANAAN_K230 -- so the board runs the Xuantie kernel, built from

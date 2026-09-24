@@ -41,6 +41,9 @@ buildLinux (args // {
     # sequence" from "it receives it, acknowledges it, and still does not
     # light". See docs/evidence/dsi-phy-hang.md.
     patches = [
+      # The vendor Kconfig V probe omits M despite the target ABI needing it;
+      # use the correction physically tested in the isolated vector kernel.
+      ../nix/patches/riscv-vector-toolchain-probe.patch
       ../nix/patches/canaan-dsi-implement-dcs-read.patch
       # Implementing the read is useless on its own -- nothing in the
       # panel driver ever issues one. This adds the caller: read RDDID
@@ -417,6 +420,11 @@ EOM
   # refuses to boot without most of these, and the board would stop at an
   # initrd panic that says nothing about the real cause.
   structuredExtraConfig = with lib.kernel; {
+    # The physical trial passed hwprobe V, context preservation through
+    # signals/scheduling, and 192 exact Pixman pixel comparisons. Userspace
+    # still requires its runtime hwprobe gate; this is not global V codegen.
+    RISCV_ISA_V = yes;
+    RISCV_ISA_V_DEFAULT_ENABLE = yes;
     DEVTMPFS = yes;
     DEVTMPFS_MOUNT = yes;
     CGROUPS = yes;
