@@ -7,10 +7,10 @@ The accepted requirement ledger remains generated only from `openspec/specs/`. I
 Host validation during implementation on 2026-09-23/24 UTC:
 
 ```text
-python3 tests/test_work_board.py         9 tests passed
+python3 tests/test_work_board.py         10 tests passed
 python3 scripts/build_site.py --local    155 pages, 4,886,224 bytes, 16.61 s; built-site tests passed
 python3 scripts/build_site.py            155 pages, 4,908,798 bytes, 9.93 s; built-site tests passed
 openspec validate the-site-shows-a-public-work-board --strict   passed
 ```
 
-The production-prefix build above used candidate revision `7ed1dd56a8bbfa10927426473c9cff49e4101b45`. Its generated board contains 6 planned, 7 in-progress, 2 verification/review and 16 archived changes. The splash change counts 20/27 tasks, including alphanumeric subgroup IDs; the launcher gesture change counts 15/16. Chromium host previews at 1440×1100 and 568×1232 were inspected for column and stacked-lane readability. These are browser layout checks, not photographs of the handheld. The public `/work/` deployment and its exact landed revision remain to be recorded after merge and push. No board or Nix build was used.
+The first production-prefix build used candidate revision `7ed1dd56a8bbfa10927426473c9cff49e4101b45`. After the final task-count and dependency-cycle correction, `01d84a43b4b4cb7dda721be4bc2dc53501637a00` passed the same full build: 155 pages, 4,908,560 bytes, 7.25 s. Its generated board contains 6 planned, 7 in-progress, 2 verification/review and 16 archived changes. The splash change counts 20/27 tasks, including alphanumeric subgroup IDs; the launcher gesture change counts 15/16. Chromium host previews at 1440×1100 and 568×1232 were inspected for column and stacked-lane readability. These are browser layout checks, not photographs of the handheld. The public `/work/` deployment and its exact landed revision remain to be recorded after merge and push. No board or Nix build was used.
