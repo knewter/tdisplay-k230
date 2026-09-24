@@ -23,6 +23,7 @@ class ChromeCache(unittest.TestCase):
 #include <stdlib.h>
 #include <string.h>
 #include "card-shell-policy.h"
+#include "route.h"
 struct wl_list { int unused; };
 struct wl_listener { int unused; };
 struct sway_output { int lx, ly; };
@@ -124,6 +125,7 @@ int main(void) {
             (path / 'test.c').write_text(program)
             subprocess.run([os.environ.get('CC', 'cc'), '-std=gnu11', '-Wall', '-Wextra',
                             '-Werror', '-I' + str(ROOT / 'nix/card-shell-policy'),
+                            '-I' + str(ROOT / 'nix/card-shell'),
                             str(path / 'test.c'), '-o', str(path / 'test')], check=True)
             subprocess.run([str(path / 'test')], check=True)
 

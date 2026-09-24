@@ -155,6 +155,7 @@
 @@ -1,4 +1,10 @@
  sway_sources = files(
 +	'card_shell.c',
++	'card_shell_route.c',
 +	'card-shell-policy.c',
 +	'card_shell_render.c',
 +	'card_shell_scaled_cache.c',

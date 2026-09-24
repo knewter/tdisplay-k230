@@ -3,6 +3,7 @@
 #include "sway/card-shell-policy.h"
 #include "sway/card_shell.h"
 #include "sway/card_shell_render.h"
+#include "sway/card_shell_route.h"
 #include "sway/card_shell_telemetry.h"
 #include "sway/card_shell_test_input.h"
 #include "sway/commands.h"
@@ -76,6 +77,7 @@ static struct {
 	int button_contact, pressed_button;
 	bool button_down;
 	double button_x, button_y;
+	struct card_shell_drawer_gesture drawer_gesture;
 } shell;
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
@@ -818,6 +820,17 @@ static bool launcher_mapped(void) {
 	}
 	return false;
 }
+static bool drawer_mapped(void) {
+	if (!shell.output)
+		return false;
+	struct sway_layer_surface *layer;
+	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
+		if (layer->mapped && layer->layer_surface->namespace &&
+			strcmp(layer->layer_surface->namespace, "k230-shell-drawer") == 0)
+			return true;
+	}
+	return false;
+}
 static void prepare_impl(struct sway_output *output) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
@@ -830,6 +843,14 @@ static void prepare_impl(struct sway_output *output) {
 		wlr_scene_node_set_enabled(&shell.ui->node, false);
 		shell.preparing = false;
 		return;
+	}
+	/* The new drawer overlays live cards. It takes new touches, while an
+	 * already owned card gesture drains through its up without reaching it. */
+	if (drawer_mapped()) {
+		if (shell.policy.contact || shell.policy.edge.tracking)
+			handle_result(cs_cancel(&shell.policy));
+		if (shell.drawer_gesture.contacts)
+			card_shell_drawer_cancel(&shell.drawer_gesture);
 	}
 	wlr_scene_node_set_enabled(&shell.ui->node, true);
 	struct cs_config cfg = cs_default_config(output->width, output->height);
@@ -926,6 +947,7 @@ static bool select_seat(struct sway_seat *seat) {
 }
 static bool enter(struct sway_seat *seat) {
 	if (!enabled() || !shell.output || server.session_lock.lock || launcher_mapped() ||
+		drawer_mapped() ||
 		popup_mapped() || wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
 		seat->cursor->simulating_pointer_from_touch)
 		return false;
@@ -964,6 +986,12 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		handle_result(r);
 		return r.consumed;
 	}
+	if (shell.drawer_gesture.contacts) {
+		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		return true;
+	}
+	if (drawer_mapped())
+		return false;
 	if (shell.button_down) {
 		shell.button_down = false;
 		handle_result(cs_cancel(&shell.policy));
@@ -997,6 +1025,12 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	}
 	if (y >= shell.policy.config.height - shell.policy.config.bottom_reserved)
 		return false;
+	if (touch_first() && shell.active &&
+		y >= shell.policy.config.height - shell.policy.config.bottom_reserved -
+			shell.policy.config.footer_height) {
+		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		return true;
+	}
 	int button = hit_button(x, y);
 	if (button) {
 		if (shell.policy.contact || shell.policy.edge.tracking) {
@@ -1032,6 +1066,11 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	if (shell.drawer_gesture.contacts) {
+		card_shell_drawer_motion(&shell.drawer_gesture, id, x, y,
+			shell.policy.config.entry_distance);
+		return true;
+	}
 	if (shell.button_down) {
 		if (id == shell.button_contact &&
 			hypot(x - shell.button_x, y - shell.button_y) > shell.policy.config.tap_slop)
@@ -1050,6 +1089,12 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
+	if (shell.drawer_gesture.contacts) {
+		bool launch = card_shell_drawer_up(&shell.drawer_gesture, id) && !drawer_mapped();
+		if (launch && !card_shell_launch_drawer())
+			sway_log(SWAY_INFO, "K230_CARD_SHELL drawer helper unavailable; deck retained");
+		return true;
+	}
 	if (shell.button_down) {
 		if (id != shell.button_contact)
 			return true;
@@ -1082,8 +1127,9 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
-	bool consumed = shell.button_down || shell.policy.contact || shell.policy.edge.tracking ||
+	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up;
+	memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
 	shell.button_down = false;
 	shell.pressed_button = 0;
 	handle_result(cs_stream_cancel(&shell.policy));

@@ -7,6 +7,8 @@ let
       cp ${./card-shell/test-input.c} sway/card_shell_test_input.c
       cp ${./card-shell/test-input.h} include/sway/card_shell_test_input.h
       cp ${./card-shell/card-shell.h} include/sway/card_shell.h
+      cp ${./card-shell/route.c} sway/card_shell_route.c
+      cp ${./card-shell/route.h} include/sway/card_shell_route.h
       cp ${./card-shell/telemetry.c} sway/card_shell_telemetry.c
       cp ${./card-shell/telemetry.h} include/sway/card_shell_telemetry.h
       cp ${./card-shell/render.c} sway/card_shell_render.c
