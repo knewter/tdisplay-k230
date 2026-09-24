@@ -1,0 +1,68 @@
+{
+  "arms": [
+    {
+      "app_appearance_state": "applied",
+      "background_count": 4,
+      "capture": {
+        "bytes": 43513,
+        "kind": "native-unreviewed",
+        "sha256": "6d8dcad4ca99e9550f8d22bcb9a1648ce97151d72326428a81017f1b02ec382b"
+      },
+      "generation": "e300675e4e4e8bfe9086505e",
+      "role": "dark",
+      "selected_background_id": "ea49f2916958608c3eac9f84",
+      "theme_id": "972f1bd5258532d1bb3125fd",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    },
+    {
+      "app_appearance_state": "applied",
+      "background_count": 2,
+      "capture": {
+        "bytes": 43957,
+        "kind": "native-unreviewed",
+        "sha256": "1be738a33a276fe9b424a38a86568541b2227c885c19aa2b2aec72f3cae5b87f"
+      },
+      "generation": "cbf6d45472043bbc28dfa42b",
+      "role": "light",
+      "selected_background_id": "6cf6556ef8dce141ee206d58",
+      "theme_id": "10db74a93cd95c1d02dd1371",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    }
+  ],
+  "baseline": {
+    "capture": {
+      "bytes": 43513,
+      "kind": "native-unreviewed",
+      "sha256": "6d8dcad4ca99e9550f8d22bcb9a1648ce97151d72326428a81017f1b02ec382b"
+    },
+    "generation": "0d16475245f13b3d7d3f036f",
+    "workload": {
+      "id": "cards-shade-static-v1",
+      "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+    }
+  },
+  "finished_utc": "2026-09-24T07:41:03+00:00",
+  "physical_observation": "UNVERIFIED",
+  "restoration": "passed",
+  "restored_capture": {
+    "bytes": 43513,
+    "kind": "native-unreviewed",
+    "sha256": "6d8dcad4ca99e9550f8d22bcb9a1648ce97151d72326428a81017f1b02ec382b"
+  },
+  "restored_generation": "0d16475245f13b3d7d3f036f",
+  "schema": 1,
+  "source_revision": "df2c34b18e39fa2b1b5da6a024d830241d38235d",
+  "started_utc": "2026-09-24T07:40:39+00:00",
+  "system": "/nix/store/lxi2zx8n8mp7z1dl1i3dz7hjlbhl7f6l-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "trial": "completed-needs-operator-review",
+  "workload": {
+    "id": "cards-shade-static-v1",
+    "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+  }
+}

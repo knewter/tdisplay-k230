@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA  6d8dcad4ca99e9550f8d22bcb9a1648ce97151d72326428a81017f1b02ec382b  docs/evidence/omarchy-themes/board-switching/dark.png
+DATA  1be738a33a276fe9b424a38a86568541b2227c885c19aa2b2aec72f3cae5b87f  docs/evidence/omarchy-themes/board-switching/light.png
 DATA  6d8dcad4ca99e9550f8d22bcb9a1648ce97151d72326428a81017f1b02ec382b  docs/evidence/coherent-shell/refined-installed/drawer.png
 DATA  cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/coherent-shell/refined-installed/terminal.png
 DATA  ccb7f23fc2cb8c7d09b73cb83a7cb094a85e9abfde64a4298dee41cb6b5c5461  docs/evidence/coherent-shell/themed-installed/deck.png

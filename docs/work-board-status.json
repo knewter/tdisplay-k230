@@ -34,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Correct user-reported mechanical release and horizontal zoom detour; implement the mockup-aligned drawer, keyboard gestures and Wi-Fi Settings, then repeat physical acceptance.",
+      "next": "Test the installed gestures on glass; integrate keyboard show/hide, Wi-Fi Settings and restrained deck chrome, then complete theme persistence and remaining physical evidence.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -58,13 +58,17 @@
         "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
         "docs/evidence/coherent-shell/themed-installed/README.md",
         "docs/evidence/coherent-shell/terminal-pixel-fit.md",
-        "docs/evidence/coherent-shell/two-axis-qemu/README.md"
+        "docs/evidence/coherent-shell/two-axis-qemu/README.md",
+        "docs/evidence/coherent-shell/rust-drawer-grid-host/README.md",
+        "docs/evidence/coherent-shell/desktop-entry-defaults-host/README.md",
+        "docs/evidence/coherent-shell/direct-carousel-qemu/README.md",
+        "docs/evidence/coherent-shell/refined-installed/README.md"
       ],
-      "rationale": "The themed Rust shell with real wallpapers/icons is installed in test activation. User feedback identified awkward horizontal zoom, abrupt vertical settling, and an exposed Foot edge. The pixel-size fix is source-landed and separately proven on the board; motion and design corrections remain in progress.",
-      "reviewRevision": "2283c642",
+      "rationale": "Source df2c34b1 is test-activated on the board: installed app grid, friendly desktop names/icons, Foot pixel fit, direct app carousel and velocity-seeded release. Native board captures are committed. User touch acceptance, keyboard gestures, Wi-Fi UI and further deck design remain open.",
+      "reviewRevision": "df2c34b1",
       "cover": {
-        "path": "docs/evidence/coherent-shell/themed-installed/drawer.png",
-        "caption": "Installed themed drawer \u2014 design refinement in progress",
+        "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
+        "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
         "provenance": "Board capture"
       }
     },
@@ -90,14 +94,15 @@
         "docs/evidence/omarchy-themes/bundled-icons.md",
         "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
         "docs/evidence/coherent-shell/themed-installed/README.md",
-        "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md"
+        "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md",
+        "docs/evidence/omarchy-themes/board-switching/README.md"
       ],
-      "rationale": "The built-in wallpapers, Yaru icons and themed Rust surfaces are installed. Exact-image QEMU checks verify real default/Latte wallpaper pixels, live-app visibility, coordinated rollback and Rust restart persistence. Native board captures confirm the default appearance; board switching, optical quality and full physical acceptance remain open.",
-      "reviewRevision": "2283c642",
+      "rationale": "Dark/light activation on installed df2c34b1 acknowledged both receivers and app appearance. Reviewed native board captures show theme colors, wallpaper and icon variants; restored capture is byte-identical to baseline. Reboot persistence, community trial, role coverage, performance and finger acceptance remain open.",
+      "reviewRevision": "df2c34b1",
       "cover": {
-        "path": "docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png",
-        "caption": "Catppuccin launcher with Yaru icons \u2014 host renderer",
-        "provenance": "Host capture"
+        "path": "docs/evidence/omarchy-themes/board-switching/light.png",
+        "caption": "Installed light theme \u2014 real board capture",
+        "provenance": "Board capture"
       }
     },
     "the-shell-trials-vglite-composition": {
@@ -123,6 +128,18 @@
       ],
       "rationale": "Research and opt-in Qt probe source are on master. The build was deliberately interrupted to prioritize shell integration; dependency outputs are cached, but Qt and the probe have not built. No Qt/Quickshell board result or toolkit adoption is claimed.",
       "reviewRevision": "c92160d8"
+    },
+    "the-handheld-configures-wifi-from-settings": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Integrate reviewed touch UI and saved-network selection, then verify scan, connect, cancel, Forget and reboot persistence on the board.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/wifi-settings/README.md"
+      ],
+      "rationale": "Protected root broker and host checks landed; UI review and integration continue. Physical Wi-Fi Settings acceptance has not been performed.",
+      "reviewRevision": "df2c34b1"
     }
   }
 }
