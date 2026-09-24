@@ -19,6 +19,10 @@ shell and broker, removes only units carrying the token, reloads systemd,
 starts normal `shell.service`, and checks that the original ExecStart identity
 and seatd are restored. A stale timer token cannot remove another trial's
 units. The trial duration is 30–180 seconds, with recovery at duration + 30.
+Every runtime unit write, service call and state update checks the live token
+and phase under the recovery lock. Recovery closes the phase before changing
+services, so a watchdog firing mid-install or just before compositor start
+cannot be followed by a stale activation or state update.
 
 The root-only `state.json` preserves UTC start/restore times, boot ID, normal
 system path, original command, source/store paths and SHA256 for runner,
@@ -67,12 +71,13 @@ openspec validate the-shell-trials-vglite-composition --strict
 ./tools/blob-scan.py --no-vendor
 ```
 
-The new lifecycle suite passed 8/8 checks; existing broker policy tests passed
+The new lifecycle suite passed 10/10 checks; existing broker policy tests passed
 7/7. Strict OpenSpec validation, blob scan and Python compilation also passed
 on the host. The lifecycle suite executes the watchdog's actual `--restore`
 entry point against a fake system manager, including partial setup failure,
 foreign-unit refusal and Pixman restoration. It does not model driver behavior
-or systemd credentials on the board.
+or systemd credentials on the board. The suite also injects watchdog recovery
+between unit writes and before compositor start to check closure of stale work.
 
 For task 2.5 to close, the reserved operator must additionally retain the
 normal-service broker grant/denial checks, direct device/proc-fd/ptrace denial
