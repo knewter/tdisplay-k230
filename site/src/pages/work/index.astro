@@ -365,7 +365,13 @@ const items = await Promise.all(work.items.map(async (item) => ({
       event.preventDefault();
       displayMedia(mediaIndex + (event.key === "ArrowRight" ? 1 : -1));
     }
-  });
+  }, { capture: true });
+  mediaDialog?.addEventListener("keyup", (event) => {
+    if ((event.key === " " || event.code === "Space") && mediaVideo && !mediaVideo.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, { capture: true });
   let swipe: { id: number; x: number; y: number } | null = null;
   mediaStage?.addEventListener("pointerdown", (event) => {
     const playerControls = event.target === mediaVideo && mediaVideo && event.clientY > mediaVideo.getBoundingClientRect().bottom - 64;
