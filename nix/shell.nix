@@ -171,6 +171,7 @@ let
   themeCommand = pkgs.callPackage ./handheld-theme-command.nix {
     omarchyThemeTools = themeTools;
     inherit themeDefault;
+    coherentShell = cfg.coherentShell;
   };
   settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
   notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };
@@ -739,6 +740,9 @@ in
         SWAY_K230_CPU_FRAME_TIMING = "1";
       } // lib.optionalAttrs cfg.coherentShell {
         DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+        SWAY_K230_CARD_APPEARANCE_SOCKET = "/run/shell/k230-card-appearance.sock";
+        SWAY_K230_CARD_THEME_STATE_ROOT = "${config.users.users.shell.home}/.local/state/omarchy/current";
+        SWAY_K230_CARD_THEME_DEFAULT = "${themeDefault}/generations/${themeDefaultId}";
         SWAY_K230_CARD_SHELL = "1";
         SWAY_K230_CARD_TOUCH_FIRST = "1";
         SWAY_K230_CARD_DRAWER_HELPER = "${rustShell}/bin/k230-shell-rust";
