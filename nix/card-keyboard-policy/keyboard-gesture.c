@@ -101,8 +101,9 @@ unsigned kg_motion(struct kg_policy *p, int32_t id, double x, double y, uint64_t
 	}
 	if (p->mode == KG_GRIP_DRAG && id != p->first) return KG_CONSUME;
 	double next = p->mode == KG_SHOW_DRAG ?
-		clamp(p->start_progress + (p->start_centroid - (p->first_y + p->second_y) * .5) / p->height) :
-		clamp(p->start_progress - (y - p->grip_start) / p->height);
+		clamp(p->start_progress + (p->start_centroid - (p->first_y + p->second_y) * .5) /
+			(p->height + 56)) :
+		clamp(p->start_progress - (y - p->grip_start) / (p->height + 56));
 	if (ms > p->sample_ms && ms - p->sample_ms <= 80) {
 		double dt = (double)(ms - p->sample_ms) / 1000;
 		p->velocity = fmax(-4, fmin(4, (next - p->progress) / dt));
@@ -142,7 +143,7 @@ unsigned kg_surface(struct kg_policy *p, bool mapped) {
 	if (mapped && p->mode == KG_WAIT_SURFACE && p->show_requested) {
 		p->mode = KG_SHOW_DRAG;
 		p->progress = clamp((p->start_centroid -
-			(p->first_y + p->second_y) * .5) / p->height);
+			(p->first_y + p->second_y) * .5) / (p->height + 56));
 		p->start_progress = 0;
 		return KG_DIRTY;
 	}
@@ -167,6 +168,10 @@ unsigned kg_tick(struct kg_policy *p, uint64_t ms) {
 		ms > p->last_ms + 750) {
 		unsigned action=kg_cancel(p);
 		return action | KG_HIDE;
+	}
+	if (p->mode == KG_WAIT_UNMAP && ms > p->last_ms + 750) {
+		p->mode=KG_SHOWN; p->progress=1; p->velocity=0;
+		return KG_DIRTY;
 	}
 	if (p->mode != KG_SETTLE || ms <= p->last_ms) return KG_NONE;
 	double dt = (double)(ms - p->last_ms) / 1000;
@@ -200,4 +205,14 @@ unsigned kg_cancel(struct kg_policy *p) {
 	p->progress = mapped ? 1 : 0;
 	p->mode = mapped ? KG_SHOWN : KG_IDLE;
 	return (mapped ? KG_DIRTY : KG_NONE) | (requested && !mapped ? KG_HIDE : KG_NONE);
+}
+unsigned kg_end_stream(struct kg_policy *p, bool keyboard_mapped) {
+	bool changed=p->mode != KG_IDLE && p->mode != KG_SHOWN;
+	bool requested=p->show_requested;
+	double height=p->height;
+	bool reduced=p->reduced_motion;
+	kg_init(p,height,reduced);
+	if (keyboard_mapped) { p->mode=KG_SHOWN; p->progress=1; }
+	return (changed ? KG_DIRTY : KG_NONE) |
+		(requested && !keyboard_mapped ? KG_HIDE : KG_NONE);
 }

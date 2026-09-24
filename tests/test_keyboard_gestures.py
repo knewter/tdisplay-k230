@@ -8,7 +8,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ('early-chord', 'late-second', 'horizontal-first', 'stationary-chord', 'grip-keys', 'stale-velocity',
          'surface-loss', 'overlay-isolation', 'reduced', 'elapsed-cadence',
-         'contact-drain', 'map-timeout', 'many-contacts')
+         'contact-drain', 'map-timeout', 'many-contacts', 'end-stream', 'hide-timeout')
 class KeyboardGestureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

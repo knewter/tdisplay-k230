@@ -30,4 +30,6 @@ unsigned kg_up(struct kg_policy *p, int32_t id, uint64_t ms);
 unsigned kg_surface(struct kg_policy *p, bool mapped);
 unsigned kg_tick(struct kg_policy *p, uint64_t ms);
 unsigned kg_cancel(struct kg_policy *p);
+/* Device cancel/seat loss terminates the whole touch stream; no ups follow. */
+unsigned kg_end_stream(struct kg_policy *p, bool keyboard_mapped);
 #endif
