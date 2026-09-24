@@ -2,7 +2,7 @@
 
 ### Requirement: Work cards expose their visual evidence
 <!-- UNVERIFIED: implementation and published-page checks remain pending. -->
-The work board SHALL discover committed images and videos associated with a change's cited evidence, show a representative visual cover when available, and present the discovered media inside that card's detail view. Videos SHALL provide playback controls without autoplay. Captions and evidence-class labels SHALL not imply physical validation from mockups or automated captures. Changes without visual evidence SHALL remain readable text cards.
+The work board SHALL discover committed images and videos associated with a change's cited evidence, show a representative visual cover when available, and present the discovered media inside that card's detail view. Videos SHALL provide playback controls, start playback when opened or selected in the media viewer, and support Space to toggle play/pause without closing it. Card previews SHALL remain paused. Captions and evidence-class labels SHALL not imply physical validation from mockups or automated captures. Changes without visual evidence SHALL remain readable text cards.
 
 #### Scenario: Screenshot and video arrive during implementation
 - **WHEN** screenshot or video evidence is committed for an open change and the site publishes that revision

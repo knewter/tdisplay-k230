@@ -305,6 +305,8 @@ const items = await Promise.all(work.items.map(async (item) => ({
     if (video) {
       mediaVideo.src = item.src ?? "";
       mediaVideo.setAttribute("aria-label", item.caption ?? "Video evidence");
+      // Opening or navigating the viewer is the user's playback gesture.
+      void mediaVideo.play().catch(() => { /* Native controls remain available if playback is blocked. */ });
     } else {
       mediaImage.src = item.src ?? "";
       mediaImage.alt = item.caption ?? "Image evidence";
@@ -349,6 +351,15 @@ const items = await Promise.all(work.items.map(async (item) => ({
   mediaPrevious?.addEventListener("click", () => displayMedia(mediaIndex - 1));
   mediaNext?.addEventListener("click", () => displayMedia(mediaIndex + 1));
   mediaDialog?.addEventListener("keydown", (event) => {
+    if ((event.key === " " || event.code === "Space") && mediaVideo && !mediaVideo.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat) {
+        if (mediaVideo.paused) void mediaVideo.play().catch(() => {});
+        else mediaVideo.pause();
+      }
+      return;
+    }
     if (event.target === mediaVideo) return; // native player owns its seek keys
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
