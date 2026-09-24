@@ -1,0 +1,115 @@
+---
+import Base from "../../layouts/Base.astro";
+import work from "../../data/work.json";
+import { url } from "../../lib/specs";
+
+const names: Record<string, { title: string; hint: string }> = {
+  planned: { title: "Planned", hint: "A committed proposal. Work and proof have not started in this snapshot." },
+  "in-progress": { title: "In progress", hint: "Implementation or investigation is underway; acceptance remains open." },
+  verification: { title: "Verification & review", hint: "Source or tasks advanced; the named review or evidence gate still matters." },
+  archived: { title: "Archived", hint: "The OpenSpec change closed. This does not certify unrelated device features." },
+};
+const byId = Object.fromEntries(work.items.map((item) => [item.id, item]));
+const sourceLabel: Record<string, string> = {
+  "not-started": "Source: not started",
+  "in-progress": "Source: in progress",
+  "source-landed": "Source: landed checkpoint",
+  archived: "Change: archived",
+};
+const physicalLabel: Record<string, string> = {
+  "not-applicable": "Proof: see linked records",
+  "not-recorded": "Device proof: see tasks",
+  pending: "Device proof: pending",
+  verified: "Device proof: verified for cited scope",
+};
+const github = (path: string) => `https://github.com/knewter/tdisplay-k230/blob/${work.sourceRevision}/${path}`;
+const accepted = (path: string) => {
+  const parts = path.split("/");
+  return url(`c/${parts[2]}-${parts[3]}/`);
+};
+---
+
+<Base title="Project work board · K230" source="work" description="A dated, evidence-aware snapshot of planned, active, verification and archived K230 work.">
+  <main class="work-page">
+    <nav class="work-breadcrumb" aria-label="Breadcrumb"><a href={url("")}>Verification ledger</a><span aria-hidden="true">/</span><span>Work board</span></nav>
+    <header class="work-intro">
+      <p class="work-kicker">K230 · public project snapshot</p>
+      <h1>What remains, and what is proven.</h1>
+      <p class="work-lede">Follow each change from proposal to evidence. The lanes reflect committed work at this revision, not a live agent feed. A checked task, landed source, archived plan, and verified device behavior are different claims.</p>
+      <div class="work-meta"><span>As of <strong>{work.generated}</strong></span><span>Revision <a href={`https://github.com/knewter/tdisplay-k230/commit/${work.sourceRevision}`}><code>{work.sourceRevision.slice(0, 12)}</code></a></span><span>Source: {work.sourceMode}</span></div>
+    </header>
+
+    <nav class="work-jump" aria-label="Work lanes">
+      {work.lanes.map((lane) => <a href={`#${lane.id}`}><span>{names[lane.id].title}</span><b>{lane.count}</b></a>)}
+    </nav>
+
+    <div class="work-grid">
+      {work.lanes.map((lane) => <section class={`work-lane lane-${lane.id}`} id={lane.id} aria-labelledby={`${lane.id}-title`}>
+        <div class="lane-head"><span class="lane-mark" aria-hidden="true"></span><div><h2 id={`${lane.id}-title`}>{names[lane.id].title}<span class="lane-count">{lane.count}</span></h2><p>{names[lane.id].hint}</p></div></div>
+        <div class="lane-items">
+          {work.items.filter((item) => item.lane === lane.id).map((item) => <article class="work-card" id={item.id}>
+            <div class="card-top"><span class="card-kind">{item.archived ? "Archived change" : "Draft proposal"}</span><span class="card-count">{item.done}/{item.total} tasks</span></div>
+            <h3>{item.title}</h3>
+            <div class="card-progress" role="img" aria-label={`${item.done} of ${item.total} tasks checked`}><span style={`width:${item.total ? Math.round(100 * item.done / item.total) : 0}%`}></span></div>
+            <div class="card-states"><span>{sourceLabel[item.source]}</span><span>{physicalLabel[item.physical]}</span></div>
+            <div class="card-next"><strong>{item.archived ? "Closed record" : "Next gate"}</strong><p>{item.next}</p></div>
+            {item.dependencies.length > 0 && <p class="card-deps"><strong>Depends on</strong>{item.dependencies.map((id) => <a href={`#${id}`}>{byId[id]?.title ?? id}</a>)}</p>}
+            <div class="card-links"><a href={github(item.proposal)}>Proposal</a>{item.tasksPath && <a href={github(item.tasksPath)}>Tasks</a>}{item.acceptedSpecs.map((path) => <a href={accepted(path)}>Spec: {path.split("/").slice(2, 4).join(" / ")}</a>)}{item.evidence.map((path) => <a href={github(path)}>Evidence</a>)}</div>
+            {item.rationale && <details class="card-basis"><summary>Status basis</summary><p>{item.rationale}</p><p>Reviewed from <a href={`https://github.com/knewter/tdisplay-k230/commit/${item.reviewRevision}`}><code>{item.reviewRevision?.slice(0, 12)}</code></a>.</p></details>}
+          </article>)}
+        </div>
+      </section>)}
+    </div>
+    <aside class="work-notes"><h2>How to read this board</h2><p>Task counts come from committed OpenSpec checkboxes. Reviewed status notes distinguish landed source from physical proof where the checklist alone cannot. “Archived” describes a closed change and its cited scope; it is not a claim that every related feature ships in the current image. Open proposals are drafts and never enter the <a href={url("")}>accepted requirement count</a>.</p></aside>
+  </main>
+</Base>
+
+<style>
+  :global(body:has(.work-page)) { padding-inline: clamp(16px, 3vw, 40px); }
+  .work-page { max-width: 1540px; margin: 0 auto 5rem; }
+  .work-breadcrumb, .work-kicker, .work-meta, .work-jump, .lane-head, .card-top, .card-states, .card-next strong, .card-deps strong, .card-links, .card-basis { font-family: var(--mono); }
+  .work-breadcrumb { display:flex; gap:.7rem; font-size:.77rem; color:var(--muted); margin-bottom:clamp(1.5rem,3vw,2.5rem); }
+  .work-intro { max-width:1100px; }
+  .work-kicker { color:var(--accent); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; font-weight:600; }
+  h1 { font-family:var(--sans); font-size:clamp(2.35rem,4vw,4rem); line-height:1.04; letter-spacing:-.035em; margin:.5rem 0 .9rem; max-width:1100px; }
+  .work-lede { font-size:clamp(1rem,1.2vw,1.16rem); color:var(--ink-2); line-height:1.48; max-width:960px; }
+  .work-meta { display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; color:var(--muted); font-size:.7rem; margin:1.3rem 0 1.9rem; }
+  .work-meta strong { color:var(--ink); }
+  .work-jump { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:8px; overflow:hidden; margin:0 0 1.5rem; }
+  .work-jump a { display:flex; justify-content:space-between; align-items:center; gap:.5rem; min-height:52px; padding:.7rem .9rem; background:var(--surface); text-decoration:none; font-size:.73rem; color:var(--ink-2); }
+  .work-jump a:hover,.work-jump a:focus-visible { background:var(--surface-2); color:var(--accent); }
+  .work-jump b,.lane-count { font-variant-numeric:tabular-nums; font-size:.7rem; color:var(--accent); }
+  .work-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; align-items:start; }
+  .work-lane { min-width:0; scroll-margin-top:1rem; }
+  .lane-head { min-height:114px; display:flex; align-items:flex-start; gap:.7rem; border-top:3px solid var(--accent); padding:1rem .15rem .7rem; }
+  .lane-mark { display:block; width:8px; height:8px; margin-top:.56rem; background:var(--accent); border-radius:50%; flex:none; }
+  .lane-head h2 { display:flex; align-items:center; gap:.5rem; font-size:.82rem; line-height:1.3; margin:0; color:var(--ink); }
+  .lane-head p { color:var(--muted); font-size:.66rem; line-height:1.45; margin:.45rem 0 0; }
+  .lane-in-progress .lane-head { border-color:var(--unverified); } .lane-in-progress .lane-mark { background:var(--unverified); }
+  .lane-verification .lane-head { border-color:var(--soc); } .lane-verification .lane-mark { background:var(--soc); }
+  .lane-archived .lane-head { border-color:var(--grounded); } .lane-archived .lane-mark { background:var(--grounded); }
+  .lane-items { display:grid; gap:.75rem; }
+  .work-card { min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface); box-shadow:var(--shadow); overflow-wrap:anywhere; }
+  .card-top { display:flex; justify-content:space-between; gap:.4rem; color:var(--muted); font-size:.63rem; line-height:1.3; }
+  .card-kind { text-transform:uppercase; letter-spacing:.07em; }
+  .card-count { white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .work-card h3 { font-family:var(--sans); font-size:1.15rem; line-height:1.18; letter-spacing:-.01em; margin:.7rem 0 .9rem; }
+  .card-progress { height:4px; background:var(--rule-2); border-radius:10px; overflow:hidden; }
+  .card-progress span { display:block; height:100%; background:var(--accent); }
+  .card-states { display:flex; flex-wrap:wrap; gap:.3rem; margin:.8rem 0 1rem; }
+  .card-states span { padding:.2rem .35rem; border:1px solid var(--rule); border-radius:3px; font-size:.59rem; line-height:1.35; color:var(--ink-2); }
+  .card-next { padding:.65rem .7rem; background:var(--surface-2); border-left:2px solid var(--accent); }
+  .card-next strong,.card-deps strong { display:block; color:var(--accent); font-size:.61rem; text-transform:uppercase; letter-spacing:.08em; }
+  .card-next p { font-family:var(--sans); font-size:.86rem; line-height:1.43; margin:.38rem 0 0; }
+  .card-deps { display:flex; flex-direction:column; gap:.22rem; font-size:.7rem; margin:.9rem 0 0; }
+  .card-links { display:flex; flex-wrap:wrap; gap:.35rem .7rem; border-top:1px solid var(--rule-2); padding-top:.75rem; margin-top:.85rem; font-size:.66rem; }
+  .card-links a { min-height:30px; display:inline-flex; align-items:center; }
+  .card-basis { border-top:1px solid var(--rule-2); font-size:.65rem; color:var(--muted); padding-top:.5rem; }
+  .card-basis summary { cursor:pointer; color:var(--ink-2); }
+  .card-basis p { margin:.4rem 0; }
+  .work-notes { max-width:830px; border-top:1px solid var(--rule); margin:3rem 0 0; padding-top:1rem; }
+  .work-notes h2 { font-family:var(--sans); font-size:1.2rem; }
+  .work-notes p { color:var(--ink-2); font-size:.94rem; }
+  @media (max-width:1100px) { .work-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lane-head { min-height:95px; } }
+  @media (max-width:650px) { .work-grid { grid-template-columns:minmax(0,1fr); } .work-jump { grid-template-columns:repeat(2,minmax(0,1fr)); } .lane-head { min-height:0; margin-top:.65rem; } .lane-items { grid-template-columns:minmax(0,1fr); } .work-card { padding:1rem 1.1rem; } }
+</style>

@@ -13,7 +13,7 @@ This is the one command. It fails, loudly and with a non-zero exit, when
     (`tools/blob-scan.py`);
   * the build takes longer or produces more than its recorded budget;
   * the built site fails its own assertions (a count that is not first, a
-    dead link, anything from an in-flight proposal).
+    dead link, an in-flight proposal in the accepted-spec ledger).
 
 The site is still written when a requirement is at fault, and shows the fault.
 A defect nobody can see is one nobody fixes. Budget and assertion failures
@@ -98,6 +98,15 @@ def main(argv: list[str] | None = None) -> int:
         failures.append(
             "the specs carry defects; they are listed above and shown on the site"
         )
+
+    # The separate work page reads committed OpenSpec state. A dirty checkout
+    # still builds an explicitly dated HEAD snapshot, never private worktree
+    # activity or an accidental mixture of staged and unstaged task files.
+    print("\n$ ./scripts/render_work_board.py")
+    work = subprocess.run([sys.executable, str(REPO / "scripts" / "render_work_board.py")], cwd=REPO)
+    if work.returncode != 0:
+        print("error: work board data pass failed", file=sys.stderr)
+        return work.returncode
 
     # 1b. Every binary is accounted for in docs/blob-inventory.md, or the
     #     build fails here, beside the evidence check, for the same reason:

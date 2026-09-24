@@ -2,17 +2,17 @@ The named work-board generator and test commands below are proposed interfaces t
 
 ## 1. Generate an honest committed snapshot
 
-- [ ] 1.1 Add a deterministic work-data generator for committed active/archived changes, checkbox counts, revision, UTC build time, and valid links; verify `python3 tests/test_work_board.py` on real and synthetic fixture trees.
-- [ ] 1.2 Add a reviewed status override file and validation for lane, source/physical state, next action, dependencies, rationale, and safe public paths; cover stale, contradictory, untracked, and secret-like input failures with `python3 tests/test_work_board.py`.
-- [ ] 1.3 Populate reviewed overrides for current active work where checkboxes cannot express a source-landed or physical-evidence state; inspect generated data against committed proposals/evidence and run `python3 tests/test_work_board.py`.
+- [x] 1.1 Add a deterministic work-data generator for committed active/archived changes, checkbox counts, revision, UTC build time, and valid links; verify `python3 tests/test_work_board.py` on real and synthetic fixture trees.
+- [x] 1.2 Add a reviewed status override file and validation for lane, source/physical state, next action, dependencies, rationale, and safe public paths; cover stale, contradictory, untracked, and secret-like input failures with `python3 tests/test_work_board.py`.
+- [x] 1.3 Populate reviewed overrides for current active work where checkboxes cannot express a source-landed or physical-evidence state; inspect generated data against committed proposals/evidence and run `python3 tests/test_work_board.py`.
 
 Proof: `python3 tests/test_work_board.py` is host repository-data proof only; it does not assert device behavior.
 
 ## 2. Publish the work board
 
-- [ ] 2.1 Render `/work/` with four clear lanes, task progress, next gates, dependencies, draft/accepted labels, links, and source/physical distinctions; verify rendered HTML assertions with `python3 tests/test_work_board.py`.
-- [ ] 2.2 Add responsive touch-scrollable styling and links from the front door and handheld page; inspect narrow and desktop browser captures and verify link targets through `python3 scripts/build_site.py`.
-- [ ] 2.3 Keep accepted-spec exclusion and tally tests intact while allowing labeled proposals only on `/work/`; add a focused regression assertion and run `python3 scripts/build_site.py` within the existing 8 MiB budget.
+- [x] 2.1 Render `/work/` with four clear lanes, task progress, next gates, dependencies, draft/accepted labels, links, and source/physical distinctions; verify rendered HTML assertions with `python3 tests/test_work_board.py`.
+- [x] 2.2 Add responsive touch-scrollable styling and links from the front door and handheld page; inspect narrow and desktop browser captures and verify link targets through `python3 scripts/build_site.py`.
+- [x] 2.3 Keep accepted-spec exclusion and tally tests intact while allowing labeled proposals only on `/work/`; add a focused regression assertion and run `python3 scripts/build_site.py` within the existing 8 MiB budget.
 
 Proof: `python3 tests/test_work_board.py` and `python3 scripts/build_site.py` prove a host site build and link/size checks, not publication.
 

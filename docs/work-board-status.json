@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "overrides": {
+    "the-shell-manages-apps-as-cards": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Reduce measured Pixman card tracking cost, rerun the fixed card workload, then record real-finger acceptance on the normal image.",
+      "dependencies": [],
+      "evidence": ["docs/evidence/card-shell/scaled-cache-board/README.md"],
+      "rationale": "The committed board cost trace misses the frame budget; checked implementation tasks do not establish a default, finger-accepted card shell.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-system-enables-proven-c908-extensions": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Run the remaining exact-image RVV/QEMU and reserved-board checks; keep the normal image unchanged until evidence passes.",
+      "dependencies": [],
+      "evidence": ["docs/evidence/cpu-extensions/normal-image-build/README.md"],
+      "rationale": "The committed source and build evidence covers the first five tasks, while later target and physical gates remain unchecked.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "touch-launcher-gestures-overview": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Capture the focused real-finger camera sequence for both swipes, overview, expansion and return, then audit it against the last task.",
+      "dependencies": [],
+      "evidence": ["docs/evidence/launcher-gestures/real-finger/README.md"],
+      "rationale": "Fifteen of sixteen committed tasks are checked; the remaining physical camera acceptance is explicit in the task list.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-handheld-presents-a-coherent-shell": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Integrate live deck, launcher artwork, Settings and notification surfaces, then verify the complete shell on glass before checking the capability tasks.",
+      "dependencies": ["the-shell-manages-apps-as-cards", "the-shell-loads-omarchy-themes"],
+      "evidence": ["docs/evidence/coherent-shell/icons/README.md"],
+      "rationale": "The icon resolver is a source checkpoint, but the 27-task coherent-shell capability and its named consumers remain open.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-shell-loads-omarchy-themes": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Package and fixture-test the pinned Omarchy helpers, then connect generated appearance data to the real shell and clients.",
+      "dependencies": ["the-handheld-presents-a-coherent-shell"],
+      "evidence": [],
+      "rationale": "An implementation workstream is active, but no theme task or device result is committed as complete in this snapshot.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-shell-trials-vglite-composition": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Resolve target format and presentation costs, then repeat paired GPU-versus-Pixman acceptance on the board before any default change.",
+      "dependencies": ["the-shell-manages-apps-as-cards"],
+      "evidence": ["docs/evidence/vglite-scene-board/context-lifetime/README.md"],
+      "rationale": "A committed GPU trial exists, but the comparison did not establish a faster accepted default compositor path.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-site-shows-a-public-work-board": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "not-applicable",
+      "next": "Complete the committed data pass and responsive page, then verify built HTML and the published URL at the landed revision.",
+      "dependencies": [],
+      "evidence": [],
+      "rationale": "The proposal has landed; site implementation and deployment proof are underway and remain unchecked.",
+      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    }
+  }
+}

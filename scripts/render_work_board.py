@@ -22,7 +22,7 @@ SOURCE = ("not-started", "in-progress", "source-landed", "archived")
 PHYSICAL = ("not-applicable", "not-recorded", "pending", "verified")
 SAFE_TEXT = re.compile(r"^[^\x00-\x1f]*$")
 SECRET_TEXT = re.compile(r"(?:/home/|/mnt/|/tmp/|/dev/tty|(?:password|token|secret|ssid)\s*[:=]|(?:\d{1,3}\.){3}\d{1,3})", re.I)
-TASK = re.compile(r"^- \[([ xX])\] (\d+(?:\.\d+)*)\s+(.+)$", re.M)
+TASK = re.compile(r"^- \[([ xX])\] (\d+[a-z]?(?:\.\d+[a-z]?)*)\s+(.+)$", re.M | re.I)
 
 
 class WorkError(ValueError):
@@ -59,7 +59,8 @@ class SourceTree:
         self.working_tree = working_tree
         self.revision = git(repo, "rev-parse", "HEAD").strip()
         if working_tree:
-            self.paths = {p.relative_to(repo).as_posix() for p in repo.rglob("*") if p.is_file() and ".git" not in p.parts}
+            listed = git(repo, "ls-files", "--cached", "--others", "--exclude-standard").splitlines()
+            self.paths = {p for p in listed if (repo / p).is_file()}
         else:
             self.paths = set(git(repo, "ls-tree", "-r", "--name-only", "HEAD").splitlines())
 
@@ -73,19 +74,27 @@ class SourceTree:
 
 
 def title_from(proposal: str, ident: str) -> str:
-    match = re.search(r"^## (?:Why|What Changes)\s*$\n+(.+)", proposal, re.M)
-    if match:
-        prose = re.sub(r"[`*\[\]]", "", match.group(1)).strip()
-        if 12 <= len(prose) <= 100 and "http" not in prose:
-            return safe_copy(prose, ident)
-    return ident.replace("-", " ").capitalize()
+    # A proposal's first paragraph is explanatory prose, not a concise title.
+    # IDs are committed, stable, and already written as readable sentences.
+    if not proposal.strip():
+        raise WorkError(f"empty proposal: {ident}")
+    return re.sub(r"^\d{4}-\d{2}-\d{2}-", "", ident).replace("-", " ").capitalize()
 
 
 def first_gate(tasks: str, archived: bool) -> str:
     for checked, _, body in TASK.findall(tasks):
         if checked == " ":
-            return safe_copy(body, "next task")
-    return "Open the archived record and evidence" if archived else "Review completed tasks and archive evidence"
+            try:
+                plain = re.sub(r"\[([^]]+)\]\([^)]+\)", r"\1", body)
+                plain = plain.replace("`", "").replace("**", "")
+                plain = re.sub(r"\s+", " ", plain).strip()
+                safe_copy(plain, "next task")
+                if len(plain) > 205:
+                    plain = plain[:202].rsplit(" ", 1)[0].rstrip(" ,.;") + "…"
+                return plain
+            except WorkError:
+                return "Review the next unchecked task in the linked task list"
+    return "Review the archived record and cited scope" if archived else "Review completed tasks and archive evidence"
 
 
 def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
@@ -114,7 +123,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
             "acceptedSpecs": accepted, "done": done, "total": len(checked),
             "lane": "archived" if archived else ("planned" if done == 0 else "in-progress"),
             "source": "archived" if archived else ("not-started" if done == 0 else "in-progress"),
-            "physical": "not-recorded", "next": first_gate(tasks, archived),
+            "physical": "not-applicable" if archived else "not-recorded", "next": first_gate(tasks, archived),
             "dependencies": [], "evidence": [], "rationale": None, "reviewRevision": None,
         }
         all_changes[ident] = item
@@ -143,7 +152,10 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
         review = safe_copy(override["reviewRevision"], f"{ident}.reviewRevision")
         if not re.fullmatch(r"[0-9a-f]{7,40}", review):
             raise WorkError(f"invalid review revision for {ident}")
-        git(tree.repo, "cat-file", "-e", f"{review}^{{commit}}")
+        try:
+            git(tree.repo, "cat-file", "-e", f"{review}^{{commit}}")
+        except WorkError as exc:
+            raise WorkError(f"review revision unavailable for {ident}: {review}; fetch full history") from exc
         if subprocess.run(["git", "-C", str(tree.repo), "merge-base", "--is-ancestor", review, tree.revision]).returncode:
             raise WorkError(f"review revision is not an ancestor of snapshot: {ident}")
         deps = override.get("dependencies", [])

@@ -148,7 +148,7 @@ class TestBuiltSite(unittest.TestCase):
         self.assertIn('class="ev-text"', log)
         self.assertNotIn('class="ev-markdown"', log)
 
-    def test_nothing_from_an_in_flight_proposal_is_published(self) -> None:
+    def test_nothing_from_an_in_flight_proposal_enters_the_accepted_ledger(self) -> None:
         ids = sorted(
             p.name for p in CHANGES.iterdir() if p.is_dir() and p.name != "archive"
         )
@@ -157,10 +157,24 @@ class TestBuiltSite(unittest.TestCase):
         blob = "\n".join(
             p.read_text(encoding="utf-8", errors="replace")
             for p in self.pages()
-            if "evidence" not in p.parts
+            if "evidence" not in p.parts and "work" not in p.parts
         )
         leaked = [i for i in ids if i in blob]
         self.assertEqual(leaked, [], f"in-flight change ids leaked: {leaked}")
+
+    def test_work_board_is_separate_dated_and_linked(self) -> None:
+        page = (DIST / "work" / "index.html").read_text(encoding="utf-8")
+        data = json.loads((REPO / "site" / "src" / "data" / "work.json").read_text())
+        self.assertIn("not a live agent feed", page)
+        self.assertIn(data["sourceRevision"][:12], page)
+        self.assertIn(data["generated"], page)
+        for lane in ("planned", "in-progress", "verification", "archived"):
+            self.assertIn(f'id="{lane}"', page)
+        self.assertIn("Draft proposal", page)
+        self.assertIn("Archived change", page)
+        self.assertIn(f'{self.base}work/', self.index)
+        self.assertIn(f'{self.base}work/', (DIST / "handheld" / "index.html").read_text())
+        self.assertNotIn("the-site-shows-a-public-work-board", self.index)
 
     def test_both_themes_are_defined(self) -> None:
         css = "\n".join(p.read_text(encoding="utf-8") for p in DIST.rglob("*.css"))

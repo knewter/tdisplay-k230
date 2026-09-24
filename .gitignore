@@ -18,6 +18,7 @@ result-*
 /site/dist/
 /site/.astro/
 /site/src/data/specs.json
+/site/src/data/work.json
 /site/public/evidence/
 
 # Python bytecode

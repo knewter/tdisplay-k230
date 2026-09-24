@@ -10,7 +10,7 @@ interface Props {
    * "hand" is written and maintained by hand in this repository. The footer
    * says which, because the two carry different guarantees.
    */
-  source?: "specs" | "hand";
+  source?: "specs" | "hand" | "work";
 }
 const { title, description, source = "specs" } = Astro.props;
 const desc =
@@ -67,8 +67,14 @@ const desc =
       {
         source === "specs" ? (
           <p class="mono dim">
-            Rendered from <code>openspec/specs/</code>. In-flight proposals are not
-            published.
+            Accepted specifications rendered from <code>openspec/specs/</code>.
+            In-flight proposals are separate on the <a href={url("work/")}>work board</a>.
+          </p>
+        ) : source === "work" ? (
+          <p class="mono dim">
+            Work status rendered from committed OpenSpec changes and reviewed
+            repository status notes. This dated snapshot is separate from the
+            accepted specification ledger.
           </p>
         ) : (
           <p class="mono dim">
