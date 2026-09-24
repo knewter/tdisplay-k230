@@ -30,7 +30,7 @@ The shell userspace SHALL treat the live card overview as Home. A purely upward 
 
 ### Requirement: Bottom app switching follows both touch axes
 <!-- UNVERIFIED: requested two-axis navigation and bottom quick switch are not implemented or physically proven. The installed correction at docs/evidence/coherent-shell/direct-drag/installed.md covers vertical movement only. -->
-The compositor SHALL retain one touch owner when an app-entry gesture bends from upward to sideways movement. The manipulated point SHALL follow both finger coordinates one-to-one within declared travel bounds, with no held-contact easing, automatic progress, or axis-change jump. A qualified lateral release SHALL settle and activate the visibly selected adjacent running app directly from the current full or near-full carousel geometry, without a forced overview or second expansion stage; a purely upward release SHALL settle into Home from its current geometry. A horizontal gesture starting in the qualified bottom-center region SHALL offer the same adjacent-app switching without requiring an upward gesture or a full card zoom. Release thresholds SHALL NOT amplify visible motion. Short/reversed gestures SHALL restore the originating app without activating a neighbor. Settling on either axis SHALL begin at the displayed position and bounded measured release velocity, with smooth deceleration or spring and no initial position or derivative jump; velocity SHALL influence motion only after release. A new accepted touch SHALL stop or retarget settlement from current geometry.
+The compositor SHALL retain one touch owner when an app-entry gesture bends from upward to sideways movement. The manipulated point SHALL follow both finger coordinates one-to-one within declared travel bounds, with no held-contact easing, automatic progress, or axis-change jump. A qualified lateral release SHALL settle and activate the visibly selected adjacent running app directly from the current full or near-full carousel geometry, without a forced overview or second expansion stage; a purely upward release SHALL settle into Home from its current geometry. A horizontal gesture starting anywhere along the qualified bottom edge band SHALL offer the same adjacent-app switching without requiring an upward gesture or a full card zoom, gated only by measured lateral displacement or release velocity in the swipe direction and not by where along the band the touch started. Release thresholds SHALL NOT amplify visible motion. Short/reversed gestures, and a release whose recent velocity trends back toward the start, SHALL restore the originating app without activating a neighbor. Settling on either axis SHALL begin at the displayed position and bounded measured release velocity, with smooth deceleration or spring and no initial position or derivative jump; velocity SHALL influence motion only after release and SHALL be estimated from recent samples rather than a single possibly-stale last delta. A new accepted touch SHALL stop or retarget settlement from current geometry.
 
 Both routes SHALL use the deck's stable left/right app order, unchanged by focus-only switching, and SHALL commit at most one neighbor per release initially. Dragging the scene right SHALL reveal the left neighbor and vice versa. They SHALL NOT wrap at either end, launch a new app, throw-close an app, or substitute a newly mapped app for a disappearing target. The compositor SHALL preserve the sibling's privacy, source-lifetime, focus eligibility and visible raise behavior. Keyboard-owned regions, active overlays, side Back regions and ordinary app content outside the qualified bottom region SHALL keep their touch ownership.
 
@@ -39,7 +39,7 @@ Both routes SHALL use the deck's stable left/right app order, unchanged by focus
 - **THEN** the same visible app/card scene follows both axes, reveals its neighbor, and a qualified release expands and visibly focuses that neighbor without another tap
 
 #### Scenario: Quick switch and reverse direction
-- **WHEN** a person switches apps with a horizontal bottom-center swipe and then performs the opposite swipe
+- **WHEN** a person switches apps with a horizontal bottom-edge swipe and then performs the opposite swipe
 - **THEN** the scene follows the finger in each direction and returns to the previous neighboring app in the unchanged deck order
 
 #### Scenario: Hold and cancel a diagonal gesture
@@ -51,7 +51,7 @@ Both routes SHALL use the deck's stable left/right app order, unchanged by focus
 - **THEN** no wrap, invented preview or unrelated activation occurs; the source app or valid deck remains reachable with correct focus
 
 #### Scenario: An app or keyboard owns the contact
-- **WHEN** a touch starts outside the qualified bottom-center region for quick switch, in a keyboard-owned region, or on an active shell overlay
+- **WHEN** a touch starts outside the qualified bottom edge band, in a keyboard-owned region, or on an active shell overlay
 - **THEN** the quick-switch recognizer does not steal the stream, and changing direction later does not reinterpret it as an app switch
 
 ### Requirement: Shade and contextual Back preserve the task

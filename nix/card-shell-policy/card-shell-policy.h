@@ -36,6 +36,10 @@ struct cs_result {
     enum cs_message message;
 };
 struct cs_rect { double x, y, width, height; };
+/* Bound small: only ever walked back a few steps for a recency-biased
+ * velocity estimate, never grown for its own sake. */
+#define CS_ENTRY_HISTORY_CAP 8
+struct cs_entry_touch_sample { double x, y; uint64_t t; };
 struct cs_config {
     double width, height;
     double top_reserved, bottom_reserved; /* bar and keyboard; never intercepted */
@@ -43,6 +47,11 @@ struct cs_config {
     double card_width, card_height;
     double edge_band, entry_distance, tap_slop;
     double select_fraction, throw_distance, throw_speed; /* logical pixels/ms */
+    /* Entry (edge-swipe app switch) lateral gate, kept separate from the
+     * in-deck select_fraction above: a fraction of the full screen width,
+     * not of the card pitch, and a release-velocity flick threshold in
+     * logical pixels/ms. See card-shell-policy.c cs_entry_up_at. */
+    double entry_select_fraction, entry_flick_speed;
     uint64_t close_timeout_ms;
     bool reduced_motion; /* Direct tracking/endpoints are identical either way. */
 	bool touch_first_motion; /* Opt-in live entry/expansion; rollback keeps old route. */
@@ -72,16 +81,21 @@ struct cs_policy {
 	uint64_t *entry_order;
 	size_t entry_count, entry_origin;
 	uint64_t entry_left_id, entry_right_id, entry_target_id;
-	bool entry_quick_allowed;
 	double entry_dx, entry_raw_dx, entry_anchor_shift, entry_anchor_factor;
 	double entry_release_dx, entry_settle_dx, entry_reverse_dx, entry_reverse_anchor;
 	double entry_reverse_from;
 	double entry_settle_from;
 	double entry_goal_progress, entry_settle_anchor;
-	double entry_velocity_x, entry_velocity_progress;
 	double entry_release_velocity_x, entry_release_velocity_progress;
 	double entry_sample_x, entry_sample_y;
 	uint64_t entry_sample_ms;
+	/* Recent raw touch samples for a recency-biased release-velocity
+	 * estimate: a single stale/instantaneous last delta is unreliable, but
+	 * averaging over a long fixed window would blur a genuine last-instant
+	 * reversal. cs_entry_release_velocity() walks back only as far as it
+	 * needs to (see card-shell-policy.c). */
+	struct cs_entry_touch_sample entry_history[CS_ENTRY_HISTORY_CAP];
+	size_t entry_history_count;
 	uint64_t entry_started_ms;
 	bool entry_reversing, entry_settling, entry_interrupted_hold;
 	double expand_progress, expand_reverse_from;

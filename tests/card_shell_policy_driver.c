@@ -303,14 +303,17 @@ static void two_axis_entry(void) {
     assert(p.cards[2].content==CS_PRIVATE && !cs_can_mirror(&p,303));
     finish_entry(&p,1030,303);
 
-    /* Side start is not the central quick-switch region. */
+    /* A side-start horizontal swipe switches like any other card: distance
+     * and flick velocity gate the switch, not where along the bottom edge
+     * the gesture started. A prior central-band-only quick-switch gate
+     * made an 80%+ swipe starting near either side of the screen snap back
+     * even though it plainly qualified on distance and speed. */
     cs_leave(&p);
     assert(cs_begin_entry(&p,5,80,1220,1400,202).consumed);
-    assert(!p.entry_quick_allowed);
     entry_geometry(&p);
     cs_entry_motion(&p,5,210,1220,1410);
-    assert(cs_entry_up(&p,5).consumed && p.entry_reversing);
-    cs_tick(&p,1420);assert(cs_tick(&p,1650).focus_id==202);
+    assert(cs_entry_up(&p,5).consumed && p.entry_settling && p.entry_target_id==101);
+    cs_tick(&p,1420);assert(cs_tick(&p,1650).focus_id==101);
     assert(p.mode==CS_NORMAL);
 
     /* A vanished target does not substitute a newly mapped neighbor. */
@@ -367,7 +370,7 @@ static void two_axis_conflicts(void) {
 
     assert(cs_begin_entry(&p,10,284,1220,414,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,10,420,1220,415);
+    cs_entry_motion(&p,10,470,1220,415); /* clears distance alone; dt=1ms has no usable velocity */
     assert(cs_entry_up(&p,10).consumed && p.entry_settling);
     cs_tick(&p,416);cs_tick(&p,456);
     double partial_x=p.entry_dx,partial_y=p.entry_progress;
@@ -388,7 +391,7 @@ static void two_axis_conflicts(void) {
     cs_set_cards(&p,restored,2);
     assert(cs_begin_entry(&p,9,284,1220,805,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,9,420,1220,806);
+    cs_entry_motion(&p,9,470,1220,806); /* clears distance alone; dt=1ms has no usable velocity */
     assert(cs_entry_up(&p,9).consumed);
     cs_tick(&p,807);
     const struct cs_card target_private[]={{101,CS_PRIVATE,true,true},
@@ -477,8 +480,8 @@ static void direct_carousel(void) {
     cs_leave(&p);
     assert(cs_begin_entry(&p,4,284,1220,1000,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,4,434,1220,1010);
-    cs_entry_motion(&p,4,364,1220,1020); /* reverse speed crosses source */
+    cs_entry_motion(&p,4,534,1220,1010); /* well past the switch distance */
+    cs_entry_motion(&p,4,384,1220,1020); /* fast reverse flick still clears the source */
     assert(cs_entry_up_at(&p,4,1021).consumed && p.entry_reversing);
     assert(p.entry_target_id==0); /* visible left neighbor cannot become right */
     assert(cs_tick(&p,1261).focus_id==202 && p.mode==CS_NORMAL);
@@ -594,6 +597,115 @@ static void tracked_entry(void) {
     r=cs_stream_cancel(&p);
     assert(r.actions&CS_RESTORE && p.mode==CS_NORMAL && p.entry_travel==0);
     assert(!p.blocked_until_up);
+    cs_finish(&p);
+}
+static void app_switch_swipe(void) {
+    /* Scenarios from a real board report: swiping left/right along the
+     * bottom edge to switch apps required far more travel than it looked
+     * like, momentum was ignored, and an 80%+ swipe still snapped back.
+     * Root causes: (1) a horizontal switch was additionally gated on the
+     * touch-DOWN x position (a central 25-75% "quick switch" band) unless
+     * the same contact also travelled entry_distance upward -- outside
+     * that band a pure sideways swipe of any length reversed; (2) release
+     * velocity was a single last-interval delta usable only inside a
+     * fixed 80ms window after the LAST SAMPLE, so a slightly delayed
+     * release, a sparse event cadence, or a naturally decelerating final
+     * sample zeroed momentum. These replay the fixed behaviour; see
+     * docs/evidence/card-shell/app-switch-swipe/ for the touch-cadence
+     * evidence and threshold derivation. */
+    struct cs_policy p=setup();
+
+    /* 1. An 80% slow horizontal swipe, low measured release velocity:
+     * distance alone must switch, starting near the side of the screen
+     * (not the old central quick-switch band). Also checks that release
+     * does not itself move the tracked position (no dead stop, no jump). */
+    assert(cs_begin_entry(&p,1,90,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,1,540,1220,1400); /* a big, unhurried initial travel */
+    cs_entry_motion(&p,1,542,1220,1408); /* then real ~8ms-cadence samples, */
+    cs_entry_motion(&p,1,544,1220,1416); /* each slow: 0.25 px/ms */
+    cs_entry_motion(&p,1,546,1220,1424);
+    assert(fabs(p.entry_raw_dx)>.8*p.config.width);
+    double held_dx=p.entry_dx;
+    struct cs_result up_result=cs_entry_up_at(&p,1,1424);
+    assert(up_result.consumed && p.entry_settling && p.entry_target_id==101);
+    assert(p.entry_dx==held_dx);
+    assert(!cs_tick(&p,1424).actions);
+    assert(cs_tick(&p,1664).focus_id==101 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 2. A 30% fast flick: below the full switch distance, above half,
+     * carried over the line by real ~8ms-cadence release velocity. */
+    assert(cs_begin_entry(&p,2,100,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,2,128,1220,8);
+    cs_entry_motion(&p,2,156,1220,16);
+    cs_entry_motion(&p,2,184,1220,24);
+    cs_entry_motion(&p,2,212,1220,32);
+    cs_entry_motion(&p,2,240,1220,40);
+    assert(fabs(p.entry_raw_dx)<.3*p.config.width); /* below full distance */
+    assert(cs_entry_up_at(&p,2,41).consumed && p.entry_target_id==101);
+    cs_tick(&p,41);assert(cs_tick(&p,281).focus_id==101 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 3. A sparse ~100ms event cadence: only two points 100ms apart, still
+     * enough to estimate a decisive flick. */
+    assert(cs_begin_entry(&p,3,100,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,3,160,1220,100);
+    cs_entry_motion(&p,3,220,1220,200);
+    assert(cs_entry_up_at(&p,3,201).consumed && p.entry_target_id==101);
+    cs_tick(&p,201);assert(cs_tick(&p,441).focus_id==101 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 4. A flick with a stale last sample: fast ~8ms-cadence motion, but
+     * the release event's own timestamp arrives 100ms after the last
+     * motion sample (delayed dispatch, or the finger visibly settling
+     * just before lift). The old 80ms-since-last-sample gate zeroed
+     * momentum here and this exact case snapped back. */
+    assert(cs_begin_entry(&p,4,100,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,4,140,1220,8);
+    cs_entry_motion(&p,4,180,1220,16);
+    cs_entry_motion(&p,4,220,1220,24);
+    assert(cs_entry_up_at(&p,4,124).consumed && p.entry_target_id==101);
+    cs_tick(&p,124);assert(cs_tick(&p,364).focus_id==101 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 5. Up then sideways, Android-style: an upward component past
+     * entry_distance, then a lateral swipe past the switch distance in
+     * the same contact. */
+    assert(cs_begin_entry(&p,5,284,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,5,284,1120,50); /* up first: entry_drag=100>=entry_distance */
+    cs_entry_motion(&p,5,484,1120,90); /* then sideways past the switch distance */
+    assert(p.entry_drag>=p.config.entry_distance);
+    assert(cs_entry_up_at(&p,5,91).consumed && p.entry_target_id==101);
+    cs_tick(&p,91);assert(cs_tick(&p,331).focus_id==101 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 6. A reversal flick cancels: a fast rightward excursion well past
+     * the switch distance, then a fast reverse flick right before
+     * release, ending inside the switch band but heading back toward the
+     * start. Must snap back, not switch. */
+    assert(cs_begin_entry(&p,6,100,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,6,400,1220,40); /* fast right, well past distance */
+    cs_entry_motion(&p,6,220,1220,48); /* fast reverse flick before release */
+    assert(cs_entry_up_at(&p,6,49).consumed && p.entry_reversing);
+    assert(p.entry_target_id==0);
+    cs_tick(&p,49);assert(cs_tick(&p,289).focus_id==202 && p.mode==CS_NORMAL);
+    cs_leave(&p);
+
+    /* 7. A pure vertical swipe still opens the overview: no lateral
+     * component, unaffected by any of the above. */
+    assert(cs_begin_entry(&p,7,284,1220,0,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,7,284,1120,50);
+    assert(cs_entry_up_at(&p,7,50).consumed && p.entry_settling && !p.entry_target_id);
+    cs_tick(&p,50);
+    assert(cs_tick(&p,290).actions&CS_REDRAW && p.mode==CS_DECK);
+
     cs_finish(&p);
 }
 static void tracked_expansion(void) {
@@ -793,6 +905,7 @@ int main(int argc,char **argv) {
         {"two-axis-entry",two_axis_entry},
         {"two-axis-conflicts",two_axis_conflicts},
         {"direct-carousel",direct_carousel},
+        {"app-switch-swipe",app_switch_swipe},
         {"tracked-expansion",tracked_expansion},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},

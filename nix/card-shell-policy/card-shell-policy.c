@@ -9,7 +9,7 @@ static bool valid_config(const struct cs_config *c) {
     const double values[]={c->width,c->height,c->top_reserved,c->bottom_reserved,
         c->inset,c->gap,c->title_height,c->footer_height,c->card_width,c->card_height,
         c->edge_band,c->entry_distance,c->tap_slop,c->select_fraction,
-        c->throw_distance,c->throw_speed};
+        c->throw_distance,c->throw_speed,c->entry_select_fraction,c->entry_flick_speed};
     for (size_t i=0;i<sizeof(values)/sizeof(values[0]);i++)
         if (!isfinite(values[i]) || values[i]<0) return false;
     double available=c->height-c->top_reserved-c->bottom_reserved;
@@ -21,6 +21,8 @@ static bool valid_config(const struct cs_config *c) {
         c->edge_band>0 && c->edge_band<=available && c->entry_distance>c->tap_slop &&
         c->entry_distance<available && c->tap_slop>0 &&
         c->select_fraction>0 && c->select_fraction<=1 &&
+        c->entry_select_fraction>0 && c->entry_select_fraction<=1 &&
+        c->entry_flick_speed>0 &&
         c->throw_distance>c->tap_slop && c->throw_speed>0 &&
         c->close_timeout_ms>0 && c->close_timeout_ms<=60000;
 }
@@ -29,6 +31,10 @@ struct cs_config cs_default_config(double width,double height) {
         .inset=24,.gap=16,.title_height=128,.footer_height=56,
         .card_width=.84*(width-48),.card_height=.72*(height-56-128-56-48),
         .edge_band=48,.entry_distance=72,.tap_slop=12,.select_fraction=.25,
+        /* Android-style paging thresholds: roughly a third of the screen
+         * width travelled, or a decisive flick, whichever comes first.
+         * See docs/evidence/card-shell/app-switch-swipe/ for the derivation. */
+        .entry_select_fraction=.3,.entry_flick_speed=.4,
         .throw_distance=120,.throw_speed=.4,.close_timeout_ms=1500};
 }
 bool cs_init(struct cs_policy *p,const struct cs_config *config) {
@@ -84,16 +90,16 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
     free(p->entry_order);p->entry_order=NULL;p->entry_count=0;p->entry_origin=0;
     p->entry_left_id=0;p->entry_right_id=0;p->entry_target_id=0;
-    p->entry_quick_allowed=false;p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
+    p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
     p->entry_anchor_factor=0;p->entry_release_dx=0;p->entry_settle_dx=0;
     p->entry_reverse_dx=0;p->entry_reverse_anchor=0;
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
 	p->entry_full_rect=(struct cs_rect){0};
     p->entry_reverse_from=0;p->entry_settle_from=0;p->entry_started_ms=0;
     p->entry_goal_progress=0;p->entry_settle_anchor=0;
-    p->entry_velocity_x=0;p->entry_velocity_progress=0;
     p->entry_release_velocity_x=0;p->entry_release_velocity_progress=0;
     p->entry_sample_x=0;p->entry_sample_y=0;p->entry_sample_ms=0;
+    p->entry_history_count=0;
     p->entry_reversing=false;p->entry_settling=false;p->entry_interrupted_hold=false;
     p->expand_progress=0;p->expand_reverse_from=0;p->expand_id=0;
     p->expand_started_ms=0;p->expand_reversing=false;p->expand_full_dwell=false;
@@ -549,6 +555,58 @@ struct cs_result cs_edge_up(struct cs_policy *p,int32_t id) {
     if (owned) p->edge.tracking=false;
     return result(p,0,owned);
 }
+/* Recency-biased backward walk: real reports arrive roughly every 8ms
+ * (docs/evidence/touch-reports.md), but dispatch under load can space
+ * them out, and a same/near-timestamp duplicate is common right after a
+ * direction change. Never look further back than CS_ENTRY_WINDOW_MS (wide
+ * enough to bridge a sparse ~100ms cadence), but stop as soon as the span
+ * reaches CS_ENTRY_MIN_SPAN_MS so a genuine last-instant reversal is not
+ * diluted by averaging over the whole window. */
+#define CS_ENTRY_WINDOW_MS 120.0
+#define CS_ENTRY_MIN_SPAN_MS 6.0
+/* How stale the newest sample may be relative to the up event before the
+ * drag is treated as already stopped: bigger than the old fixed 80ms gate
+ * (which zeroed momentum whenever dispatch lagged or the last sample
+ * preceded a slightly later release), but still well under a deliberate
+ * held pause. */
+#define CS_ENTRY_FRESHNESS_MS 160.0
+static void entry_history_push(struct cs_policy *p,double x,double y,uint64_t t) {
+    size_t n=p->entry_history_count;
+    if (n && p->entry_history[n-1].t==t) {
+        p->entry_history[n-1].x=x;p->entry_history[n-1].y=y;
+        return;
+    }
+    if (n==CS_ENTRY_HISTORY_CAP) {
+        memmove(&p->entry_history[0],&p->entry_history[1],
+            (CS_ENTRY_HISTORY_CAP-1)*sizeof(p->entry_history[0]));
+        n--;
+    }
+    p->entry_history[n]=(struct cs_entry_touch_sample){x,y,t};
+    p->entry_history_count=n+1;
+}
+/* vy is in progress units per ms (matches the historical entry_velocity_progress
+ * scaling: signed so upward motion is positive, divided by entry_travel). */
+static void entry_release_velocity(const struct cs_policy *p,uint64_t up_time,
+        double *vx,double *vy) {
+    *vx=0;*vy=0;
+    size_t n=p->entry_history_count;
+    if (!n) return;
+    const struct cs_entry_touch_sample *newest=&p->entry_history[n-1];
+    if (up_time<newest->t || up_time-newest->t>CS_ENTRY_FRESHNESS_MS) return;
+    size_t idx=n-1;
+    while (idx>0) {
+        double span=(double)(newest->t-p->entry_history[idx-1].t);
+        if (span>CS_ENTRY_WINDOW_MS) break;
+        idx--;
+        if (span>=CS_ENTRY_MIN_SPAN_MS) break;
+    }
+    const struct cs_entry_touch_sample *oldest=&p->entry_history[idx];
+    double dt=(double)(newest->t-oldest->t);
+    if (dt<4) return;
+    *vx=fmax(-3,fmin(3,(newest->x-oldest->x)/dt));
+    if (p->entry_travel>0)
+        *vy=fmax(-.012,fmin(.012,(oldest->y-newest->y)/dt/p->entry_travel));
+}
 struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y,
         uint64_t time_ms,uint64_t focused_id) {
     if (p->mode!=CS_NORMAL || p->blocked_until_up || p->edge.tracking || p->contact ||
@@ -573,8 +631,8 @@ struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y
 	p->entry_target_id=0;p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
 	p->entry_anchor_factor=1;
 	p->entry_sample_x=x;p->entry_sample_y=y;p->entry_sample_ms=time_ms;
-	p->entry_velocity_x=0;p->entry_velocity_progress=0;
-    p->entry_quick_allowed=x>=p->config.width*.25 && x<p->config.width*.75;
+	p->entry_history_count=0;
+	entry_history_push(p,x,y,time_ms);
     p->edge.tracking=true;p->edge.contact_id=id;
     p->edge.x=x;p->edge.y=y;p->edge.time_ms=time_ms;
 	return r;
@@ -629,14 +687,8 @@ struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double 
 	if (dx<0 && !entry_focusable(p,p->entry_right_id)) limit=fmin(48,pitch);
 	p->entry_dx=fmax(-limit,fmin(limit,dx));
 	if (time_ms>p->entry_sample_ms) {
-		double dt=(double)(time_ms-p->entry_sample_ms);
-		/* A sample window smooths event bursts without carrying a stale throw. */
-		if (dt>=4) {
-			p->entry_velocity_x=fmax(-3,fmin(3,(x-p->entry_sample_x)/dt));
-			p->entry_velocity_progress=fmax(-.012,fmin(.012,
-				(p->entry_sample_y-y)/dt/p->entry_travel));
-			p->entry_sample_x=x;p->entry_sample_y=y;p->entry_sample_ms=time_ms;
-		}
+		p->entry_sample_x=x;p->entry_sample_y=y;p->entry_sample_ms=time_ms;
+		entry_history_push(p,x,y,time_ms);
 	}
 	return result(p,CS_REDRAW,true);
 }
@@ -644,20 +696,24 @@ struct cs_result cs_entry_up_at(struct cs_policy *p,int32_t id,uint64_t time_ms)
 	if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
 		return result(p,0,false);
 	p->edge.tracking=false;
-	double pitch=p->config.card_width+p->config.gap;
-	double vx=time_ms>=p->entry_sample_ms && time_ms-p->entry_sample_ms<=80 ?
-		p->entry_velocity_x : 0;
-	double vy=time_ms>=p->entry_sample_ms && time_ms-p->entry_sample_ms<=80 ?
-		p->entry_velocity_progress : 0;
+	double vx,vy;
+	entry_release_velocity(p,time_ms,&vx,&vy);
+	/* Fraction of the full screen width, not the card pitch: a swipe this
+	 * long feels like a deliberate page-turn regardless of where along the
+	 * bottom edge it started (docs/evidence/card-shell/app-switch-swipe/). */
+	double distance=p->config.width*p->config.entry_select_fraction;
 	double projected=p->entry_raw_dx+vx*80;
-	bool same_side=p->entry_raw_dx*projected>0;
+	bool same_side=p->entry_raw_dx==0 || p->entry_raw_dx*projected>0;
 	bool lateral=same_side &&
-		(fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction ||
-		(fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction*.5 &&
-		 fabs(projected)>=pitch*p->config.select_fraction));
+		(fabs(p->entry_raw_dx)>=distance ||
+		(fabs(p->entry_raw_dx)>=distance*.5 && fabs(vx)>=p->config.entry_flick_speed));
 	bool vertical=p->entry_drag>=p->config.entry_distance;
 	uint64_t target=0;
-	if (lateral && (vertical || p->entry_quick_allowed))
+	/* A horizontal swipe switches on distance or flick alone: it does not
+	 * additionally need upward travel, and it does not need to have started
+	 * within a central band. That combination is what let an 80%+ swipe
+	 * starting near either side of the bottom edge still snap back. */
+	if (lateral)
 		target=p->entry_raw_dx>0 ? p->entry_left_id : p->entry_right_id;
 	if (lateral && !entry_focusable(p,target)) target=0;
 	if (!target && (!vertical || lateral)) {
