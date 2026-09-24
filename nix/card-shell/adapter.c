@@ -160,7 +160,7 @@ static void wallpaper_opaque_buffer(struct wlr_scene_buffer *buffer, int x, int 
 		buffer->dst_width <= 0 || buffer->dst_height <= 0) return;
 	pixman_region32_t opaque;
 	pixman_region32_init(&opaque);
-	if (buffer->buffer_is_opaque)
+	if (wlr_buffer_is_opaque(buffer->buffer))
 		pixman_region32_union_rect(&opaque, &opaque, x, y,
 			buffer->dst_width, buffer->dst_height);
 	else {
