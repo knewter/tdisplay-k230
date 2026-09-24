@@ -6,7 +6,8 @@ installed development Apps surface's rows; it does not claim that the proposed
 bar-free drawer, live-card headers, or notification center are installed.
 Task 1.4 remains unchecked because the latter two consumers do not exist in
 this path yet. No board, Nix cross-build, image integration, or real-finger
-verification was run for this checkpoint.
+verification was run for the initial checkpoint. A subsequent narrow
+cross-build is recorded below; physical verification remains open.
 
 The launcher now reads each installed desktop entry's `GAppInfo`/`GIcon`,
 including absolute `GFileIcon` paths and themed names. The resolver searches
@@ -69,8 +70,24 @@ The production launcher compiled against host-generated Wayland protocol
 bindings and its `--layout` command returned normally. Nix parsing passed;
 that is syntax only, not a cross-build.
 
-Remaining gate: build the changed launcher derivation after the shared build
-slot is free, then inspect installed rows and cache cost on the physical
+## Narrow cross-build after integration
+
+On 2026-09-23, from integrated source `fd8fcf326f3b7c42d5e07715999426695cad5a24`:
+
+```sh
+nix build .#touch-launcher --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+PASS: `/nix/store/xarb3m3r8drh69wz91il23l1xh6n9y0k-k230-touch-launcher`.
+The wrapper references target binary package
+`/nix/store/bir1a5d1fyx58z3isjg1pk0069p8w28h-k230-touch-launcher-riscv64-unknown-linux-gnu-0.1`
+and the explicit Foot/htop/mpv icon roots. Only the two launcher derivations
+needed building. The root coordinator reran seven icon and three launcher
+navigation host tests successfully; CI now installs `librsvg2-dev` and runs
+the icon suite. No launcher deployment, full-image build, or board action was
+performed for this result.
+
+Remaining gate: inspect installed rows and cache cost on the physical
 568×1232 screen. The final task 1.4 gate additionally needs actual live-card
 and trusted-notification consumers, private title redaction, and its named
 five-case test command to pass against those consumers. No checkbox was
