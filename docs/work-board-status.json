@@ -58,7 +58,6 @@
         "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
         "docs/evidence/coherent-shell/themed-installed/README.md",
         "docs/evidence/coherent-shell/terminal-pixel-fit.md",
-        "docs/design/handheld-shell/visual-gap-audit.md",
         "docs/evidence/coherent-shell/two-axis-qemu/README.md"
       ],
       "rationale": "The themed Rust shell with real wallpapers/icons is installed in test activation. User feedback identified awkward horizontal zoom, abrupt vertical settling, and an exposed Foot edge. The pixel-size fix is source-landed and separately proven on the board; motion and design corrections remain in progress.",
