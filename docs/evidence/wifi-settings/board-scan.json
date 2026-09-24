@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "state": "ok",
+  "error": null,
+  "connected": true,
+  "saved_count": 1,
+  "nearby_count": 1,
+  "security_kinds": [
+    "wpa2-psk"
+  ]
+}

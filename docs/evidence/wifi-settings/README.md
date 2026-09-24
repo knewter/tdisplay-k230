@@ -8,3 +8,5 @@ The protected broker host checkpoint was tested from source commit `924690e8` pl
 - `openspec validate the-handheld-configures-wifi-from-settings --strict` — passed.
 
 This is source, host-test, Nix evaluation and package build proof only. The broker has not run on the board. Real scan, association, protected persistence, recovery timer, reboot reconnect, Forget and Settings touch/keyboard behavior remain **UNVERIFIED**.
+
+The [installed board scan](board-scan.md) now confirms the real socket/radio path with allowlisted counts only. Connect/Forget and touch UI remain unverified.
