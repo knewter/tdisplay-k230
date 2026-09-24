@@ -42,3 +42,13 @@ upstream `controls` section defines control states, not a panel background.
 The pass preserves existing hit regions and gesture routing. Cross-built
 package, installed board pixels, wallpaper composition, motion quality, real
 touch, optical contrast, and CPU/frame budgets are separate open gates.
+
+## Reviewed host captures
+
+| Surface | Catppuccin | Latte |
+| --- | --- | --- |
+| Drawer | [Dark drawer](dark/drawer.png) | [Light drawer](latte/drawer.png) |
+| Shade | [Dark shade](dark/shade.png) | [Light shade](latte/shade.png) |
+| Settings | [Dark settings](dark/settings.png) | [Light settings](latte/settings.png) |
+| Themes | [Dark themes](dark/themes.png) | [Light themes](latte/themes.png) |
+| Preview | [Dark preview](dark/preview.png) | [Light preview](latte/preview.png) |
