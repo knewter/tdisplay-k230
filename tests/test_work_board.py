@@ -161,6 +161,40 @@ class Fixture(unittest.TestCase):
         with self.assertRaisesRegex(work.WorkError, "fetch full history"):
             work.snapshot(work.SourceTree(shallow), {"schema": 1, "overrides": {"the-first-thing": self.review()}}, "test UTC")
 
+    def test_media_arriving_before_archive_is_discovered_at_its_commit(self) -> None:
+        record = "docs/evidence/proof/README.md"
+        proposal = "openspec/changes/the-first-thing/proposal.md"
+        put(self.repo, proposal, "## Why\n\nSee `docs/evidence/proof/README.md`.\n")
+        put(self.repo, "docs/evidence/proof/frame.png", "fixture image bytes")
+        put(self.repo, "docs/evidence/proof/demo.mp4", "fixture video bytes")
+        put(self.repo, "docs/evidence/proof/run.log", "test result")
+        put(self.repo, record, "[Run](run.log) and [same image](frame.png).\n")
+        put(self.repo, "docs/evidence/unrelated/other.png", "unrelated")
+        command(self.repo, "add", proposal, "docs/evidence")
+        command(self.repo, "commit", "-qm", "new media while tasks remain open")
+        item = next(i for i in self.data()["items"] if i["id"] == "the-first-thing")
+        self.assertEqual({m["kind"] for m in item["media"]}, {"image", "video"})
+        self.assertEqual(len(item["media"]), 2)
+        self.assertIn("docs/evidence/proof/run.log", item["evidence"])
+        self.assertNotIn("docs/evidence/unrelated/other.png", item["evidence"])
+        self.assertFalse(item["archived"])
+        put(self.repo, "docs/evidence/proof/private-uncommitted.webm", "not published")
+        item = next(i for i in self.data()["items"] if i["id"] == "the-first-thing")
+        self.assertEqual(len(item["media"]), 2)
+
+    def test_reviewed_video_cover_is_first_without_upgrading_device_proof(self) -> None:
+        path = "docs/evidence/proof/demo.webm"
+        put(self.repo, path, "fixture")
+        command(self.repo, "add", path)
+        command(self.repo, "commit", "-qm", "video")
+        cover = {"path": path, "caption": "Drawer gesture trial", "provenance": "QEMU capture"}
+        item = next(i for i in self.data({"the-first-thing": self.review(cover=cover)})["items"] if i["id"] == "the-first-thing")
+        self.assertEqual(item["media"][0], cover | {"kind": "video"})
+        self.assertEqual(item["physical"], "pending")
+        for wrong in ["docs/evidence/missing.png", "../private.png", "https://example.invalid/x.png"]:
+            with self.subTest(path=wrong), self.assertRaises(work.WorkError):
+                self.data({"the-first-thing": self.review(cover=cover | {"path": wrong})})
+
     def test_dependency_cycle_is_rejected(self) -> None:
         overrides = {
             "the-first-thing": self.review(dependencies=["the-second-thing"]),

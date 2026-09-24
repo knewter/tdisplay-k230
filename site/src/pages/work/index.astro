@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import work from "../../data/work.json";
 import { specs, url } from "../../lib/specs";
+import { rawEvidenceUrl } from "../../lib/evidence-markdown";
 import { workMarkdownLinks } from "../../lib/work-markdown";
 
 const names: Record<string, { title: string; hint: string }> = {
@@ -27,8 +28,13 @@ const physicalLabel: Record<string, string> = {
 const github = (path: string) => `https://github.com/knewter/tdisplay-k230/blob/${work.sourceRevision}/${path}`;
 const evidenceLink = (path: string) => {
   const local = specs.evidence.find((file) => file.path === path);
-  return local ? url(`evidence/${local.slug}/`) : github(path);
+  return local ? url(`evidence/${local.slug}/`) : rawEvidenceUrl(work.sourceRevision, path);
 };
+const mediaSource = (path: string) => {
+  const file = specs.evidence.find((entry) => entry.path === path);
+  return file?.asset ? url(file.asset) : rawEvidenceUrl(work.sourceRevision, path);
+};
+const artifactName = (path: string) => path.split("/").slice(-2).join(" / ");
 const accepted = (path: string) => {
   const parts = path.split("/");
   return url(`c/${parts[2]}-${parts[3]}/`);
@@ -67,13 +73,25 @@ const items = await Promise.all(work.items.map(async (item) => ({
       {work.lanes.map((lane) => <section class={`work-lane lane-${lane.id}`} id={lane.id} aria-labelledby={`${lane.id}-title`}>
         <div class="lane-head"><span class="lane-mark" aria-hidden="true"></span><div><h2 id={`${lane.id}-title`}>{names[lane.id].title}<span class="lane-count">{lane.count}</span></h2><p>{names[lane.id].hint}</p></div></div>
         <div class="lane-items">
-          {items.filter((item) => item.lane === lane.id).map((item) => <a class="work-card" id={item.id} data-work-id={item.id} href={`${url("work/")}?work=${encodeURIComponent(item.id)}`} aria-haspopup="dialog">
+          {items.filter((item) => item.lane === lane.id).map((item) => <article class="work-card" id={item.id}>
+            {item.media[0] && <figure class="card-cover">
+              {item.media[0].kind === "image"
+                ? <img src={mediaSource(item.media[0].path)} alt={item.media[0].caption} loading="lazy" decoding="async" />
+                : <video src={mediaSource(item.media[0].path)} preload="metadata" muted playsinline aria-label={item.media[0].caption} />}
+              <figcaption><span>{item.media[0].kind === "video" ? "▶ Video" : "Image"} · {item.media[0].provenance}</span><span>{item.media.length} media</span></figcaption>
+            </figure>}
             <div class="card-top"><span class="card-kind">{item.archived ? "Archived change" : "Draft proposal"}</span><span class="card-count">{item.done}/{item.total} tasks</span></div>
-            <h3>{item.title}</h3>
+            {item.evidence.length > 0 && <details class="card-evidence">
+              <summary>Evidence <span>{item.evidence.length}</span></summary>
+              <nav aria-label={`Evidence for ${item.title}`}>
+                {item.evidence.map((path) => <a href={evidenceLink(path)}>{artifactName(path)}</a>)}
+              </nav>
+            </details>}
+            <a class="card-primary" data-work-id={item.id} href={`${url("work/")}?work=${encodeURIComponent(item.id)}`} aria-haspopup="dialog"><h3>{item.title}</h3></a>
             <div class="card-progress" role="img" aria-label={`${item.done} of ${item.total} tasks checked`}><span style={`width:${item.total ? Math.round(100 * item.done / item.total) : 0}%`}></span></div>
             <div class="card-states"><span>{sourceLabel[item.source]}</span><span>{physicalLabel[item.physical]}</span></div>
             <div class="card-next"><strong>{item.archived ? "Closed record" : "Next gate"}</strong><p>{item.next}</p></div>
-          </a>)}
+          </article>)}
         </div>
       </section>)}
     </div>
@@ -84,8 +102,16 @@ const items = await Promise.all(work.items.map(async (item) => ({
   </dialog>
   {items.map((item) => <div class="detail-template" hidden id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
+      {item.media.length > 0 && <section class="detail-media" aria-label="Visual evidence">
+        {item.media.map((media) => <figure>
+          {media.kind === "image"
+            ? <a href={evidenceLink(media.path)}><img src={mediaSource(media.path)} alt={media.caption} loading="lazy" decoding="async" /></a>
+            : <video src={mediaSource(media.path)} controls preload="metadata" playsinline aria-label={media.caption} />}
+          <figcaption><strong>{media.caption}</strong><span>{media.provenance}</span><a href={evidenceLink(media.path)}>Open evidence</a></figcaption>
+        </figure>)}
+      </section>}
       <header class="detail-summary"><p class="detail-kind">{item.archived ? "Archived change" : "Draft proposal"} · {names[item.lane].title}</p><h2>{item.title}</h2><p class="detail-revision">Snapshot {work.sourceRevision.slice(0, 12)} · {work.generated}</p><div class="detail-states"><span>{item.done}/{item.total} tasks</span><span>{sourceLabel[item.source]}</span><span>{physicalLabel[item.physical]}</span></div><p class="detail-gate"><strong>{item.archived ? "Closed record" : "Next gate"}</strong>{item.next}</p></header>
-      {(item.dependencies.length > 0 || item.acceptedSpecs.length > 0 || item.evidence.length > 0 || item.rationale) && <aside class="detail-related"><strong>Related records</strong>{item.dependencies.map((id) => <a href={`${url("work/")}?work=${encodeURIComponent(id)}`}>Depends on: {byId[id]?.title ?? id}</a>)}{item.acceptedSpecs.map((path) => <a href={accepted(path)}>Accepted spec: {path.split("/").slice(2, 4).join(" / ")}</a>)}{item.evidence.map((path) => <a href={evidenceLink(path)}>{specs.evidence.some((file) => file.path === path) ? "Evidence" : "Evidence source ↗"}</a>)}{item.rationale && <p>Status basis: {item.rationale} <a href={`https://github.com/knewter/tdisplay-k230/commit/${item.reviewRevision}`}>Reviewed {item.reviewRevision?.slice(0, 12)} ↗</a></p>}</aside>}
+      {(item.dependencies.length > 0 || item.acceptedSpecs.length > 0 || item.evidence.length > 0 || item.rationale) && <aside class="detail-related"><strong>Related records</strong>{item.dependencies.map((id) => <a href={`${url("work/")}?work=${encodeURIComponent(id)}`}>Depends on: {byId[id]?.title ?? id}</a>)}{item.acceptedSpecs.map((path) => <a href={accepted(path)}>Accepted spec: {path.split("/").slice(2, 4).join(" / ")}</a>)}{item.evidence.map((path) => <a href={evidenceLink(path)}>{artifactName(path)}</a>)}{item.rationale && <p>Status basis: {item.rationale} <a href={`https://github.com/knewter/tdisplay-k230/commit/${item.reviewRevision}`}>Reviewed {item.reviewRevision?.slice(0, 12)} ↗</a></p>}</aside>}
       <nav class="detail-toc" aria-label={`Documents for ${item.title}`}><strong>In this change</strong>{item.rendered.map((doc, index) => <button type="button" data-work-section={index}>{doc.label}</button>)}</nav>
       <div class="detail-documents">{item.rendered.map((doc, index) => <section class="detail-document" data-section={index}><div class="detail-document-heading"><h3>{doc.label}</h3><span>{doc.path}</span></div><article class="work-markdown" set:html={doc.html} /></section>)}</div>
       <footer class="detail-sources"><strong>Source files at this revision</strong>{item.rendered.map((doc) => <a href={github(doc.path)}>{doc.label} ↗</a>)}</footer>
@@ -202,9 +228,29 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .lane-verification .lane-head { border-color:var(--soc); } .lane-verification .lane-mark { background:var(--soc); }
   .lane-archived .lane-head { border-color:var(--grounded); } .lane-archived .lane-mark { background:var(--grounded); }
   .lane-items { display:grid; gap:.75rem; }
-  .work-card { display:block; min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface); color:var(--ink); text-decoration:none; box-shadow:var(--shadow); overflow-wrap:anywhere; cursor:pointer; }
+  .work-card { position:relative; display:block; min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface); color:var(--ink); text-decoration:none; box-shadow:var(--shadow); overflow-wrap:anywhere; cursor:pointer; }
   .work-card:hover,.work-card:focus-visible { border-color:var(--accent); box-shadow:0 5px 24px #122b2730; }
-  .work-card:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+  .work-card:has(.card-primary:focus-visible) { outline:3px solid var(--accent); outline-offset:3px; }
+  .card-primary { color:inherit; text-decoration:none; }
+  .card-primary::after { content:""; position:absolute; inset:0; z-index:1; border-radius:8px; }
+  .card-primary:focus-visible { outline:none; }
+  .card-cover { margin:-1rem -1rem .85rem; background:#101822; border-radius:7px 7px 0 0; overflow:hidden; }
+  .card-cover img,.card-cover video { display:block; width:100%; height:190px; object-fit:contain; }
+  .card-cover figcaption { display:flex; justify-content:space-between; gap:.4rem; padding:.45rem .65rem; background:var(--surface-2); color:var(--ink-2); font: .6rem/1.4 var(--mono); }
+  .card-cover figcaption span:last-child { white-space:nowrap; }
+  .card-evidence { position:relative; z-index:2; margin-top:.7rem; font:.7rem/1.4 var(--mono); width:fit-content; max-width:100%; }
+  .card-evidence summary { min-height:32px; display:flex; align-items:center; gap:.6rem; width:fit-content; cursor:pointer; border:1px solid var(--rule); border-radius:4px; padding:.25rem .55rem; color:var(--accent); background:var(--surface-2); }
+  .card-evidence summary::before { content:"▸"; }
+  .card-evidence[open] summary::before { content:"▾"; }
+  .card-evidence summary span { font-variant-numeric:tabular-nums; }
+  .card-evidence nav { position:absolute; top:100%; left:0; width:min(280px,70vw); max-height:300px; overflow:auto; display:grid; background:var(--surface); border:1px solid var(--rule); border-radius:5px; box-shadow:var(--shadow); padding:.4rem; z-index:5; }
+  .card-evidence nav a { color:var(--accent); padding:.55rem; border-radius:3px; overflow-wrap:anywhere; }
+  .card-evidence nav a:hover,.card-evidence nav a:focus-visible { background:var(--surface-2); }
+  .detail-media { display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x proximity; padding-bottom:1rem; margin-bottom:1.3rem; }
+  .detail-media figure { flex:0 0 min(360px,85%); min-width:0; margin:0; scroll-snap-align:start; background:var(--surface-2); border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+  .detail-media img,.detail-media video { display:block; width:100%; height:360px; object-fit:contain; background:#101822; }
+  .detail-media figcaption { display:grid; gap:.35rem; padding:.8rem; font:.75rem/1.4 var(--mono); }
+  .detail-media figcaption span { color:var(--muted); }
   .card-top { display:flex; justify-content:space-between; gap:.4rem; color:var(--muted); font-size:.63rem; line-height:1.3; }
   .card-kind { text-transform:uppercase; letter-spacing:.07em; }
   .card-count { white-space:nowrap; font-variant-numeric:tabular-nums; }

@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import posixpath
 import re
 import subprocess
 import sys
@@ -24,6 +25,8 @@ SAFE_TEXT = re.compile(r"^[^\x00-\x1f]*$")
 SECRET_TEXT = re.compile(r"(?:/home/|/mnt/|/tmp/|/dev/tty|(?:password|token|secret|ssid)\s*[:=]|(?:\d{1,3}\.){3}\d{1,3})", re.I)
 PRIVATE_DOC = re.compile(r"/(?:home|mnt)/|(?:password|token|secret|ssid)\s*[:=]\s*\S+|(?:\d{1,3}\.){3}\d{1,3}")
 MAX_DOCUMENT_BYTES = 128 * 1024
+IMAGE_TYPES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+VIDEO_TYPES = {".mp4", ".webm", ".mov", ".m4v"}
 TASK = re.compile(r"^- \[([ xX])\] (.+)$", re.M)
 TASK_ID = re.compile(r"^\d+[a-z]?(?:\.\d+[a-z]?)*\s+", re.I)
 
@@ -116,6 +119,73 @@ def first_gate(tasks: str, archived: bool) -> str:
     return "Review the archived record and cited scope" if archived else "Review completed tasks and archive evidence"
 
 
+def referenced_evidence(tree: SourceTree, source: str, text: str) -> list[str]:
+    """Resolve local document citations, never fetch arbitrary URLs."""
+    from urllib.parse import unquote, urlsplit
+    candidates = re.findall(r"\]\(<?([^\s)>]+)", text)
+    candidates += re.findall(r"\bdocs/(?:evidence|design)/[^\s`<>\"')\],;]+", text)
+    found = []
+    for raw in candidates:
+        parsed = urlsplit(raw)
+        if parsed.scheme or parsed.netloc or raw.startswith("/"):
+            continue
+        path = unquote(parsed.path).rstrip(".")
+        path = posixpath.normpath(path if path.startswith("docs/") else
+                                  posixpath.join(posixpath.dirname(source), path))
+        if not path.startswith(("docs/evidence/", "docs/design/")):
+            continue
+        try:
+            safe_path(path)
+        except WorkError:
+            continue
+        if path in tree.paths:
+            found.append(path)
+        elif raw.endswith("/"):
+            found.extend(sorted(p for p in tree.paths if posixpath.dirname(p) == path))
+    return list(dict.fromkeys(found))
+
+
+def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
+    records = list(item["evidence"])
+    for doc in item["details"]:
+        records.extend(referenced_evidence(tree, doc["path"], doc["markdown"]))
+    # Only a cited record's own sibling media is associated automatically.
+    # Do not recursively sweep neighbouring experiments or unrelated folders.
+    for path in list(dict.fromkeys(records)):
+        if Path(path).suffix.lower() == ".md":
+            records.extend(p for p in sorted(tree.paths)
+                           if posixpath.dirname(p) == posixpath.dirname(path)
+                           and Path(p).suffix.lower() in IMAGE_TYPES | VIDEO_TYPES)
+            try:
+                records.extend(referenced_evidence(tree, path, tree.read(path)))
+            except WorkError:
+                pass  # oversized records remain directly linked
+    records = list(dict.fromkeys(records))
+    if cover is not None:
+        if not isinstance(cover, dict) or set(cover) != {"path", "caption", "provenance"}:
+            raise WorkError(f"invalid cover metadata for {item['id']}")
+        path = safe_path(cover["path"])
+        if path not in records or Path(path).suffix.lower() not in IMAGE_TYPES | VIDEO_TYPES:
+            raise WorkError(f"cover is not associated committed media for {item['id']}: {path}")
+        safe_copy(cover["caption"], "cover caption")
+        if cover["provenance"] not in ("Board capture", "QEMU capture", "Host capture", "Design mockup", "Evidence — see record"):
+            raise WorkError(f"invalid cover provenance for {item['id']}")
+        records.remove(path)
+        records.insert(0, path)
+    item["evidence"] = records
+    item["media"] = []
+    for path in records:
+        suffix = Path(path).suffix.lower()
+        if suffix not in IMAGE_TYPES | VIDEO_TYPES:
+            continue
+        item["media"].append({
+            "path": path, "kind": "image" if suffix in IMAGE_TYPES else "video",
+            "caption": cover["caption"] if cover and cover["path"] == path else Path(path).stem.replace("-", " ").replace("_", " "),
+            "provenance": cover["provenance"] if cover and cover["path"] == path else
+                ("Design mockup" if path.startswith("docs/design/") else "Evidence — see record"),
+        })
+
+
 def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
     if not isinstance(status, dict) or status.get("schema") != 1 or not isinstance(status.get("overrides"), dict):
         raise WorkError("status schema must be 1 with an overrides object")
@@ -162,7 +232,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
             raise WorkError(f"stale override for unknown work ID: {ident}")
         if not isinstance(override, dict):
             raise WorkError(f"override must be an object: {ident}")
-        allowed = {"lane", "source", "physical", "next", "dependencies", "evidence", "rationale", "reviewRevision"}
+        allowed = {"lane", "source", "physical", "next", "dependencies", "evidence", "rationale", "reviewRevision", "cover"}
         if set(override) - allowed:
             raise WorkError(f"unknown override fields for {ident}: {sorted(set(override)-allowed)}")
         if not {"lane", "source", "physical", "next", "rationale", "reviewRevision"} <= set(override):
@@ -221,6 +291,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
 
     for ident in all_changes:
         check_dependencies(ident)
+        discover_evidence(tree, all_changes[ident], status["overrides"].get(ident, {}).get("cover"))
 
     order = {lane: i for i, lane in enumerate(LANES)}
     items = sorted(all_changes.values(), key=lambda i: (order[i["lane"]], i["id"]))

@@ -96,14 +96,6 @@ def main(argv: list[str] | None = None) -> int:
     started = time.monotonic()
     failures: list[str] = []
 
-    # 1. The data pass: parse, classify, check evidence, write specs.json.
-    render_specs = load_render_specs()
-    data_status = render_specs.main(["--repo", str(REPO)])
-    if data_status != 0:
-        failures.append(
-            "the specs carry defects; they are listed above and shown on the site"
-        )
-
     # The separate work page reads committed OpenSpec state. A dirty checkout
     # still builds an explicitly dated HEAD snapshot, never private worktree
     # activity or an accidental mixture of staged and unstaged task files.
@@ -112,6 +104,14 @@ def main(argv: list[str] | None = None) -> int:
     if work.returncode != 0:
         print("error: work board data pass failed", file=sys.stderr)
         return work.returncode
+
+    # 1. The data pass: parse, classify, check evidence, write specs.json.
+    render_specs = load_render_specs()
+    data_status = render_specs.main(["--repo", str(REPO)])
+    if data_status != 0:
+        failures.append(
+            "the specs carry defects; they are listed above and shown on the site"
+        )
 
     # 1b. Every binary is accounted for in docs/blob-inventory.md, or the
     #     build fails here, beside the evidence check, for the same reason:

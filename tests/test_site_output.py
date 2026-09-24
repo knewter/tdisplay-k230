@@ -184,7 +184,7 @@ class TestBuiltSite(unittest.TestCase):
         self.assertNotIn('class="card-open"', page)
         for item in data["items"]:
             self.assertIn(f'id="work-detail-{item["id"]}"', page)
-            self.assertRegex(page, rf'<a class="work-card" id="{re.escape(item["id"])}" data-work-id="{re.escape(item["id"])}"[^>]+aria-haspopup="dialog"')
+            self.assertRegex(page, rf'<a class="card-primary" data-work-id="{re.escape(item["id"])}"[^>]+aria-haspopup="dialog"')
             for doc in item["details"]:
                 self.assertIn(doc["path"], page)
         self.assertIn('class="work-markdown"', page)
@@ -193,6 +193,36 @@ class TestBuiltSite(unittest.TestCase):
         self.assertIn('<pre>', page)
         self.assertIn(f'{self.base}evidence/', page)
         self.assertIn(f'{self.base}work/?work=', page)
+
+    def test_work_media_and_header_evidence_are_revision_pinned(self) -> None:
+        page = (DIST / "work" / "index.html").read_text()
+        data = json.loads((REPO / "site/src/data/work.json").read_text())
+        self.assertIn('class="card-cover"', page)
+        self.assertIn('class="card-evidence"', page)
+        self.assertIn('class="detail-media"', page)
+        self.assertIn('<video', page)
+        self.assertNotRegex(page, r'<video[^>]* autoplay')
+        self.assertRegex(page, r'<video[^>]* controls')
+        self.assertIn('https://raw.githubusercontent.com/knewter/tdisplay-k230/' + data["sourceRevision"], page)
+        for item in data["items"]:
+            if item["evidence"]:
+                self.assertIn('Evidence for ' + item["title"], page)
+            for media in item["media"]:
+                self.assertIn(media["provenance"], page)
+        # Header links and the stretched main action must be siblings, not nested anchors.
+        from html.parser import HTMLParser
+        class Anchors(HTMLParser):
+            depth = 0
+            nested = False
+            def handle_starttag(self, tag, attrs):
+                if tag == "a":
+                    self.nested |= self.depth > 0
+                    self.depth += 1
+            def handle_endtag(self, tag):
+                if tag == "a": self.depth -= 1
+        parser = Anchors()
+        parser.feed(page)
+        self.assertFalse(parser.nested)
 
     def test_both_themes_are_defined(self) -> None:
         css = "\n".join(p.read_text(encoding="utf-8") for p in DIST.rglob("*.css"))

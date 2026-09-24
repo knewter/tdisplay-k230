@@ -12,7 +12,7 @@ export function getStaticPaths() {
 }
 
 const { file } = Astro.props;
-const markdown = file.kind === "text" && file.path.toLowerCase().endsWith(".md")
+const markdown = file.kind === "text" && file.text !== undefined && file.path.toLowerCase().endsWith(".md")
   ? (await (await createMarkdownProcessor({
       syntaxHighlight: false,
       remarkRehype: { allowDangerousHtml: false },
@@ -40,7 +40,7 @@ const markdown = file.kind === "text" && file.path.toLowerCase().endsWith(".md")
   {
     file.kind === "image" ? (
       <div class="ev-image">
-        <img src={url(file.asset!)} alt={file.path} />
+        <img src={file.asset ? url(file.asset) : file.mediaUrl} alt={file.path} />
       </div>
     ) : file.kind === "video" ? (
       <section class="ev-media">
@@ -50,6 +50,8 @@ const markdown = file.kind === "text" && file.path.toLowerCase().endsWith(".md")
         </p>
         <a class="media-link" href={file.mediaUrl}>Open the pinned raw video</a>
       </section>
+    ) : file.kind === "text" && file.text === undefined ? (
+      <p class="ev-media"><a href={file.mediaUrl}>Open the complete evidence file at this revision</a></p>
     ) : markdown !== null ? (
       <article class="ev-markdown" set:html={markdown} />
     ) : (

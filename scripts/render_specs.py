@@ -696,6 +696,15 @@ def build_data(
     revision = source_revision_value or (
         source_revision(repo_root) if (repo_root / ".git").exists() else "master"
     )
+    existing_evidence = set(link.wanted)
+    work_path = repo_root / "site/src/data/work.json"
+    if work_path.is_file():
+        work = json.loads(work_path.read_text())
+        if work.get("sourceRevision") == revision:
+            for item in work.get("items", []):
+                for path in item.get("evidence", []):
+                    link(path)
+    work_only = set(link.wanted) - existing_evidence
     for path, slug in sorted(link.wanted.items()):
         source = repo_root / path
         entry = {
@@ -711,8 +720,11 @@ def build_data(
         if source.suffix.lower() in IMAGE_SUFFIXES:
             asset = f"evidence/{slug}{source.suffix.lower()}"
             entry["kind"] = "image"
-            entry["asset"] = asset
-            if asset_dir is not None:
+            if path in work_only:
+                entry["mediaUrl"] = pinned_media_url(revision, path)
+            else:
+                entry["asset"] = asset
+            if asset_dir is not None and path not in work_only:
                 target = asset_dir / asset
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(source.read_bytes())
@@ -726,9 +738,13 @@ def build_data(
             entry["mediaUrl"] = pinned_media_url(revision, path)
         else:
             entry["kind"] = "text"
-            entry["text"] = printable(
-                source.read_text(encoding="utf-8", errors="replace")
-            )
+            if path in work_only and (source.stat().st_size > 64 * 1024 or
+                    source.suffix.lower() not in {".md", ".txt", ".log", ".json", ".csv", ".toml"}):
+                entry["mediaUrl"] = pinned_media_url(revision, path)
+            else:
+                entry["text"] = printable(
+                    source.read_text(encoding="utf-8", errors="replace")
+                )
         evidence.append(entry)
 
     groups: list[dict] = []

@@ -47,10 +47,16 @@
         "docs/evidence/coherent-shell/rust-probe-host.md",
         "docs/evidence/coherent-shell/rust-probe-board/README.md",
         "docs/evidence/coherent-shell/rust-frontend-source.md",
-        "docs/evidence/coherent-shell/reveal-stream-host.md"
+        "docs/evidence/coherent-shell/reveal-stream-host.md",
+        "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md"
       ],
       "rationale": "The Rust diagnostic probe mapped and restored the real board session; that proves diagnostic pixels, not the final UI or real touch. A separate Cairo/Pango/GIO frontend now cross-builds from exact committed source. Its service integration and full interactive themed surfaces remain in progress.",
-      "reviewRevision": "d9b24140"
+      "reviewRevision": "d9b24140",
+      "cover": {
+        "path": "docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-open.png",
+        "caption": "Rust drawer over live test cards",
+        "provenance": "QEMU capture"
+      }
     },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
