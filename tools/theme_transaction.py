@@ -26,7 +26,10 @@ def exchange(endpoint: Path, phase: str, generation: Path | None, *, timeout: fl
                "path": str(generation) if generation is not None else None}
     if phase == "prepare" and generation is not None:
         pointer = generation.parent.parent / "active"
-        previous = pointer.resolve(strict=True) if pointer.is_symlink() else None
+        try:
+            previous = pointer.resolve(strict=True) if pointer.is_symlink() else None
+        except FileNotFoundError:
+            previous = None
         message["previous_generation"] = previous.name if previous is not None else None
         message["previous_path"] = str(previous) if previous is not None else None
     deadline = time.monotonic() + timeout
@@ -61,7 +64,10 @@ def _pointer(root: Path) -> Path | None:
         if pointer.exists():
             raise TransactionError("active generation is not a symlink")
         return None
-    target = pointer.resolve(strict=True)
+    try:
+        target = pointer.resolve(strict=True)
+    except FileNotFoundError:
+        return None
     if not target.is_relative_to(root / "generations") or not target.is_dir():
         raise TransactionError("active generation escapes cache")
     return target
@@ -81,6 +87,21 @@ def _swap_pointer(root: Path, generation: Path | None) -> None:
         os.fsync(directory)
     finally:
         os.close(directory)
+
+
+def _public_links(root: Path) -> list[Path]:
+    missing = []
+    for name in ("theme", "theme.name", "background"):
+        path = root / name
+        expected = "active/" + name
+        if path.is_symlink():
+            if os.readlink(path) != expected:
+                raise TransactionError(f"incompatible public theme path: {name}")
+        elif os.path.lexists(path):
+            raise TransactionError(f"incompatible public theme path: {name}")
+        else:
+            missing.append(path)
+    return missing
 
 
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
@@ -109,13 +130,21 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                     raise TransactionError("activation lock timed out") from error
                 time.sleep(min(0.01, max(0, deadline - time.monotonic())))
         previous = _pointer(state_root)
+        missing_links = _public_links(state_root)
         transport(endpoint, "prepare", generation)
+        created_links = []
         try:
             _swap_pointer(state_root, generation)
+            for path in missing_links:
+                path.symlink_to("active/" + path.name)
+                created_links.append(path)
             transport(endpoint, "commit", generation)
         except Exception as error:
             try:
                 _swap_pointer(state_root, previous)
+                for path in created_links:
+                    if path.is_symlink() and os.readlink(path) == "active/" + path.name:
+                        path.unlink()
             except Exception as pointer_error:
                 raise TransactionError("commit failed and pointer restoration failed") from pointer_error
             try:

@@ -22,11 +22,14 @@ HARNESS = r'''
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-static bool redraw(void) { return true; }
+static int submitted;
+static bool redraw(void) { submitted++; return true; }
 int main(int argc, char **argv) {
-  if (argc!=4 || k230_appearance_start(argv[1])) return 2;
+  if (argc!=6 || k230_appearance_start(argv[1],argv[1],argv[5])) return 2;
   unsigned theme=(unsigned)strtoul(argv[2],NULL,16);
   unsigned restored=(unsigned)strtoul(argv[3],NULL,16);
+  unsigned startup=(unsigned)strtoul(argv[4],NULL,16);
+  if (k230_appearance.background!=startup) return 4;
   bool saw_theme=false;
   unsigned foreground=0,muted=0,tile=0,selected=0,error=0;
   for (int n=0; n<300; n++) {
@@ -35,13 +38,13 @@ int main(int argc, char **argv) {
     poll(fds,2,10);
     k230_appearance_service((fds[0].revents&POLLIN)!=0,
                             (fds[1].revents&(POLLIN|POLLHUP))!=0,redraw);
-    if (k230_appearance.background==theme) {
+    if (submitted>=1 && k230_appearance.background==theme) {
       saw_theme=true; foreground=k230_appearance.foreground;
       muted=k230_appearance.muted;
       tile=k230_appearance.tile; selected=k230_appearance.selected;
       error=k230_appearance_error();
     }
-    if (saw_theme && k230_appearance.background==restored) {
+    if (submitted>=2 && saw_theme && k230_appearance.background==restored) {
       k230_appearance_stop();
       printf("applied-and-rolled-back %08x %08x %08x %08x %08x\n",
              foreground,muted,tile,selected,error); return 0;
@@ -63,7 +66,7 @@ class ShellAppearanceReceiver(unittest.TestCase):
         hi, lo = sorted((luminance(first), luminance(second)), reverse=True)
         return (hi + 0.05) / (lo + 0.05)
 
-    def run_case(self, *, restart=False, light=False, palette=None):
+    def run_case(self, *, restart=False, light=False, palette=None, unavailable=False):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             source = root / "receiver-test.c"
@@ -83,6 +86,14 @@ class ShellAppearanceReceiver(unittest.TestCase):
             }))
             if restart:
                 (root / "active").symlink_to(old)
+            elif unavailable:
+                (root / "active").symlink_to(root / "generations" / ("f" * 24))
+            pinned = root / "pinned" / "generations" / ("c" * 24)
+            pinned.mkdir(parents=True)
+            (pinned / "report.json").write_text(json.dumps({
+                "generation": pinned.name,
+                "palette": {"background": "#1e1e2e", "foreground": "#cdd6f4"},
+            }))
             generation = root / "generations" / ("a" * 24)
             generation.mkdir(parents=True)
             background = palette["background"] if palette else "#f0f0f0" if light else "#202830"
@@ -96,9 +107,10 @@ class ShellAppearanceReceiver(unittest.TestCase):
                             "muted": palette.get("muted", foreground) if palette else foreground,
                             "accent": "#778899"},
             }))
-            restored = "ff102030" if restart else "ff111827"
+            restored = "ff102030" if restart else "ff1e1e2e"
+            startup = "ff102030" if restart else "ff1e1e2e"
             process = subprocess.Popen([str(binary), str(root),
-                                        "ff" + background[1:], restored], stdout=subprocess.PIPE,
+                                        "ff" + background[1:], restored, startup, str(pinned)], stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE, text=True)
             endpoint = root / "appearance.sock"
             try:
@@ -138,6 +150,9 @@ class ShellAppearanceReceiver(unittest.TestCase):
 
     def test_light_palette_keeps_launcher_labels_legible(self):
         self.run_case(light=True)
+
+    def test_missing_selected_generation_falls_back_to_pinned_default(self):
+        self.run_case(unavailable=True)
 
     def test_pinned_dark_light_and_community_palette_contrast(self):
         # Values are the resolved palettes of the pinned task-1 fixtures.

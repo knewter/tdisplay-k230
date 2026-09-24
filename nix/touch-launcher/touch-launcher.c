@@ -809,7 +809,8 @@ int main(int argc,char**argv) {
  if(flock(lock_fd,LOCK_EX|LOCK_NB) < 0) return 0; /* Existing surface stays usable. */
  if(getenv("K230_LAUNCHER_THEME_RECEIVER")
     && !strcmp(getenv("K230_LAUNCHER_THEME_RECEIVER"),"1")
-    && k230_appearance_start(runtime)<0)
+    && k230_appearance_start(runtime,getenv("K230_THEME_STATE_ROOT"),
+                             getenv("K230_THEME_DEFAULT_GENERATION"))<0)
    fprintf(stderr,"k230-touch-launcher: appearance receiver unavailable\n");
  apps=k230_app_catalog();
  signal(SIGTERM,request_shutdown);

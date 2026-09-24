@@ -37,6 +37,12 @@ class ThemeTransaction(unittest.TestCase):
             tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock", transport=ack)
             tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock", transport=ack)
             self.assertEqual(tx._pointer(root), candidate)
+            for name in ("theme", "theme.name", "background"):
+                self.assertEqual((root / name).readlink().as_posix(), "active/" + name)
+            # A palette-only generation has no usable background media; the
+            # compatibility link advertises absence via failed dereference.
+            self.assertTrue((root / "background").is_symlink())
+            self.assertFalse((root / "background").exists())
             self.assertEqual(phases, [("prepare", candidate), ("commit", candidate),
                                       ("prepare", candidate), ("commit", candidate)])
 
@@ -85,6 +91,7 @@ class ThemeTransaction(unittest.TestCase):
             with self.assertRaisesRegex(tx.TransactionError, "rollback was not acknowledged"):
                 tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock", transport=fail)
             self.assertIsNone(tx._pointer(root))
+            self.assertFalse((root / "theme").is_symlink())
 
     def test_real_socket_rejects_mismatched_ack(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -117,6 +124,25 @@ class ThemeTransaction(unittest.TestCase):
             (outsider / "report.json").write_text("{}")
             with self.assertRaisesRegex(tx.TransactionError, "outside"):
                 tx.activate_generation(outsider, state_root=root, endpoint=root / "shell.sock")
+
+    def test_existing_public_theme_path_is_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            (root / "theme").mkdir()
+            with self.assertRaisesRegex(tx.TransactionError, "incompatible public theme path"):
+                tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock",
+                                       transport=lambda *args: None)
+            self.assertIsNone(tx._pointer(root))
+
+    def test_broken_active_pointer_can_be_replaced(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            (root / "active").symlink_to(root / "generations" / "removed")
+            tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock",
+                                   transport=lambda *args: None)
+            self.assertEqual(tx._pointer(root), candidate)
 
     def test_relative_state_root_is_normalized(self):
         with tempfile.TemporaryDirectory() as temp:

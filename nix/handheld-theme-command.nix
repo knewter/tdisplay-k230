@@ -1,4 +1,4 @@
-{ stdenvNoCC, makeWrapper, python3, omarchyThemeTools }:
+{ stdenvNoCC, makeWrapper, python3, omarchyThemeTools, themeDefault }:
 
 stdenvNoCC.mkDerivation {
   pname = "handheld-theme-command";
@@ -15,7 +15,8 @@ stdenvNoCC.mkDerivation {
     install -m 0644 ${../tools/omarchy-theme-set} "$out/libexec/handheld-theme/omarchy-theme-set"
     makeWrapper ${python3}/bin/python3 "$out/bin/omarchy-theme-set" \
       --add-flags "$out/libexec/handheld-theme/omarchy-theme-set" \
-      --add-flags "--tools ${omarchyThemeTools}"
+      --add-flags "--tools ${omarchyThemeTools}" \
+      --add-flags "--builtins ${themeDefault}/share/omarchy/themes"
     runHook postInstall
   '';
 }

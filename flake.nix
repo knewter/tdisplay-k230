@@ -161,10 +161,12 @@
         # Standalone pinned helper package; no theme service enters the normal
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
+        handheld-theme-default = pkgsCross.callPackage ./nix/handheld-theme-default { };
         # Opt-in command only; no normal service/default selection until the
         # shared theme consumers and physical rollback trial pass.
         handheld-theme-command = pkgsCross.callPackage ./nix/handheld-theme-command.nix {
           omarchyThemeTools = self.packages.${buildSystem}.omarchy-theme-tools;
+          themeDefault = self.packages.${buildSystem}.handheld-theme-default;
         };
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.

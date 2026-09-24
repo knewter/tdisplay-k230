@@ -171,6 +171,22 @@ class ThemePreparation(unittest.TestCase):
             self.assertEqual(prepared.returncode, 0, prepared.stderr)
             self.assertFalse((state / "active").exists())
 
+    def test_selected_generation_and_public_paths_survive_removed_clone(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            generation, _ = call("theme", theme, state)
+            activation.activate_generation(generation, state_root=state,
+                                           endpoint=base / "shell.sock",
+                                           transport=lambda *args: None)
+            theme.rename(base / "removed-clone")
+            self.assertEqual((state / "theme.name").read_text(), "theme\n")
+            self.assertEqual((state / "theme/colors.toml").read_text(),
+                             (generation / "theme/colors.toml").read_text())
+            self.assertEqual((state / "background").resolve(),
+                             (generation / "theme/backgrounds/portrait.png").resolve())
+
 
 if __name__ == "__main__":
     unittest.main()

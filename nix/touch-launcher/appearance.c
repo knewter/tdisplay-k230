@@ -107,6 +107,35 @@ static bool read_palette(const char *path, const char *identity,
   g_object_unref(parser);
   return safe;
 }
+static void load_startup_palette(const char *state_root, const char *default_generation) {
+  if (default_generation) {
+    char *identity=g_path_get_basename(default_generation);
+    struct k230_appearance_colors colors=defaults;
+    if (valid_id(identity) && read_palette(default_generation,identity,&colors)) {
+      k230_appearance=colors;
+      strcpy(active_id,identity);
+    } else fprintf(stderr,"k230-touch-launcher: pinned default theme unavailable\n");
+    g_free(identity);
+  }
+  if (!state_root) return;
+  char *pointer=g_build_filename(state_root,"active",NULL);
+  bool selected=g_file_test(pointer,G_FILE_TEST_IS_SYMLINK);
+  char *target=selected ? realpath(pointer,NULL) : NULL;
+  char *cache=g_build_filename(state_root,"generations",NULL);
+  char *cache_real=realpath(cache,NULL);
+  if (selected) {
+    char *identity=target ? g_path_get_basename(target) : NULL;
+    struct k230_appearance_colors colors=defaults;
+    size_t length=cache_real ? strlen(cache_real) : 0;
+    bool safe=target && cache_real && !strncmp(target,cache_real,length)
+      && target[length]=='/' && valid_id(identity)
+      && read_palette(target,identity,&colors);
+    if (safe) { k230_appearance=colors; strcpy(active_id,identity); }
+    else fprintf(stderr,"k230-touch-launcher: cached theme unavailable; using pinned default\n");
+    g_free(identity);
+  }
+  free(target); free(cache_real); g_free(cache); g_free(pointer);
+}
 static void close_client(void) {
   if (client>=0) close(client);
   client=-1; used=0; client_deadline=0;
@@ -179,8 +208,10 @@ static void handle(bool (*redraw)(void)) {
   else close_client();
   g_object_unref(parser);
 }
-int k230_appearance_start(const char *runtime) {
+int k230_appearance_start(const char *runtime, const char *state_root,
+                          const char *default_generation) {
   if (!runtime) return -1;
+  load_startup_palette(state_root,default_generation);
   int length=snprintf(socket_path,sizeof socket_path,"%s/appearance.sock",runtime);
   if (length<=0 || (size_t)length>=sizeof socket_path) return -1;
   listener=socket(AF_UNIX,SOCK_STREAM|SOCK_NONBLOCK|SOCK_CLOEXEC,0);

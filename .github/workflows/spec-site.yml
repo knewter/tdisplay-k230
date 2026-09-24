@@ -89,6 +89,7 @@ jobs:
 
       - name: Check opt-in shell appearance receiver and theme transaction
         run: |
+          python3 tests/test_handheld_theme_default.py
           python3 tests/test_omarchy_theme_activation.py
           python3 tests/test_omarchy_theme_transaction.py
           python3 tests/test_shell_appearance_receiver.py
