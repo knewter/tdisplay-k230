@@ -14,7 +14,7 @@ The shell userspace SHALL use one high-contrast palette, text hierarchy, spacing
 
 ### Requirement: Home is the live card deck
 <!-- UNVERIFIED: app-to-deck entry, empty deck, and final Home behavior require implementation and real-glass proof. -->
-The shell userspace SHALL treat the live card overview as Home. A bottom-edge upward gesture from an app or transient surface SHALL lead to that deck with the current eligible app shrinking into its live card. Repeating Home at the deck SHALL leave it stable. With no eligible app, Home SHALL show a useful empty deck with an upward drawer cue and a named Terminal recovery app reachable in the drawer; it SHALL NOT open a second home grid. A continued upward pull from the deck SHALL reveal the installed-app drawer from the bottom.
+The shell userspace SHALL treat the live card overview as Home. A purely upward bottom-edge gesture from an app or transient surface SHALL lead to that deck with the current eligible app shrinking into its live card. Repeating Home at the deck SHALL leave it stable. With no eligible app, Home SHALL show a useful empty deck with an upward drawer cue and a named Terminal recovery app reachable in the drawer; it SHALL NOT open a second home grid. A continued upward pull from the deck SHALL reveal the installed-app drawer from the bottom.
 
 #### Scenario: Return from an app
 - **WHEN** a person swipes up from the bottom of a running app
@@ -27,6 +27,32 @@ The shell userspace SHALL treat the live card overview as Home. A bottom-edge up
 #### Scenario: Pull from Home into installed apps
 - **WHEN** a person continues dragging upward from the deck past the drawer threshold
 - **THEN** the drawer follows the finger and settles open; releasing below that threshold restores the deck without an accidental app launch
+
+### Requirement: Bottom app switching follows both touch axes
+<!-- UNVERIFIED: requested two-axis navigation and bottom quick switch are not implemented or physically proven. The installed correction at docs/evidence/coherent-shell/direct-drag/installed.md covers vertical movement only. -->
+The compositor SHALL retain one touch owner when an app-entry gesture bends from upward to sideways movement. The manipulated point SHALL follow both finger coordinates one-to-one within declared travel bounds, with no held-contact easing, automatic progress, or axis-change jump. A qualified lateral release SHALL settle and activate the visibly selected adjacent running app; a purely upward release SHALL retain the Home behavior. A horizontal gesture starting in the qualified bottom-center region SHALL offer the same adjacent-app switching without requiring an upward gesture. Release thresholds SHALL NOT amplify visible motion. Short/reversed gestures SHALL restore the originating app without activating a neighbor. Velocity SHALL influence settlement only after release, and a new accepted touch SHALL stop or retarget settlement from current geometry.
+
+Both routes SHALL use the deck's stable left/right app order, unchanged by focus-only switching, and SHALL commit at most one neighbor per release initially. Dragging the scene right SHALL reveal the left neighbor and vice versa. They SHALL NOT wrap at either end, launch a new app, throw-close an app, or substitute a newly mapped app for a disappearing target. The compositor SHALL preserve the sibling's privacy, source-lifetime, focus eligibility and visible raise behavior. Keyboard-owned regions, active overlays, side Back regions and ordinary app content outside the qualified bottom region SHALL keep their touch ownership.
+
+#### Scenario: Curve upward into a neighboring app
+- **WHEN** a person starts an upward app-entry gesture and moves sideways without lifting
+- **THEN** the same visible app/card scene follows both axes, reveals its neighbor, and a qualified release expands and visibly focuses that neighbor without another tap
+
+#### Scenario: Quick switch and reverse direction
+- **WHEN** a person switches apps with a horizontal bottom-center swipe and then performs the opposite swipe
+- **THEN** the scene follows the finger in each direction and returns to the previous neighboring app in the unchanged deck order
+
+#### Scenario: Hold and cancel a diagonal gesture
+- **WHEN** the person holds a diagonal gesture still, then reverses below the commitment threshold before release
+- **THEN** the held scene stays still, the return path follows the finger, and release restores the source app without activating or closing another app
+
+#### Scenario: No neighboring app or disappearing target
+- **WHEN** a switch points beyond a deck end, only one app exists, or the chosen target exits during the gesture
+- **THEN** no wrap, invented preview or unrelated activation occurs; the source app or valid deck remains reachable with correct focus
+
+#### Scenario: An app or keyboard owns the contact
+- **WHEN** a touch starts outside the qualified bottom-center region for quick switch, in a keyboard-owned region, or on an active shell overlay
+- **THEN** the quick-switch recognizer does not steal the stream, and changing direction later does not reinterpret it as an app switch
 
 ### Requirement: Shade and contextual Back preserve the task
 <!-- UNVERIFIED: final shade and edge arbitration await implementation and physical proof. -->

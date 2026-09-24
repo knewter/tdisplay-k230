@@ -13,9 +13,13 @@ installed development bar, not the gesture-led final session.*
 
 <!-- UNVERIFIED: the final bar-free Home/deck/drawer/shade route awaits implementation and real-glass proof. -->
 In the final normal session, the shell SHALL make its live-card deck the Home
-surface. An upward gesture from the bottom of an application or shell surface
+surface. A purely upward gesture from the bottom of an application or shell surface
 SHALL reach Home; an upward continuation from the deck SHALL reveal the
 installed-app drawer, which includes named Terminal and Monitor actions.
+An app-entry gesture that curves sideways without lifting SHALL select an
+adjacent running app for activation on qualified release. A horizontal swipe
+from the qualified bottom-center region SHALL provide the same adjacent-app
+switching, preserving deck order, privacy and app/keyboard touch ownership.
 A downward gesture from the top SHALL reveal notification history and Settings.
 An inward contextual Back gesture SHALL dismiss shell overlays and keyboard
 before restoring the prior scene; it SHALL NOT assume every Wayland app has a
