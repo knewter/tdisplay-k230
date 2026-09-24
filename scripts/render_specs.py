@@ -703,7 +703,11 @@ def build_data(
         if work.get("sourceRevision") == revision:
             for item in work.get("items", []):
                 for path in item.get("evidence", []):
-                    link(path)
+                    # Reports deserve rendered Markdown. Raw captures, tables
+                    # and logs are already directly linked from the work card;
+                    # avoid hundreds of duplicate wrapper pages in the bundle.
+                    if Path(path).suffix.lower() == ".md":
+                        link(path)
     work_only = set(link.wanted) - existing_evidence
     for path, slug in sorted(link.wanted.items()):
         source = repo_root / path

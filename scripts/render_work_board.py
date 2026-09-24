@@ -75,9 +75,11 @@ class SourceTree:
         self.revision = git(repo, "rev-parse", "HEAD").strip()
         if working_tree:
             listed = git(repo, "ls-files", "--cached", "--others", "--exclude-standard").splitlines()
-            self.paths = {p for p in listed if (repo / p).is_file()}
+            self.paths = {p for p in listed if (repo / p).is_file() and not (repo / p).is_symlink()}
         else:
-            self.paths = set(git(repo, "ls-tree", "-r", "--name-only", self.revision).splitlines())
+            entries = git(repo, "ls-tree", "-r", "-z", self.revision).split("\0")
+            self.paths = {entry.split("\t", 1)[1] for entry in entries
+                          if entry.startswith(("100644 ", "100755 "))}
 
     def read(self, path: str) -> str:
         safe_path(path)
@@ -160,7 +162,14 @@ def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
                 records.extend(referenced_evidence(tree, path, tree.read(path)))
             except WorkError:
                 pass  # oversized records remain directly linked
-    records = list(dict.fromkeys(records))
+    public_records = []
+    for path in dict.fromkeys(records):
+        try:
+            safe_path(path)
+        except WorkError:
+            continue
+        public_records.append(path)
+    records = public_records
     if cover is not None:
         if not isinstance(cover, dict) or set(cover) != {"path", "caption", "provenance"}:
             raise WorkError(f"invalid cover metadata for {item['id']}")

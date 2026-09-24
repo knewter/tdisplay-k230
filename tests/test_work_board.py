@@ -195,6 +195,16 @@ class Fixture(unittest.TestCase):
             with self.subTest(path=wrong), self.assertRaises(work.WorkError):
                 self.data({"the-first-thing": self.review(cover=cover | {"path": wrong})})
 
+    def test_discovery_skips_symlinks_and_private_sibling_names(self) -> None:
+        put(self.repo, "docs/evidence/proof/192.168.1.2.png", "private name")
+        (self.repo / "docs/evidence/proof/link.png").symlink_to("README.md")
+        command(self.repo, "add", "docs/evidence/proof")
+        command(self.repo, "commit", "-qm", "non-public media fixtures")
+        for working in (False, True):
+            item = next(i for i in self.data({"the-first-thing": self.review()}, working=working)["items"]
+                        if i["id"] == "the-first-thing")
+            self.assertEqual(item["media"], [])
+
     def test_dependency_cycle_is_rejected(self) -> None:
         overrides = {
             "the-first-thing": self.review(dependencies=["the-second-thing"]),
