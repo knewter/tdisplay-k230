@@ -24,6 +24,8 @@ class TwoAxisRuntime(unittest.TestCase):
             self.assertIn("K230_CARD_SHELL mirror id=", log)
             self.assertIn("K230_CARD_SHELL restored focus=", log)
             self.assertTrue((output / "two-axis-held.png").exists())
+            self.assertTrue((output / "two-axis-quick-paused.png").exists())
+            self.assertTrue((output / "two-axis-quick-releasing.png").exists())
             self.assertTrue((output / "two-axis-private-neighbor.png").exists())
 
 

@@ -219,10 +219,29 @@ def main():
             assert focused()=='k230.card.two'
             second=capture('two-axis-second-focused.png')
             assert second.getpixel((284,700))[0]>70
+            full_red=color_box(second,'red')
             before=logs().count('restored focus=')
             command('down 72 284 1200')
+            command('motion 72 384 1200')
+            quick=capture('two-axis-quick-held.png')
+            qb=color_box(quick,'red')
+            near(qb[0]-full_red[0],100,7)
+            near(qb[1],full_red[1],4);near(qb[3],full_red[3],4)
+            time.sleep(.12)
+            paused=capture('two-axis-quick-paused.png')
+            near(color_box(paused,'red')[0],qb[0],4)
+            command('motion 72 344 1200')
+            reversed_quick=capture('two-axis-quick-reversed.png')
+            near(color_box(reversed_quick,'red')[0],qb[0]-40,7)
             command('motion 72 420 1200')
             command('up 72')
+            time.sleep(.04)
+            releasing=capture('two-axis-quick-releasing.png')
+            # Both sources stay at full vertical extent while the horizontal
+            # carousel coasts. A forced overview would shrink these boxes.
+            for which,baseline in (('red',full_red),('blue',origin)):
+                box=color_box(releasing,which)
+                near(box[1],baseline[1],6);near(box[3],baseline[3],6)
             wait_for(lambda:logs().count('restored focus=')>before)
             assert focused()=='k230.card.one'
             again=capture('two-axis-opposite-return.png')
