@@ -16,6 +16,10 @@ The shell userspace SHALL show only controls backed by a readable or writable sy
 - **WHEN** a requested change cannot be applied
 - **THEN** Settings shows failure and a Retry or Back action while preserving the last confirmed state
 
+#### Scenario: Settings content exceeds the panel
+- **WHEN** the person drags or flicks a longer Settings list
+- **THEN** the rows follow the finger and settle within bounds while the current control value and Back route remain understandable
+
 ### Requirement: System actions require clear completion feedback
 <!-- UNVERIFIED: proposed integration with existing system actions. -->
 The shell userspace SHALL label power and restart actions by effect, require confirmation for disruptive actions, and report denial or failure without trapping the person. Settings defaults SHALL be provided by the NixOS image for a fresh home.

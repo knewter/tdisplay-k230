@@ -16,6 +16,10 @@ The shell userspace SHALL show a brief preview for an eligible new event and ret
 - **WHEN** the person opens Notifications with no retained events
 - **THEN** it shows an empty message and a Back route
 
+#### Scenario: Scroll through history
+- **WHEN** the person drags or flicks a longer notification history
+- **THEN** the list follows the finger, coasts within its content bounds, and can be stopped by a new touch without opening an entry
+
 ### Requirement: Actions and dismissal are explicit
 <!-- UNVERIFIED: proposed action policy. -->
 The shell userspace SHALL offer only actions whose target is currently available and SHALL distinguish opening an event from dismissing it. A failed action SHALL leave the event reachable with a short error and Retry or Back route. Dismiss All SHALL require a clearly labeled control and SHALL NOT dismiss an ongoing critical system event.
@@ -23,6 +27,10 @@ The shell userspace SHALL offer only actions whose target is currently available
 #### Scenario: Target app is gone
 - **WHEN** a person selects an event whose action target has exited
 - **THEN** the shell reports the unavailable target and keeps the event until the person dismisses it
+
+#### Scenario: Swipe an event sideways
+- **WHEN** the person swipes a dismissible history item sideways
+- **THEN** the item follows the finger and exposes a Dismiss cue; a short or reversed swipe returns it without dismissal, while a completed swipe removes only that event from history
 
 ### Requirement: Privacy and interruption have safe defaults
 <!-- UNVERIFIED: proposed privacy and priority behavior. -->
