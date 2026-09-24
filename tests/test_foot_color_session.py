@@ -194,6 +194,42 @@ class FootSession(unittest.TestCase):
                 os.close(master)
                 os.close(slave)
 
+    def test_pidfd_unavailable_still_execs_the_requested_app(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            default = generation(root, "a" * 24, "#111111")
+            master, slave = pty.openpty()
+            code = ('import os,sys,foot_color_session as session\n'
+                    'def unavailable(_): raise OSError("injected pidfd failure")\n'
+                    'session.os.pidfd_open=unavailable\n'
+                    'sys.exit(session.main(sys.argv[1:]))\n')
+            command = [sys.executable, "-c", code, "--state-root", str(root),
+                       "--default-generation", str(default), "--",
+                       "/bin/sh", "-c", "printf RECOVERED"]
+            process = subprocess.Popen(command, stdin=slave, stdout=slave, stderr=slave,
+                                       env=os.environ | {"TERM": "foot",
+                                                         "PYTHONPATH": str(ROOT / "tools")})
+            os.close(slave)
+            output = bytearray()
+            try:
+                while True:
+                    try:
+                        chunk = os.read(master, 4096)
+                    except OSError:
+                        break
+                    if not chunk:
+                        break
+                    output.extend(chunk)
+                self.assertEqual(process.wait(timeout=1), 0)
+                self.assertIn(b"RECOVERED", output)
+                self.assertIn(b"follower unavailable", output)
+                self.assertNotIn(b"\x1b]", output)
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                    process.wait(timeout=1)
+                os.close(master)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -111,9 +111,13 @@ def main(argv=None) -> int:
         parser.error("foreign theme state root")
     args.state_root.mkdir(parents=True, exist_ok=True, mode=0o700)
     state_root = args.state_root.resolve(strict=True)
-    parent_pidfd = os.pidfd_open(os.getpid())
     try:
-        child = os.fork()
+        parent_pidfd = os.pidfd_open(os.getpid())
+    except OSError:
+        print("k230-foot-session: color follower unavailable", file=sys.stderr)
+        parent_pidfd = None
+    try:
+        child = os.fork() if parent_pidfd is not None else None
     except OSError:
         print("k230-foot-session: color follower unavailable", file=sys.stderr)
         os.close(parent_pidfd)
