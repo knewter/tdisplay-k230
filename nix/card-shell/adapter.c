@@ -324,6 +324,19 @@ static enum cs_content classify(struct card *c) {
 		return CS_UNAVAILABLE;
 	return supported_node(&c->view->content_tree->node) ? CS_LIVE : CS_UNAVAILABLE;
 }
+static const char *card_display_title(enum cs_content content, const char *title,
+		const char *app_id, bool compact) {
+	if (content != CS_LIVE)
+		return cs_card_text(content);
+	/* These IDs are assigned by this image's desktop/session entries. Preserve
+	 * arbitrary third-party titles, including document and mail names with @. */
+	if (compact && app_id) {
+		if (strcmp(app_id, "k230-terminal") == 0) return "Terminal";
+		if (strcmp(app_id, "k230-monitor") == 0) return "Monitor";
+		if (strcmp(app_id, "nnn") == 0) return "Files";
+	}
+	return title && *title ? title : "Application";
+}
 static bool snapshot(void) {
 	size_t count = wl_list_length(&shell.cards), i = 0;
 	struct cs_card *cards = count ? calloc(count, sizeof(*cards)) : NULL;
@@ -638,16 +651,11 @@ static bool sync_card(struct card *c, size_t index) {
 	wlr_scene_node_set_position(&c->tree->node, c->x, c->y);
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
-	const char *title = c->content == CS_LIVE ? view_get_title(c->view) : cs_card_text(c->content);
-	/* A terminal's changing shell@host title is useful inside its live pixels,
-	 * but makes a noisy card identity. Keep rollback's old label unchanged. */
 	bool compact = touch_first();
-	if (compact && c->content == CS_LIVE && (!title || !*title || strchr(title, '@'))) {
-		const char *id = view_get_app_id(c->view);
-		if (id && *id) title = id;
-	}
-	if (!title || !*title)
-		title = "Application";
+	const char *title = c->content == CS_LIVE ?
+		card_display_title(c->content, view_get_title(c->view),
+			view_get_app_id(c->view), compact) :
+		card_display_title(c->content, NULL, NULL, compact);
 	char rollback_title[512];
 	if (!compact) {
 		snprintf(rollback_title, sizeof(rollback_title), "%s%s",
