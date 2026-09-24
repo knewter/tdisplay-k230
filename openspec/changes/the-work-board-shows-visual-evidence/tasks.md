@@ -14,5 +14,5 @@
 
 ## 3. Publish and reconcile
 
-- [ ] 3.1 Validate `openspec validate the-work-board-shows-visual-evidence --strict`, land/push and inspect CI plus the exact revision published at the work board URL.
+- [x] 3.1 Validate `openspec validate the-work-board-shows-visual-evidence --strict`, land/push and inspect CI plus the exact revision published at the work board URL.
 - [ ] 3.2 Once all named proof exists, archive/sync the docs/spec-site delta and publish the reconciled result. No physical-board claim is part of this change.

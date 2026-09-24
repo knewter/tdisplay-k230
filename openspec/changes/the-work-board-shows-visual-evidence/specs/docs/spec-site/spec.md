@@ -1,7 +1,9 @@
 ## ADDED Requirements
 
+Host website evidence: [browser and published work-board checks](docs/evidence/work-card-media/README.md).
+
 ### Requirement: Work cards expose their visual evidence
-<!-- UNVERIFIED: implementation and published-page checks remain pending. -->
+<!-- UNVERIFIED: host-browser and published-site proof is recorded in docs/evidence/work-card-media/README.md; this is not physical K230 grounding. -->
 The work board SHALL discover committed images and videos associated with a change's cited evidence, show a representative visual cover when available, and present the discovered media inside that card's detail view. Videos SHALL provide playback controls, start playback when opened or selected in the media viewer, and support Space to toggle play/pause without closing it. Card previews SHALL remain paused. Captions and evidence-class labels SHALL not imply physical validation from mockups or automated captures. Changes without visual evidence SHALL remain readable text cards.
 
 #### Scenario: Screenshot and video arrive during implementation
@@ -17,7 +19,7 @@ The work board SHALL discover committed images and videos associated with a chan
 - **THEN** a gallery modal displays that media at the largest size that fits the viewport while preserving its aspect ratio, supports adjacent-media navigation by touch swipe and arrow keys, and returns to the same card position when closed
 
 ### Requirement: Card headers expose related evidence records
-<!-- UNVERIFIED: implementation and published-page checks remain pending. -->
+<!-- UNVERIFIED: host-browser and published-site proof is recorded in docs/evidence/work-card-media/README.md; this is not physical K230 grounding. -->
 Each work card with related evidence SHALL expose directly usable evidence links from its header area, including reports, logs, screenshots and videos. Those links SHALL identify their artifacts, refer to the published revision, and remain separately usable from the primary whole-card action. Discovery SHALL exclude uncommitted, missing, unsafe and unrelated paths.
 
 #### Scenario: Open a report from a card header

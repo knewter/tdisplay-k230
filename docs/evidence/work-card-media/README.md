@@ -93,3 +93,28 @@ This supersedes the earlier no-autoplay viewer behavior above.
 including automatic video advance, Space pause/resume from Close and native
 video focus, and all prior media/document modal checks. Browser autoplay
 restrictions may still require pressing Play; controls remain usable.
+
+## Published autoplay and keyboard proof
+
+At 2026-09-24 05:39 UTC, [CI run 35960674736](https://github.com/knewter/tdisplay-k230/actions/runs/35960674736)
+completed successfully for exact source
+`b2478b5dcb53d742a0c5a2523c74668a2e15901c`. The public
+<https://knewter.github.io/tdisplay-k230/work/> contained that full revision.
+An independent headless Chromium check visited this public URL directly, with
+**no asset routing override**. Desktop 1440×1000 and mobile 390×844 both
+passed: the actual system-controls MP4 decoded and advanced on opening; Space
+paused and resumed it with focus on Close, then paused and resumed it with
+focus on the native video; the media modal remained open; Close stopped the
+video, removed its source and returned focus to the trigger. Neither viewport
+reported a page JavaScript error. This is published website/browser evidence,
+not a physical K230 panel observation.
+
+The public probe used Python Playwright Chromium against the published URL,
+with its real pinned media requests and no mocked responses. The source build
+and local browser regression are recorded above; this paragraph records the
+additional deployed-revision check required before archive. The archive's
+later published revision must be checked separately after it is pushed.
+
+```sh
+python3 tests/work_card_media_public_browser.py --revision b2478b5dcb53d742a0c5a2523c74668a2e15901c
+```
