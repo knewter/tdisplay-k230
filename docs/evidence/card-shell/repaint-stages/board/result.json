@@ -1,0 +1,96 @@
+{
+  "status": "COLLECTED",
+  "revision": "58461f518821cb2b7f1b9d2d80223677d24b3602",
+  "boot_id": "06b5701c-380d-46bc-b2f4-ba95aa08b6d6",
+  "system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/xv8x9kbrlxpygk7v1lbxwncfzskvz28a-k230-card-shell",
+  "client": "/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "config": "/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf",
+  "evidence_class": "board-injected",
+  "runs": [
+    {
+      "run": 1,
+      "started_at_utc": "2026-09-23T23:55:00.413604+00:00",
+      "running_sway": "/nix/store/374p33ril3p92i8d805fvzmsjqxhaxsv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "acceptance_exit_code": 1,
+      "checks": [
+        {
+          "case": "live-root-and-child-1-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 3772978068082
+        },
+        {
+          "case": "live-root-and-child-2-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 3796421227462
+        },
+        {
+          "case": "live-root-and-child-2-two",
+          "status": "OBSERVED",
+          "monotonic_ns": 3797062332113
+        },
+        {
+          "case": "actual-rgb565-pixman-session",
+          "status": "OBSERVED",
+          "monotonic_ns": 3817555192639
+        },
+        {
+          "case": "upward-throw-close-request",
+          "status": "FAILED",
+          "monotonic_ns": 3825574385202
+        },
+        {
+          "case": "client-explicit-refusal",
+          "status": "OBSERVED",
+          "monotonic_ns": 3827183915789
+        },
+        {
+          "case": "separate-timeout-card-retained",
+          "status": "OBSERVED",
+          "monotonic_ns": 3830096281196
+        },
+        {
+          "case": "accepted-close-source-exits",
+          "status": "OBSERVED",
+          "monotonic_ns": 3833321744485
+        },
+        {
+          "case": "terminal-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 3843057685581
+        },
+        {
+          "case": "monitor-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 3846497855252
+        },
+        {
+          "case": "windows-home-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 3851941718112
+        },
+        {
+          "case": "keyboard-reserves-content",
+          "status": "OBSERVED",
+          "monotonic_ns": 3854009050394
+        },
+        {
+          "case": "normal-controls-recover-focus",
+          "status": "OBSERVED",
+          "monotonic_ns": 3860889344348
+        }
+      ],
+      "budget_gate": "FAIL",
+      "missing_evidence": [],
+      "restored_shell_and_seatd": true,
+      "finished_at_utc": "2026-09-23T23:56:45.833714+00:00"
+    }
+  ],
+  "producer_sha256": {
+    "run-board.py": "a4afe1691cb0413f884875a732159e94d1979b62b6c7f2d18ac3da4046fa7927",
+    "card-shell-board-session.py": "17462351d8dad610c0138f8232661f940b2a99ac734afea1cf31bd6e09d04cdb",
+    "card-shell-acceptance.py": "904c4534567db3c4d273fc01667300ccb752c05cfe7c23577a2d9cc33197deaa",
+    "card-shell-benchmark.py": "ce547d2d675de8cc858c08223685eb0669815de963d544439a886771482be4a0"
+  },
+  "all_interaction_checks_observed": false
+}
