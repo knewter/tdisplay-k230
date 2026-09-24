@@ -1252,6 +1252,22 @@ DATA 0170c00341405479c590e2ded085f246f50e2090f77eb42fb5d79327675c07e2  docs/evid
 DATA 01252e5ea0c1c839cb8ec8143badb480636aa6e90b78ad8f17841e0022324672  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return.mp4
 DATA d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-cancel.png
 DATA 125bc691f5c0c8f7e426a80b5989fb4b4b45d21d44d4e476e4e6a13c62ba6462  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-held.png
+DATA 7c0236199807eef7cb68e884233eb6e1f1560389e75685b01508f1d645c4cdbc  docs/evidence/coherent-shell/webos-polish-host/dark/drawer.png
+DATA d0ae67a92ccfd2f06d3ff5c9a05f0ddb36378a99c2cb4d501745cbd4d3588d98  docs/evidence/coherent-shell/webos-polish-host/dark/preview.png
+DATA d6c24fdd4179650139fa605737d1e29644954662dd7dd1767e59771f2cbf95c9  docs/evidence/coherent-shell/webos-polish-host/dark/settings.png
+DATA 3dff33df910839c6557f58453fd75dcf0b7e348ddcd872d5611b155ce3d131fd  docs/evidence/coherent-shell/webos-polish-host/dark/shade.png
+DATA ecd12bb4fa419db0c186dff401f8dcd0664a6adc71b1ac01537291a5bf5516d3  docs/evidence/coherent-shell/webos-polish-host/dark/themes.png
+DATA 2ab25d61035dc47d48e37745bb4f767936f2aae35752fed285caad02a6a75756  docs/evidence/coherent-shell/webos-polish-host/latte/drawer.png
+DATA 04064a159eebdce9c757511c53e3f5ec2ea4d063e5acfa0406d71b6234d2dc84  docs/evidence/coherent-shell/webos-polish-host/latte/preview.png
+DATA 1012e2c71c16d01e2af568de7bc4ba903eaa8ab47893cbeb0d3fe77c1cfe8b60  docs/evidence/coherent-shell/webos-polish-host/latte/settings.png
+DATA 7920b116374b6c36684c32205a882aecd21171f86c40ec314598261430fc2ab7  docs/evidence/coherent-shell/webos-polish-host/latte/shade.png
+DATA 7c9d27d5a13b8f9e0547c8e8fa3a66c3d2f666e32a3b425108265f674bc0791b  docs/evidence/coherent-shell/webos-polish-host/latte/themes.png
+DATA 04bf07fc0c9b60b28662303751331092b5638d66ba48c70a26a0736c280bc0d6  docs/evidence/coherent-shell/webos-polish-qemu/deck-home.png
+DATA 83f065a0dd69f605b51dadf1da77d48c628579d009ea4cd54087b229ada62a40  docs/evidence/wifi-settings/webos-polish-qemu/wifi-auth-error-dark.png
+DATA 05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d  docs/evidence/wifi-settings/webos-polish-qemu/wifi-forget-confirm-dark.png
+DATA de1da296526f5f6feb4d44972fc3ccd88ce495be38265a788e0463031faae405  docs/evidence/wifi-settings/webos-polish-qemu/wifi-list-dark.png
+DATA e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8  docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png
+DATA 95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a  docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1788,3 +1804,26 @@ These DATA screenshots and short video clips contain invented notifications in t
 | `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return.mp4` | 33115 | DATA | `01252e5ea0c1c839cb8ec8143badb480636aa6e90b78ad8f17841e0022324672` |
 | `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-cancel.png` | 56150 | DATA | `d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289` |
 | `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-held.png` | 57079 | DATA | `125bc691f5c0c8f7e426a80b5989fb4b4b45d21d44d4e476e4e6a13c62ba6462` |
+
+### webOS polish review fix captures
+
+These DATA screenshots are host-rendered and paired headless-QEMU captures of invented fixture content (no real networks, notifications or user data). The adjacent READMEs record commands and limits; no physical claim.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/webos-polish-host/dark/drawer.png` | 49067 | DATA | `7c0236199807eef7cb68e884233eb6e1f1560389e75685b01508f1d645c4cdbc` |
+| `docs/evidence/coherent-shell/webos-polish-host/dark/preview.png` | 53939 | DATA | `d0ae67a92ccfd2f06d3ff5c9a05f0ddb36378a99c2cb4d501745cbd4d3588d98` |
+| `docs/evidence/coherent-shell/webos-polish-host/dark/settings.png` | 43989 | DATA | `d6c24fdd4179650139fa605737d1e29644954662dd7dd1767e59771f2cbf95c9` |
+| `docs/evidence/coherent-shell/webos-polish-host/dark/shade.png` | 31755 | DATA | `3dff33df910839c6557f58453fd75dcf0b7e348ddcd872d5611b155ce3d131fd` |
+| `docs/evidence/coherent-shell/webos-polish-host/dark/themes.png` | 26332 | DATA | `ecd12bb4fa419db0c186dff401f8dcd0664a6adc71b1ac01537291a5bf5516d3` |
+| `docs/evidence/coherent-shell/webos-polish-host/latte/drawer.png` | 48309 | DATA | `2ab25d61035dc47d48e37745bb4f767936f2aae35752fed285caad02a6a75756` |
+| `docs/evidence/coherent-shell/webos-polish-host/latte/preview.png` | 55385 | DATA | `04064a159eebdce9c757511c53e3f5ec2ea4d063e5acfa0406d71b6234d2dc84` |
+| `docs/evidence/coherent-shell/webos-polish-host/latte/settings.png` | 42505 | DATA | `1012e2c71c16d01e2af568de7bc4ba903eaa8ab47893cbeb0d3fe77c1cfe8b60` |
+| `docs/evidence/coherent-shell/webos-polish-host/latte/shade.png` | 30494 | DATA | `7920b116374b6c36684c32205a882aecd21171f86c40ec314598261430fc2ab7` |
+| `docs/evidence/coherent-shell/webos-polish-host/latte/themes.png` | 25666 | DATA | `7c9d27d5a13b8f9e0547c8e8fa3a66c3d2f666e32a3b425108265f674bc0791b` |
+| `docs/evidence/coherent-shell/webos-polish-qemu/deck-home.png` | 13892 | DATA | `04bf07fc0c9b60b28662303751331092b5638d66ba48c70a26a0736c280bc0d6` |
+| `docs/evidence/wifi-settings/webos-polish-qemu/wifi-auth-error-dark.png` | 56852 | DATA | `83f065a0dd69f605b51dadf1da77d48c628579d009ea4cd54087b229ada62a40` |
+| `docs/evidence/wifi-settings/webos-polish-qemu/wifi-forget-confirm-dark.png` | 23775 | DATA | `05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d` |
+| `docs/evidence/wifi-settings/webos-polish-qemu/wifi-list-dark.png` | 37770 | DATA | `de1da296526f5f6feb4d44972fc3ccd88ce495be38265a788e0463031faae405` |
+| `docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png` | 52048 | DATA | `e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8` |
+| `docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png` | 40215 | DATA | `95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a` |
