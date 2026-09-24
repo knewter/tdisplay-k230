@@ -18,7 +18,7 @@ Proof: `python3 tests/test_work_board.py` and `python3 scripts/build_site.py` pr
 
 ## 3. Land and verify publication
 
-- [ ] 3.1 Commit the implementation and a concise data-provenance note; run `openspec validate the-site-shows-a-public-work-board --strict` and `python3 scripts/build_site.py` at the exact candidate revision.
+- [x] 3.1 Commit the implementation and a concise data-provenance note; run `openspec validate the-site-shows-a-public-work-board --strict` and `python3 scripts/build_site.py` at the exact candidate revision.
 - [ ] 3.2 After review and push, inspect the published `/work/` URL and its front-door/handheld links at the landed revision, record URL, revision, UTC timestamp, and any deployment failure in `docs/evidence/spec-site-work-board/README.md`; verify with `python3 scripts/build_site.py`.
 - [ ] 3.3 Archive and sync only after the built and published page meets every task; run `openspec validate --all --strict`, then check the resulting master, CI and Pages revision. Keep the change open if publication or evidence remains unverified.
 
