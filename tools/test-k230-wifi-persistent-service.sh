@@ -39,7 +39,8 @@ jq -e 'index("d /var/lib/k230 0700 root root -")
   and index("d /var/lib/k230/wifi 0700 root root -")' <<<"$tmpfiles" >/dev/null
 
 rg -q --fixed-strings 'LoadCredential = "wpa_supplicant.conf:/var/lib/k230/wifi/wpa_supplicant.conf"' nix/hardware.nix
-rg -q --fixed-strings 'wpa_cli -p /run/k230-wifi/wpa_supplicant -i wlan0 status' docs/wifi-persistent-credential.md
+rg -q --fixed-strings 'wpa_cli -s /run/k230-wifi/wpa_supplicant/client' docs/wifi-persistent-credential.md
+rg -q --fixed-strings -- '-p /run/k230-wifi/wpa_supplicant -i wlan0 status' docs/wifi-persistent-credential.md
 if rg -n -i '^[[:space:]]*(ssid|psk|password)=' nix docs/wifi-persistent-credential.md; then
   echo "protected-network material appeared in tracked persistent configuration" >&2
   exit 1

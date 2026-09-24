@@ -33,6 +33,7 @@ let
   k230WifiDriver = pkgs.callPackage ./k230-wifi-driver.nix {
     kernel = config.boot.kernelPackages.kernel;
   };
+  wifiSettingsBroker = pkgs.callPackage ./wifi-settings-broker.nix { };
   splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
 in
 {
@@ -217,6 +218,32 @@ in
       StandardError = "null";
       Restart = "on-failure";
       RestartSec = "5s";
+    };
+  };
+
+  # The shell can request scan/connect/forget only through this broker. Its
+  # runtime socket is root:shell 0660 and every peer is checked against the
+  # shell UID. The candidate supplicant's files live below private/ (0700).
+  # A separately scheduled restore timer is armed before the broker stops
+  # k230-wifi, so a broker crash cannot strand the previous service forever.
+  systemd.services.k230-wifi-settings = lib.mkIf config.k230.shell.enable {
+    description = "Private Wi-Fi Settings broker";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-tmpfiles-setup.service" ];
+    path = [ pkgs.systemd pkgs.iw pkgs.wpa_supplicant ];
+    serviceConfig = {
+      Type = "simple";
+      User = "root";
+      Group = "shell";
+      ExecStart = "${wifiSettingsBroker}/bin/k230-wifi-settings-broker --socket /run/k230-wifi-settings/broker.sock";
+      RuntimeDirectory = "k230-wifi-settings";
+      RuntimeDirectoryMode = "0750";
+      UMask = "0077";
+      StandardOutput = "null";
+      StandardError = "null";
+      Restart = "on-failure";
+      RestartSec = "2s";
+      KillMode = "control-group";
     };
   };
 
