@@ -36,6 +36,8 @@ const mediaSource = (path: string) => {
 };
 const artifactName = (path: string) => path.split("/").slice(-2).join(" / ");
 const DetailTemplate = "template";
+const artifactPaths = [...new Set(work.items.flatMap((item) => [...item.evidence, ...item.details.map((doc) => doc.path)]))];
+const artifactIndex = artifactPaths.map((path) => ({ path, href: evidenceLink(path), raw: rawEvidenceUrl(work.sourceRevision, path), source: github(path) }));
 const accepted = (path: string) => {
   const parts = path.split("/");
   return url(`c/${parts[2]}-${parts[3]}/`);
@@ -110,11 +112,21 @@ const items = await Promise.all(work.items.map(async (item) => ({
       </div>
       <footer class="media-footer">
         <button id="media-previous" type="button" aria-label="Previous media">←</button>
-        <div class="media-description"><strong id="media-caption"></strong><span id="media-provenance"></span><a id="media-source">Open original evidence</a></div>
+        <div class="media-description"><strong id="media-caption"></strong><span id="media-provenance"></span><a id="media-source" data-original target="_blank" rel="noopener">Open original evidence</a></div>
         <button id="media-next" type="button" aria-label="Next media">→</button>
       </footer>
     </div>
   </dialog>
+  <dialog id="work-file-dialog" class="file-dialog" aria-label="Evidence document">
+    <div class="file-frame">
+      <header class="file-bar"><strong id="file-name"></strong><button id="file-close" type="button">Close ×</button></header>
+      <div class="file-tools"><span id="file-status" role="status"></span><a id="file-original" data-original target="_blank" rel="noopener">Download original file</a></div>
+      <iframe id="file-reader" title="Rendered evidence document" sandbox="allow-same-origin" hidden></iframe>
+      <article id="file-markdown" class="work-markdown" hidden></article>
+      <pre id="file-text" tabindex="0" hidden></pre>
+    </div>
+  </dialog>
+  <script type="application/json" id="work-artifact-index" set:html={JSON.stringify(artifactIndex).replace(/</g, "\\u003c")} />
   {items.map((item) => <DetailTemplate id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
       {item.media.length > 0 && <section class="detail-media" aria-label="Visual evidence">
@@ -151,8 +163,126 @@ const items = await Promise.all(work.items.map(async (item) => ({
   const mediaStage = document.querySelector<HTMLElement>("#media-stage");
   let mediaItems: HTMLButtonElement[] = [];
   let mediaIndex = 0;
-  let mediaReturnFocus: HTMLButtonElement | null = null;
+  let mediaReturnFocus: HTMLElement | null = null;
   let cardScrollTop = 0;
+  let mediaBodyOverflow = "";
+  type Artifact = { path: string; href: string; raw: string; source: string };
+  const artifacts: Artifact[] = JSON.parse(document.querySelector("#work-artifact-index")?.textContent ?? "[]");
+  const artifactByUrl = new Map<string, Artifact>();
+  artifacts.forEach((artifact) => [artifact.href, artifact.raw, artifact.source].forEach((link) => artifactByUrl.set(new URL(link, location.href).href, artifact)));
+  const fileDialog = document.querySelector<HTMLDialogElement>("#work-file-dialog");
+  const fileReader = document.querySelector<HTMLIFrameElement>("#file-reader");
+  const fileText = document.querySelector<HTMLPreElement>("#file-text");
+  const fileMarkdown = document.querySelector<HTMLElement>("#file-markdown");
+  const fileClose = document.querySelector<HTMLButtonElement>("#file-close");
+  let fileReturnFocus: HTMLElement | null = null;
+  let fileBodyOverflow = "";
+  let fileScrollTop = 0;
+  let fileRequest: AbortController | null = null;
+
+  function closeFile(): void {
+    if (!fileDialog?.open) return;
+    fileRequest?.abort();
+    fileRequest = null;
+    fileReader?.removeAttribute("src");
+    if (fileText) fileText.textContent = "";
+    fileMarkdown?.replaceChildren();
+    fileDialog.close();
+    document.body.style.overflow = fileBodyOverflow;
+    if (content) content.scrollTop = fileScrollTop;
+    fileReturnFocus?.focus({ preventScroll: true });
+  }
+
+  async function openFile(artifact: Artifact, trigger: HTMLElement): Promise<void> {
+    if (!fileDialog || !fileReader || !fileText) return;
+    fileRequest?.abort();
+    const request = new AbortController();
+    fileRequest = request;
+    fileReturnFocus = trigger;
+    fileScrollTop = content?.scrollTop ?? 0;
+    document.querySelector("#file-name")!.textContent = artifact.path;
+    document.querySelector<HTMLAnchorElement>("#file-original")!.href = artifact.raw;
+    const status = document.querySelector("#file-status")!;
+    status.textContent = "Loading evidence…";
+    fileReader.hidden = true;
+    fileReader.removeAttribute("src");
+    fileText.hidden = true;
+    fileText.textContent = "";
+    if (fileMarkdown) { fileMarkdown.hidden = true; fileMarkdown.replaceChildren(); }
+    if (!fileDialog.open) {
+      fileBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      fileDialog.showModal();
+    }
+    fileClose?.focus();
+    if (artifact.path.toLowerCase().endsWith(".md") && fileMarkdown) {
+      const sections = [...(content?.querySelectorAll(".detail-document") ?? []), ...Array.from(document.querySelectorAll<HTMLTemplateElement>("template[id^='work-detail-']")).flatMap((template) => Array.from(template.content.querySelectorAll(".detail-document")))];
+      const rendered = sections.find((section) => section.querySelector(".detail-document-heading span")?.textContent === artifact.path)?.querySelector(".work-markdown");
+      if (rendered) {
+        fileMarkdown.replaceChildren(...Array.from(rendered.childNodes).map((node) => node.cloneNode(true)));
+        fileMarkdown.hidden = false;
+        status.textContent = "Rendered Markdown";
+        return;
+      }
+    }
+    const report = new URL(artifact.href, location.href);
+    if (artifact.path.toLowerCase().endsWith(".md") && report.origin === location.origin) {
+      fileReader.title = artifact.path;
+      fileReader.src = report.href;
+      fileReader.hidden = false;
+      status.textContent = "Rendered Markdown";
+      return;
+    }
+    if (!/\.(md|txt|log|json|csv|toml|yaml|yml|py|sh|ini|diff|patch|nix|c|h|rs|html|xml|sha256)$/i.test(artifact.path)) {
+      status.textContent = "This format has no document preview. Download the original file above.";
+      return;
+    }
+    const timeout = setTimeout(() => request.abort(), 15000);
+    try {
+      const response = await fetch(artifact.raw, { signal: request.signal });
+      if (!response.ok || !response.body) throw new Error("Evidence could not be loaded.");
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let length = 0;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        length += value.length;
+        if (length > 2 * 1024 * 1024) { await reader.cancel(); throw new Error("This file exceeds the 2 MiB preview limit. Download the original above."); }
+        chunks.push(value);
+      }
+      if (fileRequest !== request || request.signal.aborted) return;
+      const bytes = new Uint8Array(length);
+      let offset = 0;
+      chunks.forEach((chunk) => { bytes.set(chunk, offset); offset += chunk.length; });
+      fileText.textContent = new TextDecoder().decode(bytes);
+      fileText.hidden = false;
+      status.textContent = `${length.toLocaleString()} bytes · Text preview`;
+    } catch (error) {
+      if (fileRequest === request && fileDialog.open) status.textContent = request.signal.aborted ? "Preview timed out. Try again or download the original." : String(error instanceof Error ? error.message : error);
+    } finally { clearTimeout(timeout); }
+  }
+  fileClose?.addEventListener("click", closeFile);
+  fileDialog?.addEventListener("cancel", (event) => { event.preventDefault(); closeFile(); });
+  document.addEventListener("click", (event) => {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const link = (event.target as Element).closest<HTMLAnchorElement>("a[href]");
+    if (!link || link.hasAttribute("data-original")) return;
+    const artifact = artifactByUrl.get(link.href);
+    if (!artifact) return;
+    event.preventDefault();
+    if (/\.(png|jpe?g|webp|gif|svg|mp4|webm|mov|m4v)$/i.test(artifact.path)) {
+      const scope = link.closest(".detail-body") ?? (document.getElementById(`work-detail-${link.closest(".work-card")?.id}`) as HTMLTemplateElement | null)?.content;
+      mediaItems = Array.from(scope?.querySelectorAll<HTMLButtonElement>(".media-open") ?? []);
+      let index = mediaItems.findIndex((item) => new URL(item.dataset.evidence ?? "", location.href).href === link.href);
+      if (index < 0) {
+        const item = document.createElement("button");
+        Object.assign(item.dataset, { src: artifact.raw, evidence: artifact.raw, caption: artifact.path.split("/").pop(), provenance: "Evidence — see record", kind: /\.(mp4|webm|mov|m4v)$/i.test(artifact.path) ? "video" : "image" });
+        mediaItems = [item]; index = 0;
+      }
+      openMedia(index, link);
+    } else { void openFile(artifact, link); }
+  });
 
   function clearMedia(): void {
     mediaVideo?.pause();
@@ -188,20 +318,28 @@ const items = await Promise.all(work.items.map(async (item) => ({
     if (!mediaDialog?.open) return;
     clearMedia();
     mediaDialog.close();
+    document.body.style.overflow = mediaBodyOverflow;
     if (content) content.scrollTop = cardScrollTop;
     mediaReturnFocus?.focus({ preventScroll: true });
     mediaItems = [];
+  }
+
+  function openMedia(index: number, trigger: HTMLElement): void {
+    if (!mediaDialog) return;
+    mediaReturnFocus = trigger;
+    cardScrollTop = content?.scrollTop ?? 0;
+    displayMedia(index);
+    mediaBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    mediaDialog.showModal();
+    mediaClose?.focus();
   }
 
   content?.addEventListener("click", (event) => {
     const button = (event.target as Element).closest<HTMLButtonElement>(".media-open");
     if (!button || !mediaDialog) return;
     mediaItems = Array.from(content.querySelectorAll<HTMLButtonElement>(".media-open"));
-    mediaReturnFocus = button;
-    cardScrollTop = content.scrollTop;
-    displayMedia(mediaItems.indexOf(button));
-    mediaDialog.showModal();
-    mediaClose?.focus();
+    openMedia(mediaItems.indexOf(button), button);
   });
   mediaClose?.addEventListener("click", closeMedia);
   mediaDialog?.addEventListener("cancel", (event) => { event.preventDefault(); closeMedia(); });
@@ -238,6 +376,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
     const clone = template.content.firstElementChild?.cloneNode(true);
     if (!clone) return;
     closeMedia();
+    closeFile();
     content.replaceChildren(clone);
     content.scrollTop = 0;
     if (!dialog.open) {
@@ -259,6 +398,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
   function hide(): void {
     if (!dialog?.open) return;
     closeMedia();
+    closeFile();
     dialog.close();
     document.body.style.overflow = previousBodyOverflow;
     content?.replaceChildren();
@@ -373,6 +513,18 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .media-description strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .media-description span { color:#b8c9d7; }
   .media-description a { color:#83e2d9; }
+  .file-dialog { width:calc(100vw - 24px); height:calc(100dvh - 24px); max-width:none; max-height:none; margin:auto; padding:0; border:1px solid var(--rule); border-radius:8px; background:var(--surface); color:var(--ink); }
+  .file-dialog::backdrop { background:#050a0bba; }
+  .file-frame { height:100%; display:flex; flex-direction:column; min-height:0; }
+  .file-bar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.6rem 1rem; border-bottom:1px solid var(--rule); }
+  .file-bar strong { min-width:0; overflow-wrap:anywhere; font:.8rem/1.4 var(--mono); }
+  .file-bar button { flex:none; min-width:80px; min-height:44px; border:1px solid var(--rule); border-radius:5px; background:var(--surface-2); color:var(--ink); cursor:pointer; }
+  .file-tools { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; padding:.6rem 1rem; font:.75rem/1.4 var(--mono); }
+  .file-tools a { color:var(--accent); }
+  .file-frame iframe { flex:1; min-height:0; width:100%; border:0; background:var(--surface); }
+  .file-frame pre { flex:1; min-height:0; overflow:auto; margin:0; padding:1rem; font:.85rem/1.5 var(--mono); white-space:pre; background:var(--surface-2); }
+  .file-frame article { flex:1; min-height:0; overflow:auto; padding:1rem clamp(1rem,5vw,5rem); }
+  .file-frame [hidden] { display:none; }
   .detail-media figcaption { display:grid; gap:.35rem; padding:.8rem; font:.75rem/1.4 var(--mono); }
   .detail-media figcaption span { color:var(--muted); }
   .card-top { display:flex; justify-content:space-between; gap:.4rem; color:var(--muted); font-size:.63rem; line-height:1.3; }
