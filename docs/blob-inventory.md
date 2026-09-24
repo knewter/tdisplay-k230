@@ -1457,3 +1457,18 @@ Playwright Chromium captures of the local static work board. They show the
 card evidence menu and mobile gallery; existing media retains its original
 QEMU/design/board provenance. They are host website proof, not new device
 observations. Reproduction and source revision are in the adjacent README.
+
+### Rust drawer QEMU interaction captures
+
+`docs/evidence/coherent-shell/rust-drawer-interaction-qemu/` contains four
+headless QEMU DATA captures of public synthetic cards and temporary desktop
+fixtures. They show drawer open, scrolled, and dismissed states; no private
+app content. The exact source/package identities, command, observations, and
+limits are in the adjacent README. They are not physical-panel captures.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/deck.png` | 18508 | DATA | `30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73` |
+| `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png` | 18538 | DATA | `13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5` |
+| `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png` | 69645 | DATA | `6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f` |
+| `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-scrolled.png` | 68868 | DATA | `bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54` |
