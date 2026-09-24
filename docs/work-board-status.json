@@ -7,7 +7,9 @@
       "physical": "pending",
       "next": "Reduce measured Pixman card tracking cost, rerun the fixed card workload, then record real-finger acceptance on the normal image.",
       "dependencies": [],
-      "evidence": ["docs/evidence/card-shell/scaled-cache-board/README.md"],
+      "evidence": [
+        "docs/evidence/card-shell/scaled-cache-board/README.md"
+      ],
       "rationale": "The committed board cost trace misses the frame budget; checked implementation tasks do not establish a default, finger-accepted card shell.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
     },
@@ -17,7 +19,9 @@
       "physical": "pending",
       "next": "Run the remaining exact-image RVV/QEMU and reserved-board checks; keep the normal image unchanged until evidence passes.",
       "dependencies": [],
-      "evidence": ["docs/evidence/cpu-extensions/normal-image-build/README.md"],
+      "evidence": [
+        "docs/evidence/cpu-extensions/normal-image-build/README.md"
+      ],
       "rationale": "The committed source and build evidence covers the first five tasks, while later target and physical gates remain unchecked.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
     },
@@ -27,7 +31,9 @@
       "physical": "pending",
       "next": "Capture the focused real-finger camera sequence for both swipes, overview, expansion and return, then audit it against the last task.",
       "dependencies": [],
-      "evidence": ["docs/evidence/launcher-gestures/real-finger/README.md"],
+      "evidence": [
+        "docs/evidence/launcher-gestures/real-finger/README.md"
+      ],
       "rationale": "Fifteen of sixteen committed tasks are checked; the remaining physical camera acceptance is explicit in the task list.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
     },
@@ -36,8 +42,13 @@
       "source": "in-progress",
       "physical": "pending",
       "next": "Integrate live deck, launcher artwork, Settings and notification surfaces, then verify the complete shell on glass before checking the capability tasks.",
-      "dependencies": ["the-shell-manages-apps-as-cards", "the-shell-loads-omarchy-themes"],
-      "evidence": ["docs/evidence/coherent-shell/icons/README.md"],
+      "dependencies": [
+        "the-shell-manages-apps-as-cards",
+        "the-shell-loads-omarchy-themes"
+      ],
+      "evidence": [
+        "docs/evidence/coherent-shell/icons/README.md"
+      ],
       "rationale": "The icon resolver is a source checkpoint, but the 27-task coherent-shell capability and its named consumers remain open.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
     },
@@ -45,11 +56,14 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish source and section-override fixtures for the packaged Omarchy helpers, then connect generated appearance data to the real shell and clients.",
+      "next": "Build the generation/swap coordinator and shell/client appearance adapters from the now-tested helper fixtures; then verify selection on the board.",
       "dependencies": [],
-      "evidence": ["docs/evidence/omarchy-themes/helper-package.md"],
-      "rationale": "The pinned helper package and its isolated build are committed as task 1.1; theme application and device results remain open.",
-      "reviewRevision": "5f89026e1591145cfb9143ae8787d6489aaeed69"
+      "evidence": [
+        "docs/evidence/omarchy-themes/helper-package.md",
+        "docs/evidence/omarchy-themes/source-fixtures.md"
+      ],
+      "rationale": "All three helper packaging and source/section-override fixture tasks are committed; live theme activation, consumers and physical selection remain open.",
+      "reviewRevision": "95595a8e73a8670e462301acf6becfd8739f422d"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
@@ -57,19 +71,11 @@
       "physical": "pending",
       "next": "Resolve target format and presentation costs, then repeat paired GPU-versus-Pixman acceptance on the board before any default change.",
       "dependencies": [],
-      "evidence": ["docs/evidence/vglite-scene-board/context-lifetime/README.md"],
+      "evidence": [
+        "docs/evidence/vglite-scene-board/context-lifetime/README.md"
+      ],
       "rationale": "A committed GPU trial exists, but the comparison did not establish a faster accepted default compositor path.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
-    },
-    "the-site-shows-a-public-work-board": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "not-applicable",
-      "next": "Review and land the built work board, then verify the published URL at the exact deployed revision.",
-      "dependencies": [],
-      "evidence": [],
-      "rationale": "The generator, responsive page and host checks are committed; publication and archive tasks remain open.",
-      "reviewRevision": "f2be698a01ea85e4812ca900c8d7ed1e76c6be7e"
     }
   }
 }
