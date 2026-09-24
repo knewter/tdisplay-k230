@@ -118,7 +118,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Test real-finger theme choices and reboot persistence on the board; finish wallpaper gallery, video handling and remaining appearance roles.",
+      "next": "Install and repeat the community rgba border fix; verify unchanged clone activation, then complete theme roles, video/workload and reboot/real-touch gates.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -138,7 +138,8 @@
         "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
         "docs/evidence/coherent-shell/themed-installed/README.md",
         "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md",
-        "docs/evidence/omarchy-themes/board-switching/README.md"
+        "docs/evidence/omarchy-themes/board-switching/README.md",
+        "docs/evidence/omarchy-themes/community-board/README.md"
       ],
       "rationale": "Dark/light activation on installed df2c34b1 acknowledged both receivers and app appearance. Reviewed native board captures show theme colors, wallpaper and icon variants; restored capture is byte-identical to baseline. The Rust chooser now renders a bounded selected-still sample in host dark/light fixtures. Reboot persistence, gallery/video choices, role coverage, performance and finger acceptance remain open.",
       "reviewRevision": "4be09345",
