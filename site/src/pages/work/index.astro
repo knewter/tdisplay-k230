@@ -37,7 +37,7 @@ const mediaSource = (path: string) => {
 const artifactName = (path: string) => path.split("/").slice(-2).join(" / ");
 const DetailTemplate = "template";
 const artifactPaths = [...new Set(work.items.flatMap((item) => [...item.evidence, ...item.details.map((doc) => doc.path)]))];
-const artifactIndex = artifactPaths.map((path) => ({ path, href: evidenceLink(path), raw: rawEvidenceUrl(work.sourceRevision, path), source: github(path) }));
+const artifactIndex = artifactPaths.map((path) => [path, specs.evidence.find((file) => file.path === path)?.slug ?? null]);
 const accepted = (path: string) => {
   const parts = path.split("/");
   return url(`c/${parts[2]}-${parts[3]}/`);
@@ -126,7 +126,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
       <pre id="file-text" tabindex="0" hidden></pre>
     </div>
   </dialog>
-  <script type="application/json" id="work-artifact-index" set:html={JSON.stringify(artifactIndex).replace(/</g, "\\u003c")} />
+  <script type="application/json" id="work-artifact-index" data-revision={work.sourceRevision} data-base={url("")} set:html={JSON.stringify(artifactIndex).replace(/</g, "\\u003c")} />
   {items.map((item) => <DetailTemplate id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
       {item.media.length > 0 && <section class="detail-media" aria-label="Visual evidence">
@@ -167,7 +167,12 @@ const items = await Promise.all(work.items.map(async (item) => ({
   let cardScrollTop = 0;
   let mediaBodyOverflow = "";
   type Artifact = { path: string; href: string; raw: string; source: string };
-  const artifacts: Artifact[] = JSON.parse(document.querySelector("#work-artifact-index")?.textContent ?? "[]");
+  const artifactData = document.querySelector<HTMLElement>("#work-artifact-index");
+  const artifacts: Artifact[] = (JSON.parse(artifactData?.textContent ?? "[]") as [string, string | null][]).map(([path, slug]) => {
+    const encoded = path.split("/").map(encodeURIComponent).join("/");
+    const raw = `https://raw.githubusercontent.com/knewter/tdisplay-k230/${artifactData?.dataset.revision}/${encoded}`;
+    return { path, raw, href: slug ? `${artifactData?.dataset.base}evidence/${slug}/` : raw, source: `https://github.com/knewter/tdisplay-k230/blob/${artifactData?.dataset.revision}/${encoded}` };
+  });
   const artifactByUrl = new Map<string, Artifact>();
   artifacts.forEach((artifact) => [artifact.href, artifact.raw, artifact.source].forEach((link) => artifactByUrl.set(new URL(link, location.href).href, artifact)));
   const fileDialog = document.querySelector<HTMLDialogElement>("#work-file-dialog");
