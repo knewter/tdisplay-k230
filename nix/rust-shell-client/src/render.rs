@@ -50,6 +50,17 @@ fn theme_brush<'a>(
 }
 
 fn fill_brush(cr: &Context, brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> bool {
+    let Some(gradient) = brush_gradient(brush, x, y, w, h) else {
+        return false;
+    };
+    if cr.set_source(&gradient).is_err() {
+        return false;
+    }
+    cr.rectangle(x, y, w, h);
+    cr.fill().is_ok()
+}
+
+fn brush_gradient(brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> Option<LinearGradient> {
     let radians = brush.angle_degrees.to_radians();
     let dx = radians.cos() * w / 2.0;
     let dy = radians.sin() * h / 2.0;
@@ -60,16 +71,30 @@ fn fill_brush(cr: &Context, brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> bo
         y + h / 2.0 + dy,
     );
     for stop in &brush.stops {
-        let Some((r, g, b, a)) = brush_color(&stop.argb) else {
-            return false;
-        };
+        let (r, g, b, a) = brush_color(&stop.argb)?;
         gradient.add_color_stop_rgba(stop.offset, r, g, b, a * brush.alpha);
     }
-    if cr.set_source(&gradient).is_err() {
-        return false;
+    Some(gradient)
+}
+
+fn overlay_brush(
+    cr: &Context,
+    brush: Option<&Brush>,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    alpha: f64,
+    fallback: u32,
+) {
+    if let Some(gradient) = brush.and_then(|brush| brush_gradient(brush, x, y, w, h)) {
+        if cr.set_source(&gradient).is_ok() {
+            let _ = cr.paint_with_alpha(alpha);
+            return;
+        }
     }
-    cr.rectangle(x, y, w, h);
-    cr.fill().is_ok()
+    color(cr, fallback, alpha);
+    let _ = cr.paint();
 }
 
 fn brush_rgb(theme: Option<&AppearanceSnapshot>, section: &str, key: &str, fallback: u32) -> u32 {
@@ -82,11 +107,62 @@ fn brush_rgb(theme: Option<&AppearanceSnapshot>, section: &str, key: &str, fallb
     ((r * 255.0) as u32) << 16 | ((g * 255.0) as u32) << 8 | (b * 255.0) as u32
 }
 
-fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+fn palette_rgb_or(theme: Option<&AppearanceSnapshot>, key: &str, fallback: u32) -> u32 {
+    let Some(value) = theme.and_then(|snapshot| snapshot.palette_color(key)) else {
+        return fallback;
+    };
+    u32::from(value.red) << 16 | u32::from(value.green) << 8 | u32::from(value.blue)
+}
+
+#[derive(Clone, Copy)]
+struct VisualStyle {
+    text: u32,
+    muted: u32,
+    accent: u32,
+    error: u32,
+}
+
+fn visual_style(theme: Option<&AppearanceSnapshot>, section: &str) -> VisualStyle {
+    let text = brush_rgb(
+        theme,
+        section,
+        "text",
+        palette_rgb_or(theme, "foreground", 0xf4f7f8),
+    );
+    let muted = palette_rgb_or(theme, "muted", 0xc8d7dd);
+    let accent = brush_rgb(
+        theme,
+        section,
+        if section == "notifications" {
+            "countdown"
+        } else {
+            "selected-text"
+        },
+        palette_rgb_or(theme, "accent", 0x78d7cb),
+    );
+    VisualStyle {
+        text,
+        muted,
+        accent,
+        error: palette_rgb_or(theme, "red", 0xf4b9a6),
+    }
+}
+
+fn text_weight(
+    cr: &Context,
+    value: &str,
+    x: f64,
+    y: f64,
+    width: f64,
+    size: f64,
+    rgb: u32,
+    weight: pango::Weight,
+) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family("DejaVu Sans");
     font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(weight);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
     layout.set_width((width * f64::from(pango::SCALE)) as i32);
@@ -94,6 +170,14 @@ fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u
     color(cr, rgb, 1.0);
     cr.move_to(x, y);
     pangocairo::functions::show_layout(cr, &layout);
+}
+
+fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
+}
+
+fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Bold);
 }
 
 fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
@@ -117,10 +201,77 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
-fn service_card(cr: &Context, x: f64, y: f64, w: f64, h: f64) {
+fn service_card(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    section: &str,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    selected: bool,
+) {
+    let _ = cr.save();
     rounded(cr, x, y, w, h, 16.0);
-    color(cr, 0x263946, 1.0);
-    let _ = cr.fill();
+    cr.clip();
+    let brush = theme_brush(
+        theme,
+        section,
+        if selected {
+            "selected-background"
+        } else {
+            "background"
+        },
+    )
+    .or_else(|| theme_brush(theme, "menu", "background"));
+    if !brush.is_some_and(|brush| fill_brush(cr, brush, x, y, w, h)) {
+        color(cr, 0x263946, 1.0);
+        cr.paint().ok();
+    }
+    let tint = if selected {
+        "selected-fill-alpha"
+    } else {
+        "normal-fill-alpha"
+    };
+    let alpha = match theme.and_then(|snapshot| snapshot.token("controls", tint)) {
+        Some(AppearanceToken::Number(value)) => value.clamp(0.04, 0.35),
+        _ => {
+            if selected {
+                0.18
+            } else {
+                0.08
+            }
+        }
+    };
+    overlay_brush(
+        cr,
+        theme_brush(theme, "controls", "normal-color"),
+        x,
+        y,
+        w,
+        h,
+        alpha,
+        0x78929d,
+    );
+    let _ = cr.restore();
+
+    if let Some(border) = theme_brush(
+        theme,
+        section,
+        if selected {
+            "selected-border"
+        } else {
+            "border"
+        },
+    ) {
+        if let Some(gradient) = brush_gradient(border, x, y, w, h) {
+            rounded(cr, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 15.25);
+            cr.set_line_width(1.5);
+            if cr.set_source(&gradient).is_ok() {
+                let _ = cr.stroke();
+            }
+        }
+    }
 }
 
 fn control_text(control: &Control) -> String {
@@ -151,15 +302,16 @@ fn paint_theme_chooser(
     view: &ThemeView,
     theme: Option<&AppearanceSnapshot>,
 ) {
+    let style = visual_style(theme, "image-picker");
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
         let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
     }
-    text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, 0x78d7cb);
-    text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, 0x78d7cb);
+    text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
+    text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
     match view.page {
         ThemePage::Controls => return,
         ThemePage::List => {
-            text(cr, "Themes", 28.0, 112.0, w - 56.0, 36.0, 0xf4f7f8);
+            heading(cr, "Themes", 28.0, 112.0, w - 56.0, 36.0, style.text);
             text(
                 cr,
                 "Tap to preview · swipe to browse",
@@ -167,7 +319,7 @@ fn paint_theme_chooser(
                 166.0,
                 w - 56.0,
                 18.0,
-                0xc8d7dd,
+                style.muted,
             );
             if let Some(list) = &view.list {
                 let _ = cr.save();
@@ -179,8 +331,17 @@ fn paint_theme_chooser(
                     if y >= h - 64.0 {
                         break;
                     }
-                    service_card(cr, 24.0, y, w - 48.0, 82.0);
-                    text(cr, &entry.label, 42.0, y + 13.0, w - 86.0, 24.0, 0xf4f7f8);
+                    service_card(
+                        cr,
+                        theme,
+                        "launcher",
+                        24.0,
+                        y,
+                        w - 48.0,
+                        82.0,
+                        list.active.id.as_deref() == Some(entry.id.as_str()),
+                    );
+                    heading(cr, &entry.label, 42.0, y + 13.0, w - 86.0, 24.0, style.text);
                     let status = if list.active.id.as_deref() == Some(entry.id.as_str()) {
                         "Current theme"
                     } else {
@@ -189,7 +350,7 @@ fn paint_theme_chooser(
                             crate::theme_catalog::ThemeOrigin::User => "User theme",
                         }
                     };
-                    text(cr, status, 42.0, y + 47.0, w - 86.0, 16.0, 0xc8d7dd);
+                    text(cr, status, 42.0, y + 47.0, w - 86.0, 16.0, style.muted);
                 }
                 let _ = cr.restore();
                 if list.themes.is_empty() {
@@ -200,25 +361,33 @@ fn paint_theme_chooser(
                         226.0,
                         w - 56.0,
                         20.0,
-                        0xc8d7dd,
+                        style.muted,
                     );
                 }
             } else {
-                text(cr, "Loading themes", 28.0, 226.0, w - 56.0, 20.0, 0xc8d7dd);
+                text(
+                    cr,
+                    "Loading themes",
+                    28.0,
+                    226.0,
+                    w - 56.0,
+                    20.0,
+                    style.muted,
+                );
             }
         }
         ThemePage::Preview => {
             let Some(preview) = view.preview.as_ref() else {
                 return;
             };
-            text(
+            heading(
                 cr,
                 &preview.theme.label,
                 28.0,
                 112.0,
                 w - 56.0,
                 34.0,
-                0xf4f7f8,
+                style.text,
             );
             text(
                 cr,
@@ -231,15 +400,15 @@ fn paint_theme_chooser(
                 160.0,
                 w - 56.0,
                 18.0,
-                0xc8d7dd,
+                style.muted,
             );
-            text(cr, "Palette", 28.0, 219.0, w - 56.0, 20.0, 0xc8d7dd);
+            text(cr, "Palette", 28.0, 219.0, w - 56.0, 20.0, style.muted);
             for (index, (name, value)) in preview.palette.iter().take(5).enumerate() {
                 let x = 28.0 + index as f64 * ((w - 56.0) / 5.0);
                 rounded(cr, x, 257.0, 66.0, 66.0, 12.0);
                 color(cr, palette_rgb(value).unwrap_or(0x425661), 1.0);
                 let _ = cr.fill();
-                text(cr, name, x, 334.0, 86.0, 13.0, 0xc8d7dd);
+                text(cr, name, x, 334.0, 86.0, 13.0, style.muted);
             }
             text(
                 cr,
@@ -252,9 +421,9 @@ fn paint_theme_chooser(
                 408.0,
                 w - 56.0,
                 17.0,
-                0xc8d7dd,
+                style.muted,
             );
-            text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, 0xf4f7f8);
+            text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, style.text);
             let _ = cr.save();
             cr.rectangle(0.0, 662.0, w, (h - 814.0).max(0.0));
             cr.clip();
@@ -264,7 +433,16 @@ fn paint_theme_chooser(
                 if y >= h - 152.0 {
                     break;
                 }
-                service_card(cr, 24.0, y, w - 48.0, 70.0);
+                service_card(
+                    cr,
+                    theme,
+                    "image-picker",
+                    24.0,
+                    y,
+                    w - 48.0,
+                    70.0,
+                    background.selected,
+                );
                 text(
                     cr,
                     &background.label,
@@ -272,7 +450,7 @@ fn paint_theme_chooser(
                     y + 9.0,
                     w - 84.0,
                     21.0,
-                    0xf4f7f8,
+                    style.text,
                 );
                 let status = if background.kind == BackgroundKind::Video {
                     "Video unavailable"
@@ -289,14 +467,36 @@ fn paint_theme_chooser(
                     w - 84.0,
                     15.0,
                     if background.kind == BackgroundKind::Video {
-                        0xf4b9a6
+                        style.error
                     } else {
-                        0xc8d7dd
+                        style.muted
                     },
                 );
             }
             let _ = cr.restore();
-            service_card(cr, 24.0, h - 126.0, w - 48.0, 86.0);
+            service_card(cr, theme, "controls", 24.0, h - 126.0, w - 48.0, 86.0, true);
+            if view.pending.is_some() {
+                let alpha = match theme
+                    .and_then(|snapshot| snapshot.token("controls", "pressed-fill-alpha"))
+                {
+                    Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
+                    _ => 0.22,
+                };
+                let _ = cr.save();
+                rounded(cr, w / 2.0, h - 126.0, w / 2.0 - 24.0, 86.0, 16.0);
+                cr.clip();
+                overlay_brush(
+                    cr,
+                    theme_brush(theme, "controls", "normal-color"),
+                    w / 2.0,
+                    h - 126.0,
+                    w / 2.0 - 24.0,
+                    86.0,
+                    alpha,
+                    style.accent,
+                );
+                let _ = cr.restore();
+            }
             text(
                 cr,
                 "Cancel",
@@ -304,7 +504,7 @@ fn paint_theme_chooser(
                 h - 101.0,
                 w / 2.0 - 50.0,
                 22.0,
-                0xc8d7dd,
+                style.muted,
             );
             text(
                 cr,
@@ -317,22 +517,30 @@ fn paint_theme_chooser(
                 h - 101.0,
                 w / 2.0 - 46.0,
                 22.0,
-                if view.selection_error {
-                    0x74838a
+                if view.selection_error || view.pending.is_some() {
+                    style.muted
                 } else {
-                    0x78d7cb
+                    style.accent
                 },
             );
         }
     }
     if view.pending.is_some() {
-        text(cr, "Preparing…", 28.0, h - 167.0, w - 56.0, 18.0, 0xc8d7dd);
+        text(
+            cr,
+            "Preparing…",
+            28.0,
+            h - 167.0,
+            w - 56.0,
+            18.0,
+            style.muted,
+        );
     }
     if let Some(error) = &view.error {
-        text(cr, error, 28.0, h - 167.0, w - 56.0, 17.0, 0xf4b9a6);
+        text(cr, error, 28.0, h - 167.0, w - 56.0, 17.0, style.error);
     }
     if let Some(message) = &view.message {
-        text(cr, message, 28.0, h - 167.0, w - 56.0, 17.0, 0xc8d7dd);
+        text(cr, message, 28.0, h - 167.0, w - 56.0, 17.0, style.muted);
     }
 }
 
@@ -393,6 +601,7 @@ fn scene(
         Route::Settings => "controls",
         Route::Hide => "launcher",
     };
+    let style = visual_style(theme, section);
     if !theme_brush(theme, section, "background")
         .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h))
     {
@@ -403,9 +612,18 @@ fn scene(
         let _ = cr.set_source(&gradient);
         let _ = cr.fill();
     }
-    color(cr, 0x78d7cb, 1.0);
-    cr.rectangle(0.0, panel_y, w, 3.0);
-    let _ = cr.fill();
+    if !theme_brush(theme, section, "border")
+        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, 2.0))
+    {
+        color(cr, style.accent, 1.0);
+        cr.rectangle(0.0, panel_y, w, 2.0);
+        let _ = cr.fill();
+    }
+    if matches!(route, Route::Drawer | Route::Shade) {
+        rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
+        color(cr, style.accent, 0.82);
+        let _ = cr.fill();
+    }
     let title = match route {
         Route::Drawer => "Apps",
         Route::Shade => "Notifications",
@@ -413,7 +631,7 @@ fn scene(
         Route::Hide => return,
     };
     if !(route == Route::Settings && chooser.is_some_and(|view| view.page != ThemePage::Controls)) {
-        text(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, 0xf4f7f8);
+        heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
     }
     match route {
         Route::Drawer => {
@@ -424,7 +642,7 @@ fn scene(
                 panel_y + 92.0,
                 w - 56.0,
                 18.0,
-                0xc8d7dd,
+                style.muted,
             );
             let row_start = list_top(height);
             let _ = cr.save();
@@ -436,20 +654,17 @@ fn scene(
                 if y >= h - 28.0 {
                     break;
                 }
-                if let Some(brush) = theme_brush(theme, "menu", "background") {
-                    let _ = cr.save();
-                    rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
-                    cr.clip();
-                    let _ = fill_brush(cr, brush, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT);
-                    let _ = cr.restore();
-                } else {
-                    rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
-                    color(cr, 0x263946, 1.0);
-                    let _ = cr.fill();
-                }
-                rounded(cr, 38.0, y + 15.0, 52.0, 52.0, 12.0);
-                color(cr, 0x375466, 1.0);
-                let _ = cr.fill();
+                service_card(
+                    cr,
+                    theme,
+                    "menu",
+                    24.0,
+                    y,
+                    w - 48.0,
+                    ROW_VISIBLE_HEIGHT,
+                    false,
+                );
+                service_card(cr, theme, "launcher", 38.0, y + 15.0, 52.0, 52.0, true);
                 let painted = app
                     .icon
                     .as_deref()
@@ -462,16 +677,16 @@ fn scene(
                         .unwrap_or('?')
                         .to_uppercase()
                         .to_string();
-                    text(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, 0xf4f7f8);
+                    heading(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, style.accent);
                 }
-                text(
+                heading(
                     cr,
                     &app.name,
                     108.0,
                     y + 20.0,
                     w - 156.0,
                     25.0,
-                    brush_rgb(theme, "menu", "text", 0xf4f7f8),
+                    brush_rgb(theme, "menu", "text", style.text),
                 );
                 text(
                     cr,
@@ -480,7 +695,7 @@ fn scene(
                     y + 52.0,
                     w - 156.0,
                     16.0,
-                    brush_rgb(theme, "menu", "text", 0xc8d7dd),
+                    brush_rgb(theme, "menu", "text", style.muted),
                 );
             }
             let _ = cr.restore();
@@ -492,12 +707,12 @@ fn scene(
                     row_start + 18.0,
                     w - 56.0,
                     21.0,
-                    0xc8d7dd,
+                    style.muted,
                 );
             }
         }
         Route::Shade => {
-            text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, 0x78d7cb);
+            text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, style.accent);
             text(
                 cr,
                 "Swipe up above the list to close",
@@ -505,7 +720,7 @@ fn scene(
                 86.0,
                 w - 56.0,
                 15.0,
-                0xc8d7dd,
+                style.muted,
             );
             let items = services.and_then(|view| view.notifications.as_ref());
             let count = items.map_or(0, |snapshot| snapshot.count);
@@ -516,12 +731,29 @@ fn scene(
                 112.0,
                 w - 220.0,
                 19.0,
-                0xc8d7dd,
+                style.muted,
             );
             if count > 0 {
-                text(cr, "Dismiss all", w - 166.0, 143.0, 140.0, 17.0, 0x78d7cb);
+                text(
+                    cr,
+                    "Dismiss all",
+                    w - 166.0,
+                    143.0,
+                    140.0,
+                    17.0,
+                    style.accent,
+                );
             }
-            service_card(cr, 24.0, 186.0, w - 48.0, 72.0);
+            service_card(
+                cr,
+                theme,
+                "notifications",
+                24.0,
+                186.0,
+                w - 48.0,
+                72.0,
+                false,
+            );
             if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
                 let painted = preview
                     .icon
@@ -541,11 +773,27 @@ fn scene(
                         209.0,
                         30.0,
                         21.0,
-                        0xf4f7f8,
+                        style.text,
                     );
                 }
-                text(cr, &preview.source, 94.0, 197.0, w - 132.0, 17.0, 0x78d7cb);
-                text(cr, &preview.summary, 94.0, 220.0, w - 132.0, 21.0, 0xf4f7f8);
+                text(
+                    cr,
+                    &preview.source,
+                    94.0,
+                    197.0,
+                    w - 132.0,
+                    17.0,
+                    style.accent,
+                );
+                text(
+                    cr,
+                    &preview.summary,
+                    94.0,
+                    220.0,
+                    w - 132.0,
+                    21.0,
+                    style.text,
+                );
             } else {
                 let empty = if items.is_none() {
                     "Loading preview"
@@ -554,7 +802,7 @@ fn scene(
                 } else {
                     "No active preview"
                 };
-                text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, 0xc8d7dd);
+                text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, style.muted);
             }
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
                 text(
@@ -564,7 +812,7 @@ fn scene(
                     NOTIFICATION_TOP + 14.0,
                     w - 56.0,
                     18.0,
-                    0xf4b9a6,
+                    style.error,
                 );
             } else if let Some(items) = items {
                 let _ = cr.save();
@@ -581,7 +829,16 @@ fn scene(
                     if y + NOTIFICATION_ROW < NOTIFICATION_TOP || y >= panel_h - 24.0 {
                         continue;
                     }
-                    service_card(cr, 24.0, y, w - 48.0, NOTIFICATION_ROW - 8.0);
+                    service_card(
+                        cr,
+                        theme,
+                        "notifications",
+                        24.0,
+                        y,
+                        w - 48.0,
+                        NOTIFICATION_ROW - 8.0,
+                        false,
+                    );
                     let painted = event
                         .icon
                         .as_deref()
@@ -600,10 +857,18 @@ fn scene(
                             y + 19.0,
                             36.0,
                             22.0,
-                            0xf4f7f8,
+                            style.text,
                         );
                     }
-                    text(cr, &event.source, 92.0, y + 13.0, w - 132.0, 16.0, 0x78d7cb);
+                    text(
+                        cr,
+                        &event.source,
+                        92.0,
+                        y + 13.0,
+                        w - 132.0,
+                        16.0,
+                        style.accent,
+                    );
                     text(
                         cr,
                         &event.summary,
@@ -611,11 +876,19 @@ fn scene(
                         y + 39.0,
                         w - 132.0,
                         21.0,
-                        0xf4f7f8,
+                        style.text,
                     );
-                    text(cr, &event.body, 92.0, y + 71.0, w - 132.0, 15.0, 0xc8d7dd);
+                    text(
+                        cr,
+                        &event.body,
+                        92.0,
+                        y + 71.0,
+                        w - 132.0,
+                        15.0,
+                        style.muted,
+                    );
                     if let Some(error) = &event.error {
-                        text(cr, error, 92.0, y + 90.0, w - 132.0, 14.0, 0xf4b9a6);
+                        text(cr, error, 92.0, y + 90.0, w - 132.0, 14.0, style.error);
                     }
                 }
                 let _ = cr.restore();
@@ -627,12 +900,29 @@ fn scene(
                     NOTIFICATION_TOP + 14.0,
                     w - 56.0,
                     19.0,
-                    0xc8d7dd,
+                    style.muted,
                 );
             }
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
-                service_card(cr, 24.0, panel_h - 73.0, w - 48.0, 49.0);
-                text(cr, message, 42.0, panel_h - 62.0, w - 84.0, 16.0, 0xf4b9a6);
+                service_card(
+                    cr,
+                    theme,
+                    "notifications",
+                    24.0,
+                    panel_h - 73.0,
+                    w - 48.0,
+                    49.0,
+                    false,
+                );
+                text(
+                    cr,
+                    message,
+                    42.0,
+                    panel_h - 62.0,
+                    w - 84.0,
+                    16.0,
+                    style.error,
+                );
             }
         }
         Route::Settings => {
@@ -640,9 +930,17 @@ fn scene(
                 paint_theme_chooser(cr, w, h, view, theme);
                 return;
             }
-            text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, 0x78d7cb);
-            text(cr, "Device controls", 28.0, 112.0, w - 56.0, 19.0, 0xc8d7dd);
-            text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, 0x78d7cb);
+            text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
+            text(
+                cr,
+                "Device controls",
+                28.0,
+                112.0,
+                w - 56.0,
+                19.0,
+                style.muted,
+            );
+            text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 for (y, name, control) in [
                     (162.0, "Network link", &settings.network),
@@ -650,8 +948,8 @@ fn scene(
                     (452.0, "Keyboard", &settings.keyboard),
                     (590.0, "Motion", &settings.motion),
                 ] {
-                    service_card(cr, 24.0, y, w - 48.0, 110.0);
-                    text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, 0x78d7cb);
+                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, 110.0, false);
+                    text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.accent);
                     text(
                         cr,
                         &control_text(control),
@@ -659,14 +957,14 @@ fn scene(
                         y + 43.0,
                         w - 90.0,
                         19.0,
-                        0xf4f7f8,
+                        style.text,
                     );
                     if let Some(detail) = &control.detail {
-                        text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, 0xc8d7dd);
+                        text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, style.muted);
                     }
                 }
                 if settings.brightness.state == crate::service_data::ControlState::Writable {
-                    text(cr, "−       +", w - 162.0, 366.0, 130.0, 25.0, 0x78d7cb);
+                    text(cr, "−       +", w - 162.0, 366.0, 130.0, 25.0, style.accent);
                 }
             } else {
                 text(
@@ -678,20 +976,20 @@ fn scene(
                     177.0,
                     w - 56.0,
                     20.0,
-                    0xc8d7dd,
+                    style.muted,
                 );
             }
             if services.and_then(|view| view.settings.as_ref()).is_some() {
-                text(cr, "Power", 28.0, 722.0, w - 56.0, 19.0, 0xc8d7dd);
-                service_card(cr, 24.0, 750.0, w - 48.0, 70.0);
-                text(cr, "Reboot…", 42.0, 770.0, w - 84.0, 23.0, 0xf4f7f8);
-                service_card(cr, 24.0, 828.0, w - 48.0, 70.0);
-                text(cr, "Power off…", 42.0, 848.0, w - 84.0, 23.0, 0xf4f7f8);
+                text(cr, "Power", 28.0, 722.0, w - 56.0, 19.0, style.muted);
+                service_card(cr, theme, "controls", 24.0, 750.0, w - 48.0, 70.0, false);
+                text(cr, "Reboot…", 42.0, 770.0, w - 84.0, 23.0, style.text);
+                service_card(cr, theme, "controls", 24.0, 828.0, w - 48.0, 70.0, false);
+                text(cr, "Power off…", 42.0, 848.0, w - 84.0, 23.0, style.text);
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
-                text(cr, &confirm.label, 28.0, 912.0, w - 56.0, 19.0, 0xf4f7f8);
-                service_card(cr, 24.0, 940.0, w - 48.0, 110.0);
-                text(cr, "Cancel", 45.0, 973.0, w / 2.0 - 45.0, 23.0, 0xc8d7dd);
+                text(cr, &confirm.label, 28.0, 912.0, w - 56.0, 19.0, style.text);
+                service_card(cr, theme, "controls", 24.0, 940.0, w - 48.0, 110.0, true);
+                text(cr, "Cancel", 45.0, 973.0, w / 2.0 - 45.0, 23.0, style.muted);
                 text(
                     cr,
                     "Confirm",
@@ -699,11 +997,11 @@ fn scene(
                     973.0,
                     w / 2.0 - 45.0,
                     23.0,
-                    0xf4b9a6,
+                    style.error,
                 );
             }
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
-                text(cr, message, 28.0, 1080.0, w - 56.0, 17.0, 0xc8d7dd);
+                text(cr, message, 28.0, 1080.0, w - 56.0, 17.0, style.muted);
             }
         }
         Route::Hide => {}
@@ -958,7 +1256,7 @@ impl RendererCache {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::appearance::BrushStop;
+    use crate::appearance::{BrushStop, PaletteColor, PaletteValue};
     use crate::service_data::{
         Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
         Priority, SettingsSnapshot,
@@ -968,6 +1266,261 @@ mod tests {
         ThemePreview,
     };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn themed_surface_fixtures_keep_live_area_clear_and_use_authored_roles() {
+        let brush = |first: &str, second: &str| {
+            AppearanceToken::Brush(Brush {
+                stops: vec![
+                    BrushStop {
+                        offset: 0.0,
+                        argb: first.into(),
+                    },
+                    BrushStop {
+                        offset: 1.0,
+                        argb: second.into(),
+                    },
+                ],
+                angle_degrees: 35.0,
+                alpha: 1.0,
+            })
+        };
+        let palette_color = |red, green, blue| {
+            PaletteValue::Color(PaletteColor {
+                red,
+                green,
+                blue,
+                alpha: 255,
+            })
+        };
+        let snapshot = AppearanceSnapshot {
+            generation: "0123456789abcdef01234567".into(),
+            path: "/tmp/public-visual-fixture".into(),
+            icon_theme: None,
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette: BTreeMap::from([
+                ("foreground".into(), palette_color(244, 247, 248)),
+                ("muted".into(), palette_color(192, 206, 218)),
+                ("accent".into(), palette_color(255, 194, 122)),
+                ("red".into(), palette_color(244, 145, 130)),
+            ]),
+            sections: BTreeMap::from([
+                (
+                    "launcher".into(),
+                    BTreeMap::from([
+                        ("background".into(), brush("#ff172738", "#ff27394e")),
+                        (
+                            "selected-background".into(),
+                            brush("#ff304d60", "#ff3c5264"),
+                        ),
+                        ("border".into(), brush("#ff78d7cb", "#ffffc27a")),
+                        ("selected-border".into(), brush("#ffffc27a", "#ff78d7cb")),
+                        ("text".into(), brush("#fff4f7f8", "#fff4f7f8")),
+                        ("selected-text".into(), brush("#ffffc27a", "#ffffc27a")),
+                    ]),
+                ),
+                (
+                    "menu".into(),
+                    BTreeMap::from([
+                        ("background".into(), brush("#ff263946", "#ff314b59")),
+                        ("border".into(), brush("#ff78d7cb", "#ffffc27a")),
+                        ("text".into(), brush("#fff4f7f8", "#fff4f7f8")),
+                    ]),
+                ),
+                (
+                    "notifications".into(),
+                    BTreeMap::from([
+                        ("background".into(), brush("#ff172738", "#ff27394e")),
+                        ("border".into(), brush("#ff78d7cb", "#ffffc27a")),
+                        ("text".into(), brush("#fff4f7f8", "#fff4f7f8")),
+                        ("countdown".into(), brush("#ffffc27a", "#ffffc27a")),
+                    ]),
+                ),
+                (
+                    "controls".into(),
+                    BTreeMap::from([
+                        ("normal-color".into(), brush("#ffb8d6e1", "#ffb8d6e1")),
+                        ("normal-fill-alpha".into(), AppearanceToken::Number(0.10)),
+                        ("selected-fill-alpha".into(), AppearanceToken::Number(0.22)),
+                        ("selected-border".into(), brush("#ff78d7cb", "#ffffc27a")),
+                    ]),
+                ),
+                (
+                    "image-picker".into(),
+                    BTreeMap::from([
+                        ("text".into(), brush("#fff4f7f8", "#fff4f7f8")),
+                        ("selected-border".into(), brush("#ff78d7cb", "#ffffc27a")),
+                    ]),
+                ),
+            ]),
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        };
+        let apps = vec![
+            AppEntry {
+                id: "fixture.desktop".into(),
+                name: "Terminal".into(),
+                icon: None,
+            },
+            AppEntry {
+                id: "monitor.desktop".into(),
+                name: "Monitor".into(),
+                icon: None,
+            },
+        ];
+        let unavailable = Control {
+            state: ControlState::Unavailable,
+            value: None,
+            label: "Unavailable".into(),
+            detail: Some("Open setup to continue".into()),
+            action: None,
+        };
+        let services = ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: unavailable.clone(),
+                brightness: unavailable.clone(),
+                keyboard: unavailable.clone(),
+                motion: unavailable,
+            }),
+            notifications: Some(NotificationSnapshot {
+                count: 1,
+                preview: Some(NotificationPreview {
+                    id: 1,
+                    source: "System".into(),
+                    icon: None,
+                    summary: "Connection needs attention".into(),
+                    priority: Priority::Important,
+                    ongoing: false,
+                }),
+                events: vec![NotificationEvent {
+                    id: 1,
+                    source: "System".into(),
+                    icon: None,
+                    summary: "Connection needs attention".into(),
+                    body: "Open Settings for details".into(),
+                    priority: Priority::Important,
+                    timestamp: 0,
+                    error: None,
+                    dismissible: true,
+                    action_available: false,
+                }],
+            }),
+            ..ServiceView::default()
+        };
+        let theme_entry = ThemeEntry {
+            id: "fixture-night".into(),
+            name: "Fixture Night".into(),
+            label: "Fixture Night".into(),
+            origin: ThemeOrigin::Builtin,
+        };
+        let chooser = ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: vec![
+                    theme_entry.clone(),
+                    ThemeEntry {
+                        id: "fixture-dawn".into(),
+                        name: "Fixture Dawn".into(),
+                        label: "Fixture Dawn".into(),
+                        origin: ThemeOrigin::User,
+                    },
+                ],
+                active: ActiveTheme {
+                    id: Some(theme_entry.id.clone()),
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        };
+        let preview = ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(ThemePreview {
+                theme: theme_entry,
+                generation: "0123456789abcdef01234567".into(),
+                appearance_path: "/tmp/public-visual-fixture/appearance.json".into(),
+                palette: BTreeMap::from([
+                    ("background".into(), "#172738".into()),
+                    ("foreground".into(), "#f4f7f8".into()),
+                    ("accent".into(), "#ffc27a".into()),
+                ]),
+                icon_theme: None,
+                backgrounds: vec![BackgroundChoice {
+                    id: "fixture-still".into(),
+                    label: "Landscape still".into(),
+                    kind: BackgroundKind::Image,
+                    path: "/tmp/public-still.png".into(),
+                    selected: true,
+                    decode_status: "fixture".into(),
+                }],
+                compatibility: Compatibility {
+                    applied: vec!["shell".into()],
+                    unavailable: vec![],
+                    unknown: vec![],
+                },
+                activated: false,
+                app_appearance: None,
+            }),
+            ..ThemeView::default()
+        };
+        let mut renderer = RendererCache::default();
+        renderer.set_services(services);
+        renderer.set_appearance(Some(snapshot));
+        let output = std::env::var_os("K230_VISUAL_FIXTURE_DIR").map(std::path::PathBuf::from);
+        if let Some(directory) = &output {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        for (name, route, theme_view) in [
+            ("drawer", Route::Drawer, None),
+            ("shade", Route::Shade, None),
+            ("settings", Route::Settings, None),
+            ("themes", Route::Settings, Some(chooser)),
+            ("preview", Route::Settings, Some(preview)),
+        ] {
+            if let Some(view) = theme_view {
+                renderer.set_theme_view(view);
+            }
+            let mut frame = vec![0; 568 * 1232 * 4];
+            renderer
+                .draw(
+                    &mut frame,
+                    RenderParams {
+                        width: 568,
+                        height: 1232,
+                        route,
+                        progress: 1.0,
+                        scroll: 0.0,
+                    },
+                    &apps,
+                )
+                .unwrap();
+            assert_eq!(frame.len(), 568 * 1232 * 4);
+            if route == Route::Drawer {
+                assert_eq!(
+                    &frame[0..4],
+                    &[0, 0, 0, 0],
+                    "live deck stays visible above drawer"
+                );
+            }
+            if let Some(directory) = &output {
+                let surface = unsafe {
+                    ImageSurface::create_for_data_unsafe(
+                        frame.as_mut_ptr(),
+                        Format::ARgb32,
+                        568,
+                        1232,
+                        568 * 4,
+                    )
+                }
+                .unwrap();
+                surface
+                    .write_to_png(&mut File::create(directory.join(format!("{name}.png"))).unwrap())
+                    .unwrap();
+            }
+        }
+    }
 
     #[test]
     fn theme_list_preview_and_scroll_paint_distinct_handheld_scenes() {
