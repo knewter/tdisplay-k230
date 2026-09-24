@@ -34,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Verify and install one-to-one finger tracking; install the QEMU-tested Settings/notification UI, finish theme chooser, and complete physical checks.",
+      "next": "User retry of installed one-to-one drag; finish the theme chooser and remaining motion/design and physical checks.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -51,10 +51,13 @@
         "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md",
         "docs/evidence/coherent-shell/first-integrated-preview/README.md",
         "docs/evidence/coherent-shell/direct-drag/README.md",
-        "docs/evidence/coherent-shell/rust-service-surface-qemu/README.md"
+        "docs/evidence/coherent-shell/rust-service-surface-qemu/README.md",
+        "docs/evidence/coherent-shell/direct-drag/installed.md",
+        "docs/evidence/coherent-shell/direct-reveal-drag-qemu/README.md",
+        "docs/evidence/coherent-shell/card-entry-direct-drag-host.md"
       ],
-      "rationale": "The user confirmed the installed shade-dismissal and visible card-selection corrections, then reported amplified upward drag. Drawer/shade geometry corrections are landed; card-entry tracking and exact pixel checks are in progress. Settings and notification panels have separate synthetic QEMU proof and await installation.",
-      "reviewRevision": "a8e0c2a2",
+      "rationale": "The corrected app-entry, drawer and shade motion is installed in a recoverable test activation, together with Rust Settings/notification controls. Synthetic pixel checks show 100px finger travel produces 100px panel movement, holds still and reverses. Physical feel and full acceptance remain pending.",
+      "reviewRevision": "7f4b464f",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
         "caption": "Rust app drawer \u2014 first on-device preview",

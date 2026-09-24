@@ -1,0 +1,21 @@
+{
+  "recorded_utc": "2026-09-24T06:27:57.635035+00:00",
+  "class": "physical-board-console-observation",
+  "source": "bbdbff5b3537cb0fa98b78978a1ec93833791d52",
+  "system": "/nix/store/vcy57djhmvagwmvc8z7ml8xmd0riqp4l-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/ni904kvqycv8v893wp6i1agskgck821d-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "activation_mode": "test",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "delta_paths": 23,
+  "delta_bytes": 10552336,
+  "active_units": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi"
+  ],
+  "fallback_timer": "armed before activation; stopped after exact current-system and all five units were healthy",
+  "physical_finger_acceptance": "pending user retry; synthetic pixel proof is recorded separately"
+}

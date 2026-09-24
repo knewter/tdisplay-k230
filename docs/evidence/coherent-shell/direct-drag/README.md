@@ -18,3 +18,5 @@ Native pixel regression, exact target build, installation and physical
 finger review remain open. The separate app-to-deck entry also used a
 72-pixel visual travel and is being corrected independently. No physical
 acceptance task is closed by this source checkpoint.
+
+The combined correction is now built and installed; see `docs/evidence/coherent-shell/direct-drag/installed.md`. Native held-finger pixel checks pass in `docs/evidence/coherent-shell/direct-reveal-drag-qemu/README.md`. Physical finger acceptance remains pending.
