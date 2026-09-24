@@ -756,6 +756,13 @@ DATA 1c613ec7ce7f9785c0dbc43a963534789aa3580059b0747265369cafdc609076  docs/evid
 DATA 54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png
 DATA dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png
 DATA 1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png
+DATA aec89c175df00b8a6729b83374cff768d0700eba120a4778f06e9a1dffe65326  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-coasting.png
+DATA 57482fe9fd326bd5f6f7d4ab946b77488853cb9c46d138d62830e46170952a42  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-held.png
+DATA fc4e4449694e4cca4bf113d5c2da0b5e64c6e8d401a9af865344d391efb4041b  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-settled.png
+DATA dc82447aaf14a1acdd66a1ea9bf46a788cc062fbba810b22232b7a9f5787aed7  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-opposite-return.png
+DATA 569eafcf56af3a813dffb08247134adba4679872d47b747b05c4f9ea4756e5df  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-held.png
+DATA 9e525b27f3d16d6caa0a82f6b34f3e194320f89dfa9464ba16ae046768fbdd19  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-releasing.png
+DATA 1b9a322aa851a165bfd79821852019f7c7f30ca2eedf0a7abb5050332ac56da5  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-reversed.png
 DATA 68a92ee6cb08da4c13ea717d1046d8cf1f94aaf86fb92c0ff46534ba8f6ad73f  docs/evidence/coherent-shell/two-axis-qemu/two-axis-held.png
 DATA 8521494c8dd2e1abdbc64da3a8d52935d51307f9910604645d5d519d88a8499b  docs/evidence/coherent-shell/two-axis-qemu/two-axis-left.png
 DATA 1ccaab283a509331ed392725eac48ee08ef6e8c8d94711e2a0fd0d25315ac9d0  docs/evidence/coherent-shell/two-axis-qemu/two-axis-private-neighbor.png
