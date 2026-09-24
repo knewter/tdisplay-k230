@@ -89,6 +89,7 @@ Rectangle {
         x: 20; y: 912; width: parent.width - 40; height: 112
         color: "#31415d"; radius: 12
         Image {
+            id: tileImage
             x: 20; anchors.verticalCenter: parent.verticalCenter
             width: 64; height: 64; source: "tile.png"
             fillMode: Image.PreserveAspectFit
@@ -99,14 +100,12 @@ Rectangle {
             color: "#f2f6ff"; font.pixelSize: 19
         }
     }
-    Rectangle { id: shaderSource; visible: false; x: 20; y: 1038; width: 64; height: 64; color: "#ff5b79" }
     ShaderEffect {
         x: 20; y: 1038; width: 96; height: 64
         visible: root.negativeControl
-        property variant source: shaderSource
+        property variant source: tileImage
     }
     Rectangle {
         x: 132; y: 1038; width: 96; height: 64; color: "#ff5b79"
-        visible: !root.negativeControl
     }
 }

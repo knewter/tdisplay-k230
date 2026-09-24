@@ -6,6 +6,14 @@ stdenv.mkDerivation {
   src = ./.;
   nativeBuildInputs = [ pkg-config qt6Packages.wrapQtAppsHook ];
   buildInputs = with qt6Packages; [ qtbase qtdeclarative qtwayland ];
+  preFixup = ''
+    qtWrapperArgs+=(
+      --set QT_QPA_PLATFORM wayland
+      --set QT_QUICK_BACKEND software
+      --set QSG_INFO 1
+      --unset QSG_RHI_BACKEND
+    )
+  '';
   dontConfigure = true;
   buildPhase = ''
     runHook preBuild
