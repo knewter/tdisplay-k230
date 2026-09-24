@@ -29,6 +29,8 @@ pub struct ServiceView {
     pub confirmation: Option<Confirmation>,
     pub notification_scroll: f64,
     pub wifi: Option<WifiPublic>,
+    /// Set only by an image that includes the compositor keyboard gestures.
+    pub keyboard_gesture_hint: bool,
 }
 
 impl ServiceView {
@@ -418,5 +420,10 @@ mod tests {
             remaining: None,
         };
         assert_eq!(action_message(&outcome), "target-unavailable · try again");
+    }
+
+    #[test]
+    fn keyboard_gesture_hint_requires_integrated_session_flag() {
+        assert!(!ServiceView::default().keyboard_gesture_hint);
     }
 }

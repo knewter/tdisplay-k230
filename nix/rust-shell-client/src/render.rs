@@ -1394,7 +1394,8 @@ fn scene(
                         19.0,
                         style.text,
                     );
-                    if name == "Keyboard" {
+                    if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
+                    {
                         text(
                             cr,
                             "Two fingers up at bottom to show;",

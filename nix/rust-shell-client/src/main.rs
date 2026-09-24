@@ -1754,6 +1754,8 @@ fn serve() -> Result<(), String> {
                 .as_deref(),
         ),
     };
+    state.service_view.keyboard_gesture_hint =
+        std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1");
     state.renderer.set_appearance(appearance.active().cloned());
     state.renderer.set_services(state.service_view.clone());
     state.renderer.set_theme_view(state.theme_view.clone());
