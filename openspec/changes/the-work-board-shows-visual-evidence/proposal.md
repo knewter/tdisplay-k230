@@ -25,3 +25,7 @@ None.
 ## Impact
 
 Static work-board data extraction, Astro card/dialog rendering, reviewed status metadata and narrow site tests. No image, kernel, shell runtime or board change.
+
+## Media enlargement refinement
+
+Clicking media in a card opens a viewport-sized gallery modal, preserving aspect ratio and card reading position, with swipe/keyboard navigation and video controls. Raw evidence links remain available separately.
