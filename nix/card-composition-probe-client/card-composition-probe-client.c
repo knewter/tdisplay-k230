@@ -51,6 +51,14 @@ struct app {
     uint64_t start;
     unsigned duration, logs;
     bool refuse, configured, running, failed;
+    /* Test-only: simulate a real app's redraw latency after a compositor
+     * resize, instead of this client's own always-fast animation loop.
+     * While stall_until is in the future, the main plane simply stops
+     * redrawing (the old, wrong-sized buffer stays attached) so a
+     * fixture can observe what the compositor does with a stale buffer
+     * during a resize, the way a slow real app would leave one. */
+    unsigned stall_resize_ms;
+    uint64_t stall_until;
 };
 static volatile sig_atomic_t stopped;
 static uint64_t now_ms(void) {
@@ -129,6 +137,10 @@ static void frame_done(void *data, struct wl_callback *callback, uint32_t time) 
 static const struct wl_callback_listener frame_listener={.done=frame_done};
 static void draw(struct plane *p) {
     if (p->callback || !p->app->running) return;
+    if (!p->child && p->app->stall_until && now_ms()<p->app->stall_until) {
+        p->wanted=true;
+        return;
+    }
     struct buffer *b=get_buffer(p);
     if (!b) {p->wanted=true;return;}
     p->wanted=false;
@@ -167,8 +179,11 @@ static const struct xdg_surface_listener surface_listener={.configure=configure}
 static void top_configure(void *data,struct xdg_toplevel *top,int32_t w,int32_t h,struct wl_array *states) {
     (void)top;(void)states;
     struct app *a=data;
+    bool resized=(w>0 && w<=4096 && w!=a->main.width) ||
+                 (h>0 && h<=4096 && h!=a->main.height);
     if (w>0 && w<=4096) a->main.width=w;
     if (h>0 && h<=4096) a->main.height=h;
+    if (resized && a->stall_resize_ms) a->stall_until=now_ms()+a->stall_resize_ms;
 }
 static void close_top(void *data,struct xdg_toplevel *top) {
     (void)top;
@@ -234,7 +249,11 @@ int main(int argc,char **argv) {
             char *end; unsigned long n=strtoul(argv[++i],&end,10);
             if (*end || n<1 || n>600) return 64;
             a.duration=(unsigned)n;
-        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two [--refuse-close] [--duration 1..600]\n");return 64;}
+        } else if (!strcmp(argv[i],"--stall-resize-ms") && i+1<argc) {
+            char *end; unsigned long n=strtoul(argv[++i],&end,10);
+            if (*end || n>60000) return 64;
+            a.stall_resize_ms=(unsigned)n;
+        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two [--refuse-close] [--duration 1..600] [--stall-resize-ms 0..60000]\n");return 64;}
     }
     if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two")) return 64;
     a.start=now_ms();
@@ -269,12 +288,19 @@ int main(int argc,char **argv) {
         int flush=wl_display_flush(a.display);
         if (flush<0 && errno!=EAGAIN) {wl_display_cancel_read(a.display);a.failed=true;break;}
         struct pollfd fd={.fd=wl_display_get_fd(a.display),.events=POLLIN | (flush<0 ? POLLOUT : 0)};
-        int ready=poll(&fd,1,100);
+        /* A pending stall has nothing to wait on from the display fd, so
+         * poll briefly instead of the usual 100ms to notice it elapsing. */
+        int timeout=a.stall_until ? 8 : 100;
+        int ready=poll(&fd,1,timeout);
         if (ready>0 && (fd.revents&POLLIN)) {
             if (wl_display_read_events(a.display)<0) {a.failed=true;break;}
         } else wl_display_cancel_read(a.display);
         if ((ready<0 && errno!=EINTR) || (fd.revents&(POLLERR|POLLHUP))) {a.failed=true;break;}
         if (wl_display_dispatch_pending(a.display)<0) {a.failed=true;break;}
+        if (a.stall_until && now_ms()>=a.stall_until) {
+            a.stall_until=0;
+            if (a.main.wanted) draw(&a.main);
+        }
         if (now_ms()>=next_log) {event(&a,"heartbeat");next_log=now_ms()+1000;}
     }
 done:
