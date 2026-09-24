@@ -1,0 +1,77 @@
+{
+  "run": 1,
+  "started_at_utc": "2026-09-23T23:55:00.413604+00:00",
+  "running_sway": "/nix/store/374p33ril3p92i8d805fvzmsjqxhaxsv-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "acceptance_exit_code": 1,
+  "checks": [
+    {
+      "case": "live-root-and-child-1-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 3772978068082
+    },
+    {
+      "case": "live-root-and-child-2-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 3796421227462
+    },
+    {
+      "case": "live-root-and-child-2-two",
+      "status": "OBSERVED",
+      "monotonic_ns": 3797062332113
+    },
+    {
+      "case": "actual-rgb565-pixman-session",
+      "status": "OBSERVED",
+      "monotonic_ns": 3817555192639
+    },
+    {
+      "case": "upward-throw-close-request",
+      "status": "FAILED",
+      "monotonic_ns": 3825574385202
+    },
+    {
+      "case": "client-explicit-refusal",
+      "status": "OBSERVED",
+      "monotonic_ns": 3827183915789
+    },
+    {
+      "case": "separate-timeout-card-retained",
+      "status": "OBSERVED",
+      "monotonic_ns": 3830096281196
+    },
+    {
+      "case": "accepted-close-source-exits",
+      "status": "OBSERVED",
+      "monotonic_ns": 3833321744485
+    },
+    {
+      "case": "terminal-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 3843057685581
+    },
+    {
+      "case": "monitor-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 3846497855252
+    },
+    {
+      "case": "windows-home-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 3851941718112
+    },
+    {
+      "case": "keyboard-reserves-content",
+      "status": "OBSERVED",
+      "monotonic_ns": 3854009050394
+    },
+    {
+      "case": "normal-controls-recover-focus",
+      "status": "OBSERVED",
+      "monotonic_ns": 3860889344348
+    }
+  ],
+  "budget_gate": "FAIL",
+  "missing_evidence": [],
+  "restored_shell_and_seatd": true,
+  "finished_at_utc": "2026-09-23T23:56:45.833714+00:00"
+}

@@ -63,3 +63,10 @@ board repeats observe all 13 injected checks apiece; evidence and retained
 budget failures are in `docs/evidence/card-shell/throw-sampling/README.md`.
 This does not establish historical failure attribution or physical-finger
 reliability. Tasks 4.2, 5.1 and 5.3 remain open.
+
+The following repaint-stage profile correlates all 268 submitted board frames
+and attributes about 98% of repaint CPU to output-state construction/painting.
+`docs/evidence/card-shell/repaint-stages/README.md` records both failed cost
+budgets and a renewed upward-throw check failure (12/13 observed checks), with
+successful normal-system restoration. This diagnostic does not establish the
+failure's cause or accept performance; task 4.2 remains open.

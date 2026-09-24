@@ -15,12 +15,13 @@ import { evidenceUrl, url } from "../lib/specs";
       <a href={evidenceUrl("docs/evidence/storage-capacity/README.md")}>Storage evidence</a>
     </article>
     <article>
-      <p class="status">Experimental shell · fix landed</p>
-      <h3>More reliable card throws</h3>
-      <p>A gesture fix passed all 13 injected interaction checks in each of three
-        board runs. The live-card shell still misses performance targets and
-        needs real-finger acceptance before joining the default image.</p>
-      <a href={evidenceUrl("docs/evidence/card-shell/throw-sampling/README.md")}>Gesture checks and limits</a>
+      <p class="status">Experimental shell · measured on board</p>
+      <h3>Finding the card rendering cost</h3>
+      <p>A new profile attributes about 98% of repaint CPU to constructing and
+        painting frames. Performance targets still fail, and this run missed
+        a throw check after three earlier clean runs. The cause is under review;
+        real-finger acceptance remains open.</p>
+      <a href={evidenceUrl("docs/evidence/card-shell/repaint-stages/README.md")}>Profile, failed check and next experiment</a>
     </article>
     <article>
       <p class="status">Experiment complete</p>

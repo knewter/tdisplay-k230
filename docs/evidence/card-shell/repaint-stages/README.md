@@ -66,4 +66,56 @@ python3 /var/lib/k230/card-repaint-tools-REVISION/run-board.py \
 The runner retains its independent restoration watchdog and 540-second session
 limit. A completed collection does not mean performance acceptance. Restore
 the normal shell and verify system identity, storage, Wi-Fi and HTTPS afterward.
-Physical results, real-finger feel, and default-image acceptance remain open.
+Real-finger feel and default-image acceptance remain open.
+
+## Physical profile on the normal kernel
+
+The bounded run used published revision
+`58461f518821cb2b7f1b9d2d80223677d24b3602`, the package in `build.json`, and the
+unchanged acceptance workload. `board/result.json` records the actual running
+Sway executable, tool hashes, UTC start/end times, boot ID, and restoration.
+`board/transfer.json` verifies the nine exported public text files. Raw process
+logs and pictures were excluded; no new visual or real-finger proof is claimed.
+
+`board/profile.json` was reconstructed from
+`board/run-1/public/telemetry.log`. All **268 submitted frames** have complete
+matching stage accounting, including one uncommitted attempt. Construction and
+painting dominate repaint CPU; this does not isolate individual Pixman calls.
+
+| Cards | Frames | Prepare share | Build share | Commit share | Build CPU p95 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| One | 130 | 1.06% | 97.46% | 1.48% | 14.00 ms |
+| Two | 138 | 0.86% | 97.77% | 1.37% | 19.79 ms |
+
+Both workload budgets still **FAIL**. Total charged frame CPU p95/max was
+16.55/48.98 ms with one card and 23.85/25.20 ms with two. Tracking interval
+p95 was 57.48 ms for both, against 33.334 ms. Other declared input, release,
+and incremental-memory metrics pass. The one-card 48.98 ms frame includes
+33.45 ms of input handling and 15.41 ms of render CPU: repaint optimization
+alone cannot be assumed to resolve that outlier.
+
+The acceptance process exited 1: **12 of 13 injected checks were observed**,
+but `upward-throw-close-request` failed again. Subsequent refusal, timeout,
+accepted-close and normal-control routes were observed. The previous three
+clean repeats remain valid historical observations, not proof of universal
+throw reliability. The new failure remains in the reports. Its cause cannot
+be assigned to the timing hooks merely because this run added instrumentation;
+the acceptance setup and state-transition trace require separate analysis.
+
+`board/verification.json` records exact reconstruction of the unchanged budget
+report except its generated `created_at` timestamp. This is one diagnostic
+run, not a paired performance comparison or an accepted optimized path.
+
+`normal-restoration.json` and its serial log independently verify the normal
+system, shell/seatd, Wi-Fi association and HTTPS, credential permissions, root
+sentinel, storage boundaries, and protected boot/firmware hashes. Its boot ID
+matches the workload: this session neither rebooted nor flashed the board.
+The check's `repeat` mode compares the earlier storage baseline; it does not
+claim a new reboot in this trial.
+
+The next bounded rendering experiment is reusing bilinearly scaled pixels
+only while source content and geometry are unchanged, while preserving live
+surface callbacks, subsurfaces, privacy invalidation and the existing fallback.
+Source-buffer identity alone cannot prove freshness. Measure actual cache
+reuse and same-package enabled/disabled board results before claiming a gain.
+Tasks 4.2, 5.1 and 5.3 remain open.

@@ -1,0 +1,20 @@
+{
+  "source_revision": "58461f518821cb2b7f1b9d2d80223677d24b3602",
+  "evidence_class": "physical-board-injected",
+  "budget_report_reproduced_except_created_at": true,
+  "producer_hashes_verified": true,
+  "interaction_checks_observed": 12,
+  "interaction_checks_failed": [
+    "upward-throw-close-request"
+  ],
+  "restoration": "PASS",
+  "same_boot": true,
+  "rebooted": false,
+  "flashed": false,
+  "cost_acceptance": "FAIL",
+  "limits": [
+    "Diagnostic stage clocks have overhead; not a paired speedup comparison.",
+    "No physical-finger or optical timing acceptance.",
+    "Throw failure cause remains unestablished."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "state": {
+    "state": "completed",
+    "finished_runs": 1
+  },
+  "files": 9,
+  "bytes": 60453,
+  "sha256": "2ea1fbb0530bbaa891391821abd2d484bc2a34d9e4f2679c451f2a269e369270",
+  "files_sha256": {
+    "result.json": "d8695bf9d2d72f0e05c42860777bf48e5f4580ee4cc631368e34f893e6600fd1",
+    "progress.json": "f193e955f153fc73cd9e85afae1aacfcef648e27e3a70cbb6d1eebdd05969168",
+    "run-1/public/budget.json": "3a6089d1d6c108735eb8e4c90225936f44075e7500add3a38d68c4ec631d0d5f",
+    "run-1/public/run.json": "eec1810ddfbec5b6429acb0d2e4ff6cc79f70324118b99f312d95866b5aec057",
+    "run-1/public/client-two.jsonl": "ebeec68ec4b8f7c78758ef639a99ee065de500d3fb28fa495a5280329d2af760",
+    "run-1/public/telemetry.log": "a9067b41348bf3838d38b591976ed63b4e900a46a6837a97ee89bc814e4dd6cd",
+    "run-1/public/manifest.json": "845c3913c2a07e37f65b6c33ba174f2c170e2ed3f603df103ce91eff67638852",
+    "run-1/public/acceptance.json": "aa8e52371dc2f808cf0fd72bcd32b9317d4dd15dc2088eac7260b010027f52c1",
+    "run-1/public/client-one.jsonl": "838c4d52bad2ccb59ccb9cf3b3d7eedc9703b93c01e6bd47d9bbf835bd5df173"
+  }
+}
