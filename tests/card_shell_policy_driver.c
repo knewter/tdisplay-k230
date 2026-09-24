@@ -279,6 +279,8 @@ static void tracked_expansion(void) {
     struct cs_result r=cs_up(&p,1,11);
     assert(!(r.actions&CS_RESTORE) && p.mode==CS_EXPANDING && p.expand_id==202);
     assert(p.selected==0 && p.expand_progress==0); /* preserve visible slot */
+    assert(!cs_step(&p,1).actions && p.mode==CS_EXPANDING);
+    assert(!cs_request_close(&p,202,12).actions && p.mode==CS_EXPANDING);
     cs_tick(&p,100);r=cs_tick(&p,180);
     assert((r.actions&CS_REDRAW) && p.expand_progress==.5);
     r=cs_down(&p,2,200,400,181);

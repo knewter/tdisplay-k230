@@ -304,7 +304,8 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
 }
 struct cs_result cs_step(struct cs_policy *p,int direction) {
     if (p->mode==CS_NORMAL || (direction!=-1 && direction!=1)) return result(p,0,false);
-    if (p->mode==CS_CLOSING) return result(p,0,true);
+    if (p->mode==CS_CLOSING || p->mode==CS_ENTERING || p->mode==CS_EXPANDING)
+		return result(p,0,true);
     if (p->contact) {p->blocked_until_up=true;p->blocked_contacts=1;}
     reset_drag(p);p->mode=CS_DECK;
     if (direction>0 && p->count && p->selected<p->count-1) p->selected++;
@@ -314,7 +315,8 @@ struct cs_result cs_step(struct cs_policy *p,int direction) {
 }
 struct cs_result cs_request_close(struct cs_policy *p,uint64_t id,uint64_t time_ms) {
     if (p->mode==CS_NORMAL) return result(p,0,false);
-    if (p->mode==CS_CLOSING) return result(p,0,true);
+    if (p->mode==CS_CLOSING || p->mode==CS_ENTERING || p->mode==CS_EXPANDING)
+		return result(p,0,true);
     size_t index=find(p,id);
     if (index==SIZE_MAX) {
         p->message=CS_MESSAGE_SOURCE_GONE;return result(p,CS_REDRAW,true);
