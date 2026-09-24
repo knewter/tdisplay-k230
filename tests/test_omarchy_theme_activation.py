@@ -1,6 +1,7 @@
 """Host preparation checks; no shell receiver or physical activation is claimed."""
 
 from pathlib import Path
+import json
 import shutil
 import subprocess
 import sys
@@ -29,10 +30,11 @@ def source(path):
     (path / "README.md").write_text("Unchanged source\n")
 
 
-def call(name, theme, state):
+def call(name, theme, state, *, background_choice=None):
     return activation.prepare(name, source=theme, state_root=state,
                               user_themes=state / "no-user-themes", builtins=None,
-                              tools=activation.HOST_TOOLS)
+                              tools=activation.HOST_TOOLS,
+                              background_choice=background_choice)
 
 
 class ThemePreparation(unittest.TestCase):
@@ -76,6 +78,34 @@ class ThemePreparation(unittest.TestCase):
             self.assertFalse((generation / "theme/alacritty.toml").exists())
             self.assertIn("colors.toml: legacy scratch conversion", report["applied"])
             self.assertIn('background = "#101820"', (generation / "theme/colors.toml").read_text())
+
+    def test_explicit_background_choice_is_validated_and_changes_generation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            (theme / "backgrounds" / "second.jpg").write_bytes(b"host still fixture")
+            (theme / "backgrounds" / "a-video.mp4").write_bytes(b"host video fixture")
+            original = activation.source_digest(theme)
+            default, default_report = call("theme", theme, state)
+            self.assertEqual(default_report["selected_background"], "backgrounds/portrait.png")
+            chosen, report = call("theme", theme, state,
+                                  background_choice="backgrounds/second.jpg")
+            self.assertNotEqual(chosen, default)
+            self.assertEqual(report["selected_background"], "backgrounds/second.jpg")
+            self.assertEqual((chosen / "background").readlink().as_posix(),
+                             "theme/backgrounds/second.jpg")
+            self.assertEqual(json.loads((chosen / "appearance.json").read_text())["background"],
+                             "background")
+            video, _ = call("theme", theme, state,
+                            background_choice="backgrounds/a-video.mp4")
+            self.assertIsNone(json.loads((video / "appearance.json").read_text())["background"])
+            self.assertNotEqual(video, chosen)
+            with self.assertRaisesRegex(activation.ThemeError, "not a staged theme asset"):
+                call("theme", theme, state, background_choice="../elsewhere.png")
+            with self.assertRaisesRegex(activation.ThemeError, "not a staged theme asset"):
+                call("theme", theme, state, background_choice="backgrounds/missing.png")
+            self.assertEqual(activation.source_digest(theme), original)
 
     def test_rejects_escape_malformed_palette_and_oversized_input(self):
         with tempfile.TemporaryDirectory() as temp:

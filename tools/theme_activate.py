@@ -107,7 +107,8 @@ def choose_source(name: str, source: Path | None, user_themes: Path, builtins: P
 
 
 def prepare(name: str, *, source: Path | None, state_root: Path,
-            user_themes: Path, builtins: Path | None, tools: Path) -> tuple[Path, dict]:
+            user_themes: Path, builtins: Path | None, tools: Path,
+            background_choice: str | None = None) -> tuple[Path, dict]:
     name = normalize_name(name)
     root, theme = choose_source(name, source, user_themes, builtins)
     source_hash = source_digest(theme)
@@ -123,7 +124,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         report = {"source": str(theme), "source_sha256": source_hash,
                   "helper_sha256": helper_hash, "adapter_sha256": adapter_hash,
                   "name": name, "applied": [], "unavailable": [], "unknown": [],
-                  "backgrounds": [], "icon_theme": None}
+                  "backgrounds": [], "selected_background": None,
+                  "icon_theme": None}
         total = 0
         allowed = {"colors.toml", "shell.toml", "icons.theme", "foot.ini", "alacritty.toml"}
         for entry in sorted(theme.iterdir()):
@@ -164,6 +166,12 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 raise ThemeError("theme exceeds total staging bound")
         if not (staged / "colors.toml").is_file():
             raise ThemeError("theme has no usable palette")
+        if background_choice is not None and background_choice not in report["backgrounds"]:
+            raise ThemeError("selected background is not a staged theme asset")
+        report["selected_background"] = (background_choice if background_choice is not None
+                                         else next((asset for asset in report["backgrounds"]
+                                                    if Path(asset).suffix.lower() in STILLS),
+                                                   next(iter(report["backgrounds"]), None)))
         try:
             with (staged / "colors.toml").open("rb") as stream:
                 raw = tomllib.load(stream)
@@ -208,12 +216,13 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         report["generation"] = hashlib.sha256(
             json.dumps({"source": source_hash, "source_path": str(theme),
                         "helpers": helper_hash, "adapter": adapter_hash,
-                        "name": name, "version": 1}, sort_keys=True).encode()
+                        "name": name, "selected_background": report["selected_background"],
+                        "version": 1}, sort_keys=True).encode()
         ).hexdigest()[:24]
         tokens["generation"] = report["generation"]
         tokens["icon_theme"] = report["icon_theme"]
-        tokens["background"] = ("background" if report["backgrounds"]
-                                and Path(report["backgrounds"][0]).suffix.lower() in STILLS else None)
+        tokens["background"] = ("background" if report["selected_background"]
+                                and Path(report["selected_background"]).suffix.lower() in STILLS else None)
         serialized = json.dumps(tokens, indent=2, sort_keys=True) + "\n"
         if len(serialized.encode()) > 256 * 1024:
             raise ThemeError("appearance payload exceeds bound")
@@ -221,14 +230,15 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         (work / "theme.name").write_text(name + "\n")
         (work / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
         (work / "appearance.json").write_text(serialized)
-        if report["backgrounds"]:
-            (work / "background").symlink_to("theme/" + report["backgrounds"][0])
+        if report["selected_background"]:
+            (work / "background").symlink_to("theme/" + report["selected_background"])
         if source_digest(theme) != source_hash:
             raise ThemeError("theme source changed during preparation")
         if destination.exists():
             existing = json.loads((destination / "report.json").read_text())
             if (existing["source_sha256"] != source_hash or existing["name"] != name
                     or existing["source"] != str(theme)
+                    or existing.get("selected_background") != report["selected_background"]
                     or existing["helper_sha256"] != helper_hash
                     or existing["adapter_sha256"] != adapter_hash):
                 raise ThemeError("generation identity collision")
@@ -245,13 +255,15 @@ def main():
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
     parser.add_argument("--tools", type=Path, default=HOST_TOOLS)
+    parser.add_argument("--background", help="exact source-relative backgrounds/NAME in this theme")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--prepare-only", action="store_true")
     mode.add_argument("--activate", action="store_true")
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
     args = parser.parse_args()
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
-                                  user_themes=args.user_themes, builtins=args.builtins, tools=args.tools)
+                                  user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
+                                  background_choice=args.background)
     if args.activate:
         activate_generation(destination, state_root=args.state_root, endpoint=args.socket)
     print(json.dumps({"generation_path": str(destination), "report": report}, indent=2, sort_keys=True))
