@@ -20,6 +20,9 @@ let
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
   cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
+  # Records intended shown/hidden state before signalling, so a theme-triggered
+  # keyboard restart (which always starts a fresh wvkbd process) can decide
+  # whether to pass --hidden without any post-restart signal replay race.
   keyboardGestureSignal = pkgs.writeShellScriptBin "k230-keyboard-gesture-signal" ''
     set -eu
     case "''${1:-}" in
@@ -27,6 +30,10 @@ let
       hide) signal=USR1 ;;
       *) exit 2 ;;
     esac
+    if [ -n "''${XDG_RUNTIME_DIR:-}" ]; then
+      marker="''${XDG_RUNTIME_DIR}/k230-keyboard-visible"
+      printf '%s' "$1" > "$marker.tmp.$$" && mv -f "$marker.tmp.$$" "$marker"
+    fi
     exec ${pkgs.procps}/bin/pkill -"$signal" -u "$(${pkgs.coreutils}/bin/id -u)" -x wvkbd-mobintl
   '';
   # Built only when frameTiming is selected. The patch measures monotonic
@@ -341,7 +348,37 @@ let
       done
       if [ -n "$found" ]; then
         export WAYLAND_DISPLAY="''${found##*/}"
-        exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
+        # Proves to keyboard_appearance.py's restart() that some supervisor
+        # relaunches this process on exit, so it is safe to SIGTERM it for a
+        # colour change. Rewritten every start; harmless if already present.
+        printf '1' > "$XDG_RUNTIME_DIR/k230-keyboard-supervised"
+        # Colours only take effect at process start (wvkbd has no live-recolor
+        # IPC). Read whatever theme activation last published; fall back to
+        # the packaged default when no theme has been activated yet (fresh
+        # home) or the pointer/file is missing or malformed.
+        default_args="${themeDefault}/generations/${themeDefaultId}/wvkbd.args"
+        args_file="$default_args"
+        active_args="${config.users.users.shell.home}/.local/state/omarchy/current/keyboard-appearance/active/wvkbd.args"
+        if [ -f "$active_args" ]; then
+          args_file="$active_args"
+        fi
+        color_args=()
+        if [ -f "$args_file" ]; then
+          mapfile -t color_args < "$args_file"
+        fi
+        if [ "''${#color_args[@]}" -ne 14 ] && [ -f "$default_args" ]; then
+          mapfile -t color_args < "$default_args"
+        fi
+        # Preserve shown/hidden across the restart itself: choosing whether to
+        # pass --hidden at start, rather than replaying a SIGUSR2 afterward,
+        # needs no timing assumption about when wvkbd is ready to receive it.
+        hidden_flag=(--hidden)
+        visible_marker="$XDG_RUNTIME_DIR/k230-keyboard-visible"
+        if [ -f "$visible_marker" ] && [ "$(cat "$visible_marker")" = show ]; then
+          hidden_flag=()
+        fi
+        exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} \
+          "''${hidden_flag[@]}" "''${color_args[@]}"
       fi
       ${pkgs.coreutils}/bin/sleep 0.1
     done

@@ -22,6 +22,10 @@ class PinnedThemeDefault(unittest.TestCase):
         subprocess.run([sys.executable, str(ROOT.parents[1] / "tools/generate_default_foot.py"),
                         "--check"], check=True)
 
+    def test_packaged_keyboard_colours_follow_same_keyboard_adapter(self):
+        subprocess.run([sys.executable, str(ROOT.parents[1] / "tools/generate_default_keyboard.py"),
+                        "--check"], check=True)
+
     def test_source_subset_and_report_identity(self):
         colors = (ROOT / "catppuccin/colors.toml").read_bytes()
         icons = (ROOT / "catppuccin/icons.theme").read_bytes()

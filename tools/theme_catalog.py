@@ -20,6 +20,7 @@ import sys
 import theme_activate as activation
 from theme_transaction import TransactionError, _pointer, activate_generation
 from theme_preferences import SelectionIntent
+import keyboard_appearance
 
 
 MAX_ENTRIES = 512
@@ -163,6 +164,8 @@ def main(argv=None):
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
     parser.add_argument("--rust-socket", type=Path)
     parser.add_argument("--deck-socket", type=Path)
+    parser.add_argument("--keyboard-runtime-dir", type=Path, default=Path("/run/shell"))
+    parser.add_argument("--pkill", default="pkill")
     actions = parser.add_subparsers(dest="action", required=True)
     listing = actions.add_parser("list")
     listing.add_argument("--json", action="store_true", help="JSON is also the default")
@@ -198,6 +201,9 @@ def main(argv=None):
                     preference=preference,
                     endpoints=(args.rust_socket, args.deck_socket)
                     if args.rust_socket is not None else None)
+                result["keyboard_appearance"] = keyboard_appearance.sync_and_restart(
+                    args.state_root, expected_generation=generation.name,
+                    runtime_dir=args.keyboard_runtime_dir, pkill_path=args.pkill)
                 result["activated"] = True
         print(json.dumps(result, sort_keys=True))
         return 0

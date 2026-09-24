@@ -55,6 +55,8 @@ def check(package: Path) -> None:
     assert (package / "generations" / generation / "appearance.json").read_bytes() == (THEME / "bundled-appearance.json").read_bytes()
     assert source_digest(package / "generations" / generation / "theme") == inventory["source_sha256"]["catppuccin"]
     assert (package / "generations" / recovery["generation"] / "appearance.json").is_file()
+    for gen_id in (generation, recovery["generation"]):
+        assert (package / "generations" / gen_id / "wvkbd.args").read_bytes() == (THEME / "wvkbd.args").read_bytes()
     assert (package / "share/doc/handheld-theme-default/LICENSE").is_file()
     print(f"PASS: 20 unchanged source files, two generations, selected {bundled['selected_background']}")
 

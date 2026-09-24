@@ -29,6 +29,7 @@ stdenvNoCC.mkDerivation {
     for id in ${bundledIdentity} ${recoveryIdentity}; do
       install -Dm644 ${./terminal-foot.ini} "$out/generations/$id/terminal-foot.ini"
       install -Dm644 ${./monitor-foot.ini} "$out/generations/$id/monitor-foot.ini"
+      install -Dm644 ${./wvkbd.args} "$out/generations/$id/wvkbd.args"
     done
     install -Dm644 "$src/LICENSE" "$out/share/doc/handheld-theme-default/LICENSE"
     runHook postInstall

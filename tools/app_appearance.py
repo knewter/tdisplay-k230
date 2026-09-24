@@ -129,7 +129,8 @@ def prepare(generation: Path, state_root: Path) -> Path:
             "inherited": ["htop", "nano", "nnn"],
             "limited": ["mpv: video surface does not consume terminal colors",
                         "Help: shell client uses shared shell tokens, not a separate app adapter",
-                        "wvkbd keyboard: separate shell-surface integration pending",
+                        "wvkbd keyboard: colours applied by keyboard_appearance.py, "
+                        "not this Foot/OSC adapter",
                         "existing Foot windows: no automatic PTY broadcast"],
             "withheld": ["theme foot.ini executable settings"]}
         (work / "coverage.json").write_text(json.dumps(coverage, indent=2, sort_keys=True) + "\n")

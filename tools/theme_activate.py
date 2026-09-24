@@ -23,6 +23,7 @@ from theme_sources import source_dir, source_digest
 from theme_preferences import SelectionIntent, choice as remembered_choice
 from theme_tokens import TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
+import keyboard_appearance
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -274,6 +275,10 @@ def main():
                         help="Rust shell appearance receiver (requires --deck-socket)")
     parser.add_argument("--deck-socket", type=Path,
                         help="Sway deck appearance receiver (requires --rust-socket)")
+    parser.add_argument("--keyboard-runtime-dir", type=Path, default=Path("/run/shell"),
+                        help="Supervised keyboard's XDG_RUNTIME_DIR, for its restart sentinel")
+    parser.add_argument("--pkill", default="pkill",
+                        help="Trusted pkill executable used to restart a supervised wvkbd")
     args = parser.parse_args()
     if (args.rust_socket is None) != (args.deck_socket is None):
         parser.error("--rust-socket and --deck-socket must be supplied together")
@@ -281,6 +286,7 @@ def main():
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
                                   background_choice=args.background)
     app_status = None
+    keyboard_status = None
     if args.activate:
         preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
                                      report["selected_background"], report["backgrounds"],
@@ -289,8 +295,14 @@ def main():
                                          preference=preference,
                                          endpoints=(args.rust_socket, args.deck_socket)
                                          if args.rust_socket is not None else None)
+        # Independent of app_status: a keyboard colour failure never revisits
+        # the already-acknowledged shell generation, same as app_appearance.
+        keyboard_status = keyboard_appearance.sync_and_restart(
+            args.state_root, expected_generation=destination.name,
+            runtime_dir=args.keyboard_runtime_dir, pkill_path=args.pkill)
     print(json.dumps({"generation_path": str(destination), "report": report,
-                      "app_appearance": app_status}, indent=2, sort_keys=True))
+                      "app_appearance": app_status,
+                      "keyboard_appearance": keyboard_status}, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
