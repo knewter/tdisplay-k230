@@ -1279,6 +1279,8 @@ DATA e77168a01c6ef61460d904e1af038e753c1a45e9cfbd08f28b965c26abedea9b  docs/evid
 DATA cd7bb9f6733a456be5dd8d5d0a0b2701b33e3182b5c322f8f4cd2b0489007d37  docs/evidence/omarchy-themes/quattro-carousel/swipe.mp4
 DATA 3e3eaa17ba130f3c6ee7cd912746f0c5765eef351089a5303009bfec9294ce9a  docs/evidence/omarchy-themes/quattro-carousel/theme-carousel-mid-drag.png
 DATA d3a33988c373940d58fc7daa5f42070d86882fb16894ba0dd21e796339f73351  docs/evidence/omarchy-themes/quattro-carousel/theme-carousel-rest-dark.png
+DATA a61bde5110afc2a8affad06c7cfdd78190e9b2759563646d71a80f8105a3fc13  docs/evidence/omarchy-themes/commit-fix-board/drawer-catppuccin.png
+DATA bc925fa4c5725f3fc35f682feb9f64869a300a786df0548b62329bcef4a9a75d  docs/evidence/omarchy-themes/commit-fix-board/drawer-community.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1838,3 +1840,12 @@ These DATA screenshots are host-rendered and paired headless-QEMU captures of in
 | `docs/evidence/wifi-settings/webos-polish-qemu/wifi-list-dark.png` | 37770 | DATA | `de1da296526f5f6feb4d44972fc3ccd88ce495be38265a788e0463031faae405` |
 | `docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png` | 52048 | DATA | `e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8` |
 | `docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png` | 40215 | DATA | `95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a` |
+
+### Theme activation after the commit fix: native board captures
+
+These DATA screenshots are native `grim` captures of the installed board compositor showing the app drawer under two themes. Fixture-free, no personal data. The adjacent README records system, commands and limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/commit-fix-board/drawer-catppuccin.png` | 38880 | DATA | `a61bde5110afc2a8affad06c7cfdd78190e9b2759563646d71a80f8105a3fc13` |
+| `docs/evidence/omarchy-themes/commit-fix-board/drawer-community.png` | 40915 | DATA | `bc925fa4c5725f3fc35f682feb9f64869a300a786df0548b62329bcef4a9a75d` |
