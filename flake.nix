@@ -181,6 +181,7 @@
         handheld-theme-command = pkgsCross.callPackage ./nix/handheld-theme-command.nix {
           omarchyThemeTools = self.packages.${buildSystem}.omarchy-theme-tools;
           themeDefault = self.packages.${buildSystem}.handheld-theme-default;
+          rustShellTool = self.packages.${buildSystem}.handheld-shell-rust;
         };
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.

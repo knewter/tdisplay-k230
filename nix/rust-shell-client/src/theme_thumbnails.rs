@@ -106,7 +106,7 @@ impl Default for ThumbnailWorker {
             while let Ok(key) = incoming.recv() {
                 let (width, height) = key.variant.size();
                 let pixels = cache
-                    .render(&key.path, width, height, FitMode::Crop)
+                    .render(&key.path, None, width, height, FitMode::Crop)
                     .map(<[u8]>::to_vec);
                 if outgoing.send(ThumbnailReply { key, pixels }).is_err() {
                     break;

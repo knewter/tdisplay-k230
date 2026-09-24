@@ -10,7 +10,7 @@ use image::{
 };
 use std::{
     fs::OpenOptions,
-    io::{Cursor, Read},
+    io::{Cursor, Read, Write},
     os::unix::fs::OpenOptionsExt,
     path::{Path, PathBuf},
 };
@@ -22,6 +22,124 @@ const MAX_DECODE_ALLOC: u64 = 128 * 1024 * 1024;
 const MAX_OUTPUT_WIDTH: u32 = 1024;
 const MAX_OUTPUT_HEIGHT: u32 = 2048;
 const MAX_OUTPUT_PIXELS: u64 = 1024 * 2048;
+
+/// On-disk cache of an already-decoded, already-cropped-to-panel-size still
+/// wallpaper, written once per prepared theme generation (either by
+/// `tools/theme_activate.py`'s `prepare()` at runtime, through the hidden
+/// `--write-wallpaper-cache` verb, or by a native-arch build of this same
+/// binary at Nix build time for the one pinned bundled generation). The
+/// generation directory is already an immutable, hash-identified, one-shot
+/// staged copy (see `tools/theme_activate.py`), so this file lives beside
+/// its `theme/`, `report.json` and `appearance.json` and is invalidated
+/// exactly when the generation itself is: a new generation gets a new
+/// directory, never a mutated one.
+///
+/// This cache is strictly an optimization. A missing, truncated, or
+/// geometry-mismatched cache file silently falls back to a full decode --
+/// it can never change what gets rendered, only how fast.
+const CACHE_MAGIC: &[u8; 8] = b"K230BGC1";
+const CACHE_HEADER_LEN: u64 = 17; // 8 (magic) + 4 (width) + 4 (height) + 1 (mode)
+
+fn mode_tag(mode: FitMode) -> u8 {
+    match mode {
+        FitMode::Crop => 0,
+        FitMode::Fit => 1,
+        FitMode::Center => 2,
+    }
+}
+
+fn cache_file_path(generation_root: &Path) -> PathBuf {
+    generation_root.join("background.cache")
+}
+
+/// Read a cache file for `generation_root` if one exists and matches the
+/// requested `width`/`height`/`mode` exactly. Any structural problem (wrong
+/// size, bad magic, unreadable file, symlink) is treated as a cache miss,
+/// never as an error.
+fn load_cached(generation_root: &Path, width: u32, height: u32, mode: FitMode) -> Option<Vec<u8>> {
+    let expected_pixels = output_pixels(width, height).ok()?;
+    let path = cache_file_path(generation_root);
+    let file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .ok()?;
+    let metadata = file.metadata().ok()?;
+    let expected_len = CACHE_HEADER_LEN.checked_add(expected_pixels as u64)?;
+    if !metadata.is_file() || metadata.len() != expected_len {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    file.take(expected_len + 1).read_to_end(&mut bytes).ok()?;
+    if bytes.len() as u64 != expected_len {
+        return None;
+    }
+    if &bytes[0..8] != CACHE_MAGIC {
+        return None;
+    }
+    let cached_width = u32::from_le_bytes(bytes[8..12].try_into().ok()?);
+    let cached_height = u32::from_le_bytes(bytes[12..16].try_into().ok()?);
+    let cached_mode = bytes[16];
+    if cached_width != width || cached_height != height || cached_mode != mode_tag(mode) {
+        return None;
+    }
+    bytes.drain(0..CACHE_HEADER_LEN as usize);
+    Some(bytes)
+}
+
+/// Write `pixels` (already rendered by `render_uncached` for `width` x
+/// `height` at `mode`) as a cache file under `generation_root`. Written to a
+/// sibling temporary file and atomically renamed so a reader never observes
+/// a partial file. Advisory: callers treat failure as a missed optimization,
+/// never as a reason to fail a theme activation.
+fn write_cache(
+    generation_root: &Path,
+    width: u32,
+    height: u32,
+    mode: FitMode,
+    pixels: &[u8],
+) -> Result<(), String> {
+    let expected_pixels = output_pixels(width, height)?;
+    if pixels.len() != expected_pixels {
+        return Err("wallpaper cache payload size mismatch".into());
+    }
+    let destination = cache_file_path(generation_root);
+    let temporary = generation_root.join(".background.cache.tmp");
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .custom_flags(libc::O_NOFOLLOW)
+        .mode(0o600)
+        .open(&temporary)
+        .map_err(|error| error.to_string())?;
+    file.write_all(CACHE_MAGIC)
+        .and_then(|_| file.write_all(&width.to_le_bytes()))
+        .and_then(|_| file.write_all(&height.to_le_bytes()))
+        .and_then(|_| file.write_all(&[mode_tag(mode)]))
+        .and_then(|_| file.write_all(pixels))
+        .and_then(|_| file.sync_all())
+        .map_err(|error| error.to_string())?;
+    drop(file);
+    std::fs::rename(&temporary, &destination).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+/// Compute pixels for `source` at `width` x `height`/`mode` (a full decode,
+/// bypassing any cache) and persist them as `generation_root`'s wallpaper
+/// cache. Used by the hidden `--write-wallpaper-cache` CLI verb, which is
+/// invoked both by `tools/theme_activate.py`'s `prepare()` (a fresh runtime
+/// generation, once) and by a native-arch build of this binary at Nix build
+/// time (the one pinned bundled generation).
+pub fn write_wallpaper_cache(
+    source: &Path,
+    generation_root: &Path,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    let pixels = render_uncached(source, width, height, FitMode::Crop)?;
+    write_cache(generation_root, width, height, FitMode::Crop, &pixels)
+}
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum FitMode {
@@ -52,9 +170,16 @@ impl BackgroundCache {
     /// Returns native little-endian Cairo ARGB32 bytes (B,G,R,255). The
     /// wallpaper is composited against opaque black, including Fit letterbox.
     /// A single success or failure stays cached until key changes.
+    ///
+    /// `generation_root`, when given, is the prepared theme generation
+    /// directory that `path` lives under (see `AppearanceSnapshot::path`).
+    /// If it holds a `background.cache` file matching `width`/`height`/
+    /// `mode`, that is used instead of a full decode; the miss path is
+    /// identical to passing `None`.
     pub fn render(
         &mut self,
         path: &Path,
+        generation_root: Option<&Path>,
         width: u32,
         height: u32,
         mode: FitMode,
@@ -70,7 +195,11 @@ impl BackgroundCache {
             .as_ref()
             .is_none_or(|(previous, _)| previous != &key)
         {
-            self.cached = Some((key, render_uncached(path, width, height, mode)));
+            let rendered = generation_root
+                .and_then(|root| load_cached(root, width, height, mode))
+                .map(Ok)
+                .unwrap_or_else(|| render_uncached(path, width, height, mode));
+            self.cached = Some((key, rendered));
         }
         match &self.cached.as_ref().expect("cache populated").1 {
             Ok(bytes) => Ok(bytes),

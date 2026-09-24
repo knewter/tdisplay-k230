@@ -1,4 +1,16 @@
-{ stdenvNoCC, makeWrapper, python3, omarchyThemeTools, themeDefault, lib, procps, coherentShell ? false }:
+{ stdenvNoCC, makeWrapper, python3, omarchyThemeTools, themeDefault, lib, procps
+, coherentShell ? false, rustShellTool ? null }:
+
+let
+  # Precomputing a prepared generation's panel-sized wallpaper decode only
+  # matters where the Rust shell's receiver decodes one at all
+  # (background_decode.rs); the non-coherent-shell session has no such
+  # receiver to benefit. Guarded exactly like the --rust-socket/--deck-socket
+  # flags below, which the same feature flag gates for the same reason.
+  wallpaperCacheFlag =
+    lib.optionalString (coherentShell && rustShellTool != null)
+      ''--add-flags "--wallpaper-cache-tool ${rustShellTool}/bin/k230-shell-rust"'';
+in
 
 stdenvNoCC.mkDerivation {
   pname = "handheld-theme-command";
@@ -23,12 +35,14 @@ stdenvNoCC.mkDerivation {
       --add-flags "$out/libexec/handheld-theme/omarchy-theme-set" \
       --add-flags "--tools ${omarchyThemeTools}" \
       --add-flags "--builtins ${themeDefault}/share/omarchy/themes" \
-      --add-flags "--pkill ${procps}/bin/pkill" ${lib.optionalString coherentShell ''--add-flags "--rust-socket /run/shell/k230-shell-rust-appearance.sock --deck-socket /run/shell/k230-card-appearance.sock"''}
+      --add-flags "--pkill ${procps}/bin/pkill" ${lib.optionalString coherentShell ''--add-flags "--rust-socket /run/shell/k230-shell-rust-appearance.sock --deck-socket /run/shell/k230-card-appearance.sock"''} \
+      ${wallpaperCacheFlag}
     makeWrapper ${python3}/bin/python3 "$out/bin/k230-theme" \
       --add-flags "$out/libexec/handheld-theme/theme_catalog.py" \
       --add-flags "--tools ${omarchyThemeTools}" \
       --add-flags "--builtins ${themeDefault}/share/omarchy/themes" \
-      --add-flags "--pkill ${procps}/bin/pkill" ${lib.optionalString coherentShell ''--add-flags "--rust-socket /run/shell/k230-shell-rust-appearance.sock --deck-socket /run/shell/k230-card-appearance.sock"''}
+      --add-flags "--pkill ${procps}/bin/pkill" ${lib.optionalString coherentShell ''--add-flags "--rust-socket /run/shell/k230-shell-rust-appearance.sock --deck-socket /run/shell/k230-card-appearance.sock"''} \
+      ${wallpaperCacheFlag}
     makeWrapper ${python3}/bin/python3 "$out/bin/k230-app-appearance" \
       --add-flags "$out/libexec/handheld-theme/app_appearance.py"
     makeWrapper ${python3}/bin/python3 "$out/bin/k230-foot-session" \

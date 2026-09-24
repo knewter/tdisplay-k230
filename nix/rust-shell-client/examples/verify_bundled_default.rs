@@ -56,7 +56,7 @@ fn main() -> Result<(), String> {
             return Err("default background list is incomplete".into());
         }
         let mut cache = BackgroundCache::new();
-        let frame = cache.render(image, 568, 1232, FitMode::Crop)?;
+        let frame = cache.render(image, Some(snapshot.path.as_path()), 568, 1232, FitMode::Crop)?;
         if frame.len() != 568 * 1232 * 4 {
             return Err("invalid decoded wallpaper frame".into());
         }

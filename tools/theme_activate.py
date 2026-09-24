@@ -36,6 +36,15 @@ VIDEOS = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
 MAX_CONFIG = 2 * 1024 * 1024
 MAX_ASSET = 256 * 1024 * 1024
 MAX_TOTAL = 512 * 1024 * 1024
+# The panel is a fixed 568x1232 portrait AMOLED (see AGENTS.md); the Rust
+# shell always decodes a still wallpaper to exactly this size with a Crop
+# fit (background_decode.rs). A generation's wallpaper cache is therefore
+# always built at this one geometry.
+PANEL_WIDTH = 568
+PANEL_HEIGHT = 1232
+# A cache build is advisory: a slow or failing decoder must never turn into
+# a failed or slower theme activation than before this feature existed.
+WALLPAPER_CACHE_TIMEOUT_S = 15
 KNOWN_PALETTE = {
     "mode", "theme_type", "accent", "background", "foreground", "selection",
     "selection_background", "selection_foreground", "cursor", "muted",
@@ -108,9 +117,31 @@ def choose_source(name: str, source: Path | None, user_themes: Path, builtins: P
     raise ThemeError(f"theme not found: {name}")
 
 
+def build_wallpaper_cache(wallpaper_cache_tool: Path, background_path: Path, work: Path) -> None:
+    """Precompute `work`'s panel-sized wallpaper decode via the installed
+    Rust shell binary's hidden `--write-wallpaper-cache` verb, so a later
+    commit, restart, or rollback onto this same (immutable, hash-identified)
+    generation loads a small pre-cropped file instead of decoding the
+    full-size source again (background_decode.rs).
+
+    This is strictly an optimization: any failure here is swallowed. A
+    missing or unreadable cache file is exactly the same, slower, fully
+    correct path this activation would have taken before this feature
+    existed.
+    """
+    try:
+        subprocess.run(
+            [str(wallpaper_cache_tool), "--write-wallpaper-cache", str(background_path),
+             str(work), str(PANEL_WIDTH), str(PANEL_HEIGHT)],
+            capture_output=True, timeout=WALLPAPER_CACHE_TIMEOUT_S, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
-            background_choice: str | None = None) -> tuple[Path, dict]:
+            background_choice: str | None = None,
+            wallpaper_cache_tool: Path | None = None) -> tuple[Path, dict]:
     name = normalize_name(name)
     root, theme = choose_source(name, source, user_themes, builtins)
     remembered = remembered_choice(state_root, theme) if background_choice is None else None
@@ -254,6 +285,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             # report so the chooser sees that fallback without rewriting the
             # cached generation.
             return destination, report
+        if wallpaper_cache_tool is not None and tokens["background"] == "background":
+            build_wallpaper_cache(wallpaper_cache_tool, staged / report["selected_background"], work)
         os.replace(work, destination)
         return destination, report
 
@@ -266,6 +299,8 @@ def main():
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
     parser.add_argument("--tools", type=Path, default=HOST_TOOLS)
+    parser.add_argument("--wallpaper-cache-tool", type=Path,
+                        help="k230-shell-rust binary, for precomputing a panel-sized wallpaper cache")
     parser.add_argument("--background", help="exact source-relative backgrounds/NAME in this theme")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--prepare-only", action="store_true")
@@ -284,7 +319,8 @@ def main():
         parser.error("--rust-socket and --deck-socket must be supplied together")
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
-                                  background_choice=args.background)
+                                  background_choice=args.background,
+                                  wallpaper_cache_tool=args.wallpaper_cache_tool)
     app_status = None
     keyboard_status = None
     if args.activate:

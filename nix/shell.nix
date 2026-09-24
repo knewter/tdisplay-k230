@@ -189,6 +189,7 @@ let
     omarchyThemeTools = themeTools;
     inherit themeDefault;
     coherentShell = cfg.coherentShell;
+    rustShellTool = rustShellBase;
   };
   settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
   notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };

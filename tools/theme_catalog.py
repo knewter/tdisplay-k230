@@ -154,11 +154,13 @@ def choose(entries: list[Entry], theme_id: str) -> Entry:
 
 
 def prepare_entry(entry: Entry, *, state_root: Path, tools: Path,
-                  background_id: str | None = None) -> tuple[Path, dict]:
+                  background_id: str | None = None,
+                  wallpaper_cache_tool: Path | None = None) -> tuple[Path, dict]:
     def prepare(background=None):
         return activation.prepare(entry.name, source=entry.source, state_root=state_root,
                                   user_themes=entry.source.parent, builtins=None,
-                                  tools=tools, background_choice=background)
+                                  tools=tools, background_choice=background,
+                                  wallpaper_cache_tool=wallpaper_cache_tool)
 
     generation, report = prepare()
     if background_id is not None:
@@ -191,6 +193,8 @@ def preview(entry: Entry, generation: Path, report: dict) -> dict:
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tools", type=Path, default=activation.HOST_TOOLS)
+    parser.add_argument("--wallpaper-cache-tool", type=Path,
+                        help="k230-shell-rust binary, for precomputing a panel-sized wallpaper cache")
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
     parser.add_argument("--state-root", type=Path, default=Path.home() / ".local/state/omarchy/current")
@@ -221,7 +225,8 @@ def main(argv=None):
         else:
             entry = choose(entries, args.id)
             generation, report = prepare_entry(entry, state_root=args.state_root,
-                                               tools=args.tools, background_id=args.background)
+                                               tools=args.tools, background_id=args.background,
+                                               wallpaper_cache_tool=args.wallpaper_cache_tool)
             result = preview(entry, generation, report)
             if args.action == "activate":
                 if args.expected_generation != generation.name:

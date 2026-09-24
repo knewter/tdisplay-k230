@@ -1,8 +1,20 @@
-{ lib, stdenvNoCC, fetchFromGitHub, imagemagick }:
+{ lib, stdenvNoCC, fetchFromGitHub, imagemagick, buildPackages }:
 
 let
-  bundledIdentity = (builtins.fromJSON (builtins.readFile ./bundled-report.json)).generation;
+  bundledReport = builtins.fromJSON (builtins.readFile ./bundled-report.json);
+  bundledIdentity = bundledReport.generation;
+  bundledBackground = bundledReport.selected_background;
   recoveryIdentity = (builtins.fromJSON (builtins.readFile ./default-report.json)).generation;
+  # A native (build-platform) copy of the same Rust shell binary that is
+  # cross-compiled onto the device, used only to precompute the pinned
+  # bundled generation's panel-sized wallpaper decode at build time
+  # (background_decode.rs's `--write-wallpaper-cache` verb). It never runs
+  # on the board and ships nothing into the image; `buildPackages` resolves
+  # every one of rust-shell-client's own inputs (rustPlatform, wayland,
+  # cairo, pango, glib, librsvg) for the build platform automatically, the
+  # same pattern nix/opensbi-k230.nix and nix/uboot-k230.nix already use for
+  # a native build-time tool.
+  wallpaperCacheTool = buildPackages.callPackage ../rust-shell-client { };
   # Every member of omacom/omarchy's `themes/` collection at the pinned
   # revision. Verified with `ls themes/` against the fetched source and
   # recorded in SOURCE.md; all 22 have a colors.toml palette. catppuccin and
@@ -76,6 +88,19 @@ stdenvNoCC.mkDerivation {
     cp -R "$out/share/omarchy/themes/catppuccin" "$out/generations/${bundledIdentity}/theme"
     install -Dm644 ${./bundled-report.json} "$out/generations/${bundledIdentity}/report.json"
     install -Dm644 ${./bundled-appearance.json} "$out/generations/${bundledIdentity}/appearance.json"
+    ${lib.optionalString (bundledBackground != null) ''
+      # Precompute the bundled generation's panel-sized wallpaper decode so
+      # the very first paint (before any theme is ever explicitly activated;
+      # see appearance.rs's pointerless-default bootstrap) loads a small
+      # pre-cropped file instead of decoding catppuccin's full-resolution
+      # background on the K230's single in-order core. Advisory: if this
+      # ever fails, the generation is exactly as correct and only as slow as
+      # it was before this optimization existed.
+      "${wallpaperCacheTool}/bin/k230-shell-rust" --write-wallpaper-cache \
+        "$out/generations/${bundledIdentity}/theme/${bundledBackground}" \
+        "$out/generations/${bundledIdentity}" 568 1232 \
+        || echo "handheld-theme-default: wallpaper cache precompute skipped" >&2
+    ''}
     install -Dm644 ${./default-report.json} "$out/generations/${recoveryIdentity}/report.json"
     install -Dm644 ${./default-appearance.json} "$out/generations/${recoveryIdentity}/appearance.json"
     for id in ${bundledIdentity} ${recoveryIdentity}; do

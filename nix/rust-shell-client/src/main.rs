@@ -126,7 +126,7 @@ fn appearance_renderable(
     };
     let (width, height) = geometry.ok_or("wallpaper output is not configured")?;
     cache
-        .render(still, width, height, FitMode::Crop)
+        .render(still, Some(snapshot.path.as_path()), width, height, FitMode::Crop)
         .map(|_| ())
 }
 
@@ -616,6 +616,7 @@ struct ShellClient {
     wallpaper: WallpaperState,
     background_cache: BackgroundCache,
     wallpaper_path: Option<PathBuf>,
+    wallpaper_generation_root: Option<PathBuf>,
     video_source: Option<PathBuf>,
     video_active: Option<VideoPlayback>,
     video_candidate: Option<VideoPlayback>,
@@ -1246,7 +1247,13 @@ impl ShellClient {
             }
         } else if let Some(path) = self.wallpaper_path.as_deref() {
             self.background_cache
-                .render(path, width, height, FitMode::Crop)
+                .render(
+                    path,
+                    self.wallpaper_generation_root.as_deref(),
+                    width,
+                    height,
+                    FitMode::Crop,
+                )
                 .and_then(|pixels| {
                     if pixels.len() != canvas.len() {
                         return Err("wallpaper pixel size mismatch".into());
@@ -2316,6 +2323,7 @@ fn serve() -> Result<(), String> {
         wallpaper: WallpaperState::default(),
         background_cache: BackgroundCache::new(),
         wallpaper_path: fallback_still(appearance.active()),
+        wallpaper_generation_root: appearance.active().map(|snapshot| snapshot.path.clone()),
         video_source: appearance.active().and_then(|snapshot| {
             snapshot
                 .backgrounds
@@ -2661,6 +2669,8 @@ fn serve() -> Result<(), String> {
                             let _ = appearance.respond(event, false);
                         } else {
                             state.wallpaper_path = fallback_still(event.snapshot.as_ref());
+                            state.wallpaper_generation_root =
+                                event.snapshot.as_ref().map(|snapshot| snapshot.path.clone());
                             state.video_display = video_key;
                             state.renderer.set_appearance(event.snapshot.clone());
                             state.appearance_pending = true;
@@ -2808,6 +2818,8 @@ fn serve() -> Result<(), String> {
                 };
                 if !accepted {
                     state.wallpaper_path = fallback_still(previous.as_ref());
+                    state.wallpaper_generation_root =
+                        previous.as_ref().map(|snapshot| snapshot.path.clone());
                     state.video_display = selected_video(
                         previous.as_ref(),
                         (state.wallpaper.width, state.wallpaper.height),
@@ -3024,8 +3036,26 @@ fn main() {
             selected.and_then(|selected| export_png(
                 &PathBuf::from(output), 568, 1232, selected, &installed_apps()))
         }
+        [_, flag, source, generation_root, width, height] if flag == "--write-wallpaper-cache" => {
+            // Precompute a prepared theme generation's panel-sized wallpaper
+            // decode so a later commit/restart/rollback can load it instead
+            // of decoding the full-size source again (background_decode.rs).
+            // Used both by `tools/theme_activate.py`'s `prepare()` at
+            // runtime and by a native-arch build of this same binary at Nix
+            // build time for the one pinned bundled generation
+            // (nix/handheld-theme-default). Never touches Wayland.
+            match (width.parse::<u32>(), height.parse::<u32>()) {
+                (Ok(width), Ok(height)) => k230_shell_rust::background_decode::write_wallpaper_cache(
+                    std::path::Path::new(source),
+                    std::path::Path::new(generation_root),
+                    width,
+                    height,
+                ),
+                _ => Err("invalid wallpaper cache geometry".into()),
+            }
+        }
         _ => Err(
-            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png".into(),
+            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png | --write-wallpaper-cache SOURCE GENERATION_ROOT WIDTH HEIGHT".into(),
         ),
     };
     if let Err(error) = outcome {

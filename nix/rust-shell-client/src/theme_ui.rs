@@ -39,7 +39,7 @@ impl Default for ThemeImageWorker {
             let mut cache = BackgroundCache::new();
             while let Ok(key) = incoming.recv() {
                 let pixels = cache
-                    .render(&key.path, key.width, key.height, FitMode::Crop)
+                    .render(&key.path, None, key.width, key.height, FitMode::Crop)
                     .map(<[u8]>::to_vec);
                 if outgoing.send(ThemeImageReply { key, pixels }).is_err() {
                     break;
