@@ -1174,6 +1174,8 @@ DATA 0677f13977a3c6734e461a808921716c86402386695ef3343cb4a3c36ad56a69  docs/evid
 DATA 51471171d73d883577104cae64254bcc039c12278d9b68502699de6c41ef0a02  docs/evidence/card-shell/tracked-motion-qemu/entry-end.png
 DATA 61786ceefb7f771eb3034ecea012932c366130a3f02114d3b8b7500c4fc5e99d  docs/evidence/card-shell/tracked-motion-qemu/entry-middle.png
 DATA 7033843d9fb164232b7406150f120475a2f2bb756b091bfe2a17b3fe2fe0b32d  docs/evidence/card-shell/tracked-motion-qemu/entry-start.png
+DATA 0ec94093d0139736c5c6d0c7b1a707d555cc845c2d3d62e4b07cead826d7e14c  docs/evidence/coherent-shell/rust-drawer-grid-host/dark.png
+DATA fb552085a88544e9759aa17a136505b6369ddeb40504a3752fcad588c142bb95  docs/evidence/coherent-shell/rust-drawer-grid-host/latte.png
 DATA 1b81a035e84de1aaabea0cfda17f535da2fea12c0fa80f0ddeaadc2d4b056a19  docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png
 DATA 58282345c66748b95c64e47ead88c3698046de3d231f5447f26b8d842bf23857  docs/evidence/coherent-shell/rust-visual-themes-host/dark/preview.png
 DATA f20c8690aa16951e8f64227f734337bdf3e8b8896dc9d1b2de28d92e9fc3966a  docs/evidence/coherent-shell/rust-visual-themes-host/dark/settings.png
@@ -1604,6 +1606,17 @@ identities, pixel measurements, and physical limits.
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png` | 14042 | DATA | `54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b` |
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png` | 17013 | DATA | `dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837` |
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png` | 42007 | DATA | `1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad` |
+
+### Rust drawer grid host captures
+
+The two 568×1232 DATA PNGs below are original host-rendered public fixture
+screens for the three-column drawer in pinned Catppuccin dark and Latte. Their
+adjacent README records generation IDs, checks, and the non-physical limit.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/rust-drawer-grid-host/dark.png` | 48961 | DATA | `0ec94093d0139736c5c6d0c7b1a707d555cc845c2d3d62e4b07cead826d7e14c` |
+| `docs/evidence/coherent-shell/rust-drawer-grid-host/latte.png` | 48225 | DATA | `fb552085a88544e9759aa17a136505b6369ddeb40504a3752fcad588c142bb95` |
 
 ### Rust visual theme host captures
 
