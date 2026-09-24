@@ -25,9 +25,9 @@ int main(int argc,char **argv) {
 	assert(argc==2); struct kg_policy p; init(&p);
 	if (!strcmp(argv[1],"early-chord")) {
 		chord(&p); kg_motion(&p,1,100,990,170); kg_motion(&p,2,180,988,170);
-		near(p.progress,.5); double held=p.progress;
+		near(p.progress,210.0/476); double held=p.progress;
 		kg_motion(&p,1,100,990,190); kg_motion(&p,2,180,988,190); near(p.progress,held);
-		kg_motion(&p,1,100,1032,210); kg_motion(&p,2,180,1030,210); near(p.progress,.4);
+		kg_motion(&p,1,100,1032,210); kg_motion(&p,2,180,1030,210); near(p.progress,168.0/476);
 		kg_up(&p,1,230); kg_up(&p,2,232); settle(&p,232);
 		assert(p.mode==KG_WAIT_UNMAP || p.mode==KG_SHOWN);
 	} else if (!strcmp(argv[1],"late-second")) {
@@ -49,14 +49,14 @@ int main(int argc,char **argv) {
 		p.mode=KG_SHOWN;p.progress=1;
 		assert(kg_down(&p,3,100,900,100,1232,true,false,false)==KG_NONE);
 		assert(kg_down(&p,3,100,780,110,1232,true,false,false)&KG_CONSUME);
-		kg_motion(&p,3,100,990,130); near(p.progress,.5);
-		kg_motion(&p,3,100,990,150); near(p.progress,.5);
-		kg_motion(&p,3,100,906,170);near(p.progress,.7);
+		kg_motion(&p,3,100,990,130); near(p.progress,1-210.0/476);
+		kg_motion(&p,3,100,990,150); near(p.progress,1-210.0/476);
+		kg_motion(&p,3,100,906,170);near(p.progress,1-126.0/476);
 		kg_up(&p,3,180);settle(&p,180);assert(p.mode==KG_SHOWN);
 	} else if (!strcmp(argv[1],"stale-velocity")) {
 		p.mode=KG_SHOWN;p.progress=1;
 		kg_down(&p,3,100,780,100,1232,true,false,false);
-		kg_motion(&p,3,100,1000,120);
+		kg_motion(&p,3,100,1050,120);
 		kg_up(&p,3,400);assert(p.velocity==0);
 		settle(&p,400);assert(p.mode==KG_WAIT_UNMAP);
 	} else if (!strcmp(argv[1],"surface-loss")) {
@@ -68,7 +68,7 @@ int main(int argc,char **argv) {
 	} else if (!strcmp(argv[1],"reduced")) {
 		kg_init(&p,420,true);p.mode=KG_SHOWN;p.progress=1;
 		kg_down(&p,3,100,780,100,1232,true,false,false);
-		kg_motion(&p,3,100,990,120);kg_up(&p,3,140);
+		kg_motion(&p,3,100,1050,120);kg_up(&p,3,140);
 		settle(&p,140);assert(p.mode==KG_WAIT_UNMAP);
 	} else if (!strcmp(argv[1],"elapsed-cadence")) {
 		p.mode=KG_SETTLE;p.progress=.3;p.velocity=.6;p.target_shown=true;p.last_ms=100;
@@ -102,6 +102,20 @@ int main(int argc,char **argv) {
 		assert(p.overflow_contacts==5);
 		for(int id=1;id<22;id++) assert(kg_up(&p,id,300+id)&KG_CONSUME);
 		assert(p.owned_count==0 && p.overflow_contacts==0);
+	} else if (!strcmp(argv[1],"end-stream")) {
+		chord(&p);
+		assert(p.owned_count==2);
+		assert(kg_end_stream(&p,true)&KG_DIRTY);
+		assert(p.mode==KG_SHOWN && p.owned_count==0);
+		assert(kg_up(&p,1,300)==KG_NONE);
+		assert(kg_down(&p,8,100,900,310,1232,true,false,false)==KG_NONE);
+		kg_end_stream(&p,false);
+		assert(p.mode==KG_IDLE);
+	} else if (!strcmp(argv[1],"hide-timeout")) {
+		p.mode=KG_WAIT_UNMAP;p.progress=0;p.last_ms=100;
+		assert(kg_tick(&p,851)&KG_DIRTY);
+		assert(p.mode==KG_SHOWN && p.progress==1);
+		assert(kg_down(&p,8,100,900,860,1232,true,false,false)==KG_NONE);
 	} else assert(0);
 	printf("PASS %s\n",argv[1]);
 }

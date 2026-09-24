@@ -15,6 +15,7 @@
 #include "sway/input/input-manager.h"
 #include "sway/input/seat.h"
 #include "sway/layers.h"
+#include "sway/scene_descriptor.h"
 #include "sway/output.h"
 #include "sway/server.h"
 #include "sway/tree/root.h"
@@ -184,6 +185,7 @@ static void handle_result(struct cs_result result);
 static bool snapshot(void);
 static bool chrome(void);
 static void keyboard_refresh(void);
+static struct sway_layer_surface *keyboard_layer(struct sway_output *output);
 static bool appearance_canvas_refresh(void) {
 	if (!shell.canvas || !shell.deck || !shell.output) return true;
 	const struct cs_config *cfg = &shell.policy.config;
@@ -991,6 +993,10 @@ static void handle_result(struct cs_result r) {
 				 shell.policy.mode, r.actions, r.message, shell.policy.count);
 }
 static void handle_seat_destroy(struct wl_listener *l, void *data) {
+	unsigned keyboard_end = kg_end_stream(&shell.keyboard,
+		keyboard_layer(shell.output) != NULL);
+	if (keyboard_end & KG_HIDE) keyboard_signal("hide");
+	if (keyboard_end & KG_DIRTY) keyboard_refresh();
 	wl_list_remove(&shell.seat_destroy.link);
 	shell.seat = NULL;
 	cs_stream_cancel(&shell.policy);
@@ -998,7 +1004,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
-	kg_cancel(&shell.keyboard);
+	kg_end_stream(&shell.keyboard, false);
 	card_appearance_stop();
 	card_shell_reveal_abort(&shell.reveal);
 	cs_stream_cancel(&shell.policy);
@@ -1037,7 +1043,14 @@ static int tick_impl(void *data) {
 		return 0;
 	card_appearance_poll();
 	unsigned keyboard_tick = kg_tick(&shell.keyboard, now_ms());
-	if (keyboard_tick & KG_HIDE) keyboard_signal("hide");
+	if ((keyboard_tick & KG_HIDE) && !keyboard_signal("hide")) {
+		/* A failed lifecycle helper must not strand an invisible keyboard
+		 * while every new touch remains captured in WAIT_UNMAP. */
+		shell.keyboard.mode=KG_SHOWN;
+		shell.keyboard.progress=1;
+		shell.keyboard.velocity=0;
+		keyboard_tick |= KG_DIRTY;
+	}
 	if (keyboard_tick & KG_DIRTY) keyboard_refresh();
 	if (shell.reveal.active && !card_shell_reveal_pump(&shell.reveal)) {
 		card_shell_drawer_cancel(&shell.drawer_gesture);
@@ -1138,7 +1151,13 @@ static bool popup_mapped(void) { return visible_popup_node(&root->layers.popup->
 static bool launcher_mapped(void) {
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
-		if (layer->mapped && layer->layer_surface->namespace &&
+		/* Sway's node-destroy callback rearranges layers before unlinking this
+		 * list entry. The descriptor is removed first: never touch its dying
+		 * scene node during that nested rearrange. */
+		if (layer->mapped && layer->scene && layer->scene->tree &&
+			scene_descriptor_try_get(&layer->scene->tree->node,
+				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
+			layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "k230-launcher") == 0)
 			return true;
 	}
@@ -1149,7 +1168,10 @@ static bool drawer_mapped(void) {
 		return false;
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
-		if (layer->mapped && layer->layer_surface->namespace &&
+		if (layer->mapped && layer->scene && layer->scene->tree &&
+			scene_descriptor_try_get(&layer->scene->tree->node,
+				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
+			layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "k230-shell-drawer") == 0)
 			return true;
 	}
@@ -1159,7 +1181,10 @@ static struct sway_layer_surface *keyboard_layer(struct sway_output *output) {
 	if (!output) return NULL;
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &output->layer_surfaces, link) {
-		if (layer->mapped && layer->layer_surface->namespace &&
+		if (layer->mapped && layer->scene && layer->scene->tree &&
+			scene_descriptor_try_get(&layer->scene->tree->node,
+				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
+			layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "wvkbd") == 0)
 			return layer;
 	}
@@ -1651,11 +1676,13 @@ bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
 	card_shell_reveal_cancel(&shell.reveal);
-	unsigned keyboard_cancel = kg_cancel(&shell.keyboard);
+	bool keyboard_owned = shell.keyboard.owned_count || shell.keyboard.overflow_contacts;
+	unsigned keyboard_cancel = kg_end_stream(&shell.keyboard,
+		keyboard_layer(shell.output) != NULL);
 	if (keyboard_cancel & KG_HIDE) keyboard_signal("hide");
 	if (keyboard_cancel & KG_DIRTY) keyboard_refresh();
 	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
-			keyboard_cancel != KG_NONE || shell.keyboard.owned_count != 0 ||
+			keyboard_cancel != KG_NONE || keyboard_owned ||
 			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||
 					shell.policy.mode == CS_ENTERING;
