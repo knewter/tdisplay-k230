@@ -58,6 +58,7 @@ struct card {
 	int gradient_width, gradient_height;
 	struct wlr_scene_buffer *label;
 	char *label_text;
+	bool label_selected;
 	bool hidden, original_enabled;
 	double scale;
 	int x, y, pixel_x, pixel_y;
@@ -653,11 +654,19 @@ static bool sync_card(struct card *c, size_t index) {
 			index == shell.policy.selected ? "Selected: " : "", title);
 		title = rollback_title;
 	}
+	bool selected = index == shell.policy.selected;
+	if (c->label && c->label_selected != selected) {
+		wlr_scene_node_destroy(&c->label->node);
+		c->label = NULL;
+		free(c->label_text);
+		c->label_text = NULL;
+	}
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
 			compact ? lround(r.width) - 32 : lround(r.width) - 24,
 			compact ? 44 : 56, compact ? 24 : 32,
-			appearance_text(index == shell.policy.selected)))
+			appearance_text(selected)))
 		return false;
+	c->label_selected = selected;
 	label_clip(c->label, compact ? 16 : 12,
 		lround(r.height) - (compact ? 50 : 60), c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
