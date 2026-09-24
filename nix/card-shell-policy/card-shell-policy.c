@@ -38,12 +38,21 @@ bool cs_init(struct cs_policy *p,const struct cs_config *config) {
 }
 void cs_finish(struct cs_policy *p) {
     if (!p) return;
+    free(p->entry_order);
     free(p->cards);
     memset(p,0,sizeof(*p));
 }
 static size_t find(const struct cs_policy *p,uint64_t id) {
     if (id) for (size_t i=0;i<p->count;i++) if (p->cards[i].id==id) return i;
     return SIZE_MAX;
+}
+static size_t entry_order_index(const struct cs_policy *p,uint64_t id) {
+    for (size_t i=0;i<p->entry_count;i++) if (p->entry_order[i]==id) return i;
+    return SIZE_MAX;
+}
+static bool entry_focusable(const struct cs_policy *p,uint64_t id) {
+    size_t index=find(p,id);
+    return index<p->count && p->cards[index].focusable;
 }
 static struct cs_result result(const struct cs_policy *p,unsigned actions,bool consumed) {
     return (struct cs_result){.actions=actions,.consumed=consumed,.message=p->message};
@@ -73,6 +82,11 @@ struct cs_result cs_leave(struct cs_policy *p) {
     reset_drag(p);
     p->edge.tracking=false;
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
+    free(p->entry_order);p->entry_order=NULL;p->entry_count=0;p->entry_origin=0;
+    p->entry_left_id=0;p->entry_right_id=0;p->entry_target_id=0;
+    p->entry_quick_allowed=false;p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
+    p->entry_anchor_factor=0;p->entry_release_dx=0;p->entry_settle_dx=0;
+    p->entry_reverse_dx=0;p->entry_reverse_anchor=0;
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
     p->entry_reverse_from=0;p->entry_settle_from=0;p->entry_started_ms=0;
     p->entry_reversing=false;p->entry_settling=false;
@@ -170,9 +184,16 @@ struct cs_rect cs_content_rect(const struct cs_policy *p) {
 struct cs_rect cs_card_rect(const struct cs_policy *p,size_t index) {
     if (index>=p->count) return (struct cs_rect){0};
     double pitch=p->config.card_width+p->config.gap;
+    double offset=(double)index-(double)p->selected;
+    double translation=p->axis==CS_AXIS_HORIZONTAL ? p->dx : 0;
+    if (p->mode==CS_ENTERING) {
+        size_t stable=entry_order_index(p,p->cards[index].id);
+        offset=stable==SIZE_MAX ? -4*p->config.width/pitch :
+            (double)stable-(double)p->entry_origin;
+        translation=p->entry_dx;
+    }
     return (struct cs_rect){
-        .x=(p->config.width-p->config.card_width)/2+((double)index-(double)p->selected)*pitch+
-            (p->axis==CS_AXIS_HORIZONTAL ? p->dx : 0),
+        .x=(p->config.width-p->config.card_width)/2+offset*pitch+translation,
         .y=p->config.top_reserved+p->config.title_height+p->config.inset+
             (p->cards[index].id==p->pressed_id && p->axis==CS_AXIS_VERTICAL ? p->dy : 0),
         .width=p->config.card_width,.height=p->config.card_height};
@@ -203,6 +224,8 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
 	if (p->mode==CS_ENTERING && p->entry_settling) {
 		p->entry_settling=false;p->entry_reversing=true;
 		p->entry_reverse_from=p->entry_progress;p->entry_started_ms=time_ms;
+		p->entry_reverse_dx=p->entry_dx;
+		p->entry_reverse_anchor=p->entry_anchor_factor;
 		p->blocked_until_up=true;p->blocked_contacts=1;
 		return result(p,CS_REDRAW,true);
 	}
@@ -391,13 +414,31 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 		}
 		uint64_t elapsed=time_ms>=p->entry_started_ms ? time_ms-p->entry_started_ms : 0;
 		double duration=p->config.reduced_motion ? 60 : 160;
+		double portion=fmin(1,elapsed/duration);
 		if (p->entry_reversing) {
-			p->entry_progress=fmax(0,p->entry_reverse_from-elapsed/duration);
-			if (p->entry_progress==0) return cs_leave(p);
+			p->entry_progress=fmax(0,p->entry_reverse_from-portion);
+			double pitch=p->config.card_width+p->config.gap;
+			p->entry_dx=copysign(fmax(0,fabs(p->entry_reverse_dx)-pitch*portion),
+				p->entry_reverse_dx);
+			p->entry_anchor_factor=p->entry_reverse_anchor;
+			if (p->entry_progress==0 && p->entry_dx==0) return cs_leave(p);
 		} else {
-			p->entry_progress=fmin(1,p->entry_settle_from+elapsed/duration);
-			if (p->entry_progress==1) {
-				p->mode=CS_DECK;p->entry_id=0;p->entry_settling=false;
+			p->entry_progress=p->entry_settle_from+
+				(1-p->entry_settle_from)*portion;
+			p->entry_dx=p->entry_settle_dx+
+				(p->entry_release_dx-p->entry_settle_dx)*portion;
+			p->entry_anchor_factor=1-portion;
+			if (portion==1) {
+				uint64_t target=p->entry_target_id;
+				if (target && !entry_focusable(p,target)) return cs_leave(p);
+				p->entry_id=0;p->entry_settling=false;
+				free(p->entry_order);p->entry_order=NULL;p->entry_count=0;
+				if (target) {
+					p->selected=find(p,target);
+					p->mode=CS_EXPANDING;p->expand_id=target;
+					p->expand_progress=0;p->expand_started_ms=0;
+					p->expand_reversing=false;p->expand_full_dwell=false;
+				} else p->mode=CS_DECK;
 			}
 		}
 		return result(p,CS_REDRAW,false);
@@ -478,19 +519,33 @@ struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y
 	 * upward gesture qualifies when no live mirror can be animated. */
 	if (source==SIZE_MAX || p->cards[source].content!=CS_LIVE)
 		return cs_edge_down(p,id,x,y,time_ms);
+    uint64_t *order=malloc(p->count*sizeof(*order));
+    if (!order) return fail(p);
+    for (size_t i=0;i<p->count;i++) order[i]=p->cards[i].id;
     struct cs_result r=cs_enter(p,focused_id);
-    if (!r.consumed) return r;
+    if (!r.consumed) {free(order);return r;}
 	p->mode=CS_ENTERING;p->entry_progress=0;p->entry_travel=0;p->entry_drag=0;
 	p->entry_id=p->selected<p->count ? p->cards[p->selected].id : 0;
+    p->entry_order=order;p->entry_count=p->count;p->entry_origin=source;
+    p->entry_left_id=source ? order[source-1] : 0;
+    p->entry_right_id=source+1<p->count ? order[source+1] : 0;
+    p->entry_target_id=0;p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
+    p->entry_anchor_factor=1;
+    p->entry_quick_allowed=x>=p->config.width*.25 && x<p->config.width*.75;
     p->edge.tracking=true;p->edge.contact_id=id;
     p->edge.x=x;p->edge.y=y;p->edge.time_ms=time_ms;
 	return r;
 }
-bool cs_entry_set_geometry(struct cs_policy *p,double source_y,double source_height,
-        double target_y,double target_height) {
+bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
+        double source_width,double source_height,double target_x,double target_y,
+        double target_width,double target_height) {
 	if (p->mode!=CS_ENTERING ||
-		!isfinite(source_y) || !isfinite(source_height) || source_height<=0 ||
-		!isfinite(target_y) || !isfinite(target_height) || target_height<=0)
+		!isfinite(source_x) || !isfinite(source_y) ||
+		!isfinite(source_width) || !isfinite(source_height) ||
+		source_width<=0 || source_height<=0 ||
+		!isfinite(target_x) || !isfinite(target_y) ||
+		!isfinite(target_width) || !isfinite(target_height) ||
+		target_width<=0 || target_height<=0)
 		return false;
 	if (p->entry_travel>0) return true;
 	if (!p->edge.tracking) return false;
@@ -501,7 +556,13 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_y,double source_hei
 	double travel=p->edge.y-target_anchor;
 	if (!isfinite(travel) || travel<p->config.entry_distance)
 		return false;
+	double anchor_x=(p->edge.x-source_x)/source_width;
+	double source_anchor_x=source_x+anchor_x*source_width;
+	double target_anchor_x=target_x+anchor_x*target_width;
+	double shift=source_anchor_x-target_anchor_x;
+	if (!isfinite(shift)) return false;
 	p->entry_travel=travel;
+	p->entry_anchor_shift=shift;
 	return true;
 }
 struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {
@@ -515,21 +576,41 @@ struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double 
 	if (p->entry_travel<=0) return fail(p);
 	p->entry_drag=fmax(0,p->edge.y-y);
 	p->entry_progress=fmin(1,p->entry_drag/p->entry_travel);
+	double pitch=p->config.card_width+p->config.gap;
+	double dx=x-p->edge.x;
+	p->entry_raw_dx=dx;
+	double limit=pitch;
+	if (dx>0 && !entry_focusable(p,p->entry_left_id)) limit=fmin(48,pitch);
+	if (dx<0 && !entry_focusable(p,p->entry_right_id)) limit=fmin(48,pitch);
+	p->entry_dx=fmax(-limit,fmin(limit,dx));
 	return result(p,CS_REDRAW,true);
 }
 struct cs_result cs_entry_up(struct cs_policy *p,int32_t id) {
 	if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
 		return result(p,0,false);
 	p->edge.tracking=false;
-	if (p->entry_drag<p->config.entry_distance) {
-		if (p->entry_progress==0) return cs_leave(p);
+	double pitch=p->config.card_width+p->config.gap;
+	bool lateral=fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction;
+	bool vertical=p->entry_drag>=p->config.entry_distance;
+	uint64_t target=0;
+	if (lateral && (vertical || p->entry_quick_allowed))
+		target=p->entry_raw_dx>0 ? p->entry_left_id : p->entry_right_id;
+	if (lateral && !entry_focusable(p,target)) target=0;
+	if (!target && (!vertical || lateral)) {
+		if (p->entry_progress==0 && p->entry_dx==0) return cs_leave(p);
 		p->entry_reversing=true;
 		p->entry_reverse_from=p->entry_progress;
+		p->entry_reverse_dx=p->entry_dx;
+		p->entry_reverse_anchor=p->entry_anchor_factor;
 		p->entry_started_ms=0;
 		return result(p,CS_REDRAW,true);
 	}
-	if (p->entry_progress<1) {
+	p->entry_target_id=target;
+	p->entry_release_dx=target ? (p->entry_dx>0 ? pitch : -pitch) : 0;
+	if (p->entry_progress<1 || p->entry_dx!=p->entry_release_dx ||
+		p->entry_anchor_factor!=0) {
 		p->entry_settling=true;p->entry_settle_from=p->entry_progress;
+		p->entry_settle_dx=p->entry_dx;
 		p->entry_started_ms=0;
 		return result(p,CS_REDRAW,true);
 	}

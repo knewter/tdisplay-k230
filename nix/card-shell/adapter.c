@@ -596,11 +596,15 @@ static bool sync_card(struct card *c, size_t index) {
 	if (entering) {
 		if (!c->source_valid)
 			return false;
-		if (!cs_entry_set_geometry(&shell.policy, c->source_y - shell.output->ly,
-				c->view->geometry.height, r.y, r.height))
+		if (!cs_entry_set_geometry(&shell.policy,
+				c->source_x - shell.output->lx, c->source_y - shell.output->ly,
+				c->view->geometry.width, c->view->geometry.height,
+				r.x - shell.policy.entry_dx, r.y, r.width, r.height))
 			return false;
 		double progress = shell.policy.entry_progress;
 		r.x = (c->source_x - shell.output->lx) * (1 - progress) + r.x * progress;
+		r.x += shell.policy.entry_dx * (1 - progress) +
+			shell.policy.entry_anchor_shift * progress * shell.policy.entry_anchor_factor;
 		r.y = (c->source_y - shell.output->ly) * (1 - progress) + r.y * progress;
 		r.width = c->view->geometry.width * (1 - progress) + r.width * progress;
 		r.height = c->view->geometry.height * (1 - progress) + r.height * progress;

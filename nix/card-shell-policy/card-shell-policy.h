@@ -67,6 +67,13 @@ struct cs_policy {
 	/* The projected source point under the accepted finger reaches its card
 	 * counterpart after this many logical pixels; commitment is separate. */
 	double entry_travel, entry_drag;
+	/* Snapshot preserves visual order through focus-only switches and maps. */
+	uint64_t *entry_order;
+	size_t entry_count, entry_origin;
+	uint64_t entry_left_id, entry_right_id, entry_target_id;
+	bool entry_quick_allowed;
+	double entry_dx, entry_raw_dx, entry_anchor_shift, entry_anchor_factor;
+	double entry_release_dx, entry_settle_dx, entry_reverse_dx, entry_reverse_anchor;
 	double entry_reverse_from;
 	double entry_settle_from;
 	uint64_t entry_started_ms;
@@ -135,8 +142,10 @@ struct cs_result cs_begin_entry(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms, uint64_t focused_id);
 /* Called once from the compositor's live-source/card geometry reconciliation.
  * Source and target coordinates are output-local logical pixels. */
-bool cs_entry_set_geometry(struct cs_policy *policy, double source_y,
-    double source_height, double target_y, double target_height);
+bool cs_entry_set_geometry(struct cs_policy *policy, double source_x,
+    double source_y, double source_width, double source_height,
+    double target_x, double target_y, double target_width,
+    double target_height);
 struct cs_result cs_entry_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms);
 struct cs_result cs_entry_up(struct cs_policy *policy, int32_t contact_id);
