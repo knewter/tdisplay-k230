@@ -189,9 +189,18 @@ class VideoSessionTest(unittest.TestCase):
             env = self.env(root, player, FAKE_ARGS=str(root / "args"))
             process = subprocess.Popen(["bash", str(SCRIPT), "run-mvx"], env=env)
             try:
-                for _ in range(30):
-                    if (root / "video.pid").exists(): break
+                # The controller publishes its PID before the fake player
+                # executes. Wait for the invocation we intend to stop, not
+                # merely for controller startup (which can race on CI).
+                deadline = time.monotonic() + 5
+                while time.monotonic() < deadline:
+                    args = root / "args"
+                    if (root / "video.pid").exists() and args.exists() and args.read_text().strip():
+                        break
+                    self.assertIsNone(process.poll(), "controller exited before player startup")
                     time.sleep(0.05)
+                else:
+                    self.fail("fake MVX player did not start before deadline")
                 subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
                 process.wait(timeout=5)
                 lines = (root / "args").read_text().splitlines()
