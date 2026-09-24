@@ -10,8 +10,8 @@ Commands and outcomes:
 
 ```text
 python3 tests/test_omarchy_theme_tools.py
-  PASS: 2 host tests; original-byte manifest and patched-versus-original
-  generated tree parity under disposable staging paths.
+  PASS: 2 host tests; original-byte manifest and patched-versus-path-adjusted
+  original algorithm generated tree parity under disposable staging paths.
 nix build .#omarchy-theme-tools --max-jobs 1 --cores 4 --no-link --print-out-paths
   PASS: /nix/store/2l3cmjv3i2yzcnibx2sjjm6j5nzwqblf-omarchy-theme-tools-28ceaae7
 nix path-info -S /nix/store/2l3cmjv3i2yzcnibx2sjjm6j5nzwqblf-omarchy-theme-tools-28ceaae7

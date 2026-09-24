@@ -12,7 +12,8 @@ The sole source patch changes the first three assignments in
 `OMARCHY_THEME_TEMPLATES_DIR`, `OMARCHY_THEME_USER_TEMPLATES_DIR`, and
 `OMARCHY_THEME_STAGING_DIR` override its old paths. Unset variables retain
 upstream behavior. The byte manifest records the *pre-patch* helper; the host
-test reconstructs and hashes that original script, then compares generated
-output trees under disposable staging paths. Runtime coordination must supply
+test reconstructs and hashes that original script, then adjusts only its three
+hardcoded path assignments in a reference harness to compare generated output
+trees under disposable staging paths. No child `HOME` is changed. Runtime coordination must supply
 an isolated stage and only publish declared outputs after validation; this
 package alone does not accept or activate a community checkout.

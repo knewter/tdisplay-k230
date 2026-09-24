@@ -4,7 +4,6 @@ import hashlib
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import tempfile
 import unittest
@@ -57,8 +56,7 @@ class PinnedHelpers(unittest.TestCase):
             base = Path(temp)
             original = base / "original"
             patched = base / "patched"
-            old_home = base / "isolated-original-home"
-            old_stage = old_home / ".local/state/omarchy/current/next-theme"
+            old_stage = base / "isolated-reference-stage"
             new_stage = base / "isolated-patched-stage"
             for stage in (old_stage, new_stage):
                 stage.mkdir(parents=True)
@@ -68,13 +66,27 @@ class PinnedHelpers(unittest.TestCase):
                     'selection_foreground = "#000000"\nmode = "dark"\n'
                 )
                 (stage / "shell.menu.toml").write_text('[menu]\nbackground = "#123456"\n')
-            original.write_bytes(original_script())
+            reference = original_script().decode()
+            for old, new in (
+                ('TEMPLATES_DIR="$OMARCHY_PATH/default/themed"',
+                 'TEMPLATES_DIR="$REFERENCE_TEMPLATES_DIR"'),
+                ('USER_TEMPLATES_DIR="$HOME/.config/omarchy/themed"',
+                 'USER_TEMPLATES_DIR="$REFERENCE_USER_TEMPLATES_DIR"'),
+                ('NEXT_THEME_DIR="$HOME/.local/state/omarchy/current/next-theme"',
+                 'NEXT_THEME_DIR="$REFERENCE_STAGING_DIR"'),
+            ):
+                self.assertEqual(reference.count(old), 1)
+                reference = reference.replace(old, new)
+            original.write_text(reference)
             patched.write_bytes(PATCHED.read_bytes())
-            # The upstream helper's legacy path is confined to a disposable
-            # subprocess home; production always supplies explicit stage paths.
+            # Adjust only the original three path assignments in the reference
+            # harness. Neither child environment changes HOME.
             empty = base / "empty-user-templates"
             empty.mkdir()
-            old_env = os.environ | {"HOME": str(old_home), "OMARCHY_PATH": str(UPSTREAM),
+            old_env = os.environ | {"REFERENCE_TEMPLATES_DIR": str(UPSTREAM / "default/themed"),
+                                    "REFERENCE_USER_TEMPLATES_DIR": str(empty),
+                                    "REFERENCE_STAGING_DIR": str(old_stage),
+                                    "OMARCHY_PATH": str(UPSTREAM),
                                     "PATH": str(UPSTREAM / "bin") + os.pathsep + os.environ["PATH"]}
             new_env = os.environ | {"OMARCHY_PATH": str(UPSTREAM),
                                     "OMARCHY_THEME_TEMPLATES_DIR": str(UPSTREAM / "default/themed"),
