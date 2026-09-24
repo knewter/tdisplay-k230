@@ -14,7 +14,7 @@ static bool valid_config(const struct cs_config *c) {
         if (!isfinite(values[i]) || values[i]<0) return false;
     double available=c->height-c->top_reserved-c->bottom_reserved;
     return c->width>=112 && c->height>=224 && c->width<=16384 && c->height<=16384 &&
-        c->top_reserved>=56 && c->footer_height>=56 && c->inset>=24 && c->gap>=8 &&
+        c->top_reserved>=0 && c->footer_height>=56 && c->inset>=24 && c->gap>=8 &&
         c->title_height>=56 && c->card_width>=56 && c->card_height>=56 &&
         c->card_width<=c->width-2*c->inset &&
         c->card_height<=available-c->title_height-c->footer_height-2*c->inset &&

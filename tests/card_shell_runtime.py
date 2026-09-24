@@ -125,6 +125,13 @@ def main():
         command('enter')
         if args.touch_first:
             wait_for(lambda:'K230_CARD_SHELL mirror id=' in logs())
+            command('down 90 284 10')
+            command('motion 90 284 110')
+            command('up 90')
+            request=runtime/'drawer-request'
+            wait_for(request.exists)
+            assert request.read_text().splitlines()==['--surface','shade']
+            request.unlink()
             # This was the legacy Back button. A touch-first deck must not
             # restore the app or consume it as a permanent control.
             command('down 81 500 80')
@@ -134,7 +141,6 @@ def main():
             command('down 80 284 1200')
             command('motion 80 284 1100')
             command('up 80')
-            request=runtime/'drawer-request'
             wait_for(request.exists)
             assert request.read_text().splitlines()==['--surface','drawer']
             # The helper may exit without mapping; the deck remains usable.
@@ -157,6 +163,12 @@ def main():
                 drawer.terminate();drawer.wait(timeout=10);layer_log.close()
                 command('next')
             command('back')
+            request.unlink()
+            command('down 91 284 10')
+            command('motion 91 284 110')
+            command('up 91')
+            wait_for(request.exists)
+            assert request.read_text().splitlines()==['--surface','shade']
             print('PASS touch-first drawer route: actual cross-built Sway under QEMU; no physical touch',flush=True)
             return
         # Halfway between cards makes both root/child surfaces visibly sampled.

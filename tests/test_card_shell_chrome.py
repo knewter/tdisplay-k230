@@ -116,6 +116,10 @@ int main(void) {
     assert(button_calls==prior_buttons);
     assert(shell.status != NULL);
     assert(chrome()); assert(builds==before+1);
+    shell.policy.message=CS_MESSAGE_EMPTY;
+    assert(chrome());
+    assert(!strcmp(shell.status_text,"No running apps. Swipe up for Apps."));
+    assert(button_calls==prior_buttons);
     assert(unsetenv("SWAY_K230_CARD_TOUCH_FIRST")==0);
     free(shell.status_text);
 }

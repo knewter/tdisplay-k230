@@ -50,12 +50,19 @@ int main(int argc, char **argv) {
     card_shell_drawer_motion(&gesture, 3, 210, 1000, 72);
     assert(card_shell_drawer_up(&gesture, 3));
     assert(!card_shell_drawer_up(&gesture, 3));
+    card_shell_drawer_down(&gesture, 5, 200, 10);
+    card_shell_shade_motion(&gesture, 5, 210, 110, 72);
+    assert(card_shell_drawer_up(&gesture, 5));
+    card_shell_drawer_down(&gesture, 5, 200, 10);
+    card_shell_shade_motion(&gesture, 5, 350, 110, 72);
+    assert(!card_shell_drawer_up(&gesture, 5));
     unsetenv("SWAY_K230_CARD_DRAWER_HELPER");
-    assert(!card_shell_launch_drawer());
+    assert(!card_shell_launch_surface("drawer"));
     setenv("SWAY_K230_CARD_DRAWER_HELPER", "relative/path", 1);
-    assert(!card_shell_launch_drawer());
+    assert(!card_shell_launch_surface("drawer"));
     setenv("SWAY_K230_CARD_DRAWER_HELPER", argv[1], 1);
-    assert(card_shell_launch_drawer());
+    assert(!card_shell_launch_surface("unsupported"));
+    assert(card_shell_launch_surface("shade"));
     return 0;
 }
 ''')
@@ -74,7 +81,7 @@ int main(int argc, char **argv) {
             deadline = time.monotonic() + 2
             while not capture.exists() and time.monotonic() < deadline:
                 time.sleep(0.01)
-            self.assertEqual(capture.read_text().splitlines(), ["--surface", "drawer"])
+            self.assertEqual(capture.read_text().splitlines(), ["--surface", "shade"])
 
 
 if __name__ == "__main__":

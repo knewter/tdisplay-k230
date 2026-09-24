@@ -27,6 +27,13 @@ void card_shell_drawer_motion(struct card_shell_drawer_gesture *gesture,
 			gesture->y - y >= distance && gesture->y - y > fabs(x - gesture->x);
 }
 
+void card_shell_shade_motion(struct card_shell_drawer_gesture *gesture,
+		int32_t id, double x, double y, double distance) {
+	if (gesture->contacts && !gesture->cancelled && id == gesture->owner)
+		gesture->armed = isfinite(x) && isfinite(y) &&
+			y - gesture->y >= distance && y - gesture->y > fabs(x - gesture->x);
+}
+
 bool card_shell_drawer_up(struct card_shell_drawer_gesture *gesture, int32_t id) {
 	if (!gesture->contacts)
 		return false;
@@ -43,11 +50,15 @@ void card_shell_drawer_cancel(struct card_shell_drawer_gesture *gesture) {
 	gesture->armed = false;
 }
 
-bool card_shell_launch_drawer(void) {
-	const char *path = getenv("SWAY_K230_CARD_DRAWER_HELPER");
+bool card_shell_launch_surface(const char *surface) {
+	if (!surface || (strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0))
+		return false;
+	const char *path = getenv("SWAY_K230_CARD_SURFACE_HELPER");
+	if (!path)
+		path = getenv("SWAY_K230_CARD_DRAWER_HELPER");
 	if (!path || path[0] != '/' || !path[1])
 		return false;
-	char *const argv[] = {(char *)path, "--surface", "drawer", NULL};
+	char *const argv[] = {(char *)path, "--surface", (char *)surface, NULL};
 	pid_t pid;
 	/* Sway ignores SIGCHLD, so an exited helper cannot leave a zombie. */
 	return posix_spawn(&pid, path, NULL, NULL, argv, environ) == 0;

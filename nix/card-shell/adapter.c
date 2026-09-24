@@ -78,6 +78,7 @@ static struct {
 	bool button_down;
 	double button_x, button_y;
 	struct card_shell_drawer_gesture drawer_gesture;
+	struct card_shell_drawer_gesture shade_gesture;
 } shell;
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
@@ -544,7 +545,8 @@ static bool rebuild_chrome(void) {
 		if (!title)
 			return false;
 		wlr_scene_node_set_position(&title->node, x + 24, y + 8);
-		const char *text = cs_message_text(shell.policy.message);
+		const char *text = shell.policy.message == CS_MESSAGE_EMPTY ?
+			"No running apps. Swipe up for Apps." : cs_message_text(shell.policy.message);
 		if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
 				cfg->width - 48, 56, 21))
 			return false;
@@ -855,10 +857,13 @@ static void prepare_impl(struct sway_output *output) {
 			handle_result(cs_cancel(&shell.policy));
 		if (shell.drawer_gesture.contacts)
 			card_shell_drawer_cancel(&shell.drawer_gesture);
+		if (shell.shade_gesture.contacts)
+			card_shell_drawer_cancel(&shell.shade_gesture);
 	}
 	wlr_scene_node_set_enabled(&shell.ui->node, true);
 	struct cs_config cfg = cs_default_config(output->width, output->height);
-	cfg.top_reserved = fmax(56, output->usable_area.y);
+	cfg.top_reserved = touch_first() ? fmax(0, output->usable_area.y) :
+		fmax(56, output->usable_area.y);
 	cfg.bottom_reserved =
 		fmax(0, output->height - output->usable_area.y - output->usable_area.height);
 	cfg.card_height = .72 * (cfg.height - cfg.top_reserved - cfg.bottom_reserved -
@@ -994,6 +999,10 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
 		return true;
 	}
+	if (shell.shade_gesture.contacts) {
+		card_shell_drawer_down(&shell.shade_gesture, id, x, y);
+		return true;
+	}
 	if (drawer_mapped())
 		return false;
 	if (shell.button_down) {
@@ -1019,6 +1028,10 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	if (shell.active && seat != shell.seat) {
 		handle_result(cs_leave(&shell.policy));
 		return false;
+	}
+	if (touch_first() && y >= 0 && y < shell.policy.config.edge_band) {
+		card_shell_drawer_down(&shell.shade_gesture, id, x, y);
+		return true;
 	}
 	/* Existing bar and keyboard routes stay authoritative. The top bar restores
 	 * normal app routing before its Apps/Windows/Keyboard/System command runs. */
@@ -1075,6 +1088,11 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 			shell.policy.config.entry_distance);
 		return true;
 	}
+	if (shell.shade_gesture.contacts) {
+		card_shell_shade_motion(&shell.shade_gesture, id, x, y,
+			shell.policy.config.entry_distance);
+		return true;
+	}
 	if (shell.button_down) {
 		if (id == shell.button_contact &&
 			hypot(x - shell.button_x, y - shell.button_y) > shell.policy.config.tap_slop)
@@ -1095,8 +1113,14 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		return false;
 	if (shell.drawer_gesture.contacts) {
 		bool launch = card_shell_drawer_up(&shell.drawer_gesture, id) && !drawer_mapped();
-		if (launch && !card_shell_launch_drawer())
+		if (launch && !card_shell_launch_surface("drawer"))
 			sway_log(SWAY_INFO, "K230_CARD_SHELL drawer helper unavailable; deck retained");
+		return true;
+	}
+	if (shell.shade_gesture.contacts) {
+		bool launch = card_shell_drawer_up(&shell.shade_gesture, id) && !drawer_mapped();
+		if (launch && !card_shell_launch_surface("shade"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL shade helper unavailable; scene retained");
 		return true;
 	}
 	if (shell.button_down) {
@@ -1131,9 +1155,11 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
-	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.policy.contact || shell.policy.edge.tracking ||
+	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
+			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up;
 	memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
+	memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
 	shell.button_down = false;
 	shell.pressed_button = 0;
 	handle_result(cs_stream_cancel(&shell.policy));

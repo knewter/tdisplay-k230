@@ -12,9 +12,11 @@ void card_shell_drawer_down(struct card_shell_drawer_gesture *gesture,
 		int32_t id, double x, double y);
 void card_shell_drawer_motion(struct card_shell_drawer_gesture *gesture,
 		int32_t id, double x, double y, double distance);
+void card_shell_shade_motion(struct card_shell_drawer_gesture *gesture,
+		int32_t id, double x, double y, double distance);
 bool card_shell_drawer_up(struct card_shell_drawer_gesture *gesture, int32_t id);
 void card_shell_drawer_cancel(struct card_shell_drawer_gesture *gesture);
 /* Spawns one trusted, absolute helper path with fixed arguments. Never waits
  * inside the compositor event loop for the layer client to map. */
-bool card_shell_launch_drawer(void);
+bool card_shell_launch_surface(const char *surface);
 #endif
