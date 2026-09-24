@@ -5,13 +5,15 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Reduce measured Pixman card tracking cost, rerun the fixed card workload, then record real-finger acceptance on the normal image.",
+      "next": "Implement continuous app/card motion, verify the actual shell overlay, then reduce measured card tracking cost and repeat board acceptance.",
       "dependencies": [],
       "evidence": [
+        "docs/evidence/card-shell/touch-first-route/README.md",
+        "docs/evidence/card-shell/touch-first-shade/README.md",
         "docs/evidence/card-shell/scaled-cache-board/README.md"
       ],
-      "rationale": "The committed board cost trace misses the frame budget; checked implementation tasks do not establish a default, finger-accepted card shell.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+      "rationale": "Touch-first drawer and top-shade routes now have cross-build and headless Wayland pixel/input proof. Continuous app/card motion, installed integration, frame budgets and physical acceptance remain open.",
+      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
     },
     "the-system-enables-proven-c908-extensions": {
       "lane": "verification",
@@ -29,16 +31,19 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Integrate live deck, launcher artwork, Settings and notification surfaces, then verify the complete shell on glass before checking the capability tasks.",
+      "next": "Evaluate the Rust software-rendered shell client alongside the Qt Quick probe; integrate themed drawer, Settings and notifications with live cards, then verify the image on the board.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
       ],
       "evidence": [
-        "docs/evidence/coherent-shell/icons/README.md"
+        "docs/evidence/coherent-shell/drawer-route-host.md",
+        "docs/evidence/coherent-shell/settings-backend.md",
+        "docs/evidence/coherent-shell/notification-backend.md",
+        "docs/evidence/coherent-shell/prototype-launcher-build.md"
       ],
-      "rationale": "The icon resolver is a source checkpoint, but the 27-task coherent-shell capability and its named consumers remain open.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+      "rationale": "The final UI targets Rust. The C drawer is a host-tested prototype/reference; Settings and notification backends and live-deck overlay routes are landed source checkpoints. Full surface integration and physical acceptance remain open.",
+      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
     },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
@@ -50,10 +55,11 @@
         "docs/evidence/omarchy-themes/helper-package.md",
         "docs/evidence/omarchy-themes/source-fixtures.md",
         "docs/evidence/omarchy-themes/launcher-receiver.md",
-        "docs/evidence/omarchy-themes/persistent-default.md"
+        "docs/evidence/omarchy-themes/persistent-default.md",
+        "docs/evidence/omarchy-themes/native-token-checkpoint.md"
       ],
-      "rationale": "The three helper and source-fixture tasks are checked. A host-tested opt-in launcher receiver, public selection command, cached startup and pinned default are source and cross-build checkpoints; normal configuration remains off, other consumers and physical selection remain open.",
-      "reviewRevision": "86b985a4a475478961bcdf5faa6dadde2a3525e3"
+      "rationale": "Pinned unchanged-source helpers, native appearance tokens, acknowledged selection and persistent defaults have host/build checkpoints. Explicit background choice is implemented; actual all-surface consumers, wallpaper decoding/playback and physical selection remain open.",
+      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",

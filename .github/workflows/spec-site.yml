@@ -90,6 +90,14 @@ jobs:
       - name: Check Settings capabilities and confirmed actions
         run: python3 tests/test_device_settings.py
 
+      - name: Check notification broker and prototype shell routes
+        run: |
+          python3 tests/test_notification_center.py
+          python3 tests/test_shell_gestures.py
+          python3 tests/test_shell_routes.py
+          python3 tests/test_card_shell_route.py
+          python3 tests/test_handheld_theme_rendering.py
+
       - name: Check opt-in shell appearance receiver and theme transaction
         run: |
           python3 tests/test_handheld_theme_default.py
