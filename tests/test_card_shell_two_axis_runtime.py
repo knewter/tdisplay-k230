@@ -26,6 +26,7 @@ class TwoAxisRuntime(unittest.TestCase):
             self.assertTrue((output / "two-axis-held.png").exists())
             self.assertTrue((output / "two-axis-quick-paused.png").exists())
             self.assertTrue((output / "two-axis-quick-releasing.png").exists())
+            self.assertTrue((output / "two-axis-home-coasting.png").exists())
             self.assertTrue((output / "two-axis-private-neighbor.png").exists())
 
 

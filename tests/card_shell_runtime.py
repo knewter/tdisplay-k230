@@ -179,6 +179,16 @@ def main():
                 return min(xs),min(ys),max(xs),max(ys)
             def near(actual,expected,tolerance=8):
                 assert abs(actual-expected)<=tolerance,(actual,expected,tolerance)
+            def client_blue_box(frame):
+                # Exact public fixture stripe, excluding themed deck chrome.
+                px=frame.load();xs=[];ys=[]
+                for y in range(0,frame.height,2):
+                    for x in range(0,frame.width,2):
+                        red,green,blue=px[x,y]
+                        if abs(red-32)<=3 and abs(green-112)<=3 and abs(blue-176)<=3:
+                            xs.append(x);ys.append(y)
+                assert len(xs)>200,len(xs)
+                return min(xs),min(ys),max(xs),max(ys)
             original=capture('two-axis-origin.png')
             origin=color_box(original,'blue')
             command('down 70 284 1200')
@@ -250,6 +260,21 @@ def main():
             assert focused()=='k230.card.one'
             again=capture('two-axis-opposite-return.png')
             assert again.getpixel((284,700))[0]<60
+            command('down 75 284 1200')
+            command('motion 75 284 1100')
+            home_held=capture('two-axis-home-held.png')
+            home_box=client_blue_box(home_held)
+            command('up 75')
+            time.sleep(.04)
+            home_coast=capture('two-axis-home-coasting.png')
+            coast_box=client_blue_box(home_coast)
+            assert coast_box[2]-coast_box[0]<home_box[2]-home_box[0],(home_box,coast_box)
+            time.sleep(.30)
+            home_deck=capture('two-axis-home-settled.png')
+            deck_box=client_blue_box(home_deck)
+            assert deck_box[2]-deck_box[0]<coast_box[2]-coast_box[0],(coast_box,deck_box)
+            ipc('card_shell back')
+            wait_for(lambda:focused()=='k230.card.one')
             ipc('[app_id="k230.card.two"] mark --add k230_card_private')
             command('down 73 284 1200')
             command('motion 73 150 1200')
@@ -274,7 +299,7 @@ def main():
                                 for n in tree_nodes(ipc('',4)))==1)
             command('up 74')
             wait_for(lambda:focused()=='k230.card.one')
-            print('PASS two-axis app entry: native QEMU pixels, hold/reversal, quick opposite, privacy and exit; no physical touch',flush=True)
+            print('PASS two-axis app entry: native QEMU pixels, held/reversed quick switch, direct release, vertical Home settlement, privacy and exit; no physical touch',flush=True)
             return
         if args.benchmark:
             command('benchmark injected'); time.sleep(3.1)
