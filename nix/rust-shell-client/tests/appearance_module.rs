@@ -1,8 +1,5 @@
-#[path = "../src/appearance.rs"]
-mod appearance;
-
-use appearance::{
-    AppearancePhase, AppearanceReceiver, AppearanceToken, PaletteColor, PaletteValue,
+use k230_shell_rust::appearance::{
+    self, AppearancePhase, AppearanceReceiver, AppearanceToken, PaletteColor, PaletteValue,
 };
 use serde_json::{json, Value};
 use std::{

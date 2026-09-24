@@ -1,6 +1,7 @@
 //! Cairo/Pango software scene for the opt-in shell client.
 //! This first view uses real desktop names and explicit fallback artwork.
 use crate::{
+    appearance::{AppearanceSnapshot, AppearanceToken, Brush},
     catalog::AppEntry,
     icon::IconCache,
     navigation::{list_top, ROW_HEIGHT, ROW_VISIBLE_HEIGHT},
@@ -17,6 +18,64 @@ fn color(cr: &Context, rgb: u32, alpha: f64) {
         f64::from(rgb & 255) / 255.0,
         alpha,
     );
+}
+
+fn brush_color(value: &str) -> Option<(f64, f64, f64, f64)> {
+    let hex = value.strip_prefix('#')?;
+    if hex.len() != 8 {
+        return None;
+    }
+    let byte = |at| u8::from_str_radix(&hex[at..at + 2], 16).ok();
+    Some((
+        f64::from(byte(2)?) / 255.0,
+        f64::from(byte(4)?) / 255.0,
+        f64::from(byte(6)?) / 255.0,
+        f64::from(byte(0)?) / 255.0,
+    ))
+}
+
+fn theme_brush<'a>(
+    theme: Option<&'a AppearanceSnapshot>,
+    section: &str,
+    key: &str,
+) -> Option<&'a Brush> {
+    match theme?.token(section, key)? {
+        AppearanceToken::Brush(brush) => Some(brush),
+        _ => None,
+    }
+}
+
+fn fill_brush(cr: &Context, brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> bool {
+    let radians = brush.angle_degrees.to_radians();
+    let dx = radians.cos() * w / 2.0;
+    let dy = radians.sin() * h / 2.0;
+    let gradient = LinearGradient::new(
+        x + w / 2.0 - dx,
+        y + h / 2.0 - dy,
+        x + w / 2.0 + dx,
+        y + h / 2.0 + dy,
+    );
+    for stop in &brush.stops {
+        let Some((r, g, b, a)) = brush_color(&stop.argb) else {
+            return false;
+        };
+        gradient.add_color_stop_rgba(stop.offset, r, g, b, a * brush.alpha);
+    }
+    if cr.set_source(&gradient).is_err() {
+        return false;
+    }
+    cr.rectangle(x, y, w, h);
+    cr.fill().is_ok()
+}
+
+fn brush_rgb(theme: Option<&AppearanceSnapshot>, section: &str, key: &str, fallback: u32) -> u32 {
+    let Some(brush) = theme_brush(theme, section, key) else {
+        return fallback;
+    };
+    let Some((r, g, b, _)) = brush.stops.first().and_then(|stop| brush_color(&stop.argb)) else {
+        return fallback;
+    };
+    ((r * 255.0) as u32) << 16 | ((g * 255.0) as u32) << 8 | (b * 255.0) as u32
 }
 
 fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
@@ -63,7 +122,13 @@ pub struct RenderParams {
     pub scroll: f64,
 }
 
-fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut IconCache) {
+fn scene(
+    cr: &Context,
+    params: RenderParams,
+    apps: &[AppEntry],
+    icons: &mut IconCache,
+    theme: Option<&AppearanceSnapshot>,
+) {
     let RenderParams {
         width,
         height,
@@ -97,12 +162,22 @@ fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut Icon
             -hidden * panel_h
         },
     );
-    let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
-    gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
-    gradient.add_color_stop_rgb(1.0, 0.12, 0.19, 0.24);
-    cr.rectangle(0.0, panel_y, w, panel_h);
-    let _ = cr.set_source(&gradient);
-    let _ = cr.fill();
+    let section = match route {
+        Route::Drawer => "launcher",
+        Route::Shade => "notifications",
+        Route::Settings => "controls",
+        Route::Hide => "launcher",
+    };
+    if !theme_brush(theme, section, "background")
+        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h))
+    {
+        let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
+        gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
+        gradient.add_color_stop_rgb(1.0, 0.12, 0.19, 0.24);
+        cr.rectangle(0.0, panel_y, w, panel_h);
+        let _ = cr.set_source(&gradient);
+        let _ = cr.fill();
+    }
     color(cr, 0x78d7cb, 1.0);
     cr.rectangle(0.0, panel_y, w, 3.0);
     let _ = cr.fill();
@@ -134,9 +209,17 @@ fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut Icon
                 if y >= h - 28.0 {
                     break;
                 }
-                rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
-                color(cr, 0x263946, 1.0);
-                let _ = cr.fill();
+                if let Some(brush) = theme_brush(theme, "menu", "background") {
+                    let _ = cr.save();
+                    rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
+                    cr.clip();
+                    let _ = fill_brush(cr, brush, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT);
+                    let _ = cr.restore();
+                } else {
+                    rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
+                    color(cr, 0x263946, 1.0);
+                    let _ = cr.fill();
+                }
                 rounded(cr, 38.0, y + 15.0, 52.0, 52.0, 12.0);
                 color(cr, 0x375466, 1.0);
                 let _ = cr.fill();
@@ -154,7 +237,15 @@ fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut Icon
                         .to_string();
                     text(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, 0xf4f7f8);
                 }
-                text(cr, &app.name, 108.0, y + 20.0, w - 156.0, 25.0, 0xf4f7f8);
+                text(
+                    cr,
+                    &app.name,
+                    108.0,
+                    y + 20.0,
+                    w - 156.0,
+                    25.0,
+                    brush_rgb(theme, "menu", "text", 0xf4f7f8),
+                );
                 text(
                     cr,
                     "Installed app",
@@ -162,7 +253,7 @@ fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut Icon
                     y + 52.0,
                     w - 156.0,
                     16.0,
-                    0xc8d7dd,
+                    brush_rgb(theme, "menu", "text", 0xc8d7dd),
                 );
             }
             let _ = cr.restore();
@@ -249,6 +340,7 @@ pub fn draw_shm(
         },
         apps,
         &mut IconCache::new(),
+        None,
     )
 }
 
@@ -257,6 +349,7 @@ fn draw_shm_with_icons(
     params: RenderParams,
     apps: &[AppEntry],
     icons: &mut IconCache,
+    theme: Option<&AppearanceSnapshot>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -276,7 +369,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, params, apps, icons);
+    scene(&cr, params, apps, icons, theme);
     drop(cr);
     surface.flush();
     Ok(())
@@ -303,6 +396,7 @@ pub fn export_png(
         },
         apps,
         &mut IconCache::new(),
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -323,9 +417,21 @@ pub struct RendererCache {
     rebuilds: u64,
     icons: IconCache,
     scroll: f64,
+    theme: Option<AppearanceSnapshot>,
 }
 
 impl RendererCache {
+    pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
+        let configured = std::env::var("K230_ICON_THEME").ok();
+        let name = theme
+            .as_ref()
+            .and_then(|value| value.icon_theme.as_deref())
+            .or(configured.as_deref())
+            .unwrap_or("hicolor");
+        self.icons.set_theme(name);
+        self.theme = theme;
+        self.invalidate();
+    }
     pub fn invalidate(&mut self) {
         self.route = None;
         self.static_pixels.clear();
@@ -375,6 +481,7 @@ impl RendererCache {
                 },
                 apps,
                 &mut self.icons,
+                self.theme.as_ref(),
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -410,6 +517,59 @@ impl RendererCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::appearance::BrushStop;
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn authored_launcher_brush_changes_live_renderer_pixels() {
+        let mut sections = BTreeMap::new();
+        sections.insert(
+            "launcher".into(),
+            BTreeMap::from([(
+                "background".into(),
+                AppearanceToken::Brush(Brush {
+                    stops: vec![BrushStop {
+                        offset: 0.0,
+                        argb: "#ffff0000".into(),
+                    }],
+                    angle_degrees: 0.0,
+                    alpha: 1.0,
+                }),
+            )]),
+        );
+        let snapshot = AppearanceSnapshot {
+            generation: "0123456789abcdef01234567".into(),
+            path: "/tmp/test-generation".into(),
+            icon_theme: Some("hicolor".into()),
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette: BTreeMap::new(),
+            sections,
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        };
+        let mut renderer = RendererCache::default();
+        let mut frame = vec![0; 568 * 1232 * 4];
+        renderer.set_appearance(Some(snapshot));
+        renderer
+            .draw(
+                &mut frame,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Drawer,
+                    progress: 1.0,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        let pixel = (900 * 568 + 280) * 4;
+        assert_eq!(&frame[pixel..pixel + 4], &[0, 0, 255, 255]);
+        assert_eq!(&frame[0..4], &[0, 0, 0, 0]);
+    }
 
     #[test]
     fn drawer_keeps_live_scene_above_opaque_panel() {

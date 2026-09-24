@@ -3,6 +3,7 @@
 //! Smithay Client Toolkit's MIT-licensed v0.20.0 simple_layer example.
 use gio::prelude::*;
 use k230_shell_rust::{
+    appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     catalog::{installed_apps, AppEntry},
     configure_size, frame_bytes,
     navigation::{DrawerAction, DrawerNavigation},
@@ -55,12 +56,22 @@ use wayland_client::{
 };
 
 const SOCKET_NAME: &str = "k230-shell-rust.sock";
+const APPEARANCE_SOCKET_NAME: &str = "k230-shell-rust-appearance.sock";
 const MAX_PENDING_BYTES: usize = 4096;
 const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
 
 fn socket_path() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR").ok_or("XDG_RUNTIME_DIR is unset")?;
     Ok(PathBuf::from(runtime).join(SOCKET_NAME))
+}
+
+fn appearance_socket_path() -> Result<PathBuf, String> {
+    let runtime = std::env::var_os("XDG_RUNTIME_DIR").ok_or("XDG_RUNTIME_DIR is unset")?;
+    Ok(PathBuf::from(runtime).join(APPEARANCE_SOCKET_NAME))
+}
+
+fn appearance_renderable(snapshot: Option<&AppearanceSnapshot>) -> bool {
+    snapshot.is_none_or(|snapshot| snapshot.selected_background.is_none())
 }
 
 fn poll_until(fd: i32, events: i16, deadline: Instant) -> Result<(), String> {
@@ -421,6 +432,7 @@ struct ShellClient {
     launch_started: Option<Instant>,
     swaymsg: Option<PathBuf>,
     renderer: RendererCache,
+    appearance_pending: bool,
     reveal: RevealState,
     input_ready: bool,
     reduced_motion: bool,
@@ -573,13 +585,14 @@ impl ShellClient {
         self.log("unmap");
     }
 
-    fn draw(&mut self, qh: &QueueHandle<Self>) {
-        if !self.configured || self.frame_pending || self.layer.is_none() {
-            return;
+    fn draw(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if self.appearance_pending || !self.configured || self.frame_pending || self.layer.is_none()
+        {
+            return false;
         }
         let Some(size) = frame_bytes(self.width, self.height) else {
             self.log("invalid-geometry");
-            return;
+            return false;
         };
         let stride = (self.width * 4) as i32;
         self.buffers
@@ -600,7 +613,7 @@ impl ShellClient {
         } else {
             if self.buffers.len() >= 3 {
                 self.dirty = true;
-                return;
+                return false;
             }
             let Ok((buffer, canvas)) = self.pool.create_buffer(
                 self.width as i32,
@@ -609,11 +622,11 @@ impl ShellClient {
                 wl_shm::Format::Argb8888,
             ) else {
                 self.log("shm-allocate-failed");
-                return;
+                return false;
             };
             if canvas.len() != size {
                 self.log("shm-size-mismatch");
-                return;
+                return false;
             }
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
@@ -639,7 +652,7 @@ impl ShellClient {
             &self.apps,
         ) {
             self.log(&format!("render-failed {error}"));
-            return;
+            return false;
         }
         self.input_region();
         let layer = self.layer.as_ref().expect("mapped");
@@ -649,12 +662,13 @@ impl ShellClient {
         layer.wl_surface().frame(qh, layer.wl_surface().clone());
         if self.buffers[index].attach_to(layer.wl_surface()).is_err() {
             self.log("shm-attach-failed");
-            return;
+            return false;
         }
         layer.commit();
         self.frame_pending = true;
         self.dirty = false;
         self.log("commit");
+        true
     }
 }
 
@@ -691,7 +705,7 @@ impl CompositorHandler for ShellClient {
         }
         self.frame_pending = false;
         self.log("frame-done");
-        if self.dirty {
+        if self.dirty && !self.appearance_pending {
             self.draw(qh);
         }
     }
@@ -913,6 +927,12 @@ fn serve() -> Result<(), String> {
     // stalls an owned touch stream or a route acknowledgement.
     let apps = installed_apps();
     let mut routes = RouteServer::new(socket_path()?)?;
+    let mut appearance = AppearanceReceiver::bind(
+        appearance_socket_path()?,
+        std::env::var_os("K230_THEME_DEFAULT_GENERATION").map(PathBuf::from),
+    )?;
+    let mut pending_appearance: Option<(AppearanceEvent, Instant, Option<AppearanceSnapshot>)> =
+        None;
     let conn = Connection::connect_to_env().map_err(|e| e.to_string())?;
     let (globals, mut queue) = registry_queue_init(&conn).map_err(|e| e.to_string())?;
     let qh = queue.handle();
@@ -951,6 +971,7 @@ fn serve() -> Result<(), String> {
         launch_started: None,
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
+        appearance_pending: false,
         reveal: RevealState::default(),
         input_ready: false,
         reduced_motion: reduced_motion_enabled(
@@ -959,11 +980,39 @@ fn serve() -> Result<(), String> {
                 .as_deref(),
         ),
     };
+    state.renderer.set_appearance(appearance.active().cloned());
     state.log("ready-idle");
     loop {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        match appearance.receive() {
+            Ok(Some(event)) => match event.phase {
+                AppearancePhase::Prepare => {
+                    let accepted = appearance_renderable(event.snapshot.as_ref());
+                    if !accepted {
+                        state.log("appearance-background-not-yet-renderable");
+                    }
+                    if let Err(error) = appearance.respond(event, accepted) {
+                        state.log(&format!("appearance-prepare-ack-failed {error}"));
+                    }
+                }
+                AppearancePhase::Commit | AppearancePhase::Rollback => {
+                    let previous = appearance.active().cloned();
+                    if !appearance_renderable(event.snapshot.as_ref()) {
+                        state.log("appearance-background-not-yet-renderable");
+                        let _ = appearance.respond(event, false);
+                    } else {
+                        state.renderer.set_appearance(event.snapshot.clone());
+                        state.appearance_pending = true;
+                        state.dirty = true;
+                        pending_appearance = Some((event, Instant::now(), previous));
+                    }
+                }
+            },
+            Ok(None) => {}
+            Err(error) => state.log(&format!("appearance-receive-failed {error}")),
+        }
         for _ in 0..4 {
             let Ok((attempt, result)) = state.launch_results.try_recv() else {
                 break;
@@ -1017,7 +1066,33 @@ fn serve() -> Result<(), String> {
         }
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
-        if state.dirty && !state.frame_pending {
+        if let Some((event, started, previous)) = pending_appearance.take() {
+            let idle = state.layer.is_none();
+            let ready = idle || (state.configured && !state.frame_pending);
+            if !ready && started.elapsed() < Duration::from_millis(1400) {
+                pending_appearance = Some((event, started, previous));
+            } else {
+                let accepted = if idle {
+                    true
+                } else if ready {
+                    state.appearance_pending = false;
+                    let painted = state.draw(&qh);
+                    state.appearance_pending = true;
+                    painted && queue.flush().is_ok()
+                } else {
+                    false
+                };
+                if !accepted {
+                    state.renderer.set_appearance(previous);
+                    state.dirty = true;
+                }
+                state.appearance_pending = false;
+                if let Err(error) = appearance.respond(event, accepted) {
+                    state.log(&format!("appearance-ack-failed {error}"));
+                }
+            }
+        }
+        if state.dirty && !state.frame_pending && pending_appearance.is_none() {
             state.draw(&qh);
         }
         queue.flush().map_err(|e| e.to_string())?;
@@ -1025,6 +1100,7 @@ fn serve() -> Result<(), String> {
             continue;
         };
         let peer_fd = routes.peer.as_ref().map_or(-1, |p| p.stream.as_raw_fd());
+        let appearance_peer_fd = appearance.peer_fd().unwrap_or(-1);
         let mut fds = [
             libc::pollfd {
                 fd: queue.as_fd().as_raw_fd(),
@@ -1041,8 +1117,22 @@ fn serve() -> Result<(), String> {
                 events: libc::POLLIN,
                 revents: 0,
             },
+            libc::pollfd {
+                fd: appearance.listener_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: appearance_peer_fd,
+                events: libc::POLLIN,
+                revents: 0,
+            },
         ];
-        let timeout = if state.reveal.settling() || state.nav.coasting() || routes.has_line() {
+        let timeout = if state.reveal.settling()
+            || state.nav.coasting()
+            || routes.has_line()
+            || pending_appearance.is_some()
+        {
             16
         } else {
             100
@@ -1061,6 +1151,11 @@ fn serve() -> Result<(), String> {
         }
         if fds[1].revents & libc::POLLIN != 0 {
             routes.accept();
+        }
+        if fds[3].revents & libc::POLLIN != 0 {
+            if let Err(error) = appearance.accept() {
+                state.log(&format!("appearance-accept-failed {error}"));
+            }
         }
         if routes.has_line()
             || fds[2].revents & (libc::POLLIN | libc::POLLHUP) != 0
