@@ -85,6 +85,8 @@ class SettingsTests(unittest.TestCase):
         result = self.settings.power("request", "reboot")
         self.assertEqual(result["state"], "confirmation")
         self.assertEqual(self.calls, [])
+        self.assertEqual(self.settings.power("unexpected", result["token"])["error"], "unknown-operation")
+        self.assertEqual(self.calls, [])
         self.assertEqual(self.settings.power("cancel", result["token"])["state"], "cancelled")
         self.assertEqual(self.settings.power("confirm", result["token"])["state"], "failed")
         self.assertEqual(self.calls, [])

@@ -131,6 +131,8 @@ class Settings:
         return lock
 
     def power(self, operation, value):
+        if operation not in ("request", "confirm", "cancel"):
+            return {"state": "failed", "error": "unknown-operation"}
         if operation == "request" and value not in ("reboot", "poweroff"):
             return {"state": "failed", "error": "unknown-action"}
         if operation != "request" and not re.fullmatch(r"[0-9a-f]{32}", value):
