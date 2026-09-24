@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -107,6 +108,21 @@ class ThemeSources(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "exact 40-digit"):
                 sources.acquire_one(str(one), "HEAD", base / "invalid")
             self.assertFalse((base / "invalid").exists())
+
+    def test_sparse_large_file_and_entry_count_fail_before_unbounded_hashing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            oversized = base / "sparse-large.jpg"
+            with oversized.open("wb") as stream:
+                stream.truncate(sources.MAX_FILE_BYTES + 1)
+            with self.assertRaisesRegex(ValueError, "source bytes exceed bound"):
+                sources.source_digest(base)
+            oversized.unlink()
+            for name in ("a", "b", "c"):
+                (base / name).write_bytes(b"x")
+            with mock.patch.object(sources, "MAX_ENTRIES", 2):
+                with self.assertRaisesRegex(ValueError, "entry count exceeds bound"):
+                    sources.source_digest(base)
 
 
 if __name__ == "__main__":
