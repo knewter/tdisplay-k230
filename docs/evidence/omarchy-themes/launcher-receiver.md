@@ -6,7 +6,10 @@ runtime directory and the command enters the image. The normal configuration
 keeps this option off. The receiver accepts a
 bounded versioned prepare/commit/rollback request, parses only generated
 palette fields from a bounded `report.json`, and changes its current
-background, text, muted, tile, selected and accent colors. Error text selects
+background, text, tile, selected and accent colors. The authored `muted`
+swatches in the pinned dark/light sources measure only about 1.9–2.5:1
+against their backgrounds, so small launcher hint text temporarily uses the
+foreground color; its source value remains in the report. Error text selects
 a contrasting light or dark color. Commit returns an
 acknowledgement after the launcher submits and flushes a themed Wayland
 buffer; a pending page transition is settled first. Invalid generation IDs,
@@ -22,13 +25,14 @@ python3 tests/test_omarchy_theme_activation.py
 python3 tests/test_omarchy_theme_transaction.py
   PASS: 10 host transport tests.
 python3 tests/test_shell_appearance_receiver.py
-  PASS: 3 native host receiver socket tests: prepare/commit/rollback,
+  PASS: 4 native host receiver socket tests: prepare/commit/rollback,
   pre-prepare rejection, restart restoration, socket mode 0600, and synthetic
-  light/dark foreground-to-background/tile/selected/error contrast >= 4.5.
+  light/dark plus pinned dark/light/community foreground/hint-to-background,
+  tile, selected and error contrast >= 4.5.
 python3 tests/test_launcher_navigation.py
   PASS: 3 existing launcher navigation tests with appearance.c linked.
 nix build .#touch-launcher --max-jobs 1 --cores 4 --no-link --print-out-paths
-  PASS: /nix/store/g8w8w38v6g2rfb162fvbbkkj208b2hb4-k230-touch-launcher
+  PASS: /nix/store/1abjx9k2xm3k7w14bmv9ypxwmswi383w-k230-touch-launcher
 nix build .#handheld-theme-command --max-jobs 1 --cores 4 --no-link --print-out-paths
   PASS: /nix/store/8hg86rs0yfxsc0a7lcbnbyh3d18i6wcx-handheld-theme-command-0.1
   Closure: 338,250,352 bytes, dominated by target Python; package is opt-in.

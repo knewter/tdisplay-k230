@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   unsigned theme=(unsigned)strtoul(argv[2],NULL,16);
   unsigned restored=(unsigned)strtoul(argv[3],NULL,16);
   bool saw_theme=false;
-  unsigned foreground=0,tile=0,selected=0,error=0;
+  unsigned foreground=0,muted=0,tile=0,selected=0,error=0;
   for (int n=0; n<300; n++) {
     struct pollfd fds[2]={{k230_appearance_listener_fd(),POLLIN,0},
                           {k230_appearance_client_fd(),POLLIN|POLLHUP,0}};
@@ -37,13 +37,14 @@ int main(int argc, char **argv) {
                             (fds[1].revents&(POLLIN|POLLHUP))!=0,redraw);
     if (k230_appearance.background==theme) {
       saw_theme=true; foreground=k230_appearance.foreground;
+      muted=k230_appearance.muted;
       tile=k230_appearance.tile; selected=k230_appearance.selected;
       error=k230_appearance_error();
     }
     if (saw_theme && k230_appearance.background==restored) {
       k230_appearance_stop();
-      printf("applied-and-rolled-back %08x %08x %08x %08x\n",
-             foreground,tile,selected,error); return 0;
+      printf("applied-and-rolled-back %08x %08x %08x %08x %08x\n",
+             foreground,muted,tile,selected,error); return 0;
     }
   }
   k230_appearance_stop(); return 3;
@@ -62,7 +63,7 @@ class ShellAppearanceReceiver(unittest.TestCase):
         hi, lo = sorted((luminance(first), luminance(second)), reverse=True)
         return (hi + 0.05) / (lo + 0.05)
 
-    def run_case(self, *, restart=False, light=False):
+    def run_case(self, *, restart=False, light=False, palette=None):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             source = root / "receiver-test.c"
@@ -84,19 +85,20 @@ class ShellAppearanceReceiver(unittest.TestCase):
                 (root / "active").symlink_to(old)
             generation = root / "generations" / ("a" * 24)
             generation.mkdir(parents=True)
-            background = "#f0f0f0" if light else "#202830"
-            foreground = "#202020" if light else "#ffffff"
-            tile = "#e4e4e4" if light else "#283848"
-            selected = "#d8d8d8" if light else "#344454"
+            background = palette["background"] if palette else "#f0f0f0" if light else "#202830"
+            foreground = palette["foreground"] if palette else "#202020" if light else "#ffffff"
+            tile = palette["dark_background"] if palette else "#e4e4e4" if light else "#283848"
+            selected = palette["lighter_background"] if palette else "#d8d8d8" if light else "#344454"
             (generation / "report.json").write_text(json.dumps({
                 "generation": generation.name,
                 "palette": {"background": background, "foreground": foreground,
                             "dark_background": tile, "lighter_background": selected,
+                            "muted": palette.get("muted", foreground) if palette else foreground,
                             "accent": "#778899"},
             }))
             restored = "ff102030" if restart else "ff111827"
             process = subprocess.Popen([str(binary), str(root),
-                                        "fff0f0f0" if light else "ff202830", restored], stdout=subprocess.PIPE,
+                                        "ff" + background[1:], restored], stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE, text=True)
             endpoint = root / "appearance.sock"
             try:
@@ -114,11 +116,12 @@ class ShellAppearanceReceiver(unittest.TestCase):
                 tx.exchange(endpoint, "rollback", old if restart else None)
                 stdout, stderr = process.communicate(timeout=4)
                 self.assertEqual(process.returncode, 0, stderr)
-                marker, rendered_fg, rendered_tile, rendered_selected, rendered_error = stdout.strip().split()
+                marker, rendered_fg, rendered_muted, rendered_tile, rendered_selected, rendered_error = stdout.strip().split()
                 self.assertEqual(marker, "applied-and-rolled-back")
                 bg = int(background[1:], 16)
                 fg = int(rendered_fg, 16)
                 self.assertGreaterEqual(self.contrast(bg, fg), 4.5)
+                self.assertGreaterEqual(self.contrast(bg, int(rendered_muted, 16)), 4.5)
                 self.assertGreaterEqual(self.contrast(int(rendered_tile, 16), fg), 4.5)
                 self.assertGreaterEqual(self.contrast(int(rendered_selected, 16), fg), 4.5)
                 self.assertGreaterEqual(self.contrast(bg, int(rendered_error, 16)), 4.5)
@@ -135,6 +138,19 @@ class ShellAppearanceReceiver(unittest.TestCase):
 
     def test_light_palette_keeps_launcher_labels_legible(self):
         self.run_case(light=True)
+
+    def test_pinned_dark_light_and_community_palette_contrast(self):
+        # Values are the resolved palettes of the pinned task-1 fixtures.
+        for palette in (
+            {"background": "#eff1f5", "foreground": "#4c4f69", "muted": "#acb0be",
+             "dark_background": "#e3e4e8", "lighter_background": "#dce0e8"},
+            {"background": "#1e1e2e", "foreground": "#cdd6f4", "muted": "#585b70",
+             "dark_background": "#161622", "lighter_background": "#313244"},
+            {"background": "#1a2234", "foreground": "#cdd6ee", "muted": "#4e5784",
+             "dark_background": "#141a27", "lighter_background": "#232c44"},
+        ):
+            with self.subTest(background=palette["background"]):
+                self.run_case(palette=palette)
 
 
 if __name__ == "__main__":

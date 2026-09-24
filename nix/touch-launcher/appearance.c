@@ -95,7 +95,9 @@ static bool read_palette(const char *path, const char *identity,
         out->tile=out->background;
         out->selected=out->background;
         out->accent=out->foreground;
-        (void)hex_color(member(palette,"muted"),&out->muted);
+        /* Pinned light/dark muted swatches fall below 4.5:1 on this panel's
+         * small hint text; retain the authored value in report.json while
+         * the launcher uses foreground until the full role adapter lands. */
         (void)hex_color(member(palette,"dark_background"),&out->tile);
         (void)hex_color(member(palette,"lighter_background"),&out->selected);
         (void)hex_color(member(palette,"accent"),&out->accent);
