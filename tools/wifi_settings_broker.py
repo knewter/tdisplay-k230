@@ -179,7 +179,7 @@ def parse_scan(output):
                 item["privacy"] = True
             elif line.startswith("RSN:"):
                 item["rsn"] = True
-            elif item["rsn"] and line.startswith("Authentication suites:") and "PSK" in line:
+            elif item["rsn"] and line.lstrip("* ").startswith("Authentication suites:") and "PSK" in line:
                 item["rsn_psk"] = True
     finish(item)
     return sorted(rows.values(), key=lambda row: row["ssid"].casefold())[:MAX_NETWORKS]
@@ -296,7 +296,7 @@ class Radio:
             error = "unsupported-saved-config"
         return {"current": current, "saved": saved, "error": error}
 
-    def connect(self, ssid, security, password):
+    def connect(self, ssid, security, password, cancelled=lambda: False):
         self.runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
         if self.runtime.stat().st_uid != self.owner_uid or self.runtime.stat().st_mode & 0o077:
             raise WifiError("unsafe-runtime")
@@ -312,6 +312,8 @@ class Radio:
             previous = self.previous_config()
             candidate = config_for(ssid, security, password, str(self.runtime / "control"))
             merged = merge_saved(previous, ssid, security, password)
+            if cancelled():
+                raise WifiError("cancelled")
             os.fchmod(fd, 0o600)
             with os.fdopen(fd, "wb") as stream:
                 stream.write(candidate)
@@ -333,6 +335,8 @@ class Radio:
                                        stderr=subprocess.DEVNULL)
             deadline = time.monotonic() + CONNECT_TIMEOUT
             while time.monotonic() < deadline:
+                if cancelled():
+                    raise WifiError("cancelled")
                 if process.poll() is not None:
                     raise WifiError("authentication-failed")
                 try:
@@ -346,6 +350,8 @@ class Radio:
                 time.sleep(0.5)
             if not accepted:
                 raise WifiError("connection-timeout")
+            if cancelled():
+                raise WifiError("cancelled")
             persisted = True  # _persist can fail after atomic replacement.
             try:
                 self._persist(merged)
@@ -356,7 +362,7 @@ class Radio:
                     self._persist(previous)
                 persisted = False
                 raise WifiError("save-failed") from None
-            return {"state": "saved", "ssid": ssid}
+            return {"result": "saved", "ssid": ssid}
         finally:
             if process is not None:
                 process.terminate()
@@ -431,7 +437,7 @@ class Radio:
         finally:
             if safe_to_cancel:
                 self.cancel_restore()
-        return {"state": "forgotten"}
+        return {"result": "forgotten"}
 
 
 class Broker:
@@ -441,7 +447,7 @@ class Broker:
         self.busy = False
         self.last_scan = 0.0
 
-    def handle(self, uid, data):
+    def handle(self, uid, data, cancelled=lambda: False):
         if uid != self.allowed_uid:
             return {"schema": 1, "state": "failed", "error": "denied"}
         try:
@@ -460,7 +466,8 @@ class Broker:
                 self.last_scan = now
                 result = {"networks": self.radio.scan(), **self.radio.status()}
             elif op == "connect":
-                result = self.radio.connect(request.get("ssid"), request.get("security"), request.get("password"))
+                result = self.radio.connect(request.get("ssid"), request.get("security"),
+                                            request.get("password"), cancelled)
             elif op == "forget":
                 result = self.radio.forget(request.get("ssid"))
             else:
@@ -470,6 +477,19 @@ class Broker:
             code = exc.code if isinstance(exc, WifiError) else (
                 "service-unavailable" if isinstance(exc, (OSError, subprocess.TimeoutExpired)) else "invalid-request")
             return {"schema": 1, "state": "failed", "error": code}
+
+
+def peer_closed(conn):
+    """An idle connected peer is not cancellation, even on timeout-mode sockets."""
+    try:
+        readable, _, _ = select.select([conn], [], [], 0)
+        if not readable:
+            return False
+        return not conn.recv(1, socket.MSG_PEEK | socket.MSG_DONTWAIT)
+    except BlockingIOError:
+        return False
+    except OSError:
+        return True
 
 
 def serve(path, allowed_uid, allowed_gid, radio):
@@ -508,8 +528,12 @@ def serve(path, allowed_uid, allowed_gid, radio):
                             break
                         payload.extend(chunk)
                     if b"\n" in payload:
-                        payload = payload[:payload.index(b"\n")]
-                    answer = broker.handle(uid, payload)
+                        end = payload.index(b"\n")
+                        if end + 1 != len(payload):
+                            conn.sendall(b'{"schema":1,"state":"failed","error":"invalid-request"}\n')
+                            continue
+                        payload = payload[:end]
+                    answer = broker.handle(uid, payload, lambda: peer_closed(conn))
                     encoded = json.dumps(answer, separators=(",", ":")).encode("utf-8")
                     if len(encoded) > MAX_RESPONSE:
                         encoded = b'{"schema":1,"state":"failed","error":"response-too-large"}'

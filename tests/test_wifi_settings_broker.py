@@ -2,6 +2,7 @@
 import importlib.util
 import os
 from pathlib import Path
+import socket
 import sys
 import tempfile
 import unittest
@@ -20,12 +21,12 @@ class FakeRadio:
         return {"current": None, "saved": None, "error": None}
     def scan(self):
         return [{"ssid": "Example Guest", "security": "open"}]
-    def connect(self, ssid, security, password):
+    def connect(self, ssid, security, password, cancelled=lambda: False):
         self.calls.append((ssid, security, password))
-        return {"state": "saved", "ssid": ssid}
+        return {"result": "saved", "ssid": ssid}
     def forget(self, ssid):
         self.calls.append(("forget", ssid))
-        return {"state": "forgotten"}
+        return {"result": "forgotten"}
 
 
 class FakeProcess:
@@ -70,7 +71,7 @@ class BrokerTests(unittest.TestCase):
             wifi.config_for("Example Secure\n", "open")
 
     def test_scan_filters_unsupported_hidden_and_deduplicates(self):
-        text = b"""BSS aa(on wlan0)\n\tSSID: Example Guest\n\tcapability: ESS\nBSS bb(on wlan0)\n\tSSID: Example Secure\n\tcapability: ESS Privacy\n\tRSN:\n\tAuthentication suites: PSK\nBSS cc(on wlan0)\n\tSSID: Legacy WEP\n\tcapability: ESS Privacy\nBSS dd(on wlan0)\n\tSSID: Example Guest\n"""
+        text = b"""BSS aa(on wlan0)\n\tSSID: Example Guest\n\tcapability: ESS\nBSS bb(on wlan0)\n\tSSID: Example Secure\n\tcapability: ESS Privacy\n\tRSN:\n\t * Authentication suites: PSK\nBSS cc(on wlan0)\n\tSSID: Legacy WEP\n\tcapability: ESS Privacy\nBSS dd(on wlan0)\n\tSSID: Example Guest\n"""
         self.assertEqual(wifi.parse_scan(text), [
             {"ssid": "Example Guest", "security": "open"},
             {"ssid": "Example Secure", "security": "wpa2-psk"},
@@ -78,6 +79,16 @@ class BrokerTests(unittest.TestCase):
         ])
         self.assertFalse(wifi.candidate_completed(b"wpa_state=ASSOCIATING\nssid=Example Secure", "Example Secure"))
         self.assertTrue(wifi.candidate_completed(b"wpa_state=COMPLETED\nssid=Example Secure", "Example Secure"))
+
+    def test_peer_idle_is_not_cancelled_and_close_is(self):
+        a, b = socket.socketpair()
+        try:
+            a.settimeout(3)
+            self.assertFalse(wifi.peer_closed(a))
+            b.close()
+            self.assertTrue(wifi.peer_closed(a))
+        finally:
+            a.close()
 
     def test_operator_saved_identity_and_bounded_fixed_output(self):
         operator = b'ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\nnetwork={\n ssid="Example Secure"\n psk="examplepass"\n}\n'
@@ -98,6 +109,7 @@ class BrokerTests(unittest.TestCase):
         self.assertEqual(broker.handle(1000, b"{" )["error"], "invalid-request")
         self.assertEqual(broker.handle(1000, b"x" * 4097)["error"], "request-too-large")
         answer = broker.handle(1000, request)
+        self.assertEqual((answer["state"], answer["result"]), ("ok", "saved"))
         self.assertNotIn("examplepass", str(answer))
         self.assertEqual(radio.calls, [("Example Secure", "wpa2-psk", "examplepass")])
 
@@ -108,7 +120,7 @@ class BrokerTests(unittest.TestCase):
             fake_process = FakeProcess([])
             with patch.object(wifi.subprocess, "Popen", return_value=fake_process):
                 answer = radio.connect("Example Secure", "wpa2-psk", "examplepass")
-            self.assertEqual(answer["state"], "saved")
+            self.assertEqual(answer["result"], "saved")
             self.assertTrue(fake_process.terminated)
             args = [" ".join(row) for row in radio.commands]
             self.assertIn("systemd-run", args[0])
@@ -151,6 +163,19 @@ class BrokerTests(unittest.TestCase):
                  patch.object(wifi.time, "monotonic", side_effect=[0, 100]):
                 with self.assertRaisesRegex(wifi.WifiError, "connection-timeout"):
                     radio.connect("Example Secure", "wpa2-psk", "examplepass")
+            self.assertEqual(radio.credential.read_bytes(), previous)
+            self.assertIn(("systemctl", "start", "k230-wifi.service"), radio.commands)
+
+    def test_cancel_before_commit_keeps_prior_networks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            previous = wifi.config_for("Example Guest", "open")
+            radio._persist(previous)
+            checks = iter([False, True])
+            with patch.object(wifi.subprocess, "Popen", return_value=FakeProcess([])):
+                with self.assertRaisesRegex(wifi.WifiError, "cancelled"):
+                    radio.connect("Example Secure", "wpa2-psk", "examplepass",
+                                  cancelled=lambda: next(checks, True))
             self.assertEqual(radio.credential.read_bytes(), previous)
             self.assertIn(("systemctl", "start", "k230-wifi.service"), radio.commands)
 
