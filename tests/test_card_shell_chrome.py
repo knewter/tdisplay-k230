@@ -17,7 +17,8 @@ class ChromeCache(unittest.TestCase):
         source = (ROOT / 'nix/card-shell/adapter.c').read_text()
         state = source[source.index('static struct {'):source.index('static const float backdrop')]
         start = source.index('static bool rebuild_chrome(void) {') if 'static bool rebuild_chrome(void)' in source else source.index('static bool chrome(void) {')
-        functions = source[start:source.index('static bool sync_scene_impl(void) {', start)]
+        status_start = source.index('static const char *touch_deck_status(', source.index('static bool button('))
+        functions = source[status_start:source.index('static bool sync_scene_impl(void) {', start)]
         harness = r'''
 #include <assert.h>
 #include <stdlib.h>
@@ -30,9 +31,12 @@ struct sway_output { int lx, ly; };
 struct wlr_scene_node { int x, y; };
 struct wlr_scene_tree { struct wlr_scene_node node; };
 struct wlr_scene_buffer { struct wlr_scene_node node; };
+struct wlr_box { int x, y, width, height; };
+struct card_brush { int unused; };
+struct card_appearance { int unused; };
 static struct wlr_scene_tree tree;
 static struct wlr_scene_buffer label;
-static int builds, attempts, fail_at, last_x, last_y, button_calls;
+static int builds, attempts, fail_at, last_x, last_y, button_calls, label_calls;
 static bool touch_first(void) {
     const char *value = getenv("SWAY_K230_CARD_TOUCH_FIRST");
     return value && strcmp(value, "1") == 0;
@@ -59,17 +63,19 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int w,
     button_calls++;
     last_x=x; last_y=y; return allocation();
 }
-static struct wlr_scene_buffer *card_label(struct wlr_scene_tree *parent,
-        const char *text, int w, int h, int size) {
+static uint32_t appearance_text(bool selected) { (void)selected; return 0xffffffff; }
+static struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *parent,
+        const char *text, int w, int h, int size, uint32_t argb) {
     (void)parent; (void)text; (void)w; (void)h; (void)size;
+    (void)argb; label_calls++;
     return allocation() ? &label : NULL;
 }
 const char *cs_message_text(enum cs_message message) {
     return message == CS_MESSAGE_NONE ? "" : "Close timed out";
 }
 static bool label_update(struct wlr_scene_tree *parent, struct wlr_scene_buffer **out,
-        char **old, const char *text, int w, int h, int size) {
-    (void)parent; (void)w; (void)h; (void)size;
+        char **old, const char *text, int w, int h, int size, uint32_t argb) {
+    (void)parent; (void)w; (void)h; (void)size; (void)argb;
     if (!allocation()) return false;
     free(*old); *old=strdup(text); *out=&label; return true;
 }
@@ -121,8 +127,12 @@ int main(void) {
     assert(chrome()); assert(builds==before+1);
     shell.policy.message=CS_MESSAGE_EMPTY;
     assert(chrome());
-    assert(!strcmp(shell.status_text,"No running apps. Swipe up for Apps."));
+    assert(!strcmp(shell.status_text,"No running apps"));
     assert(button_calls==prior_buttons);
+    shell.policy.message=CS_MESSAGE_NONE;
+    assert(chrome());
+    assert(shell.status == NULL);
+    assert(label_calls > 0);
     assert(unsetenv("SWAY_K230_CARD_TOUCH_FIRST")==0);
     free(shell.status_text);
 }

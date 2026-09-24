@@ -638,14 +638,28 @@ static bool sync_card(struct card *c, size_t index) {
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
 	const char *title = c->content == CS_LIVE ? view_get_title(c->view) : cs_card_text(c->content);
+	/* A terminal's changing shell@host title is useful inside its live pixels,
+	 * but makes a noisy card identity. Keep rollback's old label unchanged. */
+	bool compact = touch_first();
+	if (compact && c->content == CS_LIVE && (!title || !*title || strchr(title, '@'))) {
+		const char *id = view_get_app_id(c->view);
+		if (id && *id) title = id;
+	}
 	if (!title || !*title)
 		title = "Application";
-	char text[512];
-	snprintf(text, sizeof(text), "%s%s", index == shell.policy.selected ? "Selected: " : "", title);
-	if (!label_update(c->tree, &c->label, &c->label_text, text, lround(r.width) - 24, 56, 32,
+	char rollback_title[512];
+	if (!compact) {
+		snprintf(rollback_title, sizeof(rollback_title), "%s%s",
+			index == shell.policy.selected ? "Selected: " : "", title);
+		title = rollback_title;
+	}
+	if (!label_update(c->tree, &c->label, &c->label_text, title,
+			compact ? lround(r.width) - 32 : lround(r.width) - 24,
+			compact ? 44 : 56, compact ? 24 : 32,
 			appearance_text(index == shell.policy.selected)))
 		return false;
-	label_clip(c->label, 12, lround(r.height) - 60, c->x, c->y, clip_box());
+	label_clip(c->label, compact ? 16 : 12,
+		lround(r.height) - (compact ? 50 : 60), c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
 	if (cs_can_mirror(&shell.policy, c->id)) {
 		int width = c->view->geometry.width, height = c->view->geometry.height;
@@ -685,6 +699,22 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int width, const
 	wlr_scene_node_set_position(&label->node, x + 8, y + 9);
 	return true;
 }
+static const char *touch_deck_status(enum cs_message message) {
+	switch (message) {
+	case CS_MESSAGE_EMPTY: return "No running apps";
+	case CS_MESSAGE_PRIVATE: return "Preview hidden";
+	case CS_MESSAGE_UNAVAILABLE: return "Preview unavailable";
+	case CS_MESSAGE_CLOSING: return "Closing app";
+	case CS_MESSAGE_CLOSE_REFUSED: return "App stayed open";
+	case CS_MESSAGE_CLOSE_TIMEOUT: return "App is still open";
+	case CS_MESSAGE_CLOSE_FAILED: return "Could not close app";
+	case CS_MESSAGE_CANCELLED: return "Gesture cancelled";
+	case CS_MESSAGE_SOURCE_GONE: return "App closed";
+	case CS_MESSAGE_FAILED: return "Cards unavailable";
+	case CS_MESSAGE_NONE: return NULL;
+	}
+	return "Cards unavailable";
+}
 static bool rebuild_chrome(void) {
 	struct cs_config *cfg = &shell.policy.config;
 	if (shell.chrome)
@@ -701,17 +731,25 @@ static bool rebuild_chrome(void) {
 	if (touch_first()) {
 		if (!shell.active)
 			return true;
-		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Cards", 250, 56, 42,
+		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Home", 176, 40, 24,
 			appearance_text(false));
 		if (!title)
 			return false;
-		wlr_scene_node_set_position(&title->node, x + 24, y + 8);
-		const char *text = shell.policy.message == CS_MESSAGE_EMPTY ?
-			"No running apps. Swipe up for Apps." : cs_message_text(shell.policy.message);
-		if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
-				cfg->width - 48, 56, 21, appearance_text(false)))
+		wlr_scene_node_set_position(&title->node, x + 24, y + 16);
+		const char *text = touch_deck_status(shell.policy.message);
+		if (text) {
+			int status_y = shell.policy.message == CS_MESSAGE_EMPTY ? y + 210 : y + 64;
+			if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
+					cfg->width - 48, 44, 21, appearance_text(false)))
+				return false;
+			wlr_scene_node_set_position(&shell.status->node, x + 24, status_y);
+		}
+		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
+			"Swipe up for apps", cfg->width - 48, 36, 19, appearance_text(false));
+		if (!cue)
 			return false;
-		wlr_scene_node_set_position(&shell.status->node, x + 24, y + 72);
+		wlr_scene_node_set_position(&cue->node, x + 24,
+			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - 58);
 		return true;
 	}
 	if (!button(shell.chrome, x + cfg->width - 152, y + 8, 128, shell.active ? "Back" : "Cards",
