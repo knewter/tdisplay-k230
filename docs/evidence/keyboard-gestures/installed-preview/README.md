@@ -3,6 +3,15 @@
 Observed 2026-09-24 UTC on the physical board. Source `e9d3bd6c` built with
 `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths`.
 The exact system and running Sway/Rust binaries are in [installed.json](installed.json).
+The named narrow hint package command also passed from this same production
+source: `nix build .#handheld-shell-rust --max-jobs 1 --cores 4 --no-link --print-out-paths`,
+output `/nix/store/a4gdwfmr79pf6yfvq24wmqi495mdm4mg-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`,
+derivation `/nix/store/466mi8pv9nm0m1g1ps0x72l9bhvq9q3j-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv`.
+The flake's standalone package and the NixOS module use distinct package
+contexts: this narrow output is not claimed to be the installed `b3qdp…`
+executable, which was built by the full-system command and read from the
+running process. The dark/light hint captures remain separate QEMU evidence.
+
 The matching [coherent image](../../coherent-shell/boot-artifacts/README.md)
 is a separate host artifact; it was not flashed or selected for boot here.
 
