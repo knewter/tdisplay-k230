@@ -12,7 +12,7 @@ corrupted must not produce an unbootable card.
 
   tools/push-file.py --src result.dtb --dest /boot/k230-tdisplay.dtb --reboot
 """
-import argparse, base64, gzip, hashlib, io, os, sys, time
+import argparse, base64, gzip, hashlib, io, os, shlex, sys, time, uuid
 
 try:
     import serial
@@ -48,7 +48,8 @@ def main():
     ap.add_argument("--reboot", action="store_true")
     a = ap.parse_args()
 
-    raw = open(a.src, "rb").read()
+    with open(a.src, "rb") as source:
+        raw = source.read()
     want = hashlib.md5(raw).hexdigest()
     payload = base64.b64encode(gzip.compress(raw, 9)).decode()
     print(f"{a.src}: {len(raw)} bytes, md5 {want}, {len(payload)} b64 chars")
@@ -79,8 +80,11 @@ def main():
         sys.exit(f"md5 mismatch on the board: wanted {want}. Destination untouched.")
     print(f"md5 verified on board: {want}")
 
-    out = send(port, f"cp /tmp/push.bin {a.dest} && sync && echo INSTALLED", 2.0)
-    if b"INSTALLED" not in out:
+    marker = "K230_INSTALLED_" + uuid.uuid4().hex
+    out = send(port, f"cp -- /tmp/push.bin {shlex.quote(a.dest)} && sync && echo {marker}", 2.0)
+    # The console echoes the command even when cp fails. Require its separate
+    # acknowledgement line, never the marker embedded in that command echo.
+    if marker.encode() not in [line.strip() for line in out.splitlines()]:
         print(out.decode("utf-8", "replace")[-400:])
         sys.exit("copy to destination failed")
     print(f"installed -> {a.dest}")
