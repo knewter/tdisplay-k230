@@ -291,6 +291,15 @@ fn scene(
         }
         Route::Shade => {
             text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, 0x78d7cb);
+            text(
+                cr,
+                "Swipe up above the list to close",
+                28.0,
+                86.0,
+                w - 56.0,
+                15.0,
+                0xc8d7dd,
+            );
             let items = services.and_then(|view| view.notifications.as_ref());
             let count = items.map_or(0, |snapshot| snapshot.count);
             text(
@@ -315,7 +324,7 @@ fn scene(
                 } else if count == 0 {
                     "No new notifications"
                 } else {
-                    "Private preview"
+                    "No active preview"
                 };
                 text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, 0xc8d7dd);
             }

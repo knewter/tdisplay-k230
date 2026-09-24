@@ -452,6 +452,12 @@ fn shade_close_swipe(start: (f64, f64), end: (f64, f64)) -> bool {
     dy <= -80.0 && dx.abs() <= 80.0
 }
 
+fn shade_release_closes(start: (f64, f64), end: (f64, f64), has_rows: bool, height: u32) -> bool {
+    let list_bottom = f64::from(height) * 0.65 - 24.0;
+    let in_list = start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP && start.1 < list_bottom;
+    (!has_rows || !in_list) && shade_close_swipe(start, end)
+}
+
 struct ShellClient {
     compositor: CompositorState,
     layer_shell: LayerShell,
@@ -1207,13 +1213,16 @@ impl TouchHandler for ShellClient {
             } else if self.input_ready {
                 if let Some((start_id, start)) = self.panel_start.take() {
                     if start_id == id {
-                        let list_has_rows = self.service_view.notifications.as_ref().is_some_and(|snapshot| !snapshot.events.is_empty());
-                        let in_list = start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
-                            && start.1 < f64::from(self.height) * 0.65 - 24.0;
-                        if self.route == Route::Shade && (!list_has_rows || !in_list) && shade_close_swipe(start, point) {
+                        let list_has_rows = self
+                            .service_view
+                            .notifications
+                            .as_ref()
+                            .is_some_and(|snapshot| !snapshot.events.is_empty());
+                        if self.route == Route::Shade
+                            && shade_release_closes(start, point, list_has_rows, self.height)
+                        {
                             self.hide();
-                        } else {
-                        if let Some(intent) = panel_intent(
+                        } else if let Some(intent) = panel_intent(
                             self.route,
                             start,
                             point,
@@ -1226,7 +1235,6 @@ impl TouchHandler for ShellClient {
                             {
                                 self.panel_action(qh, intent);
                             }
-                        }
                         }
                     }
                 }
@@ -1735,6 +1743,24 @@ mod route_tests {
         assert!(touch.down(4, (280.0, 580.0)));
         touch.cancel();
         assert!(!touch.up(4));
+        assert!(shade_release_closes(
+            (280.0, 580.0),
+            (280.0, 300.0),
+            false,
+            1232
+        ));
+        assert!(shade_release_closes(
+            (280.0, 170.0),
+            (280.0, 80.0),
+            true,
+            1232
+        ));
+        assert!(!shade_release_closes(
+            (280.0, 580.0),
+            (280.0, 300.0),
+            true,
+            1232
+        ));
     }
 
     #[test]
