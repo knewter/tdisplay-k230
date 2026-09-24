@@ -18,7 +18,7 @@ Proof: the two narrow Nix builds plus `python3 tests/test_keyboard_gestures_runt
 ## 3. Install and prove on glass
 
 - [ ] 3.1 Build `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths`; record exact output and a recovery-capable installed identity via `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'` while holding the board reservation.
-- [ ] 3.2 Run a documented real-finger show, type, slow hide/hold/reverse, committed hide and app-navigation sequence. Capture focused feature video with `python3 tools/capture-feature.py --help` used to select its concrete recording command, commit that command and camera/native provenance, and keep user acceptance open until explicitly confirmed.
+- [ ] 3.2 Run a documented real-finger show, type, slow hide/hold/reverse, committed hide and app-navigation sequence. Capture focused feature video with `python3 tools/capture-feature.py keyboard-gestures --duration 15 --provenance real-touch --description "Two-finger show, typing, handle dismissal and reversal"`, record the actual camera and output directory plus camera/native provenance, and keep user acceptance open until explicitly confirmed.
 - [ ] 3.3 Measure keyboard visibility and gesture workload against the existing shell responsiveness budgets using the installed compositor instrumentation; commit the exact workload/operator invocation and observed results. Do not infer motion quality from static captures.
 
 Proof: exact build and console identity above, committed concrete camera/workload commands and real-glass observations. No routine flash readback is required.
