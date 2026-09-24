@@ -1,0 +1,41 @@
+{
+  "evidence_class": "installed-system-and-native-board-capture",
+  "observed_at_utc": "2026-09-24T08:50:58.742999+00:00",
+  "source_revision": "dcfbdb0be64dee1ba3ff024541d5bb5bd044d032",
+  "system": "/nix/store/48x70j3df8ksiyab0sdgas5nzmgx69nz-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_test_system": "/nix/store/5xm4bwka6waggamz9i48ljjp3yilaf6c-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway": "/nix/store/m1im24g1h70xylmia55s1qvjwa76jn9x-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust_shell": "/nix/store/b3qdp290baflgsyg8yxmhsn9b28pcwhw-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "activation_mode": "test",
+  "fallback_timer": "stopped after exact identity, seven active services, supervised restart and reviewed native capture",
+  "active_services": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi",
+    "k230-wifi-settings",
+    "shell-keyboard"
+  ],
+  "native_capture_dimensions": [
+    568,
+    1232
+  ],
+  "keyboard_show_method": "USR2 signal to existing shell-owned wvkbd-mobintl",
+  "physical_gesture_acceptance": false,
+  "persistent_boot_proven": false,
+  "keyboard": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+  "import_delta_paths": 23,
+  "import_nar_bytes": 7268568,
+  "keyboard_height": 400,
+  "keyboard_restart": {
+    "trigger": "systemctl kill --kill-whom=main --signal=SIGTERM shell-keyboard",
+    "wait_seconds": 5,
+    "pid_changed": true,
+    "NRestarts": 1,
+    "service_active": true,
+    "cgroup": "/system.slice/shell-keyboard.service"
+  }
+}

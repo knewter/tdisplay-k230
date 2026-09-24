@@ -5,18 +5,19 @@
       "lane": "verification",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Test-activate the brighter handle and supervised keyboard, then verify real-finger show, handle dismissal, tracking and workload measurements.",
+      "next": "Try the installed two-finger show and handle dismissal on glass; finish real-finger tracking, typing and workload measurements.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/keyboard-gestures/native-qemu/README.md",
         "docs/evidence/keyboard-gestures/installed-preview/README.md",
-        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md"
+        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md",
+        "docs/evidence/keyboard-gestures/supervised-installed/README.md"
       ],
-      "rationale": "Source e9d3bd6c is test-activated on the board with exact binaries, six active services and native keyboard capture. Headless gesture/recovery checks passed; real-finger tracking and typing acceptance remain pending. A brighter themed handle and supervised recovery have cross-build, unit evaluation and QEMU pixel proof; that followup is not installed yet.",
-      "reviewRevision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
+      "rationale": "Source dcfbdb0b is test-activated on the board with a brighter themed handle and seven active services. Terminating the keyboard process demonstrated automatic supervised recovery. Native QEMU gesture and Foot typing checks passed; physical gesture acceptance and workload budgets remain pending.",
+      "reviewRevision": "dcfbdb0be64dee1ba3ff024541d5bb5bd044d032",
       "cover": {
-        "path": "docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png",
-        "caption": "Installed keyboard and handle, shown by command; physical gesture acceptance pending",
+        "path": "docs/evidence/keyboard-gestures/supervised-installed/keyboard-shown.png",
+        "caption": "Installed brighter keyboard handle after supervised recovery; shown by command",
         "provenance": "Board capture"
       }
     },
