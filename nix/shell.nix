@@ -164,6 +164,7 @@ let
     categories = [ "AudioVideo" "Video" ];
   };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
+  rustShellBase = pkgs.callPackage ./rust-shell-client { };
   themeTools = pkgs.callPackage ./omarchy-theme-tools { };
   themeDefault = pkgs.callPackage ./handheld-theme-default { };
   themeDefaultId = (builtins.fromJSON (builtins.readFile ./handheld-theme-default/default-report.json)).generation;
@@ -174,7 +175,7 @@ let
   settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
   notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };
   notificationSources = pkgs.writeText "k230-notification-sources.json" (builtins.toJSON {
-    "${touchLauncherBase}/bin/k230-touch-launcher" = {
+    "${rustShellBase}/bin/k230-shell-rust" = {
       id = "shell"; name = "Shell"; icon = "applications-system";
     };
   });
@@ -205,16 +206,8 @@ let
     export K230_JQ=${pkgs.jq}/bin/jq
     exec ${pkgs.bash}/bin/bash ${./window-catalog.sh}
   '';
-  touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
+  launcherEnvironment = ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
-    ${lib.optionalString cfg.coherentShell ''
-      export K230_SETTINGS=${settingsCommand}/bin/k230-settings
-      export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
-      export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
-    ''}
-    ${lib.optionalString cfg.themeReceiverTrial "export K230_LAUNCHER_THEME_RECEIVER=1"}
-    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"''}
-    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"''}
     export K230_WINDOW_CATALOG=${windowCatalog}/bin/k230-window-catalog
     export K230_SWAYMSG=${sway}/bin/swaymsg
     # Include Nix profiles because the systemd session does not run a login shell.
@@ -224,7 +217,48 @@ let
     # share/icons tree. Keep their desktop art reachable by themed name.
     export XDG_DATA_DIRS="${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
+  '';
+  touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
+    ${launcherEnvironment}
+    ${lib.optionalString cfg.themeReceiverTrial "export K230_LAUNCHER_THEME_RECEIVER=1"}
+    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"''}
+    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"''}
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
+  '';
+  rustShell = pkgs.writeShellScriptBin "k230-shell-rust" ''
+    ${launcherEnvironment}
+    # The supervised UI starts after Sway's process, before its display may
+    # exist. Discover one actual session socket instead of assuming wayland-0.
+    if [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+      for attempt in $(${pkgs.coreutils}/bin/seq 1 100); do
+        found=""
+        for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+          if [ -S "$candidate" ]; then
+            if [ -n "$found" ]; then
+              echo "k230-shell-rust: ambiguous Wayland display" >&2
+              exit 1
+            fi
+            found="$candidate"
+          fi
+        done
+        if [ -n "$found" ]; then
+          export WAYLAND_DISPLAY="''${found##*/}"
+          break
+        fi
+        ${pkgs.coreutils}/bin/sleep 0.1
+      done
+      if [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+        echo "k230-shell-rust: session Wayland display unavailable" >&2
+        exit 1
+      fi
+    fi
+    export K230_SETTINGS=${settingsCommand}/bin/k230-settings
+    export K230_THEME_COMMAND=${themeCommand}/bin/k230-theme
+    export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
+    export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
+    export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
+    export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
+    exec ${rustShellBase}/bin/k230-shell-rust "$@"
   '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
     export K230_SWAYMSG=${sway}/bin/swaymsg
@@ -305,7 +339,6 @@ let
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
     exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
     exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig}
-    ${lib.optionalString cfg.coherentShell ''exec ${touchLauncher}/bin/k230-touch-launcher --serve''}
   '';
 in
 {
@@ -346,8 +379,8 @@ in
       type = lib.types.bool;
       default = false;
       description = ''
-        Select the integrated live-card/drawer session with Settings and
-        notification services. The ordinary bar session remains a separate
+        Select the opt-in Rust drawer/shade and live-card session with Settings
+        and notification services. The ordinary bar session remains a separate
         rollback configuration until touch acceptance is recorded.
       '';
     };
@@ -568,6 +601,30 @@ in
       };
     };
 
+    systemd.services.shell-ui = lib.mkIf cfg.coherentShell {
+      description = "Rust handheld drawer and system surfaces";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      wants = [ "shell-notifications.service" ];
+      after = [ "shell.service" "shell-notifications.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        SWAYSOCK = "/run/shell/sway-ipc.sock";
+      };
+      path = [ pkgs.coreutils ];
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        ExecStart = "${rustShell}/bin/k230-shell-rust --serve";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
     systemd.services.shell = {
       description = "sway on the panel";
       wantedBy = [ "multi-user.target" ];
@@ -596,7 +653,9 @@ in
       } // lib.optionalAttrs cfg.coherentShell {
         SWAY_K230_CARD_SHELL = "1";
         SWAY_K230_CARD_TOUCH_FIRST = "1";
-        SWAY_K230_CARD_DRAWER_HELPER = "${touchLauncher}/bin/k230-touch-launcher";
+        SWAY_K230_CARD_DRAWER_HELPER = "${rustShell}/bin/k230-shell-rust";
+        SWAY_K230_CARD_SURFACE_HELPER = "${rustShell}/bin/k230-shell-rust";
+        SWAY_K230_CARD_SURFACE_SOCKET = "/run/shell/k230-shell-rust.sock";
         SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_CARD_SCALED_CACHE = "0";
@@ -705,7 +764,7 @@ in
       videoDesktop
       touchLauncher
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
-      ++ lib.optionals cfg.coherentShell [ settingsCommand notificationCommand ]
+      ++ lib.optionals cfg.coherentShell [ rustShell settingsCommand notificationCommand ]
       ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
