@@ -1,6 +1,17 @@
 import path from "node:path";
+import { isIP } from "node:net";
 
-const PUBLIC_LINK_HOSTS = new Set(["github.com", "developer.android.com", "support.bell.ca", "support.google.com"]);
+function publicHttps(value) {
+  let url;
+  try { url = new URL(value); }
+  catch { return false; }
+  const host = url.hostname.toLowerCase();
+  return url.protocol === "https:"
+    && !url.username && !url.password && !url.port
+    && host.includes(".") && !host.endsWith(".")
+    && !isIP(host) && !host.startsWith("[")
+    && ![".localhost", ".local", ".internal", ".test", ".invalid"].some((suffix) => host.endsWith(suffix));
+}
 
 /** Resolve links inside committed proposal/design/task/spec Markdown. */
 export function workMarkdownLinks(
@@ -25,8 +36,7 @@ export function workMarkdownLinks(
           if (value.startsWith("#")) {
             // A heading anchor stays inside the active document.
           } else if (value.startsWith("/") || /^[a-z][a-z\d+.-]*:/i.test(value)) {
-            const parsed = value.startsWith("https:") ? new URL(value) : null;
-            if (node.tagName === "img" || !parsed || parsed.protocol !== "https:" || parsed.port || parsed.username || parsed.password || !PUBLIC_LINK_HOSTS.has(parsed.hostname)) {
+            if (node.tagName === "img" || !publicHttps(value)) {
               throw new Error(`unsupported work Markdown link: ${sourcePath} -> ${value}`);
             }
           } else {
