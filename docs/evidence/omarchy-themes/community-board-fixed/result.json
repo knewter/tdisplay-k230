@@ -1,0 +1,85 @@
+{
+  "arms": [
+    {
+      "app_appearance_state": "applied",
+      "background_count": 4,
+      "capture": {
+        "bytes": 38869,
+        "kind": "native-unreviewed",
+        "sha256": "478d3f0346f003fba5893ca17b5b85f40d7312709d888ed944d233916fbfb75e"
+      },
+      "generation": "e300675e4e4e8bfe9086505e",
+      "role": "dark",
+      "selected_background_id": "ea49f2916958608c3eac9f84",
+      "theme_id": "972f1bd5258532d1bb3125fd",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    },
+    {
+      "app_appearance_state": "applied",
+      "background_count": 2,
+      "capture": {
+        "bytes": 38673,
+        "kind": "native-unreviewed",
+        "sha256": "ff4004c2e6c509680505ce48431fc559d949da6413488814ad5fd66185c5cd5c"
+      },
+      "generation": "cbf6d45472043bbc28dfa42b",
+      "role": "light",
+      "selected_background_id": "6cf6556ef8dce141ee206d58",
+      "theme_id": "10db74a93cd95c1d02dd1371",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    },
+    {
+      "app_appearance_state": "applied",
+      "background_count": 3,
+      "capture": {
+        "bytes": 71391,
+        "kind": "native-unreviewed",
+        "sha256": "51a1f993644e3c65fab7988d451d7e2808f8a53f5935e652a4e3b0c4f248b7fd"
+      },
+      "generation": "e5f965ad4711693aec79c4fb",
+      "role": "community",
+      "selected_background_id": "77ce8d6eca1c7ee0fb198273",
+      "theme_id": "07dc4f8d6050706d5fcc9c39",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    }
+  ],
+  "baseline": {
+    "capture": {
+      "bytes": 38869,
+      "kind": "native-unreviewed",
+      "sha256": "478d3f0346f003fba5893ca17b5b85f40d7312709d888ed944d233916fbfb75e"
+    },
+    "generation": "0d16475245f13b3d7d3f036f",
+    "workload": {
+      "id": "cards-shade-static-v1",
+      "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+    }
+  },
+  "finished_utc": "2026-09-24T09:15:52+00:00",
+  "physical_observation": "UNVERIFIED",
+  "restoration": "passed",
+  "restored_capture": {
+    "bytes": 38869,
+    "kind": "native-unreviewed",
+    "sha256": "478d3f0346f003fba5893ca17b5b85f40d7312709d888ed944d233916fbfb75e"
+  },
+  "restored_generation": "0d16475245f13b3d7d3f036f",
+  "schema": 1,
+  "source_revision": "3c502a37540375a74685f70b21d73eaee28c40bc",
+  "started_utc": "2026-09-24T09:15:17+00:00",
+  "system": "/nix/store/pyj3bhzl3a018rr9q7lqy04wlxm2psd7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "trial": "completed-needs-operator-review",
+  "workload": {
+    "id": "cards-shade-static-v1",
+    "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+  }
+}

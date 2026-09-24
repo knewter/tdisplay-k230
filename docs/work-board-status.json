@@ -118,7 +118,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Install and repeat the community rgba border fix; verify unchanged clone activation, then complete theme roles, video/workload and reboot/real-touch gates.",
+      "next": "Complete notification motion and bounded video wallpapers, then measure theme/card cost and verify real chooser interaction and reboot persistence.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -139,13 +139,14 @@
         "docs/evidence/coherent-shell/themed-installed/README.md",
         "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md",
         "docs/evidence/omarchy-themes/board-switching/README.md",
-        "docs/evidence/omarchy-themes/community-board/README.md"
+        "docs/evidence/omarchy-themes/community-board/README.md",
+        "docs/evidence/omarchy-themes/community-board-fixed/README.md"
       ],
-      "rationale": "On installed dcfbdb0b, dark/light theme switching and restoration passed. An unchanged community clone previews but fails live activation at Rust prepare because of a valid rgba border value; both consumers and baseline pixels recover. The parser correction is source-landed separately and needs an exact installed repeat. Full role, video/performance, real-touch and reboot gates remain open.",
-      "reviewRevision": "4be09345",
+      "rationale": "Installed source 3c502a37 passes dark, light and unchanged community-clone activation, app appearance acknowledgement and byte-identical restoration. The Rust rgba border parser rejection is fixed and repeated on the board. Full corresponding-role coverage, real-touch, video/performance and reboot proof remain open.",
+      "reviewRevision": "3c502a37540375a74685f70b21d73eaee28c40bc",
       "cover": {
-        "path": "docs/evidence/omarchy-themes/board-switching/light.png",
-        "caption": "Installed light theme \u2014 real board capture",
+        "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
+        "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
         "provenance": "Board capture"
       }
     },

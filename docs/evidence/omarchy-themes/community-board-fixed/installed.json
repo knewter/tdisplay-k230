@@ -1,0 +1,29 @@
+{
+  "evidence_class": "installed-system-and-native-board-theme-trial",
+  "observed_at_utc": "2026-09-24T09:18:42.595903+00:00",
+  "source_revision": "3c502a37540375a74685f70b21d73eaee28c40bc",
+  "system": "/nix/store/pyj3bhzl3a018rr9q7lqy04wlxm2psd7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_test_system": "/nix/store/48x70j3df8ksiyab0sdgas5nzmgx69nz-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway": "/nix/store/m1im24g1h70xylmia55s1qvjwa76jn9x-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust_shell": "/nix/store/i8m9wlldwq0bgbsqsag8mqwxdv9i8yyd-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "system_derivation": "/nix/store/3p36ix4rd25ww41vynkd9b9vxn35dmih-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "activation_mode": "test",
+  "import_delta_paths": 15,
+  "import_nar_bytes": 4705184,
+  "services": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi",
+    "k230-wifi-settings",
+    "shell-keyboard"
+  ],
+  "services_active": true,
+  "fallback_timer": "stopped after exact identity, healthy services, completed restored trial and reviewed native captures",
+  "source_sha256_before_and_after": "f72ece7c9eead4fb049ebead18d918b4b11be6f35dcc861b8862e5c8f0693e75",
+  "physical_touch_proven": false,
+  "persistent_boot_proven": false
+}
