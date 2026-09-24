@@ -227,6 +227,12 @@ let
     # rounds floating sizes down to whole cells and exposes wallpaper edges.
     exec ${pkgs.foot}/bin/foot --config "$foot_config" ${lib.optionalString cfg.coherentShell "--override resize-by-cells=no"} "$@"
   '';
+  handheldDesktopEntries = pkgs.callPackage ./handheld-desktop-entries.nix {
+    inherit themedFoot;
+    foot = pkgs.foot;
+    htop = pkgs.htop;
+    nnn = pkgs.nnn;
+  };
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
       terminal|monitor)
@@ -263,7 +269,7 @@ let
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
     # Nix package icon trees are not necessarily merged into a profile's
     # share/icons tree. Keep their desktop art reachable by themed name.
-    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${themeIcons}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
