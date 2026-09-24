@@ -1,9 +1,9 @@
 # C908 userspace bit-manipulation probe: source and host preparation
 
 This is bounded preparation for OpenSpec task 2.2, not evidence that the board
-executes any additional extension. Task 2.2 remains unchecked pending a
-candidate host build and recorded physical execution. No system package or
-global ISA flags change here.
+executes any additional extension. Task 2.2 remains unchecked pending
+recorded physical execution and a decision on targeted userspace use. No
+normal-system package or global ISA flags change here.
 
 The pinned vendor device tree at
 `/nix/store/l6jdpbzp53y5n24ky6602f41gzs6f6ik-linux-xuantie-k230-rvv-src/arch/riscv/boot/dts/canaan/k230.dtsi:37-40`
@@ -30,11 +30,11 @@ one family is an error. Host
 `--self-test` covers scalar vectors and synthetic SIGILL, mismatch and timeout
 paths; it does not run the extension instructions.
 
-The recipe is intentionally not wired into `flake.nix` while the normal RVV
-closure uses the build slot. After that build owner adds a separate
-`pkgsCross.callPackage ./nix/c908-bitmanip-probe.nix { }` output, build that
-output narrowly, inspect its ELF ISA attributes and helper disassembly, and
-run `--probe` only under the board reservation. Capture exact executable,
+The recipe was initially prepared outside `flake.nix` while the normal RVV
+closure used the build slot. It is now a separate
+`pkgsCross.callPackage ./nix/c908-bitmanip-probe.nix { }` output, outside
+the normal system closure. Run `--probe` only under the board reservation.
+Capture exact executable,
 running system, boot ID, board model, serial report and command in a new
 physical evidence file. The probe's `runtime-probe-unclassified` label is
 deliberate: its stdout alone does not authenticate a physical board. A
@@ -56,5 +56,22 @@ without Zba/Zbb/Zbc/Zbs in `Tag_RISCV_arch`, while disassembly contained
 the four intended instructions. This proves source/toolchain isolation, not
 that the running C908 accepts any opcode. A direct ad hoc cross link outside
 the Nix cross environment could not find `Scrt1.o` and `-lc`; the Nix recipe
-still needs its named build check when the build slot is free. No board, QEMU
-or Nix build was run.
+still needed its named build check at that preparation point. No board or
+QEMU run was made.
+
+## Narrow package build, 2026-09-23/24 UTC
+
+```sh
+nix build .#c908-bitmanip-probe --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+The host cross-build passed and produced
+`/nix/store/cnnvlgaclh0knh92q94ypzfxlcdyfxph-k230-c908-bitmanip-probe-riscv64-unknown-linux-gnu-0.1`.
+The executable at `bin/c908-bitmanip-probe` has SHA256
+`9de99882f4bf6bebaf6f19a11506bf90656b3b6792d9dbb81ee88130acaa1494`.
+`readelf -A` advertises baseline `rv64gc` with no Zba/Zbb/Zbc/Zbs
+requirement; `objdump -d` finds the isolated `sh1add`, `andn`,
+`clmul` and `bset` helper instructions. The normal system closure
+`/nix/store/32w7diij07p9cjpyi3xzr4hipidyd9m5-nixos-system-nixos-26.11.20260919.20b1ddd`
+does not contain this diagnostic. No physical instruction execution or
+performance benefit is inferred from the package build.

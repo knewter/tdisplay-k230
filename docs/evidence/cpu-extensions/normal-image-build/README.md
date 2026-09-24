@@ -86,3 +86,33 @@ The card's unwrapped Sway binary is
 `/nix/store/6cg9j8ximdm8s4dy0d7rbf83318lknlx-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`.
 This package remains an opt-in card experiment; building it does not place
 cards in the normal session or prove its physical runtime behavior.
+
+## Coherent normal system closure: PASS
+
+```sh
+nix build .#toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths
+nix-store -q --requisites /nix/store/32w7diij07p9cjpyi3xzr4hipidyd9m5-nixos-system-nixos-26.11.20260919.20b1ddd |
+  rg 'pixman.*riscv64|k230-wifi-driver|linux-riscv64-unknown-linux-gnu-6.6.36'
+```
+
+The cross-build passed from combined branch revision
+`7d28a44e16674794bad104d10a766037fc9e37da`, with later documentation
+and standalone-probe commits leaving these normal derivations unchanged.
+The output is
+`/nix/store/32w7diij07p9cjpyi3xzr4hipidyd9m5-nixos-system-nixos-26.11.20260919.20b1ddd`.
+Its `boot.json` selects the kernel `nyka2ipsrg8i5w5grrc4y18pspyv9gxj`
+`Image` above and matching initrd
+`/nix/store/36p4258i2ldxsi5vid9nq5l4dh2vayfm-initrd-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/initrd`.
+The closure includes rebuilt Wi-Fi driver
+`/nix/store/169mynmksdh5psqg6wyw61jnk21s578x-k230-wifi-driver-riscv64-unknown-linux-gnu-94cc959d`
+and exactly one target Pixman provider,
+`/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4`.
+Its normal closure contains neither the opt-in card package nor the
+standalone bit-manipulation diagnostic. The kernel `Image` SHA256 is
+`29727ff3313e8d8d5a171eab736df244812dbbcc1280bf28f88b358700054857`;
+the Pixman `lib/libpixman-1.so` SHA256 is
+`983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56`.
+
+This closes host build integration only. The ordinary image has not been
+booted on this board, its actual mapped library and dispatch are not yet
+observed, and physical recovery is still open.
