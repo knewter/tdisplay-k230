@@ -1182,14 +1182,15 @@ void card_shell_keyboard_adjust_usable(struct sway_output *output, struct wlr_bo
 	}
 	kg_surface(&shell.keyboard, true);
 	double progress = shell.keyboard.progress;
-	int hidden = (int)lround(shell.keyboard.height * (1 - progress));
+	int hidden = (int)lround((shell.keyboard.height + 56) * (1 - progress));
 	int grip = (int)lround(56 * progress);
-	if (usable->height + hidden - grip > 0)
-		usable->height += hidden - grip;
+	int allocation = (int)lround(shell.keyboard.height * (1 - progress)) - grip;
+	if (usable->height + allocation > 0)
+		usable->height += allocation;
 	wlr_scene_node_set_position(&layer->scene->tree->node,
 		layer->scene->tree->node.x, layer->scene->tree->node.y + hidden);
 	if (shell.keyboard_grip && shell.keyboard_grip_line) {
-		int top = output->height - (int)lround(shell.keyboard.height * progress) - 56;
+		int top = output->height - (int)lround((shell.keyboard.height + 56) * progress);
 		wlr_scene_node_set_position(&shell.keyboard_grip->node, output->lx, output->ly + top);
 		wlr_scene_node_set_position(&shell.keyboard_grip_line->node,
 			output->lx + (output->width - 96) / 2, output->ly + top + 24);
@@ -1437,7 +1438,7 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	if (keyboard_gestures_enabled()) {
 		unsigned action = kg_down(&shell.keyboard, id, x, y, event_ms,
 			shell.output->height, keyboard_layer(shell.output) != NULL,
-			shell.policy.mode == CS_DRAGGING || shell.policy.edge.tracking,
+			shell.policy.mode == CS_DRAGGING,
 			launcher_mapped() || drawer_mapped() || popup_mapped());
 		if (keyboard_apply_action(action)) return true;
 	}
