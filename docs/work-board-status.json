@@ -5,13 +5,14 @@
       "lane": "verification",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Try the installed two-finger show and handle dismissal on glass; improve grip contrast and keyboard restart recovery, then finish workload and physical evidence.",
+      "next": "Test-activate the brighter handle and supervised keyboard, then verify real-finger show, handle dismissal, tracking and workload measurements.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/keyboard-gestures/native-qemu/README.md",
-        "docs/evidence/keyboard-gestures/installed-preview/README.md"
+        "docs/evidence/keyboard-gestures/installed-preview/README.md",
+        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md"
       ],
-      "rationale": "Source e9d3bd6c is test-activated on the board with exact binaries, six active services and native keyboard capture. Headless gesture/recovery checks passed; real-finger tracking and typing acceptance remain pending.",
+      "rationale": "Source e9d3bd6c is test-activated on the board with exact binaries, six active services and native keyboard capture. Headless gesture/recovery checks passed; real-finger tracking and typing acceptance remain pending. A brighter themed handle and supervised recovery have cross-build, unit evaluation and QEMU pixel proof; that followup is not installed yet.",
       "reviewRevision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
       "cover": {
         "path": "docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png",
