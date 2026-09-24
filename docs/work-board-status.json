@@ -5,15 +5,16 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Implement continuous app/card motion, verify the actual shell overlay, then reduce measured card tracking cost and repeat board acceptance.",
+      "next": "Cross-build and check the landed finger-tracked entry and reversible card expansion in the real compositor; then repeat presentation, CPU/frame and physical touch acceptance.",
       "dependencies": [],
       "evidence": [
+        "docs/evidence/card-shell/tracked-motion-host.md",
         "docs/evidence/card-shell/touch-first-route/README.md",
         "docs/evidence/card-shell/touch-first-shade/README.md",
         "docs/evidence/card-shell/scaled-cache-board/README.md"
       ],
-      "rationale": "Touch-first drawer and top-shade routes now have cross-build and headless Wayland pixel/input proof. Continuous app/card motion, installed integration, frame budgets and physical acceptance remain open.",
-      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
+      "rationale": "Drawer and shade routing have cross-build/headless proof. Finger-tracked entry, partial-release reversal and card expansion are now host-tested source; their exact cross-build/runtime and physical acceptance remain open. A policy dwell is not proof of panel presentation.",
+      "reviewRevision": "4459983f"
     },
     "the-system-enables-proven-c908-extensions": {
       "lane": "verification",
@@ -40,26 +41,28 @@
         "docs/evidence/coherent-shell/drawer-route-host.md",
         "docs/evidence/coherent-shell/settings-backend.md",
         "docs/evidence/coherent-shell/notification-backend.md",
-        "docs/evidence/coherent-shell/prototype-launcher-build.md"
+        "docs/evidence/coherent-shell/prototype-launcher-build.md",
+        "docs/evidence/coherent-shell/rust-probe-host.md"
       ],
-      "rationale": "The final UI targets Rust. The C drawer is a host-tested prototype/reference; Settings and notification backends and live-deck overlay routes are landed source checkpoints. Full surface integration and physical acceptance remain open.",
-      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
+      "rationale": "The final UI targets Rust. Its opt-in software layer-shell probe has host checks and target evaluation; cross-build and device comparison remain open. The C drawer reference and Settings/notification backends are landed, while full themed surfaces and physical acceptance remain open.",
+      "reviewRevision": "6f1a5a0c"
     },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish full generated-token and client, icon and background integration; check service compatibility, then verify theme selection and persistence on the board.",
+      "next": "Connect the real chooser to the landed JSON catalog and acknowledged preview/apply interface; finish all-surface colors, icons and backgrounds, then verify selection and persistence on the board.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
         "docs/evidence/omarchy-themes/source-fixtures.md",
         "docs/evidence/omarchy-themes/launcher-receiver.md",
         "docs/evidence/omarchy-themes/persistent-default.md",
-        "docs/evidence/omarchy-themes/native-token-checkpoint.md"
+        "docs/evidence/omarchy-themes/native-token-checkpoint.md",
+        "docs/evidence/omarchy-themes/catalog-host.md"
       ],
-      "rationale": "Pinned unchanged-source helpers, native appearance tokens, acknowledged selection and persistent defaults have host/build checkpoints. Explicit background choice is implemented; actual all-surface consumers, wallpaper decoding/playback and physical selection remain open.",
-      "reviewRevision": "d5fe6c4df6254fda123a501c35dc43f93fc89d68"
+      "rationale": "Pinned helpers, appearance tokens, acknowledged selection and persistent defaults have host/build checkpoints. The JSON catalog and staged background selection pass host checks. Real chooser/rendering, wallpaper playback and physical acceptance remain open.",
+      "reviewRevision": "6f1a5a0c"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
@@ -72,6 +75,18 @@
       ],
       "rationale": "A committed GPU trial exists, but the comparison did not establish a faster accepted default compositor path.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+    },
+    "the-handheld-evaluates-qtquick-and-quickshell": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Finish the Qt Quick software probe cross-build, inspect target closure and QML configuration, then measure pixels, touch and combined client/compositor cost on the reserved board before a Quickshell trial.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/qtquick/minimal-probe-prebuild.md"
+      ],
+      "rationale": "The research and opt-in Qt Quick probe are on master. Host QML parsing and Nix target evaluation passed; the actual cross-build is underway. No Qt or Quickshell board performance result or toolkit adoption is claimed.",
+      "reviewRevision": "6f1a5a0c"
     }
   }
 }
