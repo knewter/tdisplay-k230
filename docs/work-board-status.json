@@ -5,17 +5,18 @@
       "lane": "verification",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete real text-field and output-change native checks, then build and test the integrated image on glass with two-finger show, grip reverse/hide, and workload measurements.",
+      "next": "Try the installed two-finger show and handle dismissal on glass; improve grip contrast and keyboard restart recovery, then finish workload and physical evidence.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/keyboard-gestures/native-qemu/README.md"
+        "docs/evidence/keyboard-gestures/native-qemu/README.md",
+        "docs/evidence/keyboard-gestures/installed-preview/README.md"
       ],
-      "rationale": "The exact RISC-V compositor and wvkbd passed headless QEMU injected-touch show, held/reversed pixels, grip dismissal and failed-helper recovery. One Wayland key event reached the live probe, but real text entry, final image and physical finger acceptance remain open.",
-      "reviewRevision": "651f9410",
+      "rationale": "Source e9d3bd6c is test-activated on the board with exact binaries, six active services and native keyboard capture. Headless gesture/recovery checks passed; real-finger tracking and typing acceptance remain pending.",
+      "reviewRevision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
       "cover": {
-        "path": "docs/evidence/keyboard-gestures/native-qemu/shown.png",
-        "caption": "Headless QEMU keyboard reveal — injected touch, not panel proof",
-        "provenance": "QEMU capture"
+        "path": "docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png",
+        "caption": "Installed keyboard and handle, shown by command; physical gesture acceptance pending",
+        "provenance": "Board capture"
       }
     },
     "the-shell-manages-apps-as-cards": {
@@ -51,7 +52,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Test the installed gestures on glass; integrate keyboard show/hide, Wi-Fi Settings and restrained deck chrome, then complete theme persistence and remaining physical evidence.",
+      "next": "Test installed keyboard gestures, Wi-Fi Settings and app motion on glass; complete remaining design refinements, recovery and persistent boot/theme proof.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -79,10 +80,12 @@
         "docs/evidence/coherent-shell/rust-drawer-grid-host/README.md",
         "docs/evidence/coherent-shell/desktop-entry-defaults-host/README.md",
         "docs/evidence/coherent-shell/direct-carousel-qemu/README.md",
-        "docs/evidence/coherent-shell/refined-installed/README.md"
+        "docs/evidence/coherent-shell/refined-installed/README.md",
+        "docs/evidence/keyboard-gestures/installed-preview/README.md",
+        "docs/evidence/coherent-shell/boot-artifacts/README.md"
       ],
-      "rationale": "Source df2c34b1 is test-activated on the board: installed app grid, friendly desktop names/icons, Foot pixel fit, direct app carousel and velocity-seeded release. Native board captures are committed. User touch acceptance, keyboard gestures, Wi-Fi UI and further deck design remain open.",
-      "reviewRevision": "df2c34b1",
+      "rationale": "Source e9d3bd6c is test-activated: app grid, direct carousel, quieter cards, Wi-Fi Settings, actual wallpaper previews and keyboard gestures. Native board keyboard capture is committed; real touch acceptance and persistent boot remain open.",
+      "reviewRevision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
@@ -93,15 +96,16 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Build and install the corrected combined image, then verify scan, connection, Forget and reboot reconnect through real glass and a protected configuration on the reserved board.",
+      "next": "Try the installed Wi-Fi Settings on glass; verify real connection, cancellation, Forget and reboot reconnect with protected credentials.",
       "dependencies": [
         "the-handheld-presents-a-coherent-shell"
       ],
       "evidence": [
-        "docs/evidence/wifi-settings/README.md"
+        "docs/evidence/wifi-settings/README.md",
+        "docs/evidence/keyboard-gestures/installed-preview/README.md"
       ],
-      "rationale": "The protected broker and Rust Settings flow have host tests. A paired Sway/Rust headless QEMU touch run with an invented broker proves the captured scan/list, masked entry, error and Forget-confirmation states, but no physical association or real-glass interaction.",
-      "reviewRevision": "05b5afcc88f6c92508929f34742ad4be3443edb7",
+      "rationale": "The protected broker and Rust UI are test-activated in source e9d3bd6c. Host and paired headless QEMU tests cover saved selection, masked entry, errors and confirmation. Real association, persistence and glass interaction remain pending.",
+      "reviewRevision": "e9d3bd6c",
       "cover": {
         "path": "docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png",
         "caption": "Wi-Fi network list with invented names and a synthetic broker",
@@ -165,18 +169,6 @@
       ],
       "rationale": "Research and opt-in Qt probe source are on master. The build was deliberately interrupted to prioritize shell integration; dependency outputs are cached, but Qt and the probe have not built. No Qt/Quickshell board result or toolkit adoption is claimed.",
       "reviewRevision": "c92160d8"
-    },
-    "the-handheld-configures-wifi-from-settings": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Integrate reviewed touch UI and saved-network selection, then verify scan, connect, cancel, Forget and reboot persistence on the board.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/wifi-settings/README.md"
-      ],
-      "rationale": "Protected root broker and host checks landed; UI review and integration continue. Physical Wi-Fi Settings acceptance has not been performed.",
-      "reviewRevision": "df2c34b1"
     }
   }
 }

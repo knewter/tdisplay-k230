@@ -1,0 +1,28 @@
+{
+  "evidence_class": "installed-system-and-native-board-capture",
+  "observed_at_utc": "2026-09-24T08:30:56.207217+00:00",
+  "source_revision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
+  "system": "/nix/store/5xm4bwka6waggamz9i48ljjp3yilaf6c-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_test_system": "/nix/store/lxi2zx8n8mp7z1dl1i3dz7hjlbhl7f6l-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway": "/nix/store/nkz1nrjk71pmlslsninjwj4xalgapmfx-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust_shell": "/nix/store/b3qdp290baflgsyg8yxmhsn9b28pcwhw-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "activation_mode": "test",
+  "fallback_timer": "stopped after exact identity, six active services and reviewed native captures",
+  "active_services": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi",
+    "k230-wifi-settings"
+  ],
+  "native_capture_dimensions": [
+    568,
+    1232
+  ],
+  "keyboard_show_method": "USR2 signal to existing shell-owned wvkbd-mobintl",
+  "physical_gesture_acceptance": false,
+  "persistent_boot_proven": false
+}
