@@ -284,6 +284,15 @@ pub fn panel_intent(
                 if dy.abs() > 22.0 {
                     return Some(PanelIntent::ScrollNotifications(-dy));
                 }
+                // The painted row can be displaced or waiting for its dismiss
+                // reply. A tap at its old slot must not activate that event.
+                if view
+                    .notification_swipe
+                    .as_ref()
+                    .is_some_and(|swipe| swipe.event_id == event.id)
+                {
+                    return None;
+                }
                 if dx.abs() <= 18.0 && event.action_available {
                     return Some(PanelIntent::Request(ServiceRequest::NotificationAction(
                         event.id,
@@ -548,6 +557,13 @@ mod tests {
         view.notifications.as_mut().unwrap().events[0].id = 7;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Ordinary;
         assert!(notification_swipe_valid(&view, &swipe));
+        view.notification_swipe = Some(swipe.clone());
+        assert_eq!(panel_intent(Route::Shade, start, start, 568, 1232, &view), None);
+        view.notification_swipe = None;
+        assert_eq!(
+            panel_intent(Route::Shade, start, start, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::NotificationAction(7)))
+        );
         let mut newer = view.notifications.as_ref().unwrap().events[0].clone();
         newer.id = 8;
         view.notifications.as_mut().unwrap().events.insert(0, newer);

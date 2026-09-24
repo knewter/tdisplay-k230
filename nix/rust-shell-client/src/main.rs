@@ -1592,9 +1592,10 @@ impl TouchHandler for ShellClient {
                 self.panel_scrolled = false;
                 self.panel_swipe_owned = false;
                 self.notification_coast.stop();
-                self.notification_settle = None;
-                self.notification_wait = None;
-                self.settle_notification(0.0, None);
+                if self.notification_wait.is_none() {
+                    self.notification_settle = None;
+                    self.settle_notification(0.0, None);
+                }
                 self.theme_dragged = false;
                 self.wifi_dragged = false;
             }
@@ -1762,8 +1763,11 @@ impl TouchHandler for ShellClient {
                         && self.panel_swipe_owned
                         && self.service_view.notification_swipe.is_some()
                     {
-                        if dy.abs() > SWIPE_VERTICAL_CANCEL {
+                        if dy.abs() > SWIPE_VERTICAL_CANCEL && !self.panel_swipe_cancelled {
                             self.panel_swipe_cancelled = true;
+                            // The remaining contact is consumed, while the
+                            // displaced row visibly returns without a jump.
+                            self.settle_notification(0.0, None);
                         } else if !self.panel_swipe_cancelled {
                             if let Some(swipe) = &mut self.service_view.notification_swipe {
                                 swipe.offset = (self.panel_swipe_base
