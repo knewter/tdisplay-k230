@@ -74,6 +74,8 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->edge.tracking=false;
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
     p->entry_progress=0;p->entry_id=0;
+    p->expand_progress=0;p->expand_reverse_from=0;p->expand_id=0;
+    p->expand_started_ms=0;p->expand_reversing=false;p->expand_full_frame=false;
     p->message=CS_MESSAGE_NONE;
     struct cs_result r=result(p,CS_RESTORE|CS_RECONCILE,true);
     r.focus_id=focus;
@@ -102,6 +104,11 @@ struct cs_result cs_set_cards(struct cs_policy *p,const struct cs_card *cards,si
 	if (p->mode==CS_ENTERING) {
 		size_t entering=find(p,p->entry_id);
 		if (entering==SIZE_MAX || p->cards[entering].content!=CS_LIVE)
+			return cs_leave(p);
+	}
+	if (p->mode==CS_EXPANDING) {
+		size_t expanding=find(p,p->expand_id);
+		if (expanding==SIZE_MAX || p->cards[expanding].content!=CS_LIVE)
 			return cs_leave(p);
 	}
     size_t index=find(p,selected);
@@ -136,7 +143,7 @@ struct cs_result cs_set_cards(struct cs_policy *p,const struct cs_card *cards,si
 struct cs_result cs_set_config(struct cs_policy *p,const struct cs_config *config) {
     if (!valid_config(config)) return fail(p);
     p->config=*config;
-	if (p->mode==CS_ENTERING) return cs_leave(p);
+	if (p->mode==CS_ENTERING || p->mode==CS_EXPANDING) return cs_leave(p);
     if (p->contact) {
         reset_drag(p);p->mode=CS_DECK;p->message=CS_MESSAGE_CANCELLED;
         p->blocked_until_up=true;p->blocked_contacts=1;
@@ -191,6 +198,14 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
         if (p->blocked_contacts<UINT_MAX) p->blocked_contacts++;
         return result(p,0,true);
     }
+	if (p->mode==CS_EXPANDING) {
+		p->expand_reversing=true;
+		p->expand_reverse_from=p->expand_progress;
+		p->expand_started_ms=time_ms;
+		p->expand_full_frame=false;
+		p->blocked_until_up=true;p->blocked_contacts=1;
+		return result(p,CS_REDRAW,true);
+	}
     if (p->contact || p->edge.tracking) return multiple_contacts(p);
     if (p->mode==CS_NORMAL || !contains(cs_content_rect(p),x,y)) return result(p,0,false);
     if (p->mode==CS_CLOSING) {
@@ -251,14 +266,22 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
     bool thrown=p->axis==CS_AXIS_VERTICAL && -p->dy>=p->config.throw_distance &&
         -p->velocity_y>=p->config.throw_speed && time_ms-p->last_time_ms<=150;
     if (tap && index<p->count) {
-        p->selected=index;
         if (p->cards[index].content==CS_LIVE && p->cards[index].focusable) {
             uint64_t target=p->cards[index].id;
             p->contact=false; /* This up already completes the touch sequence. */
+			if (p->config.touch_first_motion) {
+				reset_drag(p);p->mode=CS_EXPANDING;
+				p->expand_id=target;p->expand_progress=0;
+				p->expand_started_ms=0;p->expand_reversing=false;
+				p->expand_full_frame=false;
+				return result(p,CS_REDRAW,true);
+			}
+			p->selected=index;
             struct cs_result r=cs_leave(p);
             r.actions|=CS_EXPAND;r.focus_id=target;
             return r;
         }
+		p->selected=index;
     } else if (thrown && index<p->count && p->cards[index].content==CS_LIVE &&
             p->cards[index].closeable) {
         p->contact=false; /* This up completes the owned contact. */
@@ -309,6 +332,11 @@ struct cs_result cs_cancel(struct cs_policy *p) {
         p->message=CS_MESSAGE_CANCELLED;r.message=p->message;
         return r;
     }
+	if (p->mode==CS_EXPANDING) {
+		p->expand_reversing=true;p->expand_reverse_from=p->expand_progress;
+		p->expand_started_ms=0;p->expand_full_frame=false;
+		return result(p,CS_REDRAW,false);
+	}
     bool owned=p->contact;
     reset_drag(p);
     if (owned) {p->blocked_until_up=true;p->blocked_contacts=1;}
@@ -324,6 +352,12 @@ struct cs_result cs_stream_cancel(struct cs_policy *p) {
         p->message=CS_MESSAGE_CANCELLED;r.message=p->message;
         return r;
     }
+	if (p->mode==CS_EXPANDING) {
+		p->expand_reversing=true;p->expand_reverse_from=p->expand_progress;
+		p->expand_started_ms=0;p->expand_full_frame=false;
+		p->blocked_until_up=false;p->blocked_contacts=0;
+		return result(p,CS_REDRAW,false);
+	}
     bool owned=p->contact || p->edge.tracking || p->blocked_until_up;
     reset_drag(p);
     memset(&p->edge,0,sizeof(p->edge));
@@ -336,6 +370,31 @@ struct cs_result cs_stream_cancel(struct cs_policy *p) {
     return result(p,p->mode==CS_NORMAL ? 0 : CS_REDRAW,owned);
 }
 struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
+	if (p->mode==CS_EXPANDING) {
+		if (!p->expand_started_ms) {
+			p->expand_started_ms=time_ms;
+			return result(p,0,false);
+		}
+		uint64_t elapsed=time_ms>=p->expand_started_ms ? time_ms-p->expand_started_ms : 0;
+		double duration=p->config.reduced_motion ? 60 : 160;
+		if (p->expand_reversing) {
+			p->expand_progress=fmax(0,p->expand_reverse_from-elapsed/duration);
+			if (p->expand_progress==0) {
+				p->mode=CS_DECK;p->expand_id=0;p->expand_reversing=false;
+			}
+			return result(p,CS_REDRAW,false);
+		}
+		p->expand_progress=fmin(1,elapsed/duration);
+		if (p->expand_progress<1) return result(p,CS_REDRAW,false);
+		if (!p->expand_full_frame) {
+			p->expand_full_frame=true;
+			return result(p,CS_REDRAW,false);
+		}
+		p->saved_focus_id=p->expand_id;
+		struct cs_result r=cs_leave(p);
+		r.actions|=CS_EXPAND;
+		return r;
+	}
     if (p->mode!=CS_CLOSING || time_ms<p->close_deadline_ms) return result(p,0,false);
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_DECK;
     p->message=CS_MESSAGE_CLOSE_TIMEOUT;

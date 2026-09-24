@@ -15,7 +15,7 @@ import subprocess
 import tempfile
 import time
 from card_virtual_keyboard import Keyboard
-from PIL import Image
+from PIL import Image, ImageChops
 import shlex
 
 def wait_for(predicate, timeout=30):
@@ -162,7 +162,17 @@ def main():
                 assert not blocked[0]['success'],blocked
                 drawer.terminate();drawer.wait(timeout=10);layer_log.close()
                 command('next')
-            command('back')
+            before_restore=logs().count('restored focus=')
+            subprocess.run(['grim',str(runtime/'before-expand.png')],env=env,check=True)
+            command('down 87 284 450')
+            command('up 87')
+            time.sleep(.06)
+            subprocess.run(['grim',str(runtime/'during-expand.png')],env=env,check=True)
+            wait_for(lambda:logs().count('restored focus=')>before_restore)
+            expand_before=Image.open(runtime/'before-expand.png').convert('RGB')
+            expand_middle=Image.open(runtime/'during-expand.png').convert('RGB')
+            assert ImageChops.difference(expand_before,expand_middle).getbbox()
+            assert len(expand_middle.getcolors(1_000_000) or [])>5
             request.unlink()
             command('down 91 284 10')
             command('motion 91 284 110')
@@ -176,7 +186,6 @@ def main():
             subprocess.run(['grim',str(runtime/'entry-middle.png')],env=env,check=True)
             command('motion 92 284 1120')
             subprocess.run(['grim',str(runtime/'entry-end.png')],env=env,check=True)
-            from PIL import ImageChops
             start=Image.open(runtime/'entry-start.png').convert('RGB')
             middle=Image.open(runtime/'entry-middle.png').convert('RGB')
             end=Image.open(runtime/'entry-end.png').convert('RGB')

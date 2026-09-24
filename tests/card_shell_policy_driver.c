@@ -243,6 +243,37 @@ static void tracked_entry(void) {
     cs_up(&p,4,71);assert(!p.blocked_until_up);
     cs_finish(&p);
 }
+static void tracked_expansion(void) {
+    struct cs_policy p=setup();
+    struct cs_config cfg=p.config;cfg.touch_first_motion=true;
+    cs_set_config(&p,&cfg);
+    cs_enter(&p,101);
+    struct cs_rect adjacent=cs_card_rect(&p,1);
+    assert(cs_down(&p,1,adjacent.x+2,adjacent.y+20,10).consumed);
+    struct cs_result r=cs_up(&p,1,11);
+    assert(!(r.actions&CS_RESTORE) && p.mode==CS_EXPANDING && p.expand_id==202);
+    assert(p.selected==0 && p.expand_progress==0); /* preserve visible slot */
+    cs_tick(&p,100);r=cs_tick(&p,180);
+    assert((r.actions&CS_REDRAW) && p.expand_progress==.5);
+    r=cs_down(&p,2,200,400,181);
+    assert(r.consumed && p.expand_reversing && p.expand_progress==.5);
+    r=cs_tick(&p,221);assert(p.expand_progress==.25 && p.mode==CS_EXPANDING);
+    r=cs_tick(&p,261);assert(p.mode==CS_DECK && p.expand_progress==0);
+    assert(p.blocked_until_up);cs_up(&p,2,262);assert(!p.blocked_until_up);
+    assert(cs_card_rect(&p,1).x==adjacent.x);
+    assert(cs_down(&p,3,adjacent.x+2,adjacent.y+20,300).consumed);
+    cs_up(&p,3,301);assert(p.mode==CS_EXPANDING && p.expand_id==202);
+    cs_tick(&p,320);r=cs_tick(&p,480);
+    assert(p.expand_progress==1 && p.expand_full_frame && !(r.actions&CS_RESTORE));
+    r=cs_tick(&p,496);
+    assert((r.actions&CS_RESTORE) && r.focus_id==202 && p.mode==CS_NORMAL);
+    cs_enter(&p,101);down(&p,500);cs_up(&p,1,501);
+    assert(p.mode==CS_EXPANDING && p.expand_id==101);
+    const struct cs_card changed[]={{101,CS_PRIVATE,true,true},{202,CS_LIVE,true,true}};
+    r=cs_set_cards(&p,changed,2);
+    assert((r.actions&CS_RESTORE) && p.mode==CS_NORMAL && !cs_can_mirror(&p,101));
+    cs_finish(&p);
+}
 static void keyboard_and_geometry(void) {
     struct cs_policy p=setup();
     struct cs_config c=p.config;c.bottom_reserved=400;
@@ -394,6 +425,7 @@ int main(int argc,char **argv) {
         {"repeated-timestamp-rejection",repeated_timestamp_rejection},
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
         {"tracked-entry",tracked_entry},
+        {"tracked-expansion",tracked_expansion},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},
         {"buttons",buttons},{"stream-cancel",stream_cancel},

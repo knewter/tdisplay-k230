@@ -56,6 +56,9 @@ struct card {
 	int x, y, pixel_x, pixel_y;
 	bool source_valid;
 	int source_x, source_y;
+	bool expand_start_valid;
+	int last_width, last_height;
+	double expand_x, expand_y, expand_width, expand_height;
 };
 static struct {
 	struct wl_list cards;
@@ -185,6 +188,7 @@ static void clear_card(struct card *c) {
 		wlr_scene_node_set_enabled(&c->view->scene_tree->node, c->original_enabled);
 	c->hidden = false;
 	c->source_valid = false;
+	c->expand_start_valid = false;
 }
 static bool supported_surface(struct wlr_surface *surface) {
 	if (!surface->buffer)
@@ -318,7 +322,8 @@ static struct wlr_box clip_box(void) {
 								cfg->title_height - cfg->footer_height};
 }
 static struct wlr_box card_clip_box(struct card *c) {
-	if (shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id)
+	if ((shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id) ||
+		(shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id))
 		return (struct wlr_box){shell.output->lx, shell.output->ly,
 			shell.policy.config.width, shell.policy.config.height};
 	return clip_box();
@@ -482,6 +487,7 @@ static bool sync_card(struct card *c, size_t index) {
 		c->source_valid = true;
 	}
 	bool entering = shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id;
+	bool expanding = shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id;
 	if (entering) {
 		if (!c->source_valid)
 			return false;
@@ -491,8 +497,21 @@ static bool sync_card(struct card *c, size_t index) {
 		r.width = c->view->geometry.width * (1 - progress) + r.width * progress;
 		r.height = c->view->geometry.height * (1 - progress) + r.height * progress;
 	}
+	if (expanding) {
+		if (!c->source_valid || !c->expand_start_valid)
+			return false;
+		double progress = shell.policy.expand_progress;
+		r.x = (c->expand_x - shell.output->lx) * (1 - progress) +
+			(c->source_x - shell.output->lx) * progress;
+		r.y = (c->expand_y - shell.output->ly) * (1 - progress) +
+			(c->source_y - shell.output->ly) * progress;
+		r.width = c->expand_width * (1 - progress) + c->view->geometry.width * progress;
+		r.height = c->expand_height * (1 - progress) + c->view->geometry.height * progress;
+	}
 	c->x = shell.output->lx + lround(r.x);
 	c->y = shell.output->ly + lround(r.y);
+	c->last_width = lround(r.width);
+	c->last_height = lround(r.height);
 	if (!c->tree) {
 		c->tree = wlr_scene_tree_create(shell.deck);
 		if (!c->tree)
@@ -508,7 +527,7 @@ static bool sync_card(struct card *c, size_t index) {
 							 index == shell.policy.selected ? selected_color : card_color);
 	rect_clip(c->background, (struct wlr_box){c->x, c->y, lround(r.width), lround(r.height)}, c->x,
 			  c->y, clip_box());
-	if (entering)
+	if (entering || expanding)
 		wlr_scene_node_set_enabled(&c->background->node, false);
 	const char *title = c->content == CS_LIVE ? view_get_title(c->view) : cs_card_text(c->content);
 	if (!title || !*title)
@@ -518,12 +537,13 @@ static bool sync_card(struct card *c, size_t index) {
 	if (!label_update(c->tree, &c->label, &c->label_text, text, lround(r.width) - 24, 56, 32))
 		return false;
 	label_clip(c->label, 12, lround(r.height) - 60, c->x, c->y, clip_box());
-	wlr_scene_node_set_enabled(&c->label->node, !entering);
+	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
 	if (cs_can_mirror(&shell.policy, c->id)) {
 		int width = c->view->geometry.width, height = c->view->geometry.height;
 		if (width <= 0 || height <= 0)
 			return false;
-		double label_space = entering ? 64 * shell.policy.entry_progress : 64;
+		double label_space = entering ? 64 * shell.policy.entry_progress :
+			expanding ? 64 * (1 - shell.policy.expand_progress) : 64;
 		c->scale = fmin(r.width / width, (r.height - label_space) / height);
 		c->pixel_x = lround((r.width - width * c->scale) / 2);
 		c->pixel_y = lround((r.height - label_space - height * c->scale) / 2);
@@ -639,7 +659,8 @@ static bool chrome(void) {
 	uint64_t start = card_bench_input_stage_begin();
 	bool ok = chrome_impl();
 	if (ok && shell.chrome)
-		wlr_scene_node_set_enabled(&shell.chrome->node, shell.policy.mode != CS_ENTERING);
+		wlr_scene_node_set_enabled(&shell.chrome->node,
+			shell.policy.mode != CS_ENTERING && shell.policy.mode != CS_EXPANDING);
 	card_bench_input_stage_end(CARD_BENCH_CHROME, start);
 	return ok;
 }
@@ -653,9 +674,12 @@ static bool sync_scene_impl(void) {
 							cfg->height - cfg->top_reserved - cfg->bottom_reserved);
 	size_t i = 0;
 	struct card *c;
+	if (shell.policy.mode != CS_EXPANDING)
+		wl_list_for_each(c, &shell.cards, link) c->expand_start_valid = false;
 	wl_list_for_each(c, &shell.cards, link) if (!sync_card(c, i++)) return false;
-	if (shell.policy.mode == CS_ENTERING) {
-		c = find(shell.policy.entry_id);
+	if (shell.policy.mode == CS_ENTERING || shell.policy.mode == CS_EXPANDING) {
+		c = find(shell.policy.mode == CS_ENTERING ? shell.policy.entry_id :
+			shell.policy.expand_id);
 		if (c && c->tree)
 			wlr_scene_node_raise_to_top(&c->tree->node);
 	}
@@ -705,6 +729,16 @@ static void restore(struct cs_result result) {
 		chrome();
 }
 static void handle_result(struct cs_result r) {
+	if (shell.policy.mode == CS_EXPANDING && shell.policy.expand_progress == 0) {
+		struct card *c = find(shell.policy.expand_id);
+		if (c && !c->expand_start_valid && c->tree) {
+			c->expand_x = c->x;
+			c->expand_y = c->y;
+			c->expand_width = c->last_width;
+			c->expand_height = c->last_height;
+			c->expand_start_valid = true;
+		}
+	}
 	if (r.actions & CS_RESTORE) {
 		restore(r);
 		return;
@@ -890,7 +924,8 @@ static void prepare_impl(struct sway_output *output) {
 		 * created later, so without this the drawer would paint underneath it. */
 		wlr_scene_node_place_above(&output->layers.shell_overlay->node,
 			&shell.ui->node);
-		if (shell.policy.contact || shell.policy.edge.tracking)
+		if (shell.policy.contact || shell.policy.edge.tracking ||
+			(shell.policy.mode == CS_EXPANDING && !shell.policy.expand_reversing))
 			handle_result(cs_cancel(&shell.policy));
 		if (shell.drawer_gesture.contacts)
 			card_shell_drawer_cancel(&shell.drawer_gesture);
@@ -907,10 +942,12 @@ static void prepare_impl(struct sway_output *output) {
 							 cfg.title_height - cfg.footer_height - 2 * cfg.inset);
 	cfg.reduced_motion = getenv("SWAY_K230_CARD_REDUCED_MOTION") &&
 						 strcmp(getenv("SWAY_K230_CARD_REDUCED_MOTION"), "1") == 0;
+	cfg.touch_first_motion = touch_first();
 	if (cfg.width != shell.policy.config.width || cfg.height != shell.policy.config.height ||
 		cfg.top_reserved != shell.policy.config.top_reserved ||
 		cfg.bottom_reserved != shell.policy.config.bottom_reserved ||
-		cfg.reduced_motion != shell.policy.config.reduced_motion) {
+		cfg.reduced_motion != shell.policy.config.reduced_motion ||
+		cfg.touch_first_motion != shell.policy.config.touch_first_motion) {
 		handle_result(cs_set_config(&shell.policy, &cfg));
 		chrome();
 	}

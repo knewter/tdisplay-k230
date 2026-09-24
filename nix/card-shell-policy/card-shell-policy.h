@@ -45,6 +45,7 @@ struct cs_config {
     double select_fraction, throw_distance, throw_speed; /* logical pixels/ms */
     uint64_t close_timeout_ms;
     bool reduced_motion; /* Direct tracking/endpoints are identical either way. */
+	bool touch_first_motion; /* Opt-in live entry/expansion; rollback keeps old route. */
 };
 struct cs_policy {
     struct cs_config config;
@@ -63,6 +64,9 @@ struct cs_policy {
 	/* 0 displays the original view geometry; 1 displays its deck slot. */
 	double entry_progress;
 	uint64_t entry_id;
+	double expand_progress, expand_reverse_from;
+	uint64_t expand_id, expand_started_ms;
+	bool expand_reversing, expand_full_frame;
     enum { CS_AXIS_NONE, CS_AXIS_HORIZONTAL, CS_AXIS_VERTICAL } axis;
     struct {
         bool tracking;
