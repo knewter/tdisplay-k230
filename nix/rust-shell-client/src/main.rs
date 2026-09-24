@@ -1165,7 +1165,21 @@ impl ShellClient {
     }
 
     fn draw_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
-        if self.appearance_pending || !self.wallpaper.configured || self.wallpaper.frame_pending {
+        // Do not gate drawing on the wallpaper's own outstanding frame
+        // callback. The wallpaper sits on the background layer, which an
+        // ordinary maximized app (or the card deck's own backdrop) can fully
+        // occlude; a compositor is free to stop sending frame-done events
+        // for a surface nothing is compositing, so `frame_pending` can stay
+        // true indefinitely with no client-visible damage. That used to
+        // block every redraw here unconditionally, which starved a themed
+        // commit/rollback of the free buffer slot the pool below already
+        // tracks independently (up to two buffers, reused as soon as the
+        // compositor releases one) -- the bounded 1400ms wait in the event
+        // loop's deferred commit path then always expired with `ready`
+        // false, silently rejecting the transaction. The buffer pool's own
+        // released-slot/allocate-up-to-two-slots bookkeeping below is the
+        // correct and sufficient gate for whether a redraw can proceed.
+        if self.appearance_pending || !self.wallpaper.configured {
             return false;
         }
         let (width, height) = (self.wallpaper.width, self.wallpaper.height);
@@ -2752,18 +2766,44 @@ fn serve() -> Result<(), String> {
         // the event loop so the deferred touch frame is eventually submitted.
         if let Some((event, started, previous)) = pending_appearance.take() {
             let overlay_ready = state.layer.is_none() || (state.configured && !state.frame_pending);
-            let ready =
-                state.wallpaper.configured && !state.wallpaper.frame_pending && overlay_ready;
+            // `draw_wallpaper()` no longer requires its own outstanding frame
+            // callback to have fired (see its comment): the background layer
+            // can be fully occluded by an ordinary maximized app or the card
+            // deck's backdrop, and a compositor may then never send that
+            // callback at all. Mirror the same relaxed condition here so this
+            // readiness check does not itself keep the transaction pending
+            // forever waiting on a signal that will never arrive.
+            let ready = state.wallpaper.configured && overlay_ready;
             if !ready && started.elapsed() < Duration::from_millis(1400) {
                 pending_appearance = Some((event, started, previous));
             } else {
                 let accepted = if ready {
                     state.appearance_pending = false;
                     let background = state.draw_wallpaper(&qh);
+                    if !background {
+                        state.log("appearance-commit-rejected draw-wallpaper-failed");
+                    }
                     let foreground = state.layer.is_none() || state.draw(&qh);
+                    if background && !foreground {
+                        state.log("appearance-commit-rejected draw-failed");
+                    }
                     state.appearance_pending = true;
-                    background && foreground && queue.flush().is_ok()
+                    let flushed = queue.flush().is_ok();
+                    if background && foreground && !flushed {
+                        state.log("appearance-commit-rejected flush-failed");
+                    }
+                    background && foreground && flushed
                 } else {
+                    state.log(&format!(
+                        "appearance-commit-rejected ready-timeout \
+                         wallpaper-configured={} wallpaper-frame-pending={} \
+                         overlay-layer-present={} overlay-configured={} overlay-frame-pending={}",
+                        state.wallpaper.configured,
+                        state.wallpaper.frame_pending,
+                        state.layer.is_some(),
+                        state.configured,
+                        state.frame_pending,
+                    ));
                     false
                 };
                 if !accepted {
