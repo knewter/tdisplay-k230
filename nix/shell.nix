@@ -175,11 +175,13 @@ let
   };
   settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
   notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };
-  notificationSources = pkgs.writeText "k230-notification-sources.json" (builtins.toJSON {
-    "${rustShellBase}/bin/k230-shell-rust" = {
+  # Keep the executable reference in string content: Nix attribute names
+  # cannot carry a derivation context, but this allowlist must retain it.
+  notificationSources = pkgs.writeText "k230-notification-sources.json" ''
+    {"${rustShellBase}/bin/k230-shell-rust": ${builtins.toJSON {
       id = "shell"; name = "Shell"; icon = "applications-system";
-    };
-  });
+    }}}
+  '';
   themedFoot = pkgs.writeShellScriptBin "k230-foot" ''
     set -eu
     case "''${1:-}" in
