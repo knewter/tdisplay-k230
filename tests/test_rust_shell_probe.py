@@ -8,6 +8,7 @@ from pathlib import Path
 import socket
 import subprocess
 import tempfile
+import threading
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +41,25 @@ def route_timeout():
                                  capture_output=True, timeout=2)
         assert invalid.returncode != 0
         server.close()
+        path.unlink()
+        split = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        split.bind(str(path))
+        split.listen(1)
+
+        def reply_in_parts():
+            with split.accept()[0] as peer:
+                assert peer.recv(24) == b"shade\n"
+                peer.sendall(b"O")
+                time.sleep(0.03)
+                peer.sendall(b"K\n")
+
+        worker = threading.Thread(target=reply_in_parts)
+        worker.start()
+        accepted = subprocess.run([binary, "--surface", "shade"], env=env,
+                                  capture_output=True, timeout=2)
+        worker.join(timeout=2)
+        assert accepted.returncode == 0, accepted.stderr.decode()
+        split.close()
 
 
 def main():

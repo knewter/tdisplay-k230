@@ -130,14 +130,28 @@ fn request(route: &str) -> Result<(), String> {
     }
     let deadline = Instant::now() + Duration::from_millis(500);
     let mut stream = connect_bounded(&path, deadline)?;
-    poll_until(stream.as_raw_fd(), libc::POLLOUT, deadline)?;
-    stream
-        .write_all(bytes.as_bytes())
-        .map_err(|e| e.to_string())?;
-    poll_until(stream.as_raw_fd(), libc::POLLIN, deadline)?;
-    let mut reply = [0u8; 4];
-    let count = stream.read(&mut reply).map_err(|e| e.to_string())?;
-    if count == 3 && &reply[..3] == b"OK\n" {
+    let mut sent = 0;
+    while sent < bytes.len() {
+        poll_until(stream.as_raw_fd(), libc::POLLOUT, deadline)?;
+        match stream.write(&bytes.as_bytes()[sent..]) {
+            Ok(0) => return Err("route socket closed".into()),
+            Ok(count) => sent += count,
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => continue,
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    let mut reply = [0u8; 3];
+    let mut received = 0;
+    while received < reply.len() {
+        poll_until(stream.as_raw_fd(), libc::POLLIN, deadline)?;
+        match stream.read(&mut reply[received..]) {
+            Ok(0) => return Err("route socket closed".into()),
+            Ok(count) => received += count,
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => continue,
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    if &reply == b"OK\n" {
         Ok(())
     } else {
         Err("route was not accepted".into())
