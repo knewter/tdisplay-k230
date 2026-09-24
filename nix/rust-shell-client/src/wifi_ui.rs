@@ -530,6 +530,31 @@ mod tests {
         assert_eq!(view.public().password_len, 0);
     }
     #[test]
+    fn open_network_connects_without_password_editor() {
+        let mut view = WifiView::default();
+        view.page = Page::List;
+        view.snapshot = Some(Snapshot {
+            networks: vec![Network {
+                ssid: "Example Guest".into(),
+                security: Security::Open,
+            }],
+            current: None,
+            saved: Vec::new(),
+            error: None,
+        });
+        view.select(0);
+        assert!(!view.use_saved);
+        assert_eq!(view.public().password_len, 0);
+        assert!(view.can_connect());
+        assert!(matches!(
+            view.connect_request(),
+            Some(WifiRequest::Connect {
+                security: Security::Open,
+                ..
+            })
+        ));
+    }
+    #[test]
     fn scroll_does_not_select_and_back_is_reachable() {
         let mut view = WifiView::default();
         view.page = Page::List;

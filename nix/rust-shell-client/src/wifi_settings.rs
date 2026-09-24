@@ -168,6 +168,10 @@ pub struct WifiWorker {
 
 impl WifiWorker {
     pub fn spawn(socket: PathBuf) -> Self {
+        Self::spawn_identity(socket, 0, unsafe { libc::getegid() })
+    }
+
+    fn spawn_identity(socket: PathBuf, uid: u32, gid: u32) -> Self {
         let (requests, incoming) = mpsc::sync_channel::<(u64, WifiRequest)>(4);
         let (outgoing, replies) = mpsc::sync_channel(4);
         let cancelled = Arc::new(AtomicU64::new(0));
@@ -175,7 +179,7 @@ impl WifiWorker {
         thread::spawn(move || {
             while let Ok((id, request)) = incoming.recv() {
                 let kind = request.kind();
-                let result = execute(&socket, request, id, &worker_cancelled);
+                let result = execute_identity(&socket, request, id, &worker_cancelled, uid, gid);
                 if outgoing.send(WifiReply { id, kind, result }).is_err() {
                     break;
                 }
@@ -454,15 +458,6 @@ fn connect_nonblocking(path: &Path, deadline: Instant, uid: u32) -> Result<UnixS
     }
     Ok(stream)
 }
-fn execute(
-    path: &Path,
-    request: WifiRequest,
-    id: u64,
-    cancelled: &AtomicU64,
-) -> Result<WifiResult, String> {
-    execute_identity(path, request, id, cancelled, 0, unsafe { libc::getegid() })
-}
-
 fn execute_identity(
     path: &Path,
     request: WifiRequest,
@@ -630,6 +625,54 @@ mod tests {
         assert_eq!(result.unwrap_err(), "cancelled");
         server.join().unwrap();
         fs::remove_file(cancelled_path).unwrap();
+        fs::remove_dir(root).unwrap();
+    }
+    #[test]
+    fn worker_queue_reports_busy_without_blocking_ui_thread() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-wifi-queue-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&root).unwrap();
+        fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+        let path = root.join("broker.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+        let (ready, accepted) = mpsc::sync_channel(1);
+        let (release, gate) = mpsc::sync_channel(1);
+        let server = thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut line = Vec::new();
+            while !line.ends_with(b"\n") {
+                let mut one = [0u8];
+                stream.read_exact(&mut one).unwrap();
+                line.push(one[0]);
+            }
+            ready.send(()).unwrap();
+            gate.recv().unwrap();
+            stream.write_all(b"{\"schema\":1,\"state\":\"ok\",\"current\":null,\"saved\":[],\"error\":null}\n").unwrap();
+        });
+        let mut worker =
+            WifiWorker::spawn_identity(path.clone(), unsafe { libc::geteuid() }, unsafe {
+                libc::getegid()
+            });
+        worker.try_submit(WifiRequest::Status).unwrap();
+        accepted.recv_timeout(Duration::from_secs(2)).unwrap();
+        for _ in 0..4 {
+            worker.try_submit(WifiRequest::Status).unwrap();
+        }
+        assert_eq!(
+            worker.try_submit(WifiRequest::Status).unwrap_err(),
+            "Wi-Fi is busy"
+        );
+        drop(worker);
+        release.send(()).unwrap();
+        server.join().unwrap();
+        fs::remove_file(path).unwrap();
         fs::remove_dir(root).unwrap();
     }
     #[test]
