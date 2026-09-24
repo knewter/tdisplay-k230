@@ -280,7 +280,6 @@ fn decode(path: &Path, size: i32) -> Option<ImageSurface> {
     ok.then_some(output)
 }
 
-#[derive(Default)]
 pub struct IconCache {
     theme: String,
     roots: Vec<PathBuf>,
@@ -296,7 +295,8 @@ impl IconCache {
                 .filter(|name| safe_name(name))
                 .unwrap_or_else(|| "hicolor".into()),
             roots: data_roots(),
-            ..Self::default()
+            entries: Vec::new(),
+            decode_count: 0,
         }
     }
 
@@ -312,6 +312,12 @@ impl IconCache {
     }
     pub fn cache_count(&self) -> usize {
         self.entries.len()
+    }
+
+    #[cfg(test)]
+    pub(crate) fn use_fixture_root(&mut self, root: PathBuf) {
+        self.roots = vec![root];
+        self.entries.clear();
     }
 
     pub fn paint(&mut self, cr: &Context, icon: &str, size: i32, x: f64, y: f64) -> bool {
@@ -337,6 +343,12 @@ impl IconCache {
     }
 }
 
+impl Default for IconCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -349,6 +361,9 @@ mod tests {
         let mut cache = IconCache::new();
         cache.set_theme("../../bad");
         assert_eq!(cache.theme, "hicolor");
+        let default = IconCache::default();
+        assert!(!default.theme.is_empty());
+        assert!(!default.roots.is_empty());
     }
 
     #[test]

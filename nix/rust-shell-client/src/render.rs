@@ -497,6 +497,48 @@ mod tests {
     }
 
     #[test]
+    fn default_renderer_resolves_named_icon() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-rust-render-theme-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let apps_dir = root.join("icons/hicolor/scalable/apps");
+        std::fs::create_dir_all(&apps_dir).unwrap();
+        std::fs::write(root.join("icons/hicolor/index.theme"), "[Icon Theme]\nName=hicolor\nDirectories=scalable/apps\n[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n").unwrap();
+        std::fs::write(apps_dir.join("fixture.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>").unwrap();
+        let mut cache = RendererCache::default();
+        cache.set_icon_theme("hicolor");
+        cache.icons.use_fixture_root(root.clone());
+        let apps = vec![AppEntry {
+            id: "fixture.desktop".into(),
+            name: "Fixture".into(),
+            icon: Some("fixture".into()),
+        }];
+        let mut frame = vec![0; 568 * 1232 * 4];
+        cache
+            .draw(
+                &mut frame,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Drawer,
+                    progress: 1.0,
+                    scroll: 0.0,
+                },
+                &apps,
+            )
+            .unwrap();
+        assert_eq!(cache.icons.decode_count(), 1);
+        let pixel = (402 * 568 + 52) * 4;
+        assert!(frame[pixel + 2] > 160, "named SVG red channel absent");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
     fn scrolling_repaints_clipped_rows_but_keeps_header() {
         let apps = (0..30)
             .map(|index| AppEntry {
