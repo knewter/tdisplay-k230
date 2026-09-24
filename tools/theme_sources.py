@@ -45,27 +45,30 @@ def source_dir(root: Path, member: str | None = None) -> Path:
 def source_digest(theme: Path) -> str:
     digest = hashlib.sha256()
     entries = total = 0
-    def walk_error(error):
-        raise error
-
-    for base, directories, files in os.walk(theme, topdown=True, followlinks=False,
-                                             onerror=walk_error):
-        relative_base = Path(base).relative_to(theme)
-        if len(relative_base.parts) > MAX_DEPTH:
+    def visit(base: Path, depth: int) -> None:
+        nonlocal entries, total
+        if depth > MAX_DEPTH:
             raise ValueError("source nesting exceeds bound")
-        directories[:] = sorted(name for name in directories if name != ".git")
-        files = sorted(name for name in files if name != ".git")
-        entries += len(directories) + len(files)
-        if entries > MAX_ENTRIES:
-            raise ValueError("source entry count exceeds bound")
-        for name in directories:
-            path = Path(base) / name
-            if path.is_symlink():
-                raise ValueError(f"symlink in source: {path.relative_to(theme)}")
-        for name in files:
-            path = Path(base) / name
-            if path.is_symlink() or not path.is_file():
-                raise ValueError(f"unsafe source entry: {path.relative_to(theme)}")
+        directories, files = [], []
+        # Count while consuming scandir, before collecting/sorting an
+        # attacker-sized flat directory into memory.
+        with os.scandir(base) as scanner:
+            for entry in scanner:
+                if entry.name == ".git":
+                    continue
+                entries += 1
+                if entries > MAX_ENTRIES:
+                    raise ValueError("source entry count exceeds bound")
+                if entry.is_symlink():
+                    raise ValueError(f"symlink in source: {Path(entry.path).relative_to(theme)}")
+                if entry.is_dir(follow_symlinks=False):
+                    directories.append(entry.name)
+                elif entry.is_file(follow_symlinks=False):
+                    files.append(entry.name)
+                else:
+                    raise ValueError(f"unsafe source entry: {Path(entry.path).relative_to(theme)}")
+        for name in sorted(files):
+            path = base / name
             size = path.stat().st_size
             total += size
             if size > MAX_FILE_BYTES or total > MAX_TOTAL_BYTES:
@@ -85,6 +88,10 @@ def source_digest(theme: Path) -> str:
             if observed != size:
                 raise ValueError("source changed while hashing")
             digest.update(file_digest.digest())
+        for name in sorted(directories):
+            visit(base / name, depth + 1)
+
+    visit(theme, 0)
     return digest.hexdigest()
 
 
