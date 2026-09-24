@@ -710,6 +710,7 @@ E1   d0279bc93038793906764d22dfea298d82a89999dd0b26b23d69cce98497e544  firmware/
 IO   517aa534255e88c941882be40f5e5735349cd1e3b144b536155e51bdc6309c8b  embedded:fn_u-boot-spl.bin@0x1fc74+0x8000  ddr-pmu-imem
 IO   1c0819e81446a8944a3ecf95304642ecec2071451d430e21925e5d7daea47313  embedded:fn_u-boot-spl.bin@0x1f5f4+0x67c   ddr-pmu-dmem
 DATA 910743a6c9ace7d92dab5fcf0a5bfe2e3bcc986bea428a9f102d4185ece20206  assets/boot-splash.png
+DATA e17961464d313d4799d8037381c5179101f982f60bd908a111e74f92c6b2cdcd  nix/qtquick-software-probe/tile.png
 DATA 5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236  docs/evidence/shell-features/startup-portrait/20260922T172430Z-portrait-image-startup.mp4
 DATA 3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947  docs/evidence/shell-features/startup-portrait/demo.mp4
 DATA 70ac27055e70e2add02b8460b8596b1c4597aacfad212e8f1793257606536cfa  docs/evidence/shell-features/startup-portrait/screen.png
@@ -1395,3 +1396,13 @@ Pixman. Performance and normal-service acceptance remain open. Provenance:
 Native synthetic-scene DATA accompanying opt-in phase timings. Exact palettes
 match; no performance acceptance is claimed. Commands, artifacts and limits:
 `docs/evidence/vglite-scene-board/cost-profile/README.md`.
+
+### Qt Quick probe checker image
+
+`nix/qtquick-software-probe/tile.png` is original generated DATA, not vendor
+firmware or third-party artwork. The source recipe is
+`python3 nix/qtquick-software-probe/generate-tile.py`: a 32×32 RGBA checker
+using two literal colors, PNG chunks and zlib from the Python standard
+library. It is only a known image-decode fixture for the opt-in Qt Quick
+probe. The 125-byte file has SHA-256
+`e17961464d313d4799d8037381c5179101f982f60bd908a111e74f92c6b2cdcd`.
