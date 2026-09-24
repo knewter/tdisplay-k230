@@ -7,8 +7,8 @@ cross-build and physical proof are separate. Store committed results under
 ## 1. Reuse upstream helpers and unchanged source fixtures
 
 - [x] 1.1 Pin and package the upstream palette, template, legacy-palette and OSC helpers plus relevant templates and licenses; carry the narrow staging/template-path patch and verify its output parity, then verify the closure with `nix build .#omarchy-theme-tools` and record the output. Reserve the sole build slot.
-- [ ] 1.2 Add exact-revision fixture acquisition for built-in light/dark themes and the community section-override sample; include `.git` directory clones, `.git` file worktrees and source directories without Git metadata. Record source hashes/licenses and prove no checkout changes with `python3 tests/test_omarchy_theme_sources.py`.
-- [ ] 1.3 Add helper compatibility tests for aliases, explicit ANSI/selection/custom colors, mode fallbacks, mix/gradient substitutions, full-file and section replacement precedence; compare upstream outputs with `python3 tests/test_omarchy_theme_resolution.py`.
+- [x] 1.2 Add exact-revision fixture acquisition for built-in light/dark themes and the community section-override sample; include `.git` directory clones, `.git` file worktrees and source directories without Git metadata. Record source hashes/licenses and prove no checkout changes with `python3 tests/test_omarchy_theme_sources.py`.
+- [x] 1.3 Add helper compatibility tests for aliases, explicit ANSI/selection/custom colors, mode fallbacks, mix/gradient substitutions, full-file and section replacement precedence; compare upstream outputs with `python3 tests/test_omarchy_theme_resolution.py`.
 
 Proof: `nix build .#omarchy-theme-tools` is a package cross-build; the two Python invocations are host checks only. No device claim.
 
