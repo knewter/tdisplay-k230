@@ -158,6 +158,8 @@
         shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
+        # Opt-in Qt Quick software/Wayland evaluation client, never in the image.
+        qtquick-software-probe = pkgsCross.callPackage ./nix/qtquick-software-probe/default.nix { };
         # Standalone pinned helper package; no theme service enters the normal
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
