@@ -231,3 +231,27 @@ The work board SHALL make each entire card a single keyboard-accessible control 
 
 - **WHEN** the board opens with a valid work-item selection in its URL
 - **THEN** that item's detail opens using the same revision as the visible board
+
+### Requirement: Work cards expose their visual evidence
+<!-- UNVERIFIED: host-browser and published-site proof is recorded in docs/evidence/work-card-media/README.md; this is not physical K230 grounding. -->
+The work board SHALL discover committed images and videos associated with a change's cited evidence, show a representative visual cover when available, and present the discovered media inside that card's detail view. Videos SHALL provide playback controls, start playback when opened or selected in the media viewer, and support Space to toggle play/pause without closing it. Card previews SHALL remain paused. Captions and evidence-class labels SHALL not imply physical validation from mockups or automated captures. Changes without visual evidence SHALL remain readable text cards.
+
+#### Scenario: Screenshot and video arrive during implementation
+- **WHEN** screenshot or video evidence is committed for an open change and the site publishes that revision
+- **THEN** the card and detail view expose the new media without waiting for task completion or archive
+
+#### Scenario: A reader opens a card
+- **WHEN** the reader clicks the card outside its evidence links or activates its primary link by keyboard
+- **THEN** the existing inline detail view opens with its media and documents, without a separate View details button
+
+#### Scenario: Enlarge media while reading a card
+- **WHEN** the reader activates an image or the enlarge action for a video in the card detail
+- **THEN** a gallery modal displays that media at the largest size that fits the viewport while preserving its aspect ratio, supports adjacent-media navigation by touch swipe and arrow keys, and returns to the same card position when closed
+
+### Requirement: Card headers expose related evidence records
+<!-- UNVERIFIED: host-browser and published-site proof is recorded in docs/evidence/work-card-media/README.md; this is not physical K230 grounding. -->
+Each work card with related evidence SHALL expose directly usable evidence links from its header area, including reports, logs, screenshots and videos. Those links SHALL identify their artifacts, refer to the published revision, and remain separately usable from the primary whole-card action. Discovery SHALL exclude uncommitted, missing, unsafe and unrelated paths.
+
+#### Scenario: Open a report from a card header
+- **WHEN** the reader activates a report or log in the card's header evidence menu
+- **THEN** the named evidence opens in a document modal over the board, with Markdown rendered and text readable, without replacing the board with a raw URL; closing restores the reader's place and an explicit original-file link remains available
