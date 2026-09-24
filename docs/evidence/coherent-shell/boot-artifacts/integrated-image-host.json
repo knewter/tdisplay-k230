@@ -1,0 +1,37 @@
+{
+  "evidence_class": "host-built-image",
+  "source_revision": "6ed24efb221b81d1ec83bc1e7173fc3e5dede237",
+  "observed_at_utc": "2026-09-24T08:27:03.644730+00:00",
+  "command": "nix build .#sdImage-coherent --max-jobs 1 --cores 4 --no-link --print-out-paths",
+  "image": {
+    "path": "/nix/store/x0dpxdq2lc8ic9z8hd11ysnfr7cz9w2s-k230-sd-image.img",
+    "sha256": "fb0004182d09c501ba5bc5ea8f755bd1475a71061e7634f23af0b6417c142588",
+    "bytes": 2711429120,
+    "derivation": "/nix/store/hblijq11fclax1q6ja1a58vda74nh4fl-k230-sd-image.img.drv"
+  },
+  "system": "/nix/store/5xm4bwka6waggamz9i48ljjp3yilaf6c-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_image_derivation": "/nix/store/mw0y48wxa3f6piwa416dnyjd7rafahmw-k230-sd-image.img.drv",
+  "boot_partition": {
+    "start_sector": 8192,
+    "sectors": 229376,
+    "sector_bytes": 512
+  },
+  "boot_files_sha256": {
+    "Image": "29727ff3313e8d8d5a171eab736df244812dbbcc1280bf28f88b358700054857",
+    "initrd.uimg": "3bd3f2584547b5e6d97237882d1abdc2ad32916f8b94ce63bb513b3e61e4bda5",
+    "k230-tdisplay.dtb": "e4b371298ec8aa4b5bfafcfa19d65b2f0c97fe426b0d2873c27aa41d618b156e",
+    "bootargs.txt": "f8d196a7b0a892f875ee804bccba98698949a7b418cc5f31d4166a831c43f301",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "checks": {
+    "exact_single_init_token": true,
+    "kernel_image_matches_system": true,
+    "uimage_magic_and_initrd_payload_match_system": true,
+    "device_tree_diff_only_chosen_bootargs": true,
+    "eight_boot_files_extracted": true,
+    "normal_image_derivation_distinct": true
+  }
+}

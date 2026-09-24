@@ -1,12 +1,13 @@
 # Matching coherent-shell boot image: operator preparation
 
-This source checkpoint adds `.#sdImage-coherent` using the same `mkBoardImage`
-function as the existing normal `.#sdImage`. It selects the opt-in
+This change adds `.#sdImage-coherent` using the same `mkBoardImage` function
+as the existing normal `.#sdImage`. It selects the opt-in
 `k230-coherent-shell` NixOS configuration. The normal image remains the
-bar-session rollback. No image build, SD write, boot-file change, reboot, or
-new physical observation is claimed here. The installed coherent system was
-last test-activated, not selected for ordinary boot; its exact prior evidence
-is in [refined-installed](../refined-installed/README.md).
+bar-session rollback. A matching integrated image was later built and
+inspected on the host; no SD write, boot-file change, reboot, or new physical
+observation is claimed here. The installed coherent system was last
+test-activated, not selected for ordinary boot; its prior evidence is in
+[refined-installed](../refined-installed/README.md).
 
 On the host, after the sole Nix build slot is released, build and record the
 two identities together:
@@ -63,6 +64,22 @@ full-image flash, a fresh ordinary boot, exact `/run/current-system` and
 service checks, and the selected theme appearing again. The theme's private
 `current/active` pointer is designed to survive a service restart, but this
 document provides no reboot proof.
+
+## Exact integrated host build
+
+At source `6ed24efb` (including the final keyboard source), the command above
+passed and produced
+`/nix/store/x0dpxdq2lc8ic9z8hd11ysnfr7cz9w2s-k230-sd-image.img`.
+The [structured host inspection](integrated-image-host.json) records the full
+revision, image SHA256, derivation, eight extracted boot-file hashes and
+check results. The image's single `init=` token names the built coherent
+system `/nix/store/5xm4bwka6waggamz9i48ljjp3yilaf6c-nixos-system-nixos-26.11.20260919.20b1ddd/init`.
+Its `Image` bytes match that system's kernel; the U-Boot ramdisk has the
+expected image magic and its payload byte-matches that system's initrd. The
+decompiled image DTB differs from the pinned source DTB only by the inserted
+`/chosen/bootargs`. The normal image derivation remains distinct. This is
+host-built artifact identity only; reboot selection, GC roots and restored
+theme on glass remain open physical work.
 
 Evaluated from this source checkpoint (before the final keyboard source was
 integrated, so these are provisional identities): coherent system
