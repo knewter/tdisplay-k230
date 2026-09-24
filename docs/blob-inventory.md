@@ -1212,6 +1212,15 @@ DATA f2b5285c4b49724b5c2aaf2e8cb833126401fff0a0afaa2bd834685d5082999f  docs/evid
 DATA 507106852a16b574cbe443f6b77c1735d77b84624bc3e689f3578bb61c1b762f  docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-deck.png
 DATA da29388bc9afc242aff7b1ee051f5badb078f42d60bdafc3b843856965c22580  docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-drawer.png
 DATA 912d9208a2a4db6ddb32844228d4ed8290c6f95cb3752654ad07fa6124528b60  docs/evidence/coherent-shell/real-theme-paired-qemu/rollback-deck.png
+DATA 574ea4b392e0e8bdc4ee5b4f46d82b800d39c43b53e343dabe85adcaa23b945c  docs/evidence/wifi-settings/paired-qemu/wifi-auth-error-dark.png
+DATA 05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d  docs/evidence/wifi-settings/paired-qemu/wifi-forget-confirm-dark.png
+DATA 6a93416bc16cd60e96bf196c42afe36d52b028a02efacdb204c6ced6fcfaf6f4  docs/evidence/wifi-settings/paired-qemu/wifi-keyboard-gesture-disabled-dark.png
+DATA ce8dd44606ab1bbe450fa502853249e656e8aeadc50718dfc075a006c076d317  docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png
+DATA 10f0f24d1816e6ce1df6efa2f48a11acb0d9d1fd44f926fb6fabe7f4581fcda5  docs/evidence/wifi-settings/paired-qemu/wifi-list-light.png
+DATA 2e0916e57186db62ee52ce18959612f7acab2a5620a61c8388d5742cf756ba8e  docs/evidence/wifi-settings/paired-qemu/wifi-masked-dark.png
+DATA dd3782ac477ddfce563d062bdecdef87a5939ce815e2849a30d75c7e8a41b675  docs/evidence/wifi-settings/paired-qemu/wifi-saved-entry.png
+DATA e8be5551a201b2278569864505f6602965511f222c838d349c99ebd1829641c4  docs/evidence/wifi-settings/paired-qemu/wifi-settings-dark.png
+DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evidence/wifi-settings/paired-qemu/wifi-settings-light.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1715,3 +1724,18 @@ These four unedited headless QEMU DATA frames show the revised touch-first deck 
 | `docs/evidence/coherent-shell/deck-visual-qemu/latte-empty.png` | 72649 | DATA | `839fd97c28444da99ece4f80fb8441d21142aabe5729e4eaff8d7d5615c959c9` |
 | `docs/evidence/coherent-shell/deck-visual-qemu/latte-ordinary.png` | 48886 | DATA | `9323bae053396da177251402e2773fd6d6287c6b2775db9b2b0cd0d05606e949` |
 | `docs/evidence/coherent-shell/deck-visual-qemu/latte-private.png` | 46628 | DATA | `b3d289baa7dc73d5d5d7a7518995d0834ee898049d01c55b199f52a4188351a3` |
+### Wi-Fi Settings paired headless QEMU captures, 2026-09-24
+
+These nine DATA frames use invented network names and synthetic dark/light palettes. The adjacent evidence README records the exact Sway/Rust inputs and QEMU-only limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-auth-error-dark.png` | 56457 | DATA | `574ea4b392e0e8bdc4ee5b4f46d82b800d39c43b53e343dabe85adcaa23b945c` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-forget-confirm-dark.png` | 23775 | DATA | `05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-keyboard-gesture-disabled-dark.png` | 37014 | DATA | `6a93416bc16cd60e96bf196c42afe36d52b028a02efacdb204c6ced6fcfaf6f4` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png` | 37765 | DATA | `ce8dd44606ab1bbe450fa502853249e656e8aeadc50718dfc075a006c076d317` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-list-light.png` | 37243 | DATA | `10f0f24d1816e6ce1df6efa2f48a11acb0d9d1fd44f926fb6fabe7f4581fcda5` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-masked-dark.png` | 52870 | DATA | `2e0916e57186db62ee52ce18959612f7acab2a5620a61c8388d5742cf756ba8e` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-saved-entry.png` | 36381 | DATA | `dd3782ac477ddfce563d062bdecdef87a5939ce815e2849a30d75c7e8a41b675` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-settings-dark.png` | 40394 | DATA | `e8be5551a201b2278569864505f6602965511f222c838d349c99ebd1829641c4` |
+| `docs/evidence/wifi-settings/paired-qemu/wifi-settings-light.png` | 39815 | DATA | `13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b` |
