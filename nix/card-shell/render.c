@@ -90,8 +90,8 @@ static bool access(struct wlr_buffer *base, uint32_t flags, void **data, uint32_
 static void end(struct wlr_buffer *base) {}
 static const struct wlr_buffer_impl impl = {
 	.destroy = destroy, .begin_data_ptr_access = access, .end_data_ptr_access = end};
-struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const char *text,
-		int width, int height, int size, uint32_t argb) {
+struct wlr_scene_buffer *card_label_weight(struct wlr_scene_tree *tree, const char *text,
+		int width, int height, int size, uint32_t argb, enum card_label_weight weight) {
 	struct label_buffer *b = calloc(1, sizeof(*b));
 	if (!b)
 		return NULL;
@@ -109,8 +109,11 @@ struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const cha
 		return NULL;
 	}
 	PangoLayout *layout = pango_cairo_create_layout(cr);
-	PangoFontDescription *font = pango_font_description_from_string("sans");
+	PangoFontDescription *font = pango_font_description_new();
+	pango_font_description_set_family(font, CARD_SHELL_FONT_FAMILY);
 	pango_font_description_set_absolute_size(font, size * PANGO_SCALE);
+	pango_font_description_set_weight(font, weight == CARD_LABEL_BOLD ? PANGO_WEIGHT_BOLD :
+		weight == CARD_LABEL_MEDIUM ? PANGO_WEIGHT_MEDIUM : PANGO_WEIGHT_NORMAL);
 	pango_layout_set_font_description(layout, font);
 	pango_layout_set_text(layout, text, -1);
 	pango_layout_set_width(layout, width * PANGO_SCALE);
@@ -129,9 +132,67 @@ struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const cha
 	wlr_buffer_drop(&b->base);
 	return node;
 }
+struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const char *text,
+		int width, int height, int size, uint32_t argb) {
+	return card_label_weight(tree, text, width, height, size, argb, CARD_LABEL_REGULAR);
+}
 struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *text, int width,
 		int height, int size) {
 	return card_label_color(tree, text, width, height, size, 0xfff7faff);
+}
+struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char letter, int size,
+		uint32_t bg_argb, uint32_t fg_argb) {
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b)
+		return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	/* Avoid M_PI: not guaranteed under the strict C standard flags this file
+	 * builds with (see card_brush_scene's own literal below). */
+	const double pi = 3.14159265358979323846;
+	double r = size * 0.28;
+	cairo_new_sub_path(cr);
+	cairo_arc(cr, size - r, r, r, -pi / 2, 0);
+	cairo_arc(cr, size - r, size - r, r, 0, pi / 2);
+	cairo_arc(cr, r, size - r, r, pi / 2, pi);
+	cairo_arc(cr, r, r, r, pi, 3 * pi / 2);
+	cairo_close_path(cr);
+	cairo_set_source_rgba(cr, ((bg_argb >> 16) & 255) / 255.0, ((bg_argb >> 8) & 255) / 255.0,
+		(bg_argb & 255) / 255.0, ((bg_argb >> 24) & 255) / 255.0);
+	cairo_fill(cr);
+	PangoLayout *layout = pango_cairo_create_layout(cr);
+	PangoFontDescription *font = pango_font_description_new();
+	pango_font_description_set_family(font, CARD_SHELL_FONT_FAMILY);
+	pango_font_description_set_absolute_size(font, (size * 0.5) * PANGO_SCALE);
+	pango_font_description_set_weight(font, PANGO_WEIGHT_BOLD);
+	pango_layout_set_font_description(layout, font);
+	char text[2] = {letter, 0};
+	pango_layout_set_text(layout, text, -1);
+	int tw, th;
+	pango_layout_get_pixel_size(layout, &tw, &th);
+	cairo_set_source_rgba(cr, ((fg_argb >> 16) & 255) / 255.0, ((fg_argb >> 8) & 255) / 255.0,
+		(fg_argb & 255) / 255.0, ((fg_argb >> 24) & 255) / 255.0);
+	cairo_move_to(cr, (size - tw) / 2.0, (size - th) / 2.0);
+	pango_cairo_show_layout(cr, layout);
+	g_object_unref(layout);
+	pango_font_description_free(font);
+	cairo_destroy(cr);
+	cairo_surface_flush(b->surface);
+	wlr_buffer_init(&b->base, &impl, size, size);
+	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
+	wlr_buffer_drop(&b->base);
+	return node;
 }
 void card_brush_solid_color(const struct card_brush *brush, float out[4]) {
 	uint32_t color = brush->stops[0].argb;

@@ -15,6 +15,7 @@ Exec=${themedFoot}/bin/k230-foot terminal
 Icon=foot
 Terminal=false
 Categories=System;TerminalEmulator;
+StartupWMClass=k230-terminal
 EOF
   cat > "$out/share/applications/htop.desktop" <<'EOF'
 [Desktop Entry]
@@ -26,6 +27,7 @@ Exec=${themedFoot}/bin/k230-foot monitor -e ${htop}/bin/htop
 Icon=htop
 Terminal=false
 Categories=System;Monitor;
+StartupWMClass=k230-monitor
 EOF
   cat > "$out/share/applications/nnn.desktop" <<'EOF'
 [Desktop Entry]
@@ -38,6 +40,7 @@ Icon=folder
 Terminal=true
 MimeType=inode/directory;
 Categories=System;FileTools;FileManager;
+StartupWMClass=nnn
 EOF
   cat > "$out/share/applications/footclient.desktop" <<'EOF'
 [Desktop Entry]

@@ -23,7 +23,9 @@
 #include "sway/tree/view.h"
 #include "sway/tree/workspace.h"
 #include <drm_fourcc.h>
+#include <dirent.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <math.h>
 #include <spawn.h>
 #include <stdio.h>
@@ -61,6 +63,8 @@ struct card {
 	int gradient_width, gradient_height;
 	struct wlr_scene_buffer *label;
 	char *label_text;
+	struct wlr_scene_buffer *label_icon;
+	char label_icon_letter;
 	bool label_selected;
 	bool hidden, original_enabled;
 	double scale;
@@ -113,6 +117,13 @@ static const float selected_color[4] = {.184, .420, .310, 1};
 static uint32_t appearance_text(bool selected) {
 	return shell.appearance_enabled ?
 		(selected ? shell.appearance.selected_text : shell.appearance.text) : 0xfff7faff;
+}
+/* card_appearance carries no separate muted/secondary tone; approximate one
+ * with a fixed alpha reduction rather than plumbing a new theme token, so
+ * the gesture-hint cue below can match the Rust side's muted, de-emphasized
+ * treatment (finding P1-2) without a cross-cutting appearance.c/token change. */
+static uint32_t appearance_text_muted(bool selected) {
+	return (appearance_text(selected) & 0x00ffffff) | 0xb3000000;
 }
 static uint64_t now_ms(void) {
 	struct timespec t;
@@ -247,6 +258,9 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 		c->label = NULL;
 		free(c->label_text);
 		c->label_text = NULL;
+		if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
+		c->label_icon = NULL;
+		c->label_icon_letter = 0;
 	}
 	shell.chrome_valid = false;
 	return (!shell.active || sync_scene()) && chrome();
@@ -293,6 +307,8 @@ static void clear_card(struct card *c) {
 	c->tree = NULL;
 	c->pixels = NULL;
 	c->label = NULL;
+	c->label_icon = NULL;
+	c->label_icon_letter = 0;
 	c->background = NULL;
 	c->gradient = NULL;
 	free(c->label_text);
@@ -362,17 +378,174 @@ static enum cs_content classify(struct card *c) {
 		return CS_UNAVAILABLE;
 	return supported_node(&c->view->content_tree->node) ? CS_LIVE : CS_UNAVAILABLE;
 }
+/* Card header identity (finding P0-1): resolve a running window's app_id to
+ * its shipped .desktop entry's Name=, the same freedesktop mechanism the
+ * drawer's own catalog uses (task 1.4 of the-handheld-presents-a-coherent-shell),
+ * instead of a 3-entry strcmp allowlist that silently regressed to the raw,
+ * live-changing window title for anything else. StartupWMClass=<app_id> is
+ * the standard field for exactly this window-to-entry mapping; falling back
+ * to the file's own basename covers entries (like nnn.desktop) that already
+ * happen to match. This is a dependency-free scan, not GDesktopAppInfo/gio:
+ * gio is not linked into this compositor today, and adding it is a bigger
+ * build-surface change than a rendering/label fix warrants. */
+#define DESKTOP_IDENTITY_CACHE_MAX 16
+struct desktop_identity_entry {
+	char *app_id;
+	char *name;
+};
+static struct desktop_identity_entry desktop_identity_cache[DESKTOP_IDENTITY_CACHE_MAX];
+static size_t desktop_identity_cache_count;
+static bool desktop_entry_group_line(bool *in_entry, const char *line) {
+	if (line[0] == '[') {
+		*in_entry = strcmp(line, "[Desktop Entry]") == 0;
+		return true;
+	}
+	return false;
+}
+static bool desktop_file_matches(const char *path, const char *app_id) {
+	FILE *f = fopen(path, "r");
+	if (!f)
+		return false;
+	char line[512];
+	bool in_entry = false, has_class = false, matched = false;
+	while (fgets(line, sizeof(line), f)) {
+		size_t len = strlen(line);
+		while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = 0;
+		bool header = line[0] == '[';
+		if (header) { in_entry = strcmp(line, "[Desktop Entry]") == 0; continue; }
+		if (!in_entry) continue;
+		if (strncmp(line, "StartupWMClass=", 15) == 0) {
+			has_class = true;
+			matched = strcmp(line + 15, app_id) == 0;
+			break;
+		}
+	}
+	fclose(f);
+	if (has_class)
+		return matched;
+	const char *base = strrchr(path, '/');
+	base = base ? base + 1 : path;
+	size_t blen = strlen(base);
+	if (blen > 8 && strcmp(base + blen - 8, ".desktop") == 0)
+		blen -= 8;
+	return strlen(app_id) == blen && strncmp(base, app_id, blen) == 0;
+}
+static char *parse_desktop_name(const char *path) {
+	FILE *f = fopen(path, "r");
+	if (!f)
+		return NULL;
+	char line[512];
+	bool in_entry = false;
+	char *name = NULL;
+	while (!name && fgets(line, sizeof(line), f)) {
+		size_t len = strlen(line);
+		while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = 0;
+		if (desktop_entry_group_line(&in_entry, line))
+			continue;
+		if (!in_entry)
+			continue;
+		if (strncmp(line, "Name=", 5) == 0 && line[5])
+			name = strdup(line + 5);
+	}
+	fclose(f);
+	return name;
+}
+/* GCC's -Wformat-truncation cannot see that `dir` (one XDG_DATA_DIRS
+ * segment) and `entry->d_name` (bounded by struct dirent) never actually
+ * approach PATH_MAX together; the explicit length checks below are the real
+ * truncation guard; this pragma only silences the compiler's own worst-case
+ * static estimate, which treats every source buffer as if fully populated
+ * out to its declared size. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+static char *resolve_desktop_name(const char *app_id) {
+	const char *xdg = getenv("XDG_DATA_DIRS");
+	if (!xdg || !*xdg)
+		xdg = "/run/current-system/sw/share:/usr/local/share:/usr/share";
+	char *dirs = strdup(xdg);
+	if (!dirs)
+		return NULL;
+	char *name = NULL;
+	for (char *dir = strtok(dirs, ":"); dir && !name; dir = strtok(NULL, ":")) {
+		char appdir[PATH_MAX];
+		if (strlen(dir) + strlen("/applications") >= sizeof(appdir))
+			continue;
+		snprintf(appdir, sizeof(appdir), "%s/applications", dir);
+		DIR *d = opendir(appdir);
+		if (!d)
+			continue;
+		struct dirent *entry;
+		while (!name && (entry = readdir(d))) {
+			size_t len = strlen(entry->d_name);
+			if (len < 9 || strcmp(entry->d_name + len - 8, ".desktop") != 0)
+				continue;
+			char path[PATH_MAX];
+			if (strlen(appdir) + 1 + len >= sizeof(path))
+				continue;
+			snprintf(path, sizeof(path), "%s/%s", appdir, entry->d_name);
+			if (desktop_file_matches(path, app_id))
+				name = parse_desktop_name(path);
+		}
+		closedir(d);
+	}
+	free(dirs);
+	return name;
+}
+#pragma GCC diagnostic pop
+/* Desktop entries are static after boot; a bounded per-app_id cache avoids
+ * re-scanning every applications/ directory on every card redraw. */
+static const char *desktop_identity_name(const char *app_id) {
+	if (!app_id || !*app_id)
+		return NULL;
+	for (size_t i = 0; i < desktop_identity_cache_count; i++)
+		if (strcmp(desktop_identity_cache[i].app_id, app_id) == 0)
+			return desktop_identity_cache[i].name;
+	char *name = resolve_desktop_name(app_id);
+	if (desktop_identity_cache_count < DESKTOP_IDENTITY_CACHE_MAX) {
+		struct desktop_identity_entry *e = &desktop_identity_cache[desktop_identity_cache_count++];
+		e->app_id = strdup(app_id);
+		e->name = name;
+		return e->name;
+	}
+	free(name);
+	return NULL;
+}
+/* The badge glyph is the resolved title's own first letter, matching the
+ * drawer's fallback-initial treatment when no icon image is available
+ * (finding P0-1) -- ASCII only, since every shipped app name is ASCII; a
+ * non-ASCII first byte falls back to '?' rather than a mis-decoded glyph. */
+static char card_badge_letter(const char *title) {
+	if (!title || !*title)
+		return '?';
+	unsigned char c = (unsigned char)title[0];
+	if (c >= 'a' && c <= 'z')
+		return (char)(c - 32);
+	if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+		return (char)c;
+	return '?';
+}
 static const char *card_display_title(enum cs_content content, const char *title,
-		const char *app_id, bool compact) {
+		const char *app_id, bool compact, char *name_buf, size_t name_buf_len) {
 	if (content != CS_LIVE)
 		return cs_card_text(content);
-	/* These IDs are assigned by this image's desktop/session entries. Preserve
-	 * arbitrary third-party titles, including document and mail names with @. */
-	if (compact && app_id) {
-		if (strcmp(app_id, "k230-terminal") == 0) return "Terminal";
-		if (strcmp(app_id, "k230-monitor") == 0) return "Monitor";
-		if (strcmp(app_id, "nnn") == 0) return "Files";
+	if (app_id) {
+		const char *name = desktop_identity_name(app_id);
+		if (name && *name) {
+			snprintf(name_buf, name_buf_len, "%s", name);
+			return name_buf;
+		}
+		/* Safety net for the three shipped apps if XDG_DATA_DIRS is not set
+		 * up as expected (a sandboxed test build, say): preserved from
+		 * before desktop-entry resolution existed, and only reachable in
+		 * the rollback (non-touch-first) chrome, which predates it. */
+		if (compact) {
+			if (strcmp(app_id, "k230-terminal") == 0) return "Terminal";
+			if (strcmp(app_id, "k230-monitor") == 0) return "Monitor";
+			if (strcmp(app_id, "nnn") == 0) return "Files";
+		}
 	}
+	/* Arbitrary third-party titles, including document and mail names with
+	 * @, are preserved as-is when no desktop entry claims this app_id. */
 	return title && *title ? title : "Application";
 }
 static bool snapshot(void) {
@@ -690,10 +863,12 @@ static bool sync_card(struct card *c, size_t index) {
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
 	bool compact = touch_first();
-	const char *title = c->content == CS_LIVE ?
+	char name_buf[128];
+	const char *display_title = c->content == CS_LIVE ?
 		card_display_title(c->content, view_get_title(c->view),
-			view_get_app_id(c->view), compact) :
-		card_display_title(c->content, NULL, NULL, compact);
+			view_get_app_id(c->view), compact, name_buf, sizeof(name_buf)) :
+		card_display_title(c->content, NULL, NULL, compact, name_buf, sizeof(name_buf));
+	const char *title = display_title;
 	char rollback_title[512];
 	if (!compact) {
 		snprintf(rollback_title, sizeof(rollback_title), "%s%s",
@@ -707,15 +882,47 @@ static bool sync_card(struct card *c, size_t index) {
 		free(c->label_text);
 		c->label_text = NULL;
 	}
+	/* A small icon glyph beside the name, matching the drawer's own
+	 * icon-tile fallback treatment (finding P0-1), for any card that
+	 * represents a running app -- not the placeholder text cs_card_text()
+	 * returns for other content states. */
+	bool show_icon = c->content == CS_LIVE;
+	int badge_size = compact ? 32 : 40;
+	int label_x = compact ? 16 : 12;
+	int label_w = compact ? lround(r.width) - 32 : lround(r.width) - 24;
+	if (show_icon) {
+		label_x += badge_size + 10;
+		label_w -= badge_size + 10;
+	}
+	if (label_w < 0) label_w = 0;
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
-			compact ? lround(r.width) - 32 : lround(r.width) - 24,
-			compact ? 44 : 56, compact ? 24 : 32,
+			label_w, compact ? 44 : 56, compact ? 24 : 32,
 			appearance_text(selected)))
 		return false;
 	c->label_selected = selected;
-	label_clip(c->label, compact ? 16 : 12,
-		lround(r.height) - (compact ? 50 : 60), c->x, c->y, clip_box());
+	int label_top = lround(r.height) - (compact ? 50 : 60);
+	label_clip(c->label, label_x, label_top, c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
+	char letter = show_icon ? card_badge_letter(display_title) : 0;
+	if (!show_icon || letter == 0) {
+		if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
+		c->label_icon = NULL;
+		c->label_icon_letter = 0;
+	} else {
+		if (!c->label_icon || c->label_icon_letter != letter ||
+				c->label_icon->buffer->width != badge_size) {
+			if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
+			uint32_t fg = appearance_text(selected);
+			uint32_t bg = (fg & 0x00ffffff) | 0x2e000000;
+			c->label_icon = card_icon_badge(c->tree, letter, badge_size, bg, fg);
+			c->label_icon_letter = letter;
+		}
+		if (c->label_icon) {
+			int badge_y = label_top + ((compact ? 44 : 56) - badge_size) / 2;
+			label_clip(c->label_icon, compact ? 16 : 12, badge_y, c->x, c->y, clip_box());
+			wlr_scene_node_set_enabled(&c->label_icon->node, !entering && !expanding);
+		}
+	}
 	if (cs_can_mirror(&shell.policy, c->id)) {
 		int width = c->view->geometry.width, height = c->view->geometry.height;
 		if (width <= 0 || height <= 0)
@@ -800,12 +1007,16 @@ static bool rebuild_chrome(void) {
 				return false;
 			wlr_scene_node_set_position(&shell.status->node, x + 24, status_y);
 		}
+		/* One gesture-hint typography across the deck footer and the Rust
+		 * drawer/shade hints (finding P1-2): sentence case (already was),
+		 * muted rather than full-strength text color, and size 14 to match
+		 * `render.rs`'s own converged hint size. */
 		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
-			"Swipe up for apps", cfg->width - 48, 36, 19, appearance_text(false));
+			"Swipe up for apps", cfg->width - 48, 24, 14, appearance_text_muted(false));
 		if (!cue)
 			return false;
 		wlr_scene_node_set_position(&cue->node, x + 24,
-			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - 58);
+			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - 40);
 		return true;
 	}
 	if (!button(shell.chrome, x + cfg->width - 152, y + 8, 128, shell.active ? "Back" : "Cards",

@@ -65,6 +65,7 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int w,
     last_x=x; last_y=y; return allocation();
 }
 static uint32_t appearance_text(bool selected) { (void)selected; return 0xffffffff; }
+static uint32_t appearance_text_muted(bool selected) { (void)selected; return 0xb3ffffff; }
 static struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *parent,
         const char *text, int w, int h, int size, uint32_t argb) {
     (void)parent; (void)text; (void)w; (void)h; (void)size;
