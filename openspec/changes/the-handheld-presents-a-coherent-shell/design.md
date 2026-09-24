@@ -53,3 +53,18 @@ The proposed [surface sheet](../../../docs/design/handheld-shell/surfaces.svg), 
 ## Migration Plan
 
 Land the revised planning artifacts first. Retain the cross-built Rust probe and run its reserved physical check before selecting a final default; keep its result separate from full shell acceptance. Build a separate opt-in Rust client with host route/gesture, real desktop-entry/catalog and rendering fixtures, then implement its drawer, shade/Settings, notification state and theme consumer over the selected opt-in Sway route after the sibling live-card gates. The installed persistent bar remains a separate rollback session, not a staged visual element of the final session. Only switch the default after a reserved board run proves bottom Home, empty deck, drawer, shade/Settings, contextual Back, keyboard escape, app navigation conflicts, real-glass motion and recovery. Keep unmet physical tasks open. Stage 1, kernel, and device tree are unaffected.
+
+The opt-in coherent system also needs a bootable image identity, distinct from
+the normal rollback image. Reuse `mkBoardImage` for a `sdImage-coherent` output
+while retaining `sdImage` on the normal system. Its boot partition carries the
+coherent system's exact `init=` closure selection, kernel, initrd and device
+tree. A running `switch-to-configuration test` is only a reversible preview:
+the external bootloader hook is a no-op and U-Boot imports the fixed
+`/boot/bootargs.txt`, so neither a profile update nor
+`switch-to-configuration boot` alone selects this session after restart.
+For later persistent selection, compare the matching image's complete boot
+file hashes with the installed files, preserve the previous selection and
+recovery image, and update only the files that differ under a reserved board
+procedure. A full image flash remains the fallback, not a prerequisite for
+userspace-only changes. An ordinary reboot and exact running-system and
+service identity are separate physical proof gates.
