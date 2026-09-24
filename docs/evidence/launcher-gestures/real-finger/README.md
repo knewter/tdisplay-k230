@@ -28,7 +28,14 @@ changes are readable, while the lower screen and small labels are softer,
 with a reflection near its bottom edge. This documents a real-finger workflow;
 it does not establish uniform sharpness, exact finger coordinates, or the
 200 ms transition limit. Native captures and instrumentation provide separate
-state/timing evidence. The full sharpness acceptance gate remains open.
+state/timing evidence.
+
+On 2026-09-23 the user explicitly accepted `touch-launcher-gestures-overview`
+as complete based on this existing real-finger workflow and its separate
+injected/native evidence. This closes the change's capture-review task without
+a new recording. Uniform sharpness, exact finger coordinates, and optical
+verification of the 200 ms limit remain unproved by this footage; the lower
+screen and small labels retain the focus limits described above.
 
 Reproduction from the already cropped local source:
 

@@ -10,9 +10,11 @@ the same touch SHALL NOT activate a card. A gesture that does not meet the
 threshold or directional ratio SHALL leave the page unchanged and SHALL NOT
 launch an application.
 
-<!-- UNVERIFIED: the existing launcher records real touch contacts and deliberately
-cancels activation when motion leaves a card, but these numeric gesture thresholds
-and page transitions have not yet been implemented or tested on the glass. -->
+*Grounding: `docs/evidence/launcher-gestures/integrated-injected/README.md`
+records numeric threshold and transition checks on the installed image;
+`docs/evidence/launcher-gestures/real-finger/README.md` records the accepted
+physical paging workflow. The camera view does not resolve exact finger
+coordinates or uniformly sharp small text.*
 
 #### Scenario: A horizontal swipe pages Apps
 
@@ -45,9 +47,12 @@ screencopy protocol. Existing persistent Windows/Home, Keyboard, Apps, Help,
 Previous, Next, and Back controls SHALL remain available according to their current
 contracts.
 
-<!-- UNVERIFIED: metadata cards and the upward/downward overview gestures are a
-new client behavior; existing Windows/Home evidence proves button-based focus and
-Home recovery, not this overview. -->
+*Grounding: `docs/evidence/launcher-gestures/real-finger/README.md` records
+overview entry, return, and window selection by a real finger. The installed
+image's injected/native observations are in
+`docs/evidence/launcher-gestures/integrated-injected/README.md` and
+`docs/evidence/final-shell-image/README.md`. Exact touch paths and optical
+sharpness remain outside this recording's proof.*
 
 #### Scenario: A user opens the overview
 
@@ -78,8 +83,10 @@ Windows/Home, Keyboard, Help, Terminal, Monitor, and system controls. The client
 SHALL remain keyboard-non-interactive while it is an app chooser or overview so
 that the existing terminal keyboard path is not displaced.
 
-<!-- UNVERIFIED: the 200 ms transition and Pixman frame cost require measured
-client evidence; current shell timing only measures ordinary Sway scene/KMS work. -->
+*Grounding: `docs/evidence/launcher-gestures/integrated-injected/README.md`
+records installed-client transition timing, resource counts, and fallback
+checks. `docs/evidence/launcher-gestures/real-finger/README.md` establishes the
+accepted workflow, but optical timing of its transitions remains `UNVERIFIED`.*
 
 #### Scenario: A transition exceeds its frame budget
 

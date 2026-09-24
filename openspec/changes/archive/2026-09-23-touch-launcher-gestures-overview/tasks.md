@@ -25,7 +25,7 @@
 
 - [x] 5.1 Build and flash the integrated image only after host tests pass; verify the normal shell, Apps, Help, keyboard, Terminal, Monitor, and Home controls still work on the board.
 - [x] 5.2 Exercise 20 injected swipes in both directions plus tap, Back, overview focus, stale/empty state, and button fallbacks; verify console/native evidence labels injected input separately from physical-finger proof.
-- [ ] 5.3 Capture a concise physical camera trial showing a real left swipe, right swipe, overview entry/exit, card tap, and Back with the display sharply focused; verify no legs/private scene content and retain physical-glass/readability limitations.
+- [x] 5.3 Review the committed 23-second physical camera trial showing real-finger paging, overview entry/exit, window-card selection, and Back; record the user's acceptance of this workflow, privacy review, and the remaining oblique-focus/readability limits. Do not treat the footage as uniformly sharp or as an optical timing measurement.
 
 ## 6. Review and integration
 
@@ -38,6 +38,6 @@ Task 4.1: the integrated-injected evidence includes 40 keyboard-hidden Apps tran
 
 Task 3.2: `docs/evidence/launcher-gestures/metadata-budget/README.md` records the production-client host ordering fixture plus an injected Monitor-to-Terminal selection on the board: launcher closed, Terminal focused, existing Foot/htop process sets unchanged. The same report records 20 keyboard-visible two-card overview refreshes using the separated metadata deadline; final-image and physical-finger acceptance remain distinct.
 
-Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction is distinct from the still-open focused real-finger gesture capture.
+Final installed-image proof: `docs/evidence/final-shell-image/README.md`, result JSON, executed checker and native captures. Injected board interaction and the accepted real-finger workflow are separate evidence classes; the existing camera view does not prove uniform sharpness or optical timing.
 
 Final evidence validation: `python3 scripts/build_site.py` passed (123 pages, 4,029,541 bytes); `python3 tools/blob-scan.py --no-vendor` accounted for all 295 committed binaries; strict validation passed all 25 active specs/changes.
