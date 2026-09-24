@@ -66,6 +66,28 @@ const APPEARANCE_SOCKET_NAME: &str = "k230-shell-rust-appearance.sock";
 const MAX_PENDING_BYTES: usize = 4096;
 const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
 
+fn panel_input_rect(
+    route: Route,
+    width: u32,
+    height: u32,
+    ready: bool,
+) -> Option<(i32, i32, i32, i32)> {
+    if !ready {
+        return None;
+    }
+    let top = if route == Route::Drawer {
+        (f64::from(height) * 0.19) as i32
+    } else {
+        0
+    };
+    let bottom = if route == Route::Shade {
+        (f64::from(height) * 0.65) as i32
+    } else {
+        height as i32
+    };
+    Some((0, top, width as i32, bottom - top))
+}
+
 fn socket_path() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR").ok_or("XDG_RUNTIME_DIR is unset")?;
     Ok(PathBuf::from(runtime).join(SOCKET_NAME))
@@ -471,6 +493,7 @@ struct ShellClient {
     appearance_pending: bool,
     reveal: RevealState,
     input_ready: bool,
+    input_region_key: Option<(Route, u32, u32, bool)>,
     reduced_motion: bool,
 }
 
@@ -782,6 +805,7 @@ impl ShellClient {
             self.layer = Some(layer);
             self.configured = false;
             self.input_ready = false;
+            self.input_region_key = None;
             self.log("map-request");
         }
         true
@@ -833,7 +857,8 @@ impl ShellClient {
 
     fn input_region(&mut self) {
         let ready = self.reveal.surface().is_none() || self.reveal.input_ready();
-        if ready == self.input_ready {
+        let key = (self.route, self.width, self.height, ready);
+        if self.input_region_key == Some(key) {
             return;
         }
         let Some(layer) = self.layer.as_ref() else {
@@ -842,23 +867,16 @@ impl ShellClient {
         let Ok(region) = Region::new(&self.compositor) else {
             return;
         };
-        if ready {
-            let y = if self.route == Route::Drawer {
-                (self.height as f64 * 0.19) as i32
-            } else {
-                0
-            };
-            let bottom = if self.route == Route::Shade {
-                (self.height as f64 * 0.65) as i32
-            } else {
-                self.height as i32
-            };
-            region.add(0, y, self.width as i32, bottom - y);
+        if let Some((x, y, width, height)) =
+            panel_input_rect(self.route, self.width, self.height, ready)
+        {
+            region.add(x, y, width, height);
         }
         layer
             .wl_surface()
             .set_input_region(Some(region.wl_region()));
         self.input_ready = ready;
+        self.input_region_key = Some(key);
     }
 
     fn hide(&mut self) {
@@ -872,6 +890,7 @@ impl ShellClient {
         self.dirty = false;
         self.buffers.clear();
         self.input_ready = false;
+        self.input_region_key = None;
         self.log("unmap");
     }
 
@@ -1382,6 +1401,7 @@ fn serve() -> Result<(), String> {
         appearance_pending: false,
         reveal: RevealState::default(),
         input_ready: false,
+        input_region_key: None,
         reduced_motion: reduced_motion_enabled(
             std::env::var("K230_SETTINGS_REDUCED_MOTION")
                 .ok()
@@ -1715,6 +1735,23 @@ mod route_tests {
         assert!(touch.down(4, (280.0, 580.0)));
         touch.cancel();
         assert!(!touch.up(4));
+    }
+
+    #[test]
+    fn shade_to_settings_expands_mapped_input_region() {
+        assert_eq!(
+            panel_input_rect(Route::Shade, 568, 1232, true),
+            Some((0, 0, 568, 800))
+        );
+        assert_eq!(
+            panel_input_rect(Route::Settings, 568, 1232, true),
+            Some((0, 0, 568, 1232))
+        );
+        assert_eq!(panel_input_rect(Route::Shade, 568, 1232, false), None);
+        assert_eq!(
+            panel_input_rect(Route::Shade, 600, 1200, true),
+            Some((0, 0, 600, 780))
+        );
     }
 
     #[test]
