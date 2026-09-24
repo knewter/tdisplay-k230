@@ -50,3 +50,19 @@ After the exact candidate and its recovery path are staged by the sole board
 operator, the remaining device gate is the integrated drawer/card/keyboard
 trial with representative apps, native captures and measured CPU/frame cost.
 Real-finger acceptance stays pending until separately observed.
+
+## Integrated theme system closure
+
+Source `cd06bee4` built the complete opt-in NixOS toplevel on 2026-09-24:
+
+```sh
+nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel \
+  --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+PASS: `/nix/store/206lci3a8k86igxi1hmahdwfzd9gd5l0-nixos-system-nixos-26.11.20260919.20b1ddd`.
+This includes the paired Rust/deck appearance command wiring and persistent
+Rust wallpaper implementation. An initial evaluation rejected a store-context
+attribute name in the notification source allowlist; `cd06bee4` uses JSON
+string content to preserve its package dependency. Full build passed after
+that correction. No board activation or image boot is claimed by this build.
