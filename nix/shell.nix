@@ -345,7 +345,7 @@ let
       # more specific video rules below. Home is the live deck, not a tab strip.
       floating_maximum_size -1 x -1
       default_floating_border none
-      for_window [tiling app_id=".*"] mark --add k230-shell-ordinary-maximized, floating enable, resize set 100 ppt 100 ppt, move position 0 0
+      for_window [tiling app_id="^(?!k230-video-(software|mvx)$).+"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
     ''}
 
     # mpv's wlshm surface is explicitly floating so its profile geometry is
