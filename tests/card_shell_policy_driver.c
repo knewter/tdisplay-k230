@@ -378,46 +378,57 @@ static void two_axis_conflicts(void) {
     assert(cs_up(&p,4,412).consumed && cs_up(&p,5,413).consumed);
     assert(!p.blocked_until_up);
 
-    assert(cs_begin_entry(&p,6,284,1220,420,202).consumed);
+    assert(cs_begin_entry(&p,10,284,1220,414,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,6,420,1220,430);
+    cs_entry_motion(&p,10,420,1220,415);
+    assert(cs_entry_up(&p,10).consumed && p.entry_settling);
+    cs_tick(&p,416);cs_tick(&p,456);
+    double partial_x=p.entry_dx,partial_y=p.entry_progress;
+    assert(cs_down(&p,11,300,900,457).consumed && p.entry_reversing);
+    assert(p.entry_dx==partial_x && p.entry_progress==partial_y);
+    assert(cs_up(&p,11,458).consumed);
+    assert(cs_tick(&p,617).focus_id==202 && p.mode==CS_NORMAL);
+
+    assert(cs_begin_entry(&p,6,284,1220,620,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,6,420,1220,630);
     assert(cs_entry_up(&p,6).consumed && p.entry_target_id==101);
-    cs_tick(&p,440);
+    cs_tick(&p,640);
     const struct cs_card target_gone[]={{202,CS_LIVE,true,true}};
     cs_set_cards(&p,target_gone,1);
-    assert(cs_tick(&p,600).focus_id==202 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,800).focus_id==202 && p.mode==CS_NORMAL);
 
     cs_set_cards(&p,restored,2);
-    assert(cs_begin_entry(&p,9,284,1220,605,202).consumed);
+    assert(cs_begin_entry(&p,9,284,1220,805,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,9,420,1220,606);
+    cs_entry_motion(&p,9,420,1220,806);
     assert(cs_entry_up(&p,9).consumed);
-    cs_tick(&p,607);
+    cs_tick(&p,807);
     const struct cs_card target_private[]={{101,CS_PRIVATE,true,true},
                                            {202,CS_LIVE,true,true}};
     cs_set_cards(&p,target_private,2);
-    struct cs_result private_result=cs_tick(&p,767);
+    struct cs_result private_result=cs_tick(&p,967);
     assert((private_result.actions&CS_RESTORE) && private_result.focus_id==101);
     assert(p.mode==CS_NORMAL && !p.entry_order); /* never expand a private mirror */
 
     cs_set_cards(&p,restored,2);
-    assert(cs_begin_entry(&p,7,284,1220,780,202).consumed);
+    assert(cs_begin_entry(&p,7,284,1220,980,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,7,420,1130,790);
+    cs_entry_motion(&p,7,420,1130,990);
     const struct cs_card source_private[]={{101,CS_LIVE,true,true},
                                            {202,CS_PRIVATE,true,true}};
     assert(cs_set_cards(&p,source_private,2).actions&CS_RESTORE);
     assert(p.mode==CS_NORMAL && !p.entry_order && p.blocked_until_up);
-    assert(cs_up(&p,7,791).consumed);
+    assert(cs_up(&p,7,991).consumed);
 
     cs_set_cards(&p,restored,2);
     p.config.reduced_motion=true;
-    assert(cs_begin_entry(&p,8,284,1220,800,202).consumed);
+    assert(cs_begin_entry(&p,8,284,1220,1000,202).consumed);
     entry_geometry(&p);
-    cs_entry_motion(&p,8,420,1220,810);
+    cs_entry_motion(&p,8,420,1220,1010);
     assert(cs_entry_up(&p,8).consumed);
-    assert(!cs_tick(&p,820).actions);
-    assert(cs_tick(&p,880).actions&CS_REDRAW);
+    assert(!cs_tick(&p,1020).actions);
+    assert(cs_tick(&p,1080).actions&CS_REDRAW);
     assert(p.mode==CS_EXPANDING && p.expand_id==101);
     cs_finish(&p);
 }

@@ -754,6 +754,12 @@ DATA 1c613ec7ce7f9785c0dbc43a963534789aa3580059b0747265369cafdc609076  docs/evid
 DATA 54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png
 DATA dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png
 DATA 1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png
+DATA 68a92ee6cb08da4c13ea717d1046d8cf1f94aaf86fb92c0ff46534ba8f6ad73f  docs/evidence/coherent-shell/two-axis-qemu/two-axis-held.png
+DATA 8521494c8dd2e1abdbc64da3a8d52935d51307f9910604645d5d519d88a8499b  docs/evidence/coherent-shell/two-axis-qemu/two-axis-left.png
+DATA 1ccaab283a509331ed392725eac48ee08ef6e8c8d94711e2a0fd0d25315ac9d0  docs/evidence/coherent-shell/two-axis-qemu/two-axis-private-neighbor.png
+DATA be1a5afadef475a2d132489465eff5b288e2983a22ea4f0782f159807aba44a4  docs/evidence/coherent-shell/two-axis-qemu/two-axis-second-focused.png
+DATA 294a90a5ceba6bb59f49aeffc22ba6e24b0c3c6824b052da48ca217918f501b3  docs/evidence/coherent-shell/two-axis-qemu/two-axis-start.png
+DATA 441248f701999c8c186ef1500c865e57970928e65b86a98895b38a5d5b48808e  docs/evidence/coherent-shell/two-axis-qemu/two-axis-up.png
 DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
 DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
 DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
@@ -1608,3 +1614,18 @@ The ten original host-rendered DATA PNGs in `docs/evidence/coherent-shell/rust-v
 | `docs/evidence/coherent-shell/rust-visual-themes-host/latte/settings.png` | 39223 | DATA | `02a2fa43467c766afd3721e364ed738bff2ab22bf0ea2f2353b8e9bd3c28cf73` |
 | `docs/evidence/coherent-shell/rust-visual-themes-host/latte/shade.png` | 37777 | DATA | `b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45` |
 | `docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png` | 22963 | DATA | `ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0` |
+
+### Two-axis card entry QEMU captures
+
+These six PNGs are unedited headless QEMU DATA captures of public synthetic
+blue/purple Wayland clients. The adjacent README records exact binaries,
+measured pixel displacement, and the open physical-touch gate.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-held.png` | 9431 | DATA | `68a92ee6cb08da4c13ea717d1046d8cf1f94aaf86fb92c0ff46534ba8f6ad73f` |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-left.png` | 9389 | DATA | `8521494c8dd2e1abdbc64da3a8d52935d51307f9910604645d5d519d88a8499b` |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-private-neighbor.png` | 8152 | DATA | `1ccaab283a509331ed392725eac48ee08ef6e8c8d94711e2a0fd0d25315ac9d0` |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-second-focused.png` | 4505 | DATA | `be1a5afadef475a2d132489465eff5b288e2983a22ea4f0782f159807aba44a4` |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-start.png` | 5817 | DATA | `294a90a5ceba6bb59f49aeffc22ba6e24b0c3c6824b052da48ca217918f501b3` |
+| `docs/evidence/coherent-shell/two-axis-qemu/two-axis-up.png` | 6573 | DATA | `441248f701999c8c186ef1500c865e57970928e65b86a98895b38a5d5b48808e` |

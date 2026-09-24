@@ -40,6 +40,7 @@ def main():
     ap.add_argument('--scaled-cache',action='store_true',help='enable bounded opaque RGB565 cache')
     ap.add_argument('--rgb565',action='store_true',help='request the RGB565 headless render format')
     ap.add_argument('--touch-first',action='store_true',help='exercise opt-in deck-to-drawer route')
+    ap.add_argument('--two-axis',action='store_true',help='measure same-contact app entry and quick switch')
     ap.add_argument('--reveal-stream',action='store_true',help='capture persistent drawer/shade progress IPC')
     ap.add_argument('--rust-reveal-client',help='run the actual RISC-V Rust reveal receiver')
     ap.add_argument('--drawer-layer-client',help='native mapped layer-shell fixture for touch-first route')
@@ -50,6 +51,8 @@ def main():
         ap.error('--reveal-stream requires --touch-first')
     if args.rust_reveal_client and (not args.touch_first or args.reveal_stream):
         ap.error('--rust-reveal-client requires --touch-first and excludes --reveal-stream')
+    if args.two_axis and (not args.touch_first or not args.native_touch):
+        ap.error('--two-axis requires --touch-first and --native-touch')
     runtime=args.output or Path(tempfile.mkdtemp(prefix='k230-card-headless-'))
     if args.output and runtime.exists() and any(runtime.iterdir()):
         ap.error('--output must be a new or empty directory')
@@ -156,6 +159,100 @@ def main():
         wait_for(lambda:focused()=='k230.card.one')
         time.sleep(.15)  # Let the focused floating scene reach the headless output.
         subprocess.run(['grim',str(runtime/'first-focused.png')],env=env,check=True)
+        if args.two_axis:
+            def capture(name):
+                subprocess.run(['grim',str(runtime/name)],env=env,check=True)
+                with Image.open(runtime/name) as image:
+                    return image.convert('RGB')
+            def color_box(frame,which):
+                px=frame.load(); xs=[];ys=[]
+                for y in range(80,min(frame.height,1120),2):
+                    for x in range(0,frame.width,2):
+                        red,green,blue=px[x,y]
+                        matching=(red<55 and green>35 and blue>green*1.3) if which=='blue' else \
+                            (red>62 and blue>48 and green<red*.55 and blue>green*1.4)
+                        if matching: xs.append(x);ys.append(y)
+                assert len(xs)>200,(which,len(xs))
+                return min(xs),min(ys),max(xs),max(ys)
+            def near(actual,expected,tolerance=8):
+                assert abs(actual-expected)<=tolerance,(actual,expected,tolerance)
+            original=capture('two-axis-origin.png')
+            origin=color_box(original,'blue')
+            command('down 70 284 1200')
+            start=capture('two-axis-start.png')
+            command('motion 70 284 1100')
+            vertical=capture('two-axis-up.png')
+            vb=color_box(vertical,'blue')
+            assert vb[1]>origin[1] and vb[3]<origin[3],(origin,vb)
+            # The client color's lower edge moves with the 100 px upward
+            # drag; small deviation comes from proportional live scaling.
+            near(vb[3]-origin[3],-100,14)
+            command('motion 70 283 1100')
+            bent=capture('two-axis-bend.png')
+            bb=color_box(bent,'blue')
+            near(bb[2]-vb[2],-1,4)
+            near(bb[1],vb[1],4)
+            near(bb[3],vb[3],4)
+            command('motion 70 150 1100')
+            lateral=capture('two-axis-left.png')
+            lb=color_box(lateral,'blue')
+            near(lb[2]-vb[2],-134,7)
+            near(lb[1],vb[1],4)
+            near(lb[3],vb[3],4)
+            time.sleep(.12)
+            held=capture('two-axis-held.png')
+            hb=color_box(held,'blue')
+            near(hb[2],lb[2],4);near(hb[1],lb[1],4);near(hb[3],lb[3],4)
+            command('motion 70 284 1185')
+            reversed_frame=capture('two-axis-reversed.png')
+            rb=color_box(reversed_frame,'blue')
+            assert rb[2]>lb[2] and rb[1]<lb[1],(lb,rb)
+            command('up 70')
+            wait_for(lambda:'restored focus=' in logs())
+            assert focused()=='k230.card.one'
+            before=logs().count('restored focus=')
+            command('down 71 284 1200')
+            command('motion 71 284 1100')
+            command('motion 71 150 1100')
+            command('up 71')
+            wait_for(lambda:logs().count('restored focus=')>before)
+            assert focused()=='k230.card.two'
+            second=capture('two-axis-second-focused.png')
+            assert second.getpixel((284,700))[0]>70
+            before=logs().count('restored focus=')
+            command('down 72 284 1200')
+            command('motion 72 420 1200')
+            command('up 72')
+            wait_for(lambda:logs().count('restored focus=')>before)
+            assert focused()=='k230.card.one'
+            again=capture('two-axis-opposite-return.png')
+            assert again.getpixel((284,700))[0]<60
+            ipc('[app_id="k230.card.two"] mark --add k230_card_private')
+            command('down 73 284 1200')
+            command('motion 73 150 1200')
+            private=capture('two-axis-private-neighbor.png')
+            # The private neighbor's purple client pixels must not appear in
+            # the exposed right edge; only its neutral placeholder may show.
+            right=private.crop((420,250,568,850))
+            assert not any(color_box_pixel[0]>62 and color_box_pixel[2]>48 and
+                           color_box_pixel[1]<color_box_pixel[0]*.55
+                           for color_box_pixel in right.get_flattened_data())
+            before=logs().count('restored focus=')
+            command('up 73')
+            wait_for(lambda:logs().count('restored focus=')>before)
+            assert focused()=='k230.card.two'
+            ipc('[app_id="k230.card.two"] unmark k230_card_private')
+            ipc('[app_id="k230.card.one"] focus')
+            wait_for(lambda:focused()=='k230.card.one')
+            command('down 74 284 1200')
+            command('motion 74 150 1200')
+            two.terminate();two.wait(timeout=10)
+            wait_for(lambda:sum(n.get('app_id') in ('k230.card.one','k230.card.two')
+                                for n in tree_nodes(ipc('',4)))==1)
+            command('up 74')
+            wait_for(lambda:focused()=='k230.card.one')
+            print('PASS two-axis app entry: native QEMU pixels, hold/reversal, quick opposite, privacy and exit; no physical touch',flush=True)
+            return
         if args.benchmark:
             command('benchmark injected'); time.sleep(3.1)
         command('enter')
