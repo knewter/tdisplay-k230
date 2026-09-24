@@ -49,6 +49,26 @@ static const char *member(JsonObject *object, const char *key) {
   return JSON_NODE_HOLDS_VALUE(node) && json_node_get_value_type(node)==G_TYPE_STRING
     ? json_node_get_string(node) : NULL;
 }
+static bool numeric_member(JsonObject *object, const char *key, double *out) {
+  if (!object || !json_object_has_member(object,key) || !out) return false;
+  JsonNode *node=json_object_get_member(object,key);
+  if (!JSON_NODE_HOLDS_VALUE(node)) return false;
+  GType type=json_node_get_value_type(node);
+  if (type!=G_TYPE_DOUBLE && type!=G_TYPE_INT64 && type!=G_TYPE_INT
+      && type!=G_TYPE_UINT64 && type!=G_TYPE_UINT) return false;
+  *out=json_node_get_double(node);
+  return isfinite(*out);
+}
+static bool numeric_array(JsonArray *array, guint index, double *out) {
+  if (!array || index>=json_array_get_length(array) || !out) return false;
+  JsonNode *node=json_array_get_element(array,index);
+  if (!JSON_NODE_HOLDS_VALUE(node)) return false;
+  GType type=json_node_get_value_type(node);
+  if (type!=G_TYPE_DOUBLE && type!=G_TYPE_INT64 && type!=G_TYPE_INT
+      && type!=G_TYPE_UINT64 && type!=G_TYPE_UINT) return false;
+  *out=json_node_get_double(node);
+  return isfinite(*out);
+}
 static bool hex_color(const char *value, uint32_t *color) {
   if (!value || strlen(value)!=7 || value[0]!='#') return false;
   unsigned parsed=0;
@@ -130,9 +150,9 @@ static JsonParser *read_tokens(const char *path, const char *identity) {
     safe=JSON_NODE_HOLDS_OBJECT(root);
     if (safe) {
       JsonObject *object=json_node_get_object(root);
+      double version=0;
       safe=member(object,"generation") && !strcmp(member(object,"generation"),identity)
-        && json_object_has_member(object,"version")
-        && json_object_get_int_member(object,"version")==1
+        && numeric_member(object,"version",&version) && version==1
         && json_object_has_member(object,"sections")
         && JSON_NODE_HOLDS_OBJECT(json_object_get_member(object,"sections"));
     }
@@ -167,9 +187,13 @@ static void set_active_tokens(JsonParser *parser, const char *path) {
 static JsonObject *token(const char *section, const char *key) {
   if (!active_tokens || !section || !key) return NULL;
   JsonObject *root=json_node_get_object(json_parser_get_root(active_tokens));
-  JsonObject *sections=json_object_get_object_member(root,"sections");
+  JsonNode *sections_node=json_object_get_member(root,"sections");
+  JsonObject *sections=JSON_NODE_HOLDS_OBJECT(sections_node)
+    ? json_node_get_object(sections_node) : NULL;
   if (!sections || !json_object_has_member(sections,section)) return NULL;
-  JsonObject *group=json_object_get_object_member(sections,section);
+  JsonNode *group_node=json_object_get_member(sections,section);
+  JsonObject *group=JSON_NODE_HOLDS_OBJECT(group_node)
+    ? json_node_get_object(group_node) : NULL;
   if (!group || !json_object_has_member(group,key)) return NULL;
   JsonNode *node=json_object_get_member(group,key);
   return JSON_NODE_HOLDS_OBJECT(node) ? json_node_get_object(node) : NULL;
@@ -188,20 +212,22 @@ bool k230_appearance_brush(const char *section, const char *key,
                            struct k230_appearance_brush *out) {
   JsonObject *field=token(section,key);
   if (!out || !field || g_strcmp0(member(field,"kind"),"brush")) return false;
-  JsonArray *stops=json_object_get_array_member(field,"stops");
+  JsonNode *stops_node=json_object_get_member(field,"stops");
+  JsonArray *stops=JSON_NODE_HOLDS_ARRAY(stops_node)
+    ? json_node_get_array(stops_node) : NULL;
   guint count=stops ? json_array_get_length(stops) : 0;
   if (count<1 || count>K230_APPEARANCE_MAX_STOPS) return false;
   struct k230_appearance_brush result={0};
   result.stop_count=count;
-  result.alpha=json_object_get_double_member(field,"alpha");
-  result.angle_degrees=json_object_get_double_member(field,"angle_degrees");
-  if (!isfinite(result.alpha) || result.alpha<0 || result.alpha>1
-      || !isfinite(result.angle_degrees) || fabs(result.angle_degrees)>3600) return false;
+  if (!numeric_member(field,"alpha",&result.alpha)
+      || !numeric_member(field,"angle_degrees",&result.angle_degrees)
+      || result.alpha<0 || result.alpha>1
+      || fabs(result.angle_degrees)>3600) return false;
   for (guint i=0; i<count; i++) {
     JsonObject *stop=json_array_get_object_element(stops,i);
     if (!stop || !argb_value(member(stop,"argb"),&result.stops[i].argb)) return false;
-    result.stops[i].offset=json_object_get_double_member(stop,"offset");
-    if (!isfinite(result.stops[i].offset) || result.stops[i].offset<0
+    if (!numeric_member(stop,"offset",&result.stops[i].offset)
+        || result.stops[i].offset<0
         || result.stops[i].offset>1) return false;
   }
   *out=result; return true;
@@ -209,8 +235,8 @@ bool k230_appearance_brush(const char *section, const char *key,
 bool k230_appearance_number(const char *section, const char *key, double *out) {
   JsonObject *field=token(section,key);
   if (!out || !field || g_strcmp0(member(field,"kind"),"number")) return false;
-  double value=json_object_get_double_member(field,"value");
-  if (!isfinite(value) || fabs(value)>10000) return false;
+  double value=0;
+  if (!numeric_member(field,"value",&value) || fabs(value)>10000) return false;
   *out=value; return true;
 }
 bool k230_appearance_border(const char *section, const char *key,
@@ -220,11 +246,13 @@ bool k230_appearance_border(const char *section, const char *key,
   char *width_key=g_strconcat(key,"-width",NULL);
   JsonObject *width=token(section,width_key);
   if (width && g_strcmp0(member(width,"kind"),"width")==0) {
-    JsonArray *values=json_object_get_array_member(width,"value");
+    JsonNode *values_node=json_object_get_member(width,"value");
+    JsonArray *values=JSON_NODE_HOLDS_ARRAY(values_node)
+      ? json_node_get_array(values_node) : NULL;
     if (!values || json_array_get_length(values)!=4) { g_free(width_key); return false; }
     for (int i=0; i<4; i++) {
-      out->width[i]=json_array_get_double_element(values,i);
-      if (!isfinite(out->width[i]) || out->width[i]<0 || out->width[i]>128) {
+      if (!numeric_array(values,i,&out->width[i])
+          || out->width[i]<0 || out->width[i]>128) {
         g_free(width_key); return false;
       }
     }
@@ -233,7 +261,10 @@ bool k230_appearance_border(const char *section, const char *key,
   for (int i=0; i<4; i++) {
     char *side_key=g_strconcat(width_key,"-",sides[i],NULL);
     double override=0;
-    if (k230_appearance_number(section,side_key,&override)) out->width[i]=override;
+    if (k230_appearance_number(section,side_key,&override)) {
+      if (override<0 || override>128) { g_free(side_key); g_free(width_key); return false; }
+      out->width[i]=override;
+    }
     g_free(side_key);
   }
   g_free(width_key); return true;

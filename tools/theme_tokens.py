@@ -94,10 +94,14 @@ def compile_tokens(shell: dict) -> dict:
         identity = (section, key)
         if identity in chain or len(chain) > 8:
             raise TokenError("appearance reference cycle")
-        value = shell.get(section, {}).get(key)
+        fields = shell.get(section)
+        if not isinstance(fields, dict):
+            raise TokenError(f"invalid appearance reference section: {section}")
+        value = fields.get(key)
         if isinstance(value, str) and REFERENCE.fullmatch(value):
             next_section, next_key = value.split(".", 1)
-            if next_key not in shell.get(next_section, {}):
+            next_fields = shell.get(next_section)
+            if not isinstance(next_fields, dict) or next_key not in next_fields:
                 raise TokenError(f"missing appearance reference: {value}")
             return resolve(next_section, next_key, chain + (identity,))
         return value

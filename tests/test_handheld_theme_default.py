@@ -24,8 +24,12 @@ class PinnedThemeDefault(unittest.TestCase):
                            ("LICENSE", ROOT / "LICENSE")):
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), SOURCE_HASHES[name])
         report = json.loads((ROOT / "default-report.json").read_text())
+        appearance = json.loads((ROOT / "default-appearance.json").read_text())
+        unsigned = {key: value for key, value in appearance.items() if key != "generation"}
+        canonical = json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode()
         identity = hashlib.sha256(b"catppuccin-colors\0" + colors
-                                  + b"catppuccin-icons\0" + icons).hexdigest()[:24]
+                                  + b"catppuccin-icons\0" + icons
+                                  + b"appearance-v1\0" + canonical).hexdigest()[:24]
         self.assertEqual(report["generation"], identity)
         self.assertEqual(report["source_revision"],
                          "28ceaae70ebac3a0edcc21f2faa77a90dc6d404c")
@@ -35,13 +39,20 @@ class PinnedThemeDefault(unittest.TestCase):
         self.assertEqual(report["source_file_sha256"],
                          {"colors.toml": SOURCE_HASHES["colors.toml"],
                           "icons.theme": SOURCE_HASHES["icons.theme"]})
-        appearance = json.loads((ROOT / "default-appearance.json").read_text())
         self.assertEqual(appearance["generation"], identity)
         self.assertEqual(appearance["version"], 1)
         self.assertEqual(appearance["icon_theme"], report["icon_theme"])
         self.assertIsNone(appearance["background"])
         self.assertEqual(appearance["sections"]["launcher"]["background"]["stops"][0]["argb"],
                          "#ff1e1e2e")
+        changed = json.loads(json.dumps(unsigned))
+        changed["sections"]["launcher"]["background"]["alpha"] = 0.5
+        changed_hash = hashlib.sha256(b"catppuccin-colors\0" + colors
+                                      + b"catppuccin-icons\0" + icons
+                                      + b"appearance-v1\0"
+                                      + json.dumps(changed, sort_keys=True,
+                                                   separators=(",", ":")).encode()).hexdigest()[:24]
+        self.assertNotEqual(changed_hash, identity)
 
 
 if __name__ == "__main__":

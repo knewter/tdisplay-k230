@@ -34,6 +34,7 @@ class ThemeTokenRendering(unittest.TestCase):
             ({"launcher": {"border": "menu.missing"}}, "missing appearance reference"),
             ({"launcher": {"background": "#112233", "background-alpha": 1.2}}, "out of range"),
             ({"launcher": {"border-width": "1 2 3 4 5"}}, "width arity"),
+            ({"other": 3, "launcher": {"background": "other.value"}}, "invalid shell section"),
         ):
             with self.subTest(problem=problem):
                 with self.assertRaisesRegex(TokenError, problem):

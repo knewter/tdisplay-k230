@@ -68,6 +68,23 @@ int main(int argc, char **argv) {
 }
 '''
 
+MALFORMED_HARNESS = r'''
+#include "appearance.h"
+#include <stdlib.h>
+int main(int argc, char **argv) {
+  if (argc!=4 || k230_appearance_start(argv[1],argv[1],argv[2])) return 2;
+  struct k230_appearance_brush brush;
+  struct k230_appearance_border border;
+  double number;
+  int kind=atoi(argv[3]);
+  int accepted=(kind==1) ? k230_appearance_brush("launcher","background",&brush)
+    : (kind==2) ? k230_appearance_border("launcher","border",&border)
+    : k230_appearance_number("spacing","scale",&number);
+  k230_appearance_stop();
+  return accepted ? 1 : 0;
+}
+'''
+
 
 class ShellAppearanceReceiver(unittest.TestCase):
     @staticmethod
@@ -197,6 +214,39 @@ class ShellAppearanceReceiver(unittest.TestCase):
         ):
             with self.subTest(background=palette["background"]):
                 self.run_case(palette=palette)
+
+    def test_malformed_native_token_types_and_widths_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "malformed.c"
+            source.write_text(MALFORMED_HARNESS)
+            binary = root / "malformed"
+            pkg = subprocess.check_output(
+                ["pkg-config", "--cflags", "--libs", "json-glib-1.0"], text=True).split()
+            subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                            "-I", str(ROOT / "nix/touch-launcher"), str(source),
+                            str(ROOT / "nix/touch-launcher/appearance.c"), *pkg,
+                            "-o", str(binary)], check=True)
+            generation = root / "generations" / ("a" * 24)
+            self.write_generation(generation, {"background": "#202830", "foreground": "#ffffff"})
+            payload_path = generation / "appearance.json"
+            pristine = json.loads(payload_path.read_text())
+            for index, (kind, mutate) in enumerate((
+                (1, lambda p: p["sections"]["launcher"]["background"].update(alpha="0.5")),
+                (1, lambda p: p["sections"]["launcher"]["background"]["stops"][0].pop("offset")),
+                (2, lambda p: p["sections"]["launcher"].update(
+                    **{"border-width-left": {"kind": "number", "value": -1}})),
+                (3, lambda p: p["sections"]["spacing"]["scale"].update(value=True)),
+            )):
+                with self.subTest(kind=kind, mutate=mutate):
+                    payload = json.loads(json.dumps(pristine))
+                    mutate(payload)
+                    payload_path.write_text(json.dumps(payload))
+                    runtime = root / f"run-{index}"
+                    runtime.mkdir(exist_ok=True)
+                    result = subprocess.run([str(binary), str(runtime), str(generation), str(kind)],
+                                            capture_output=True, text=True, timeout=3)
+                    self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":
