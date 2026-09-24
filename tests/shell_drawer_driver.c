@@ -27,6 +27,16 @@ int main(int argc, char **argv) {
     assert(drawer_begin(&d, 2, 150, 90));
     assert(!drawer_release(&d, 2));
     assert(!drawer_tick(&d, 16) && d.offset == coasting);
+  } else if (!strcmp(name, "finger-coast")) {
+    assert(drawer_begin(&d, 1, 300, 0));
+    assert(drawer_move(&d, 1, 170, 50));
+    double sampled=d.velocity;
+    assert(sampled>0);
+    assert(!drawer_tick(&d, 16));
+    assert(d.velocity==sampled && d.offset==130);
+    assert(!drawer_release(&d, 1));
+    assert(drawer_tick(&d, 16));
+    assert(d.offset>130);
   } else if (!strcmp(name, "cancel-below-threshold")) {
     assert(drawer_begin(&d, 1, 300, 0));
     assert(!drawer_move(&d, 1, 289, 50));

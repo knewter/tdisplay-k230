@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ("drawer-drag", "flick-stop", "cancel-below-threshold", "tap-launch",
+CASES = ("drawer-drag", "flick-stop", "finger-coast", "cancel-below-threshold", "tap-launch",
          "hold-cue", "move-cancel", "back-cancel", "second-contact")
 
 

@@ -46,6 +46,10 @@ static struct shell_drawer drawer = { .pointer_id = -1 };
 static int held_action = ACT_NONE;
 static char *held_label;
 static int route_fd = -1;
+static int route_client_fd = -1;
+static int64_t route_client_deadline_ms;
+static char route_request[24];
+static size_t route_request_len;
 static char route_path[sizeof(((struct sockaddr_un *)0)->sun_path)];
 struct window_card { char *id, *title, *app_id, *state; };
 static GPtrArray *apps, *windows;
@@ -77,6 +81,14 @@ struct page_transition {
 };
 static struct page_transition transition;
 static char *launch_error;
+/* A selected app leaves the live deck before it is launched. Sway IPC is
+ * reaped in the event loop so a stalled compositor never blocks touch input. */
+static struct {
+  GPid pid;
+  int action;
+  int64_t deadline_ms;
+  bool timed_out;
+} pending_launch;
 static void redraw(void);
 static void transition_settle(void);
 static bool transition_prepare(void);
@@ -451,12 +463,6 @@ static void draw_shell_drawer(void) {
   /* A transparent upper fifth leaves the compositor's live deck visible. */
   memset(pixels,0,(size_t)mapped_size);
   rect(0,top,width,height-top,k230_appearance.background);
-  rect(width/2-28,top+14,56,5,k230_appearance.muted);
-  text("Applications",24,top+34,width-48,60,40,k230_appearance.foreground);
-  char subtitle[96];
-  snprintf(subtitle,sizeof subtitle,"%u installed · swipe to scroll",apps ? apps->len : 0);
-  text(launch_error ? launch_error : subtitle,24,top+92,width-48,30,19,
-       launch_error ? k230_appearance_error() : k230_appearance.muted);
   button_count=0;
   int first=drawer.offset/row_step;
   int y=list_top-(drawer.offset%row_step);
@@ -469,11 +475,23 @@ static void draw_shell_drawer(void) {
     else if (item==2) label="New terminal";
     else if (item==3) label="Help";
     else label=g_app_info_get_display_name(g_ptr_array_index(apps,item-BUILTIN_COUNT));
-    add_button(action,label,NULL,24,y,width-48,row_height,k230_appearance.tile);
+    /* The first scrolled row is partly under the sheet header. Its hit box
+     * must match only the portion that remains visible after clipping. */
+    int hit_y=y<list_top ? list_top : y;
+    add_button(action,label,NULL,24,hit_y,width-48,row_height-(hit_y-y),k230_appearance.tile);
     rect(24,y,width-48,row_height,k230_appearance.tile);
     app_icon(action,40,y+(row_height-48)/2);
     text(label,104,y,width-136,row_height,27,k230_appearance.foreground);
   }
+  /* Clip all row artwork to the scrolling viewport, including icon/text
+   * rendered by separate Cairo contexts. */
+  rect(0,top,width,list_top-top,k230_appearance.background);
+  rect(width/2-28,top+14,56,5,k230_appearance.muted);
+  text("Applications",24,top+34,width-48,60,40,k230_appearance.foreground);
+  char subtitle[96];
+  snprintf(subtitle,sizeof subtitle,"%u installed · swipe to scroll",apps ? apps->len : 0);
+  text(launch_error ? launch_error : subtitle,24,top+92,width-48,30,19,
+       launch_error ? k230_appearance_error() : k230_appearance.muted);
   rect(width/2-28,height-14,56,4,k230_appearance.muted);
   if (!shell_item_count()) text("No installed apps",24,list_top,width-48,64,24,k230_appearance.muted);
 }
@@ -590,6 +608,67 @@ static void focus_window_card(int item) {
   }
   g_free(id);
 }
+static void launch_selected(int action) {
+  GError *error=NULL;
+  gboolean ok=FALSE;
+  if(action>=0) {
+    GAppInfo *app=g_ptr_array_index(apps,action);
+    ok=k230_app_launch(g_app_info_get_id(app),&error);
+  } else {
+    const char *helper=getenv("K230_LAUNCHER_ACTION");
+    const char *name=action==ACT_TERMINAL?"terminal":action==ACT_MONITOR?"monitor":"new-terminal";
+    if(helper && *helper) {
+      char *argv[]={(char *)helper,(char *)name,NULL};
+      ok=g_spawn_async(NULL,argv,NULL,G_SPAWN_DEFAULT,NULL,NULL,NULL,&error);
+    } else g_set_error_literal(&error,G_IO_ERROR,G_IO_ERROR_NOT_FOUND,"Application action is unavailable");
+  }
+  if(ok) { if (shell_mode) shell_hide(); else running=false; return; }
+  g_free(launch_error); launch_error=g_strdup(error?error->message:"Could not launch application");
+  fprintf(stderr,"k230-touch-launcher: %s\n",launch_error);
+  g_clear_error(&error);
+  if (shell_mode) (void)shell_show(SHELL_DRAWER);
+  else redraw();
+}
+static bool leave_deck_for_launch(int action) {
+  const char *swaymsg=getenv("K230_SWAYMSG");
+  if (!swaymsg || !g_path_is_absolute(swaymsg) || pending_launch.pid) return false;
+  char *argv[]={(char *)swaymsg,"card_shell","back",NULL};
+  GError *error=NULL;
+  shell_hide();
+  if (!g_spawn_async(NULL,argv,NULL,G_SPAWN_DO_NOT_REAP_CHILD,NULL,NULL,
+                     &pending_launch.pid,&error)) {
+    g_free(launch_error);
+    launch_error=g_strdup(error ? error->message : "Could not leave the deck");
+    g_clear_error(&error);
+    (void)shell_show(SHELL_DRAWER);
+    return false;
+  }
+  pending_launch.action=action;
+  pending_launch.deadline_ms=monotonic_ms()+1200;
+  pending_launch.timed_out=false;
+  return true;
+}
+static void poll_pending_launch(void) {
+  if (!pending_launch.pid) return;
+  int status=0;
+  pid_t result=waitpid(pending_launch.pid,&status,WNOHANG);
+  if (!result && monotonic_ms()>=pending_launch.deadline_ms && !pending_launch.timed_out) {
+    kill(pending_launch.pid,SIGKILL);
+    pending_launch.timed_out=true;
+    pending_launch.deadline_ms=monotonic_ms()+100;
+  }
+  if (!result) return;
+  if (result<0) status=0;
+  g_spawn_close_pid(pending_launch.pid);
+  pending_launch.pid=0;
+  if (!pending_launch.timed_out && WIFEXITED(status) && WEXITSTATUS(status)==0) {
+    launch_selected(pending_launch.action);
+    return;
+  }
+  g_free(launch_error);
+  launch_error=g_strdup(pending_launch.timed_out ? "Home did not respond" : "Could not leave Home");
+  (void)shell_show(SHELL_DRAWER);
+}
 static void run_action(int action) {
   if (shell_mode) {
     if (action==ACT_BACK) {
@@ -617,23 +696,8 @@ static void run_action(int action) {
     if(navigation_result==1) { redraw(); return; }
   }
   if(action>=0 && (unsigned)action>=apps->len) return;
-  GError *error=NULL;
-  gboolean ok=FALSE;
-  if(action>=0) {
-    GAppInfo *app=g_ptr_array_index(apps,action);
-    ok=k230_app_launch(g_app_info_get_id(app),&error);
-  } else {
-    const char *helper=getenv("K230_LAUNCHER_ACTION");
-    const char *name=action==ACT_TERMINAL?"terminal":action==ACT_MONITOR?"monitor":"new-terminal";
-    if(helper && *helper) {
-      char *argv[]={(char *)helper,(char *)name,NULL};
-      ok=g_spawn_async(NULL,argv,NULL,G_SPAWN_DEFAULT,NULL,NULL,NULL,&error);
-    } else g_set_error_literal(&error,G_IO_ERROR,G_IO_ERROR_NOT_FOUND,"Application action is unavailable");
-  }
-  if(ok) { if (shell_mode) shell_hide(); else running=false; return; }
-  g_free(launch_error); launch_error=g_strdup(error?error->message:"Could not launch application");
-  fprintf(stderr,"k230-touch-launcher: %s\n",launch_error);
-  g_clear_error(&error); redraw();
+  if (shell_mode) (void)leave_deck_for_launch(action);
+  else launch_selected(action);
 }
 static void activate_card(int card) {
   if (!transition.active && card>=0 && card<button_count) run_action(buttons[card].action);
@@ -1030,25 +1094,47 @@ static bool route_listen(const char *runtime) {
   }
   return true;
 }
-static void route_poll(void) {
+static void route_accept(void) {
   if (route_fd<0) return;
   int fd=accept(route_fd,NULL,NULL);
   if (fd<0) return;
   (void)fcntl(fd,F_SETFD,FD_CLOEXEC);
-  struct pollfd ready={.fd=fd,.events=POLLIN};
-  if (poll(&ready,1,100)<=0 || !(ready.revents&POLLIN)) { close(fd); return; }
-  char request[24]={0};
-  ssize_t count=read(fd,request,sizeof request-1);
+  int flags=fcntl(fd,F_GETFL,0);
+  if (flags<0 || fcntl(fd,F_SETFL,flags|O_NONBLOCK)<0) { close(fd); return; }
+  /* One tiny in-flight request is enough for the trusted route helper. A
+   * silent peer cannot occupy the Wayland event loop or evict the first. */
+  if (route_client_fd>=0) { close(fd); return; }
+  route_client_fd=fd;
+  route_client_deadline_ms=monotonic_ms()+100;
+  route_request_len=0;
+}
+static void route_client_close(void) {
+  if (route_client_fd>=0) close(route_client_fd);
+  route_client_fd=-1;
+  route_request_len=0;
+}
+static void route_client_poll(short revents) {
+  if (route_client_fd<0) return;
+  if (monotonic_ms()>=route_client_deadline_ms || (revents&(POLLHUP|POLLERR|POLLNVAL))) {
+    route_client_close(); return;
+  }
+  if (!(revents&POLLIN)) return;
+  ssize_t count=read(route_client_fd,route_request+route_request_len,
+                     sizeof route_request-1-route_request_len);
+  if (count<=0) { if (count==0 || errno!=EAGAIN) route_client_close(); return; }
+  route_request_len+=(size_t)count;
+  if (route_request[route_request_len-1]!='\n') {
+    if (route_request_len>=sizeof route_request-1) route_client_close();
+    return;
+  }
+  route_request[route_request_len-1]=0;
   enum shell_view view;
   /* The socket is mode 0600 inside the session's private runtime directory.
    * No route request is accepted from a path outside that boundary. */
-  bool valid=count>1 && request[count-1]=='\n';
-  if (valid) {
-    request[count-1]=0;
-    valid=route_name(request,&view) && shell_show(view);
-  }
-  (void)send(fd,valid ? "OK\n" : "ERR\n",valid ? 3 : 4,MSG_NOSIGNAL);
-  close(fd);
+  bool valid=route_request_len>1 && !pending_launch.pid &&
+    route_name(route_request,&view) && shell_show(view);
+  (void)send(route_client_fd,valid ? "OK\n" : "ERR\n",valid ? 3 : 4,MSG_NOSIGNAL);
+  route_client_close();
 }
 int main(int argc,char**argv) {
  if(argc==2 && !strcmp(argv[1],"--layout")) { puts("Portrait application catalogue: 4 cards per page, 3 with keyboard; Previous / Back / Next; gestures settle immediately within 200 ms"); return 0; }
@@ -1083,16 +1169,20 @@ int main(int argc,char**argv) {
    surface=wl_compositor_create_surface(compositor); layer_surface=zwlr_layer_shell_v1_get_layer_surface(layer_shell,surface,NULL,ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,"k230-launcher"); zwlr_layer_surface_v1_add_listener(layer_surface,&layer_listener,NULL);
    zwlr_layer_surface_v1_set_anchor(layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT|ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT); zwlr_layer_surface_v1_set_margin(layer_surface,0,0,0,0); zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE); zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,0); wl_surface_commit(surface);
  }
- while(running || catalog.pid) {
+ while(running || catalog.pid || pending_launch.pid) {
    if (shutdown_requested) {
      running=false;
      catalog_cancel();
    }
    if (wl_display_dispatch_pending(display)<0) break;
-   if (!running && !catalog.pid) break;
+   if (!running && !catalog.pid && !pending_launch.pid) break;
    (void)wl_display_flush(display);
    int64_t deadline=-1;
    if (catalog.pid) deadline=catalog.deadline_ms;
+   if (pending_launch.pid && (deadline<0 || pending_launch.deadline_ms<deadline))
+     deadline=pending_launch.deadline_ms;
+   if (route_client_fd>=0 && (deadline<0 || route_client_deadline_ms<deadline))
+     deadline=route_client_deadline_ms;
    if (transition.active) {
      int64_t transition_deadline=transition.started_ms+120;
      if (deadline<0 || transition_deadline<deadline) deadline=transition_deadline;
@@ -1105,20 +1195,23 @@ int main(int argc,char**argv) {
    }
    if (shell_mode && shell_view==SHELL_DRAWER && (drawer.tracking || drawer.velocity>0.05 || drawer.velocity< -0.05) && timeout>16)
      timeout=16;
-   struct pollfd fds[5] = {
+   struct pollfd fds[6] = {
      { .fd=wl_display_get_fd(display), .events=POLLIN },
      { .fd=catalog.output_fd, .events=POLLIN|POLLHUP },
      { .fd=k230_appearance_listener_fd(), .events=POLLIN },
      { .fd=k230_appearance_client_fd(), .events=POLLIN|POLLHUP },
      { .fd=route_fd, .events=POLLIN },
+     { .fd=route_client_fd, .events=POLLIN|POLLHUP },
    };
-   int poll_result=poll(fds,5,timeout);
+   int poll_result=poll(fds,6,timeout);
    if (poll_result<0 && errno!=EINTR) break;
    catalog_poll();
+   poll_pending_launch();
    k230_appearance_service((fds[2].revents & POLLIN)!=0,
                            (fds[3].revents & (POLLIN|POLLHUP))!=0,
                            appearance_redraw);
-   if (fds[4].revents & POLLIN) route_poll();
+   if (fds[4].revents & POLLIN) route_accept();
+   route_client_poll(fds[5].revents);
    if (shell_mode && shell_view==SHELL_DRAWER) {
      int64_t now=monotonic_ms();
      int elapsed=(int)(now-last_drawer_tick_ms);
@@ -1156,6 +1249,7 @@ int main(int argc,char**argv) {
  transition_cleanup();
  if (shell_mode) shell_hide();
  if (route_fd>=0) { close(route_fd); unlink(route_path); }
+ route_client_close();
  k230_appearance_stop();
  free(last_frame);
  return 0;

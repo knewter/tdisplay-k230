@@ -90,7 +90,8 @@ static inline bool drawer_release(struct shell_drawer *d, int id) {
   return tap;
 }
 static inline bool drawer_tick(struct shell_drawer *d, int elapsed_ms) {
-  if (d->tracking || elapsed_ms <= 0 || (d->velocity < 0.05 && d->velocity > -0.05)) {
+  if (d->tracking) return false;
+  if (elapsed_ms <= 0 || (d->velocity < 0.05 && d->velocity > -0.05)) {
     d->velocity = 0;
     return false;
   }
