@@ -718,6 +718,8 @@ DATA e17961464d313d4799d8037381c5179101f982f60bd908a111e74f92c6b2cdcd  nix/qtqui
 DATA ce89bec08e3a28f2a5eee150dcca1dc9d048c9421e31116904d0c6ee5f8081e9  docs/evidence/coherent-shell/rust-probe-board/mapped.png
 DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evidence/coherent-shell/rust-probe-board/restored.png
 DATA 450c318b8f9eff21bff89fe70c34b16101f0dbdb43b37a50fdc385b6d658ddf2  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-deck.png
+DATA c008c3e10bfcbfe18348dae4b72ee090ea986316f31681bddc5d8549c145e01a  docs/evidence/work-card-media/file-mobile.png
+DATA 118acb1e9bcefa389a49b97e344c31d362d07d00f79b36db762b41d1a30d09f4  docs/evidence/work-card-media/gallery-desktop.png
 DATA b81dbc7f9de727cc7a0c0acff138d5509dc911ceec46d69c2f1ae89a95eb11b2  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-mid.png
 DATA 381f5aaa192d9bce2582a6712199b499c311e6e98da7c0782a52e87e87ec7276  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-open.png
 DATA b50f6bd0107b1d2e3a0fe2722e95b4edf8362f41501b89e831adde901e87b37c  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-reversed.png
