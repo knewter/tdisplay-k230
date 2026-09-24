@@ -67,6 +67,7 @@ struct cs_policy {
 	/* The projected source point under the accepted finger reaches its card
 	 * counterpart after this many logical pixels; commitment is separate. */
 	double entry_travel, entry_drag;
+	struct cs_rect entry_full_rect;
 	/* Snapshot preserves visual order through focus-only switches and maps. */
 	uint64_t *entry_order;
 	size_t entry_count, entry_origin;

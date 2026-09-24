@@ -88,6 +88,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->entry_anchor_factor=0;p->entry_release_dx=0;p->entry_settle_dx=0;
     p->entry_reverse_dx=0;p->entry_reverse_anchor=0;
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
+	p->entry_full_rect=(struct cs_rect){0};
     p->entry_reverse_from=0;p->entry_settle_from=0;p->entry_started_ms=0;
     p->entry_goal_progress=0;p->entry_settle_anchor=0;
     p->entry_velocity_x=0;p->entry_velocity_progress=0;
@@ -210,6 +211,10 @@ struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
     double offset=stable==SIZE_MAX ? -4 :
         (double)stable-(double)p->entry_origin;
     double progress=p->entry_progress;
+    /* Unfocused Sway floating views can have a different current geometry
+     * from the focused full-panel source. Use one carousel frame for every
+     * eligible live/neutral slot; mirror scaling still preserves aspect. */
+    if (p->entry_travel>0) source=p->entry_full_rect;
     double full_x=source.x+offset*p->config.width;
     r.x=full_x*(1-progress)+(r.x-p->entry_dx)*progress+p->entry_dx+
         p->entry_anchor_shift*progress*p->entry_anchor_factor;
@@ -601,6 +606,7 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
 	if (!isfinite(shift)) return false;
 	p->entry_travel=travel;
 	p->entry_anchor_shift=shift;
+	p->entry_full_rect=(struct cs_rect){source_x,source_y,source_width,source_height};
 	return true;
 }
 struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {

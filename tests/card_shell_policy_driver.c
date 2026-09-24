@@ -425,8 +425,11 @@ static void direct_carousel(void) {
     entry_geometry(&p);
     struct cs_rect origin=cs_entry_visual_rect(&p,1,full);
     struct cs_rect left=cs_entry_visual_rect(&p,0,full);
+    struct cs_rect unfocused={0,128,520,960};
+    struct cs_rect aligned=cs_entry_visual_rect(&p,0,unfocused);
     assert(fabs(origin.x)<.001 && fabs(origin.width-568)<.001);
     assert(fabs(left.x+568)<.001 && fabs(left.width-568)<.001);
+    assert(fabs(aligned.y-origin.y)<.001 && fabs(aligned.height-origin.height)<.001);
     cs_entry_motion(&p,1,384,1220,20);
     origin=cs_entry_visual_rect(&p,1,full);
     left=cs_entry_visual_rect(&p,0,full);

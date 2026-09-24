@@ -776,6 +776,22 @@ static bool sync_scene_impl(void) {
 	if (!shell.active)
 		return true;
 	if (!appearance_canvas_refresh()) return false;
+	if (shell.policy.mode == CS_ENTERING && shell.policy.entry_travel <= 0) {
+		struct card *source = find(shell.policy.entry_id);
+		int sx, sy;
+		if (!source || !wlr_scene_node_coords(&source->view->content_tree->node, &sx, &sy))
+			return false;
+		source->source_x = sx; source->source_y = sy; source->source_valid = true;
+		size_t index = shell.policy.count;
+		for (size_t j = 0; j < shell.policy.count; ++j)
+			if (shell.policy.cards[j].id == source->id) { index = j; break; }
+		if (index == shell.policy.count) return false;
+		struct cs_rect card = cs_card_rect(&shell.policy, index);
+		if (!cs_entry_set_geometry(&shell.policy, sx - shell.output->lx,
+				sy - shell.output->ly, source->view->geometry.width,
+				source->view->geometry.height, card.x - shell.policy.entry_dx,
+				card.y, card.width, card.height)) return false;
+	}
 	size_t i = 0;
 	struct card *c;
 	if (shell.policy.mode != CS_EXPANDING)
