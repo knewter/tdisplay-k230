@@ -5,13 +5,14 @@
       "lane": "verification",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete real text-field and output-change native checks, then build and test the integrated image on glass with two-finger show, grip reverse/hide, and workload measurements.",
+      "next": "Build and test the supervised keyboard in the integrated image, then prove real-finger show, grip reverse/hide, output-loss recovery and workload measurements on glass.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/keyboard-gestures/native-qemu/README.md"
+        "docs/evidence/keyboard-gestures/native-qemu/README.md",
+        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md"
       ],
-      "rationale": "The exact RISC-V compositor and wvkbd passed headless QEMU injected-touch show, held/reversed pixels, grip dismissal and failed-helper recovery. One Wayland key event reached the live probe, but real text entry, final image and physical finger acceptance remain open.",
-      "reviewRevision": "9fea8e1f",
+      "rationale": "The exact RISC-V compositor and wvkbd passed headless QEMU injected-touch show, held/reversed pixels, grip dismissal and failed-helper recovery. Real RISC-V Foot received public text from keyboard touch. A supervised keyboard unit and themed grip passed host evaluation and dark/light QEMU pixels; final image and physical finger acceptance remain open.",
+      "reviewRevision": "8402cfe2",
       "cover": {
         "path": "docs/evidence/keyboard-gestures/native-qemu/shown.png",
         "caption": "Headless QEMU keyboard reveal — injected touch, not panel proof",

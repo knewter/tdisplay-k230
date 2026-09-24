@@ -1,0 +1,18 @@
+{
+  "class": "headless-qemu-authored-dark-light-keyboard-grip",
+  "bundle": "/nix/store/aajw0dknkkwx4mdswaa0vd52li64d6i7-handheld-theme-default-28ceaae7",
+  "dark_generation": "0d16475245f13b3d7d3f036f",
+  "light_generation": "91f5df6022a0e2e7d6bee6a9",
+  "dark_rgb": [
+    205,
+    214,
+    244
+  ],
+  "light_rgb": [
+    76,
+    79,
+    105
+  ],
+  "physical_touch": false,
+  "panel_capture": false
+}

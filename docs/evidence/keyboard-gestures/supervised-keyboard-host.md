@@ -28,6 +28,23 @@ luminance formula. Inputs were the checked-in
 `nix/handheld-theme-default/catppuccin/colors.toml` and
 `/nix/store/aajw0dknkkwx4mdswaa0vd52li64d6i7-handheld-theme-default-28ceaae7/share/omarchy/themes/catppuccin-latte/colors.toml`.
 
-The exact source/build and dark/light rendered-pixel checks are recorded below
-when available. Installed output loss and physical handle legibility remain
-unverified.
+Source `b890b0ae` plus rate-limit correction `8402cfe2` passed
+`python3 tests/test_keyboard_service_policy.py`. The evaluated coherent
+NixOS unit has `Restart=always`, `RestartSec=3`,
+`StartLimitIntervalSec=0`, `BindsTo=shell.service`, and a trusted absolute
+wrapper `ExecStart`. The exact narrow compositor build
+`nix build .#card-shell --max-jobs 1 --cores 4 --no-link --print-out-paths`
+passed: package `/nix/store/8p7ryh0zw8fkhc74xc6v52br3rif9j7d-k230-card-shell`,
+unwrapped Sway
+`/nix/store/m1im24g1h70xylmia55s1qvjwa76jn9x-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`.
+
+The actual compositor then passed a separate headless QEMU pixel check using
+the pinned bundle and prepared real Latte generation. The grip line at
+`(280,782)` was RGB `(205,214,244)` in dark mode and `(76,79,105)` after
+Latte commit, exactly the adopted foreground roles. See
+[dark grip](supervised-grip-qemu/theme-dark-grip.png),
+[light grip](supervised-grip-qemu/theme-light-grip.png), and
+[numeric result](supervised-grip-qemu/theme-grip-result.json). These are
+composited QEMU pixels, not a panel photograph. The unit has not been run
+under systemd in this fixture, and installed output loss and physical handle
+legibility remain unverified.

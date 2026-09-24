@@ -1194,6 +1194,8 @@ DATA ef2b4dfc9fc2fe0b2d6a7fe8c3085b4eaca2227beea99e991f5d1387c302af9f  docs/evid
 DATA 73174e71bd6ef16ee9f7484ac088e4fcd44a40500c8ad03c96b0734b2cef1236  docs/evidence/keyboard-gestures/native-qemu/hidden.png
 DATA 2f3ada81bf23ac6ae1c55077c3e223e1512c11db4908fe1c484e790c21df3369  docs/evidence/keyboard-gestures/native-qemu/reverse.png
 DATA 1eac9525b757c36bd8ec7c4b7812c161a6ba2b375e78aa96c93810f2e082be44  docs/evidence/keyboard-gestures/native-qemu/shown.png
+DATA 9638d2dfa0e296e689ad8f5da90c4a039faa3c4682e254e30e26d39244334040  docs/evidence/keyboard-gestures/supervised-grip-qemu/theme-dark-grip.png
+DATA c6c93e431a8d3c8a1574594caba23ee771681d380478dac4c7c39d2fe6190a88  docs/evidence/keyboard-gestures/supervised-grip-qemu/theme-light-grip.png
 DATA 0ec94093d0139736c5c6d0c7b1a707d555cc845c2d3d62e4b07cead826d7e14c  docs/evidence/coherent-shell/rust-drawer-grid-host/dark.png
 DATA fb552085a88544e9759aa17a136505b6369ddeb40504a3752fcad588c142bb95  docs/evidence/coherent-shell/rust-drawer-grid-host/latte.png
 DATA 1b81a035e84de1aaabea0cfda17f535da2fea12c0fa80f0ddeaadc2d4b056a19  docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png

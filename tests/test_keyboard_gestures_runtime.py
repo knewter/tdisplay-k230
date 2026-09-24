@@ -8,6 +8,7 @@ import signal
 import socket
 import struct
 import subprocess
+import sys
 import time
 from PIL import Image, ImageChops
 
@@ -32,9 +33,23 @@ def main():
     ap.add_argument('--output-reset', action='store_true',
                     help='disable and re-enable the output with the keyboard shown')
     ap.add_argument('--foot', help='exact RISC-V Foot executable for a real PTY text-entry check')
+    ap.add_argument('--theme-bundle', help='pinned bundle for dark/Latte grip pixels')
     args = ap.parse_args()
     out = Path(args.output)
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
+    if args.theme_bundle:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+        from theme_activate import prepare
+        from theme_transaction import exchange
+        bundle = Path(args.theme_bundle).resolve(strict=True)
+        default = bundle/'generations/0d16475245f13b3d7d3f036f'
+        state = out/'theme-state'
+        state.mkdir()
+        latte, _ = prepare('catppuccin-latte',
+                           source=bundle/'share/omarchy/themes/catppuccin-latte',
+                           state_root=state, user_themes=out/'empty-user-themes',
+                           builtins=None,
+                           tools=Path(__file__).resolve().parents[1]/'nix/omarchy-theme-tools/upstream')
     config = out / 'sway.conf'
     config.write_text('''output HEADLESS-1 mode 568x1232
 seat seat0 fallback true
@@ -62,6 +77,10 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
                SWAY_K230_CARD_TEST_INPUT='1', SWAY_K230_KEYBOARD_GESTURES='1',
                SWAY_K230_KEYBOARD_HEIGHT='420', SWAY_K230_KEYBOARD_SIGNAL=str(helper))
     if args.fail_hide: env['K230_FIXTURE_FAIL_HIDE'] = '1'
+    if args.theme_bundle:
+        env.update(SWAY_K230_CARD_APPEARANCE_SOCKET=str(out/'card-appearance.sock'),
+                   SWAY_K230_CARD_THEME_STATE_ROOT=str(state),
+                   SWAY_K230_CARD_THEME_DEFAULT=str(default))
     processes = []
     streams = []
     def launch(name, cmd):
@@ -128,6 +147,8 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
         sway = launch('sway', [args.qemu, args.sway, '-c', str(config), '-d'])
         wait_for(lambda: next((p.name for p in out.glob('wayland-*') if p.is_socket()), None))
         wait_for(lambda: next((p.name for p in out.glob('sway-ipc.*.sock') if p.is_socket()), None))
+        if args.theme_bundle:
+            wait_for(lambda: (out/'card-appearance.sock').is_socket())
         env['WAYLAND_DISPLAY'] = next(p.name for p in out.glob('wayland-*') if p.is_socket())
         client_cmd = ([args.qemu] if Path(args.client).read_bytes()[18:20] == b'\xf3\x00' else [])
         client = launch('client', client_cmd + [args.client, '--app-id', 'k230.card.one'])
@@ -140,6 +161,34 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
         (out/'keyboard.pid').write_text(str(keyboard.pid))
         wait_for(lambda: 'Found 2 layers' in (out/'wvkbd.log').read_text())
         touch('init')
+        if args.theme_bundle:
+            # This separate mode probes the actual themed scene rectangle;
+            # movement measurements below deliberately use their fallback.
+            subprocess.run([str(helper), 'show'], env=env, check=True)
+            wait_for(lambda: app_height() == 756)
+            def authored_text(generation):
+                appearance = json.loads((generation/'appearance.json').read_text())
+                token = appearance['sections'].get('card', {}).get('text')
+                color = (token['stops'][0]['argb'][3:] if token else
+                         json.loads((generation/'report.json').read_text())['palette']['foreground'][1:])
+                return tuple(bytes.fromhex(color))
+            dark = capture('theme-dark-grip.png')
+            dark_rgb = dark.getpixel((280, 782))
+            assert dark_rgb == authored_text(default), (dark_rgb, authored_text(default))
+            exchange(out/'card-appearance.sock', 'prepare', latte)
+            (state/'active').symlink_to(latte)
+            exchange(out/'card-appearance.sock', 'commit', latte)
+            light = capture('theme-light-grip.png')
+            light_rgb = light.getpixel((280, 782))
+            assert light_rgb == authored_text(latte), (light_rgb, authored_text(latte))
+            (out/'theme-grip-result.json').write_text(json.dumps({
+                'class':'headless-qemu-authored-dark-light-keyboard-grip',
+                'bundle':str(bundle),'dark_generation':default.name,
+                'light_generation':latte.name,'dark_rgb':dark_rgb,
+                'light_rgb':light_rgb,'physical_touch':False,
+                'panel_capture':False},indent=2)+'\n')
+            print('PASS actual dark/Latte keyboard grip pixels; no physical proof')
+            return
         baseline = capture('hidden.png')
         stamp = int(time.monotonic()*1000) & 0xffffffff
         touch('down', 1, 100, 1200, stamp)
