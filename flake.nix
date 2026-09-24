@@ -168,20 +168,14 @@
         };
         rvv-context-probe = pkgsCross.callPackage ./nix/rvv-context-probe.nix { };
         rvv-context-probe-corrupt = pkgsCross.callPackage ./nix/rvv-context-probe.nix { corrupt = true; };
-        card-shell = pkgsCross.callPackage ./nix/card-shell.nix {
-          swayUnwrapped = pkgsCross.sway-unwrapped;
+        # The card trial must use the same overlaid Pixman graph as the normal
+        # board compositor; build it from that package set, not pkgsCross.
+        card-shell = self.nixosConfigurations.k230.pkgs.callPackage ./nix/card-shell.nix {
+          swayUnwrapped = self.nixosConfigurations.k230.pkgs.sway-unwrapped;
         };
-        # Optional diagnostic closure: swap the ABI-identical Pixman build
-        # through every dependent store path, preserving the exact card source.
-        # Nixpkgs' recursive replacement avoids two Pixman SONAME providers.
-        # A default promotion must use a fully rebuilt/reviewed package graph.
-        card-shell-rvv = pkgs.replaceDependencies {
-          drv = self.packages.${buildSystem}.card-shell;
-          replacements = [{
-            oldDependency = pkgsCross.pixman;
-            newDependency = self.packages.${buildSystem}.pixman-rvv;
-          }];
-        };
+        # Historical diagnostic output name retained for trial scripts. The
+        # actual candidate now uses the fully rebuilt normal board graph.
+        card-shell-rvv = self.packages.${buildSystem}.card-shell;
         card-composition-probe = pkgsCross.callPackage ./nix/card-composition-probe.nix {
           sway = pkgsCross.sway;
           swayUnwrapped = pkgsCross.sway-unwrapped;
