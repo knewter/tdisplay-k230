@@ -15,10 +15,12 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import tomllib
 
 from theme_sources import source_dir, source_digest
+from theme_transaction import TransactionError, activate_generation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -232,12 +234,21 @@ def main():
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
     parser.add_argument("--tools", type=Path, default=HOST_TOOLS)
-    parser.add_argument("--prepare-only", action="store_true", required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--prepare-only", action="store_true")
+    mode.add_argument("--activate", action="store_true")
+    parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
     args = parser.parse_args()
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools)
+    if args.activate:
+        activate_generation(destination, state_root=args.state_root, endpoint=args.socket)
     print(json.dumps({"generation_path": str(destination), "report": report}, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (ThemeError, TransactionError, OSError, ValueError, TimeoutError) as error:
+        print(f"omarchy-theme-set: {error}", file=sys.stderr)
+        sys.exit(1)

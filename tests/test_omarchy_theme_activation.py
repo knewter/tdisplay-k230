@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -152,6 +153,23 @@ class ThemePreparation(unittest.TestCase):
                     call("theme", theme, state)
             self.assertTrue(changed)
             self.assertEqual(list((state / "generations").glob("[0-9a-f]*")), [])
+
+    def test_compatible_command_fails_closed_without_receiver(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            command = [sys.executable, str(ROOT / "tools/omarchy-theme-set"), "theme",
+                       "--source", str(theme), "--state-root", str(state),
+                       "--socket", str(base / "missing.sock")]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("omarchy-theme-set:", result.stderr)
+            self.assertFalse((state / "active").exists())
+            prepared = subprocess.run(command + ["--prepare-only"], capture_output=True,
+                                      text=True, timeout=20)
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            self.assertFalse((state / "active").exists())
 
 
 if __name__ == "__main__":

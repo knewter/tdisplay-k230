@@ -26,6 +26,7 @@
 #include "navigation.h"
 #include "gesture.h"
 #include "overview.h"
+#include "appearance.h"
 
 struct button { int action, x, y, w, h; const char *label, *hint; uint32_t color; };
 static struct button buttons[8];
@@ -63,6 +64,7 @@ struct page_transition {
 static struct page_transition transition;
 static char *launch_error;
 static void redraw(void);
+static void transition_settle(void);
 static bool transition_prepare(void);
 static void transition_begin(enum transition_direction direction);
 static void redraw_if_configured(void);
@@ -92,6 +94,13 @@ static void redraw_if_configured(void) {
     if (transition.active) redraw_pending=true;
     else redraw();
   }
+}
+static bool appearance_redraw(void) {
+  /* The receiver only acknowledges after the themed buffer is submitted. */
+  if (!configured) return false;
+  if (transition.active) transition_settle();
+  redraw_if_configured();
+  return wl_display_flush(display)>=0;
 }
 static uint32_t pointer_button_code;
 static int pointer_card = -1, touch_card = -1;
@@ -392,21 +401,21 @@ static void draw_overview(void) {
   overview.page_size=height<900?3:4;
   int pages=overview_pages(&overview,count);
   if (overview.page>=pages) overview.page=pages-1;
-  rect(0,0,width,height,0xff111827); text("Windows",24,22,width-48,64,42,0xfff8fafc);
+  rect(0,0,width,height,k230_appearance.background); text("Windows",24,22,width-48,64,42,k230_appearance.foreground);
   char subtitle[100]; snprintf(subtitle,sizeof subtitle,count?"%d running · Page %d of %d":"No running windows · Back returns to Apps",count,overview.page+1,pages);
-  text(launch_error?launch_error:subtitle,24,90,width-48,44,22,launch_error?0xfffca5a5:0xffcbd5e1);
+  text(launch_error?launch_error:subtitle,24,90,width-48,44,22,launch_error?0xfffca5a5:k230_appearance.muted);
   int top=150,gap=14,footer=height-110,bh=(footer-top-24-(overview.page_size-1)*gap)/overview.page_size;
   button_count=0;
-  if (!count) add_button(ACT_NONE,"No windows","Open an app, then return here",24,top,width-48,bh,0xff243547);
+  if (!count) add_button(ACT_NONE,"No windows","Open an app, then return here",24,top,width-48,bh,k230_appearance.tile);
   for(int row=0;row<overview.page_size;row++) { int item=overview.page*overview.page_size+row; if(item>=count) break;
     struct window_card *card=g_ptr_array_index(windows,item); char *hint=g_strdup_printf("%s · %s",card->app_id,card->state);
-    add_button(ACT_WINDOW_BASE+item,card->title,hint,24,top+row*(bh+gap),width-48,bh,0xff24495a); }
+    add_button(ACT_WINDOW_BASE+item,card->title,hint,24,top+row*(bh+gap),width-48,bh,k230_appearance.selected); }
   int bw=(width-64)/3;
-  add_button(ACT_PREVIOUS,"Previous",NULL,24,footer,bw,86,overview.page?0xff304f65:0xff202b38);
+  add_button(ACT_PREVIOUS,"Previous",NULL,24,footer,bw,86,overview.page?k230_appearance.accent:0xff202b38);
   add_button(ACT_BACK,"Back",NULL,32+bw,footer,bw,86,0xff374151);
-  add_button(ACT_NEXT,"Next",NULL,40+2*bw,footer,bw,86,overview.page+1<pages?0xff304f65:0xff202b38);
+  add_button(ACT_NEXT,"Next",NULL,40+2*bw,footer,bw,86,overview.page+1<pages?k230_appearance.accent:0xff202b38);
   for(int i=0;i<button_count;i++) { struct button *b=&buttons[i]; rect(b->x,b->y,b->w,b->h,b->color);
-    if(b->hint) { text(b->label,b->x+12,b->y+b->h/2-42,b->w-24,52,30,0xffffffff); text(b->hint,b->x+12,b->y+b->h/2+10,b->w-24,30,18,0xffcbd5e1); }
+    if(b->hint) { text(b->label,b->x+12,b->y+b->h/2-42,b->w-24,52,30,0xffffffff); text(b->hint,b->x+12,b->y+b->h/2+10,b->w-24,30,18,k230_appearance.muted); }
     else text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);
     if (b->action >= ACT_WINDOW_BASE) g_free((char *)b->hint);
   }
@@ -420,14 +429,14 @@ static void draw(void) {
   int *current_page=navigation.help?&navigation.help_page:&navigation.page;
   if(*current_page>=pages) *current_page=pages-1;
   int page=launcher_current_page(&navigation);
-  rect(0,0,width,height,0xff111827);
-  text(navigation.help?"Help":"Applications",24,22,width-48,64,42,0xfff8fafc);
+  rect(0,0,width,height,k230_appearance.background);
+  text(navigation.help?"Help":"Applications",24,22,width-48,64,42,k230_appearance.foreground);
   char subtitle[100];
   if(navigation.help) snprintf(subtitle,sizeof subtitle,"Shell controls · Page %d of %d",page+1,pages);
   else snprintf(subtitle,sizeof subtitle,"%u installed · Page %d of %d",apps->len,page+1,pages);
   bool show_error=launch_error && !navigation.help;
   text(show_error?launch_error:subtitle,24,90,width-48,44,22,
-    show_error?0xfffca5a5:0xffcbd5e1);
+    show_error?0xfffca5a5:k230_appearance.muted);
   int top=150,gap=14,footer=height-110;
   int bh=(footer-top-24-(page_size-1)*gap)/page_size;
   button_count=0;
@@ -436,32 +445,32 @@ static void draw(void) {
     if(item>=count) break;
     if(navigation.help) {
       add_button(ACT_NONE,help_topics[item].label,help_topics[item].hint,
-        24,top+row*(bh+gap),width-48,bh,0xff243547);
+        24,top+row*(bh+gap),width-48,bh,k230_appearance.tile);
     } else if(item<3) {
       const char *labels[]={"Terminal","Monitor","New terminal"};
       const char *hints[]={"Resume or open a terminal","Resume or open system monitor","Open another terminal"};
-      add_button(launcher_item_action(item),labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,0xff24495a);
+      add_button(launcher_item_action(item),labels[item],hints[item],24,top+row*(bh+gap),width-48,bh,k230_appearance.selected);
     } else if(item==3) { add_button(ACT_HELP,"Help","How to use this shell",24,top+row*(bh+gap),width-48,bh,0xff3f556b);
     } else {
       GAppInfo *app=g_ptr_array_index(apps,item-BUILTIN_COUNT);
       add_button(launcher_item_action(item),g_app_info_get_display_name(app),"Installed application",24,
-        top+row*(bh+gap),width-48,bh,0xff243547);
+        top+row*(bh+gap),width-48,bh,k230_appearance.tile);
     }
   }
   int bw=(width-64)/3;
-  add_button(ACT_PREVIOUS,"Previous",NULL,24,footer,bw,86,page?0xff304f65:0xff202b38);
+  add_button(ACT_PREVIOUS,"Previous",NULL,24,footer,bw,86,page?k230_appearance.accent:0xff202b38);
   add_button(ACT_BACK,"Back",NULL,32+bw,footer,bw,86,0xff374151);
-  add_button(ACT_NEXT,"Next",NULL,40+2*bw,footer,bw,86,page+1<pages?0xff304f65:0xff202b38);
+  add_button(ACT_NEXT,"Next",NULL,40+2*bw,footer,bw,86,page+1<pages?k230_appearance.accent:0xff202b38);
   for(int i=0;i<button_count;i++) {
     struct button *b=&buttons[i];
     rect(b->x,b->y,b->w,b->h,b->color);
     if(navigation.help && b->hint) {
       text(b->label,b->x+12,b->y+8,b->w-24,40,28,0xffffffff);
-      text_layout(b->hint,b->x+16,b->y+48,b->w-32,b->h-56,20,0xffcbd5e1,true);
+      text_layout(b->hint,b->x+16,b->y+48,b->w-32,b->h-56,20,k230_appearance.muted,true);
     } else if(b->hint) {
       app_icon(b->action,b->x+17,b->y+(b->h-48)/2);
       text(b->label,b->x+78,b->y+b->h/2-42,b->w-90,52,32,0xffffffff);
-      text(b->hint,b->x+78,b->y+b->h/2+10,b->w-90,30,18,0xffcbd5e1);
+      text(b->hint,b->x+78,b->y+b->h/2+10,b->w-90,30,18,k230_appearance.muted);
     } else text(b->label,b->x+8,b->y,b->w-16,b->h,24,0xffffffff);
   }
 }
@@ -798,6 +807,8 @@ int main(int argc,char**argv) {
  lock_fd=open(lock_path,O_CREAT|O_RDWR|O_CLOEXEC,0600);
  if(lock_fd < 0) { perror("k230-touch-launcher lock"); return 1; }
  if(flock(lock_fd,LOCK_EX|LOCK_NB) < 0) return 0; /* Existing surface stays usable. */
+ if(k230_appearance_start(runtime)<0)
+   fprintf(stderr,"k230-touch-launcher: appearance receiver unavailable\n");
  apps=k230_app_catalog();
  signal(SIGTERM,request_shutdown);
  signal(SIGINT,request_shutdown);
@@ -826,13 +837,18 @@ int main(int argc,char**argv) {
      int64_t until=deadline-monotonic_ms();
      timeout=(int)(until>0 ? (until<100 ? until : 100) : 0);
    }
-   struct pollfd fds[2] = {
+   struct pollfd fds[4] = {
      { .fd=wl_display_get_fd(display), .events=POLLIN },
      { .fd=catalog.output_fd, .events=POLLIN|POLLHUP },
+     { .fd=k230_appearance_listener_fd(), .events=POLLIN },
+     { .fd=k230_appearance_client_fd(), .events=POLLIN|POLLHUP },
    };
-   int poll_result=poll(fds,catalog.pid ? 2 : 1,timeout);
+   int poll_result=poll(fds,4,timeout);
    if (poll_result<0 && errno!=EINTR) break;
    catalog_poll();
+   k230_appearance_service((fds[2].revents & POLLIN)!=0,
+                           (fds[3].revents & (POLLIN|POLLHUP))!=0,
+                           appearance_redraw);
    if (transition.active && monotonic_ms()-transition.started_ms>=120)
      transition_settle();
    if (fds[0].revents & (POLLERR|POLLHUP|POLLNVAL)) break;
@@ -850,6 +866,7 @@ int main(int argc,char**argv) {
    catalog_reap();
  }
  transition_cleanup();
+ k230_appearance_stop();
  free(last_frame);
  return 0;
 }

@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Compatible theme command; fails closed until a shell receiver acknowledges."""
+
+from theme_activate import main, ThemeError, TransactionError
+import sys
+
+
+if __name__ == "__main__":
+    if "--prepare-only" not in sys.argv and "--activate" not in sys.argv:
+        sys.argv.append("--activate")
+    try:
+        main()
+    except (ThemeError, TransactionError, OSError, ValueError, TimeoutError) as error:
+        print(f"omarchy-theme-set: {error}", file=sys.stderr)
+        sys.exit(1)
