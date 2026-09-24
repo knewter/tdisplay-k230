@@ -25,18 +25,6 @@
       "rationale": "The committed source and build evidence covers the first five tasks, while later target and physical gates remain unchecked.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
     },
-    "touch-launcher-gestures-overview": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Capture the focused real-finger camera sequence for both swipes, overview, expansion and return, then audit it against the last task.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/launcher-gestures/real-finger/README.md"
-      ],
-      "rationale": "Fifteen of sixteen committed tasks are checked; the remaining physical camera acceptance is explicit in the task list.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
-    },
     "the-handheld-presents-a-coherent-shell": {
       "lane": "in-progress",
       "source": "in-progress",

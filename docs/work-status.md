@@ -34,7 +34,7 @@ claiming a branch is current with the server.
   and three-round timing passed. The full-panel probe used about 94% less process
   CPU but 11% more elapsed time than Pixman. This supports an opt-in renderer
   experiment; the current Sway renderer remains Pixman.
-- [Cards and gestures planning](../openspec/changes/touch-launcher-gestures-overview/proposal.md),
+- [Cards and gestures planning](../openspec/changes/archive/2026-09-23-touch-launcher-gestures-overview/proposal.md),
   implementation now includes bounded transitions and window metadata, with physical acceptance still open.
 
 ## Almost done or actively underway
