@@ -6,6 +6,7 @@ use crate::{
         ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction,
         ServiceRequest, SettingsSnapshot,
     },
+    wifi_ui::WifiPublic,
     Route,
 };
 use std::time::Instant;
@@ -27,6 +28,7 @@ pub struct ServiceView {
     pub message: Option<String>,
     pub confirmation: Option<Confirmation>,
     pub notification_scroll: f64,
+    pub wifi: Option<WifiPublic>,
 }
 
 impl ServiceView {
@@ -64,6 +66,7 @@ pub fn action_message(outcome: &ActionOutcome) -> String {
 pub enum PanelIntent {
     Hide,
     OpenSettings,
+    OpenWifi,
     Request(ServiceRequest),
     ScrollNotifications(f64),
 }
@@ -160,6 +163,9 @@ pub fn panel_intent(
                 return None;
             }
             let settings = view.settings.as_ref()?;
+            if (162.0..272.0).contains(&end.1) {
+                return Some(PanelIntent::OpenWifi);
+            }
             if (326.0..420.0).contains(&end.1)
                 && end.0 > w - 210.0
                 && settings.brightness.state == ControlState::Writable

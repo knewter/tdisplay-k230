@@ -18,6 +18,8 @@ use k230_shell_rust::{
     },
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
     theme_ui::{ThemeIntent, ThemePage, ThemeView},
+    wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
+    wifi_ui::{self, Intent as WifiIntent, Page as WifiPage, WifiView},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
@@ -495,6 +497,10 @@ struct ShellClient {
     renderer: RendererCache,
     services: ServiceWorker,
     service_view: ServiceView,
+    wifi_worker: WifiWorker,
+    wifi_view: WifiView,
+    wifi_origin_scroll: f64,
+    wifi_dragged: bool,
     themes: ThemeWorker,
     theme_view: ThemeView,
     theme_origin_scroll: f64,
@@ -523,6 +529,103 @@ struct WallpaperState {
 }
 
 impl ShellClient {
+    fn wifi_dirty(&mut self) {
+        self.service_view.wifi = Some(self.wifi_view.public());
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
+    fn submit_wifi(&mut self, request: WifiRequest) {
+        let kind = request.kind();
+        match self.wifi_worker.try_submit(request) {
+            Ok(id) => self.wifi_view.submitted(id, kind),
+            Err(error) => self.wifi_view.submit_failed(error),
+        }
+        self.wifi_dirty();
+    }
+
+    fn wifi_action(&mut self, intent: WifiIntent) {
+        match intent {
+            WifiIntent::Back => {
+                if self.wifi_view.page == WifiPage::Connecting {
+                    return;
+                }
+                if !self.wifi_view.back() {
+                    self.service_view.wifi = None;
+                    self.renderer.set_services(self.service_view.clone());
+                    self.dirty = true;
+                } else {
+                    self.wifi_dirty();
+                }
+            }
+            WifiIntent::Refresh => {
+                if self.wifi_view.pending.is_none() {
+                    self.submit_wifi(WifiRequest::Scan);
+                }
+            }
+            WifiIntent::Select(index) => {
+                self.wifi_view.select(index);
+                self.wifi_dirty();
+            }
+            WifiIntent::Key(_)
+            | WifiIntent::Backspace
+            | WifiIntent::Symbols
+            | WifiIntent::Shift
+            | WifiIntent::Space => {
+                self.wifi_view.key(intent);
+                self.wifi_dirty();
+            }
+            WifiIntent::Connect => {
+                if let Some(request) = self.wifi_view.connect_request() {
+                    self.submit_wifi(request);
+                }
+            }
+            WifiIntent::Forget => {
+                if self.wifi_view.selected.as_ref().is_some_and(|selected| {
+                    self.wifi_view.snapshot.as_ref().is_some_and(|snapshot| {
+                        snapshot
+                            .saved
+                            .iter()
+                            .any(|saved| saved.ssid == selected.ssid)
+                    })
+                }) {
+                    self.wifi_view.page = WifiPage::ForgetConfirm;
+                    self.wifi_dirty();
+                }
+            }
+            WifiIntent::ForgetConfirm => {
+                if let Some(request) = self.wifi_view.forget_request() {
+                    self.submit_wifi(request);
+                }
+            }
+            WifiIntent::ForgetCancel => {
+                self.wifi_view.page = WifiPage::Entry;
+                self.wifi_dirty();
+            }
+            WifiIntent::CancelPending => {
+                if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+                    self.wifi_worker.cancel(id);
+                    self.wifi_view.message = Some("Cancelling connection…".into());
+                    self.wifi_dirty();
+                }
+            }
+            WifiIntent::Scroll(delta) => {
+                self.wifi_view.scroll(delta);
+                self.wifi_dirty();
+            }
+        }
+    }
+
+    fn wifi_reply(&mut self, reply: k230_shell_rust::wifi_settings::WifiReply) {
+        let saved = matches!(&reply.result, Ok(WifiResult::Saved | WifiResult::Forgotten));
+        if self.wifi_view.accept(reply) {
+            self.wifi_dirty();
+            if saved {
+                self.submit_wifi(WifiRequest::Scan);
+            }
+        }
+    }
+
     fn theme_dirty(&mut self) {
         self.renderer.set_theme_view(self.theme_view.clone());
         self.dirty = true;
@@ -692,6 +795,10 @@ impl ShellClient {
             PanelIntent::Hide => self.hide(),
             PanelIntent::OpenSettings => {
                 self.show(qh, Route::Settings);
+            }
+            PanelIntent::OpenWifi => {
+                let request = self.wifi_view.open();
+                self.submit_wifi(request);
             }
             PanelIntent::Request(request) => {
                 let accepted = self.submit_service(request.clone());
@@ -896,6 +1003,14 @@ impl ShellClient {
             return true;
         }
         self.reveal.clear();
+        if route != Route::Settings && self.wifi_view.page != WifiPage::Closed {
+            if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+                self.wifi_worker.cancel(id);
+            }
+            self.wifi_view.close();
+            self.service_view.wifi = None;
+            self.renderer.set_services(self.service_view.clone());
+        }
         if self.route != route {
             self.nav = DrawerNavigation::default();
             self.renderer.set_drawer_pressed(None);
@@ -915,6 +1030,14 @@ impl ShellClient {
         if !self.reveal.apply(message, now, self.reduced_motion) {
             self.log("reveal-rejected");
             return;
+        }
+        if message.surface != Route::Settings && self.wifi_view.page != WifiPage::Closed {
+            if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+                self.wifi_worker.cancel(id);
+            }
+            self.wifi_view.close();
+            self.service_view.wifi = None;
+            self.renderer.set_services(self.service_view.clone());
         }
         self.route = message.surface;
         if message.phase == Phase::Begin {
@@ -962,6 +1085,12 @@ impl ShellClient {
     fn hide(&mut self) {
         self.touch.cancel();
         self.panel_start = None;
+        if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+            self.wifi_worker.cancel(id);
+        }
+        self.wifi_view.close();
+        self.service_view.wifi = None;
+        self.renderer.set_services(self.service_view.clone());
         self.theme_view = ThemeView::default();
         self.renderer.set_theme_view(self.theme_view.clone());
         self.nav = DrawerNavigation::default();
@@ -1265,6 +1394,8 @@ impl TouchHandler for ShellClient {
                     self.panel_scrolled = false;
                     self.theme_origin_scroll = self.theme_view.scroll;
                     self.theme_dragged = false;
+                    self.wifi_origin_scroll = self.wifi_view.scroll;
+                    self.wifi_dragged = false;
                 }
             } else {
                 self.log("touch-second-cancel");
@@ -1275,6 +1406,7 @@ impl TouchHandler for ShellClient {
                 self.panel_start = None;
                 self.panel_scrolled = false;
                 self.theme_dragged = false;
+                self.wifi_dragged = false;
             }
             if self.dirty {
                 self.draw(qh);
@@ -1318,7 +1450,19 @@ impl TouchHandler for ShellClient {
                         {
                             self.hide();
                         } else if self.route == Route::Settings {
-                            if !self.theme_dragged {
+                            if self.wifi_view.page != WifiPage::Closed {
+                                if !self.wifi_dragged {
+                                    if let Some(intent) = wifi_ui::hit(
+                                        &self.wifi_view.public(),
+                                        start,
+                                        point,
+                                        self.width,
+                                        self.height,
+                                    ) {
+                                        self.wifi_action(intent);
+                                    }
+                                }
+                            } else if !self.theme_dragged {
                                 if let Some(intent) =
                                     self.theme_view.hit(start, point, self.width, self.height)
                                 {
@@ -1408,7 +1552,25 @@ impl TouchHandler for ShellClient {
                 }
             } else if self.route == Route::Settings
                 && self.input_ready
+                && self.wifi_view.page == WifiPage::List
+            {
+                if let Some((start_id, start)) = self.panel_start {
+                    let scale_y = 1232.0 / f64::from(self.height.max(1));
+                    let dy = (pos.1 - start.1) * scale_y;
+                    if start_id == id && start.1 * scale_y >= 338.0 && dy.abs() > 18.0 {
+                        self.wifi_dragged = true;
+                        let previous = self.wifi_view.scroll;
+                        self.wifi_view.scroll = self.wifi_origin_scroll;
+                        self.wifi_view.scroll(-dy);
+                        if (self.wifi_view.scroll - previous).abs() >= 1.0 {
+                            self.wifi_dirty();
+                        }
+                    }
+                }
+            } else if self.route == Route::Settings
+                && self.input_ready
                 && self.theme_view.page != ThemePage::Controls
+                && self.wifi_view.page == WifiPage::Closed
             {
                 if let Some((start_id, start)) = self.panel_start {
                     let y = start.1;
@@ -1511,6 +1673,10 @@ fn serve() -> Result<(), String> {
         .map(PathBuf::from)
         .unwrap_or_default();
     let services = ServiceWorker::spawn(settings_command, notification_socket);
+    let wifi_socket = std::env::var_os("K230_WIFI_SOCKET")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/run/k230-wifi-settings/broker.sock"));
+    let wifi_worker = WifiWorker::spawn(wifi_socket);
     let theme_command = std::env::var_os("K230_THEME_COMMAND")
         .map(PathBuf::from)
         .unwrap_or_default();
@@ -1552,6 +1718,10 @@ fn serve() -> Result<(), String> {
         renderer: RendererCache::default(),
         services,
         service_view: ServiceView::default(),
+        wifi_worker,
+        wifi_view: WifiView::default(),
+        wifi_origin_scroll: 0.0,
+        wifi_dragged: false,
         themes,
         theme_view: ThemeView::default(),
         theme_origin_scroll: 0.0,
@@ -1585,6 +1755,12 @@ fn serve() -> Result<(), String> {
                 break;
             };
             state.service_reply(reply);
+        }
+        for _ in 0..4 {
+            let Some(reply) = state.wifi_worker.try_recv() else {
+                break;
+            };
+            state.wifi_reply(reply);
         }
         for _ in 0..4 {
             let Some(reply) = state.themes.try_recv() else {

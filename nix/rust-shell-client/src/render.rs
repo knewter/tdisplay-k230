@@ -9,6 +9,8 @@ use crate::{
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_catalog::BackgroundKind,
     theme_ui::{ThemePage, ThemeView},
+    wifi_settings::Security,
+    wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
@@ -579,6 +581,328 @@ pub struct RenderParams {
     pub scroll: f64,
 }
 
+fn paint_wifi(
+    cr: &Context,
+    view: &WifiPublic,
+    theme: Option<&AppearanceSnapshot>,
+    width: f64,
+    height: f64,
+) {
+    // Touch coordinates and artwork share a 568×1232 reference layout.
+    let _ = cr.save();
+    cr.scale(width / 568.0, height / 1232.0);
+    let style = visual_style(theme, "controls");
+    text(
+        cr,
+        if view.page == WifiPage::List {
+            "‹ Settings"
+        } else {
+            "‹ Networks"
+        },
+        28.0,
+        45.0,
+        180.0,
+        23.0,
+        style.accent,
+    );
+    heading(cr, "Wi-Fi", 28.0, 105.0, 360.0, 38.0, style.text);
+    match view.page {
+        WifiPage::Closed => {}
+        WifiPage::List => {
+            text(cr, "Refresh", 420.0, 45.0, 125.0, 22.0, style.accent);
+            service_card(cr, theme, "controls", 24.0, 150.0, 520.0, 116.0, false);
+            text(
+                cr,
+                "Current connection",
+                42.0,
+                168.0,
+                470.0,
+                16.0,
+                style.muted,
+            );
+            text(
+                cr,
+                view.snapshot
+                    .as_ref()
+                    .and_then(|s| s.current.as_deref())
+                    .unwrap_or("Not connected"),
+                42.0,
+                199.0,
+                460.0,
+                24.0,
+                style.text,
+            );
+            let saved = view.snapshot.as_ref().map_or(0, |s| s.saved.len());
+            text(
+                cr,
+                &format!("{saved} saved  ·  tap a network to connect"),
+                42.0,
+                235.0,
+                470.0,
+                15.0,
+                style.muted,
+            );
+            text(
+                cr,
+                "Saved and nearby",
+                28.0,
+                304.0,
+                480.0,
+                19.0,
+                style.muted,
+            );
+            let _ = cr.save();
+            cr.rectangle(20.0, 338.0, 528.0, 814.0);
+            cr.clip();
+            if let Some(snapshot) = &view.snapshot {
+                let rows = all_networks(snapshot);
+                for (index, item) in rows.iter().enumerate() {
+                    let y = 338.0 + index as f64 * 88.0 - view.scroll;
+                    if !(-88.0..1152.0).contains(&y) {
+                        continue;
+                    }
+                    service_card(cr, theme, "controls", 24.0, y, 520.0, 78.0, false);
+                    text(cr, &item.ssid, 42.0, y + 13.0, 350.0, 21.0, style.text);
+                    let status = if snapshot.current.as_ref() == Some(&item.ssid) {
+                        "Connected"
+                    } else if snapshot.saved.iter().any(|saved| saved.ssid == item.ssid) {
+                        "Saved"
+                    } else {
+                        match item.security {
+                            Security::Open => "Open",
+                            Security::Wpa2Psk => "Password",
+                            Security::Unsupported => "Unsupported",
+                        }
+                    };
+                    text(cr, status, 42.0, y + 45.0, 430.0, 16.0, style.muted);
+                    text(cr, "›", 492.0, y + 22.0, 30.0, 25.0, style.accent);
+                }
+                if rows.is_empty() && !view.pending {
+                    text(
+                        cr,
+                        "No networks found. Tap Refresh.",
+                        42.0,
+                        370.0,
+                        470.0,
+                        21.0,
+                        style.muted,
+                    );
+                }
+            } else {
+                text(
+                    cr,
+                    "Scanning nearby networks…",
+                    42.0,
+                    370.0,
+                    470.0,
+                    21.0,
+                    style.muted,
+                );
+            }
+            let _ = cr.restore();
+        }
+        WifiPage::Entry => {
+            if let Some(selected) = &view.selected {
+                service_card(cr, theme, "controls", 24.0, 150.0, 520.0, 108.0, true);
+                text(cr, &selected.ssid, 42.0, 172.0, 470.0, 25.0, style.text);
+                text(
+                    cr,
+                    match selected.security {
+                        Security::Open => "Open network · no password needed",
+                        Security::Wpa2Psk => "WPA2-Personal · password required",
+                        Security::Unsupported => "Unsupported",
+                    },
+                    42.0,
+                    214.0,
+                    470.0,
+                    17.0,
+                    style.muted,
+                );
+                if selected.security == Security::Wpa2Psk {
+                    text(cr, "Password", 28.0, 281.0, 500.0, 18.0, style.muted);
+                    service_card(cr, theme, "controls", 24.0, 310.0, 520.0, 90.0, false);
+                    let mask = "•".repeat(view.password_len.min(22));
+                    text(
+                        cr,
+                        if mask.is_empty() {
+                            "Tap keys to enter password"
+                        } else {
+                            &mask
+                        },
+                        42.0,
+                        337.0,
+                        464.0,
+                        25.0,
+                        style.text,
+                    );
+                    text(
+                        cr,
+                        &format!("{} / 63", view.password_len),
+                        445.0,
+                        369.0,
+                        75.0,
+                        15.0,
+                        style.muted,
+                    );
+                }
+                if view
+                    .snapshot
+                    .as_ref()
+                    .is_some_and(|s| s.saved.iter().any(|n| n.ssid == selected.ssid))
+                {
+                    text(
+                        cr,
+                        "Forget this network…",
+                        357.0,
+                        431.0,
+                        175.0,
+                        18.0,
+                        style.error,
+                    );
+                }
+            }
+            if view
+                .selected
+                .as_ref()
+                .is_some_and(|s| s.security == Security::Wpa2Psk)
+            {
+                let rows = [
+                    if view.symbols {
+                        "!@#$%^&*()"
+                    } else {
+                        "1234567890"
+                    },
+                    if view.symbols {
+                        "-_=+[]{};:"
+                    } else {
+                        "qwertyuiop"
+                    },
+                    if view.symbols {
+                        "'\"\\|/?.<>"
+                    } else {
+                        "asdfghjkl"
+                    },
+                    if view.symbols { "~`,zxcv" } else { "zxcvbnm" },
+                ];
+                for (row, keys) in rows.iter().enumerate() {
+                    let y = 530.0 + row as f64 * 90.0;
+                    let (left, right) = if row == 2 {
+                        (28.0, 540.0)
+                    } else if row == 3 {
+                        (74.0, 494.0)
+                    } else {
+                        (18.0, 550.0)
+                    };
+                    let cell = (right - left) / keys.chars().count() as f64;
+                    for (index, ch) in keys.chars().enumerate() {
+                        let x = left + index as f64 * cell;
+                        service_card(cr, theme, "controls", x + 2.0, y, cell - 4.0, 76.0, false);
+                        text(
+                            cr,
+                            &ch.to_string(),
+                            x + cell * 0.35,
+                            y + 23.0,
+                            cell * 0.6,
+                            26.0,
+                            style.text,
+                        );
+                    }
+                }
+                service_card(cr, theme, "controls", 18.0, 800.0, 52.0, 76.0, false);
+                text(cr, "⇧", 28.0, 820.0, 40.0, 28.0, style.accent);
+                service_card(cr, theme, "controls", 498.0, 800.0, 52.0, 76.0, false);
+                text(cr, "⌫", 505.0, 820.0, 40.0, 27.0, style.accent);
+                service_card(cr, theme, "controls", 18.0, 890.0, 112.0, 76.0, false);
+                text(
+                    cr,
+                    if view.symbols { "ABC" } else { "?123" },
+                    38.0,
+                    913.0,
+                    90.0,
+                    22.0,
+                    style.accent,
+                );
+                service_card(cr, theme, "controls", 136.0, 890.0, 278.0, 76.0, false);
+                text(cr, "space", 222.0, 914.0, 110.0, 20.0, style.muted);
+                service_card(cr, theme, "controls", 420.0, 890.0, 130.0, 76.0, false);
+                text(cr, "⌫", 468.0, 913.0, 60.0, 26.0, style.accent);
+            }
+            service_card(cr, theme, "controls", 24.0, 1120.0, 250.0, 88.0, false);
+            service_card(cr, theme, "controls", 294.0, 1120.0, 250.0, 88.0, true);
+            text(cr, "Cancel", 90.0, 1147.0, 145.0, 25.0, style.muted);
+            text(cr, "Connect", 351.0, 1147.0, 145.0, 25.0, style.accent);
+        }
+        WifiPage::Connecting => {
+            service_card(cr, theme, "controls", 24.0, 220.0, 520.0, 210.0, true);
+            text(cr, "Connecting…", 42.0, 260.0, 460.0, 31.0, style.text);
+            text(
+                cr,
+                "Checking association, then saving for reconnect",
+                42.0,
+                324.0,
+                460.0,
+                19.0,
+                style.muted,
+            );
+            service_card(cr, theme, "controls", 24.0, 1010.0, 520.0, 110.0, false);
+            text(
+                cr,
+                "Cancel connection",
+                135.0,
+                1047.0,
+                310.0,
+                25.0,
+                style.accent,
+            );
+        }
+        WifiPage::ForgetConfirm => {
+            service_card(cr, theme, "controls", 24.0, 230.0, 520.0, 210.0, true);
+            text(
+                cr,
+                "Forget saved network?",
+                42.0,
+                270.0,
+                470.0,
+                27.0,
+                style.text,
+            );
+            text(
+                cr,
+                "It will not reconnect automatically.",
+                42.0,
+                326.0,
+                470.0,
+                19.0,
+                style.muted,
+            );
+            service_card(cr, theme, "controls", 24.0, 850.0, 250.0, 110.0, false);
+            service_card(cr, theme, "controls", 294.0, 850.0, 250.0, 110.0, true);
+            text(cr, "Keep", 101.0, 886.0, 140.0, 25.0, style.muted);
+            text(cr, "Forget", 360.0, 886.0, 140.0, 25.0, style.error);
+        }
+    }
+    if let Some(message) = &view.message {
+        let y = match view.page {
+            WifiPage::List => 1163.0,
+            WifiPage::Entry => 1020.0,
+            WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
+            WifiPage::Closed => 0.0,
+        };
+        let color = if view.pending
+            || message.starts_with("Saved")
+            || message.starts_with("Network forgotten")
+        {
+            style.muted
+        } else {
+            style.error
+        };
+        if y > 0.0 {
+            text(cr, message, 30.0, y, 506.0, 18.0, color);
+        }
+    }
+    let _ = cr.restore();
+}
+
 fn scene(
     cr: &Context,
     params: RenderParams,
@@ -679,7 +1003,10 @@ fn scene(
         );
         heading(cr, title, 28.0, panel_y + 76.0, w - 56.0, 40.0, style.text);
     } else if !(route == Route::Settings
-        && chooser.is_some_and(|view| view.page != ThemePage::Controls))
+        && (chooser.is_some_and(|view| view.page != ThemePage::Controls)
+            || services
+                .and_then(|s| s.wifi.as_ref())
+                .is_some_and(|view| view.page != WifiPage::Closed)))
     {
         heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
     }
@@ -996,6 +1323,13 @@ fn scene(
             }
         }
         Route::Settings => {
+            if let Some(view) = services
+                .and_then(|s| s.wifi.as_ref())
+                .filter(|v| v.page != WifiPage::Closed)
+            {
+                paint_wifi(cr, view, theme, w, h);
+                return;
+            }
             if let Some(view) = chooser.filter(|view| view.page != ThemePage::Controls) {
                 paint_theme_chooser(cr, w, h, view, theme);
                 return;
@@ -1013,7 +1347,7 @@ fn scene(
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 for (y, name, control) in [
-                    (162.0, "Network link", &settings.network),
+                    (162.0, "Wi-Fi ›", &settings.network),
                     (326.0, "Brightness", &settings.brightness),
                     (452.0, "Keyboard", &settings.keyboard),
                     (590.0, "Motion", &settings.motion),
@@ -1029,7 +1363,26 @@ fn scene(
                         19.0,
                         style.text,
                     );
-                    if let Some(detail) = &control.detail {
+                    if name == "Keyboard" {
+                        text(
+                            cr,
+                            "Two fingers up at bottom to show;",
+                            42.0,
+                            y + 72.0,
+                            w - 90.0,
+                            14.0,
+                            style.muted,
+                        );
+                        text(
+                            cr,
+                            "drag the handle down to hide.",
+                            42.0,
+                            y + 89.0,
+                            w - 90.0,
+                            14.0,
+                            style.muted,
+                        );
+                    } else if let Some(detail) = &control.detail {
                         text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, style.muted);
                     }
                 }
