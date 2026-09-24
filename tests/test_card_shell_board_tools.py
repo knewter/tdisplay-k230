@@ -68,6 +68,13 @@ class SessionTests(unittest.TestCase):
                   row.replace('build_cpu_ns=5','prepare_cpu_ns=5'),
                   row.replace('build_cpu_ns=5','build_cpu_ns=-5')]
         self.assertEqual(H.normalized_journal('prefix '+row+'\n'+'\n'.join(rejected)),row+'\n')
+    def test_input_cost_export_accepts_only_fixed_numeric_fields(self):
+        row='K230_CARD_SHELL input-cost run=1 input_id=2 cpu_ns=20 policy_cpu_ns=3 scene_cpu_ns=12 chrome_cpu_ns=1'
+        rejected=[row+' secret=private',row.replace(' scene_cpu_ns=12',''),
+                  row.replace('policy_cpu_ns=3','policy_cpu_ns=private-token'),
+                  row.replace('chrome_cpu_ns=1','cpu_ns=1'),
+                  row.replace('scene_cpu_ns=12','scene_cpu_ns=-1')]
+        self.assertEqual(H.normalized_journal('prefix '+row+'\n'+'\n'.join(rejected)),row+'\n')
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(prefix='board-tools-');self.root=Path(self.temp.name);self.runtime=self.root/'run';self.runtime.mkdir()
         self.account=patch.object(H.pwd,'getpwnam',return_value=types.SimpleNamespace(pw_uid=os.getuid(),pw_gid=os.getgid(),pw_dir=str(self.root)))

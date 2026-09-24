@@ -24,8 +24,8 @@ STORE = re.compile(r'^/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=
 DEVICE_NAME = 'K230 injected touchscreen'
 RUNTIME_PATH = re.compile(r'/run/k230-card-shell(?:-[a-z0-9]+)?')
 BENCH_KEYS = {'v','run','event','t_ns','clock','backend','renderer','width','height','output_format','input','cards','input_id','gesture_id','kind','source','frame_id','update_cpu_ns','final','presented','phase','cpu_ns','memory_bytes','scope'}
-CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts','hits','misses','fallbacks','bytes'}
-CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost','repaint-cost','scaled-cache'}
+CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','input_id','cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns','total_cpu_ns','render_cpu_ns','input_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts','hits','misses','fallbacks','bytes'}
+CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost','repaint-cost','input-cost','scaled-cache'}
 
 
 def trusted(path: str) -> str:
@@ -89,6 +89,10 @@ def normalized_journal(text: str) -> str:
                     continue
             if row.startswith('K230_CARD_SHELL repaint-cost '):
                 expected = {'run','frame_id','render_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts'}
+                if len(fields) != len(expected) or {pair[0] for pair in fields} != expected or not all(len(pair) == 2 and re.fullmatch(r'[0-9]+', pair[1]) for pair in fields):
+                    continue
+            if row.startswith('K230_CARD_SHELL input-cost '):
+                expected = {'run','input_id','cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns'}
                 if len(fields) != len(expected) or {pair[0] for pair in fields} != expected or not all(len(pair) == 2 and re.fullmatch(r'[0-9]+', pair[1]) for pair in fields):
                     continue
             if row.startswith('K230_CARD_SHELL scaled-cache '):

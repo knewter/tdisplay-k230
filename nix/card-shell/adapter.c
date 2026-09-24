@@ -555,7 +555,7 @@ static bool rebuild_chrome(void) {
 }
 /* Only a complete tree is reusable. Layout and feedback changes invalidate it;
  * card motion alone does not recreate labels or buttons. */
-static bool chrome(void) {
+static bool chrome_impl(void) {
 	struct cs_config *cfg = &shell.policy.config;
 	int pressed = shell.button_down ? shell.pressed_button : 0;
 	if (shell.chrome_valid && shell.chrome && shell.chrome_message == shell.policy.message &&
@@ -581,7 +581,13 @@ static bool chrome(void) {
 	shell.chrome_valid = true;
 	return true;
 }
-static bool sync_scene(void) {
+static bool chrome(void) {
+	uint64_t start = card_bench_input_stage_begin();
+	bool ok = chrome_impl();
+	card_bench_input_stage_end(CARD_BENCH_CHROME, start);
+	return ok;
+}
+static bool sync_scene_impl(void) {
 	if (!shell.active)
 		return true;
 	struct cs_config *cfg = &shell.policy.config;
@@ -602,6 +608,12 @@ static bool sync_scene(void) {
 	}
 	wlr_scene_node_set_enabled(&shell.deck->node, true);
 	return true;
+}
+static bool sync_scene(void) {
+	uint64_t start = card_bench_input_stage_begin();
+	bool ok = sync_scene_impl();
+	card_bench_input_stage_end(CARD_BENCH_SCENE, start);
+	return ok;
 }
 static uint64_t focus_id(struct sway_seat *seat) {
 	struct sway_container *c = seat_get_focused_container(seat);
@@ -1005,9 +1017,11 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		chrome();
 		return true;
 	}
+	uint64_t policy_start = card_bench_input_stage_begin();
 	struct cs_result r = shell.policy.mode == CS_NORMAL
 							 ? cs_edge_motion(&shell.policy, id, x, y, event_ms, focus_id(seat))
 							 : cs_motion(&shell.policy, id, x, y, event_ms);
+	card_bench_input_stage_end(CARD_BENCH_POLICY, policy_start);
 	handle_result(r);
 	return r.consumed;
 }

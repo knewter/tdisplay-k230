@@ -23,6 +23,7 @@ static struct {
 	unsigned work_depth;
 	uint64_t work_cpu;
 	uint64_t input_cpu_start, input_cpu, render_cpu_start, render_cpu;
+	uint64_t input_stage_cpu[3];
 	bool in_render;
 	enum card_bench_render_stage render_stage;
 	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
@@ -171,19 +172,31 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 	card_bench_work_begin();
 	bench.input_time = stamp(CLOCK_MONOTONIC);
 	bench.input_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
+	memset(bench.input_stage_cpu, 0, sizeof(bench.input_stage_cpu));
 	bench.in_input = true;
 	bench.input_gesture = gesture;
 	bench.kind = kind;
 	bench.source = injected ? "injected" : "physical";
 }
 void card_bench_input_end(bool consumed, bool final) {
-	if (bench.armed && bench.in_input)
-		bench.input_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.input_cpu_start;
+	uint64_t event_cpu = 0;
+	if (bench.armed && bench.in_input) {
+		event_cpu = stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.input_cpu_start;
+		bench.input_cpu += event_cpu;
+	}
 	card_bench_work_end();
 	bench.in_input = false;
 	if (!bench.armed || !consumed)
 		return;
 	uint64_t id = ++bench.next_input;
+	/* One row per accepted event. The existing frame and input totals still
+	 * include every stage clock and all other handler work. */
+	sway_log(SWAY_INFO,
+			"K230_CARD_SHELL input-cost run=%" PRIu64 " input_id=%" PRIu64
+			" cpu_ns=%" PRIu64 " policy_cpu_ns=%" PRIu64
+			" scene_cpu_ns=%" PRIu64 " chrome_cpu_ns=%" PRIu64,
+			bench.run, id, event_cpu, bench.input_stage_cpu[CARD_BENCH_POLICY],
+			bench.input_stage_cpu[CARD_BENCH_SCENE], bench.input_stage_cpu[CARD_BENCH_CHROME]);
 
 	sway_log(SWAY_INFO,
 			 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=input input_id=%" PRIu64
@@ -195,6 +208,13 @@ void card_bench_input_end(bool consumed, bool final) {
 		sway_log(SWAY_ERROR,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=incomplete reason=input-overflow",
 				 bench.run);
+}
+uint64_t card_bench_input_stage_begin(void) {
+	return bench.armed && bench.in_input ? stamp(CLOCK_PROCESS_CPUTIME_ID) : 0;
+}
+void card_bench_input_stage_end(enum card_bench_input_stage stage, uint64_t start) {
+	if (start && bench.armed && bench.in_input && stage <= CARD_BENCH_CHROME)
+		bench.input_stage_cpu[stage] += stamp(CLOCK_PROCESS_CPUTIME_ID) - start;
 }
 void card_bench_work_begin(void) {
 	if (bench.armed && bench.work_depth++ == 0)
