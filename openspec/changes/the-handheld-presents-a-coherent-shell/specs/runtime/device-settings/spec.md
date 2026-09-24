@@ -14,11 +14,11 @@ The shell userspace SHALL show only controls backed by a readable or writable sy
 
 #### Scenario: Control application fails
 - **WHEN** a requested change cannot be applied
-- **THEN** Settings shows failure and a Retry or Back action while preserving the last confirmed state
+- **THEN** Settings shows failure and a Retry or contextual dismissal action while preserving the last confirmed state
 
 #### Scenario: Settings content exceeds the panel
 - **WHEN** the person drags or flicks a longer Settings list
-- **THEN** the rows follow the finger and settle within bounds while the current control value and Back route remain understandable
+- **THEN** the rows follow the finger and settle within bounds while the current control value and contextual return route remain understandable
 
 ### Requirement: System actions require clear completion feedback
 <!-- UNVERIFIED: proposed integration with existing system actions. -->
@@ -26,4 +26,4 @@ The shell userspace SHALL label power and restart actions by effect, require con
 
 #### Scenario: Restart is cancelled
 - **WHEN** a person opens Restart confirmation and chooses Cancel
-- **THEN** Settings returns with prior focus and no restart request
+- **THEN** Settings returns to the shade or prior scene with prior focus and no restart request
