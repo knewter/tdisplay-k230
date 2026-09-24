@@ -36,11 +36,17 @@ class Fixture(unittest.TestCase):
         command(self.repo, "config", "user.name", "Site Test")
         command(self.repo, "config", "user.email", "site@example.invalid")
         put(self.repo, "openspec/changes/the-first-thing/proposal.md", "## Why\n\nFirst thing.\n")
+        put(self.repo, "openspec/changes/the-first-thing/design.md", "## Approach\n\nA table:\n\n| A | B |\n| - | - |\n| 1 | 2 |\n")
         put(self.repo, "openspec/changes/the-first-thing/tasks.md", "- [x] 1.1 Started\n- [x] 1.1b Follow-up\n- [ ] 1a.2 Test on glass\n")
+        put(self.repo, "openspec/changes/the-first-thing/specs/runtime/demo/spec.md", "## ADDED Requirements\n\n### Requirement: Demo\n")
         put(self.repo, "openspec/changes/the-second-thing/proposal.md", "## Why\n\nSecond thing.\n")
+        put(self.repo, "openspec/changes/the-second-thing/design.md", "## Design\n\nSecond design.\n")
         put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [ ] Make it\n")
+        put(self.repo, "openspec/changes/the-second-thing/specs/runtime/demo/spec.md", "## ADDED Requirements\n\n### Requirement: Second\n")
         put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/proposal.md", "## Why\n\nOld thing.\n")
+        put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/design.md", "## Design\n\nOld design.\n")
         put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/tasks.md", "- [x] 1.1 Done\n")
+        put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/specs/runtime/demo/spec.md", "## ADDED Requirements\n\n### Requirement: Old\n")
         put(self.repo, "docs/evidence/proof/README.md", "Physical observation with limits.\n")
         command(self.repo, "add", ".")
         command(self.repo, "commit", "-qm", "fixture")
@@ -74,6 +80,25 @@ class Fixture(unittest.TestCase):
         preview = {item["id"]: item for item in self.data(working=True)["items"]}
         self.assertEqual(committed["the-second-thing"]["done"], 0)
         self.assertEqual(preview["the-second-thing"]["done"], 1)
+
+    def test_detail_documents_use_the_same_committed_revision(self) -> None:
+        put(self.repo, "openspec/changes/the-first-thing/design.md", "## Private uncommitted edit\n")
+        item = next(i for i in self.data()["items"] if i["id"] == "the-first-thing")
+        self.assertEqual([d["label"] for d in item["details"]], ["Proposal", "Design", "Tasks", "Delta spec: runtime/demo"])
+        self.assertIn("| A | B |", item["details"][1]["markdown"])
+        self.assertNotIn("Private uncommitted", item["details"][1]["markdown"])
+
+    def test_missing_oversize_and_private_detail_fail_with_path(self) -> None:
+        path = "openspec/changes/the-first-thing/design.md"
+        (self.repo / path).unlink()
+        with self.assertRaisesRegex(work.WorkError, "missing work document.*design.md"):
+            self.data(working=True)
+        put(self.repo, path, "A" * (work.MAX_DOCUMENT_BYTES + 1))
+        with self.assertRaisesRegex(work.WorkError, "exceeds.*design.md"):
+            self.data(working=True)
+        put(self.repo, path, "Read /home/operator/private-settings")
+        with self.assertRaisesRegex(work.WorkError, "private path.*design.md"):
+            self.data(working=True)
 
     def test_reviewed_override_keeps_source_and_device_proof_distinct(self) -> None:
         item = next(i for i in self.data({"the-first-thing": self.review()})["items"] if i["id"] == "the-first-thing")

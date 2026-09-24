@@ -22,6 +22,8 @@ SOURCE = ("not-started", "in-progress", "source-landed", "archived")
 PHYSICAL = ("not-applicable", "not-recorded", "pending", "verified")
 SAFE_TEXT = re.compile(r"^[^\x00-\x1f]*$")
 SECRET_TEXT = re.compile(r"(?:/home/|/mnt/|/tmp/|/dev/tty|(?:password|token|secret|ssid)\s*[:=]|(?:\d{1,3}\.){3}\d{1,3})", re.I)
+PRIVATE_DOC = re.compile(r"/(?:home|mnt)/|(?:password|token|secret|ssid)\s*[:=]\s*\S+|(?:\d{1,3}\.){3}\d{1,3}")
+MAX_DOCUMENT_BYTES = 128 * 1024
 TASK = re.compile(r"^- \[([ xX])\] (.+)$", re.M)
 TASK_ID = re.compile(r"^\d+[a-z]?(?:\.\d+[a-z]?)*\s+", re.I)
 
@@ -52,6 +54,15 @@ def safe_copy(value: object, where: str) -> str:
     if not isinstance(value, str) or not value.strip() or not SAFE_TEXT.fullmatch(value) or SECRET_TEXT.search(value):
         raise WorkError(f"unsafe or empty public text at {where}")
     return value.strip()
+
+
+def document(tree: "SourceTree", path: str, label: str) -> dict:
+    value = tree.read(path)
+    if len(value.encode("utf-8")) > MAX_DOCUMENT_BYTES:
+        raise WorkError(f"work document exceeds {MAX_DOCUMENT_BYTES} bytes: {path}")
+    if PRIVATE_DOC.search(value):
+        raise WorkError(f"work document contains a private path/address/credential: {path}")
+    return {"path": path, "label": label, "markdown": value}
 
 
 class SourceTree:
@@ -113,16 +124,26 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
             raise WorkError(f"duplicate work ID: {ident}")
         proposal = tree.read(proposal_path)
         task_path = f"{change_dir}/tasks.md"
-        tasks = tree.read(task_path) if task_path in tree.paths else ""
+        design_path = f"{change_dir}/design.md"
+        for required in (design_path, task_path):
+            if required not in tree.paths:
+                raise WorkError(f"missing work document for {ident}: {required}")
+        tasks = tree.read(task_path)
         checked = TASK.findall(tasks)
         done = sum(flag != " " for flag, _ in checked)
         delta = sorted(p for p in tree.paths if p.startswith(f"{change_dir}/specs/") and p.endswith("/spec.md"))
+        if not delta:
+            raise WorkError(f"missing delta specification for {ident}: {change_dir}/specs/")
+        details = [document(tree, proposal_path, "Proposal"), document(tree, design_path, "Design"),
+                   document(tree, task_path, "Tasks")]
+        details.extend(document(tree, path, "Delta spec: " + path.split("/specs/", 1)[1].removesuffix("/spec.md")) for path in delta)
         accepted = ["openspec/specs/" + p.split("/specs/", 1)[1] for p in delta]
         accepted = [p for p in accepted if p in tree.paths]
         item = {
             "id": ident, "title": title_from(proposal, ident), "archived": archived,
             "proposal": proposal_path, "tasksPath": task_path if task_path in tree.paths else None,
             "acceptedSpecs": accepted, "done": done, "total": len(checked),
+            "details": details,
             "lane": "archived" if archived else ("planned" if done == 0 else "in-progress"),
             "source": "archived" if archived else ("not-started" if done == 0 else "in-progress"),
             "physical": "not-applicable" if archived else "not-recorded", "next": first_gate(tasks, archived),
