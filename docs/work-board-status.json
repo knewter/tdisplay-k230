@@ -34,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish real Rust gesture, icon and theme consumption, connect Settings and notifications, and build/deploy the coherent image for board trials.",
+      "next": "Fix user-reported shade dismissal and floating-window selection, then finish Settings/notification controls and repeat on-device checks.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -48,14 +48,15 @@
         "docs/evidence/coherent-shell/rust-probe-board/README.md",
         "docs/evidence/coherent-shell/rust-frontend-source.md",
         "docs/evidence/coherent-shell/reveal-stream-host.md",
-        "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md"
+        "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md",
+        "docs/evidence/coherent-shell/first-integrated-preview/README.md"
       ],
-      "rationale": "The Rust diagnostic probe mapped and restored the real board session; that proves diagnostic pixels, not the final UI or real touch. A separate Cairo/Pango/GIO frontend now cross-builds from exact committed source. Its service integration and full interactive themed surfaces remain in progress.",
-      "reviewRevision": "d9b24140",
+      "rationale": "The integrated Rust shell is running on the physical board through a recoverable NixOS test activation. Native drawer and notification captures show real device output. The user found shade-dismissal and card-selection defects; physical acceptance remains open.",
+      "reviewRevision": "cd06bee4",
       "cover": {
-        "path": "docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-open.png",
-        "caption": "Rust drawer over live test cards",
-        "provenance": "QEMU capture"
+        "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
+        "caption": "Rust app drawer on the K230",
+        "provenance": "Native board capture \u2014 navigation fixes pending"
       }
     },
     "the-shell-loads-omarchy-themes": {
