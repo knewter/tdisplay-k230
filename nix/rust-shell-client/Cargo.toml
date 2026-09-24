@@ -1,0 +1,15 @@
+[package]
+name = "k230-shell-rust"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Opt-in K230 handheld Rust shell client"
+
+[dependencies]
+libc = "=0.2.175"
+smithay-client-toolkit = { version = "=0.20.0", default-features = false }
+wayland-client = "=0.31.11"
+cairo-rs = { version = "=0.21.5", features = ["png"] }
+pango = "=0.21.5"
+pangocairo = "=0.21.5"
+gio = "=0.21.5"
