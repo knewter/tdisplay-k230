@@ -121,7 +121,6 @@ const items = await Promise.all(work.items.map(async (item) => ({
     <div class="file-frame">
       <header class="file-bar"><strong id="file-name"></strong><button id="file-close" type="button">Close ×</button></header>
       <div class="file-tools"><span id="file-status" role="status"></span><a id="file-original" data-original target="_blank" rel="noopener">Download original file</a></div>
-      <iframe id="file-reader" title="Rendered evidence document" sandbox="allow-same-origin" hidden></iframe>
       <article id="file-markdown" class="work-markdown" hidden></article>
       <pre id="file-text" tabindex="0" hidden></pre>
     </div>
@@ -176,7 +175,6 @@ const items = await Promise.all(work.items.map(async (item) => ({
   const artifactByUrl = new Map<string, Artifact>();
   artifacts.forEach((artifact) => [artifact.href, artifact.raw, artifact.source].forEach((link) => artifactByUrl.set(new URL(link, location.href).href, artifact)));
   const fileDialog = document.querySelector<HTMLDialogElement>("#work-file-dialog");
-  const fileReader = document.querySelector<HTMLIFrameElement>("#file-reader");
   const fileText = document.querySelector<HTMLPreElement>("#file-text");
   const fileMarkdown = document.querySelector<HTMLElement>("#file-markdown");
   const fileClose = document.querySelector<HTMLButtonElement>("#file-close");
@@ -189,7 +187,6 @@ const items = await Promise.all(work.items.map(async (item) => ({
     if (!fileDialog?.open) return;
     fileRequest?.abort();
     fileRequest = null;
-    fileReader?.removeAttribute("src");
     if (fileText) fileText.textContent = "";
     fileMarkdown?.replaceChildren();
     fileDialog.close();
@@ -199,7 +196,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
   }
 
   async function openFile(artifact: Artifact, trigger: HTMLElement): Promise<void> {
-    if (!fileDialog || !fileReader || !fileText) return;
+    if (!fileDialog || !fileText) return;
     fileRequest?.abort();
     const request = new AbortController();
     fileRequest = request;
@@ -209,8 +206,6 @@ const items = await Promise.all(work.items.map(async (item) => ({
     document.querySelector<HTMLAnchorElement>("#file-original")!.href = artifact.raw;
     const status = document.querySelector("#file-status")!;
     status.textContent = "Loading evidence…";
-    fileReader.hidden = true;
-    fileReader.removeAttribute("src");
     fileText.hidden = true;
     fileText.textContent = "";
     if (fileMarkdown) { fileMarkdown.hidden = true; fileMarkdown.replaceChildren(); }
@@ -231,20 +226,14 @@ const items = await Promise.all(work.items.map(async (item) => ({
       }
     }
     const report = new URL(artifact.href, location.href);
-    if (artifact.path.toLowerCase().endsWith(".md") && report.origin === location.origin) {
-      fileReader.title = artifact.path;
-      fileReader.src = report.href;
-      fileReader.hidden = false;
-      status.textContent = "Rendered Markdown";
-      return;
-    }
+    const renderedReport = artifact.path.toLowerCase().endsWith(".md") && report.origin === location.origin;
     if (!/\.(md|txt|log|json|csv|toml|yaml|yml|py|sh|ini|diff|patch|nix|c|h|rs|html|xml|sha256)$/i.test(artifact.path)) {
       status.textContent = "This format has no document preview. Download the original file above.";
       return;
     }
     const timeout = setTimeout(() => request.abort(), 15000);
     try {
-      const response = await fetch(artifact.raw, { signal: request.signal });
+      const response = await fetch(renderedReport ? report.href : artifact.raw, { signal: request.signal });
       if (!response.ok || !response.body) throw new Error("Evidence could not be loaded.");
       const reader = response.body.getReader();
       const chunks: Uint8Array[] = [];
@@ -260,9 +249,18 @@ const items = await Promise.all(work.items.map(async (item) => ({
       const bytes = new Uint8Array(length);
       let offset = 0;
       chunks.forEach((chunk) => { bytes.set(chunk, offset); offset += chunk.length; });
-      fileText.textContent = new TextDecoder().decode(bytes);
-      fileText.hidden = false;
-      status.textContent = `${length.toLocaleString()} bytes · Text preview`;
+      const text = new TextDecoder().decode(bytes);
+      if (renderedReport && fileMarkdown) {
+        const rendered = new DOMParser().parseFromString(text, "text/html").querySelector(".ev-markdown");
+        if (!rendered) throw new Error("This report has no rendered preview. Download the original above.");
+        fileMarkdown.replaceChildren(...Array.from(rendered.childNodes).map((node) => document.importNode(node, true)));
+        fileMarkdown.hidden = false;
+        status.textContent = "Rendered Markdown";
+      } else {
+        fileText.textContent = text;
+        fileText.hidden = false;
+        status.textContent = `${length.toLocaleString()} bytes · Text preview`;
+      }
     } catch (error) {
       if (fileRequest === request && fileDialog.open) status.textContent = request.signal.aborted ? "Preview timed out. Try again or download the original." : String(error instanceof Error ? error.message : error);
     } finally { clearTimeout(timeout); }
@@ -526,7 +524,6 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .file-bar button { flex:none; min-width:80px; min-height:44px; border:1px solid var(--rule); border-radius:5px; background:var(--surface-2); color:var(--ink); cursor:pointer; }
   .file-tools { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; padding:.6rem 1rem; font:.75rem/1.4 var(--mono); }
   .file-tools a { color:var(--accent); }
-  .file-frame iframe { flex:1; min-height:0; width:100%; border:0; background:var(--surface); }
   .file-frame pre { flex:1; min-height:0; overflow:auto; margin:0; padding:1rem; font:.85rem/1.5 var(--mono); white-space:pre; background:var(--surface-2); }
   .file-frame article { flex:1; min-height:0; overflow:auto; padding:1rem clamp(1rem,5vw,5rem); }
   .file-frame [hidden] { display:none; }

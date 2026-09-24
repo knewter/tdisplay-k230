@@ -110,7 +110,7 @@ with sync_playwright() as p:
         report = page.locator('#work-detail-content .detail-related a').filter(has_text='reveal-integrated-qemu / README.md').first
         report.click()
         page.wait_for_selector('#work-file-dialog[open]')
-        page.frame_locator('#file-reader').locator('.ev-markdown').wait_for()
+        page.wait_for_function('document.querySelector("#file-markdown").textContent.length > 0')
         page.screenshot(path=f'/tmp/k230-work-file-{label}.png')
         assert page.url == original_url
         page.locator('#file-close').click()
@@ -131,7 +131,7 @@ with sync_playwright() as p:
         header_report = menu.locator('a').filter(has_text='reveal-integrated-qemu / README.md').first
         header_report.click()
         page.wait_for_selector('#work-file-dialog[open]')
-        page.frame_locator('#file-reader').locator('.ev-markdown').wait_for()
+        page.wait_for_function('document.querySelector("#file-markdown").textContent.length > 0')
         assert page.url == base
         page.keyboard.press('Escape')
         log = menu.locator('a[href$=".json"], a[href$=".log"], a[href$=".txt"]').first
