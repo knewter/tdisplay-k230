@@ -1,0 +1,20 @@
+{
+  "recorded_utc": "2026-09-24T07:10:46.905961+00:00",
+  "class": "physical-board-console-and-native-capture",
+  "source": "aab74fb78dd7ed47a521146827696ea51a0ac6e7",
+  "system": "/nix/store/25x0q5b2jxg4pgv53085xvszipsfzv5a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/vcy57djhmvagwmvc8z7ml8xmd0riqp4l-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "activation_mode": "test",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "delta_paths": 34,
+  "delta_bytes": 146163312,
+  "active_units": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi"
+  ],
+  "physical_acceptance": "NOT ACCEPTED: user reports awkward horizontal switch zoom, mechanical upward release, and exposed right edge; design comparison and fixes in progress"
+}

@@ -1650,3 +1650,12 @@ The seven original headless QEMU DATA captures in `docs/evidence/coherent-shell/
 | `docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-deck.png` | 55361 | DATA | `507106852a16b574cbe443f6b77c1735d77b84624bc3e689f3578bb61c1b762f` |
 | `docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-drawer.png` | 56535 | DATA | `da29388bc9afc242aff7b1ee051f5badb078f42d60bdafc3b843856965c22580` |
 | `docs/evidence/coherent-shell/real-theme-paired-qemu/rollback-deck.png` | 55297 | DATA | `912d9208a2a4db6ddb32844228d4ed8290c6f95cb3752654ad07fa6124528b60` |
+
+### Themed installed shell captures
+
+Original native board captures from installed source `aab74fb7`; reviewed public app content, exact system and limits in the adjacent README.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/themed-installed/deck.png` | 39512 | DATA | `ccb7f23fc2cb8c7d09b73cb83a7cb094a85e9abfde64a4298dee41cb6b5c5461` |
+| `docs/evidence/coherent-shell/themed-installed/drawer.png` | 55241 | DATA | `fc3d567e4527bb2e4b71e9b0460af75d02aed0c49d86c9275e92926bd50c5888` |
