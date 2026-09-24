@@ -21,8 +21,9 @@ be live; allocation failure falls back to the original path.
 `K230_CARD_SHELL scaled-cache hits=N misses=N fallbacks=N bytes=N` reports
 cumulative mirror sync decisions and currently allocated cache pixel bytes.
 These counts are diagnostic; a hit does not by itself prove that the mirror
-was sampled in a submitted frame. The board-session exporter needs its own
-explicit grammar change before using these rows in exported evidence.
+was sampled in a submitted frame. The board-session exporter has an explicit grammar for these rows. The
+[physical paired trial](../scaled-cache-board/README.md) exercised the cache
+but did not improve the required workload, so it remains disabled by default.
 
 Host checks from this branch:
 

@@ -1,0 +1,180 @@
+{
+  "status": "COLLECTED",
+  "revision": "ec838d9c38ffdecca3e45d72d58852b66f7c5ebc",
+  "boot_id": "06b5701c-380d-46bc-b2f4-ba95aa08b6d6",
+  "system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "package": "/nix/store/hxilq8jdlb0b8mj8jzmvhwsw9mwnr69y-k230-card-shell",
+  "sway": "/nix/store/6an3zjnjv5jbyxzh80cm0cnaajq6spx9-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/bxiz9zkb33m4v97gkgzx91aswfm7cf9f-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "config": "/nix/store/7amq3c8lnlvg82la2g4zxhiik716fgq9-k230-sway.conf",
+  "evidence_class": "board-injected",
+  "workload": "same 13 acceptance cases and 24 drags per card count in each arm",
+  "runs": [
+    {
+      "run": 1,
+      "scaled_cache": "off",
+      "started_at_utc": "2026-09-24T00:30:09.082606+00:00",
+      "running_sway": "/nix/store/6an3zjnjv5jbyxzh80cm0cnaajq6spx9-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "acceptance_exit_code": 0,
+      "checks": [
+        {
+          "case": "live-root-and-child-1-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 5881567636951
+        },
+        {
+          "case": "live-root-and-child-2-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 5904999981506
+        },
+        {
+          "case": "live-root-and-child-2-two",
+          "status": "OBSERVED",
+          "monotonic_ns": 5905646133779
+        },
+        {
+          "case": "actual-rgb565-pixman-session",
+          "status": "OBSERVED",
+          "monotonic_ns": 5926085636184
+        },
+        {
+          "case": "upward-throw-close-request",
+          "status": "OBSERVED",
+          "monotonic_ns": 5934589424538
+        },
+        {
+          "case": "client-explicit-refusal",
+          "status": "OBSERVED",
+          "monotonic_ns": 5934603793097
+        },
+        {
+          "case": "separate-timeout-card-retained",
+          "status": "OBSERVED",
+          "monotonic_ns": 5937639071787
+        },
+        {
+          "case": "accepted-close-source-exits",
+          "status": "OBSERVED",
+          "monotonic_ns": 5940861382115
+        },
+        {
+          "case": "terminal-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 5950659284772
+        },
+        {
+          "case": "monitor-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 5954097527571
+        },
+        {
+          "case": "windows-home-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 5959498813534
+        },
+        {
+          "case": "keyboard-reserves-content",
+          "status": "OBSERVED",
+          "monotonic_ns": 5961566495946
+        },
+        {
+          "case": "normal-controls-recover-focus",
+          "status": "OBSERVED",
+          "monotonic_ns": 5968481830909
+        }
+      ],
+      "budget_gate": "FAIL",
+      "missing_evidence": [],
+      "scaled_cache_rows": 0,
+      "restored_shell_and_seatd": true,
+      "finished_at_utc": "2026-09-24T00:31:54.567344+00:00"
+    },
+    {
+      "run": 2,
+      "scaled_cache": "on",
+      "started_at_utc": "2026-09-24T00:31:54.589181+00:00",
+      "running_sway": "/nix/store/6an3zjnjv5jbyxzh80cm0cnaajq6spx9-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "acceptance_exit_code": 0,
+      "checks": [
+        {
+          "case": "live-root-and-child-1-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 5987086745963
+        },
+        {
+          "case": "live-root-and-child-2-one",
+          "status": "OBSERVED",
+          "monotonic_ns": 6010606268395
+        },
+        {
+          "case": "live-root-and-child-2-two",
+          "status": "OBSERVED",
+          "monotonic_ns": 6011133800370
+        },
+        {
+          "case": "actual-rgb565-pixman-session",
+          "status": "OBSERVED",
+          "monotonic_ns": 6031533259533
+        },
+        {
+          "case": "upward-throw-close-request",
+          "status": "OBSERVED",
+          "monotonic_ns": 6040430604632
+        },
+        {
+          "case": "client-explicit-refusal",
+          "status": "OBSERVED",
+          "monotonic_ns": 6040447303000
+        },
+        {
+          "case": "separate-timeout-card-retained",
+          "status": "OBSERVED",
+          "monotonic_ns": 6043375123817
+        },
+        {
+          "case": "accepted-close-source-exits",
+          "status": "OBSERVED",
+          "monotonic_ns": 6046605434501
+        },
+        {
+          "case": "terminal-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 6056373694778
+        },
+        {
+          "case": "monitor-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 6059812685774
+        },
+        {
+          "case": "windows-home-route",
+          "status": "OBSERVED",
+          "monotonic_ns": 6065208657653
+        },
+        {
+          "case": "keyboard-reserves-content",
+          "status": "OBSERVED",
+          "monotonic_ns": 6067291896695
+        },
+        {
+          "case": "normal-controls-recover-focus",
+          "status": "OBSERVED",
+          "monotonic_ns": 6074163680553
+        }
+      ],
+      "budget_gate": "FAIL",
+      "missing_evidence": [],
+      "scaled_cache_rows": 36,
+      "restored_shell_and_seatd": true,
+      "finished_at_utc": "2026-09-24T00:33:40.656112+00:00"
+    }
+  ],
+  "producer_sha256": {
+    "run-board.py": "d293ceb51abdcc7acfd02f1635e6ca70a635c9acd190359b7c8f0d1dcd65e4fc",
+    "card-shell-board-session.py": "a179bb4b190550b01146876293ee20189de6c10816aab10a9e78d7b310f8b3a3",
+    "card-shell-acceptance.py": "2140a8771b0b5677cfc1dc348d47e6b0cd86cfb6e03c09fd049498320ce8e574",
+    "card-shell-benchmark.py": "ce547d2d675de8cc858c08223685eb0669815de963d544439a886771482be4a0"
+  },
+  "all_interaction_checks_observed": true,
+  "both_budgets_pass": false
+}

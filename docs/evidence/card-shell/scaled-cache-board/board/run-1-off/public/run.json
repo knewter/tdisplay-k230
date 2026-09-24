@@ -1,0 +1,79 @@
+{
+  "run": 1,
+  "scaled_cache": "off",
+  "started_at_utc": "2026-09-24T00:30:09.082606+00:00",
+  "running_sway": "/nix/store/6an3zjnjv5jbyxzh80cm0cnaajq6spx9-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "acceptance_exit_code": 0,
+  "checks": [
+    {
+      "case": "live-root-and-child-1-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 5881567636951
+    },
+    {
+      "case": "live-root-and-child-2-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 5904999981506
+    },
+    {
+      "case": "live-root-and-child-2-two",
+      "status": "OBSERVED",
+      "monotonic_ns": 5905646133779
+    },
+    {
+      "case": "actual-rgb565-pixman-session",
+      "status": "OBSERVED",
+      "monotonic_ns": 5926085636184
+    },
+    {
+      "case": "upward-throw-close-request",
+      "status": "OBSERVED",
+      "monotonic_ns": 5934589424538
+    },
+    {
+      "case": "client-explicit-refusal",
+      "status": "OBSERVED",
+      "monotonic_ns": 5934603793097
+    },
+    {
+      "case": "separate-timeout-card-retained",
+      "status": "OBSERVED",
+      "monotonic_ns": 5937639071787
+    },
+    {
+      "case": "accepted-close-source-exits",
+      "status": "OBSERVED",
+      "monotonic_ns": 5940861382115
+    },
+    {
+      "case": "terminal-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 5950659284772
+    },
+    {
+      "case": "monitor-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 5954097527571
+    },
+    {
+      "case": "windows-home-route",
+      "status": "OBSERVED",
+      "monotonic_ns": 5959498813534
+    },
+    {
+      "case": "keyboard-reserves-content",
+      "status": "OBSERVED",
+      "monotonic_ns": 5961566495946
+    },
+    {
+      "case": "normal-controls-recover-focus",
+      "status": "OBSERVED",
+      "monotonic_ns": 5968481830909
+    }
+  ],
+  "budget_gate": "FAIL",
+  "missing_evidence": [],
+  "scaled_cache_rows": 0,
+  "restored_shell_and_seatd": true,
+  "finished_at_utc": "2026-09-24T00:31:54.567344+00:00"
+}

@@ -1,0 +1,6 @@
+{"event": "root_watchdog_armed", "monotonic_ns": 5870155116648}
+{"event": "normal_shell_stopped", "monotonic_ns": 5870758898006}
+{"event": "product_session_started", "monotonic_ns": 5872229123818}
+{"event": "distinct_virtual_touch_ready", "monotonic_ns": 5874921851932}
+{"event": "normal_services_restored", "monotonic_ns": 5971095184082}
+{"event": "normal_services_restored", "monotonic_ns": 5974141434807}

@@ -1101,6 +1101,14 @@ DATA 0f0d6df50445c4c9ace8d6e0dc2406b627fdd5aa1a8a01a79051890b1ac5818a  docs/evid
 DATA 0c22854140c93aa879eccc553e7ea85f1ac869b0ffce62b0f51e427f2a29d63d  docs/evidence/vglite-scene-board/cost-profile/baseline/pixman/scene-first.png
 DATA 77d40029a1007744b82a4e89446035a437a4253b8a507f20a634dc5c415c47fb  docs/evidence/vglite-scene-board/cost-profile/baseline/pixman/scene-later.png
 
+DATA f6fd5b602373bda6d8c0776f99ae080a7e0706c73a0f0040a7023d8c4636298b  docs/evidence/card-shell/scaled-cache-board/board/run-1-off/captures/two-live.png
+DATA fa4631fea9c528ba41352b800215fb353979e66d160e2d9b8376b0709c8158d2  docs/evidence/card-shell/scaled-cache-board/board/run-1-off/captures/during-drag.png
+DATA 9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d  docs/evidence/card-shell/scaled-cache-board/board/run-1-off/captures/private.png
+DATA 55650b6737053bc2fb3f4151ee8b293ea10963515acbd6cac5ea1e690ea1eb17  docs/evidence/card-shell/scaled-cache-board/board/run-1-off/captures/close-timeout.png
+DATA 64e856a1544fbedbdcac8a1bea92b9ce08e06611c0e77f3ce76265805648a609  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/two-live.png
+DATA 37ac7bccec11e01f2c244436ee60d1a430ed7475850424f909caf0faaa3dc4bd  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/during-drag.png
+DATA 9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/private.png
+DATA daf9ae76840b71eef09940dbfda654d38554f62bbe7d671d5c692c096178c620  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/close-timeout.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

@@ -19,10 +19,12 @@ import { evidenceUrl, url } from "../lib/specs";
       <h3>Finding the card rendering cost</h3>
       <p>A new profile attributes about 98% of repaint CPU to constructing and
         painting frames. After correcting a test setup race, all 13 injected interaction checks
-        passed again. Performance targets still fail; a scaled-pixel cache
-        comparison is next, and real-finger acceptance remains open.</p>
+        passed again. A scaled-pixel cache passed interaction checks but increased CPU cost
+        in its board comparison, so it stays disabled. Performance and
+        real-finger acceptance remain open.</p>
       <a href={evidenceUrl("docs/evidence/card-shell/repaint-stages/README.md")}>Repaint profile and remaining performance gates</a>
       <a href={evidenceUrl("docs/evidence/card-shell/throw-fixture-sync/README.md")}>Corrected test and board repeat</a>
+      <a href={evidenceUrl("docs/evidence/card-shell/scaled-cache-board/README.md")}>Cache comparison and decision</a>
     </article>
     <article>
       <p class="status">Experiment complete</p>
@@ -35,7 +37,9 @@ import { evidenceUrl, url } from "../lib/specs";
   </div>
   <p class="next"><strong>Next:</strong> reduce card repaint cost, verify the feel
     with a finger, and refine the shell, launcher, settings and notifications
-    into a coherent webOS-inspired interface. That interface is still in development.</p>
+    into a coherent webOS-inspired interface. That interface is still in development.
+    <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-shell/surfaces.svg">See the proposed screens</a>
+    · <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-shell/README.md">Read the design overview</a>.</p>
   <p class="publication">The requirement count tracks archived specifications.
     This progress summary and the <a href={url("handheld/")}>feature demonstrations</a>
     also report verified work in changes that remain open. Landing a proposal

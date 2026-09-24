@@ -78,3 +78,10 @@ setup failures and the following same-package board run with all 13 checks
 observed, 277 fully correlated submitted frames, and independent normal-system
 restoration. Frame CPU and tracking budgets still fail; this supports the
 fixture-race diagnosis without completing performance or physical-touch gates.
+
+
+The same-package scaled-cache off/on physical pair observed all 13 checks in
+both arms, but increased p95 CPU cost and left tracking cadence unchanged.
+`docs/evidence/card-shell/scaled-cache-board/README.md` preserves all 662
+submitted frames and independent normal-system restoration. The cache remains
+disabled; task 4.2 is still open with unchanged limits.
