@@ -25,11 +25,17 @@ python3 tests/test_shell_appearance_receiver.py
   PASS: 3 native host receiver socket tests: prepare/commit/rollback,
   pre-prepare rejection, restart restoration, socket mode 0600, and synthetic
   light/dark foreground-to-background/tile/selected/error contrast >= 4.5.
+python3 tests/test_launcher_navigation.py
+  PASS: 3 existing launcher navigation tests with appearance.c linked.
 nix build .#touch-launcher --max-jobs 1 --cores 4 --no-link --print-out-paths
-  PASS: /nix/store/bix6yarxjgf4zbkv1gsjpb49kh2289gr-k230-touch-launcher
+  PASS: /nix/store/g8w8w38v6g2rfb162fvbbkkj208b2hb4-k230-touch-launcher
 nix build .#handheld-theme-command --max-jobs 1 --cores 4 --no-link --print-out-paths
-  PASS: /nix/store/ipfhs2l5km4vxj0iqaf8jzx8myc41ckc-handheld-theme-command-0.1
-  Closure: 338,249,992 bytes, dominated by target Python; package is opt-in.
+  PASS: /nix/store/8hg86rs0yfxsc0a7lcbnbyh3d18i6wcx-handheld-theme-command-0.1
+  Closure: 338,250,352 bytes, dominated by target Python; package is opt-in.
+nix eval --json .#nixosConfigurations.k230.config.k230.shell.themeReceiverTrial
+  PASS: false in normal configuration.
+nix eval --impure --json --expr 'let f = builtins.getFlake (toString ./.); c = f.nixosConfigurations.k230.extendModules { modules = [ { k230.shell.themeReceiverTrial = true; } ]; }; in { enabled = c.config.k230.shell.themeReceiverTrial; installed = builtins.any (p: (p.pname or "") == "handheld-theme-command") c.config.environment.systemPackages; }'
+  PASS: {"enabled":true,"installed":true} in an opt-in evaluation; no image built.
 ```
 
 This receiver currently styles the installed launcher only, using a subset of

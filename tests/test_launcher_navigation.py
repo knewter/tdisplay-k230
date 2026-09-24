@@ -346,13 +346,14 @@ int main(int argc, char **argv) {
             focus.chmod(0o755)
             flags = subprocess.check_output(['pkg-config', '--cflags', '--libs',
                                              'wayland-client', 'gio-unix-2.0', 'pangocairo',
-                                             'librsvg-2.0'], text=True).split()
+                                             'librsvg-2.0', 'json-glib-1.0'], text=True).split()
             subprocess.run(['cc', '-std=c11', '-Wall', '-Wextra', '-Werror',
                             '-Wno-unused-parameter', '-Wno-misleading-indentation',
                             '-DK230_CATALOG_LIBRARY', '-I', str(path),
                             '-I', str(ROOT / 'nix/touch-launcher'), str(path / 'client.c'),
                             str(ROOT / 'nix/touch-launcher/catalog.c'),
                             str(ROOT / 'nix/touch-launcher/icon.c'),
+                            str(ROOT / 'nix/touch-launcher/appearance.c'),
                             str(path / 'wlr-layer-shell-unstable-v1-protocol.c'),
                             str(path / 'xdg-shell-protocol.c'), '-o', str(path / 'test'), *flags, '-lm'], check=True)
             subprocess.run([str(path / 'test'), str(fresh), str(hung), str(focus), str(record), str(flood), str(slow), str(empty), str(delayed)],

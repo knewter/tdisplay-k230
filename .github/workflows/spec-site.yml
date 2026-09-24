@@ -43,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install host test dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev librsvg2-dev libpixman-1-dev libdrm-dev ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libjson-glib-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev librsvg2-dev libpixman-1-dev libdrm-dev ffmpeg
 
       - name: Install site dependencies
         run: npm ci
@@ -86,6 +86,12 @@ jobs:
 
       - name: Check launcher Help and application navigation
         run: python3 tests/test_launcher_navigation.py
+
+      - name: Check opt-in shell appearance receiver and theme transaction
+        run: |
+          python3 tests/test_omarchy_theme_activation.py
+          python3 tests/test_omarchy_theme_transaction.py
+          python3 tests/test_shell_appearance_receiver.py
 
       - name: Check unattended flash target refusals
         run: python3 -m unittest discover -s tests -p 'test_ums_target.py'
