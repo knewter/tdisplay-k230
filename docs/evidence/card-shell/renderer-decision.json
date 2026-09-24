@@ -1,0 +1,63 @@
+{
+  "schema": "card-shell-renderer-decision-v1",
+  "decision": "retain-pixman-required-path",
+  "optional_vglite_for_this_card_change": "not-pursued",
+  "decision_date": "2026-09-23",
+  "card_performance_accepted": false,
+  "separate_vglite_trial_remains_open": true,
+  "card_cost_evidence": "docs/evidence/card-shell/scaled-cache-board/board/comparison.json",
+  "gpu_diagnostic_evidence": [
+    {
+      "round": 1,
+      "gpu": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-1/gpu/summary.json",
+        "measured_frames": 475,
+        "mean_pass_wall_ms": 43.95873927368421,
+        "mean_process_cpu_ms": 37.04583077894737
+      },
+      "pixman": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-1/pixman/summary.json",
+        "measured_frames": 551,
+        "mean_pass_wall_ms": 36.24204682758621,
+        "mean_process_cpu_ms": 32.471078025408346
+      }
+    },
+    {
+      "round": 2,
+      "gpu": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-2/gpu/summary.json",
+        "measured_frames": 472,
+        "mean_pass_wall_ms": 44.190879673728816,
+        "mean_process_cpu_ms": 37.25900653601695
+      },
+      "pixman": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-2/pixman/summary.json",
+        "measured_frames": 546,
+        "mean_pass_wall_ms": 36.6470873992674,
+        "mean_process_cpu_ms": 32.5938465989011
+      }
+    },
+    {
+      "round": 3,
+      "gpu": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-3/gpu/summary.json",
+        "measured_frames": 470,
+        "mean_pass_wall_ms": 44.45174314893617,
+        "mean_process_cpu_ms": 37.20480742978724
+      },
+      "pixman": {
+        "source": "docs/evidence/vglite-scene-board/context-lifetime/round-3/pixman/summary.json",
+        "measured_frames": 547,
+        "mean_pass_wall_ms": 36.52348041499086,
+        "mean_process_cpu_ms": 32.645646248628886
+      }
+    }
+  ],
+  "limits": [
+    "GPU scenes are not the same live-card workload; no GPU-versus-Pixman card benchmark is claimed.",
+    "Diagnostic process CPU excludes separately accounted interrupt and whole-device cost.",
+    "GPU format, synchronization, normal-service isolation and physical-control gates remain with the separate VGLite proposal.",
+    "RVV promotion is separately authorized; these measurements do not decide against vectors.",
+    "No card performance, image integration or physical-finger acceptance is claimed."
+  ]
+}

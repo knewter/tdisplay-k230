@@ -18,7 +18,7 @@
 
 - [x] 4.1 Declare card interaction frame/update, input-to-visible-update, and incremental-memory budgets before acceptance; implement the proposed-to-create `tools/card-shell-benchmark.py` and verify its parser with `python3 tools/card-shell-benchmark.py --self-test`.
 - [ ] 4.2 Measure the default Pixman composition path at 568x1232 RGB565 with one and multiple eligible cards; verify on hardware with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --output docs/evidence/card-shell/pixman.json`. Record a reduced-refresh behavior or independently measured optimization only when every required core card interaction remains live and direct; otherwise leave this change open or request explicit authorization for a successor.
-- [ ] 4.3 Decide and record whether to pursue the optional VGLite path. If pursued, measure it against the same workload without making it a prerequisite for Pixman acceptance; verify with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --renderer vglite --output docs/evidence/card-shell/vglite.json`. If not pursued, record that decision in the Pixman evidence so this optional path does not remain an archive gate.
+- [x] 4.3 Decide and record whether to pursue the optional VGLite path. If pursued, measure it against the same workload without making it a prerequisite for Pixman acceptance; verify with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --renderer vglite --output docs/evidence/card-shell/vglite.json`. If not pursued, record that decision in the Pixman evidence so this optional path does not remain an archive gate.
 
 ## 5. Integration and board acceptance
 
@@ -85,3 +85,12 @@ both arms, but increased p95 CPU cost and left tracking cadence unchanged.
 `docs/evidence/card-shell/scaled-cache-board/README.md` preserves all 662
 submitted frames and independent normal-system restoration. The cache remains
 disabled; task 4.2 is still open with unchanged limits.
+
+
+Task 4.3: `docs/evidence/card-shell/renderer-decision.md` and
+`docs/evidence/card-shell/renderer-decision.json` record the decision not to pursue the
+optional GPU path within this card acceptance change. Existing GPU synthetic
+scene measurements are explicitly not represented as a card comparison. The
+separate GPU proposal retains every open gate; task 4.2 and image/real-finger
+acceptance remain incomplete. The separate user-authorized RVV promotion is
+unaffected.
