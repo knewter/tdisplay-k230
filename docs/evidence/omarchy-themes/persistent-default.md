@@ -27,8 +27,8 @@ python3 tests/test_handheld_theme_default.py
 python3 tests/test_omarchy_theme_activation.py
   PASS: 8 host tests including stable public paths after clone removal.
 python3 tests/test_omarchy_theme_transaction.py
-  PASS: 12 host tests including incompatible path refusal and broken-pointer
-  replacement.
+  PASS: 13 host tests including incompatible path refusal, in-cache broken
+  pointer replacement, and foreign dangling-pointer refusal.
 python3 tests/test_shell_appearance_receiver.py
   PASS: 5 native host socket tests including fresh-home startup, reopened
   selected palette and unavailable cached selection fallback.

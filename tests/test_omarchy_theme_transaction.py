@@ -144,6 +144,17 @@ class ThemeTransaction(unittest.TestCase):
                                    transport=lambda *args: None)
             self.assertEqual(tx._pointer(root), candidate)
 
+    def test_dangling_foreign_active_pointer_is_not_replaced(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            foreign = root / "elsewhere" / "removed"
+            (root / "active").symlink_to(foreign)
+            with self.assertRaisesRegex(tx.TransactionError, "escapes cache"):
+                tx.activate_generation(candidate, state_root=root, endpoint=root / "shell.sock",
+                                       transport=lambda *args: None)
+            self.assertEqual((root / "active").readlink(), foreign)
+
     def test_relative_state_root_is_normalized(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

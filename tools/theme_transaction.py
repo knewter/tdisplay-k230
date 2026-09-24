@@ -25,11 +25,7 @@ def exchange(endpoint: Path, phase: str, generation: Path | None, *, timeout: fl
     message = {"protocol": 1, "phase": phase, "generation": identity,
                "path": str(generation) if generation is not None else None}
     if phase == "prepare" and generation is not None:
-        pointer = generation.parent.parent / "active"
-        try:
-            previous = pointer.resolve(strict=True) if pointer.is_symlink() else None
-        except FileNotFoundError:
-            previous = None
+        previous = _pointer(generation.parent.parent)
         message["previous_generation"] = previous.name if previous is not None else None
         message["previous_path"] = str(previous) if previous is not None else None
     deadline = time.monotonic() + timeout
@@ -64,11 +60,16 @@ def _pointer(root: Path) -> Path | None:
         if pointer.exists():
             raise TransactionError("active generation is not a symlink")
         return None
+    cache = (root / "generations").resolve(strict=True)
+    raw = Path(os.readlink(pointer))
+    normalized = (raw if raw.is_absolute() else pointer.parent / raw).resolve(strict=False)
+    if not normalized.is_relative_to(cache):
+        raise TransactionError("active generation escapes cache")
     try:
         target = pointer.resolve(strict=True)
     except FileNotFoundError:
         return None
-    if not target.is_relative_to(root / "generations") or not target.is_dir():
+    if not target.is_relative_to(cache) or not target.is_dir():
         raise TransactionError("active generation escapes cache")
     return target
 
