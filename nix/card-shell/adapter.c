@@ -84,6 +84,7 @@ static struct {
 	double button_x, button_y;
 	struct card_shell_drawer_gesture drawer_gesture;
 	struct card_shell_drawer_gesture shade_gesture;
+	struct card_shell_reveal_stream reveal;
 } shell;
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
@@ -784,6 +785,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	card_shell_reveal_abort(&shell.reveal);
 	cs_stream_cancel(&shell.policy);
 	shell.button_down = false;
 	handle_result(cs_leave(&shell.policy));
@@ -813,6 +815,11 @@ void card_shell_output_disable(struct sway_output *output) {
 static int tick_impl(void *data) {
 	if (!shell.output)
 		return 0;
+	if (shell.reveal.active && !card_shell_reveal_pump(&shell.reveal)) {
+		card_shell_drawer_cancel(&shell.drawer_gesture);
+		card_shell_drawer_cancel(&shell.shade_gesture);
+		sway_log(SWAY_INFO, "K230_CARD_SHELL reveal stream closed; scene retained");
+	}
 	card_shell_prepare(shell.output);
 	card_bench_resource(shell.active);
 	if (shell.output && shell.timer) {
@@ -911,6 +918,11 @@ static void prepare_impl(struct sway_output *output) {
 	bool blocked =
 		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
 	if (blocked) {
+		card_shell_reveal_cancel(&shell.reveal);
+		if (shell.drawer_gesture.contacts)
+			card_shell_drawer_cancel(&shell.drawer_gesture);
+		if (shell.shade_gesture.contacts)
+			card_shell_drawer_cancel(&shell.shade_gesture);
 		if (shell.active)
 			handle_result(cs_leave(&shell.policy));
 		wlr_scene_node_set_enabled(&shell.ui->node, false);
@@ -927,9 +939,9 @@ static void prepare_impl(struct sway_output *output) {
 		if (shell.policy.contact || shell.policy.edge.tracking ||
 			(shell.policy.mode == CS_EXPANDING && !shell.policy.expand_reversing))
 			handle_result(cs_cancel(&shell.policy));
-		if (shell.drawer_gesture.contacts)
+		if (shell.drawer_gesture.contacts && !shell.reveal.active)
 			card_shell_drawer_cancel(&shell.drawer_gesture);
-		if (shell.shade_gesture.contacts)
+		if (shell.shade_gesture.contacts && !shell.reveal.active)
 			card_shell_drawer_cancel(&shell.shade_gesture);
 	}
 	wlr_scene_node_set_enabled(&shell.ui->node, true);
@@ -1071,10 +1083,14 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	}
 	if (shell.drawer_gesture.contacts) {
 		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		if (shell.drawer_gesture.cancelled)
+			card_shell_reveal_cancel(&shell.reveal);
 		return true;
 	}
 	if (shell.shade_gesture.contacts) {
 		card_shell_drawer_down(&shell.shade_gesture, id, x, y);
+		if (shell.shade_gesture.cancelled)
+			card_shell_reveal_cancel(&shell.reveal);
 		return true;
 	}
 	if (drawer_mapped())
@@ -1107,6 +1123,9 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		if (shell.policy.mode == CS_EXPANDING)
 			handle_result(cs_cancel(&shell.policy));
 		card_shell_drawer_down(&shell.shade_gesture, id, x, y);
+		if (card_shell_reveal_enabled() &&
+			!card_shell_reveal_begin(&shell.reveal, "shade"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL shade reveal unavailable; scene retained");
 		return true;
 	}
 	/* Existing bar and keyboard routes stay authoritative. The top bar restores
@@ -1124,6 +1143,9 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		if (shell.policy.mode == CS_EXPANDING)
 			handle_result(cs_cancel(&shell.policy));
 		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		if (card_shell_reveal_enabled() &&
+			!card_shell_reveal_begin(&shell.reveal, "drawer"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL drawer reveal unavailable; deck retained");
 		return true;
 	}
 	int button = hit_button(x, y);
@@ -1166,11 +1188,19 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 	if (shell.drawer_gesture.contacts) {
 		card_shell_drawer_motion(&shell.drawer_gesture, id, x, y,
 			shell.policy.config.entry_distance);
+		if (id == shell.drawer_gesture.owner && shell.reveal.active)
+			card_shell_reveal_update(&shell.reveal,
+				card_shell_reveal_progress(&shell.drawer_gesture, x, y,
+					shell.policy.config.height * .60, false));
 		return true;
 	}
 	if (shell.shade_gesture.contacts) {
 		card_shell_shade_motion(&shell.shade_gesture, id, x, y,
 			shell.policy.config.entry_distance);
+		if (id == shell.shade_gesture.owner && shell.reveal.active)
+			card_shell_reveal_update(&shell.reveal,
+				card_shell_reveal_progress(&shell.shade_gesture, x, y,
+					shell.policy.config.height * .55, true));
 		return true;
 	}
 	if (shell.button_down) {
@@ -1194,14 +1224,20 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
 	if (shell.drawer_gesture.contacts) {
-		bool launch = card_shell_drawer_up(&shell.drawer_gesture, id) && !drawer_mapped();
-		if (launch && !card_shell_launch_surface("drawer"))
+		bool launch = card_shell_drawer_up(&shell.drawer_gesture, id);
+		if (card_shell_reveal_enabled()) {
+			if (shell.reveal.active && !card_shell_reveal_finish(&shell.reveal, launch))
+				sway_log(SWAY_INFO, "K230_CARD_SHELL drawer reveal failed; deck retained");
+		} else if (launch && !drawer_mapped() && !card_shell_launch_surface("drawer"))
 			sway_log(SWAY_INFO, "K230_CARD_SHELL drawer helper unavailable; deck retained");
 		return true;
 	}
 	if (shell.shade_gesture.contacts) {
-		bool launch = card_shell_drawer_up(&shell.shade_gesture, id) && !drawer_mapped();
-		if (launch && !card_shell_launch_surface("shade"))
+		bool launch = card_shell_drawer_up(&shell.shade_gesture, id);
+		if (card_shell_reveal_enabled()) {
+			if (shell.reveal.active && !card_shell_reveal_finish(&shell.reveal, launch))
+				sway_log(SWAY_INFO, "K230_CARD_SHELL shade reveal failed; scene retained");
+		} else if (launch && !drawer_mapped() && !card_shell_launch_surface("shade"))
 			sway_log(SWAY_INFO, "K230_CARD_SHELL shade helper unavailable; scene retained");
 		return true;
 	}
@@ -1239,6 +1275,7 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
+	card_shell_reveal_cancel(&shell.reveal);
 	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
 			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||
