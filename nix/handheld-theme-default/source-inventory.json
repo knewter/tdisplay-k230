@@ -1,4 +1,10 @@
 {
+  "bounded_background_themes": [
+    "ethereal", "everforest", "flexoki-light", "gruvbox", "hackerman",
+    "kanagawa", "last-horizon", "lumon", "lupine", "matte-black", "miasma",
+    "nord", "osaka-jade", "retro-82", "ristretto", "rose-pine", "solitude",
+    "tokyo-night", "vantablack", "white"
+  ],
   "files": {
     "themes/catppuccin-latte/backgrounds/1-color-fade.webp": "c4cb211770713984e630ef6eebfb6cfb03169124c98765fd52f82ee0bfd36603",
     "themes/catppuccin-latte/backgrounds/omarchy.webp": "8482e189755138084295e90f353b8efe8d3e575d7bc3fc3ed756d1e890242d32",
@@ -21,9 +27,31 @@
     "themes/catppuccin/unlock.png": "cbfa11cbb5f9028099087e942e8e80648eaf6edf24b733aaf07ba01d1c69162e",
     "themes/catppuccin/vscode.json": "7618ba0f071991effc4a2a923e4e241e661821968fc078d4fe188b9fa18e82fc"
   },
+  "full_resolution_themes": ["catppuccin", "catppuccin-latte"],
+  "note": "`files` holds every individual pinned file hash for the two full-resolution themes only (catppuccin/catppuccin-latte, whose bytes are exactly the upstream checkout and whose bundled/default generation identities are pinned to them). The other 20 built-ins in `bounded_background_themes` ship background images resized at build time by nix/handheld-theme-default/default.nix (see SOURCE.md); `source_sha256` below is the whole-theme-directory digest of the *installed* (post-resize) tree for every one of the 22 built-ins, verified by tests/test_handheld_theme_bundle.py against the real `nix build .#handheld-theme-default` output.",
   "revision": "28ceaae70ebac3a0edcc21f2faa77a90dc6d404c",
   "source_sha256": {
     "catppuccin": "72e8f8f39a1209893b30b651fece6c1d1ce47ec643df9e596c7cd282ea97d4c6",
-    "catppuccin-latte": "11ea23e5a4659b09ecda0658dd86921489d6f536b86ffa60af2f601912a70cdc"
+    "catppuccin-latte": "11ea23e5a4659b09ecda0658dd86921489d6f536b86ffa60af2f601912a70cdc",
+    "ethereal": "ad3e25e508c80f7b706d2009eaa5cfa493684279618292b0b0fdf21e1496bcd1",
+    "everforest": "9ded4ad155ccc1d614ed51fffb2fbadde5b5bc88a47250212fec025509a17b0a",
+    "flexoki-light": "eb1465fb1e3db44089d9332f663c3db9fbccc2b17dd6500d2de6a819108e6f52",
+    "gruvbox": "edcc159ff28d909c3ab174289fca8c0bd126cb6176df0133958929e3683d8e6e",
+    "hackerman": "f077adefde3334c10619026dc26b4fcb9bcbb92a0427adbbb6b5217254bb4d2e",
+    "kanagawa": "7be5f31ad6f754344b86263b8c84daa2c23c8ad54b76016ab5a450e7ccd9679c",
+    "last-horizon": "5e2fb29ce6d7a197ac048650190b77e9f1811228f3d5decd4ccf5ad1d9f0e76a",
+    "lumon": "da06bb75b6ca936b255082d58928409d330b82255b5f20522e273f1ebffe139c",
+    "lupine": "e237ca64bd8e34c1aacb6682c5e199d4d1e4bc52bad0a5f0fb2ea6884b391cfd",
+    "matte-black": "d5e1caa9e28104a4195a538d3e72ad32f753551e58a256d4262ad984be15e8db",
+    "miasma": "bc091d119da6cf1908fe7e2d1721214ecbae58443739121363af7794d03c39ec",
+    "nord": "ee56775351561d3f2a230a7212abda9c5f26549384248bc69b34f44d443b75ff",
+    "osaka-jade": "0a845307f326c557165f70cc083503f41ee0ca5c80e11c313d58aa14599125b2",
+    "retro-82": "c5d5b59b47c70db1b3559a2d949296297d07be97b32231aa9f7d848376126e1c",
+    "ristretto": "b655fc2c8c47e0c29546ba03635940d5a34526c08e634ef43853a7b213beddb2",
+    "rose-pine": "b24223c87c77e39e235fa826616476ffc2c35dacc6c1864b1121309f28ff7ded",
+    "solitude": "d711beaa49bdb287ebe212d3219708da73db25a8e92d522004a62c13ccdb024b",
+    "tokyo-night": "8f45b52e1e5d94760ff7d3678b0fc784424aa6b245139cb4fbcaa8d885ad03bf",
+    "vantablack": "ad1d157cafadc0804e30bc652628ff66d52f6998327121cbc90a05e89a1d480b",
+    "white": "2ebfdab4dc1a57b98c6cd5c16defa2818661f431199df25fc78bb1cdc36578dc"
   }
 }

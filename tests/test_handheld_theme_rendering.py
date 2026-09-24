@@ -28,6 +28,29 @@ class ThemeTokenRendering(unittest.TestCase):
         self.assertEqual(tokens["border"]["alpha"], 0.4)
         self.assertEqual(tokens["border-width"]["value"], [1, 2, 3, 5])
 
+    def test_hyprland_hex_gradient_and_bare_rgb_are_distinct_from_css_decimal_form(self):
+        # Built-in Omarchy themes hackerman/last-horizon/solitude spell
+        # hyprland_active_border/hyprland_inactive_border as a compact hex
+        # rgba(RRGGBBAA)/rgb(RRGGBB) run, not the CSS decimal rgba(r, g, b, a)
+        # form covered above. Both must resolve, and a length that does not
+        # match its own prefix must still fail closed.
+        source = {
+            "hyprland": {"active-border": "rgba(26a269ee) rgba(2ec27eee) 45deg",
+                         "inactive-border": "rgb(1e1e1e)"},
+        }
+        tokens = compile_tokens(source)["sections"]["hyprland"]
+        self.assertEqual(tokens["active-border"]["stops"], [
+            {"argb": "#ee26a269", "offset": 0.0},
+            {"argb": "#ee2ec27e", "offset": 1.0},
+        ])
+        self.assertEqual(tokens["active-border"]["angle_degrees"], 45)
+        self.assertEqual(tokens["inactive-border"]["stops"],
+                         [{"argb": "#ff1e1e1e", "offset": 0.0}])
+        for bad in ("rgba(1e1e1e)", "rgb(26a269ee)", "rgba(26a269)"):
+            with self.subTest(bad=bad):
+                with self.assertRaisesRegex(TokenError, "invalid color"):
+                    compile_tokens({"hyprland": {"active-border": bad}})
+
     def test_cycle_missing_reference_and_invalid_alpha_fail_closed(self):
         for source, problem in (
             ({"launcher": {"border": "menu.border"}, "menu": {"border": "launcher.border"}}, "cycle"),

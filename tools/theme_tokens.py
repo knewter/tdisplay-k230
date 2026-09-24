@@ -12,6 +12,12 @@ MAX_SECTIONS = 32
 MAX_KEYS = 512
 COLOR = re.compile(r"#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\Z")
 RGBA = re.compile(r"rgba?\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)(?:\s*,\s*([0-9]*\.?[0-9]+))?\s*\)\Z")
+# Hyprland's own border/gradient syntax, distinct from the CSS decimal form
+# above: a single compact hex run with no separating commas, alpha (if any)
+# trailing the RGB bytes. Several built-in Omarchy themes (hackerman,
+# last-horizon, solitude) set hyprland_active_border/hyprland_inactive_border
+# this way, e.g. "rgba(26a269ee) rgba(2ec27eee) 45deg" or "rgb(1e1e1e)".
+HEX_RGBA = re.compile(r"rgba\(\s*([0-9a-fA-F]{8})\s*\)\Z|rgb\(\s*([0-9a-fA-F]{6})\s*\)\Z")
 PARTS = re.compile(r"#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?|rgba?\([^)]*\)|[-+]?[0-9]*\.?[0-9]+deg")
 REFERENCE = re.compile(r"[a-zA-Z][a-zA-Z0-9_-]*\.[a-zA-Z][a-zA-Z0-9_-]*\Z")
 WIDTH_KEYS = re.compile(r"(?:^|-)border-width\Z")
@@ -35,6 +41,11 @@ def _argb(value):
     if COLOR.fullmatch(value):
         digits = value[1:]
         return "#" + (digits[6:8] if len(digits) == 8 else "ff") + digits[:6].lower()
+    hex_form = HEX_RGBA.fullmatch(value)
+    if hex_form:
+        digits = (hex_form.group(1) or hex_form.group(2)).lower()
+        # Hyprland's rgba(RRGGBBAA) trails the alpha byte; rgb(RRGGBB) has none.
+        return "#" + (digits[6:8] if len(digits) == 8 else "ff") + digits[:6]
     match = RGBA.fullmatch(value)
     if not match:
         raise TokenError(f"invalid color: {value[:40]}")

@@ -207,6 +207,70 @@ fn community_hyprland_rgba_palette_prepares_without_relaxing_shell_colors() {
 }
 
 #[test]
+fn builtin_multi_stop_hyprland_gradient_palette_uses_first_stop_color() {
+    // Several bundled Omarchy built-in themes (hackerman, last-horizon,
+    // solitude) set hyprland_active_border/hyprland_inactive_border to a
+    // multi-stop Hyprland gradient rather than a single color, e.g.
+    // "rgba(26a269ee) rgba(2ec27eee) 45deg" (hackerman) or a bare
+    // "rgb(1e1e1e)" (solitude, no alpha). The full gradient is rendered
+    // through the resolved shell.toml brush tokens; this flat palette map
+    // only needs one representative color per key.
+    let fixture = Fixture::new();
+    let generation = fixture.user_generation();
+    let report_path = generation.join("report.json");
+    let mut report: Value = serde_json::from_slice(&fs::read(&report_path).unwrap()).unwrap();
+    report["palette"]["hyprland_active_border"] = json!("rgba(26a269ee) rgba(2ec27eee) 45deg");
+    report["palette"]["hyprland_inactive_border"] = json!("rgb(1e1e1e)");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    let id = generation.file_name().unwrap().to_str().unwrap();
+    let (event, reply) = send(
+        &mut receiver,
+        &fixture.socket(),
+        json!({
+            "protocol": 1, "phase": "prepare", "generation": id, "path": generation,
+            "previous_generation": null, "previous_path": null
+        }),
+    );
+    assert_eq!(reply["status"], "ok");
+    let snapshot = event.snapshot.unwrap();
+    assert_eq!(
+        snapshot.palette_color("hyprland_active_border"),
+        Some(PaletteColor {
+            red: 0x26,
+            green: 0xa2,
+            blue: 0x69,
+            alpha: 0xee
+        })
+    );
+    assert_eq!(
+        snapshot.palette_color("hyprland_inactive_border"),
+        Some(PaletteColor {
+            red: 0x1e,
+            green: 0x1e,
+            blue: 0x1e,
+            alpha: 0xff
+        })
+    );
+    drop(receiver);
+
+    // A value with no parseable rgb()/rgba() token anywhere is still rejected.
+    report["palette"]["hyprland_active_border"] = json!("45deg");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    assert!(AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(generation),
+        fixture.state.clone(),
+    )
+    .is_err());
+}
+
+#[test]
 fn prepared_real_community_generation_loads_when_fixture_is_available() {
     let Some(path) = std::env::var_os("K230_COMMUNITY_GENERATION").map(PathBuf::from) else {
         return;

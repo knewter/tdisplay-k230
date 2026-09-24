@@ -164,18 +164,34 @@ fn palette_value(key: &str, value: &str) -> Result<PaletteValue, String> {
             _ => Err("invalid palette mode".into()),
         };
     }
-    // Omarchy permits Hyprland-only border values in rgba(RRGGBBAA)
-    // syntax. They are still colors, but are not written as #RRGGBBAA in
-    // the resolved palette. Limit this spelling to those two source keys;
-    // other shell roles must remain strict hexadecimal colors.
+    // Omarchy permits Hyprland-only border values in rgba(RRGGBBAA)/
+    // rgb(RRGGBB) syntax, and several built-in themes (hackerman,
+    // last-horizon, solitude) set these two keys to a multi-stop gradient,
+    // e.g. "rgba(26a269ee) rgba(2ec27eee) 45deg". They are still colors,
+    // but are not written as #RRGGBBAA in the resolved palette. This flat
+    // map holds one representative color per key; the full gradient (every
+    // stop and the angle) is preserved and rendered separately through the
+    // resolved shell.toml brush tokens. Limit this spelling to those two
+    // source keys; other shell roles must remain strict hexadecimal colors.
     let hex = if let Some(hex) = value.strip_prefix('#') {
         hex
     } else if key == "hyprland_active_border" || key == "hyprland_inactive_border" {
-        let hex = value
-            .strip_prefix("rgba(")
-            .and_then(|inner| inner.strip_suffix(')'))
+        let first = value
+            .split_whitespace()
+            .find(|part| part.starts_with("rgba(") || part.starts_with("rgb("))
             .ok_or("invalid palette color")?;
-        if hex.len() != 8 {
+        // "rgba(...)" promises an alpha byte and "rgb(...)" does not; keep
+        // that distinction exact instead of accepting either length for both.
+        let (hex, expected_len) = if let Some(inner) = first.strip_prefix("rgba(") {
+            (inner.strip_suffix(')'), 8)
+        } else {
+            (
+                first.strip_prefix("rgb(").and_then(|inner| inner.strip_suffix(')')),
+                6,
+            )
+        };
+        let hex = hex.ok_or("invalid palette color")?;
+        if hex.len() != expected_len {
             return Err("invalid palette color".into());
         }
         hex
