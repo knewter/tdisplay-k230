@@ -23,6 +23,20 @@ LOCK=Path('/run/k230-vglite-service-trial.lock')
 RESTORE_LOCK=Path('/run/k230-vglite-service-restore.lock')
 OUTPUT=re.compile(r'/var/lib/k230/vglite-service-trial-[a-z0-9-]+')
 STORE=re.compile(r'/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._/-]+')
+BROKER_JOURNAL_LIMIT=1000
+
+
+def broker_messages(output):
+    lines=output.splitlines()
+    if len(lines)>BROKER_JOURNAL_LIMIT:
+        raise RuntimeError('broker journal exceeds inspection limit')
+    try:
+        messages=[json.loads(line)['MESSAGE'] for line in lines]
+    except (json.JSONDecodeError,KeyError,TypeError) as exc:
+        raise RuntimeError('broker journal is malformed') from exc
+    if not all(isinstance(message,str) for message in messages):
+        raise RuntimeError('broker journal is malformed')
+    return messages
 
 
 def store_file(value):
@@ -240,10 +254,11 @@ class Trial:
                 self.check_isolation('restarted',active_pid,pid)
             time.sleep(max(0,deadline-time.monotonic()))
             since=json.loads((self.output/'state.json').read_text())['created_at_utc']
-            broker_log=self.system.call(['journalctl','-u','k230-vglite-broker.service','--since='+since,'--no-pager','-o','cat','-n','1000'])
+            broker_log=self.system.call(['journalctl','-u','k230-vglite-broker.service','--since='+since,
+                                         '--no-pager','-o','json','-n',str(BROKER_JOURNAL_LIMIT+1)])
             shell_log=self.system.call(['journalctl','-u','shell.service','--since='+since,'--no-pager','-o','cat','-n','10000'])
-            grant_pids=[int(value) for value in re.findall(
-                r'^VG-Lite descriptor granted to compositor MainPID ([0-9]+)$',broker_log,re.M)]
+            grant_pids=[int(match.group(1)) for message in broker_messages(broker_log)
+                        if (match:=re.fullmatch(r'VG-Lite descriptor granted to compositor MainPID ([0-9]+)',message))]
             grants=grant_pids.count(active_pid)
             old_grants=grant_pids.count(pid) if self.restart_once else 0
             gpu=shell_log.count('VG-Lite full frame submitted')

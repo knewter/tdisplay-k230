@@ -25,6 +25,7 @@ SOCKET_DIR=Path('/run')
 PTR_SEIZE=0x4206
 PTR_DETACH=17
 SCHEMA=1
+BROKER_JOURNAL_LIMIT=1000
 
 
 def status(pid):
@@ -199,9 +200,20 @@ def run_app_check(pid):
 def broker_counts(trial, old_pid, current_pid):
     since=trial['created_at_utc']
     result=subprocess.run(['journalctl','-u','k230-vglite-broker.service','--since='+since,
-                           '--no-pager','-o','cat','-n','1000'],capture_output=True,text=True,check=True,timeout=5)
-    grants=[int(v) for v in re.findall(r'^VG-Lite descriptor granted to compositor MainPID ([0-9]+)$',result.stdout,re.M)]
-    denied=sum(line.startswith('VG-Lite descriptor denied:') for line in result.stdout.splitlines())
+                           '--no-pager','-o','json','-n',str(BROKER_JOURNAL_LIMIT+1)],
+                          capture_output=True,text=True,check=True,timeout=5)
+    lines=result.stdout.splitlines()
+    if len(lines)>BROKER_JOURNAL_LIMIT:
+        raise RuntimeError('broker journal exceeds inspection limit')
+    try:
+        messages=[json.loads(line)['MESSAGE'] for line in lines]
+    except (json.JSONDecodeError,KeyError,TypeError) as exc:
+        raise RuntimeError('broker journal is malformed') from exc
+    if not all(isinstance(message,str) for message in messages):
+        raise RuntimeError('broker journal is malformed')
+    grants=[int(match.group(1)) for message in messages
+            if (match:=re.fullmatch(r'VG-Lite descriptor granted to compositor MainPID ([0-9]+)',message))]
+    denied=sum(message.startswith('VG-Lite descriptor denied:') for message in messages)
     expected=[current_pid] if old_pid is None else [old_pid,current_pid]
     if sorted(grants)!=sorted(expected) or denied<1:
         raise RuntimeError('broker grant/denial journal does not match trial phase')

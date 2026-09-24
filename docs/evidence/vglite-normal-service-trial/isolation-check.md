@@ -19,6 +19,13 @@ start, the phase guard prevents a stale activation or result write. Reports
 are root-only and failure reports preserve only a fixed error type, not raw
 journal text or paths.
 
+Both checker and runner request up to 1001 broker journal entries in JSON
+since trial creation. They count grants only when at most 1000 complete entries
+are returned; 1001 entries or malformed output fails closed, so an older
+grant cannot disappear behind a 1000-entry tail and yield a false exact count.
+The host fixture buries an extra grant before 998 later denials and confirms
+the cap failure. This is a bounded journal proof, not a board observation.
+
 The checker covers the following concrete parts of the
 [access contract](../../research/vglite-service-access.md):
 

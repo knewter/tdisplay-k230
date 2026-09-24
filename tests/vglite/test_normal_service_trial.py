@@ -210,8 +210,9 @@ class NormalServiceTrialTests(unittest.TestCase):
         def logs(command,**kwargs):
             if command[:2]==['journalctl','-u']:
                 if command[2]=='k230-vglite-broker.service':
-                    return ('VG-Lite descriptor granted to compositor MainPID 777\n'
-                            'VG-Lite descriptor granted to compositor MainPID 778')
+                    return '\n'.join(json.dumps({'MESSAGE':message}) for message in (
+                        'VG-Lite descriptor granted to compositor MainPID 777',
+                        'VG-Lite descriptor granted to compositor MainPID 778'))
                 if command[2]=='shell.service':return 'VG-Lite full frame submitted'
             return original(command,**kwargs)
         def checker(phase,pid,old=None):
@@ -228,6 +229,29 @@ class NormalServiceTrialTests(unittest.TestCase):
         self.assertEqual((state['broker_grants_for_old_pid'],state['broker_grants_for_main_pid']),(1,1))
         self.assertEqual(state['phase'],'restored')
         self.assertTrue(self.manager.active('shell.service'))
+
+    def test_broker_journal_overflow_rejects_hidden_extra_grant(self):
+        grant=lambda pid:'VG-Lite descriptor granted to compositor MainPID '+str(pid)
+        deny='VG-Lite descriptor denied: Denied peer is not compositor MainPID'
+        messages=[grant(999),grant(777)]+[deny]*999
+        broker_log='\n'.join(json.dumps({'MESSAGE':message}) for message in messages)
+        original=self.manager.call
+        def logs(command,**kwargs):
+            if command[:3]==['journalctl','-u','k230-vglite-broker.service']:
+                self.assertEqual(command[-2:],['-n','1001'])
+                return broker_log
+            if command[:3]==['journalctl','-u','shell.service']:
+                return 'VG-Lite full frame submitted'
+            return original(command,**kwargs)
+        with patch.object(self.trial,'observe_main',return_value=(777,'1',0)), \
+             patch.object(self.manager,'call',side_effect=logs), \
+             patch.object(T.time,'sleep'):
+            with self.assertRaisesRegex(RuntimeError,'exceeds inspection limit'):
+                self.trial.run()
+        state=json.loads((self.trial.output/'state.json').read_text())
+        self.assertEqual(state['phase'],'restored')
+        self.assertTrue(self.manager.active('shell.service'))
+        self.assertEqual(T.broker_messages(json.dumps({'MESSAGE':grant(777)})),[grant(777)])
 
 
 if __name__=='__main__':unittest.main()

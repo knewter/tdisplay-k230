@@ -21,7 +21,8 @@ class IsolationChecks(unittest.TestCase):
     def test_broker_grants_exact_old_and_new_pid_and_denial(self):
         trial={'created_at_utc':'2026-09-23T00:00:00Z'}
         def journal(lines):
-            return patch.object(M.subprocess,'run',return_value=types.SimpleNamespace(stdout='\n'.join(lines)))
+            output='\n'.join(json.dumps({'MESSAGE':line}) for line in lines)
+            return patch.object(M.subprocess,'run',return_value=types.SimpleNamespace(stdout=output))
         grant=lambda pid:'VG-Lite descriptor granted to compositor MainPID '+str(pid)
         deny='VG-Lite descriptor denied: Denied peer is not compositor MainPID'
         with journal([grant(101),deny]):
@@ -33,6 +34,23 @@ class IsolationChecks(unittest.TestCase):
                       [grant(101),grant(202)], [grant(101),grant(303),deny]):
             with self.subTest(lines=lines),journal(lines):
                 with self.assertRaises(RuntimeError):M.broker_counts(trial,101,202)
+
+    def test_broker_rejects_extra_grant_buried_before_old_journal_tail(self):
+        trial={'created_at_utc':'2026-09-23T00:00:00Z'}
+        grant=lambda pid:'VG-Lite descriptor granted to compositor MainPID '+str(pid)
+        deny='VG-Lite descriptor denied: Denied peer is not compositor MainPID'
+        messages=[grant(303),grant(101),grant(202)]+[deny]*998
+        output='\n'.join(json.dumps({'MESSAGE':message}) for message in messages)
+        with patch.object(M.subprocess,'run',return_value=types.SimpleNamespace(stdout=output)) as run:
+            with self.assertRaisesRegex(RuntimeError,'exceeds inspection limit'):
+                M.broker_counts(trial,101,202)
+        self.assertEqual(run.call_args.args[0][-2:],['-n','1001'])
+
+    def test_broker_rejects_malformed_journal_entry(self):
+        trial={'created_at_utc':'2026-09-23T00:00:00Z'}
+        with patch.object(M.subprocess,'run',return_value=types.SimpleNamespace(stdout='{"MESSAGE": [65]}')):
+            with self.assertRaisesRegex(RuntimeError,'malformed'):
+                M.broker_counts(trial,None,101)
 
     def test_same_uid_result_requires_every_denial(self):
         ok={'caps_zero':True,'broker_denied':True,'direct_denied':True,
