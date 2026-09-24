@@ -137,6 +137,101 @@ fn restart_loads_selected_generation_and_bad_pointer_falls_back() {
 }
 
 #[test]
+fn community_hyprland_rgba_palette_prepares_without_relaxing_shell_colors() {
+    let fixture = Fixture::new();
+    let generation = fixture.user_generation();
+    let report_path = generation.join("report.json");
+    let mut report: Value = serde_json::from_slice(&fs::read(&report_path).unwrap()).unwrap();
+    report["palette"]["hyprland_inactive_border"] = json!("rgba(4e578499)");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    let id = generation.file_name().unwrap().to_str().unwrap();
+    let (event, reply) = send(
+        &mut receiver,
+        &fixture.socket(),
+        json!({
+            "protocol": 1, "phase": "prepare", "generation": id, "path": generation,
+            "previous_generation": null, "previous_path": null
+        }),
+    );
+    assert_eq!(reply["status"], "ok");
+    assert_eq!(
+        event
+            .snapshot
+            .unwrap()
+            .palette_color("hyprland_inactive_border"),
+        Some(PaletteColor {
+            red: 0x4e,
+            green: 0x57,
+            blue: 0x84,
+            alpha: 0x99
+        })
+    );
+    drop(receiver);
+
+    // The same spelling is not a valid shell background or arbitrary key.
+    report["palette"]["background"] = json!("rgba(1e1e2eff)");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    assert!(AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(generation.clone()),
+        fixture.state.clone(),
+    )
+    .is_err());
+    report["palette"]["background"] = json!("#1e1e2e");
+    report["palette"]["unrelated"] = json!("rgba(4e578499)");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    assert!(AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(generation),
+        fixture.state.clone(),
+    )
+    .is_err());
+    report["palette"]
+        .as_object_mut()
+        .unwrap()
+        .remove("unrelated");
+    report["palette"]["hyprland_inactive_border"] = json!("rgba(4e5784)");
+    fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+    assert!(AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(report_path.parent().unwrap().to_path_buf()),
+        fixture.state.clone(),
+    )
+    .is_err());
+}
+
+#[test]
+fn prepared_real_community_generation_loads_when_fixture_is_available() {
+    let Some(path) = std::env::var_os("K230_COMMUNITY_GENERATION").map(PathBuf::from) else {
+        return;
+    };
+    let path = path.canonicalize().unwrap();
+    let root = path.parent().unwrap().parent().unwrap().to_path_buf();
+    let fixture = Fixture::new();
+    let receiver =
+        AppearanceReceiver::bind_with_roots(fixture.socket(), Some(path.clone()), root).unwrap();
+    assert_eq!(receiver.active().unwrap().path, path);
+    assert_eq!(
+        receiver
+            .active()
+            .unwrap()
+            .palette_color("hyprland_inactive_border"),
+        Some(PaletteColor {
+            red: 0x4e,
+            green: 0x57,
+            blue: 0x84,
+            alpha: 0x99
+        })
+    );
+}
+
+#[test]
 fn rollback_restores_state_after_commit_reply_is_lost() {
     let fixture = Fixture::new();
     let selected = fixture.user_generation();

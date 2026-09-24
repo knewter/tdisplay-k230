@@ -164,7 +164,24 @@ fn palette_value(key: &str, value: &str) -> Result<PaletteValue, String> {
             _ => Err("invalid palette mode".into()),
         };
     }
-    let hex = value.strip_prefix('#').ok_or("invalid palette color")?;
+    // Omarchy permits Hyprland-only border values in rgba(RRGGBBAA)
+    // syntax. They are still colors, but are not written as #RRGGBBAA in
+    // the resolved palette. Limit this spelling to those two source keys;
+    // other shell roles must remain strict hexadecimal colors.
+    let hex = if let Some(hex) = value.strip_prefix('#') {
+        hex
+    } else if key == "hyprland_active_border" || key == "hyprland_inactive_border" {
+        let hex = value
+            .strip_prefix("rgba(")
+            .and_then(|inner| inner.strip_suffix(')'))
+            .ok_or("invalid palette color")?;
+        if hex.len() != 8 {
+            return Err("invalid palette color".into());
+        }
+        hex
+    } else {
+        return Err("invalid palette color".into());
+    };
     if !matches!(hex.len(), 6 | 8) || !hex.bytes().all(|c| c.is_ascii_hexdigit()) {
         return Err("invalid palette color".into());
     }
