@@ -1187,6 +1187,12 @@ DATA 0677f13977a3c6734e461a808921716c86402386695ef3343cb4a3c36ad56a69  docs/evid
 DATA 51471171d73d883577104cae64254bcc039c12278d9b68502699de6c41ef0a02  docs/evidence/card-shell/tracked-motion-qemu/entry-end.png
 DATA 61786ceefb7f771eb3034ecea012932c366130a3f02114d3b8b7500c4fc5e99d  docs/evidence/card-shell/tracked-motion-qemu/entry-middle.png
 DATA 7033843d9fb164232b7406150f120475a2f2bb756b091bfe2a17b3fe2fe0b32d  docs/evidence/card-shell/tracked-motion-qemu/entry-start.png
+DATA 865c3fa18b743280892c49b63ccf7ba54049da74d83a6015a61f198a8f898b98  docs/evidence/keyboard-gestures/native-qemu/grip-held.png
+DATA 4e086633efc0ff342823a72e001a56e06a6cfcf7a550441761ce19c8c748d5bf  docs/evidence/keyboard-gestures/native-qemu/grip-reverse.png
+DATA ef2b4dfc9fc2fe0b2d6a7fe8c3085b4eaca2227beea99e991f5d1387c302af9f  docs/evidence/keyboard-gestures/native-qemu/held.png
+DATA 73174e71bd6ef16ee9f7484ac088e4fcd44a40500c8ad03c96b0734b2cef1236  docs/evidence/keyboard-gestures/native-qemu/hidden.png
+DATA 2f3ada81bf23ac6ae1c55077c3e223e1512c11db4908fe1c484e790c21df3369  docs/evidence/keyboard-gestures/native-qemu/reverse.png
+DATA 1eac9525b757c36bd8ec7c4b7812c161a6ba2b375e78aa96c93810f2e082be44  docs/evidence/keyboard-gestures/native-qemu/shown.png
 DATA 0ec94093d0139736c5c6d0c7b1a707d555cc845c2d3d62e4b07cead826d7e14c  docs/evidence/coherent-shell/rust-drawer-grid-host/dark.png
 DATA fb552085a88544e9759aa17a136505b6369ddeb40504a3752fcad588c142bb95  docs/evidence/coherent-shell/rust-drawer-grid-host/latte.png
 DATA 1b81a035e84de1aaabea0cfda17f535da2fea12c0fa80f0ddeaadc2d4b056a19  docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png

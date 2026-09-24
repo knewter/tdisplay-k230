@@ -217,9 +217,15 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
         assert 964 <= grip_height <= 968, grip_height
         grip_frame = capture('grip-held.png')
         assert abs(grip_edge(grip_frame)-966) <= 2, grip_edge(grip_frame)
+        touch('motion', 7, 100, 950, stamp+840)
+        grip_reverse_height = wait_for(lambda: app_height() if app_height() < 950 else None)
+        assert 924 <= grip_reverse_height <= 928, grip_reverse_height
+        grip_reverse = capture('grip-reverse.png')
+        assert abs(grip_edge(grip_reverse)-926) <= 2, grip_edge(grip_reverse)
+        assert ImageChops.difference(grip_frame, grip_reverse).getbbox(), 'grip reverse pixels unchanged'
         # A stale release beyond the midpoint commits the hide; the 210px
         # capture above remains a held, one-to-one displacement check.
-        touch('motion', 7, 100, 1080, stamp+850)
+        touch('motion', 7, 100, 1080, stamp+860)
         touch('up', 7, stamp=stamp+1100)
         wait_for(lambda: app_height() == 1232)
         wait_for(lambda: (out/'keyboard-actions').read_text().count('hide') >= 2)
@@ -227,11 +233,13 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
         result = {'class':'headless-qemu-native-sway-wvkbd-injected-touch',
                   'source_sway':args.sway, 'keyboard':args.keyboard,
                   'heights':{'hidden':1232,'show_held':held_height,'reversed':reverse_height,
-                             'shown':shown_height,'grip_held':grip_height,'hidden_final':1232},
+                             'shown':shown_height,'grip_held':grip_height,
+                             'grip_reversed':grip_reverse_height,'hidden_final':1232},
                   'actions':(out/'keyboard-actions').read_text().splitlines(),
                   'key_presses_after_cancel':key_presses(),
                   'screenshots':['hidden.png','held.png','paused.png','reverse.png',
-                                 'hidden-again.png','shown.png','grip-held.png'],
+                                 'hidden-again.png','shown.png','grip-held.png',
+                                 'grip-reverse.png'],
                   'physical_touch':False,'panel_capture':False}
         (out/'result.json').write_text(json.dumps(result,indent=2)+'\n')
         print('PASS native Sway/wvkbd chord, held/reversed pixels, grip and usable area; no physical proof')

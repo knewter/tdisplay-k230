@@ -1,0 +1,9 @@
+{
+  "class": "headless-qemu-failed-hide-helper-recovery",
+  "source_sway": "/nix/store/nkz1nrjk71pmlslsninjwj4xalgapmfx-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "keyboard": "/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+  "recovered_usable_height": 756,
+  "key_presses_after_recovery": 1,
+  "physical_touch": false,
+  "panel_capture": false
+}

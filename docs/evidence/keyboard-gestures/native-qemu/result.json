@@ -1,0 +1,33 @@
+{
+  "class": "headless-qemu-native-sway-wvkbd-injected-touch",
+  "source_sway": "/nix/store/nkz1nrjk71pmlslsninjwj4xalgapmfx-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "keyboard": "/nix/store/n7p6qfbyw30yany09x8kr95j2ar1fh7b-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+  "heights": {
+    "hidden": 1232,
+    "show_held": 1132,
+    "reversed": 1182,
+    "shown": 756,
+    "grip_held": 966,
+    "grip_reversed": 926,
+    "hidden_final": 1232
+  },
+  "actions": [
+    "show",
+    "hide",
+    "show",
+    "hide"
+  ],
+  "key_presses_after_cancel": 1,
+  "screenshots": [
+    "hidden.png",
+    "held.png",
+    "paused.png",
+    "reverse.png",
+    "hidden-again.png",
+    "shown.png",
+    "grip-held.png",
+    "grip-reverse.png"
+  ],
+  "physical_touch": false,
+  "panel_capture": false
+}
