@@ -18,6 +18,9 @@ pub struct ThemeView {
     pub list: Option<ThemeList>,
     pub preview: Option<ThemePreview>,
     pub pending: Option<ThemeRequest>,
+    pub pending_id: Option<u64>,
+    /// A failed background choice must not leave the previous Apply enabled.
+    pub selection_error: bool,
     pub error: Option<String>,
     pub message: Option<String>,
     pub scroll: f64,
@@ -30,6 +33,8 @@ impl Default for ThemeView {
             list: None,
             preview: None,
             pending: None,
+            pending_id: None,
+            selection_error: false,
             error: None,
             message: None,
             scroll: 0.0,
@@ -56,6 +61,7 @@ impl ThemeView {
     pub fn open(&mut self) -> ThemeRequest {
         self.page = ThemePage::List;
         self.preview = None;
+        self.selection_error = false;
         self.error = None;
         self.message = None;
         self.scroll = 0.0;
@@ -67,6 +73,8 @@ impl ThemeView {
             return None; // Activation cannot be cancelled after dispatch.
         }
         self.pending = None; // A late preview/activation reply must not reopen a dismissed view.
+        self.pending_id = None;
+        self.selection_error = false;
         self.error = None;
         self.message = None;
         self.scroll = 0.0;
@@ -84,8 +92,18 @@ impl ThemeView {
         }
     }
 
-    pub fn submitted(&mut self, request: ThemeRequest) {
+    pub fn submitted(&mut self, request: ThemeRequest, id: u64) {
+        if matches!(
+            &request,
+            ThemeRequest::Preview {
+                background_id: Some(_),
+                ..
+            }
+        ) {
+            self.selection_error = true;
+        }
         self.pending = Some(request);
+        self.pending_id = Some(id);
         self.error = None;
         self.message = None;
     }
@@ -94,13 +112,31 @@ impl ThemeView {
         self.error = Some(error.into());
     }
 
+    pub fn selection_failed(&mut self, error: &str) {
+        self.selection_error = true;
+        self.failed_to_submit(error);
+    }
+
     pub fn accept(&mut self, reply: ThemeReply) -> bool {
-        if self.pending.as_ref() != Some(&reply.request) {
+        if self.pending_id != Some(reply.id) || self.pending.as_ref() != Some(&reply.request) {
             return false;
         }
         self.pending = None;
+        self.pending_id = None;
+        let was_background_choice = matches!(
+            &reply.request,
+            ThemeRequest::Preview {
+                background_id: Some(_),
+                ..
+            }
+        );
         match reply.result {
-            Err(error) => self.error = Some(error),
+            Err(error) => {
+                if was_background_choice {
+                    self.selection_error = true;
+                }
+                self.error = Some(error);
+            }
             Ok(ThemeResponse::List(list)) => {
                 self.list = Some(list);
                 self.page = ThemePage::List;
@@ -118,6 +154,7 @@ impl ThemeView {
                     None
                 };
                 self.preview = Some(*preview);
+                self.selection_error = false;
                 self.page = ThemePage::Preview;
                 self.scroll = 0.0;
                 self.error = None;
@@ -153,6 +190,9 @@ impl ThemeView {
         let preview = self.preview.as_ref().ok_or("Preview unavailable")?;
         if self.pending.is_some() {
             return Err("Wait for theme preview");
+        }
+        if self.selection_error {
+            return Err("Select an available background before applying");
         }
         let selected = preview.backgrounds.iter().find(|row| row.selected);
         if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
@@ -241,6 +281,8 @@ impl ThemeView {
                     ThemePage::Preview if (h - 126.0..h - 40.0).contains(&end.1) => {
                         if end.0 < w / 2.0 {
                             Some(ThemeIntent::Back)
+                        } else if self.selection_error {
+                            None
                         } else {
                             Some(ThemeIntent::Apply)
                         }
@@ -311,7 +353,7 @@ mod tests {
             Some(ThemeIntent::Open)
         );
         let list_request = view.open();
-        view.submitted(list_request.clone());
+        view.submitted(list_request.clone(), 1);
         let list = ThemeList {
             themes: vec![preview().theme],
             active: ActiveTheme {
@@ -320,6 +362,7 @@ mod tests {
             },
         };
         assert!(view.accept(ThemeReply {
+            id: 1,
             request: list_request,
             result: Ok(ThemeResponse::List(list))
         }));
@@ -328,8 +371,9 @@ mod tests {
             Some(ThemeIntent::Theme(0))
         );
         let request = view.preview_request(0).unwrap();
-        view.submitted(request.clone());
+        view.submitted(request.clone(), 2);
         assert!(view.accept(ThemeReply {
+            id: 2,
             request,
             result: Ok(ThemeResponse::Preview(Box::new(preview())))
         }));
@@ -352,12 +396,16 @@ mod tests {
     fn stale_reply_after_cancel_and_app_sync_status_are_explicit() {
         let mut view = ThemeView::default();
         view.page = ThemePage::List;
-        view.submitted(ThemeRequest::Preview {
-            theme_id: id('a'),
-            background_id: None,
-        });
+        view.submitted(
+            ThemeRequest::Preview {
+                theme_id: id('a'),
+                background_id: None,
+            },
+            1,
+        );
         view.back();
         assert!(!view.accept(ThemeReply {
+            id: 1,
             request: ThemeRequest::Preview {
                 theme_id: id('a'),
                 background_id: None
@@ -379,8 +427,9 @@ mod tests {
             expected_generation: id('b'),
             background_id: Some(id('c')),
         };
-        view.submitted(request.clone());
+        view.submitted(request.clone(), 2);
         assert!(view.accept(ThemeReply {
+            id: 2,
             request,
             result: Ok(ThemeResponse::Preview(Box::new(applied)))
         }));
@@ -413,9 +462,58 @@ mod tests {
         view.page = ThemePage::Preview;
         view.preview = Some(preview());
         let activation = view.apply_request().unwrap();
-        view.submitted(activation);
+        view.submitted(activation, 1);
         assert_eq!(view.back(), None);
         assert_eq!(view.page, ThemePage::Preview);
         assert_eq!(view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232), None);
+    }
+
+    #[test]
+    fn reopened_list_rejects_old_equal_request_and_failed_background_blocks_apply() {
+        let mut view = ThemeView::default();
+        let old_request = view.open();
+        view.submitted(old_request.clone(), 1);
+        view.back();
+        let new_request = view.open();
+        view.submitted(new_request.clone(), 2);
+        let list = ThemeList {
+            themes: vec![preview().theme],
+            active: ActiveTheme {
+                id: None,
+                generation: None,
+            },
+        };
+        assert!(!view.accept(ThemeReply {
+            id: 1,
+            request: old_request,
+            result: Ok(ThemeResponse::List(list.clone())),
+        }));
+        assert_eq!(view.pending_id, Some(2));
+        assert!(view.accept(ThemeReply {
+            id: 2,
+            request: new_request,
+            result: Ok(ThemeResponse::List(list)),
+        }));
+        view.page = ThemePage::Preview;
+        view.preview = Some(preview());
+        let choice = view.background_request(0).unwrap();
+        view.submitted(choice.clone(), 3);
+        assert!(view.accept(ThemeReply {
+            id: 3,
+            request: choice,
+            result: Err("background preparation failed".into()),
+        }));
+        assert!(view.selection_error);
+        assert!(view.apply_request().is_err());
+        assert_eq!(view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232), None);
+        let retry = view.background_request(0).unwrap();
+        view.submitted(retry.clone(), 4);
+        assert!(view.accept(ThemeReply {
+            id: 4,
+            request: retry,
+            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+        }));
+        assert!(!view.selection_error);
+        assert!(view.apply_request().is_ok());
     }
 }

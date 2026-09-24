@@ -530,8 +530,20 @@ impl ShellClient {
 
     fn submit_theme(&mut self, request: ThemeRequest) {
         match self.themes.try_submit(request.clone()) {
-            Ok(()) => self.theme_view.submitted(request),
-            Err(error) => self.theme_view.failed_to_submit(error),
+            Ok(id) => self.theme_view.submitted(request, id),
+            Err(error) => {
+                if matches!(
+                    request,
+                    ThemeRequest::Preview {
+                        background_id: Some(_),
+                        ..
+                    }
+                ) {
+                    self.theme_view.selection_failed(error);
+                } else {
+                    self.theme_view.failed_to_submit(error);
+                }
+            }
         }
         self.theme_dirty();
     }
@@ -564,7 +576,7 @@ impl ShellClient {
             ThemeIntent::Background(index) => match self.theme_view.background_request(index) {
                 Ok(request) => self.submit_theme(request),
                 Err(error) => {
-                    self.theme_view.failed_to_submit(error);
+                    self.theme_view.selection_failed(error);
                     self.theme_dirty();
                 }
             },

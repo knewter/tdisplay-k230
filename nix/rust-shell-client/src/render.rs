@@ -317,7 +317,11 @@ fn paint_theme_chooser(
                 h - 101.0,
                 w / 2.0 - 46.0,
                 22.0,
-                0x78d7cb,
+                if view.selection_error {
+                    0x74838a
+                } else {
+                    0x78d7cb
+                },
             );
         }
     }

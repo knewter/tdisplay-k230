@@ -13,7 +13,7 @@ use std::{
     path::{Component, Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{
-        atomic::{AtomicUsize, Ordering},
+        atomic::{AtomicU64, AtomicUsize, Ordering},
         mpsc::{self, Receiver, SyncSender, TryRecvError, TrySendError},
         Arc,
     },
@@ -125,14 +125,16 @@ pub enum ThemeResponse {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ThemeReply {
+    pub id: u64,
     pub request: ThemeRequest,
     pub result: Result<ThemeResponse, String>,
 }
 
 pub struct ThemeWorker {
-    requests: SyncSender<ThemeRequest>,
+    requests: SyncSender<(u64, ThemeRequest)>,
     replies: Receiver<ThemeReply>,
     outstanding: Arc<AtomicUsize>,
+    next_id: AtomicU64,
 }
 
 impl ThemeWorker {
@@ -141,9 +143,16 @@ impl ThemeWorker {
         let (outgoing, replies) = mpsc::sync_channel(QUEUE);
         let outstanding = Arc::new(AtomicUsize::new(0));
         thread::spawn(move || {
-            while let Ok(request) = incoming.recv() {
+            while let Ok((id, request)) = incoming.recv() {
                 let result = execute(&command, &request);
-                if outgoing.send(ThemeReply { request, result }).is_err() {
+                if outgoing
+                    .send(ThemeReply {
+                        id,
+                        request,
+                        result,
+                    })
+                    .is_err()
+                {
                     break;
                 }
             }
@@ -152,10 +161,11 @@ impl ThemeWorker {
             requests,
             replies,
             outstanding,
+            next_id: AtomicU64::new(1),
         }
     }
 
-    pub fn try_submit(&self, request: ThemeRequest) -> Result<(), &'static str> {
+    pub fn try_submit(&self, request: ThemeRequest) -> Result<u64, &'static str> {
         if !valid_request(&request) {
             return Err("invalid theme or generation identity");
         }
@@ -163,8 +173,9 @@ impl ThemeWorker {
             self.outstanding.fetch_sub(1, Ordering::AcqRel);
             return Err("theme queue full");
         }
-        match self.requests.try_send(request) {
-            Ok(()) => Ok(()),
+        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
+        match self.requests.try_send((id, request)) {
+            Ok(()) => Ok(id),
             Err(TrySendError::Full(_)) | Err(TrySendError::Disconnected(_)) => {
                 self.outstanding.fetch_sub(1, Ordering::AcqRel);
                 Err("theme worker unavailable")
