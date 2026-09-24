@@ -141,7 +141,7 @@
         "docs/evidence/omarchy-themes/board-switching/README.md",
         "docs/evidence/omarchy-themes/community-board/README.md"
       ],
-      "rationale": "Dark/light activation on installed df2c34b1 acknowledged both receivers and app appearance. Reviewed native board captures show theme colors, wallpaper and icon variants; restored capture is byte-identical to baseline. The Rust chooser now renders a bounded selected-still sample in host dark/light fixtures. Reboot persistence, gallery/video choices, role coverage, performance and finger acceptance remain open.",
+      "rationale": "On installed dcfbdb0b, dark/light theme switching and restoration passed. An unchanged community clone previews but fails live activation at Rust prepare because of a valid rgba border value; both consumers and baseline pixels recover. The parser correction is source-landed separately and needs an exact installed repeat. Full role, video/performance, real-touch and reboot gates remain open.",
       "reviewRevision": "4be09345",
       "cover": {
         "path": "docs/evidence/omarchy-themes/board-switching/light.png",

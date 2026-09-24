@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "evidence_class": "operator-observed-prepare-only-diagnostic",
+  "source_revision": "dcfbdb0be64dee1ba3ff024541d5bb5bd044d032",
+  "candidate_source_sha256": "f72ece7c9eead4fb049ebead18d918b4b11be6f35dcc861b8862e5c8f0693e75",
+  "commit_sent": false,
+  "rust_prepare": "invalid prepare acknowledgement",
+  "deck_prepare": "acknowledged",
+  "initial_rollback_argument": "explicit immutable default generation",
+  "initial_rust_rollback": "acknowledged",
+  "initial_deck_rollback": "TransactionError",
+  "corrected_rollback_argument": null,
+  "corrected_rust_rollback": "acknowledged",
+  "corrected_deck_rollback": "acknowledged",
+  "result_limit": "Fixed operator transcription of private diagnostic; original stderr and paths not published."
+}

@@ -44,8 +44,10 @@ class to a private log. This diagnostic changed no activation/restoration logic.
 Its bounded error was `fanout prepare failed; both receivers restored`.
 Both attempts restored the starting generation and byte-identical native pixels.
 
-A separate prepare-only diagnostic isolated the same generated community
+A separate operator-observed prepare-only diagnostic isolated the same generated community
 appearance: Rust rejected its prepare acknowledgement; the deck accepted it.
+The [fixed diagnostic outcome](endpoint-diagnostic.json) is a transcription
+of the private log, distinct from the trial helper’s machine-produced results.
 No commit was sent. The initial diagnostic rollback named the immutable default
 explicitly; the deck rejected that path. Repeating rollback with the actual
 prior pointer (`None`) acknowledged on both endpoints and cleared staged state.
@@ -71,3 +73,23 @@ the terminal, and wvkbd was shown with USR2. Shell, Rust UI and keyboard service
 were active. The board was released. No reboot, persistent boot selection,
 performance workload or physical acceptance was performed. Full theme-role
 coverage, real chooser gestures, videos and boot persistence remain open.
+
+Diagnostic calls used the installed `theme_transaction` module under the same
+packaged Python/PYTHONPATH above. `generation` came from the community preview’s
+`appearance_path.parent`; `previous` was the manifest’s immutable default
+because `_pointer(state_root)` returned `None`:
+
+```python
+exchange(Path(manifest['rust_socket']), 'prepare', generation)
+exchange(Path(manifest['deck_socket']), 'prepare', generation)
+# In finally, each endpoint was attempted separately:
+exchange(endpoint, 'rollback', previous)
+# Explicit corrective call after the deck rejected the default store path:
+exchange(Path('/run/shell/k230-shell-rust-appearance.sock'), 'rollback', None)
+exchange(Path('/run/shell/k230-card-appearance.sock'), 'rollback', None)
+```
+
+The trial’s capture executable was
+`/nix/store/hjllbawb3xs65bmcnyy66yf6g9hdaxk8-grim-riscv64-unknown-linux-gnu-1.5.0/bin/grim`,
+with the single output argument `/run/shell/k230-theme-community-03/dark.png`
+or `light.png`, in the shell user’s active Wayland session.
