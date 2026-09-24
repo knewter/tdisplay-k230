@@ -674,6 +674,9 @@ DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evid
 DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/final-shell-image/keyboard-visible.png
 DATA ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102  docs/evidence/card-composition-headless/cards.png
 DATA 00c70a72742835f3cc0376bcfc33c81c2d491e759d5c76d29fb0e9ea2c185030  docs/evidence/coherent-shell/rust-icons-host.png
+
+DATA e448f0761d241083e2d9f9a7dc9c3e3c16e4c89822a348a5fa188d12c7cde4d6  docs/evidence/work-card-media/desktop-card.png
+DATA abb9463e46fdd7b2d622d6fd6274e1f087768b8f9d724c3255a21a1d3ab2cb1d  docs/evidence/work-card-media/mobile-dialog.png
 DATA 2e56b5aeb46b748a6cbd192352d7c3a985fe705ffedb1a1fe38d6f6bacc0e7a3  docs/evidence/card-shell/headless/during-drag.png
 DATA 38cb6ab82eeedb0154574a7f126380b3c1cf52e62f88bb0228db208a89f35ed3  docs/evidence/card-shell/headless/private.png
 DATA cd0ff6f6b75552bf4f5a891395e36f12b6366ab844d15afcf4e7fabdb97077f8  docs/evidence/card-shell/headless/two-live.png
@@ -1446,3 +1449,11 @@ installed Foot, htop, and mpv SVG assets. Its SHA-256 is
 The rendering command, evidence limits and upstream icon license records are
 linked from `docs/evidence/coherent-shell/rust-icons-host.md`. It is not a
 board image or a runtime dependency.
+
+### Work board media browser captures
+
+`docs/evidence/work-card-media/{desktop-card,mobile-dialog}.png` are public
+Playwright Chromium captures of the local static work board. They show the
+card evidence menu and mobile gallery; existing media retains its original
+QEMU/design/board provenance. They are host website proof, not new device
+observations. Reproduction and source revision are in the adjacent README.
