@@ -268,6 +268,10 @@
         # holding the three filenames U-Boot loads by name, and our root
         # filesystem.
         sdImage = mkBoardImage self.nixosConfigurations.k230.config self.k230Kernel.kernel;
+        # Exact opt-in Rust shell image. The normal sdImage above remains the
+        # tested bar-session rollback until physical coherent-shell acceptance.
+        sdImage-coherent = mkBoardImage self.nixosConfigurations.k230-coherent-shell.config
+          self.k230Kernel.kernel;
         sdImage-rvv-trial = mkBoardImage self.nixosConfigurations.k230-rvv-trial.config
           self.nixosConfigurations.k230-rvv-trial.config.boot.kernelPackages.kernel;
       };
