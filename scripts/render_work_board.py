@@ -22,7 +22,8 @@ SOURCE = ("not-started", "in-progress", "source-landed", "archived")
 PHYSICAL = ("not-applicable", "not-recorded", "pending", "verified")
 SAFE_TEXT = re.compile(r"^[^\x00-\x1f]*$")
 SECRET_TEXT = re.compile(r"(?:/home/|/mnt/|/tmp/|/dev/tty|(?:password|token|secret|ssid)\s*[:=]|(?:\d{1,3}\.){3}\d{1,3})", re.I)
-TASK = re.compile(r"^- \[([ xX])\] (\d+[a-z]?(?:\.\d+[a-z]?)*)\s+(.+)$", re.M | re.I)
+TASK = re.compile(r"^- \[([ xX])\] (.+)$", re.M)
+TASK_ID = re.compile(r"^\d+[a-z]?(?:\.\d+[a-z]?)*\s+", re.I)
 
 
 class WorkError(ValueError):
@@ -82,9 +83,10 @@ def title_from(proposal: str, ident: str) -> str:
 
 
 def first_gate(tasks: str, archived: bool) -> str:
-    for checked, _, body in TASK.findall(tasks):
+    for checked, body in TASK.findall(tasks):
         if checked == " ":
             try:
+                body = TASK_ID.sub("", body)
                 plain = re.sub(r"\[([^]]+)\]\([^)]+\)", r"\1", body)
                 plain = plain.replace("`", "").replace("**", "")
                 plain = re.sub(r"\s+", " ", plain).strip()
@@ -113,7 +115,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
         task_path = f"{change_dir}/tasks.md"
         tasks = tree.read(task_path) if task_path in tree.paths else ""
         checked = TASK.findall(tasks)
-        done = sum(flag != " " for flag, _, _ in checked)
+        done = sum(flag != " " for flag, _ in checked)
         delta = sorted(p for p in tree.paths if p.startswith(f"{change_dir}/specs/") and p.endswith("/spec.md"))
         accepted = ["openspec/specs/" + p.split("/specs/", 1)[1] for p in delta]
         accepted = [p for p in accepted if p in tree.paths]
@@ -175,6 +177,23 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
             "rationale": safe_copy(override["rationale"], f"{ident}.rationale"),
             "reviewRevision": review,
         })
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def check_dependencies(ident: str) -> None:
+        if ident in visiting:
+            raise WorkError(f"cyclic dependency involving {ident}")
+        if ident in visited:
+            return
+        visiting.add(ident)
+        for dep in all_changes[ident]["dependencies"]:
+            check_dependencies(dep)
+        visiting.remove(ident)
+        visited.add(ident)
+
+    for ident in all_changes:
+        check_dependencies(ident)
 
     order = {lane: i for i, lane in enumerate(LANES)}
     items = sorted(all_changes.values(), key=lambda i: (order[i["lane"]], i["id"]))

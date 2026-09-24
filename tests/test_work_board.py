@@ -38,7 +38,7 @@ class Fixture(unittest.TestCase):
         put(self.repo, "openspec/changes/the-first-thing/proposal.md", "## Why\n\nFirst thing.\n")
         put(self.repo, "openspec/changes/the-first-thing/tasks.md", "- [x] 1.1 Started\n- [x] 1.1b Follow-up\n- [ ] 1a.2 Test on glass\n")
         put(self.repo, "openspec/changes/the-second-thing/proposal.md", "## Why\n\nSecond thing.\n")
-        put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [ ] 1.1 Make it\n")
+        put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [ ] Make it\n")
         put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/proposal.md", "## Why\n\nOld thing.\n")
         put(self.repo, "openspec/changes/archive/2026-09-23-the-old-thing/tasks.md", "- [x] 1.1 Done\n")
         put(self.repo, "docs/evidence/proof/README.md", "Physical observation with limits.\n")
@@ -63,12 +63,13 @@ class Fixture(unittest.TestCase):
         self.assertEqual((items["the-first-thing"]["done"], items["the-first-thing"]["total"]), (2, 3))
         self.assertEqual(items["the-first-thing"]["lane"], "in-progress")
         self.assertEqual(items["the-second-thing"]["lane"], "planned")
+        self.assertEqual(items["the-second-thing"]["next"], "Make it")
         self.assertEqual(items["2026-09-23-the-old-thing"]["lane"], "archived")
         self.assertEqual(data["sourceRevision"], self.revision)
         self.assertEqual(data["sourceMode"], "committed HEAD")
 
     def test_dirty_task_is_ignored_without_explicit_working_tree_mode(self) -> None:
-        put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [x] 1.1 Make it\n")
+        put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [x] Make it\n")
         committed = {item["id"]: item for item in self.data()["items"]}
         preview = {item["id"]: item for item in self.data(working=True)["items"]}
         self.assertEqual(committed["the-second-thing"]["done"], 0)
@@ -112,6 +113,14 @@ class Fixture(unittest.TestCase):
         subprocess.run(["git", "clone", "-q", "--depth", "1", "--no-local", self.repo.as_uri(), str(shallow)], check=True)
         with self.assertRaisesRegex(work.WorkError, "fetch full history"):
             work.snapshot(work.SourceTree(shallow), {"schema": 1, "overrides": {"the-first-thing": self.review()}}, "test UTC")
+
+    def test_dependency_cycle_is_rejected(self) -> None:
+        overrides = {
+            "the-first-thing": self.review(dependencies=["the-second-thing"]),
+            "the-second-thing": self.review(dependencies=["the-first-thing"]),
+        }
+        with self.assertRaisesRegex(work.WorkError, "cyclic dependency"):
+            self.data(overrides)
 
 
 class RealRepository(unittest.TestCase):

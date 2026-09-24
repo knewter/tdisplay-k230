@@ -46,8 +46,8 @@
       "source": "in-progress",
       "physical": "pending",
       "next": "Finish source and section-override fixtures for the packaged Omarchy helpers, then connect generated appearance data to the real shell and clients.",
-      "dependencies": ["the-handheld-presents-a-coherent-shell"],
-      "evidence": [],
+      "dependencies": [],
+      "evidence": ["docs/evidence/omarchy-themes/helper-package.md"],
       "rationale": "The pinned helper package and its isolated build are committed as task 1.1; theme application and device results remain open.",
       "reviewRevision": "5f89026e1591145cfb9143ae8787d6489aaeed69"
     },
@@ -56,7 +56,7 @@
       "source": "in-progress",
       "physical": "pending",
       "next": "Resolve target format and presentation costs, then repeat paired GPU-versus-Pixman acceptance on the board before any default change.",
-      "dependencies": ["the-shell-manages-apps-as-cards"],
+      "dependencies": [],
       "evidence": ["docs/evidence/vglite-scene-board/context-lifetime/README.md"],
       "rationale": "A committed GPU trial exists, but the comparison did not establish a faster accepted default compositor path.",
       "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
