@@ -59,7 +59,8 @@ def main():
             for index in range(1,2):
                 write(args.output/'progress.json',{'state':'running','run':index,'finished_runs':len(result['runs'])})
                 target=args.output/('run-'+str(index));target.mkdir();public=target/'public';public.mkdir()
-                runtime=Path('/run/k230-card-shell-repaint'+str(index))
+                namespace=hashlib.sha256(str(args.output).encode()).hexdigest()[:16]
+                runtime=Path('/run/k230-card-repaint-'+namespace+'-'+str(index))
                 if runtime.exists():raise RuntimeError('preserve previous runtime directory')
                 runtime.mkdir(mode=0o711);runtime.chmod(0o711)
                 system=session_module.System();session=session_module.Session(runtime,system)
