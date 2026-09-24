@@ -1378,6 +1378,12 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		struct sway_container *con = config->handler_context.container;
 		if (!con || !con->view)
 			return cmd_results_new(CMD_INVALID, "ordinary requires an app container");
+		const char *app_id = view_get_app_id(con->view);
+		if (!app_id || strcmp(app_id, "k230-video-software") == 0 ||
+			strcmp(app_id, "k230-video-mvx") == 0 ||
+			(con->view->impl->wants_floating &&
+			con->view->impl->wants_floating(con->view)))
+			return cmd_results_new(CMD_FAILURE, "video and transient views stay unmarked");
 		con->card_shell_ordinary_maximized = true;
 		return cmd_results_new(CMD_SUCCESS, NULL);
 	}
