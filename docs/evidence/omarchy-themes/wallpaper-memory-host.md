@@ -37,3 +37,9 @@ concurrent activations, the
 compatible command path, and an alien symlink. No Nix package build, reboot,
 touch chooser, decode/cache/overlay/fit mode, or real-glass proof was run for
 this checkpoint. OpenSpec task 4.1 and the physical tasks remain open.
+
+The coordinator subsequently built the narrow command package from the landed
+`99ac8e48` integration revision: `nix build .#handheld-theme-command --no-link`
+PASS, output `/nix/store/xjncl4sgb4yb7asabpk41l051wncpi5b-handheld-theme-command-0.1`.
+This proves the package evaluates and cross-builds; it does not prove a theme
+switch, client repaint, wallpaper presentation, or persistence on the board.
