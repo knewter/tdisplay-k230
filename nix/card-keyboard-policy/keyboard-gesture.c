@@ -165,7 +165,7 @@ unsigned kg_surface(struct kg_policy *p, bool mapped) {
 }
 unsigned kg_tick(struct kg_policy *p, uint64_t ms) {
 	if (p->mode == KG_WAIT_SURFACE && p->show_requested &&
-		ms > p->last_ms + 750) {
+		ms > p->last_ms + 3000) {
 		unsigned action=kg_cancel(p);
 		return action | KG_HIDE;
 	}

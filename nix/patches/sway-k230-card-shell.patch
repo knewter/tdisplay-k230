@@ -44,6 +44,8 @@
 -		arrange_output(output);
 +		arrange_output(output);
 +		card_shell_usable_area_changed(output);
+@@ -221,0 +224,1 @@
++	layer->mapped = false; // The scene node is dying before nested arrange_layers.
 --- a/sway/desktop/output.c
 +++ b/sway/desktop/output.c
 @@ -1,3 +1,5 @@
