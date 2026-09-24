@@ -658,10 +658,12 @@ static void poll_pending_launch(void) {
     pending_launch.deadline_ms=monotonic_ms()+100;
   }
   if (!result) return;
-  if (result<0) status=0;
+  if (result<0 && errno==EINTR) return;
+  bool exited_successfully=result>0 && !pending_launch.timed_out &&
+    WIFEXITED(status) && WEXITSTATUS(status)==0;
   g_spawn_close_pid(pending_launch.pid);
   pending_launch.pid=0;
-  if (!pending_launch.timed_out && WIFEXITED(status) && WEXITSTATUS(status)==0) {
+  if (exited_successfully) {
     launch_selected(pending_launch.action);
     return;
   }
