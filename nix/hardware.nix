@@ -43,7 +43,13 @@ in
   # existing userspace package graph.
   nixpkgs.overlays = [
     (final: prev: {
-      pixman = prev.callPackage ./pixman-rvv.nix { pixman = prev.pixman; };
+      # Cross builds also evaluate this overlay for native buildPackages.
+      # Enabling required RVV there makes x86 Meson reject Pixman before
+      # the target renderer can build.
+      pixman =
+        if prev.stdenv.hostPlatform.system == "riscv64-linux"
+        then prev.callPackage ./pixman-rvv.nix { pixman = prev.pixman; }
+        else prev.pixman;
     })
   ];
   k230.rootGrowth.enable = lib.mkDefault true;
