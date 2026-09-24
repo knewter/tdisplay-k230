@@ -1168,6 +1168,16 @@ DATA 0677f13977a3c6734e461a808921716c86402386695ef3343cb4a3c36ad56a69  docs/evid
 DATA 51471171d73d883577104cae64254bcc039c12278d9b68502699de6c41ef0a02  docs/evidence/card-shell/tracked-motion-qemu/entry-end.png
 DATA 61786ceefb7f771eb3034ecea012932c366130a3f02114d3b8b7500c4fc5e99d  docs/evidence/card-shell/tracked-motion-qemu/entry-middle.png
 DATA 7033843d9fb164232b7406150f120475a2f2bb756b091bfe2a17b3fe2fe0b32d  docs/evidence/card-shell/tracked-motion-qemu/entry-start.png
+DATA 1b81a035e84de1aaabea0cfda17f535da2fea12c0fa80f0ddeaadc2d4b056a19  docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png
+DATA 58282345c66748b95c64e47ead88c3698046de3d231f5447f26b8d842bf23857  docs/evidence/coherent-shell/rust-visual-themes-host/dark/preview.png
+DATA f20c8690aa16951e8f64227f734337bdf3e8b8896dc9d1b2de28d92e9fc3966a  docs/evidence/coherent-shell/rust-visual-themes-host/dark/settings.png
+DATA 46f03a6e34944c00bce6b098d7f0e23cab543c12c207b81e70c3ac62524feb3d  docs/evidence/coherent-shell/rust-visual-themes-host/dark/shade.png
+DATA df7ee114f05bc49ccf8cbca4354e5a7aa8d7ab78ab90a22e609c5af6dc0d605b  docs/evidence/coherent-shell/rust-visual-themes-host/dark/themes.png
+DATA 03ce789d9abeb9c06b2aae2bbfc421851cb68f9316eb6d48d0d2d2f03cc1f358  docs/evidence/coherent-shell/rust-visual-themes-host/latte/drawer.png
+DATA f46a27a79670a1968ceb8b4bd1fc398c8d4f3750fab75d8f96e53140b1a73493  docs/evidence/coherent-shell/rust-visual-themes-host/latte/preview.png
+DATA 02a2fa43467c766afd3721e364ed738bff2ab22bf0ea2f2353b8e9bd3c28cf73  docs/evidence/coherent-shell/rust-visual-themes-host/latte/settings.png
+DATA b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45  docs/evidence/coherent-shell/rust-visual-themes-host/latte/shade.png
+DATA ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0  docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1581,3 +1591,20 @@ identities, pixel measurements, and physical limits.
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png` | 14042 | DATA | `54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b` |
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png` | 17013 | DATA | `dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837` |
 | `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png` | 42007 | DATA | `1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad` |
+
+### Rust visual theme host captures
+
+The ten original host-rendered DATA PNGs in `docs/evidence/coherent-shell/rust-visual-themes-host/` show public fixture content with the pinned Catppuccin dark/Latte appearance generations and selected Yaru app icons. The adjacent README records generation/source identity, commands, visual review, and hardware limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png` | 26365 | DATA | `1b81a035e84de1aaabea0cfda17f535da2fea12c0fa80f0ddeaadc2d4b056a19` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/dark/preview.png` | 36255 | DATA | `58282345c66748b95c64e47ead88c3698046de3d231f5447f26b8d842bf23857` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/dark/settings.png` | 40662 | DATA | `f20c8690aa16951e8f64227f734337bdf3e8b8896dc9d1b2de28d92e9fc3966a` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/dark/shade.png` | 39405 | DATA | `46f03a6e34944c00bce6b098d7f0e23cab543c12c207b81e70c3ac62524feb3d` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/dark/themes.png` | 23437 | DATA | `df7ee114f05bc49ccf8cbca4354e5a7aa8d7ab78ab90a22e609c5af6dc0d605b` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/latte/drawer.png` | 26158 | DATA | `03ce789d9abeb9c06b2aae2bbfc421851cb68f9316eb6d48d0d2d2f03cc1f358` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/latte/preview.png` | 36733 | DATA | `f46a27a79670a1968ceb8b4bd1fc398c8d4f3750fab75d8f96e53140b1a73493` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/latte/settings.png` | 39223 | DATA | `02a2fa43467c766afd3721e364ed738bff2ab22bf0ea2f2353b8e9bd3c28cf73` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/latte/shade.png` | 37777 | DATA | `b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45` |
+| `docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png` | 22963 | DATA | `ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0` |
