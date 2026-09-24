@@ -29,3 +29,5 @@ Static work-board data extraction, Astro card/dialog rendering, reviewed status 
 ## Media enlargement refinement
 
 Clicking media in a card opens a viewport-sized gallery modal, preserving aspect ratio and card reading position, with swipe/keyboard navigation and video controls. Raw evidence links remain available separately.
+
+Evidence files likewise open in an in-place document modal, preserving rendered Markdown, readable text, and a separate original-file download link.

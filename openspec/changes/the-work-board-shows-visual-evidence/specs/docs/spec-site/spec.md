@@ -22,4 +22,4 @@ Each work card with related evidence SHALL expose directly usable evidence links
 
 #### Scenario: Open a report from a card header
 - **WHEN** the reader activates a report or log in the card's header evidence menu
-- **THEN** the named evidence opens directly, without first searching through proposal documents
+- **THEN** the named evidence opens in a document modal over the board, with Markdown rendered and text readable, without replacing the board with a raw URL; closing restores the reader's place and an explicit original-file link remains available
