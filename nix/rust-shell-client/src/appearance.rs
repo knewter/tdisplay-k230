@@ -57,6 +57,21 @@ pub struct BackgroundChoice {
     pub selected: bool,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PaletteColor {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+    pub alpha: u8,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PaletteValue {
+    Color(PaletteColor),
+    Light,
+    Dark,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct AppearanceSnapshot {
     pub generation: String,
@@ -65,6 +80,7 @@ pub struct AppearanceSnapshot {
     pub background: Option<PathBuf>,
     pub selected_background: Option<PathBuf>,
     pub backgrounds: Vec<BackgroundChoice>,
+    pub palette: BTreeMap<String, PaletteValue>,
     pub sections: BTreeMap<String, BTreeMap<String, AppearanceToken>>,
     pub applied: Vec<String>,
     pub unavailable: Vec<String>,
@@ -74,6 +90,13 @@ pub struct AppearanceSnapshot {
 impl AppearanceSnapshot {
     pub fn token(&self, section: &str, key: &str) -> Option<&AppearanceToken> {
         self.sections.get(section)?.get(key)
+    }
+
+    pub fn palette_color(&self, key: &str) -> Option<PaletteColor> {
+        match self.palette.get(key)? {
+            PaletteValue::Color(color) => Some(*color),
+            _ => None,
+        }
     }
 }
 
@@ -131,6 +154,27 @@ fn name(value: &str) -> bool {
 
 fn hex_argb(value: &str) -> bool {
     value.len() == 9 && value.starts_with('#') && value[1..].bytes().all(|b| b.is_ascii_hexdigit())
+}
+
+fn palette_value(key: &str, value: &str) -> Result<PaletteValue, String> {
+    if key == "mode" || key == "theme_type" {
+        return match value {
+            "light" => Ok(PaletteValue::Light),
+            "dark" => Ok(PaletteValue::Dark),
+            _ => Err("invalid palette mode".into()),
+        };
+    }
+    let hex = value.strip_prefix('#').ok_or("invalid palette color")?;
+    if !matches!(hex.len(), 6 | 8) || !hex.bytes().all(|c| c.is_ascii_hexdigit()) {
+        return Err("invalid palette color".into());
+    }
+    let component = |start| u8::from_str_radix(&hex[start..start + 2], 16).unwrap();
+    Ok(PaletteValue::Color(PaletteColor {
+        red: component(0),
+        green: component(2),
+        blue: component(4),
+        alpha: if hex.len() == 8 { component(6) } else { 255 },
+    }))
 }
 
 fn number(value: &Value, low: f64, high: f64) -> Result<f64, String> {
@@ -225,7 +269,7 @@ fn token(value: &Value) -> Result<AppearanceToken, String> {
 fn bounded_json(path: &Path, limit: u64) -> Result<Value, String> {
     let file = OpenOptions::new()
         .read(true)
-        .custom_flags(libc::O_NOFOLLOW)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
         .open(path)
         .map_err(|e| e.to_string())?;
     let meta = file.metadata().map_err(|e| e.to_string())?;
@@ -321,6 +365,26 @@ fn load_snapshot(
             return Err("icon theme report mismatch".into());
         }
     }
+    let palette_value_map = report
+        .get("palette")
+        .and_then(Value::as_object)
+        .ok_or("missing report palette")?;
+    if palette_value_map.len() > MAX_KEYS {
+        return Err("report palette exceeds bound".into());
+    }
+    let mut palette = BTreeMap::new();
+    for (key, value) in palette_value_map {
+        if !name(key) {
+            return Err("invalid palette key".into());
+        }
+        let value = value.as_str().ok_or("invalid palette value")?;
+        palette.insert(key.clone(), palette_value(key, value)?);
+    }
+    for required in ["background", "foreground", "accent"] {
+        if !matches!(palette.get(required), Some(PaletteValue::Color(_))) {
+            return Err("report palette lacks a required color".into());
+        }
+    }
     let sections_value = appearance
         .get("sections")
         .and_then(Value::as_object)
@@ -367,6 +431,10 @@ fn load_snapshot(
         if !meta.file_type().is_file() || meta.len() > 256 * 1024 * 1024 {
             return Err("invalid background asset".into());
         }
+        let canonical_asset = asset.canonicalize().map_err(|e| e.to_string())?;
+        if canonical_asset.parent() != Some(canonical.join("theme/backgrounds").as_path()) {
+            return Err("background escapes staged theme".into());
+        }
         let suffix = Path::new(relative)
             .extension()
             .and_then(|s| s.to_str())
@@ -378,7 +446,7 @@ fn load_snapshot(
         );
         backgrounds.push(BackgroundChoice {
             relative: relative.to_owned(),
-            staged_path: asset,
+            staged_path: canonical_asset,
             is_video,
             selected: selected == Some(relative),
         });
@@ -411,6 +479,7 @@ fn load_snapshot(
         background,
         selected_background,
         backgrounds,
+        palette,
         sections,
         applied: text_list(&report, "applied")?,
         unavailable: text_list(&report, "unavailable")?,

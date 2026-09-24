@@ -1,12 +1,18 @@
 #[path = "../src/appearance.rs"]
 mod appearance;
 
-use appearance::{AppearancePhase, AppearanceReceiver, AppearanceToken};
+use appearance::{
+    AppearancePhase, AppearanceReceiver, AppearanceToken, PaletteColor, PaletteValue,
+};
 use serde_json::{json, Value};
 use std::{
     fs,
     io::{Read, Write},
-    os::unix::{fs::PermissionsExt, net::UnixStream},
+    os::unix::{
+        ffi::OsStrExt,
+        fs::{symlink, PermissionsExt},
+        net::UnixStream,
+    },
     path::{Path, PathBuf},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -136,6 +142,16 @@ fn two_phase_ack_follows_typed_snapshot_adoption_and_rollback_is_idempotent() {
         Some(AppearanceToken::Brush(_))
     ));
     assert_eq!(reply["status"], "ok");
+    assert_eq!(snapshot.palette.get("mode"), Some(&PaletteValue::Dark));
+    assert_eq!(
+        snapshot.palette_color("background"),
+        Some(PaletteColor {
+            red: 0x1e,
+            green: 0x1e,
+            blue: 0x2e,
+            alpha: 255,
+        })
+    );
     assert_eq!(receiver.prepared().unwrap().generation, id);
     let (commit, reply) = send(
         &mut receiver,
@@ -158,6 +174,92 @@ fn two_phase_ack_follows_typed_snapshot_adoption_and_rollback_is_idempotent() {
             fixture.default.file_name().unwrap().to_str().unwrap()
         );
     }
+}
+
+#[test]
+fn fifo_payload_is_rejected_without_blocking() {
+    let fixture = Fixture::new();
+    let generation = fixture.user_generation();
+    let report = generation.join("report.json");
+    fs::remove_file(&report).unwrap();
+    let c_path = std::ffi::CString::new(report.as_os_str().as_bytes()).unwrap();
+    assert_eq!(unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) }, 0);
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    let id = generation.file_name().unwrap().to_str().unwrap();
+    let mut peer = UnixStream::connect(fixture.socket()).unwrap();
+    peer.write_all(
+        format!(
+            "{}\n",
+            json!({"protocol":1,"phase":"prepare",
+        "generation":id,"path":generation,"previous_generation":null,"previous_path":null})
+        )
+        .as_bytes(),
+    )
+    .unwrap();
+    receiver.accept().unwrap();
+    let start = std::time::Instant::now();
+    assert!(receiver
+        .receive()
+        .unwrap_err()
+        .contains("invalid appearance file"));
+    assert!(start.elapsed() < Duration::from_secs(1));
+    assert!(receiver.prepared().is_none());
+}
+
+#[test]
+fn intermediate_background_symlink_escape_is_rejected() {
+    let fixture = Fixture::new();
+    let generation = fixture.user_generation();
+    let outside = fixture.root.join("outside");
+    fs::create_dir(&outside).unwrap();
+    fs::write(outside.join("portrait.png"), b"host fixture").unwrap();
+    fs::create_dir(generation.join("theme")).unwrap();
+    symlink(&outside, generation.join("theme/backgrounds")).unwrap();
+    let mut report: Value =
+        serde_json::from_slice(&fs::read(generation.join("report.json")).unwrap()).unwrap();
+    report["backgrounds"] = json!(["backgrounds/portrait.png"]);
+    report["selected_background"] = json!("backgrounds/portrait.png");
+    fs::write(
+        generation.join("report.json"),
+        serde_json::to_vec(&report).unwrap(),
+    )
+    .unwrap();
+    let mut appearance: Value =
+        serde_json::from_slice(&fs::read(generation.join("appearance.json")).unwrap()).unwrap();
+    appearance["background"] = json!("background");
+    fs::write(
+        generation.join("appearance.json"),
+        serde_json::to_vec(&appearance).unwrap(),
+    )
+    .unwrap();
+    let mut receiver = AppearanceReceiver::bind_with_roots(
+        fixture.socket(),
+        Some(fixture.default.clone()),
+        fixture.state.clone(),
+    )
+    .unwrap();
+    let id = generation.file_name().unwrap().to_str().unwrap();
+    let mut peer = UnixStream::connect(fixture.socket()).unwrap();
+    peer.write_all(
+        format!(
+            "{}\n",
+            json!({"protocol":1,"phase":"prepare",
+        "generation":id,"path":generation,"previous_generation":null,"previous_path":null})
+        )
+        .as_bytes(),
+    )
+    .unwrap();
+    receiver.accept().unwrap();
+    assert!(receiver
+        .receive()
+        .unwrap_err()
+        .contains("background escapes staged theme"));
+    assert!(receiver.prepared().is_none());
 }
 
 #[test]
