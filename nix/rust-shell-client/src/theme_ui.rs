@@ -385,6 +385,7 @@ mod tests {
                 name: "Night".into(),
                 label: "Night".into(),
                 origin: ThemeOrigin::Builtin,
+                preview_path: None,
             },
             generation: id('b'),
             appearance_path: PathBuf::from("/tmp/generation/appearance.json"),

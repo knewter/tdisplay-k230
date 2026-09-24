@@ -8,6 +8,7 @@ use crate::{
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_catalog::BackgroundKind,
+    theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey},
     theme_ui::{background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView},
     wifi_settings::Security,
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
@@ -426,6 +427,7 @@ fn paint_theme_chooser(
     theme: Option<&AppearanceSnapshot>,
     preview_image: Option<&ImageSurface>,
     preview_error: bool,
+    thumbnails: Option<&ThemeThumbnailCache>,
 ) {
     let style = visual_style(theme, "image-picker");
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
@@ -464,18 +466,52 @@ fn paint_theme_chooser(
                     if y >= h - 64.0 {
                         break;
                     }
-                    service_card(
+                    let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
+                    service_card(cr, theme, "launcher", 24.0, y, w - 48.0, 82.0, is_current);
+                    // A small square thumbnail from the theme's own preview
+                    // image (or a representative background, chosen by
+                    // tools/theme_catalog.py), mirroring Omarchy's per-theme
+                    // preview art in its picker. Always reserve the slot so
+                    // rows line up before a lazily-decoded thumbnail lands.
+                    let thumb: f64 = 64.0;
+                    let thumb_x = 34.0;
+                    let thumb_y = y + (82.0 - thumb).max(0.0) / 2.0;
+                    rounded(cr, thumb_x, thumb_y, thumb, thumb, 10.0);
+                    color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
+                    let _ = cr.fill();
+                    if let Some(image) = thumbnails.and_then(|cache| cache.get(&entry.id)) {
+                        let _ = cr.save();
+                        rounded(cr, thumb_x, thumb_y, thumb, thumb, 10.0);
+                        cr.clip();
+                        if cr.set_source_surface(image, thumb_x, thumb_y).is_ok() {
+                            let _ = cr.paint();
+                        }
+                        let _ = cr.restore();
+                    }
+                    rounded(
                         cr,
-                        theme,
-                        "launcher",
-                        24.0,
-                        y,
-                        w - 48.0,
-                        82.0,
-                        list.active.id.as_deref() == Some(entry.id.as_str()),
+                        thumb_x + 0.75,
+                        thumb_y + 0.75,
+                        thumb - 1.5,
+                        thumb - 1.5,
+                        9.25,
                     );
-                    heading(cr, &entry.label, 42.0, y + 13.0, w - 86.0, 24.0, style.text);
-                    let status = if list.active.id.as_deref() == Some(entry.id.as_str()) {
+                    cr.set_line_width(1.5);
+                    color(cr, style.muted, 0.5);
+                    let _ = cr.stroke();
+                    if is_current {
+                        let badge = 22.0;
+                        let badge_x = thumb_x + thumb - badge + 4.0;
+                        let badge_y = thumb_y + thumb - badge + 4.0;
+                        rounded(cr, badge_x, badge_y, badge, badge, badge / 2.0);
+                        color(cr, style.accent, 1.0);
+                        let _ = cr.fill();
+                        centered_label(cr, "✓", badge_x, badge_y + 3.0, badge, 15.0, 0x0b1216);
+                    }
+                    let text_x = thumb_x + thumb + 14.0;
+                    let text_w = (w - 24.0 - 20.0 - text_x).max(0.0);
+                    heading(cr, &entry.label, text_x, y + 13.0, text_w, 24.0, style.text);
+                    let status = if is_current {
                         "Current theme"
                     } else {
                         match entry.origin {
@@ -483,7 +519,7 @@ fn paint_theme_chooser(
                             crate::theme_catalog::ThemeOrigin::User => "User theme",
                         }
                     };
-                    text(cr, status, 42.0, y + 47.0, w - 86.0, 16.0, style.muted);
+                    text(cr, status, text_x, y + 47.0, text_w, 16.0, style.muted);
                 }
                 let _ = cr.restore();
                 if list.themes.is_empty() {
@@ -707,12 +743,45 @@ fn paint_theme_chooser(
                     70.0,
                     background.selected,
                 );
+                // A small thumbnail of the background asset itself, same
+                // treatment as each theme's own row on the list page: a
+                // reserved rounded slot, filled once its lazily-decoded
+                // crop lands. Video rows keep the plain fallback slot since
+                // nothing here decodes a video first frame.
+                let thumb: f64 = 52.0;
+                let thumb_x = 34.0;
+                let thumb_y = y + (70.0 - thumb).max(0.0) / 2.0;
+                rounded(cr, thumb_x, thumb_y, thumb, thumb, 8.0);
+                color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
+                let _ = cr.fill();
+                if let Some(image) = thumbnails.and_then(|cache| cache.get(&background.id)) {
+                    let _ = cr.save();
+                    rounded(cr, thumb_x, thumb_y, thumb, thumb, 8.0);
+                    cr.clip();
+                    if cr.set_source_surface(image, thumb_x, thumb_y).is_ok() {
+                        let _ = cr.paint();
+                    }
+                    let _ = cr.restore();
+                }
+                rounded(
+                    cr,
+                    thumb_x + 0.75,
+                    thumb_y + 0.75,
+                    thumb - 1.5,
+                    thumb - 1.5,
+                    7.25,
+                );
+                cr.set_line_width(1.5);
+                color(cr, style.muted, 0.5);
+                let _ = cr.stroke();
+                let text_x = thumb_x + thumb + 14.0;
+                let text_w = (w - 24.0 - 20.0 - text_x).max(0.0);
                 text(
                     cr,
                     &background_display_label(&background.label),
-                    42.0,
+                    text_x,
                     y + 9.0,
-                    w - 84.0,
+                    text_w,
                     21.0,
                     style.text,
                 );
@@ -726,9 +795,9 @@ fn paint_theme_chooser(
                 text(
                     cr,
                     status,
-                    42.0,
+                    text_x,
                     y + 39.0,
-                    w - 84.0,
+                    text_w,
                     15.0,
                     if background.kind == BackgroundKind::Video {
                         style.error
@@ -1302,6 +1371,7 @@ fn scene(
     chooser: Option<&ThemeView>,
     preview_image: Option<&ImageSurface>,
     preview_error: bool,
+    thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
 ) {
     let RenderParams {
@@ -1780,7 +1850,16 @@ fn scene(
                 return;
             }
             if let Some(view) = chooser.filter(|view| view.page != ThemePage::Controls) {
-                paint_theme_chooser(cr, w, h, view, theme, preview_image, preview_error);
+                paint_theme_chooser(
+                    cr,
+                    w,
+                    h,
+                    view,
+                    theme,
+                    preview_image,
+                    preview_error,
+                    thumbnails,
+                );
                 return;
             }
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
@@ -1988,6 +2067,7 @@ pub fn draw_shm(
         None,
         false,
         None,
+        None,
     )
 }
 
@@ -2001,6 +2081,7 @@ fn draw_shm_with_icons(
     chooser: Option<&ThemeView>,
     preview_image: Option<&ImageSurface>,
     preview_error: bool,
+    thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
@@ -2031,6 +2112,7 @@ fn draw_shm_with_icons(
         chooser,
         preview_image,
         preview_error,
+        thumbnails,
         pressed,
     );
     drop(cr);
@@ -2065,6 +2147,7 @@ pub fn export_png(
         None,
         false,
         None,
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -2094,6 +2177,7 @@ pub struct RendererCache {
     preview_requested: Option<ThemeImageKey>,
     preview_surface: Option<ImageSurface>,
     preview_error: bool,
+    thumbnails: ThemeThumbnailCache,
 }
 
 impl RendererCache {
@@ -2167,6 +2251,51 @@ impl RendererCache {
             {
                 self.preview_requested = Some(key.clone());
             }
+        }
+        changed
+    }
+    /// Requests a thumbnail decode for every row that wants its own small
+    /// image: each catalog entry with preview art while the list page is
+    /// open, or each still background while the preview page is open.
+    /// Unlike the single live wallpaper preview above, these thumbnails are
+    /// small and cached forever once decoded, so the whole known set is
+    /// requested rather than only visible rows.
+    pub fn poll_theme_thumbnails(&mut self) -> bool {
+        let changed = self.thumbnails.poll();
+        if changed {
+            self.invalidate();
+        }
+        let Some(chooser) = self.chooser.as_ref() else {
+            return changed;
+        };
+        match chooser.page {
+            ThemePage::List => {
+                let Some(list) = chooser.list.as_ref() else {
+                    return changed;
+                };
+                for theme in &list.themes {
+                    if let Some(path) = &theme.preview_path {
+                        self.thumbnails.request(ThumbnailKey {
+                            id: theme.id.clone(),
+                            path: path.clone(),
+                        });
+                    }
+                }
+            }
+            ThemePage::Preview => {
+                let Some(preview) = chooser.preview.as_ref() else {
+                    return changed;
+                };
+                for background in &preview.backgrounds {
+                    if background.kind == BackgroundKind::Image {
+                        self.thumbnails.request(ThumbnailKey {
+                            id: background.id.clone(),
+                            path: background.path.clone(),
+                        });
+                    }
+                }
+            }
+            ThemePage::Controls => {}
         }
         changed
     }
@@ -2267,6 +2396,7 @@ impl RendererCache {
             return Err("invalid canvas length".into());
         }
         self.poll_theme_image(width, height);
+        self.poll_theme_thumbnails();
         if self.route != Some(route)
             || self.width != width
             || self.height != height
@@ -2286,6 +2416,7 @@ impl RendererCache {
                 self.chooser.as_ref(),
                 self.preview_surface.as_ref(),
                 self.preview_error,
+                Some(&self.thumbnails),
                 self.pressed,
             )?;
             self.static_pixels = painted;
@@ -2668,11 +2799,21 @@ mod tests {
             .unwrap()
             .to_string_lossy()
             .to_string();
+        // Exercise the same per-theme thumbnail path a real generation
+        // takes: the theme's staged background, when one is actually on
+        // disk (K230_VISUAL_GENERATION_DIR fixtures), else no thumbnail.
+        let preview_path = snapshot
+            .path
+            .join("theme")
+            .join(background_id)
+            .canonicalize()
+            .ok();
         let theme_entry = ThemeEntry {
             id: theme_id.into(),
             name: theme_label.into(),
             label: theme_label.into(),
             origin: ThemeOrigin::Builtin,
+            preview_path,
         };
         let chooser = ThemeView {
             page: ThemePage::List,
@@ -2684,6 +2825,7 @@ mod tests {
                         name: "Fixture Dawn".into(),
                         label: "Fixture Dawn".into(),
                         origin: ThemeOrigin::User,
+                        preview_path: None,
                     },
                 ],
                 active: ActiveTheme {
@@ -2823,6 +2965,7 @@ mod tests {
             name: "Fixture Night".into(),
             label: "Fixture Night".into(),
             origin: ThemeOrigin::Builtin,
+            preview_path: None,
         };
         let mut view = ThemeView {
             page: ThemePage::List,
@@ -2930,6 +3073,135 @@ mod tests {
         std::fs::remove_file(wallpaper).unwrap();
     }
 
+    /// A theme's own preview image (or a representative background, chosen
+    /// upstream by `tools/theme_catalog.py`) paints as a thumbnail beside
+    /// its list row, and a background's own asset paints the same way
+    /// beside its row on the preview page -- the touch counterpart to
+    /// Omarchy's per-theme `preview.png` carousel art.
+    #[test]
+    fn list_and_background_rows_paint_their_own_thumbnail_once_decoded() {
+        let stamp = format!("{}-{}", std::process::id(), line!());
+        let theme_thumb = std::env::temp_dir().join(format!("k230-theme-thumb-list-{stamp}.png"));
+        let background_thumb =
+            std::env::temp_dir().join(format!("k230-theme-thumb-bg-{stamp}.png"));
+        image::RgbaImage::from_pixel(48, 48, image::Rgba([210, 60, 20, 255]))
+            .save(&theme_thumb)
+            .unwrap();
+        image::RgbaImage::from_pixel(48, 48, image::Rgba([20, 60, 210, 255]))
+            .save(&background_thumb)
+            .unwrap();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Settings,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+
+        let mut without_art = RendererCache::default();
+        let bare_entry = ThemeEntry {
+            id: "fixture-bare".into(),
+            name: "Fixture Bare".into(),
+            label: "Fixture Bare".into(),
+            origin: ThemeOrigin::Builtin,
+            preview_path: None,
+        };
+        without_art.set_theme_view(ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: vec![bare_entry],
+                active: ActiveTheme {
+                    id: None,
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        });
+        let mut bare_frame = vec![0; 568 * 1232 * 4];
+        without_art.draw(&mut bare_frame, params, &[]).unwrap();
+
+        let mut renderer = RendererCache::default();
+        let illustrated_entry = ThemeEntry {
+            id: "fixture-bare".into(),
+            name: "Fixture Bare".into(),
+            label: "Fixture Bare".into(),
+            origin: ThemeOrigin::Builtin,
+            preview_path: Some(theme_thumb.canonicalize().unwrap()),
+        };
+        renderer.set_theme_view(ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: vec![illustrated_entry.clone()],
+                active: ActiveTheme {
+                    id: None,
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        });
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        while renderer.thumbnails.get("fixture-bare").is_none() && std::time::Instant::now() < deadline
+        {
+            renderer.poll_theme_thumbnails();
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert!(renderer.thumbnails.get("fixture-bare").is_some());
+        let mut illustrated_list_frame = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut illustrated_list_frame, params, &[]).unwrap();
+        assert_ne!(
+            bare_frame, illustrated_list_frame,
+            "a theme's own preview art must change the painted list row"
+        );
+
+        renderer.set_theme_view(ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(ThemePreview {
+                theme: illustrated_entry,
+                generation: "fixture-generation".into(),
+                appearance_path: "/tmp/fixture-appearance.json".into(),
+                palette: BTreeMap::new(),
+                icon_theme: None,
+                backgrounds: vec![BackgroundChoice {
+                    id: "fixture-background".into(),
+                    label: "1-scene.png".into(),
+                    kind: BackgroundKind::Image,
+                    path: background_thumb.canonicalize().unwrap(),
+                    selected: true,
+                    decode_status: "unverified".into(),
+                }],
+                compatibility: Compatibility {
+                    applied: vec![],
+                    unavailable: vec![],
+                    unknown: vec![],
+                },
+                activated: false,
+                app_appearance: None,
+            }),
+            ..ThemeView::default()
+        });
+        let mut bare_preview_frame = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut bare_preview_frame, params, &[]).unwrap();
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        while renderer.thumbnails.get("fixture-background").is_none()
+            && std::time::Instant::now() < deadline
+        {
+            renderer.poll_theme_thumbnails();
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert!(renderer.thumbnails.get("fixture-background").is_some());
+        let mut illustrated_preview_frame = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(&mut illustrated_preview_frame, params, &[])
+            .unwrap();
+        assert_ne!(
+            bare_preview_frame, illustrated_preview_frame,
+            "a background's own asset must change the painted row once decoded"
+        );
+
+        std::fs::remove_file(theme_thumb).unwrap();
+        std::fs::remove_file(background_thumb).unwrap();
+    }
+
     #[test]
     fn cancelled_still_result_never_reappears_in_chooser() {
         let path =
@@ -2942,6 +3214,7 @@ mod tests {
             name: "Fixture".into(),
             label: "Fixture".into(),
             origin: ThemeOrigin::Builtin,
+            preview_path: None,
         };
         let mut renderer = RendererCache::default();
         renderer.set_theme_view(ThemeView {

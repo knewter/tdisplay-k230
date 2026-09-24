@@ -39,7 +39,8 @@ fn preview(activated: bool) -> serde_json::Value {
 fn typed_catalog_and_preview_preserve_identity_background_and_app_status() {
     let list = ThemeRequest::List;
     let data = json!({"schema":1,"themes":[
-        {"id":THEME,"name":"public-fixture","label":"Public Fixture","origin":"user"}],
+        {"id":THEME,"name":"public-fixture","label":"Public Fixture","origin":"user",
+         "preview_path":"/tmp/state/themes/public-fixture/preview.png"}],
         "active":{"id":null,"generation":GENERATION}});
     let ThemeResponse::List(listed) = parse_response(&list, data.to_string().as_bytes()).unwrap()
     else {
@@ -47,6 +48,10 @@ fn typed_catalog_and_preview_preserve_identity_background_and_app_status() {
     };
     assert_eq!(listed.themes[0].label, "Public Fixture");
     assert_eq!(listed.active.generation.as_deref(), Some(GENERATION));
+    assert_eq!(
+        listed.themes[0].preview_path,
+        Some(PathBuf::from("/tmp/state/themes/public-fixture/preview.png"))
+    );
     let request = ThemeRequest::Preview {
         theme_id: THEME.into(),
         background_id: Some(BACKGROUND.into()),
@@ -98,6 +103,11 @@ fn stale_generation_escape_and_oversized_list_are_rejected() {
     let mut wrong_choice = preview(false);
     wrong_choice["backgrounds"][0]["selected"] = json!(false);
     assert!(parse_response(&request, wrong_choice.to_string().as_bytes()).is_err());
+    let escaping_preview = json!({"schema":1,"themes":[
+        {"id":THEME,"name":"public","label":"Public","origin":"user",
+         "preview_path":"/tmp/state/themes/public/../../private/preview.png"}],
+        "active":{"id":null,"generation":null}});
+    assert!(parse_response(&ThemeRequest::List, escaping_preview.to_string().as_bytes()).is_err());
     let giant = json!({"schema":1,"themes":vec![json!({
         "id":THEME,"name":"public","label":"Public","origin":"user"}); 513],
         "active":{"id":null,"generation":null}});

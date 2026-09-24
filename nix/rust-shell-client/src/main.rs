@@ -2068,6 +2068,14 @@ fn serve() -> Result<(), String> {
         if state.renderer.poll_theme_image(state.width, state.height) {
             state.dirty = true;
         }
+        // Each theme/background row thumbnail decodes independently of the
+        // single live wallpaper preview above; without this, a completed
+        // decode would sit undrained until some unrelated event happened to
+        // mark the frame dirty, and later rows would never even get
+        // requested past the worker's bounded queue depth.
+        if state.renderer.poll_theme_thumbnails() {
+            state.dirty = true;
+        }
         if state
             .service_view
             .confirmation

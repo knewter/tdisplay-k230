@@ -64,6 +64,27 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual([entry.id for entry in self.entries()], identities)
         self.assertFalse(self.state.exists())
 
+    def test_preview_asset_prefers_own_image_then_first_still_background(self):
+        with_own_preview = theme(self.user / "aurora")
+        (with_own_preview / "preview.png").write_bytes(b"not decoded in this test")
+        without_preview = theme(self.user / "borealis")
+        colorless = self.user / "colorless"
+        colorless.mkdir()
+        (colorless / "colors.toml").write_text(COLORS)
+        entries = {entry.name: entry for entry in self.entries()}
+        self.assertEqual(entries["aurora"].preview_path, with_own_preview / "preview.png")
+        # No preview.* ships for "borealis"; the first still background sorts
+        # ahead of the later still and the video this project cannot decode,
+        # matching the representative-thumbnail fallback.
+        self.assertEqual(entries["borealis"].preview_path, without_preview / "backgrounds/other.jpg")
+        self.assertIsNone(entries["colorless"].preview_path)
+        _, listing = self.run_cli("list", "--json")
+        by_name = {row["name"]: row for row in listing["themes"]}
+        self.assertEqual(by_name["aurora"]["preview_path"], str(with_own_preview / "preview.png"))
+        self.assertEqual(by_name["borealis"]["preview_path"],
+                         str(without_preview / "backgrounds/other.jpg"))
+        self.assertIsNone(by_name["colorless"]["preview_path"])
+
     def test_bounds_include_ignored_directory_entries(self):
         self.user.mkdir()
         for index in range(4):

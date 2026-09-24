@@ -38,10 +38,42 @@ class Entry:
     label: str
     origin: str
     source: Path
+    preview_path: Path | None
 
     def public(self):
         return {"id": self.id, "name": self.name, "label": self.label,
-                "origin": self.origin}
+                "origin": self.origin,
+                "preview_path": str(self.preview_path) if self.preview_path else None}
+
+
+#: Search order for a theme's own preview image, matching upstream
+#: `bin/omarchy-theme-switcher`'s `find_preview()` restricted to the still
+#: formats this project actually decodes (`theme_activate.STILLS`); that
+#: helper also accepts a video preview/background, which has no decodable
+#: thumbnail here and is skipped rather than claimed.
+PREVIEW_NAMES = ("preview.png", "preview.jpg", "preview.jpeg", "preview.webp",
+                 "preview.gif", "preview.bmp")
+
+
+def find_preview(path: Path) -> Path | None:
+    """A theme's own preview image, matching Omarchy's per-theme `preview.*`
+    convention, or (absent one) its first background image as a
+    representative thumbnail. Cheap directory metadata only; never decodes.
+    """
+    for name in PREVIEW_NAMES:
+        preview = path / name
+        if preview.is_file() and not preview.is_symlink():
+            return preview
+    backgrounds = path / "backgrounds"
+    if backgrounds.is_dir() and not backgrounds.is_symlink():
+        with os.scandir(backgrounds) as scan:
+            candidates = sorted(
+                item.name for item in scan
+                if item.is_file(follow_symlinks=False)
+                and Path(item.name).suffix.lower() in activation.STILLS)
+        if candidates:
+            return backgrounds / candidates[0]
+    return None
 
 
 def discover(user_themes: Path, builtins: Path | None) -> list[Entry]:
@@ -79,8 +111,9 @@ def discover(user_themes: Path, builtins: Path | None) -> list[Entry]:
             return
         if len(path.name) > 80 or not path.name.isprintable():
             return
+        resolved = path.resolve(strict=True)
         entries.append(Entry(identity(origin, relative), name, path.name,
-                             origin, path.resolve(strict=True)))
+                             origin, resolved, find_preview(resolved)))
 
     for origin, directory in (("user", user_themes), ("builtin", builtins)):
         if directory is None:

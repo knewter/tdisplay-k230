@@ -10,6 +10,7 @@ pub mod render;
 pub mod service_data;
 pub mod service_ui;
 pub mod theme_catalog;
+pub mod theme_thumbnails;
 pub mod theme_ui;
 pub mod wifi_settings;
 pub mod wifi_ui;

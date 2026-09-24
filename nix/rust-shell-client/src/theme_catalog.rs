@@ -56,6 +56,11 @@ pub struct ThemeEntry {
     pub name: String,
     pub label: String,
     pub origin: ThemeOrigin,
+    /// The theme's own `preview.png` (Omarchy's convention), or a
+    /// representative background image when a theme ships none. `None`
+    /// leaves the chooser row as text only, same as before this field
+    /// existed.
+    pub preview_path: Option<PathBuf>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -424,6 +429,13 @@ fn clean_absolute(value: Option<&Value>) -> Result<PathBuf, String> {
     Ok(path)
 }
 
+fn optional_absolute(value: Option<&Value>) -> Result<Option<PathBuf>, String> {
+    match value {
+        None | Some(Value::Null) => Ok(None),
+        Some(value) => clean_absolute(Some(value)).map(Some),
+    }
+}
+
 fn entry(value: &Value) -> Result<ThemeEntry, String> {
     let origin = match value.get("origin").and_then(Value::as_str) {
         Some("user") => ThemeOrigin::User,
@@ -435,6 +447,7 @@ fn entry(value: &Value) -> Result<ThemeEntry, String> {
         name: required_text(value.get("name"), 80)?,
         label: required_text(value.get("label"), 80)?,
         origin,
+        preview_path: optional_absolute(value.get("preview_path"))?,
     })
 }
 
