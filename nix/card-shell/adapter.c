@@ -230,7 +230,12 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 	if (shell.keyboard_grip && shell.keyboard_grip_line) {
 		float bg[4], line[4];
 		card_brush_solid_color(&next->card, bg);
-		card_brush_solid_color(&next->selected, line);
+		/* The selected card fill can be nearly identical to card background.
+		 * Use the authored foreground role for a readable touch handle. */
+		line[0] = ((next->text >> 16) & 255) / 255.0f;
+		line[1] = ((next->text >> 8) & 255) / 255.0f;
+		line[2] = (next->text & 255) / 255.0f;
+		line[3] = 1.0f;
 		wlr_scene_rect_set_color(shell.keyboard_grip, bg);
 		wlr_scene_rect_set_color(shell.keyboard_grip_line, line);
 	}

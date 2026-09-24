@@ -324,6 +324,30 @@ let
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
     exec ${rustShellBase}/bin/k230-shell-rust "$@"
   '';
+  supervisedKeyboard = pkgs.writeShellScriptBin "k230-supervised-keyboard" ''
+    set -eu
+    # Match the supervised shell UI: Sway may have started before its Wayland
+    # socket exists. Never assume wayland-0 or connect to an ambiguous session.
+    for attempt in $(${pkgs.coreutils}/bin/seq 1 100); do
+      found=""
+      for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+        if [ -S "$candidate" ]; then
+          if [ -n "$found" ]; then
+            echo "k230-supervised-keyboard: ambiguous Wayland display" >&2
+            exit 1
+          fi
+          found="$candidate"
+        fi
+      done
+      if [ -n "$found" ]; then
+        export WAYLAND_DISPLAY="''${found##*/}"
+        exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
+      fi
+      ${pkgs.coreutils}/bin/sleep 0.1
+    done
+    echo "k230-supervised-keyboard: session Wayland display unavailable" >&2
+    exit 1
+  '';
   touchMenu = pkgs.writeShellScriptBin "k230-touch-menu" ''
     export K230_SWAYMSG=${sway}/bin/swaymsg
     export K230_FOOT=${pkgs.foot}/bin/foot
@@ -401,7 +425,7 @@ let
 
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
-    exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
+    ${lib.optionalString (!cfg.coherentShell) "exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden"}
     exec ${themedFoot}/bin/k230-foot terminal
   '';
 in
@@ -727,6 +751,25 @@ in
         WorkingDirectory = config.users.users.shell.home;
         ExecStart = "${rustShell}/bin/k230-shell-rust --serve";
         Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    systemd.services.shell-keyboard = lib.mkIf cfg.coherentShell {
+      description = "Supervised on-screen keyboard";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "shell.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        ExecStart = "${supervisedKeyboard}/bin/k230-supervised-keyboard";
+        Restart = "always";
         RestartSec = 1;
         UMask = "0077";
       };
