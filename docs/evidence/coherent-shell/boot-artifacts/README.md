@@ -45,7 +45,12 @@ whole matching closure and found kernel/initrd hashes unchanged, so it
 replaced only differing `bootargs.txt` and DTB bytes. That prior comparison
 does not establish that this coherent candidate has the same kernel/initrd;
 repeat it on the exact candidate. Preserve the current boot files, system
-profile, and a byte-verified recovery image before any write. On a failed
+profile, and a byte-verified recovery image before any write. During the
+later guarded selection, register the newly selected system in the durable
+`/nix/var/nix/profiles/system` profile and retain the previous system through
+a separate durable GC root or verified retained profile generation. Check
+both roots before reboot: an absolute `init=/nix/store/...` in `bootargs.txt`
+does **not** protect that store closure from garbage collection. On a failed
 ordinary boot, a Linux rollback timer cannot run; use the preserved boot
 selection or the proved USB recovery route.
 
@@ -58,6 +63,16 @@ full-image flash, a fresh ordinary boot, exact `/run/current-system` and
 service checks, and the selected theme appearing again. The theme's private
 `current/active` pointer is designed to survive a service restart, but this
 document provides no reboot proof.
+
+Evaluated from this source checkpoint (before the final keyboard source was
+integrated, so these are provisional identities): coherent system
+`/nix/store/sgmhnb5fwh3vvd4nx2937ixmlgb9h8mr-nixos-system-nixos-26.11.20260919.20b1ddd`,
+coherent image derivation
+`/nix/store/gqix4f4q4y4bfnwii9bj8mq00822lg8h-k230-sd-image.img.drv`,
+normal image derivation
+`/nix/store/mw0y48wxa3f6piwa416dnyjd7rafahmw-k230-sd-image.img.drv`.
+The two image derivations differ and no image was built. Repeat evaluation
+from the final integrated revision before recording a candidate for boot.
 
 The host extraction commands were rehearsed read-only on the already built
 recovery image
