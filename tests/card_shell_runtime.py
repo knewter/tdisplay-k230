@@ -59,7 +59,10 @@ def main():
     runtime.mkdir(parents=True,exist_ok=True); runtime.chmod(0o700)
     print(f'Headless evidence: {runtime}',flush=True)
     config=runtime/'config'
-    config.write_text('output HEADLESS-1 mode 568x1232' + (' render_bit_depth 6' if args.rgb565 else '') + '\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
+    ordinary = ('for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0\n'
+                if args.two_axis else
+                'for_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
+    config.write_text('output HEADLESS-1 mode 568x1232' + (' render_bit_depth 6' if args.rgb565 else '') + '\nseat seat0 fallback true\nfocus_follows_mouse no\n' + ordinary)
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',SWAY_K230_CARD_SHELL='0' if args.disabled else '1')
     env['SWAY_K230_CARD_SCALED_CACHE'] = '1' if args.scaled_cache else '0'
     reveal_messages=[]

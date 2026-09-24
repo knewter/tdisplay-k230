@@ -423,29 +423,31 @@ static void direct_carousel(void) {
     const struct cs_rect full={0,56,568,1176};
     assert(cs_begin_entry(&p,1,284,1220,10,202).consumed);
     entry_geometry(&p);
-    struct cs_rect origin=cs_entry_visual_rect(&p,1,full);
-    struct cs_rect left=cs_entry_visual_rect(&p,0,full);
+    struct cs_rect origin=cs_entry_visual_rect(&p,1,full,true);
+    struct cs_rect left=cs_entry_visual_rect(&p,0,full,true);
     struct cs_rect unfocused={0,128,520,960};
-    struct cs_rect aligned=cs_entry_visual_rect(&p,0,unfocused);
+    struct cs_rect aligned=cs_entry_visual_rect(&p,0,unfocused,true);
     assert(fabs(origin.x)<.001 && fabs(origin.width-568)<.001);
     assert(fabs(left.x+568)<.001 && fabs(left.width-568)<.001);
     assert(fabs(aligned.y-origin.y)<.001 && fabs(aligned.height-origin.height)<.001);
+    struct cs_rect distinct=cs_entry_visual_rect(&p,0,unfocused,false);
+    assert(fabs(distinct.y-unfocused.y)<.001 && fabs(distinct.height-unfocused.height)<.001);
     cs_entry_motion(&p,1,384,1220,20);
-    origin=cs_entry_visual_rect(&p,1,full);
-    left=cs_entry_visual_rect(&p,0,full);
+    origin=cs_entry_visual_rect(&p,1,full,true);
+    left=cs_entry_visual_rect(&p,0,full,true);
     assert(fabs(origin.x-100)<.001 && fabs(left.x+468)<.001);
     assert(!cs_tick(&p,100).actions); /* held finger cannot advance */
-    assert(fabs(cs_entry_visual_rect(&p,1,full).x-origin.x)<.001);
+    assert(fabs(cs_entry_visual_rect(&p,1,full,true).x-origin.x)<.001);
     cs_entry_motion(&p,1,324,1220,110); /* reverse follows x exactly */
-    assert(fabs(cs_entry_visual_rect(&p,1,full).x-40)<.001);
+    assert(fabs(cs_entry_visual_rect(&p,1,full,true).x-40)<.001);
     cs_entry_motion(&p,1,444,1220,120);
-    origin=cs_entry_visual_rect(&p,1,full);
+    origin=cs_entry_visual_rect(&p,1,full,true);
     assert(fabs(origin.x-160)<.001 && p.entry_progress==0);
     assert(cs_entry_up_at(&p,1,121).consumed && p.entry_target_id==101);
     assert(!cs_tick(&p,121).actions);
-    assert(fabs(cs_entry_visual_rect(&p,1,full).x-origin.x)<.001);
+    assert(fabs(cs_entry_visual_rect(&p,1,full,true).x-origin.x)<.001);
     cs_tick(&p,122);
-    assert(cs_entry_visual_rect(&p,1,full).x>origin.x); /* release momentum */
+    assert(cs_entry_visual_rect(&p,1,full,true).x>origin.x); /* release momentum */
     assert(p.entry_progress==0); /* no forced zoom to overview */
     struct cs_result done=cs_tick(&p,361);
     assert((done.actions&CS_RESTORE) && done.focus_id==101 && p.mode==CS_NORMAL);

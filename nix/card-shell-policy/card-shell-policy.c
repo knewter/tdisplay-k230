@@ -204,7 +204,7 @@ struct cs_rect cs_card_rect(const struct cs_policy *p,size_t index) {
         .width=p->config.card_width,.height=p->config.card_height};
 }
 struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
-        struct cs_rect source) {
+        struct cs_rect source,bool common_full_frame) {
     struct cs_rect r=cs_card_rect(p,index);
     if (p->mode!=CS_ENTERING || index>=p->count) return r;
     size_t stable=entry_order_index(p,p->cards[index].id);
@@ -214,7 +214,7 @@ struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
     /* Unfocused Sway floating views can have a different current geometry
      * from the focused full-panel source. Use one carousel frame for every
      * eligible live/neutral slot; mirror scaling still preserves aspect. */
-    if (p->entry_travel>0) source=p->entry_full_rect;
+    if (common_full_frame && p->entry_travel>0) source=p->entry_full_rect;
     double full_x=source.x+offset*p->config.width;
     r.x=full_x*(1-progress)+(r.x-p->entry_dx)*progress+p->entry_dx+
         p->entry_anchor_shift*progress*p->entry_anchor_factor;

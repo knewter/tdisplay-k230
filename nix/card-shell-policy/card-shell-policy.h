@@ -166,7 +166,7 @@ struct cs_rect cs_card_rect(const struct cs_policy *policy, size_t index);
 /* Geometry of one live or neutral carousel slot during app entry. Source is
  * the output-local full view rectangle; no pixels or titles enter policy. */
 struct cs_rect cs_entry_visual_rect(const struct cs_policy *policy,
-    size_t index, struct cs_rect source);
+    size_t index, struct cs_rect source, bool common_full_frame);
 /* Returns SIZE_MAX outside cards/content clip. Adapter buttons are hit first. */
 size_t cs_hit_test(const struct cs_policy *policy, double x, double y);
 const char *cs_message_text(enum cs_message message);

@@ -601,9 +601,13 @@ static bool sync_card(struct card *c, size_t index) {
 				c->view->geometry.width, c->view->geometry.height,
 				r.x - shell.policy.entry_dx, r.y, r.width, r.height))
 			return false;
+		struct card *origin = find(shell.policy.entry_id);
+		bool common_full_frame = origin && origin->view->container &&
+			origin->view->container->card_shell_ordinary_maximized &&
+			c->view->container && c->view->container->card_shell_ordinary_maximized;
 		r = cs_entry_visual_rect(&shell.policy, index, (struct cs_rect){
 			c->source_x - shell.output->lx, c->source_y - shell.output->ly,
-			c->view->geometry.width, c->view->geometry.height});
+			c->view->geometry.width, c->view->geometry.height}, common_full_frame);
 	}
 	if (expanding) {
 		if (!c->source_valid || !c->expand_start_valid)
