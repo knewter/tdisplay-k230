@@ -8,7 +8,7 @@ use crate::{
     service_data::{Control, ControlValue},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_catalog::BackgroundKind,
-    theme_ui::{ThemePage, ThemeView},
+    theme_ui::{background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView},
     wifi_settings::Security,
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
     Route,
@@ -325,6 +325,8 @@ fn paint_theme_chooser(
     h: f64,
     view: &ThemeView,
     theme: Option<&AppearanceSnapshot>,
+    preview_image: Option<&ImageSurface>,
+    preview_error: bool,
 ) {
     let style = visual_style(theme, "image-picker");
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
@@ -438,6 +440,16 @@ fn paint_theme_chooser(
                 let _ = cr.stroke();
                 text(cr, name, x, 334.0, 86.0, 13.0, style.muted);
             }
+            let selected = preview.backgrounds.iter().find(|row| row.selected);
+            text(
+                cr,
+                "Selected background",
+                28.0,
+                373.0,
+                w - 56.0,
+                18.0,
+                style.muted,
+            );
             text(
                 cr,
                 &format!(
@@ -445,12 +457,61 @@ fn paint_theme_chooser(
                     preview.compatibility.applied.len(),
                     preview.compatibility.unavailable.len()
                 ),
-                28.0,
-                408.0,
-                w - 56.0,
-                17.0,
+                w - 274.0,
+                373.0,
+                246.0,
+                14.0,
                 style.muted,
             );
+            let image_x = 28.0;
+            let image_y = 399.0;
+            let image_w = w - 56.0;
+            let image_h = 176.0;
+            rounded(cr, image_x, image_y, image_w, image_h, 15.0);
+            color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
+            let _ = cr.fill();
+            if let Some(image) = preview_image {
+                let _ = cr.save();
+                rounded(cr, image_x, image_y, image_w, image_h, 15.0);
+                cr.clip();
+                if cr.set_source_surface(image, image_x, image_y).is_ok() {
+                    let _ = cr.paint();
+                }
+                let _ = cr.restore();
+            } else {
+                let message = if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
+                    "Video preview unavailable"
+                } else if preview_error {
+                    "Still preview unavailable"
+                } else if selected.is_some() {
+                    "Preparing still preview"
+                } else {
+                    "Choose a background"
+                };
+                text(
+                    cr,
+                    message,
+                    44.0,
+                    image_y + 72.0,
+                    image_w - 32.0,
+                    20.0,
+                    style.muted,
+                );
+            }
+            if let Some(background) = selected {
+                text(
+                    cr,
+                    &format!(
+                        "{} · wallpaper sample, center crop",
+                        background_display_label(&background.label)
+                    ),
+                    28.0,
+                    580.0,
+                    w - 56.0,
+                    16.0,
+                    style.muted,
+                );
+            }
             text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, style.text);
             let _ = cr.save();
             cr.rectangle(0.0, 662.0, w, (h - 814.0).max(0.0));
@@ -473,7 +534,7 @@ fn paint_theme_chooser(
                 );
                 text(
                     cr,
-                    &background.label,
+                    &background_display_label(&background.label),
                     42.0,
                     y + 9.0,
                     w - 84.0,
@@ -942,6 +1003,8 @@ fn scene(
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
     chooser: Option<&ThemeView>,
+    preview_image: Option<&ImageSurface>,
+    preview_error: bool,
     pressed: Option<usize>,
 ) {
     let RenderParams {
@@ -1362,7 +1425,7 @@ fn scene(
                 return;
             }
             if let Some(view) = chooser.filter(|view| view.page != ThemePage::Controls) {
-                paint_theme_chooser(cr, w, h, view, theme);
+                paint_theme_chooser(cr, w, h, view, theme, preview_image, preview_error);
                 return;
             }
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
@@ -1486,6 +1549,8 @@ pub fn draw_shm(
         None,
         None,
         None,
+        false,
+        None,
     )
 }
 
@@ -1497,6 +1562,8 @@ fn draw_shm_with_icons(
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
     chooser: Option<&ThemeView>,
+    preview_image: Option<&ImageSurface>,
+    preview_error: bool,
     pressed: Option<usize>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
@@ -1517,7 +1584,18 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, params, apps, icons, theme, services, chooser, pressed);
+    scene(
+        &cr,
+        params,
+        apps,
+        icons,
+        theme,
+        services,
+        chooser,
+        preview_image,
+        preview_error,
+        pressed,
+    );
     drop(cr);
     surface.flush();
     Ok(())
@@ -1548,6 +1626,8 @@ pub fn export_png(
         None,
         None,
         None,
+        false,
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -1572,12 +1652,85 @@ pub struct RendererCache {
     theme: Option<AppearanceSnapshot>,
     services: Option<ServiceView>,
     chooser: Option<ThemeView>,
+    preview_worker: ThemeImageWorker,
+    preview_key: Option<ThemeImageKey>,
+    preview_requested: Option<ThemeImageKey>,
+    preview_surface: Option<ImageSurface>,
+    preview_error: bool,
 }
 
 impl RendererCache {
     pub fn set_theme_view(&mut self, view: ThemeView) {
         self.chooser = Some(view);
         self.invalidate();
+    }
+    /// Nonblocking dispatch hook. Only a selected staged still is decoded;
+    /// the one-entry worker cache and result channel bound memory and work.
+    pub fn poll_theme_image(&mut self, width: u32) -> bool {
+        let desired = self.chooser.as_ref().and_then(|view| {
+            let preview = (view.page == ThemePage::Preview)
+                .then_some(view.preview.as_ref())
+                .flatten()?;
+            preview
+                .backgrounds
+                .iter()
+                .find(|row| row.selected && row.kind == BackgroundKind::Image)
+                .and_then(|row| {
+                    let image_width = width.checked_sub(56)?;
+                    (image_width > 0 && image_width <= 1024).then(|| ThemeImageKey {
+                        generation: preview.generation.clone(),
+                        path: row.path.clone(),
+                        width: image_width,
+                        height: 176,
+                    })
+                })
+        });
+        let mut changed = false;
+        if desired != self.preview_key {
+            self.preview_key = desired.clone();
+            self.preview_surface = None;
+            self.preview_error = false;
+            self.invalidate();
+            changed = true;
+        }
+        for _ in 0..2 {
+            let Some(reply) = self.preview_worker.try_recv() else {
+                break;
+            };
+            if self.preview_requested.as_ref() == Some(&reply.key) {
+                self.preview_requested = None;
+            }
+            if self.preview_key.as_ref() != Some(&reply.key) {
+                continue; // Cancelled preview or another generation won.
+            }
+            let pixels = match reply.pixels {
+                Ok(pixels) => Some(pixels),
+                Err(_) => None,
+            };
+            self.preview_surface = pixels.and_then(|pixels| {
+                ImageSurface::create_for_data(
+                    pixels,
+                    Format::ARgb32,
+                    reply.key.width as i32,
+                    reply.key.height as i32,
+                    (reply.key.width * 4) as i32,
+                )
+                .ok()
+            });
+            self.preview_error = self.preview_surface.is_none();
+            self.invalidate();
+            changed = true;
+        }
+        if let Some(key) = desired.as_ref() {
+            if self.preview_surface.is_none()
+                && !self.preview_error
+                && self.preview_requested.as_ref() != Some(key)
+                && self.preview_worker.try_request(key.clone())
+            {
+                self.preview_requested = Some(key.clone());
+            }
+        }
+        changed
     }
     pub fn set_services(&mut self, services: ServiceView) {
         self.services = Some(services);
@@ -1675,6 +1828,7 @@ impl RendererCache {
         if canvas.len() != size {
             return Err("invalid canvas length".into());
         }
+        self.poll_theme_image(width);
         if self.route != Some(route)
             || self.width != width
             || self.height != height
@@ -1692,6 +1846,8 @@ impl RendererCache {
                 self.theme.as_ref(),
                 self.services.as_ref(),
                 self.chooser.as_ref(),
+                self.preview_surface.as_ref(),
+                self.preview_error,
                 self.pressed,
             )?;
             self.static_pixels = painted;
@@ -2091,6 +2247,25 @@ mod tests {
             if let Some(view) = theme_view {
                 renderer.set_theme_view(view);
             }
+            if name == "preview" {
+                let deadline = std::time::Instant::now() + std::time::Duration::from_secs(8);
+                while std::time::Instant::now() < deadline {
+                    renderer.poll_theme_image(568);
+                    if renderer.preview_surface.is_some() || renderer.preview_error {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(5));
+                }
+                if std::env::var_os("K230_VISUAL_REQUIRE_BACKGROUND").is_some() {
+                    assert!(
+                        renderer.preview_surface.is_some(),
+                        "actual staged still must render: key={:?} requested={:?} error={}",
+                        renderer.preview_key,
+                        renderer.preview_requested,
+                        renderer.preview_error
+                    );
+                }
+            }
             let mut frame = vec![0; 568 * 1232 * 4];
             renderer
                 .draw(
@@ -2243,6 +2418,60 @@ mod tests {
             let mut file = File::create(path).unwrap();
             surface.write_to_png(&mut file).unwrap();
         }
+    }
+
+    #[test]
+    fn cancelled_still_result_never_reappears_in_chooser() {
+        let path =
+            std::env::temp_dir().join(format!("k230-cancelled-still-{}.png", std::process::id()));
+        image::RgbaImage::from_pixel(4, 4, image::Rgba([90, 40, 150, 255]))
+            .save(&path)
+            .unwrap();
+        let entry = ThemeEntry {
+            id: "fixture".into(),
+            name: "Fixture".into(),
+            label: "Fixture".into(),
+            origin: ThemeOrigin::Builtin,
+        };
+        let mut renderer = RendererCache::default();
+        renderer.set_theme_view(ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(ThemePreview {
+                theme: entry,
+                generation: "fixture-generation".into(),
+                appearance_path: "/tmp/fixture-appearance.json".into(),
+                palette: BTreeMap::new(),
+                icon_theme: None,
+                backgrounds: vec![BackgroundChoice {
+                    id: "still".into(),
+                    label: "1-still.png".into(),
+                    kind: BackgroundKind::Image,
+                    path: path.canonicalize().unwrap(),
+                    selected: true,
+                    decode_status: "unverified".into(),
+                }],
+                compatibility: Compatibility {
+                    applied: vec![],
+                    unavailable: vec![],
+                    unknown: vec![],
+                },
+                activated: false,
+                app_appearance: None,
+            }),
+            ..ThemeView::default()
+        });
+        assert!(renderer.poll_theme_image(568));
+        renderer.set_theme_view(ThemeView::default());
+        assert!(renderer.poll_theme_image(568));
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        while renderer.preview_requested.is_some() && std::time::Instant::now() < deadline {
+            renderer.poll_theme_image(568);
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert!(renderer.preview_requested.is_none());
+        assert!(renderer.preview_surface.is_none());
+        assert!(renderer.preview_key.is_none());
+        std::fs::remove_file(path).unwrap();
     }
 
     #[test]

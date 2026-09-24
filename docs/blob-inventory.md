@@ -1199,6 +1199,8 @@ DATA f46a27a79670a1968ceb8b4bd1fc398c8d4f3750fab75d8f96e53140b1a73493  docs/evid
 DATA 02a2fa43467c766afd3721e364ed738bff2ab22bf0ea2f2353b8e9bd3c28cf73  docs/evidence/coherent-shell/rust-visual-themes-host/latte/settings.png
 DATA b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45  docs/evidence/coherent-shell/rust-visual-themes-host/latte/shade.png
 DATA ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0  docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png
+DATA 75ed77a0908f061eb3fe9f7838064ea09c86c9e33c34e1bf5ee038900463fb43  docs/evidence/omarchy-themes/theme-preview-host/catppuccin-preview.png
+DATA a28b6fe0088877677cb754fa68335d6b2b813de6f3538ef7d0aac23891465c09  docs/evidence/omarchy-themes/theme-preview-host/latte-preview.png
 DATA 01afc171955fb0625e5d17262357af043fedbb78a2811e3b11872167ba1aff80  docs/evidence/coherent-shell/real-theme-paired-qemu/app-after.png
 DATA 8900500145efe6fdb13d5a705b385f034d2d56777311bdae8a0c3a64c8b6d3a8  docs/evidence/coherent-shell/real-theme-paired-qemu/default-deck.png
 DATA f247e96c608ec9cba0cda92fcf924fcd6329ceb9ce3c8a0f7320ed6872e51629  docs/evidence/coherent-shell/deck-visual-qemu/dark-ordinary.png

@@ -1,9 +1,82 @@
 //! Touch-only theme chooser state. All command I/O belongs to `ThemeWorker`.
 //! Preview is reversible; only an explicit Apply may request activation.
 
+use crate::background_decode::{BackgroundCache, FitMode};
 use crate::theme_catalog::{
     BackgroundKind, ThemeList, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
 };
+use std::{
+    path::PathBuf,
+    sync::mpsc::{self, Receiver, SyncSender, TryRecvError},
+    thread,
+};
+
+/// One immutable generation still at a time. Decode runs outside Wayland
+/// dispatch; a cancelled/changed preview can discard the returned key.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ThemeImageKey {
+    pub generation: String,
+    pub path: PathBuf,
+    pub width: u32,
+    pub height: u32,
+}
+
+pub struct ThemeImageReply {
+    pub key: ThemeImageKey,
+    pub pixels: Result<Vec<u8>, String>,
+}
+
+pub struct ThemeImageWorker {
+    requests: SyncSender<ThemeImageKey>,
+    replies: Receiver<ThemeImageReply>,
+}
+
+impl Default for ThemeImageWorker {
+    fn default() -> Self {
+        let (requests, incoming) = mpsc::sync_channel::<ThemeImageKey>(1);
+        let (outgoing, replies) = mpsc::sync_channel::<ThemeImageReply>(1);
+        thread::spawn(move || {
+            let mut cache = BackgroundCache::new();
+            while let Ok(key) = incoming.recv() {
+                let pixels = cache
+                    .render(&key.path, key.width, key.height, FitMode::Crop)
+                    .map(<[u8]>::to_vec);
+                if outgoing.send(ThemeImageReply { key, pixels }).is_err() {
+                    break;
+                }
+            }
+        });
+        Self { requests, replies }
+    }
+}
+
+impl ThemeImageWorker {
+    pub fn try_request(&self, key: ThemeImageKey) -> bool {
+        matches!(self.requests.try_send(key), Ok(()))
+    }
+
+    pub fn try_recv(&self) -> Option<ThemeImageReply> {
+        match self.replies.try_recv() {
+            Ok(reply) => Some(reply),
+            Err(TryRecvError::Empty | TryRecvError::Disconnected) => None,
+        }
+    }
+}
+
+/// Source filenames are secondary to a readable selection name. Opaque IDs
+/// still select the exact staged asset; this changes display text only.
+pub fn background_display_label(label: &str) -> String {
+    let stem = label.rsplit_once('.').map_or(label, |(stem, _)| stem);
+    let stem = stem.trim_start_matches(|ch: char| ch.is_ascii_digit() || ch == '-' || ch == '_');
+    let words = stem.replace(['-', '_'], " ");
+    let words = words.trim();
+    if words.is_empty() {
+        return "Background".into();
+    }
+    let mut chars = words.chars();
+    let first = chars.next().expect("nonempty background label");
+    format!("{}{}", first.to_uppercase(), chars.as_str())
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ThemePage {
@@ -515,5 +588,43 @@ mod tests {
         }));
         assert!(!view.selection_error);
         assert!(view.apply_request().is_ok());
+    }
+
+    #[test]
+    fn wallpaper_labels_are_readable_without_changing_opaque_selection() {
+        assert_eq!(background_display_label("2-waves.webp"), "Waves");
+        assert_eq!(background_display_label("1-color-fade.webp"), "Color fade");
+        assert_eq!(background_display_label("Blue hour"), "Blue hour");
+        assert_eq!(background_display_label("001.png"), "Background");
+    }
+
+    #[test]
+    fn still_preview_worker_returns_bounded_crop_outside_dispatch() {
+        let path = std::env::temp_dir().join(format!(
+            "k230-theme-preview-{}-{}.png",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let image = image::RgbaImage::from_pixel(4, 2, image::Rgba([20, 80, 160, 255]));
+        image.save(&path).unwrap();
+        let key = ThemeImageKey {
+            generation: "fixture-generation".into(),
+            path: path.canonicalize().unwrap(),
+            width: 64,
+            height: 32,
+        };
+        let worker = ThemeImageWorker::default();
+        assert!(worker.try_request(key.clone()));
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        let reply = loop {
+            if let Some(reply) = worker.try_recv() {
+                break reply;
+            }
+            assert!(std::time::Instant::now() < deadline);
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        };
+        assert_eq!(reply.key, key);
+        assert_eq!(reply.pixels.unwrap().len(), 64 * 32 * 4);
+        std::fs::remove_file(path).unwrap();
     }
 }

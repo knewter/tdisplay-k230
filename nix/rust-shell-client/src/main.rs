@@ -1785,6 +1785,9 @@ fn serve() -> Result<(), String> {
             };
             state.theme_reply(reply);
         }
+        if state.renderer.poll_theme_image(state.width) {
+            state.dirty = true;
+        }
         if state
             .service_view
             .confirmation
