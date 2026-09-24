@@ -17,7 +17,7 @@ class ChromeCache(unittest.TestCase):
         source = (ROOT / 'nix/card-shell/adapter.c').read_text()
         state = source[source.index('static struct {'):source.index('static const float backdrop')]
         start = source.index('static bool rebuild_chrome(void) {') if 'static bool rebuild_chrome(void)' in source else source.index('static bool chrome(void) {')
-        functions = source[start:source.index('static bool sync_scene(void) {', start)]
+        functions = source[start:source.index('static bool sync_scene_impl(void) {', start)]
         harness = r'''
 #include <assert.h>
 #include <stdlib.h>
@@ -31,7 +31,16 @@ struct wlr_scene_tree { struct wlr_scene_node node; };
 struct wlr_scene_buffer { struct wlr_scene_node node; };
 static struct wlr_scene_tree tree;
 static struct wlr_scene_buffer label;
-static int builds, attempts, fail_at, last_x, last_y;
+static int builds, attempts, fail_at, last_x, last_y, button_calls;
+static bool touch_first(void) {
+    const char *value = getenv("SWAY_K230_CARD_TOUCH_FIRST");
+    return value && strcmp(value, "1") == 0;
+}
+enum { CARD_BENCH_CHROME };
+static uint64_t card_bench_input_stage_begin(void) { return 0; }
+static void card_bench_input_stage_end(int stage, uint64_t start) {
+    (void)stage; (void)start;
+}
 static bool allocation(void) { return ++attempts != fail_at; }
 static void wlr_scene_node_destroy(struct wlr_scene_node *node) { (void)node; }
 static struct wlr_scene_tree *wlr_scene_tree_create(struct wlr_scene_tree *parent) {
@@ -43,6 +52,7 @@ static void wlr_scene_node_set_position(struct wlr_scene_node *node, int x, int 
 static bool button(struct wlr_scene_tree *parent, int x, int y, int w,
                    const char *text, bool pressed) {
     (void)parent; (void)w; (void)text; (void)pressed;
+    button_calls++;
     last_x=x; last_y=y; return allocation();
 }
 static struct wlr_scene_buffer *card_label(struct wlr_scene_tree *parent,
@@ -95,6 +105,17 @@ int main(void) {
     }
     shell.chrome=NULL; int before=builds;
     assert(chrome()); assert(builds==before+1);
+    /* Opt-in integrated route has no permanent buttons or pagination.
+     * Feedback remains visible and ordinary rollback mode was tested above. */
+    assert(setenv("SWAY_K230_CARD_TOUCH_FIRST", "1", 1)==0);
+    shell.chrome_valid=false;
+    int prior_buttons=button_calls;
+    before=builds;
+    assert(chrome()); assert(builds==before+1);
+    assert(button_calls==prior_buttons);
+    assert(shell.status != NULL);
+    assert(chrome()); assert(builds==before+1);
+    assert(unsetenv("SWAY_K230_CARD_TOUCH_FIRST")==0);
     free(shell.status_text);
 }
 '''

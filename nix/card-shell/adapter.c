@@ -107,6 +107,10 @@ static bool scaled_cache_enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SCALED_CACHE");
 	return s && strcmp(s, "1") == 0;
 }
+static bool touch_first(void) {
+	const char *s = getenv("SWAY_K230_CARD_TOUCH_FIRST");
+	return s && strcmp(s, "1") == 0;
+}
 static void scaled_cache_log(void) {
 	if (scaled_cache_enabled())
 		sway_log(SWAY_INFO,
@@ -529,6 +533,22 @@ static bool rebuild_chrome(void) {
 	if (!shell.chrome)
 		return false;
 	int x = shell.output->lx, y = shell.output->ly + cfg->top_reserved;
+	/* The integrated shell routes by gesture. Keep the old controls available
+	 * only in the opt-in card trial's rollback mode. */
+	if (touch_first()) {
+		if (!shell.active)
+			return true;
+		struct wlr_scene_buffer *title = card_label(shell.chrome, "Cards", 250, 56, 42);
+		if (!title)
+			return false;
+		wlr_scene_node_set_position(&title->node, x + 24, y + 8);
+		const char *text = cs_message_text(shell.policy.message);
+		if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
+				cfg->width - 48, 56, 21))
+			return false;
+		wlr_scene_node_set_position(&shell.status->node, x + 24, y + 72);
+		return true;
+	}
 	if (!button(shell.chrome, x + cfg->width - 152, y + 8, 128, shell.active ? "Back" : "Cards",
 				shell.button_down && shell.pressed_button == 1))
 		return false;
@@ -915,6 +935,8 @@ static bool enter(struct sway_seat *seat) {
 	return shell.active;
 }
 static int hit_button(double x, double y) {
+	if (touch_first())
+		return 0;
 	struct cs_config *c = &shell.policy.config;
 	if (x >= c->width - 152 && x < c->width - 24 && y >= c->top_reserved + 8 &&
 		y < c->top_reserved + 64)
