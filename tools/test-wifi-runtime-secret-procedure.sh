@@ -12,7 +12,19 @@ procedure="$repo_root/docs/wifi-runtime-secret.md"
 test "$(id -u)" -eq 0
 
 test_root=$(mktemp -d)
-trap 'kill "${unrelated_pid:-}" "${owned_pid:-}" 2>/dev/null || true; rm -rf "$test_root"' EXIT
+phase=initialization
+cleanup_test() {
+  result=$?
+  kill "${unrelated_pid:-}" "${owned_pid:-}" 2>/dev/null || true
+  rm -rf "$test_root"
+  if test "$result" -ne 0; then
+    echo "synthetic Wi-Fi runtime-secret test failed during $phase (exit $result)" >&2
+  fi
+}
+trap cleanup_test EXIT
+# A fixed PID such as 999999 can exist on a busy CI host. Select a decimal
+# PID outside the kernel's allowed range for the exited-daemon fixture.
+dead_pid=$(( $(< /proc/sys/kernel/pid_max) + 1 ))
 fake_bin="$test_root/bin"
 mkdir "$fake_bin"
 printf '%s\n' \
@@ -37,7 +49,7 @@ printf '%s\n' \
   '    test "$(/usr/bin/stat -c %a "$WPA_EXPECT_CLIENT")" = 700' \
   '    test "$(/usr/bin/stat -c %a "$logfile")" = 600' \
   '    grep -F -x -- "ctrl_interface=DIR=$WPA_EXPECT_CTRL GROUP=root" "$config" >/dev/null' \
-  '    printf "%s\\n" 999999 > "$pidfile"; exit 0 ;;' \
+  '    printf "%s\\n" "${WPA_FAKE_DEAD_PID:?}" > "$pidfile"; exit 0 ;;' \
   '  *) exit 2 ;;' \
   'esac' > "$fake_bin/wpa_supplicant"
 chmod 755 "$fake_bin/wpa_supplicant"
@@ -63,6 +75,7 @@ run_setup() {
     | env PATH="$fake_bin:$PATH" \
         RUNTIME_SECRET_FILE="$source_file" WIFI_IFACE=test0 \
         WPA_FAKE_MODE="$1" WPA_FAKE_NONROOT_SOURCE="${2:-}" \
+        WPA_FAKE_DEAD_PID="$dead_pid" \
         WPA_EXPECT_CTRL="$runtime_ctrl" WPA_EXPECT_CLIENT="$runtime_client" bash
 }
 
@@ -102,6 +115,7 @@ chown 0:0 "$source_file"
 # The documented source-owner check rejects a non-root input before a copy.
 # A user namespace has only UID 0 mapped, so the test double reports UID 1
 # only for this one stat query while all later mode checks use real stat.
+phase=source-owner-refusal
 if run_setup fail 1; then
   echo "non-root source unexpectedly accepted" >&2
   exit 1
@@ -112,6 +126,7 @@ test ! -e "$runtime_ctrl"
 test ! -e "$runtime_log"
 
 # A failed daemon start triggers removal of the copied secret and PID path.
+phase=daemon-start-failure-cleanup
 if run_setup fail; then
   echo "failed daemon start unexpectedly succeeded" >&2
   exit 1
@@ -124,6 +139,7 @@ test ! -e "$runtime_log"
 # The control directive is mandatory and a missing directive cleans every
 # runtime artifact after the protected file has been copied.
 printf '%s\n' placeholder-only > "$source_file"
+phase=missing-control-directive-cleanup
 if run_setup dead; then
   echo "missing control directive unexpectedly accepted" >&2
   exit 1
@@ -138,6 +154,7 @@ printf '%s\n' \
 
 # A daemon that has exited before completion still permits removal of this
 # invocation's files without signalling a reused or absent PID.
+phase=exited-daemon-completion
 run_setup dead
 test -e "$runtime_conf"
 test -e "$runtime_pid"
@@ -151,6 +168,7 @@ test ! -e "$runtime_ctrl"
 test ! -e "$runtime_log"
 
 # Starting a second invocation refuses to overwrite existing state.
+phase=existing-state-refusal
 printf '%s\n' existing > "$runtime_conf"
 printf '%s\n' 999999 > "$runtime_pid"
 mkdir -p "$runtime_client"
@@ -168,6 +186,7 @@ rm -rf "$runtime_conf" "$runtime_pid" "$runtime_ctrl" "$runtime_log"
 
 # A live PID whose command line does not name this config cannot be killed or
 # have its state removed by the explicit-completion block.
+phase=unrelated-pid-preservation
 sleep 600 &
 unrelated_pid=$!
 wait_for_exec "$unrelated_pid" "$(command -v sleep)"
@@ -189,6 +208,7 @@ unset unrelated_pid
 
 # A live process that names the generated runtime configuration is stopped and
 # its two runtime files are removed.
+phase=owned-pid-completion
 printf '%s\n' own > "$runtime_conf"
 mkdir -m 700 "$runtime_ctrl"
 mkdir -m 700 "$runtime_client"
