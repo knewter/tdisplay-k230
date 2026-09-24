@@ -152,7 +152,7 @@
  	}
 --- a/sway/meson.build
 +++ b/sway/meson.build
-@@ -1,4 +1,10 @@
+@@ -1,4 +1,11 @@
  sway_sources = files(
 +	'card_shell.c',
 +	'card_shell_route.c',
