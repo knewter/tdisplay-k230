@@ -206,6 +206,19 @@ let
       esac
     ''}
     export HTOPRC="''${HTOPRC:-${monitorHtopConfig}}"
+    ${lib.optionalString cfg.coherentShell ''
+      # Our managed launch paths use either a login shell or explicit -e.
+      # The follower runs inside that Foot PTY and never scans other sessions.
+      session=( ${themeCommand}/bin/k230-foot-session
+        --state-root "$appearance_root"
+        --default-generation ${themeDefault}/generations/${themeDefaultId} -- )
+      if [ "$#" -eq 0 ]; then
+        set -- -e "''${session[@]}" ${pkgs.bashInteractive}/bin/bash -l
+      elif [ "$1" = -e ]; then
+        shift
+        set -- -e "''${session[@]}" "$@"
+      fi
+    ''}
     exec ${pkgs.foot}/bin/foot --config "$foot_config" "$@"
   '';
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
