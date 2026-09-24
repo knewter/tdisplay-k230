@@ -1199,6 +1199,10 @@ DATA b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45  docs/evid
 DATA ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0  docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png
 DATA 01afc171955fb0625e5d17262357af043fedbb78a2811e3b11872167ba1aff80  docs/evidence/coherent-shell/real-theme-paired-qemu/app-after.png
 DATA 8900500145efe6fdb13d5a705b385f034d2d56777311bdae8a0c3a64c8b6d3a8  docs/evidence/coherent-shell/real-theme-paired-qemu/default-deck.png
+DATA f247e96c608ec9cba0cda92fcf924fcd6329ceb9ce3c8a0f7320ed6872e51629  docs/evidence/coherent-shell/deck-visual-qemu/dark-ordinary.png
+DATA 839fd97c28444da99ece4f80fb8441d21142aabe5729e4eaff8d7d5615c959c9  docs/evidence/coherent-shell/deck-visual-qemu/latte-empty.png
+DATA 9323bae053396da177251402e2773fd6d6287c6b2775db9b2b0cd0d05606e949  docs/evidence/coherent-shell/deck-visual-qemu/latte-ordinary.png
+DATA b3d289baa7dc73d5d5d7a7518995d0834ee898049d01c55b199f52a4188351a3  docs/evidence/coherent-shell/deck-visual-qemu/latte-private.png
 DATA ef25eecd486e05105d261e885ccf60be774ce15bc06020d360ce6f7c2d21cd32  docs/evidence/coherent-shell/real-theme-paired-qemu/latte-deck.png
 DATA f2b5285c4b49724b5c2aaf2e8cb833126401fff0a0afaa2bd834685d5082999f  docs/evidence/coherent-shell/real-theme-paired-qemu/latte-drawer.png
 DATA 507106852a16b574cbe443f6b77c1735d77b84624bc3e689f3578bb61c1b762f  docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-deck.png
@@ -1696,3 +1700,14 @@ These seven unedited DATA captures show public blue/purple live-client pixels du
 | `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-held.png` | 4965 | DATA | `569eafcf56af3a813dffb08247134adba4679872d47b747b05c4f9ea4756e5df` |
 | `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-releasing.png` | 4948 | DATA | `9e525b27f3d16d6caa0a82f6b34f3e194320f89dfa9464ba16ae046768fbdd19` |
 | `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-reversed.png` | 4954 | DATA | `1b9a322aa851a165bfd79821852019f7c7f30ca2eedf0a7abb5050332ac56da5` |
+
+### Quiet deck visual QEMU captures
+
+These four unedited headless QEMU DATA frames show the revised touch-first deck in dark and Latte themes, including ordinary, private and empty states. The adjacent README records the exact cross-built compositor and host limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/deck-visual-qemu/dark-ordinary.png` | 64191 | DATA | `f247e96c608ec9cba0cda92fcf924fcd6329ceb9ce3c8a0f7320ed6872e51629` |
+| `docs/evidence/coherent-shell/deck-visual-qemu/latte-empty.png` | 72649 | DATA | `839fd97c28444da99ece4f80fb8441d21142aabe5729e4eaff8d7d5615c959c9` |
+| `docs/evidence/coherent-shell/deck-visual-qemu/latte-ordinary.png` | 48886 | DATA | `9323bae053396da177251402e2773fd6d6287c6b2775db9b2b0cd0d05606e949` |
+| `docs/evidence/coherent-shell/deck-visual-qemu/latte-private.png` | 46628 | DATA | `b3d289baa7dc73d5d5d7a7518995d0834ee898049d01c55b199f52a4188351a3` |
