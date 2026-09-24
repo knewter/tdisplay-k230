@@ -158,7 +158,7 @@ struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 		cairo_destroy(cr); cairo_surface_destroy(b->surface); free(b); return NULL;
 	}
 	/* CSS-like angle: zero points up and 90 degrees points right. */
-	double radians = brush->angle_degrees * M_PI / 180.0;
+	double radians = brush->angle_degrees * 3.14159265358979323846 / 180.0;
 	double dx = sin(radians), dy = -cos(radians);
 	double span = fabs(dx) * width + fabs(dy) * height;
 	double cx = width / 2.0, cy = height / 2.0;
