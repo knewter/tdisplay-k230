@@ -499,12 +499,14 @@ fn paint_theme_chooser(
                 );
             }
             if let Some(background) = selected {
+                let detail = if background.kind == BackgroundKind::Video {
+                    "video preview unavailable"
+                } else {
+                    "wallpaper sample, center crop"
+                };
                 text(
                     cr,
-                    &format!(
-                        "{} · wallpaper sample, center crop",
-                        background_display_label(&background.label)
-                    ),
+                    &format!("{} · {detail}", background_display_label(&background.label),),
                     28.0,
                     580.0,
                     w - 56.0,
