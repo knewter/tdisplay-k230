@@ -9,6 +9,7 @@ struct k230_appearance_colors {
 };
 
 extern struct k230_appearance_colors k230_appearance;
+uint32_t k230_appearance_error(void);
 
 /* Optional receiver: a missing socket leaves the installed palette intact. */
 int k230_appearance_start(const char *runtime);

@@ -24,6 +24,11 @@ def exchange(endpoint: Path, phase: str, generation: Path | None, *, timeout: fl
     identity = generation.name if generation is not None else None
     message = {"protocol": 1, "phase": phase, "generation": identity,
                "path": str(generation) if generation is not None else None}
+    if phase == "prepare" and generation is not None:
+        pointer = generation.parent.parent / "active"
+        previous = pointer.resolve(strict=True) if pointer.is_symlink() else None
+        message["previous_generation"] = previous.name if previous is not None else None
+        message["previous_path"] = str(previous) if previous is not None else None
     deadline = time.monotonic() + timeout
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
         connection.settimeout(max(0.001, deadline - time.monotonic()))

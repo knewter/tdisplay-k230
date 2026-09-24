@@ -162,6 +162,10 @@ let
     categories = [ "AudioVideo" "Video" ];
   };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
+  themeTools = pkgs.callPackage ./omarchy-theme-tools { };
+  themeCommand = pkgs.callPackage ./handheld-theme-command.nix {
+    omarchyThemeTools = themeTools;
+  };
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
       terminal|monitor)
@@ -191,6 +195,7 @@ let
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
+    ${lib.optionalString cfg.themeReceiverTrial "export K230_LAUNCHER_THEME_RECEIVER=1"}
     export K230_WINDOW_CATALOG=${windowCatalog}/bin/k230-window-catalog
     export K230_SWAYMSG=${sway}/bin/swaymsg
     # Include Nix profiles because the systemd session does not run a login shell.
@@ -293,6 +298,16 @@ in
       description = ''
         Run sway with -d so the journal carries wlroots' WLR_DEBUG output,
         including which renderer and allocator it selected.
+      '';
+    };
+
+    themeReceiverTrial = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Opt into the launcher-only appearance receiver and install the pinned
+        theme command. This does not enable a system-wide theme or claim
+        physical touch, contrast, rollback or reboot proof.
       '';
     };
 
@@ -614,7 +629,7 @@ in
       videoSession
       videoDesktop
       touchLauncher
-    ] ++ lib.optionals cfg.probes [
+    ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ] ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
       pkgs.drm_info

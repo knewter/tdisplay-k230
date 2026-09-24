@@ -24,8 +24,14 @@ static const struct k230_appearance_colors defaults = {
   .muted=0xffcbd5e1, .tile=0xff243547,
   .selected=0xff24495a, .accent=0xff304f65
 };
+uint32_t k230_appearance_error(void) {
+  uint32_t background=k230_appearance.background;
+  unsigned brightness=3*((background>>16)&255)+6*((background>>8)&255)+(background&255);
+  return brightness>=1280 ? 0xff9f1239 : 0xfffca5a5;
+}
 static struct k230_appearance_colors candidate, previous;
 static char candidate_id[25], previous_id[25], active_id[25];
+static bool candidate_prepared;
 static int listener=-1, client=-1;
 static char socket_path[sizeof(((struct sockaddr_un *)0)->sun_path)];
 static char input[4097];
@@ -57,6 +63,12 @@ static bool valid_id(const char *value) {
 static bool read_palette(const char *path, const char *identity,
                          struct k230_appearance_colors *out) {
   if (!path || strlen(path)>1024 || !g_path_is_absolute(path)) return false;
+  char *basename=g_path_get_basename(path);
+  char *parent=g_path_get_dirname(path);
+  char *parent_name=g_path_get_basename(parent);
+  bool shaped=!strcmp(basename,identity) && !strcmp(parent_name,"generations");
+  g_free(basename); g_free(parent); g_free(parent_name);
+  if (!shaped) return false;
   char *filename=g_build_filename(path,"report.json",NULL);
   GStatBuf metadata;
   bool safe=g_stat(filename,&metadata)==0 && S_ISREG(metadata.st_mode)
@@ -119,26 +131,38 @@ static void handle(bool (*redraw)(void)) {
   const char *phase=member(request,"phase");
   const char *id=member(request,"generation");
   const char *path=member(request,"path");
+  const char *old_id=member(request,"previous_generation");
+  const char *old_path=member(request,"previous_path");
   bool null_id=json_object_has_member(request,"generation")
     && JSON_NODE_HOLDS_NULL(json_object_get_member(request,"generation"));
   bool ok=false;
   if (json_object_has_member(request,"protocol")
       && json_object_get_int_member(request,"protocol")==1 && phase) {
     if (!strcmp(phase,"prepare") && valid_id(id)) {
+      candidate_prepared=false;
       struct k230_appearance_colors colors=defaults;
       ok=read_palette(path,id,&colors);
-      if (ok) { candidate=colors; strcpy(candidate_id,id);
-        previous=k230_appearance; /* Last visible generation for rollback. */
-        strcpy(previous_id,active_id);
+      if (ok) {
+        struct k230_appearance_colors former=k230_appearance;
+        if (old_id || old_path) {
+          ok=valid_id(old_id) && read_palette(old_path,old_id,&former);
+          if (ok) strcpy(previous_id,old_id);
+        } else previous_id[0]=0;
+        if (ok) {
+          candidate=colors; strcpy(candidate_id,id);
+          previous=former;
+          candidate_prepared=true;
+        }
       }
     } else if (!strcmp(phase,"commit") && valid_id(id)
-               && !strcmp(candidate_id,id)) {
+               && candidate_prepared && !strcmp(candidate_id,id)) {
       struct k230_appearance_colors former=k230_appearance;
       k230_appearance=candidate;
       ok=redraw();
       if (ok) strcpy(active_id,id);
       else k230_appearance=former;
     } else if (!strcmp(phase,"rollback")
+               && candidate_prepared
                && ((valid_id(id) && !strcmp(id,previous_id))
                    || (null_id && !previous_id[0]))) {
       struct k230_appearance_colors former=k230_appearance;
@@ -165,7 +189,9 @@ int k230_appearance_start(const char *runtime) {
   mode_t old=umask(0077);
   int result=bind(listener,(struct sockaddr *)&address,sizeof address);
   umask(old);
-  if (result || listen(listener,1)) { k230_appearance_stop(); return -1; }
+  if (result || chmod(socket_path,0600) || listen(listener,1)) {
+    k230_appearance_stop(); return -1;
+  }
   return 0;
 }
 int k230_appearance_listener_fd(void) { return listener; }
