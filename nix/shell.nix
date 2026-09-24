@@ -164,6 +164,7 @@ let
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
   themeTools = pkgs.callPackage ./omarchy-theme-tools { };
   themeDefault = pkgs.callPackage ./handheld-theme-default { };
+  themeDefaultId = (builtins.fromJSON (builtins.readFile ./handheld-theme-default/default-report.json)).generation;
   themeCommand = pkgs.callPackage ./handheld-theme-command.nix {
     omarchyThemeTools = themeTools;
     inherit themeDefault;
@@ -199,7 +200,7 @@ let
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
     ${lib.optionalString cfg.themeReceiverTrial "export K230_LAUNCHER_THEME_RECEIVER=1"}
     ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"''}
-    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/ab1e1a1426b700555c85c3b9"''}
+    ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"''}
     export K230_WINDOW_CATALOG=${windowCatalog}/bin/k230-window-catalog
     export K230_SWAYMSG=${sway}/bin/swaymsg
     # Include Nix profiles because the systemd session does not run a login shell.
