@@ -1670,6 +1670,10 @@ bool card_shell_cancel(struct sway_seat *seat) {
 }
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
 	bool consumed = input_down(seat, id, x, y, event_time_ms(time_msec));
+	/* An edge contact forwarded to an app cannot later be recaptured by the
+	 * keyboard chord. Only card/drawer-owned first contacts are eligible. */
+	if (!consumed && shell.keyboard.mode == KG_CHORD && shell.keyboard.first == id)
+		kg_cancel(&shell.keyboard);
 	if (consumed)
 		shell.gesture_seq++;
 	return consumed;

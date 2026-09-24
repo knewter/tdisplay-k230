@@ -34,6 +34,11 @@ int main(int argc,char **argv) {
 		kg_down(&p,1,100,1200,100,1232,false,false,false);
 		assert(!(kg_down(&p,2,180,1198,300,1232,false,true,false)&KG_SHOW));
 		assert(p.mode==KG_IDLE);
+	} else if (!strcmp(argv[1],"horizontal-first")) {
+		kg_down(&p,1,100,1200,100,1232,false,false,false);
+		kg_motion(&p,1,350,1200,130);
+		assert(p.mode==KG_IDLE);
+		assert(!(kg_down(&p,2,180,1198,140,1232,false,true,false)&KG_SHOW));
 	} else if (!strcmp(argv[1],"stationary-chord")) {
 		kg_down(&p,1,100,1200,100,1232,false,false,false);
 		assert(!(kg_down(&p,2,180,1198,130,1232,false,false,false)&KG_SHOW));
