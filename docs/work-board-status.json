@@ -34,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish Settings, notification actions and theme-choice UI; refine design/motion and complete the remaining physical checks.",
+      "next": "Verify and install one-to-one finger tracking; install the QEMU-tested Settings/notification UI, finish theme chooser, and complete physical checks.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -49,10 +49,12 @@
         "docs/evidence/coherent-shell/rust-frontend-source.md",
         "docs/evidence/coherent-shell/reveal-stream-host.md",
         "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md",
-        "docs/evidence/coherent-shell/first-integrated-preview/README.md"
+        "docs/evidence/coherent-shell/first-integrated-preview/README.md",
+        "docs/evidence/coherent-shell/direct-drag/README.md",
+        "docs/evidence/coherent-shell/rust-service-surface-qemu/README.md"
       ],
-      "rationale": "The integrated Rust shell runs on the physical board. The user reported shade-dismissal and visible card-selection bugs, then confirmed the combined installed navigation correction worked. Full shell acceptance, Settings/notification controls and design refinement remain open.",
-      "reviewRevision": "8d231e7b",
+      "rationale": "The user confirmed the installed shade-dismissal and visible card-selection corrections, then reported amplified upward drag. Drawer/shade geometry corrections are landed; card-entry tracking and exact pixel checks are in progress. Settings and notification panels have separate synthetic QEMU proof and await installation.",
+      "reviewRevision": "a8e0c2a2",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
         "caption": "Rust app drawer \u2014 first on-device preview",
