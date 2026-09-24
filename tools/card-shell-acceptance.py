@@ -232,6 +232,22 @@ class Acceptance:
         return self.system.call(['journalctl','_SYSTEMD_INVOCATION_ID='+self.state['invocation'],
                                  '--no-pager','-o','cat','--grep=K230_CARD_(BENCH|SHELL)','-n','20000']).stdout
 
+    def live_mirror_count(self, card_id):
+        # A new mirror for this exact card proves the compositor has applied
+        # its unavailable-to-live classification. Count works regardless of
+        # journal output order and excludes old mirrors from prior workloads.
+        prefix=f'K230_CARD_SHELL mirror id={card_id} '
+        return sum(line.startswith(prefix) for line in module.normalized_journal(self.journal()).splitlines())
+
+    def restore_live_before_throw(self):
+        one=[node for node in self.apps() if node['app_id']=='k230.card.one']
+        if len(one)!=1:raise RuntimeError('close fixture card is not uniquely mapped')
+        card_id=one[0]['id']
+        prior_mirrors=self.live_mirror_count(card_id)
+        self.ipc('[app_id="k230.card.one"] unmark k230_card_unavailable')
+        if not self.wait(lambda:self.live_mirror_count(card_id)>prior_mirrors,3):
+            raise RuntimeError('close fixture card did not become live before throw')
+
     def run(self):
         outputs=[o for o in self.ipc(kind=3) if o.get('active')]
         if len(outputs)!=1 or outputs[0].get('name')!='DSI-1' or outputs[0]['rect']['width']!=568 or outputs[0]['rect']['height']!=1232 or outputs[0].get('scale')!=1:
@@ -249,7 +265,7 @@ class Acceptance:
         self.ipc('[app_id="k230.card.one"] mark --add k230_card_private');time.sleep(.3);self.capture('private')
         self.ipc('[app_id="k230.card.one"] mark --add k230_card_unavailable')
         self.ipc('[app_id="k230.card.one"] unmark k230_card_private');time.sleep(.3);self.capture('unavailable')
-        self.ipc('[app_id="k230.card.one"] unmark k230_card_unavailable')
+        self.restore_live_before_throw()
         self.inject(284,500,284,250);self.capture('closing')
         requested=self.wait(lambda:any(e.get('event')=='close_requested' for e in self.client_events('one')),3)
         self.check('upward-throw-close-request',requested)

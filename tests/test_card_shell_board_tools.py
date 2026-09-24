@@ -251,4 +251,35 @@ class SessionTests(unittest.TestCase):
             for point in ((-1,20),(568,20),(20,1232)):
                 with self.assertRaises(ValueError):A.native_touch('/dev/input/event9',*point)
             opened.assert_not_called()
+
+    def test_throw_waits_for_new_mirror_of_close_fixture(self):
+        fixture=object.__new__(A.Acceptance)
+        fixture.apps=lambda:[{'app_id':'k230.card.one','id':7},{'app_id':'k230.card.two','id':9}]
+        old='00:00:04.664 [INFO] [sway/card_shell.c:276] K230_CARD_SHELL mirror id=7 format=34325258 width=520 height=1040 stride=2080\n'
+        other='00:00:04.666 [INFO] [sway/card_shell.c:276] K230_CARD_SHELL mirror id=9 format=34325258 width=520 height=1040 stride=2080\n'
+        new='00:00:12.529 [INFO] [sway/card_shell.c:276] K230_CARD_SHELL mirror id=7 format=34325258 width=520 height=1040 stride=2080\n'
+        journals=iter([old,other+old,new+other+old])  # journal may be newest first
+        fixture.journal=lambda:next(journals)
+        commands=[]
+        fixture.ipc=lambda command:commands.append(command)
+        observed=[]
+        def wait(predicate,timeout):
+            self.assertEqual(timeout,3)
+            for _ in range(2):observed.append(predicate())
+            return observed[-1]
+        fixture.wait=wait
+        fixture.restore_live_before_throw()
+        self.assertEqual(observed,[False,True])
+        self.assertEqual(commands,['[app_id="k230.card.one"] unmark k230_card_unavailable'])
+
+    def test_throw_setup_fails_if_live_mirror_never_arrives(self):
+        fixture=object.__new__(A.Acceptance)
+        fixture.apps=lambda:[{'app_id':'k230.card.one','id':7}]
+        fixture.journal=lambda:'00:00:04.664 [INFO] [sway/card_shell.c:276] K230_CARD_SHELL mirror id=7 format=34325258 width=520 height=1040 stride=2080\n'
+        commands=[]
+        fixture.ipc=lambda command:commands.append(command)
+        fixture.wait=lambda predicate,timeout:predicate()
+        with self.assertRaisesRegex(RuntimeError,'did not become live before throw'):
+            fixture.restore_live_before_throw()
+        self.assertEqual(len(commands),1)
 if __name__=='__main__':unittest.main()
