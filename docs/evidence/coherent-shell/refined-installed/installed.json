@@ -1,0 +1,20 @@
+{
+  "source": "df2c34b18e39fa2b1b5da6a024d830241d38235d",
+  "system": "/nix/store/lxi2zx8n8mp7z1dl1i3dz7hjlbhl7f6l-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/25x0q5b2jxg4pgv53085xvszipsfzv5a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "delta_paths": 31,
+  "delta_bytes": 10757752,
+  "recorded_utc": "2026-09-24T07:41:32.357487+00:00",
+  "activation_mode": "test",
+  "import_exit": 0,
+  "activation_exit": 0,
+  "active_units": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi",
+    "k230-wifi-settings"
+  ],
+  "physical_acceptance": "Pending user testing of this installed revision; native captures do not prove finger motion."
+}
