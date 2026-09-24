@@ -1147,6 +1147,12 @@ static bool visible_popup_node(struct wlr_scene_node *node) {
 	return false;
 }
 static bool popup_mapped(void) { return visible_popup_node(&root->layers.popup->node); }
+static bool popup_at(double x, double y) {
+	/* A keyboard's own text popup may be mapped elsewhere on the output.
+	 * Preserve popup ownership only at the contact, including over the grip. */
+	return wlr_scene_node_at(&root->layers.popup->node,
+		shell.output->lx + x, shell.output->ly + y, NULL, NULL) != NULL;
+}
 static bool launcher_mapped(void) {
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
@@ -1451,7 +1457,7 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		unsigned action = kg_down(&shell.keyboard, id, x, y, event_ms,
 			shell.output->height, keyboard_layer(shell.output) != NULL,
 			shell.policy.mode == CS_DRAGGING,
-			launcher_mapped() || drawer_mapped() || popup_mapped());
+			launcher_mapped() || drawer_mapped() || popup_at(x, y));
 		if (keyboard_apply_action(action)) return true;
 	}
 	if (shell.policy.blocked_until_up) {
