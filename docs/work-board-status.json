@@ -97,7 +97,7 @@
       "cover": {
         "path": "docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png",
         "caption": "Catppuccin launcher with Yaru icons \u2014 host renderer",
-        "provenance": "Host renderer fixture"
+        "provenance": "Host capture"
       }
     },
     "the-shell-trials-vglite-composition": {
