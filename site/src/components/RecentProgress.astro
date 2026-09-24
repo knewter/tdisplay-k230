@@ -30,15 +30,17 @@ import { evidenceUrl, url } from "../lib/specs";
       <p class="status">Experiment complete</p>
       <h3>CPU vectors tested on the board</h3>
       <p>Vector state and 192 pixel comparisons passed. Card performance gains
-        were small and mixed, so the optional vector kernel was not promoted
-        to the normal image.</p>
+        were small and mixed. Work is underway to bring the proven vector
+        path into the normal image; the candidate still needs its own boot and
+        recovery checks.</p>
       <a href={evidenceUrl("docs/evidence/card-shell/kernel-rvv/card-cost/README.md")}>Measured decision</a>
     </article>
   </div>
   <p class="next"><strong>Next:</strong> reduce card repaint cost, verify the feel
     with a finger, and refine the shell, launcher, settings and notifications
     into a coherent webOS-inspired interface. That interface is still in development.
-    <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-shell/surfaces.svg">See the proposed screens</a>
+    <a href={url("design/handheld/")}>Try the gesture and motion study</a>
+    · <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-shell/surfaces.svg">See the proposed screens</a>
     · <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-shell/README.md">Read the design overview</a>.</p>
   <p class="publication">The requirement count tracks archived specifications.
     This progress summary and the <a href={url("handheld/")}>feature demonstrations</a>
