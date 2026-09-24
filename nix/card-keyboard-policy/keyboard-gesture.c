@@ -76,10 +76,10 @@ unsigned kg_down(struct kg_policy *p, int32_t id, double x, double y,
 	return KG_NONE;
 }
 unsigned kg_motion(struct kg_policy *p, int32_t id, double x, double y, uint64_t ms) {
-	(void)x;
 	bool owned = owns(p,id);
 	if (p->mode == KG_CHORD && id == p->first) {
-		if (fabs(y - p->first_y) > 12 || ms > p->first_ms + 180) p->mode = KG_IDLE;
+		if (hypot(x - p->first_x, y - p->first_y) > 12 ||
+			ms > p->first_ms + 180) p->mode = KG_IDLE;
 		return KG_NONE;
 	}
 	if (p->mode == KG_WAIT_SURFACE) {
