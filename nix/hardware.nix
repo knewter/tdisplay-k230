@@ -230,7 +230,7 @@ in
     description = "Private Wi-Fi Settings broker";
     wantedBy = [ "multi-user.target" ];
     after = [ "systemd-tmpfiles-setup.service" ];
-    path = [ pkgs.systemd pkgs.iw pkgs.wpa_supplicant ];
+    path = [ pkgs.systemd pkgs.iproute2 pkgs.iw pkgs.wpa_supplicant ];
     serviceConfig = {
       Type = "simple";
       User = "root";

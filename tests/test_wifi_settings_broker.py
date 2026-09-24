@@ -80,6 +80,15 @@ class BrokerTests(unittest.TestCase):
         self.assertFalse(wifi.candidate_completed(b"wpa_state=ASSOCIATING\nssid=Example Secure", "Example Secure"))
         self.assertTrue(wifi.candidate_completed(b"wpa_state=COMPLETED\nssid=Example Secure", "Example Secure"))
 
+    def test_fresh_setup_brings_interface_up_before_scanning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            self.assertEqual(radio.scan(), [])
+            self.assertEqual(radio.commands[:2], [
+                ("ip", "link", "set", "dev", "wlan0", "up"),
+                ("iw", "dev", "wlan0", "scan"),
+            ])
+
     def test_peer_idle_is_not_cancelled_and_close_is(self):
         a, b = socket.socketpair()
         try:
@@ -149,8 +158,10 @@ class BrokerTests(unittest.TestCase):
             radio = TrialRadio(Path(tmp))
             legacy = b"country=US\nnetwork={\n ssid=4578616d706c65\n psk=0000000000000000000000000000000000000000000000000000000000000000\n}\n"
             radio._persist(legacy)
-            with self.assertRaisesRegex(wifi.WifiError, "unsupported-saved-config"):
-                radio.connect("Example Secure", "wpa2-psk", "examplepass")
+            with patch.object(wifi.tempfile, "mkstemp") as temp:
+                with self.assertRaisesRegex(wifi.WifiError, "unsupported-saved-config"):
+                    radio.connect("Example Secure", "wpa2-psk", "examplepass")
+                temp.assert_not_called()
             self.assertEqual(radio.credential.read_bytes(), legacy)
             self.assertFalse(radio.commands)
 

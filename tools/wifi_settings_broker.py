@@ -281,6 +281,9 @@ class Radio:
         return [identity for identity, _ in parse_saved(self.previous_config())]
 
     def scan(self):
+        # A credential-free image skips k230-wifi.service, so no supplicant
+        # has brought the device up for the first Settings scan.
+        self.fixed(["ip", "link", "set", "dev", "wlan0", "up"])
         return parse_scan(self.fixed([self.iw, "dev", "wlan0", "scan"], timeout=12))
 
     def status(self):
@@ -300,6 +303,13 @@ class Radio:
         self.runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
         if self.runtime.stat().st_uid != self.owner_uid or self.runtime.stat().st_mode & 0o077:
             raise WifiError("unsafe-runtime")
+        # Validate all existing credentials and the proposed merge before a
+        # temporary fd exists or the old radio owner is touched.
+        previous = self.previous_config()
+        candidate = config_for(ssid, security, password, str(self.runtime / "control"))
+        merged = merge_saved(previous, ssid, security, password)
+        if cancelled():
+            raise WifiError("cancelled")
         fd, name = tempfile.mkstemp(prefix="candidate-", dir=self.runtime)
         path = Path(name)
         process = None
@@ -307,15 +317,9 @@ class Radio:
         accepted = False
         persisted = False
         watchdog = False
-        previous = None
         try:
-            previous = self.previous_config()
-            candidate = config_for(ssid, security, password, str(self.runtime / "control"))
-            merged = merge_saved(previous, ssid, security, password)
-            if cancelled():
-                raise WifiError("cancelled")
-            os.fchmod(fd, 0o600)
             with os.fdopen(fd, "wb") as stream:
+                os.fchmod(stream.fileno(), 0o600)
                 stream.write(candidate)
                 stream.flush()
                 os.fsync(stream.fileno())
@@ -327,6 +331,7 @@ class Radio:
             # The persistent service and candidate must never own wlan0 together.
             self.fixed([self.systemctl, "stop", "k230-wifi.service"])
             stopped = True
+            self.fixed(["ip", "link", "set", "dev", "wlan0", "up"])
             control = self.runtime / "control"
             control.mkdir(mode=0o700, exist_ok=True)
             (self.runtime / "client").mkdir(mode=0o700, exist_ok=True)
