@@ -18,8 +18,11 @@ use k230_shell_rust::{
         panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelIntent,
         ServiceView, SWIPE_VERTICAL_CANCEL,
     },
+    theme_carousel::{Carousel, CarouselOutcome},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
-    theme_ui::{ThemeIntent, ThemePage, ThemeView},
+    theme_ui::{
+        ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
+    },
     video_status::{self, VideoStatus},
     video_visibility,
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
@@ -662,8 +665,8 @@ struct ShellClient {
     wifi_dragged: bool,
     themes: ThemeWorker,
     theme_view: ThemeView,
-    theme_origin_scroll: f64,
-    theme_dragged: bool,
+    theme_carousel: Carousel,
+    background_carousel: Carousel,
     panel_start: Option<(i32, (f64, f64))>,
     panel_origin_scroll: f64,
     panel_scrolled: bool,
@@ -845,6 +848,23 @@ impl ShellClient {
 
     fn theme_reply(&mut self, reply: ThemeReply) {
         if self.theme_view.accept(reply) {
+            // `ThemeView::accept` just centered `theme_position`/
+            // `background_position` on the freshly-loaded active theme or
+            // selected background; jump the matching physics carousel
+            // there too, with no animation (a fresh list/preview is not a
+            // browsing gesture). Only the carousel for the page just
+            // loaded is touched, so an in-flight drag on the *other*
+            // carousel (e.g. background_carousel while a stray List reply
+            // for an unrelated re-open lands) is never interrupted.
+            match self.theme_view.page {
+                ThemePage::List => self
+                    .theme_carousel
+                    .set_index(self.theme_view.theme_position.max(0.0).round() as usize),
+                ThemePage::Preview => self
+                    .background_carousel
+                    .set_index(self.theme_view.background_position.max(0.0).round() as usize),
+                ThemePage::Controls => {}
+            }
             self.theme_dirty();
         }
     }
@@ -1787,10 +1807,33 @@ impl TouchHandler for ShellClient {
                             }
                         }
                     }
-                    self.theme_origin_scroll = self.theme_view.scroll;
-                    self.theme_dragged = false;
                     self.wifi_origin_scroll = self.wifi_view.scroll;
                     self.wifi_dragged = false;
+                    if self.wifi_view.page == WifiPage::Closed {
+                        // Arm the carousel only when the touch actually
+                        // started inside its band, mirroring the old
+                        // `valid_list` gate: an accidental down on the
+                        // header/footer chrome must never later be
+                        // mistaken for a carousel drag.
+                        match self.theme_view.page {
+                            ThemePage::List
+                                if (THEME_CAROUSEL_TOP
+                                    ..THEME_CAROUSEL_TOP + k230_shell_rust::theme_carousel::EXPANDED_H)
+                                    .contains(&pos.1) =>
+                            {
+                                self.theme_carousel.down(id, pos, time_ms);
+                            }
+                            ThemePage::Preview
+                                if (BACKGROUND_CAROUSEL_TOP
+                                    ..BACKGROUND_CAROUSEL_TOP
+                                        + k230_shell_rust::theme_carousel::EXPANDED_H)
+                                    .contains(&pos.1) =>
+                            {
+                                self.background_carousel.down(id, pos, time_ms);
+                            }
+                            _ => {}
+                        }
+                    }
                 }
             } else {
                 self.log("touch-second-cancel");
@@ -1806,7 +1849,8 @@ impl TouchHandler for ShellClient {
                     self.notification_settle = None;
                     self.settle_notification(0.0, None);
                 }
-                self.theme_dragged = false;
+                self.theme_carousel.cancel();
+                self.background_carousel.cancel();
                 self.wifi_dragged = false;
             }
             if self.dirty {
@@ -1887,21 +1931,80 @@ impl TouchHandler for ShellClient {
                                         self.wifi_action(intent);
                                     }
                                 }
-                            } else if !self.theme_dragged {
-                                if let Some(intent) =
-                                    self.theme_view.hit(start, point, self.width, self.height)
-                                {
-                                    self.theme_action(intent);
-                                } else if self.theme_view.page == ThemePage::Controls {
-                                    if let Some(intent) = panel_intent(
-                                        self.route,
-                                        start,
-                                        point,
-                                        self.width,
-                                        self.height,
-                                        &self.service_view,
-                                    ) {
-                                        self.panel_action(qh, intent);
+                            } else {
+                                let center_x = f64::from(self.width) / 2.0;
+                                let carousel_outcome = match self.theme_view.page {
+                                    ThemePage::List => {
+                                        let count = self
+                                            .theme_view
+                                            .list
+                                            .as_ref()
+                                            .map_or(0, |list| list.themes.len());
+                                        self.theme_carousel.up(
+                                            id,
+                                            point,
+                                            time_ms,
+                                            count,
+                                            center_x,
+                                            THEME_CAROUSEL_TOP,
+                                        )
+                                    }
+                                    ThemePage::Preview => {
+                                        let count = self
+                                            .theme_view
+                                            .preview
+                                            .as_ref()
+                                            .map_or(0, |preview| preview.backgrounds.len());
+                                        self.background_carousel.up(
+                                            id,
+                                            point,
+                                            time_ms,
+                                            count,
+                                            center_x,
+                                            BACKGROUND_CAROUSEL_TOP,
+                                        )
+                                    }
+                                    ThemePage::Controls => None,
+                                };
+                                match carousel_outcome {
+                                    Some(CarouselOutcome::Confirm(index)) => {
+                                        let intent = match self.theme_view.page {
+                                            ThemePage::List => ThemeIntent::Theme(index),
+                                            ThemePage::Preview => ThemeIntent::Background(index),
+                                            ThemePage::Controls => unreachable!(
+                                                "a carousel outcome only comes from List/Preview"
+                                            ),
+                                        };
+                                        self.theme_action(intent);
+                                    }
+                                    Some(CarouselOutcome::Recenter(_) | CarouselOutcome::Consumed) => {
+                                        // The carousel owns this touch (a tap that
+                                        // missed every slice, or a drag release
+                                        // that just armed momentum/settle);
+                                        // `tick()` drives the rest, this just
+                                        // repaints so it starts moving right away.
+                                        self.theme_dirty();
+                                    }
+                                    None => {
+                                        if let Some(intent) = self.theme_view.hit(
+                                            start,
+                                            point,
+                                            self.width,
+                                            self.height,
+                                        ) {
+                                            self.theme_action(intent);
+                                        } else if self.theme_view.page == ThemePage::Controls {
+                                            if let Some(intent) = panel_intent(
+                                                self.route,
+                                                start,
+                                                point,
+                                                self.width,
+                                                self.height,
+                                                &self.service_view,
+                                            ) {
+                                                self.panel_action(qh, intent);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -2062,23 +2165,31 @@ impl TouchHandler for ShellClient {
                 && self.theme_view.page != ThemePage::Controls
                 && self.wifi_view.page == WifiPage::Closed
             {
-                if let Some((start_id, start)) = self.panel_start {
-                    let y = start.1;
-                    let valid_list = match self.theme_view.page {
-                        ThemePage::List => y >= 204.0 && y < f64::from(self.height) - 64.0,
-                        ThemePage::Preview => y >= 662.0 && y < f64::from(self.height) - 152.0,
-                        ThemePage::Controls => false,
-                    };
-                    let dy = pos.1 - y;
-                    if start_id == id && valid_list && dy.abs() > 18.0 {
-                        self.theme_dragged = true;
-                        if self
-                            .theme_view
-                            .scroll_from(self.theme_origin_scroll, dy, self.height)
-                        {
-                            self.theme_dirty();
+                let count = match self.theme_view.page {
+                    ThemePage::List => self.theme_view.list.as_ref().map_or(0, |l| l.themes.len()),
+                    ThemePage::Preview => self
+                        .theme_view
+                        .preview
+                        .as_ref()
+                        .map_or(0, |p| p.backgrounds.len()),
+                    ThemePage::Controls => 0,
+                };
+                let moved = match self.theme_view.page {
+                    ThemePage::List => self.theme_carousel.motion(id, pos, time_ms, count),
+                    ThemePage::Preview => self.background_carousel.motion(id, pos, time_ms, count),
+                    ThemePage::Controls => false,
+                };
+                if moved {
+                    match self.theme_view.page {
+                        ThemePage::List => {
+                            self.theme_view.theme_position = self.theme_carousel.position();
                         }
+                        ThemePage::Preview => {
+                            self.theme_view.background_position = self.background_carousel.position();
+                        }
+                        ThemePage::Controls => {}
                     }
+                    self.theme_dirty();
                 }
             }
             if self.dirty {
@@ -2116,7 +2227,8 @@ impl TouchHandler for ShellClient {
         self.notification_wait = None;
         self.settle_notification(0.0, None);
         self.renderer.set_services(self.service_view.clone());
-        self.theme_dragged = false;
+        self.theme_carousel.cancel();
+        self.background_carousel.cancel();
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -2247,8 +2359,8 @@ fn serve() -> Result<(), String> {
         wifi_dragged: false,
         themes,
         theme_view: ThemeView::default(),
-        theme_origin_scroll: 0.0,
-        theme_dragged: false,
+        theme_carousel: Carousel::default(),
+        background_carousel: Carousel::default(),
         panel_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
@@ -2590,6 +2702,34 @@ fn serve() -> Result<(), String> {
             state.dirty = true;
         }
         state.tick_notifications(elapsed);
+        if state.route == Route::Settings {
+            let count = match state.theme_view.page {
+                ThemePage::List => state.theme_view.list.as_ref().map_or(0, |l| l.themes.len()),
+                ThemePage::Preview => state
+                    .theme_view
+                    .preview
+                    .as_ref()
+                    .map_or(0, |p| p.backgrounds.len()),
+                ThemePage::Controls => 0,
+            };
+            let moved = match state.theme_view.page {
+                ThemePage::List => state.theme_carousel.tick(elapsed, count),
+                ThemePage::Preview => state.background_carousel.tick(elapsed, count),
+                ThemePage::Controls => false,
+            };
+            if moved {
+                match state.theme_view.page {
+                    ThemePage::List => {
+                        state.theme_view.theme_position = state.theme_carousel.position();
+                    }
+                    ThemePage::Preview => {
+                        state.theme_view.background_position = state.background_carousel.position();
+                    }
+                    ThemePage::Controls => {}
+                }
+                state.theme_dirty();
+            }
+        }
         if state
             .reveal
             .tick(state.started.elapsed().as_millis() as u64)
@@ -2760,6 +2900,8 @@ fn serve() -> Result<(), String> {
             || state.notification_wait.is_some()
             || routes.has_line()
             || pending_appearance.is_some()
+            || (state.route == Route::Settings
+                && (state.theme_carousel.is_animating() || state.background_carousel.is_animating()))
         {
             16
         } else {

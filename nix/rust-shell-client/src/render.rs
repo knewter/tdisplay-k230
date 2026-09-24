@@ -7,9 +7,13 @@ use crate::{
     navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
+    theme_carousel,
     theme_catalog::BackgroundKind,
-    theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey},
-    theme_ui::{background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView},
+    theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
+    theme_ui::{
+        background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
+        BACKGROUND_CAROUSEL_TOP, PREVIEW_FOOTER_Y, THEME_CAROUSEL_TOP,
+    },
     wifi_settings::Security,
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
     Route,
@@ -419,6 +423,92 @@ fn palette_rgb(value: &str) -> Option<u32> {
     u32::from_str_radix(rgb, 16).ok()
 }
 
+/// Paints one Quattro-style Cover Flow carousel: `ids[position.round()]`
+/// expanded and centered, its shingled skewed neighbors fanned either side.
+/// Shared by the theme carousel (List page) and a theme's background
+/// carousel (Preview page) -- both are the same component upstream too
+/// (`ImagePicker.qml`, shared by `omarchy-theme-switcher` and
+/// `omarchy-theme-bg-switcher`).
+fn paint_carousel(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    dim_color: u32,
+    style: VisualStyle,
+    thumbnails: Option<&ThemeThumbnailCache>,
+    position: f64,
+    ids: &[&str],
+    center_x: f64,
+    top_y: f64,
+) {
+    if ids.is_empty() {
+        return;
+    }
+    let centered = position.round().clamp(0.0, (ids.len() - 1) as f64) as usize;
+    let skew = theme_carousel::SKEW;
+    for slice in theme_carousel::visible_slices(position, ids.len(), center_x, top_y) {
+        let Some(id) = ids.get(slice.index) else {
+            continue;
+        };
+        // Upstream's mask shape (`ImagePicker.qml` lines 463-489): the top
+        // edge is inset by `skew` on the left, the bottom edge by `skew` on
+        // the right, so the slice leans like every other slice in the row.
+        let top_left = skew;
+        let top_right = slice.width;
+        let bottom_right = slice.width - skew;
+        let bottom_left = 0.0;
+        let parallelogram = |cr: &Context| {
+            cr.move_to(slice.x + top_left, slice.y);
+            cr.line_to(slice.x + top_right, slice.y);
+            cr.line_to(slice.x + bottom_right, slice.y + slice.height);
+            cr.line_to(slice.x + bottom_left, slice.y + slice.height);
+            cr.close_path();
+        };
+        let _ = cr.save();
+        parallelogram(cr);
+        cr.clip();
+        // A slice nearer the centered position blends toward the wide
+        // "Expanded" crop; a distant one uses the narrow "Slice" crop. See
+        // `theme_thumbnails.rs` for why only these two are ever decoded.
+        let variant = if slice.blend < 0.5 {
+            Variant::Expanded
+        } else {
+            Variant::Slice
+        };
+        if let Some(image) = thumbnails.and_then(|cache| cache.get(id, variant)) {
+            let iw = f64::from(image.width());
+            let ih = f64::from(image.height());
+            if iw > 0.0 && ih > 0.0 {
+                let _ = cr.save();
+                cr.translate(slice.x, slice.y);
+                cr.scale(slice.width / iw, slice.height / ih);
+                if cr.set_source_surface(image, 0.0, 0.0).is_ok() {
+                    let _ = cr.paint();
+                }
+                let _ = cr.restore();
+            }
+        } else {
+            color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
+            let _ = cr.paint();
+        }
+        // Dims a non-centered slice, fading out as it nears the centered
+        // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
+        // 0 : 0.42)`, continuous here instead of a hard boolean.
+        color(cr, dim_color, 0.42 * slice.blend);
+        let _ = cr.paint();
+        let _ = cr.restore(); // drop the clip
+
+        let selected = slice.index == centered;
+        parallelogram(cr);
+        cr.set_line_width(if selected { 3.0 } else { 1.0 });
+        color(
+            cr,
+            if selected { style.accent } else { style.muted },
+            if selected { 1.0 } else { 0.5 },
+        );
+        let _ = cr.stroke();
+    }
+}
+
 fn paint_theme_chooser(
     cr: &Context,
     w: f64,
@@ -433,13 +523,12 @@ fn paint_theme_chooser(
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
         let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
     }
-    // The Preview page's Cancel/Apply footer is pinned near the screen
-    // bottom regardless of how many background rows sit above it (finding
-    // P0-2). Instead of a full panel-height rework, float the footer up to
-    // just below its own content when that content is short, and only fall
-    // back to the old screen-bottom position once there is enough content
-    // to reach it -- the List page below floats its own end-of-content
-    // markers the same way.
+    // Upstream's `dimColor: Color.background` -- tints unselected carousel
+    // slices, not the panel's own background wash above.
+    let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
+    // The Preview page's Cancel/Apply footer sits a fixed distance below
+    // the background carousel (`theme_ui::PREVIEW_FOOTER_Y`); this default
+    // only matters while no chooser page has overridden it below.
     let mut footer_y = h - 126.0;
     text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
     text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
@@ -449,68 +538,36 @@ fn paint_theme_chooser(
             heading(cr, "Themes", 28.0, 112.0, w - 56.0, 36.0, style.text);
             text(
                 cr,
-                "Tap to preview · swipe to browse",
+                "Drag to browse · tap the centre to choose",
                 28.0,
                 166.0,
                 w - 56.0,
                 18.0,
                 style.muted,
             );
-            if let Some(list) = &view.list {
-                let _ = cr.save();
-                cr.rectangle(0.0, 204.0, w, (h - 268.0).max(0.0));
-                cr.clip();
-                let first = (view.scroll / 92.0).floor().max(0.0) as usize;
-                for (index, entry) in list.themes.iter().enumerate().skip(first).take(14) {
-                    let y = 204.0 + index as f64 * 92.0 - view.scroll;
-                    if y >= h - 64.0 {
-                        break;
-                    }
-                    let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
-                    service_card(cr, theme, "launcher", 24.0, y, w - 48.0, 82.0, is_current);
-                    // A small square thumbnail from the theme's own preview
-                    // image (or a representative background, chosen by
-                    // tools/theme_catalog.py), mirroring Omarchy's per-theme
-                    // preview art in its picker. Always reserve the slot so
-                    // rows line up before a lazily-decoded thumbnail lands.
-                    let thumb: f64 = 64.0;
-                    let thumb_x = 34.0;
-                    let thumb_y = y + (82.0 - thumb).max(0.0) / 2.0;
-                    rounded(cr, thumb_x, thumb_y, thumb, thumb, 10.0);
-                    color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
-                    let _ = cr.fill();
-                    if let Some(image) = thumbnails.and_then(|cache| cache.get(&entry.id)) {
-                        let _ = cr.save();
-                        rounded(cr, thumb_x, thumb_y, thumb, thumb, 10.0);
-                        cr.clip();
-                        if cr.set_source_surface(image, thumb_x, thumb_y).is_ok() {
-                            let _ = cr.paint();
-                        }
-                        let _ = cr.restore();
-                    }
-                    rounded(
+            match &view.list {
+                Some(list) if !list.themes.is_empty() => {
+                    let center_x = w / 2.0;
+                    let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
+                    paint_carousel(
                         cr,
-                        thumb_x + 0.75,
-                        thumb_y + 0.75,
-                        thumb - 1.5,
-                        thumb - 1.5,
-                        9.25,
+                        theme,
+                        dim_color,
+                        style,
+                        thumbnails,
+                        view.theme_position,
+                        &ids,
+                        center_x,
+                        THEME_CAROUSEL_TOP,
                     );
-                    cr.set_line_width(1.5);
-                    color(cr, style.muted, 0.5);
-                    let _ = cr.stroke();
-                    if is_current {
-                        let badge = 22.0;
-                        let badge_x = thumb_x + thumb - badge + 4.0;
-                        let badge_y = thumb_y + thumb - badge + 4.0;
-                        rounded(cr, badge_x, badge_y, badge, badge, badge / 2.0);
-                        color(cr, style.accent, 1.0);
-                        let _ = cr.fill();
-                        centered_label(cr, "✓", badge_x, badge_y + 3.0, badge, 15.0, 0x0b1216);
-                    }
-                    let text_x = thumb_x + thumb + 14.0;
-                    let text_w = (w - 24.0 - 20.0 - text_x).max(0.0);
-                    heading(cr, &entry.label, text_x, y + 13.0, text_w, 24.0, style.text);
+                    let centered = view
+                        .theme_position
+                        .round()
+                        .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
+                    let entry = &list.themes[centered];
+                    let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
+                    let label_y = THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 24.0;
+                    heading(cr, &entry.label, 28.0, label_y, w - 56.0, 30.0, style.text);
                     let status = if is_current {
                         "Current theme"
                     } else {
@@ -519,30 +576,30 @@ fn paint_theme_chooser(
                             crate::theme_catalog::ThemeOrigin::User => "User theme",
                         }
                     };
-                    text(cr, status, text_x, y + 47.0, text_w, 16.0, style.muted);
+                    text(cr, status, 28.0, label_y + 32.0, w - 56.0, 18.0, style.muted);
                 }
-                let _ = cr.restore();
-                if list.themes.is_empty() {
+                Some(_) => {
                     text(
                         cr,
                         "No themes available",
                         28.0,
-                        226.0,
+                        THEME_CAROUSEL_TOP + 22.0,
                         w - 56.0,
                         20.0,
                         style.muted,
                     );
                 }
-            } else {
-                text(
-                    cr,
-                    "Loading themes",
-                    28.0,
-                    226.0,
-                    w - 56.0,
-                    20.0,
-                    style.muted,
-                );
+                None => {
+                    text(
+                        cr,
+                        "Loading themes",
+                        28.0,
+                        THEME_CAROUSEL_TOP + 22.0,
+                        w - 56.0,
+                        20.0,
+                        style.muted,
+                    );
+                }
             }
         }
         ThemePage::Preview => {
@@ -713,76 +770,48 @@ fn paint_theme_chooser(
                 );
             }
             text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, style.text);
-            // Float the footer up to just below the background list's own
-            // natural extent when the list is short, instead of always
-            // pinning it to the screen bottom and leaving a void above it
-            // (finding P0-2); once the list is long enough to need
-            // scrolling, this converges back on the old pinned position.
-            const BACKGROUND_LIST_TOP: f64 = 662.0;
-            const BACKGROUND_ROW_H: f64 = 78.0;
-            const FOOTER_MIN_Y: f64 = 700.0;
-            let list_bottom = BACKGROUND_LIST_TOP + preview.backgrounds.len() as f64 * BACKGROUND_ROW_H + 12.0;
-            footer_y = list_bottom.max(FOOTER_MIN_Y).min(h - 126.0);
-            let clip_bottom = (footer_y - 12.0).max(BACKGROUND_LIST_TOP);
-            let _ = cr.save();
-            cr.rectangle(0.0, BACKGROUND_LIST_TOP, w, (clip_bottom - BACKGROUND_LIST_TOP).max(0.0));
-            cr.clip();
-            let first = (view.scroll / 78.0).floor().max(0.0) as usize;
-            for (index, background) in preview.backgrounds.iter().enumerate().skip(first).take(10) {
-                let y = BACKGROUND_LIST_TOP + index as f64 * 78.0 - view.scroll;
-                if y >= clip_bottom {
-                    break;
-                }
-                service_card(
-                    cr,
-                    theme,
-                    "image-picker",
-                    24.0,
-                    y,
-                    w - 48.0,
-                    70.0,
-                    background.selected,
-                );
-                // A small thumbnail of the background asset itself, same
-                // treatment as each theme's own row on the list page: a
-                // reserved rounded slot, filled once its lazily-decoded
-                // crop lands. Video rows keep the plain fallback slot since
-                // nothing here decodes a video first frame.
-                let thumb: f64 = 52.0;
-                let thumb_x = 34.0;
-                let thumb_y = y + (70.0 - thumb).max(0.0) / 2.0;
-                rounded(cr, thumb_x, thumb_y, thumb, thumb, 8.0);
-                color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
-                let _ = cr.fill();
-                if let Some(image) = thumbnails.and_then(|cache| cache.get(&background.id)) {
-                    let _ = cr.save();
-                    rounded(cr, thumb_x, thumb_y, thumb, thumb, 8.0);
-                    cr.clip();
-                    if cr.set_source_surface(image, thumb_x, thumb_y).is_ok() {
-                        let _ = cr.paint();
-                    }
-                    let _ = cr.restore();
-                }
-                rounded(
-                    cr,
-                    thumb_x + 0.75,
-                    thumb_y + 0.75,
-                    thumb - 1.5,
-                    thumb - 1.5,
-                    7.25,
-                );
-                cr.set_line_width(1.5);
-                color(cr, style.muted, 0.5);
-                let _ = cr.stroke();
-                let text_x = thumb_x + thumb + 14.0;
-                let text_w = (w - 24.0 - 20.0 - text_x).max(0.0);
+            // The carousel's height never depends on how many backgrounds a
+            // theme has, so the footer is a fixed offset below it now (see
+            // `theme_ui::PREVIEW_FOOTER_Y`) rather than floating with a
+            // variable-height row list.
+            footer_y = PREVIEW_FOOTER_Y;
+            if preview.backgrounds.is_empty() {
                 text(
                     cr,
+                    "No backgrounds available",
+                    28.0,
+                    BACKGROUND_CAROUSEL_TOP + 22.0,
+                    w - 56.0,
+                    20.0,
+                    style.muted,
+                );
+            } else {
+                let center_x = w / 2.0;
+                let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
+                paint_carousel(
+                    cr,
+                    theme,
+                    dim_color,
+                    style,
+                    thumbnails,
+                    view.background_position,
+                    &ids,
+                    center_x,
+                    BACKGROUND_CAROUSEL_TOP,
+                );
+                let centered = view
+                    .background_position
+                    .round()
+                    .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
+                let background = &preview.backgrounds[centered];
+                let label_y = BACKGROUND_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 24.0;
+                heading(
+                    cr,
                     &background_display_label(&background.label),
-                    text_x,
-                    y + 9.0,
-                    text_w,
-                    21.0,
+                    28.0,
+                    label_y,
+                    w - 56.0,
+                    28.0,
                     style.text,
                 );
                 let status = if background.kind == BackgroundKind::Video {
@@ -795,10 +824,10 @@ fn paint_theme_chooser(
                 text(
                     cr,
                     status,
-                    text_x,
-                    y + 39.0,
-                    text_w,
-                    15.0,
+                    28.0,
+                    label_y + 30.0,
+                    w - 56.0,
+                    16.0,
                     if background.kind == BackgroundKind::Video {
                         style.error
                     } else {
@@ -806,7 +835,6 @@ fn paint_theme_chooser(
                     },
                 );
             }
-            let _ = cr.restore();
             service_card(cr, theme, "controls", 24.0, footer_y, w - 48.0, 86.0, true);
             if view.pending.is_some() {
                 let alpha = match theme
@@ -859,13 +887,11 @@ fn paint_theme_chooser(
         }
     }
     // The List page has no pinned footer of its own; anchor its own
-    // pending/error/message line just below its (possibly short) content
-    // instead of the raw screen bottom, so it never floats disconnected
-    // over the dimmed area a short list leaves behind (finding P0-2).
+    // pending/error/message line just below the carousel's fixed-height
+    // content (the carousel itself, its name label, and its caption).
     let message_y = match view.page {
         ThemePage::List => {
-            let count = view.list.as_ref().map_or(0, |l| l.themes.len());
-            (204.0 + count as f64 * 92.0 + 24.0).min(h - 167.0)
+            (THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 70.0).min(h - 167.0)
         }
         _ => footer_y - 41.0,
     };
@@ -1322,15 +1348,13 @@ fn wifi_content_bottom(view: &WifiPublic) -> f64 {
 }
 
 /// Themes' List page is content-sized the same way as Wi-Fi's; the Preview
-/// page keeps the full height (its own footer already floats to its content
-/// via `footer_y` inside `paint_theme_chooser`, which does not require
-/// shrinking the whole panel).
+/// page keeps the full height (its own footer sits at the fixed
+/// `theme_ui::PREVIEW_FOOTER_Y` inside `paint_theme_chooser`, which does not
+/// require shrinking the whole panel). The carousel's own height never
+/// depends on the theme count, unlike the row list it replaced.
 fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
     match view.page {
-        ThemePage::List => {
-            let count = view.list.as_ref().map_or(0, |l| l.themes.len());
-            204.0 + count as f64 * 92.0 + 24.0
-        }
+        ThemePage::List => THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 70.0,
         ThemePage::Preview | ThemePage::Controls => f64::MAX,
     }
 }
@@ -2254,12 +2278,15 @@ impl RendererCache {
         }
         changed
     }
-    /// Requests a thumbnail decode for every row that wants its own small
-    /// image: each catalog entry with preview art while the list page is
-    /// open, or each still background while the preview page is open.
-    /// Unlike the single live wallpaper preview above, these thumbnails are
-    /// small and cached forever once decoded, so the whole known set is
-    /// requested rather than only visible rows.
+    /// Requests both cached-bitmap variants (see `theme_thumbnails.rs`) for
+    /// every carousel entry within `theme_carousel::NEARBY_LIMIT` of the
+    /// carousel's current position: each nearby catalog entry with preview
+    /// art while the list page is open, or each nearby still background
+    /// while the preview page is open. Unlike the single live wallpaper
+    /// preview above, these bitmaps are cached forever once decoded, so
+    /// re-requesting an already-ready (id, variant) is a no-op
+    /// (`ThemeThumbnailCache::request`); only newly-nearby entries actually
+    /// queue a decode.
     pub fn poll_theme_thumbnails(&mut self) -> bool {
         let changed = self.thumbnails.poll();
         if changed {
@@ -2273,12 +2300,20 @@ impl RendererCache {
                 let Some(list) = chooser.list.as_ref() else {
                     return changed;
                 };
-                for theme in &list.themes {
-                    if let Some(path) = &theme.preview_path {
-                        self.thumbnails.request(ThumbnailKey {
-                            id: theme.id.clone(),
-                            path: path.clone(),
-                        });
+                for slice in
+                    theme_carousel::visible_slices(chooser.theme_position, list.themes.len(), 0.0, 0.0)
+                {
+                    let Some(entry) = list.themes.get(slice.index) else {
+                        continue;
+                    };
+                    if let Some(path) = &entry.preview_path {
+                        for variant in [Variant::Expanded, Variant::Slice] {
+                            self.thumbnails.request(ThumbnailKey {
+                                id: entry.id.clone(),
+                                path: path.clone(),
+                                variant,
+                            });
+                        }
                     }
                 }
             }
@@ -2286,12 +2321,23 @@ impl RendererCache {
                 let Some(preview) = chooser.preview.as_ref() else {
                     return changed;
                 };
-                for background in &preview.backgrounds {
+                for slice in theme_carousel::visible_slices(
+                    chooser.background_position,
+                    preview.backgrounds.len(),
+                    0.0,
+                    0.0,
+                ) {
+                    let Some(background) = preview.backgrounds.get(slice.index) else {
+                        continue;
+                    };
                     if background.kind == BackgroundKind::Image {
-                        self.thumbnails.request(ThumbnailKey {
-                            id: background.id.clone(),
-                            path: background.path.clone(),
-                        });
+                        for variant in [Variant::Expanded, Variant::Slice] {
+                            self.thumbnails.request(ThumbnailKey {
+                                id: background.id.clone(),
+                                path: background.path.clone(),
+                                variant,
+                            });
+                        }
                     }
                 }
             }
@@ -2988,12 +3034,13 @@ mod tests {
         let mut list = vec![0; controls.len()];
         renderer.draw(&mut list, params, &[]).unwrap();
         assert_ne!(list, controls);
-        view.scroll = 460.0;
+        view.theme_position = 9.0;
         renderer.set_theme_view(view.clone());
         let mut scrolled = vec![0; controls.len()];
         renderer.draw(&mut scrolled, params, &[]).unwrap();
         assert_ne!(list, scrolled);
-        // Scrolling leaves the header unchanged while replacing visible rows.
+        // Browsing the carousel leaves the header unchanged while
+        // repainting the carousel band and its name label below it.
         assert_eq!(&list[..568 * 180 * 4], &scrolled[..568 * 180 * 4]);
         let wallpaper =
             std::env::temp_dir().join(format!("k230-theme-screen-crop-{}.png", std::process::id()));
@@ -3007,7 +3054,7 @@ mod tests {
         .save(&wallpaper)
         .unwrap();
         view.page = ThemePage::Preview;
-        view.scroll = 0.0;
+        view.background_position = 0.0;
         view.preview = Some(ThemePreview {
             theme: entry,
             generation: "fixture-generation".into(),
@@ -3140,12 +3187,12 @@ mod tests {
             ..ThemeView::default()
         });
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
-        while renderer.thumbnails.get("fixture-bare").is_none() && std::time::Instant::now() < deadline
+        while renderer.thumbnails.get("fixture-bare", Variant::Expanded).is_none() && std::time::Instant::now() < deadline
         {
             renderer.poll_theme_thumbnails();
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
-        assert!(renderer.thumbnails.get("fixture-bare").is_some());
+        assert!(renderer.thumbnails.get("fixture-bare", Variant::Expanded).is_some());
         let mut illustrated_list_frame = vec![0; 568 * 1232 * 4];
         renderer.draw(&mut illustrated_list_frame, params, &[]).unwrap();
         assert_ne!(
@@ -3182,13 +3229,13 @@ mod tests {
         let mut bare_preview_frame = vec![0; 568 * 1232 * 4];
         renderer.draw(&mut bare_preview_frame, params, &[]).unwrap();
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
-        while renderer.thumbnails.get("fixture-background").is_none()
+        while renderer.thumbnails.get("fixture-background", Variant::Expanded).is_none()
             && std::time::Instant::now() < deadline
         {
             renderer.poll_theme_thumbnails();
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
-        assert!(renderer.thumbnails.get("fixture-background").is_some());
+        assert!(renderer.thumbnails.get("fixture-background", Variant::Expanded).is_some());
         let mut illustrated_preview_frame = vec![0; 568 * 1232 * 4];
         renderer
             .draw(&mut illustrated_preview_frame, params, &[])

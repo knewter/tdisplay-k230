@@ -96,7 +96,13 @@ pub struct ThemeView {
     pub selection_error: bool,
     pub error: Option<String>,
     pub message: Option<String>,
-    pub scroll: f64,
+    /// The theme carousel's continuous position (`theme_carousel::Carousel`
+    /// in `main.rs` owns the drag/momentum physics; this is just the
+    /// latest value, mirrored here so the renderer -- which only ever sees
+    /// a cloned `ThemeView`, never the live carousel -- can paint it).
+    pub theme_position: f64,
+    /// Same, for the Preview page's background carousel.
+    pub background_position: f64,
 }
 
 impl Default for ThemeView {
@@ -110,7 +116,8 @@ impl Default for ThemeView {
             selection_error: false,
             error: None,
             message: None,
-            scroll: 0.0,
+            theme_position: 0.0,
+            background_position: 0.0,
         }
     }
 }
@@ -125,10 +132,17 @@ pub enum ThemeIntent {
     Apply,
 }
 
-const THEME_TOP: f64 = 204.0;
-const THEME_ROW: f64 = 92.0;
-const BACKGROUND_TOP: f64 = 662.0;
-const BACKGROUND_ROW: f64 = 78.0;
+/// Top of the theme carousel band (below the "Themes" heading/subtext).
+pub const THEME_CAROUSEL_TOP: f64 = 204.0;
+/// Top of the background carousel band on the Preview page (below the
+/// palette swatches, screen-crop preview, and "Backgrounds" heading).
+pub const BACKGROUND_CAROUSEL_TOP: f64 = 662.0;
+/// The Preview page's Cancel/Apply footer card's own top y. Unlike the old
+/// scrolling row list, the background carousel's height never depends on
+/// how many backgrounds a theme has, so this footer is a fixed offset
+/// below the carousel band, not a floating one.
+pub const PREVIEW_FOOTER_Y: f64 =
+    BACKGROUND_CAROUSEL_TOP + crate::theme_carousel::EXPANDED_H + 104.0;
 
 impl ThemeView {
     pub fn open(&mut self) -> ThemeRequest {
@@ -137,7 +151,6 @@ impl ThemeView {
         self.selection_error = false;
         self.error = None;
         self.message = None;
-        self.scroll = 0.0;
         ThemeRequest::List
     }
 
@@ -150,7 +163,6 @@ impl ThemeView {
         self.selection_error = false;
         self.error = None;
         self.message = None;
-        self.scroll = 0.0;
         match self.page {
             ThemePage::Preview => {
                 self.page = ThemePage::List;
@@ -211,6 +223,13 @@ impl ThemeView {
                 self.error = Some(error);
             }
             Ok(ThemeResponse::List(list)) => {
+                // Center the theme carousel on the currently active theme,
+                // like Quattro's own picker opening on `selectedImage`.
+                self.theme_position = list
+                    .themes
+                    .iter()
+                    .position(|entry| Some(entry.id.as_str()) == list.active.id.as_deref())
+                    .unwrap_or(0) as f64;
                 self.list = Some(list);
                 self.page = ThemePage::List;
                 self.error = None;
@@ -226,10 +245,16 @@ impl ThemeView {
                 } else {
                     None
                 };
+                // Center the background carousel on whichever background
+                // this preview reports selected.
+                self.background_position = preview
+                    .backgrounds
+                    .iter()
+                    .position(|row| row.selected)
+                    .unwrap_or(0) as f64;
                 self.preview = Some(*preview);
                 self.selection_error = false;
                 self.page = ThemePage::Preview;
-                self.scroll = 0.0;
                 self.error = None;
             }
         }
@@ -278,42 +303,13 @@ impl ThemeView {
         })
     }
 
-    pub fn max_scroll(&self, height: u32) -> f64 {
-        match self.page {
-            ThemePage::List => {
-                let count = self.list.as_ref().map_or(0, |list| list.themes.len());
-                (THEME_TOP + count as f64 * THEME_ROW - (f64::from(height) - 64.0)).max(0.0)
-            }
-            ThemePage::Preview => {
-                let count = self
-                    .preview
-                    .as_ref()
-                    .map_or(0, |item| item.backgrounds.len());
-                (BACKGROUND_TOP + count as f64 * BACKGROUND_ROW - (f64::from(height) - 152.0))
-                    .max(0.0)
-            }
-            ThemePage::Controls => 0.0,
-        }
-    }
-
-    pub fn scroll_from(&mut self, origin: f64, dy: f64, height: u32) -> bool {
-        let next = (origin - dy).clamp(0.0, self.max_scroll(height));
-        if (next - self.scroll).abs() < 1.0 {
-            return false;
-        }
-        self.scroll = next;
-        true
-    }
-
-    pub fn hit(
-        &self,
-        start: (f64, f64),
-        end: (f64, f64),
-        width: u32,
-        height: u32,
-    ) -> Option<ThemeIntent> {
+    /// Header (Back/Close) and, on the Preview page, footer (Cancel/Apply)
+    /// chrome hits. Everything in between belongs to a carousel band now --
+    /// `theme_carousel::Carousel::up` resolves those touches directly (see
+    /// `main.rs`), returning `CarouselOutcome::Consumed` for anything that
+    /// should not fall through to here.
+    pub fn hit(&self, start: (f64, f64), end: (f64, f64), width: u32, _height: u32) -> Option<ThemeIntent> {
         let w = f64::from(width);
-        let h = f64::from(height);
         let dx = end.0 - start.0;
         let dy = end.1 - start.1;
         if dx.abs() > 18.0 || dy.abs() > 18.0 {
@@ -339,29 +335,18 @@ impl ThemeView {
                 if self.pending.is_some() {
                     return None;
                 }
-                match self.page {
-                    ThemePage::List if (THEME_TOP..h - 60.0).contains(&end.1) => {
-                        let index = ((end.1 - THEME_TOP + self.scroll) / THEME_ROW) as usize;
-                        (index < self.list.as_ref()?.themes.len())
-                            .then_some(ThemeIntent::Theme(index))
-                    }
-                    ThemePage::Preview if (BACKGROUND_TOP..h - 152.0).contains(&end.1) => {
-                        let index =
-                            ((end.1 - BACKGROUND_TOP + self.scroll) / BACKGROUND_ROW) as usize;
-                        (index < self.preview.as_ref()?.backgrounds.len())
-                            .then_some(ThemeIntent::Background(index))
-                    }
-                    ThemePage::Preview if (h - 126.0..h - 40.0).contains(&end.1) => {
-                        if end.0 < w / 2.0 {
-                            Some(ThemeIntent::Back)
-                        } else if self.selection_error {
-                            None
-                        } else {
-                            Some(ThemeIntent::Apply)
-                        }
-                    }
-                    _ => None,
+                if self.page == ThemePage::Preview
+                    && (PREVIEW_FOOTER_Y..PREVIEW_FOOTER_Y + 86.0).contains(&end.1)
+                {
+                    return if end.0 < w / 2.0 {
+                        Some(ThemeIntent::Back)
+                    } else if self.selection_error {
+                        None
+                    } else {
+                        Some(ThemeIntent::Apply)
+                    };
                 }
+                None
             }
         }
     }
@@ -440,10 +425,9 @@ mod tests {
             request: list_request,
             result: Ok(ThemeResponse::List(list))
         }));
-        assert_eq!(
-            view.hit((200.0, 240.0), (200.0, 240.0), 568, 1232),
-            Some(ThemeIntent::Theme(0))
-        );
+        // Which slice a tap lands on is `theme_carousel::Carousel::up`'s job
+        // now (covered by its own tests); `ThemeView` just needs to build
+        // the right request once a caller says "confirm index 0".
         let request = view.preview_request(0).unwrap();
         view.submitted(request.clone(), 2);
         assert!(view.accept(ThemeReply {
@@ -461,7 +445,12 @@ mod tests {
         );
         assert!(view.background_request(1).is_err());
         assert_eq!(
-            view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232),
+            view.hit(
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                568,
+                1232
+            ),
             Some(ThemeIntent::Apply)
         );
     }
@@ -514,32 +503,65 @@ mod tests {
     }
 
     #[test]
-    fn scroll_is_bounded_and_activation_cannot_be_cancelled_mid_transaction() {
+    fn activation_cannot_be_cancelled_mid_transaction() {
         let mut view = ThemeView {
-            page: ThemePage::List,
-            list: Some(ThemeList {
-                themes: (0..20).map(|_| preview().theme).collect(),
-                active: ActiveTheme {
-                    id: None,
-                    generation: None,
-                },
-            }),
+            page: ThemePage::Preview,
+            preview: Some(preview()),
             ..ThemeView::default()
         };
-        assert!(view.scroll_from(0.0, -9000.0, 1232));
-        assert_eq!(view.scroll, view.max_scroll(1232));
-        assert_eq!(
-            view.hit((200.0, 242.0), (200.0, 242.0), 568, 1232),
-            Some(ThemeIntent::Theme(9))
-        );
-        assert_eq!(view.hit((200.0, 242.0), (200.0, 270.0), 568, 1232), None);
-        view.page = ThemePage::Preview;
-        view.preview = Some(preview());
         let activation = view.apply_request().unwrap();
         view.submitted(activation, 1);
         assert_eq!(view.back(), None);
         assert_eq!(view.page, ThemePage::Preview);
-        assert_eq!(view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232), None);
+        assert_eq!(
+            view.hit(
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                568,
+                1232
+            ),
+            None,
+            "a pending activation blocks the footer, not just carousel taps"
+        );
+    }
+
+    #[test]
+    fn list_and_preview_loads_center_the_carousels_on_the_active_selection() {
+        let mut view = ThemeView::default();
+        let themes: Vec<ThemeEntry> = (0..5)
+            .map(|index| {
+                let mut theme = preview().theme;
+                theme.id = std::iter::repeat_n(char::from_digit(index, 10).unwrap(), 24).collect();
+                theme
+            })
+            .collect();
+        let active_id = themes[3].id.clone();
+        let request = view.open();
+        view.submitted(request.clone(), 1);
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request,
+            result: Ok(ThemeResponse::List(ThemeList {
+                themes,
+                active: ActiveTheme {
+                    id: Some(active_id),
+                    generation: None,
+                },
+            })),
+        }));
+        assert_eq!(view.theme_position, 3.0);
+
+        let mut staged = preview();
+        staged.backgrounds[1].selected = true;
+        staged.backgrounds[0].selected = false;
+        let request = view.preview_request(0).unwrap();
+        view.submitted(request.clone(), 2);
+        assert!(view.accept(ThemeReply {
+            id: 2,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(staged))),
+        }));
+        assert_eq!(view.background_position, 1.0);
     }
 
     #[test]
@@ -579,7 +601,15 @@ mod tests {
         }));
         assert!(view.selection_error);
         assert!(view.apply_request().is_err());
-        assert_eq!(view.hit((430.0, 1160.0), (430.0, 1160.0), 568, 1232), None);
+        assert_eq!(
+            view.hit(
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                (430.0, PREVIEW_FOOTER_Y + 20.0),
+                568,
+                1232
+            ),
+            None
+        );
         let retry = view.background_request(0).unwrap();
         view.submitted(retry.clone(), 4);
         assert!(view.accept(ThemeReply {

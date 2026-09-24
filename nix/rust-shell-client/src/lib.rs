@@ -9,6 +9,7 @@ pub mod protocol;
 pub mod render;
 pub mod service_data;
 pub mod service_ui;
+pub mod theme_carousel;
 pub mod theme_catalog;
 pub mod theme_thumbnails;
 pub mod theme_ui;
