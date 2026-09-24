@@ -730,6 +730,12 @@ DATA 30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73  docs/evid
 DATA 13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png
 DATA 6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png
 DATA bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-scrolled.png
+DATA 553d64fc7e19f8f3b783a3b862245d9f3155c8bc425762f9e013f1fc8afd6feb  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/app-restored.png
+DATA 2efb9c643352a88a89a8387372cdedf2cf29cebac62a736976e571fdfe00fea3  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/app-shade.png
+DATA c23edc5813c65d9e399719aac6ea29cb53c62e9bff02ce2acbe530005a941dc6  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/deck-restored.png
+DATA 9f15515cc8abb69f4b67ab5164fe46367996d4b935cd002b18431c64e4597a99  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-cancelled.png
+DATA befdaf2fcf1e0e7b1be1acdfdcc043e73ea6c194ee21ceaa22fc628a3b2b8c81  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-multitouch.png
+DATA 1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-open.png
 DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
 DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
 DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
@@ -1526,4 +1532,12 @@ packages, fanout command, pixel checks, and physical limits are in its README.
 physical-board native compositor DATA captures. They contain shell UI and
 public installed-app labels/icons; no private application content. The
 adjacent README preserves exact system identity and reported navigation bugs.
+
+### Rust shade dismissal QEMU captures
+
+`docs/evidence/coherent-shell/rust-shade-dismiss-qemu/` contains six headless
+QEMU DATA captures of the public synthetic card, empty notification shade,
+and its cancellation, unmap, and live-underlay behavior. The adjacent README
+records the exact old and corrected packages, command, observations, and
+physical limits. No private notifications or real app pixels are included.
 

@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-native-touch",
+  "sway": "/nix/store/qwja5838kgidxzvii70l0smf72snzsqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/rbvcqv3sjq87iami6iymwd9cx7nzhhma-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "cancel_kept_shade": true,
+  "second_contact_kept_shade": true,
+  "upward_release_unmapped": true,
+  "underlying_deck_restored": true,
+  "underlying_app_restored": true
+}
