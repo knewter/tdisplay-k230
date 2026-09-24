@@ -34,6 +34,17 @@ python3 tests/test_shell_appearance_receiver.py
   selected palette and unavailable cached selection fallback.
 python3 tools/omarchy-theme-set catppuccin --builtins nix/handheld-theme-default --tools nix/omarchy-theme-tools/upstream --state-root /tmp/k230-omarchy-default-prep-check --prepare-only
   PASS: 56 resolved keys, Yaru-purple selector, no background candidates.
+nix build .#handheld-theme-default --max-jobs 1 --cores 4 --no-link --print-out-paths
+  PASS: /nix/store/qlrciqqmh3s80rc755p9dgm3plw1w1r4-handheld-theme-default-28ceaae7
+nix build .#handheld-theme-command --max-jobs 1 --cores 4 --no-link --print-out-paths
+  PASS: /nix/store/pd1igazqim6rzs515vbnq0ij11yn4nzj-handheld-theme-command-0.1
+nix build .#touch-launcher --max-jobs 1 --cores 4 --no-link --print-out-paths
+  PASS: /nix/store/5dzy6jj37xm7a1v40j9fdrmc7q4ih7dp-k230-touch-launcher
+nix eval --json .#nixosConfigurations.k230.config.k230.shell.themeReceiverTrial
+  PASS: false in the normal board configuration.
+nix eval --impure --json --expr 'let f = builtins.getFlake (toString ./.); c = f.nixosConfigurations.k230.extendModules { modules = [ { k230.shell.themeReceiverTrial = true; } ]; }; in { enabled = c.config.k230.shell.themeReceiverTrial; installed = builtins.any (p: (p.pname or "") == "handheld-theme-command") c.config.environment.systemPackages; launcher = toString c.config.k230.shell.launcher; }'
+  PASS: enabled=true, installed=true; the opt-in launcher wrapper is a new
+  evaluated store path. No whole image or physical boot was built or observed.
 ```
 
 Host startup and cache tests are not reboot or panel evidence. Full Omarchy
