@@ -37,6 +37,9 @@ struct mirror {
 	struct wlr_scene_buffer *source, *copy;
 	struct wl_listener source_destroy, copy_destroy, commit, sample;
 	bool seen;
+	struct wlr_buffer *scaled;
+	uint64_t generation, scaled_generation;
+	int scaled_width, scaled_height;
 };
 struct card {
 	struct wl_list link, mirrors;
@@ -69,6 +72,7 @@ static struct {
 	char *status_text;
 	struct wlr_scene_buffer *status;
 	unsigned commits, samples, frames, presents, ticks;
+	uint64_t cache_hits, cache_misses, cache_fallbacks;
 	int button_contact, pressed_button;
 	bool button_down;
 	double button_x, button_y;
@@ -99,6 +103,18 @@ static bool enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SHELL");
 	return s && strcmp(s, "1") == 0;
 }
+static bool scaled_cache_enabled(void) {
+	const char *s = getenv("SWAY_K230_CARD_SCALED_CACHE");
+	return s && strcmp(s, "1") == 0;
+}
+static void scaled_cache_log(void) {
+	if (scaled_cache_enabled())
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL scaled-cache hits=%" PRIu64 " misses=%" PRIu64
+			" fallbacks=%" PRIu64 " bytes=%zu",
+			shell.cache_hits, shell.cache_misses, shell.cache_fallbacks,
+			card_scaled_buffer_bytes());
+}
 static bool live(struct sway_view *v) {
 	return v && v->surface && v->surface->mapped && v->container && !v->container->node.destroying;
 }
@@ -119,6 +135,8 @@ static void free_mirror(struct mirror *m) {
 		wl_list_remove(&m->sample.link);
 		wlr_scene_node_destroy(&m->copy->node);
 	}
+	if (m->scaled)
+		wlr_buffer_drop(m->scaled);
 	wl_list_remove(&m->link);
 	sway_log(SWAY_DEBUG, "K230_CARD_SHELL mirror-release id=%" PRIu64, m->card->id);
 	free(m);
@@ -133,7 +151,11 @@ static void copy_destroy(struct wl_listener *l, void *data) {
 	wl_list_remove(&m->sample.link);
 	m->copy = NULL;
 }
-static void commit(struct wl_listener *l, void *data) { shell.commits++; }
+static void commit(struct wl_listener *l, void *data) {
+	struct mirror *m = wl_container_of(l, m, commit);
+	m->generation++;
+	shell.commits++;
+}
 static void sample(struct wl_listener *l, void *data) {
 	struct wlr_scene_output_sample_event *e = data;
 	if (shell.active && shell.output && e->output == shell.output->scene_output)
@@ -295,6 +317,61 @@ static void order_mirror(struct wlr_scene_node **previous, struct wlr_scene_buff
 		wlr_scene_node_lower_to_bottom(&copy->node);
 	*previous = &copy->node;
 }
+/* Only a fully visible, opaque, untransformed SHM surface is pixel-equivalent
+ * to a pre-scaled RGB565 buffer. Keep the wlroots scene-surface node itself:
+ * it still owns live commits, frame callbacks, and presentation sampling. */
+static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, double scale,
+		int x, int y, int parent_x, int parent_y, struct wlr_box clip) {
+	struct wlr_output *output = shell.output->wlr_output;
+	if (!scaled_cache_enabled() || output->render_format != DRM_FORMAT_RGB565 ||
+		output->scale != 1 || output->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+		shell.output->color_transform || source->opacity != 1 ||
+		source->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+		!((source->src_box.x == 0 && source->src_box.y == 0 &&
+			source->src_box.width == 0 && source->src_box.height == 0) ||
+			(source->src_box.x == 0 && source->src_box.y == 0 &&
+			source->src_box.width == source->buffer->width &&
+			source->src_box.height == source->buffer->height)) ||
+		(source->dst_width && source->dst_width != source->buffer->width) ||
+		(source->dst_height && source->dst_height != source->buffer->height) ||
+		source->primaries != WLR_COLOR_NAMED_PRIMARIES_SRGB ||
+		source->color_encoding || source->color_range ||
+		source->transfer_function != WLR_COLOR_TRANSFER_FUNCTION_GAMMA22)
+		return false;
+	struct wlr_shm_attributes shm;
+	if (!wlr_buffer_get_shm(source->buffer, &shm) ||
+		(shm.format != DRM_FORMAT_XRGB8888 && shm.format != DRM_FORMAT_RGB565))
+		return false;
+	int left = lround(x * scale), top = lround(y * scale);
+	int right = lround((x + source->buffer->width) * scale);
+	int bottom = lround((y + source->buffer->height) * scale);
+	int width = right - left, height = bottom - top;
+	int ax = parent_x + left, ay = parent_y + top;
+	if (width <= 0 || height <= 0 || ax < clip.x || ay < clip.y ||
+		ax + width > clip.x + clip.width || ay + height > clip.y + clip.height)
+		return false;
+	if (!m->scaled || m->scaled_generation != m->generation ||
+		m->scaled_width != width || m->scaled_height != height) {
+		if (m->scaled) { wlr_buffer_drop(m->scaled); m->scaled = NULL; }
+		m->scaled = card_scaled_buffer_create(source->buffer, width, height);
+		shell.cache_misses++;
+		if (!m->scaled) return false;
+		m->scaled_generation = m->generation;
+		m->scaled_width = width;
+		m->scaled_height = height;
+	} else {
+		shell.cache_hits++;
+	}
+	struct wlr_scene_buffer *copy = m->copy;
+	if (copy->buffer != m->scaled)
+		wlr_scene_buffer_set_buffer(copy, m->scaled);
+	wlr_scene_buffer_set_source_box(copy, NULL);
+	wlr_scene_buffer_set_dest_size(copy, width, height);
+	wlr_scene_buffer_set_transform(copy, WL_OUTPUT_TRANSFORM_NORMAL);
+	wlr_scene_node_set_position(&copy->node, left, top);
+	wlr_scene_node_set_enabled(&copy->node, true);
+	return true;
+}
 static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 		struct wlr_scene_node **previous) {
 	if (!node->enabled)
@@ -327,8 +404,14 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 	pixman_region32_init(&empty);
 	wlr_scene_buffer_set_opaque_region(copy, &empty);
 	pixman_region32_fini(&empty);
-	card_clip_buffer(copy, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
+	if (!scaled_mirror(m, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
+					clip_box())) {
+		if (scaled_cache_enabled()) shell.cache_fallbacks++;
+		if (copy->buffer != source->buffer)
+			wlr_scene_buffer_set_buffer(copy, source->buffer);
+		card_clip_buffer(copy, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
 					 clip_box());
+	}
 	order_mirror(previous, copy);
 	return true;
 }
@@ -528,6 +611,7 @@ static void restore(struct cs_result result) {
 	shell.active = false;
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) clear_card(c);
+	scaled_cache_log();
 	if (shell.deck)
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 	if (shell.seat && !server.session_lock.lock) {
@@ -633,6 +717,8 @@ static int tick_impl(void *data) {
 					 "output-presented=%u",
 					 shell.policy.count, shell.commits, shell.samples, shell.frames,
 					 shell.presents);
+		if (shell.active && shell.ticks % 60 == 0)
+			scaled_cache_log();
 		if (shell.active)
 			wlr_output_schedule_frame(shell.output->wlr_output);
 		wl_event_source_timer_update(shell.timer, 16);

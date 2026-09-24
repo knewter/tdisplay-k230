@@ -40,7 +40,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install host test dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev libpixman-1-dev libdrm-dev ffmpeg
 
       - name: Install site dependencies
         run: npm ci
@@ -64,6 +64,10 @@ jobs:
         run: |
           python3 tests/test_card_shell_board_tools.py
           python3 tests/test_card_shell_rvv_benchmark.py
+          python3 tests/test_card_shell_cache_session.py
+
+      - name: Check opaque card scale pixels
+        run: python3 tests/test_card_scaled_cache.py
 
       - name: Check booted-card-smoke proof protocol
         run: python3 tests/test_qemu_card_shell_smoke.py

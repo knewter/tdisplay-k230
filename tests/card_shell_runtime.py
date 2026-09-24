@@ -36,6 +36,8 @@ def main():
     ap.add_argument('--benchmark',action='store_true')
     ap.add_argument('--native-touch',action='store_true')
     ap.add_argument('--delayed-touch',action='store_true',help='test source cadence independently of dispatch delay')
+    ap.add_argument('--scaled-cache',action='store_true',help='enable bounded opaque RGB565 cache')
+    ap.add_argument('--rgb565',action='store_true',help='request the RGB565 headless render format')
     args=ap.parse_args()
     if args.delayed_touch and not args.native_touch:
         ap.error('--delayed-touch requires --native-touch')
@@ -45,8 +47,9 @@ def main():
     runtime.mkdir(parents=True,exist_ok=True); runtime.chmod(0o700)
     print(f'Headless evidence: {runtime}',flush=True)
     config=runtime/'config'
-    config.write_text('output HEADLESS-1 mode 568x1232\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
+    config.write_text('output HEADLESS-1 mode 568x1232' + (' render_bit_depth 6' if args.rgb565 else '') + '\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',SWAY_K230_CARD_SHELL='0' if args.disabled else '1')
+    env['SWAY_K230_CARD_SCALED_CACHE'] = '1' if args.scaled_cache else '0'
     if args.native_touch: env['SWAY_K230_CARD_TEST_INPUT']='1'
     processes=[]
     keyboard=None
@@ -260,6 +263,11 @@ def main():
         ipc('output HEADLESS-1 enable');time.sleep(.3)
         before_keys=keys('k230.card.one');keyboard.press();wait_for(lambda:keys('k230.card.one')>before_keys)
         assert sway.poll() is None
+        if args.scaled_cache:
+            cache = re.findall(r'K230_CARD_SHELL scaled-cache hits=(\d+) misses=(\d+) fallbacks=(\d+) bytes=(\d+)', logs())
+            assert cache and all(int(value) > 0 for value in cache[-1][:3]), 'cache hit, rebuild, and fallback paths were not exercised on RGB565'
+            assert any(int(row[3]) > 0 for row in cache), 'cache never held scaled pixels'
+            assert int(cache[-1][3]) == 0, 'cached pixels survived normal shell restore'
         results={'evidence_class':'headless-qemu-injected-input',
           'source_time_checks': ['slow-source-no-close','paused-source-no-close','delayed-fast-source-close','full-dispatch-timeout',
                                  'same-ms-motion-close','same-ms-duplicate-close','same-ms-reversal-no-close','same-ms-held-no-close'] if args.delayed_touch else [],

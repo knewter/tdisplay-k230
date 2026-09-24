@@ -1,4 +1,5 @@
 #include "sway/card_shell_render.h"
+#include "sway/card_shell_scaled_cache.h"
 #include <cairo.h>
 #include <drm_fourcc.h>
 #include <math.h>
@@ -10,6 +11,62 @@ struct label_buffer {
 	struct wlr_buffer base;
 	cairo_surface_t *surface;
 };
+/* Bound all live cached pixels, including buffers still held by a scene node. */
+#define SCALED_CACHE_LIMIT (8u * 1024u * 1024u)
+struct scaled_buffer {
+	struct wlr_buffer base;
+	uint8_t *pixels;
+	size_t bytes, stride;
+};
+static size_t scaled_bytes;
+static void scaled_destroy(struct wlr_buffer *base) {
+	struct scaled_buffer *b = wl_container_of(base, b, base);
+	wlr_buffer_finish(base);
+	scaled_bytes -= b->bytes;
+	free(b->pixels);
+	free(b);
+}
+static bool scaled_access(struct wlr_buffer *base, uint32_t flags, void **data,
+		uint32_t *format, size_t *stride) {
+	if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE) return false;
+	struct scaled_buffer *b = wl_container_of(base, b, base);
+	*data = b->pixels;
+	*format = DRM_FORMAT_RGB565;
+	*stride = b->stride;
+	return true;
+}
+static void scaled_end(struct wlr_buffer *base) {}
+static const struct wlr_buffer_impl scaled_impl = {
+	.destroy = scaled_destroy, .begin_data_ptr_access = scaled_access, .end_data_ptr_access = scaled_end};
+size_t card_scaled_buffer_bytes(void) { return scaled_bytes; }
+struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height) {
+	if (!source || width <= 0 || height <= 0 || width > 4096 || height > 4096)
+		return NULL;
+	size_t stride = ((size_t)width * 2 + 3) & ~(size_t)3;
+	size_t bytes = stride * (size_t)height;
+	if (bytes > SCALED_CACHE_LIMIT - scaled_bytes)
+		return NULL;
+	struct scaled_buffer *b = calloc(1, sizeof(*b));
+	if (!b) return NULL;
+	b->pixels = calloc(1, bytes);
+	if (!b->pixels) { free(b); return NULL; }
+	void *data;
+	uint32_t format;
+	size_t source_stride;
+	if (!wlr_buffer_begin_data_ptr_access(source, WLR_BUFFER_DATA_PTR_ACCESS_READ,
+			&data, &format, &source_stride)) {
+		free(b->pixels); free(b); return NULL;
+	}
+	bool okay = card_scale_rgb565(b->pixels, stride, width, height, data, source_stride,
+		source->width, source->height, format);
+	wlr_buffer_end_data_ptr_access(source);
+	if (!okay) { free(b->pixels); free(b); return NULL; }
+	b->stride = stride;
+	b->bytes = bytes;
+	wlr_buffer_init(&b->base, &scaled_impl, width, height);
+	scaled_bytes += bytes;
+	return &b->base;
+}
 static void destroy(struct wlr_buffer *base) {
 	struct label_buffer *b = wl_container_of(base, b, base);
 	cairo_surface_destroy(b->surface);
