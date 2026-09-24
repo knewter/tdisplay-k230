@@ -3,7 +3,7 @@
 
 use crate::{
     service_data::{
-        ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction,
+        ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction, Priority,
         ServiceRequest, SettingsSnapshot,
     },
     wifi_ui::WifiPublic,
@@ -28,9 +28,18 @@ pub struct ServiceView {
     pub message: Option<String>,
     pub confirmation: Option<Confirmation>,
     pub notification_scroll: f64,
+    /// Active, single-contact history drag. Never used for a critical row.
+    pub notification_swipe: Option<NotificationSwipe>,
     pub wifi: Option<WifiPublic>,
     /// Set only by an image that includes the compositor keyboard gestures.
     pub keyboard_gesture_hint: bool,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct NotificationSwipe {
+    pub event_id: u64,
+    pub row_index: usize,
+    pub offset: f64,
 }
 
 impl ServiceView {
@@ -75,6 +84,9 @@ pub enum PanelIntent {
 
 pub const NOTIFICATION_TOP: f64 = 266.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
+const SWIPE_START: f64 = 18.0;
+pub const SWIPE_COMMIT: f64 = 85.0;
+const SWIPE_TRAVEL: f64 = 160.0;
 
 pub fn notification_max_scroll(count: usize, height: u32) -> f64 {
     let bottom = f64::from(height) * 0.65 - 24.0;
@@ -88,6 +100,57 @@ fn notification_index(y: f64, height: u32, view: &ServiceView) -> Option<usize> 
     let index =
         ((y - NOTIFICATION_TOP + view.notification_scroll) / NOTIFICATION_ROW).floor() as usize;
     (index < view.notifications.as_ref()?.events.len()).then_some(index)
+}
+
+pub fn notification_swipe_start(
+    start: (f64, f64),
+    current: (f64, f64),
+    width: u32,
+    height: u32,
+    view: &ServiceView,
+) -> Option<NotificationSwipe> {
+    let dx = current.0 - start.0;
+    let dy = current.1 - start.1;
+    if start.0 < 24.0
+        || start.0 >= f64::from(width) - 24.0
+        || dx.abs() <= SWIPE_START
+        || dx.abs() <= dy.abs()
+    {
+        return None;
+    }
+    let row_y =
+        (start.1 - NOTIFICATION_TOP + view.notification_scroll).rem_euclid(NOTIFICATION_ROW);
+    if row_y >= NOTIFICATION_ROW - 8.0 {
+        return None;
+    }
+    let row_index = notification_index(start.1, height, view)?;
+    let event = &view.notifications.as_ref()?.events[row_index];
+    (event.dismissible && event.priority != Priority::Critical).then_some(NotificationSwipe {
+        event_id: event.id,
+        row_index,
+        offset: notification_swipe_offset(start.0, current.0),
+    })
+}
+
+pub fn notification_swipe_offset(start_x: f64, current_x: f64) -> f64 {
+    (current_x - start_x).clamp(-SWIPE_TRAVEL, SWIPE_TRAVEL)
+}
+
+pub fn notification_swipe_valid(view: &ServiceView, swipe: &NotificationSwipe) -> bool {
+    view.notifications
+        .as_ref()
+        .and_then(|snapshot| snapshot.events.get(swipe.row_index))
+        .is_some_and(|event| {
+            event.id == swipe.event_id && event.dismissible && event.priority != Priority::Critical
+        })
+}
+
+pub fn notification_swipe_release(
+    view: &ServiceView,
+    swipe: &NotificationSwipe,
+) -> Option<ServiceRequest> {
+    (swipe.offset.abs() >= SWIPE_COMMIT && notification_swipe_valid(view, swipe))
+        .then_some(ServiceRequest::NotificationDismiss(swipe.event_id))
 }
 
 /// Returns an intent only after the caller has paired a single real contact.
@@ -109,11 +172,6 @@ pub fn panel_intent(
             }
             if let Some(index) = notification_index(start.1, height, view) {
                 let event = &view.notifications.as_ref()?.events[index];
-                if dx.abs() > 85.0 && dy.abs() < 45.0 {
-                    return event.dismissible.then_some(PanelIntent::Request(
-                        ServiceRequest::NotificationDismiss(event.id),
-                    ));
-                }
                 if dy.abs() > 22.0 {
                     return Some(PanelIntent::ScrollNotifications(-dy));
                 }
@@ -236,7 +294,12 @@ mod tests {
                 1232,
                 &view
             ),
-            Some(PanelIntent::Request(ServiceRequest::NotificationDismiss(7)))
+            None // release alone cannot dismiss without a tracked drag
+        );
+        assert_eq!(
+            notification_swipe_start((300.0, 300.0), (400.0, 305.0), 568, 1232, &view)
+                .map(|swipe| swipe.event_id),
+            Some(7),
         );
         assert_eq!(
             panel_intent(
@@ -299,6 +362,85 @@ mod tests {
             ),
             None
         );
+    }
+
+    #[test]
+    fn notification_swipe_tracks_reversal_and_refuses_critical_or_changed_rows() {
+        let event = NotificationEvent {
+            id: 7,
+            source: "System".into(),
+            icon: None,
+            summary: "Message".into(),
+            body: "Body".into(),
+            priority: Priority::Ordinary,
+            timestamp: 0,
+            error: None,
+            dismissible: true,
+            action_available: true,
+        };
+        let mut view = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 1,
+                events: vec![event],
+                preview: None,
+            }),
+            ..ServiceView::default()
+        };
+        let start = (300.0, 300.0);
+        assert_eq!(
+            notification_swipe_start(start, (320.0, 305.0), 568, 1232, &view)
+                .map(|swipe| swipe.event_id),
+            Some(7),
+        );
+        assert_eq!(notification_swipe_offset(300.0, 410.0), 110.0);
+        assert_eq!(notification_swipe_offset(300.0, 312.0), 12.0);
+        assert_eq!(notification_swipe_offset(300.0, 1000.0), 160.0);
+        let swipe = NotificationSwipe {
+            event_id: 7,
+            row_index: 0,
+            offset: 110.0,
+        };
+        assert_eq!(
+            notification_swipe_release(&view, &swipe),
+            Some(ServiceRequest::NotificationDismiss(7))
+        );
+        assert_eq!(
+            notification_swipe_release(
+                &view,
+                &NotificationSwipe {
+                    offset: 12.0,
+                    ..swipe.clone()
+                }
+            ),
+            None
+        );
+        assert_eq!(
+            notification_swipe_start(start, (320.0, 350.0), 568, 1232, &view),
+            None
+        );
+        view.notifications.as_mut().unwrap().events[0].dismissible = false;
+        assert_eq!(
+            notification_swipe_start(start, (400.0, 300.0), 568, 1232, &view),
+            None
+        );
+        assert!(!notification_swipe_valid(&view, &swipe));
+        assert_eq!(notification_swipe_release(&view, &swipe), None);
+        view.notifications.as_mut().unwrap().events[0].dismissible = true;
+        view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
+        assert_eq!(
+            notification_swipe_start(start, (400.0, 300.0), 568, 1232, &view),
+            None
+        );
+        assert_eq!(notification_swipe_release(&view, &swipe), None);
+        view.notifications.as_mut().unwrap().events[0].id = 8;
+        assert!(!notification_swipe_valid(&view, &swipe));
+        view.notifications.as_mut().unwrap().events[0].id = 7;
+        view.notifications.as_mut().unwrap().events[0].priority = Priority::Ordinary;
+        assert!(notification_swipe_valid(&view, &swipe));
+        let mut newer = view.notifications.as_ref().unwrap().events[0].clone();
+        newer.id = 8;
+        view.notifications.as_mut().unwrap().events.insert(0, newer);
+        assert!(!notification_swipe_valid(&view, &swipe));
     }
 
     #[test]

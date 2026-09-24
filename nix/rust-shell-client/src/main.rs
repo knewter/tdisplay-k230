@@ -13,8 +13,9 @@ use k230_shell_rust::{
     render::{export_png, RenderParams, RendererCache},
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
-        action_message, notification_max_scroll, panel_intent, Confirmation, PanelIntent,
-        ServiceView,
+        action_message, notification_max_scroll, notification_swipe_offset,
+        notification_swipe_release, notification_swipe_start, notification_swipe_valid,
+        panel_intent, Confirmation, PanelIntent, ServiceView,
     },
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
     theme_ui::{ThemeIntent, ThemePage, ThemeView},
@@ -508,6 +509,7 @@ struct ShellClient {
     panel_start: Option<(i32, (f64, f64))>,
     panel_origin_scroll: f64,
     panel_scrolled: bool,
+    panel_swipe_owned: bool,
     appearance_pending: bool,
     reveal: RevealState,
     input_ready: bool,
@@ -795,6 +797,14 @@ impl ShellClient {
                 }
             },
         }
+        if self
+            .service_view
+            .notification_swipe
+            .as_ref()
+            .is_some_and(|swipe| !notification_swipe_valid(&self.service_view, swipe))
+        {
+            self.service_view.notification_swipe = None;
+        }
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
     }
@@ -1023,6 +1033,10 @@ impl ShellClient {
         if self.route != route {
             self.nav = DrawerNavigation::default();
             self.renderer.set_drawer_pressed(None);
+            self.panel_start = None;
+            self.panel_swipe_owned = false;
+            self.service_view.notification_swipe = None;
+            self.renderer.set_services(self.service_view.clone());
         }
         self.route = route;
         self.refresh_route(route);
@@ -1046,6 +1060,12 @@ impl ShellClient {
             }
             self.wifi_view.close();
             self.service_view.wifi = None;
+            self.renderer.set_services(self.service_view.clone());
+        }
+        if self.route != message.surface {
+            self.panel_start = None;
+            self.panel_swipe_owned = false;
+            self.service_view.notification_swipe = None;
             self.renderer.set_services(self.service_view.clone());
         }
         self.route = message.surface;
@@ -1094,6 +1114,8 @@ impl ShellClient {
     fn hide(&mut self) {
         self.touch.cancel();
         self.panel_start = None;
+        self.service_view.notification_swipe = None;
+        self.panel_swipe_owned = false;
         if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
             self.wifi_worker.cancel(id);
         }
@@ -1403,6 +1425,8 @@ impl TouchHandler for ShellClient {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
                     self.panel_scrolled = false;
+                    self.panel_swipe_owned = false;
+                    self.service_view.notification_swipe = None;
                     self.theme_origin_scroll = self.theme_view.scroll;
                     self.theme_dragged = false;
                     self.wifi_origin_scroll = self.wifi_view.scroll;
@@ -1416,6 +1440,9 @@ impl TouchHandler for ShellClient {
                 }
                 self.panel_start = None;
                 self.panel_scrolled = false;
+                self.panel_swipe_owned = false;
+                self.service_view.notification_swipe = None;
+                self.renderer.set_services(self.service_view.clone());
                 self.theme_dragged = false;
                 self.wifi_dragged = false;
             }
@@ -1453,12 +1480,26 @@ impl TouchHandler for ShellClient {
             } else if self.input_ready {
                 if let Some((start_id, start)) = self.panel_start.take() {
                     if start_id == id {
+                        let swipe = self.service_view.notification_swipe.take();
+                        if swipe.is_some() {
+                            self.renderer.set_services(self.service_view.clone());
+                            self.dirty = true;
+                        }
                         let list_has_rows = self
                             .service_view
                             .notifications
                             .as_ref()
                             .is_some_and(|snapshot| !snapshot.events.is_empty());
-                        if self.route == Route::Shade
+                        if self.panel_swipe_owned {
+                            if let Some(swipe) = swipe {
+                                if let Some(request) =
+                                    notification_swipe_release(&self.service_view, &swipe)
+                                {
+                                    self.panel_action(qh, PanelIntent::Request(request));
+                                }
+                            }
+                            self.panel_swipe_owned = false;
+                        } else if self.route == Route::Shade
                             && shade_release_closes(start, point, list_has_rows, self.height)
                         {
                             self.hide();
@@ -1545,7 +1586,29 @@ impl TouchHandler for ShellClient {
             } else if self.route == Route::Shade && self.input_ready {
                 if let Some((start_id, start)) = self.panel_start {
                     let dy = pos.1 - start.1;
+                    if start_id == id && self.service_view.notification_swipe.is_some() {
+                        if let Some(swipe) = &mut self.service_view.notification_swipe {
+                            swipe.offset = notification_swipe_offset(start.0, pos.0);
+                        }
+                        self.renderer.set_services(self.service_view.clone());
+                        self.dirty = true;
+                    } else if start_id == id && !self.panel_scrolled && !self.panel_swipe_owned {
+                        if let Some(swipe) = notification_swipe_start(
+                            start,
+                            pos,
+                            self.width,
+                            self.height,
+                            &self.service_view,
+                        ) {
+                            self.service_view.notification_swipe = Some(swipe);
+                            self.panel_swipe_owned = true;
+                            self.renderer.set_services(self.service_view.clone());
+                            self.dirty = true;
+                        }
+                    }
                     if start_id == id
+                        && self.service_view.notification_swipe.is_none()
+                        && !self.panel_swipe_owned
                         && start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
                         && dy.abs() > 22.0
                     {
@@ -1636,6 +1699,9 @@ impl TouchHandler for ShellClient {
         self.renderer.set_drawer_pressed(None);
         self.panel_start = None;
         self.panel_scrolled = false;
+        self.panel_swipe_owned = false;
+        self.service_view.notification_swipe = None;
+        self.renderer.set_services(self.service_view.clone());
         self.theme_dragged = false;
         self.log("touch-cancel");
         self.dirty = true;
@@ -1744,6 +1810,7 @@ fn serve() -> Result<(), String> {
         panel_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
+        panel_swipe_owned: false,
         appearance_pending: false,
         reveal: RevealState::default(),
         input_ready: false,

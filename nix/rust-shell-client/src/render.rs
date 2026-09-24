@@ -5,7 +5,7 @@ use crate::{
     catalog::AppEntry,
     icon::IconCache,
     navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
-    service_data::{Control, ControlValue},
+    service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_catalog::BackgroundKind,
     theme_ui::{background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView},
@@ -1357,6 +1357,28 @@ fn scene(
                     if y + NOTIFICATION_ROW < NOTIFICATION_TOP || y >= panel_h - 24.0 {
                         continue;
                     }
+                    let drag = services
+                        .and_then(|view| view.notification_swipe.as_ref())
+                        .filter(|swipe| {
+                            swipe.row_index == index
+                                && swipe.event_id == event.id
+                                && event.dismissible
+                                && event.priority != Priority::Critical
+                        })
+                        .map_or(0.0, |swipe| swipe.offset);
+                    if drag.abs() >= 18.0 {
+                        text(
+                            cr,
+                            "Dismiss",
+                            if drag > 0.0 { 36.0 } else { w - 128.0 },
+                            y + 44.0,
+                            96.0,
+                            18.0,
+                            style.error,
+                        );
+                    }
+                    let _ = cr.save();
+                    cr.translate(drag, 0.0);
                     service_card(
                         cr,
                         theme,
@@ -1418,6 +1440,7 @@ fn scene(
                     if let Some(error) = &event.error {
                         text(cr, error, 92.0, y + 90.0, w - 132.0, 14.0, style.error);
                     }
+                    let _ = cr.restore();
                 }
                 let _ = cr.restore();
             } else {
@@ -1927,6 +1950,7 @@ mod tests {
         Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
         Priority, SettingsSnapshot,
     };
+    use crate::service_ui::NotificationSwipe;
     use crate::theme_catalog::{
         ActiveTheme, BackgroundChoice, Compatibility, ThemeEntry, ThemeList, ThemeOrigin,
         ThemePreview,
@@ -2614,6 +2638,63 @@ mod tests {
         renderer.draw(&mut failed, params, &[]).unwrap();
         let region = (355 * 568 * 4)..(375 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    #[test]
+    fn notification_swipe_moves_only_a_dismissible_row_and_reverses() {
+        let mut renderer = RendererCache::default();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Shade,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let mut view = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 1,
+                preview: None,
+                events: vec![NotificationEvent {
+                    id: 3,
+                    source: "System".into(),
+                    icon: None,
+                    summary: "Ready".into(),
+                    body: "Message".into(),
+                    priority: Priority::Ordinary,
+                    timestamp: 0,
+                    error: None,
+                    dismissible: true,
+                    action_available: false,
+                }],
+            }),
+            ..ServiceView::default()
+        };
+        let mut baseline = vec![0; 568 * 1232 * 4];
+        renderer.set_services(view.clone());
+        renderer.draw(&mut baseline, params, &[]).unwrap();
+        view.notification_swipe = Some(NotificationSwipe {
+            event_id: 3,
+            row_index: 0,
+            offset: 100.0,
+        });
+        renderer.set_services(view.clone());
+        let mut moved = vec![0; baseline.len()];
+        renderer.draw(&mut moved, params, &[]).unwrap();
+        assert_ne!(moved, baseline);
+        view.notification_swipe.as_mut().unwrap().offset = 0.0;
+        renderer.set_services(view.clone());
+        let mut reversed = vec![0; baseline.len()];
+        renderer.draw(&mut reversed, params, &[]).unwrap();
+        assert_eq!(reversed, baseline);
+        view.notifications.as_mut().unwrap().events[0].dismissible = false;
+        renderer.set_services(view.clone());
+        let mut critical = vec![0; baseline.len()];
+        renderer.draw(&mut critical, params, &[]).unwrap();
+        view.notification_swipe.as_mut().unwrap().offset = 100.0;
+        renderer.set_services(view);
+        let mut attempted = vec![0; baseline.len()];
+        renderer.draw(&mut attempted, params, &[]).unwrap();
+        assert_eq!(attempted, critical);
     }
 
     #[test]
