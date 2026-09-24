@@ -179,6 +179,35 @@ let
       id = "shell"; name = "Shell"; icon = "applications-system";
     };
   });
+  themedFoot = pkgs.writeShellScriptBin "k230-foot" ''
+    set -eu
+    case "''${1:-}" in
+      terminal|monitor) role="$1"; shift ;;
+      *) echo "k230-foot: expected terminal or monitor" >&2; exit 2 ;;
+    esac
+    ${if cfg.coherentShell then ''
+      # Read only the adapter's acknowledged generation. Failed preparation
+      # keeps terminal recovery available with the packaged fresh-home palette.
+      appearance_root="${config.users.users.shell.home}/.local/state/omarchy/current"
+      foot_config="${themeDefault}/generations/${themeDefaultId}/$role-foot.ini"
+      if generation="$(${themeCommand}/bin/k230-app-appearance sync --state-root "$appearance_root" 2>/dev/null)"; then
+        case "$generation" in
+          "$appearance_root"/app-appearance/generations/*)
+            if [ -f "$generation/$role-foot.ini" ]; then
+              foot_config="$generation/$role-foot.ini"
+            fi
+            ;;
+        esac
+      fi
+    '' else ''
+      case "$role" in
+        terminal) foot_config=${terminalFootConfig} ;;
+        monitor) foot_config=${monitorFootConfig} ;;
+      esac
+    ''}
+    export HTOPRC="''${HTOPRC:-${monitorHtopConfig}}"
+    exec ${pkgs.foot}/bin/foot --config "$foot_config" "$@"
+  '';
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
       terminal|monitor)
@@ -186,20 +215,20 @@ let
             'recurse(.nodes[]?, .floating_nodes[]?) | select(.app_id? == $app_id) | .id' >/dev/null 2>&1; then
           ${sway}/bin/swaymsg "[app_id=\"k230-$1\"] focus"
         elif [ "$1" = monitor ]; then
-          HTOPRC=${monitorHtopConfig} ${pkgs.foot}/bin/foot --config ${monitorFootConfig} -e ${pkgs.htop}/bin/htop &
+          ${themedFoot}/bin/k230-foot monitor -e ${pkgs.htop}/bin/htop &
         else
-          ${pkgs.foot}/bin/foot --config ${terminalFootConfig} &
+          ${themedFoot}/bin/k230-foot terminal &
         fi
         ;;
-      new-terminal) ${pkgs.foot}/bin/foot --config ${terminalFootConfig} & ;;
+      new-terminal) ${themedFoot}/bin/k230-foot terminal & ;;
       *) echo "k230-launcher-action: unknown action" >&2; exit 2 ;;
     esac
   '';
   xdgTerminalExec = pkgs.writeShellScriptBin "xdg-terminal-exec" ''
-    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig} -e "$@"
+    exec ${themedFoot}/bin/k230-foot terminal -e "$@"
   '';
   launcherFoot = pkgs.writeShellScriptBin "foot" ''
-    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig} "$@"
+    exec ${themedFoot}/bin/k230-foot terminal "$@"
   '';
   windowCatalog = pkgs.writeShellScriptBin "k230-window-catalog" ''
     export K230_SWAYMSG=${sway}/bin/swaymsg
@@ -338,7 +367,7 @@ let
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
     exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
-    exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig}
+    exec ${themedFoot}/bin/k230-foot terminal
   '';
 in
 {
@@ -463,6 +492,20 @@ in
       description = "Native portrait Apps launcher, exposed for a narrow build.";
     };
 
+    rustFrontend = lib.mkOption {
+      type = lib.types.package;
+      default = rustShell;
+      readOnly = true;
+      description = "Supervised Rust frontend wrapper, exposed for a narrow build.";
+    };
+
+    themedTerminal = lib.mkOption {
+      type = lib.types.package;
+      default = themedFoot;
+      readOnly = true;
+      description = "Terminal launcher using the acknowledged app appearance.";
+    };
+
     frameTimingCompositor = lib.mkOption {
       type = lib.types.package;
       default = swayFrameTiming;
@@ -516,7 +559,9 @@ in
     # Fresh homes get the same portrait defaults as menu-launched applications.
     # User configuration may still override these normal system-wide defaults.
     environment.etc."htoprc".source = monitorHtopConfig;
-    environment.etc."xdg/foot/foot.ini".source = terminalFootConfig;
+    environment.etc."xdg/foot/foot.ini".source = if cfg.coherentShell
+      then "${themeDefault}/generations/${themeDefaultId}/terminal-foot.ini"
+      else terminalFootConfig;
     environment.etc."neofetch/config.conf".source = ./neofetch.conf;
 
     users.groups.shell = { };
@@ -584,6 +629,30 @@ in
       };
     };
 
+    # Sway and the separately supervised Rust client share one session bus;
+    # a bus created inside only Sway's wrapper cannot reach UI-launched apps.
+    systemd.services.shell-session-bus = lib.mkIf cfg.coherentShell {
+      description = "Handheld application session bus";
+      serviceConfig = {
+        User = "shell";
+        Group = "shell";
+        RuntimeDirectory = "shell-bus";
+        RuntimeDirectoryMode = "0700";
+        Type = "exec";
+        ExecStart = "${pkgs.dbus}/bin/dbus-daemon --session --nofork --address=unix:path=/run/shell-bus/bus";
+        ExecStartPost = pkgs.writeShellScript "wait-for-shell-bus" ''
+          for attempt in $(${pkgs.coreutils}/bin/seq 1 100); do
+            [ -S /run/shell-bus/bus ] && exit 0
+            ${pkgs.coreutils}/bin/sleep 0.1
+          done
+          echo "handheld session bus did not become ready" >&2
+          exit 1
+        '';
+        Restart = "on-failure";
+        UMask = "0077";
+      };
+    };
+
     systemd.services.shell-notifications = lib.mkIf cfg.coherentShell {
       description = "Handheld notification history";
       wantedBy = [ "multi-user.target" ];
@@ -606,11 +675,13 @@ in
       wantedBy = [ "shell.service" ];
       bindsTo = [ "shell.service" ];
       partOf = [ "shell.service" ];
+      requires = [ "shell-session-bus.service" ];
       wants = [ "shell-notifications.service" ];
-      after = [ "shell.service" "shell-notifications.service" ];
+      after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" ];
       environment = {
         XDG_RUNTIME_DIR = "/run/shell";
         SWAYSOCK = "/run/shell/sway-ipc.sock";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
       };
       path = [ pkgs.coreutils ];
       serviceConfig = {
@@ -628,9 +699,11 @@ in
     systemd.services.shell = {
       description = "sway on the panel";
       wantedBy = [ "multi-user.target" ];
-      requires = [ "seatd.service" ] ++ lib.optional cfg.vgliteAccessTrial "k230-vglite-broker.socket";
+      requires = [ "seatd.service" ] ++ lib.optional cfg.vgliteAccessTrial "k230-vglite-broker.socket"
+        ++ lib.optional cfg.coherentShell "shell-session-bus.service";
       wants = lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
       after = [ "seatd.service" "systemd-udev-settle.service" ]
+        ++ lib.optional cfg.coherentShell "shell-session-bus.service"
         ++ lib.optional cfg.vgliteAccessTrial "k230-vglite-broker.socket"
         ++ lib.optional (!config.k230.panelConsole) "k230-drm-splash.service";
 
@@ -651,6 +724,7 @@ in
       } // lib.optionalAttrs cfg.frameTiming {
         SWAY_K230_CPU_FRAME_TIMING = "1";
       } // lib.optionalAttrs cfg.coherentShell {
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
         SWAY_K230_CARD_SHELL = "1";
         SWAY_K230_CARD_TOUCH_FIRST = "1";
         SWAY_K230_CARD_DRAWER_HELPER = "${rustShell}/bin/k230-shell-rust";
@@ -764,7 +838,7 @@ in
       videoDesktop
       touchLauncher
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
-      ++ lib.optionals cfg.coherentShell [ rustShell settingsCommand notificationCommand ]
+      ++ lib.optionals cfg.coherentShell [ rustShell themedFoot settingsCommand notificationCommand ]
       ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
