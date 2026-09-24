@@ -153,6 +153,9 @@ def main():
         if args.native_touch: command('test-touch init')
         time.sleep(.4)
         ipc('[app_id="k230.card.one"] focus')
+        wait_for(lambda:focused()=='k230.card.one')
+        time.sleep(.15)  # Let the focused floating scene reach the headless output.
+        subprocess.run(['grim',str(runtime/'first-focused.png')],env=env,check=True)
         if args.benchmark:
             command('benchmark injected'); time.sleep(3.1)
         command('enter')
@@ -339,6 +342,13 @@ def main():
         command('up 1')
         command('down 2 284 450'); command('up 2')
         wait_for(lambda:focused()=='k230.card.two')
+        time.sleep(.15)
+        subprocess.run(['grim',str(runtime/'second-focused.png')],env=env,check=True)
+        first_pixel=Image.open(runtime/'first-focused.png').convert('RGB').getpixel((284,700))
+        second_pixel=Image.open(runtime/'second-focused.png').convert('RGB').getpixel((284,700))
+        # These synthetic clients are blue and purple respectively. The
+        # keyboard-focus assertion alone missed a lower, obscured floater.
+        assert first_pixel[0]<60 and second_pixel[0]>60,(first_pixel,second_pixel)
         keyboard.press(); wait_for(lambda:keys('k230.card.two')==1)
         if args.benchmark:
             time.sleep(3.1);command('benchmark-stop')
