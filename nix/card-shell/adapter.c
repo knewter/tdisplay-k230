@@ -16,6 +16,8 @@
 #include "sway/output.h"
 #include "sway/server.h"
 #include "sway/tree/root.h"
+#include "sway/tree/arrange.h"
+#include "sway/tree/container.h"
 #include "sway/tree/view.h"
 #include "sway/tree/workspace.h"
 #include <drm_fourcc.h>
@@ -31,6 +33,7 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_touch.h>
+#include <wlr/util/box.h>
 struct card;
 struct mirror {
 	struct wl_list link;
@@ -70,6 +73,8 @@ static struct {
 	int chrome_pressed, chrome_x, chrome_y;
 	double chrome_w, chrome_h, chrome_top, chrome_bottom, chrome_footer;
 	struct sway_output *output;
+	struct wlr_box ordinary_usable;
+	bool ordinary_usable_valid;
 	struct sway_seat *seat;
 	struct wl_listener output_destroy, seat_destroy;
 	struct wlr_scene_tree *ui, *deck, *chrome, *button;
@@ -792,6 +797,7 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	wl_list_remove(&shell.output_destroy.link);
 	card_bench_stop();
 	shell.output = NULL;
+	shell.ordinary_usable_valid = false;
 	if (shell.timer) {
 		wl_event_source_remove(shell.timer);
 		shell.timer = NULL;
@@ -858,6 +864,7 @@ static bool ensure_ui(struct sway_output *output) {
 	if (shell.ui)
 		return shell.output == output;
 	shell.output = output;
+	shell.ordinary_usable_valid = false;
 	shell.output_destroy.notify = handle_output_destroy;
 	wl_signal_add(&output->node.events.destroy, &shell.output_destroy);
 	shell.ui = wlr_scene_tree_create(root->layers.shell_overlay);
@@ -911,10 +918,50 @@ static bool drawer_mapped(void) {
 	}
 	return false;
 }
+/* The Sway config marks only ordinary full-panel app containers. Floating
+ * geometry otherwise ignores a layer-shell keyboard's usable-area height,
+ * leaving the focused prompt beneath the keyboard. Never resize dialogs,
+ * video windows, scratchpads or fullscreen views here. */
+static bool ordinary_resize(struct sway_view *view, struct sway_output *output) {
+	if (!view || !view->container || !output)
+		return false;
+	struct sway_container *con = view->container;
+	if (!con->card_shell_ordinary_maximized || !container_is_floating(con) ||
+		con->pending.parent || con->scratchpad || con->pending.fullscreen_mode ||
+		!con->pending.workspace || con->pending.workspace->output != output)
+		return false;
+	struct wlr_box *usable = &output->usable_area;
+	if (usable->width <= 0 || usable->height <= 0)
+		return false;
+	int x = output->lx + usable->x, y = output->ly + usable->y;
+	if (con->pending.x == x && con->pending.y == y &&
+		con->pending.width == usable->width && con->pending.height == usable->height)
+		return false;
+	con->pending.x = x;
+	con->pending.y = y;
+	con->pending.width = usable->width;
+	con->pending.height = usable->height;
+	arrange_container(con);
+	return true;
+}
+static void ordinary_sync_usable(struct sway_output *output) {
+	if (shell.ordinary_usable_valid &&
+		wlr_box_equal(&shell.ordinary_usable, &output->usable_area))
+		return;
+	shell.ordinary_usable = output->usable_area;
+	shell.ordinary_usable_valid = true;
+	bool changed = false;
+	struct card *card;
+	wl_list_for_each(card, &shell.cards, link)
+		changed |= ordinary_resize(card->view, output);
+	if (changed)
+		transaction_commit_dirty();
+}
 static void prepare_impl(struct sway_output *output) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
 	shell.preparing = true;
+	ordinary_sync_usable(output);
 	bool blocked =
 		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
 	if (blocked) {
@@ -992,6 +1039,8 @@ void card_shell_observe(struct sway_view *view) {
 	c->content = CS_UNAVAILABLE;
 	wl_list_init(&c->mirrors);
 	wl_list_insert(shell.cards.prev, &c->link);
+	if (ordinary_resize(view, shell.output))
+		transaction_commit_dirty();
 	snapshot();
 	sway_log(SWAY_INFO, "K230_CARD_SHELL map id=%" PRIu64 " class=%d", c->id, c->content);
 }
@@ -1321,6 +1370,13 @@ bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, 
 struct cmd_results *cmd_card_shell(int argc, char **argv) {
 	if (!enabled() || config->reading)
 		return cmd_results_new(CMD_FAILURE, "card shell is disabled");
+	if (argc == 1 && strcmp(argv[0], "ordinary") == 0) {
+		struct sway_container *con = config->handler_context.container;
+		if (!con || !con->view)
+			return cmd_results_new(CMD_INVALID, "ordinary requires an app container");
+		con->card_shell_ordinary_maximized = true;
+		return cmd_results_new(CMD_SUCCESS, NULL);
+	}
 	if (root->outputs->length != 1 || !ensure_ui(root->outputs->items[0]))
 		return cmd_results_new(CMD_FAILURE, "card shell requires one Pixman output");
 	struct sway_seat *seat = config->handler_context.seat;
