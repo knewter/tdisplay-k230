@@ -4,7 +4,7 @@ use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
     catalog::AppEntry,
     icon::IconCache,
-    navigation::{list_top, ROW_HEIGHT, ROW_VISIBLE_HEIGHT},
+    navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
     service_data::{Control, ControlValue},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_catalog::BackgroundKind,
@@ -184,6 +184,22 @@ fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u
 
 fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Bold);
+}
+
+fn centered_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family("DejaVu Sans");
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Bold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(pango::Alignment::Center);
+    layout.set_ellipsize(EllipsizeMode::End);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
 }
 
 fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
@@ -571,6 +587,7 @@ fn scene(
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
     chooser: Option<&ThemeView>,
+    pressed: Option<usize>,
 ) {
     let RenderParams {
         width,
@@ -617,6 +634,13 @@ fn scene(
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
+    if route == Route::Drawer {
+        // Preserve the authored translucent launcher brush over an opaque
+        // theme plate, rather than letting live card text ghost through apps.
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        cr.rectangle(0.0, panel_y, w, panel_h);
+        let _ = cr.fill();
+    }
     if !panel_brush.is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h)) {
         let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
         gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
@@ -638,50 +662,75 @@ fn scene(
         let _ = cr.fill();
     }
     let title = match route {
-        Route::Drawer => "Apps",
+        Route::Drawer => "All apps",
         Route::Shade => "Notifications",
         Route::Settings => "Settings",
         Route::Hide => return,
     };
-    if !(route == Route::Settings && chooser.is_some_and(|view| view.page != ThemePage::Controls)) {
+    if route == Route::Drawer {
+        text(
+            cr,
+            "YOUR DEVICE",
+            28.0,
+            panel_y + 44.0,
+            w - 56.0,
+            15.0,
+            style.muted,
+        );
+        heading(cr, title, 28.0, panel_y + 76.0, w - 56.0, 40.0, style.text);
+    } else if !(route == Route::Settings
+        && chooser.is_some_and(|view| view.page != ThemePage::Controls))
+    {
         heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
     }
     match route {
         Route::Drawer => {
             text(
                 cr,
-                "Installed on this device",
+                "Everything installed, one upward pull away.",
                 28.0,
-                panel_y + 92.0,
+                panel_y + 130.0,
                 w - 56.0,
                 18.0,
                 style.muted,
             );
             let row_start = list_top(height);
             let _ = cr.save();
-            cr.rectangle(0.0, row_start, w, (h - 28.0 - row_start).max(0.0));
+            cr.rectangle(
+                0.0,
+                row_start,
+                w,
+                (h - GRID_BOTTOM_INSET - row_start).max(0.0),
+            );
             cr.clip();
-            let first = (scroll / ROW_HEIGHT).floor().max(0.0) as usize;
-            for (index, app) in apps.iter().enumerate().skip(first).take(10) {
-                let y = row_start + index as f64 * ROW_HEIGHT - scroll;
-                if y >= h - 28.0 {
+            let first = (scroll / ROW_HEIGHT).floor().max(0.0) as usize * COLUMNS;
+            for (index, app) in apps.iter().enumerate().skip(first).take(21) {
+                let (x, y, tile_w, tile_h) = tile_rect(width, height, index, scroll);
+                if y >= h - GRID_BOTTOM_INSET || tile_w <= 0.0 {
                     break;
                 }
                 service_card(
                     cr,
                     theme,
                     "menu",
-                    24.0,
+                    x,
                     y,
-                    w - 48.0,
-                    ROW_VISIBLE_HEIGHT,
-                    false,
+                    tile_w,
+                    tile_h,
+                    pressed == Some(index),
                 );
-                service_card(cr, theme, "launcher", 38.0, y + 15.0, 52.0, 52.0, true);
+                if pressed == Some(index) {
+                    rounded(cr, x + 2.0, y + 2.0, tile_w - 4.0, tile_h - 4.0, 14.0);
+                    cr.set_line_width(3.0);
+                    color(cr, style.accent, 1.0);
+                    let _ = cr.stroke();
+                }
+                let icon_x = x + (tile_w - 58.0) / 2.0;
+                service_card(cr, theme, "launcher", icon_x, y + 17.0, 58.0, 58.0, true);
                 let painted = app
                     .icon
                     .as_deref()
-                    .is_some_and(|icon| icons.paint(cr, icon, 48, 40.0, y + 17.0));
+                    .is_some_and(|icon| icons.paint(cr, icon, 50, icon_x + 4.0, y + 21.0));
                 if !painted {
                     let initial = app
                         .name
@@ -690,25 +739,24 @@ fn scene(
                         .unwrap_or('?')
                         .to_uppercase()
                         .to_string();
-                    heading(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, style.accent);
+                    centered_label(
+                        cr,
+                        &initial,
+                        icon_x + 4.0,
+                        y + 30.0,
+                        50.0,
+                        27.0,
+                        style.accent,
+                    );
                 }
-                heading(
+                centered_label(
                     cr,
                     &app.name,
-                    108.0,
-                    y + 20.0,
-                    w - 156.0,
-                    25.0,
+                    x + 8.0,
+                    y + 94.0,
+                    tile_w - 16.0,
+                    20.0,
                     brush_rgb(theme, "menu", "text", style.text),
-                );
-                text(
-                    cr,
-                    "Installed app",
-                    108.0,
-                    y + 52.0,
-                    w - 156.0,
-                    16.0,
-                    brush_rgb(theme, "menu", "text", style.muted),
                 );
             }
             let _ = cr.restore();
@@ -723,6 +771,15 @@ fn scene(
                     style.muted,
                 );
             }
+            text(
+                cr,
+                "SWIPE DOWN TO RETURN TO CARDS",
+                88.0,
+                h - 43.0,
+                w - 176.0,
+                13.0,
+                style.muted,
+            );
         }
         Route::Shade => {
             text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, style.accent);
@@ -1043,6 +1100,7 @@ pub fn draw_shm(
         None,
         None,
         None,
+        None,
     )
 }
 
@@ -1054,6 +1112,7 @@ fn draw_shm_with_icons(
     theme: Option<&AppearanceSnapshot>,
     services: Option<&ServiceView>,
     chooser: Option<&ThemeView>,
+    pressed: Option<usize>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -1073,7 +1132,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, params, apps, icons, theme, services, chooser);
+    scene(&cr, params, apps, icons, theme, services, chooser, pressed);
     drop(cr);
     surface.flush();
     Ok(())
@@ -1103,6 +1162,7 @@ pub fn export_png(
         None,
         None,
         None,
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -1123,6 +1183,7 @@ pub struct RendererCache {
     rebuilds: u64,
     icons: IconCache,
     scroll: f64,
+    pressed: Option<usize>,
     theme: Option<AppearanceSnapshot>,
     services: Option<ServiceView>,
     chooser: Option<ThemeView>,
@@ -1136,6 +1197,14 @@ impl RendererCache {
     pub fn set_services(&mut self, services: ServiceView) {
         self.services = Some(services);
         self.invalidate();
+    }
+    pub fn set_drawer_pressed(&mut self, pressed: Option<usize>) -> bool {
+        if self.pressed != pressed {
+            self.pressed = pressed;
+            self.invalidate();
+            return true;
+        }
+        false
     }
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
         let configured = std::env::var("K230_ICON_THEME").ok();
@@ -1238,6 +1307,7 @@ impl RendererCache {
                 self.theme.as_ref(),
                 self.services.as_ref(),
                 self.chooser.as_ref(),
+                self.pressed,
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -1468,6 +1538,31 @@ mod tests {
                 name: "Monitor".into(),
                 icon: Some("system-monitor-app".into()),
             },
+            AppEntry {
+                id: "video.desktop".into(),
+                name: "Video".into(),
+                icon: None,
+            },
+            AppEntry {
+                id: "files.desktop".into(),
+                name: "Files".into(),
+                icon: None,
+            },
+            AppEntry {
+                id: "editor.desktop".into(),
+                name: "Editor".into(),
+                icon: None,
+            },
+            AppEntry {
+                id: "help.desktop".into(),
+                name: "Help".into(),
+                icon: None,
+            },
+            AppEntry {
+                id: "foot-server.desktop".into(),
+                name: "Foot Server".into(),
+                icon: None,
+            },
         ];
         let unavailable = Control {
             state: ControlState::Unavailable,
@@ -1627,6 +1722,11 @@ mod tests {
                 .unwrap();
             assert_eq!(frame.len(), 568 * 1232 * 4);
             if route == Route::Drawer {
+                assert_eq!(
+                    frame[(600 * 568 + 10) * 4 + 3],
+                    255,
+                    "drawer panel must be opaque after theme composition"
+                );
                 assert_eq!(
                     &frame[0..4],
                     &[0, 0, 0, 0],
@@ -2017,7 +2117,8 @@ mod tests {
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
         draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
-        let pixel = (402 * 568 + 52) * 4;
+        let (x, y, tile_w, _) = tile_rect(568, 1232, 0, 0.0);
+        let pixel = ((y as usize + 46) * 568 + (x + tile_w / 2.0) as usize) * 4;
         assert!(frame[pixel + 2] > 160, "actual SVG red channel absent");
         assert!(frame[pixel] < 80, "actual SVG blue channel absent");
         std::fs::remove_file(icon).unwrap();
@@ -2060,7 +2161,8 @@ mod tests {
             )
             .unwrap();
         assert_eq!(cache.icons.decode_count(), 1);
-        let pixel = (402 * 568 + 52) * 4;
+        let (x, y, tile_w, _) = tile_rect(568, 1232, 0, 0.0);
+        let pixel = ((y as usize + 46) * 568 + (x + tile_w / 2.0) as usize) * 4;
         assert!(frame[pixel + 2] > 160, "named SVG red channel absent");
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -2104,5 +2206,36 @@ mod tests {
             &before[400 * 568 * 4..460 * 568 * 4]
         );
         assert_eq!(cache.rebuild_count(), 2);
+    }
+
+    #[test]
+    fn pressed_grid_tile_has_visible_non_color_border_without_affecting_neighbor() {
+        let apps = (0..3)
+            .map(|index| AppEntry {
+                id: format!("fixture-{index}.desktop"),
+                name: format!("Fixture {index}"),
+                icon: None,
+            })
+            .collect::<Vec<_>>();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Drawer,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let mut renderer = RendererCache::default();
+        let mut before = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut before, params, &apps).unwrap();
+        assert!(renderer.set_drawer_pressed(Some(1)));
+        let mut after = vec![0; before.len()];
+        renderer.draw(&mut after, params, &apps).unwrap();
+        let (x, y, width, _) = tile_rect(568, 1232, 1, 0.0);
+        let border = ((y as usize + 3) * 568 + (x + width / 2.0) as usize) * 4;
+        assert_ne!(&before[border..border + 4], &after[border..border + 4]);
+        let (other_x, other_y, other_width, _) = tile_rect(568, 1232, 0, 0.0);
+        let other = ((other_y as usize + 3) * 568 + (other_x + other_width / 2.0) as usize) * 4;
+        assert_eq!(&before[other..other + 4], &after[other..other + 4]);
+        assert!(renderer.set_drawer_pressed(None));
     }
 }

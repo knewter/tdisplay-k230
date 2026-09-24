@@ -898,6 +898,7 @@ impl ShellClient {
         self.reveal.clear();
         if self.route != route {
             self.nav = DrawerNavigation::default();
+            self.renderer.set_drawer_pressed(None);
         }
         self.route = route;
         self.refresh_route(route);
@@ -964,6 +965,7 @@ impl ShellClient {
         self.theme_view = ThemeView::default();
         self.renderer.set_theme_view(self.theme_view.clone());
         self.nav = DrawerNavigation::default();
+        self.renderer.set_drawer_pressed(None);
         self.reveal.clear();
         self.layer.take();
         self.configured = false;
@@ -1233,7 +1235,7 @@ impl TouchHandler for ShellClient {
     fn down(
         &mut self,
         _: &Connection,
-        _qh: &QueueHandle<Self>,
+        qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
         _: u32,
         time_ms: u32,
@@ -1250,6 +1252,13 @@ impl TouchHandler for ShellClient {
                 self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 if self.route == Route::Drawer && self.input_ready {
                     self.nav.down(id, pos, time_ms);
+                    if self.renderer.set_drawer_pressed(self.nav.pressed(
+                        self.width,
+                        self.height,
+                        self.apps.len(),
+                    )) {
+                        self.dirty = true;
+                    }
                 } else if matches!(self.route, Route::Shade | Route::Settings) && self.input_ready {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
@@ -1260,11 +1269,16 @@ impl TouchHandler for ShellClient {
             } else {
                 self.log("touch-second-cancel");
                 self.nav.cancel();
+                if self.renderer.set_drawer_pressed(None) {
+                    self.dirty = true;
+                }
                 self.panel_start = None;
                 self.panel_scrolled = false;
                 self.theme_dragged = false;
             }
-            // The contact itself is invisible; only a changed scene paints.
+            if self.dirty {
+                self.draw(qh);
+            }
         }
     }
     fn up(
@@ -1280,9 +1294,12 @@ impl TouchHandler for ShellClient {
         if self.touch.up(id) {
             self.log(&format!("touch-up {id}"));
             if self.route == Route::Drawer && self.input_ready {
+                if self.renderer.set_drawer_pressed(None) {
+                    self.dirty = true;
+                }
                 match self
                     .nav
-                    .up(id, point, time_ms, self.height, self.apps.len())
+                    .up(id, point, time_ms, self.width, self.height, self.apps.len())
                 {
                     Some(DrawerAction::Launch(index)) => self.launch_app(index),
                     Some(DrawerAction::Close) => self.hide(),
@@ -1352,13 +1369,20 @@ impl TouchHandler for ShellClient {
     ) {
         if self.touch.motion(id, pos) {
             self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
-            if self.route == Route::Drawer
-                && self.input_ready
-                && self
+            if self.route == Route::Drawer && self.input_ready {
+                if self
                     .nav
                     .motion(id, pos, time_ms, self.height, self.apps.len())
-            {
-                self.dirty = true;
+                {
+                    self.dirty = true;
+                }
+                if self.renderer.set_drawer_pressed(self.nav.pressed(
+                    self.width,
+                    self.height,
+                    self.apps.len(),
+                )) {
+                    self.dirty = true;
+                }
             } else if self.route == Route::Shade && self.input_ready {
                 if let Some((start_id, start)) = self.panel_start {
                     let dy = pos.1 - start.1;
