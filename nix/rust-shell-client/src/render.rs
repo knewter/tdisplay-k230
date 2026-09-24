@@ -446,6 +446,40 @@ impl RendererCache {
         self.invalidate();
     }
 
+    /// Full-output opaque scene behind Sway's live deck. The selected still
+    /// image, when available, is composited by the wallpaper layer owner.
+    pub fn draw_wallpaper(&self, canvas: &mut [u8], width: u32, height: u32) -> Result<(), String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid wallpaper geometry")?;
+        if canvas.len() != size {
+            return Err("invalid wallpaper canvas".into());
+        }
+        let surface = unsafe {
+            ImageSurface::create_for_data_unsafe(
+                canvas.as_mut_ptr(),
+                Format::ARgb32,
+                width as i32,
+                height as i32,
+                (width * 4) as i32,
+            )
+        }
+        .map_err(|e| e.to_string())?;
+        let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+        cr.set_operator(Operator::Source);
+        color(&cr, 0x1e1e2e, 1.0);
+        cr.paint().map_err(|e| e.to_string())?;
+        cr.set_operator(Operator::Over);
+        if let Some(brush) = theme_brush(self.theme.as_ref(), "launcher", "background") {
+            let _ = fill_brush(&cr, brush, 0.0, 0.0, width as f64, height as f64);
+        }
+        drop(cr);
+        surface.flush();
+        Ok(())
+    }
+
     pub fn draw(
         &mut self,
         canvas: &mut [u8],
@@ -569,6 +603,8 @@ mod tests {
         let pixel = (900 * 568 + 280) * 4;
         assert_eq!(&frame[pixel..pixel + 4], &[0, 0, 255, 255]);
         assert_eq!(&frame[0..4], &[0, 0, 0, 0]);
+        renderer.draw_wallpaper(&mut frame, 568, 1232).unwrap();
+        assert_eq!(&frame[0..4], &[0, 0, 255, 255]);
     }
 
     #[test]

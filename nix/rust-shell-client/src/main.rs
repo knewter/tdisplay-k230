@@ -4,6 +4,7 @@
 use gio::prelude::*;
 use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
+    background_decode::{BackgroundCache, FitMode},
     catalog::{installed_apps, AppEntry},
     configure_size, frame_bytes,
     navigation::{DrawerAction, DrawerNavigation},
@@ -70,8 +71,24 @@ fn appearance_socket_path() -> Result<PathBuf, String> {
     Ok(PathBuf::from(runtime).join(APPEARANCE_SOCKET_NAME))
 }
 
-fn appearance_renderable(snapshot: Option<&AppearanceSnapshot>) -> bool {
-    snapshot.is_none_or(|snapshot| snapshot.selected_background.is_none())
+fn appearance_renderable(
+    snapshot: Option<&AppearanceSnapshot>,
+    cache: &mut BackgroundCache,
+    geometry: Option<(u32, u32)>,
+) -> Result<(), String> {
+    let Some(snapshot) = snapshot else {
+        return Ok(());
+    };
+    let Some(_) = snapshot.selected_background.as_ref() else {
+        return Ok(());
+    };
+    let Some(still) = snapshot.background.as_ref() else {
+        return Err("video background is not supported".into());
+    };
+    let (width, height) = geometry.ok_or("wallpaper output is not configured")?;
+    cache
+        .render(still, width, height, FitMode::Crop)
+        .map(|_| ())
 }
 
 fn poll_until(fd: i32, events: i16, deadline: Instant) -> Result<(), String> {
@@ -412,6 +429,9 @@ struct ShellClient {
     pool: SlotPool,
     buffers: Vec<Buffer>,
     layer: Option<LayerSurface>,
+    wallpaper: WallpaperState,
+    background_cache: BackgroundCache,
+    wallpaper_path: Option<PathBuf>,
     touch_device: Option<wl_touch::WlTouch>,
     route: Route,
     touch: TouchTrace,
@@ -438,12 +458,132 @@ struct ShellClient {
     reduced_motion: bool,
 }
 
+#[derive(Default)]
+struct WallpaperState {
+    layer: Option<LayerSurface>,
+    buffers: Vec<Buffer>,
+    width: u32,
+    height: u32,
+    configured: bool,
+    frame_pending: bool,
+    dirty: bool,
+}
+
 impl ShellClient {
     fn log(&self, event: &str) {
         eprintln!(
             "rust-shell {}ms {event}",
             self.started.elapsed().as_millis()
         );
+    }
+
+    fn ensure_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if self.wallpaper.layer.is_some() {
+            return true;
+        }
+        let surface = self.compositor.create_surface(qh);
+        let layer = self.layer_shell.create_layer_surface(
+            qh,
+            surface,
+            Layer::Background,
+            Some("k230-shell-wallpaper"),
+            None,
+        );
+        layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
+        layer.set_size(0, 0);
+        layer.set_exclusive_zone(0);
+        layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+        let Ok(empty) = Region::new(&self.compositor) else {
+            return false;
+        };
+        layer.wl_surface().set_input_region(Some(empty.wl_region()));
+        layer.commit();
+        self.wallpaper.layer = Some(layer);
+        self.wallpaper.configured = false;
+        self.wallpaper.dirty = true;
+        self.log("wallpaper-map-request");
+        true
+    }
+
+    fn draw_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if self.appearance_pending || !self.wallpaper.configured || self.wallpaper.frame_pending {
+            return false;
+        }
+        let (width, height) = (self.wallpaper.width, self.wallpaper.height);
+        if frame_bytes(width, height).is_none() {
+            return false;
+        }
+        let stride = (width * 4) as i32;
+        self.wallpaper
+            .buffers
+            .retain(|b| b.stride() == stride && b.height() == height as i32);
+        let available: Vec<bool> = self
+            .wallpaper
+            .buffers
+            .iter()
+            .map(|b| b.canvas(&mut self.pool).is_some())
+            .collect();
+        let (index, canvas) = if let Some(index) = released_slot(&available) {
+            (
+                index,
+                self.wallpaper.buffers[index]
+                    .canvas(&mut self.pool)
+                    .expect("released wallpaper slot"),
+            )
+        } else {
+            if self.wallpaper.buffers.len() >= 2 {
+                self.wallpaper.dirty = true;
+                return false;
+            }
+            let Ok((buffer, canvas)) = self.pool.create_buffer(
+                width as i32,
+                height as i32,
+                stride,
+                wl_shm::Format::Argb8888,
+            ) else {
+                self.log("wallpaper-shm-allocate-failed");
+                return false;
+            };
+            self.wallpaper.buffers.push(buffer);
+            (self.wallpaper.buffers.len() - 1, canvas)
+        };
+        let rendered = if let Some(path) = self.wallpaper_path.as_deref() {
+            self.background_cache
+                .render(path, width, height, FitMode::Crop)
+                .and_then(|pixels| {
+                    if pixels.len() != canvas.len() {
+                        return Err("wallpaper pixel size mismatch".into());
+                    }
+                    canvas.copy_from_slice(pixels);
+                    Ok(())
+                })
+        } else {
+            self.renderer.draw_wallpaper(canvas, width, height)
+        };
+        if let Err(error) = rendered {
+            self.wallpaper.dirty = false;
+            self.log(&format!("wallpaper-render-failed {error}"));
+            return false;
+        }
+        let Some(layer) = self.wallpaper.layer.as_ref() else {
+            return false;
+        };
+        layer
+            .wl_surface()
+            .damage_buffer(0, 0, width as i32, height as i32);
+        layer.wl_surface().frame(qh, layer.wl_surface().clone());
+        if self.wallpaper.buffers[index]
+            .attach_to(layer.wl_surface())
+            .is_err()
+        {
+            self.log("wallpaper-attach-failed");
+            return false;
+        }
+        layer.commit();
+        self.wallpaper.frame_pending = true;
+        self.wallpaper.dirty = false;
+        self.log("wallpaper-commit");
+        true
     }
 
     fn launch_app(&mut self, index: usize) {
@@ -696,6 +836,18 @@ impl CompositorHandler for ShellClient {
         surface: &wl_surface::WlSurface,
         _: u32,
     ) {
+        if self
+            .wallpaper
+            .layer
+            .as_ref()
+            .is_some_and(|l| l.wl_surface() == surface)
+        {
+            self.wallpaper.frame_pending = false;
+            if self.wallpaper.dirty && !self.appearance_pending {
+                self.draw_wallpaper(qh);
+            }
+            return;
+        }
         if !self
             .layer
             .as_ref()
@@ -737,18 +889,46 @@ impl OutputHandler for ShellClient {
 }
 
 impl LayerShellHandler for ShellClient {
-    fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &LayerSurface) {
+    fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, layer: &LayerSurface) {
+        if self
+            .wallpaper
+            .layer
+            .as_ref()
+            .is_some_and(|wallpaper| wallpaper.wl_surface() == layer.wl_surface())
+        {
+            self.wallpaper = WallpaperState::default();
+            self.log("wallpaper-closed");
+            return;
+        }
         self.hide();
     }
     fn configure(
         &mut self,
         _: &Connection,
         qh: &QueueHandle<Self>,
-        _: &LayerSurface,
+        layer: &LayerSurface,
         configure: LayerSurfaceConfigure,
         _: u32,
     ) {
         let (width, height) = configure.new_size;
+        if self
+            .wallpaper
+            .layer
+            .as_ref()
+            .is_some_and(|wallpaper| wallpaper.wl_surface() == layer.wl_surface())
+        {
+            let mut geometry = (self.wallpaper.width, self.wallpaper.height);
+            if configure_size(&mut geometry, width, height).is_none() {
+                self.log("wallpaper-configure-rejected");
+                return;
+            }
+            (self.wallpaper.width, self.wallpaper.height) = geometry;
+            self.wallpaper.configured = true;
+            self.wallpaper.dirty = true;
+            self.log(&format!("wallpaper-configure {width}x{height}"));
+            self.draw_wallpaper(qh);
+            return;
+        }
         let mut geometry = (self.width, self.height);
         if configure_size(&mut geometry, width, height).is_none() {
             self.log("configure-rejected");
@@ -939,7 +1119,7 @@ fn serve() -> Result<(), String> {
     let compositor = CompositorState::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let layer_shell = LayerShell::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let shm = Shm::bind(&globals, &qh).map_err(|e| e.to_string())?;
-    let pool = SlotPool::new(568 * 1232 * 4 * 3, &shm).map_err(|e| e.to_string())?;
+    let pool = SlotPool::new(568 * 1232 * 4 * 5, &shm).map_err(|e| e.to_string())?;
     let (launch_sender, launch_results) = mpsc::channel();
     let mut state = ShellClient {
         compositor,
@@ -951,6 +1131,11 @@ fn serve() -> Result<(), String> {
         pool,
         buffers: Vec::new(),
         layer: None,
+        wallpaper: WallpaperState::default(),
+        background_cache: BackgroundCache::new(),
+        wallpaper_path: appearance
+            .active()
+            .and_then(|snapshot| snapshot.background.clone()),
         touch_device: None,
         route: Route::Drawer,
         touch: TouchTrace::default(),
@@ -981,6 +1166,9 @@ fn serve() -> Result<(), String> {
         ),
     };
     state.renderer.set_appearance(appearance.active().cloned());
+    if !state.ensure_wallpaper(&qh) {
+        return Err("wallpaper layer unavailable".into());
+    }
     state.log("ready-idle");
     loop {
         queue
@@ -989,9 +1177,18 @@ fn serve() -> Result<(), String> {
         match appearance.receive() {
             Ok(Some(event)) => match event.phase {
                 AppearancePhase::Prepare => {
-                    let accepted = appearance_renderable(event.snapshot.as_ref());
-                    if !accepted {
-                        state.log("appearance-background-not-yet-renderable");
+                    let geometry = state
+                        .wallpaper
+                        .configured
+                        .then_some((state.wallpaper.width, state.wallpaper.height));
+                    let result = appearance_renderable(
+                        event.snapshot.as_ref(),
+                        &mut state.background_cache,
+                        geometry,
+                    );
+                    let accepted = result.is_ok();
+                    if let Err(error) = result {
+                        state.log(&format!("appearance-prepare-rejected {error}"));
                     }
                     if let Err(error) = appearance.respond(event, accepted) {
                         state.log(&format!("appearance-prepare-ack-failed {error}"));
@@ -999,13 +1196,26 @@ fn serve() -> Result<(), String> {
                 }
                 AppearancePhase::Commit | AppearancePhase::Rollback => {
                     let previous = appearance.active().cloned();
-                    if !appearance_renderable(event.snapshot.as_ref()) {
-                        state.log("appearance-background-not-yet-renderable");
+                    let geometry = state
+                        .wallpaper
+                        .configured
+                        .then_some((state.wallpaper.width, state.wallpaper.height));
+                    if let Err(error) = appearance_renderable(
+                        event.snapshot.as_ref(),
+                        &mut state.background_cache,
+                        geometry,
+                    ) {
+                        state.log(&format!("appearance-commit-rejected {error}"));
                         let _ = appearance.respond(event, false);
                     } else {
+                        state.wallpaper_path = event
+                            .snapshot
+                            .as_ref()
+                            .and_then(|snapshot| snapshot.background.clone());
                         state.renderer.set_appearance(event.snapshot.clone());
                         state.appearance_pending = true;
                         state.dirty = true;
+                        state.wallpaper.dirty = true;
                         pending_appearance = Some((event, Instant::now(), previous));
                     }
                 }
@@ -1067,24 +1277,28 @@ fn serve() -> Result<(), String> {
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
         if let Some((event, started, previous)) = pending_appearance.take() {
-            let idle = state.layer.is_none();
-            let ready = idle || (state.configured && !state.frame_pending);
+            let overlay_ready = state.layer.is_none() || (state.configured && !state.frame_pending);
+            let ready =
+                state.wallpaper.configured && !state.wallpaper.frame_pending && overlay_ready;
             if !ready && started.elapsed() < Duration::from_millis(1400) {
                 pending_appearance = Some((event, started, previous));
             } else {
-                let accepted = if idle {
-                    true
-                } else if ready {
+                let accepted = if ready {
                     state.appearance_pending = false;
-                    let painted = state.draw(&qh);
+                    let background = state.draw_wallpaper(&qh);
+                    let foreground = state.layer.is_none() || state.draw(&qh);
                     state.appearance_pending = true;
-                    painted && queue.flush().is_ok()
+                    background && foreground && queue.flush().is_ok()
                 } else {
                     false
                 };
                 if !accepted {
+                    state.wallpaper_path = previous
+                        .as_ref()
+                        .and_then(|snapshot| snapshot.background.clone());
                     state.renderer.set_appearance(previous);
                     state.dirty = true;
+                    state.wallpaper.dirty = true;
                 }
                 state.appearance_pending = false;
                 if let Err(error) = appearance.respond(event, accepted) {
@@ -1094,6 +1308,9 @@ fn serve() -> Result<(), String> {
         }
         if state.dirty && !state.frame_pending && pending_appearance.is_none() {
             state.draw(&qh);
+        }
+        if state.wallpaper.dirty && !state.wallpaper.frame_pending && pending_appearance.is_none() {
+            state.draw_wallpaper(&qh);
         }
         queue.flush().map_err(|e| e.to_string())?;
         let Some(read_guard) = queue.prepare_read() else {
@@ -1218,6 +1435,29 @@ fn main() {
 mod route_tests {
     use super::*;
     use std::os::unix::fs::DirBuilderExt;
+
+    #[test]
+    fn appearance_media_requires_a_configured_still_decoder() {
+        let mut snapshot = AppearanceSnapshot {
+            generation: "0123456789abcdef01234567".into(),
+            path: "/tmp/fixture-generation".into(),
+            icon_theme: None,
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette: Default::default(),
+            sections: Default::default(),
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        };
+        let mut cache = BackgroundCache::new();
+        assert!(appearance_renderable(Some(&snapshot), &mut cache, None).is_ok());
+        snapshot.selected_background = Some("/tmp/fixture.webm".into());
+        assert!(appearance_renderable(Some(&snapshot), &mut cache, Some((568, 1232))).is_err());
+        snapshot.background = Some("/tmp/fixture.png".into());
+        assert!(appearance_renderable(Some(&snapshot), &mut cache, None).is_err());
+    }
 
     #[test]
     fn sway_back_failure_blocks_launch_handoff() {
