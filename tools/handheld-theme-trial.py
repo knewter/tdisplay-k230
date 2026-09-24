@@ -224,6 +224,10 @@ class Trial:
 
     def capture_native(self, role: str, raw: Path) -> dict:
         image = raw / (role + ".png")
+        # Shell ACK precedes the managed Foot follower's one-second poll.
+        # Allow that asynchronous consumer to paint before a static capture;
+        # this delay is not a presentation-latency measurement or acceptance.
+        time.sleep(1.25)
         result = subprocess.run([self.m["capture_command"], "-t", "png", str(image)],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                 timeout=15, check=False)

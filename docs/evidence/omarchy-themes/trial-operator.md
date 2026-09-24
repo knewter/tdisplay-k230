@@ -1,7 +1,7 @@
 # Reserved-board theme trial procedure (source checkpoint)
 
 This procedure is for the sole board/serial operator after an integrated image
-has been built and installed. The helper has **not** been run on the board.
+has been built and installed. The initial helper completed a reserved-board dark/light activation and metadata restoration on 24 September 2026. Its immediate restored capture preceded the managed Foot follower's next one-second poll; the helper now waits 1.25 seconds before each static capture. This is a capture settling allowance, not latency proof. Reviewed board records are linked as they are committed.
 `python3 tests/test_handheld_theme_trial.py` exercises its failure recovery
 against host fakes. It neither proves physical touch nor runs a performance
 workload. OpenSpec theme tasks 5.3–5.5 remain open.
