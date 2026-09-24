@@ -86,12 +86,15 @@ def remove_owned(path, token):
 
 
 class Trial:
-    def __init__(self, output, wrapper, unwrapped, broker, python, config, seconds, system=None, force_pixman=False):
+    def __init__(self, output, wrapper, unwrapped, broker, python, config, seconds, system=None,
+                 force_pixman=False, isolation_checker=None, restart_once=False):
         self.output=Path(output);self.wrapper=Path(wrapper);self.unwrapped=Path(unwrapped)
         self.broker=Path(broker);self.python=Path(python);self.config=Path(config)
         self.seconds=seconds;self.system=system or System();self.token=uuid.uuid4().hex
         self.watchdog='k230-vglite-service-recovery-'+self.token[:12]
         self.force_pixman=force_pixman
+        self.isolation_checker=Path(isolation_checker) if isolation_checker else None
+        self.restart_once=restart_once
 
     def preflight(self):
         if not OUTPUT.fullmatch(str(self.output)) or self.output.exists():
@@ -100,6 +103,9 @@ class Trial:
             raise ValueError('trial duration must be 30–180 seconds')
         for path in (self.wrapper,self.unwrapped,self.broker,self.python,self.config):
             store_file(str(path))
+        if self.isolation_checker:store_file(str(self.isolation_checker))
+        if self.restart_once and not self.isolation_checker:
+            raise ValueError('coordinated restart requires an isolation checker')
         if not self.system.active('shell.service') or not self.system.active('seatd.service'):
             raise RuntimeError('normal shell and seatd must be active')
         if self.system.prop('shell.service','User') != 'shell':
@@ -142,8 +148,11 @@ class Trial:
                'wrapper':str(self.wrapper),'unwrapped':str(self.unwrapped),'broker':str(self.broker),
                'python':str(self.python),'config':str(self.config),'seconds':self.seconds,
                'forced_pixman':self.force_pixman,
+               'isolation_checker':str(self.isolation_checker) if self.isolation_checker else None,
+               'restart_once':self.restart_once,
                'sha256':{'runner':digest(copy),'broker':digest(self.broker),'wrapper':digest(self.wrapper),
                          'unwrapped':digest(self.unwrapped),'config':digest(self.config)}}
+        if self.isolation_checker:state['sha256']['isolation_checker']=digest(self.isolation_checker)
         write_state(self.output,state)
         # Arm before any unit or normal-service mutation. The copied runner
         # survives an interrupted controller and is root-only.
@@ -174,8 +183,33 @@ class Trial:
             raise RuntimeError('broker socket failed to arm')
         self.record(phase='trial-units-ready')
 
+    def check_isolation(self, phase, pid, old_pid=None):
+        report=self.output/('isolation-'+phase+'.json')
+        self.record(isolation_phase_requested=phase)
+        command=[str(self.python),'-I',str(self.isolation_checker),'--trial',str(self.output),
+                 '--token',self.token,'--phase',phase,'--expected-main-pid',str(pid),
+                 '--output',str(report)]
+        if old_pid is not None:command+=['--old-main-pid',str(old_pid)]
+        self.system.call(command,timeout=20)
+        observation=json.loads(report.read_text())
+        if observation.get('status')!='PASS' or observation.get('phase')!=phase or \
+                observation.get('main',{}).get('main_pid')!=pid:
+            raise RuntimeError('isolation checker report differs from trial phase')
+        self.record(**{'isolation_'+phase+'_sha256':digest(report)})
+
+    def observe_main(self):
+        pid=int(self.system.prop('shell.service','MainPID'))
+        if pid<=1 or os.path.realpath('/proc/'+str(pid)+'/exe')!=str(self.unwrapped):
+            raise RuntimeError('trial MainPID is not the expected compositor')
+        scope=Path('/proc/sys/kernel/yama/ptrace_scope').read_text().strip()
+        fd_owner=Path('/proc/'+str(pid)+'/fd').stat().st_uid
+        if scope not in ('1','2','3') or fd_owner!=0:
+            raise RuntimeError('normal-service ptrace or non-dumpability boundary failed')
+        return pid,scope,fd_owner
+
     def run(self):
         original=self.preflight()
+        deadline=time.monotonic()+self.seconds
         try:
             self.prepare(original)
             self.install()
@@ -185,24 +219,39 @@ class Trial:
             self.guarded(lambda: self.system.call(['systemctl','start','shell.service']))
             if not self.system.active('shell.service'):
                 raise RuntimeError('trial shell did not start')
-            pid=int(self.system.prop('shell.service','MainPID'))
-            if pid <= 1 or os.path.realpath('/proc/'+str(pid)+'/exe') != str(self.unwrapped):
-                raise RuntimeError('trial MainPID is not the expected compositor')
-            scope=Path('/proc/sys/kernel/yama/ptrace_scope').read_text().strip()
-            fd_owner=Path('/proc/'+str(pid)+'/fd').stat().st_uid
+            pid,scope,fd_owner=self.observe_main()
             self.record(phase='observed',main_pid=pid,ptrace_scope=scope,proc_fd_owner=fd_owner)
-            if scope not in ('1','2','3') or fd_owner != 0:
-                raise RuntimeError('normal-service ptrace or non-dumpability boundary failed')
-            time.sleep(self.seconds)
+            active_pid=pid
+            if self.isolation_checker:
+                self.check_isolation('initial',pid)
+            if self.restart_once:
+                if deadline-time.monotonic()<15:
+                    raise RuntimeError('insufficient watchdog time for coordinated restart')
+                self.record(restart_requested=True,initial_main_pid=pid)
+                self.guarded(lambda: self.system.call(['systemctl','stop','shell.service']))
+                if self.system.active('shell.service') or Path('/proc/'+str(pid)).exists():
+                    raise RuntimeError('old compositor survived coordinated stop')
+                self.guarded(lambda: self.system.call(['systemctl','start','shell.service']))
+                active_pid,scope,fd_owner=self.observe_main()
+                if active_pid==pid:
+                    raise RuntimeError('coordinated restart MainPID differs')
+                self.record(main_pid=active_pid,restart_new_main_pid=active_pid,
+                            ptrace_scope=scope,proc_fd_owner=fd_owner)
+                self.check_isolation('restarted',active_pid,pid)
+            time.sleep(max(0,deadline-time.monotonic()))
             since=json.loads((self.output/'state.json').read_text())['created_at_utc']
             broker_log=self.system.call(['journalctl','-u','k230-vglite-broker.service','--since='+since,'--no-pager','-o','cat','-n','1000'])
             shell_log=self.system.call(['journalctl','-u','shell.service','--since='+since,'--no-pager','-o','cat','-n','10000'])
-            grants=sum('VG-Lite descriptor granted to compositor MainPID '+str(pid) in line
-                       for line in broker_log.splitlines())
+            grant_pids=[int(value) for value in re.findall(
+                r'^VG-Lite descriptor granted to compositor MainPID ([0-9]+)$',broker_log,re.M)]
+            grants=grant_pids.count(active_pid)
+            old_grants=grant_pids.count(pid) if self.restart_once else 0
             gpu=shell_log.count('VG-Lite full frame submitted')
             replay=shell_log.count('VG-Lite full pass replayed with Pixman')
-            self.record(broker_grants_for_main_pid=grants,gpu_full_frames=gpu,pixman_replays=replay)
-            if grants > 1 or (self.force_pixman and (replay == 0 or gpu != 0)) or \
+            self.record(broker_grants_for_main_pid=grants,broker_grants_for_old_pid=old_grants,
+                        gpu_full_frames=gpu,pixman_replays=replay)
+            if grants > 1 or (self.restart_once and (old_grants!=1 or len(grant_pids)!=2)) or \
+                    (self.force_pixman and (replay == 0 or gpu != 0)) or \
                     (not self.force_pixman and (grants != 1 or gpu == 0)):
                 raise RuntimeError('trial did not observe its required broker/render path')
         finally:
@@ -258,6 +307,7 @@ def main(argv=None):
     p.add_argument('--wrapper');p.add_argument('--unwrapped');p.add_argument('--broker')
     p.add_argument('--python');p.add_argument('--config');p.add_argument('--seconds',type=int,default=90)
     p.add_argument('--force-pixman',action='store_true')
+    p.add_argument('--isolation-checker');p.add_argument('--restart-once',action='store_true')
     p.add_argument('--restore',action='store_true');p.add_argument('--token')
     a=p.parse_args(argv)
     if os.geteuid()!=0 or not platform.machine().startswith('riscv') or not OUTPUT.fullmatch(str(a.output)):
@@ -271,7 +321,8 @@ def main(argv=None):
         if not all((a.wrapper,a.unwrapped,a.broker,a.python,a.config)):
             p.error('wrapper, unwrapped, broker, python and config required')
         Trial(a.output,a.wrapper,a.unwrapped,a.broker,a.python,a.config,a.seconds,
-              force_pixman=a.force_pixman).run()
+              force_pixman=a.force_pixman,isolation_checker=a.isolation_checker,
+              restart_once=a.restart_once).run()
     return 0
 
 

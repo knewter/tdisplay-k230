@@ -166,5 +166,68 @@ class NormalServiceTrialTests(unittest.TestCase):
         self.assertEqual(self.manager.events,[])
         self.assertFalse(self.trial.output.exists())
 
+    def test_restart_requires_checker_before_service_mutation(self):
+        self.trial.restart_once=True
+        with self.assertRaisesRegex(ValueError,'requires an isolation checker'):
+            self.trial.preflight()
+        self.assertFalse(self.trial.output.exists())
+        self.assertEqual(self.manager.events,[])
+
+    def test_watchdog_during_checker_prevents_stale_result_record(self):
+        self.trial.isolation_checker=self.trial.wrapper
+        self.trial.prepare(self.manager.normal);self.trial.install()
+        self.trial.record(phase='observed',main_pid=777)
+        original=self.manager.call
+        def interrupted(command,**kwargs):
+            if '--trial' in command:
+                (self.trial.output/'isolation-initial.json').write_text(json.dumps({
+                    'status':'PASS','phase':'initial','main':{'main_pid':777}}))
+                T.restore(self.trial.output,self.trial.token,self.manager)
+                return ''
+            return original(command,**kwargs)
+        with patch.object(self.manager,'call',side_effect=interrupted):
+            with self.assertRaisesRegex(RuntimeError,'closed by recovery'):
+                self.trial.check_isolation('initial',777)
+        self.assertEqual(json.loads((self.trial.output/'state.json').read_text())['phase'],'restored')
+
+    def test_watchdog_between_coordinated_stop_and_start_blocks_restart(self):
+        self.trial.isolation_checker=self.trial.wrapper
+        self.trial.prepare(self.manager.normal);self.trial.install()
+        self.trial.record(phase='observed',main_pid=777)
+        self.trial.guarded(lambda:self.manager.call(['systemctl','stop','shell.service']))
+        T.restore(self.trial.output,self.trial.token,self.manager)
+        count=sum(event[:3]==['systemctl','start','shell.service'] for event in self.manager.events)
+        with self.assertRaisesRegex(RuntimeError,'closed by recovery'):
+            self.trial.guarded(lambda:self.manager.call(['systemctl','start','shell.service']))
+        self.assertEqual(sum(event[:3]==['systemctl','start','shell.service'] for event in self.manager.events),count)
+        self.assertEqual(json.loads((self.trial.output/'state.json').read_text())['phase'],'restored')
+
+    def test_coordinated_restart_tracks_new_main_pid_and_restores(self):
+        self.trial.isolation_checker=self.trial.wrapper
+        self.trial.restart_once=True
+        phases=[]
+        original=self.manager.call
+        def logs(command,**kwargs):
+            if command[:2]==['journalctl','-u']:
+                if command[2]=='k230-vglite-broker.service':
+                    return ('VG-Lite descriptor granted to compositor MainPID 777\n'
+                            'VG-Lite descriptor granted to compositor MainPID 778')
+                if command[2]=='shell.service':return 'VG-Lite full frame submitted'
+            return original(command,**kwargs)
+        def checker(phase,pid,old=None):
+            phases.append((phase,pid,old))
+            self.trial.record(**{'isolation_'+phase+'_sha256':'a'*64})
+        with patch.object(self.trial,'observe_main',side_effect=[(777,'1',0),(778,'1',0)]), \
+             patch.object(self.trial,'check_isolation',side_effect=checker), \
+             patch.object(self.manager,'call',side_effect=logs), \
+             patch.object(T.time,'sleep'):
+            self.trial.run()
+        state=json.loads((self.trial.output/'state.json').read_text())
+        self.assertEqual(phases,[('initial',777,None),('restarted',778,777)])
+        self.assertEqual((state['initial_main_pid'],state['restart_new_main_pid']),(777,778))
+        self.assertEqual((state['broker_grants_for_old_pid'],state['broker_grants_for_main_pid']),(1,1))
+        self.assertEqual(state['phase'],'restored')
+        self.assertTrue(self.manager.active('shell.service'))
+
 
 if __name__=='__main__':unittest.main()
