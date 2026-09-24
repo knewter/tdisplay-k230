@@ -53,6 +53,17 @@ int main(int argc,char **argv) {
 		kg_motion(&p,3,100,990,150); near(p.progress,1-210.0/476);
 		kg_motion(&p,3,100,906,170);near(p.progress,1-126.0/476);
 		kg_up(&p,3,180);settle(&p,180);assert(p.mode==KG_SHOWN);
+	} else if (!strcmp(argv[1],"settle-interrupt")) {
+		p.mode=KG_SETTLE;p.progress=.95;p.target_shown=true;p.last_ms=100;
+		assert(kg_down(&p,3,100,800,110,1232,true,false,false)&KG_CONSUME);
+		assert(p.mode==KG_GRIP_DRAG);
+		near(p.start_progress,.95);
+		kg_motion(&p,3,100,900,130);
+		near(p.progress,.95-100.0/476);
+		assert(kg_tick(&p,180)==KG_NONE);
+		kg_motion(&p,3,100,850,200);
+		near(p.progress,.95-50.0/476);
+		kg_up(&p,3,500);settle(&p,500);assert(p.mode==KG_SHOWN);
 	} else if (!strcmp(argv[1],"stale-velocity")) {
 		p.mode=KG_SHOWN;p.progress=1;
 		kg_down(&p,3,100,780,100,1232,true,false,false);

@@ -29,11 +29,13 @@ unsigned kg_down(struct kg_policy *p, int32_t id, double x, double y,
 	uint64_t ms, double output_height, bool keyboard_mapped, bool claimed_card,
 	bool overlay_owns_input) {
 	if (overlay_owns_input) return KG_NONE;
-	if (keyboard_mapped && p->mode == KG_SHOWN &&
-		y >= output_height - p->height - 56 && y < output_height - p->height) {
+	double grip_top = output_height - (p->height + 56) * p->progress;
+	if (keyboard_mapped && p->owned_count == 0 && p->overflow_contacts == 0 &&
+		(p->mode == KG_SHOWN || p->mode == KG_SETTLE) && p->progress > .01 &&
+		y >= grip_top && y < grip_top + 56) {
 		p->mode = KG_GRIP_DRAG;
 		p->first = id; p->first_live = true; p->second_live = false;
-		p->grip_start = y; p->start_progress = p->progress = 1;
+		p->grip_start = y; p->start_progress = p->progress;
 		p->velocity = 0; p->last_ms = p->sample_ms = ms;
 		own(p,id);
 		return KG_CONSUME;
