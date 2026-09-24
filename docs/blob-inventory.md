@@ -1110,6 +1110,11 @@ DATA 64e856a1544fbedbdcac8a1bea92b9ce08e06611c0e77f3ce76265805648a609  docs/evid
 DATA 37ac7bccec11e01f2c244436ee60d1a430ed7475850424f909caf0faaa3dc4bd  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/during-drag.png
 DATA 9bfb0f7f50043d736abf921550a75f4066003dd5cc9961a007c6bb8382bc063d  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/private.png
 DATA daf9ae76840b71eef09940dbfda654d38554f62bbe7d671d5c692c096178c620  docs/evidence/card-shell/scaled-cache-board/board/run-2-on/captures/close-timeout.png
+DATA bf55548b7df7f5b7efa1016fab9955e98ed5a831d48ffeddb3de29dd8215b80c  docs/evidence/card-shell/tracked-motion-qemu/before-expand.png
+DATA 0677f13977a3c6734e461a808921716c86402386695ef3343cb4a3c36ad56a69  docs/evidence/card-shell/tracked-motion-qemu/during-expand.png
+DATA 51471171d73d883577104cae64254bcc039c12278d9b68502699de6c41ef0a02  docs/evidence/card-shell/tracked-motion-qemu/entry-end.png
+DATA 61786ceefb7f771eb3034ecea012932c366130a3f02114d3b8b7500c4fc5e99d  docs/evidence/card-shell/tracked-motion-qemu/entry-middle.png
+DATA 7033843d9fb164232b7406150f120475a2f2bb756b091bfe2a17b3fe2fe0b32d  docs/evidence/card-shell/tracked-motion-qemu/entry-start.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1326,6 +1331,14 @@ are in `docs/evidence/final-shell-image/README.md`.
 Four locally generated `grim` captures of synthetic repository clients under
 headless QEMU/Pixman. No board or user application content. Provenance, commands
 and limits: `docs/evidence/card-shell/headless/README.md`. Hashes are in MANIFEST.
+
+## Finger-tracked card motion headless captures
+
+Five locally generated `grim` frames of the repository's synthetic nested
+Wayland clients and card compositor under headless RISC-V QEMU/Pixman. They
+contain no user application data or physical panel image. Exact source package,
+commands, visual bounds and limits: `docs/evidence/card-shell/tracked-motion-qemu/README.md`.
+Their SHA-256 values are in MANIFEST.
 
 ## Card composition board captures
 
