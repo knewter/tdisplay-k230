@@ -905,7 +905,7 @@ fn paint_wifi(
                 service_card(cr, theme, "controls", 18.0, 800.0, 52.0, 76.0, false);
                 text(cr, "⇧", 28.0, 820.0, 40.0, 28.0, style.accent);
                 service_card(cr, theme, "controls", 498.0, 800.0, 52.0, 76.0, false);
-                text(cr, "⌫", 505.0, 820.0, 40.0, 27.0, style.accent);
+                text(cr, "Del", 504.0, 824.0, 44.0, 18.0, style.accent);
                 service_card(cr, theme, "controls", 18.0, 890.0, 112.0, 76.0, false);
                 text(
                     cr,
@@ -919,7 +919,7 @@ fn paint_wifi(
                 service_card(cr, theme, "controls", 136.0, 890.0, 278.0, 76.0, false);
                 text(cr, "space", 222.0, 914.0, 110.0, 20.0, style.muted);
                 service_card(cr, theme, "controls", 420.0, 890.0, 130.0, 76.0, false);
-                text(cr, "⌫", 468.0, 913.0, 60.0, 26.0, style.accent);
+                text(cr, "Delete", 445.0, 917.0, 85.0, 18.0, style.accent);
             }
             service_card(cr, theme, "controls", 24.0, 1120.0, 250.0, 88.0, false);
             service_card(cr, theme, "controls", 294.0, 1120.0, 250.0, 88.0, true);
