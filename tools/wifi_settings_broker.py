@@ -25,6 +25,7 @@ import time
 MAX_REQUEST = 4096
 MAX_RESPONSE = 16384
 MAX_NETWORKS = 48
+MAX_SAVED = 8
 MAX_SCAN_BYTES = 256 * 1024
 SOCKET_TIMEOUT = 3
 CONNECT_TIMEOUT = 22
@@ -70,13 +71,8 @@ def config_for(ssid, security, password=None, control="/run/k230-wifi/wpa_suppli
             "}\n").encode("ascii")
 
 
-def saved_identity(data):
-    """Reflect a safe single-network identity, including the operator format."""
+def block_identity(block):
     try:
-        blocks = re.findall(rb"network=\{([^}]*)\}", data, re.S)
-        if len(blocks) != 1:
-            return None
-        block = blocks[0]
         raw = re.search(rb"(?m)^\s*ssid=([0-9a-fA-F]{2,64})\s*$", block)
         quoted = re.search(rb'(?m)^\s*ssid="((?:[^"\\]|\\["\\])+)"\s*$', block)
         if raw:
@@ -91,10 +87,62 @@ def saved_identity(data):
         elif re.search(rb"(?m)^\s*psk=", block):
             security = "wpa2-psk"
         else:
-            return None
+            security = "unsupported"
         return {"ssid": ssid, "security": security}
     except (UnicodeError, ValueError, WifiError):
         return None
+
+
+def parse_saved(data):
+    """Preserve bounded root-owned stanzas byte-for-byte; fail closed on unknown global data."""
+    if data is None:
+        return []
+    if len(data) > 8192:
+        raise WifiError("unsupported-saved-config")
+    allowed = (b"ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root",
+               b"update_config=0")
+    blocks = []
+    current = None
+    for line in data.splitlines(keepends=True):
+        stripped = line.strip()
+        if current is None:
+            if stripped == b"network={":
+                current = [line]
+            elif not stripped or stripped.startswith(b"#") or stripped in allowed:
+                continue
+            else:
+                raise WifiError("unsupported-saved-config")
+        else:
+            if stripped == b"network={":
+                raise WifiError("unsupported-saved-config")
+            current.append(line)
+            if stripped == b"}":
+                raw = b"".join(current)
+                identity = block_identity(raw)
+                if identity is None:
+                    raise WifiError("unsupported-saved-config")
+                blocks.append((identity, raw))
+                if len(blocks) > MAX_SAVED:
+                    raise WifiError("saved-limit")
+                current = None
+    if current is not None:
+        raise WifiError("unsupported-saved-config")
+    names = [identity["ssid"] for identity, _ in blocks]
+    if len(names) != len(set(names)):
+        raise WifiError("unsupported-saved-config")
+    return blocks
+
+
+def merge_saved(previous, ssid, security, password):
+    existing = [(identity, raw) for identity, raw in parse_saved(previous)
+                if identity["ssid"] != ssid]
+    if len(existing) >= MAX_SAVED:
+        raise WifiError("saved-limit")
+    selected = config_for(ssid, security, password).split(b"network={", 1)[1]
+    blocks = [raw if raw.endswith(b"\n") else raw + b"\n" for _, raw in existing]
+    blocks.append(b"network={" + selected)
+    return (b"ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\n"
+            b"update_config=0\n" + b"".join(blocks))
 
 
 def parse_scan(output):
@@ -230,11 +278,7 @@ class Radio:
         self.fixed([self.systemctl, "stop", "k230-wifi-settings-restore.timer"])
 
     def saved(self):
-        try:
-            data = self.previous_config()
-            return saved_identity(data) if data is not None else None
-        except OSError:
-            raise WifiError("unsafe-credential") from None
+        return [identity for identity, _ in parse_saved(self.previous_config())]
 
     def scan(self):
         return parse_scan(self.fixed([self.iw, "dev", "wlan0", "scan"], timeout=12))
@@ -245,7 +289,12 @@ class Radio:
             error = None
         except WifiError as exc:
             current, error = None, exc.code
-        return {"current": current, "saved": self.saved(), "error": error}
+        try:
+            saved = self.saved()
+        except (WifiError, OSError):
+            saved = []
+            error = "unsupported-saved-config"
+        return {"current": current, "saved": saved, "error": error}
 
     def connect(self, ssid, security, password):
         self.runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -262,6 +311,7 @@ class Radio:
         try:
             previous = self.previous_config()
             candidate = config_for(ssid, security, password, str(self.runtime / "control"))
+            merged = merge_saved(previous, ssid, security, password)
             os.fchmod(fd, 0o600)
             with os.fdopen(fd, "wb") as stream:
                 stream.write(candidate)
@@ -298,7 +348,7 @@ class Radio:
                 raise WifiError("connection-timeout")
             persisted = True  # _persist can fail after atomic replacement.
             try:
-                self._persist(candidate)
+                self._persist(merged)
             except (OSError, WifiError):
                 if previous is None:
                     self.credential.unlink(missing_ok=True)
@@ -354,15 +404,33 @@ class Radio:
 
     def forget(self, ssid):
         ssid_value(ssid)
-        saved = self.saved()
-        if saved is None or saved["ssid"] != ssid:
+        previous = self.previous_config()
+        blocks = parse_saved(previous)
+        if not any(identity["ssid"] == ssid for identity, _ in blocks):
             raise WifiError("not-saved")
+        remaining = [raw if raw.endswith(b"\n") else raw + b"\n" for identity, raw in blocks
+                     if identity["ssid"] != ssid]
+        new_data = (b"ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\n"
+                    b"update_config=0\n" + b"".join(remaining))
         self.arm_restore()
+        safe_to_cancel = False
         try:
             self.fixed([self.systemctl, "stop", "k230-wifi.service"])
-            self.credential.unlink()
+            try:
+                if remaining:
+                    self._persist(new_data)
+                else:
+                    self.credential.unlink()
+                self.fixed([self.systemctl, "start", "k230-wifi.service"])
+                safe_to_cancel = True
+            except (OSError, WifiError):
+                self._persist(previous)
+                self.fixed([self.systemctl, "start", "k230-wifi.service"])
+                safe_to_cancel = True
+                raise WifiError("forget-failed") from None
         finally:
-            self.cancel_restore()
+            if safe_to_cancel:
+                self.cancel_restore()
         return {"state": "forgotten"}
 
 

@@ -62,7 +62,7 @@ class BrokerTests(unittest.TestCase):
         data = wifi.config_for("Example Secure", "wpa2-psk", "examplepass")
         self.assertNotIn(b"examplepass", data)
         self.assertIn(b"psk=", data)
-        self.assertEqual(wifi.saved_identity(data), {"ssid": "Example Secure", "security": "wpa2-psk"})
+        self.assertEqual(wifi.parse_saved(data)[0][0], {"ssid": "Example Secure", "security": "wpa2-psk"})
         for password in ("short", "x" * 64, "a\npassword"):
             with self.assertRaises(wifi.WifiError):
                 wifi.config_for("Example Secure", "wpa2-psk", password)
@@ -81,7 +81,7 @@ class BrokerTests(unittest.TestCase):
 
     def test_operator_saved_identity_and_bounded_fixed_output(self):
         operator = b'ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\nnetwork={\n ssid="Example Secure"\n psk="examplepass"\n}\n'
-        self.assertEqual(wifi.saved_identity(operator),
+        self.assertEqual(wifi.parse_saved(operator)[0][0],
                          {"ssid": "Example Secure", "security": "wpa2-psk"})
         radio = wifi.Radio()
         with self.assertRaisesRegex(wifi.WifiError, "response-too-large"):
@@ -117,6 +117,30 @@ class BrokerTests(unittest.TestCase):
             self.assertIn("systemctl stop k230-wifi-settings-restore.timer", args[-1])
             self.assertTrue(all("examplepass" not in arg and "Example Secure" not in arg for arg in args))
             self.assertEqual(radio.credential.stat().st_mode & 0o777, 0o600)
+
+    def test_connect_preserves_other_saved_networks_and_replaces_only_selected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            original = wifi.config_for("Example Guest", "open")
+            radio._persist(original)
+            radio.connected = True
+            with patch.object(wifi.subprocess, "Popen", return_value=FakeProcess([])):
+                radio.connect("Example Secure", "wpa2-psk", "examplepass")
+            names = [identity["ssid"] for identity, _ in wifi.parse_saved(radio.credential.read_bytes())]
+            self.assertEqual(names, ["Example Guest", "Example Secure"])
+            radio.forget("Example Secure")
+            self.assertEqual([identity["ssid"] for identity, _ in wifi.parse_saved(radio.credential.read_bytes())],
+                             ["Example Guest"])
+
+    def test_unsupported_legacy_config_refused_without_stopping_prior_service(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            legacy = b"country=US\nnetwork={\n ssid=4578616d706c65\n psk=0000000000000000000000000000000000000000000000000000000000000000\n}\n"
+            radio._persist(legacy)
+            with self.assertRaisesRegex(wifi.WifiError, "unsupported-saved-config"):
+                radio.connect("Example Secure", "wpa2-psk", "examplepass")
+            self.assertEqual(radio.credential.read_bytes(), legacy)
+            self.assertFalse(radio.commands)
 
     def test_failed_attempt_preserves_prior_credential_and_restores_service(self):
         with tempfile.TemporaryDirectory() as tmp:
