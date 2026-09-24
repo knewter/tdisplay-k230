@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
-import json
+from contextlib import redirect_stderr
+from io import StringIO
 import subprocess
 import tempfile
 import unittest
@@ -73,6 +74,19 @@ class Fixture(unittest.TestCase):
         self.assertEqual(items["2026-09-23-the-old-thing"]["lane"], "archived")
         self.assertEqual(data["sourceRevision"], self.revision)
         self.assertEqual(data["sourceMode"], "committed HEAD")
+
+    def test_duplicate_status_override_fails_before_last_value_can_win(self) -> None:
+        put(self.repo, work.STATUS_PATH,
+            '{"schema":1,"overrides":{"the-first-thing":{"next":"older"},'
+            '"the-first-thing":{"next":"newer"}}}')
+        command(self.repo, "add", work.STATUS_PATH)
+        command(self.repo, "commit", "-qm", "duplicate status fixture")
+        stderr = StringIO()
+        with redirect_stderr(stderr):
+            result = work.main(["--repo", str(self.repo), "--output", str(self.repo / "work.json")])
+        self.assertEqual(result, 2)
+        self.assertIn("duplicate work-board status JSON key: 'the-first-thing'", stderr.getvalue())
+        self.assertFalse((self.repo / "work.json").exists())
 
     def test_dirty_task_is_ignored_without_explicit_working_tree_mode(self) -> None:
         put(self.repo, "openspec/changes/the-second-thing/tasks.md", "- [x] Make it\n")
@@ -216,7 +230,7 @@ class Fixture(unittest.TestCase):
 
 class RealRepository(unittest.TestCase):
     def test_current_status_file_is_valid_against_working_tree(self) -> None:
-        status = json.loads((ROOT / work.STATUS_PATH).read_text())
+        status = work.parse_status((ROOT / work.STATUS_PATH).read_text())
         data = work.snapshot(work.SourceTree(ROOT, True), status, "test UTC")
         self.assertGreaterEqual(len(data["items"]), 20)
         self.assertTrue(any(i["lane"] == "verification" for i in data["items"]))
@@ -224,7 +238,7 @@ class RealRepository(unittest.TestCase):
 
     def test_every_current_openspec_checkbox_is_counted(self) -> None:
         import re
-        data = work.snapshot(work.SourceTree(ROOT, True), json.loads((ROOT / work.STATUS_PATH).read_text()), "test UTC")
+        data = work.snapshot(work.SourceTree(ROOT, True), work.parse_status((ROOT / work.STATUS_PATH).read_text()), "test UTC")
         for item in data["items"]:
             if not item["tasksPath"]:
                 continue

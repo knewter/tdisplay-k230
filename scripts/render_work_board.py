@@ -35,6 +35,19 @@ class WorkError(ValueError):
     pass
 
 
+def parse_status(raw: str) -> dict:
+    """Reject repeated keys before JSON can silently discard an override."""
+    def unique_object(pairs: list[tuple[str, object]]) -> dict:
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise WorkError(f"duplicate work-board status JSON key: {key!r}")
+            result[key] = value
+        return result
+
+    return json.loads(raw, object_pairs_hook=unique_object)
+
+
 def git(repo: Path, *args: str) -> str:
     result = subprocess.run(["git", "-C", str(repo), *args], text=True, capture_output=True)
     if result.returncode:
@@ -318,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
         tree = SourceTree(args.repo.resolve(), args.working_tree)
         raw = tree.read(STATUS_PATH) if STATUS_PATH in tree.paths else '{"schema": 1, "overrides": {}}'
         generated = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        data = snapshot(tree, json.loads(raw), generated)
+        data = snapshot(tree, parse_status(raw), generated)
         output = args.output or args.repo / "site/src/data/work.json"
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
