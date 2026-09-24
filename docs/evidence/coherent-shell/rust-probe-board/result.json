@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "evidence_class": "board-runtime-native-capture",
+  "interaction_provenance": "route-command-no-touch-injected",
+  "observed_date_utc": "2026-09-24",
+  "source_commit": "6d56d140f11ab6049821a452fa32a848183cb1dc",
+  "package": "/nix/store/ii2dvxw952j33xprfxycphxyqsxj6v6p-k230-shell-rust-probe-riscv64-unknown-linux-gnu-0.1.0",
+  "installed_system_before_and_after": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "output_dimensions": [
+    568,
+    1232
+  ],
+  "configured_client_dimensions": [
+    568,
+    1176
+  ],
+  "configure_limit": "existing bar reserves 56 pixels; final no-bar shell was not installed",
+  "process_relative_ms": {
+    "ready_idle": 0,
+    "touch_capability": 3,
+    "map_request": 14217,
+    "first_configure": 14225,
+    "first_commit": 14270,
+    "first_frame_done": 14291,
+    "second_commit": 14314,
+    "second_frame_done": 14351,
+    "unmap": 49502
+  },
+  "single_service_snapshot": {
+    "memory_current_bytes": 5611520,
+    "cpu_usage_nsec_cumulative": 93487000,
+    "rss": "UNMEASURED"
+  },
+  "map_request_to_first_commit_ms": 53,
+  "map_request_to_first_frame_done_ms": 74,
+  "physical_touch": "UNVERIFIED",
+  "panel_presentation": "UNVERIFIED",
+  "cold_start": "UNMEASURED",
+  "comparative_performance": "UNMEASURED",
+  "restoration": {
+    "probe": "inactive",
+    "shell": "active",
+    "system_unchanged": true
+  },
+  "captures": {
+    "mapped.png": {
+      "sha256": "ce89bec08e3a28f2a5eee150dcca1dc9d048c9421e31116904d0c6ee5f8081e9",
+      "bytes": 16628
+    },
+    "restored.png": {
+      "sha256": "2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7",
+      "bytes": 16517
+    }
+  },
+  "host_console_collection_window_utc": {
+    "baseline": "2026-09-24T04:00:05.972980+00:00",
+    "restored": "2026-09-24T04:05:43.824709+00:00"
+  }
+}
