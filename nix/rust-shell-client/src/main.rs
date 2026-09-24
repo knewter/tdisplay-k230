@@ -3,13 +3,14 @@
 //! Smithay Client Toolkit's MIT-licensed v0.20.0 simple_layer example.
 use k230_shell_rust::{
     catalog::{installed_apps, AppEntry},
-    configure_size, frame_bytes, released_slot,
-    render::draw_shm,
-    render::export_png,
+    configure_size, frame_bytes,
+    protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
+    released_slot,
+    render::{export_png, RendererCache},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
-    compositor::{CompositorHandler, CompositorState},
+    compositor::{CompositorHandler, CompositorState, Region},
     delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat,
     delegate_shm, delegate_touch,
     output::{OutputHandler, OutputState},
@@ -49,7 +50,8 @@ use wayland_client::{
 };
 
 const SOCKET_NAME: &str = "k230-shell-rust.sock";
-const MAX_ROUTE_BYTES: usize = 24;
+const MAX_PENDING_BYTES: usize = 4096;
+const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
 
 fn socket_path() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR").ok_or("XDG_RUNTIME_DIR is unset")?;
@@ -166,6 +168,13 @@ struct Peer {
     stream: UnixStream,
     bytes: Vec<u8>,
     deadline: Instant,
+    progress_stream: bool,
+}
+
+enum Received {
+    Route(Route, UnixStream),
+    Reveal(RevealMessage),
+    Abort,
 }
 
 struct RouteServer {
@@ -194,7 +203,7 @@ impl RouteServer {
             .open(lock_path)
             .map_err(|e| e.to_string())?;
         if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-            return Err("probe is already running".into());
+            return Err("shell client is already running".into());
         }
         if let Ok(metadata) = fs::symlink_metadata(&path) {
             if !metadata.file_type().is_socket() || metadata.uid() != unsafe { libc::geteuid() } {
@@ -227,47 +236,78 @@ impl RouteServer {
             self.peer = Some(Peer {
                 stream,
                 bytes: Vec::new(),
-                deadline: Instant::now() + Duration::from_millis(100),
+                deadline: Instant::now() + PEER_IDLE_TIMEOUT,
+                progress_stream: false,
             });
         }
     }
 
-    fn receive(&mut self) -> Option<(Route, UnixStream)> {
+    fn has_line(&self) -> bool {
+        self.peer
+            .as_ref()
+            .is_some_and(|peer| peer.bytes.contains(&b'\n'))
+    }
+
+    fn receive(&mut self) -> Option<Received> {
         let peer = self.peer.as_mut()?;
         if Instant::now() >= peer.deadline {
+            let abort = peer.progress_stream;
             self.peer = None;
+            return abort.then_some(Received::Abort);
+        }
+        if !peer.bytes.contains(&b'\n') {
+            let mut part = [0u8; 512];
+            match peer.stream.read(&mut part) {
+                Ok(0) => {
+                    let abort = peer.progress_stream;
+                    self.peer = None;
+                    return abort.then_some(Received::Abort);
+                }
+                Ok(count) if peer.bytes.len() + count <= MAX_PENDING_BYTES => {
+                    peer.bytes.extend_from_slice(&part[..count]);
+                }
+                Ok(_) => {
+                    let abort = peer.progress_stream;
+                    self.peer = None;
+                    return abort.then_some(Received::Abort);
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => return None,
+                Err(_) => {
+                    let abort = peer.progress_stream;
+                    self.peer = None;
+                    return abort.then_some(Received::Abort);
+                }
+            }
+        }
+        let Some(end) = peer.bytes.iter().position(|byte| *byte == b'\n') else {
+            if peer.bytes.len() > MAX_LINE {
+                let abort = peer.progress_stream;
+                self.peer = None;
+                return abort.then_some(Received::Abort);
+            }
             return None;
+        };
+        if end + 1 > MAX_LINE {
+            let abort = peer.progress_stream;
+            self.peer = None;
+            return abort.then_some(Received::Abort);
         }
-        let mut part = [0u8; MAX_ROUTE_BYTES];
-        match peer.stream.read(&mut part) {
-            Ok(0) => {
-                self.peer = None;
-                return None;
-            }
-            Ok(count) if peer.bytes.len() + count <= MAX_ROUTE_BYTES => {
-                peer.bytes.extend_from_slice(&part[..count])
-            }
-            Ok(_) => {
-                self.peer = None;
-                return None;
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => return None,
-            Err(_) => {
-                self.peer = None;
-                return None;
-            }
+        let line: Vec<u8> = peer.bytes.drain(..=end).collect();
+        peer.deadline = Instant::now() + PEER_IDLE_TIMEOUT;
+        if let Some(route) = Route::parse(&line) {
+            let peer = self.peer.take().expect("in-flight peer");
+            return Some(Received::Route(route, peer.stream));
         }
-        if !peer.bytes.ends_with(b"\n") {
-            return None;
+        if let Some(message) = RevealMessage::parse(&line) {
+            peer.progress_stream = true;
+            if matches!(message.phase, Phase::Finish | Phase::Cancel) {
+                self.peer = None; // complete terminal line; EOF is normal
+            }
+            return Some(Received::Reveal(message));
         }
-        let route = Route::parse(&peer.bytes);
-        let mut peer = self.peer.take().expect("in-flight peer");
-        if let Some(route) = route {
-            Some((route, peer.stream))
-        } else {
-            let _ = peer.stream.write_all(b"ERR\n");
-            None
-        }
+        let abort = peer.progress_stream;
+        self.peer = None;
+        abort.then_some(Received::Abort)
     }
 }
 
@@ -277,7 +317,7 @@ impl Drop for RouteServer {
     }
 }
 
-struct Probe {
+struct ShellClient {
     compositor: CompositorState,
     layer_shell: LayerShell,
     registry_state: RegistryState,
@@ -297,22 +337,20 @@ struct Probe {
     frame_pending: bool,
     started: Instant,
     apps: Vec<AppEntry>,
+    renderer: RendererCache,
+    reveal: RevealState,
+    input_ready: bool,
 }
 
-impl Probe {
+impl ShellClient {
     fn log(&self, event: &str) {
         eprintln!(
-            "rust-probe {}ms {event}",
+            "rust-shell {}ms {event}",
             self.started.elapsed().as_millis()
         );
     }
 
-    fn show(&mut self, qh: &QueueHandle<Self>, route: Route) {
-        if route == Route::Hide {
-            self.hide();
-            return;
-        }
-        self.route = route;
+    fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
         if self.layer.is_none() {
             let surface = self.compositor.create_surface(qh);
             let layer = self.layer_shell.create_layer_surface(
@@ -326,23 +364,97 @@ impl Probe {
             layer.set_size(0, 0);
             layer.set_exclusive_zone(0);
             layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            let Ok(empty) = Region::new(&self.compositor) else {
+                self.log("input-region-unavailable");
+                return false;
+            };
+            layer.wl_surface().set_input_region(Some(empty.wl_region()));
             layer.commit();
             self.layer = Some(layer);
             self.configured = false;
+            self.input_ready = false;
             self.log("map-request");
-        } else {
-            self.dirty = true;
-            self.draw(qh);
         }
+        true
+    }
+
+    fn show(&mut self, qh: &QueueHandle<Self>, route: Route) -> bool {
+        if route == Route::Hide {
+            self.hide();
+            return true;
+        }
+        self.reveal.clear();
+        self.route = route;
+        if !self.ensure_layer(qh) {
+            return false;
+        }
+        self.dirty = true;
+        self.draw(qh);
+        true
+    }
+
+    fn reveal_message(&mut self, qh: &QueueHandle<Self>, message: RevealMessage) {
+        let now = self.started.elapsed().as_millis() as u64;
+        if !self.reveal.apply(message, now, false) {
+            self.log("reveal-rejected");
+            return;
+        }
+        self.route = message.surface;
+        if !self.ensure_layer(qh) {
+            self.reveal.clear();
+            return;
+        }
+        if message.phase == Phase::Begin {
+            // Drop overlay hit targets before the compositor-owned finger
+            // stream can see this layer; do not wait for a frame callback.
+            self.input_region();
+            if let Some(layer) = self.layer.as_ref() {
+                layer.commit();
+            }
+        }
+        self.dirty = true;
+        self.draw(qh);
+    }
+
+    fn input_region(&mut self) {
+        let ready = self.reveal.surface().is_none() || self.reveal.input_ready();
+        if ready == self.input_ready {
+            return;
+        }
+        let Some(layer) = self.layer.as_ref() else {
+            return;
+        };
+        let Ok(region) = Region::new(&self.compositor) else {
+            return;
+        };
+        if ready {
+            let y = if self.route == Route::Drawer {
+                (self.height as f64 * 0.19) as i32
+            } else {
+                0
+            };
+            let bottom = if self.route == Route::Shade {
+                (self.height as f64 * 0.65) as i32
+            } else {
+                self.height as i32
+            };
+            region.add(0, y, self.width as i32, bottom - y);
+        }
+        layer
+            .wl_surface()
+            .set_input_region(Some(region.wl_region()));
+        self.input_ready = ready;
     }
 
     fn hide(&mut self) {
         self.touch.cancel();
+        self.reveal.clear();
         self.layer.take();
         self.configured = false;
         self.frame_pending = false;
         self.dirty = false;
         self.buffers.clear();
+        self.input_ready = false;
         self.log("unmap");
     }
 
@@ -391,10 +503,23 @@ impl Probe {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
-        if let Err(error) = draw_shm(canvas, self.width, self.height, self.route, &self.apps) {
+        let progress = if self.reveal.surface().is_some() {
+            self.reveal.progress()
+        } else {
+            1.0
+        };
+        if let Err(error) = self.renderer.draw(
+            canvas,
+            self.width,
+            self.height,
+            self.route,
+            &self.apps,
+            progress,
+        ) {
             self.log(&format!("render-failed {error}"));
             return;
         }
+        self.input_region();
         let layer = self.layer.as_ref().expect("mapped");
         layer
             .wl_surface()
@@ -411,7 +536,7 @@ impl Probe {
     }
 }
 
-impl CompositorHandler for Probe {
+impl CompositorHandler for ShellClient {
     fn scale_factor_changed(
         &mut self,
         _: &Connection,
@@ -466,7 +591,7 @@ impl CompositorHandler for Probe {
     }
 }
 
-impl OutputHandler for Probe {
+impl OutputHandler for ShellClient {
     fn output_state(&mut self) -> &mut OutputState {
         &mut self.output_state
     }
@@ -475,7 +600,7 @@ impl OutputHandler for Probe {
     fn output_destroyed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_output::WlOutput) {}
 }
 
-impl LayerShellHandler for Probe {
+impl LayerShellHandler for ShellClient {
     fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &LayerSurface) {
         self.hide();
     }
@@ -501,7 +626,7 @@ impl LayerShellHandler for Probe {
     }
 }
 
-impl SeatHandler for Probe {
+impl SeatHandler for ShellClient {
     fn seat_state(&mut self) -> &mut SeatState {
         &mut self.seat_state
     }
@@ -534,7 +659,7 @@ impl SeatHandler for Probe {
     fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {}
 }
 
-impl TouchHandler for Probe {
+impl TouchHandler for ShellClient {
     fn down(
         &mut self,
         _: &Connection,
@@ -617,19 +742,19 @@ impl TouchHandler for Probe {
     }
 }
 
-impl ShmHandler for Probe {
+impl ShmHandler for ShellClient {
     fn shm_state(&mut self) -> &mut Shm {
         &mut self.shm
     }
 }
-delegate_compositor!(Probe);
-delegate_output!(Probe);
-delegate_shm!(Probe);
-delegate_seat!(Probe);
-delegate_touch!(Probe);
-delegate_layer!(Probe);
-delegate_registry!(Probe);
-impl ProvidesRegistryState for Probe {
+delegate_compositor!(ShellClient);
+delegate_output!(ShellClient);
+delegate_shm!(ShellClient);
+delegate_seat!(ShellClient);
+delegate_touch!(ShellClient);
+delegate_layer!(ShellClient);
+delegate_registry!(ShellClient);
+impl ProvidesRegistryState for ShellClient {
     fn registry(&mut self) -> &mut RegistryState {
         &mut self.registry_state
     }
@@ -648,7 +773,7 @@ fn serve() -> Result<(), String> {
     let layer_shell = LayerShell::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let shm = Shm::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let pool = SlotPool::new(568 * 1232 * 4 * 3, &shm).map_err(|e| e.to_string())?;
-    let mut state = Probe {
+    let mut state = ShellClient {
         compositor,
         layer_shell,
         registry_state: RegistryState::new(&globals),
@@ -668,12 +793,25 @@ fn serve() -> Result<(), String> {
         frame_pending: false,
         started: Instant::now(),
         apps,
+        renderer: RendererCache::default(),
+        reveal: RevealState::default(),
+        input_ready: false,
     };
     state.log("ready-idle");
     loop {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        if state
+            .reveal
+            .tick(state.started.elapsed().as_millis() as u64)
+        {
+            if state.reveal.surface().is_none() {
+                state.hide();
+            } else {
+                state.dirty = true;
+            }
+        }
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
         if state.dirty && !state.frame_pending {
@@ -701,7 +839,12 @@ fn serve() -> Result<(), String> {
                 revents: 0,
             },
         ];
-        let polled = unsafe { libc::poll(fds.as_mut_ptr(), fds.len() as libc::nfds_t, 100) };
+        let timeout = if state.reveal.settling() || routes.has_line() {
+            16
+        } else {
+            100
+        };
+        let polled = unsafe { libc::poll(fds.as_mut_ptr(), fds.len() as libc::nfds_t, timeout) };
         if polled < 0 {
             if std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted {
                 continue;
@@ -716,20 +859,31 @@ fn serve() -> Result<(), String> {
         if fds[1].revents & libc::POLLIN != 0 {
             routes.accept();
         }
-        if fds[2].revents & libc::POLLIN != 0
+        if routes.has_line()
+            || fds[2].revents & (libc::POLLIN | libc::POLLHUP) != 0
             || routes
                 .peer
                 .as_ref()
                 .is_some_and(|p| Instant::now() >= p.deadline)
         {
-            if let Some((route, mut peer)) = routes.receive() {
-                state.show(&qh, route);
-                let reply: &[u8] = if queue.flush().is_ok() {
-                    b"OK\n"
-                } else {
-                    b"ERR\n"
-                };
-                let _ = peer.write_all(reply);
+            match routes.receive() {
+                Some(Received::Route(route, mut peer)) => {
+                    let mapped = state.show(&qh, route);
+                    let reply: &[u8] = if mapped && queue.flush().is_ok() {
+                        b"OK\n"
+                    } else {
+                        b"ERR\n"
+                    };
+                    let _ = peer.write_all(reply);
+                }
+                Some(Received::Reveal(message)) => state.reveal_message(&qh, message),
+                Some(Received::Abort) => {
+                    state
+                        .reveal
+                        .eof(state.started.elapsed().as_millis() as u64, false);
+                    state.dirty = true;
+                }
+                None => {}
             }
         }
     }
@@ -753,5 +907,53 @@ fn main() {
     if let Err(error) = outcome {
         eprintln!("k230-shell-rust: {error}");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod route_tests {
+    use super::*;
+    use std::os::unix::fs::DirBuilderExt;
+
+    #[test]
+    fn split_stream_finish_and_premature_eof() {
+        let runtime = std::env::temp_dir().join(format!(
+            "k230-shell-route-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::DirBuilder::new().mode(0o700).create(&runtime).unwrap();
+        let path = runtime.join(SOCKET_NAME);
+        let mut server = RouteServer::new(path.clone()).unwrap();
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        let begin = b"{\"v\":1,\"kind\":\"reveal\",\"surface\":\"drawer\",\"phase\":\"begin\",\"seq\":19,\"progress\":0}\n";
+        client.write_all(&begin[..12]).unwrap();
+        assert!(server.receive().is_none());
+        client.write_all(&begin[12..]).unwrap();
+        let Some(Received::Reveal(message)) = server.receive() else {
+            panic!("missing begin");
+        };
+        assert_eq!(message.phase, Phase::Begin);
+        drop(client);
+        assert!(matches!(server.receive(), Some(Received::Abort)));
+
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        client.write_all(begin).unwrap();
+        assert!(matches!(server.receive(), Some(Received::Reveal(_))));
+        let finish = b"{\"v\":1,\"kind\":\"reveal\",\"surface\":\"drawer\",\"phase\":\"finish\",\"seq\":19,\"progress\":1000}\n";
+        client.write_all(finish).unwrap();
+        let Some(Received::Reveal(message)) = server.receive() else {
+            panic!("missing finish");
+        };
+        assert_eq!(message.phase, Phase::Finish);
+        drop(client);
+        assert!(server.peer.is_none());
+        drop(server);
+        fs::remove_dir_all(runtime).unwrap();
     }
 }

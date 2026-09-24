@@ -1,6 +1,7 @@
 //! Testable state boundaries for the opt-in Rust shell client.
 
 pub mod catalog;
+pub mod protocol;
 pub mod render;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -24,7 +25,7 @@ impl Route {
 }
 
 pub fn frame_bytes(width: u32, height: u32) -> Option<usize> {
-    if !(300..=4096).contains(&width) || !(600..=4096).contains(&height) {
+    if !(300..=1024).contains(&width) || !(600..=2048).contains(&height) {
         return None;
     }
     usize::try_from(width)
@@ -153,6 +154,8 @@ mod tests {
     #[test]
     fn configure_size_is_bounded() {
         assert_eq!(frame_bytes(568, 1232), Some(2_799_104));
+        assert_eq!(frame_bytes(1025, 1232), None);
+        assert_eq!(frame_bytes(568, 2049), None);
         assert_eq!(frame_bytes(0, 1232), None);
         assert_eq!(frame_bytes(568, 99_999), None);
         let mut geometry = (568, 1232);

@@ -49,7 +49,7 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
-fn scene(cr: &Context, width: u32, height: u32, route: Route, apps: &[AppEntry]) {
+fn scene(cr: &Context, width: u32, height: u32, route: Route, apps: &[AppEntry], progress: f64) {
     let w = f64::from(width);
     let h = f64::from(height);
     cr.set_operator(Operator::Source);
@@ -67,6 +67,15 @@ fn scene(cr: &Context, width: u32, height: u32, route: Route, apps: &[AppEntry])
     } else {
         h - panel_y
     };
+    let hidden = 1.0 - progress.clamp(0.0, 1.0);
+    cr.translate(
+        0.0,
+        if route == Route::Drawer {
+            hidden * panel_h
+        } else {
+            -hidden * panel_h
+        },
+    );
     let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
     gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
     gradient.add_color_stop_rgb(1.0, 0.12, 0.19, 0.24);
@@ -195,6 +204,7 @@ pub fn draw_shm(
     height: u32,
     route: Route,
     apps: &[AppEntry],
+    progress: f64,
 ) -> Result<(), String> {
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
     if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
@@ -213,7 +223,7 @@ pub fn draw_shm(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps);
+    scene(&cr, width, height, route, apps, progress);
     drop(cr);
     surface.flush();
     Ok(())
@@ -229,13 +239,84 @@ pub fn export_png(
     let surface = ImageSurface::create(Format::ARgb32, width as i32, height as i32)
         .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps);
+    scene(&cr, width, height, route, apps, 1.0);
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
     surface
         .write_to_png(&mut file)
         .map_err(|error| error.to_string())?;
     Ok(())
+}
+
+/// A route/geometry/catalog-generation scene is shaped once. Finger updates
+/// translate the finished ARGB pixels into a released Wayland SHM canvas.
+#[derive(Default)]
+pub struct RendererCache {
+    route: Option<Route>,
+    width: u32,
+    height: u32,
+    static_pixels: Vec<u8>,
+    rebuilds: u64,
+}
+
+impl RendererCache {
+    pub fn invalidate(&mut self) {
+        self.route = None;
+        self.static_pixels.clear();
+    }
+
+    pub fn rebuild_count(&self) -> u64 {
+        self.rebuilds
+    }
+
+    pub fn draw(
+        &mut self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        route: Route,
+        apps: &[AppEntry],
+        progress: f64,
+    ) -> Result<(), String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid cache geometry")?;
+        if canvas.len() != size {
+            return Err("invalid canvas length".into());
+        }
+        if self.route != Some(route) || self.width != width || self.height != height {
+            let mut painted = vec![0; size];
+            draw_shm(&mut painted, width, height, route, apps, 1.0)?;
+            self.static_pixels = painted;
+            self.width = width;
+            self.height = height;
+            self.route = Some(route);
+            self.rebuilds += 1;
+        }
+        canvas.fill(0);
+        let panel_height = if route == Route::Shade {
+            f64::from(height) * 0.65
+        } else {
+            f64::from(height) * if route == Route::Drawer { 0.81 } else { 1.0 }
+        };
+        let hidden = 1.0 - progress.clamp(0.0, 1.0);
+        let shift =
+            (hidden * panel_height).round() as i32 * if route == Route::Drawer { 1 } else { -1 };
+        let row_bytes = width as usize * 4;
+        for source_y in 0..height as i32 {
+            let target_y = source_y + shift;
+            if target_y < 0 || target_y >= height as i32 {
+                continue;
+            }
+            let source = source_y as usize * row_bytes;
+            let target = target_y as usize * row_bytes;
+            canvas[target..target + row_bytes]
+                .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -250,10 +331,37 @@ mod tests {
             icon: Some("foot".into()),
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
-        draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps).unwrap();
+        draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
         assert_eq!(&frame[0..4], &[0, 0, 0, 0]);
         let panel_pixel = (900 * 568 + 280) * 4;
         assert_eq!(frame[panel_pixel + 3], 255);
-        assert!(draw_shm(&mut frame[..100], 568, 1232, Route::Drawer, &apps).is_err());
+        assert!(draw_shm(&mut frame[..100], 568, 1232, Route::Drawer, &apps, 1.0).is_err());
+        draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 0.0).unwrap();
+        assert_eq!(frame[panel_pixel + 3], 0);
+    }
+
+    #[test]
+    fn finger_progress_reuses_shaped_scene() {
+        let apps = vec![AppEntry {
+            id: "foot.desktop".into(),
+            name: "Terminal".into(),
+            icon: Some("foot".into()),
+        }];
+        let mut cache = RendererCache::default();
+        let mut frame = vec![0; 568 * 1232 * 4];
+        cache
+            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 0.2)
+            .unwrap();
+        let partial = frame.clone();
+        cache
+            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 0.8)
+            .unwrap();
+        assert_ne!(frame, partial);
+        assert_eq!(cache.rebuild_count(), 1);
+        cache.invalidate();
+        cache
+            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0)
+            .unwrap();
+        assert_eq!(cache.rebuild_count(), 2);
     }
 }
