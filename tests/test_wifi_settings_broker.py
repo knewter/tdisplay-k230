@@ -24,6 +24,9 @@ class FakeRadio:
     def connect(self, ssid, security, password, cancelled=lambda: False):
         self.calls.append((ssid, security, password))
         return {"result": "saved", "ssid": ssid}
+    def connect_saved(self, ssid, cancelled=lambda: False):
+        self.calls.append(("connect-saved", ssid))
+        return {"result": "selected", "ssid": ssid}
     def forget(self, ssid):
         self.calls.append(("forget", ssid))
         return {"result": "forgotten"}
@@ -48,13 +51,15 @@ class TrialRadio(wifi.Radio):
         (root / "wifi").mkdir(mode=0o700)
         self.commands = []
         self.connected = False
+        self.connected_ssid = "Example Secure"
         self.fail_start = False
     def fixed(self, argv, timeout=5):
         self.commands.append(tuple(argv))
         if argv[:2] == [self.systemctl, "start"] and self.fail_start:
             raise wifi.WifiError("radio-unavailable")
         if argv[0] == self.wpa_cli:
-            return b"wpa_state=COMPLETED\nssid=Example Secure\n" if self.connected else b"wpa_state=SCANNING\n"
+            return (b"wpa_state=COMPLETED\nssid=" + self.connected_ssid.encode() + b"\n"
+                    if self.connected else b"wpa_state=SCANNING\n")
         return b""
 
 
@@ -121,6 +126,9 @@ class BrokerTests(unittest.TestCase):
         self.assertEqual((answer["state"], answer["result"]), ("ok", "saved"))
         self.assertNotIn("examplepass", str(answer))
         self.assertEqual(radio.calls, [("Example Secure", "wpa2-psk", "examplepass")])
+        selected = broker.handle(1000, b'{"schema":1,"op":"connect-saved","ssid":"Example Secure"}')
+        self.assertEqual((selected["state"], selected["result"]), ("ok", "selected"))
+        self.assertEqual(radio.calls[-1], ("connect-saved", "Example Secure"))
 
     def test_connect_arms_recovery_before_stop_and_only_persists_after_completion(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -149,9 +157,43 @@ class BrokerTests(unittest.TestCase):
                 radio.connect("Example Secure", "wpa2-psk", "examplepass")
             names = [identity["ssid"] for identity, _ in wifi.parse_saved(radio.credential.read_bytes())]
             self.assertEqual(names, ["Example Guest", "Example Secure"])
+            selected = wifi.parse_saved(radio.credential.read_bytes())[-1][1]
+            self.assertIn(b"priority=1", selected)
             radio.forget("Example Secure")
             self.assertEqual([identity["ssid"] for identity, _ in wifi.parse_saved(radio.credential.read_bytes())],
                              ["Example Guest"])
+
+    def test_saved_reselect_uses_protected_stanza_and_preserves_peer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            first = wifi.config_for("Example Guest", "open")
+            radio._persist(first)
+            radio.connected = True
+            with patch.object(wifi.subprocess, "Popen", return_value=FakeProcess([])):
+                radio.connect("Example Secure", "wpa2-psk", "examplepass")
+                radio.connected_ssid = "Example Guest"
+                result = radio.connect_saved("Example Guest")
+            self.assertEqual(result["result"], "selected")
+            blocks = wifi.parse_saved(radio.credential.read_bytes())
+            self.assertEqual([identity["ssid"] for identity, _ in blocks],
+                             ["Example Secure", "Example Guest"])
+            self.assertIn(b"priority=2", blocks[-1][1])
+            self.assertIn(b"priority=1", blocks[0][1])
+            self.assertFalse(any("examplepass" in " ".join(row) for row in radio.commands))
+
+    def test_saved_reselect_missing_or_bad_priority_preserves_previous(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            radio = TrialRadio(Path(tmp))
+            old = wifi.config_for("Example Guest", "open")
+            radio._persist(old)
+            with self.assertRaisesRegex(wifi.WifiError, "not-saved"):
+                radio.connect_saved("Other")
+            self.assertEqual(radio.credential.read_bytes(), old)
+            bad = old.replace(b"}\n", b" priority=999999\n}\n")
+            radio._persist(bad)
+            with self.assertRaisesRegex(wifi.WifiError, "unsupported-saved-config"):
+                radio.connect("Example Secure", "wpa2-psk", "examplepass")
+            self.assertEqual(radio.credential.read_bytes(), bad)
 
     def test_unsupported_legacy_config_refused_without_stopping_prior_service(self):
         with tempfile.TemporaryDirectory() as tmp:

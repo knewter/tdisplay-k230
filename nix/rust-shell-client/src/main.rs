@@ -580,6 +580,10 @@ impl ShellClient {
                     self.submit_wifi(request);
                 }
             }
+            WifiIntent::EditPassword => {
+                self.wifi_view.edit_password();
+                self.wifi_dirty();
+            }
             WifiIntent::Forget => {
                 if self.wifi_view.selected.as_ref().is_some_and(|selected| {
                     self.wifi_view.snapshot.as_ref().is_some_and(|snapshot| {
@@ -603,7 +607,9 @@ impl ShellClient {
                 self.wifi_dirty();
             }
             WifiIntent::CancelPending => {
-                if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+                if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) =
+                    self.wifi_view.pending
+                {
                     self.wifi_worker.cancel(id);
                     self.wifi_view.message = Some("Cancelling connection…".into());
                     self.wifi_dirty();
@@ -617,11 +623,14 @@ impl ShellClient {
     }
 
     fn wifi_reply(&mut self, reply: k230_shell_rust::wifi_settings::WifiReply) {
-        let saved = matches!(&reply.result, Ok(WifiResult::Saved | WifiResult::Forgotten));
+        let saved = matches!(
+            &reply.result,
+            Ok(WifiResult::Saved | WifiResult::Selected | WifiResult::Forgotten)
+        );
         if self.wifi_view.accept(reply) {
             self.wifi_dirty();
             if saved {
-                self.submit_wifi(WifiRequest::Scan);
+                self.submit_wifi(WifiRequest::Status);
             }
         }
     }
@@ -1004,7 +1013,7 @@ impl ShellClient {
         }
         self.reveal.clear();
         if route != Route::Settings && self.wifi_view.page != WifiPage::Closed {
-            if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+            if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
@@ -1032,7 +1041,7 @@ impl ShellClient {
             return;
         }
         if message.surface != Route::Settings && self.wifi_view.page != WifiPage::Closed {
-            if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+            if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
@@ -1085,7 +1094,7 @@ impl ShellClient {
     fn hide(&mut self) {
         self.touch.cancel();
         self.panel_start = None;
-        if let Some((id, WifiKind::Connect)) = self.wifi_view.pending {
+        if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
             self.wifi_worker.cancel(id);
         }
         self.wifi_view.close();
@@ -1378,7 +1387,9 @@ impl TouchHandler for ShellClient {
             .is_some_and(|l| l.wl_surface() == &surface)
         {
             if self.touch.down(id, pos) {
-                self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
+                if self.wifi_view.page == WifiPage::Closed {
+                    self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
+                }
                 if self.route == Route::Drawer && self.input_ready {
                     self.nav.down(id, pos, time_ms);
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
@@ -1424,7 +1435,9 @@ impl TouchHandler for ShellClient {
     ) {
         let point = self.touch.position;
         if self.touch.up(id) {
-            self.log(&format!("touch-up {id}"));
+            if self.wifi_view.page == WifiPage::Closed {
+                self.log(&format!("touch-up {id}"));
+            }
             if self.route == Route::Drawer && self.input_ready {
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
@@ -1512,7 +1525,9 @@ impl TouchHandler for ShellClient {
         pos: (f64, f64),
     ) {
         if self.touch.motion(id, pos) {
-            self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
+            if self.wifi_view.page == WifiPage::Closed {
+                self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
+            }
             if self.route == Route::Drawer && self.input_ready {
                 if self
                     .nav

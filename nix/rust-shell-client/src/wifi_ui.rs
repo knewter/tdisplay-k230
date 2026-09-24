@@ -19,6 +19,7 @@ pub struct WifiPublic {
     pub snapshot: Option<Snapshot>,
     pub selected: Option<Network>,
     pub password_len: usize,
+    pub use_saved: bool,
     pub symbols: bool,
     pub shifted: bool,
     pub pending: bool,
@@ -26,6 +27,7 @@ pub struct WifiPublic {
     pub scroll: f64,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Intent {
     Back,
     Refresh,
@@ -36,6 +38,7 @@ pub enum Intent {
     Shift,
     Space,
     Connect,
+    EditPassword,
     Forget,
     ForgetConfirm,
     ForgetCancel,
@@ -50,6 +53,7 @@ pub struct WifiView {
     pub message: Option<String>,
     pub scroll: f64,
     password: Secret,
+    pub use_saved: bool,
     pub symbols: bool,
     pub shifted: bool,
     pub pending: Option<(u64, Kind)>,
@@ -63,6 +67,7 @@ impl Default for WifiView {
             message: None,
             scroll: 0.0,
             password: Secret::new(String::new()),
+            use_saved: false,
             symbols: false,
             shifted: false,
             pending: None,
@@ -76,6 +81,7 @@ impl WifiView {
             snapshot: self.snapshot.clone(),
             selected: self.selected.clone(),
             password_len: self.password.len(),
+            use_saved: self.use_saved,
             symbols: self.symbols,
             shifted: self.shifted,
             pending: self.pending.is_some(),
@@ -108,7 +114,12 @@ impl WifiView {
         }
         self.pending = None;
         match reply.result {
-            Ok(WifiResult::Snapshot(snapshot)) => {
+            Ok(WifiResult::Snapshot(mut snapshot)) => {
+                if reply.kind == Kind::Status {
+                    if let Some(previous) = &self.snapshot {
+                        snapshot.networks = previous.networks.clone();
+                    }
+                }
                 let unavailable = snapshot.error.clone();
                 self.snapshot = Some(snapshot);
                 self.message = unavailable.map(|code| useful_error(&code).into());
@@ -116,7 +127,12 @@ impl WifiView {
             Ok(WifiResult::Saved) => {
                 self.password = Secret::new(String::new());
                 self.page = Page::List;
-                self.message = Some("Saved. Reconnecting with this network…".into());
+                self.message = Some("Saved. Checking current connection…".into());
+            }
+            Ok(WifiResult::Selected) => {
+                self.password = Secret::new(String::new());
+                self.page = Page::List;
+                self.message = Some("Saved network selected. Checking current link…".into());
             }
             Ok(WifiResult::Forgotten) => {
                 self.page = Page::List;
@@ -125,8 +141,11 @@ impl WifiView {
             }
             Err(error) => {
                 self.message = Some(useful_error(&error).into());
-                if reply.kind == Kind::Connect {
+                if matches!(reply.kind, Kind::Connect | Kind::ConnectSaved) {
                     self.page = Page::Entry;
+                    if reply.kind == Kind::ConnectSaved && error == "authentication-failed" {
+                        self.use_saved = false;
+                    }
                 }
                 if reply.kind == Kind::Forget {
                     self.page = Page::ForgetConfirm;
@@ -147,6 +166,10 @@ impl WifiView {
                 Some("This network needs a setup method that is not supported yet".into());
             return;
         }
+        self.use_saved = snapshot
+            .saved
+            .iter()
+            .any(|saved| saved.ssid == network.ssid);
         self.selected = Some(network);
         self.password = Secret::new(String::new());
         self.page = Page::Entry;
@@ -157,7 +180,7 @@ impl WifiView {
             .as_ref()
             .is_some_and(|selected| match selected.security {
                 Security::Open => true,
-                Security::Wpa2Psk => (8..=63).contains(&self.password.len()),
+                Security::Wpa2Psk => self.use_saved || (8..=63).contains(&self.password.len()),
                 Security::Unsupported => false,
             })
             && self.pending.is_none()
@@ -169,6 +192,11 @@ impl WifiView {
         let selected = self.selected.as_ref()?;
         self.page = Page::Connecting;
         self.message = Some("Connecting…".into());
+        if self.use_saved {
+            return Some(WifiRequest::ConnectSaved {
+                ssid: selected.ssid.clone(),
+            });
+        }
         Some(WifiRequest::Connect {
             ssid: selected.ssid.clone(),
             security: selected.security,
@@ -204,13 +232,14 @@ impl WifiView {
                 self.page = Page::List;
                 self.selected = None;
                 self.password = Secret::new(String::new());
+                self.use_saved = false;
                 self.message = None;
                 true
             }
         }
     }
     pub fn key(&mut self, intent: Intent) {
-        if self.page != Page::Entry || self.pending.is_some() {
+        if self.page != Page::Entry || self.pending.is_some() || self.use_saved {
             return;
         }
         match intent {
@@ -224,6 +253,19 @@ impl WifiView {
             Intent::Symbols => self.symbols = !self.symbols,
             Intent::Shift => self.shifted = !self.shifted,
             _ => {}
+        }
+    }
+    pub fn edit_password(&mut self) {
+        if self.page == Page::Entry
+            && self.pending.is_none()
+            && self
+                .selected
+                .as_ref()
+                .is_some_and(|network| network.security == Security::Wpa2Psk)
+        {
+            self.use_saved = false;
+            self.password = Secret::new(String::new());
+            self.message = None;
         }
     }
     pub fn scroll(&mut self, delta: f64) {
@@ -309,6 +351,12 @@ pub fn hit(
     if (x - start.0).abs() > 18.0 || dy.abs() > 18.0 {
         return None;
     }
+    let down = target(view, start.0, start.1);
+    let up = target(view, x, y);
+    (down == up).then_some(up).flatten()
+}
+
+fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
     if y < 104.0 && x < 150.0 {
         return Some(Intent::Back);
     }
@@ -316,40 +364,64 @@ pub fn hit(
         if y < 104.0 && x > 418.0 {
             return Some(Intent::Refresh);
         }
-        if (338.0..1152.0).contains(&y) {
+        if (338.0..1152.0).contains(&y) && (24.0..544.0).contains(&x) {
             let index = ((y - 338.0 + view.scroll) / 88.0).floor() as usize;
             let count = view.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
             return (index < count).then_some(Intent::Select(index));
         }
     }
     if view.page == Page::Connecting {
-        if (1010.0..1140.0).contains(&y) {
+        if (1010.0..1120.0).contains(&y) && (24.0..544.0).contains(&x) {
             return Some(Intent::CancelPending);
         }
         return None;
     }
     if view.page == Page::ForgetConfirm {
-        if (850.0..1030.0).contains(&y) {
-            return Some(if x < 284.0 {
-                Intent::ForgetCancel
-            } else {
-                Intent::ForgetConfirm
-            });
+        if (850.0..960.0).contains(&y) {
+            if (24.0..274.0).contains(&x) {
+                return Some(Intent::ForgetCancel);
+            }
+            if (294.0..544.0).contains(&x) {
+                return Some(Intent::ForgetConfirm);
+            }
         }
         return None;
     }
     if view.page != Page::Entry {
         return None;
     }
-    if (1120.0..1210.0).contains(&y) {
-        return Some(if x < 284.0 {
-            Intent::Back
-        } else {
-            Intent::Connect
-        });
+    if (1120.0..1208.0).contains(&y) {
+        if (24.0..274.0).contains(&x) {
+            return Some(Intent::Back);
+        }
+        if (294.0..544.0).contains(&x) {
+            return Some(Intent::Connect);
+        }
     }
-    if (405.0..490.0).contains(&y) && x > 383.0 {
-        return Some(Intent::Forget);
+    let is_saved = view.selected.as_ref().is_some_and(|selected| {
+        view.snapshot.as_ref().is_some_and(|snapshot| {
+            snapshot
+                .saved
+                .iter()
+                .any(|saved| saved.ssid == selected.ssid)
+        })
+    });
+    if (414.0..476.0).contains(&y) && is_saved {
+        if (24.0..274.0).contains(&x)
+            && view.use_saved
+            && view
+                .selected
+                .as_ref()
+                .is_some_and(|n| n.security == Security::Wpa2Psk)
+        {
+            return Some(Intent::EditPassword);
+        }
+        if (294.0..544.0).contains(&x) {
+            return Some(Intent::Forget);
+        }
+    }
+    if view.use_saved {
+        return None;
     }
     let row = if (530.0..610.0).contains(&y) {
         0
@@ -366,13 +438,13 @@ pub fn hit(
     };
     let w = 568.0;
     if row == 4 {
-        if x < w * 0.23 {
+        if (18.0..130.0).contains(&x) {
             return Some(Intent::Symbols);
         }
-        if x < w * 0.75 {
+        if (136.0..414.0).contains(&x) {
             return Some(Intent::Space);
         }
-        return Some(Intent::Backspace);
+        return (420.0..550.0).contains(&x).then_some(Intent::Backspace);
     }
     let (keys, left, right): (&str, f64, f64) = match row {
         0 => (
@@ -403,10 +475,10 @@ pub fn hit(
             w - 28.0,
         ),
         3 => {
-            if x < 70.0 {
+            if (18.0..70.0).contains(&x) {
                 return Some(Intent::Shift);
             }
-            if x > w - 70.0 {
+            if (498.0..550.0).contains(&x) {
                 return Some(Intent::Backspace);
             }
             (
@@ -420,7 +492,11 @@ pub fn hit(
     if x < left || x >= right {
         return None;
     }
-    let index = ((x - left) / (right - left) * keys.chars().count() as f64).floor() as usize;
+    let cell = (right - left) / keys.chars().count() as f64;
+    let index = ((x - left) / cell).floor() as usize;
+    if x < left + index as f64 * cell + 2.0 || x >= left + (index + 1) as f64 * cell - 2.0 {
+        return None;
+    }
     keys.chars().nth(index).map(Intent::Key)
 }
 
@@ -466,6 +542,18 @@ mod tests {
             hit(&view.public(), (50.0, 50.0), (50.0, 50.0), 568, 1232),
             Some(Intent::Back)
         ));
+        let mut long = snapshot();
+        long.networks = (0..20)
+            .map(|index| Network {
+                ssid: format!("Example {index}"),
+                security: Security::Open,
+            })
+            .collect();
+        view.snapshot = Some(long);
+        view.scroll(100.0);
+        assert_eq!(view.scroll, 100.0);
+        view.scroll(-40.0);
+        assert_eq!(view.scroll, 60.0);
     }
     #[test]
     fn hit_uses_rendered_output_scale() {
@@ -477,6 +565,32 @@ mod tests {
             hit(&view.public(), point, point, 390, 844),
             Some(Intent::Select(0))
         ));
+    }
+    #[test]
+    fn release_must_stay_on_same_key_or_confirm_control() {
+        let mut view = WifiView::default();
+        view.page = Page::Entry;
+        assert_eq!(
+            hit(&view.public(), (68.0, 550.0), (75.0, 550.0), 568, 1232),
+            None
+        );
+        assert_eq!(
+            hit(&view.public(), (25.0, 550.0), (25.0, 550.0), 568, 1232),
+            Some(Intent::Key('1'))
+        );
+        assert_eq!(
+            hit(&view.public(), (520.0, 925.0), (520.0, 925.0), 568, 1232),
+            Some(Intent::Backspace)
+        );
+        view.page = Page::ForgetConfirm;
+        assert_eq!(
+            hit(&view.public(), (285.0, 900.0), (295.0, 900.0), 568, 1232),
+            None
+        );
+        assert_eq!(
+            hit(&view.public(), (300.0, 900.0), (300.0, 900.0), 568, 1232),
+            Some(Intent::ForgetConfirm)
+        );
     }
     #[test]
     fn closed_or_reopened_view_ignores_old_network_reply() {
@@ -500,6 +614,30 @@ mod tests {
         assert_eq!(view.snapshot.as_ref().map(|s| s.networks.len()), Some(1));
     }
     #[test]
+    fn status_after_save_updates_current_without_discarding_scan_rows() {
+        let mut view = WifiView::default();
+        view.page = Page::List;
+        view.snapshot = Some(snapshot());
+        view.submitted(4, Kind::Status);
+        let mut status = snapshot();
+        status.networks.clear();
+        status.current = Some("Example Secure".into());
+        status.saved = vec![Network {
+            ssid: "Example Secure".into(),
+            security: Security::Wpa2Psk,
+        }];
+        assert!(view.accept(WifiReply {
+            id: 4,
+            kind: Kind::Status,
+            result: Ok(WifiResult::Snapshot(status))
+        }));
+        assert_eq!(view.snapshot.as_ref().unwrap().networks.len(), 1);
+        assert_eq!(
+            view.snapshot.as_ref().unwrap().current.as_deref(),
+            Some("Example Secure")
+        );
+    }
+    #[test]
     fn forget_is_explicit_and_does_not_expose_password() {
         let mut view = WifiView::default();
         view.page = Page::List;
@@ -507,6 +645,14 @@ mod tests {
         data.saved = data.networks.clone();
         view.snapshot = Some(data);
         view.select(0);
+        assert!(view.use_saved);
+        assert!(matches!(
+            view.connect_request(),
+            Some(WifiRequest::ConnectSaved { .. })
+        ));
+        view.page = Page::Entry;
+        view.edit_password();
+        assert!(!view.use_saved);
         for ch in "examplepass".chars() {
             view.key(Intent::Key(ch));
         }

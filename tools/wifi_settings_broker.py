@@ -140,9 +140,68 @@ def merge_saved(previous, ssid, security, password):
         raise WifiError("saved-limit")
     selected = config_for(ssid, security, password).split(b"network={", 1)[1]
     blocks = [raw if raw.endswith(b"\n") else raw + b"\n" for _, raw in existing]
-    blocks.append(b"network={" + selected)
+    blocks.append(with_priority(b"network={" + selected, next_priority(existing)))
     return (b"ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\n"
             b"update_config=0\n" + b"".join(blocks))
+
+
+def next_priority(blocks):
+    """Choose a bounded preference above preserved network stanzas, or refuse."""
+    values = [0]
+    for _, raw in blocks:
+        matches = []
+        for line in raw.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(b"priority"):
+                continue
+            parsed = re.fullmatch(rb"priority\s*=\s*([0-9]{1,6})", stripped)
+            if parsed is None:
+                raise WifiError("unsupported-saved-config")
+            matches.append(parsed.group(1))
+        if len(matches) > 1 or any(not re.fullmatch(rb"[0-9]{1,6}", value) for value in matches):
+            raise WifiError("unsupported-saved-config")
+        if matches:
+            values.append(int(matches[0]))
+    result = max(values) + 1
+    if result > 999999:
+        raise WifiError("unsupported-saved-config")
+    return result
+
+
+def with_priority(raw, priority):
+    lines = []
+    closed = False
+    for line in raw.splitlines(keepends=True):
+        if re.match(rb"priority\s*=", line.strip()):
+            continue
+        if line.strip() == b"}":
+            lines.append(f"    priority={priority}\n".encode("ascii"))
+            closed = True
+        lines.append(line)
+    if not closed:
+        raise WifiError("unsupported-saved-config")
+    result = b"".join(lines)
+    return result if result.endswith(b"\n") else result + b"\n"
+
+
+def reselect_saved(previous, ssid):
+    ssid_value(ssid)
+    blocks = parse_saved(previous)
+    selected = next(((identity, raw) for identity, raw in blocks
+                     if identity["ssid"] == ssid), None)
+    if selected is None:
+        raise WifiError("not-saved")
+    if selected[0]["security"] not in ("open", "wpa2-psk"):
+        raise WifiError("unsupported-security")
+    next_priority([selected])  # reject malformed priority in the chosen stanza too
+    others = [(identity, raw) for identity, raw in blocks if identity["ssid"] != ssid]
+    selected_raw = with_priority(selected[1], next_priority(others))
+    header = (b"ctrl_interface=DIR=/run/k230-wifi/wpa_supplicant GROUP=root\n"
+              b"update_config=0\n")
+    candidate = header + selected_raw
+    merged = header + b"".join(raw if raw.endswith(b"\n") else raw + b"\n"
+                               for _, raw in others) + selected_raw
+    return candidate, merged
 
 
 def parse_scan(output):
@@ -300,14 +359,26 @@ class Radio:
         return {"current": current, "saved": saved, "error": error}
 
     def connect(self, ssid, security, password, cancelled=lambda: False):
-        self.runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
-        if self.runtime.stat().st_uid != self.owner_uid or self.runtime.stat().st_mode & 0o077:
-            raise WifiError("unsafe-runtime")
-        # Validate all existing credentials and the proposed merge before a
-        # temporary fd exists or the old radio owner is touched.
         previous = self.previous_config()
         candidate = config_for(ssid, security, password, str(self.runtime / "control"))
         merged = merge_saved(previous, ssid, security, password)
+        return self._connect_candidate(ssid, previous, candidate, merged, cancelled, "saved")
+
+    def connect_saved(self, ssid, cancelled=lambda: False):
+        previous = self.previous_config()
+        candidate, merged = reselect_saved(previous, ssid)
+        # The candidate carries the selected saved stanza only. The priority
+        # update is committed after confirmed association, with peers intact.
+        candidate = candidate.replace(b"DIR=/run/k230-wifi/wpa_supplicant",
+                                      (b"DIR=" + str(self.runtime / "control").encode("ascii")), 1)
+        return self._connect_candidate(ssid, previous, candidate, merged, cancelled, "selected")
+
+    def _connect_candidate(self, ssid, previous, candidate, merged, cancelled, outcome):
+        self.runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
+        if self.runtime.stat().st_uid != self.owner_uid or self.runtime.stat().st_mode & 0o077:
+            raise WifiError("unsafe-runtime")
+        # All existing credentials and the proposed merge were validated
+        # before a temporary fd exists or the old radio owner is touched.
         if cancelled():
             raise WifiError("cancelled")
         fd, name = tempfile.mkstemp(prefix="candidate-", dir=self.runtime)
@@ -367,7 +438,7 @@ class Radio:
                     self._persist(previous)
                 persisted = False
                 raise WifiError("save-failed") from None
-            return {"result": "saved", "ssid": ssid}
+            return {"result": outcome, "ssid": ssid}
         finally:
             if process is not None:
                 process.terminate()
@@ -473,6 +544,8 @@ class Broker:
             elif op == "connect":
                 result = self.radio.connect(request.get("ssid"), request.get("security"),
                                             request.get("password"), cancelled)
+            elif op == "connect-saved":
+                result = self.radio.connect_saved(request.get("ssid"), cancelled)
             elif op == "forget":
                 result = self.radio.forget(request.get("ssid"))
             else:

@@ -709,6 +709,7 @@ fn paint_wifi(
                     cr,
                     match selected.security {
                         Security::Open => "Open network · no password needed",
+                        Security::Wpa2Psk if view.use_saved => "WPA2-Personal · saved credential",
                         Security::Wpa2Psk => "WPA2-Personal · password required",
                         Security::Unsupported => "Unsupported",
                     },
@@ -719,12 +720,26 @@ fn paint_wifi(
                     style.muted,
                 );
                 if selected.security == Security::Wpa2Psk {
-                    text(cr, "Password", 28.0, 281.0, 500.0, 18.0, style.muted);
+                    text(
+                        cr,
+                        if view.use_saved {
+                            "Saved password"
+                        } else {
+                            "Password"
+                        },
+                        28.0,
+                        281.0,
+                        500.0,
+                        18.0,
+                        style.muted,
+                    );
                     service_card(cr, theme, "controls", 24.0, 310.0, 520.0, 90.0, false);
                     let mask = "•".repeat(view.password_len.min(22));
                     text(
                         cr,
-                        if mask.is_empty() {
+                        if view.use_saved {
+                            "Stored securely; no re-entry needed"
+                        } else if mask.is_empty() {
                             "Tap keys to enter password"
                         } else {
                             &mask
@@ -735,36 +750,52 @@ fn paint_wifi(
                         25.0,
                         style.text,
                     );
-                    text(
-                        cr,
-                        &format!("{} / 63", view.password_len),
-                        445.0,
-                        369.0,
-                        75.0,
-                        15.0,
-                        style.muted,
-                    );
+                    if !view.use_saved {
+                        text(
+                            cr,
+                            &format!("{} / 63", view.password_len),
+                            445.0,
+                            369.0,
+                            75.0,
+                            15.0,
+                            style.muted,
+                        );
+                    }
                 }
                 if view
                     .snapshot
                     .as_ref()
                     .is_some_and(|s| s.saved.iter().any(|n| n.ssid == selected.ssid))
                 {
+                    if view.use_saved && selected.security == Security::Wpa2Psk {
+                        service_card(cr, theme, "controls", 24.0, 414.0, 250.0, 62.0, false);
+                        text(
+                            cr,
+                            "Change password…",
+                            42.0,
+                            432.0,
+                            225.0,
+                            18.0,
+                            style.accent,
+                        );
+                    }
+                    service_card(cr, theme, "controls", 294.0, 414.0, 250.0, 62.0, false);
                     text(
                         cr,
-                        "Forget this network…",
-                        357.0,
-                        431.0,
-                        175.0,
+                        "Forget network…",
+                        314.0,
+                        432.0,
+                        215.0,
                         18.0,
                         style.error,
                     );
                 }
             }
-            if view
-                .selected
-                .as_ref()
-                .is_some_and(|s| s.security == Security::Wpa2Psk)
+            if !view.use_saved
+                && view
+                    .selected
+                    .as_ref()
+                    .is_some_and(|s| s.security == Security::Wpa2Psk)
             {
                 let rows = [
                     if view.symbols {

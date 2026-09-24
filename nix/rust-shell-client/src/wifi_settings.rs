@@ -71,6 +71,7 @@ pub struct Snapshot {
 pub enum WifiResult {
     Snapshot(Snapshot),
     Saved,
+    Selected,
     Forgotten,
 }
 
@@ -79,6 +80,7 @@ pub enum Kind {
     Status,
     Scan,
     Connect,
+    ConnectSaved,
     Forget,
 }
 
@@ -92,6 +94,9 @@ pub enum WifiRequest {
         security: Security,
         password: Secret,
     },
+    ConnectSaved {
+        ssid: String,
+    },
     Forget {
         ssid: String,
     },
@@ -102,6 +107,7 @@ impl WifiRequest {
             Self::Status => Kind::Status,
             Self::Scan => Kind::Scan,
             Self::Connect { .. } => Kind::Connect,
+            Self::ConnectSaved { .. } => Kind::ConnectSaved,
             Self::Forget { .. } => Kind::Forget,
         }
     }
@@ -136,6 +142,14 @@ impl Drop for Secret {
         unsafe {
             self.0.as_bytes_mut().fill(0);
         }
+    }
+}
+
+struct PrivatePayload(Vec<u8>);
+impl Drop for PrivatePayload {
+    fn drop(&mut self) {
+        // Minimize lifetime of the serialized password on every exit path.
+        self.0.fill(0);
     }
 }
 
@@ -187,7 +201,7 @@ impl WifiWorker {
         }
     }
     pub fn cancel(&self, id: u64) {
-        self.cancelled.store(id, Ordering::Release);
+        self.cancelled.fetch_max(id, Ordering::AcqRel);
     }
     pub fn try_recv(&self) -> Option<WifiReply> {
         self.replies.try_recv().ok()
@@ -302,6 +316,10 @@ pub fn parse_response(bytes: &[u8], kind: Kind) -> Result<WifiResult, String> {
             name(value.get("ssid").ok_or("missing saved network")?)?;
             Ok(WifiResult::Saved)
         }
+        Kind::ConnectSaved if value.get("result").and_then(Value::as_str) == Some("selected") => {
+            name(value.get("ssid").ok_or("missing selected network")?)?;
+            Ok(WifiResult::Selected)
+        }
         Kind::Forget if value.get("result").and_then(Value::as_str) == Some("forgotten") => {
             Ok(WifiResult::Forgotten)
         }
@@ -316,6 +334,10 @@ fn valid_request(request: &WifiRequest) -> Result<Value, String> {
         WifiRequest::Forget { ssid } => {
             name(&Value::String(ssid.clone()))?;
             json!({"schema":1,"op":"forget","ssid":ssid})
+        }
+        WifiRequest::ConnectSaved { ssid } => {
+            name(&Value::String(ssid.clone()))?;
+            json!({"schema":1,"op":"connect-saved","ssid":ssid})
         }
         WifiRequest::Connect {
             ssid,
@@ -438,26 +460,36 @@ fn execute(
     id: u64,
     cancelled: &AtomicU64,
 ) -> Result<WifiResult, String> {
+    execute_identity(path, request, id, cancelled, 0, unsafe { libc::getegid() })
+}
+
+fn execute_identity(
+    path: &Path,
+    request: WifiRequest,
+    id: u64,
+    cancelled: &AtomicU64,
+    uid: u32,
+    gid: u32,
+) -> Result<WifiResult, String> {
     let kind = request.kind();
-    let value = valid_request(&request)?;
-    let mut payload = serde_json::to_vec(&value).map_err(|_| "invalid Wi-Fi request")?;
-    payload.push(b'\n');
-    if payload.len() > REQUEST_LIMIT {
-        payload.fill(0);
+    let mut payload = PrivatePayload({
+        let value = valid_request(&request)?;
+        serde_json::to_vec(&value).map_err(|_| "invalid Wi-Fi request")?
+    });
+    drop(request);
+    payload.0.push(b'\n');
+    if payload.0.len() > REQUEST_LIMIT {
         return Err("Wi-Fi request too large".into());
     }
     let deadline = Instant::now() + DEADLINE;
-    let uid = 0;
-    let gid = unsafe { libc::getegid() };
     socket_identity(path, uid, gid)?;
     let mut stream = connect_nonblocking(path, deadline, uid)?;
     let mut written = 0;
-    while written < payload.len() {
-        if cancelled.load(Ordering::Acquire) == id {
-            payload.fill(0);
+    while written < payload.0.len() {
+        if cancelled.load(Ordering::Acquire) >= id {
             return Err("cancelled".into());
         }
-        match stream.write(&payload[written..]) {
+        match stream.write(&payload.0[written..]) {
             Ok(0) => return Err("Wi-Fi write closed".into()),
             Ok(n) => written += n,
             Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
@@ -466,10 +498,10 @@ fn execute(
             Err(_) => return Err("Wi-Fi write failed".into()),
         }
     }
-    payload.fill(0);
+    payload.0.fill(0);
     let mut response = Vec::new();
     loop {
-        if cancelled.load(Ordering::Acquire) == id {
+        if cancelled.load(Ordering::Acquire) >= id {
             return Err("cancelled".into());
         }
         let mut chunk = [0u8; 2048];
@@ -500,6 +532,7 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::os::unix::net::UnixListener;
     #[test]
     fn parse_scan_and_saved_with_fake_names() {
         let bytes = br#"{"schema":1,"state":"ok","current":"Example Guest","saved":[{"ssid":"Example Guest","security":"open"}],"networks":[{"ssid":"Example Guest","security":"open"},{"ssid":"Example Secure","security":"wpa2-psk"}],"error":null}"#;
@@ -522,6 +555,82 @@ mod tests {
             parse_response(failed, Kind::Connect).unwrap_err(),
             "authentication-failed"
         );
+    }
+    #[test]
+    fn later_cancel_keeps_earlier_queued_request_cancelled() {
+        let watermark = AtomicU64::new(0);
+        watermark.fetch_max(7, Ordering::AcqRel);
+        watermark.fetch_max(9, Ordering::AcqRel);
+        assert!(watermark.load(Ordering::Acquire) >= 7);
+        assert!(watermark.load(Ordering::Acquire) >= 9);
+        assert!(watermark.load(Ordering::Acquire) < 10);
+    }
+    #[test]
+    fn fake_broker_socket_carries_saved_selection_without_password() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-wifi-fixture-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&root).unwrap();
+        fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+        let path = root.join("broker.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+        let server = thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut request = Vec::new();
+            while !request.ends_with(b"\n") {
+                let mut one = [0u8];
+                stream.read_exact(&mut one).unwrap();
+                request.push(one[0]);
+                assert!(request.len() < REQUEST_LIMIT);
+            }
+            let value: Value = serde_json::from_slice(&request).unwrap();
+            assert_eq!(value["op"], "connect-saved");
+            assert_eq!(value["ssid"], "Example Secure");
+            assert!(value.get("password").is_none());
+            stream.write_all(b"{\"schema\":1,\"state\":\"ok\",\"result\":\"selected\",\"ssid\":\"Example Secure\"}\n").unwrap();
+        });
+        let result = execute_identity(
+            &path,
+            WifiRequest::ConnectSaved {
+                ssid: "Example Secure".into(),
+            },
+            1,
+            &AtomicU64::new(0),
+            unsafe { libc::geteuid() },
+            unsafe { libc::getegid() },
+        );
+        server.join().unwrap();
+        assert_eq!(result.unwrap(), WifiResult::Selected);
+        fs::remove_file(path).unwrap();
+        let cancelled_path = root.join("cancel.sock");
+        let listener = UnixListener::bind(&cancelled_path).unwrap();
+        fs::set_permissions(&cancelled_path, fs::Permissions::from_mode(0o600)).unwrap();
+        let server = thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut byte = [0u8];
+            assert_eq!(stream.read(&mut byte).unwrap(), 0);
+        });
+        let watermark = AtomicU64::new(9); // later B cancelled after queued A
+        let result = execute_identity(
+            &cancelled_path,
+            WifiRequest::ConnectSaved {
+                ssid: "Example Secure".into(),
+            },
+            7,
+            &watermark,
+            unsafe { libc::geteuid() },
+            unsafe { libc::getegid() },
+        );
+        assert_eq!(result.unwrap_err(), "cancelled");
+        server.join().unwrap();
+        fs::remove_file(cancelled_path).unwrap();
+        fs::remove_dir(root).unwrap();
     }
     #[test]
     fn reject_oversized_untrusted_and_secret_leaks() {
