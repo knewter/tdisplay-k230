@@ -1,3 +1,5 @@
+The named work-board generator and test commands below are proposed interfaces to create during implementation; they do not yet exist or provide evidence.
+
 ## 1. Generate an honest committed snapshot
 
 - [ ] 1.1 Add a deterministic work-data generator for committed active/archived changes, checkbox counts, revision, UTC build time, and valid links; verify `python3 tests/test_work_board.py` on real and synthetic fixture trees.

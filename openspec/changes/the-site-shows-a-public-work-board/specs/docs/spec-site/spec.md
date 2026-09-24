@@ -12,7 +12,8 @@ reads nothing else, on the Python standard library alone.
 `scripts/build_site.py` is the one command; the workflow runs it and nothing
 else. `docs/evidence/spec-site-build.txt` records both. The existing accepted
 ledger test excludes in-flight change identifiers from index and capability
-pages; a separate work-board test permits them only on its labeled page.*
+pages. The separate work-board allowance is planned and remains unverified
+until its focused test and published page have been checked.*
 
 #### Scenario: A capability's spec is edited
 
@@ -60,4 +61,3 @@ The work board SHALL be generated from committed repository state at an identifi
 
 - **WHEN** a work-board link points to a file the site cannot publish
 - **THEN** the build fails with the work item and link named
-
