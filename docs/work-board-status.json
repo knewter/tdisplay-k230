@@ -54,10 +54,11 @@
         "docs/evidence/coherent-shell/rust-service-surface-qemu/README.md",
         "docs/evidence/coherent-shell/direct-drag/installed.md",
         "docs/evidence/coherent-shell/direct-reveal-drag-qemu/README.md",
-        "docs/evidence/coherent-shell/card-entry-direct-drag-host.md"
+        "docs/evidence/coherent-shell/card-entry-direct-drag-host.md",
+        "docs/evidence/coherent-shell/rust-visual-themes-host/README.md"
       ],
       "rationale": "The corrected app-entry, drawer and shade motion is installed in a recoverable test activation, together with Rust Settings/notification controls. Synthetic pixel checks show 100px finger travel produces 100px panel movement, holds still and reverses. Physical feel and full acceptance remain pending.",
-      "reviewRevision": "7f4b464f",
+      "reviewRevision": "f4ce4eac",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
         "caption": "Rust app drawer \u2014 first on-device preview",
@@ -68,7 +69,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Install the reviewed Rust chooser with real packaged theme/background choices and finish themed surface colors; verify production switching and persistence on the board.",
+      "next": "Build and install the combined visual/theme update, then verify actual wallpaper and theme switching on the board.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -83,10 +84,16 @@
         "docs/evidence/omarchy-themes/rust-chooser-host.md",
         "docs/evidence/omarchy-themes/rust-chooser-qemu.md",
         "docs/evidence/omarchy-themes/bundled-backgrounds-host.md",
-        "docs/evidence/omarchy-themes/bundled-icons.md"
+        "docs/evidence/omarchy-themes/bundled-icons.md",
+        "docs/evidence/coherent-shell/rust-visual-themes-host/README.md"
       ],
-      "rationale": "The Rust chooser is landed and cross-built; paired QEMU touch checks with a synthetic command pass. Unchanged pinned Catppuccin and Latte themes, their backgrounds, a real wallpaper default, and matching Yaru icon data are now packaged and landed. The installed preview remains palette-only until the next integrated activation. Actual light/dark surface styling and production board switching remain in progress.",
-      "reviewRevision": "ad01f2ba"
+      "rationale": "The chooser, pinned Catppuccin/Latte wallpapers and Yaru icons are landed. The Rust visual pass has reviewed dark/light host screenshots and 62 passing host tests; Settings, notifications, drawer and chooser use theme roles. The target package is building. The installed preview remains palette-only until the next integrated activation; production board switching and physical acceptance remain open.",
+      "reviewRevision": "f4ce4eac",
+      "cover": {
+        "path": "docs/evidence/coherent-shell/rust-visual-themes-host/dark/drawer.png",
+        "caption": "Catppuccin launcher with Yaru icons \u2014 host renderer",
+        "provenance": "Host renderer fixture"
+      }
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
