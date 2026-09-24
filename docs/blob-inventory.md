@@ -1674,3 +1674,16 @@ Original native board captures from installed source `aab74fb7`; reviewed public
 | --- | ---: | --- | --- |
 | `docs/evidence/coherent-shell/themed-installed/deck.png` | 39512 | DATA | `ccb7f23fc2cb8c7d09b73cb83a7cb094a85e9abfde64a4298dee41cb6b5c5461` |
 | `docs/evidence/coherent-shell/themed-installed/drawer.png` | 55241 | DATA | `fc3d567e4527bb2e4b71e9b0460af75d02aed0c49d86c9275e92926bd50c5888` |
+### Direct carousel headless QEMU captures
+
+These seven unedited DATA captures show public blue/purple live-client pixels during the corrected direct switch and upward Home settlement. The adjacent README gives exact binaries, commands, and physical limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-coasting.png` | 5264 | DATA | `aec89c175df00b8a6729b83374cff768d0700eba120a4778f06e9a1dffe65326` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-held.png` | 5399 | DATA | `57482fe9fd326bd5f6f7d4ab946b77488853cb9c46d138d62830e46170952a42` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-home-settled.png` | 20682 | DATA | `fc4e4449694e4cca4bf113d5c2da0b5e64c6e8d401a9af865344d391efb4041b` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-opposite-return.png` | 4884 | DATA | `dc82447aaf14a1acdd66a1ea9bf46a788cc062fbba810b22232b7a9f5787aed7` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-held.png` | 4965 | DATA | `569eafcf56af3a813dffb08247134adba4679872d47b747b05c4f9ea4756e5df` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-releasing.png` | 4948 | DATA | `9e525b27f3d16d6caa0a82f6b34f3e194320f89dfa9464ba16ae046768fbdd19` |
+| `docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-reversed.png` | 4954 | DATA | `1b9a322aa851a165bfd79821852019f7c7f30ca2eedf0a7abb5050332ac56da5` |
