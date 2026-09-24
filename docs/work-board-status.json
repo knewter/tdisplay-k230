@@ -44,14 +44,16 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Build the generation/swap coordinator and shell/client appearance adapters from the now-tested helper fixtures; then verify selection on the board.",
+      "next": "Finish full generated-token and client, icon and background integration; check service compatibility, then verify theme selection and persistence on the board.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
-        "docs/evidence/omarchy-themes/source-fixtures.md"
+        "docs/evidence/omarchy-themes/source-fixtures.md",
+        "docs/evidence/omarchy-themes/launcher-receiver.md",
+        "docs/evidence/omarchy-themes/persistent-default.md"
       ],
-      "rationale": "All three helper packaging and source/section-override fixture tasks are committed; live theme activation, consumers and physical selection remain open.",
-      "reviewRevision": "95595a8e73a8670e462301acf6becfd8739f422d"
+      "rationale": "The three helper and source-fixture tasks are checked. A host-tested opt-in launcher receiver, public selection command, cached startup and pinned default are source and cross-build checkpoints; normal configuration remains off, other consumers and physical selection remain open.",
+      "reviewRevision": "86b985a4a475478961bcdf5faa6dadde2a3525e3"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
