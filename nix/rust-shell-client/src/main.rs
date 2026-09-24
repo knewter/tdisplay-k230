@@ -12,7 +12,10 @@ use k230_shell_rust::{
     released_slot,
     render::{export_png, RenderParams, RendererCache},
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
-    service_ui::{notification_max_scroll, panel_intent, Confirmation, PanelIntent, ServiceView},
+    service_ui::{
+        action_message, notification_max_scroll, panel_intent, Confirmation, PanelIntent,
+        ServiceView,
+    },
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
@@ -498,12 +501,14 @@ impl ShellClient {
         }
     }
 
-    fn submit_service(&mut self, request: ServiceRequest) {
+    fn submit_service(&mut self, request: ServiceRequest) -> bool {
         if let Err(error) = self.services.try_submit(request) {
             self.service_view.message = Some(error.into());
             self.renderer.set_services(self.service_view.clone());
             self.dirty = true;
+            return false;
         }
+        true
     }
 
     fn service_reply(&mut self, reply: ServiceReply) {
@@ -524,19 +529,22 @@ impl ShellClient {
                 self.service_view.notification_error = None;
             }
             Ok(ServiceResponse::Action(outcome)) => {
-                self.service_view.message = Some(
-                    outcome
-                        .label
-                        .clone()
-                        .unwrap_or_else(|| outcome.state.clone()),
-                );
+                self.service_view.message = Some(action_message(&outcome));
                 self.service_view.confirmation = if outcome.state == "confirmation" {
-                    match (outcome.token, outcome.power_action) {
-                        (Some(token), Some(action)) => Some(Confirmation {
-                            token,
-                            action,
-                            label: outcome.label.unwrap_or("Confirm power action".into()),
-                        }),
+                    match (
+                        outcome.token,
+                        outcome.power_action,
+                        outcome.expires_in_seconds,
+                    ) {
+                        (Some(token), Some(action), Some(seconds)) if seconds > 0 => {
+                            Some(Confirmation {
+                                token,
+                                action,
+                                label: outcome.label.unwrap_or("Confirm power action".into()),
+                                expires_at: Instant::now()
+                                    + Duration::from_secs(u64::from(seconds)),
+                            })
+                        }
                         _ => None,
                     }
                 } else {
@@ -566,7 +574,11 @@ impl ShellClient {
                     self.service_view.notifications = None;
                     self.service_view.notification_error = Some(error);
                 }
-                _ => self.service_view.message = Some(error),
+                _ => {
+                    self.service_view.confirmation = None;
+                    self.service_view.message =
+                        Some(format!("Service outcome unavailable: {error}"));
+                }
             },
         }
         self.renderer.set_services(self.service_view.clone());
@@ -580,16 +592,11 @@ impl ShellClient {
                 self.show(qh, Route::Settings);
             }
             PanelIntent::Request(request) => {
-                if matches!(
-                    request,
-                    ServiceRequest::PowerConfirm(_) | ServiceRequest::PowerCancel(_)
-                ) {
-                    self.service_view.confirmation = None;
-                    self.service_view.message = Some("Working…".into());
+                let accepted = self.submit_service(request.clone());
+                if self.service_view.request_queued(&request, accepted) {
                     self.renderer.set_services(self.service_view.clone());
                     self.dirty = true;
                 }
-                self.submit_service(request);
             }
             PanelIntent::ScrollNotifications(delta) => {
                 let max = self
@@ -1396,6 +1403,17 @@ fn serve() -> Result<(), String> {
                 break;
             };
             state.service_reply(reply);
+        }
+        if state
+            .service_view
+            .confirmation
+            .as_ref()
+            .is_some_and(|confirmation| Instant::now() >= confirmation.expires_at)
+        {
+            state.service_view.confirmation = None;
+            state.service_view.message = Some("Confirmation expired; request again".into());
+            state.renderer.set_services(state.service_view.clone());
+            state.dirty = true;
         }
         if state.wallpaper.layer.is_none()
             && state

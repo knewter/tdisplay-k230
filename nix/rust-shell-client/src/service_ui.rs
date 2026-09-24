@@ -3,17 +3,19 @@
 
 use crate::{
     service_data::{
-        ControlState, ControlValue, NotificationSnapshot, PowerAction, ServiceRequest,
-        SettingsSnapshot,
+        ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction,
+        ServiceRequest, SettingsSnapshot,
     },
     Route,
 };
+use std::time::Instant;
 
 #[derive(Clone, Debug)]
 pub struct Confirmation {
     pub token: String,
     pub action: PowerAction,
     pub label: String,
+    pub expires_at: Instant,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -25,6 +27,37 @@ pub struct ServiceView {
     pub message: Option<String>,
     pub confirmation: Option<Confirmation>,
     pub notification_scroll: f64,
+}
+
+impl ServiceView {
+    /// A full worker queue must not consume the only live confirmation token.
+    pub fn request_queued(&mut self, request: &ServiceRequest, accepted: bool) -> bool {
+        if accepted
+            && matches!(
+                request,
+                ServiceRequest::PowerConfirm(_) | ServiceRequest::PowerCancel(_)
+            )
+        {
+            self.confirmation = None;
+            self.message = Some("Working…".into());
+            true
+        } else {
+            false
+        }
+    }
+}
+
+pub fn action_message(outcome: &ActionOutcome) -> String {
+    let explanation = outcome
+        .error
+        .as_deref()
+        .or(outcome.label.as_deref())
+        .unwrap_or(&outcome.state);
+    if outcome.retry {
+        format!("{explanation} · try again")
+    } else {
+        explanation.into()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -114,6 +147,9 @@ pub fn panel_intent(
                 return Some(PanelIntent::Hide);
             }
             if let Some(confirm) = &view.confirmation {
+                if Instant::now() >= confirm.expires_at {
+                    return None;
+                }
                 if (940.0..1050.0).contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
@@ -301,6 +337,7 @@ mod tests {
             token: "opaque-token".into(),
             action: PowerAction::Reboot,
             label: "Restart device?".into(),
+            expires_at: Instant::now() + std::time::Duration::from_secs(30),
         });
         assert_eq!(
             panel_intent(
@@ -339,5 +376,41 @@ mod tests {
                 "opaque-token".into()
             )))
         );
+        view.confirmation.as_mut().unwrap().expires_at = Instant::now();
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (440.0, 985.0),
+                (440.0, 985.0),
+                568,
+                1232,
+                &view
+            ),
+            None
+        );
+        view.confirmation.as_mut().unwrap().expires_at =
+            Instant::now() + std::time::Duration::from_secs(30);
+        let request = ServiceRequest::PowerConfirm("opaque-token".into());
+        assert!(!view.request_queued(&request, false));
+        assert!(view.confirmation.is_some());
+        assert!(view.request_queued(&request, true));
+        assert!(view.confirmation.is_none());
+    }
+
+    #[test]
+    fn failed_action_exposes_backend_error_and_retry() {
+        let outcome = ActionOutcome {
+            state: "failed".into(),
+            error: Some("target-unavailable".into()),
+            token: None,
+            label: None,
+            power_action: None,
+            expires_in_seconds: None,
+            requested_percent: None,
+            brightness: None,
+            retry: true,
+            remaining: None,
+        };
+        assert_eq!(action_message(&outcome), "target-unavailable · try again");
     }
 }

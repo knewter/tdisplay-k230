@@ -310,7 +310,14 @@ fn scene(
                 text(cr, &preview.source, 42.0, 197.0, w - 84.0, 17.0, 0x78d7cb);
                 text(cr, &preview.summary, 42.0, 220.0, w - 84.0, 21.0, 0xf4f7f8);
             } else {
-                text(cr, "Private preview", 42.0, 211.0, w - 84.0, 20.0, 0xc8d7dd);
+                let empty = if items.is_none() {
+                    "Loading preview"
+                } else if count == 0 {
+                    "No new notifications"
+                } else {
+                    "Private preview"
+                };
+                text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, 0xc8d7dd);
             }
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
                 text(
@@ -370,6 +377,9 @@ fn scene(
                         0xf4f7f8,
                     );
                     text(cr, &event.body, 92.0, y + 71.0, w - 132.0, 15.0, 0xc8d7dd);
+                    if let Some(error) = &event.error {
+                        text(cr, error, 92.0, y + 90.0, w - 132.0, 14.0, 0xf4b9a6);
+                    }
                 }
                 let _ = cr.restore();
             } else {
@@ -382,6 +392,10 @@ fn scene(
                     19.0,
                     0xc8d7dd,
                 );
+            }
+            if let Some(message) = services.and_then(|view| view.message.as_deref()) {
+                service_card(cr, 24.0, panel_h - 73.0, w - 48.0, 49.0);
+                text(cr, message, 42.0, panel_h - 62.0, w - 84.0, 16.0, 0xf4b9a6);
             }
         }
         Route::Settings => {
@@ -694,7 +708,9 @@ impl RendererCache {
 mod tests {
     use super::*;
     use crate::appearance::BrushStop;
-    use crate::service_data::{Control, ControlState, SettingsSnapshot};
+    use crate::service_data::{
+        Control, ControlState, NotificationEvent, NotificationSnapshot, Priority, SettingsSnapshot,
+    };
     use std::collections::BTreeMap;
 
     #[test]
@@ -730,6 +746,47 @@ mod tests {
         renderer.draw(&mut loaded, params, &[]).unwrap();
         let row = 770 * 568 * 4;
         assert_ne!(&loading[row..row + 568 * 4], &loaded[row..row + 568 * 4]);
+    }
+
+    #[test]
+    fn notification_target_error_changes_visible_history_row() {
+        let mut renderer = RendererCache::default();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Shade,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let event = NotificationEvent {
+            id: 7,
+            source: "Terminal".into(),
+            icon: None,
+            summary: "Ready".into(),
+            body: "Body".into(),
+            priority: Priority::Ordinary,
+            timestamp: 0,
+            error: None,
+            dismissible: true,
+            action_available: false,
+        };
+        let mut view = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 1,
+                events: vec![event],
+                preview: None,
+            }),
+            ..ServiceView::default()
+        };
+        renderer.set_services(view.clone());
+        let mut normal = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut normal, params, &[]).unwrap();
+        view.notifications.as_mut().unwrap().events[0].error = Some("target-unavailable".into());
+        renderer.set_services(view);
+        let mut failed = vec![0; normal.len()];
+        renderer.draw(&mut failed, params, &[]).unwrap();
+        let region = (355 * 568 * 4)..(375 * 568 * 4);
+        assert!(normal[region.clone()] != failed[region]);
     }
 
     #[test]
