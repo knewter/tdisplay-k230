@@ -1,0 +1,43 @@
+# Installed-app appearance adapter: host checkpoint
+
+Observed 2026-09-23 from integration base `99ac8e48`. The source is
+`tools/app_appearance.py`; this checkpoint does not install or invoke it in the
+normal shell service. Its input is an already prepared generation's bounded
+`report.json` with the pinned upstream resolver's palette. It writes only
+`app-appearance/generations/ID/{terminal-foot.ini,monitor-foot.ini,coverage.json}`
+under private theme state. `sync` obtains the activation lock, reads the
+acknowledged `current/active` pointer, and atomically updates a separate
+`app-appearance/active` pointer for future Foot launches. It rejects foreign
+generation/pointer paths and does not edit the source checkout.
+
+The two generated Foot configs retain the portrait font and distinct app IDs,
+and use resolved semantic colors plus all sixteen explicit ANSI slots. Both
+Foot light and dark color sections receive the same selected palette so the
+app cannot silently switch back to an unrelated default. The opt-in
+`osc-current` command writes the pinned upstream OSC sequence only to the
+caller's own terminal stdout after an `isatty` and `TERM=foot` check; these
+checks are an opt-in routing guard, not proof of the terminal executable.
+It never enumerates `/dev/pts`,
+signals a process, or closes an app. The host test compares its 21 sequences
+byte-for-byte with `omarchy-theme-osc` on the prepared fixture.
+
+Coverage is deliberately bounded: htop, nano and nnn inherit Foot's terminal
+colors; mpv's video surface is not a terminal-color consumer; Help uses shell
+tokens; the on-screen keyboard remains a separate shell-surface integration.
+Existing Foot windows are not automatically retinted, and the normal Nix
+launch paths still point at their immutable base configs. The generated
+configuration and sync hook must be packaged and wired to those launch paths
+before task 3.4 can be marked complete. Any app reload failure belongs in a
+separate status from the shell generation ACK; it must not be reported as a
+successful existing-session recolor.
+
+```text
+python3 tests/test_handheld_app_themes.py   PASS 6 host tests
+python3 -m py_compile tools/app_appearance.py  PASS
+openspec validate the-shell-loads-omarchy-themes --strict  PASS
+git diff --check  PASS
+```
+
+No Nix build, device session, physical display observation, or live Foot
+reload was performed for this adapter checkpoint. OpenSpec task 3.4 remains
+open, as do the cross-surface, app-session and physical gates.
