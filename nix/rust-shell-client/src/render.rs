@@ -129,7 +129,13 @@ fn visual_style(theme: Option<&AppearanceSnapshot>, section: &str) -> VisualStyl
         "text",
         palette_rgb_or(theme, "foreground", 0xf4f7f8),
     );
-    let muted = palette_rgb_or(theme, "muted", 0xc8d7dd);
+    // `muted` is a decorative swatch in both pinned Catppuccin variants;
+    // `light_foreground` is the authored readable secondary text role.
+    let muted = palette_rgb_or(
+        theme,
+        "light_foreground",
+        palette_rgb_or(theme, "foreground", 0xc8d7dd),
+    );
     let accent = brush_rgb(
         theme,
         section,
@@ -408,6 +414,10 @@ fn paint_theme_chooser(
                 rounded(cr, x, 257.0, 66.0, 66.0, 12.0);
                 color(cr, palette_rgb(value).unwrap_or(0x425661), 1.0);
                 let _ = cr.fill();
+                rounded(cr, x + 0.75, 257.75, 64.5, 64.5, 11.25);
+                cr.set_line_width(1.5);
+                color(cr, style.muted, 0.65);
+                let _ = cr.stroke();
                 text(cr, name, x, 334.0, 86.0, 13.0, style.muted);
             }
             text(
@@ -602,9 +612,12 @@ fn scene(
         Route::Hide => "launcher",
     };
     let style = visual_style(theme, section);
-    if !theme_brush(theme, section, "background")
-        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h))
-    {
+    let panel_brush = theme_brush(theme, section, "background").or_else(|| {
+        (route == Route::Settings)
+            .then(|| theme_brush(theme, "menu", "background"))
+            .flatten()
+    });
+    if !panel_brush.is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h)) {
         let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
         gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
         gradient.add_color_stop_rgb(1.0, 0.12, 0.19, 0.24);
@@ -1172,7 +1185,11 @@ impl RendererCache {
         .map_err(|e| e.to_string())?;
         let cr = Context::new(&surface).map_err(|e| e.to_string())?;
         cr.set_operator(Operator::Source);
-        color(&cr, 0x1e1e2e, 1.0);
+        color(
+            &cr,
+            palette_rgb_or(self.theme.as_ref(), "background", 0x1e1e2e),
+            1.0,
+        );
         cr.paint().map_err(|e| e.to_string())?;
         cr.set_operator(Operator::Over);
         if let Some(brush) = theme_brush(self.theme.as_ref(), "launcher", "background") {
@@ -1267,6 +1284,84 @@ mod tests {
     };
     use std::collections::BTreeMap;
 
+    // Host-only visual review reads the actual immutable generation emitted by
+    // `theme_activate.py --prepare-only`; production parsing stays in appearance.rs.
+    fn visual_generation(path: &Path) -> AppearanceSnapshot {
+        let appearance: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(path.join("appearance.json")).unwrap()).unwrap();
+        let report: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(path.join("report.json")).unwrap()).unwrap();
+        let generation = path.file_name().unwrap().to_str().unwrap();
+        assert_eq!(appearance["generation"].as_str(), Some(generation));
+        assert_eq!(report["generation"].as_str(), Some(generation));
+        let palette = report["palette"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter_map(|(key, value)| {
+                let hex = value.as_str()?.strip_prefix('#')?;
+                if hex.len() != 6 {
+                    return None;
+                }
+                let number = u32::from_str_radix(hex, 16).ok()?;
+                Some((
+                    key.clone(),
+                    PaletteValue::Color(PaletteColor {
+                        red: (number >> 16) as u8,
+                        green: (number >> 8) as u8,
+                        blue: number as u8,
+                        alpha: 255,
+                    }),
+                ))
+            })
+            .collect();
+        let sections = appearance["sections"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(section, values)| {
+                let tokens = values
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .filter_map(|(key, value)| {
+                        let token = match value["kind"].as_str()? {
+                            "brush" => AppearanceToken::Brush(Brush {
+                                stops: value["stops"]
+                                    .as_array()?
+                                    .iter()
+                                    .map(|stop| BrushStop {
+                                        offset: stop["offset"].as_f64().unwrap(),
+                                        argb: stop["argb"].as_str().unwrap().into(),
+                                    })
+                                    .collect(),
+                                angle_degrees: value["angle_degrees"].as_f64().unwrap(),
+                                alpha: value["alpha"].as_f64().unwrap(),
+                            }),
+                            "number" => AppearanceToken::Number(value["value"].as_f64()?),
+                            _ => return None,
+                        };
+                        Some((key.clone(), token))
+                    })
+                    .collect();
+                (section.clone(), tokens)
+            })
+            .collect();
+        AppearanceSnapshot {
+            generation: generation.into(),
+            path: path.into(),
+            icon_theme: appearance["icon_theme"].as_str().map(str::to_owned),
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette,
+            sections,
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        }
+    }
+
     #[test]
     fn themed_surface_fixtures_keep_live_area_clear_and_use_authored_roles() {
         let brush = |first: &str, second: &str| {
@@ -1293,7 +1388,7 @@ mod tests {
                 alpha: 255,
             })
         };
-        let snapshot = AppearanceSnapshot {
+        let mut snapshot = AppearanceSnapshot {
             generation: "0123456789abcdef01234567".into(),
             path: "/tmp/public-visual-fixture".into(),
             icon_theme: None,
@@ -1359,16 +1454,19 @@ mod tests {
             unavailable: vec![],
             unknown: vec![],
         };
+        if let Some(path) = std::env::var_os("K230_VISUAL_GENERATION_DIR") {
+            snapshot = visual_generation(Path::new(&path));
+        }
         let apps = vec![
             AppEntry {
                 id: "fixture.desktop".into(),
                 name: "Terminal".into(),
-                icon: None,
+                icon: Some("terminal-app".into()),
             },
             AppEntry {
                 id: "monitor.desktop".into(),
                 name: "Monitor".into(),
-                icon: None,
+                icon: Some("system-monitor-app".into()),
             },
         ];
         let unavailable = Control {
@@ -1390,7 +1488,7 @@ mod tests {
                 preview: Some(NotificationPreview {
                     id: 1,
                     source: "System".into(),
-                    icon: None,
+                    icon: Some("system-settings".into()),
                     summary: "Connection needs attention".into(),
                     priority: Priority::Important,
                     ongoing: false,
@@ -1398,7 +1496,7 @@ mod tests {
                 events: vec![NotificationEvent {
                     id: 1,
                     source: "System".into(),
-                    icon: None,
+                    icon: Some("system-settings".into()),
                     summary: "Connection needs attention".into(),
                     body: "Open Settings for details".into(),
                     priority: Priority::Important,
@@ -1410,10 +1508,45 @@ mod tests {
             }),
             ..ServiceView::default()
         };
+        let actual_report: Option<serde_json::Value> =
+            std::fs::read(snapshot.path.join("report.json"))
+                .ok()
+                .and_then(|bytes| serde_json::from_slice(&bytes).ok());
+        let theme_id = actual_report
+            .as_ref()
+            .and_then(|report| report["name"].as_str())
+            .unwrap_or("fixture-night");
+        let theme_label = if theme_id == "catppuccin-latte" {
+            "Catppuccin Latte"
+        } else if theme_id == "catppuccin" {
+            "Catppuccin"
+        } else {
+            "Fixture Night"
+        };
+        let preview_palette = ["accent", "background", "foreground"]
+            .into_iter()
+            .filter_map(|key| {
+                snapshot.palette_color(key).map(|value| {
+                    (
+                        key.into(),
+                        format!("#{:02x}{:02x}{:02x}", value.red, value.green, value.blue),
+                    )
+                })
+            })
+            .collect();
+        let background_id = actual_report
+            .as_ref()
+            .and_then(|report| report["selected_background"].as_str())
+            .unwrap_or("fixture-still");
+        let background_label = Path::new(background_id)
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
         let theme_entry = ThemeEntry {
-            id: "fixture-night".into(),
-            name: "Fixture Night".into(),
-            label: "Fixture Night".into(),
+            id: theme_id.into(),
+            name: theme_label.into(),
+            label: theme_label.into(),
             origin: ThemeOrigin::Builtin,
         };
         let chooser = ThemeView {
@@ -1439,19 +1572,15 @@ mod tests {
             page: ThemePage::Preview,
             preview: Some(ThemePreview {
                 theme: theme_entry,
-                generation: "0123456789abcdef01234567".into(),
-                appearance_path: "/tmp/public-visual-fixture/appearance.json".into(),
-                palette: BTreeMap::from([
-                    ("background".into(), "#172738".into()),
-                    ("foreground".into(), "#f4f7f8".into()),
-                    ("accent".into(), "#ffc27a".into()),
-                ]),
-                icon_theme: None,
+                generation: snapshot.generation.clone(),
+                appearance_path: snapshot.path.join("appearance.json"),
+                palette: preview_palette,
+                icon_theme: snapshot.icon_theme.clone(),
                 backgrounds: vec![BackgroundChoice {
-                    id: "fixture-still".into(),
-                    label: "Landscape still".into(),
+                    id: background_id.into(),
+                    label: background_label,
                     kind: BackgroundKind::Image,
-                    path: "/tmp/public-still.png".into(),
+                    path: snapshot.path.join("theme").join(background_id),
                     selected: true,
                     decode_status: "fixture".into(),
                 }],
@@ -1519,6 +1648,12 @@ mod tests {
                     .write_to_png(&mut File::create(directory.join(format!("{name}.png"))).unwrap())
                     .unwrap();
             }
+        }
+        if std::env::var_os("K230_VISUAL_REQUIRE_ICONS").is_some() {
+            assert!(
+                renderer.icons.decode_count() >= 2,
+                "selected icon theme must resolve public app icons"
+            );
         }
     }
 
