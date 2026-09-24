@@ -177,6 +177,38 @@ enum Received {
     Abort,
 }
 
+/// Consume a ready burst without one poll timeout per line. Only contiguous
+/// updates for the same gesture are replaced; begin/terminal ordering stays
+/// intact. A hard batch limit returns control to Wayland event dispatch.
+fn drain_routes(mut receive: impl FnMut() -> Option<Received>, mut emit: impl FnMut(Received)) {
+    let mut latest: Option<RevealMessage> = None;
+    for _ in 0..64 {
+        let Some(record) = receive() else { break };
+        if let Received::Reveal(message) = &record {
+            if message.phase == Phase::Update {
+                if latest.is_some_and(|previous| {
+                    previous.seq != message.seq || previous.surface != message.surface
+                }) {
+                    emit(Received::Reveal(latest.take().expect("pending update")));
+                }
+                latest = Some(*message);
+                continue;
+            }
+        }
+        if let Some(message) = latest.take() {
+            emit(Received::Reveal(message));
+        }
+        emit(record);
+    }
+    if let Some(message) = latest {
+        emit(Received::Reveal(message));
+    }
+}
+
+fn reduced_motion_enabled(value: Option<&str>) -> bool {
+    value == Some("1")
+}
+
 struct RouteServer {
     listener: UnixListener,
     peer: Option<Peer>,
@@ -340,6 +372,7 @@ struct ShellClient {
     renderer: RendererCache,
     reveal: RevealState,
     input_ready: bool,
+    reduced_motion: bool,
 }
 
 impl ShellClient {
@@ -395,7 +428,7 @@ impl ShellClient {
 
     fn reveal_message(&mut self, qh: &QueueHandle<Self>, message: RevealMessage) {
         let now = self.started.elapsed().as_millis() as u64;
-        if !self.reveal.apply(message, now, false) {
+        if !self.reveal.apply(message, now, self.reduced_motion) {
             self.log("reveal-rejected");
             return;
         }
@@ -413,7 +446,6 @@ impl ShellClient {
             }
         }
         self.dirty = true;
-        self.draw(qh);
     }
 
     fn input_region(&mut self) {
@@ -796,6 +828,11 @@ fn serve() -> Result<(), String> {
         renderer: RendererCache::default(),
         reveal: RevealState::default(),
         input_ready: false,
+        reduced_motion: reduced_motion_enabled(
+            std::env::var("K230_SETTINGS_REDUCED_MOTION")
+                .ok()
+                .as_deref(),
+        ),
     };
     state.log("ready-idle");
     loop {
@@ -866,24 +903,30 @@ fn serve() -> Result<(), String> {
                 .as_ref()
                 .is_some_and(|p| Instant::now() >= p.deadline)
         {
-            match routes.receive() {
-                Some(Received::Route(route, mut peer)) => {
-                    let mapped = state.show(&qh, route);
-                    let reply: &[u8] = if mapped && queue.flush().is_ok() {
-                        b"OK\n"
-                    } else {
-                        b"ERR\n"
-                    };
-                    let _ = peer.write_all(reply);
-                }
-                Some(Received::Reveal(message)) => state.reveal_message(&qh, message),
-                Some(Received::Abort) => {
-                    state
-                        .reveal
-                        .eof(state.started.elapsed().as_millis() as u64, false);
-                    state.dirty = true;
-                }
-                None => {}
+            drain_routes(
+                || routes.receive(),
+                |record| match record {
+                    Received::Route(route, mut peer) => {
+                        let mapped = state.show(&qh, route);
+                        let reply: &[u8] = if mapped && queue.flush().is_ok() {
+                            b"OK\n"
+                        } else {
+                            b"ERR\n"
+                        };
+                        let _ = peer.write_all(reply);
+                    }
+                    Received::Reveal(message) => state.reveal_message(&qh, message),
+                    Received::Abort => {
+                        state.reveal.eof(
+                            state.started.elapsed().as_millis() as u64,
+                            state.reduced_motion,
+                        );
+                        state.dirty = true;
+                    }
+                },
+            );
+            if state.dirty && !state.frame_pending {
+                state.draw(&qh);
             }
         }
     }
@@ -953,6 +996,55 @@ mod route_tests {
         assert_eq!(message.phase, Phase::Finish);
         drop(client);
         assert!(server.peer.is_none());
+        drop(server);
+        fs::remove_dir_all(runtime).unwrap();
+    }
+
+    #[test]
+    fn buffered_progress_burst_coalesces_before_next_poll() {
+        let runtime = std::env::temp_dir().join(format!(
+            "k230-shell-burst-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::DirBuilder::new().mode(0o700).create(&runtime).unwrap();
+        let path = runtime.join(SOCKET_NAME);
+        let mut server = RouteServer::new(path.clone()).unwrap();
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        let mut lines = String::new();
+        for (phase, progress) in std::iter::once(("begin", 0))
+            .chain((1..=20).map(|index| ("update", index * 40)))
+            .chain(std::iter::once(("finish", 1000)))
+        {
+            lines.push_str(&format!("{{\"v\":1,\"kind\":\"reveal\",\"surface\":\"drawer\",\"phase\":\"{phase}\",\"seq\":22,\"progress\":{progress}}}\n"));
+        }
+        client.write_all(lines.as_bytes()).unwrap();
+        let mut collected = Vec::new();
+        drain_routes(
+            || server.receive(),
+            |record| {
+                if let Received::Reveal(message) = record {
+                    collected.push((message.phase, message.progress));
+                }
+            },
+        );
+        assert_eq!(
+            collected,
+            vec![
+                (Phase::Begin, 0),
+                (Phase::Update, 800),
+                (Phase::Finish, 1000)
+            ]
+        );
+        assert!(server.peer.is_none());
+        assert!(reduced_motion_enabled(Some("1")));
+        assert!(!reduced_motion_enabled(Some("0")));
+        assert!(!reduced_motion_enabled(None));
+        drop(client);
         drop(server);
         fs::remove_dir_all(runtime).unwrap();
     }
