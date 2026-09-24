@@ -43,3 +43,33 @@ checkpoint does **not** close physical acceptance or the coherent-shell
 proposal. Settings and notification actions are still an unfinished surface
 in this installed revision. These captures prove native compositor pixels,
 not camera-visible presentation timing or performance budgets.
+
+## Navigation correction installed and user checked
+
+The combined correction built from integrated source `8d231e7b` with:
+
+```sh
+nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel \
+  --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+PASS: `/nix/store/ni904kvqycv8v893wp6i1agskgck821d-nixos-system-nixos-26.11.20260919.20b1ddd`.
+A 23-path, 10,376,208-byte delta imported successfully over Wi-Fi. A new
+five-minute fallback timer was confirmed active before test activation.
+Activation returned zero; the current system matched the target and shell,
+Rust UI, session bus, notifications, and Wi-Fi were active. The fallback
+timer was then stopped, leaving the corrected preview running.
+
+The fixes add upward-swipe dismissal to the shade and raise the selected
+floating window after focusing it. Exact old/new QEMU negative and positive
+results are in `docs/evidence/coherent-shell/rust-shade-dismiss-qemu/README.md`
+and `docs/evidence/card-shell/focus-raise/README.md`.
+
+After being told the combined update was installed and to retry shade
+dismissal and window selection, the user reported: “that worked perfectly”.
+This is user-reported on-device acceptance of the navigation update, not a
+new camera recording or complete acceptance of every shell requirement.
+The initial screenshots above still depict the earlier preview. Settings,
+notifications, theme-choice UI, broader design and motion work remain open.
+The running update is still a test activation with the original boot profile
+retained until the integrated milestone is ready for persistent activation.

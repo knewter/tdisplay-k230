@@ -23,5 +23,15 @@
       "sha256": "298f42631b45023fb26c0e4e4e486a4740615cc4d9ee1f8e2eb12b24a27c11ab"
     }
   },
-  "user_acceptance": "pending: shade dismissal and window selection bugs reported"
+  "user_acceptance": "pending: shade dismissal and window selection bugs reported",
+  "navigation_update": {
+    "source": "8d231e7b",
+    "system": "/nix/store/ni904kvqycv8v893wp6i1agskgck821d-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "activation_mode": "test",
+    "activation_exit": 0,
+    "delta_paths": 23,
+    "delta_bytes": 10376208,
+    "user_feedback": "that worked perfectly",
+    "acceptance_scope": "combined navigation correction; full shell acceptance remains pending"
+  }
 }

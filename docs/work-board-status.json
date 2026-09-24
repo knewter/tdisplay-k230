@@ -34,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Fix user-reported shade dismissal and floating-window selection, then finish Settings/notification controls and repeat on-device checks.",
+      "next": "Finish Settings, notification actions and theme-choice UI; refine design/motion and complete the remaining physical checks.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -51,11 +51,11 @@
         "docs/evidence/coherent-shell/reveal-integrated-qemu/README.md",
         "docs/evidence/coherent-shell/first-integrated-preview/README.md"
       ],
-      "rationale": "The integrated Rust shell is running on the physical board through a recoverable NixOS test activation. Native drawer and notification captures show real device output. The user found shade-dismissal and card-selection defects; physical acceptance remains open.",
-      "reviewRevision": "34cb971e",
+      "rationale": "The integrated Rust shell runs on the physical board. The user reported shade-dismissal and visible card-selection bugs, then confirmed the combined installed navigation correction worked. Full shell acceptance, Settings/notification controls and design refinement remain open.",
+      "reviewRevision": "8d231e7b",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
-        "caption": "Rust app drawer on the K230 \u2014 navigation fixes pending",
+        "caption": "Rust app drawer \u2014 first on-device preview",
         "provenance": "Board capture"
       }
     },
