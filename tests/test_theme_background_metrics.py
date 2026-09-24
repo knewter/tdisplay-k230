@@ -57,6 +57,38 @@ class MetricsFixture(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "bound"):
             measure(61, cgroup_root=self.groups, proc_root=self.proc)
 
+    def test_one_unit_counter_reset_cannot_hide_behind_other_unit_growth(self):
+        tick = [0.0]
+
+        def sleep(seconds):
+            tick[0] += seconds
+            (self.groups / "shell.service" / "cpu.stat").write_text("usage_usec 900000\n")
+            (self.groups / "shell-ui.service" / "cpu.stat").write_text("usage_usec 0\n")
+
+        with self.assertRaisesRegex(ValueError, "shell-ui.service CPU counter regressed"):
+            measure(2.0, 0.5, cgroup_root=self.groups, proc_root=self.proc,
+                    clock=lambda: tick[0], sleep=sleep)
+
+    def test_recreated_unit_cgroup_is_rejected_even_if_cpu_counter_grows(self):
+        tick = [0.0]
+        changed = [False]
+
+        def sleep(seconds):
+            tick[0] += seconds
+            if changed[0]:
+                return
+            changed[0] = True
+            old = self.groups / "shell-ui.service"
+            old.rename(self.groups / "old-shell-ui.service")
+            old.mkdir()
+            (old / "cpu.stat").write_text("usage_usec 300\n")
+            (old / "memory.current").write_text("2000\n")
+            (old / "cgroup.procs").write_text("12\n")
+
+        with self.assertRaisesRegex(ValueError, "shell-ui.service cgroup was recreated"):
+            measure(2.0, 0.5, cgroup_root=self.groups, proc_root=self.proc,
+                    clock=lambda: tick[0], sleep=sleep)
+
 
 if __name__ == "__main__":
     unittest.main()
