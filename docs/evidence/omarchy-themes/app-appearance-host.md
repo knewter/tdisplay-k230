@@ -49,12 +49,30 @@ before task 3.4 can be marked complete. Any app reload failure belongs in a
 separate status from the shell generation ACK; it must not be reported as a
 successful existing-session recolor.
 
+An opt-in `k230-foot-session` source wrapper is now packaged for Foot launch
+paths. Invoked inside Foot as `k230-foot-session --state-root STATE
+--default-generation PINNED -- COMMAND`, it validates its own stdout TTY,
+forks one bounded color follower, then execs COMMAND with its original args
+and foreground process group. The follower inherits only that terminal's
+stdout and a Linux pidfd for the exec'd parent. It polls the acknowledged
+generation once per second by default, emits OSC only on a generation change
+under the activation lock, uses the pinned default on rollback to no active
+pointer, and exits when the parent exits. It does not scan PTYs, signal apps,
+or keep a terminal open after its app leaves. A fake PTY with a controlling
+terminal proved unchanged argument execution, foreground process group,
+initial OSC, and follower exit. A single 2026-09-23 x86_64 host run observed
+14,404 KiB `VmRSS` for one Python follower; this is neither a target RSS nor
+a frame-cost measurement. The one-second polling and target cost need review
+on the actual handheld. The normal Foot launchers do not yet invoke this
+wrapper, so existing-window automatic recolor remains unproved in production.
+
 ```text
 python3 tests/test_handheld_app_themes.py   PASS 9 host tests
 python3 tests/test_handheld_theme_default.py  PASS 2 host tests
 python3 tests/test_omarchy_theme_transaction.py  PASS 13 host tests
 python3 tests/test_theme_catalog.py  PASS 9 host tests
 python3 tests/test_omarchy_theme_activation.py  PASS 9 host tests
+python3 tests/test_foot_color_session.py  PASS 3 host tests; one host RSS=14,404 KiB
 python3 tools/generate_default_foot.py --check  PASS
 python3 -m py_compile tools/app_appearance.py  PASS
 openspec validate the-shell-loads-omarchy-themes --strict  PASS

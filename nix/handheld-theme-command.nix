@@ -16,6 +16,7 @@ stdenvNoCC.mkDerivation {
     install -m 0644 ${../tools/theme_tokens.py} "$out/libexec/handheld-theme/theme_tokens.py"
     install -m 0644 ${../tools/theme_catalog.py} "$out/libexec/handheld-theme/theme_catalog.py"
     install -m 0644 ${../tools/app_appearance.py} "$out/libexec/handheld-theme/app_appearance.py"
+    install -m 0644 ${../tools/foot_color_session.py} "$out/libexec/handheld-theme/foot_color_session.py"
     install -m 0644 ${../tools/omarchy-theme-set} "$out/libexec/handheld-theme/omarchy-theme-set"
     makeWrapper ${python3}/bin/python3 "$out/bin/omarchy-theme-set" \
       --add-flags "$out/libexec/handheld-theme/omarchy-theme-set" \
@@ -27,6 +28,8 @@ stdenvNoCC.mkDerivation {
       --add-flags "--builtins ${themeDefault}/share/omarchy/themes"
     makeWrapper ${python3}/bin/python3 "$out/bin/k230-app-appearance" \
       --add-flags "$out/libexec/handheld-theme/app_appearance.py"
+    makeWrapper ${python3}/bin/python3 "$out/bin/k230-foot-session" \
+      --add-flags "$out/libexec/handheld-theme/foot_color_session.py"
     runHook postInstall
   '';
 }
