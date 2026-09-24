@@ -18,9 +18,15 @@ class TransactionError(Exception):
 
 
 MAX_REPLY = 4096
+# A receiver's own bounded work (decoding a full-size theme still, then waiting
+# for a presentation slot) takes about 3 s on the K230's in-order core, so the
+# former 2 s budget dropped legitimate acks mid-flight ("Broken pipe" in the
+# Rust log). Keep this above the slowest receiver's internal bounds.
+EXCHANGE_TIMEOUT_S = 8.0
 
 
-def exchange(endpoint: Path, phase: str, generation: Path | None, *, timeout: float = 2.0) -> None:
+def exchange(endpoint: Path, phase: str, generation: Path | None, *,
+             timeout: float = EXCHANGE_TIMEOUT_S) -> None:
     identity = generation.name if generation is not None else None
     message = {"protocol": 1, "phase": phase, "generation": identity,
                "path": str(generation) if generation is not None else None}
