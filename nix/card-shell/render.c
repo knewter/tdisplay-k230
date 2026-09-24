@@ -165,6 +165,10 @@ struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 	cairo_pattern_t *pattern = cairo_pattern_create_linear(
 		cx - dx * span / 2, cy - dy * span / 2,
 		cx + dx * span / 2, cy + dy * span / 2);
+	if (cairo_pattern_status(pattern) != CAIRO_STATUS_SUCCESS) {
+		cairo_pattern_destroy(pattern); cairo_destroy(cr);
+		cairo_surface_destroy(b->surface); free(b); return NULL;
+	}
 	for (size_t i = 0; i < brush->count; ++i) {
 		uint32_t color = brush->stops[i].argb;
 		cairo_pattern_add_color_stop_rgba(pattern, brush->stops[i].offset,
@@ -174,8 +178,10 @@ struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 	}
 	cairo_set_source(cr, pattern);
 	cairo_paint(cr);
+	bool painted = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
 	cairo_pattern_destroy(pattern);
 	cairo_destroy(cr);
+	if (!painted) { cairo_surface_destroy(b->surface); free(b); return NULL; }
 	cairo_surface_flush(b->surface);
 	b->gradient_bytes = bytes;
 	wlr_buffer_init(&b->base, &impl, width, height);

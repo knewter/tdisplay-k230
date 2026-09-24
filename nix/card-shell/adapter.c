@@ -54,9 +54,8 @@ struct card {
 	struct wlr_scene_tree *tree, *pixels;
 	struct wlr_scene_rect *background;
 	struct wlr_scene_buffer *gradient;
-	uint64_t gradient_serial;
+	struct card_brush gradient_brush;
 	int gradient_width, gradient_height;
-	bool gradient_selected;
 	struct wlr_scene_buffer *label;
 	char *label_text;
 	bool hidden, original_enabled;
@@ -85,11 +84,10 @@ static struct {
 	struct wlr_scene_tree *ui, *deck, *chrome, *button;
 	struct wlr_scene_rect *canvas;
 	struct wlr_scene_buffer *canvas_gradient;
-	uint64_t canvas_serial;
+	struct card_brush canvas_brush;
 	int canvas_width, canvas_height;
 	struct card_appearance appearance;
 	bool appearance_enabled;
-	uint64_t appearance_serial;
 	struct wl_event_source *timer;
 	char *status_text;
 	struct wlr_scene_buffer *status;
@@ -161,39 +159,49 @@ static bool sync_scene(void);
 static void handle_result(struct cs_result result);
 static bool snapshot(void);
 static bool chrome(void);
-static bool appearance_apply(const struct card_appearance *next, void *data) {
-	(void)data;
-	if (shell.appearance_enabled && memcmp(&shell.appearance, next, sizeof(*next)) == 0)
-		return true;
-	shell.appearance = *next;
-	shell.appearance_enabled = true;
-	shell.appearance_serial++;
+static bool appearance_canvas_refresh(void) {
 	if (!shell.canvas || !shell.deck || !shell.output) return true;
-	const struct card_brush *brush = &next->canvas;
-	bool gradient = brush->count > 1;
+	const struct cs_config *cfg = &shell.policy.config;
+	int width = cfg->width;
+	int height = cfg->height - cfg->top_reserved - cfg->bottom_reserved;
+	if (width <= 0 || height <= 0) return false;
+	const struct card_brush *brush = &shell.appearance.canvas;
+	bool gradient = shell.appearance_enabled && brush->count > 1;
 	if (gradient && (!shell.canvas_gradient ||
-		shell.canvas_serial != shell.appearance_serial ||
-		shell.canvas_width != shell.output->width ||
-		shell.canvas_height != shell.output->height)) {
-		struct wlr_scene_buffer *replacement = card_brush_scene(shell.deck, brush,
-			shell.output->width, shell.output->height);
+		memcmp(&shell.canvas_brush, brush, sizeof(*brush)) != 0 ||
+		shell.canvas_width != width || shell.canvas_height != height)) {
+		struct wlr_scene_buffer *replacement = card_brush_scene(shell.deck, brush, width, height);
 		if (!replacement) return false;
 		wlr_scene_node_place_above(&replacement->node, &shell.canvas->node);
-		wlr_scene_node_set_position(&replacement->node, shell.output->lx, shell.output->ly);
 		if (shell.canvas_gradient)
 			wlr_scene_node_destroy(&shell.canvas_gradient->node);
 		shell.canvas_gradient = replacement;
-		shell.canvas_serial = shell.appearance_serial;
-		shell.canvas_width = shell.output->width;
-		shell.canvas_height = shell.output->height;
+		shell.canvas_brush = *brush;
+		shell.canvas_width = width;
+		shell.canvas_height = height;
 	}
-	if (shell.canvas_gradient)
+	if (shell.canvas_gradient) {
 		wlr_scene_node_set_enabled(&shell.canvas_gradient->node, gradient);
+		wlr_scene_node_set_position(&shell.canvas_gradient->node,
+			shell.output->lx, shell.output->ly + cfg->top_reserved);
+	}
 	float rgba[4];
-	card_brush_solid_color(brush, rgba);
-	if (next->wallpaper && !next->canvas_authored) rgba[3] = 0;
+	if (shell.appearance_enabled) card_brush_solid_color(brush, rgba);
+	else memcpy(rgba, backdrop, sizeof(rgba));
+	if (shell.appearance_enabled && shell.appearance.wallpaper &&
+		!shell.appearance.canvas_authored) rgba[3] = 0;
 	wlr_scene_rect_set_color(shell.canvas, rgba);
 	wlr_scene_node_set_enabled(&shell.canvas->node, !gradient);
+	wlr_scene_rect_set_size(shell.canvas, width, height);
+	wlr_scene_node_set_position(&shell.canvas->node,
+		shell.output->lx, shell.output->ly + cfg->top_reserved);
+	return true;
+}
+static bool appearance_apply(const struct card_appearance *next, void *data) {
+	(void)data;
+	shell.appearance = *next;
+	shell.appearance_enabled = true;
+	if (!appearance_canvas_refresh()) return false;
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) {
 		if (c->label) wlr_scene_node_destroy(&c->label->node);
@@ -201,6 +209,7 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 		free(c->label_text);
 		c->label_text = NULL;
 	}
+	shell.chrome_valid = false;
 	return (!shell.active || sync_scene()) && chrome();
 }
 static void free_mirror(struct mirror *m) {
@@ -247,7 +256,6 @@ static void clear_card(struct card *c) {
 	c->label = NULL;
 	c->background = NULL;
 	c->gradient = NULL;
-	c->gradient_serial = 0;
 	free(c->label_text);
 	c->label_text = NULL;
 	if (c->hidden && live(c->view))
@@ -548,16 +556,15 @@ static bool card_background(struct card *c, bool selected, bool hidden) {
 	const struct card_brush *brush = selected ? &shell.appearance.selected : &shell.appearance.card;
 	bool gradient = shell.appearance_enabled && brush->count > 1;
 	int width = c->last_width, height = c->last_height;
-	if (gradient && !hidden && (!c->gradient || c->gradient_serial != shell.appearance_serial ||
-		c->gradient_selected != selected ||
+	if (gradient && !hidden && (!c->gradient ||
+		memcmp(&c->gradient_brush, brush, sizeof(*brush)) != 0 ||
 		c->gradient_width != width || c->gradient_height != height)) {
 		struct wlr_scene_buffer *next = card_brush_scene(c->tree, brush, width, height);
 		if (!next) return false;
 		wlr_scene_node_place_below(&next->node, &c->pixels->node);
 		if (c->gradient) wlr_scene_node_destroy(&c->gradient->node);
 		c->gradient = next;
-		c->gradient_serial = shell.appearance_serial;
-		c->gradient_selected = selected;
+		c->gradient_brush = *brush;
 		c->gradient_width = width;
 		c->gradient_height = height;
 	}
@@ -765,11 +772,7 @@ static bool chrome(void) {
 static bool sync_scene_impl(void) {
 	if (!shell.active)
 		return true;
-	struct cs_config *cfg = &shell.policy.config;
-	wlr_scene_node_set_position(&shell.canvas->node, shell.output->lx,
-								shell.output->ly + cfg->top_reserved);
-	wlr_scene_rect_set_size(shell.canvas, cfg->width,
-							cfg->height - cfg->top_reserved - cfg->bottom_reserved);
+	if (!appearance_canvas_refresh()) return false;
 	size_t i = 0;
 	struct card *c;
 	if (shell.policy.mode != CS_EXPANDING)

@@ -78,9 +78,12 @@ static bool color(const char *value, uint32_t *result) {
 
 static bool palette_color(json_object *palette, const char *key, uint32_t *result) {
 	const char *value = string(palette, key);
-	if (!value || strlen(value) != 7 || value[0] != '#') return false;
-	char argb[10] = "#ff";
-	memcpy(argb + 3, value + 1, 7);
+	if (!value || value[0] != '#') return false;
+	size_t length = strlen(value);
+	if (length != 7 && length != 9) return false;
+	char argb[10] = "#ff000000";
+	memcpy(argb + 3, value + 1, 6);
+	if (length == 9) memcpy(argb + 1, value + 7, 2);
 	return color(argb, result);
 }
 
@@ -140,7 +143,7 @@ static json_object *read_json(const char *directory, const char *filename) {
 	char path[1200];
 	int length = snprintf(path, sizeof(path), "%s/%s", directory, filename);
 	if (length <= 0 || (size_t)length >= sizeof(path)) return NULL;
-	int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+	int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK);
 	if (fd < 0) return NULL;
 	struct stat st;
 	bool valid = fstat(fd, &st) == 0 && S_ISREG(st.st_mode) &&
@@ -234,6 +237,42 @@ static void close_client(void) {
 	if (service.client >= 0) close(service.client);
 	service.client = -1;
 	service.used = 0;
+}
+
+/* A new home need not have a theme cache yet. Canonicalize its existing
+ * ancestor while refusing ambiguous dot segments in the missing suffix. */
+static char *planned_root(const char *path) {
+	char *resolved = realpath(path, NULL);
+	if (resolved || errno != ENOENT) return resolved;
+	char *copy = strdup(path);
+	if (!copy) return NULL;
+	char *cut = copy + strlen(copy);
+	while (cut > copy + 1) {
+		while (cut > copy + 1 && *cut != '/') --cut;
+		if (cut <= copy + 1) break;
+		char saved = *cut;
+		*cut = 0;
+		resolved = realpath(copy, NULL);
+		*cut = saved;
+		if (resolved) {
+			const char *suffix = path + (cut - copy);
+			char *part = strdup(suffix);
+			if (!part) { free(resolved); break; }
+			bool safe = true;
+			for (char *token = strtok(part, "/"); token; token = strtok(NULL, "/"))
+				if (!strcmp(token, ".") || !strcmp(token, "..")) safe = false;
+			free(part);
+			if (!safe) { free(resolved); break; }
+			char *result = NULL;
+			if (asprintf(&result, "%s%s", resolved, suffix) < 0) result = NULL;
+			free(resolved); free(copy);
+			return result;
+		}
+		if (errno != ENOENT) break;
+		cut--;
+	}
+	free(copy);
+	return NULL;
 }
 
 static void answer(const char *phase, const char *id, bool ok) {
@@ -330,7 +369,7 @@ bool card_appearance_start(const char *socket_path, const char *state_root,
 		strlen(state_root) >= sizeof(service.state_root) ||
 		strlen(default_generation) >= sizeof(service.default_path) ||
 		socket_path[0] != '/' || state_root[0] != '/' || default_generation[0] != '/') return false;
-	char *root = realpath(state_root, NULL);
+	char *root = planned_root(state_root);
 	char *pinned = realpath(default_generation, NULL);
 	if (!root || !pinned) { free(root); free(pinned); return false; }
 	if (strlen(root) >= sizeof(service.state_root) ||

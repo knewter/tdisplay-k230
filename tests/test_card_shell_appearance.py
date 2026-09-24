@@ -6,7 +6,6 @@ from pathlib import Path
 import socket
 import subprocess
 import tempfile
-import time
 import unittest
 
 
@@ -79,7 +78,10 @@ class AppearanceReceiver(unittest.TestCase):
             client.sendall(json.dumps(request).encode() + b'\n')
             response = b''
             while not response.endswith(b'\n'):
-                response += client.recv(256)
+                chunk = client.recv(256)
+                if not chunk:
+                    raise AssertionError('receiver closed without acknowledgement')
+                response += chunk
         return json.loads(response)
 
     def test_prepare_commit_repeated_commit_and_rollback(self):
@@ -118,6 +120,36 @@ class AppearanceReceiver(unittest.TestCase):
         (other / NEXT_ID).symlink_to(self.default)
         self.assertEqual(self.exchange('prepare', NEXT_ID, other / NEXT_ID,
                                        previous_generation=None, previous_path=None)['status'], 'error')
+
+    def test_fresh_state_root_uses_pinned_default(self):
+        fresh = self.root / 'new-home' / 'state' / 'themes'
+        fresh_socket = self.root / 'fresh.sock'
+        process = subprocess.Popen([str(self.binary), str(fresh_socket), str(fresh),
+                                    str(self.default)], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, text=True)
+        try:
+            self.assertEqual(process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+            self.assertEqual(process.stdout.readline().strip(), 'READY')
+            self.assertTrue(fresh_socket.is_socket())
+        finally:
+            process.terminate()
+            process.communicate(timeout=2)
+
+    def test_rgba_palette_is_accepted(self):
+        report = self.next / 'report.json'
+        data = json.loads(report.read_text())
+        data['palette']['background'] = '#1e1e2e80'
+        report.write_text(json.dumps(data))
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
+                                       previous_generation=None, previous_path=None)['status'], 'ok')
+
+    def test_fifo_payload_rejected_without_blocking_compositor(self):
+        payload = self.next / 'appearance.json'
+        payload.unlink()
+        os.mkfifo(payload)
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
+                                       previous_generation=None, previous_path=None)['status'], 'error')
+        self.assertIsNone(self.process.poll())
 
 
 if __name__ == '__main__':
