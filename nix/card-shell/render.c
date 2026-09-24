@@ -1,4 +1,5 @@
 #include "sway/card_shell_render.h"
+#include "sway/card_shell_appearance.h"
 #include "sway/card_shell_scaled_cache.h"
 #include <cairo.h>
 #include <drm_fourcc.h>
@@ -10,7 +11,10 @@
 struct label_buffer {
 	struct wlr_buffer base;
 	cairo_surface_t *surface;
+	size_t gradient_bytes;
 };
+static size_t gradient_bytes;
+#define GRADIENT_BYTES_LIMIT (24u * 1024u * 1024u)
 /* Bound all live cached pixels, including buffers still held by a scene node. */
 #define SCALED_CACHE_LIMIT (8u * 1024u * 1024u)
 struct scaled_buffer {
@@ -69,6 +73,7 @@ struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int widt
 }
 static void destroy(struct wlr_buffer *base) {
 	struct label_buffer *b = wl_container_of(base, b, base);
+	gradient_bytes -= b->gradient_bytes;
 	cairo_surface_destroy(b->surface);
 	free(b);
 }
@@ -85,8 +90,8 @@ static bool access(struct wlr_buffer *base, uint32_t flags, void **data, uint32_
 static void end(struct wlr_buffer *base) {}
 static const struct wlr_buffer_impl impl = {
 	.destroy = destroy, .begin_data_ptr_access = access, .end_data_ptr_access = end};
-struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *text, int width,
-									int height, int size) {
+struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const char *text,
+		int width, int height, int size, uint32_t argb) {
 	struct label_buffer *b = calloc(1, sizeof(*b));
 	if (!b)
 		return NULL;
@@ -111,13 +116,70 @@ struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *tex
 	pango_layout_set_width(layout, width * PANGO_SCALE);
 	pango_layout_set_height(layout, height * PANGO_SCALE);
 	pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
-	cairo_set_source_rgba(cr, .97, .98, 1, 1);
+	cairo_set_source_rgba(cr, ((argb >> 16) & 255) / 255.0,
+		((argb >> 8) & 255) / 255.0, (argb & 255) / 255.0,
+		((argb >> 24) & 255) / 255.0);
 	pango_cairo_show_layout(cr, layout);
 	g_object_unref(layout);
 	pango_font_description_free(font);
 	cairo_destroy(cr);
 	cairo_surface_flush(b->surface);
 	wlr_buffer_init(&b->base, &impl, width, height);
+	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
+	wlr_buffer_drop(&b->base);
+	return node;
+}
+struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *text, int width,
+		int height, int size) {
+	return card_label_color(tree, text, width, height, size, 0xfff7faff);
+}
+void card_brush_solid_color(const struct card_brush *brush, float out[4]) {
+	uint32_t color = brush->stops[0].argb;
+	out[0] = ((color >> 16) & 255) / 255.0f;
+	out[1] = ((color >> 8) & 255) / 255.0f;
+	out[2] = (color & 255) / 255.0f;
+	out[3] = ((color >> 24) & 255) / 255.0f * (float)brush->alpha;
+}
+struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
+		const struct card_brush *brush, int width, int height) {
+	if (!tree || !brush || !brush->count || width <= 0 || height <= 0 ||
+		width > 4096 || height > 4096 || (size_t)width * height > 4u * 1024u * 1024u)
+		return NULL;
+	size_t bytes = (size_t)width * (size_t)height * 4;
+	if (bytes > GRADIENT_BYTES_LIMIT - gradient_bytes) return NULL;
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b) return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(b->surface); free(b); return NULL;
+	}
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr); cairo_surface_destroy(b->surface); free(b); return NULL;
+	}
+	/* CSS-like angle: zero points up and 90 degrees points right. */
+	double radians = brush->angle_degrees * M_PI / 180.0;
+	double dx = sin(radians), dy = -cos(radians);
+	double span = fabs(dx) * width + fabs(dy) * height;
+	double cx = width / 2.0, cy = height / 2.0;
+	cairo_pattern_t *pattern = cairo_pattern_create_linear(
+		cx - dx * span / 2, cy - dy * span / 2,
+		cx + dx * span / 2, cy + dy * span / 2);
+	for (size_t i = 0; i < brush->count; ++i) {
+		uint32_t color = brush->stops[i].argb;
+		cairo_pattern_add_color_stop_rgba(pattern, brush->stops[i].offset,
+			((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0,
+			(color & 255) / 255.0,
+			((color >> 24) & 255) / 255.0 * brush->alpha);
+	}
+	cairo_set_source(cr, pattern);
+	cairo_paint(cr);
+	cairo_pattern_destroy(pattern);
+	cairo_destroy(cr);
+	cairo_surface_flush(b->surface);
+	b->gradient_bytes = bytes;
+	wlr_buffer_init(&b->base, &impl, width, height);
+	gradient_bytes += bytes;
 	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
 	wlr_buffer_drop(&b->base);
 	return node;

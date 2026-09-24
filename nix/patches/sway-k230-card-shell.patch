@@ -166,9 +166,10 @@
  	}
 --- a/sway/meson.build
 +++ b/sway/meson.build
-@@ -1,4 +1,11 @@
+@@ -1,4 +1,12 @@
  sway_sources = files(
 +	'card_shell.c',
++	'card_shell_appearance.c',
 +	'card_shell_route.c',
 +	'card-shell-policy.c',
 +	'card_shell_render.c',

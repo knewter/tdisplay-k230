@@ -1,6 +1,7 @@
 /* Opt-in product adapter: Sway alone owns surfaces, input and presentation. */
 #include "log.h"
 #include "sway/card-shell-policy.h"
+#include "sway/card_shell_appearance.h"
 #include "sway/card_shell.h"
 #include "sway/card_shell_render.h"
 #include "sway/card_shell_route.h"
@@ -52,6 +53,10 @@ struct card {
 	enum cs_content content;
 	struct wlr_scene_tree *tree, *pixels;
 	struct wlr_scene_rect *background;
+	struct wlr_scene_buffer *gradient;
+	uint64_t gradient_serial;
+	int gradient_width, gradient_height;
+	bool gradient_selected;
 	struct wlr_scene_buffer *label;
 	char *label_text;
 	bool hidden, original_enabled;
@@ -79,6 +84,12 @@ static struct {
 	struct wl_listener output_destroy, seat_destroy;
 	struct wlr_scene_tree *ui, *deck, *chrome, *button;
 	struct wlr_scene_rect *canvas;
+	struct wlr_scene_buffer *canvas_gradient;
+	uint64_t canvas_serial;
+	int canvas_width, canvas_height;
+	struct card_appearance appearance;
+	bool appearance_enabled;
+	uint64_t appearance_serial;
 	struct wl_event_source *timer;
 	char *status_text;
 	struct wlr_scene_buffer *status;
@@ -94,6 +105,10 @@ static struct {
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
 static const float selected_color[4] = {.184, .420, .310, 1};
+static uint32_t appearance_text(bool selected) {
+	return shell.appearance_enabled ?
+		(selected ? shell.appearance.selected_text : shell.appearance.text) : 0xfff7faff;
+}
 static uint64_t now_ms(void) {
 	struct timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
@@ -145,6 +160,49 @@ static void restore(struct cs_result result);
 static bool sync_scene(void);
 static void handle_result(struct cs_result result);
 static bool snapshot(void);
+static bool chrome(void);
+static bool appearance_apply(const struct card_appearance *next, void *data) {
+	(void)data;
+	if (shell.appearance_enabled && memcmp(&shell.appearance, next, sizeof(*next)) == 0)
+		return true;
+	shell.appearance = *next;
+	shell.appearance_enabled = true;
+	shell.appearance_serial++;
+	if (!shell.canvas || !shell.deck || !shell.output) return true;
+	const struct card_brush *brush = &next->canvas;
+	bool gradient = brush->count > 1;
+	if (gradient && (!shell.canvas_gradient ||
+		shell.canvas_serial != shell.appearance_serial ||
+		shell.canvas_width != shell.output->width ||
+		shell.canvas_height != shell.output->height)) {
+		struct wlr_scene_buffer *replacement = card_brush_scene(shell.deck, brush,
+			shell.output->width, shell.output->height);
+		if (!replacement) return false;
+		wlr_scene_node_place_above(&replacement->node, &shell.canvas->node);
+		wlr_scene_node_set_position(&replacement->node, shell.output->lx, shell.output->ly);
+		if (shell.canvas_gradient)
+			wlr_scene_node_destroy(&shell.canvas_gradient->node);
+		shell.canvas_gradient = replacement;
+		shell.canvas_serial = shell.appearance_serial;
+		shell.canvas_width = shell.output->width;
+		shell.canvas_height = shell.output->height;
+	}
+	if (shell.canvas_gradient)
+		wlr_scene_node_set_enabled(&shell.canvas_gradient->node, gradient);
+	float rgba[4];
+	card_brush_solid_color(brush, rgba);
+	if (next->wallpaper && !next->canvas_authored) rgba[3] = 0;
+	wlr_scene_rect_set_color(shell.canvas, rgba);
+	wlr_scene_node_set_enabled(&shell.canvas->node, !gradient);
+	struct card *c;
+	wl_list_for_each(c, &shell.cards, link) {
+		if (c->label) wlr_scene_node_destroy(&c->label->node);
+		c->label = NULL;
+		free(c->label_text);
+		c->label_text = NULL;
+	}
+	return (!shell.active || sync_scene()) && chrome();
+}
 static void free_mirror(struct mirror *m) {
 	wl_list_remove(&m->source_destroy.link);
 	wl_list_remove(&m->commit.link);
@@ -188,6 +246,8 @@ static void clear_card(struct card *c) {
 	c->pixels = NULL;
 	c->label = NULL;
 	c->background = NULL;
+	c->gradient = NULL;
+	c->gradient_serial = 0;
 	free(c->label_text);
 	c->label_text = NULL;
 	if (c->hidden && live(c->view))
@@ -443,11 +503,12 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 	return true;
 }
 static bool label_update(struct wlr_scene_tree *parent, struct wlr_scene_buffer **node,
-						 char **saved, const char *text, int width, int height, int size) {
+						 char **saved, const char *text, int width, int height, int size,
+						 uint32_t argb) {
 	if (*node && *saved && strcmp(*saved, text) == 0 && (*node)->buffer->width == width &&
 		(*node)->buffer->height == height)
 		return true;
-	struct wlr_scene_buffer *next = card_label(parent, text, width, height, size);
+	struct wlr_scene_buffer *next = card_label_color(parent, text, width, height, size, argb);
 	char *copy = strdup(text);
 	if (!next || !copy) {
 		if (next)
@@ -482,6 +543,37 @@ static void rect_clip(struct wlr_scene_rect *rect, struct wlr_box box, int px, i
 		wlr_scene_rect_set_size(rect, right - x, bottom - y);
 		wlr_scene_node_set_position(&rect->node, x - px, y - py);
 	}
+}
+static bool card_background(struct card *c, bool selected, bool hidden) {
+	const struct card_brush *brush = selected ? &shell.appearance.selected : &shell.appearance.card;
+	bool gradient = shell.appearance_enabled && brush->count > 1;
+	int width = c->last_width, height = c->last_height;
+	if (gradient && !hidden && (!c->gradient || c->gradient_serial != shell.appearance_serial ||
+		c->gradient_selected != selected ||
+		c->gradient_width != width || c->gradient_height != height)) {
+		struct wlr_scene_buffer *next = card_brush_scene(c->tree, brush, width, height);
+		if (!next) return false;
+		wlr_scene_node_place_below(&next->node, &c->pixels->node);
+		if (c->gradient) wlr_scene_node_destroy(&c->gradient->node);
+		c->gradient = next;
+		c->gradient_serial = shell.appearance_serial;
+		c->gradient_selected = selected;
+		c->gradient_width = width;
+		c->gradient_height = height;
+	}
+	if (c->gradient) {
+		wlr_scene_node_set_enabled(&c->gradient->node, gradient && !hidden);
+		if (gradient) label_clip(c->gradient, 0, 0, c->x, c->y, clip_box());
+	}
+	float rgba[4];
+	if (shell.appearance_enabled) card_brush_solid_color(brush, rgba);
+	else memcpy(rgba, selected ? selected_color : card_color, sizeof(rgba));
+	wlr_scene_rect_set_color(c->background, rgba);
+	rect_clip(c->background, (struct wlr_box){c->x, c->y, width, height}, c->x,
+		c->y, clip_box());
+	wlr_scene_node_set_enabled(&c->background->node, !gradient && !hidden &&
+		c->background->node.enabled);
+	return true;
 }
 static bool sync_card(struct card *c, size_t index) {
 	struct cs_rect r = cs_card_rect(&shell.policy, index);
@@ -529,18 +621,15 @@ static bool sync_card(struct card *c, size_t index) {
 			return false;
 	}
 	wlr_scene_node_set_position(&c->tree->node, c->x, c->y);
-	wlr_scene_rect_set_color(c->background,
-							 index == shell.policy.selected ? selected_color : card_color);
-	rect_clip(c->background, (struct wlr_box){c->x, c->y, lround(r.width), lround(r.height)}, c->x,
-			  c->y, clip_box());
-	if (entering || expanding)
-		wlr_scene_node_set_enabled(&c->background->node, false);
+	if (!card_background(c, index == shell.policy.selected, entering || expanding))
+		return false;
 	const char *title = c->content == CS_LIVE ? view_get_title(c->view) : cs_card_text(c->content);
 	if (!title || !*title)
 		title = "Application";
 	char text[512];
 	snprintf(text, sizeof(text), "%s%s", index == shell.policy.selected ? "Selected: " : "", title);
-	if (!label_update(c->tree, &c->label, &c->label_text, text, lround(r.width) - 24, 56, 32))
+	if (!label_update(c->tree, &c->label, &c->label_text, text, lround(r.width) - 24, 56, 32,
+			appearance_text(index == shell.policy.selected)))
 		return false;
 	label_clip(c->label, 12, lround(r.height) - 60, c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
@@ -574,7 +663,8 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int width, const
 				   bool pressed) {
 	struct wlr_scene_rect *rect =
 		wlr_scene_rect_create(parent, width, 56, pressed ? card_color : selected_color);
-	struct wlr_scene_buffer *label = card_label(parent, text, width - 16, 48, 26);
+	struct wlr_scene_buffer *label = card_label_color(parent, text, width - 16, 48, 26,
+		appearance_text(false));
 	if (!rect || !label)
 		return false;
 	wlr_scene_node_set_position(&rect->node, x, y);
@@ -597,14 +687,15 @@ static bool rebuild_chrome(void) {
 	if (touch_first()) {
 		if (!shell.active)
 			return true;
-		struct wlr_scene_buffer *title = card_label(shell.chrome, "Cards", 250, 56, 42);
+		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Cards", 250, 56, 42,
+			appearance_text(false));
 		if (!title)
 			return false;
 		wlr_scene_node_set_position(&title->node, x + 24, y + 8);
 		const char *text = shell.policy.message == CS_MESSAGE_EMPTY ?
 			"No running apps. Swipe up for Apps." : cs_message_text(shell.policy.message);
 		if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
-				cfg->width - 48, 56, 21))
+				cfg->width - 48, 56, 21, appearance_text(false)))
 			return false;
 		wlr_scene_node_set_position(&shell.status->node, x + 24, y + 72);
 		return true;
@@ -614,7 +705,8 @@ static bool rebuild_chrome(void) {
 		return false;
 	if (!shell.active)
 		return true;
-	struct wlr_scene_buffer *title = card_label(shell.chrome, "Cards", 250, 56, 42);
+	struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Cards", 250, 56, 42,
+		appearance_text(false));
 	if (!title)
 		return false;
 	wlr_scene_node_set_position(&title->node, x + 24, y + 8);
@@ -622,7 +714,7 @@ static bool rebuild_chrome(void) {
 	if (!text || !*text)
 		text = "Drag to browse. Tap to resume.";
 	if (!label_update(shell.chrome, &shell.status, &shell.status_text, text, cfg->width - 48, 56,
-					  21))
+					  21, appearance_text(false)))
 		return false;
 	wlr_scene_node_set_position(&shell.status->node, x + 24, y + 72);
 	int footer = shell.output->ly + cfg->height - cfg->bottom_reserved - cfg->footer_height;
@@ -790,6 +882,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	card_appearance_stop();
 	card_shell_reveal_abort(&shell.reveal);
 	cs_stream_cancel(&shell.policy);
 	shell.button_down = false;
@@ -808,6 +901,7 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	shell.deck = NULL;
 	shell.chrome = NULL;
 	shell.canvas = NULL;
+	shell.canvas_gradient = NULL;
 	shell.status = NULL;
 	free(shell.status_text);
 	shell.status_text = NULL;
@@ -821,6 +915,7 @@ void card_shell_output_disable(struct sway_output *output) {
 static int tick_impl(void *data) {
 	if (!shell.output)
 		return 0;
+	card_appearance_poll();
 	if (shell.reveal.active && !card_shell_reveal_pump(&shell.reveal)) {
 		card_shell_drawer_cancel(&shell.drawer_gesture);
 		card_shell_drawer_cancel(&shell.shade_gesture);
@@ -879,6 +974,12 @@ static bool ensure_ui(struct sway_output *output) {
 		handle_output_destroy(NULL, NULL);
 		return false;
 	}
+	const char *appearance_socket = getenv("SWAY_K230_CARD_APPEARANCE_SOCKET");
+	if (appearance_socket && *appearance_socket &&
+		!card_appearance_start(appearance_socket,
+			getenv("SWAY_K230_CARD_THEME_STATE_ROOT"),
+			getenv("SWAY_K230_CARD_THEME_DEFAULT"), appearance_apply, NULL))
+		sway_log(SWAY_ERROR, "K230_CARD_SHELL appearance receiver unavailable");
 	wl_event_source_timer_update(shell.timer, 16);
 	return true;
 }
