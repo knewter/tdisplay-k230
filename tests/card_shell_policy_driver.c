@@ -228,8 +228,8 @@ static double entry_finger_x(const struct cs_policy *p, double source_x) {
     struct cs_rect target=cs_card_rect(p,index);
     double anchor=(p->edge.x-source_x)/568.0;
     double progress=p->entry_progress;
-    return source_x*(1-progress)+target.x*progress+
-        p->entry_dx*(1-progress)+
+    return source_x*(1-progress)+(target.x-p->entry_dx)*progress+
+        p->entry_dx+
         p->entry_anchor_shift*progress*p->entry_anchor_factor+
         anchor*(568.0*(1-progress)+target.width*progress);
 }
@@ -239,39 +239,26 @@ static void entry_geometry(struct cs_policy *p) {
                                  target.x,target.y,target.width,target.height));
 }
 static void finish_entry(struct cs_policy *p,uint64_t time_ms,uint64_t target) {
-    assert(cs_entry_up(p,p->edge.contact_id).consumed);
+    assert(cs_entry_up_at(p,p->edge.contact_id,time_ms).consumed);
     assert(p->entry_settling && p->mode==CS_ENTERING);
-    double held_x=p->entry_dx,held_y=p->entry_progress;
+    double held_x=p->entry_dx, held_y=p->entry_progress;
     assert(!cs_tick(p,time_ms).actions);
     assert(p->entry_dx==held_x && p->entry_progress==held_y);
     if (target) {
-        size_t ordinal=SIZE_MAX;
-        for (size_t i=0;i<p->entry_count;i++)
-            if (p->entry_order[i]==target) ordinal=i;
-        assert(ordinal<p->entry_count);
-        double pitch=p->config.card_width+p->config.gap;
-        double expected=(p->config.width-p->config.card_width)/2+
-            ((double)ordinal-(double)p->entry_origin)*pitch+p->entry_release_dx;
-        assert(fabs(expected-(p->config.width-p->config.card_width)/2)<.001);
-    }
-    bool mirrored=false;
-    for (size_t i=0;i<p->count;i++)
-        if (p->cards[i].id==target) mirrored=p->cards[i].content==CS_LIVE;
-    struct cs_result endpoint=cs_tick(p,time_ms+160);
-    if (target && !mirrored) {
+        assert(p->entry_goal_progress==0);
+        assert(fabs(p->entry_release_dx)==p->config.width);
+    } else assert(p->entry_goal_progress==1);
+    struct cs_result middle=cs_tick(p,time_ms+40);
+    assert((middle.actions&CS_REDRAW) && p->mode==CS_ENTERING);
+    struct cs_result endpoint=cs_tick(p,time_ms+240);
+    if (target) {
         assert((endpoint.actions&CS_RESTORE) && endpoint.focus_id==target);
         assert(p->mode==CS_NORMAL && !p->entry_order);
-        return;
+        assert(p->expand_id==0); /* no forced deck-to-app expansion */
+    } else {
+        assert(endpoint.actions&CS_REDRAW);
+        assert(p->mode==CS_DECK);
     }
-    assert(endpoint.actions&CS_REDRAW);
-    if (target) {
-        assert(p->mode==CS_EXPANDING && p->expand_id==target);
-        assert(p->cards[p->selected].id==target);
-        assert(!cs_tick(p,time_ms+161).actions);
-        assert(cs_tick(p,time_ms+321).actions&CS_REDRAW);
-        assert(cs_tick(p,time_ms+322).focus_id==target);
-        assert(p->mode==CS_NORMAL);
-    } else assert(p->mode==CS_DECK);
 }
 static void two_axis_entry(void) {
     struct cs_policy p=setup();
@@ -290,7 +277,7 @@ static void two_axis_entry(void) {
     assert(fabs(entry_finger_y(&p)-1160)<.001);
     assert(cs_entry_up(&p,1).consumed && p.entry_reversing);
     cs_tick(&p,60);
-    assert(cs_tick(&p,220).focus_id==202 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,290).focus_id==202 && p.mode==CS_NORMAL);
     assert(!p.entry_order && !p.entry_count);
 
     /* Bottom-center quick switch rightward chooses the stable left neighbor. */
@@ -323,7 +310,7 @@ static void two_axis_entry(void) {
     entry_geometry(&p);
     cs_entry_motion(&p,5,210,1220,1410);
     assert(cs_entry_up(&p,5).consumed && p.entry_reversing);
-    cs_tick(&p,1420);assert(cs_tick(&p,1580).focus_id==202);
+    cs_tick(&p,1420);assert(cs_tick(&p,1650).focus_id==202);
     assert(p.mode==CS_NORMAL);
 
     /* A vanished target does not substitute a newly mapped neighbor. */
@@ -335,7 +322,7 @@ static void two_axis_entry(void) {
     cs_set_cards(&p,gone,4);
     assert(p.mode==CS_ENTERING && p.entry_left_id==101);
     assert(cs_entry_up(&p,6).consumed && p.entry_reversing);
-    cs_tick(&p,1620);assert(cs_tick(&p,1780).focus_id==202);
+    cs_tick(&p,1620);assert(cs_tick(&p,1850).focus_id==202);
     assert(p.mode==CS_NORMAL);
     cs_finish(&p);
 }
@@ -348,7 +335,7 @@ static void two_axis_conflicts(void) {
     assert(p.entry_raw_dx==146 && p.entry_dx<=48);
     assert(cs_entry_up(&p,1).consumed && p.entry_reversing);
     cs_tick(&p,30);
-    assert(cs_tick(&p,190).focus_id==101 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,260).focus_id==101 && p.mode==CS_NORMAL);
 
     const struct cs_card alone[]={{101,CS_LIVE,true,true}};
     cs_set_cards(&p,alone,1);
@@ -358,7 +345,7 @@ static void two_axis_conflicts(void) {
     assert(p.entry_dx>=-48 && !p.entry_right_id);
     assert(cs_entry_up(&p,2).consumed && p.entry_reversing);
     cs_tick(&p,220);
-    assert(cs_tick(&p,380).focus_id==101 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,450).focus_id==101 && p.mode==CS_NORMAL);
 
     struct cs_config keyboard=p.config;
     keyboard.bottom_reserved=180;
@@ -385,9 +372,9 @@ static void two_axis_conflicts(void) {
     cs_tick(&p,416);cs_tick(&p,456);
     double partial_x=p.entry_dx,partial_y=p.entry_progress;
     assert(cs_down(&p,11,300,900,457).consumed && p.entry_reversing);
-    assert(p.entry_dx==partial_x && p.entry_progress==partial_y);
+    assert(fabs(p.entry_dx-partial_x)<10 && fabs(p.entry_progress-partial_y)<.01);
     assert(cs_up(&p,11,458).consumed);
-    assert(cs_tick(&p,617).focus_id==202 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,700).focus_id==202 && p.mode==CS_NORMAL);
 
     assert(cs_begin_entry(&p,6,284,1220,620,202).consumed);
     entry_geometry(&p);
@@ -396,7 +383,7 @@ static void two_axis_conflicts(void) {
     cs_tick(&p,640);
     const struct cs_card target_gone[]={{202,CS_LIVE,true,true}};
     cs_set_cards(&p,target_gone,1);
-    assert(cs_tick(&p,800).focus_id==202 && p.mode==CS_NORMAL);
+    assert(cs_tick(&p,880).focus_id==202 && p.mode==CS_NORMAL);
 
     cs_set_cards(&p,restored,2);
     assert(cs_begin_entry(&p,9,284,1220,805,202).consumed);
@@ -407,7 +394,7 @@ static void two_axis_conflicts(void) {
     const struct cs_card target_private[]={{101,CS_PRIVATE,true,true},
                                            {202,CS_LIVE,true,true}};
     cs_set_cards(&p,target_private,2);
-    struct cs_result private_result=cs_tick(&p,967);
+    struct cs_result private_result=cs_tick(&p,1047);
     assert((private_result.actions&CS_RESTORE) && private_result.focus_id==101);
     assert(p.mode==CS_NORMAL && !p.entry_order); /* never expand a private mirror */
 
@@ -427,9 +414,50 @@ static void two_axis_conflicts(void) {
     entry_geometry(&p);
     cs_entry_motion(&p,8,420,1220,1010);
     assert(cs_entry_up(&p,8).consumed);
-    assert(!cs_tick(&p,1020).actions);
-    assert(cs_tick(&p,1080).actions&CS_REDRAW);
-    assert(p.mode==CS_EXPANDING && p.expand_id==101);
+    assert(cs_tick(&p,1020).actions&CS_REDRAW);
+    assert(cs_tick(&p,1110).focus_id==101 && p.mode==CS_NORMAL);
+    cs_finish(&p);
+}
+static void direct_carousel(void) {
+    struct cs_policy p=setup();
+    const struct cs_rect full={0,56,568,1176};
+    assert(cs_begin_entry(&p,1,284,1220,10,202).consumed);
+    entry_geometry(&p);
+    struct cs_rect origin=cs_entry_visual_rect(&p,1,full);
+    struct cs_rect left=cs_entry_visual_rect(&p,0,full);
+    assert(fabs(origin.x)<.001 && fabs(origin.width-568)<.001);
+    assert(fabs(left.x+568)<.001 && fabs(left.width-568)<.001);
+    cs_entry_motion(&p,1,384,1220,20);
+    origin=cs_entry_visual_rect(&p,1,full);
+    left=cs_entry_visual_rect(&p,0,full);
+    assert(fabs(origin.x-100)<.001 && fabs(left.x+468)<.001);
+    assert(!cs_tick(&p,100).actions); /* held finger cannot advance */
+    assert(fabs(cs_entry_visual_rect(&p,1,full).x-origin.x)<.001);
+    cs_entry_motion(&p,1,324,1220,110); /* reverse follows x exactly */
+    assert(fabs(cs_entry_visual_rect(&p,1,full).x-40)<.001);
+    cs_entry_motion(&p,1,444,1220,120);
+    origin=cs_entry_visual_rect(&p,1,full);
+    assert(fabs(origin.x-160)<.001 && p.entry_progress==0);
+    assert(cs_entry_up_at(&p,1,121).consumed && p.entry_target_id==101);
+    assert(!cs_tick(&p,121).actions);
+    assert(fabs(cs_entry_visual_rect(&p,1,full).x-origin.x)<.001);
+    cs_tick(&p,122);
+    assert(cs_entry_visual_rect(&p,1,full).x>origin.x); /* release momentum */
+    assert(p.entry_progress==0); /* no forced zoom to overview */
+    struct cs_result done=cs_tick(&p,361);
+    assert((done.actions&CS_RESTORE) && done.focus_id==101 && p.mode==CS_NORMAL);
+    assert(p.expand_id==0);
+
+    assert(cs_begin_entry(&p,2,284,1220,400,101).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,2,284,1100,410);
+    double held=p.entry_progress;
+    assert(held>0 && held<1);
+    assert(cs_entry_up_at(&p,2,411).consumed && !p.entry_target_id);
+    assert(!cs_tick(&p,411).actions && p.entry_progress==held);
+    cs_tick(&p,412);
+    assert(p.entry_progress>held); /* measured upward derivative continues */
+    assert(cs_tick(&p,651).actions&CS_REDRAW && p.mode==CS_DECK);
     cs_finish(&p);
 }
 static void tracked_entry(void) {
@@ -461,8 +489,8 @@ static void tracked_entry(void) {
     double partial=p.entry_progress;
     cs_tick(&p,40);
     r=cs_tick(&p,48);
-    assert(r.actions&CS_REDRAW && p.entry_progress<partial && p.entry_progress>0);
-    r=cs_tick(&p,80);
+    assert(r.actions&CS_REDRAW && p.entry_progress<=partial);
+    r=cs_tick(&p,275);
     assert((r.actions&CS_RESTORE) && r.focus_id==101 && p.mode==CS_NORMAL);
     assert(!p.blocked_until_up && !cs_can_mirror(&p,101));
     /* A new touch during reversal is owned, not delivered to the app. */
@@ -473,7 +501,7 @@ static void tracked_entry(void) {
     cs_entry_up(&p,5);
     assert(cs_down(&p,6,200,400,84).consumed && p.blocked_until_up);
     cs_up(&p,6,85);
-    cs_tick(&p,90);cs_tick(&p,180);
+    cs_tick(&p,90);cs_tick(&p,325);
     assert(p.mode==CS_NORMAL && !p.blocked_until_up);
     cs_begin_entry(&p,2,200,1220,190,101);
     target=cs_card_rect(&p,p.selected);
@@ -483,9 +511,9 @@ static void tracked_entry(void) {
     r=cs_entry_up(&p,2);
     assert(r.consumed && p.mode==CS_ENTERING && p.entry_settling);
     partial=p.entry_progress;
-    assert(!cs_tick(&p,205).actions && p.entry_progress==partial);
+    assert(cs_tick(&p,205).actions&CS_REDRAW && p.entry_progress>=partial);
     assert(cs_tick(&p,230).actions&CS_REDRAW && p.entry_progress>partial);
-    assert(cs_tick(&p,400).actions&CS_REDRAW && p.mode==CS_DECK);
+    assert(cs_tick(&p,440).actions&CS_REDRAW && p.mode==CS_DECK);
     assert(cs_can_mirror(&p,101));
     cs_leave(&p);
     /* A fresh touch interrupts post-release settling from visible geometry. */
@@ -497,8 +525,8 @@ static void tracked_entry(void) {
     cs_tick(&p,420);cs_tick(&p,440);
     partial=p.entry_progress;
     assert(cs_down(&p,10,200,400,441).consumed && p.entry_reversing);
-    assert(!p.entry_settling && p.entry_reverse_from==partial);
-    cs_up(&p,10,442);cs_tick(&p,470);cs_tick(&p,620);
+    assert(!p.entry_settling && fabs(p.entry_reverse_from-partial)<.01);
+    cs_up(&p,10,442);cs_tick(&p,470);cs_tick(&p,682);
     assert(p.mode==CS_NORMAL && !p.blocked_until_up);
     r=cs_begin_entry(&p,3,200,1220,210,303);
     assert(r.consumed && p.mode==CS_NORMAL && p.edge.tracking);
@@ -740,6 +768,7 @@ int main(int argc,char **argv) {
         {"tracked-entry",tracked_entry},
         {"two-axis-entry",two_axis_entry},
         {"two-axis-conflicts",two_axis_conflicts},
+        {"direct-carousel",direct_carousel},
         {"tracked-expansion",tracked_expansion},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},

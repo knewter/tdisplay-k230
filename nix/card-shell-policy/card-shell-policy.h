@@ -76,8 +76,13 @@ struct cs_policy {
 	double entry_release_dx, entry_settle_dx, entry_reverse_dx, entry_reverse_anchor;
 	double entry_reverse_from;
 	double entry_settle_from;
+	double entry_goal_progress, entry_settle_anchor;
+	double entry_velocity_x, entry_velocity_progress;
+	double entry_release_velocity_x, entry_release_velocity_progress;
+	double entry_sample_x, entry_sample_y;
+	uint64_t entry_sample_ms;
 	uint64_t entry_started_ms;
-	bool entry_reversing, entry_settling;
+	bool entry_reversing, entry_settling, entry_interrupted_hold;
 	double expand_progress, expand_reverse_from;
 	uint64_t expand_id, expand_started_ms;
 	/* A policy tick dwell at full geometry; not output presentation proof. */
@@ -149,12 +154,18 @@ bool cs_entry_set_geometry(struct cs_policy *policy, double source_x,
 struct cs_result cs_entry_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms);
 struct cs_result cs_entry_up(struct cs_policy *policy, int32_t contact_id);
+struct cs_result cs_entry_up_at(struct cs_policy *policy, int32_t contact_id,
+    uint64_t time_ms);
 /* Local edge rejection only; for a complete stream use cs_stream_cancel. */
 void cs_edge_cancel(struct cs_policy *policy);
 
 bool cs_can_mirror(const struct cs_policy *policy, uint64_t id);
 struct cs_rect cs_content_rect(const struct cs_policy *policy);
 struct cs_rect cs_card_rect(const struct cs_policy *policy, size_t index);
+/* Geometry of one live or neutral carousel slot during app entry. Source is
+ * the output-local full view rectangle; no pixels or titles enter policy. */
+struct cs_rect cs_entry_visual_rect(const struct cs_policy *policy,
+    size_t index, struct cs_rect source);
 /* Returns SIZE_MAX outside cards/content clip. Adapter buttons are hit first. */
 size_t cs_hit_test(const struct cs_policy *policy, double x, double y);
 const char *cs_message_text(enum cs_message message);

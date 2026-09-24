@@ -591,23 +591,19 @@ static bool sync_card(struct card *c, size_t index) {
 		c->source_y = source_y;
 		c->source_valid = true;
 	}
-	bool entering = shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id;
+	bool entering = shell.policy.mode == CS_ENTERING;
 	bool expanding = shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id;
 	if (entering) {
 		if (!c->source_valid)
 			return false;
-		if (!cs_entry_set_geometry(&shell.policy,
+		if (c->id == shell.policy.entry_id && !cs_entry_set_geometry(&shell.policy,
 				c->source_x - shell.output->lx, c->source_y - shell.output->ly,
 				c->view->geometry.width, c->view->geometry.height,
 				r.x - shell.policy.entry_dx, r.y, r.width, r.height))
 			return false;
-		double progress = shell.policy.entry_progress;
-		r.x = (c->source_x - shell.output->lx) * (1 - progress) + r.x * progress;
-		r.x += shell.policy.entry_dx * (1 - progress) +
-			shell.policy.entry_anchor_shift * progress * shell.policy.entry_anchor_factor;
-		r.y = (c->source_y - shell.output->ly) * (1 - progress) + r.y * progress;
-		r.width = c->view->geometry.width * (1 - progress) + r.width * progress;
-		r.height = c->view->geometry.height * (1 - progress) + r.height * progress;
+		r = cs_entry_visual_rect(&shell.policy, index, (struct cs_rect){
+			c->source_x - shell.output->lx, c->source_y - shell.output->ly,
+			c->view->geometry.width, c->view->geometry.height});
 	}
 	if (expanding) {
 		if (!c->source_valid || !c->expand_start_valid)
@@ -1432,7 +1428,7 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		return true;
 	}
 	struct cs_result r = shell.policy.mode == CS_ENTERING ?
-							 cs_entry_up(&shell.policy, id) :
+							 cs_entry_up_at(&shell.policy, id, event_ms) :
 							 shell.policy.mode == CS_NORMAL && !shell.policy.blocked_until_up
 							 ? cs_edge_up(&shell.policy, id)
 							 : cs_up(&shell.policy, id, event_ms);
