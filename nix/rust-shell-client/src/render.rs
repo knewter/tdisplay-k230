@@ -5,6 +5,8 @@ use crate::{
     catalog::AppEntry,
     icon::IconCache,
     navigation::{list_top, ROW_HEIGHT, ROW_VISIBLE_HEIGHT},
+    service_data::{Control, ControlValue},
+    service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
@@ -113,6 +115,23 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
+fn service_card(cr: &Context, x: f64, y: f64, w: f64, h: f64) {
+    rounded(cr, x, y, w, h, 16.0);
+    color(cr, 0x263946, 1.0);
+    let _ = cr.fill();
+}
+
+fn control_text(control: &Control) -> String {
+    match &control.value {
+        Some(ControlValue::Percent(value)) => format!("{} · {value}%", control.label),
+        Some(ControlValue::Text(value)) => format!("{} · {value}", control.label),
+        Some(ControlValue::Boolean(value)) => {
+            format!("{} · {}", control.label, if *value { "on" } else { "off" })
+        }
+        None => control.label.clone(),
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct RenderParams {
     pub width: u32,
@@ -128,6 +147,7 @@ fn scene(
     apps: &[AppEntry],
     icons: &mut IconCache,
     theme: Option<&AppearanceSnapshot>,
+    services: Option<&ServiceView>,
 ) {
     let RenderParams {
         width,
@@ -270,52 +290,165 @@ fn scene(
             }
         }
         Route::Shade => {
-            text(cr, "Current activity", 28.0, 98.0, w - 56.0, 19.0, 0xc8d7dd);
-            rounded(cr, 24.0, 148.0, w - 48.0, 116.0, 16.0);
-            color(cr, 0x263946, 1.0);
-            let _ = cr.fill();
+            text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, 0x78d7cb);
+            let items = services.and_then(|view| view.notifications.as_ref());
+            let count = items.map_or(0, |snapshot| snapshot.count);
             text(
                 cr,
-                "No notifications loaded",
-                44.0,
-                174.0,
-                w - 88.0,
-                24.0,
-                0xf4f7f8,
-            );
-            text(
-                cr,
-                "Open Settings from this shade",
-                44.0,
-                213.0,
-                w - 88.0,
-                18.0,
+                &format!("{count} notifications"),
+                28.0,
+                112.0,
+                w - 220.0,
+                19.0,
                 0xc8d7dd,
             );
+            if count > 0 {
+                text(cr, "Dismiss all", w - 166.0, 143.0, 140.0, 17.0, 0x78d7cb);
+            }
+            service_card(cr, 24.0, 186.0, w - 48.0, 72.0);
+            if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
+                text(cr, &preview.source, 42.0, 197.0, w - 84.0, 17.0, 0x78d7cb);
+                text(cr, &preview.summary, 42.0, 220.0, w - 84.0, 21.0, 0xf4f7f8);
+            } else {
+                text(cr, "Private preview", 42.0, 211.0, w - 84.0, 20.0, 0xc8d7dd);
+            }
+            if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
+                text(
+                    cr,
+                    error,
+                    28.0,
+                    NOTIFICATION_TOP + 14.0,
+                    w - 56.0,
+                    18.0,
+                    0xf4b9a6,
+                );
+            } else if let Some(items) = items {
+                let _ = cr.save();
+                cr.rectangle(
+                    0.0,
+                    NOTIFICATION_TOP,
+                    w,
+                    (panel_h - NOTIFICATION_TOP - 24.0).max(0.0),
+                );
+                cr.clip();
+                let offset = services.map_or(0.0, |view| view.notification_scroll);
+                for (index, event) in items.events.iter().enumerate() {
+                    let y = NOTIFICATION_TOP + index as f64 * NOTIFICATION_ROW - offset;
+                    if y + NOTIFICATION_ROW < NOTIFICATION_TOP || y >= panel_h - 24.0 {
+                        continue;
+                    }
+                    service_card(cr, 24.0, y, w - 48.0, NOTIFICATION_ROW - 8.0);
+                    let painted = event
+                        .icon
+                        .as_deref()
+                        .is_some_and(|icon| icons.paint(cr, icon, 38, 40.0, y + 15.0));
+                    if !painted {
+                        text(
+                            cr,
+                            &event
+                                .source
+                                .chars()
+                                .next()
+                                .unwrap_or('?')
+                                .to_uppercase()
+                                .to_string(),
+                            48.0,
+                            y + 19.0,
+                            36.0,
+                            22.0,
+                            0xf4f7f8,
+                        );
+                    }
+                    text(cr, &event.source, 92.0, y + 13.0, w - 132.0, 16.0, 0x78d7cb);
+                    text(
+                        cr,
+                        &event.summary,
+                        92.0,
+                        y + 39.0,
+                        w - 132.0,
+                        21.0,
+                        0xf4f7f8,
+                    );
+                    text(cr, &event.body, 92.0, y + 71.0, w - 132.0, 15.0, 0xc8d7dd);
+                }
+                let _ = cr.restore();
+            } else {
+                text(
+                    cr,
+                    "Loading notifications",
+                    28.0,
+                    NOTIFICATION_TOP + 14.0,
+                    w - 56.0,
+                    19.0,
+                    0xc8d7dd,
+                );
+            }
         }
         Route::Settings => {
-            text(cr, "Device controls", 28.0, 98.0, w - 56.0, 19.0, 0xc8d7dd);
-            rounded(cr, 24.0, 148.0, w - 48.0, 116.0, 16.0);
-            color(cr, 0x263946, 1.0);
-            let _ = cr.fill();
-            text(
-                cr,
-                "Loading capability state",
-                44.0,
-                174.0,
-                w - 88.0,
-                24.0,
-                0xf4f7f8,
-            );
-            text(
-                cr,
-                "Controls appear only when confirmed",
-                44.0,
-                213.0,
-                w - 88.0,
-                18.0,
-                0xc8d7dd,
-            );
+            text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, 0x78d7cb);
+            text(cr, "Device controls", 28.0, 112.0, w - 56.0, 19.0, 0xc8d7dd);
+            if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
+                for (y, name, control) in [
+                    (162.0, "Network link", &settings.network),
+                    (326.0, "Brightness", &settings.brightness),
+                    (452.0, "Keyboard", &settings.keyboard),
+                    (590.0, "Motion", &settings.motion),
+                ] {
+                    service_card(cr, 24.0, y, w - 48.0, 110.0);
+                    text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, 0x78d7cb);
+                    text(
+                        cr,
+                        &control_text(control),
+                        42.0,
+                        y + 43.0,
+                        w - 90.0,
+                        19.0,
+                        0xf4f7f8,
+                    );
+                    if let Some(detail) = &control.detail {
+                        text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, 0xc8d7dd);
+                    }
+                }
+                if settings.brightness.state == crate::service_data::ControlState::Writable {
+                    text(cr, "−       +", w - 162.0, 366.0, 130.0, 25.0, 0x78d7cb);
+                }
+            } else {
+                text(
+                    cr,
+                    services
+                        .and_then(|view| view.settings_error.as_deref())
+                        .unwrap_or("Loading settings"),
+                    28.0,
+                    177.0,
+                    w - 56.0,
+                    20.0,
+                    0xc8d7dd,
+                );
+            }
+            if services.and_then(|view| view.settings.as_ref()).is_some() {
+                text(cr, "Power", 28.0, 722.0, w - 56.0, 19.0, 0xc8d7dd);
+                service_card(cr, 24.0, 750.0, w - 48.0, 70.0);
+                text(cr, "Reboot…", 42.0, 770.0, w - 84.0, 23.0, 0xf4f7f8);
+                service_card(cr, 24.0, 828.0, w - 48.0, 70.0);
+                text(cr, "Power off…", 42.0, 848.0, w - 84.0, 23.0, 0xf4f7f8);
+            }
+            if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
+                text(cr, &confirm.label, 28.0, 912.0, w - 56.0, 19.0, 0xf4f7f8);
+                service_card(cr, 24.0, 940.0, w - 48.0, 110.0);
+                text(cr, "Cancel", 45.0, 973.0, w / 2.0 - 45.0, 23.0, 0xc8d7dd);
+                text(
+                    cr,
+                    "Confirm",
+                    w / 2.0 + 20.0,
+                    973.0,
+                    w / 2.0 - 45.0,
+                    23.0,
+                    0xf4b9a6,
+                );
+            }
+            if let Some(message) = services.and_then(|view| view.message.as_deref()) {
+                text(cr, message, 28.0, 1080.0, w - 56.0, 17.0, 0xc8d7dd);
+            }
         }
         Route::Hide => {}
     }
@@ -341,6 +474,7 @@ pub fn draw_shm(
         apps,
         &mut IconCache::new(),
         None,
+        None,
     )
 }
 
@@ -350,6 +484,7 @@ fn draw_shm_with_icons(
     apps: &[AppEntry],
     icons: &mut IconCache,
     theme: Option<&AppearanceSnapshot>,
+    services: Option<&ServiceView>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -369,7 +504,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, params, apps, icons, theme);
+    scene(&cr, params, apps, icons, theme, services);
     drop(cr);
     surface.flush();
     Ok(())
@@ -397,6 +532,7 @@ pub fn export_png(
         apps,
         &mut IconCache::new(),
         None,
+        None,
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -418,9 +554,14 @@ pub struct RendererCache {
     icons: IconCache,
     scroll: f64,
     theme: Option<AppearanceSnapshot>,
+    services: Option<ServiceView>,
 }
 
 impl RendererCache {
+    pub fn set_services(&mut self, services: ServiceView) {
+        self.services = Some(services);
+        self.invalidate();
+    }
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
         let configured = std::env::var("K230_ICON_THEME").ok();
         let name = theme
@@ -516,6 +657,7 @@ impl RendererCache {
                 apps,
                 &mut self.icons,
                 self.theme.as_ref(),
+                self.services.as_ref(),
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -552,7 +694,43 @@ impl RendererCache {
 mod tests {
     use super::*;
     use crate::appearance::BrushStop;
+    use crate::service_data::{Control, ControlState, SettingsSnapshot};
     use std::collections::BTreeMap;
+
+    #[test]
+    fn settings_power_rows_require_a_loaded_capability_snapshot() {
+        let mut renderer = RendererCache::default();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Settings,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let mut loading = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut loading, params, &[]).unwrap();
+        let unavailable = Control {
+            state: ControlState::Unavailable,
+            value: None,
+            label: "Unavailable".into(),
+            detail: None,
+            action: None,
+        };
+        let view = ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: unavailable.clone(),
+                brightness: unavailable.clone(),
+                keyboard: unavailable.clone(),
+                motion: unavailable,
+            }),
+            ..ServiceView::default()
+        };
+        renderer.set_services(view);
+        let mut loaded = vec![0; loading.len()];
+        renderer.draw(&mut loaded, params, &[]).unwrap();
+        let row = 770 * 568 * 4;
+        assert_ne!(&loading[row..row + 568 * 4], &loaded[row..row + 568 * 4]);
+    }
 
     #[test]
     fn authored_launcher_brush_changes_live_renderer_pixels() {

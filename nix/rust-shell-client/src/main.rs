@@ -11,6 +11,8 @@ use k230_shell_rust::{
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
     render::{export_png, RenderParams, RendererCache},
+    service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
+    service_ui::{notification_max_scroll, panel_intent, Confirmation, PanelIntent, ServiceView},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
@@ -441,7 +443,6 @@ struct ShellClient {
     touch_device: Option<wl_touch::WlTouch>,
     route: Route,
     touch: TouchTrace,
-    shade_start: Option<(i32, (f64, f64))>,
     width: u32,
     height: u32,
     configured: bool,
@@ -459,6 +460,11 @@ struct ShellClient {
     launch_started: Option<Instant>,
     swaymsg: Option<PathBuf>,
     renderer: RendererCache,
+    services: ServiceWorker,
+    service_view: ServiceView,
+    panel_start: Option<(i32, (f64, f64))>,
+    panel_origin_scroll: f64,
+    panel_scrolled: bool,
     appearance_pending: bool,
     reveal: RevealState,
     input_ready: bool,
@@ -479,6 +485,128 @@ struct WallpaperState {
 }
 
 impl ShellClient {
+    fn refresh_route(&mut self, route: Route) {
+        let request = match route {
+            Route::Shade => ServiceRequest::RefreshNotifications,
+            Route::Settings => ServiceRequest::RefreshSettings,
+            _ => return,
+        };
+        if let Err(error) = self.services.try_submit(request) {
+            self.service_view.message = Some(error.into());
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
+        }
+    }
+
+    fn submit_service(&mut self, request: ServiceRequest) {
+        if let Err(error) = self.services.try_submit(request) {
+            self.service_view.message = Some(error.into());
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
+        }
+    }
+
+    fn service_reply(&mut self, reply: ServiceReply) {
+        match reply.result {
+            Ok(ServiceResponse::Settings(settings)) => {
+                self.service_view.settings = Some(settings);
+                self.service_view.settings_error = None;
+            }
+            Ok(ServiceResponse::Notifications(notifications)) => {
+                self.service_view.notification_scroll =
+                    self.service_view
+                        .notification_scroll
+                        .min(notification_max_scroll(
+                            notifications.events.len(),
+                            self.height,
+                        ));
+                self.service_view.notifications = Some(notifications);
+                self.service_view.notification_error = None;
+            }
+            Ok(ServiceResponse::Action(outcome)) => {
+                self.service_view.message = Some(
+                    outcome
+                        .label
+                        .clone()
+                        .unwrap_or_else(|| outcome.state.clone()),
+                );
+                self.service_view.confirmation = if outcome.state == "confirmation" {
+                    match (outcome.token, outcome.power_action) {
+                        (Some(token), Some(action)) => Some(Confirmation {
+                            token,
+                            action,
+                            label: outcome.label.unwrap_or("Confirm power action".into()),
+                        }),
+                        _ => None,
+                    }
+                } else {
+                    None
+                };
+                if let Some(brightness) = outcome.brightness {
+                    if let Some(settings) = &mut self.service_view.settings {
+                        settings.brightness = brightness;
+                    }
+                }
+                match reply.request {
+                    ServiceRequest::NotificationDismiss(_)
+                    | ServiceRequest::NotificationDismissAll
+                    | ServiceRequest::NotificationAction(_) => self.refresh_route(Route::Shade),
+                    ServiceRequest::Brightness(_) | ServiceRequest::KeyboardToggle => {
+                        self.refresh_route(Route::Settings)
+                    }
+                    _ => {}
+                }
+            }
+            Err(error) => match reply.request {
+                ServiceRequest::RefreshSettings => {
+                    self.service_view.settings = None;
+                    self.service_view.settings_error = Some(error);
+                }
+                ServiceRequest::RefreshNotifications => {
+                    self.service_view.notifications = None;
+                    self.service_view.notification_error = Some(error);
+                }
+                _ => self.service_view.message = Some(error),
+            },
+        }
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
+    fn panel_action(&mut self, qh: &QueueHandle<Self>, intent: PanelIntent) {
+        match intent {
+            PanelIntent::Hide => self.hide(),
+            PanelIntent::OpenSettings => {
+                self.show(qh, Route::Settings);
+            }
+            PanelIntent::Request(request) => {
+                if matches!(
+                    request,
+                    ServiceRequest::PowerConfirm(_) | ServiceRequest::PowerCancel(_)
+                ) {
+                    self.service_view.confirmation = None;
+                    self.service_view.message = Some("Working…".into());
+                    self.renderer.set_services(self.service_view.clone());
+                    self.dirty = true;
+                }
+                self.submit_service(request);
+            }
+            PanelIntent::ScrollNotifications(delta) => {
+                let max = self
+                    .service_view
+                    .notifications
+                    .as_ref()
+                    .map_or(0.0, |snapshot| {
+                        notification_max_scroll(snapshot.events.len(), self.height)
+                    });
+                self.service_view.notification_scroll =
+                    (self.service_view.notification_scroll + delta).clamp(0.0, max);
+                self.renderer.set_services(self.service_view.clone());
+                self.dirty = true;
+            }
+        }
+    }
+
     fn log(&self, event: &str) {
         eprintln!(
             "rust-shell {}ms {event}",
@@ -662,6 +790,7 @@ impl ShellClient {
             self.nav = DrawerNavigation::default();
         }
         self.route = route;
+        self.refresh_route(route);
         if !self.ensure_layer(qh) {
             return false;
         }
@@ -677,6 +806,9 @@ impl ShellClient {
             return;
         }
         self.route = message.surface;
+        if message.phase == Phase::Begin {
+            self.refresh_route(message.surface);
+        }
         if !self.ensure_layer(qh) {
             self.reveal.clear();
             return;
@@ -724,7 +856,7 @@ impl ShellClient {
 
     fn hide(&mut self) {
         self.touch.cancel();
-        self.shade_start = None;
+        self.panel_start = None;
         self.nav = DrawerNavigation::default();
         self.reveal.clear();
         self.layer.take();
@@ -1011,13 +1143,16 @@ impl TouchHandler for ShellClient {
                 self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 if self.route == Route::Drawer && self.input_ready {
                     self.nav.down(id, pos, time_ms);
-                } else if self.route == Route::Shade && self.input_ready {
-                    self.shade_start = Some((id, pos));
+                } else if matches!(self.route, Route::Shade | Route::Settings) && self.input_ready {
+                    self.panel_start = Some((id, pos));
+                    self.panel_origin_scroll = self.service_view.notification_scroll;
+                    self.panel_scrolled = false;
                 }
             } else {
                 self.log("touch-second-cancel");
                 self.nav.cancel();
-                self.shade_start = None;
+                self.panel_start = None;
+                self.panel_scrolled = false;
             }
             // The contact itself is invisible; only a changed scene paints.
         }
@@ -1043,13 +1178,32 @@ impl TouchHandler for ShellClient {
                     Some(DrawerAction::Close) => self.hide(),
                     None => {}
                 }
-            } else if self.route == Route::Shade
-                && self.input_ready
-                && self.shade_start.take().is_some_and(|(start_id, start)| {
-                    start_id == id && shade_close_swipe(start, point)
-                })
-            {
-                self.hide();
+            } else if self.input_ready {
+                if let Some((start_id, start)) = self.panel_start.take() {
+                    if start_id == id {
+                        let list_has_rows = self.service_view.notifications.as_ref().is_some_and(|snapshot| !snapshot.events.is_empty());
+                        let in_list = start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
+                            && start.1 < f64::from(self.height) * 0.65 - 24.0;
+                        if self.route == Route::Shade && (!list_has_rows || !in_list) && shade_close_swipe(start, point) {
+                            self.hide();
+                        } else {
+                        if let Some(intent) = panel_intent(
+                            self.route,
+                            start,
+                            point,
+                            self.width,
+                            self.height,
+                            &self.service_view,
+                        ) {
+                            if !(self.panel_scrolled
+                                && matches!(intent, PanelIntent::ScrollNotifications(_)))
+                            {
+                                self.panel_action(qh, intent);
+                            }
+                        }
+                        }
+                    }
+                }
             }
             if self.dirty {
                 self.draw(qh);
@@ -1074,6 +1228,29 @@ impl TouchHandler for ShellClient {
                     .motion(id, pos, time_ms, self.height, self.apps.len())
             {
                 self.dirty = true;
+            } else if self.route == Route::Shade && self.input_ready {
+                if let Some((start_id, start)) = self.panel_start {
+                    let dy = pos.1 - start.1;
+                    if start_id == id
+                        && start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
+                        && dy.abs() > 22.0
+                    {
+                        let max = self
+                            .service_view
+                            .notifications
+                            .as_ref()
+                            .map_or(0.0, |snapshot| {
+                                notification_max_scroll(snapshot.events.len(), self.height)
+                            });
+                        let next = (self.panel_origin_scroll - dy).clamp(0.0, max);
+                        if (next - self.service_view.notification_scroll).abs() >= 1.0 {
+                            self.service_view.notification_scroll = next;
+                            self.renderer.set_services(self.service_view.clone());
+                            self.dirty = true;
+                        }
+                        self.panel_scrolled = true;
+                    }
+                }
             }
             if self.dirty {
                 self.draw(qh);
@@ -1102,7 +1279,8 @@ impl TouchHandler for ShellClient {
     fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
         self.touch.cancel();
         self.nav.cancel();
-        self.shade_start = None;
+        self.panel_start = None;
+        self.panel_scrolled = false;
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -1147,6 +1325,13 @@ fn serve() -> Result<(), String> {
     let shm = Shm::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let pool = SlotPool::new(568 * 1232 * 4 * 5, &shm).map_err(|e| e.to_string())?;
     let (launch_sender, launch_results) = mpsc::channel();
+    let settings_command = std::env::var_os("K230_SETTINGS")
+        .map(PathBuf::from)
+        .unwrap_or_default();
+    let notification_socket = std::env::var_os("K230_NOTIFICATION_SOCKET")
+        .map(PathBuf::from)
+        .unwrap_or_default();
+    let services = ServiceWorker::spawn(settings_command, notification_socket);
     let mut state = ShellClient {
         compositor,
         layer_shell,
@@ -1165,7 +1350,6 @@ fn serve() -> Result<(), String> {
         touch_device: None,
         route: Route::Drawer,
         touch: TouchTrace::default(),
-        shade_start: None,
         width: 568,
         height: 1232,
         configured: false,
@@ -1183,6 +1367,11 @@ fn serve() -> Result<(), String> {
         launch_started: None,
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
+        services,
+        service_view: ServiceView::default(),
+        panel_start: None,
+        panel_origin_scroll: 0.0,
+        panel_scrolled: false,
         appearance_pending: false,
         reveal: RevealState::default(),
         input_ready: false,
@@ -1193,6 +1382,7 @@ fn serve() -> Result<(), String> {
         ),
     };
     state.renderer.set_appearance(appearance.active().cloned());
+    state.renderer.set_services(state.service_view.clone());
     if !state.ensure_wallpaper(&qh) {
         return Err("wallpaper layer unavailable".into());
     }
@@ -1201,6 +1391,12 @@ fn serve() -> Result<(), String> {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        for _ in 0..8 {
+            let Some(reply) = state.services.try_recv() else {
+                break;
+            };
+            state.service_reply(reply);
+        }
         if state.wallpaper.layer.is_none()
             && state
                 .wallpaper
