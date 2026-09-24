@@ -47,5 +47,22 @@ that correction yields the unchanged, tested target RVV Pixman derivation
 `/nix/store/3vhbn7qrav9g876s4kd6snp3rx6hhyvv-pixman-riscv64-unknown-linux-gnu-0.46.4.drv`
 and native scalar Pixman derivation
 `/nix/store/c69ckksfgkwwdp84gxi33m9m1zc2cjlh-pixman-0.46.4.drv`.
-The corrected compositor build is a separate run; its result is recorded
-below when complete.
+## Corrected normal compositor: PASS
+
+```sh
+nix build .#shell-compositor --max-jobs 1 --cores 4 --no-link --print-out-paths
+nix-store -q --requisites /nix/store/6y0ba1gg2bgiqm2qc7hkwk022frrz4sp-sway-1.12 |
+  rg 'pixman.*riscv64|pixman-0.46'
+```
+
+The corrected cross-build passed from combined source revision
+`b1b3770fb5a324b29d147189dd9591623d6ce5d2` and produced
+`/nix/store/6y0ba1gg2bgiqm2qc7hkwk022frrz4sp-sway-1.12`.
+Its runtime closure contains exactly one target Pixman provider:
+`/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4`.
+This is the identical library derivation/output previously used in the
+physical [pixel](../../card-shell/pixman-rvv/pixel-trial/README.md) and
+[on/off card](../../card-shell/kernel-rvv/card-cost/README.md) trials. Those
+trials proved a scalar `PIXMAN_DISABLE=rvv` control and the runtime hwprobe
+gate for their trial kernel; this host build alone does not show which path
+the **new** ordinary image will select after boot.
