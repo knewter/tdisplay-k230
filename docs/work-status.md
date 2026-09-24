@@ -35,7 +35,9 @@ claiming a branch is current with the server.
   CPU but 11% more elapsed time than Pixman. This supports an opt-in renderer
   experiment; the current Sway renderer remains Pixman.
 - [Cards and gestures planning](../openspec/changes/archive/2026-09-23-touch-launcher-gestures-overview/proposal.md),
-  implementation now includes bounded transitions and window metadata, with physical acceptance still open.
+  now archived after acceptance of the existing real-finger workflow evidence;
+  its camera sharpness limits remain documented. The separate live-card product
+  performance and real-finger gates remain open.
 
 ## Almost done or actively underway
 
