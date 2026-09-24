@@ -483,6 +483,46 @@ a.cite:hover code { background: color-mix(in srgb, var(--accent) 16%, var(--surf
 }
 
 /* ---- evidence pages ---- */
+.ev-source { margin: 14px 0 0; font-family: var(--mono); font-size: 12px; }
+.ev-markdown {
+  margin-top: 26px;
+  padding: clamp(18px, 4vw, 32px);
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  overflow-wrap: anywhere;
+}
+.ev-markdown > :first-child { margin-top: 0; }
+.ev-markdown > :last-child { margin-bottom: 0; }
+.ev-markdown h1, .ev-markdown h2, .ev-markdown h3 {
+  font-family: var(--sans);
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 1.7em 0 0.55em;
+}
+.ev-markdown h1 { font-size: clamp(25px, 4vw, 34px); }
+.ev-markdown h2 { font-size: clamp(21px, 3vw, 27px); border-bottom: 1px solid var(--rule); padding-bottom: 0.3em; }
+.ev-markdown h3 { font-size: 19px; }
+.ev-markdown p, .ev-markdown ul, .ev-markdown ol { margin: 0 0 1em; }
+.ev-markdown ul, .ev-markdown ol { padding-left: 1.5em; }
+.ev-markdown li + li { margin-top: 0.25em; }
+.ev-markdown pre {
+  overflow-x: auto;
+  margin: 1.1em 0 1.5em;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  font: 12.5px/1.55 var(--mono);
+}
+.ev-markdown pre code { padding: 0; border: 0; background: none; word-break: normal; }
+.ev-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.2em 0 1.6em; font-size: 14px; }
+.ev-markdown th, .ev-markdown td { border: 1px solid var(--rule); padding: 8px 11px; text-align: left; white-space: nowrap; }
+.ev-markdown th[align="right"], .ev-markdown td[align="right"] { text-align: right; }
+.ev-markdown th { background: var(--surface-2); font-family: var(--sans); font-weight: 600; }
+.ev-markdown tr:nth-child(even) td { background: var(--surface-2); }
+.ev-markdown img { max-width: 100%; height: auto; }
+.ev-markdown blockquote { margin: 1.2em 0; padding-left: 16px; border-left: 3px solid var(--rule); color: var(--ink-2); }
 .ev-text {
   margin-top: 26px;
   padding: 18px;

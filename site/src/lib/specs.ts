@@ -56,6 +56,7 @@ export interface EvidenceFile {
 }
 
 export interface Specs {
+  sourceRevision: string;
   generated: string;
   tally: Tally;
   total: number;

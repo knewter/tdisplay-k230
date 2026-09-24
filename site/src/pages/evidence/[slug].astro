@@ -1,6 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import { specs, url, kib } from "../../lib/specs";
+import { evidenceMarkdownLinks, rawEvidenceUrl } from "../../lib/evidence-markdown";
 
 export function getStaticPaths() {
   return specs.evidence.map((file) => ({
@@ -10,6 +12,13 @@ export function getStaticPaths() {
 }
 
 const { file } = Astro.props;
+const markdown = file.kind === "text" && file.path.toLowerCase().endsWith(".md")
+  ? (await (await createMarkdownProcessor({
+      syntaxHighlight: false,
+      remarkRehype: { allowDangerousHtml: false },
+      rehypePlugins: [evidenceMarkdownLinks(file.path, specs.evidence, import.meta.env.BASE_URL, specs.sourceRevision)],
+    })).render(file.text ?? "")).code
+  : null;
 ---
 
 <Base title={`${file.name} — evidence`} description={`Committed evidence at ${file.path}.`}>
@@ -25,6 +34,7 @@ const { file } = Astro.props;
       Committed at <code>{file.path}</code>. This is what grounds the requirements
       that cite it.
     </p>
+    {file.kind === "text" && <p class="ev-source"><a href={rawEvidenceUrl(specs.sourceRevision, file.path)}>Open raw source</a></p>}
   </header>
 
   {
@@ -40,6 +50,8 @@ const { file } = Astro.props;
         </p>
         <a class="media-link" href={file.mediaUrl}>Open the pinned raw video</a>
       </section>
+    ) : markdown !== null ? (
+      <article class="ev-markdown" set:html={markdown} />
     ) : (
       <pre class="ev-text">{file.text}</pre>
     )

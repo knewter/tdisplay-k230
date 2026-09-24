@@ -691,7 +691,11 @@ def build_data(
             )
 
     evidence = []
-    revision = source_revision_value
+    # Unit fixtures are plain temporary trees; published builds use the exact
+    # committed revision so raw links stay paired with the rendered evidence.
+    revision = source_revision_value or (
+        source_revision(repo_root) if (repo_root / ".git").exists() else "master"
+    )
     for path, slug in sorted(link.wanted.items()):
         source = repo_root / path
         entry = {
@@ -740,6 +744,7 @@ def build_data(
         groups[-1]["slugs"].append(cap["slug"])
 
     data = {
+        "sourceRevision": revision,
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "tally": tally_dict(report.tally()),
         "total": report.total_requirements,

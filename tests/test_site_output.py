@@ -128,6 +128,26 @@ class TestBuiltSite(unittest.TestCase):
         copied = sorted(path.relative_to(DIST) for path in DIST.rglob("*.mp4"))
         self.assertEqual(copied, [], f"video evidence leaked into the static site: {copied}")
 
+    def test_markdown_evidence_renders_rvv_page_and_resolves_relative_links(self) -> None:
+        page = (DIST / "evidence" / "docs-evidence-card-shell-kernel-rvv-card-cost-readme-md" / "index.html").read_text()
+        self.assertIn('class="ev-markdown"', page)
+        self.assertIn('<h1 id="paired-rvv-card-workload">Paired RVV card workload</h1>', page)
+        self.assertIn('<table>', page)
+        self.assertIn('<th align="right">RVV disabled p95 CPU ms</th>', page)
+        self.assertIn('<pre>', page)
+        self.assertIn(
+            f'href="{self.base}evidence/docs-evidence-card-shell-kernel-rvv-board-trial-readme-md/"', page
+        )
+        self.assertIn(
+            f'href="{self.base}evidence/docs-evidence-card-shell-pixman-rvv-pixel-trial-readme-md/"', page
+        )
+        self.assertIn("Open raw source</a>", page)
+        self.assertNotIn("| Pair | Cards |", page)
+
+        log = (DIST / "evidence" / "docs-evidence-card-shell-pixman-rvv-kernel-probe-json" / "index.html").read_text()
+        self.assertIn('class="ev-text"', log)
+        self.assertNotIn('class="ev-markdown"', log)
+
     def test_nothing_from_an_in_flight_proposal_is_published(self) -> None:
         ids = sorted(
             p.name for p in CHANGES.iterdir() if p.is_dir() and p.name != "archive"
