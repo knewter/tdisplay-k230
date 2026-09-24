@@ -108,6 +108,46 @@ class NormalServiceTrialTests(unittest.TestCase):
         self.assertFalse(any(path.exists() for path in self.paths))
         self.assertTrue(self.manager.active('shell.service'))
 
+    def test_watchdog_between_unit_writes_closes_controller(self):
+        for step in (1,2,3):
+            with self.subTest(step=step):
+                manager=Manager()
+                trial=T.Trial(self.trial.output.with_name('out'+str(step)),
+                              self.trial.wrapper,self.trial.unwrapped,self.trial.broker,
+                              self.trial.python,self.trial.config,30,manager)
+                trial.prepare(manager.normal)
+                guarded=trial.guarded
+                calls=[]
+                def interrupted(action):
+                    result=guarded(action)
+                    calls.append(1)
+                    if len(calls)==step:
+                        T.restore(trial.output,trial.token,manager)
+                    return result
+                with patch.object(trial,'guarded',side_effect=interrupted):
+                    with self.assertRaisesRegex(RuntimeError,'closed by recovery'):
+                        trial.install()
+                self.assertEqual(json.loads((trial.output/'state.json').read_text())['phase'],'restored')
+                self.assertFalse(any(path.exists() for path in self.paths))
+                self.assertFalse(manager.active('k230-vglite-broker.socket'))
+
+    def test_watchdog_before_compositor_start_prevents_reactivation(self):
+        guarded=self.trial.guarded
+        restored_at=[]
+        def interrupted(action):
+            result=guarded(action)
+            if self.manager.events[-1][:3]==['systemctl','stop','shell.service']:
+                T.restore(self.trial.output,self.trial.token,self.manager)
+                restored_at.append(len(self.manager.events))
+            return result
+        with patch.object(self.trial,'guarded',side_effect=interrupted):
+            with self.assertRaisesRegex(RuntimeError,'normal shell did not stop'):
+                self.trial.run()
+        self.assertEqual(len(restored_at),1)
+        self.assertFalse(any(args[:3]==['systemctl','start','shell.service']
+                             for args in self.manager.events[restored_at[0]:]))
+        self.assertEqual(json.loads((self.trial.output/'state.json').read_text())['phase'],'restored')
+
     def test_exec_identity_ignores_runtime_pid_fields(self):
         self.assertEqual(T.exec_identity(self.manager.normal),T.exec_identity(self.manager.prop('shell.service','ExecStart')))
 

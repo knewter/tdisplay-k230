@@ -114,10 +114,24 @@ class Trial:
                 raise RuntimeError('trial unit path already exists: '+str(path))
         return original
 
-    def record(self, **values):
+    def _record_unlocked(self, **values):
         state=json.loads((self.output/'state.json').read_text())
         state.update(values)
         write_state(self.output,state)
+
+    def guarded(self, action):
+        # Recovery uses this lock too. Keep each possibly slow systemctl call
+        # inside one guard, then give the watchdog a chance to take over.
+        with RESTORE_LOCK.open('a') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX)
+            state=json.loads((self.output/'state.json').read_text())
+            if state.get('token') != self.token or state.get('phase') not in \
+                    ('prepared','armed','trial-units-ready','observed'):
+                raise RuntimeError('trial was closed by recovery')
+            return action()
+
+    def record(self, **values):
+        self.guarded(lambda: self._record_unlocked(**values))
 
     def prepare(self, original):
         self.output.mkdir(mode=0o700)
@@ -141,21 +155,21 @@ class Trial:
         self.record(phase='armed',watchdog=self.watchdog)
 
     def install(self):
-        owned_text(SOCKET_UNIT,self.token,'[Socket]\nListenStream=/run/k230-vglite-broker.sock\nSocketUser=root\nSocketGroup=shell\nSocketMode=0660\nRemoveOnStop=yes\n[Install]\nWantedBy=sockets.target\n')
-        owned_text(BROKER_UNIT,self.token,
+        self.guarded(lambda: owned_text(SOCKET_UNIT,self.token,'[Socket]\nListenStream=/run/k230-vglite-broker.sock\nSocketUser=root\nSocketGroup=shell\nSocketMode=0660\nRemoveOnStop=yes\n[Install]\nWantedBy=sockets.target\n'))
+        self.guarded(lambda: owned_text(BROKER_UNIT,self.token,
             '[Unit]\nRequires=k230-vglite-broker.socket\nAfter=k230-vglite-broker.socket\n[Service]\nType=simple\nUser=root\nGroup=root\n'
             'ExecStart='+str(self.python)+' '+str(self.broker)+' --unit shell.service --executable '+str(self.unwrapped)+' --user shell\n'
             'NoNewPrivileges=yes\nCapabilityBoundingSet=CAP_SYS_PTRACE\nDevicePolicy=closed\nDeviceAllow=/dev/vg_lite rw\n'
             'ProtectSystem=strict\nProtectHome=yes\nPrivateTmp=yes\nProtectKernelTunables=yes\n'
             'ProtectKernelModules=yes\nProtectControlGroups=yes\nRestrictNamespaces=yes\n'
-            'RestrictAddressFamilies=AF_UNIX\nSystemCallFilter=~@debug\nUMask=0077\n')
-        owned_text(DROPIN,self.token,
+            'RestrictAddressFamilies=AF_UNIX\nSystemCallFilter=~@debug\nUMask=0077\n'))
+        self.guarded(lambda: owned_text(DROPIN,self.token,
             '[Unit]\nRequires=k230-vglite-broker.socket\nAfter=k230-vglite-broker.socket\n'
             '[Service]\nExecStart=\nExecStart='+str(self.wrapper)+' -V -c '+str(self.config)+'\n'
             'Environment=WLR_RENDERER=vglite K230_VGLITE_BROKER=/run/k230-vglite-broker.sock K230_VGLITE_ALLOW_UNPROVEN_CACHE='+('0' if self.force_pixman else '1')+'\n'
-            'Restart=no\n')
-        self.system.call(['systemctl','daemon-reload'])
-        self.system.call(['systemctl','start','k230-vglite-broker.socket'])
+            'Restart=no\n'))
+        self.guarded(lambda: self.system.call(['systemctl','daemon-reload']))
+        self.guarded(lambda: self.system.call(['systemctl','start','k230-vglite-broker.socket']))
         if not self.system.active('k230-vglite-broker.socket'):
             raise RuntimeError('broker socket failed to arm')
         self.record(phase='trial-units-ready')
@@ -165,10 +179,10 @@ class Trial:
         try:
             self.prepare(original)
             self.install()
-            self.system.call(['systemctl','stop','shell.service'])
+            self.guarded(lambda: self.system.call(['systemctl','stop','shell.service']))
             if self.system.active('shell.service'):
                 raise RuntimeError('normal shell did not stop')
-            self.system.call(['systemctl','start','shell.service'])
+            self.guarded(lambda: self.system.call(['systemctl','start','shell.service']))
             if not self.system.active('shell.service'):
                 raise RuntimeError('trial shell did not start')
             pid=int(self.system.prop('shell.service','MainPID'))
@@ -211,6 +225,8 @@ def _restore(output, token, system=None):
         write_state(output,state)
         system.call(['systemctl','stop','k230-vglite-service-recovery-'+token[:12]+'.timer'],check=False)
         return
+    state['phase']='restoring'
+    write_state(output,state)
     system.call(['systemctl','stop','shell.service'],check=False)
     system.call(['systemctl','stop','k230-vglite-broker.socket','k230-vglite-broker.service'],check=False)
     if any(system.active(unit) for unit in ('shell.service','k230-vglite-broker.socket','k230-vglite-broker.service')):
