@@ -15,6 +15,8 @@ stdenvNoCC.mkDerivation {
     install -Dm644 catppuccin/icons.theme "$out/share/omarchy/themes/catppuccin/icons.theme"
     install -Dm644 default-report.json "$out/generations/${identity}/report.json"
     install -Dm644 default-appearance.json "$out/generations/${identity}/appearance.json"
+    install -Dm644 terminal-foot.ini "$out/generations/${identity}/terminal-foot.ini"
+    install -Dm644 monitor-foot.ini "$out/generations/${identity}/monitor-foot.ini"
     install -Dm644 LICENSE "$out/share/doc/handheld-theme-default/LICENSE"
     runHook postInstall
   '';

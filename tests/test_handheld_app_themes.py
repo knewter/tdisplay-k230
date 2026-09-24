@@ -2,6 +2,7 @@
 
 import json
 import fcntl
+import io
 import os
 from pathlib import Path
 import subprocess
@@ -112,6 +113,23 @@ class AppAppearance(unittest.TestCase):
                 with self.assertRaisesRegex(app.AppAppearanceError, "lock timed out"):
                     app.sync(state, lock_timeout=0.02)
             self.assertFalse((state / "app-appearance/active").exists())
+
+    def test_live_osc_holds_activation_lock_through_flush(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, state, generation = prepared(Path(temporary))
+            (state / "active").symlink_to(generation)
+
+            class CheckedStream(io.BytesIO):
+                def flush(self):
+                    with (state / ".activation.lock").open("r") as contender:
+                        with self_test.assertRaises(BlockingIOError):
+                            fcntl.flock(contender, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    super().flush()
+
+            self_test = self
+            stream = CheckedStream()
+            app.emit_current(state, stream)
+            self.assertEqual(stream.getvalue(), app.osc_sequences(app.palette(generation)))
 
 
 if __name__ == "__main__":

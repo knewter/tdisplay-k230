@@ -6,6 +6,7 @@ The opt-in OSC operation writes only to the caller's own terminal stdout.
 """
 
 import argparse
+from contextlib import contextmanager
 import fcntl
 import hashlib
 import json
@@ -137,12 +138,11 @@ def prepare(generation: Path, state_root: Path) -> Path:
     return target
 
 
-def sync(state_root: Path, *, lock_timeout: float = 2.0) -> Path:
-    """Update future-launch config only after caller has completed shell ACK."""
-    root = state_root.resolve(strict=True)
+@contextmanager
+def activation_lock(root: Path, timeout: float):
     fd = os.open(root / ".activation.lock", os.O_CREAT | os.O_RDWR, 0o600)
     try:
-        deadline = time.monotonic() + lock_timeout
+        deadline = time.monotonic() + timeout
         while True:
             try:
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -151,6 +151,15 @@ def sync(state_root: Path, *, lock_timeout: float = 2.0) -> Path:
                 if time.monotonic() >= deadline:
                     raise AppAppearanceError("activation lock timed out") from error
                 time.sleep(min(0.01, max(0, deadline - time.monotonic())))
+        yield
+    finally:
+        os.close(fd)
+
+
+def sync(state_root: Path, *, lock_timeout: float = 2.0) -> Path:
+    """Update future-launch config only after caller has completed shell ACK."""
+    root = state_root.resolve(strict=True)
+    with activation_lock(root, lock_timeout):
         current = _pointer(root)
         if current is None:
             raise AppAppearanceError("no acknowledged active generation")
@@ -174,8 +183,17 @@ def sync(state_root: Path, *, lock_timeout: float = 2.0) -> Path:
         finally:
             os.close(directory)
         return target
-    finally:
-        os.close(fd)
+
+
+def emit_current(state_root: Path, stream, *, lock_timeout: float = 2.0) -> None:
+    """Serialize selection and OSC flush with shell generation publication."""
+    root = state_root.resolve(strict=True)
+    with activation_lock(root, lock_timeout):
+        current = _pointer(root)
+        if current is None:
+            raise AppAppearanceError("no acknowledged active generation")
+        stream.write(osc_sequences(palette(current)))
+        stream.flush()
 
 
 def main() -> None:
@@ -195,11 +213,7 @@ def main() -> None:
             parser.error("osc-current uses the acknowledged active generation")
         if not sys.stdout.isatty() or os.environ.get("TERM", "").split("-", 1)[0] != "foot":
             raise AppAppearanceError("OSC requires an explicitly invoked Foot terminal session")
-        generation = _pointer(args.state_root.resolve(strict=True))
-        if generation is None:
-            raise AppAppearanceError("no acknowledged active generation")
-        sys.stdout.buffer.write(osc_sequences(palette(generation)))
-        sys.stdout.buffer.flush()
+        emit_current(args.state_root, sys.stdout.buffer)
 
 
 if __name__ == "__main__":

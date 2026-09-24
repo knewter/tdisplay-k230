@@ -3,6 +3,8 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tomllib
 import unittest
 
@@ -16,6 +18,10 @@ SOURCE_HASHES = {
 
 
 class PinnedThemeDefault(unittest.TestCase):
+    def test_packaged_foot_configs_follow_same_app_adapter(self):
+        subprocess.run([sys.executable, str(ROOT.parents[1] / "tools/generate_default_foot.py"),
+                        "--check"], check=True)
+
     def test_source_subset_and_report_identity(self):
         colors = (ROOT / "catppuccin/colors.toml").read_bytes()
         icons = (ROOT / "catppuccin/icons.theme").read_bytes()
