@@ -318,6 +318,7 @@ let
     export K230_SETTINGS=${settingsCommand}/bin/k230-settings
     export K230_THEME_COMMAND=${themeCommand}/bin/k230-theme
     export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
+    export K230_KEYBOARD_TOUCH_GESTURES=${if cfg.coherentShell then "1" else "0"}
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
@@ -771,6 +772,7 @@ in
         SWAY_K230_CARD_REVEAL_STREAM = "1";
         SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_KEYBOARD_GESTURES = "1";
+        K230_KEYBOARD_TOUCH_GESTURES = "1";
         SWAY_K230_KEYBOARD_HEIGHT = toString cfg.keyboardHeight;
         SWAY_K230_KEYBOARD_SIGNAL = "${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";

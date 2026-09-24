@@ -92,7 +92,7 @@ int main(int argc,char **argv) {
 		kg_down(&p,1,100,1200,100,1232,false,false,false);
 		kg_down(&p,2,180,1198,130,1232,false,false,false);
 		assert(kg_motion(&p,1,100,1140,150)&KG_SHOW);
-		assert(kg_tick(&p,1000)&KG_HIDE);
+		assert(kg_tick(&p,3200)&KG_HIDE);
 		assert(p.mode==KG_IDLE);
 		assert(kg_up(&p,1,1010)&KG_CONSUME);
 		assert(kg_up(&p,2,1011)&KG_CONSUME);

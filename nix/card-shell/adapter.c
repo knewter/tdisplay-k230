@@ -15,7 +15,6 @@
 #include "sway/input/input-manager.h"
 #include "sway/input/seat.h"
 #include "sway/layers.h"
-#include "sway/scene_descriptor.h"
 #include "sway/output.h"
 #include "sway/server.h"
 #include "sway/tree/root.h"
@@ -1151,13 +1150,7 @@ static bool popup_mapped(void) { return visible_popup_node(&root->layers.popup->
 static bool launcher_mapped(void) {
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
-		/* Sway's node-destroy callback rearranges layers before unlinking this
-		 * list entry. The descriptor is removed first: never touch its dying
-		 * scene node during that nested rearrange. */
-		if (layer->mapped && layer->scene && layer->scene->tree &&
-			scene_descriptor_try_get(&layer->scene->tree->node,
-				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
-			layer->layer_surface->namespace &&
+		if (layer->mapped && layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "k230-launcher") == 0)
 			return true;
 	}
@@ -1168,10 +1161,7 @@ static bool drawer_mapped(void) {
 		return false;
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
-		if (layer->mapped && layer->scene && layer->scene->tree &&
-			scene_descriptor_try_get(&layer->scene->tree->node,
-				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
-			layer->layer_surface->namespace &&
+		if (layer->mapped && layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "k230-shell-drawer") == 0)
 			return true;
 	}
@@ -1181,10 +1171,7 @@ static struct sway_layer_surface *keyboard_layer(struct sway_output *output) {
 	if (!output) return NULL;
 	struct sway_layer_surface *layer;
 	wl_list_for_each(layer, &output->layer_surfaces, link) {
-		if (layer->mapped && layer->scene && layer->scene->tree &&
-			scene_descriptor_try_get(&layer->scene->tree->node,
-				SWAY_SCENE_DESC_LAYER_SHELL) == layer &&
-			layer->layer_surface->namespace &&
+		if (layer->mapped && layer->layer_surface->namespace &&
 			strcmp(layer->layer_surface->namespace, "wvkbd") == 0)
 			return layer;
 	}
