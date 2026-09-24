@@ -135,6 +135,32 @@ class AppearanceReceiver(unittest.TestCase):
             process.terminate()
             process.communicate(timeout=2)
 
+    def test_restart_restores_selected_and_rejects_foreign_or_dangling_pointer(self):
+        pointer = self.root / 'active'
+
+        def restart(expected):
+            self.process.terminate()
+            self.process.communicate(timeout=2)
+            self.process = subprocess.Popen([str(self.binary), str(self.socket), str(self.root),
+                                             str(self.default)], stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE, text=True)
+            self.assertEqual(self.process.stdout.readline().strip(), expected)
+            self.assertEqual(self.process.stdout.readline().strip(), 'READY')
+
+        pointer.symlink_to(self.next)
+        restart(f'APPLY {NEXT_ID} 2 1 1')
+
+        foreign = self.root / 'foreign' / NEXT_ID
+        foreign.parent.mkdir()
+        foreign.mkdir()
+        pointer.unlink()
+        pointer.symlink_to(foreign)
+        restart(f'APPLY {DEFAULT_ID} 1 1 0')
+
+        pointer.unlink()
+        pointer.symlink_to(self.root / 'missing' / NEXT_ID)
+        restart(f'APPLY {DEFAULT_ID} 1 1 0')
+
     def test_rgba_palette_is_accepted(self):
         report = self.next / 'report.json'
         data = json.loads(report.read_text())
