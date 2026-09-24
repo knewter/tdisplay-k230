@@ -7,7 +7,7 @@ Some named host files and narrow packages now exist as source checkpoints; each 
 ## 0. Rust client target and architecture gate (probe, not final UI)
 
 - [x] 0.1 Pin a minimal Rust Wayland/layer-shell client and software `wl_shm` renderer with `Cargo.lock`, private route request and touch/cancel instrumentation; verify `python3 tests/test_rust_shell_probe.py --case route-timeout --case configure-resize --case buffer-release --case touch-cancel`, then `nix build .#handheld-shell-rust-probe --dry-run`. Record the evaluated target/dependency graph and compare dependency choices with the Qt Quick software probe. Dry-run is an evaluation gate, not a cross-build.
-- [ ] 0.2 Cross-build `nix build .#handheld-shell-rust-probe --no-link --print-out-paths --max-jobs 1 --cores 4` only in the reserved build slot. Record exact target/store path and runtime closure; inspect binary target and dynamic dependencies. A package build does not prove mapping or touch.
+- [x] 0.2 Cross-build `nix build .#handheld-shell-rust-probe --no-link --print-out-paths --max-jobs 1 --cores 4` only in the reserved build slot. Record exact target/store path and runtime closure; inspect binary target and dynamic dependencies. A package build does not prove mapping or touch. See `docs/evidence/coherent-shell/rust-probe-host.md`.
 - [ ] 0.3 On a reserved board, opt in to the Rust probe and record 568×1232 map/unmap, distinguishable software frame, real touch/move/cancel, bounded IPC acknowledgement, cold start, RSS, CPU and touch-to-commit/present cadence against the C reference and Qt probe. Keep this task open until the physical trace and camera evidence are committed. Do not install the probe as the normal session from a build alone.
 
 ## 1. Gesture Home and installed-app drawer (host)

@@ -38,15 +38,37 @@ nix build .#handheld-shell-rust-probe --dry-run --print-out-paths --max-jobs 1 -
   fetch (5.0 MiB download, 44.0 MiB unpacked) in this cached host state
 ```
 
+The first exact target build failed after compiling the dependency graph:
+RISC-V glibc declares `sockaddr_un.sun_path` as `u8`, while the host exposes
+`i8`; the probe's `i8` assignment failed with Rust E0308. The failing
+derivation was `/nix/store/iys8wi02v4dr0aa4685mv16dqz55yk7j-k230-shell-rust-probe-riscv64-unknown-linux-gnu-0.1.0.drv`
+(`nix-store -l` retains its log). Commit `6d56d140` uses the target's
+`libc::c_char`; the same five Cargo tests, four Python scenarios, Clippy
+with warnings denied, and formatting check passed again before the rebuild.
+
+At 2026-09-24 03:59 UTC, in the sole build slot, the exact command
+`nix build .#handheld-shell-rust-probe --max-jobs 1 --cores 4 --no-link --print-out-paths`
+passed. Its target derivation is
+`/nix/store/y6p1mmp9by083fhb45ykpxylbjm7b74b-k230-shell-rust-probe-riscv64-unknown-linux-gnu-0.1.0.drv`;
+the output is
+`/nix/store/ii2dvxw952j33xprfxycphxyqsxj6v6p-k230-shell-rust-probe-riscv64-unknown-linux-gnu-0.1.0`.
+`file` and `readelf -h` report an ELF64 RISC-V LP64D executable. The
+unstripped binary is 1,599,608 bytes. `readelf -d` lists `libc.so.6`,
+`libgcc_s.so.1`, and `ld-linux-riscv64-lp64d.so.1`; the output's direct
+Nix references are the pinned RISC-V glibc and GCC library paths.
+`nix path-info -S --closure-size` reports 43,715,016 bytes for this probe
+and its recursive runtime closure. This is a package result, not a measured
+process RSS or proof that Wayland mapping/touch works on the board.
+
 The independent Qt Quick software probe uses pinned Qt 6.11.2 through the
 same nixpkgs input, targets Qt Base/Declarative/Wayland, and forces Wayland
 plus the software scene-graph backend. Its reported dry-run had 40
 derivations, with incidental QtSvg/ShaderTools/XCB/Vulkan-loader inputs. The
 dry-run counts depend on store cache state and are **not** a closure-size or
 runtime-performance comparison. Rust uses a small Wayland/SHM client graph;
-Qt includes a fuller scene graph and QML stack. Neither target's actual
-binary, closure, cold-start, RSS, CPU or touch-to-present numbers follow from
-these evaluations.
+Qt includes a fuller scene graph and QML stack. The Rust binary and closure
+are now built; Qt's target build and both clients' cold-start, RSS, CPU and
+touch-to-present numbers remain unknown.
 
 The pinned Qt Declarative 6.11.2 source archive
 `/nix/store/wv7whhmb9kmmjh0hcf10bl1w3vkmzvmv-qtdeclarative-everywhere-src-6.11.2.tar.xz`
@@ -55,8 +77,7 @@ i386/x86_64/arm/arm64, not RISC-V. This suggests the target QV4 JIT may be
 off; only the actual Qt target configure log can confirm it. It is not a
 measured animation or binding cost.
 
-Remaining proof: the reserved narrow Rust cross-build, actual target/store
-closure inspection, QEMU or compositor mapping if useful, and a separately
+Remaining proof: QEMU or compositor mapping if useful, and a separately
 reserved real board/camera run at 568×1232 with real touch, frame cadence,
 CPU/RSS and C/Qt comparison. No panel presentation or installed-image claim
 is made here. Source API inspiration is SCTK's
