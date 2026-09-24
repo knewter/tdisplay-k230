@@ -13,6 +13,9 @@ Proof: `python3 tests/test_work_board.py` is host repository-data proof only; it
 - [x] 2.1 Render `/work/` with four clear lanes, task progress, next gates, dependencies, draft/accepted labels, links, and source/physical distinctions; verify rendered HTML assertions with `python3 tests/test_work_board.py`.
 - [x] 2.2 Add responsive touch-scrollable styling and links from the front door and handheld page; inspect narrow and desktop browser captures and verify link targets through `python3 scripts/build_site.py`.
 - [x] 2.3 Keep accepted-spec exclusion and tally tests intact while allowing labeled proposals only on `/work/`; add a focused regression assertion and run `python3 scripts/build_site.py` within the existing 8 MiB budget.
+- [ ] 2.4 Extend the committed snapshot data with bounded proposal/design/tasks/delta-spec Markdown and validate source identity, missing paths and private text; verify `python3 tests/test_work_board.py` with dirty-checkout and failure fixtures.
+- [ ] 2.5 Render selectable card details inside the dashboard with formatted headings/tables/code, local evidence links and secondary pinned source links; verify selected-card content, Escape/Close/Back/focus restoration and direct URL behavior with `python3 tests/test_work_board.py` and a browser interaction check.
+- [ ] 2.6 Inspect a selected card at 568×1232 and desktop widths for scroll, close control, focus and readability; run `python3 scripts/build_site.py` and its built-link/8 MiB assertions.
 
 Proof: `python3 tests/test_work_board.py` and `python3 scripts/build_site.py` prove a host site build and link/size checks, not publication.
 
@@ -20,6 +23,7 @@ Proof: `python3 tests/test_work_board.py` and `python3 scripts/build_site.py` pr
 
 - [x] 3.1 Commit the implementation and a concise data-provenance note; run `openspec validate the-site-shows-a-public-work-board --strict` and `python3 scripts/build_site.py` at the exact candidate revision.
 - [x] 3.2 After review and push, inspect the published `/work/` URL and its front-door/handheld links at the landed revision, record URL, revision, UTC timestamp, and any deployment failure in `docs/evidence/spec-site-work-board/README.md`; verify with `python3 scripts/build_site.py`.
-- [ ] 3.3 Archive and sync only after the built and published page meets every task; run `openspec validate --all --strict`, then check the resulting master, CI and Pages revision. Keep the change open if publication or evidence remains unverified.
+- [ ] 3.3 After the detail view lands, inspect the published `/work/` URL at its new revision, directly open an item and verify its local documents/links and close behavior; record URL, CI run, UTC observation and limits in `docs/evidence/spec-site-work-board/README.md`, then run `python3 scripts/build_site.py`.
+- [ ] 3.4 Archive and sync only after the built and published detail view meets every task; run `openspec validate --all --strict`, then check the resulting master, CI and Pages revision. Keep the change open if publication or evidence remains unverified.
 
 Proof: the exact host commands above and published URL inspection. No physical board or Nix build is required for this documentation capability.

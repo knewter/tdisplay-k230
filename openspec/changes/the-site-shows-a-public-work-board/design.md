@@ -20,13 +20,16 @@ See proposal.md. The existing userspace site build renders archived `openspec/sp
 
 5. **Responsive Kanban layout.** On wide screens, four aligned columns allow comparison; at narrow widths, lanes stack in document order with scroll position and clear headings. Each card shows its title, badge, `done/total`, separate source/physical status if relevant, next gate, dependencies, and compact links. Use native links and CSS; no drag-and-drop or client data fetch is required. Preserve keyboard focus, contrast, and comfortable tap targets. Rejected alternative: horizontally clipped four-column board on the 568-pixel panel.
 
+6. **In-dashboard card detail.** Include proposal, design, task and delta-spec text from the same committed Git snapshot in generated data. Render it at build time with the site's existing Markdown processor, escaping raw HTML and resolving repository-relative evidence links to local evidence pages when published. Missing or oversized source inputs fail with the item/path named; do not fetch Markdown at click time. An accessible native dialog displays one selected item with summary, progress and scrollable labeled document sections. The whole card can be tapped to open it except its existing links; a visible “View details” button supplies an unambiguous keyboard target. Close button, Escape and browser Back restore focus and scroll position. A `?work=<id>` URL can reopen the selected card directly; invalid IDs return to the board without a broken modal. Keep pinned GitHub source references in a secondary “source files” area. Rejected alternative: primary card clicks navigating to GitHub, which interrupts the board and makes comparison difficult; rejected alternative: raw preformatted Markdown, which hides headings, tables and links.
+
 ## Risks / Trade-offs
 
 - Committed metadata can drift from reality → require rationale/source links and a review revision, then make stale or inconsistent records a build error.
 - A large archive can overwhelm readers → show concise cards with a clear archived count and optional details, retaining accessible links.
 - Existing spec-site exclusion tests may flag proposals → scope their check to accepted-ledger pages, add an explicit work-page draft test, and leave all other site checks intact.
 - Static status ages between pushes → show UTC as-of time and revision; do not claim live telemetry.
+- Many full documents can enlarge HTML → cap individual input size, retain the 8 MiB site budget, and measure the resulting page on mobile and desktop.
 
 ## Migration Plan
 
-Land this proposal first. Implement and validate the data pass, override schema, page, navigation and focused tests together. Build with `python3 scripts/build_site.py`, inspect the built HTML at mobile and desktop widths, then merge/push and inspect the published `/work/` URL at the landed revision. No board or Nix build reservation is required. If deployment fails, the prior published site remains in place while the failed revision is corrected.
+The first board is published. Land this refinement to the proposal promptly, then implement and validate the committed document pass and accessible dialog. Build with `python3 scripts/build_site.py`, inspect selected-card and close behavior at mobile and desktop widths, then merge/push and inspect the revised published `/work/` URL at the landed revision. No board or Nix build reservation is required. If deployment fails, the prior published site remains in place while the failed revision is corrected.

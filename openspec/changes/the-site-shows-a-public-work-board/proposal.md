@@ -7,9 +7,10 @@ Readers can see accepted specifications and scattered progress notes, but cannot
 - Add a public, touch-scrollable `/work/` board linked from the front door and handheld page. Its lanes distinguish planned, in progress, verification/review, and shipped/archived work.
 - Generate card identities, task counts, and archive state deterministically from committed OpenSpec files at a named source revision and build time. Add a small reviewed, committed status record only where the task checklist cannot distinguish source landed from physical evidence pending.
 - Show each card's next concrete action or evidence gate, dependencies, and links to its proposal, accepted spec, and relevant evidence. Expose separate source and physical-proof states where they differ, with an explicit “as of” label; a static page is not live agent telemetry.
+- Let readers open a card in the dashboard to read its committed proposal, design, tasks and delta specification as formatted Markdown, then close it and return to the same place. Evidence links should stay on the local site where that evidence has a published page; GitHub source links remain secondary.
 - Keep the accepted specification ledger authoritative. A proposal shown on the work board remains marked draft and cannot silently enter the accepted requirement count.
 
-**Non-goals:** Live agent or GitHub issue telemetry, automatic inference that checked boxes mean a deployed feature, a task-editing UI, or new hardware behavior. No physical board or Nix build is needed for this documentation change.
+**Non-goals:** Live agent or GitHub issue telemetry, automatic inference that checked boxes mean a deployed feature, a task-editing UI, or new hardware behavior. The detail view reads only the committed snapshot; it does not fetch source from GitHub at click time. No physical board or Nix build is needed for this documentation change.
 
 ## Capabilities
 
