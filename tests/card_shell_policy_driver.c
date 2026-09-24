@@ -224,23 +224,49 @@ static void tracked_entry(void) {
     cs_entry_motion(&p,1,200,1210,30);
     assert(p.entry_progress<.2); /* reverse uses current finger position */
     r=cs_entry_up(&p,1);
+    assert(r.consumed && (r.actions&CS_REDRAW) && p.mode==CS_ENTERING);
+    assert(p.entry_reversing && p.entry_progress>0);
+    double partial=p.entry_progress;
+    cs_tick(&p,40);
+    r=cs_tick(&p,48);
+    assert(r.actions&CS_REDRAW && p.entry_progress<partial && p.entry_progress>0);
+    r=cs_tick(&p,80);
     assert((r.actions&CS_RESTORE) && r.focus_id==101 && p.mode==CS_NORMAL);
     assert(!p.blocked_until_up && !cs_can_mirror(&p,101));
-    cs_begin_entry(&p,2,200,1220,40,101);
-    cs_entry_motion(&p,2,200,1100,50);
+    /* A new touch during reversal is owned, not delivered to the app. */
+    cs_begin_entry(&p,5,200,1220,82,101);
+    cs_entry_motion(&p,5,200,1184,83);
+    cs_entry_up(&p,5);
+    assert(cs_down(&p,6,200,400,84).consumed && p.blocked_until_up);
+    cs_up(&p,6,85);
+    cs_tick(&p,90);cs_tick(&p,180);
+    assert(p.mode==CS_NORMAL && !p.blocked_until_up);
+    cs_begin_entry(&p,2,200,1220,190,101);
+    cs_entry_motion(&p,2,200,1100,200);
     assert(p.entry_progress==1);
     r=cs_entry_up(&p,2);
     assert(r.consumed && p.mode==CS_DECK && cs_can_mirror(&p,101));
     cs_leave(&p);
-    r=cs_begin_entry(&p,3,200,1220,60,303);
+    r=cs_begin_entry(&p,3,200,1220,210,303);
+    assert(r.consumed && p.mode==CS_NORMAL && p.edge.tracking);
+    assert(cs_edge_up(&p,3).consumed && p.mode==CS_NORMAL); /* bottom tap */
+    r=cs_begin_entry(&p,3,200,1220,220,303);
+    assert(r.consumed && p.mode==CS_NORMAL);
+    r=cs_edge_motion(&p,3,200,1100,230,303);
     assert(r.consumed && p.mode==CS_DECK && p.blocked_until_up);
     assert(!cs_can_mirror(&p,303));
-    cs_up(&p,3,61);cs_leave(&p);
-    cs_begin_entry(&p,4,200,1220,70,101);
+    cs_up(&p,3,231);cs_leave(&p);
+    const struct cs_card empty[]={{202,CS_LIVE,true,true}};
+    cs_set_cards(&p,empty,1);
+    assert(cs_begin_entry(&p,8,200,1220,235,0).consumed && p.mode==CS_NORMAL);
+    assert(cs_edge_up(&p,8).consumed && p.mode==CS_NORMAL);
+    const struct cs_card restored[]={{101,CS_LIVE,true,true},{202,CS_LIVE,true,true}};
+    cs_set_cards(&p,restored,2);
+    cs_begin_entry(&p,4,200,1220,240,101);
     const struct cs_card changed[]={{101,CS_PRIVATE,true,true},{202,CS_LIVE,true,true}};
     r=cs_set_cards(&p,changed,2);
     assert(r.actions&CS_RESTORE && p.mode==CS_NORMAL && p.blocked_until_up);
-    cs_up(&p,4,71);assert(!p.blocked_until_up);
+    cs_up(&p,4,241);assert(!p.blocked_until_up);
     cs_finish(&p);
 }
 static void tracked_expansion(void) {
@@ -264,7 +290,7 @@ static void tracked_expansion(void) {
     assert(cs_down(&p,3,adjacent.x+2,adjacent.y+20,300).consumed);
     cs_up(&p,3,301);assert(p.mode==CS_EXPANDING && p.expand_id==202);
     cs_tick(&p,320);r=cs_tick(&p,480);
-    assert(p.expand_progress==1 && p.expand_full_frame && !(r.actions&CS_RESTORE));
+    assert(p.expand_progress==1 && p.expand_full_dwell && !(r.actions&CS_RESTORE));
     r=cs_tick(&p,496);
     assert((r.actions&CS_RESTORE) && r.focus_id==202 && p.mode==CS_NORMAL);
     cs_enter(&p,101);down(&p,500);cs_up(&p,1,501);
@@ -273,6 +299,16 @@ static void tracked_expansion(void) {
     r=cs_set_cards(&p,changed,2);
     assert((r.actions&CS_RESTORE) && p.mode==CS_NORMAL && !cs_can_mirror(&p,101));
     cs_finish(&p);
+    struct cs_policy q=setup();
+    cfg=q.config;cfg.touch_first_motion=true;cs_set_config(&q,&cfg);
+    cs_enter(&q,101);
+    adjacent=cs_card_rect(&q,1);
+    cs_down(&q,7,adjacent.x+2,adjacent.y+20,10);
+    cs_up(&q,7,11);
+    cs_tick(&q,100);cs_tick(&q,180);
+    assert(q.mode==CS_EXPANDING && q.expand_progress==.5);
+    assert(cs_cancel(&q).consumed && q.expand_reversing);
+    cs_finish(&q);
 }
 static void keyboard_and_geometry(void) {
     struct cs_policy p=setup();

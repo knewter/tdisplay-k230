@@ -1241,7 +1241,8 @@ bool card_shell_cancel(struct sway_seat *seat) {
 		return false;
 	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
 			shell.policy.contact || shell.policy.edge.tracking ||
-					shell.policy.blocked_until_up;
+					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||
+					shell.policy.mode == CS_ENTERING;
 	memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
 	memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
 	shell.button_down = false;

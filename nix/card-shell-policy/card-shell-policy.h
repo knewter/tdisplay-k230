@@ -64,9 +64,13 @@ struct cs_policy {
 	/* 0 displays the original view geometry; 1 displays its deck slot. */
 	double entry_progress;
 	uint64_t entry_id;
+	double entry_reverse_from;
+	uint64_t entry_started_ms;
+	bool entry_reversing;
 	double expand_progress, expand_reverse_from;
 	uint64_t expand_id, expand_started_ms;
-	bool expand_reversing, expand_full_frame;
+	/* A policy tick dwell at full geometry; not output presentation proof. */
+	bool expand_reversing, expand_full_dwell;
     enum { CS_AXIS_NONE, CS_AXIS_HORIZONTAL, CS_AXIS_VERTICAL } axis;
     struct {
         bool tracking;
