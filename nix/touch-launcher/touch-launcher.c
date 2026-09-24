@@ -1063,16 +1063,29 @@ static bool route_path_for(const char *runtime) {
 static int route_client_request(const char *runtime, const char *name) {
   enum shell_view view;
   if (!route_name(name,&view) || !route_path_for(runtime)) return 2;
-  int fd=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0);
+  int fd=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK,0);
   if (fd<0) return 1;
+  int64_t deadline=monotonic_ms()+500;
   struct sockaddr_un address={.sun_family=AF_UNIX};
   strcpy(address.sun_path,route_path);
-  if (connect(fd,(struct sockaddr *)&address,sizeof address)<0) { close(fd); return 1; }
+  if (connect(fd,(struct sockaddr *)&address,sizeof address)<0) {
+    if (errno!=EINPROGRESS) { close(fd); return 1; }
+    struct pollfd ready={.fd=fd,.events=POLLOUT};
+    int remaining=(int)(deadline-monotonic_ms());
+    if (remaining<=0 || poll(&ready,1,remaining)<=0 || !(ready.revents&POLLOUT)) {
+      close(fd); return 1;
+    }
+    int error=0; socklen_t length=sizeof error;
+    if (getsockopt(fd,SOL_SOCKET,SO_ERROR,&error,&length)<0 || error) { close(fd); return 1; }
+  }
   char request[24];
   int length=snprintf(request,sizeof request,"%s\n",name);
   if (send(fd,request,(size_t)length,MSG_NOSIGNAL)!=length) { close(fd); return 1; }
   struct pollfd wait={.fd=fd,.events=POLLIN};
-  if (poll(&wait,1,500)<=0 || !(wait.revents&POLLIN)) { close(fd); return 1; }
+  int remaining=(int)(deadline-monotonic_ms());
+  if (remaining<=0 || poll(&wait,1,remaining)<=0 || !(wait.revents&POLLIN)) {
+    close(fd); return 1;
+  }
   char reply[4]={0};
   ssize_t count=read(fd,reply,sizeof reply-1);
   close(fd);

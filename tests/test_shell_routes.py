@@ -6,6 +6,7 @@ import socket
 import subprocess
 import tempfile
 import threading
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -63,6 +64,15 @@ def test_route_socket(executable, runtime):
     path.unlink()
     assert subprocess.run([str(executable), "--surface", "drawer"], env=env,
                           timeout=2, capture_output=True).returncode == 1
+    silent = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    silent.bind(str(path))
+    silent.listen(1)
+    before = time.monotonic()
+    result = subprocess.run([str(executable), "--surface", "drawer"], env=env,
+                            timeout=2, capture_output=True)
+    elapsed = time.monotonic() - before
+    assert result.returncode == 1 and elapsed < 0.9, (result.returncode, elapsed)
+    silent.close()
 
 
 def main():
