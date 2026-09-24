@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -51,9 +52,14 @@ def source_digest(theme: Path) -> str:
         name = path.relative_to(theme).as_posix().encode()
         digest.update(len(name).to_bytes(4, "big"))
         digest.update(name)
+        file_digest = hashlib.sha256()
+        file_size = 0
         with path.open("rb") as stream:
             while chunk := stream.read(1024 * 1024):
-                digest.update(chunk)
+                file_digest.update(chunk)
+                file_size += len(chunk)
+        digest.update(file_size.to_bytes(8, "big"))
+        digest.update(file_digest.digest())
     return digest.hexdigest()
 
 
@@ -72,6 +78,8 @@ def inspect(root: Path, member: str | None = None) -> dict:
 
 
 def acquire_one(url: str, rev: str, destination: Path, *, members: tuple[str, ...] = ()) -> None:
+    if not re.fullmatch(r"[0-9a-f]{40}", rev):
+        raise ValueError("fixture revision must be an exact 40-digit Git SHA-1")
     if destination.exists():
         raise FileExistsError(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -80,9 +88,9 @@ def acquire_one(url: str, rev: str, destination: Path, *, members: tuple[str, ..
         subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "clone", "--filter=blob:none",
                         "--no-checkout", url, str(checkout)], check=True, stdout=subprocess.DEVNULL)
         if members:
-            subprocess.run(["git", "-C", str(checkout), "sparse-checkout", "set",
+            subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-C", str(checkout), "sparse-checkout", "set",
                             *(f"themes/{name}" for name in members)], check=True)
-        subprocess.run(["git", "-C", str(checkout), "checkout", "--detach", rev],
+        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-C", str(checkout), "checkout", "--detach", rev],
                        check=True, stdout=subprocess.DEVNULL)
         if run("git", "-C", str(checkout), "rev-parse", "HEAD") != rev:
             raise ValueError("checkout revision mismatch")

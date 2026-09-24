@@ -1,6 +1,5 @@
 """Source fixture acquisition and unchanged-checkout host gates."""
 
-import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -92,6 +91,22 @@ class ThemeSources(unittest.TestCase):
                 sources.source_dir(collection, "escaped")
             (collection / "themes/catppuccin/colors.toml").write_text('background = "#ffffff"\n')
             self.assertNotEqual(first, sources.inspect(collection, "catppuccin")["sha256"])
+
+    def test_digest_frames_file_content_and_revision_is_exact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            one, two = base / "one", base / "two"
+            one.mkdir()
+            two.mkdir()
+            # Without a file-content length or digest, these byte streams
+            # collide: the first file's content can impersonate a second name.
+            (one / "a").write_bytes(b"\0\0\0\1bXYZ")
+            (two / "a").write_bytes(b"")
+            (two / "b").write_bytes(b"XYZ")
+            self.assertNotEqual(sources.source_digest(one), sources.source_digest(two))
+            with self.assertRaisesRegex(ValueError, "exact 40-digit"):
+                sources.acquire_one(str(one), "HEAD", base / "invalid")
+            self.assertFalse((base / "invalid").exists())
 
 
 if __name__ == "__main__":
