@@ -21,5 +21,23 @@ rustfmt --edition 2021 --check src/service_data.rs tests/service_data_module.rs
   PASS
 ```
 
-Service execution, action transport, target cross-build, real shell rendering,
-and physical panel interaction have not been exercised in this checkpoint.
+The follow-up worker runs trusted settings commands and connects to the
+private notification socket on a dedicated thread. Its UI API uses only
+nonblocking `try_submit` and `try_recv`; the queue holds at most eight
+outstanding requests, coalesces duplicate refreshes, and returns one explicit
+result per accepted request. Process and socket operations have total
+deadlines, size bounds, fixed operation names, and narrow action arguments.
+The socket requires a private owned directory, mode-0600 socket, and same-UID
+peer credentials. This does not give the UI arbitrary command authority.
+
+```text
+cd nix/rust-shell-client
+CARGO_TARGET_DIR=/tmp/k230-rust-service-cargo cargo test --offline --test service_data_module
+  PASS 7 host tests, including private-socket history and slow-peer deadline
+rustfmt --edition 2021 --check src/service_data.rs tests/service_data_module.rs
+  PASS
+```
+
+The worker tests use host fakes. The module is not yet linked into the
+production frontend; target cross-build, real shell rendering, and physical
+panel interaction remain unverified.
