@@ -54,5 +54,10 @@ also passed, producing
 with the cross-package Python, procps and systemd paths; it is package proof,
 not a running Settings surface.
 
+The explicit operation allowlist correction was rebuilt after review, producing
+`/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings`. The same nine host
+tests pass, including an unexpected operation with an otherwise valid token;
+it neither executes an action nor consumes the pending confirmation.
+
 Remaining: launcher integration and asynchronous action feedback,
 real Settings scroll/gesture checks, installed image and board observations.
