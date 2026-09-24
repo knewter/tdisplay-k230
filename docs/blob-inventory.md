@@ -741,6 +741,19 @@ DATA 291e10cae0bb67a7896650b20f14569cd510caddaa448cff9af2a3fe66af4651  docs/evid
 DATA c3042ea320cd424f589b8844ca738c48723ca7ea32c3b0427d3a2fc83754aee1  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-action-error.png
 DATA babc311f3246bcb5ba9acc391cc061362f983a8af941660c927f19d4e33542b2  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-private-first.png
 DATA 9db3bbd5425e546f6abfe2a35de98f433f34b617abdcaa6cdfbe520896f7a8b9  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-private-second.png
+DATA b18c75f8d63c6f7792eed767e54e8ad333600d02dc504c22d62412e298def220  docs/evidence/coherent-shell/direct-reveal-drag-qemu/deck.png
+DATA 96b4a3a5a268d33a466c5f0c0479ed5f02960322e97a91e014c648b142ca1d22  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-100.png
+DATA 8c4308e515d65e4551c8d58b73b285157fd31e608c1d6c5e6c28f9bffdb89baf  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-cancelled.png
+DATA 939a69ae6e42cf6dda98375ce8cfbb0869f9f9a410ac140de976e77943268621  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-held.png
+DATA 84239bc8fc2cf384f14e69e3218f75d786ff77f398f7ed5e05266de30bde8539  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-lateral.png
+DATA 431343213a8735a1cd1bc3cf69f452b9f68ff5b1cdc4b4d5335526b31b524854  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-reversed.png
+DATA edbd20a1a8f462d2cc5555330c23a5acbe0d20532886fe52d78d61ecff3ffbb1  docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-settled.png
+DATA 882d9732d92c28047a2e57808737c0cac52414f5145755b07a925e214d478e1e  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-100.png
+DATA 2f60e48539e07f8b8de02fd8716c6d73c9de7a04a87ba80ffb9fa1123b8c21a0  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-cancelled.png
+DATA 1c613ec7ce7f9785c0dbc43a963534789aa3580059b0747265369cafdc609076  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-held.png
+DATA 54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png
+DATA dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png
+DATA 1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad  docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png
 DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
 DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
 DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
@@ -1545,3 +1558,26 @@ QEMU DATA captures of the public synthetic card, empty notification shade,
 and its cancellation, unmap, and live-underlay behavior. The adjacent README
 records the exact old and corrected packages, command, observations, and
 physical limits. No private notifications or real app pixels are included.
+
+
+### Direct reveal drag QEMU captures
+
+The 13 PNG files below are original headless QEMU captures of a public synthetic
+card and temporary drawer/shade UI. The adjacent README records exact binary
+identities, pixel measurements, and physical limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/deck.png` | 18491 | DATA | `b18c75f8d63c6f7792eed767e54e8ad333600d02dc504c22d62412e298def220` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-100.png` | 23526 | DATA | `96b4a3a5a268d33a466c5f0c0479ed5f02960322e97a91e014c648b142ca1d22` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-cancelled.png` | 18623 | DATA | `8c4308e515d65e4551c8d58b73b285157fd31e608c1d6c5e6c28f9bffdb89baf` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-held.png` | 23529 | DATA | `939a69ae6e42cf6dda98375ce8cfbb0869f9f9a410ac140de976e77943268621` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-lateral.png` | 23518 | DATA | `84239bc8fc2cf384f14e69e3218f75d786ff77f398f7ed5e05266de30bde8539` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-reversed.png` | 21223 | DATA | `431343213a8735a1cd1bc3cf69f452b9f68ff5b1cdc4b4d5335526b31b524854` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/drawer-settled.png` | 39433 | DATA | `edbd20a1a8f462d2cc5555330c23a5acbe0d20532886fe52d78d61ecff3ffbb1` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-100.png` | 14044 | DATA | `882d9732d92c28047a2e57808737c0cac52414f5145755b07a925e214d478e1e` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-cancelled.png` | 18554 | DATA | `2f60e48539e07f8b8de02fd8716c6d73c9de7a04a87ba80ffb9fa1123b8c21a0` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-held.png` | 14001 | DATA | `1c613ec7ce7f9785c0dbc43a963534789aa3580059b0747265369cafdc609076` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-lateral.png` | 14042 | DATA | `54300d5986b4ef86263222df1ce23aa666b39cf09bd1ab03b5e64d5b5fd1837b` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-reversed.png` | 17013 | DATA | `dcb9307591e0b3d692d2800ed80e7a3ae27ec05ad8abf9f89a76453261d0c837` |
+| `docs/evidence/coherent-shell/direct-reveal-drag-qemu/shade-settled.png` | 42007 | DATA | `1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad` |

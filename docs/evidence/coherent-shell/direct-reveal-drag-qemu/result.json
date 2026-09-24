@@ -1,0 +1,20 @@
+{
+  "drawer": {
+    "after_100px": 1132,
+    "lateral_at_same_y": 1132,
+    "held": 1132,
+    "after_reverse_40px": 1172,
+    "settled": 234
+  },
+  "shade": {
+    "after_100px": 100,
+    "lateral_at_same_y": 100,
+    "held": 100,
+    "after_reverse_40px": 60,
+    "settled": 801
+  },
+  "result": "PASS",
+  "class": "headless-qemu-native-touch",
+  "sway": "/nix/store/6jx6nlxxc2hy5viidq7msnlpshidd5w6-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/rbvcqv3sjq87iami6iymwd9cx7nzhhma-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+}
