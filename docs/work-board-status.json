@@ -68,7 +68,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Wire the Rust chooser and all-surface appearance, including live deck and app palette updates; then verify theme/background switching and reboot persistence on the board.",
+      "next": "Install the reviewed Rust chooser with real packaged theme/background choices and finish themed surface colors; verify production switching and persistence on the board.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -78,10 +78,13 @@
         "docs/evidence/omarchy-themes/native-token-checkpoint.md",
         "docs/evidence/omarchy-themes/catalog-host.md",
         "docs/evidence/omarchy-themes/wallpaper-memory-host.md",
-        "docs/evidence/omarchy-themes/app-appearance-host.md"
+        "docs/evidence/omarchy-themes/app-appearance-host.md",
+        "docs/evidence/omarchy-themes/rust-theme-catalog-bridge-host.md",
+        "docs/evidence/omarchy-themes/rust-chooser-host.md",
+        "docs/evidence/omarchy-themes/rust-chooser-qemu.md"
       ],
-      "rationale": "The catalog, acknowledged theme swap and remembered wallpaper choices are landed. Generated Foot palettes, fresh-home defaults and post-ACK app sync pass host tests. Full chooser rendering, background playback and physical acceptance remain open.",
-      "reviewRevision": "5f9c46eb"
+      "rationale": "The Rust chooser is landed and cross-built; paired QEMU touch checks with a synthetic command pass. The installed default is still palette-only without wallpaper. Real theme/background packaging and visual token coverage are being implemented; production activation and physical acceptance remain open.",
+      "reviewRevision": "52ff0087"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
