@@ -29,7 +29,9 @@ int main(int argc, char **argv) {
     struct card_shell_drawer_gesture gesture={0};
     card_shell_drawer_down(&gesture,7,200,1100);
     assert(card_shell_reveal_progress(&gesture,205,1030,700,false)==100);
-    assert(card_shell_reveal_progress(&gesture,300,1050,700,false)==0);
+    assert(card_shell_reveal_progress(&gesture,300,1050,700,false)==71);
+    /* Horizontal displacement cannot reset a vertically dragged panel. */
+    assert(card_shell_reveal_progress(&gesture,400,1030,700,false)==100);
     assert(card_shell_reveal_progress(&gesture,200,1200,700,false)==0);
     card_shell_drawer_down(&gesture,8,200,1100);
     assert(card_shell_reveal_progress(&gesture,200,1000,700,false)==0);

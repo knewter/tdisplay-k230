@@ -243,8 +243,9 @@ uint16_t card_shell_reveal_progress(const struct card_shell_drawer_gesture *gest
 		!isfinite(travel) || travel <= 0)
 		return 0;
 	double vertical = shade ? y - gesture->y : gesture->y - y;
-	if (vertical <= fabs(x - gesture->x))
-		return 0;
+	/* This stream already owns the contact. Direction qualification belongs
+	 * to the release decision, not its visible position: crossing a diagonal
+	 * must not teleport an in-progress panel back to the edge. */
 	return (uint16_t)lround(fmin(1000, fmax(0, vertical / travel * 1000)));
 }
 
