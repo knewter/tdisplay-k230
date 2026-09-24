@@ -11,4 +11,4 @@ cargo clippy --manifest-path nix/rust-shell-client/Cargo.toml --locked --all-tar
 git diff --check
 ```
 
-All passed on 2026-09-24 UTC: 18 library tests and 3 route/launch tests. Focused fixtures cover scrolled hit mapping, finger reversal, second-touch cancellation, fling stop, list clipping with a stable header, and Sway command failure gating. Exact target build, integrated QEMU app launch/scroll, physical finger use, frame time and CPU cost remain open. The source leaves Settings, shade history, and theme transaction consumers for separate checkpoints.
+All passed on 2026-09-24 UTC: 19 library tests and 3 route/launch tests. Focused fixtures cover scrolled hit mapping, finger reversal, second-touch cancellation, fling stop, list clipping with a stable header, and Sway command failure gating. Exact target build, integrated QEMU app launch/scroll, physical finger use, frame time and CPU cost remain open. The source leaves Settings, shade history, and theme transaction consumers for separate checkpoints.
