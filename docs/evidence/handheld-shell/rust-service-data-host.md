@@ -16,7 +16,7 @@ are 16 KiB for settings and 128 KiB/64 events for history.
 ```text
 cd nix/rust-shell-client
 CARGO_TARGET_DIR=/tmp/k230-rust-service-cargo cargo test --offline --test service_data_module
-  PASS 4 host parser tests
+  PASS 5 host parser tests, including broker-length Unicode text
 rustfmt --edition 2021 --check src/service_data.rs tests/service_data_module.rs
   PASS
 ```
@@ -33,7 +33,7 @@ peer credentials. This does not give the UI arbitrary command authority.
 ```text
 cd nix/rust-shell-client
 CARGO_TARGET_DIR=/tmp/k230-rust-service-cargo cargo test --offline --test service_data_module
-  PASS 7 host tests, including private-socket history and slow-peer deadline
+  PASS 8 host tests, including private-socket history and slow-peer deadline
 rustfmt --edition 2021 --check src/service_data.rs tests/service_data_module.rs
   PASS
 ```

@@ -114,7 +114,7 @@ fn bounded_json(bytes: &[u8], limit: usize) -> Result<Value, String> {
 
 fn string(value: &Value, limit: usize) -> Result<String, String> {
     let text = value.as_str().ok_or("invalid service text")?;
-    if text.len() > limit || text.chars().any(|c| c.is_control()) {
+    if text.chars().count() > limit || text.chars().any(|c| c.is_control()) {
         return Err("invalid service text".into());
     }
     Ok(text.to_owned())

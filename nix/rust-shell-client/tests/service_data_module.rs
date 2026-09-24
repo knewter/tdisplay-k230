@@ -88,6 +88,19 @@ fn history_rejects_focus_count_priority_and_unbounded_input() {
     assert!(parse_settings(&vec![b' '; 16 * 1024 + 1]).is_err());
 }
 
+#[test]
+fn broker_character_limits_accept_multibyte_unicode() {
+    let mut value = history();
+    value["events"][0]["summary"] = json!("界".repeat(160));
+    value["events"][0]["body"] = json!("🙂".repeat(512));
+    value["preview"]["summary"] = json!("界".repeat(160));
+    let parsed = parse_history(&serde_json::to_vec(&value).unwrap()).unwrap();
+    assert_eq!(parsed.events[0].summary.chars().count(), 160);
+    assert_eq!(parsed.events[0].body.chars().count(), 512);
+    value["events"][0]["summary"] = json!("界".repeat(161));
+    assert!(parse_history(&serde_json::to_vec(&value).unwrap()).is_err());
+}
+
 struct WorkerFixture {
     root: PathBuf,
     settings: PathBuf,
