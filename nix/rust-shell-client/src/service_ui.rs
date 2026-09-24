@@ -2,6 +2,7 @@
 //! Service I/O remains in `service_data::ServiceWorker` off the Wayland loop.
 
 use crate::{
+    render::{settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H},
     service_data::{
         ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction, Priority,
         ServiceRequest, SettingsSnapshot,
@@ -331,7 +332,8 @@ pub fn panel_intent(
                 if Instant::now() >= confirm.expires_at {
                     return None;
                 }
-                if (940.0..1050.0).contains(&end.1) {
+                let card_y = settings_confirm_layout(settings_layout().poweroff_bottom).card_y;
+                if (card_y..card_y + 110.0).contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
                     } else {
@@ -341,10 +343,14 @@ pub fn panel_intent(
                 return None;
             }
             let settings = view.settings.as_ref()?;
-            if (162.0..272.0).contains(&end.1) {
+            // These ranges mirror the row rhythm `render.rs` paints the
+            // Settings screen with (finding P0-4); call the same helpers
+            // rather than repeating its literals, so the two cannot drift.
+            let layout = settings_layout();
+            if (settings_row_y(0)..settings_row_y(0) + 110.0).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
-            if (326.0..420.0).contains(&end.1)
+            if (settings_row_y(1)..settings_row_y(1) + 94.0).contains(&end.1)
                 && end.0 > w - 210.0
                 && settings.brightness.state == ControlState::Writable
             {
@@ -358,15 +364,21 @@ pub fn panel_intent(
                 };
                 return Some(PanelIntent::Request(ServiceRequest::Brightness(next)));
             }
-            if (452.0..562.0).contains(&end.1) && settings.keyboard.state == ControlState::Action {
+            if (settings_row_y(2)..settings_row_y(2) + 110.0).contains(&end.1)
+                && settings.keyboard.state == ControlState::Action
+            {
                 return Some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
             }
-            if (750.0..820.0).contains(&end.1) && view.settings.is_some() {
+            if (layout.reboot_y..layout.reboot_y + SETTINGS_POWER_CARD_H).contains(&end.1)
+                && view.settings.is_some()
+            {
                 return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
                     PowerAction::Reboot,
                 )));
             }
-            if (828.0..898.0).contains(&end.1) && view.settings.is_some() {
+            if (layout.poweroff_y..layout.poweroff_y + SETTINGS_POWER_CARD_H).contains(&end.1)
+                && view.settings.is_some()
+            {
                 return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
                     PowerAction::Poweroff,
                 )));
@@ -622,8 +634,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 780.0),
-                (60.0, 780.0),
+                (60.0, 730.0),
+                (60.0, 730.0),
                 568,
                 1232,
                 &view
@@ -646,8 +658,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 780.0),
-                (60.0, 780.0),
+                (60.0, 730.0),
+                (60.0, 730.0),
                 568,
                 1232,
                 &view
@@ -665,8 +677,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 780.0),
-                (60.0, 780.0),
+                (60.0, 730.0),
+                (60.0, 730.0),
                 568,
                 1232,
                 &view

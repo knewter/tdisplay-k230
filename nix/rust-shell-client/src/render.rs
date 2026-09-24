@@ -17,6 +17,17 @@ use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
 use pango::{EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path};
 
+/// The one system font family used by every label this renderer draws.
+/// `nix/card-shell/render.h` names the same literal (`CARD_SHELL_FONT_FAMILY`)
+/// for the C card deck, so the two renderers that composite into one frame
+/// never drift onto different fallback faces (finding P1-1 of
+/// `docs/design/webos-polish-review.md`). This is deliberately "DejaVu Sans",
+/// not the design study's IBM Plex family: `nix/shell.nix` ships only
+/// `pkgs.dejavu_fonts` on the image ("One family is enough"), so DejaVu is
+/// the only face guaranteed present, and pulling in a new font package is a
+/// blob-inventory / image-size change out of scope for a rendering-only fix.
+pub const FONT_FAMILY: &str = "DejaVu Sans";
+
 fn color(cr: &Context, rgb: u32, alpha: f64) {
     cr.set_source_rgba(
         f64::from((rgb >> 16) & 255) / 255.0,
@@ -168,7 +179,7 @@ fn text_weight(
 ) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
-    font.set_family("DejaVu Sans");
+    font.set_family(FONT_FAMILY);
     font.set_absolute_size(size * f64::from(pango::SCALE));
     font.set_weight(weight);
     layout.set_font_description(Some(&font));
@@ -184,14 +195,102 @@ fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
 }
 
+/// A third weight tier between `text()` and `heading()` (finding P1-1), for
+/// section-eyebrow labels like "YOUR DEVICE" or "Device controls" that
+/// should read as a distinct hierarchy step, not plain body text nor a
+/// heading. DejaVu Sans ships only Book/Bold faces, so fontconfig/Pango
+/// synthesize this via partial emboldening rather than a true medium
+/// instance; that is an accepted, low-risk approximation given the image
+/// deliberately carries one font family (see `FONT_FAMILY`).
+fn medium(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Medium);
+}
+
 fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Bold);
+}
+
+/// Vertical rhythm for the Settings screen's four capability rows (finding
+/// P0-4 of `docs/design/webos-polish-review.md`): one row height plus one
+/// gap, computed from `index`, in place of five independent hand-typed `y`
+/// constants that drifted out of sync with each other.
+/// `service_ui::hit` mirrors these exact numbers for touch regions --
+/// keep the two in lockstep if this rhythm ever changes.
+pub const SETTINGS_ROW_FIRST_Y: f64 = 162.0;
+pub const SETTINGS_ROW_H: f64 = 110.0;
+pub const SETTINGS_ROW_GAP: f64 = 16.0;
+pub const SETTINGS_ROW_COUNT: u32 = 4;
+pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
+
+pub fn settings_row_y(index: u32) -> f64 {
+    SETTINGS_ROW_FIRST_Y + f64::from(index) * (SETTINGS_ROW_H + SETTINGS_ROW_GAP)
+}
+
+/// The bottom edge of `count` stacked settings rows, i.e. where any content
+/// that follows the row list (the Power section) should begin.
+pub fn settings_rows_bottom(count: u32) -> f64 {
+    if count == 0 {
+        return SETTINGS_ROW_FIRST_Y;
+    }
+    settings_row_y(count - 1) + SETTINGS_ROW_H
+}
+
+/// The Power section and, when present, the power confirmation dialog are
+/// themselves positioned relative to the row rhythm above rather than as
+/// independent literals, so nothing in the Settings screen is a hand-typed
+/// offset any more.
+#[derive(Clone, Copy)]
+pub struct SettingsLayout {
+    pub power_heading_y: f64,
+    pub reboot_y: f64,
+    pub poweroff_y: f64,
+    pub poweroff_bottom: f64,
+}
+
+pub fn settings_layout() -> SettingsLayout {
+    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT);
+    let power_heading_y = rows_bottom + 22.0;
+    let reboot_y = power_heading_y + 28.0;
+    let poweroff_y = reboot_y + SETTINGS_POWER_CARD_H + SETTINGS_ROW_GAP;
+    SettingsLayout {
+        power_heading_y,
+        reboot_y,
+        poweroff_y,
+        poweroff_bottom: poweroff_y + SETTINGS_POWER_CARD_H,
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct SettingsConfirmLayout {
+    pub label_y: f64,
+    pub card_y: f64,
+    pub bottom: f64,
+}
+
+/// The power confirmation dialog, positioned `after` whatever content
+/// precedes it (the Power section's bottom edge).
+pub fn settings_confirm_layout(after: f64) -> SettingsConfirmLayout {
+    let label_y = after + 14.0;
+    let card_y = label_y + 28.0;
+    SettingsConfirmLayout {
+        label_y,
+        card_y,
+        bottom: card_y + 110.0,
+    }
+}
+
+/// Size a secondary panel to its content instead of a full-height sheet
+/// (finding P0-2): `natural` is the content's own bottom edge, clamped to a
+/// minimum so short content still reads as a panel and to the available
+/// height so it never overflows the screen.
+pub fn content_sized_panel_h(natural: f64, available_h: f64, min_h: f64) -> f64 {
+    natural.max(min_h).min(available_h)
 }
 
 fn centered_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
-    font.set_family("DejaVu Sans");
+    font.set_family(FONT_FAMILY);
     font.set_absolute_size(size * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Bold);
     layout.set_font_description(Some(&font));
@@ -332,6 +431,14 @@ fn paint_theme_chooser(
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
         let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
     }
+    // The Preview page's Cancel/Apply footer is pinned near the screen
+    // bottom regardless of how many background rows sit above it (finding
+    // P0-2). Instead of a full panel-height rework, float the footer up to
+    // just below its own content when that content is short, and only fall
+    // back to the old screen-bottom position once there is enough content
+    // to reach it -- the List page below floats its own end-of-content
+    // markers the same way.
+    let mut footer_y = h - 126.0;
     text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
     text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
     match view.page {
@@ -467,7 +574,10 @@ fn paint_theme_chooser(
             let image_y = 399.0;
             let image_w = w - 56.0;
             let image_h = 176.0;
-            rounded(cr, image_x, image_y, image_w, image_h, 15.0);
+            // 16.0 everywhere else in this panel-scale family (finding
+            // P2-1); this frame was the one 1px drift with no reason for it.
+            const PREVIEW_RADIUS: f64 = 16.0;
+            rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
             color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
             let _ = cr.fill();
             if let Some(image) = preview_image {
@@ -480,7 +590,7 @@ fn paint_theme_chooser(
                 let phone_x = image_x + 16.0;
                 let phone_y = image_y + 6.0;
                 let _ = cr.save();
-                rounded(cr, image_x, image_y, image_w, image_h, 15.0);
+                rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
                 cr.clip();
                 cr.translate(phone_x, phone_y);
                 cr.scale(
@@ -514,6 +624,23 @@ fn paint_theme_chooser(
                     style.muted,
                 );
             } else {
+                // A flat fill here reads as an intentional two-color
+                // wallpaper choice rather than a missing preview (finding
+                // P1-3). Hatch it so a fallback is never mistaken for
+                // authored imagery, independent of the message beneath it.
+                let _ = cr.save();
+                rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
+                cr.clip();
+                color(cr, style.muted, 0.16);
+                cr.set_line_width(2.0);
+                let mut x = image_x - image_h;
+                while x < image_x + image_w {
+                    cr.move_to(x, image_y + image_h);
+                    cr.line_to(x + image_h, image_y);
+                    x += 26.0;
+                }
+                let _ = cr.stroke();
+                let _ = cr.restore();
                 let message = if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
                     "Video preview unavailable"
                 } else if preview_error {
@@ -550,13 +677,24 @@ fn paint_theme_chooser(
                 );
             }
             text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, style.text);
+            // Float the footer up to just below the background list's own
+            // natural extent when the list is short, instead of always
+            // pinning it to the screen bottom and leaving a void above it
+            // (finding P0-2); once the list is long enough to need
+            // scrolling, this converges back on the old pinned position.
+            const BACKGROUND_LIST_TOP: f64 = 662.0;
+            const BACKGROUND_ROW_H: f64 = 78.0;
+            const FOOTER_MIN_Y: f64 = 700.0;
+            let list_bottom = BACKGROUND_LIST_TOP + preview.backgrounds.len() as f64 * BACKGROUND_ROW_H + 12.0;
+            footer_y = list_bottom.max(FOOTER_MIN_Y).min(h - 126.0);
+            let clip_bottom = (footer_y - 12.0).max(BACKGROUND_LIST_TOP);
             let _ = cr.save();
-            cr.rectangle(0.0, 662.0, w, (h - 814.0).max(0.0));
+            cr.rectangle(0.0, BACKGROUND_LIST_TOP, w, (clip_bottom - BACKGROUND_LIST_TOP).max(0.0));
             cr.clip();
             let first = (view.scroll / 78.0).floor().max(0.0) as usize;
             for (index, background) in preview.backgrounds.iter().enumerate().skip(first).take(10) {
-                let y = 662.0 + index as f64 * 78.0 - view.scroll;
-                if y >= h - 152.0 {
+                let y = BACKGROUND_LIST_TOP + index as f64 * 78.0 - view.scroll;
+                if y >= clip_bottom {
                     break;
                 }
                 service_card(
@@ -600,7 +738,7 @@ fn paint_theme_chooser(
                 );
             }
             let _ = cr.restore();
-            service_card(cr, theme, "controls", 24.0, h - 126.0, w - 48.0, 86.0, true);
+            service_card(cr, theme, "controls", 24.0, footer_y, w - 48.0, 86.0, true);
             if view.pending.is_some() {
                 let alpha = match theme
                     .and_then(|snapshot| snapshot.token("controls", "pressed-fill-alpha"))
@@ -609,13 +747,13 @@ fn paint_theme_chooser(
                     _ => 0.22,
                 };
                 let _ = cr.save();
-                rounded(cr, w / 2.0, h - 126.0, w / 2.0 - 24.0, 86.0, 16.0);
+                rounded(cr, w / 2.0, footer_y, w / 2.0 - 24.0, 86.0, 16.0);
                 cr.clip();
                 overlay_brush(
                     cr,
                     theme_brush(theme, "controls", "normal-color"),
                     w / 2.0,
-                    h - 126.0,
+                    footer_y,
                     w / 2.0 - 24.0,
                     86.0,
                     alpha,
@@ -627,7 +765,7 @@ fn paint_theme_chooser(
                 cr,
                 "Cancel",
                 48.0,
-                h - 101.0,
+                footer_y + 25.0,
                 w / 2.0 - 50.0,
                 22.0,
                 style.muted,
@@ -640,7 +778,7 @@ fn paint_theme_chooser(
                     "Apply"
                 },
                 w / 2.0 + 18.0,
-                h - 101.0,
+                footer_y + 25.0,
                 w / 2.0 - 46.0,
                 22.0,
                 if view.selection_error || view.pending.is_some() {
@@ -651,22 +789,25 @@ fn paint_theme_chooser(
             );
         }
     }
+    // The List page has no pinned footer of its own; anchor its own
+    // pending/error/message line just below its (possibly short) content
+    // instead of the raw screen bottom, so it never floats disconnected
+    // over the dimmed area a short list leaves behind (finding P0-2).
+    let message_y = match view.page {
+        ThemePage::List => {
+            let count = view.list.as_ref().map_or(0, |l| l.themes.len());
+            (204.0 + count as f64 * 92.0 + 24.0).min(h - 167.0)
+        }
+        _ => footer_y - 41.0,
+    };
     if view.pending.is_some() {
-        text(
-            cr,
-            "Preparing…",
-            28.0,
-            h - 167.0,
-            w - 56.0,
-            18.0,
-            style.muted,
-        );
+        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
     }
     if let Some(error) = &view.error {
-        text(cr, error, 28.0, h - 167.0, w - 56.0, 17.0, style.error);
+        text(cr, error, 28.0, message_y, w - 56.0, 17.0, style.error);
     }
     if let Some(message) = &view.message {
-        text(cr, message, 28.0, h - 167.0, w - 56.0, 17.0, style.muted);
+        text(cr, message, 28.0, message_y, w - 56.0, 17.0, style.muted);
     }
 }
 
@@ -677,6 +818,18 @@ pub struct RenderParams {
     pub route: Route,
     pub progress: f64,
     pub scroll: f64,
+}
+
+/// The Entry page's `view.message` is reused for informational text ("Saved
+/// for automatic reconnect", "Network forgotten") as well as genuine
+/// connect failures; only the latter gets the elevated P0-3 banner.
+fn entry_error_message(view: &WifiPublic) -> Option<&str> {
+    if view.page != WifiPage::Entry {
+        return None;
+    }
+    view.message.as_deref().filter(|message| {
+        !(view.pending || message.starts_with("Saved") || message.starts_with("Network forgotten"))
+    })
 }
 
 fn paint_wifi(
@@ -888,6 +1041,27 @@ fn paint_wifi(
                         style.error,
                     );
                 }
+                // A rejected password used to sit as a single line of colored
+                // text between the numeric row and the Cancel/Connect
+                // buttons -- easy to miss in what otherwise reads as dead
+                // space (finding P0-3). Give it its own elevated,
+                // border-accented banner directly under the field it
+                // refers to instead.
+                if selected.security == Security::Wpa2Psk && !view.use_saved {
+                    if let Some(message) = entry_error_message(view) {
+                        let show_saved_buttons = view.snapshot.as_ref().is_some_and(|s| {
+                            s.saved.iter().any(|n| n.ssid == selected.ssid)
+                        });
+                        let banner_y = if show_saved_buttons { 486.0 } else { 408.0 };
+                        service_card(cr, theme, "controls", 24.0, banner_y, 520.0, 64.0, false);
+                        rounded(cr, 24.75, banner_y + 0.75, 518.5, 62.5, 15.25);
+                        cr.set_line_width(1.5);
+                        color(cr, style.error, 0.85);
+                        let _ = cr.stroke();
+                        text(cr, "!", 40.0, banner_y + 17.0, 30.0, 28.0, style.error);
+                        text(cr, message, 78.0, banner_y + 21.0, 448.0, 19.0, style.error);
+                    }
+                }
             }
             if !view.use_saved
                 && view
@@ -1010,26 +1184,112 @@ fn paint_wifi(
             text(cr, "Forget", 360.0, 886.0, 140.0, 25.0, style.error);
         }
     }
-    if let Some(message) = &view.message {
-        let y = match view.page {
-            WifiPage::List => 1163.0,
-            WifiPage::Entry => 1020.0,
-            WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
-            WifiPage::Closed => 0.0,
-        };
-        let color = if view.pending
-            || message.starts_with("Saved")
-            || message.starts_with("Network forgotten")
-        {
-            style.muted
-        } else {
-            style.error
-        };
-        if y > 0.0 {
-            text(cr, message, 30.0, y, 506.0, 18.0, color);
+    // The Entry page's rejected-password case already got its own elevated
+    // banner above (finding P0-3); do not also repeat it as a second,
+    // lower-emphasis line down here.
+    let already_shown = view.page == WifiPage::Entry && entry_error_message(view).is_some();
+    if !already_shown {
+        if let Some(message) = &view.message {
+            let y = match view.page {
+                WifiPage::List => 1163.0,
+                WifiPage::Entry => 1020.0,
+                WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
+                WifiPage::Closed => 0.0,
+            };
+            let color = if view.pending
+                || message.starts_with("Saved")
+                || message.starts_with("Network forgotten")
+            {
+                style.muted
+            } else {
+                style.error
+            };
+            if y > 0.0 {
+                text(cr, message, 30.0, y, 506.0, 18.0, color);
+            }
         }
     }
     let _ = cr.restore();
+}
+
+/// Where the Settings screen's own content (rows, Power section, and any
+/// confirm dialog or message) naturally ends, feeding `content_sized_panel_h`
+/// (finding P0-2) instead of always filling the screen.
+fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
+    const EMPTY_BOTTOM: f64 = 177.0 + 20.0 + 24.0;
+    let Some(view) = services else {
+        return EMPTY_BOTTOM;
+    };
+    if view.settings.is_none() {
+        return EMPTY_BOTTOM;
+    }
+    let mut bottom = settings_layout().poweroff_bottom;
+    if view.confirmation.is_some() {
+        bottom = settings_confirm_layout(bottom).bottom;
+    }
+    if view.message.is_some() {
+        bottom += 56.0;
+    }
+    bottom + 32.0
+}
+
+/// Wi-Fi's List page is a plain scrollable row list, like Settings and
+/// Themes; content-size it the same way. The Entry/Connecting/ForgetConfirm
+/// dialogs are fixed, footer- and keyboard-anchored layouts where every
+/// literal `y` assumes the full screen height -- re-anchoring all of them to
+/// a shrunk panel is real surgery on `paint_wifi` with no evidence citing
+/// those specific pages as offenders, so they are left at full height here
+/// (`f64::MAX` clamps to the available height with no visible change).
+fn wifi_content_bottom(view: &WifiPublic) -> f64 {
+    match view.page {
+        WifiPage::List => {
+            let rows = view.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
+            338.0 + rows as f64 * 88.0 + 24.0
+        }
+        WifiPage::Entry | WifiPage::Connecting | WifiPage::ForgetConfirm | WifiPage::Closed => {
+            f64::MAX
+        }
+    }
+}
+
+/// Themes' List page is content-sized the same way as Wi-Fi's; the Preview
+/// page keeps the full height (its own footer already floats to its content
+/// via `footer_y` inside `paint_theme_chooser`, which does not require
+/// shrinking the whole panel).
+fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
+    match view.page {
+        ThemePage::List => {
+            let count = view.list.as_ref().map_or(0, |l| l.themes.len());
+            204.0 + count as f64 * 92.0 + 24.0
+        }
+        ThemePage::Preview | ThemePage::Controls => f64::MAX,
+    }
+}
+
+/// The effective panel height for whatever is currently showing under
+/// `Route::Settings` -- the plain controls screen, the Wi-Fi flow, or the
+/// theme chooser -- content-sized per finding P0-2 instead of the full
+/// screen height regardless of what is actually on it.
+fn settings_panel_h(
+    available_h: f64,
+    chooser: Option<&ThemeView>,
+    services: Option<&ServiceView>,
+) -> f64 {
+    const MIN_PANEL_H: f64 = 420.0;
+    if let Some(view) = services
+        .and_then(|s| s.wifi.as_ref())
+        .filter(|v| v.page != WifiPage::Closed)
+    {
+        return content_sized_panel_h(wifi_content_bottom(view), available_h, MIN_PANEL_H);
+    }
+    if let Some(view) = chooser.filter(|v| v.page != ThemePage::Controls) {
+        return content_sized_panel_h(
+            theme_chooser_content_bottom(view),
+            available_h,
+            MIN_PANEL_H,
+        );
+    }
+    content_sized_panel_h(settings_content_bottom(services), available_h, MIN_PANEL_H)
 }
 
 fn scene(
@@ -1063,10 +1323,15 @@ fn scene(
     } else {
         0.0
     };
-    let panel_h = if route == Route::Shade {
-        h * 0.65
-    } else {
-        h - panel_y
+    // Secondary panels are sized to their own content and capped, rather
+    // than always filling the remaining screen height regardless of how
+    // little is on them (finding P0-2). Drawer keeps its existing full-bleed
+    // grid -- its captures show it filling the space in ordinary use, and
+    // it is not among the offending screens this finding cites.
+    let panel_h = match route {
+        Route::Shade => h * 0.65,
+        Route::Settings => settings_panel_h(h - panel_y, chooser, services),
+        _ => h - panel_y,
     };
     let hidden = 1.0 - progress.clamp(0.0, 1.0);
     cr.translate(
@@ -1089,9 +1354,13 @@ fn scene(
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
-    if route == Route::Drawer {
-        // Preserve the authored translucent launcher brush over an opaque
-        // theme plate, rather than letting live card text ghost through apps.
+    if matches!(route, Route::Drawer | Route::Shade | Route::Settings) {
+        // Preserve the authored translucent brush over an opaque theme
+        // plate, rather than letting live card text ghost through apps.
+        // Originally Drawer-only; any theme can author sub-1.0 alpha on
+        // `notifications`/`controls` backgrounds just as easily as on
+        // `launcher`, so the same guard now covers Shade and Settings
+        // (finding P1-5).
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
         cr.rectangle(0.0, panel_y, w, panel_h);
         let _ = cr.fill();
@@ -1111,6 +1380,14 @@ fn scene(
         cr.rectangle(0.0, panel_y, w, 2.0);
         let _ = cr.fill();
     }
+    // Whatever content-sizing (Settings) or the fixed Shade cap leaves
+    // beneath the panel is the live deck, not empty air; dim it rather than
+    // either an opaque void or an undimmed, jarring reveal (finding P0-2).
+    if matches!(route, Route::Settings | Route::Shade) && panel_y + panel_h < h {
+        color(cr, 0x000000, 0.35);
+        cr.rectangle(0.0, panel_y + panel_h, w, h - panel_y - panel_h);
+        let _ = cr.fill();
+    }
     if matches!(route, Route::Drawer | Route::Shade) {
         rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
         color(cr, style.accent, 0.82);
@@ -1123,7 +1400,7 @@ fn scene(
         Route::Hide => return,
     };
     if route == Route::Drawer {
-        text(
+        medium(
             cr,
             "YOUR DEVICE",
             28.0,
@@ -1229,13 +1506,16 @@ fn scene(
                     style.muted,
                 );
             }
+            // One gesture-hint typography across Drawer/Shade/deck: sentence
+            // case, muted, size 14 (finding P1-2); `nix/card-shell/adapter.c`'s
+            // "Swipe up for apps" matches this same treatment.
             text(
                 cr,
-                "SWIPE DOWN TO RETURN TO CARDS",
+                "Swipe down to return to cards",
                 88.0,
                 h - 43.0,
                 w - 176.0,
-                13.0,
+                14.0,
                 style.muted,
             );
         }
@@ -1254,7 +1534,14 @@ fn scene(
             let count = items.map_or(0, |snapshot| snapshot.count);
             text(
                 cr,
-                &format!("{count} notifications"),
+                // Singular form (finding P1-4): "1 notifications" read as a
+                // bug on the one screen where the number is always visible.
+                if count == 1 {
+                    "1 notification".to_string()
+                } else {
+                    format!("{count} notifications")
+                }
+                .as_str(),
                 28.0,
                 112.0,
                 w - 220.0,
@@ -1272,65 +1559,73 @@ fn scene(
                     style.accent,
                 );
             }
-            service_card(
-                cr,
-                theme,
-                "notifications",
-                24.0,
-                186.0,
-                w - 48.0,
-                72.0,
-                false,
-            );
-            if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
-                let painted = preview
-                    .icon
-                    .as_deref()
-                    .is_some_and(|icon| icons.paint(cr, icon, 38, 42.0, 203.0));
-                if !painted {
+            // The preview tile repeated whatever the top history row already
+            // shows -- identical text for one notification, or a
+            // contentless "No active preview" sitting directly above a full
+            // history list (finding P1-4). webOS kept banners (ephemeral)
+            // and the dashboard (persistent history) as two different
+            // objects; here, show the tile only when there is no history to
+            // display it alongside.
+            let show_preview = items.is_none() || count == 0;
+            if show_preview {
+                service_card(
+                    cr,
+                    theme,
+                    "notifications",
+                    24.0,
+                    186.0,
+                    w - 48.0,
+                    72.0,
+                    false,
+                );
+                if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
+                    let painted = preview
+                        .icon
+                        .as_deref()
+                        .is_some_and(|icon| icons.paint(cr, icon, 38, 42.0, 203.0));
+                    if !painted {
+                        text(
+                            cr,
+                            &preview
+                                .source
+                                .chars()
+                                .next()
+                                .unwrap_or('?')
+                                .to_uppercase()
+                                .to_string(),
+                            51.0,
+                            209.0,
+                            30.0,
+                            21.0,
+                            style.text,
+                        );
+                    }
                     text(
                         cr,
-                        &preview
-                            .source
-                            .chars()
-                            .next()
-                            .unwrap_or('?')
-                            .to_uppercase()
-                            .to_string(),
-                        51.0,
-                        209.0,
-                        30.0,
+                        &preview.source,
+                        94.0,
+                        197.0,
+                        w - 132.0,
+                        17.0,
+                        style.accent,
+                    );
+                    text(
+                        cr,
+                        &preview.summary,
+                        94.0,
+                        220.0,
+                        w - 132.0,
                         21.0,
                         style.text,
                     );
-                }
-                text(
-                    cr,
-                    &preview.source,
-                    94.0,
-                    197.0,
-                    w - 132.0,
-                    17.0,
-                    style.accent,
-                );
-                text(
-                    cr,
-                    &preview.summary,
-                    94.0,
-                    220.0,
-                    w - 132.0,
-                    21.0,
-                    style.text,
-                );
-            } else {
-                let empty = if items.is_none() {
-                    "Loading preview"
-                } else if count == 0 {
-                    "No new notifications"
                 } else {
-                    "No active preview"
-                };
-                text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, style.muted);
+                    let empty = if items.is_none() {
+                        "Loading preview"
+                    } else {
+                        "No new notifications"
+                    };
+                    text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, style.muted);
+                }
             }
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
                 text(
@@ -1489,7 +1784,7 @@ fn scene(
                 return;
             }
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
-            text(
+            medium(
                 cr,
                 "Device controls",
                 28.0,
@@ -1500,13 +1795,17 @@ fn scene(
             );
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
-                for (y, name, control) in [
-                    (162.0, "Wi-Fi ›", &settings.network),
-                    (326.0, "Brightness", &settings.brightness),
-                    (452.0, "Keyboard", &settings.keyboard),
-                    (590.0, "Motion", &settings.motion),
-                ] {
-                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, 110.0, false);
+                for (index, (name, control)) in [
+                    ("Wi-Fi ›", &settings.network),
+                    ("Brightness", &settings.brightness),
+                    ("Keyboard", &settings.keyboard),
+                    ("Motion", &settings.motion),
+                ]
+                .into_iter()
+                .enumerate()
+                {
+                    let y = settings_row_y(index as u32);
+                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.accent);
                     text(
                         cr,
@@ -1542,7 +1841,15 @@ fn scene(
                     }
                 }
                 if settings.brightness.state == crate::service_data::ControlState::Writable {
-                    text(cr, "−       +", w - 162.0, 366.0, 130.0, 25.0, style.accent);
+                    text(
+                        cr,
+                        "−       +",
+                        w - 162.0,
+                        settings_row_y(1) + 40.0,
+                        130.0,
+                        25.0,
+                        style.accent,
+                    );
                 }
             } else {
                 text(
@@ -1557,29 +1864,99 @@ fn scene(
                     style.muted,
                 );
             }
+            // Power heading/actions and the confirm dialog are positioned
+            // relative to the row rhythm above (finding P0-4), not as
+            // independent literals that stay correct only by coincidence.
+            let layout = settings_layout();
             if services.and_then(|view| view.settings.as_ref()).is_some() {
-                text(cr, "Power", 28.0, 722.0, w - 56.0, 19.0, style.muted);
-                service_card(cr, theme, "controls", 24.0, 750.0, w - 48.0, 70.0, false);
-                text(cr, "Reboot…", 42.0, 770.0, w - 84.0, 23.0, style.text);
-                service_card(cr, theme, "controls", 24.0, 828.0, w - 48.0, 70.0, false);
-                text(cr, "Power off…", 42.0, 848.0, w - 84.0, 23.0, style.text);
+                text(
+                    cr,
+                    "Power",
+                    28.0,
+                    layout.power_heading_y,
+                    w - 56.0,
+                    19.0,
+                    style.muted,
+                );
+                service_card(
+                    cr,
+                    theme,
+                    "controls",
+                    24.0,
+                    layout.reboot_y,
+                    w - 48.0,
+                    SETTINGS_POWER_CARD_H,
+                    false,
+                );
+                text(
+                    cr,
+                    "Reboot…",
+                    42.0,
+                    layout.reboot_y + 20.0,
+                    w - 84.0,
+                    23.0,
+                    style.text,
+                );
+                service_card(
+                    cr,
+                    theme,
+                    "controls",
+                    24.0,
+                    layout.poweroff_y,
+                    w - 48.0,
+                    SETTINGS_POWER_CARD_H,
+                    false,
+                );
+                text(
+                    cr,
+                    "Power off…",
+                    42.0,
+                    layout.poweroff_y + 20.0,
+                    w - 84.0,
+                    23.0,
+                    style.text,
+                );
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
-                text(cr, &confirm.label, 28.0, 912.0, w - 56.0, 19.0, style.text);
-                service_card(cr, theme, "controls", 24.0, 940.0, w - 48.0, 110.0, true);
-                text(cr, "Cancel", 45.0, 973.0, w / 2.0 - 45.0, 23.0, style.muted);
+                let confirm_layout = settings_confirm_layout(layout.poweroff_bottom);
+                text(
+                    cr,
+                    &confirm.label,
+                    28.0,
+                    confirm_layout.label_y,
+                    w - 56.0,
+                    19.0,
+                    style.text,
+                );
+                service_card(
+                    cr,
+                    theme,
+                    "controls",
+                    24.0,
+                    confirm_layout.card_y,
+                    w - 48.0,
+                    110.0,
+                    true,
+                );
+                let button_y = confirm_layout.card_y + 33.0;
+                text(cr, "Cancel", 45.0, button_y, w / 2.0 - 45.0, 23.0, style.muted);
                 text(
                     cr,
                     "Confirm",
                     w / 2.0 + 20.0,
-                    973.0,
+                    button_y,
                     w / 2.0 - 45.0,
                     23.0,
                     style.error,
                 );
             }
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
-                text(cr, message, 28.0, 1080.0, w - 56.0, 17.0, style.muted);
+                let after = services
+                    .and_then(|view| view.confirmation.as_ref())
+                    .map_or(layout.poweroff_bottom, |_| {
+                        settings_confirm_layout(layout.poweroff_bottom).bottom
+                    });
+                text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
             }
         }
         Route::Hide => {}
@@ -1939,6 +2316,56 @@ impl RendererCache {
                 .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod layout_tests {
+    use super::*;
+
+    #[test]
+    fn settings_row_y_uses_one_height_and_one_gap() {
+        assert_eq!(settings_row_y(0), 162.0);
+        assert_eq!(settings_row_y(1), 288.0);
+        assert_eq!(settings_row_y(2), 414.0);
+        assert_eq!(settings_row_y(3), 540.0);
+    }
+
+    #[test]
+    fn settings_rows_bottom_is_the_last_row_end() {
+        assert_eq!(settings_rows_bottom(0), SETTINGS_ROW_FIRST_Y);
+        assert_eq!(settings_rows_bottom(1), 272.0);
+        assert_eq!(settings_rows_bottom(4), 650.0);
+    }
+
+    #[test]
+    fn settings_layout_cascades_from_the_row_rhythm() {
+        let layout = settings_layout();
+        assert_eq!(layout.power_heading_y, 672.0);
+        assert_eq!(layout.reboot_y, 700.0);
+        assert_eq!(layout.poweroff_y, 786.0);
+        assert_eq!(layout.poweroff_bottom, 856.0);
+    }
+
+    #[test]
+    fn settings_confirm_layout_follows_whatever_precedes_it() {
+        let confirm = settings_confirm_layout(856.0);
+        assert_eq!(confirm.label_y, 870.0);
+        assert_eq!(confirm.card_y, 898.0);
+        assert_eq!(confirm.bottom, 1008.0);
+    }
+
+    #[test]
+    fn content_sized_panel_h_clamps_short_and_long_content() {
+        // Short content still reads as a panel, not a sliver.
+        assert_eq!(content_sized_panel_h(300.0, 1232.0, 500.0), 500.0);
+        // Ordinary content is used as-is.
+        assert_eq!(content_sized_panel_h(900.0, 1232.0, 500.0), 900.0);
+        // Content taller than the screen never overflows it.
+        assert_eq!(content_sized_panel_h(4000.0, 1232.0, 500.0), 1232.0);
+        // The available height doubles as a hard cap even below the minimum,
+        // so a panel is never asked to be taller than the screen itself.
+        assert_eq!(content_sized_panel_h(300.0, 400.0, 500.0), 400.0);
     }
 }
 
