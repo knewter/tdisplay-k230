@@ -2729,6 +2729,14 @@ fn serve() -> Result<(), String> {
                 }
                 state.theme_dirty();
             }
+            // A drag/settle can move on to a slice whose bitmap the worker
+            // hasn't decoded yet, or drop a request when its bounded queue
+            // was briefly full; keep scheduling redraws (each one retries
+            // `poll_theme_thumbnails`) until every nearby slice is resolved,
+            // not only while the carousel itself is still animating.
+            if state.renderer.theme_thumbnails_pending() {
+                state.dirty = true;
+            }
         }
         if state
             .reveal
@@ -2901,7 +2909,9 @@ fn serve() -> Result<(), String> {
             || routes.has_line()
             || pending_appearance.is_some()
             || (state.route == Route::Settings
-                && (state.theme_carousel.is_animating() || state.background_carousel.is_animating()))
+                && (state.theme_carousel.is_animating()
+                    || state.background_carousel.is_animating()
+                    || state.renderer.theme_thumbnails_pending()))
         {
             16
         } else {

@@ -1,0 +1,136 @@
+{
+  "created_at": "2026-09-24T22:00:04Z",
+  "description": "Quattro-style theme carousel: a horizontal swipe through several themes, sampled under QEMU (host monotonic timestamps, not board /proc/uptime)",
+  "artifact": {
+    "path": "/tmp/k230-qc-evidence-real6/swipe.mp4",
+    "kind": "mp4-h264-yuv420p",
+    "portrait_source": true
+  },
+  "capture_source": {
+    "kind": "sampled-wayland-screencopy-png",
+    "sample_directory": "/tmp/k230-qc-evidence-real6/swipe-frames",
+    "frame_count": 13,
+    "timestamps": "board /proc/uptime boot-relative monotonic seconds",
+    "rendered_duration_seconds": 1.645929,
+    "final_frame_codec_duration_note": "The concat input repeats the final PNG so FFmpeg honors its measured duration. At its 100 fps input timebase, the MP4 may extend by 0.01 seconds beyond the measured display duration."
+  },
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-001.png",
+      "capture_start_monotonic_seconds": 94479.516354,
+      "capture_end_monotonic_seconds": 94479.557284,
+      "display_duration_seconds": 0.091767
+    },
+    {
+      "index": 2,
+      "file": "frame-002.png",
+      "capture_start_monotonic_seconds": 94479.608121,
+      "capture_end_monotonic_seconds": 94479.647688,
+      "display_duration_seconds": 0.090856
+    },
+    {
+      "index": 3,
+      "file": "frame-003.png",
+      "capture_start_monotonic_seconds": 94479.698977,
+      "capture_end_monotonic_seconds": 94479.738608,
+      "display_duration_seconds": 0.162255
+    },
+    {
+      "index": 4,
+      "file": "frame-004.png",
+      "capture_start_monotonic_seconds": 94479.861232,
+      "capture_end_monotonic_seconds": 94479.898753,
+      "display_duration_seconds": 0.088523
+    },
+    {
+      "index": 5,
+      "file": "frame-005.png",
+      "capture_start_monotonic_seconds": 94479.949755,
+      "capture_end_monotonic_seconds": 94480.099294,
+      "display_duration_seconds": 0.200918
+    },
+    {
+      "index": 6,
+      "file": "frame-006.png",
+      "capture_start_monotonic_seconds": 94480.150673,
+      "capture_end_monotonic_seconds": 94480.198871,
+      "display_duration_seconds": 0.171019
+    },
+    {
+      "index": 7,
+      "file": "frame-007.png",
+      "capture_start_monotonic_seconds": 94480.321692,
+      "capture_end_monotonic_seconds": 94480.36039,
+      "display_duration_seconds": 0.089712
+    },
+    {
+      "index": 8,
+      "file": "frame-008.png",
+      "capture_start_monotonic_seconds": 94480.411404,
+      "capture_end_monotonic_seconds": 94480.524864,
+      "display_duration_seconds": 0.16453
+    },
+    {
+      "index": 9,
+      "file": "frame-009.png",
+      "capture_start_monotonic_seconds": 94480.575934,
+      "capture_end_monotonic_seconds": 94480.617378,
+      "display_duration_seconds": 0.092351
+    },
+    {
+      "index": 10,
+      "file": "frame-010.png",
+      "capture_start_monotonic_seconds": 94480.668285,
+      "capture_end_monotonic_seconds": 94480.790064,
+      "display_duration_seconds": 0.172833
+    },
+    {
+      "index": 11,
+      "file": "frame-011.png",
+      "capture_start_monotonic_seconds": 94480.841118,
+      "capture_end_monotonic_seconds": 94480.884956,
+      "display_duration_seconds": 0.175179
+    },
+    {
+      "index": 12,
+      "file": "frame-012.png",
+      "capture_start_monotonic_seconds": 94481.016297,
+      "capture_end_monotonic_seconds": 94481.062113,
+      "display_duration_seconds": 0.097105
+    },
+    {
+      "index": 13,
+      "file": "frame-013.png",
+      "capture_start_monotonic_seconds": 94481.113402,
+      "capture_end_monotonic_seconds": 94481.162283,
+      "display_duration_seconds": 0.048881
+    }
+  ],
+  "interaction_provenance": "injected",
+  "evidence_note": "This is sampled Wayland screencopy. It does not demonstrate smoothness, frame rate, compositor performance, or prove real touch.",
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    "/tmp/k230-qc-evidence-real6/swipe.concat.txt",
+    "-fps_mode",
+    "vfr",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/tmp/k230-qc-evidence-real6/swipe.mp4"
+  ],
+  "dry_run": false
+}

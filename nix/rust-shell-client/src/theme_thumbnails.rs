@@ -134,6 +134,18 @@ impl ThemeThumbnailCache {
             .and_then(Option::as_ref)
     }
 
+    /// Whether this (id, variant) has finished decoding one way or the
+    /// other -- successfully, or permanently as absent. `false` means a
+    /// caller still needs to keep calling `request`/`poll` (or nothing ever
+    /// asked for this pair): a dropped request (the worker's bounded queue
+    /// was full) leaves it in neither map, and only another `request` call
+    /// retries it, so a caller driving its own redraw loop from this can
+    /// keep polling until every pair it cares about is actually resolved,
+    /// rather than only while something else happens to be animating.
+    pub fn is_resolved(&self, id: &str, variant: Variant) -> bool {
+        self.ready.contains_key(&format!("{id}#{}", variant.tag()))
+    }
+
     /// Requests a decode if this (id, variant) is not already cached or in
     /// flight. A full worker queue silently defers the request to a later
     /// call; callers request the whole visible/known slice set each poll,

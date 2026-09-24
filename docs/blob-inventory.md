@@ -1273,6 +1273,12 @@ DATA 80749cf5e3d95f1637f8ed3fa428ee035a342ec4767c3667f4f353e9d322a574  docs/evid
 DATA dfee60f07b4940903ddd9f4ac2e6ed6efb29474db1b937e24d8f4a324b5e93ee  docs/evidence/omarchy-themes/quattro-picker-parity/light-catppuccin-latte-background-selected.png
 DATA f488d4bf3cc0f454c05dc3413ef5c840ee9163ca91b54067b076cc5871190e2d  docs/evidence/omarchy-themes/quattro-picker-parity/light-catppuccin-latte-preview.png
 DATA 237c63820485263b53806aee8c647dcc687c0c403db80a402bfedb4beb1c8d2b  docs/evidence/omarchy-themes/quattro-picker-parity/theme-list.png
+DATA a107dfac9429fef675f44c1e142d9b44a8cf1a43c357ea9a51c1d86cff421801  docs/evidence/omarchy-themes/quattro-carousel/background-carousel-mid-drag.png
+DATA 54e118abb4cd06538442ed8aa7f575039e90e673f5bb54d34fcbfece3399b55c  docs/evidence/omarchy-themes/quattro-carousel/preview-dark.png
+DATA e77168a01c6ef61460d904e1af038e753c1a45e9cfbd08f28b965c26abedea9b  docs/evidence/omarchy-themes/quattro-carousel/preview-light.png
+DATA cd7bb9f6733a456be5dd8d5d0a0b2701b33e3182b5c322f8f4cd2b0489007d37  docs/evidence/omarchy-themes/quattro-carousel/swipe.mp4
+DATA 3e3eaa17ba130f3c6ee7cd912746f0c5765eef351089a5303009bfec9294ce9a  docs/evidence/omarchy-themes/quattro-carousel/theme-carousel-mid-drag.png
+DATA d3a33988c373940d58fc7daa5f42070d86882fb16894ba0dd21e796339f73351  docs/evidence/omarchy-themes/quattro-carousel/theme-carousel-rest-dark.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

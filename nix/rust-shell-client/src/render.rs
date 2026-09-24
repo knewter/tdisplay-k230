@@ -2345,6 +2345,55 @@ impl RendererCache {
         }
         changed
     }
+
+    /// Whether some carousel slice within `theme_carousel::NEARBY_LIMIT`
+    /// still has an unresolved bitmap (queued, or dropped by a full worker
+    /// queue and waiting on a future `poll_theme_thumbnails` retry). A
+    /// caller that keeps redrawing while this is true is what makes that
+    /// retry actually happen once the touch gesture that first opened the
+    /// carousel has ended -- without it, a request dropped near the end of
+    /// a drag would never resolve until some *unrelated* future redraw
+    /// happened to call `poll_theme_thumbnails` again.
+    pub fn theme_thumbnails_pending(&self) -> bool {
+        let Some(chooser) = self.chooser.as_ref() else {
+            return false;
+        };
+        match chooser.page {
+            ThemePage::List => {
+                let Some(list) = chooser.list.as_ref() else {
+                    return false;
+                };
+                theme_carousel::visible_slices(chooser.theme_position, list.themes.len(), 0.0, 0.0)
+                    .into_iter()
+                    .filter_map(|slice| list.themes.get(slice.index))
+                    .filter(|entry| entry.preview_path.is_some())
+                    .any(|entry| {
+                        !self.thumbnails.is_resolved(&entry.id, Variant::Expanded)
+                            || !self.thumbnails.is_resolved(&entry.id, Variant::Slice)
+                    })
+            }
+            ThemePage::Preview => {
+                let Some(preview) = chooser.preview.as_ref() else {
+                    return false;
+                };
+                theme_carousel::visible_slices(
+                    chooser.background_position,
+                    preview.backgrounds.len(),
+                    0.0,
+                    0.0,
+                )
+                .into_iter()
+                .filter_map(|slice| preview.backgrounds.get(slice.index))
+                .filter(|background| background.kind == BackgroundKind::Image)
+                .any(|background| {
+                    !self.thumbnails.is_resolved(&background.id, Variant::Expanded)
+                        || !self.thumbnails.is_resolved(&background.id, Variant::Slice)
+                })
+            }
+            ThemePage::Controls => false,
+        }
+    }
+
     pub fn set_services(&mut self, services: ServiceView) {
         self.services = Some(services);
         self.invalidate();

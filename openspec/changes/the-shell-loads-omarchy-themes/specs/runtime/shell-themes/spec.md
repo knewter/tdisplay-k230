@@ -40,7 +40,7 @@ The system SHALL preserve authored palette keys and reproduce the pinned Quattro
 The system SHALL resolve `icons.theme` through installed freedesktop themes with explicit missing-theme fallback. It SHALL list all background candidates from the source and user overlay, support upstream still-image formats and bounded supported video playback, and distinguish unavailable codecs from missing assets. Selection SHALL remember each theme's wallpaper across switches and boots. Portrait crop preview, fit options, empty-directory fallback and removed-file recovery SHALL remain usable by touch.
 
 #### Scenario: Choose another background
-- **WHEN** a person scrolls the background chooser and taps a different image
+- **WHEN** a person browses the background carousel (by drag or a side-slice tap) and confirms a different image (by tapping the centred slice or Apply)
 - **THEN** the actual portrait preview and shell change to that image, other choices remain available, and the chosen image returns after switching away and back or rebooting
 
 #### Scenario: A video wallpaper is covered by an app
@@ -54,19 +54,19 @@ The system SHALL resolve `icons.theme` through installed freedesktop themes with
 ### Requirement: The theme chooser shows each theme's own imagery
 
 <!-- UNVERIFIED -->
-The touch chooser SHALL show a thumbnail beside each catalog entry, matching Omarchy's own picker: sourced from that theme's own preview image when the source provides one, and otherwise a representative background image chosen by the same fallback rule Omarchy's picker uses (its first background asset, not a fabricated substitute). A theme with neither a preview image nor a background asset SHALL show no thumbnail rather than an invented one. The background chooser SHALL show the same per-row treatment for each background candidate.
+The touch chooser SHALL present each catalog entry as a full-image carousel slice, matching the horizontal Cover Flow layout of Omarchy's own picker (`shell/plugins/image-picker/ImagePicker.qml`, shared by `omarchy-theme-switcher` and `omarchy-theme-bg-switcher`): one large expanded centre slice with skewed side slices either side, browsed by drag or a side-slice tap and confirmed by tapping the centred slice or an explicit Apply. Each slice's imagery SHALL be sourced from that theme's own preview image when the source provides one, and otherwise a representative background image chosen by the same fallback rule Omarchy's picker uses (its first background asset, not a fabricated substitute). A theme with neither a preview image nor a background asset SHALL show a plain placeholder slice rather than an invented image. The background chooser SHALL show the same carousel treatment for each background candidate.
 
 #### Scenario: A theme ships its own preview image
 - **WHEN** a theme's source directory contains a supported preview image
-- **THEN** the chooser's list row for that theme shows a thumbnail decoded from that exact file
+- **THEN** that theme's carousel slice shows imagery decoded from that exact file, whether the slice is centred or a side slice
 
 #### Scenario: A theme ships no preview image
 - **WHEN** a theme has no preview file but does have background images
-- **THEN** the chooser's list row shows a thumbnail derived from that theme's first background image, sorted the same way Omarchy's own picker selects one
+- **THEN** that theme's carousel slice shows imagery derived from that theme's first background image, sorted the same way Omarchy's own picker selects one
 
 #### Scenario: A theme ships neither
 - **WHEN** a theme has no preview image and no background image
-- **THEN** its list row shows no thumbnail, and the row otherwise remains fully usable by touch
+- **THEN** its carousel slice shows a plain placeholder instead of imagery, and remains fully usable by touch (browsable and confirmable) all the same
 
 ### Requirement: Theme activation is coordinated and recoverable
 

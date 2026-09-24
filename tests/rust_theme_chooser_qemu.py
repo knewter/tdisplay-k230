@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paired Sway/Rust theme chooser touch proof with a synthetic theme command.
+"""Paired Sway/Rust theme carousel touch proof with a synthetic theme command.
 
 The fixture never calls the real theme transaction or modifies user themes.
 Synthetic Wayland touch and headless screenshots are not physical panel proof.
@@ -28,7 +28,7 @@ with open(os.environ["K230_TEST_THEME_LOG"], "a") as log:
 generation = "b" * 24
 # Every row points at the same real fixture PNG (K230_TEST_THEME_PREVIEW),
 # matching Omarchy's per-theme preview.png convention closely enough to
-# prove the chooser's list-row thumbnail actually decodes and paints real
+# prove the carousel's own slice imagery actually decodes and paints real
 # pixels, not just that the field round-trips.
 preview_path = os.environ["K230_TEST_THEME_PREVIEW"]
 themes = [{"id": f"{i:024x}", "name": f"Fixture {i:02d}",
@@ -64,6 +64,33 @@ else:
                                     "error": None, "kind": None}
 print(json.dumps(answer))
 '''
+
+
+# Mirrors nix/rust-shell-client/src/theme_carousel.rs's geometry constants
+# exactly, so this black-box test can derive exact tap points (always well
+# inside a slice's skewed shape) instead of guessing coordinates. The
+# skewed-hit-test edge cases themselves are covered by that module's own
+# unit tests; this only needs "some point solidly inside slice N".
+EXPANDED_W, EXPANDED_H = 300.0, 186.0
+SLICE_W, SLICE_H = 42.0, 169.0
+SPACING = -12.0
+ITEM_STEP = SLICE_W + SPACING
+THEME_TOP = 204.0
+BACKGROUND_TOP = 662.0
+PREVIEW_FOOTER_Y = BACKGROUND_TOP + EXPANDED_H + 104.0
+
+
+def slice_center(selected, index, center_x, top_y):
+    """The exact center of carousel slice `index`'s rect when `selected` is
+    centered -- theme_carousel::exact_layout, transcribed for the test."""
+    relative = index - selected
+    preview_x = center_x - EXPANDED_W / 2.0
+    if relative == 0:
+        return center_x, top_y + EXPANDED_H / 2.0
+    x = (preview_x + relative * ITEM_STEP if relative < 0
+         else preview_x + EXPANDED_W + SPACING + (relative - 1) * ITEM_STEP)
+    y = top_y + (EXPANDED_H - SLICE_H) / 2.0
+    return x + SLICE_W / 2.0, y + SLICE_H / 2.0
 
 
 def wait_for(predicate, seconds=25):
@@ -151,77 +178,153 @@ def main():
             def commits():
                 return sum(line.endswith(" commit") for line in (root / "rust.log").read_text().splitlines())
 
-            def capture(name):
+            def capture(name, timeout=8.0, stable_frames=3, interval=0.1):
+                """Grabs the settled frame at `name`: an async theme-command
+                reply, a thumbnail decode, or the carousel's own drag/settle
+                animation can each still be landing when the *triggering*
+                action's own log line or commit already happened, so this
+                re-captures until several consecutive frames are pixel
+                identical rather than trusting any single timing signal."""
                 path = root / name
-                subprocess.run(["grim", str(path)], env=env, check=True)
-                with Image.open(path) as image:
-                    return image.convert("RGB")
+                previous = None
+                stable = 0
+                deadline = time.monotonic() + timeout
+                while time.monotonic() < deadline:
+                    subprocess.run(["grim", str(path)], env=env, check=True)
+                    with Image.open(path) as image:
+                        current = image.convert("RGB")
+                    if previous is not None and ImageChops.difference(current, previous).getbbox() is None:
+                        stable += 1
+                        if stable >= stable_frames:
+                            return current
+                    else:
+                        stable = 0
+                    previous = current
+                    time.sleep(interval)
+                raise AssertionError(f"display never stabilized before capturing {name}")
 
             contact = 1
+
             def tap(x, y):
                 nonlocal contact
                 ipc(f"card_shell test-touch down {contact} {x} {y}")
                 ipc(f"card_shell test-touch up {contact}")
                 contact += 1
 
-            def swipe(x, y1, y2):
+            def drag(x1, x2, y):
+                """A deliberate drag: several real motion steps toward x2,
+                then two "hold still" steps at x2 before release, so the
+                recorded release velocity is near zero and the carousel
+                settles immediately onto the nearest slot rather than
+                coasting an unpredictable distance -- the touch-panel analog
+                of theme_carousel.rs's own
+                `slow_release_settles_immediately_to_nearest` unit test."""
                 nonlocal contact
-                ipc(f"card_shell test-touch down {contact} {x} {y1}")
-                ipc(f"card_shell test-touch motion {contact} {x} {y2}")
-                ipc(f"card_shell test-touch up {contact}")
+                this_contact = contact
                 contact += 1
+                ipc(f"card_shell test-touch down {this_contact} {x1} {y}")
+                steps = 6
+                for step in range(1, steps + 1):
+                    x = x1 + (x2 - x1) * step / steps
+                    ipc(f"card_shell test-touch motion {this_contact} {x:.1f} {y}")
+                    time.sleep(0.03)
+                for _ in range(3):
+                    ipc(f"card_shell test-touch motion {this_contact} {x2} {y}")
+                    time.sleep(0.03)
+                ipc(f"card_shell test-touch up {this_contact}")
 
             ipc("card_shell test-touch init")
             subprocess.run([args.qemu, str(args.rust), "--surface", "settings"],
                            env=env, check=True, stdout=subprocess.DEVNULL)
             wait_for(lambda: commits() >= 1)
             controls = capture("settings.png")
-            before = commits()
+
+            # --- Open the theme carousel, centered on the active theme. ---
             tap(475, 130)
             wait_for(lambda: calls() == [["list"]])
-            wait_for(lambda: commits() >= before + 2)
+            # The list reply, its thumbnail decodes, and the carousel's own
+            # first paint are each a separate repaint; wait for all of them
+            # to finish landing rather than assuming a fixed commit count.
             listing = capture("theme-list.png")
-            assert ImageChops.difference(controls, listing).getbbox(), "chooser list was not painted"
-            before = commits()
-            swipe(300, 850, 550)
-            wait_for(lambda: commits() > before)
-            scrolled = capture("theme-list-scrolled.png")
-            assert ImageChops.difference(listing.crop((20, 204, 548, 1100)),
-                                         scrolled.crop((20, 204, 548, 1100))).getbbox(), \
-                "touch scroll did not move theme rows"
+            assert ImageChops.difference(controls, listing).getbbox(), "carousel was not painted"
             assert all(row[0] != "activate" for row in calls())
-            before = commits()
-            tap(280, 240)
+
+            # --- Browse by drag: 1:1, no side effect, no confirm. ---
+            center_x = 284.0
+            theme_center = slice_center(0, 0, center_x, THEME_TOP)
+            drag(theme_center[0] + 60.0, theme_center[0] - 120.0, theme_center[1])  # -6 slots
+            dragged = capture("theme-list-dragged.png")
+            # Every fixture theme shares one solid-color preview image, so
+            # two different *centered* indices can render pixel-identical
+            # carousel slices in the middle of the range (same count of
+            # neighbors either side, same imagery); extend the band to
+            # include the name label below the carousel, which always
+            # differs between two different centered themes.
+            band = (20, int(THEME_TOP), 548, int(THEME_TOP + EXPANDED_H) + 70)
+            assert ImageChops.difference(listing.crop(band), dragged.crop(band)).getbbox(), \
+                "drag did not move the theme carousel"
+            assert calls() == [["list"]], "browsing must never itself request a preview"
+
+            # --- Browse by tap: a side slice recenters, still no confirm. ---
+            # The exact slot the preceding drag settled on is a timing
+            # detail of this synthetic IPC-injected touch harness (each
+            # motion/up is its own round trip, unlike a real continuous
+            # touch stream), not something this test should hardcode; "two
+            # slices to the right of roughly where the drag left off" is
+            # enough to land on a different slice than the drag alone did.
+            side = slice_center(6, 8, center_x, THEME_TOP)
+            tap(*side)
+            recentered = capture("theme-list-recentered.png")
+            assert ImageChops.difference(dragged.crop(band), recentered.crop(band)).getbbox(), \
+                "tapping a side slice did not bring it to the centre"
+            assert calls() == [["list"]], "a side-slice tap must only browse, never confirm"
+
+            # --- Confirm: tap the now-centered slice. ---
+            tap(*theme_center)  # slice_center's (0,0) case is centre-independent of `selected`
             wait_for(lambda: any(row[0] == "preview" for row in calls()))
-            wait_for(lambda: commits() >= before + 2)
-            preview = capture("theme-preview.png")
-            assert ImageChops.difference(scrolled, preview).getbbox(), "preview was not painted"
+            preview_capture = capture("theme-preview.png")
+            assert ImageChops.difference(recentered, preview_capture).getbbox(), "preview was not painted"
             assert all(row[0] != "activate" for row in calls())
-            selected_theme = [row for row in calls() if row[0] == "preview"][-1][1]
-            before = commits()
-            tap(280, 780)  # Choose the second still, rather than the default first.
+            preview_calls = [row for row in calls() if row[0] == "preview"]
+            assert len(preview_calls) == 1, "browsing must never queue an extra preview request"
+            selected_theme = preview_calls[-1][1]
+            assert selected_theme != f"{0:024x}", \
+                "confirming after browsing away from the active theme must select a different one"
+
+            # --- Background carousel: browse by drag, then confirm. ---
+            bg_center = slice_center(0, 0, center_x, BACKGROUND_TOP)
+            drag(bg_center[0], bg_center[0] - ITEM_STEP, bg_center[1])  # one slot: still 0 -> still 1
+            bg_dragged = capture("theme-background-dragged.png")
+            bg_band = (20, int(BACKGROUND_TOP), 548, int(BACKGROUND_TOP + EXPANDED_H))
+            assert ImageChops.difference(preview_capture.crop(bg_band), bg_dragged.crop(bg_band)).getbbox(), \
+                "drag did not move the background carousel"
+            assert all(row[0] != "activate" for row in calls())
+            tap(*bg_center)
             wait_for(lambda: any(row[:2] == ["preview", selected_theme] and "--background" in row
                                  for row in calls()), 20)
-            wait_for(lambda: commits() >= before + 2)
             selected = capture("theme-background-selected.png")
-            assert ImageChops.difference(preview, selected).getbbox(), \
-                "background selection did not update preview"
+            assert ImageChops.difference(bg_dragged, selected).getbbox(), \
+                "confirming a different background did not update the preview"
+            background_call = [row for row in calls() if row[0] == "preview" and "--background" in row][-1]
+            assert background_call[background_call.index("--background") + 1] == "d" * 24
             assert all(row[0] != "activate" for row in calls())
-            before = commits()
-            tap(120, 1150)  # Cancel preview; return to list without activation.
+
+            # --- Cancel returns to the carousel without activating. ---
+            tap(120, PREVIEW_FOOTER_Y + 25.0)
             wait_for(lambda: calls()[-1] == ["list"])
-            wait_for(lambda: commits() >= before + 2)
+            capture("_after-cancel.png")  # only for its stabilization wait
             assert all(row[0] != "activate" for row in calls())
-            before = commits()
-            tap(280, 240)
+
+            # --- Re-confirm and Apply: only this explicit action activates. ---
+            tap(*theme_center)
             wait_for(lambda: calls()[-1][0] == "preview")
-            wait_for(lambda: commits() >= before + 2)
-            tap(440, 1150)  # Only this explicit Apply may activate.
+            capture("_before-apply.png")  # only for its stabilization wait
+            tap(430, PREVIEW_FOOTER_Y + 25.0)
             wait_for(lambda: any(row[0] == "activate" for row in calls()))
             activation = [row for row in calls() if row[0] == "activate"]
             assert len(activation) == 1 and "--expected-generation" in activation[0]
             assert activation[0][activation[0].index("--expected-generation") + 1] == "b" * 24
-            print("PASS paired Sway/Rust theme chooser QEMU touch, synthetic backend; no physical touch")
+            print("PASS paired Sway/Rust theme carousel QEMU touch, synthetic backend; no physical touch")
         finally:
             if rust is not None:
                 rust.terminate()
