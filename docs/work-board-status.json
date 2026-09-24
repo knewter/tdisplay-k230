@@ -52,7 +52,7 @@
         "docs/evidence/coherent-shell/first-integrated-preview/README.md"
       ],
       "rationale": "The integrated Rust shell is running on the physical board through a recoverable NixOS test activation. Native drawer and notification captures show real device output. The user found shade-dismissal and card-selection defects; physical acceptance remains open.",
-      "reviewRevision": "cd06bee4",
+      "reviewRevision": "34cb971e",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
         "caption": "Rust app drawer on the K230",
