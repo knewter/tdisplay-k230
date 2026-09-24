@@ -89,6 +89,93 @@ pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
 pub const SWIPE_VERTICAL_CANCEL: f64 = 45.0;
 
+/// Pixel-per-millisecond coast after the finger releases a history list.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct NotificationCoast {
+    velocity: f64,
+}
+
+impl NotificationCoast {
+    pub fn start(&mut self, velocity: f64) {
+        self.velocity = if velocity.is_finite() && velocity.abs() >= 0.12 {
+            velocity.clamp(-2.5, 2.5)
+        } else {
+            0.0
+        };
+    }
+
+    pub fn stop(&mut self) -> bool {
+        let moving = self.moving();
+        self.velocity = 0.0;
+        moving
+    }
+
+    pub fn moving(&self) -> bool {
+        self.velocity != 0.0
+    }
+
+    pub fn tick(&mut self, scroll: &mut f64, max_scroll: f64, elapsed_ms: u32) -> bool {
+        if !self.moving() {
+            return false;
+        }
+        let dt = f64::from(elapsed_ms.min(48));
+        if dt == 0.0 {
+            return false;
+        }
+        let decay = (-dt / 180.0).exp();
+        let next =
+            (*scroll + self.velocity * 180.0 * (1.0 - decay)).clamp(0.0, max_scroll.max(0.0));
+        let changed = (next - *scroll).abs() >= 0.01;
+        *scroll = next;
+        self.velocity *= decay;
+        if self.velocity.abs() < 0.03 || next == 0.0 || next == max_scroll.max(0.0) {
+            self.velocity = 0.0;
+        }
+        changed
+    }
+}
+
+/// A release animates from the displayed row position, never from an endpoint.
+#[derive(Clone, Copy, Debug)]
+pub struct NotificationSwipeSettle {
+    start: f64,
+    target: f64,
+    elapsed_ms: u32,
+    duration_ms: u32,
+    pub dismiss_id: Option<u64>,
+}
+
+impl NotificationSwipeSettle {
+    pub fn new(start: f64, target: f64, dismiss_id: Option<u64>, reduced_motion: bool) -> Self {
+        let distance = (target - start).abs();
+        Self {
+            start,
+            target,
+            elapsed_ms: 0,
+            duration_ms: if reduced_motion {
+                60
+            } else {
+                (distance * 0.4).clamp(120.0, 240.0) as u32
+            },
+            dismiss_id,
+        }
+    }
+
+    pub fn tick(&mut self, offset: &mut f64, elapsed_ms: u32) -> bool {
+        self.elapsed_ms = self.elapsed_ms.saturating_add(elapsed_ms.min(48));
+        let t = (f64::from(self.elapsed_ms) / f64::from(self.duration_ms)).min(1.0);
+        let eased = 1.0 - (1.0 - t).powi(3);
+        let next = self.start + (self.target - self.start) * eased;
+        let changed = (next - *offset).abs() >= 0.01;
+        *offset = next;
+        changed
+    }
+
+    pub fn finished(&self) -> bool {
+        self.elapsed_ms >= self.duration_ms
+    }
+}
+
 pub fn notification_max_scroll(count: usize, height: u32) -> f64 {
     let bottom = f64::from(height) * 0.65 - 24.0;
     (NOTIFICATION_TOP + count as f64 * NOTIFICATION_ROW - bottom).max(0.0)
@@ -144,6 +231,24 @@ pub fn notification_swipe_valid(view: &ServiceView, swipe: &NotificationSwipe) -
         .is_some_and(|event| {
             event.id == swipe.event_id && event.dismissible && event.priority != Priority::Critical
         })
+}
+
+pub fn notification_swipe_hit(
+    view: &ServiceView,
+    swipe: &NotificationSwipe,
+    pos: (f64, f64),
+    width: u32,
+    height: u32,
+) -> bool {
+    if !notification_swipe_valid(view, swipe) {
+        return false;
+    }
+    let y = NOTIFICATION_TOP + swipe.row_index as f64 * NOTIFICATION_ROW - view.notification_scroll;
+    let bottom = f64::from(height) * 0.65 - 24.0;
+    pos.1 >= y.max(NOTIFICATION_TOP)
+        && pos.1 < (y + NOTIFICATION_ROW - 8.0).min(bottom)
+        && pos.0 >= 24.0 + swipe.offset
+        && pos.0 < f64::from(width) - 24.0 + swipe.offset
 }
 
 pub fn notification_swipe_release(
@@ -447,6 +552,52 @@ mod tests {
         newer.id = 8;
         view.notifications.as_mut().unwrap().events.insert(0, newer);
         assert!(!notification_swipe_valid(&view, &swipe));
+    }
+
+    #[test]
+    fn notification_release_settles_from_current_pixels_and_can_be_interrupted() {
+        let mut offset = 110.0;
+        let mut settle = NotificationSwipeSettle::new(offset, 0.0, None, false);
+        assert_eq!(offset, 110.0); // no release-time jump
+        assert!(settle.tick(&mut offset, 16));
+        assert!(offset < 110.0 && offset > 0.0);
+        let interrupted = offset;
+        // A new finger can take the exact displayed offset as its next anchor.
+        offset = interrupted + 24.0;
+        assert_eq!(offset, interrupted + 24.0);
+        let mut exit = NotificationSwipeSettle::new(offset, 568.0, Some(7), false);
+        assert_eq!(offset, interrupted + 24.0);
+        for _ in 0..20 {
+            exit.tick(&mut offset, 16);
+        }
+        assert!(exit.finished());
+        assert_eq!(offset, 568.0);
+        assert_eq!(exit.dismiss_id, Some(7));
+    }
+
+    #[test]
+    fn notification_scroll_coast_is_bounded_and_tap_stops_without_jump() {
+        let mut coast = NotificationCoast::default();
+        let mut scroll = 120.0;
+        coast.start(1.2);
+        assert!(coast.tick(&mut scroll, 400.0, 16));
+        assert!(scroll > 120.0 && scroll < 400.0);
+        let held = scroll;
+        assert!(coast.stop());
+        assert!(!coast.tick(&mut scroll, 400.0, 16));
+        assert_eq!(scroll, held);
+        coast.start(2.0);
+        for _ in 0..60 {
+            coast.tick(&mut scroll, 400.0, 16);
+        }
+        assert!(scroll <= 400.0);
+        assert!(!coast.moving());
+        coast.start(-2.0);
+        for _ in 0..60 {
+            coast.tick(&mut scroll, 400.0, 16);
+        }
+        assert!(scroll >= 0.0);
+        assert!(!coast.moving());
     }
 
     #[test]
