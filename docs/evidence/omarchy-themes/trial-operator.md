@@ -124,10 +124,14 @@ media kind, missing cgroup or incomplete RSS fails the trial and runs the
 normal restoration path. These counters do not establish decoder throughput,
 Wayland presentation or panel photons.
 
-The current installed client rejects video wallpaper, and this initial trial
-checkpoint deliberately returns a failed `measure-video` result even if a
-fake backend accepts it. **Do not run or cite it as a video pass.** After the
-separately owned wallpaper-video consumer lands, the sampler must require its
-generation-matched private status and visibly changing native captures before
-the video arm can complete. Physical CPU/frame/card budgets still require the
-reserved-board workload and trace; task 5.4 remains open.
+The currently installed client rejects video wallpaper, so this workload
+still fails closed at `measure-video` until a real Rust wallpaper decoder and
+private status writer are installed. The sampler requires a generation- and
+selected-asset-matched mode-0600 status file under `XDG_RUNTIME_DIR`, a stable
+decoder PID, at least two decoded/submitted/frame-callback increments during
+the resource interval, and two distinct native captures retained only in the
+private raw directory. A host fake passing that schema is **not** a video
+pass. The operator must review the raw changing image region; Wayland frame
+callbacks and full-screen capture differences do not alone prove panel
+presentation. Physical CPU/frame/card budgets still require the reserved-board
+workload and trace; task 5.4 remains open.

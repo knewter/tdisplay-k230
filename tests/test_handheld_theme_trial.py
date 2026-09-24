@@ -94,6 +94,11 @@ class Fixture(unittest.TestCase):
         if action == "preview":
             if self.fail_role == "light" and generation == self.light:
                 raise RuntimeError("private fake path should not enter result")
+            if background == "e" * 24:
+                (generation / "report.json").write_text(json.dumps({
+                    "generation": generation.name,
+                    "backgrounds": ["backgrounds/trial.mp4"],
+                    "selected_background": "backgrounds/trial.mp4"}))
             return {"schema": 1, "generation": generation.name,
                     "backgrounds": [{"id": background, "selected": True,
                                      "kind": "video" if background == "e" * 24 else "image"}]}
@@ -110,13 +115,15 @@ class Fixture(unittest.TestCase):
         return {"schema": 1, "generation": generation.name, "activated": True,
                 "app_appearance": {"state": "applied"}}
 
-    def runner(self):
+    def runner(self, **kwargs):
         return trial.Trial(self.manifest, call=self.call, capture=self.capture,
                            transport=self.transport,
                            app_sync=lambda *_args, **_kwargs: None,
                            resource_sample=lambda duration, interval: {
                                "elapsed_s": duration, "sample_count": 3,
-                               "cpu_usage_usec": 400000, "process_rss_peak_bytes": 1024})
+                               "cpu_usage_usec": 400000, "process_rss_peak_bytes": 1024},
+                           status_path=self.root / "k230-wallpaper-status.json",
+                           status_wait_s=0, **kwargs)
 
 
 class ThemeTrialTests(Fixture):
@@ -183,7 +190,7 @@ class ThemeTrialTests(Fixture):
         self.assertFalse((self.out / "result.json").exists())
         self.assertIsNone(_pointer(self.state))
 
-    def test_backgrounds_samples_static_then_fails_closed_on_unproved_video(self):
+    def test_backgrounds_samples_static_then_fails_closed_without_video_status(self):
         self.manifest["background_trial"] = {
             "duration_seconds": 2, "interval_seconds": .5,
             "choices": {
@@ -196,12 +203,45 @@ class ThemeTrialTests(Fixture):
         result = json.loads((self.out / "result.json").read_text())
         self.assertEqual(result["workload_mode"], "backgrounds")
         self.assertEqual(result["failure_stage"], "measure-video")
-        self.assertEqual([arm["role"] for arm in result["arms"]], ["static", "video"])
+        self.assertEqual([arm["role"] for arm in result["arms"]], ["static"])
         self.assertEqual(result["baseline"]["resources"]["sample_count"], 3)
         self.assertEqual(result["arms"][0]["resources"]["cpu_usage_usec"], 400000)
         self.assertEqual(self.selected_kinds, ["d" * 24, "d" * 24, "e" * 24, "e" * 24])
         self.assertEqual(result["restoration"], "passed")
         self.assertIsNone(_pointer(self.state))
+
+    def test_background_video_needs_real_frame_progress_and_distinct_native_captures(self):
+        self.manifest["background_trial"] = {
+            "duration_seconds": 2, "interval_seconds": .5,
+            "choices": {
+                "static": {"theme_name": "catppuccin", "origin": "builtin",
+                           "background_id": "d" * 24},
+                "video": {"theme_name": "catppuccin-latte", "origin": "builtin",
+                          "background_id": "e" * 24}}}
+        observations = [0]
+
+        def status_reader(_path, generation, fingerprint):
+            observations[0] += 1
+            step = observations[0] * 3
+            return {"generation": generation, "background_fingerprint": fingerprint,
+                    "decoder_pid": 123, "frames_decoded": step,
+                    "frames_submitted": step, "frame_callbacks": step,
+                    "last_decoded_monotonic_ms": step,
+                    "last_submitted_monotonic_ms": step,
+                    "last_callback_monotonic_ms": step}
+
+        def capture(role, _raw):
+            return {"kind": "native-unreviewed",
+                    "sha256": ("d" if role == "video-second" else "c") * 64,
+                    "bytes": 4}
+
+        runner = self.runner(status_reader=status_reader)
+        runner.capture = capture
+        result = runner.run(self.out, self.raw, workload_mode="backgrounds")
+        self.assertEqual(result["trial"], "completed-needs-operator-review")
+        self.assertEqual(result["arms"][1]["playback"]["frame_deltas"]["frames_decoded"], 3)
+        self.assertTrue(result["arms"][1]["playback"]["native_captures_distinct"])
+        self.assertEqual(result["restoration"], "passed")
 
     def test_backgrounds_refuses_unpinned_choices_before_mutation(self):
         with self.assertRaisesRegex(ValueError, "pinned trial choices"):

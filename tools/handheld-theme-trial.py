@@ -29,6 +29,7 @@ from theme_transaction import (
     activate_generation, exchange,
 )
 from theme_background_metrics import measure as measure_background_resources
+from theme_background_status import expected_fingerprint, progress as video_progress, read_status
 
 STORE = re.compile(r"/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._/-]+)?\Z")
 IDENTITY = re.compile(r"[a-f0-9]{24}\Z")
@@ -238,13 +239,34 @@ def restore(snapshot: dict, *, state_root: Path, default_generation: Path,
 class Trial:
     def __init__(self, manifest: dict, *, call=command, capture=None,
                  transport=exchange, app_sync=None,
-                 resource_sample=measure_background_resources):
+                 resource_sample=measure_background_resources,
+                 status_reader=read_status, status_path: Path | None = None,
+                 status_wait_s: float = 3.0):
         self.m = manifest
         self.call = call
         self.capture = capture or self.capture_native
         self.transport = transport
         self.app_sync = app_sync
         self.resource_sample = resource_sample
+        self.status_reader = status_reader
+        self.status_path = status_path
+        self.status_wait_s = status_wait_s
+
+    def video_status(self, generation: str, fingerprint: str) -> dict:
+        path = self.status_path
+        if path is None:
+            runtime = os.environ.get("XDG_RUNTIME_DIR")
+            if not runtime or not Path(runtime).is_absolute():
+                raise RuntimeError("wallpaper status runtime is unavailable")
+            path = Path(runtime) / "k230-wallpaper-status.json"
+        deadline = time.monotonic() + self.status_wait_s
+        while True:
+            try:
+                return self.status_reader(path, generation, fingerprint)
+            except (OSError, ValueError, json.JSONDecodeError) as error:
+                if time.monotonic() >= deadline:
+                    raise RuntimeError("matching private wallpaper playback status unavailable") from error
+                time.sleep(0.1)
 
     def capture_native(self, role: str, raw: Path) -> dict:
         image = raw / (role + ".png")
@@ -366,16 +388,28 @@ class Trial:
                        "app_appearance_state": app_state}
                 if background_trial is not None:
                     stage = "measure-" + role
+                    if role == "video":
+                        active_generation = _pointer(state)
+                        if active_generation is None or active_generation.name != generation:
+                            raise RuntimeError("video generation pointer differs from activation")
+                        fingerprint = expected_fingerprint(
+                            generation, active_generation / "report.json")
+                        before_video = self.video_status(generation, fingerprint)
                     arm["resources"] = self.resource_sample(
                         background_trial["duration_seconds"], background_trial["interval_seconds"])
+                    if role == "video":
+                        after_video = self.video_status(generation, fingerprint)
+                        counts = video_progress(before_video, after_video)
+                        second = self.capture("video-second", raw)
+                        if second["sha256"] == arm["capture"]["sha256"]:
+                            raise RuntimeError("two native wallpaper captures are identical")
+                        arm["playback"] = {"source": "private-wallpaper-status-v1",
+                                           "frame_deltas": counts,
+                                           "native_captures_distinct": True,
+                                           "second_capture": second,
+                                           "limits": "Wayland callbacks and changing native captures do not prove panel presentation."}
                 public["arms"].append(arm)
                 write_public(output / "result.json", public)
-                if background_trial is not None:
-                    if role == "video":
-                        # The old image only rejects video. A real wallpaper
-                        # playback consumer and frame proof must be present
-                        # before this mode can claim a completed video arm.
-                        raise RuntimeError("wallpaper video telemetry is not yet connected")
         except Exception as caught:
             error = caught
             public["trial"] = "failed"
