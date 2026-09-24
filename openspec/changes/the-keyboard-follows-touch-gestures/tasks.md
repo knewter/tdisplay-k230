@@ -11,7 +11,7 @@ Proof: `python3 tests/test_keyboard_gestures.py` is host policy evidence only.
 
 - [x] 2.1 Integrate the actual keyboard surface, themed grip, clipping, focus and consistent exclusive area with compositor ownership; build `nix build .#card-shell --max-jobs 1 --cores 4 --no-link --print-out-paths` under the sole build reservation.
 - [x] 2.2 Add the Settings gesture hint and retain explicit keyboard control, distinct from Wi-Fi editor cancellation; verify dark/light host rendering and build `nix build .#handheld-shell-rust --max-jobs 1 --cores 4 --no-link --print-out-paths`.
-- [ ] 2.3 Add and run `python3 tests/test_keyboard_gestures_runtime.py` against the exact built compositor and keyboard, verifying injected two-contact show, grip hide/hold/reverse, typed text ownership and settled app geometry. Record native screenshots and source/store identities.
+- [x] 2.3 Add and run `python3 tests/test_keyboard_gestures_runtime.py` against the exact built compositor and keyboard, verifying injected two-contact show, grip hide/hold/reverse, typed text ownership and settled app geometry. Record native screenshots and source/store identities.
 
 Proof: the two narrow Nix builds plus `python3 tests/test_keyboard_gestures_runtime.py`. Native headless QEMU does not establish panel touch reachability or smoothness.
 
@@ -30,4 +30,4 @@ Proof: exact build and console identity above, committed concrete camera/workloa
 
 Proof: `python3 scripts/build_site.py` and `openspec validate the-keyboard-follows-touch-gestures --strict`, followed by exact deployed revision inspection.
 
-Installed checkpoint: [native board identity and captures](../../../docs/evidence/keyboard-gestures/installed-preview/README.md). Tasks 2.2 and 3.1 have their named build/identity proof; real-finger and remaining native text/output-change gates stay open.
+Installed checkpoint: [native board identity and captures](../../../docs/evidence/keyboard-gestures/installed-preview/README.md). Tasks 2.2 and 3.1 have their named build/identity proof; real-finger and output-change recovery gates stay open; the later native Foot text proof completes task 2.3.
