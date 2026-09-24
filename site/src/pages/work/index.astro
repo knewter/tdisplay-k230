@@ -35,6 +35,7 @@ const mediaSource = (path: string) => {
   return file?.asset ? url(file.asset) : rawEvidenceUrl(work.sourceRevision, path);
 };
 const artifactName = (path: string) => path.split("/").slice(-2).join(" / ");
+const DetailTemplate = "template";
 const accepted = (path: string) => {
   const parts = path.split("/");
   return url(`c/${parts[2]}-${parts[3]}/`);
@@ -100,7 +101,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
   <dialog id="work-detail-dialog" class="work-dialog" aria-label="Work item details">
     <div class="dialog-frame"><header class="dialog-bar"><span>Project work · committed detail</span><button id="work-detail-close" type="button">Close <span aria-hidden="true">×</span></button></header><div id="work-detail-content" class="dialog-scroll"></div></div>
   </dialog>
-  {items.map((item) => <template id={`work-detail-${item.id}`}>
+  {items.map((item) => <DetailTemplate id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
       {item.media.length > 0 && <section class="detail-media" aria-label="Visual evidence">
         {item.media.map((media) => <figure>
@@ -116,7 +117,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
       <div class="detail-documents">{item.rendered.map((doc, index) => <section class="detail-document" data-section={index}><div class="detail-document-heading"><h3>{doc.label}</h3><span>{doc.path}</span></div><article class="work-markdown" set:html={doc.html} /></section>)}</div>
       <footer class="detail-sources"><strong>Source files at this revision</strong>{item.rendered.map((doc) => <a href={github(doc.path)}>{doc.label} ↗</a>)}</footer>
     </div>
-  </template>)}
+  </DetailTemplate>)}
 </Base>
 
 <script>
