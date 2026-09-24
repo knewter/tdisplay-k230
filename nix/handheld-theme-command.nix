@@ -13,9 +13,14 @@ stdenvNoCC.mkDerivation {
     install -m 0644 ${../tools/theme_sources.py} "$out/libexec/handheld-theme/theme_sources.py"
     install -m 0644 ${../tools/theme_transaction.py} "$out/libexec/handheld-theme/theme_transaction.py"
     install -m 0644 ${../tools/theme_tokens.py} "$out/libexec/handheld-theme/theme_tokens.py"
+    install -m 0644 ${../tools/theme_catalog.py} "$out/libexec/handheld-theme/theme_catalog.py"
     install -m 0644 ${../tools/omarchy-theme-set} "$out/libexec/handheld-theme/omarchy-theme-set"
     makeWrapper ${python3}/bin/python3 "$out/bin/omarchy-theme-set" \
       --add-flags "$out/libexec/handheld-theme/omarchy-theme-set" \
+      --add-flags "--tools ${omarchyThemeTools}" \
+      --add-flags "--builtins ${themeDefault}/share/omarchy/themes"
+    makeWrapper ${python3}/bin/python3 "$out/bin/k230-theme" \
+      --add-flags "$out/libexec/handheld-theme/theme_catalog.py" \
       --add-flags "--tools ${omarchyThemeTools}" \
       --add-flags "--builtins ${themeDefault}/share/omarchy/themes"
     runHook postInstall
