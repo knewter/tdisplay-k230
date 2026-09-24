@@ -128,6 +128,7 @@ fn theme_lookup(
     for root in roots {
         let base = root.join("icons").join(theme);
         let index = KeyFile::new();
+        index.set_list_separator(b','.into());
         let index_path = base.join("index.theme");
         if fs::metadata(&index_path).is_ok_and(|meta| meta.is_file() && meta.len() <= INDEX_LIMIT)
             && index.load_from_file(index_path, KeyFileFlags::NONE).is_ok()
@@ -138,7 +139,14 @@ fn theme_lookup(
                     .map(|list| list.iter().take(8).map(ToString::to_string).collect())
                     .unwrap_or_default();
             }
-            if let Ok(directories) = index.string_list("Icon Theme", "Directories") {
+            let mut directories = index
+                .string_list("Icon Theme", "Directories")
+                .map(|list| list.iter().map(ToString::to_string).collect::<Vec<_>>())
+                .unwrap_or_default();
+            if let Ok(scaled) = index.string_list("Icon Theme", "ScaledDirectories") {
+                directories.extend(scaled.iter().map(ToString::to_string));
+            }
+            if !directories.is_empty() {
                 let mut candidates = directories
                     .iter()
                     .take(MAX_DIRS)
@@ -380,6 +388,37 @@ mod tests {
         assert!(cache.paint(&cr, "foot", 48, 0.0, 0.0));
         assert_eq!(cache.decode_count(), 3);
         drop(cr);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn comma_lists_reach_second_inherited_theme_and_later_directory() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-rust-icon-list-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let custom = root.join("icons/custom");
+        let second = root.join("icons/second");
+        fs::create_dir_all(&custom).unwrap();
+        fs::create_dir_all(second.join("scalable/apps")).unwrap();
+        fs::create_dir_all(second.join("scaled/apps")).unwrap();
+        fs::write(custom.join("index.theme"), "[Icon Theme]\nName=custom\nDirectories=unused/apps,missing/apps\nInherits=first,second\n").unwrap();
+        fs::write(second.join("index.theme"), "[Icon Theme]\nName=second\nDirectories=unused/apps,scalable/apps\nScaledDirectories=scaled/apps\n[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n[scaled/apps]\nSize=48\nScale=1\nType=Scalable\nMinSize=16\nMaxSize=128\n").unwrap();
+        let svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>";
+        fs::write(second.join("scalable/apps/foot.svg"), svg).unwrap();
+        fs::write(second.join("scaled/apps/scaled.svg"), svg).unwrap();
+        assert_eq!(
+            resolve("foot", "custom", 48, std::slice::from_ref(&root)),
+            Some(second.join("scalable/apps/foot.svg"))
+        );
+        assert_eq!(
+            resolve("scaled", "custom", 48, std::slice::from_ref(&root)),
+            Some(second.join("scaled/apps/scaled.svg"))
+        );
         fs::remove_dir_all(root).unwrap();
     }
 }
