@@ -332,7 +332,7 @@ let
       # more specific video rules below. Home is the live deck, not a tab strip.
       floating_maximum_size -1 x -1
       default_floating_border none
-      for_window [tiling app_id=".*"] floating enable, resize set 100 ppt 100 ppt, move position 0 0
+      for_window [tiling app_id=".*"] mark --add k230-shell-ordinary-maximized, floating enable, resize set 100 ppt 100 ppt, move position 0 0
     ''}
 
     # mpv's wlshm surface is explicitly floating so its profile geometry is
@@ -731,6 +731,7 @@ in
         SWAY_K230_CARD_DRAWER_HELPER = "${rustShell}/bin/k230-shell-rust";
         SWAY_K230_CARD_SURFACE_HELPER = "${rustShell}/bin/k230-shell-rust";
         SWAY_K230_CARD_SURFACE_SOCKET = "/run/shell/k230-shell-rust.sock";
+        SWAY_K230_CARD_REVEAL_STREAM = "1";
         SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_CARD_SCALED_CACHE = "0";
