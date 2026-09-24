@@ -176,6 +176,23 @@ class TestBuiltSite(unittest.TestCase):
         self.assertIn(f'{self.base}work/', (DIST / "handheld" / "index.html").read_text())
         self.assertNotIn("the-site-shows-a-public-work-board", self.index)
 
+    def test_work_cards_embed_rendered_local_details(self) -> None:
+        page = (DIST / "work" / "index.html").read_text(encoding="utf-8")
+        data = json.loads((REPO / "site" / "src" / "data" / "work.json").read_text())
+        self.assertIn('id="work-detail-dialog"', page)
+        self.assertIn('id="work-detail-close"', page)
+        for item in data["items"]:
+            self.assertIn(f'id="work-detail-{item["id"]}"', page)
+            self.assertIn(f'data-open-work="{item["id"]}"', page)
+            for doc in item["details"]:
+                self.assertIn(doc["path"], page)
+        self.assertIn('class="work-markdown"', page)
+        self.assertIn('<h2 id="why"', page)
+        self.assertIn('<table>', page)
+        self.assertIn('<pre>', page)
+        self.assertIn(f'{self.base}evidence/', page)
+        self.assertIn(f'{self.base}work/?work=', page)
+
     def test_both_themes_are_defined(self) -> None:
         css = "\n".join(p.read_text(encoding="utf-8") for p in DIST.rglob("*.css"))
         # The CSS is minified, so match on structure rather than spelling.

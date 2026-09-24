@@ -1,4 +1,4 @@
-The named work-board generator and test commands below are proposed interfaces to create during implementation; they do not yet exist or provide evidence.
+The named work-board generator and test commands are implemented host checks. Publication is recorded separately below.
 
 ## 1. Generate an honest committed snapshot
 
@@ -13,9 +13,9 @@ Proof: `python3 tests/test_work_board.py` is host repository-data proof only; it
 - [x] 2.1 Render `/work/` with four clear lanes, task progress, next gates, dependencies, draft/accepted labels, links, and source/physical distinctions; verify rendered HTML assertions with `python3 tests/test_work_board.py`.
 - [x] 2.2 Add responsive touch-scrollable styling and links from the front door and handheld page; inspect narrow and desktop browser captures and verify link targets through `python3 scripts/build_site.py`.
 - [x] 2.3 Keep accepted-spec exclusion and tally tests intact while allowing labeled proposals only on `/work/`; add a focused regression assertion and run `python3 scripts/build_site.py` within the existing 8 MiB budget.
-- [ ] 2.4 Extend the committed snapshot data with bounded proposal/design/tasks/delta-spec Markdown and validate source identity, missing paths and private text; verify `python3 tests/test_work_board.py` with dirty-checkout and failure fixtures.
-- [ ] 2.5 Render selectable card details inside the dashboard with formatted headings/tables/code, local evidence links and secondary pinned source links; verify selected-card content, Escape/Close/Back/focus restoration and direct URL behavior with `python3 tests/test_work_board.py` and a browser interaction check.
-- [ ] 2.6 Inspect a selected card at 568×1232 and desktop widths for scroll, close control, focus and readability; run `python3 scripts/build_site.py` and its built-link/8 MiB assertions.
+- [x] 2.4 Extend the committed snapshot data with bounded proposal/design/tasks/delta-spec Markdown and validate source identity, missing paths and private text; verify `python3 tests/test_work_board.py` with dirty-checkout and failure fixtures.
+- [x] 2.5 Render selectable card details inside the dashboard with formatted headings/tables/code, local evidence links and secondary pinned source links; verify selected-card content, Escape/Close/Back/focus restoration and direct URL behavior with `python3 tests/test_work_board.py` and a browser interaction check.
+- [x] 2.6 Inspect a selected card at 568×1232 and desktop widths for scroll, close control, focus and readability; run `python3 scripts/build_site.py` and its built-link/8 MiB assertions.
 
 Proof: `python3 tests/test_work_board.py` and `python3 scripts/build_site.py` prove a host site build and link/size checks, not publication.
 

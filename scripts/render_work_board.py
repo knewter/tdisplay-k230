@@ -74,15 +74,21 @@ class SourceTree:
             listed = git(repo, "ls-files", "--cached", "--others", "--exclude-standard").splitlines()
             self.paths = {p for p in listed if (repo / p).is_file()}
         else:
-            self.paths = set(git(repo, "ls-tree", "-r", "--name-only", "HEAD").splitlines())
+            self.paths = set(git(repo, "ls-tree", "-r", "--name-only", self.revision).splitlines())
 
     def read(self, path: str) -> str:
         safe_path(path)
         if path not in self.paths:
             raise WorkError(f"uncommitted or missing public path: {path}")
         if self.working_tree:
-            return (self.repo / path).read_text(encoding="utf-8")
-        return git(self.repo, "show", f"HEAD:{path}")
+            source = self.repo / path
+            if source.stat().st_size > MAX_DOCUMENT_BYTES:
+                raise WorkError(f"work document exceeds {MAX_DOCUMENT_BYTES} bytes: {path}")
+            return source.read_text(encoding="utf-8")
+        size = int(git(self.repo, "cat-file", "-s", f"{self.revision}:{path}").strip())
+        if size > MAX_DOCUMENT_BYTES:
+            raise WorkError(f"work document exceeds {MAX_DOCUMENT_BYTES} bytes: {path}")
+        return git(self.repo, "show", f"{self.revision}:{path}")
 
 
 def title_from(proposal: str, ident: str) -> str:
@@ -218,7 +224,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
 
     order = {lane: i for i, lane in enumerate(LANES)}
     items = sorted(all_changes.values(), key=lambda i: (order[i["lane"]], i["id"]))
-    return {"sourceRevision": tree.revision, "generated": generated, "sourceMode": "working-tree" if tree.working_tree else "committed HEAD", "items": items,
+    return {"sourceRevision": tree.revision, "generated": generated, "sourceMode": "working-tree" if tree.working_tree else "committed HEAD", "trackedPaths": sorted(tree.paths), "items": items,
             "lanes": [{"id": lane, "count": sum(i["lane"] == lane for i in items)} for lane in LANES]}
 
 

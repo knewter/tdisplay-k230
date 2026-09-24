@@ -88,6 +88,17 @@ class Fixture(unittest.TestCase):
         self.assertIn("| A | B |", item["details"][1]["markdown"])
         self.assertNotIn("Private uncommitted", item["details"][1]["markdown"])
 
+    def test_snapshot_stays_at_captured_revision_when_head_advances(self) -> None:
+        tree = work.SourceTree(self.repo)
+        put(self.repo, "openspec/changes/the-first-thing/design.md", "## A newer commit\n")
+        command(self.repo, "add", ".")
+        command(self.repo, "commit", "-qm", "new design")
+        data = work.snapshot(tree, {"schema": 1, "overrides": {}}, "test UTC")
+        item = next(i for i in data["items"] if i["id"] == "the-first-thing")
+        self.assertEqual(data["sourceRevision"], self.revision)
+        self.assertIn("| A | B |", item["details"][1]["markdown"])
+        self.assertNotIn("newer commit", item["details"][1]["markdown"])
+
     def test_missing_oversize_and_private_detail_fail_with_path(self) -> None:
         path = "openspec/changes/the-first-thing/design.md"
         (self.repo / path).unlink()
@@ -99,6 +110,17 @@ class Fixture(unittest.TestCase):
         put(self.repo, path, "Read /home/operator/private-settings")
         with self.assertRaisesRegex(work.WorkError, "private path.*design.md"):
             self.data(working=True)
+
+    def test_large_committed_blob_is_rejected_before_read(self) -> None:
+        path = "openspec/changes/the-first-thing/design.md"
+        with (self.repo / path).open("wb") as out:
+            out.seek(work.MAX_DOCUMENT_BYTES + 4 * 1024 * 1024)
+            out.write(b"x")
+        command(self.repo, "add", path)
+        command(self.repo, "commit", "-qm", "oversize")
+        tree = work.SourceTree(self.repo)
+        with self.assertRaisesRegex(work.WorkError, "exceeds.*design.md"):
+            tree.read(path)
 
     def test_reviewed_override_keeps_source_and_device_proof_distinct(self) -> None:
         item = next(i for i in self.data({"the-first-thing": self.review()})["items"] if i["id"] == "the-first-thing")

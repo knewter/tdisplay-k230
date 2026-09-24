@@ -88,6 +88,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    links = subprocess.run(["node", str(REPO / "tests" / "test_work_markdown_links.mjs")], cwd=REPO)
+    if links.returncode != 0:
+        print("error: work Markdown link checks failed", file=sys.stderr)
+        return links.returncode
+
     started = time.monotonic()
     failures: list[str] = []
 
