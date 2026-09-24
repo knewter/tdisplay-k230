@@ -1,7 +1,9 @@
-# Compositor-to-Rust reveal stream: host checkpoint
+# Compositor-to-Rust reveal stream: host and QEMU checkpoint
 
 Source branch `impl/card-reveal-stream`, based on `99ac8e48cc3147a736fb7ba2366bb0cb6eb0b9d9`.
-This checkpoint implements the compositor sender only. The Rust client owns
+Sender revisions `ea920846ae44d602c21953b0cbb97f2289662590` and
+`e185c9d7ee9314688a9dce3ffe9c5a6de0e4c4ae` implement the compositor
+sender and runtime fixture. The Rust client owns
 the separately developed receiver/rendering half. The existing coherent-shell
 tasks 1.1, 1.2, 2.1, 4.2 and 4.4 still require integrated runtime and board
 proof; no task is completed by this host check.
@@ -39,7 +41,7 @@ the client; EOF before it is a client-side cancel. The host test covers exact
 fields, frame bounds, sequence separation, private socket rejection, and an
 idle finger pause longer than the connection/write deadline.
 
-Host commands and results:
+Commands and results from the exact sender revision:
 
 ```text
 python3 tests/test_card_shell_reveal.py       PASS 1 native stream/socket case
@@ -47,11 +49,26 @@ python3 tests/test_card_shell_route.py        PASS 1 fixed-helper regression cas
 python3 tests/test_card_shell_chrome.py       PASS 1 chrome case
 python3 tests/test_card_shell_state.py        PASS 25 native policy cases
 git diff --check                        PASS
+nix build .#card-shell --max-jobs 1 --cores 4 --no-link --print-out-paths
+                                      PASS /nix/store/13mxaxxmldpmcx418d6cq9bjvcc72ifb-k230-card-shell
+CARD_SHELL_SWAY=/nix/store/6a0jd8i6sg8ix6j9mkhz72wnb4h5diyg-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway CARD_SHELL_CLIENT=/nix/store/6nskh3ldk3ya7mwxbb258qszrxhw2i61-card-composition-probe-client-0.1/bin/card-composition-probe-client python3 tests/test_card_shell_touch_first_runtime.py
+                                      PASS 1 actual cross-built Sway under headless QEMU
 ```
 
-Remaining gates: exact Sway/card cross-build; headless compositor plus Rust
-client mapping and captured pixels on begin, intermediate movement, reversal,
-and settle; disconnect, second-contact, source-unmap/privacy and keyboard
-ownership tests; then reserved real-finger/panel presentation and existing
-frame CPU/cadence budgets. Native socket tests do not prove Wayland mapping,
-output presentation, physical touch, or final shell acceptance.
+The QEMU test observed three separate streams (drawer finish open, shade
+finish closed after reversal, shade second-contact cancel), no per-motion
+helper invocation, and an actual `k230-shell-drawer` layer painted above the
+live card during tracking. The sender's built unwrapped Sway is the ELF path
+above; the card package's `.sway-wrapped` is a shell script and cannot be
+passed directly to `qemu-riscv64-static`. The fixture uses a native socket
+collector and magenta layer fixture, not the Rust receiver. Build log:
+`/tmp/k230-card-reveal-build.log`; retained local headless log:
+`/tmp/k230-card-reveal-e185-qemu/sway.log`. These `/tmp` files are local
+diagnostics, not committed artifacts.
+
+Remaining gates: integrated Rust client mapping and captured pixels on begin,
+intermediate movement, reversal, and settle; client disconnect,
+source-unmap/privacy and keyboard ownership tests; then reserved
+real-finger/panel presentation and existing frame CPU/cadence budgets.
+The current QEMU test proves stream semantics and overlay stacking, not Rust
+pixels, actual output presentation, physical touch, or final shell acceptance.
