@@ -40,7 +40,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install host test dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev libpixman-1-dev libdrm-dev ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y jq build-essential pkg-config libglib2.0-dev libwayland-dev libwayland-bin wayland-protocols libpango1.0-dev libcairo2-dev librsvg2-dev libpixman-1-dev libdrm-dev ffmpeg
 
       - name: Install site dependencies
         run: npm ci
@@ -89,6 +89,9 @@ jobs:
 
       - name: Check desktop catalogue discovery and launch arguments
         run: python3 tests/test_desktop_catalog.py
+
+      - name: Check launcher icon resolution and bounded cache
+        run: python3 tests/test_shell_icons.py
 
       - name: Check Wi-Fi runtime secret cleanup
         run: sudo bash tools/test-wifi-runtime-secret-procedure.sh
