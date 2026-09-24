@@ -19,6 +19,7 @@ import sys
 
 import theme_activate as activation
 from theme_transaction import TransactionError, _pointer, activate_generation
+from theme_preferences import SelectionIntent
 
 
 MAX_ENTRIES = 512
@@ -185,7 +186,11 @@ def main(argv=None):
             if args.action == "activate":
                 if args.expected_generation != generation.name:
                     raise activation.ThemeError("theme changed since preview; preview it again")
-                activate_generation(generation, state_root=args.state_root, endpoint=args.socket)
+                preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
+                                             report["selected_background"], report["backgrounds"],
+                                             explicit=args.background is not None)
+                activate_generation(generation, state_root=args.state_root, endpoint=args.socket,
+                                    preference=preference)
                 result["activated"] = True
         print(json.dumps(result, sort_keys=True))
         return 0

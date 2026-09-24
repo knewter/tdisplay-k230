@@ -154,6 +154,32 @@ class CatalogTests(unittest.TestCase):
         self.assertIn("previous generation restored", result["error"])
         self.assertEqual((self.state / "active").resolve(), generation)
 
+    def test_catalog_explicit_choice_is_reused_by_both_entry_points(self):
+        source = theme(self.user / "night")
+        entry = self.entries()[0]
+        _, first = self.run_cli("preview", entry.id)
+        choice = next(asset for asset in first["backgrounds"] if asset["label"] == "portrait.png")
+        _, chosen = self.run_cli("preview", entry.id, "--background", choice["id"])
+
+        def commit(generation, **kwargs):
+            activate_generation(generation, **kwargs, transport=lambda *_: None)
+
+        with mock.patch.object(catalog, "activate_generation", side_effect=commit):
+            status, applied = self.run_cli("activate", entry.id,
+                                           "--background", choice["id"],
+                                           "--expected-generation", chosen["generation"])
+        self.assertEqual(status, 0, applied)
+        _, remembered = self.run_cli("preview", entry.id)
+        self.assertEqual(remembered["generation"], chosen["generation"])
+        self.assertEqual([asset["id"] for asset in remembered["backgrounds"] if asset["selected"]],
+                         [choice["id"]])
+        # The compatible omarchy-theme-set path reads the same persisted choice.
+        direct, report = catalog.activation.prepare(
+            "night", source=source, state_root=self.state,
+            user_themes=self.user, builtins=None, tools=catalog.activation.HOST_TOOLS)
+        self.assertEqual(direct.name, chosen["generation"])
+        self.assertEqual(report["selected_background"], "backgrounds/portrait.png")
+
     def test_invalid_removed_theme_and_symlink_asset_are_rejected(self):
         source = theme(self.user / "night")
         entry = self.entries()[0]

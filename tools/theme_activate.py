@@ -20,6 +20,7 @@ import tempfile
 import tomllib
 
 from theme_sources import source_dir, source_digest
+from theme_preferences import SelectionIntent, choice as remembered_choice
 from theme_tokens import TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 
@@ -111,6 +112,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             background_choice: str | None = None) -> tuple[Path, dict]:
     name = normalize_name(name)
     root, theme = choose_source(name, source, user_themes, builtins)
+    remembered = remembered_choice(state_root, theme) if background_choice is None else None
     source_hash = source_digest(theme)
     helper_hash = source_digest(tools)
     adapter_hash = hashlib.sha256(Path(__file__).read_bytes()
@@ -168,7 +170,10 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             raise ThemeError("theme has no usable palette")
         if background_choice is not None and background_choice not in report["backgrounds"]:
             raise ThemeError("selected background is not a staged theme asset")
+        if remembered is not None and remembered not in report["backgrounds"]:
+            report["unavailable"].append("remembered background removed; using theme default")
         report["selected_background"] = (background_choice if background_choice is not None
+                                         else remembered if remembered in report["backgrounds"]
                                          else next((asset for asset in report["backgrounds"]
                                                     if Path(asset).suffix.lower() in STILLS),
                                                    next(iter(report["backgrounds"]), None)))
@@ -242,7 +247,12 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                     or existing["helper_sha256"] != helper_hash
                     or existing["adapter_sha256"] != adapter_hash):
                 raise ThemeError("generation identity collision")
-            return destination, existing
+            # Memory diagnostics are request-specific: a previously prepared
+            # immutable generation can have the same selected default while
+            # a remembered asset is now missing. Return this preparation's
+            # report so the chooser sees that fallback without rewriting the
+            # cached generation.
+            return destination, report
         os.replace(work, destination)
         return destination, report
 
@@ -265,7 +275,11 @@ def main():
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
                                   background_choice=args.background)
     if args.activate:
-        activate_generation(destination, state_root=args.state_root, endpoint=args.socket)
+        preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
+                                     report["selected_background"], report["backgrounds"],
+                                     explicit=args.background is not None)
+        activate_generation(destination, state_root=args.state_root, endpoint=args.socket,
+                            preference=preference)
     print(json.dumps({"generation_path": str(destination), "report": report}, indent=2, sort_keys=True))
 
 

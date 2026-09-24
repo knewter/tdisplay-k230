@@ -106,7 +106,8 @@ def _public_links(root: Path) -> list[Path]:
 
 
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
-                        transport=exchange, lock_timeout: float = 2.0) -> None:
+                        transport=exchange, lock_timeout: float = 2.0,
+                        preference=None) -> None:
     """Publish one prepared generation only after phase-checked shell acks.
 
     The lock covers the whole transaction, including failure recovery. The
@@ -132,6 +133,8 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                 time.sleep(min(0.01, max(0, deadline - time.monotonic())))
         previous = _pointer(state_root)
         missing_links = _public_links(state_root)
+        if preference is not None:
+            preference.guard()
         transport(endpoint, "prepare", generation)
         created_links = []
         try:
@@ -140,18 +143,31 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                 path.symlink_to("active/" + path.name)
                 created_links.append(path)
             transport(endpoint, "commit", generation)
+            if preference is not None:
+                preference.commit()
         except Exception as error:
+            preference_error = None
+            pointer_error = None
             try:
                 _swap_pointer(state_root, previous)
                 for path in created_links:
                     if path.is_symlink() and os.readlink(path) == "active/" + path.name:
                         path.unlink()
-            except Exception as pointer_error:
-                raise TransactionError("commit failed and pointer restoration failed") from pointer_error
+            except Exception as restore_error:
+                pointer_error = restore_error
+            if preference is not None:
+                try:
+                    preference.rollback()
+                except Exception as restore_error:
+                    preference_error = restore_error
             try:
                 transport(endpoint, "rollback", previous)
             except Exception as rollback_error:
                 raise TransactionError("commit failed and shell rollback was not acknowledged") from rollback_error
+            if pointer_error is not None:
+                raise TransactionError("commit failed and pointer restoration failed") from pointer_error
+            if preference_error is not None:
+                raise TransactionError("commit failed and wallpaper preference restoration failed") from preference_error
             raise TransactionError("commit failed; previous generation restored") from error
     finally:
         os.close(descriptor)
