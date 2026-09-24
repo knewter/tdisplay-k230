@@ -1,0 +1,41 @@
+{
+  "evidence_class": "host-built-image",
+  "source_revision": "017125c89a1103c0371035f95544a801f41c14e0",
+  "observed_at_utc": "2026-09-24T08:59:42.528167+00:00",
+  "command": "nix build .#sdImage-coherent --max-jobs 1 --cores 4 --no-link --print-out-paths",
+  "image": {
+    "path": "/nix/store/i0mp5wbp5gjyrb5x69g6n9hm5khawr82-k230-sd-image.img",
+    "sha256": "e95bfe56162fc7a9dd9e4c0301fbeb9c20e44259fa6cd471b923e6feb7357fc7",
+    "bytes": 2711429120,
+    "derivation": "/nix/store/agidgzbcm2hzmvn2gj1ab4d5z2js4qn6-k230-sd-image.img.drv"
+  },
+  "system": "/nix/store/48x70j3df8ksiyab0sdgas5nzmgx69nz-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_image_derivation": "/nix/store/mw0y48wxa3f6piwa416dnyjd7rafahmw-k230-sd-image.img.drv",
+  "device_tree_source": "/nix/store/slxqmgng9k2a120bw8lrssa3rqb9p8fc-k230-tdisplay.dtb/k230-tdisplay.dtb",
+  "boot_partition": {
+    "start_sector": 8192,
+    "sectors": 229376,
+    "sector_bytes": 512
+  },
+  "boot_files_sha256": {
+    "Image": "29727ff3313e8d8d5a171eab736df244812dbbcc1280bf28f88b358700054857",
+    "initrd.uimg": "3bd3f2584547b5e6d97237882d1abdc2ad32916f8b94ce63bb513b3e61e4bda5",
+    "k230-tdisplay.dtb": "9acb6460b6cb7ab593c4ec743d54ebedb688c90d945577e881478becf7008fe7",
+    "bootargs.txt": "8d2174877c760550c720cf6b5eaee59e5ce0a6c7bba911abe6601e007188f0b8",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "checks": {
+    "exact_single_init_token": true,
+    "bootargs_txt_matches_device_tree": true,
+    "kernel_image_matches_system": true,
+    "uimage_magic_and_initrd_payload_match_system": true,
+    "device_tree_diff_only_chosen_bootargs": true,
+    "eight_boot_files_extracted": true,
+    "selector_files_match_dtb_name": true,
+    "normal_image_derivation_distinct": true
+  },
+  "physical_boot_proven": false
+}

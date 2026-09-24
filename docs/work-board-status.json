@@ -86,8 +86,8 @@
         "docs/evidence/keyboard-gestures/installed-preview/README.md",
         "docs/evidence/coherent-shell/boot-artifacts/README.md"
       ],
-      "rationale": "Source e9d3bd6c is test-activated: app grid, direct carousel, quieter cards, Wi-Fi Settings, actual wallpaper previews and keyboard gestures. Native board keyboard capture is committed; real touch acceptance and persistent boot remain open.",
-      "reviewRevision": "e9d3bd6c19d22540b1d25b8533dda52937ef745d",
+      "rationale": "Source dcfbdb0b is test-activated with a supervised keyboard and exact board process identity. The matching coherent SD image was built and inspected on the host at source 017125c8. Native board captures are committed; real touch acceptance, theme restoration after reboot and persistent boot remain open.",
+      "reviewRevision": "017125c89a1103c0371035f95544a801f41c14e0",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
