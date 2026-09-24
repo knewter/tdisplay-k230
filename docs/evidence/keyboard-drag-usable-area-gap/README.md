@@ -19,7 +19,7 @@ it, exposing whatever sits behind the app.
 
 ## Reproduction and fix
 
-`tools/qemu-keyboard-drag-gap-capture.py` starts the app while the keyboard
+`tests/keyboard_drag_backdrop_qemu.py` starts the app while the keyboard
 is already shown (so the client's committed geometry starts at the shrunk
 756px height), then holds a one-finger grip-drag partway through hiding the
 keyboard without releasing, and samples a pixel in the theoretical gap
@@ -83,11 +83,11 @@ pre-fix commit `a68014de`, plus the stall fixture cherry-picked on top; after
 build from this change):
 
 ```sh
-python3 tools/qemu-keyboard-drag-gap-capture.py \
+python3 tests/keyboard_drag_backdrop_qemu.py \
   --sway <pre-fix sway-unwrapped>/bin/sway \
   --client <card-composition-probe-client with --stall-resize-ms> \
   --keyboard <wvkbd-mobintl> --output /tmp/k230-ux-gap-before
-python3 tools/qemu-keyboard-drag-gap-capture.py \
+python3 tests/keyboard_drag_backdrop_qemu.py \
   --sway <this change's sway-unwrapped>/bin/sway \
   --client <card-composition-probe-client with --stall-resize-ms> \
   --keyboard <wvkbd-mobintl> --output /tmp/k230-ux-gap-after

@@ -141,8 +141,17 @@ kill -"$signal" "$(cat "$XDG_RUNTIME_DIR/keyboard.pid")"
             'before_sample_rgb': before_rgb,
         }
         (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        print(json.dumps(result))
         touch('up', 20, stamp=stamp + 400)
+        # Regression check: the exposed margin behind a stalled app buffer
+        # must show the card backdrop (~(36,73,90) for the unthemed default),
+        # never a flat unpainted colour. This fails against the pre-fix
+        # adapter.c, where the sample is (0,0,0); see the paired before/after
+        # captures under docs/evidence/keyboard-drag-usable-area-gap/.
+        assert sum(gap_rgb) > 60, (
+            f'gap at {result["gap_sample_xy"]} reads {gap_rgb}: nothing painted '
+            'behind the stalled app buffer (ordinary_backdrop missing/disabled)')
+        print(json.dumps(result))
+        print('PASS card backdrop covers the keyboard-drag usable-area gap; no physical proof')
     finally:
         for p in reversed(processes):
             if p.poll() is None:
