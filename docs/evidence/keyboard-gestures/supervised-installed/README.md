@@ -26,6 +26,17 @@ physical output disconnection/reconnection or a finger gesture.
 This unedited 568×1232 native board capture used installed `grim` against the
 active Wayland display and was visually inspected. It shows the board's
 compositor pixels, not a camera view. Keyboard reveal was signalled by command.
+The capture command inside `runuser -u shell -- sh -c` was:
+
+```sh
+cd /home/shell
+export XDG_RUNTIME_DIR=/run/shell
+export WAYLAND_DISPLAY=$(basename "$(find /run/shell -maxdepth 1 -type s -name 'wayland-*' | head -1)")
+/nix/store/hjllbawb3xs65bmcnyy66yf6g9hdaxk8-grim-riscv64-unknown-linux-gnu-1.5.0/bin/grim /run/shell/coherent-fit.png
+```
+
+The resulting PNG was transferred over the reserved console using base64
+and committed unchanged as `keyboard-shown.png`.
 The foreground-colored grip is visible above the keyboard. No injected touch
 or real finger was used for this record. Raw serial logs remain private.
 
