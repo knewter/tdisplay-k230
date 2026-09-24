@@ -13,4 +13,10 @@ cargo clippy --manifest-path nix/rust-shell-client/Cargo.toml --locked --all-tar
 git diff --check
 ```
 
-Host checks passed on 2026-09-24 UTC: 21 library tests, 3 route/launch tests, 8 appearance receiver tests, formatting and strict clippy. Exact RISC-V target build and paired compositor transaction remain open at this source checkpoint.
+Host checks passed on 2026-09-24 UTC: 21 library tests, 3 route/launch tests, 8 appearance receiver tests, formatting and strict clippy. The exact source commit `c78c9f2198fdad6aa9e1c9a2e27eabec20d5b49b` then passed the RISC-V target build:
+
+```sh
+nix build "git+file://$PWD?rev=c78c9f2198fdad6aa9e1c9a2e27eabec20d5b49b#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+Derivation `/nix/store/x2w7mzbq0wkm3gqa67452pgr9gzxxz25-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv` produced `/nix/store/ijla8rh8s7dqknhbhw9g7yvxpz83zfa6-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. The paired compositor theme transaction and physical visual proof remain open.
