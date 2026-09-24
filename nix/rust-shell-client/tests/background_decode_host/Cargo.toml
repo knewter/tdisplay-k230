@@ -1,0 +1,12 @@
+[package]
+name = "k230-background-host-check"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libc = "=0.2.175"
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp"] }
+
+[[test]]
+name = "background_decode_module"
+path = "../background_decode_module.rs"
