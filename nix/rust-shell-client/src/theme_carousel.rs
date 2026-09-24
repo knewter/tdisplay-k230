@@ -1,28 +1,70 @@
 //! Physics and layout for a Cover Flow carousel, adapted from Omarchy
 //! Quattro's `ImagePicker.qml` (omacom/omarchy @28ceaae7, pinned by
-//! `nix/handheld-theme-default/default.nix`) to this handheld's narrower
+//! `nix/handheld-theme-default/default.nix`) to this handheld's narrow
 //! 568x1232 portrait panel and to touch drag/momentum, which upstream's
 //! keyboard/mouse-only picker never has.
 //!
-//! ## What is scaled, what is new
+//! ## Two geometries, one shape
 //!
-//! Upstream's own geometry (`expandedWidth: 768`, `expandedHeight: 475`,
-//! `sliceWidth: 108`, `sliceHeight: 432`, `sliceSpacing: -30`,
-//! `skewOffset: 28`) is sized for a desktop monitor. Every constant below is
-//! that same geometry scaled by one factor to fit a 568px-wide panel, with
-//! every ratio preserved: `EXPANDED_W`/`EXPANDED_H` for the centered item,
-//! `SLICE_W`/`SLICE_H` for a side slice, `SKEW` for the parallelogram lean,
-//! `ITEM_STEP` for the pitch between slices. `SKEW` is a constant offset
-//! applied to every slice's own width, matching upstream: a small fraction
-//! of a narrow side slice, a subtler lean on the wide centered one.
+//! The first pass of this module scaled every one of upstream's constants
+//! (`expandedWidth: 768`, `expandedHeight: 475`, `sliceWidth: 108`,
+//! `sliceHeight: 432`, `sliceSpacing: -30`, `skewOffset: 28`) down by one
+//! flat factor. That reproduced upstream's landscape-monitor proportions
+//! exactly, but on a screen this tall and narrow it left the Themes page's
+//! carousel only ~186px tall at the very top of a 1232px page -- correct
+//! geometry, wrong emphasis: the carousel is this page's only real content,
+//! and it read as a small ornament above a mostly empty card.
 //!
-//! Upstream has no `Behavior`/`Animation` at all (confirmed by reading the
-//! whole file): selection jumps instantly, driven only by arrow keys, Tab,
-//! or a slice tap. This module adds real drag-with-momentum on top of that,
-//! because our panel is touch-first and a hard snap under a dragging finger
-//! would feel broken. The interaction contract upstream does define is kept
-//! exactly: browse (drag, or tap a side slice to bring it to the centre),
-//! then confirm (tap the already-centered slice, or an explicit Apply).
+//! [`CarouselGeometry`] now bundles every size constant so each carousel
+//! context can pick its own: [`THEME_GEOMETRY`] is the Themes page's hero --
+//! a large, portrait-cropped centered slice that dominates the page, as
+//! Quattro's own carousel dominates its (much larger) desktop page. Its
+//! *width*-derived measures (`slice_w`, `skew`, `spacing`, hence
+//! `item_step`) still keep upstream's exact ratio to `expanded_w`
+//! (`108/768`, `28/768`, `-30/768`); only `expanded_h` breaks from the flat
+//! scale -- see "Portrait crop" below for why. [`BACKGROUND_GEOMETRY`] is
+//! the Preview page's background carousel: that page already carries a
+//! palette swatch row and a screen-crop preview above the carousel, so it
+//! keeps upstream's own landscape aspect (`expanded_h` derived from
+//! `expanded_w` by upstream's exact `475/768` ratio, same as the first
+//! pass), just enlarged as far as the remaining page budget allows.
+//! Everything below that used to be a bare module constant (`EXPANDED_W`,
+//! `SLICE_H`, `SKEW`, ...) is now a field on whichever `CarouselGeometry` a
+//! caller is drawing; `Carousel` itself owns one for its whole lifetime
+//! (set once at construction, matching which carousel -- theme or
+//! background -- it drives), and the free layout functions
+//! (`visible_slices`, `hit_test`) take one explicitly, so the theme
+//! carousel and the background carousel can each be sized for their own
+//! page without duplicating any layout math.
+//!
+//! ## Portrait crop, not letterboxing
+//!
+//! Every `preview.png` this module draws is a landscape desktop
+//! screenshot. Two ways to put that into a much taller hero slot were
+//! considered: pillarbox it (keep the image's own landscape aspect, pad
+//! the extra vertical space with plain bars) or crop it to the slot's own
+//! portrait aspect. Pillarboxing wastes exactly the vertical space this
+//! change exists to use, and (having painted it as a quick comparison)
+//! reads as a smaller picture floating in a bigger frame -- an admission
+//! the source doesn't fill its slot, not a bigger picture. A portrait crop
+//! (still just `FitMode::Crop`'s existing centered cover-crop, now to a
+//! taller aspect -- no new render code) fills the whole slot with real
+//! pixels and, since a desktop screenshot's visually distinctive content
+//! (terminal, editor, panel) usually sits centered anyway, keeps that
+//! content rather than cropping it away. `THEME_GEOMETRY` uses a 3:4
+//! portrait aspect (`480x640`) for exactly this reason. The background
+//! carousel's imagery is the opposite case -- actual wallpapers, already
+//! meant to be viewed full-screen on a portrait device -- but that page
+//! has far less spare vertical budget (see below), so it keeps upstream's
+//! landscape aspect rather than fighting for the extra height a portrait
+//! crop there would need.
+//!
+//! `SLICE_W`/`SLICE_H` (a fully-collapsed side slice) were never landscape
+//! to begin with -- upstream's own `108x432` is already a narrow, nearly
+//! full-height vertical strip (aspect `0.25`) -- so no crop decision was
+//! needed there; `slice_h` simply keeps upstream's own `432/475` ratio to
+//! whichever `expanded_h` a geometry picks, so a side slice always spans
+//! nearly the full height of its own carousel band, exactly as upstream.
 //!
 //! ## The approximation this module makes, and why
 //!
@@ -57,27 +99,76 @@
 //! nothing is ever decoded off the Wayland thread's hot path, and both
 //! endpoints (fully expanded, fully slice) are pixel-exact.
 
-/// Upstream's `expandedWidth: 768` / `expandedHeight: 475`, scaled by
-/// `EXPANDED_W / 768.0` so this panel's centered slice is prominent without
-/// crowding the 568px-wide screen.
-pub const EXPANDED_W: f64 = 300.0;
-pub const EXPANDED_H: f64 = 186.0; // 475 * (300/768) = 185.55, rounded for crisp raster.
-/// Upstream's `sliceWidth: 108` / `sliceHeight: 432`, same scale factor.
-pub const SLICE_W: f64 = 42.0;
-pub const SLICE_H: f64 = 169.0; // 432 * (300/768) = 168.75, rounded.
-/// Upstream's `skewOffset: 28`, same scale factor. Applied as a constant
-/// pixel offset regardless of a slice's own width, exactly like upstream.
-pub const SKEW: f64 = 11.0;
-/// Upstream's `sliceSpacing: -30`, same scale factor. Negative: consecutive
-/// slices overlap (a "shingled" look), resolved by z-order at paint time.
-pub const SPACING: f64 = -12.0;
-/// Pitch between adjacent slice centers/left-edges.
-pub const ITEM_STEP: f64 = SLICE_W + SPACING;
+/// Every fixed size a Cover Flow carousel needs, bundled so each carousel
+/// context (the Themes page's hero, the Preview page's background picker)
+/// can pick its own without duplicating the layout math below. See the
+/// module doc for how `THEME_GEOMETRY`/`BACKGROUND_GEOMETRY` were chosen.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct CarouselGeometry {
+    /// The centered slice's width.
+    pub expanded_w: f64,
+    /// The centered slice's height.
+    pub expanded_h: f64,
+    /// A fully-collapsed side slice's width.
+    pub slice_w: f64,
+    /// A fully-collapsed side slice's height.
+    pub slice_h: f64,
+    /// Upstream's `skewOffset`: a constant pixel shear applied to every
+    /// slice's own width, regardless of that slice's current size.
+    pub skew: f64,
+    /// Upstream's `sliceSpacing`: negative, so consecutive slices overlap
+    /// (a "shingled" look), resolved by z-order at paint time.
+    pub spacing: f64,
+}
+
+impl CarouselGeometry {
+    /// Pitch between adjacent slice centers/left-edges.
+    pub const fn item_step(&self) -> f64 {
+        self.slice_w + self.spacing
+    }
+}
+
+/// The Themes page's hero carousel: a large, portrait-cropped centered
+/// slice using most of the panel's width, as the page's dominant content.
+/// Width-derived measures keep upstream's exact ratio to `expanded_w`
+/// (`SLICE_W`: `108/768`, `SKEW`: `28/768`, `SPACING`: `-30/768`);
+/// `expanded_h` is a deliberate 3:4 portrait crop, not upstream's own
+/// landscape aspect -- see the module doc's "Portrait crop" section.
+/// `slice_h` keeps upstream's own `432/475` ratio to `expanded_h`, so a
+/// side slice still spans nearly the whole carousel band, whatever its
+/// height.
+pub const THEME_GEOMETRY: CarouselGeometry = CarouselGeometry {
+    expanded_w: 480.0,
+    expanded_h: 640.0, // 3:4 portrait crop, not upstream's 768:475 landscape.
+    slice_w: 68.0,     // 480 * 108/768 = 67.5, rounded.
+    slice_h: 582.0,    // 640 * 432/475 = 582.06, rounded.
+    skew: 18.0,        // 480 * 28/768 = 17.5, rounded.
+    spacing: -19.0,    // 480 * -30/768 = -18.75, rounded.
+};
+
+/// The Preview page's background carousel: smaller than the Themes hero
+/// because that page already carries a palette row and a screen-crop
+/// preview above it (see `theme_ui::BACKGROUND_CAROUSEL_TOP`'s own doc for
+/// exactly what's above). Keeps upstream's own landscape aspect (`475/768`
+/// between `expanded_h`/`expanded_w`, same as every other measure here)
+/// rather than fighting for height a portrait crop would need but this
+/// page cannot spare.
+pub const BACKGROUND_GEOMETRY: CarouselGeometry = CarouselGeometry {
+    expanded_w: 420.0,
+    expanded_h: 260.0, // 420 * 475/768 = 259.77, rounded: upstream's own aspect.
+    slice_w: 59.0,     // 420 * 108/768 = 59.06, rounded.
+    slice_h: 237.0,    // 260 * 432/475 = 236.5, rounded.
+    skew: 15.0,        // 420 * 28/768 = 15.31, rounded.
+    spacing: -16.0,    // 420 * -30/768 = -16.41, rounded.
+};
+
 /// How many slices either side of the centered position are laid out and
 /// hit-tested at all. Upstream's own `nearby` cutoff is 16, sized for a
 /// desktop monitor; ours is smaller because this screen is much narrower
 /// (fewer slices are ever visible) and every visible id must fit in the
-/// bounded thumbnail cache.
+/// bounded thumbnail cache. Shared by both geometries above: the smaller,
+/// more tightly margined hero carousel needs no more of a lookahead than
+/// the background carousel already used.
 pub const NEARBY_LIMIT: i64 = 8;
 
 const MAX_FLING_PX_PER_SEC: f64 = 3000.0;
@@ -126,31 +217,32 @@ fn blend_of(relative: f64) -> f64 {
 /// Upstream's exact discrete layout (`ImagePicker.qml` lines 457-460),
 /// evaluated at an arbitrary integer `selected` so it can be sampled at the
 /// two integers bracketing a continuous position and interpolated.
-fn exact_layout(selected: i64, i: i64, center_x: f64) -> (f64, f64, f64, f64) {
+fn exact_layout(geometry: &CarouselGeometry, selected: i64, i: i64, center_x: f64) -> (f64, f64, f64, f64) {
     let relative = i - selected;
-    let preview_x = center_x - EXPANDED_W / 2.0;
+    let preview_x = center_x - geometry.expanded_w / 2.0;
     if relative == 0 {
-        return (preview_x, EXPANDED_W, EXPANDED_H, 0.0);
+        return (preview_x, geometry.expanded_w, geometry.expanded_h, 0.0);
     }
+    let item_step = geometry.item_step();
     let x = if relative < 0 {
-        preview_x + relative as f64 * ITEM_STEP
+        preview_x + relative as f64 * item_step
     } else {
-        preview_x + EXPANDED_W + SPACING + (relative - 1) as f64 * ITEM_STEP
+        preview_x + geometry.expanded_w + geometry.spacing + (relative - 1) as f64 * item_step
     };
-    let y = (EXPANDED_H - SLICE_H) / 2.0;
-    (x, SLICE_W, SLICE_H, y)
+    let y = (geometry.expanded_h - geometry.slice_h) / 2.0;
+    (x, geometry.slice_w, geometry.slice_h, y)
 }
 
 /// The continuous approximation described in the module doc: lerp between
 /// upstream's own exact layout at the two integers bracketing `position`.
-fn interpolated_layout(position: f64, i: i64, center_x: f64) -> (f64, f64, f64, f64) {
+fn interpolated_layout(geometry: &CarouselGeometry, position: f64, i: i64, center_x: f64) -> (f64, f64, f64, f64) {
     let lo = position.floor();
     let hi = position.ceil();
-    let a = exact_layout(lo as i64, i, center_x);
+    let a = exact_layout(geometry, lo as i64, i, center_x);
     if (hi - lo).abs() < f64::EPSILON {
         return a;
     }
-    let b = exact_layout(hi as i64, i, center_x);
+    let b = exact_layout(geometry, hi as i64, i, center_x);
     let t = position - lo;
     (
         a.0 + (b.0 - a.0) * t,
@@ -163,7 +255,13 @@ fn interpolated_layout(position: f64, i: i64, center_x: f64) -> (f64, f64, f64, 
 /// Every slice within `NEARBY_LIMIT` of `position`, in back-to-front paint
 /// order (ascending `z`, so the caller can just paint the returned `Vec` in
 /// order and the centered slice naturally ends up on top).
-pub fn visible_slices(position: f64, count: usize, center_x: f64, top_y: f64) -> Vec<SlicePlacement> {
+pub fn visible_slices(
+    geometry: &CarouselGeometry,
+    position: f64,
+    count: usize,
+    center_x: f64,
+    top_y: f64,
+) -> Vec<SlicePlacement> {
     if count == 0 {
         return Vec::new();
     }
@@ -173,7 +271,7 @@ pub fn visible_slices(position: f64, count: usize, center_x: f64, top_y: f64) ->
     let mut slices: Vec<SlicePlacement> = (lo..=hi)
         .map(|i| {
             let relative = i as f64 - position;
-            let (x, width, height, y) = interpolated_layout(position, i, center_x);
+            let (x, width, height, y) = interpolated_layout(geometry, position, i, center_x);
             let z = if relative.round() == 0.0 {
                 100
             } else {
@@ -198,29 +296,36 @@ pub fn visible_slices(position: f64, count: usize, center_x: f64, top_y: f64) ->
 /// origin, i.e. `px = point.0 - slice.x`, `py = point.1 - slice.y` -- inside
 /// the skewed parallelogram, not just its bounding rectangle? Upstream's
 /// mask (`ImagePicker.qml` lines 463-489) shears the left edge from
-/// `(SKEW, 0)` to `(0, height)` and the right edge from `(width, 0)` to
-/// `(width - SKEW, height)`; at a given fractional height `t`, the valid
-/// horizontal span narrows linearly from the top edge's full-`SKEW` inset.
-fn in_slice(px: f64, py: f64, width: f64, height: f64) -> bool {
+/// `(skew, 0)` to `(0, height)` and the right edge from `(width, 0)` to
+/// `(width - skew, height)`; at a given fractional height `t`, the valid
+/// horizontal span narrows linearly from the top edge's full-`skew` inset.
+fn in_slice(skew: f64, px: f64, py: f64, width: f64, height: f64) -> bool {
     if height <= 0.0 || py < 0.0 || py > height {
         return false;
     }
     let t = (py / height).clamp(0.0, 1.0);
-    let left = SKEW * (1.0 - t);
-    let right = width - SKEW * t;
+    let left = skew * (1.0 - t);
+    let right = width - skew * t;
     px >= left && px <= right
 }
 
 /// Which slice, if any, a tap at `point` lands on, honoring the skewed
 /// shape and upstream's z-order (the slice nearest the centered position is
 /// drawn on top of its shingled neighbors, so it is tested first).
-pub fn hit_test(point: (f64, f64), position: f64, count: usize, center_x: f64, top_y: f64) -> Option<usize> {
-    let mut slices = visible_slices(position, count, center_x, top_y);
+pub fn hit_test(
+    geometry: &CarouselGeometry,
+    point: (f64, f64),
+    position: f64,
+    count: usize,
+    center_x: f64,
+    top_y: f64,
+) -> Option<usize> {
+    let mut slices = visible_slices(geometry, position, count, center_x, top_y);
     slices.sort_by(|a, b| b.z.cmp(&a.z));
     slices.into_iter().find_map(|slice| {
         let px = point.0 - slice.x;
         let py = point.1 - slice.y;
-        in_slice(px, py, slice.width, slice.height).then_some(slice.index)
+        in_slice(geometry.skew, px, py, slice.width, slice.height).then_some(slice.index)
     })
 }
 
@@ -263,9 +368,12 @@ pub enum CarouselOutcome {
 }
 
 /// Drag/momentum/settle state for one carousel (the theme list, or a
-/// theme's background list -- both get one of these; see `main.rs`).
-#[derive(Default)]
+/// theme's background list -- both get one of these; see `main.rs`). Each
+/// instance is constructed with the [`CarouselGeometry`] it draws (see
+/// `THEME_GEOMETRY`/`BACKGROUND_GEOMETRY`) and keeps it for its whole
+/// lifetime -- it never changes underneath a live drag.
 pub struct Carousel {
+    geometry: CarouselGeometry,
     position: f64,
     velocity: f64, // index-units/sec
     contact: Option<Contact>,
@@ -273,6 +381,16 @@ pub struct Carousel {
 }
 
 impl Carousel {
+    pub fn new(geometry: CarouselGeometry) -> Self {
+        Self {
+            geometry,
+            position: 0.0,
+            velocity: 0.0,
+            contact: None,
+            settle: None,
+        }
+    }
+
     /// Jump to `index` with no animation -- used when a page opens fresh.
     pub fn set_index(&mut self, index: usize) {
         self.position = index as f64;
@@ -314,9 +432,9 @@ impl Carousel {
         });
     }
 
-    /// Moves the carousel 1:1 with the finger: a drag of `ITEM_STEP` pixels
-    /// moves the position by exactly one slice. Returns whether a repaint
-    /// is needed.
+    /// Moves the carousel 1:1 with the finger: a drag of `item_step()`
+    /// pixels moves the position by exactly one slice. Returns whether a
+    /// repaint is needed.
     pub fn motion(&mut self, id: i32, point: (f64, f64), time_ms: u32, count: usize) -> bool {
         let Some(contact) = self.contact.as_mut() else {
             return false;
@@ -336,7 +454,7 @@ impl Carousel {
         contact.last_ms = time_ms;
         let old = self.position;
         let max_index = count.saturating_sub(1) as f64;
-        self.position = (contact.start_position - (point.0 - contact.start_x) / ITEM_STEP)
+        self.position = (contact.start_position - (point.0 - contact.start_x) / self.geometry.item_step())
             .clamp(0.0, max_index);
         (self.position - old).abs() >= 0.001
     }
@@ -362,7 +480,7 @@ impl Carousel {
             return None;
         }
         if !contact.dragged {
-            let Some(tapped) = hit_test(point, self.position, count, center_x, top_y) else {
+            let Some(tapped) = hit_test(&self.geometry, point, self.position, count, center_x, top_y) else {
                 return Some(CarouselOutcome::Consumed);
             };
             let centered = self.index(count);
@@ -375,7 +493,7 @@ impl Carousel {
             });
         }
         let _ = time_ms; // recency is implicit: finger_velocity already decays to 0 if motion() stalls
-        let velocity = -contact.finger_velocity / ITEM_STEP;
+        let velocity = -contact.finger_velocity / self.geometry.item_step();
         if velocity.abs() < MIN_COAST_VELOCITY {
             self.start_settle(self.position.round());
         } else {
@@ -449,7 +567,7 @@ mod tests {
 
     #[test]
     fn index_from_offset_rounds_to_nearest_and_clamps() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
         carousel.set_index(3);
         assert_eq!(carousel.index(10), 3);
         carousel.position = 3.49;
@@ -464,33 +582,36 @@ mod tests {
 
     #[test]
     fn drag_moves_one_to_one_with_the_finger() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        let item_step = THEME_GEOMETRY.item_step();
         carousel.set_index(5);
         carousel.down(1, (300.0, 600.0), 0);
-        // Dragging left by one full ITEM_STEP must advance exactly one slot:
+        // Dragging left by one full item_step must advance exactly one slot:
         // "moves the carousel 1:1 with the finger."
-        carousel.motion(1, (300.0 - ITEM_STEP, 600.0), 16, 22);
+        carousel.motion(1, (300.0 - item_step, 600.0), 16, 22);
         assert!((carousel.position() - 6.0).abs() < 1e-6);
-        carousel.motion(1, (300.0 + ITEM_STEP * 2.0, 600.0), 32, 22);
+        carousel.motion(1, (300.0 + item_step * 2.0, 600.0), 32, 22);
         assert!((carousel.position() - 3.0).abs() < 1e-6);
     }
 
     #[test]
     fn drag_clamps_at_both_ends() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        let item_step = THEME_GEOMETRY.item_step();
         carousel.set_index(0);
         carousel.down(1, (300.0, 600.0), 0);
-        carousel.motion(1, (300.0 + ITEM_STEP * 50.0, 600.0), 16, 5);
+        carousel.motion(1, (300.0 + item_step * 50.0, 600.0), 16, 5);
         assert_eq!(carousel.position(), 0.0);
         carousel.set_index(4);
         carousel.down(1, (300.0, 600.0), 0);
-        carousel.motion(1, (300.0 - ITEM_STEP * 50.0, 600.0), 16, 5);
+        carousel.motion(1, (300.0 - item_step * 50.0, 600.0), 16, 5);
         assert_eq!(carousel.position(), 4.0);
     }
 
     #[test]
     fn slow_release_settles_immediately_to_nearest() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        let item_step = THEME_GEOMETRY.item_step();
         carousel.set_index(2);
         carousel.down(1, (300.0, 600.0), 0);
         // A quick initial move establishes real drag distance (past
@@ -498,9 +619,9 @@ mod tests {
         // before lifting -- release velocity is measured from the last
         // motion segment only, matching a real touch driver, so this is a
         // "slow release" even though the whole gesture moved a full slot.
-        carousel.motion(1, (300.0 - ITEM_STEP * 0.6, 600.0), 16, 22);
-        carousel.motion(1, (300.0 - ITEM_STEP * 0.6 - 1.0, 600.0), 416, 22);
-        let tap = carousel.up(1, (300.0 - ITEM_STEP * 0.6 - 1.0, 600.0), 420, 22, 284.0, 200.0);
+        carousel.motion(1, (300.0 - item_step * 0.6, 600.0), 16, 22);
+        carousel.motion(1, (300.0 - item_step * 0.6 - 1.0, 600.0), 416, 22);
+        let tap = carousel.up(1, (300.0 - item_step * 0.6 - 1.0, 600.0), 420, 22, 284.0, 200.0);
         assert_eq!(tap, Some(CarouselOutcome::Consumed), "a drag release never itself confirms");
         assert!(carousel.is_animating(), "settle animation must be running");
         // Settle target is the nearest slot to where the finger let go,
@@ -516,13 +637,14 @@ mod tests {
 
     #[test]
     fn fast_flick_coasts_then_settles_and_decays_over_time() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        let item_step = THEME_GEOMETRY.item_step();
         carousel.set_index(10);
         carousel.down(1, (300.0, 600.0), 0);
         // A fast leftward drag (finger velocity clamps to MAX_FLING) should
         // start a momentum coast, not an immediate settle.
-        carousel.motion(1, (300.0 - ITEM_STEP * 3.0, 600.0), 20, 22);
-        let tap = carousel.up(1, (300.0 - ITEM_STEP * 3.0, 600.0), 21, 22, 284.0, 200.0);
+        carousel.motion(1, (300.0 - item_step * 3.0, 600.0), 20, 22);
+        let tap = carousel.up(1, (300.0 - item_step * 3.0, 600.0), 21, 22, 284.0, 200.0);
         assert_eq!(tap, Some(CarouselOutcome::Consumed));
         assert!(carousel.is_animating());
         let after_drag = carousel.position();
@@ -542,11 +664,11 @@ mod tests {
 
     #[test]
     fn tap_on_centered_slice_confirms_tap_on_side_slice_only_recenters() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
         carousel.set_index(4);
         let center_x = 284.0;
         let top_y = 200.0;
-        let centered = visible_slices(4.0, 22, center_x, top_y)
+        let centered = visible_slices(&THEME_GEOMETRY, 4.0, 22, center_x, top_y)
             .into_iter()
             .find(|slice| slice.index == 4)
             .unwrap();
@@ -561,7 +683,7 @@ mod tests {
         );
         assert_eq!(tap, Some(CarouselOutcome::Confirm(4)));
 
-        let neighbor = visible_slices(4.0, 22, center_x, top_y)
+        let neighbor = visible_slices(&THEME_GEOMETRY, 4.0, 22, center_x, top_y)
             .into_iter()
             .find(|slice| slice.index == 5)
             .unwrap();
@@ -580,44 +702,47 @@ mod tests {
 
     #[test]
     fn skewed_hit_test_excludes_the_sheared_corner() {
+        let skew = THEME_GEOMETRY.skew;
+        let slice_w = THEME_GEOMETRY.slice_w;
+        let slice_h = THEME_GEOMETRY.slice_h;
         // A point in the rectangle's top-left corner, but outside the
-        // sheared-in left edge at y=0 (valid x there is [SKEW, width]).
-        assert!(!in_slice(SKEW / 2.0, 0.0, SLICE_W, SLICE_H));
+        // sheared-in left edge at y=0 (valid x there is [skew, width]).
+        assert!(!in_slice(skew, skew / 2.0, 0.0, slice_w, slice_h));
         // The same x is inside the shape once y has moved far enough down
         // that the shear has widened the left bound past it.
-        assert!(in_slice(SKEW / 2.0, SLICE_H, SLICE_W, SLICE_H));
+        assert!(in_slice(skew, skew / 2.0, slice_h, slice_w, slice_h));
         // Dead center is always inside regardless of skew.
-        assert!(in_slice(SLICE_W / 2.0, SLICE_H / 2.0, SLICE_W, SLICE_H));
+        assert!(in_slice(skew, slice_w / 2.0, slice_h / 2.0, slice_w, slice_h));
         // Symmetric check on the right edge: it is untouched at the top
-        // (valid x there is [SKEW, width]) but sheared in at the bottom
-        // (valid x there is [0, width - SKEW]).
-        assert!(in_slice(SLICE_W - SKEW / 2.0, 0.0, SLICE_W, SLICE_H));
-        assert!(!in_slice(SLICE_W - SKEW / 2.0, SLICE_H, SLICE_W, SLICE_H));
+        // (valid x there is [skew, width]) but sheared in at the bottom
+        // (valid x there is [0, width - skew]).
+        assert!(in_slice(skew, slice_w - skew / 2.0, 0.0, slice_w, slice_h));
+        assert!(!in_slice(skew, slice_w - skew / 2.0, slice_h, slice_w, slice_h));
     }
 
     #[test]
     fn hit_test_prefers_the_slice_nearest_center_in_overlap() {
-        // Negative SPACING makes consecutive slices overlap; the centered
+        // Negative spacing makes consecutive slices overlap; the centered
         // slice's z-order (100) beats every neighbor, so a point inside both
         // the expanded slice and a neighbor's bounding box must resolve to
         // the centered index.
         let center_x = 284.0;
         let top_y = 200.0;
-        let centered = visible_slices(4.0, 22, center_x, top_y)
+        let centered = visible_slices(&THEME_GEOMETRY, 4.0, 22, center_x, top_y)
             .into_iter()
             .find(|slice| slice.index == 4)
             .unwrap();
         // 20px in from the centered slice's own left edge, at half its
         // height: inside the centered slice's sheared shape (the shear
-        // only excludes the first ~SKEW px near an edge), and still inside
-        // the shingled left neighbor's bounding box (ITEM_STEP < SLICE_W).
+        // only excludes the first ~skew px near an edge), and still inside
+        // the shingled left neighbor's bounding box (item_step < slice_w).
         let point = (centered.x + 20.0, centered.y + centered.height / 2.0);
-        assert_eq!(hit_test(point, 4.0, 22, center_x, top_y), Some(4));
+        assert_eq!(hit_test(&THEME_GEOMETRY, point, 4.0, 22, center_x, top_y), Some(4));
     }
 
     #[test]
     fn set_index_stops_any_animation_in_progress() {
-        let mut carousel = Carousel::default();
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
         carousel.set_index(0);
         carousel.velocity = 5.0;
         carousel.settle = Some(Settle {
@@ -629,5 +754,19 @@ mod tests {
         carousel.set_index(7);
         assert!(!carousel.is_animating());
         assert_eq!(carousel.index(22), 7);
+    }
+
+    #[test]
+    fn background_geometry_is_smaller_but_keeps_upstreams_ratios() {
+        // The Preview page's carousel is deliberately smaller than the
+        // Themes page's hero (less spare vertical budget -- see the module
+        // doc), but every width-derived ratio to upstream is still exact,
+        // and slice_h still keeps upstream's own height ratio.
+        let g = BACKGROUND_GEOMETRY;
+        assert!(g.expanded_w < THEME_GEOMETRY.expanded_w);
+        assert!(g.expanded_h < THEME_GEOMETRY.expanded_h);
+        assert!((g.slice_w / g.expanded_w - 108.0 / 768.0).abs() < 0.01);
+        assert!((g.slice_h / g.expanded_h - 432.0 / 475.0).abs() < 0.01);
+        assert!((g.skew / g.expanded_w - 28.0 / 768.0).abs() < 0.01);
     }
 }

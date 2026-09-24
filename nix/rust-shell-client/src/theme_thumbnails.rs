@@ -22,6 +22,21 @@
 //! Both endpoints of a drag are pixel-exact; a few frames near the halfway
 //! point of a transition use the "wrong" aspect's crop, scaled -- a
 //! deliberate, cheap tradeoff, not a decode-time approximation.
+//!
+//! ## Two geometries, so two sizes per variant
+//!
+//! `theme_carousel.rs` now sizes the Themes page's hero carousel and the
+//! Preview page's background carousel independently
+//! (`theme_carousel::{THEME_GEOMETRY, BACKGROUND_GEOMETRY}`), rather than
+//! one shared set of constants. A theme id is only ever drawn on the theme
+//! carousel and a background id only ever on the background carousel (the
+//! two id spaces never collide -- see `ThumbnailKey::id`'s own doc), so
+//! nothing here needs to know which geometry produced a given request, but
+//! the two carousels' `Expanded` bitmaps are no longer the same pixel size.
+//! `ThumbnailKey` therefore carries its own explicit `width`/`height`
+//! (the caller's job to fill in from whichever geometry it is painting,
+//! mirroring `theme_ui::ThemeImageKey`'s own explicit dimensions) rather
+//! than `Variant` mapping to one fixed size.
 
 use crate::background_decode::{BackgroundCache, FitMode};
 use cairo::{Format, ImageSurface};
@@ -32,9 +47,11 @@ use std::{
     thread,
 };
 
-/// Which of the carousel's two fixed slice sizes a cached bitmap was
-/// cropped for. Matches `theme_carousel::{EXPANDED_W,EXPANDED_H,SLICE_W,
-/// SLICE_H}` exactly so the un-scaled bitmap already fills its slot.
+/// Which cache slot a bitmap belongs to for a given catalog id -- the wide
+/// centered crop, or the narrow collapsed-slice crop. The actual decode
+/// target size is carried on `ThumbnailKey` itself (see the module doc),
+/// since the two carousel contexts no longer share one fixed size per
+/// variant.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Variant {
     Expanded,
@@ -42,15 +59,6 @@ pub enum Variant {
 }
 
 impl Variant {
-    fn size(self) -> (u32, u32) {
-        match self {
-            // theme_carousel::{EXPANDED_W, EXPANDED_H}.
-            Variant::Expanded => (300, 186),
-            // theme_carousel::{SLICE_W, SLICE_H}.
-            Variant::Slice => (42, 169),
-        }
-    }
-
     fn tag(self) -> &'static str {
         match self {
             Variant::Expanded => "expanded",
@@ -59,13 +67,25 @@ impl Variant {
     }
 }
 
-/// Bounds cache memory: each entry is at most `300*186*4` bytes (~218 KiB
-/// for an `Expanded` bitmap; a `Slice` bitmap is far smaller). 48 entries
-/// (a little over 10 MiB at the generous end) comfortably covers the
-/// 22-theme built-in catalog's `Expanded`+`Slice` pair each, plus headroom
-/// for a handful of user themes and the currently-open theme's own
-/// background carousel.
-const CACHE_CAP: usize = 48;
+/// Bounds cache memory. The largest possible entry is now the Themes page
+/// hero carousel's `Expanded` bitmap (`theme_carousel::THEME_GEOMETRY`:
+/// `480*640*4` = 1,228,800 bytes, ~1.17 MiB) rather than the old shared
+/// `300*186*4` (~218 KiB) -- a direct consequence of that carousel's
+/// centered slice becoming the page's hero (see `theme_carousel.rs`'s
+/// module doc). `NEARBY_LIMIT` (8, unchanged) means one fully-populated
+/// carousel needs at most `(8*2+1)*2` = 34 entries (17 nearby ids, each an
+/// `Expanded`+`Slice` pair); `CACHE_CAP` shrank from 48 to 36 -- just above
+/// that steady-state need, not the old flat headroom -- so the *count* of
+/// cached bitmaps offsets most of each bitmap's bigger footprint. Worst
+/// realistic case (the hero carousel fully populated: 17 `Expanded` + 17
+/// `Slice`) is `17*1,228,800 + 17*158,304` (`68*582*4`, the hero's own
+/// `Slice` size) = 23,580,768 bytes, ~22.5 MiB -- up from the previous
+/// ~10 MiB, still a small, fixed, and now explicitly stated bound. The
+/// Preview page's background carousel is far smaller
+/// (`theme_carousel::BACKGROUND_GEOMETRY`: `420*260*4` = 436,800 bytes per
+/// `Expanded` entry), so browsing only ever there stays well under half
+/// that figure.
+const CACHE_CAP: usize = 36;
 /// Concurrent in-flight decodes; bounds the worker's request channel.
 const QUEUE: usize = 4;
 
@@ -79,6 +99,12 @@ pub struct ThumbnailKey {
     pub id: String,
     pub path: PathBuf,
     pub variant: Variant,
+    /// The decode target size, chosen by the caller from whichever
+    /// `CarouselGeometry` this (id, variant) belongs to (see the module
+    /// doc): `geometry.expanded_w/expanded_h` for `Variant::Expanded`,
+    /// `geometry.slice_w/slice_h` for `Variant::Slice`.
+    pub width: u32,
+    pub height: u32,
 }
 
 impl ThumbnailKey {
@@ -104,7 +130,7 @@ impl Default for ThumbnailWorker {
         thread::spawn(move || {
             let mut cache = BackgroundCache::new();
             while let Ok(key) = incoming.recv() {
-                let (width, height) = key.variant.size();
+                let (width, height) = (key.width, key.height);
                 let pixels = cache
                     .render(&key.path, None, width, height, FitMode::Crop)
                     .map(<[u8]>::to_vec);
@@ -167,7 +193,7 @@ impl ThemeThumbnailCache {
         while let Ok(reply) = self.worker.replies.try_recv() {
             let cache_key = reply.key.cache_key();
             self.in_flight.remove(&cache_key);
-            let (width, height) = reply.key.variant.size();
+            let (width, height) = (reply.key.width, reply.key.height);
             let surface = reply.pixels.ok().and_then(|pixels| {
                 ImageSurface::create_for_data(
                     pixels,
@@ -218,6 +244,8 @@ mod tests {
             id: "fixture".into(),
             path: path.clone(),
             variant: Variant::Expanded,
+            width: 480,
+            height: 640,
         };
         cache.request(key.clone());
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
@@ -251,11 +279,15 @@ mod tests {
             id: "two-variants".into(),
             path: path.clone(),
             variant: Variant::Expanded,
+            width: 480,
+            height: 640,
         });
         cache.request(ThumbnailKey {
             id: "two-variants".into(),
             path: path.clone(),
             variant: Variant::Slice,
+            width: 68,
+            height: 582,
         });
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
         while cache.known_len() < 2 && std::time::Instant::now() < deadline {
@@ -265,8 +297,11 @@ mod tests {
         assert_eq!(cache.known_len(), 2, "both variants cached separately");
         let expanded = cache.get("two-variants", Variant::Expanded).unwrap();
         let slice = cache.get("two-variants", Variant::Slice).unwrap();
-        assert_eq!((expanded.width(), expanded.height()), (300, 186));
-        assert_eq!((slice.width(), slice.height()), (42, 169));
+        // Each bitmap is decoded at whichever explicit size the caller's
+        // request carried -- the Themes hero carousel's sizes here -- not a
+        // fixed size baked into `Variant` itself.
+        assert_eq!((expanded.width(), expanded.height()), (480, 640));
+        assert_eq!((slice.width(), slice.height()), (68, 582));
         std::fs::remove_file(&path).unwrap();
     }
 
@@ -277,6 +312,8 @@ mod tests {
             id: "missing".into(),
             path: PathBuf::from("/nonexistent/k230-theme-thumbnail-fixture.png"),
             variant: Variant::Slice,
+            width: 68,
+            height: 582,
         };
         cache.request(key);
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
@@ -309,11 +346,15 @@ mod tests {
             id: "shared-id-space-a".into(),
             path: theme_path.canonicalize().unwrap(),
             variant: Variant::Expanded,
+            width: 480,
+            height: 640,
         });
         cache.request(ThumbnailKey {
             id: "shared-id-space-b".into(),
             path: background_path.canonicalize().unwrap(),
             variant: Variant::Slice,
+            width: 59,
+            height: 237,
         });
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
         while cache.known_len() < 2 && std::time::Instant::now() < deadline {

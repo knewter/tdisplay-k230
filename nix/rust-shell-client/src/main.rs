@@ -18,7 +18,7 @@ use k230_shell_rust::{
         panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelIntent,
         ServiceView, SWIPE_VERTICAL_CANCEL,
     },
-    theme_carousel::{Carousel, CarouselOutcome},
+    theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
     theme_ui::{
         ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
@@ -1838,16 +1838,14 @@ impl TouchHandler for ShellClient {
                         // mistaken for a carousel drag.
                         match self.theme_view.page {
                             ThemePage::List
-                                if (THEME_CAROUSEL_TOP
-                                    ..THEME_CAROUSEL_TOP + k230_shell_rust::theme_carousel::EXPANDED_H)
+                                if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h)
                                     .contains(&pos.1) =>
                             {
                                 self.theme_carousel.down(id, pos, time_ms);
                             }
                             ThemePage::Preview
                                 if (BACKGROUND_CAROUSEL_TOP
-                                    ..BACKGROUND_CAROUSEL_TOP
-                                        + k230_shell_rust::theme_carousel::EXPANDED_H)
+                                    ..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h)
                                     .contains(&pos.1) =>
                             {
                                 self.background_carousel.down(id, pos, time_ms);
@@ -2381,8 +2379,8 @@ fn serve() -> Result<(), String> {
         wifi_dragged: false,
         themes,
         theme_view: ThemeView::default(),
-        theme_carousel: Carousel::default(),
-        background_carousel: Carousel::default(),
+        theme_carousel: Carousel::new(THEME_GEOMETRY),
+        background_carousel: Carousel::new(BACKGROUND_GEOMETRY),
         panel_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,

@@ -133,16 +133,26 @@ pub enum ThemeIntent {
 }
 
 /// Top of the theme carousel band (below the "Themes" heading/subtext).
+/// This page's carousel is the Themes page's hero content (see
+/// `theme_carousel::THEME_GEOMETRY`'s own doc), so almost everything below
+/// this line is the carousel itself, its name label, and its origin
+/// caption -- the page is otherwise deliberately uncluttered.
 pub const THEME_CAROUSEL_TOP: f64 = 204.0;
 /// Top of the background carousel band on the Preview page (below the
-/// palette swatches, screen-crop preview, and "Backgrounds" heading).
+/// palette swatches, screen-crop preview, and "Backgrounds" heading). This
+/// carousel is smaller than the Themes page's hero
+/// (`theme_carousel::BACKGROUND_GEOMETRY`) because everything above this
+/// line already fills a meaningful share of the page.
 pub const BACKGROUND_CAROUSEL_TOP: f64 = 662.0;
 /// The Preview page's Cancel/Apply footer card's own top y. Unlike the old
 /// scrolling row list, the background carousel's height never depends on
 /// how many backgrounds a theme has, so this footer is a fixed offset
-/// below the carousel band, not a floating one.
+/// below the carousel band, not a floating one. The `120.0` gap (not the
+/// smaller `104.0` this used before the carousel grew) leaves clear space
+/// between the background's own name/status caption and this footer, both
+/// of which now share this same headroom regardless of geometry size.
 pub const PREVIEW_FOOTER_Y: f64 =
-    BACKGROUND_CAROUSEL_TOP + crate::theme_carousel::EXPANDED_H + 104.0;
+    BACKGROUND_CAROUSEL_TOP + crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 120.0;
 
 impl ThemeView {
     pub fn open(&mut self) -> ThemeRequest {

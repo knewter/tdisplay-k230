@@ -423,6 +423,17 @@ fn palette_rgb(value: &str) -> Option<u32> {
     u32::from_str_radix(rgb, 16).ok()
 }
 
+/// The decode target size for a cached thumbnail variant under a given
+/// carousel's own geometry (see `theme_thumbnails.rs`'s "Two geometries, so
+/// two sizes per variant"): `Expanded` decodes at the centered slice's own
+/// size, `Slice` at a fully-collapsed side slice's size.
+fn variant_size(geometry: &theme_carousel::CarouselGeometry, variant: Variant) -> (u32, u32) {
+    match variant {
+        Variant::Expanded => (geometry.expanded_w.round() as u32, geometry.expanded_h.round() as u32),
+        Variant::Slice => (geometry.slice_w.round() as u32, geometry.slice_h.round() as u32),
+    }
+}
+
 /// Paints one Quattro-style Cover Flow carousel: `ids[position.round()]`
 /// expanded and centered, its shingled skewed neighbors fanned either side.
 /// Shared by the theme carousel (List page) and a theme's background
@@ -435,6 +446,7 @@ fn paint_carousel(
     dim_color: u32,
     style: VisualStyle,
     thumbnails: Option<&ThemeThumbnailCache>,
+    geometry: &theme_carousel::CarouselGeometry,
     position: f64,
     ids: &[&str],
     center_x: f64,
@@ -444,8 +456,8 @@ fn paint_carousel(
         return;
     }
     let centered = position.round().clamp(0.0, (ids.len() - 1) as f64) as usize;
-    let skew = theme_carousel::SKEW;
-    for slice in theme_carousel::visible_slices(position, ids.len(), center_x, top_y) {
+    let skew = geometry.skew;
+    for slice in theme_carousel::visible_slices(geometry, position, ids.len(), center_x, top_y) {
         let Some(id) = ids.get(slice.index) else {
             continue;
         };
@@ -555,6 +567,7 @@ fn paint_theme_chooser(
                         dim_color,
                         style,
                         thumbnails,
+                        &theme_carousel::THEME_GEOMETRY,
                         view.theme_position,
                         &ids,
                         center_x,
@@ -566,7 +579,8 @@ fn paint_theme_chooser(
                         .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
                     let entry = &list.themes[centered];
                     let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
-                    let label_y = THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 24.0;
+                    let label_y =
+                        THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 24.0;
                     heading(cr, &entry.label, 28.0, label_y, w - 56.0, 30.0, style.text);
                     let status = if is_current {
                         "Current theme"
@@ -794,6 +808,7 @@ fn paint_theme_chooser(
                     dim_color,
                     style,
                     thumbnails,
+                    &theme_carousel::BACKGROUND_GEOMETRY,
                     view.background_position,
                     &ids,
                     center_x,
@@ -804,7 +819,9 @@ fn paint_theme_chooser(
                     .round()
                     .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
                 let background = &preview.backgrounds[centered];
-                let label_y = BACKGROUND_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 24.0;
+                let label_y = BACKGROUND_CAROUSEL_TOP
+                    + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
+                    + 24.0;
                 heading(
                     cr,
                     &background_display_label(&background.label),
@@ -888,10 +905,13 @@ fn paint_theme_chooser(
     }
     // The List page has no pinned footer of its own; anchor its own
     // pending/error/message line just below the carousel's fixed-height
-    // content (the carousel itself, its name label, and its caption).
+    // content (the carousel itself, its name label, and its caption). The
+    // `90.0` gap (not `70.0`, which left this line nearly touching the
+    // status caption above it once measured precisely) clears the status
+    // caption's own text height with a few pixels to spare.
     let message_y = match view.page {
         ThemePage::List => {
-            (THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 70.0).min(h - 167.0)
+            (THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0).min(h - 167.0)
         }
         _ => footer_y - 41.0,
     };
@@ -1354,7 +1374,9 @@ fn wifi_content_bottom(view: &WifiPublic) -> f64 {
 /// depends on the theme count, unlike the row list it replaced.
 fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
     match view.page {
-        ThemePage::List => THEME_CAROUSEL_TOP + theme_carousel::EXPANDED_H + 70.0,
+        ThemePage::List => {
+            THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0
+        }
         ThemePage::Preview | ThemePage::Controls => f64::MAX,
     }
 }
@@ -2300,18 +2322,45 @@ impl RendererCache {
                 let Some(list) = chooser.list.as_ref() else {
                     return changed;
                 };
-                for slice in
-                    theme_carousel::visible_slices(chooser.theme_position, list.themes.len(), 0.0, 0.0)
+                // `visible_slices` is sorted ascending by paint z-order --
+                // farthest neighbor first, the centered slice last -- which
+                // is the right order to *paint* (so the centered slice ends
+                // up on top) but the wrong order to *request decodes* in:
+                // the bounded worker queue (`theme_thumbnails::QUEUE`) means
+                // whichever ids get `request()`-ed first each frame claim
+                // its few slots, so painting order left the one slice a
+                // user actually sees at rest -- the centered one -- decoding
+                // *last* of every nearby id. That went unnoticed at the
+                // smaller pre-hero size (every decode was fast enough not to
+                // matter); the Themes hero's much larger `Expanded` bitmap
+                // makes a single decode slow enough under software
+                // (Pixman/Cairo, no GPU) decode that request order is worth
+                // getting right. `.rev()` here requests centered-outward
+                // instead, with no effect on `paint_carousel`'s own separate
+                // (unreversed) call to `visible_slices` for paint order.
+                for slice in theme_carousel::visible_slices(
+                    &theme_carousel::THEME_GEOMETRY,
+                    chooser.theme_position,
+                    list.themes.len(),
+                    0.0,
+                    0.0,
+                )
+                .into_iter()
+                .rev()
                 {
                     let Some(entry) = list.themes.get(slice.index) else {
                         continue;
                     };
                     if let Some(path) = &entry.preview_path {
                         for variant in [Variant::Expanded, Variant::Slice] {
+                            let (width, height) =
+                                variant_size(&theme_carousel::THEME_GEOMETRY, variant);
                             self.thumbnails.request(ThumbnailKey {
                                 id: entry.id.clone(),
                                 path: path.clone(),
                                 variant,
+                                width,
+                                height,
                             });
                         }
                     }
@@ -2321,21 +2370,30 @@ impl RendererCache {
                 let Some(preview) = chooser.preview.as_ref() else {
                     return changed;
                 };
+                // Centered-outward request order; see the List branch above.
                 for slice in theme_carousel::visible_slices(
+                    &theme_carousel::BACKGROUND_GEOMETRY,
                     chooser.background_position,
                     preview.backgrounds.len(),
                     0.0,
                     0.0,
-                ) {
+                )
+                .into_iter()
+                .rev()
+                {
                     let Some(background) = preview.backgrounds.get(slice.index) else {
                         continue;
                     };
                     if background.kind == BackgroundKind::Image {
                         for variant in [Variant::Expanded, Variant::Slice] {
+                            let (width, height) =
+                                variant_size(&theme_carousel::BACKGROUND_GEOMETRY, variant);
                             self.thumbnails.request(ThumbnailKey {
                                 id: background.id.clone(),
                                 path: background.path.clone(),
                                 variant,
+                                width,
+                                height,
                             });
                         }
                     }
@@ -2363,7 +2421,13 @@ impl RendererCache {
                 let Some(list) = chooser.list.as_ref() else {
                     return false;
                 };
-                theme_carousel::visible_slices(chooser.theme_position, list.themes.len(), 0.0, 0.0)
+                theme_carousel::visible_slices(
+                    &theme_carousel::THEME_GEOMETRY,
+                    chooser.theme_position,
+                    list.themes.len(),
+                    0.0,
+                    0.0,
+                )
                     .into_iter()
                     .filter_map(|slice| list.themes.get(slice.index))
                     .filter(|entry| entry.preview_path.is_some())
@@ -2377,6 +2441,7 @@ impl RendererCache {
                     return false;
                 };
                 theme_carousel::visible_slices(
+                    &theme_carousel::BACKGROUND_GEOMETRY,
                     chooser.background_position,
                     preview.backgrounds.len(),
                     0.0,

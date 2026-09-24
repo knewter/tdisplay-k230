@@ -71,26 +71,42 @@ print(json.dumps(answer))
 # inside a slice's skewed shape) instead of guessing coordinates. The
 # skewed-hit-test edge cases themselves are covered by that module's own
 # unit tests; this only needs "some point solidly inside slice N".
-EXPANDED_W, EXPANDED_H = 300.0, 186.0
-SLICE_W, SLICE_H = 42.0, 169.0
-SPACING = -12.0
-ITEM_STEP = SLICE_W + SPACING
+#
+# Two geometries now, matching theme_carousel::{THEME_GEOMETRY,
+# BACKGROUND_GEOMETRY}: the Themes page's hero carousel is deliberately
+# larger (and a portrait-cropped aspect) than the Preview page's background
+# carousel, which has far less spare vertical budget on that page. See that
+# module's own doc for why.
+THEME_GEOMETRY = {"expanded_w": 480.0, "expanded_h": 640.0, "slice_w": 68.0,
+                  "slice_h": 582.0, "spacing": -19.0}
+BACKGROUND_GEOMETRY = {"expanded_w": 420.0, "expanded_h": 260.0, "slice_w": 59.0,
+                       "slice_h": 237.0, "spacing": -16.0}
 THEME_TOP = 204.0
 BACKGROUND_TOP = 662.0
-PREVIEW_FOOTER_Y = BACKGROUND_TOP + EXPANDED_H + 104.0
+PREVIEW_FOOTER_Y = BACKGROUND_TOP + BACKGROUND_GEOMETRY["expanded_h"] + 120.0
 
 
-def slice_center(selected, index, center_x, top_y):
+def item_step(geometry):
+    return geometry["slice_w"] + geometry["spacing"]
+
+
+def slice_center(geometry, selected, index, center_x, top_y):
     """The exact center of carousel slice `index`'s rect when `selected` is
     centered -- theme_carousel::exact_layout, transcribed for the test."""
     relative = index - selected
-    preview_x = center_x - EXPANDED_W / 2.0
+    expanded_w = geometry["expanded_w"]
+    expanded_h = geometry["expanded_h"]
+    slice_w = geometry["slice_w"]
+    slice_h = geometry["slice_h"]
+    spacing = geometry["spacing"]
+    step = item_step(geometry)
+    preview_x = center_x - expanded_w / 2.0
     if relative == 0:
-        return center_x, top_y + EXPANDED_H / 2.0
-    x = (preview_x + relative * ITEM_STEP if relative < 0
-         else preview_x + EXPANDED_W + SPACING + (relative - 1) * ITEM_STEP)
-    y = top_y + (EXPANDED_H - SLICE_H) / 2.0
-    return x + SLICE_W / 2.0, y + SLICE_H / 2.0
+        return center_x, top_y + expanded_h / 2.0
+    x = (preview_x + relative * step if relative < 0
+         else preview_x + expanded_w + spacing + (relative - 1) * step)
+    y = top_y + (expanded_h - slice_h) / 2.0
+    return x + slice_w / 2.0, y + slice_h / 2.0
 
 
 def wait_for(predicate, seconds=25):
@@ -251,8 +267,10 @@ def main():
 
             # --- Browse by drag: 1:1, no side effect, no confirm. ---
             center_x = 284.0
-            theme_center = slice_center(0, 0, center_x, THEME_TOP)
-            drag(theme_center[0] + 60.0, theme_center[0] - 120.0, theme_center[1])  # -6 slots
+            theme_step = item_step(THEME_GEOMETRY)
+            theme_center = slice_center(THEME_GEOMETRY, 0, 0, center_x, THEME_TOP)
+            drag(theme_center[0] + 2 * theme_step, theme_center[0] - 4 * theme_step,
+                 theme_center[1])  # -6 slots
             dragged = capture("theme-list-dragged.png")
             # Every fixture theme shares one solid-color preview image, so
             # two different *centered* indices can render pixel-identical
@@ -260,7 +278,7 @@ def main():
             # neighbors either side, same imagery); extend the band to
             # include the name label below the carousel, which always
             # differs between two different centered themes.
-            band = (20, int(THEME_TOP), 548, int(THEME_TOP + EXPANDED_H) + 70)
+            band = (20, int(THEME_TOP), 548, int(THEME_TOP + THEME_GEOMETRY["expanded_h"]) + 90)
             assert ImageChops.difference(listing.crop(band), dragged.crop(band)).getbbox(), \
                 "drag did not move the theme carousel"
             assert calls() == [["list"]], "browsing must never itself request a preview"
@@ -269,10 +287,14 @@ def main():
             # The exact slot the preceding drag settled on is a timing
             # detail of this synthetic IPC-injected touch harness (each
             # motion/up is its own round trip, unlike a real continuous
-            # touch stream), not something this test should hardcode; "two
-            # slices to the right of roughly where the drag left off" is
-            # enough to land on a different slice than the drag alone did.
-            side = slice_center(6, 8, center_x, THEME_TOP)
+            # touch stream), not something this test should hardcode; "one
+            # slice to the right of roughly where the drag left off" is
+            # enough to land on a different slice than the drag alone did,
+            # and (unlike the previous, much wider-margined geometry) is as
+            # far from center as this hero carousel's tight side margin
+            # keeps on-panel at all -- see theme_carousel.rs's own doc for
+            # why this carousel's neighbors barely peek in from the edge.
+            side = slice_center(THEME_GEOMETRY, 6, 7, center_x, THEME_TOP)
             # A tap sent immediately after the preceding drag's own release
             # occasionally (observed empirically, not explained by
             # theme_carousel.rs's own logic -- its hit_test/visible_slices
@@ -305,10 +327,12 @@ def main():
                 "confirming after browsing away from the active theme must select a different one"
 
             # --- Background carousel: browse by drag, then confirm. ---
-            bg_center = slice_center(0, 0, center_x, BACKGROUND_TOP)
-            drag(bg_center[0], bg_center[0] - ITEM_STEP, bg_center[1])  # one slot: still 0 -> still 1
+            bg_step = item_step(BACKGROUND_GEOMETRY)
+            bg_center = slice_center(BACKGROUND_GEOMETRY, 0, 0, center_x, BACKGROUND_TOP)
+            drag(bg_center[0], bg_center[0] - bg_step, bg_center[1])  # one slot: still 0 -> still 1
             bg_dragged = capture("theme-background-dragged.png")
-            bg_band = (20, int(BACKGROUND_TOP), 548, int(BACKGROUND_TOP + EXPANDED_H))
+            bg_band = (20, int(BACKGROUND_TOP), 548,
+                       int(BACKGROUND_TOP + BACKGROUND_GEOMETRY["expanded_h"]))
             assert ImageChops.difference(preview_capture.crop(bg_band), bg_dragged.crop(bg_band)).getbbox(), \
                 "drag did not move the background carousel"
             assert all(row[0] != "activate" for row in calls())
