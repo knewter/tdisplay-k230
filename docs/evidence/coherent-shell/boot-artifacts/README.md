@@ -40,7 +40,7 @@ sha256sum "$boot_dir"/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_
 Check that `bootargs.txt` has exactly one `init=` token and it names the
 evaluated coherent system plus `/init`. Compare **all** eight file hashes with
 the running card before deciding which files need replacement. The previous
-[root-growth selection](../../../storage-capacity/README.md) imported the
+[root-growth selection](../../storage-capacity/README.md) imported the
 whole matching closure and found kernel/initrd hashes unchanged, so it
 replaced only differing `bootargs.txt` and DTB bytes. That prior comparison
 does not establish that this coherent candidate has the same kernel/initrd;
@@ -64,6 +64,6 @@ recovery image
 `/nix/store/b384ag314xp1gprqy3i5h7sbsci3fmm0-k230-sd-image.img`:
 `sfdisk` reported start 8192/size 229376 sectors, all eight named files
 extracted, and OpenSBI's wrapped image SHA256 was
-`9627edbeea9b115d70491c6d23b6aca61cd502fd7760d7ee179f42c99`.
+`9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99`.
 That rehearsal validates extraction syntax and the fixed layout only; it
 does not identify or validate the new coherent image.
