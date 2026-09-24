@@ -87,6 +87,9 @@ jobs:
       - name: Check launcher Help and application navigation
         run: python3 tests/test_launcher_navigation.py
 
+      - name: Check Settings capabilities and confirmed actions
+        run: python3 tests/test_device_settings.py
+
       - name: Check opt-in shell appearance receiver and theme transaction
         run: |
           python3 tests/test_handheld_theme_default.py

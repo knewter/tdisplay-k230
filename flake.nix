@@ -162,6 +162,7 @@
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
         handheld-theme-default = pkgsCross.callPackage ./nix/handheld-theme-default { };
+        handheld-settings = pkgsCross.callPackage ./nix/handheld-settings.nix { };
         # Opt-in command only; no normal service/default selection until the
         # shared theme consumers and physical rollback trial pass.
         handheld-theme-command = pkgsCross.callPackage ./nix/handheld-theme-command.nix {
