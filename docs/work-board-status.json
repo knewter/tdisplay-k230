@@ -55,8 +55,8 @@
       "reviewRevision": "34cb971e",
       "cover": {
         "path": "docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png",
-        "caption": "Rust app drawer on the K230 — navigation fixes pending",
-        "provenance": "Native board capture \u2014 navigation fixes pending"
+        "caption": "Rust app drawer on the K230 \u2014 navigation fixes pending",
+        "provenance": "Board capture"
       }
     },
     "the-shell-loads-omarchy-themes": {
