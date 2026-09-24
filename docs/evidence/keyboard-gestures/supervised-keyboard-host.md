@@ -3,7 +3,7 @@
 The optional coherent shell now starts wvkbd through a `shell-keyboard`
 systemd unit bound to `shell.service`. Its bounded wrapper waits for exactly
 one owned Wayland socket and executes the unchanged wvkbd binary with the
-configured 420 px height and `--hidden`. `Restart=always`, a three-second
+configured height (400 px default; 420 px in the QEMU fixture) and `--hidden`. `Restart=always`, a three-second
 delay, and disabled systemd start-rate latching recover a keyboard that exits
 after temporary or prolonged output loss without a rapid retry loop. The coherent
 Sway config no longer starts a duplicate keyboard. The noncoherent Sway path
