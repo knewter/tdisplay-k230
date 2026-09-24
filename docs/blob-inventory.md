@@ -1268,6 +1268,11 @@ DATA 05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d  docs/evid
 DATA de1da296526f5f6feb4d44972fc3ccd88ce495be38265a788e0463031faae405  docs/evidence/wifi-settings/webos-polish-qemu/wifi-list-dark.png
 DATA e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8  docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png
 DATA 95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a  docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png
+DATA e2c0ba874a9bb5dcf1032bdcf15a1cd1c4817f21232ff8e5acbfb47445f85a9b  docs/evidence/omarchy-themes/quattro-picker-parity/dark-catppuccin-background-selected.png
+DATA 80749cf5e3d95f1637f8ed3fa428ee035a342ec4767c3667f4f353e9d322a574  docs/evidence/omarchy-themes/quattro-picker-parity/dark-catppuccin-preview.png
+DATA dfee60f07b4940903ddd9f4ac2e6ed6efb29474db1b937e24d8f4a324b5e93ee  docs/evidence/omarchy-themes/quattro-picker-parity/light-catppuccin-latte-background-selected.png
+DATA f488d4bf3cc0f454c05dc3413ef5c840ee9163ca91b54067b076cc5871190e2d  docs/evidence/omarchy-themes/quattro-picker-parity/light-catppuccin-latte-preview.png
+DATA 237c63820485263b53806aee8c647dcc687c0c403db80a402bfedb4beb1c8d2b  docs/evidence/omarchy-themes/quattro-picker-parity/theme-list.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
