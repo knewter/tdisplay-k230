@@ -20,9 +20,10 @@ The theme checkout is never written. Source inspection caps are recorded in
 
 ```text
 python3 tests/test_omarchy_theme_activation.py
-  PASS: 5 host tests: unchanged direct source, curated outputs, legacy scratch
+  PASS: 6 host tests: unchanged direct source, curated outputs, legacy scratch
   conversion, path/symlink/size/palette rejection, old-generation retention,
-  source edit/clone path and trusted helper update invalidation.
+  source edit/clone path and trusted helper update invalidation, and rejection
+  when a checkout changes during preparation before generation publication.
 python3 tools/theme_activate.py fuchsblau --source /tmp/k230-omarchy-theme-fixtures/community --state-root /tmp/k230-theme-prep-final --prepare-only
   PASS: 58 resolved palette keys, 3 background candidates, Yaru-blue selector.
 python3 tools/theme_activate.py catppuccin --source /tmp/k230-omarchy-theme-fixtures/builtins --state-root /tmp/k230-theme-prep-final --prepare-only
@@ -35,6 +36,9 @@ These counts are host parse/preparation results, not claims that wallpapers,
 icons, gradients, applications or touch surfaces rendered. The next source
 boundary is a bounded shell-side prepare/commit/rollback acknowledgement,
 followed by a compatible `omarchy-theme-set NAME` wrapper and Nix service.
+An authored `foot.ini` full-file override is withheld: it may contain terminal
+directives beyond appearance data. A safe appearance-only adapter remains
+OpenSpec task 3.4, so this checkpoint does not claim full Foot theme support.
 Until then the command has an explicit `--prepare-only` flag and cannot change
 the active shell. Card/drawer, Settings, notifications, keyboard and wallpaper
 consumers remain separate implementation tasks and need their named gates.

@@ -210,6 +210,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         (work / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
         if report["backgrounds"]:
             (work / "background").symlink_to("theme/" + report["backgrounds"][0])
+        if source_digest(theme) != source_hash:
+            raise ThemeError("theme source changed during preparation")
         if destination.exists():
             existing = json.loads((destination / "report.json").read_text())
             if (existing["source_sha256"] != source_hash or existing["name"] != name

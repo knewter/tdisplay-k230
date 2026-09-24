@@ -5,6 +5,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +131,27 @@ class ThemePreparation(unittest.TestCase):
                 builtins=None, tools=tools)
             self.assertNotEqual(second, third)
             self.assertNotEqual(second_report["helper_sha256"], third_report["helper_sha256"])
+
+    def test_source_changed_during_preparation_is_not_published(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            original_invoke = activation.invoke
+            changed = False
+
+            def mutate_during_helper(*args, **kwargs):
+                nonlocal changed
+                if not changed:
+                    (theme / "colors.toml").write_text(COLORS.replace("#101820", "#202830"))
+                    changed = True
+                return original_invoke(*args, **kwargs)
+
+            with mock.patch.object(activation, "invoke", side_effect=mutate_during_helper):
+                with self.assertRaisesRegex(activation.ThemeError, "changed during preparation"):
+                    call("theme", theme, state)
+            self.assertTrue(changed)
+            self.assertEqual(list((state / "generations").glob("[0-9a-f]*")), [])
 
 
 if __name__ == "__main__":
