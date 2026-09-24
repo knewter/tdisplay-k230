@@ -169,6 +169,7 @@
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
         handheld-theme-default = pkgsCross.callPackage ./nix/handheld-theme-default { };
+        handheld-theme-icons = pkgsCross.callPackage ./nix/handheld-theme-icons { };
         handheld-settings = pkgsCross.callPackage ./nix/handheld-settings.nix { };
         handheld-notifications = self.nixosConfigurations.k230.pkgs.callPackage ./nix/handheld-notifications.nix { };
         handheld-shell-rust-probe = pkgsCross.callPackage ./nix/rust-shell-probe { };

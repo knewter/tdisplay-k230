@@ -167,6 +167,7 @@ let
   rustShellBase = pkgs.callPackage ./rust-shell-client { };
   themeTools = pkgs.callPackage ./omarchy-theme-tools { };
   themeDefault = pkgs.callPackage ./handheld-theme-default { };
+  themeIcons = pkgs.callPackage ./handheld-theme-icons { };
   themeDefaultId = (builtins.fromJSON (builtins.readFile ./handheld-theme-default/default-report.json)).generation;
   themeCommand = pkgs.callPackage ./handheld-theme-command.nix {
     omarchyThemeTools = themeTools;
@@ -260,7 +261,7 @@ let
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
     # Nix package icon trees are not necessarily merged into a profile's
     # share/icons tree. Keep their desktop art reachable by themed name.
-    export XDG_DATA_DIRS="${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${themeIcons}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
