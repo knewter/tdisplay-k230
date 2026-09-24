@@ -1346,13 +1346,16 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	/* Reveal progress spans the actual Rust panel travel (drawer 81%, shade
+	 * 65%). The separate entry_distance is only a release decision threshold;
+	 * using a shorter travel here amplifies movement under the finger. */
 	if (shell.drawer_gesture.contacts) {
 		card_shell_drawer_motion(&shell.drawer_gesture, id, x, y,
 			shell.policy.config.entry_distance);
 		if (id == shell.drawer_gesture.owner && shell.reveal.active)
 			card_shell_reveal_update(&shell.reveal,
 				card_shell_reveal_progress(&shell.drawer_gesture, x, y,
-					shell.policy.config.height * .60, false));
+					shell.policy.config.height * .81, false));
 		return true;
 	}
 	if (shell.shade_gesture.contacts) {
@@ -1361,7 +1364,7 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		if (id == shell.shade_gesture.owner && shell.reveal.active)
 			card_shell_reveal_update(&shell.reveal,
 				card_shell_reveal_progress(&shell.shade_gesture, x, y,
-					shell.policy.config.height * .55, true));
+					shell.policy.config.height * .65, true));
 		return true;
 	}
 	if (shell.button_down) {
