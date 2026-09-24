@@ -758,6 +758,10 @@ in
 
     systemd.services.shell-keyboard = lib.mkIf cfg.coherentShell {
       description = "Supervised on-screen keyboard";
+      # Output loss can make wvkbd exit repeatedly until the connector comes
+      # back. A three-second retry bounds churn; disabling the start-rate
+      # latch lets it recover even after a long absence.
+      startLimitIntervalSec = 0;
       wantedBy = [ "shell.service" ];
       bindsTo = [ "shell.service" ];
       partOf = [ "shell.service" ];
@@ -770,7 +774,7 @@ in
         WorkingDirectory = config.users.users.shell.home;
         ExecStart = "${supervisedKeyboard}/bin/k230-supervised-keyboard";
         Restart = "always";
-        RestartSec = 1;
+        RestartSec = 3;
         UMask = "0077";
       };
     };
