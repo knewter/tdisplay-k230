@@ -35,6 +35,11 @@ def load(name,path):
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
 
+def runtime_directory(output, index):
+    namespace=hashlib.sha256(str(output).encode()).hexdigest()[:16]
+    return Path('/run/k230-card-shell-repaint'+namespace+str(index))
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--board',action='store_true',required=True)
@@ -59,8 +64,9 @@ def main():
             for index in range(1,2):
                 write(args.output/'progress.json',{'state':'running','run':index,'finished_runs':len(result['runs'])})
                 target=args.output/('run-'+str(index));target.mkdir();public=target/'public';public.mkdir()
-                namespace=hashlib.sha256(str(args.output).encode()).hexdigest()[:16]
-                runtime=Path('/run/k230-card-repaint-'+namespace+'-'+str(index))
+                runtime=runtime_directory(args.output,index)
+                if not session_module.RUNTIME_PATH.fullmatch(str(runtime)):
+                    raise RuntimeError('runtime must satisfy the session guard before arming')
                 if runtime.exists():raise RuntimeError('preserve previous runtime directory')
                 runtime.mkdir(mode=0o711);runtime.chmod(0o711)
                 system=session_module.System();session=session_module.Session(runtime,system)

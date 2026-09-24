@@ -65,6 +65,7 @@ jobs:
           python3 tests/test_card_shell_board_tools.py
           python3 tests/test_card_shell_rvv_benchmark.py
           python3 tests/test_card_shell_cache_session.py
+          python3 tests/test_card_repaint_runner.py
 
       - name: Check opaque card scale pixels
         run: python3 tests/test_card_scaled_cache.py

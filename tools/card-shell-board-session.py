@@ -22,6 +22,7 @@ UNIT = 'k230-card-shell.service'
 INPUT_UNIT = 'k230-card-shell-input.service'
 STORE = re.compile(r'^/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._/-]+)?$')
 DEVICE_NAME = 'K230 injected touchscreen'
+RUNTIME_PATH = re.compile(r'/run/k230-card-shell(?:-[a-z0-9]+)?')
 BENCH_KEYS = {'v','run','event','t_ns','clock','backend','renderer','width','height','output_format','input','cards','input_id','gesture_id','kind','source','frame_id','update_cpu_ns','final','presented','phase','cpu_ns','memory_bytes','scope'}
 CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts','hits','misses','fallbacks','bytes'}
 CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost','repaint-cost','scaled-cache'}
@@ -396,7 +397,7 @@ def main(argv=None):
             return 0
         if os.geteuid() != 0 or not platform.machine().startswith('riscv'):
             raise RuntimeError('execution requires the reserved RISC-V board root session')
-        if not re.fullmatch(r'/run/k230-card-shell(?:-[a-z0-9]+)?', str(args.runtime)):
+        if not RUNTIME_PATH.fullmatch(str(args.runtime)):
             raise ValueError('invalid protected runtime directory')
         os.umask(0o077)
         args.runtime.mkdir(mode=0o711, exist_ok=True)
