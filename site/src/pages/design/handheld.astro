@@ -1,0 +1,68 @@
+---
+import Base from "../../layouts/Base.astro";
+import { url } from "../../lib/specs";
+import "../../styles/handheld-design.css";
+
+const icon = (name: string) => url(`design/handheld/${name}.svg`);
+const apps = [
+  { id: "terminal", name: "Terminal", subtitle: "Foot", icon: "foot", tone: "mint" },
+  { id: "monitor", name: "Monitor", subtitle: "htop", icon: "htop", tone: "lime" },
+  { id: "video", name: "Video", subtitle: "mpv", icon: "mpv", tone: "coral" },
+  { id: "files", name: "Files", subtitle: "nnn", icon: "files", tone: "blue" },
+  { id: "editor", name: "Editor", subtitle: "nano", icon: "editor", tone: "violet" },
+  { id: "help", name: "Help", subtitle: "Built in", icon: "help", tone: "gold" },
+];
+---
+<Base title="Handheld shell · interaction study" source="hand" description="An interactive design study for a gesture-driven handheld shell. Sample content; not an installed UI.">
+  <main class="handheld-study">
+    <header class="study-heading">
+      <p class="study-kicker"><a href={url("handheld/")}>Handheld shell</a> <span>/</span> interaction study 01</p>
+      <div class="heading-grid"><div><h1>One surface.<br /><em>All your apps.</em></h1><p class="study-lead">A live-card Home for the 568 × 1232 portrait display. An open app shrinks into the deck; the deck moves between apps, the drawer, and a quiet notification shade.</p></div><div class="study-stamp"><span>Design direction</span><b>Glass-first<br />navigation</b><small>Interactive study · sample content<br />September 2026</small></div></div>
+    </header>
+    <div class="study-layout">
+      <section class="device-area" aria-label="Interactive handheld prototype">
+        <div class="device-meta"><span>01 / LIVE PROTOTYPE</span><span>568 × 1232 REFERENCE</span></div>
+        <div class="device" id="device" data-view="deck" data-active="terminal" tabindex="0" aria-label="Interactive handheld screen. Use pointer gestures or the playback controls beside it.">
+          <div class="glass">
+            <div class="wallpaper" aria-hidden="true"><div class="wallpaper-orb"></div><div class="wallpaper-grid"></div></div>
+            <div class="system-line"><span class="system-time">09:41</span><span class="system-dots" aria-label="Network signal">●●●</span></div>
+            <div class="deck-view view">
+              <div class="deck-head"><span class="overline">WEDNESDAY / 23 SEPTEMBER</span><h2>Good morning<span class="headline-dot">.</span></h2><p><span class="open-count">Three apps are</span> right where you left them.</p></div>
+              <div class="cards" aria-label="Open apps">
+                <button class="app-card card-terminal" data-card="terminal" type="button" aria-label="Expand Terminal"><span class="card-top"><img src={icon("foot")} alt="" /><span><b>Terminal</b><small>Foot · active</small></span><i aria-hidden="true">↗</i></span><span class="terminal-preview"><span class="terminal-line dim-line">nixos@k230 ~</span><span class="terminal-line"><em>➜</em> printf 'hello, handheld'</span><span class="terminal-line output">hello, handheld</span><span class="terminal-line"><em>➜</em> <span class="cursor"></span></span></span><span class="card-bottom">YOUR WORKSPACE <span>01 / 03</span></span></button>
+                <button class="app-card card-monitor" data-card="monitor" type="button" aria-label="Expand Monitor"><span class="card-top"><img src={icon("htop")} alt="" /><span><b>Monitor</b><small>htop · running</small></span><i aria-hidden="true">↗</i></span><span class="monitor-preview"><span>CPU <b>24%</b></span><span class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>MEM <b>188 / 1024 MB</b></span><span class="meter"><i></i></span></span><span class="card-bottom">SYSTEM ACTIVITY <span>02 / 03</span></span></button>
+                <button class="app-card card-video" data-card="video" type="button" aria-label="Expand Video"><span class="card-top"><img src={icon("mpv")} alt="" /><span><b>Video</b><small>mpv · paused</small></span><i aria-hidden="true">↗</i></span><span class="video-preview"><span class="video-sun"></span><span class="video-hills"></span><span class="play-mark">▶</span></span><span class="card-bottom">A QUIETER MOMENT <span>03 / 03</span></span></button>
+                {apps.slice(3).map(app => <button class={`app-card card-generic ${app.tone}`} data-card={app.id} type="button" aria-label={`Expand ${app.name}`}><span class="card-top"><img src={icon(app.icon)} alt="" /><span><b>{app.name}</b><small>{app.subtitle} · open</small></span><i aria-hidden="true">↗</i></span><span class="generic-preview"><img src={icon(app.icon)} alt="" /><strong>{app.name}</strong><small>Sample application surface</small></span><span class="card-bottom">RETURN TO {app.name.toUpperCase()} <span>LIVE CARD</span></span></button>)}
+              </div>
+              <p class="deck-hint">SWIPE CARDS <span>·</span> PULL UP FOR APPS</p>
+            </div>
+            <div class="app-view view">
+              <div class="app-title"><img class="active-icon" src={icon("foot")} alt="" /><span><small class="active-subtitle">Foot</small><b class="active-title">Terminal</b></span><span class="app-live">LIVE</span></div>
+              <div class="app-content terminal-content"><div class="terminal-greeting">NixOS on K230<br />Welcome back, explorer.</div><div class="terminal-command"><span>➜</span> pwd</div><p>/home/nixos</p><div class="terminal-command"><span>➜</span> nnn</div><p class="file-list">▸ Documents<br />▸ Downloads<br />▸ Pictures<br />▸ Videos</p><div class="terminal-command"><span>➜</span> <i class="cursor"></i></div></div>
+              <div class="app-content monitor-content"><div class="big-reading">24<span>%</span></div><p>CPU ACTIVITY · ILLUSTRATIVE</p><div class="large-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="monitor-stats"><span>MEMORY<b>188 MB</b></span><span>TASKS<b>42</b></span><span>UPTIME<b>02:18</b></span></div></div>
+              <div class="app-content video-content"><div class="video-landscape"><span class="video-sun"></span><span class="video-hills"></span><span class="play-mark">▶</span></div><h3>A quieter moment</h3><p>Sample video frame · paused</p><div class="video-progress"><i></i></div><div class="video-times"><span>00:42</span><span>03:18</span></div></div>
+              <div class="app-content generic-content"><img class="generic-active-icon" src={icon("files")} alt="" /><h3 class="generic-heading">Files</h3><p>Sample application content</p></div>
+              <div class="edge-hint">SWIPE UP FROM EDGE FOR HOME</div>
+            </div>
+            <div class="drawer-view view"><div class="drawer-head"><span class="overline">YOUR DEVICE</span><h2>All apps<span class="headline-dot">.</span></h2><p>Everything installed, one upward pull away.</p></div><div class="app-grid">{apps.map(app => <button type="button" class={`drawer-app ${app.tone}`} data-launch={app.id}><span class="icon-tile"><img src={icon(app.icon)} alt="" /></span><b>{app.name}</b><small>{app.subtitle}</small></button>)}</div><div class="drawer-foot">SWIPE DOWN TO RETURN TO CARDS</div></div>
+            <div class="shade-view view"><div class="shade-head"><span class="overline">WEDNESDAY, 23 SEPTEMBER</span><h2>Good morning.</h2><span class="shade-clock">09:41</span></div><div class="quick-settings"><div><span class="setting-glyph">◉</span><b>Wi-Fi</b><small>Connected</small></div><div><span class="setting-glyph">⌨</span><b>Keyboard</b><small>Available</small></div></div><div class="notifications-title">NOTIFICATIONS <span>2</span></div><div class="notification"><img src={icon("htop")} alt="" /><span><b>Monitor</b><small>All systems are looking good.</small></span><time>now</time></div><div class="notification"><img src={icon("mpv")} alt="" /><span><b>Video</b><small>Playback paused at 00:42.</small></span><time>8m</time></div><button class="shade-footer" type="button" id="open-settings"><img src={icon("settings")} alt="" /> Settings <span>↗</span></button><div class="drawer-foot">SWIPE UP TO DISMISS</div></div>
+            <div class="settings-view view"><button class="settings-back" id="settings-back" type="button">← <span>NOTIFICATIONS</span></button><div class="settings-head"><img src={icon("settings")} alt="" /><span class="overline">DEVICE CONTROLS</span><h2>Settings<span class="headline-dot">.</span></h2></div><div class="settings-group"><span class="overline">CONNECTION</span><div class="settings-row"><span class="settings-row-icon">◉</span><span><b>Wi-Fi</b><small>Connected network</small></span><i>›</i></div></div><div class="settings-group"><span class="overline">INPUT & DISPLAY</span><div class="settings-row"><span class="settings-row-icon">⌨</span><span><b>On-screen keyboard</b><small>Available in text fields</small></span><i>›</i></div><div class="settings-row"><span class="settings-row-icon">☼</span><span><b>Display</b><small>Appearance preview</small></span><i>›</i></div></div><p class="settings-disclaimer">Illustrative settings surface. Controls here show navigation and layout only.</p></div>
+            <div class="toast" role="status" aria-live="polite"></div>
+            <div class="gesture-area" aria-hidden="true"><span></span></div>
+          </div>
+        </div>
+        <p class="device-caption">Illustrative content. This is a browser prototype, not a capture from the board.</p>
+      </section>
+      <aside class="control-area"><p class="control-eyebrow">TRY THE MOTIONS</p><h2>A smaller shell<br /><em>with room to breathe.</em></h2><p class="control-intro">Drag on the screen with a mouse or finger, or play an example below. The same app stays recognizable as it crosses between full screen and the deck.</p><div class="motion-list">
+        <button type="button" data-demo="home"><span class="motion-index">01</span><span><b>App to Home</b><small>Pull up from the bottom edge</small></span><span class="motion-arrow">↗</span></button>
+        <button type="button" data-demo="swipe"><span class="motion-index">02</span><span><b>Move through cards</b><small>Swipe sideways in the deck</small></span><span class="motion-arrow">→</span></button>
+        <button type="button" data-demo="drawer"><span class="motion-index">03</span><span><b>Open the app drawer</b><small>Pull up from Home</small></span><span class="motion-arrow">↑</span></button>
+        <button type="button" data-demo="expand"><span class="motion-index">04</span><span><b>Return to an app</b><small>Tap a live card</small></span><span class="motion-arrow">↗</span></button>
+        <button type="button" data-demo="throw"><span class="motion-index">05</span><span><b>Throw a card away</b><small>Close, with a refusal example</small></span><span class="motion-arrow">↑</span></button>
+        <button type="button" data-demo="shade"><span class="motion-index">06</span><span><b>See notifications</b><small>Pull down from the top</small></span><span class="motion-arrow">↓</span></button>
+      </div><div class="control-note"><span class="note-mark">✳</span><p><b>Interaction contract</b><br />Home is the live-card overview. The app drawer and shade emerge from edges; neither needs a permanent navigation bar.</p></div></aside>
+    </div>
+    <section class="study-credits"><div><p class="study-kicker">THE DESIGN LANGUAGE</p><h2>Recognizable, wherever you left it.</h2></div><p>Installed app artwork appears in cards, the drawer, and app-specific notices. Built-in destinations use small original line icons. The screen treats each app as a place to return to, not a thumbnail to decode. <a href="https://github.com/knewter/tdisplay-k230/blob/master/docs/design/handheld-prototype/README.md">Icon sources and licenses</a>.</p></section>
+  </main>
+  <script>import "../../scripts/handheld-design";</script>
+</Base>
