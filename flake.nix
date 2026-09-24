@@ -158,6 +158,9 @@
         shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
+        # Standalone pinned helper package; no theme service enters the normal
+        # image until generation/rollback and physical gates pass.
+        omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
         # Source-built route checkpoint for card-composition investigation. It
         # is intentionally outside the system closure and starts no session.
         root-growth = pkgsCross.callPackage ./nix/root-growth.nix { };
