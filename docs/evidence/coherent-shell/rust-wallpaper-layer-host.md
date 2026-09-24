@@ -14,3 +14,11 @@ git diff --check
 ```
 
 Host checks on 2026-09-24 UTC passed: 21 library tests, 4 main tests, 8 appearance receiver tests, 5 decoder tests, formatting and strict clippy. The decoder's `image` allocation limit is not a strict process RSS ceiling; measured physical memory remains a required gate.
+
+The exact source commit `0a56fb1ca9cab284217f38d38914324dcbc8ecf1` subsequently passed the RISC-V target build:
+
+```sh
+nix build "git+file://$PWD?rev=0a56fb1ca9cab284217f38d38914324dcbc8ecf1#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+Derivation `/nix/store/j2plrfjnjbzjlb8bhd52zlb9ij397f02-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv` produced `/nix/store/wlcbjyzi8447gdslp7xfr842ppwxyvny-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. This is a target package, not an installed session or panel image.
