@@ -128,7 +128,11 @@ keyboard/input-method route.
    source revision, closure (`nix path-info -rsS <out>`), Qt configure summary,
    QML JIT mode, binary/library paths, and cross-build failures. Planned build
    command once an output is added: `nix build .#qtquick-software-probe --max-jobs 1 --cores 4 --no-link --print-out-paths`.
-   **That output does not exist now; the command is a proposed gate.**
+   The opt-in `qtquick-software-probe` output now exists as a flake derivation.
+   Its first target build was interrupted at a dependency boundary before any
+   Qt target library or probe output completed; see
+   [`minimal-probe-prebuild.md`](../evidence/qtquick/minimal-probe-prebuild.md).
+   The command remains an open cross-build gate, not physical validation.
 2. With the board operator's exclusive lock and a reversible normal-service
    trial, launch this client in the existing Sway session with
    `QT_QPA_PLATFORM=wayland QT_QUICK_BACKEND=software QSG_INFO=1` and the
