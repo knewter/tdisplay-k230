@@ -15,3 +15,11 @@ nix build "git+file://$PWD?rev=23d703f77595f8dea4d69f351b7d22209da02489#handheld
 ```
 
 The target derivation `/nix/store/pp2ib3y9ysbpz9mv3nnkzxkpbrrp70xs-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv` produced `/nix/store/4xmskqli9r93qrl41qx6ybs7593pzq8j-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. `file` reports ELF64 RISC-V LP64D; `nix path-info -S` reports 114,784,312 bytes recursive closure. The added librsvg dependency increases closure relative to the earlier no-icon client. This build is not an installed session or visual board result. Remaining gates are theme generation hookup, app tap/launch, card and notification identity consumers, and physical visual/touch plus measured decode cost.
+
+Source correction `fbcdfd3222f990022db1e029766abeb2227ced37` parses comma-separated freedesktop `Directories`, `ScaledDirectories`, and `Inherits` lists. Fixtures cover a match in the second directory, the second inherited theme, and a scaled directory. Host tests and clippy pass. The exact corrected target was built with:
+
+```sh
+nix build "git+file://$PWD?rev=fbcdfd3222f990022db1e029766abeb2227ced37#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+Derivation `/nix/store/29vdbji0pa6j0j2p29wr3fl97sk8wdp0-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv` produced `/nix/store/cmdsldi6vgq22nrmc9kfqnww3f7s26ci-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. This remains a target build, not a board or physical icon observation.
