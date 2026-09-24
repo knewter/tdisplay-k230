@@ -72,6 +72,25 @@
         "provenance": "Board capture"
       }
     },
+    "the-handheld-configures-wifi-from-settings": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Build and install the corrected combined image, then verify scan, connection, Forget and reboot reconnect through real glass and a protected configuration on the reserved board.",
+      "dependencies": [
+        "the-handheld-presents-a-coherent-shell"
+      ],
+      "evidence": [
+        "docs/evidence/wifi-settings/README.md"
+      ],
+      "rationale": "The protected broker and Rust Settings flow have host tests. A paired Sway/Rust headless QEMU touch run with an invented broker proves the captured scan/list, masked entry, error and Forget-confirmation states, but no physical association or real-glass interaction.",
+      "reviewRevision": "05b5afcc88f6c92508929f34742ad4be3443edb7",
+      "cover": {
+        "path": "docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png",
+        "caption": "Wi-Fi network list with invented names and a synthetic broker",
+        "provenance": "QEMU capture"
+      }
+    },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
       "source": "in-progress",
