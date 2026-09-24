@@ -702,8 +702,9 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int width, const
 static const char *touch_deck_status(enum cs_message message) {
 	switch (message) {
 	case CS_MESSAGE_EMPTY: return "No running apps";
-	case CS_MESSAGE_PRIVATE: return "Preview hidden";
-	case CS_MESSAGE_UNAVAILABLE: return "Preview unavailable";
+	/* These states already have neutral text inside their card frame. */
+	case CS_MESSAGE_PRIVATE:
+	case CS_MESSAGE_UNAVAILABLE: return NULL;
 	case CS_MESSAGE_CLOSING: return "Closing app";
 	case CS_MESSAGE_CLOSE_REFUSED: return "App stayed open";
 	case CS_MESSAGE_CLOSE_TIMEOUT: return "App is still open";

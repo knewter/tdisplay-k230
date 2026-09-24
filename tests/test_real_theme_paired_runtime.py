@@ -26,6 +26,8 @@ def arguments():
         parser.add_argument("--" + field, required=True)
     parser.add_argument("--qemu", default="/usr/bin/qemu-riscv64-static")
     parser.add_argument("--check-restart", action="store_true")
+    parser.add_argument("--deck-visual-states", action="store_true",
+                        help="capture private and empty deck states after the paired transaction")
     return parser.parse_args()
 
 
@@ -151,7 +153,7 @@ def main():
         wait(card_endpoint.exists)
         rust_process = spawn("rust", [args.qemu, args.rust, "--serve"])
         wait(lambda: "wallpaper-commit" in log("rust") and rust_endpoint.exists(), 30)
-        spawn("client", [args.client, "--app-id", "k230.card.one"])
+        client_process = spawn("client", [args.client, "--app-id", "k230.card.one"])
         wait(lambda: "k230.card.one" in json.dumps(ipc("", 4)))
         app_before = capture("app-before.png")
         ipc("card_shell enter")
@@ -249,6 +251,26 @@ def main():
             wait(lambda: any(line.endswith(" commit") for line in log("rust-restarted").splitlines()), 8)
             reopened = capture("restarted-drawer.png")
             assert reopened.getpixel((10, 500)) == drawer_pixel
+            with socket.socket(socket.AF_UNIX) as peer:
+                peer.settimeout(3)
+                peer.connect(str(out / "k230-shell-rust.sock"))
+                peer.sendall(b"hide\n")
+                assert peer.recv(64) == b"OK\n"
+            wait(lambda: "unmap" in log("rust-restarted"))
+        if args.deck_visual_states:
+            ipc('[app_id="k230.card.one"] mark --add k230_card_private')
+            time.sleep(0.25)
+            private = capture("private-deck.png")
+            # The recognizable blue live probe is forbidden inside a private
+            # card; only its neutral placeholder and short state copy remain.
+            assert not any(r < 55 and 70 < b < 180 and b > g * 1.3
+                           for r, g, b in private.crop((120, 220, 450, 800)).getdata())
+            client_process.terminate()
+            client_process.wait(timeout=5)
+            wait(lambda: "k230.card.one" not in json.dumps(ipc("", 4)))
+            time.sleep(0.25)
+            empty = capture("empty-deck.png")
+            assert private.size == empty.size == (568, 1232)
         summary = {"result": "PASS", "class": "headless-qemu-paired-appearance",
                    "sway": args.sway, "rust": args.rust,
                    "default_generation": default.name,

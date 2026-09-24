@@ -132,6 +132,9 @@ int main(void) {
     shell.policy.message=CS_MESSAGE_NONE;
     assert(chrome());
     assert(shell.status == NULL);
+    assert(touch_deck_status(CS_MESSAGE_PRIVATE) == NULL);
+    assert(touch_deck_status(CS_MESSAGE_UNAVAILABLE) == NULL);
+    assert(!strcmp(touch_deck_status(CS_MESSAGE_CLOSE_REFUSED), "App stayed open"));
     assert(label_calls > 0);
     assert(unsetenv("SWAY_K230_CARD_TOUCH_FIRST")==0);
     free(shell.status_text);
