@@ -256,4 +256,88 @@ mod tests {
             None
         );
     }
+
+    #[test]
+    fn power_needs_loaded_settings_and_token_confirmation() {
+        let mut view = ServiceView::default();
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (60.0, 780.0),
+                (60.0, 780.0),
+                568,
+                1232,
+                &view
+            ),
+            None
+        );
+        let unavailable = Control {
+            state: ControlState::Unavailable,
+            value: None,
+            label: "Unavailable".into(),
+            detail: None,
+            action: None,
+        };
+        view.settings = Some(SettingsSnapshot {
+            network: unavailable.clone(),
+            brightness: unavailable.clone(),
+            keyboard: unavailable.clone(),
+            motion: unavailable,
+        });
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (60.0, 780.0),
+                (60.0, 780.0),
+                568,
+                1232,
+                &view
+            ),
+            Some(PanelIntent::Request(ServiceRequest::PowerRequest(
+                PowerAction::Reboot
+            )))
+        );
+        view.confirmation = Some(Confirmation {
+            token: "opaque-token".into(),
+            action: PowerAction::Reboot,
+            label: "Restart device?".into(),
+        });
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (60.0, 780.0),
+                (60.0, 780.0),
+                568,
+                1232,
+                &view
+            ),
+            None
+        );
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (80.0, 985.0),
+                (80.0, 985.0),
+                568,
+                1232,
+                &view
+            ),
+            Some(PanelIntent::Request(ServiceRequest::PowerCancel(
+                "opaque-token".into()
+            )))
+        );
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (440.0, 985.0),
+                (440.0, 985.0),
+                568,
+                1232,
+                &view
+            ),
+            Some(PanelIntent::Request(ServiceRequest::PowerConfirm(
+                "opaque-token".into()
+            )))
+        );
+    }
 }
