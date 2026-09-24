@@ -419,6 +419,12 @@ fn launch_selected(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+fn shade_close_swipe(start: (f64, f64), end: (f64, f64)) -> bool {
+    let dx = end.0 - start.0;
+    let dy = end.1 - start.1;
+    dy <= -80.0 && dx.abs() <= 80.0
+}
+
 struct ShellClient {
     compositor: CompositorState,
     layer_shell: LayerShell,
@@ -435,6 +441,7 @@ struct ShellClient {
     touch_device: Option<wl_touch::WlTouch>,
     route: Route,
     touch: TouchTrace,
+    shade_start: Option<(i32, (f64, f64))>,
     width: u32,
     height: u32,
     configured: bool,
@@ -717,6 +724,7 @@ impl ShellClient {
 
     fn hide(&mut self) {
         self.touch.cancel();
+        self.shade_start = None;
         self.nav = DrawerNavigation::default();
         self.reveal.clear();
         self.layer.take();
@@ -1003,10 +1011,13 @@ impl TouchHandler for ShellClient {
                 self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 if self.route == Route::Drawer && self.input_ready {
                     self.nav.down(id, pos, time_ms);
+                } else if self.route == Route::Shade && self.input_ready {
+                    self.shade_start = Some((id, pos));
                 }
             } else {
                 self.log("touch-second-cancel");
                 self.nav.cancel();
+                self.shade_start = None;
             }
             // The contact itself is invisible; only a changed scene paints.
         }
@@ -1032,6 +1043,13 @@ impl TouchHandler for ShellClient {
                     Some(DrawerAction::Close) => self.hide(),
                     None => {}
                 }
+            } else if self.route == Route::Shade
+                && self.input_ready
+                && self.shade_start.take().is_some_and(|(start_id, start)| {
+                    start_id == id && shade_close_swipe(start, point)
+                })
+            {
+                self.hide();
             }
             if self.dirty {
                 self.draw(qh);
@@ -1084,6 +1102,7 @@ impl TouchHandler for ShellClient {
     fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
         self.touch.cancel();
         self.nav.cancel();
+        self.shade_start = None;
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -1146,6 +1165,7 @@ fn serve() -> Result<(), String> {
         touch_device: None,
         route: Route::Drawer,
         touch: TouchTrace::default(),
+        shade_start: None,
         width: 568,
         height: 1232,
         configured: false,
@@ -1468,6 +1488,20 @@ fn main() {
 mod route_tests {
     use super::*;
     use std::os::unix::fs::DirBuilderExt;
+
+    #[test]
+    fn shade_upward_contact_closes_only_after_valid_release() {
+        let mut touch = TouchTrace::default();
+        assert!(touch.down(3, (282.0, 580.0)));
+        assert!(touch.motion(3, (280.0, 440.0)));
+        assert!(touch.up(3));
+        assert!(shade_close_swipe((282.0, 580.0), touch.position));
+        assert!(!shade_close_swipe((282.0, 580.0), (282.0, 540.0)));
+        assert!(!shade_close_swipe((282.0, 580.0), (420.0, 440.0)));
+        assert!(touch.down(4, (280.0, 580.0)));
+        touch.cancel();
+        assert!(!touch.up(4));
+    }
 
     #[test]
     fn appearance_media_requires_a_configured_still_decoder() {
