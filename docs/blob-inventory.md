@@ -1184,6 +1184,13 @@ DATA f46a27a79670a1968ceb8b4bd1fc398c8d4f3750fab75d8f96e53140b1a73493  docs/evid
 DATA 02a2fa43467c766afd3721e364ed738bff2ab22bf0ea2f2353b8e9bd3c28cf73  docs/evidence/coherent-shell/rust-visual-themes-host/latte/settings.png
 DATA b471f7de6f27b1da4c27ac3bf52f1f2f63bca3e99b02ec4ef934812e53b24b45  docs/evidence/coherent-shell/rust-visual-themes-host/latte/shade.png
 DATA ea77ac12202cc445453a9d458bfab23fe2e720e72ec4d4e0cb88dd2d1899d8a0  docs/evidence/coherent-shell/rust-visual-themes-host/latte/themes.png
+DATA 01afc171955fb0625e5d17262357af043fedbb78a2811e3b11872167ba1aff80  docs/evidence/coherent-shell/real-theme-paired-qemu/app-after.png
+DATA 8900500145efe6fdb13d5a705b385f034d2d56777311bdae8a0c3a64c8b6d3a8  docs/evidence/coherent-shell/real-theme-paired-qemu/default-deck.png
+DATA ef25eecd486e05105d261e885ccf60be774ce15bc06020d360ce6f7c2d21cd32  docs/evidence/coherent-shell/real-theme-paired-qemu/latte-deck.png
+DATA f2b5285c4b49724b5c2aaf2e8cb833126401fff0a0afaa2bd834685d5082999f  docs/evidence/coherent-shell/real-theme-paired-qemu/latte-drawer.png
+DATA 507106852a16b574cbe443f6b77c1735d77b84624bc3e689f3578bb61c1b762f  docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-deck.png
+DATA da29388bc9afc242aff7b1ee051f5badb078f42d60bdafc3b843856965c22580  docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-drawer.png
+DATA 912d9208a2a4db6ddb32844228d4ed8290c6f95cb3752654ad07fa6124528b60  docs/evidence/coherent-shell/real-theme-paired-qemu/rollback-deck.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1629,3 +1636,17 @@ measured pixel displacement, and the open physical-touch gate.
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-second-focused.png` | 4505 | DATA | `be1a5afadef475a2d132489465eff5b288e2983a22ea4f0782f159807aba44a4` |
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-start.png` | 5817 | DATA | `294a90a5ceba6bb59f49aeffc22ba6e24b0c3c6824b052da48ca217918f501b3` |
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-up.png` | 6573 | DATA | `441248f701999c8c186ef1500c865e57970928e65b86a98895b38a5d5b48808e` |
+
+### Pinned theme paired QEMU captures
+
+The seven original headless QEMU DATA captures in `docs/evidence/coherent-shell/real-theme-paired-qemu/` show the public live-card fixture over the actual bundled waves wallpaper, prepared Latte still, drawer, app, rollback, and restart. The adjacent README records exact identities, pixel tests, and hardware limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/app-after.png` | 18818 | DATA | `01afc171955fb0625e5d17262357af043fedbb78a2811e3b11872167ba1aff80` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/default-deck.png` | 68829 | DATA | `8900500145efe6fdb13d5a705b385f034d2d56777311bdae8a0c3a64c8b6d3a8` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/latte-deck.png` | 55351 | DATA | `ef25eecd486e05105d261e885ccf60be774ce15bc06020d360ce6f7c2d21cd32` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/latte-drawer.png` | 56435 | DATA | `f2b5285c4b49724b5c2aaf2e8cb833126401fff0a0afaa2bd834685d5082999f` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-deck.png` | 55361 | DATA | `507106852a16b574cbe443f6b77c1735d77b84624bc3e689f3578bb61c1b762f` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/restarted-drawer.png` | 56535 | DATA | `da29388bc9afc242aff7b1ee051f5badb078f42d60bdafc3b843856965c22580` |
+| `docs/evidence/coherent-shell/real-theme-paired-qemu/rollback-deck.png` | 55297 | DATA | `912d9208a2a4db6ddb32844228d4ed8290c6f95cb3752654ad07fa6124528b60` |

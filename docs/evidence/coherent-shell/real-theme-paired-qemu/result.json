@@ -1,0 +1,49 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-paired-appearance",
+  "sway": "/nix/store/ixamm5fj89083y41g55x8p46wfsgbllf-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/l8i7g4y9c18gm8l10m7a61cjbpgxvby4-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "default_generation": "0d16475245f13b3d7d3f036f",
+  "default_background": "backgrounds/2-waves.webp",
+  "default_wallpaper_sample": [
+    165,
+    156,
+    204
+  ],
+  "default_wallpaper_expected": [
+    165,
+    156,
+    204
+  ],
+  "latte_generation": "91f5df6022a0e2e7d6bee6a9",
+  "latte_background": "backgrounds/1-color-fade.webp",
+  "latte_wallpaper_upper": [
+    254,
+    238,
+    221
+  ],
+  "latte_wallpaper_lower": [
+    241,
+    210,
+    227
+  ],
+  "latte_wallpaper_expected_upper": [
+    254,
+    238,
+    221
+  ],
+  "latte_wallpaper_expected_lower": [
+    241,
+    210,
+    227
+  ],
+  "latte_drawer": [
+    239,
+    240,
+    243
+  ],
+  "rollback_pointer": "91f5df6022a0e2e7d6bee6a9",
+  "background_did_not_obscure_app": true,
+  "injected_failure_rolled_back_both": true,
+  "restart_preserved_selected_generation": true
+}
