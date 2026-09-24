@@ -1476,3 +1476,8 @@ limits are in the adjacent README. They are not physical-panel captures.
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png` | 18538 | DATA | `13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png` | 69645 | DATA | `6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-scrolled.png` | 68868 | DATA | `bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54` |
+
+`docs/evidence/work-card-media/` files `gallery-desktop.png` and `file-mobile.png` capture the
+viewport media gallery and rendered document modal at source `046ae608`.
+They are reviewed local-browser captures with the same provenance limits.
+

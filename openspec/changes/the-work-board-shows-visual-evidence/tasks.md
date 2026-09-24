@@ -7,8 +7,8 @@
 
 - [x] 2.1 Add image/video card covers, header evidence links and inline detail galleries while retaining one whole-card action, keyboard access and no autoplay.
 - [x] 2.2 Verify generated markup and site budgets with `python3 scripts/build_site.py`; inspect desktop/mobile card and dialog behavior in a browser, including direct evidence links and a video player. Record exact commands/results in `docs/evidence/work-card-media/README.md`.
-- [ ] 2.3 Add a viewport-sized media modal/gallery with contain sizing, swipe/keyboard navigation, video controls, Escape/close and restoration of the underlying card position/focus. Verify with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`; extend the committed evidence record.
-- [ ] 2.4 Open evidence files in document modals with rendered Markdown or bounded text, original-file access, Escape/close and position/focus restoration. Verify header and inline file links on desktop/mobile with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`.
+- [x] 2.3 Add a viewport-sized media modal/gallery with contain sizing, swipe/keyboard navigation, video controls, Escape/close and restoration of the underlying card position/focus. Verify with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`; extend the committed evidence record.
+- [x] 2.4 Open evidence files in document modals with rendered Markdown or bounded text, original-file access, Escape/close and position/focus restoration. Verify header and inline file links on desktop/mobile with `python3 tests/work_card_media_browser.py` and `python3 scripts/build_site.py`.
 
 ## 3. Publish and reconcile
 

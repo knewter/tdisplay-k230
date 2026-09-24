@@ -42,5 +42,39 @@ The coordinator visually inspected these public browser captures:
 
 ![Mobile inline gallery with the QEMU provenance label](mobile-dialog.png)
 
-Publication at <https://knewter.github.io/tdisplay-k230/work/> remains a
-separate gate until the exact deployed revision is recorded here.
+The initial card/media implementation was published at
+<https://knewter.github.io/tdisplay-k230/work/>: Pages run `35958300081`
+succeeded and the page contained source revision `1005d4f5a538`.
+
+## Viewport gallery and document modal
+
+Additional host browser proof recorded 2026-09-24 at source
+`046ae6082a92b281d0a0e4e05343dfa29b524027` using:
+
+```sh
+python3 scripts/build_site.py
+python3 -u tests/work_card_media_browser.py
+```
+
+The build passed: 238 pages, 8,043,984 bytes, 12.99 seconds and all 12 output
+checks. Desktop (1440×1000) and mobile (390×844) Chromium both passed:
+
+- Images fit the available viewport without cropping; arrow navigation and
+  actual mobile touch swipes move through the gallery.
+- Video starts paused, plays and advances when requested, and stops/releases
+  its source when closed.
+- Inline and header evidence open document modals; Markdown is rendered and
+  logs/data use bounded text previews. The board URL stays unchanged.
+- Escape/Close returns to the same card and restores focus; header previews
+  also work without opening a card. No JavaScript errors occurred.
+
+The coordinator visually reviewed the desktop gallery and mobile document
+captures below. The browser routes pinned raw artifacts to local files; this
+is host website proof, not new device evidence or remote deployment proof.
+The explicit original-file action may open the original separately; ordinary
+card evidence clicks stay in the modal. Publication of this extension is
+recorded separately after CI.
+
+![Largest-fit desktop gallery](gallery-desktop.png)
+
+![Rendered Markdown in the mobile document modal](file-mobile.png)
