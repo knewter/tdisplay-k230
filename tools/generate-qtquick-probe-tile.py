@@ -23,4 +23,5 @@ payload = (b"\x89PNG\r\n\x1a\n"
            + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9))
            + chunk(b"IEND", b""))
-Path(__file__).with_name("tile.png").write_bytes(payload)
+Path(__file__).resolve().parents[1].joinpath(
+    "nix/qtquick-software-probe/tile.png").write_bytes(payload)

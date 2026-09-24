@@ -1401,7 +1401,7 @@ match; no performance acceptance is claimed. Commands, artifacts and limits:
 
 `nix/qtquick-software-probe/tile.png` is original generated DATA, not vendor
 firmware or third-party artwork. The source recipe is
-`python3 nix/qtquick-software-probe/generate-tile.py`: a 32×32 RGBA checker
+`python3 tools/generate-qtquick-probe-tile.py`: a 32×32 RGBA checker
 using two literal colors, PNG chunks and zlib from the Python standard
 library. It is only a known image-decode fixture for the opt-in Qt Quick
 probe. The 125-byte file has SHA-256
