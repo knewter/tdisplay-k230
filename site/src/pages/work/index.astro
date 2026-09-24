@@ -101,13 +101,29 @@ const items = await Promise.all(work.items.map(async (item) => ({
   <dialog id="work-detail-dialog" class="work-dialog" aria-label="Work item details">
     <div class="dialog-frame"><header class="dialog-bar"><span>Project work · committed detail</span><button id="work-detail-close" type="button">Close <span aria-hidden="true">×</span></button></header><div id="work-detail-content" class="dialog-scroll"></div></div>
   </dialog>
+  <dialog id="work-media-dialog" class="media-dialog" aria-label="Evidence gallery">
+    <div class="media-frame">
+      <header class="media-bar"><span id="media-position" aria-live="polite"></span><button id="media-close" type="button" aria-label="Close gallery">Close ×</button></header>
+      <div class="media-stage" id="media-stage">
+        <img id="media-image" alt="" hidden />
+        <video id="media-video" controls preload="none" playsinline hidden />
+      </div>
+      <footer class="media-footer">
+        <button id="media-previous" type="button" aria-label="Previous media">←</button>
+        <div class="media-description"><strong id="media-caption"></strong><span id="media-provenance"></span><a id="media-source">Open original evidence</a></div>
+        <button id="media-next" type="button" aria-label="Next media">→</button>
+      </footer>
+    </div>
+  </dialog>
   {items.map((item) => <DetailTemplate id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
       {item.media.length > 0 && <section class="detail-media" aria-label="Visual evidence">
-        {item.media.map((media) => <figure>
-          {media.kind === "image"
-            ? <a href={evidenceLink(media.path)}><img src={mediaSource(media.path)} alt={media.caption} loading="lazy" decoding="async" /></a>
-            : <video src={mediaSource(media.path)} controls preload="none" playsinline aria-label={media.caption} />}
+        {item.media.map((media, index) => <figure>
+          <button type="button" class="media-open" data-media-index={index} data-kind={media.kind} data-src={mediaSource(media.path)} data-caption={media.caption} data-provenance={media.provenance} data-evidence={evidenceLink(media.path)} aria-label={`Enlarge ${media.caption}`} aria-haspopup="dialog">
+            {media.kind === "image"
+              ? <img src={mediaSource(media.path)} alt={media.caption} loading="lazy" decoding="async" />
+              : <><video src={mediaSource(media.path)} preload="none" muted playsinline aria-label={media.caption} /><span class="media-play">▶ Open video</span></>}
+          </button>
           <figcaption><strong>{media.caption}</strong><span>{media.provenance}</span><a href={evidenceLink(media.path)}>Open evidence</a></figcaption>
         </figure>)}
       </section>}
@@ -126,6 +142,93 @@ const items = await Promise.all(work.items.map(async (item) => ({
   const closeButton = document.querySelector<HTMLButtonElement>("#work-detail-close");
   let returnFocus: HTMLElement | null = null;
   let previousBodyOverflow = "";
+  const mediaDialog = document.querySelector<HTMLDialogElement>("#work-media-dialog");
+  const mediaImage = document.querySelector<HTMLImageElement>("#media-image");
+  const mediaVideo = document.querySelector<HTMLVideoElement>("#media-video");
+  const mediaClose = document.querySelector<HTMLButtonElement>("#media-close");
+  const mediaPrevious = document.querySelector<HTMLButtonElement>("#media-previous");
+  const mediaNext = document.querySelector<HTMLButtonElement>("#media-next");
+  const mediaStage = document.querySelector<HTMLElement>("#media-stage");
+  let mediaItems: HTMLButtonElement[] = [];
+  let mediaIndex = 0;
+  let mediaReturnFocus: HTMLButtonElement | null = null;
+  let cardScrollTop = 0;
+
+  function clearMedia(): void {
+    mediaVideo?.pause();
+    mediaVideo?.removeAttribute("src");
+    mediaVideo?.load();
+    mediaImage?.removeAttribute("src");
+  }
+
+  function displayMedia(index: number): void {
+    if (!mediaImage || !mediaVideo || index < 0 || index >= mediaItems.length) return;
+    clearMedia();
+    mediaIndex = index;
+    const item = mediaItems[index].dataset;
+    const video = item.kind === "video";
+    mediaImage.hidden = video;
+    mediaVideo.hidden = !video;
+    if (video) {
+      mediaVideo.src = item.src ?? "";
+      mediaVideo.setAttribute("aria-label", item.caption ?? "Video evidence");
+    } else {
+      mediaImage.src = item.src ?? "";
+      mediaImage.alt = item.caption ?? "Image evidence";
+    }
+    document.querySelector("#media-caption")!.textContent = item.caption ?? "Evidence";
+    document.querySelector("#media-provenance")!.textContent = item.provenance ?? "";
+    document.querySelector("#media-position")!.textContent = `${index + 1} / ${mediaItems.length}`;
+    document.querySelector<HTMLAnchorElement>("#media-source")!.href = item.evidence ?? "";
+    if (mediaPrevious) mediaPrevious.disabled = index === 0;
+    if (mediaNext) mediaNext.disabled = index === mediaItems.length - 1;
+  }
+
+  function closeMedia(): void {
+    if (!mediaDialog?.open) return;
+    clearMedia();
+    mediaDialog.close();
+    if (content) content.scrollTop = cardScrollTop;
+    mediaReturnFocus?.focus({ preventScroll: true });
+    mediaItems = [];
+  }
+
+  content?.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>(".media-open");
+    if (!button || !mediaDialog) return;
+    mediaItems = Array.from(content.querySelectorAll<HTMLButtonElement>(".media-open"));
+    mediaReturnFocus = button;
+    cardScrollTop = content.scrollTop;
+    displayMedia(mediaItems.indexOf(button));
+    mediaDialog.showModal();
+    mediaClose?.focus();
+  });
+  mediaClose?.addEventListener("click", closeMedia);
+  mediaDialog?.addEventListener("cancel", (event) => { event.preventDefault(); closeMedia(); });
+  mediaPrevious?.addEventListener("click", () => displayMedia(mediaIndex - 1));
+  mediaNext?.addEventListener("click", () => displayMedia(mediaIndex + 1));
+  mediaDialog?.addEventListener("keydown", (event) => {
+    if (event.target === mediaVideo) return; // native player owns its seek keys
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      displayMedia(mediaIndex + (event.key === "ArrowRight" ? 1 : -1));
+    }
+  });
+  let swipe: { id: number; x: number; y: number } | null = null;
+  mediaStage?.addEventListener("pointerdown", (event) => {
+    const playerControls = event.target === mediaVideo && mediaVideo && event.clientY > mediaVideo.getBoundingClientRect().bottom - 64;
+    if (!event.isPrimary || playerControls) { swipe = null; return; }
+    swipe = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    mediaStage.setPointerCapture(event.pointerId);
+  });
+  mediaStage?.addEventListener("pointercancel", () => { swipe = null; });
+  mediaStage?.addEventListener("pointerup", (event) => {
+    const start = swipe;
+    swipe = null;
+    if (!start || start.id !== event.pointerId) return;
+    const dx = event.clientX - start.x, dy = event.clientY - start.y;
+    if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5) displayMedia(mediaIndex + (dx < 0 ? 1 : -1));
+  });
 
   function show(id: string, section = 0, push = true): void {
     const template = document.getElementById(`work-detail-${id}`) as HTMLTemplateElement | null;
@@ -134,6 +237,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
     returnFocus = trigger;
     const clone = template.content.firstElementChild?.cloneNode(true);
     if (!clone) return;
+    closeMedia();
     content.replaceChildren(clone);
     content.scrollTop = 0;
     if (!dialog.open) {
@@ -154,6 +258,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
 
   function hide(): void {
     if (!dialog?.open) return;
+    closeMedia();
     dialog.close();
     document.body.style.overflow = previousBodyOverflow;
     content?.replaceChildren();
@@ -250,6 +355,24 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .detail-media { display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x proximity; padding-bottom:1rem; margin-bottom:1.3rem; }
   .detail-media figure { flex:0 0 min(360px,85%); min-width:0; margin:0; scroll-snap-align:start; background:var(--surface-2); border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
   .detail-media img,.detail-media video { display:block; width:100%; height:360px; object-fit:contain; background:#101822; }
+  .media-open { display:block; width:100%; position:relative; padding:0; border:0; background:#101822; cursor:zoom-in; }
+  .media-open:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
+  .media-play { position:absolute; inset:0; display:grid; place-items:center; color:#fff; font:600 .9rem var(--sans); }
+  .media-dialog { width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; background:#0b1016; color:#f5f7f9; }
+  .media-dialog::backdrop { background:#05080bee; }
+  .media-frame { height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+  .media-bar { display:flex; justify-content:space-between; align-items:center; padding:.4rem max(.75rem,env(safe-area-inset-right)) .4rem max(.75rem,env(safe-area-inset-left)); font:.8rem var(--mono); }
+  .media-dialog button { min-width:44px; min-height:44px; border:1px solid #52606d; border-radius:6px; background:#202b35; color:inherit; font:600 .9rem var(--sans); cursor:pointer; }
+  .media-dialog button:disabled { opacity:.35; cursor:default; }
+  .media-dialog button:focus-visible,.media-dialog a:focus-visible { outline:2px solid #83e2d9; outline-offset:2px; }
+  .media-stage { min-width:0; min-height:0; display:flex; justify-content:center; align-items:center; overflow:hidden; touch-action:pan-y pinch-zoom; }
+  .media-stage img,.media-stage video { width:100%; height:100%; object-fit:contain; }
+  .media-stage [hidden] { display:none; }
+  .media-footer { display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem max(.75rem,env(safe-area-inset-bottom)); }
+  .media-description { flex:1; min-width:0; display:grid; gap:.25rem; text-align:center; font:.75rem/1.25 var(--mono); }
+  .media-description strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .media-description span { color:#b8c9d7; }
+  .media-description a { color:#83e2d9; }
   .detail-media figcaption { display:grid; gap:.35rem; padding:.8rem; font:.75rem/1.4 var(--mono); }
   .detail-media figcaption span { color:var(--muted); }
   .card-top { display:flex; justify-content:space-between; gap:.4rem; color:var(--muted); font-size:.63rem; line-height:1.3; }
