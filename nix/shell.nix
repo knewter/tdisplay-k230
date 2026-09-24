@@ -223,7 +223,9 @@ let
         set -- -e "''${session[@]}" "$@"
       fi
     ''}
-    exec ${pkgs.foot}/bin/foot --config "$foot_config" "$@"
+    # Ordinary coherent-shell apps fill the output in pixels. Foot otherwise
+    # rounds floating sizes down to whole cells and exposes wallpaper edges.
+    exec ${pkgs.foot}/bin/foot --config "$foot_config" ${lib.optionalString cfg.coherentShell "--override resize-by-cells=no"} "$@"
   '';
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
