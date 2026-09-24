@@ -20,6 +20,7 @@ import tempfile
 import tomllib
 
 from theme_sources import source_dir, source_digest
+from theme_tokens import TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 
 
@@ -111,7 +112,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     root, theme = choose_source(name, source, user_themes, builtins)
     source_hash = source_digest(theme)
     helper_hash = source_digest(tools)
-    adapter_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    adapter_hash = hashlib.sha256(Path(__file__).read_bytes()
+                                  + (Path(__file__).with_name("theme_tokens.py")).read_bytes()).hexdigest()
     generations = state_root / "generations"
     generations.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".prepare-", dir=generations) as temporary:
@@ -193,8 +195,9 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 raise ThemeError(f"unresolved template reference in {filename}")
         try:
             with (staged / "shell.toml").open("rb") as stream:
-                tomllib.load(stream)
-        except tomllib.TOMLDecodeError as error:
+                resolved_shell = tomllib.load(stream)
+            tokens = compile_tokens(resolved_shell)
+        except (tomllib.TOMLDecodeError, TokenError) as error:
             raise ThemeError(f"invalid shell appearance: {error}") from error
         icon_file = staged / "icons.theme"
         if icon_file.exists():
@@ -207,9 +210,17 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                         "helpers": helper_hash, "adapter": adapter_hash,
                         "name": name, "version": 1}, sort_keys=True).encode()
         ).hexdigest()[:24]
+        tokens["generation"] = report["generation"]
+        tokens["icon_theme"] = report["icon_theme"]
+        tokens["background"] = ("background" if report["backgrounds"]
+                                and Path(report["backgrounds"][0]).suffix.lower() in STILLS else None)
+        serialized = json.dumps(tokens, indent=2, sort_keys=True) + "\n"
+        if len(serialized.encode()) > 256 * 1024:
+            raise ThemeError("appearance payload exceeds bound")
         destination = generations / report["generation"]
         (work / "theme.name").write_text(name + "\n")
         (work / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        (work / "appearance.json").write_text(serialized)
         if report["backgrounds"]:
             (work / "background").symlink_to("theme/" + report["backgrounds"][0])
         if source_digest(theme) != source_hash:

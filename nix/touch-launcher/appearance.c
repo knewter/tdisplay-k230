@@ -5,6 +5,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,10 @@ uint32_t k230_appearance_error(void) {
   return brightness>=1280 ? 0xff9f1239 : 0xfffca5a5;
 }
 static struct k230_appearance_colors candidate, previous;
+static JsonParser *active_tokens, *candidate_tokens, *previous_tokens;
+static char *active_path, *candidate_path, *previous_path;
+static char *background_path;
+static uint64_t generation_serial;
 static char candidate_id[25], previous_id[25], active_id[25];
 static bool candidate_prepared;
 static int listener=-1, client=-1;
@@ -107,14 +112,154 @@ static bool read_palette(const char *path, const char *identity,
   g_object_unref(parser);
   return safe;
 }
+static JsonParser *read_tokens(const char *path, const char *identity) {
+  if (!path || strlen(path)>1024) return NULL;
+  char *filename=g_build_filename(path,"appearance.json",NULL);
+  GStatBuf metadata;
+  bool safe=g_stat(filename,&metadata)==0 && S_ISREG(metadata.st_mode)
+    && metadata.st_size>0 && metadata.st_size<=256*1024;
+  gchar *data=NULL; gsize length=0;
+  if (safe) safe=g_file_get_contents(filename,&data,&length,NULL) && length<=256*1024;
+  g_free(filename);
+  if (!safe) { g_free(data); return NULL; }
+  JsonParser *parser=json_parser_new();
+  safe=json_parser_load_from_data(parser,data,(gssize)length,NULL);
+  g_free(data);
+  if (safe) {
+    JsonNode *root=json_parser_get_root(parser);
+    safe=JSON_NODE_HOLDS_OBJECT(root);
+    if (safe) {
+      JsonObject *object=json_node_get_object(root);
+      safe=member(object,"generation") && !strcmp(member(object,"generation"),identity)
+        && json_object_has_member(object,"version")
+        && json_object_get_int_member(object,"version")==1
+        && json_object_has_member(object,"sections")
+        && JSON_NODE_HOLDS_OBJECT(json_object_get_member(object,"sections"));
+    }
+  }
+  if (!safe) { g_object_unref(parser); return NULL; }
+  return parser;
+}
+static void set_active_tokens(JsonParser *parser, const char *path) {
+  if (active_tokens) g_object_unref(active_tokens);
+  active_tokens=parser ? g_object_ref(parser) : NULL;
+  g_free(active_path);
+  active_path=path ? g_strdup(path) : NULL;
+  g_free(background_path); background_path=NULL;
+  if (active_tokens && active_path) {
+    JsonObject *root=json_node_get_object(json_parser_get_root(active_tokens));
+    if (g_strcmp0(member(root,"background"),"background")==0) {
+      char *candidate_file=g_build_filename(active_path,"background",NULL);
+      char *resolved=realpath(candidate_file,NULL);
+      char *asset_root=g_build_filename(active_path,"theme","backgrounds",NULL);
+      char *canonical_root=realpath(asset_root,NULL);
+      GStatBuf metadata;
+      size_t count=canonical_root ? strlen(canonical_root) : 0;
+      if (resolved && canonical_root && !strncmp(resolved,canonical_root,count)
+          && resolved[count]=='/' && g_stat(resolved,&metadata)==0
+          && S_ISREG(metadata.st_mode) && metadata.st_size>0
+          && metadata.st_size<=256*1024*1024) background_path=g_strdup(candidate_file);
+      free(resolved); free(canonical_root); g_free(asset_root); g_free(candidate_file);
+    }
+  }
+  generation_serial++;
+}
+static JsonObject *token(const char *section, const char *key) {
+  if (!active_tokens || !section || !key) return NULL;
+  JsonObject *root=json_node_get_object(json_parser_get_root(active_tokens));
+  JsonObject *sections=json_object_get_object_member(root,"sections");
+  if (!sections || !json_object_has_member(sections,section)) return NULL;
+  JsonObject *group=json_object_get_object_member(sections,section);
+  if (!group || !json_object_has_member(group,key)) return NULL;
+  JsonNode *node=json_object_get_member(group,key);
+  return JSON_NODE_HOLDS_OBJECT(node) ? json_node_get_object(node) : NULL;
+}
+static bool argb_value(const char *value, uint32_t *out) {
+  if (!value || strlen(value)!=9 || value[0]!='#') return false;
+  uint32_t parsed=0;
+  for (int i=1; i<9; i++) {
+    char c=value[i];
+    if (!g_ascii_isxdigit(c)) return false;
+    parsed=(parsed<<4)|(uint32_t)(g_ascii_isdigit(c)?c-'0':g_ascii_tolower(c)-'a'+10);
+  }
+  *out=parsed; return true;
+}
+bool k230_appearance_brush(const char *section, const char *key,
+                           struct k230_appearance_brush *out) {
+  JsonObject *field=token(section,key);
+  if (!out || !field || g_strcmp0(member(field,"kind"),"brush")) return false;
+  JsonArray *stops=json_object_get_array_member(field,"stops");
+  guint count=stops ? json_array_get_length(stops) : 0;
+  if (count<1 || count>K230_APPEARANCE_MAX_STOPS) return false;
+  struct k230_appearance_brush result={0};
+  result.stop_count=count;
+  result.alpha=json_object_get_double_member(field,"alpha");
+  result.angle_degrees=json_object_get_double_member(field,"angle_degrees");
+  if (!isfinite(result.alpha) || result.alpha<0 || result.alpha>1
+      || !isfinite(result.angle_degrees) || fabs(result.angle_degrees)>3600) return false;
+  for (guint i=0; i<count; i++) {
+    JsonObject *stop=json_array_get_object_element(stops,i);
+    if (!stop || !argb_value(member(stop,"argb"),&result.stops[i].argb)) return false;
+    result.stops[i].offset=json_object_get_double_member(stop,"offset");
+    if (!isfinite(result.stops[i].offset) || result.stops[i].offset<0
+        || result.stops[i].offset>1) return false;
+  }
+  *out=result; return true;
+}
+bool k230_appearance_number(const char *section, const char *key, double *out) {
+  JsonObject *field=token(section,key);
+  if (!out || !field || g_strcmp0(member(field,"kind"),"number")) return false;
+  double value=json_object_get_double_member(field,"value");
+  if (!isfinite(value) || fabs(value)>10000) return false;
+  *out=value; return true;
+}
+bool k230_appearance_border(const char *section, const char *key,
+                            struct k230_appearance_border *out) {
+  if (!out || !k230_appearance_brush(section,key,&out->brush)) return false;
+  for (int i=0; i<4; i++) out->width[i]=1.0;
+  char *width_key=g_strconcat(key,"-width",NULL);
+  JsonObject *width=token(section,width_key);
+  if (width && g_strcmp0(member(width,"kind"),"width")==0) {
+    JsonArray *values=json_object_get_array_member(width,"value");
+    if (!values || json_array_get_length(values)!=4) { g_free(width_key); return false; }
+    for (int i=0; i<4; i++) {
+      out->width[i]=json_array_get_double_element(values,i);
+      if (!isfinite(out->width[i]) || out->width[i]<0 || out->width[i]>128) {
+        g_free(width_key); return false;
+      }
+    }
+  }
+  const char *sides[]={"top","right","bottom","left"};
+  for (int i=0; i<4; i++) {
+    char *side_key=g_strconcat(width_key,"-",sides[i],NULL);
+    double override=0;
+    if (k230_appearance_number(section,side_key,&override)) out->width[i]=override;
+    g_free(side_key);
+  }
+  g_free(width_key); return true;
+}
+const char *k230_appearance_icon_theme(void) {
+  if (!active_tokens) return NULL;
+  JsonObject *root=json_node_get_object(json_parser_get_root(active_tokens));
+  const char *name=member(root,"icon_theme");
+  if (!name || strlen(name)>160 || !g_ascii_isalnum(name[0])) return NULL;
+  for (const char *p=name; *p; p++)
+    if (!g_ascii_isalnum(*p) && *p!='_' && *p!='-' && *p!='.' && *p!='+') return NULL;
+  return name;
+}
+const char *k230_appearance_background_path(void) { return background_path; }
+uint64_t k230_appearance_generation_serial(void) { return generation_serial; }
 static void load_startup_palette(const char *state_root, const char *default_generation) {
   if (default_generation) {
     char *identity=g_path_get_basename(default_generation);
     struct k230_appearance_colors colors=defaults;
-    if (valid_id(identity) && read_palette(default_generation,identity,&colors)) {
+    JsonParser *tokens=valid_id(identity) ? read_tokens(default_generation,identity) : NULL;
+    if (tokens && read_palette(default_generation,identity,&colors)) {
       k230_appearance=colors;
       strcpy(active_id,identity);
+      set_active_tokens(tokens,default_generation);
     } else fprintf(stderr,"k230-touch-launcher: pinned default theme unavailable\n");
+    if (tokens) g_object_unref(tokens);
     g_free(identity);
   }
   if (!state_root) return;
@@ -127,11 +272,16 @@ static void load_startup_palette(const char *state_root, const char *default_gen
     char *identity=target ? g_path_get_basename(target) : NULL;
     struct k230_appearance_colors colors=defaults;
     size_t length=cache_real ? strlen(cache_real) : 0;
+    JsonParser *tokens=target && valid_id(identity) ? read_tokens(target,identity) : NULL;
     bool safe=target && cache_real && !strncmp(target,cache_real,length)
       && target[length]=='/' && valid_id(identity)
-      && read_palette(target,identity,&colors);
-    if (safe) { k230_appearance=colors; strcpy(active_id,identity); }
+      && tokens && read_palette(target,identity,&colors);
+    if (safe) {
+      k230_appearance=colors; strcpy(active_id,identity);
+      set_active_tokens(tokens,target);
+    }
     else fprintf(stderr,"k230-touch-launcher: cached theme unavailable; using pinned default\n");
+    if (tokens) g_object_unref(tokens);
     g_free(identity);
   }
   free(target); free(cache_real); g_free(cache); g_free(pointer);
@@ -174,33 +324,60 @@ static void handle(bool (*redraw)(void)) {
       struct k230_appearance_colors colors=defaults;
       ok=read_palette(path,id,&colors);
       if (ok) {
+        JsonParser *next=read_tokens(path,id);
+        if (!next) ok=false;
         struct k230_appearance_colors former=k230_appearance;
-        if (old_id || old_path) {
+        if (ok && (old_id || old_path)) {
           ok=valid_id(old_id) && read_palette(old_path,old_id,&former);
           if (ok) strcpy(previous_id,old_id);
-        } else previous_id[0]=0;
+        } else if (ok) previous_id[0]=0;
+        JsonParser *old_tokens=(ok && old_id && old_path)
+          ? read_tokens(old_path,old_id) : NULL;
+        if (ok && old_id && old_path && !old_tokens) ok=false;
         if (ok) {
           candidate=colors; strcpy(candidate_id,id);
           previous=former;
+          if (candidate_tokens) g_object_unref(candidate_tokens);
+          candidate_tokens=next;
+          g_free(candidate_path); candidate_path=g_strdup(path);
+          if (previous_tokens) g_object_unref(previous_tokens);
+          previous_tokens=(old_id && old_path) ? old_tokens
+            : (active_tokens ? g_object_ref(active_tokens) : NULL);
+          g_free(previous_path);
+          previous_path=(old_id && old_path) ? g_strdup(old_path)
+            : (active_path ? g_strdup(active_path) : NULL);
           candidate_prepared=true;
+        } else {
+          if (next) g_object_unref(next);
+          if (old_tokens) g_object_unref(old_tokens);
         }
       }
     } else if (!strcmp(phase,"commit") && valid_id(id)
                && candidate_prepared && !strcmp(candidate_id,id)) {
       struct k230_appearance_colors former=k230_appearance;
+      JsonParser *former_tokens=active_tokens ? g_object_ref(active_tokens) : NULL;
+      char *former_path=g_strdup(active_path);
       k230_appearance=candidate;
+      set_active_tokens(candidate_tokens,candidate_path);
       ok=redraw();
       if (ok) strcpy(active_id,id);
-      else k230_appearance=former;
+      else { k230_appearance=former; set_active_tokens(former_tokens,former_path); }
+      if (former_tokens) g_object_unref(former_tokens);
+      g_free(former_path);
     } else if (!strcmp(phase,"rollback")
                && candidate_prepared
                && ((valid_id(id) && !strcmp(id,previous_id))
                    || (null_id && !previous_id[0]))) {
       struct k230_appearance_colors former=k230_appearance;
+      JsonParser *former_tokens=active_tokens ? g_object_ref(active_tokens) : NULL;
+      char *former_path=g_strdup(active_path);
       k230_appearance=previous;
+      set_active_tokens(previous_tokens,previous_path);
       ok=redraw();
       if (ok) strcpy(active_id,previous_id);
-      else k230_appearance=former;
+      else { k230_appearance=former; set_active_tokens(former_tokens,former_path); }
+      if (former_tokens) g_object_unref(former_tokens);
+      g_free(former_path);
     }
   }
   if (phase && (!strcmp(phase,"prepare") || !strcmp(phase,"commit")
@@ -256,4 +433,12 @@ void k230_appearance_stop(void) {
   if (listener>=0) close(listener);
   listener=-1;
   if (socket_path[0]) unlink(socket_path);
+  if (active_tokens) g_object_unref(active_tokens);
+  if (candidate_tokens) g_object_unref(candidate_tokens);
+  if (previous_tokens) g_object_unref(previous_tokens);
+  active_tokens=candidate_tokens=previous_tokens=NULL;
+  g_clear_pointer(&active_path,g_free);
+  g_clear_pointer(&candidate_path,g_free);
+  g_clear_pointer(&previous_path,g_free);
+  g_clear_pointer(&background_path,g_free);
 }

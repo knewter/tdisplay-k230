@@ -35,6 +35,13 @@ class PinnedThemeDefault(unittest.TestCase):
         self.assertEqual(report["source_file_sha256"],
                          {"colors.toml": SOURCE_HASHES["colors.toml"],
                           "icons.theme": SOURCE_HASHES["icons.theme"]})
+        appearance = json.loads((ROOT / "default-appearance.json").read_text())
+        self.assertEqual(appearance["generation"], identity)
+        self.assertEqual(appearance["version"], 1)
+        self.assertEqual(appearance["icon_theme"], report["icon_theme"])
+        self.assertIsNone(appearance["background"])
+        self.assertEqual(appearance["sections"]["launcher"]["background"]["stops"][0]["argb"],
+                         "#ff1e1e2e")
 
 
 if __name__ == "__main__":

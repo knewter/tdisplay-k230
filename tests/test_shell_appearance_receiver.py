@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
   unsigned restored=(unsigned)strtoul(argv[3],NULL,16);
   unsigned startup=(unsigned)strtoul(argv[4],NULL,16);
   if (k230_appearance.background!=startup) return 4;
+  uint64_t startup_serial=k230_appearance_generation_serial();
   bool saw_theme=false;
   unsigned foreground=0,muted=0,tile=0,selected=0,error=0;
   for (int n=0; n<300; n++) {
@@ -38,7 +39,20 @@ int main(int argc, char **argv) {
     poll(fds,2,10);
     k230_appearance_service((fds[0].revents&POLLIN)!=0,
                             (fds[1].revents&(POLLIN|POLLHUP))!=0,redraw);
-    if (submitted>=1 && k230_appearance.background==theme) {
+    if (!saw_theme && submitted>=1 && k230_appearance.background==theme) {
+      struct k230_appearance_brush surface;
+      struct k230_appearance_border border;
+      double scale=0;
+      if (!k230_appearance_brush("launcher","background",&surface)
+          || surface.stop_count!=1 || surface.alpha<0.94 || surface.alpha>0.96
+          || !k230_appearance_border("launcher","border",&border)
+          || border.brush.stop_count!=2 || border.brush.angle_degrees!=45
+          || border.width[0]!=1 || border.width[1]!=2
+          || border.width[2]!=3 || border.width[3]!=4
+          || !k230_appearance_number("spacing","scale",&scale) || scale!=1.25
+          || !k230_appearance_icon_theme()
+          || !k230_appearance_background_path()
+          || k230_appearance_generation_serial()<=startup_serial) return 5;
       saw_theme=true; foreground=k230_appearance.foreground;
       muted=k230_appearance.muted;
       tile=k230_appearance.tile; selected=k230_appearance.selected;
@@ -56,6 +70,35 @@ int main(int argc, char **argv) {
 
 
 class ShellAppearanceReceiver(unittest.TestCase):
+    @staticmethod
+    def write_generation(path, palette, *, with_background=False):
+        path.mkdir(parents=True)
+        if with_background:
+            assets = path / "theme/backgrounds"
+            assets.mkdir(parents=True)
+            (assets / "still.png").write_bytes(b"host-fixture")
+            (path / "background").symlink_to("theme/backgrounds/still.png")
+        (path / "report.json").write_text(json.dumps({"generation": path.name,
+                                                       "palette": palette}))
+        background = palette["background"]
+        (path / "appearance.json").write_text(json.dumps({
+            "version": 1, "generation": path.name, "icon_theme": "Yaru-purple",
+            "background": "background" if with_background else None,
+            "sections": {
+                "launcher": {
+                    "background": {"kind": "brush", "alpha": 0.95,
+                                   "angle_degrees": 0,
+                                   "stops": [{"argb": "#ff" + background[1:], "offset": 0}]},
+                    "border": {"kind": "brush", "alpha": 0.7,
+                               "angle_degrees": 45,
+                               "stops": [{"argb": "#ff112233", "offset": 0},
+                                         {"argb": "#ff445566", "offset": 1}]},
+                    "border-width": {"kind": "width", "value": [1, 2, 3, 4]},
+                },
+                "spacing": {"scale": {"kind": "number", "value": 1.25}},
+            },
+        }))
+
     @staticmethod
     def contrast(first, second):
         def luminance(color):
@@ -79,34 +122,22 @@ class ShellAppearanceReceiver(unittest.TestCase):
                             str(ROOT / "nix/touch-launcher/appearance.c"), *pkg,
                             "-o", str(binary)], check=True)
             old = root / "generations" / ("b" * 24)
-            old.mkdir(parents=True)
-            (old / "report.json").write_text(json.dumps({
-                "generation": old.name,
-                "palette": {"background": "#102030", "foreground": "#ffffff"},
-            }))
+            self.write_generation(old, {"background": "#102030", "foreground": "#ffffff"})
             if restart:
                 (root / "active").symlink_to(old)
             elif unavailable:
                 (root / "active").symlink_to(root / "generations" / ("f" * 24))
             pinned = root / "pinned" / "generations" / ("c" * 24)
-            pinned.mkdir(parents=True)
-            (pinned / "report.json").write_text(json.dumps({
-                "generation": pinned.name,
-                "palette": {"background": "#1e1e2e", "foreground": "#cdd6f4"},
-            }))
+            self.write_generation(pinned, {"background": "#1e1e2e", "foreground": "#cdd6f4"})
             generation = root / "generations" / ("a" * 24)
-            generation.mkdir(parents=True)
             background = palette["background"] if palette else "#f0f0f0" if light else "#202830"
             foreground = palette["foreground"] if palette else "#202020" if light else "#ffffff"
             tile = palette["dark_background"] if palette else "#e4e4e4" if light else "#283848"
             selected = palette["lighter_background"] if palette else "#d8d8d8" if light else "#344454"
-            (generation / "report.json").write_text(json.dumps({
-                "generation": generation.name,
-                "palette": {"background": background, "foreground": foreground,
-                            "dark_background": tile, "lighter_background": selected,
-                            "muted": palette.get("muted", foreground) if palette else foreground,
-                            "accent": "#778899"},
-            }))
+            self.write_generation(generation, {"background": background, "foreground": foreground,
+                                               "dark_background": tile, "lighter_background": selected,
+                                               "muted": palette.get("muted", foreground) if palette else foreground,
+                                               "accent": "#778899"}, with_background=True)
             restored = "ff102030" if restart else "ff1e1e2e"
             startup = "ff102030" if restart else "ff1e1e2e"
             process = subprocess.Popen([str(binary), str(root),
