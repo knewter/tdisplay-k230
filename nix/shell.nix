@@ -19,6 +19,7 @@ let
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
+  cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
   # Built only when frameTiming is selected. The patch measures monotonic
   # wall-clock elapsed time across wlroots scene building/Pixman submission
   # and KMS commit submission; it neither waits for nor claims panel scanout.
@@ -47,7 +48,8 @@ let
     enableXWayland = false;
     sway-unwrapped = swayInitialSplashUnwrapped;
   };
-  sway = if cfg.vgliteAccessTrial then swayVgliteMainPid
+  sway = if cfg.coherentShell then cardShell
+    else if cfg.vgliteAccessTrial then swayVgliteMainPid
     else if cfg.initialSplash then swayInitialSplash
     else if cfg.frameTiming then swayFrameTiming
     else swayBase;
@@ -169,6 +171,13 @@ let
     omarchyThemeTools = themeTools;
     inherit themeDefault;
   };
+  settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
+  notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };
+  notificationSources = pkgs.writeText "k230-notification-sources.json" (builtins.toJSON {
+    "${touchLauncherBase}/bin/k230-touch-launcher" = {
+      id = "shell"; name = "Shell"; icon = "applications-system";
+    };
+  });
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
       terminal|monitor)
@@ -198,6 +207,11 @@ let
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
+    ${lib.optionalString cfg.coherentShell ''
+      export K230_SETTINGS=${settingsCommand}/bin/k230-settings
+      export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
+      export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
+    ''}
     ${lib.optionalString cfg.themeReceiverTrial "export K230_LAUNCHER_THEME_RECEIVER=1"}
     ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"''}
     ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"''}
@@ -249,6 +263,15 @@ let
     output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
     input type:touch map_to_output DSI-1
 
+    ${lib.optionalString cfg.coherentShell ''
+      # Sway classifies transients as floating before for_window matching.
+      # Maximize ordinary tiling apps, preserving dialog geometry and the
+      # more specific video rules below. Home is the live deck, not a tab strip.
+      floating_maximum_size -1 x -1
+      default_floating_border none
+      for_window [tiling app_id=".*"] floating enable, resize set 100 ppt 100 ppt, move position 0 0
+    ''}
+
     # mpv's wlshm surface is explicitly floating so its profile geometry is
     # honored by Sway on the portrait panel and remains touchable.
     for_window [app_id="k230-video-software"] floating enable, resize set 480 px 270 px, move position center
@@ -259,8 +282,9 @@ let
     focus_follows_mouse no
     # A 568 px panel cannot make two tiled terminals useful. New applications
     # share a tabbed workspace; the touch menu can still focus any container.
-    workspace_layout tabbed
+    workspace_layout ${if cfg.coherentShell then "default" else "tabbed"}
 
+    ${lib.optionalString (!cfg.coherentShell) ''
     bar {
       position top
       height 56
@@ -275,11 +299,13 @@ let
         background #202020
       }
     }
+    ''}
 
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
     exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden
     exec ${pkgs.foot}/bin/foot --config ${terminalFootConfig}
+    ${lib.optionalString cfg.coherentShell ''exec ${touchLauncher}/bin/k230-touch-launcher --serve''}
   '';
 in
 {
@@ -308,12 +334,28 @@ in
 
     themeReceiverTrial = lib.mkOption {
       type = lib.types.bool;
-      default = false;
+      default = cfg.coherentShell;
       description = ''
         Opt into the launcher-only appearance receiver and install the pinned
         theme command. This does not enable a system-wide theme or claim
         physical touch, contrast, rollback or reboot proof.
       '';
+    };
+
+    coherentShell = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Select the integrated live-card/drawer session with Settings and
+        notification services. The ordinary bar session remains a separate
+        rollback configuration until touch acceptance is recorded.
+      '';
+    };
+
+    reducedMotion = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Shorten shell settling while preserving direct touch and destinations.";
     };
 
     vgliteAccessTrial = lib.mkOption {
@@ -405,6 +447,10 @@ in
 
   config = lib.mkIf cfg.enable {
     assertions = [
+      {
+        assertion = !cfg.coherentShell || !(cfg.initialSplash || cfg.frameTiming || cfg.vgliteAccessTrial);
+        message = "The coherent shell uses its card compositor; run renderer/splash diagnostics in their separate configurations.";
+      }
       {
         assertion = !(cfg.initialSplash && cfg.frameTiming);
         message = "k230.shell.initialSplash and frameTiming patch the same Sway commit path; enable one diagnostic at a time.";
@@ -505,6 +551,23 @@ in
       };
     };
 
+    systemd.services.shell-notifications = lib.mkIf cfg.coherentShell {
+      description = "Handheld notification history";
+      wantedBy = [ "multi-user.target" ];
+      environment.SWAYSOCK = "/run/shell/sway-ipc.sock";
+      serviceConfig = {
+        User = "shell";
+        Group = "shell";
+        RuntimeDirectory = "shell-notifications";
+        RuntimeDirectoryMode = "0700";
+        ExecStart = "${notificationCommand}/bin/k230-notifications serve --trusted ${notificationSources}";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+        NoNewPrivileges = true;
+      };
+    };
+
     systemd.services.shell = {
       description = "sway on the panel";
       wantedBy = [ "multi-user.target" ];
@@ -530,6 +593,13 @@ in
         K230_VGLITE_ALLOW_UNPROVEN_CACHE = "1";
       } // lib.optionalAttrs cfg.frameTiming {
         SWAY_K230_CPU_FRAME_TIMING = "1";
+      } // lib.optionalAttrs cfg.coherentShell {
+        SWAY_K230_CARD_SHELL = "1";
+        SWAY_K230_CARD_TOUCH_FIRST = "1";
+        SWAY_K230_CARD_DRAWER_HELPER = "${touchLauncher}/bin/k230-touch-launcher";
+        SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
+        K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
+        SWAY_K230_CARD_SCALED_CACHE = "0";
       } // lib.optionalAttrs cfg.initialSplash {
         # The derivation validates the fixed raw B,G,R,X asset before adding
         # it above layer-shell backgrounds. It is absent from the daily service.
@@ -634,7 +704,9 @@ in
       videoSession
       videoDesktop
       touchLauncher
-    ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ] ++ lib.optionals cfg.probes [
+    ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
+      ++ lib.optionals cfg.coherentShell [ settingsCommand notificationCommand ]
+      ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
       pkgs.drm_info
