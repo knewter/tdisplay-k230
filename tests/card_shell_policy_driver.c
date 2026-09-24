@@ -458,6 +458,25 @@ static void direct_carousel(void) {
     cs_tick(&p,412);
     assert(p.entry_progress>held); /* measured upward derivative continues */
     assert(cs_tick(&p,651).actions&CS_REDRAW && p.mode==CS_DECK);
+    cs_leave(&p);
+    assert(cs_begin_entry(&p,3,284,1220,700,101).consumed);
+    entry_geometry(&p);
+    double near_deck_y=1220-.95*p.entry_travel;
+    cs_entry_motion(&p,3,284,near_deck_y+40,710);
+    cs_entry_motion(&p,3,284,near_deck_y,720);
+    assert(p.entry_progress>.9 && p.entry_progress<1);
+    assert(cs_entry_up_at(&p,3,721).consumed);
+    cs_tick(&p,746);
+    assert(p.entry_progress>1 && p.entry_progress<1.08);
+    assert(cs_tick(&p,961).actions&CS_REDRAW && p.mode==CS_DECK);
+    cs_leave(&p);
+    assert(cs_begin_entry(&p,4,284,1220,1000,202).consumed);
+    entry_geometry(&p);
+    cs_entry_motion(&p,4,434,1220,1010);
+    cs_entry_motion(&p,4,364,1220,1020); /* reverse speed crosses source */
+    assert(cs_entry_up_at(&p,4,1021).consumed && p.entry_reversing);
+    assert(p.entry_target_id==0); /* visible left neighbor cannot become right */
+    assert(cs_tick(&p,1261).focus_id==202 && p.mode==CS_NORMAL);
     cs_finish(&p);
 }
 static void tracked_entry(void) {

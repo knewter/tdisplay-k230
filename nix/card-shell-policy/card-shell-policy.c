@@ -443,7 +443,12 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 		uint64_t elapsed=time_ms>=p->entry_started_ms ? time_ms-p->entry_started_ms : 0;
 		if (!elapsed) return result(p,0,false);
 		double duration=p->config.reduced_motion ? 100 : 240;
-		double omega=p->config.reduced_motion ? .09 : .04;
+		/* A fast upward release near the deck may pass its exact endpoint by
+		 * a few percent, then spring back. Clamping at one would halt the
+		 * derivative while the source is still moving. Increase damping for
+		 * high velocity so this bounded overshoot stays visually small. */
+		double omega=p->config.reduced_motion ? .12 :
+			fmax(.04,fmin(.11,fabs(p->entry_release_velocity_progress)/.136));
 		double t=fmin((double)elapsed,duration);
 		double e=exp(-omega*t);
 		double dy=p->entry_settle_from-p->entry_goal_progress;
@@ -452,7 +457,7 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 			(dy+(p->entry_release_velocity_progress+omega*dy)*t)*e;
 		p->entry_dx=p->entry_release_dx+
 			(dx+(p->entry_release_velocity_x+omega*dx)*t)*e;
-		p->entry_progress=fmax(0,fmin(1,p->entry_progress));
+		p->entry_progress=fmax(-.08,fmin(1.08,p->entry_progress));
 		double pitch=p->config.width*(1-p->entry_progress)+
 			(p->config.card_width+p->config.gap)*p->entry_progress;
 		p->entry_dx=fmax(-pitch,fmin(pitch,p->entry_dx));
@@ -639,14 +644,15 @@ struct cs_result cs_entry_up_at(struct cs_policy *p,int32_t id,uint64_t time_ms)
 	double vy=time_ms>=p->entry_sample_ms && time_ms-p->entry_sample_ms<=80 ?
 		p->entry_velocity_progress : 0;
 	double projected=p->entry_raw_dx+vx*80;
-	bool lateral=fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction ||
+	bool same_side=p->entry_raw_dx*projected>0;
+	bool lateral=same_side &&
+		(fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction ||
 		(fabs(p->entry_raw_dx)>=pitch*p->config.select_fraction*.5 &&
-		 p->entry_raw_dx*projected>0 &&
-		 fabs(projected)>=pitch*p->config.select_fraction);
+		 fabs(projected)>=pitch*p->config.select_fraction));
 	bool vertical=p->entry_drag>=p->config.entry_distance;
 	uint64_t target=0;
 	if (lateral && (vertical || p->entry_quick_allowed))
-		target=projected>0 ? p->entry_left_id : p->entry_right_id;
+		target=p->entry_raw_dx>0 ? p->entry_left_id : p->entry_right_id;
 	if (lateral && !entry_focusable(p,target)) target=0;
 	if (!target && (!vertical || lateral)) {
 		if (p->entry_progress==0 && p->entry_dx==0) return cs_leave(p);
@@ -662,7 +668,7 @@ struct cs_result cs_entry_up_at(struct cs_policy *p,int32_t id,uint64_t time_ms)
 		return result(p,CS_REDRAW,true);
 	}
 	p->entry_target_id=target;
-	p->entry_release_dx=target ? (projected>0 ? p->config.width : -p->config.width) : 0;
+	p->entry_release_dx=target ? (p->entry_raw_dx>0 ? p->config.width : -p->config.width) : 0;
 	p->entry_goal_progress=target ? 0 : 1;
 	p->entry_settling=true;p->entry_settle_from=p->entry_progress;
 	p->entry_settle_dx=p->entry_dx;p->entry_settle_anchor=p->entry_anchor_factor;
