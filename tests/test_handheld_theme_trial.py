@@ -54,6 +54,7 @@ class Fixture(unittest.TestCase):
         self.events = []
         self.fail_role = None
         self.fail_rollback_default = False
+        self.selected_kinds = []
         self.manifest = {"schema": 1, "source_revision": "a" * 40,
                          "system": "/nix/store/" + "a" * 32 + "-system",
                          "theme_command": "/nix/store/" + "a" * 32 + "-theme/bin/k230-theme",
@@ -87,12 +88,15 @@ class Fixture(unittest.TestCase):
             return {"schema": 1, "themes": entries,
                     "active": {"generation": pointer.name if pointer else None}}
         theme_id = argv[argv.index(action) + 1]
+        background = argv[argv.index("--background") + 1] if "--background" in argv else "d" * 24
+        self.selected_kinds.append(background)
         generation = self.dark if theme_id == "a" * 24 else self.light
         if action == "preview":
             if self.fail_role == "light" and generation == self.light:
                 raise RuntimeError("private fake path should not enter result")
             return {"schema": 1, "generation": generation.name,
-                    "backgrounds": [{"id": "d" * 24, "selected": True}]}
+                    "backgrounds": [{"id": background, "selected": True,
+                                     "kind": "video" if background == "e" * 24 else "image"}]}
         self.assertEqual(action, "activate")
         self.assertEqual(argv[argv.index("--expected-generation") + 1], generation.name)
         _swap_pointer(self.state, generation)
@@ -109,7 +113,10 @@ class Fixture(unittest.TestCase):
     def runner(self):
         return trial.Trial(self.manifest, call=self.call, capture=self.capture,
                            transport=self.transport,
-                           app_sync=lambda *_args, **_kwargs: None)
+                           app_sync=lambda *_args, **_kwargs: None,
+                           resource_sample=lambda duration, interval: {
+                               "elapsed_s": duration, "sample_count": 3,
+                               "cpu_usage_usec": 400000, "process_rss_peak_bytes": 1024})
 
 
 class ThemeTrialTests(Fixture):
@@ -175,6 +182,39 @@ class ThemeTrialTests(Fixture):
             self.runner().run(self.out, self.raw)
         self.assertFalse((self.out / "result.json").exists())
         self.assertIsNone(_pointer(self.state))
+
+    def test_backgrounds_samples_static_then_fails_closed_on_unproved_video(self):
+        self.manifest["background_trial"] = {
+            "duration_seconds": 2, "interval_seconds": .5,
+            "choices": {
+                "static": {"theme_name": "catppuccin", "origin": "builtin",
+                           "background_id": "d" * 24},
+                "video": {"theme_name": "catppuccin-latte", "origin": "builtin",
+                          "background_id": "e" * 24}}}
+        with self.assertRaisesRegex(RuntimeError, "trial failed"):
+            self.runner().run(self.out, self.raw, workload_mode="backgrounds")
+        result = json.loads((self.out / "result.json").read_text())
+        self.assertEqual(result["workload_mode"], "backgrounds")
+        self.assertEqual(result["failure_stage"], "measure-video")
+        self.assertEqual([arm["role"] for arm in result["arms"]], ["static", "video"])
+        self.assertEqual(result["baseline"]["resources"]["sample_count"], 3)
+        self.assertEqual(result["arms"][0]["resources"]["cpu_usage_usec"], 400000)
+        self.assertEqual(self.selected_kinds, ["d" * 24, "d" * 24, "e" * 24, "e" * 24])
+        self.assertEqual(result["restoration"], "passed")
+        self.assertIsNone(_pointer(self.state))
+
+    def test_backgrounds_refuses_unpinned_choices_before_mutation(self):
+        with self.assertRaisesRegex(ValueError, "pinned trial choices"):
+            self.runner().run(self.out, self.raw, workload_mode="backgrounds")
+        self.assertFalse((self.out / "result.json").exists())
+        self.manifest["background_trial"] = {"duration_seconds": 99, "interval_seconds": .5,
+                                            "choices": {}}
+        self.manifest["default_generation"] = (
+            "/nix/store/" + "a" * 32 + "-theme/generations/" + "4" * 24)
+        path = self.root / "candidate.json"
+        path.write_text(json.dumps(self.manifest))
+        with self.assertRaisesRegex(ValueError, "bound"):
+            trial.candidate(path)
 
 
 if __name__ == "__main__":

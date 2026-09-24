@@ -28,6 +28,7 @@ from theme_transaction import (
     TransactionError, _pointer, _public_links, _swap_pointer,
     activate_generation, exchange,
 )
+from theme_background_metrics import measure as measure_background_resources
 
 STORE = re.compile(r"/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._/-]+)?\Z")
 IDENTITY = re.compile(r"[a-f0-9]{24}\Z")
@@ -54,7 +55,7 @@ def candidate(path: Path) -> dict:
     required = {"schema", "source_revision", "system", "theme_command", "capture_command",
                 "default_generation", "state_root", "rust_socket", "deck_socket",
                 "workload", "themes"}
-    if not isinstance(raw, dict) or set(raw) != required or raw["schema"] != 1:
+    if not isinstance(raw, dict) or not required.issubset(raw) or set(raw) - required - {"background_trial"} or raw["schema"] != 1:
         raise ValueError("invalid candidate manifest fields")
     if not REVISION.fullmatch(raw["source_revision"]):
         raise ValueError("invalid source revision")
@@ -78,6 +79,27 @@ def candidate(path: Path) -> dict:
     for role, name in themes.items():
         if not isinstance(name, str) or not LABEL.fullmatch(name):
             raise ValueError(f"invalid {role} theme name")
+    if "background_trial" in raw:
+        trial = raw["background_trial"]
+        if not isinstance(trial, dict) or set(trial) != {"duration_seconds", "interval_seconds", "choices"}:
+            raise ValueError("invalid background trial fields")
+        duration, interval = trial["duration_seconds"], trial["interval_seconds"]
+        if (isinstance(duration, bool) or not isinstance(duration, (int, float))
+                or isinstance(interval, bool) or not isinstance(interval, (int, float))
+                or not 2 <= duration <= 60 or not .1 <= interval <= 1):
+            raise ValueError("background trial sampling exceeds bound")
+        choices = trial["choices"]
+        if not isinstance(choices, dict) or set(choices) != {"static", "video"}:
+            raise ValueError("background trial needs static and video choices")
+        for choice in choices.values():
+            if (not isinstance(choice, dict)
+                    or set(choice) != {"theme_name", "origin", "background_id"}
+                    or not isinstance(choice["theme_name"], str)
+                    or not LABEL.fullmatch(choice["theme_name"])
+                    or choice["origin"] not in ("builtin", "user")
+                    or not isinstance(choice["background_id"], str)
+                    or not IDENTITY.fullmatch(choice["background_id"])):
+                raise ValueError("invalid background trial choice")
     return raw
 
 
@@ -215,12 +237,14 @@ def restore(snapshot: dict, *, state_root: Path, default_generation: Path,
 
 class Trial:
     def __init__(self, manifest: dict, *, call=command, capture=None,
-                 transport=exchange, app_sync=None):
+                 transport=exchange, app_sync=None,
+                 resource_sample=measure_background_resources):
         self.m = manifest
         self.call = call
         self.capture = capture or self.capture_native
         self.transport = transport
         self.app_sync = app_sync
+        self.resource_sample = resource_sample
 
     def capture_native(self, role: str, raw: Path) -> dict:
         image = raw / (role + ".png")
@@ -245,7 +269,12 @@ class Trial:
                           "--deck-socket", self.m["deck_socket"],
                           action, *args, "--json"])
 
-    def run(self, output: Path, raw: Path) -> dict:
+    def run(self, output: Path, raw: Path, workload_mode: str = "themes") -> dict:
+        if workload_mode not in ("themes", "backgrounds"):
+            raise ValueError("unknown theme workload mode")
+        background_trial = self.m.get("background_trial") if workload_mode == "backgrounds" else None
+        if workload_mode == "backgrounds" and background_trial is None:
+            raise ValueError("background workload needs pinned trial choices")
         workload = self.m["workload"]
         artifact = Path(workload["artifact"])
         metadata = artifact.lstat()
@@ -270,6 +299,7 @@ class Trial:
         save_private(raw / "recovery.json", snapshot)
         public = {"schema": 1, "source_revision": self.m["source_revision"],
                   "system": self.m["system"], "workload": public_workload,
+                  "workload_mode": workload_mode,
                   "started_utc": utc(), "arms": [], "restoration": "pending",
                   "physical_observation": "UNVERIFIED"}
         write_public(output / "result.json", public)
@@ -284,17 +314,25 @@ class Trial:
             public["baseline"] = {"generation": previous.name if previous else default.name,
                                   "capture": self.capture("baseline", raw),
                                   "workload": public_workload}
+            if background_trial is not None:
+                public["baseline"]["resources"] = self.resource_sample(
+                    background_trial["duration_seconds"], background_trial["interval_seconds"])
             write_public(output / "result.json", public)
-            for role, name in self.m["themes"].items():
+            arms = ([(role, name, None, None) for role, name in self.m["themes"].items()]
+                    if background_trial is None else
+                    [(role, choice["theme_name"], choice["background_id"], choice["origin"])
+                     for role, choice in background_trial["choices"].items()])
+            for role, name, background_id, origin in arms:
                 stage = "select-" + role
                 matches = [item for item in entries if isinstance(item, dict)
                            and item.get("name") == name and
-                           item.get("origin") == ("user" if role == "community" else "builtin")]
+                           item.get("origin") == (origin or ("user" if role == "community" else "builtin"))]
                 if len(matches) != 1 or not IDENTITY.fullmatch(str(matches[0].get("id", ""))):
                     raise RuntimeError("requested theme is absent or ambiguous")
                 theme_id = matches[0]["id"]
                 stage = "preview-" + role
-                preview = self.theme("preview", theme_id)
+                background_arg = ("--background", background_id) if background_id else ()
+                preview = self.theme("preview", theme_id, *background_arg)
                 generation = preview.get("generation")
                 if not isinstance(generation, str) or not IDENTITY.fullmatch(generation):
                     raise RuntimeError("invalid preview generation")
@@ -304,8 +342,13 @@ class Trial:
                 selected = [row for row in backgrounds if isinstance(row, dict) and row.get("selected") is True]
                 if len(selected) != 1 or not IDENTITY.fullmatch(str(selected[0].get("id", ""))):
                     raise RuntimeError("preview lacks one selected background")
+                if background_id and selected[0]["id"] != background_id:
+                    raise RuntimeError("preview selected a different background")
+                if background_trial is not None and selected[0].get("kind") != ("image" if role == "static" else "video"):
+                    raise RuntimeError("background trial choice has wrong media kind")
                 stage = "activate-" + role
-                activated = self.theme("activate", theme_id, "--expected-generation", generation)
+                activated = self.theme("activate", theme_id, *background_arg,
+                                       "--expected-generation", generation)
                 if activated.get("activated") is not True or activated.get("generation") != generation:
                     raise RuntimeError("activation did not acknowledge preview generation")
                 active = self.theme("list").get("active")
@@ -321,8 +364,18 @@ class Trial:
                        "background_count": len(backgrounds), "workload": public_workload,
                        "capture": self.capture(role, raw),
                        "app_appearance_state": app_state}
+                if background_trial is not None:
+                    stage = "measure-" + role
+                    arm["resources"] = self.resource_sample(
+                        background_trial["duration_seconds"], background_trial["interval_seconds"])
                 public["arms"].append(arm)
                 write_public(output / "result.json", public)
+                if background_trial is not None:
+                    if role == "video":
+                        # The old image only rejects video. A real wallpaper
+                        # playback consumer and frame proof must be present
+                        # before this mode can claim a completed video arm.
+                        raise RuntimeError("wallpaper video telemetry is not yet connected")
         except Exception as caught:
             error = caught
             public["trial"] = "failed"
@@ -356,6 +409,7 @@ def main() -> int:
     parser.add_argument("--candidate-manifest", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--raw-private-dir", type=Path)
+    parser.add_argument("--workload", choices=("themes", "backgrounds"), default="themes")
     parser.add_argument("--restore-private-dir", type=Path,
                         help="manually restore from an interrupted trial's private recovery.json")
     args = parser.parse_args()
@@ -390,7 +444,7 @@ def main() -> int:
         if (not resolved_raw.is_relative_to(runtime) or resolved_raw.is_relative_to(args.output.resolve())
                 or raw.stat().st_uid != os.geteuid() or raw.stat().st_mode & 0o077):
             raise RuntimeError("raw directory must be owned and private under XDG_RUNTIME_DIR")
-        Trial(manifest).run(args.output, raw)
+        Trial(manifest).run(args.output, raw, workload_mode=args.workload)
         print(f"fixed public result: {args.output / 'result.json'}")
         print(f"private raw captures and recovery: {raw}")
         return 0

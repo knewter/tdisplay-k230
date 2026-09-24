@@ -95,3 +95,39 @@ python3 tests/test_handheld_theme_trial.py
 # 5 tests passed: prior/default restoration, failed rollback visibility,
 # manifest and changed workload identity rejection.
 ```
+
+## Background resource workload (source checkpoint)
+
+The new `--workload backgrounds` option requires the normal candidate fields
+plus a private `background_trial` object. Resolve both opaque background IDs
+using `k230-theme preview THEME_ID --json` against the **installed** source;
+pin one supported still and one video choice. Do not publish source paths or a
+user theme name from the private candidate. A representative shape is:
+
+```json
+"background_trial": {
+  "duration_seconds": 8,
+  "interval_seconds": 0.25,
+  "choices": {
+    "static": {"theme_name": "catppuccin", "origin": "builtin", "background_id": "24 lowercase hex digits"},
+    "video": {"theme_name": "catppuccin", "origin": "builtin", "background_id": "24 lowercase hex digits"}
+  }
+}
+```
+
+The host sampler reads only `shell.service` and `shell-ui.service` cgroup CPU,
+memory and their processes' RSS at a bounded interval. A decoder started by
+the persistent Rust wallpaper client belongs to `shell-ui.service`; an ordinary
+mpv application is not a wallpaper decoder. The fixed result labels sampled
+peaks and CPU time, including the baseline arm. A changed generation, wrong
+media kind, missing cgroup or incomplete RSS fails the trial and runs the
+normal restoration path. These counters do not establish decoder throughput,
+Wayland presentation or panel photons.
+
+The current installed client rejects video wallpaper, and this initial trial
+checkpoint deliberately returns a failed `measure-video` result even if a
+fake backend accepts it. **Do not run or cite it as a video pass.** After the
+separately owned wallpaper-video consumer lands, the sampler must require its
+generation-matched private status and visibly changing native captures before
+the video arm can complete. Physical CPU/frame/card budgets still require the
+reserved-board workload and trace; task 5.4 remains open.
