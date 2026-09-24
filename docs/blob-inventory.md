@@ -720,6 +720,8 @@ DATA 2da9e91dc7261bec5f58c042f8f5eab8ebcafe0ca392f92b00615fbf27b363f7  docs/evid
 DATA 450c318b8f9eff21bff89fe70c34b16101f0dbdb43b37a50fdc385b6d658ddf2  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-deck.png
 DATA c008c3e10bfcbfe18348dae4b72ee090ea986316f31681bddc5d8549c145e01a  docs/evidence/work-card-media/file-mobile.png
 DATA 118acb1e9bcefa389a49b97e344c31d362d07d00f79b36db762b41d1a30d09f4  docs/evidence/work-card-media/gallery-desktop.png
+DATA e8f491fb0e78cf07a7369b0743719a1c10bf809f8a63b67b58974a5a4636003d  docs/evidence/coherent-shell/first-integrated-preview/notification-shade.png
+DATA 298f42631b45023fb26c0e4e4e486a4740615cc4d9ee1f8e2eb12b24a27c11ab  docs/evidence/coherent-shell/first-integrated-preview/app-drawer.png
 DATA b81dbc7f9de727cc7a0c0acff138d5509dc911ceec46d69c2f1ae89a95eb11b2  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-mid.png
 DATA 381f5aaa192d9bce2582a6712199b499c311e6e98da7c0782a52e87e87ec7276  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-open.png
 DATA b50f6bd0107b1d2e3a0fe2722e95b4edf8362f41501b89e831adde901e87b37c  docs/evidence/coherent-shell/reveal-integrated-qemu/rust-drawer-reversed.png
@@ -1517,3 +1519,11 @@ packages, fanout command, pixel checks, and physical limits are in its README.
 | `docs/evidence/omarchy-themes/paired-endpoints-qemu/rollback-deck.png` | 18312 | DATA | `085a00f2d55edf2e0073788f1fd302f41548e3ade7dd9a07640f020b53ea7971` |
 | `docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-deck.png` | 18346 | DATA | `d5b3e47bf88596e75dc8ba1f22d456de2ea478e68df4443d53d0e0489ce41f13` |
 | `docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-drawer.png` | 39422 | DATA | `d2b189f2421e5b2421b091ae8cbfb403e57e784a2b70f3853f8b26945ecf089e` |
+
+### First integrated Rust shell preview
+
+`docs/evidence/coherent-shell/first-integrated-preview/*.png` are reviewed
+physical-board native compositor DATA captures. They contain shell UI and
+public installed-app labels/icons; no private application content. The
+adjacent README preserves exact system identity and reported navigation bugs.
+

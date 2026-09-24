@@ -1,0 +1,27 @@
+{
+  "class": "physical-board-native-compositor-capture",
+  "source": "cd06bee4",
+  "system": "/nix/store/206lci3a8k86igxi1hmahdwfzd9gd5l0-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "activation_mode": "test",
+  "activation_exit": 0,
+  "services_active": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "k230-wifi"
+  ],
+  "transfer_bytes": 171004000,
+  "captures": {
+    "notification-shade.png": {
+      "bytes": 17589,
+      "sha256": "e8f491fb0e78cf07a7369b0743719a1c10bf809f8a63b67b58974a5a4636003d"
+    },
+    "app-drawer.png": {
+      "bytes": 42689,
+      "sha256": "298f42631b45023fb26c0e4e4e486a4740615cc4d9ee1f8e2eb12b24a27c11ab"
+    }
+  },
+  "user_acceptance": "pending: shade dismissal and window selection bugs reported"
+}
