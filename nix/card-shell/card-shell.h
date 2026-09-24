@@ -11,6 +11,7 @@ void card_shell_observe(struct sway_view *view);
 void card_shell_unmap(struct sway_view *view);
 void card_shell_output_disable(struct sway_output *output);
 void card_shell_prepare(struct sway_output *output);
+void card_shell_usable_area_changed(struct sway_output *output);
 void card_shell_frame(struct wlr_scene_buffer *buffer);
 void card_shell_present(struct sway_output *output, bool presented);
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec);

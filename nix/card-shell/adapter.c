@@ -944,7 +944,7 @@ static bool ordinary_resize(struct sway_view *view, struct sway_output *output) 
 	arrange_container(con);
 	return true;
 }
-static void ordinary_sync_usable(struct sway_output *output) {
+static void ordinary_sync_usable(struct sway_output *output, bool commit) {
 	if (shell.ordinary_usable_valid &&
 		wlr_box_equal(&shell.ordinary_usable, &output->usable_area))
 		return;
@@ -954,14 +954,18 @@ static void ordinary_sync_usable(struct sway_output *output) {
 	struct card *card;
 	wl_list_for_each(card, &shell.cards, link)
 		changed |= ordinary_resize(card->view, output);
-	if (changed)
+	if (changed && commit)
 		transaction_commit_dirty();
+}
+void card_shell_usable_area_changed(struct sway_output *output) {
+	if (shell.initialized && shell.output == output)
+		ordinary_sync_usable(output, false);
 }
 static void prepare_impl(struct sway_output *output) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
 	shell.preparing = true;
-	ordinary_sync_usable(output);
+	ordinary_sync_usable(output, true);
 	bool blocked =
 		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
 	if (blocked) {
