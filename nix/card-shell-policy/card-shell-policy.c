@@ -73,8 +73,9 @@ struct cs_result cs_leave(struct cs_policy *p) {
     reset_drag(p);
     p->edge.tracking=false;
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
-    p->entry_progress=0;p->entry_id=0;
-    p->entry_reverse_from=0;p->entry_started_ms=0;p->entry_reversing=false;
+    p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
+    p->entry_reverse_from=0;p->entry_settle_from=0;p->entry_started_ms=0;
+    p->entry_reversing=false;p->entry_settling=false;
     p->expand_progress=0;p->expand_reverse_from=0;p->expand_id=0;
     p->expand_started_ms=0;p->expand_reversing=false;p->expand_full_dwell=false;
     p->message=CS_MESSAGE_NONE;
@@ -199,6 +200,12 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
         if (p->blocked_contacts<UINT_MAX) p->blocked_contacts++;
         return result(p,0,true);
     }
+	if (p->mode==CS_ENTERING && p->entry_settling) {
+		p->entry_settling=false;p->entry_reversing=true;
+		p->entry_reverse_from=p->entry_progress;p->entry_started_ms=time_ms;
+		p->blocked_until_up=true;p->blocked_contacts=1;
+		return result(p,CS_REDRAW,true);
+	}
 	if (p->mode==CS_EXPANDING) {
 		p->expand_reversing=true;
 		p->expand_reverse_from=p->expand_progress;
@@ -377,15 +384,22 @@ struct cs_result cs_stream_cancel(struct cs_policy *p) {
     return result(p,p->mode==CS_NORMAL ? 0 : CS_REDRAW,owned);
 }
 struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
-	if (p->mode==CS_ENTERING && p->entry_reversing) {
+	if (p->mode==CS_ENTERING && (p->entry_reversing || p->entry_settling)) {
 		if (!p->entry_started_ms) {
 			p->entry_started_ms=time_ms;
 			return result(p,0,false);
 		}
 		uint64_t elapsed=time_ms>=p->entry_started_ms ? time_ms-p->entry_started_ms : 0;
 		double duration=p->config.reduced_motion ? 60 : 160;
-		p->entry_progress=fmax(0,p->entry_reverse_from-elapsed/duration);
-		if (p->entry_progress==0) return cs_leave(p);
+		if (p->entry_reversing) {
+			p->entry_progress=fmax(0,p->entry_reverse_from-elapsed/duration);
+			if (p->entry_progress==0) return cs_leave(p);
+		} else {
+			p->entry_progress=fmin(1,p->entry_settle_from+elapsed/duration);
+			if (p->entry_progress==1) {
+				p->mode=CS_DECK;p->entry_id=0;p->entry_settling=false;
+			}
+		}
 		return result(p,CS_REDRAW,false);
 	}
 	if (p->mode==CS_EXPANDING) {
@@ -466,11 +480,29 @@ struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y
 		return cs_edge_down(p,id,x,y,time_ms);
     struct cs_result r=cs_enter(p,focused_id);
     if (!r.consumed) return r;
-    p->mode=CS_ENTERING;p->entry_progress=0;
-    p->entry_id=p->selected<p->count ? p->cards[p->selected].id : 0;
+	p->mode=CS_ENTERING;p->entry_progress=0;p->entry_travel=0;p->entry_drag=0;
+	p->entry_id=p->selected<p->count ? p->cards[p->selected].id : 0;
     p->edge.tracking=true;p->edge.contact_id=id;
     p->edge.x=x;p->edge.y=y;p->edge.time_ms=time_ms;
-    return r;
+	return r;
+}
+bool cs_entry_set_geometry(struct cs_policy *p,double source_y,double source_height,
+        double target_y,double target_height) {
+	if (p->mode!=CS_ENTERING ||
+		!isfinite(source_y) || !isfinite(source_height) || source_height<=0 ||
+		!isfinite(target_y) || !isfinite(target_height) || target_height<=0)
+		return false;
+	if (p->entry_travel>0) return true;
+	if (!p->edge.tracking) return false;
+	/* The same relative point is in the source app and its target card.
+	 * Linear geometry interpolation then moves it exactly with the finger. */
+	double anchor=(p->edge.y-source_y)/source_height;
+	double target_anchor=target_y+anchor*target_height;
+	double travel=p->edge.y-target_anchor;
+	if (!isfinite(travel) || travel<p->config.entry_distance)
+		return false;
+	p->entry_travel=travel;
+	return true;
 }
 struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {
     if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
@@ -480,23 +512,29 @@ struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double 
         p->blocked_until_up=true;p->blocked_contacts=1;
         return r;
     }
-    double dy=p->edge.y-y;
-    p->entry_progress=fmax(0,fmin(1,dy/p->config.entry_distance));
-    return result(p,CS_REDRAW,true);
+	if (p->entry_travel<=0) return fail(p);
+	p->entry_drag=fmax(0,p->edge.y-y);
+	p->entry_progress=fmin(1,p->entry_drag/p->entry_travel);
+	return result(p,CS_REDRAW,true);
 }
 struct cs_result cs_entry_up(struct cs_policy *p,int32_t id) {
-    if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
-        return result(p,0,false);
-    p->edge.tracking=false;
-    if (p->entry_progress<1) {
+	if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
+		return result(p,0,false);
+	p->edge.tracking=false;
+	if (p->entry_drag<p->config.entry_distance) {
 		if (p->entry_progress==0) return cs_leave(p);
 		p->entry_reversing=true;
 		p->entry_reverse_from=p->entry_progress;
 		p->entry_started_ms=0;
 		return result(p,CS_REDRAW,true);
 	}
-    p->mode=CS_DECK;p->entry_progress=1;p->entry_id=0;
-    return result(p,CS_REDRAW,true);
+	if (p->entry_progress<1) {
+		p->entry_settling=true;p->entry_settle_from=p->entry_progress;
+		p->entry_started_ms=0;
+		return result(p,CS_REDRAW,true);
+	}
+	p->mode=CS_DECK;p->entry_progress=1;p->entry_id=0;
+	return result(p,CS_REDRAW,true);
 }
 void cs_edge_cancel(struct cs_policy *p) {
     if (p->edge.tracking) {p->blocked_until_up=true;p->blocked_contacts=1;}

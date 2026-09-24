@@ -64,9 +64,13 @@ struct cs_policy {
 	/* 0 displays the original view geometry; 1 displays its deck slot. */
 	double entry_progress;
 	uint64_t entry_id;
+	/* The projected source point under the accepted finger reaches its card
+	 * counterpart after this many logical pixels; commitment is separate. */
+	double entry_travel, entry_drag;
 	double entry_reverse_from;
+	double entry_settle_from;
 	uint64_t entry_started_ms;
-	bool entry_reversing;
+	bool entry_reversing, entry_settling;
 	double expand_progress, expand_reverse_from;
 	uint64_t expand_id, expand_started_ms;
 	/* A policy tick dwell at full geometry; not output presentation proof. */
@@ -129,6 +133,10 @@ struct cs_result cs_edge_up(struct cs_policy *policy, int32_t contact_id);
  * Early/reversed release restores the application without a deck endpoint. */
 struct cs_result cs_begin_entry(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms, uint64_t focused_id);
+/* Called once from the compositor's live-source/card geometry reconciliation.
+ * Source and target coordinates are output-local logical pixels. */
+bool cs_entry_set_geometry(struct cs_policy *policy, double source_y,
+    double source_height, double target_y, double target_height);
 struct cs_result cs_entry_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms);
 struct cs_result cs_entry_up(struct cs_policy *policy, int32_t contact_id);

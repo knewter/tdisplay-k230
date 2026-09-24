@@ -596,6 +596,9 @@ static bool sync_card(struct card *c, size_t index) {
 	if (entering) {
 		if (!c->source_valid)
 			return false;
+		if (!cs_entry_set_geometry(&shell.policy, c->source_y - shell.output->ly,
+				c->view->geometry.height, r.y, r.height))
+			return false;
 		double progress = shell.policy.entry_progress;
 		r.x = (c->source_x - shell.output->lx) * (1 - progress) + r.x * progress;
 		r.y = (c->source_y - shell.output->ly) * (1 - progress) + r.y * progress;
