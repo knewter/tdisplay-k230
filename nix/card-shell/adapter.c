@@ -105,6 +105,7 @@ static struct {
 	struct card_shell_reveal_stream reveal;
 	struct kg_policy keyboard;
 	struct wlr_scene_rect *keyboard_grip, *keyboard_grip_line;
+	struct wlr_scene_rect *ordinary_backdrop;
 } shell;
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
@@ -1027,6 +1028,8 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	if (shell.keyboard_grip) wlr_scene_node_destroy(&shell.keyboard_grip->node);
 	if (shell.keyboard_grip_line) wlr_scene_node_destroy(&shell.keyboard_grip_line->node);
 	shell.keyboard_grip = shell.keyboard_grip_line = NULL;
+	if (shell.ordinary_backdrop) wlr_scene_node_destroy(&shell.ordinary_backdrop->node);
+	shell.ordinary_backdrop = NULL;
 	shell.ui = NULL;
 	shell.deck = NULL;
 	shell.chrome = NULL;
@@ -1112,6 +1115,20 @@ static bool ensure_ui(struct sway_output *output) {
 		shell.canvas = wlr_scene_rect_create(shell.deck, output->width, output->height, backdrop);
 	if (shell.deck)
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
+	/* A single ordinary-maximized app is a real Sway floating container in
+	 * output->layers.tiling, not shell.deck (which is disabled outside the
+	 * card overview). Its exclusive-zone reservation tracks the keyboard
+	 * gesture continuously (card_shell_keyboard_adjust_usable), and a real
+	 * client can be too slow to redraw at each new size before Sway's
+	 * transaction timeout forces the new geometry through anyway -- the
+	 * still-old-sized buffer then leaves a margin with nothing painted in
+	 * it. This backdrop sits directly behind ordinary cards in that same
+	 * layer (see ordinary_backdrop_sync) so that margin shows the card
+	 * backdrop colour instead of the desktop wallpaper underneath. */
+	shell.ordinary_backdrop = wlr_scene_rect_create(output->layers.tiling,
+		output->width, output->height, card_color);
+	if (shell.ordinary_backdrop)
+		wlr_scene_node_set_enabled(&shell.ordinary_backdrop->node, false);
 	if (keyboard_gestures_enabled()) {
 		const float grip_bg[4] = {.10f, .14f, .19f, .95f};
 		const float grip_line[4] = {.60f, .78f, .80f, 1.f};
@@ -1123,7 +1140,8 @@ static bool ensure_ui(struct sway_output *output) {
 		if (shell.keyboard_grip_line) wlr_scene_node_set_enabled(&shell.keyboard_grip_line->node, false);
 	}
 	shell.timer = wl_event_loop_add_timer(server.wl_event_loop, tick, NULL);
-	if (!shell.ui || !shell.deck || !shell.canvas || !shell.timer || !chrome()) {
+	if (!shell.ui || !shell.deck || !shell.canvas || !shell.ordinary_backdrop ||
+		!shell.timer || !chrome()) {
 		handle_output_destroy(NULL, NULL);
 		return false;
 	}
@@ -1272,7 +1290,54 @@ static bool ordinary_resize(struct sway_view *view, struct sway_output *output) 
 	arrange_container(con);
 	return true;
 }
+/* The colour an ordinary card would show if it had no themed appearance of
+ * its own; matches card_background()'s unthemed/themed choice so the
+ * backdrop reads as "this card's surface", not an unrelated void. */
+static void ordinary_backdrop_color(float rgba[4]) {
+	if (shell.appearance_enabled) card_brush_solid_color(&shell.appearance.card, rgba);
+	else memcpy(rgba, card_color, sizeof(float) * 4);
+}
+/* Keeps a card-coloured rect exactly at the output's current usable area,
+ * directly behind ordinary cards in output->layers.tiling. A scene rect
+ * resize is a pure compositor-side operation with no client round trip, so
+ * unlike the ordinary card's own resize (ordinary_resize, gated on a
+ * Wayland configure/ack) it never lags the animated keyboard exclusive
+ * zone. It closes the gap described in ensure_ui's ordinary_backdrop
+ * comment: whatever margin a slow client hasn't painted yet shows this
+ * backdrop instead of the desktop wallpaper underneath. */
+static void ordinary_backdrop_sync(struct sway_output *output) {
+	if (!shell.ordinary_backdrop)
+		return;
+	bool any = false;
+	struct card *card;
+	wl_list_for_each(card, &shell.cards, link) {
+		struct sway_view *view = card->view;
+		if (live(view) && view->container &&
+			view->container->card_shell_ordinary_maximized &&
+			container_is_floating(view->container) &&
+			!view->container->scratchpad &&
+			view->container->pending.workspace &&
+			view->container->pending.workspace->output == output) {
+			any = true;
+			break;
+		}
+	}
+	wlr_scene_node_set_enabled(&shell.ordinary_backdrop->node, any);
+	if (!any)
+		return;
+	float rgba[4];
+	ordinary_backdrop_color(rgba);
+	wlr_scene_rect_set_color(shell.ordinary_backdrop, rgba);
+	struct wlr_box *usable = &output->usable_area;
+	wlr_scene_rect_set_size(shell.ordinary_backdrop,
+		usable->width > 0 ? usable->width : output->width,
+		usable->height > 0 ? usable->height : output->height);
+	wlr_scene_node_set_position(&shell.ordinary_backdrop->node,
+		output->lx + usable->x, output->ly + usable->y);
+	wlr_scene_node_lower_to_bottom(&shell.ordinary_backdrop->node);
+}
 static void ordinary_sync_usable(struct sway_output *output, bool commit) {
+	ordinary_backdrop_sync(output);
 	if (shell.ordinary_usable_valid &&
 		wlr_box_equal(&shell.ordinary_usable, &output->usable_area))
 		return;
