@@ -471,13 +471,48 @@ fn paint_theme_chooser(
             color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
             let _ = cr.fill();
             if let Some(image) = preview_image {
+                // The worker decodes the same portrait crop as the persistent
+                // wallpaper. Scale that output down as a phone silhouette;
+                // cropping it again to this wide panel would hide the visible
+                // top and bottom of the selected background.
+                let phone_h = image_h - 12.0;
+                let phone_w = phone_h * f64::from(image.width()) / f64::from(image.height());
+                let phone_x = image_x + 16.0;
+                let phone_y = image_y + 6.0;
                 let _ = cr.save();
                 rounded(cr, image_x, image_y, image_w, image_h, 15.0);
                 cr.clip();
-                if cr.set_source_surface(image, image_x, image_y).is_ok() {
+                cr.translate(phone_x, phone_y);
+                cr.scale(
+                    phone_w / f64::from(image.width()),
+                    phone_h / f64::from(image.height()),
+                );
+                if cr.set_source_surface(image, 0.0, 0.0).is_ok() {
                     let _ = cr.paint();
                 }
                 let _ = cr.restore();
+                rounded(cr, phone_x, phone_y, phone_w, phone_h, 6.0);
+                cr.set_line_width(1.5);
+                color(cr, style.muted, 0.8);
+                let _ = cr.stroke();
+                text(
+                    cr,
+                    "Screen crop",
+                    phone_x + phone_w + 22.0,
+                    image_y + 66.0,
+                    image_w - phone_w - 54.0,
+                    20.0,
+                    style.text,
+                );
+                text(
+                    cr,
+                    "Full-height preview",
+                    phone_x + phone_w + 22.0,
+                    image_y + 94.0,
+                    image_w - phone_w - 54.0,
+                    17.0,
+                    style.muted,
+                );
             } else {
                 let message = if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
                     "Video preview unavailable"
@@ -502,7 +537,7 @@ fn paint_theme_chooser(
                 let detail = if background.kind == BackgroundKind::Video {
                     "video preview unavailable"
                 } else {
-                    "wallpaper sample, center crop"
+                    "screen crop, scaled to preview"
                 };
                 text(
                     cr,
@@ -1668,7 +1703,7 @@ impl RendererCache {
     }
     /// Nonblocking dispatch hook. Only a selected staged still is decoded;
     /// the one-entry worker cache and result channel bound memory and work.
-    pub fn poll_theme_image(&mut self, width: u32) -> bool {
+    pub fn poll_theme_image(&mut self, width: u32, height: u32) -> bool {
         let desired = self.chooser.as_ref().and_then(|view| {
             let preview = (view.page == ThemePage::Preview)
                 .then_some(view.preview.as_ref())
@@ -1678,12 +1713,13 @@ impl RendererCache {
                 .iter()
                 .find(|row| row.selected && row.kind == BackgroundKind::Image)
                 .and_then(|row| {
-                    let image_width = width.checked_sub(56)?;
-                    (image_width > 0 && image_width <= 1024).then(|| ThemeImageKey {
-                        generation: preview.generation.clone(),
-                        path: row.path.clone(),
-                        width: image_width,
-                        height: 176,
+                    (width > 0 && width <= 1024 && height > 0 && height <= 2048).then(|| {
+                        ThemeImageKey {
+                            generation: preview.generation.clone(),
+                            path: row.path.clone(),
+                            width,
+                            height,
+                        }
                     })
                 })
         });
@@ -1830,7 +1866,7 @@ impl RendererCache {
         if canvas.len() != size {
             return Err("invalid canvas length".into());
         }
-        self.poll_theme_image(width);
+        self.poll_theme_image(width, height);
         if self.route != Some(route)
             || self.width != width
             || self.height != height
@@ -2252,7 +2288,7 @@ mod tests {
             if name == "preview" {
                 let deadline = std::time::Instant::now() + std::time::Duration::from_secs(8);
                 while std::time::Instant::now() < deadline {
-                    renderer.poll_theme_image(568);
+                    renderer.poll_theme_image(568, 1232);
                     if renderer.preview_surface.is_some() || renderer.preview_error {
                         break;
                     }
@@ -2365,6 +2401,17 @@ mod tests {
         assert_ne!(list, scrolled);
         // Scrolling leaves the header unchanged while replacing visible rows.
         assert_eq!(&list[..568 * 180 * 4], &scrolled[..568 * 180 * 4]);
+        let wallpaper =
+            std::env::temp_dir().join(format!("k230-theme-screen-crop-{}.png", std::process::id()));
+        image::RgbaImage::from_fn(80, 160, |_, y| {
+            if y < 80 {
+                image::Rgba([220, 40, 30, 255])
+            } else {
+                image::Rgba([20, 80, 220, 255])
+            }
+        })
+        .save(&wallpaper)
+        .unwrap();
         view.page = ThemePage::Preview;
         view.scroll = 0.0;
         view.preview = Some(ThemePreview {
@@ -2381,7 +2428,7 @@ mod tests {
                     id: "fixture-still".into(),
                     label: "Still scene".into(),
                     kind: BackgroundKind::Image,
-                    path: "/tmp/fixture.png".into(),
+                    path: wallpaper.canonicalize().unwrap(),
                     selected: true,
                     decode_status: "unverified".into(),
                 },
@@ -2404,6 +2451,15 @@ mod tests {
         });
         renderer.set_theme_view(view);
         let mut preview = vec![0; controls.len()];
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        while renderer.preview_surface.is_none() && std::time::Instant::now() < deadline {
+            renderer.poll_theme_image(568, 1232);
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert_eq!(
+            renderer.preview_surface.as_ref().map(ImageSurface::height),
+            Some(1232)
+        );
         renderer.draw(&mut preview, params, &[]).unwrap();
         assert_ne!(preview, list);
         if let Ok(path) = std::env::var("K230_THEME_FIXTURE_PNG") {
@@ -2420,6 +2476,7 @@ mod tests {
             let mut file = File::create(path).unwrap();
             surface.write_to_png(&mut file).unwrap();
         }
+        std::fs::remove_file(wallpaper).unwrap();
     }
 
     #[test]
@@ -2462,12 +2519,19 @@ mod tests {
             }),
             ..ThemeView::default()
         });
-        assert!(renderer.poll_theme_image(568));
+        assert!(renderer.poll_theme_image(568, 1232));
+        assert_eq!(
+            renderer
+                .preview_key
+                .as_ref()
+                .map(|key| (key.width, key.height)),
+            Some((568, 1232))
+        );
         renderer.set_theme_view(ThemeView::default());
-        assert!(renderer.poll_theme_image(568));
+        assert!(renderer.poll_theme_image(568, 1232));
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
         while renderer.preview_requested.is_some() && std::time::Instant::now() < deadline {
-            renderer.poll_theme_image(568);
+            renderer.poll_theme_image(568, 1232);
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
         assert!(renderer.preview_requested.is_none());

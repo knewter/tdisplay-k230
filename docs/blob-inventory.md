@@ -1233,6 +1233,7 @@ DATA e8be5551a201b2278569864505f6602965511f222c838d349c99ebd1829641c4  docs/evid
 DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evidence/wifi-settings/paired-qemu/wifi-settings-light.png
 DATA 21fac03a2ab67a15b2a1faa45f3dea6688aa2017facc1f57315f8706edf8474e  docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png
 DATA cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/keyboard-gestures/installed-preview/terminal-hidden.png
+DATA 3df8cda30a4e3d966bed5ac2ddd15ff73cd551a065ddeb75743a57b75d3ca645  docs/evidence/omarchy-themes/portrait-preview-host/preview.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

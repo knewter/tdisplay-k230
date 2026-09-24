@@ -599,19 +599,25 @@ mod tests {
     }
 
     #[test]
-    fn still_preview_worker_returns_bounded_crop_outside_dispatch() {
+    fn still_preview_worker_returns_output_crop_outside_dispatch() {
         let path = std::env::temp_dir().join(format!(
             "k230-theme-preview-{}-{}.png",
             std::process::id(),
             std::thread::current().name().unwrap_or("test")
         ));
-        let image = image::RgbaImage::from_pixel(4, 2, image::Rgba([20, 80, 160, 255]));
+        let image = image::RgbaImage::from_fn(80, 160, |_, y| {
+            if y < 80 {
+                image::Rgba([220, 40, 30, 255])
+            } else {
+                image::Rgba([20, 80, 220, 255])
+            }
+        });
         image.save(&path).unwrap();
         let key = ThemeImageKey {
             generation: "fixture-generation".into(),
             path: path.canonicalize().unwrap(),
-            width: 64,
-            height: 32,
+            width: 56,
+            height: 123,
         };
         let worker = ThemeImageWorker::default();
         assert!(worker.try_request(key.clone()));
@@ -624,7 +630,13 @@ mod tests {
             std::thread::sleep(std::time::Duration::from_millis(5));
         };
         assert_eq!(reply.key, key);
-        assert_eq!(reply.pixels.unwrap().len(), 64 * 32 * 4);
+        let pixels = reply.pixels.unwrap();
+        assert_eq!(pixels.len(), 56 * 123 * 4);
+        // Both vertical regions visible in the actual portrait wallpaper
+        // must survive the asynchronous chooser sample. A wide 512x176 crop
+        // would sample a different source region.
+        assert_eq!(&pixels[..4], &[30, 40, 220, 255]);
+        assert_eq!(&pixels[pixels.len() - 4..], &[220, 80, 20, 255]);
         std::fs::remove_file(path).unwrap();
     }
 }
