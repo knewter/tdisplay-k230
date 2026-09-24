@@ -1456,6 +1456,7 @@ impl TouchHandler for ShellClient {
     fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
         self.touch.cancel();
         self.nav.cancel();
+        self.renderer.set_drawer_pressed(None);
         self.panel_start = None;
         self.panel_scrolled = false;
         self.theme_dragged = false;

@@ -156,7 +156,10 @@ impl DrawerNavigation {
         }
         if dx.abs() <= 12.0 && dy.abs() <= 12.0 && time_ms.wrapping_sub(contact.down_ms) < 800 {
             if let Some(index) = tile_at(point, width, height, apps, self.scroll) {
-                return Some(DrawerAction::Launch(index));
+                if tile_at(contact.start, width, height, apps, contact.start_scroll) == Some(index)
+                {
+                    return Some(DrawerAction::Launch(index));
+                }
             }
         }
         if dy.abs() > 12.0 && time_ms.wrapping_sub(contact.last_ms) <= 100 {
@@ -233,6 +236,25 @@ mod tests {
             tap(&mut nav, (100.0, top - 1.0), 7),
             None,
             "header is not a tile"
+        );
+        nav.down(2, (195.0, top + 40.0), 50);
+        assert_eq!(
+            nav.up(2, (204.0, top + 40.0), 70, 568, 1232, 7),
+            None,
+            "gap-to-tile is not a tap"
+        );
+        nav.down(3, (100.0, top - 5.0), 80);
+        assert_eq!(
+            nav.up(3, (100.0, top + 5.0), 100, 568, 1232, 7),
+            None,
+            "header-to-tile is not a tap"
+        );
+        let (x, y, w, _) = tile_rect(568, 1232, 0, 0.0);
+        nav.down(4, (x + w - 1.0, y + 40.0), 110);
+        assert_eq!(
+            nav.up(4, (x + w + 13.0, y + 40.0), 130, 568, 1232, 7),
+            None,
+            "tile-to-neighbor is not a tap"
         );
     }
 
