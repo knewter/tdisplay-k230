@@ -78,7 +78,7 @@ fn connect_bounded(path: &std::path::Path, deadline: Instant) -> Result<UnixStre
     }
     address.sun_family = libc::AF_UNIX as libc::sa_family_t;
     for (target, source) in address.sun_path.iter_mut().zip(bytes.iter()) {
-        *target = *source as i8;
+        *target = *source as libc::c_char;
     }
     let fd = unsafe {
         libc::socket(
