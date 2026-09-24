@@ -673,6 +673,7 @@ DATA b8e4c7894698a1b2f425dc1c10d4f07af05c31fc22042285cc8725c4bfecfd9e  docs/evid
 DATA 237247e3e1a95f6afdf0abf8735655d2b738d4d408ad9015da0fd3a3b9071cd3  docs/evidence/final-shell-image/help-header.png
 DATA eb0d6c97a5380669fa5e31dfbc34db07c150943d07ca8b727a21e1a8faac5fb8  docs/evidence/final-shell-image/keyboard-visible.png
 DATA ba91edae2fe3b89422797769edcbcccde5195eb7574cce4a556b7ab9970d3102  docs/evidence/card-composition-headless/cards.png
+DATA 00c70a72742835f3cc0376bcfc33c81c2d491e759d5c76d29fb0e9ea2c185030  docs/evidence/coherent-shell/rust-icons-host.png
 DATA 2e56b5aeb46b748a6cbd192352d7c3a985fe705ffedb1a1fe38d6f6bacc0e7a3  docs/evidence/card-shell/headless/during-drag.png
 DATA 38cb6ab82eeedb0154574a7f126380b3c1cf52e62f88bb0228db208a89f35ed3  docs/evidence/card-shell/headless/private.png
 DATA cd0ff6f6b75552bf4f5a891395e36f12b6366ab844d15afcf4e7fabdb97077f8  docs/evidence/card-shell/headless/two-live.png
@@ -1435,3 +1436,13 @@ restored ordinary shell. They were visually reviewed and contain no private
 app data. Commands, exact package/system identity and limits are recorded in
 that directory. They prove compositor pixels, not camera-visible presentation
 or physical touch; the diagnostic is not the finished shell UI.
+
+### Rust drawer icon host fixture
+
+`docs/evidence/coherent-shell/rust-icons-host.png` is a 56,149-byte DATA
+software-render fixture made from fixed public `.desktop` labels and the
+installed Foot, htop, and mpv SVG assets. Its SHA-256 is
+`00c70a72742835f3cc0376bcfc33c81c2d491e759d5c76d29fb0e9ea2c185030`.
+The rendering command, evidence limits and upstream icon license records are
+linked from `docs/evidence/coherent-shell/rust-icons-host.md`. It is not a
+board image or a runtime dependency.
