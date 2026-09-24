@@ -1,0 +1,21 @@
+{
+  "class": "headless-qemu-injected-keyboard-drag-gap",
+  "physical_touch": false,
+  "panel_capture": false,
+  "app_height_before_drag": 756,
+  "app_height_mid_drag_usable": 1026,
+  "gap_sample_xy": [
+    284,
+    891
+  ],
+  "gap_sample_rgb": [
+    36,
+    73,
+    90
+  ],
+  "before_sample_rgb": [
+    16,
+    56,
+    88
+  ]
+}

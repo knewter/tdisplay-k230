@@ -1191,6 +1191,10 @@ DATA 0677f13977a3c6734e461a808921716c86402386695ef3343cb4a3c36ad56a69  docs/evid
 DATA 51471171d73d883577104cae64254bcc039c12278d9b68502699de6c41ef0a02  docs/evidence/card-shell/tracked-motion-qemu/entry-end.png
 DATA 61786ceefb7f771eb3034ecea012932c366130a3f02114d3b8b7500c4fc5e99d  docs/evidence/card-shell/tracked-motion-qemu/entry-middle.png
 DATA 7033843d9fb164232b7406150f120475a2f2bb756b091bfe2a17b3fe2fe0b32d  docs/evidence/card-shell/tracked-motion-qemu/entry-start.png
+DATA 36fd6e2ca65c23b2489b7dd140236aa3035aaf2d21db806895b6815dc5affcb2  docs/evidence/keyboard-drag-usable-area-gap/after-fix-drag-start.png
+DATA 4019586f78af6a5ca85d733f34a757b3dd54e5ff52cfb4ce6202a343c1dba8f7  docs/evidence/keyboard-drag-usable-area-gap/after-fix-mid-drag-backdrop.png
+DATA 06a2cdb171eeebd8c3d8bfd79f0c865a038ab44b2c67fada22a29669354c2c55  docs/evidence/keyboard-drag-usable-area-gap/before-fix-drag-start.png
+DATA 61c3d0b2f67f7c778a7f68f14a7ba96f1d2eb68d244aba18e5c842d259bf48e4  docs/evidence/keyboard-drag-usable-area-gap/before-fix-mid-drag-gap.png
 DATA faf50cf2f88613f2524fcb8c130831e1b08ca2a69feca67ddfde799e5854da87  docs/evidence/keyboard-gestures/native-qemu/foot-typed.png
 DATA 865c3fa18b743280892c49b63ccf7ba54049da74d83a6015a61f198a8f898b98  docs/evidence/keyboard-gestures/native-qemu/grip-held.png
 DATA 4e086633efc0ff342823a72e001a56e06a6cfcf7a550441761ce19c8c748d5bf  docs/evidence/keyboard-gestures/native-qemu/grip-reverse.png
