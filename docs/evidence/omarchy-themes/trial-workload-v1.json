@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "cards-shade-static-v1",
+  "purpose": "Use the same real-finger route sequence before and after static theme activation.",
+  "steps": [
+    "From one live app, enter the live card deck from the bottom edge.",
+    "Swipe between two live cards, expand one, and return to the deck.",
+    "Open the app drawer from the deck, scroll, and dismiss it without launching.",
+    "Pull down notifications, then swipe up to dismiss the shade.",
+    "Open Settings, enter Themes, preview a background, cancel, and verify the active scene remains unchanged."
+  ],
+  "limits": "This checklist fixes interaction identity. The script records no timing or performance pass; physical observations and card budget measurements are separate gates."
+}
