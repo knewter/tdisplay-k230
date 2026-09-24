@@ -31,7 +31,7 @@ Some named host files and narrow packages now exist as source checkpoints; each 
 
 - [ ] 3.1 Implement bounded events from shell/system and deliberately integrated apps, source validation, priority, privacy and deduplication; verify `python3 tests/test_notification_center.py --case priority --case privacy --case retention --case unknown-source`.
 - [ ] 3.2 Implement non-focus-taking top preview, shade history/action/dismissal, empty and target-gone/critical states; verify `python3 tests/test_notification_center.py --case preview-timeout --case typing-focus --case action-gone --case critical`.
-- [ ] 3.3 Implement history drag/flick/tap-to-stop and reversible sideways item dismissal; verify `python3 tests/test_notification_center.py --case history-flick-stop --case swipe-cancel --case swipe-dismiss --case critical-retained`.
+- [x] 3.3 Implement history drag/flick/tap-to-stop and reversible sideways item dismissal; verify `python3 tests/test_notification_center.py --case history-flick-stop --case swipe-cancel --case swipe-dismiss --case critical-retained` with `CARD_SHELL_SWAY` and `K230_SHELL_RUST` bound to the exact cross-built executables. Paired injected-touch QEMU and host proof: `docs/evidence/coherent-shell/notification-history-motion-qemu/README.md`; on-glass task 5.4 remains open.
 - [ ] 3.4 Build the narrow notification broker/client with Nix defaults; verify `nix build .#handheld-notifications` (derivation proof only). A desktop notification adapter remains a separately reviewable extension.
 
 ## 4. Coordinated compositor scene (host, after sibling gates)

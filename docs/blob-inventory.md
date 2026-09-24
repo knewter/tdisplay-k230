@@ -1237,6 +1237,17 @@ DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evid
 DATA 21fac03a2ab67a15b2a1faa45f3dea6688aa2017facc1f57315f8706edf8474e  docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png
 DATA cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/keyboard-gestures/installed-preview/terminal-hidden.png
 DATA 3df8cda30a4e3d966bed5ac2ddd15ff73cd551a065ddeb75743a57b75d3ca645  docs/evidence/omarchy-themes/portrait-preview-host/preview.png
+DATA 856747c4afd9f1a223a444dd1b76f1d6dc02e1ddfc9f45991cd00b175743d827  docs/evidence/coherent-shell/notification-history-motion-qemu/dismiss-after.png
+DATA d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289  docs/evidence/coherent-shell/notification-history-motion-qemu/initial.png
+DATA 3a8d023504d8dc638c76a900081512cf36ddbaa2d7d334a6b7040e9cc61cb65e  docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-coasting-next.png
+DATA 75052edc63e86795286dd26d45b195e3f75785da13ff10676bc405c6f2a6fe51  docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-coasting.png
+DATA 5332e5896c24821965190c7d69974fab359ecd627674c5c4522a0b884d974da6  docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-stable.png
+DATA c4d221cc28a7cfa31da38e818561449cc7cef2564c7ea7cc86ffa094f35164bc  docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-stop.mp4
+DATA cb4d0b8a85f2511b3525bb5ff724eb65fcf6dc2bd31a73eca0f22c56a4965600  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-held.png
+DATA 0170c00341405479c590e2ded085f246f50e2090f77eb42fb5d79327675c07e2  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return-early.png
+DATA 01252e5ea0c1c839cb8ec8143badb480636aa6e90b78ad8f17841e0022324672  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return.mp4
+DATA d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-cancel.png
+DATA 125bc691f5c0c8f7e426a80b5989fb4b4b45d21d44d4e476e4e6a13c62ba6462  docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-held.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1755,3 +1766,21 @@ These nine DATA frames use invented network names and synthetic dark/light palet
 | `docs/evidence/wifi-settings/paired-qemu/wifi-saved-entry.png` | 36381 | DATA | `dd3782ac477ddfce563d062bdecdef87a5939ce815e2849a30d75c7e8a41b675` |
 | `docs/evidence/wifi-settings/paired-qemu/wifi-settings-dark.png` | 40394 | DATA | `e8be5551a201b2278569864505f6602965511f222c838d349c99ebd1829641c4` |
 | `docs/evidence/wifi-settings/paired-qemu/wifi-settings-light.png` | 39815 | DATA | `13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b` |
+
+### Notification motion paired headless QEMU captures
+
+These DATA screenshots and short video clips contain invented notifications in the paired Sway/Rust QEMU session. The adjacent README records exact binaries, injected touch commands, sampling limits and no physical claim.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/dismiss-after.png` | 56017 | DATA | `856747c4afd9f1a223a444dd1b76f1d6dc02e1ddfc9f45991cd00b175743d827` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/initial.png` | 56150 | DATA | `d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-coasting-next.png` | 58488 | DATA | `3a8d023504d8dc638c76a900081512cf36ddbaa2d7d334a6b7040e9cc61cb65e` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-coasting.png` | 56869 | DATA | `75052edc63e86795286dd26d45b195e3f75785da13ff10676bc405c6f2a6fe51` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-stable.png` | 57229 | DATA | `5332e5896c24821965190c7d69974fab359ecd627674c5c4522a0b884d974da6` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-stop.mp4` | 41753 | DATA | `c4d221cc28a7cfa31da38e818561449cc7cef2564c7ea7cc86ffa094f35164bc` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-held.png` | 56527 | DATA | `cb4d0b8a85f2511b3525bb5ff724eb65fcf6dc2bd31a73eca0f22c56a4965600` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return-early.png` | 56192 | DATA | `0170c00341405479c590e2ded085f246f50e2090f77eb42fb5d79327675c07e2` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-return.mp4` | 33115 | DATA | `01252e5ea0c1c839cb8ec8143badb480636aa6e90b78ad8f17841e0022324672` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-cancel.png` | 56150 | DATA | `d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289` |
+| `docs/evidence/coherent-shell/notification-history-motion-qemu/swipe-vertical-held.png` | 57079 | DATA | `125bc691f5c0c8f7e426a80b5989fb4b4b45d21d44d4e476e4e6a13c62ba6462` |

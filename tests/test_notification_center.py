@@ -146,6 +146,10 @@ class Notifications(unittest.TestCase):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", action="append", default=[])
+    parser.add_argument("--sway", type=Path, default=os.environ.get("CARD_SHELL_SWAY"),
+                        help="exact cross-built Sway executable for QEMU UI cases")
+    parser.add_argument("--rust", type=Path, default=os.environ.get("K230_SHELL_RUST"),
+                        help="exact cross-built Rust client for QEMU UI cases")
     args = parser.parse_args()
     groups = {"priority": ["test_priority"], "privacy": ["test_privacy"],
               "retention": ["test_retention_deduplication_and_expiry", "test_critical_flood_is_bounded"],
@@ -154,9 +158,19 @@ if __name__ == "__main__":
               "action-gone": ["test_action_gone_and_retry"],
               "critical": ["test_critical_retained_until_resolved"],
               "critical-retained": ["test_critical_retained_until_resolved"]}
-    if any(case not in groups for case in args.case):
-        parser.error("unknown or unimplemented UI case (focus/scroll/swipe require actual client tests)")
-    names = sorted({name for case in args.case for name in groups[case]})
+    ui_cases = {"history-flick-stop", "swipe-cancel", "swipe-dismiss"}
+    if any(case not in groups and case not in ui_cases for case in args.case):
+        parser.error("unknown case")
+    run_ui = any(case in ui_cases for case in args.case)
+    if run_ui and (not args.sway or not args.rust):
+        parser.error("QEMU UI cases require --sway and --rust (or CARD_SHELL_SWAY and K230_SHELL_RUST)")
+    names = sorted({name for case in args.case for name in groups.get(case, [])})
     suite = (unittest.TestSuite(Notifications(name) for name in names) if args.case
              else unittest.defaultTestLoader.loadTestsFromTestCase(Notifications))
-    raise SystemExit(not unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful())
+    if not unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful():
+        raise SystemExit(1)
+    if run_ui:
+        raise SystemExit(subprocess.call([
+            sys.executable, str(ROOT / "tests/rust_notification_motion_qemu.py"),
+            "--sway", str(args.sway), "--rust", str(args.rust),
+        ]))
