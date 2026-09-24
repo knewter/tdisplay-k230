@@ -396,10 +396,11 @@ in
 
     themeReceiverTrial = lib.mkOption {
       type = lib.types.bool;
-      default = cfg.coherentShell;
+      default = false;
       description = ''
-        Opt into the launcher-only appearance receiver and install the pinned
-        theme command. This does not enable a system-wide theme or claim
+        Opt into the legacy C launcher-only appearance receiver and install
+        the pinned theme command. The coherent Rust client needs its own
+        appearance receiver. This does not enable a system-wide theme or claim
         physical touch, contrast, rollback or reboot proof.
       '';
     };
@@ -838,7 +839,7 @@ in
       videoDesktop
       touchLauncher
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
-      ++ lib.optionals cfg.coherentShell [ rustShell themedFoot settingsCommand notificationCommand ]
+      ++ lib.optionals cfg.coherentShell [ rustShell themedFoot themeCommand settingsCommand notificationCommand ]
       ++ lib.optionals cfg.probes [
       cage
       cage-rgb565
