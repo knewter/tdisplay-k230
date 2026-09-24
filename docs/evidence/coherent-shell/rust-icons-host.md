@@ -8,4 +8,10 @@ The host tests cover inherited SVG lookup, native decode, cache reuse/invalidati
 
 The exact icon asset paths, SHA-256 values, source links and license notices are recorded in [the design study's icon provenance](../../design/handheld-prototype/README.md). The screenshot contains no private app catalog or device data.
 
-Remaining: exact riscv64 cross-build with librsvg, theme generation hook, actual app tap/launch path, card and notification identity consumers, on-device visual/touch evidence, and measured decode/memory cost.
+Exact source commit `23d703f77595f8dea4d69f351b7d22209da02489` subsequently passed:
+
+```sh
+nix build "git+file://$PWD?rev=23d703f77595f8dea4d69f351b7d22209da02489#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+The target derivation `/nix/store/pp2ib3y9ysbpz9mv3nnkzxkpbrrp70xs-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv` produced `/nix/store/4xmskqli9r93qrl41qx6ybs7593pzq8j-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. `file` reports ELF64 RISC-V LP64D; `nix path-info -S` reports 114,784,312 bytes recursive closure. The added librsvg dependency increases closure relative to the earlier no-icon client. This build is not an installed session or visual board result. Remaining gates are theme generation hookup, app tap/launch, card and notification identity consumers, and physical visual/touch plus measured decode cost.
