@@ -26,8 +26,14 @@ args = sys.argv[1:]
 with open(os.environ["K230_TEST_THEME_LOG"], "a") as log:
     log.write(json.dumps(args) + "\\n")
 generation = "b" * 24
+# Every row points at the same real fixture PNG (K230_TEST_THEME_PREVIEW),
+# matching Omarchy's per-theme preview.png convention closely enough to
+# prove the chooser's list-row thumbnail actually decodes and paints real
+# pixels, not just that the field round-trips.
+preview_path = os.environ["K230_TEST_THEME_PREVIEW"]
 themes = [{"id": f"{i:024x}", "name": f"Fixture {i:02d}",
-           "label": f"Fixture {i:02d}", "origin": "builtin"}
+           "label": f"Fixture {i:02d}", "origin": "builtin",
+           "preview_path": preview_path}
           for i in range(18)]
 if args == ["list"]:
     answer = {"schema": 1, "themes": themes,
@@ -92,11 +98,22 @@ def main():
         command.chmod(0o700)
         log = root / "theme-commands.jsonl"
         log.touch()
+        # Real, decodable fixture art: a shared per-theme preview thumbnail,
+        # and two distinguishable backgrounds staged at the exact generation
+        # path the synthetic command reports. Nothing here is upstream art;
+        # it exists only to prove the chooser's own decode/paint path.
+        preview = root / "fixture-preview.png"
+        Image.new("RGB", (48, 48), (214, 64, 24)).save(preview)
+        generation_dir = root / "generations" / ("b" * 24) / "theme" / "backgrounds"
+        generation_dir.mkdir(parents=True)
+        Image.new("RGB", (64, 128), (32, 96, 214)).save(generation_dir / "one.png")
+        Image.new("RGB", (64, 128), (214, 176, 32)).save(generation_dir / "two.png")
         env = dict(os.environ, XDG_RUNTIME_DIR=str(root), WLR_BACKENDS="headless",
                    WLR_HEADLESS_OUTPUTS="1", WLR_RENDERER="pixman",
                    SWAY_K230_CARD_SHELL="1", SWAY_K230_CARD_TEST_INPUT="1",
                    K230_THEME_COMMAND=str(command), K230_TEST_THEME_LOG=str(log),
-                   K230_TEST_THEME_GENERATION=str(root / "generations"))
+                   K230_TEST_THEME_GENERATION=str(root / "generations"),
+                   K230_TEST_THEME_PREVIEW=str(preview))
         sway_log = (root / "sway.log").open("w")
         rust_log = (root / "rust.log").open("w")
         sway = subprocess.Popen([args.qemu, str(args.sway), "-c", str(config), "-d"],
