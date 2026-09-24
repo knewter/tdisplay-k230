@@ -13,6 +13,7 @@ import socket
 import struct
 import subprocess
 import tempfile
+import threading
 import time
 from card_virtual_keyboard import Keyboard
 from PIL import Image, ImageChops
@@ -39,10 +40,13 @@ def main():
     ap.add_argument('--scaled-cache',action='store_true',help='enable bounded opaque RGB565 cache')
     ap.add_argument('--rgb565',action='store_true',help='request the RGB565 headless render format')
     ap.add_argument('--touch-first',action='store_true',help='exercise opt-in deck-to-drawer route')
+    ap.add_argument('--reveal-stream',action='store_true',help='capture persistent drawer/shade progress IPC')
     ap.add_argument('--drawer-layer-client',help='native mapped layer-shell fixture for touch-first route')
     args=ap.parse_args()
     if args.delayed_touch and not args.native_touch:
         ap.error('--delayed-touch requires --native-touch')
+    if args.reveal_stream and not args.touch_first:
+        ap.error('--reveal-stream requires --touch-first')
     runtime=args.output or Path(tempfile.mkdtemp(prefix='k230-card-headless-'))
     if args.output and runtime.exists() and any(runtime.iterdir()):
         ap.error('--output must be a new or empty directory')
@@ -52,6 +56,23 @@ def main():
     config.write_text('output HEADLESS-1 mode 568x1232' + (' render_bit_depth 6' if args.rgb565 else '') + '\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',SWAY_K230_CARD_SHELL='0' if args.disabled else '1')
     env['SWAY_K230_CARD_SCALED_CACHE'] = '1' if args.scaled_cache else '0'
+    reveal_messages=[]
+    reveal_listener=None
+    if args.reveal_stream:
+        reveal_listener=socket.socket(socket.AF_UNIX)
+        reveal_path=runtime/'k230-shell-rust.sock'
+        reveal_listener.bind(str(reveal_path))
+        reveal_path.chmod(0o600)
+        reveal_listener.listen(3)
+        env['SWAY_K230_CARD_REVEAL_STREAM']='1'
+        env['SWAY_K230_CARD_SURFACE_SOCKET']=str(reveal_path)
+        def collect_reveal():
+            for _ in range(3):
+                client,_=reveal_listener.accept()
+                with client, client.makefile('rb') as lines:
+                    for line in lines:
+                        reveal_messages.append(json.loads(line))
+        threading.Thread(target=collect_reveal,daemon=True).start()
     if args.touch_first:
         helper=runtime/'drawer-helper'
         helper.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$XDG_RUNTIME_DIR/drawer-request"\n')
@@ -125,6 +146,48 @@ def main():
         command('enter')
         if args.touch_first:
             wait_for(lambda:'K230_CARD_SHELL mirror id=' in logs())
+            if args.reveal_stream:
+                command('down 80 284 1200')
+                wait_for(lambda:any(row['phase']=='begin' for row in reveal_messages))
+                if args.drawer_layer_client:
+                    layer_log=(runtime/'drawer.log').open('w')
+                    drawer=subprocess.Popen([args.drawer_layer_client],env=env,
+                                            stdout=layer_log,stderr=layer_log)
+                    processes.append(drawer)
+                    wait_for(lambda:'drawer mapped' in (runtime/'drawer.log').read_text())
+                    subprocess.run(['grim',str(runtime/'reveal-layer.png')],env=env,check=True)
+                    assert Image.open(runtime/'reveal-layer.png').convert('RGB').getpixel((284,1000))==(255,0,255)
+                command('motion 80 284 1100')
+                command('motion 80 284 1120')
+                command('up 80')
+                wait_for(lambda:any(row['phase']=='finish' for row in reveal_messages))
+                if args.drawer_layer_client:
+                    drawer.terminate();drawer.wait(timeout=10);layer_log.close()
+                command('down 81 284 10')
+                command('motion 81 284 100')
+                command('motion 81 284 40')
+                command('up 81')
+                wait_for(lambda:sum(row['phase']=='finish' for row in reveal_messages)==2)
+                command('down 82 284 10')
+                command('down 83 284 20')
+                command('up 83')
+                command('up 82')
+                wait_for(lambda:any(row['phase']=='cancel' for row in reveal_messages))
+                groups={}
+                for row in reveal_messages:
+                    groups.setdefault(row['seq'],[]).append(row)
+                assert len(groups)==3,groups
+                drawer_rows,shade_rows,cancel_rows=list(groups.values())
+                assert drawer_rows[0]['surface']=='drawer' and drawer_rows[0]['phase']=='begin'
+                assert drawer_rows[-1]['phase']=='finish' and drawer_rows[-1]['progress']==1000
+                updates=[row['progress'] for row in drawer_rows if row['phase']=='update']
+                assert len(updates)>=2 and updates[-2]>updates[-1]>0,updates
+                assert shade_rows[0]['surface']=='shade' and shade_rows[-1]['progress']==0
+                assert cancel_rows[-1]['phase']=='cancel'
+                assert not (runtime/'drawer-request').exists()
+                assert 'restored focus=' not in logs()
+                print('PASS continuous reveal IPC: QEMU Sway and mapped overlay; no Rust pixels/physical touch',flush=True)
+                return
             command('down 90 284 10')
             command('motion 90 284 110')
             command('up 90')
@@ -356,6 +419,7 @@ def main():
           'passed':['horizontal-live-deck','expand-focus-keyboard','close-timeout-retains','close-exit','private-placeholder','unavailable-placeholder','live-privacy-transition','three-dynamic-views','popup-normal-fallback','topbar-restores-normal','cancel-no-up-return','multi-contact-drain','output-loss-restores','upward-throw-close','global-edge-entry','persistent-button'],
           'limits':['no physical touch or panel proof','no on-board cost acceptance']}
     finally:
+        if reveal_listener: reveal_listener.close()
         if keyboard: keyboard.close()
         for proc in reversed(processes):
             if proc.poll() is None: proc.terminate()

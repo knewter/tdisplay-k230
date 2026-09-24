@@ -40,6 +40,14 @@ class TouchFirstRuntime(unittest.TestCase):
             self.assertIn("K230_CARD_SHELL mirror id=", log)
             self.assertIn("K230_CARD_SHELL restored focus=", log)
             self.assertTrue((evidence / "with-drawer.png").exists())
+            reveal = Path(directory) / "reveal"
+            subprocess.run(
+                [sys.executable, str(ROOT / "tests/card_shell_runtime.py"),
+                 "--sway", sway, "--client", client, "--output", str(reveal),
+                 "--touch-first", "--reveal-stream", "--drawer-layer-client", str(layer_client)],
+                cwd=ROOT, check=True,
+            )
+            self.assertTrue((reveal / "reveal-layer.png").exists())
 
 
 if __name__ == "__main__":
