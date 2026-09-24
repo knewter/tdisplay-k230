@@ -38,6 +38,8 @@ def main():
     ap.add_argument('--delayed-touch',action='store_true',help='test source cadence independently of dispatch delay')
     ap.add_argument('--scaled-cache',action='store_true',help='enable bounded opaque RGB565 cache')
     ap.add_argument('--rgb565',action='store_true',help='request the RGB565 headless render format')
+    ap.add_argument('--touch-first',action='store_true',help='exercise opt-in deck-to-drawer route')
+    ap.add_argument('--drawer-layer-client',help='native mapped layer-shell fixture for touch-first route')
     args=ap.parse_args()
     if args.delayed_touch and not args.native_touch:
         ap.error('--delayed-touch requires --native-touch')
@@ -50,6 +52,12 @@ def main():
     config.write_text('output HEADLESS-1 mode 568x1232' + (' render_bit_depth 6' if args.rgb565 else '') + '\nseat seat0 fallback true\nfocus_follows_mouse no\nfor_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48\n')
     env=dict(os.environ,XDG_RUNTIME_DIR=str(runtime),WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',SWAY_K230_CARD_SHELL='0' if args.disabled else '1')
     env['SWAY_K230_CARD_SCALED_CACHE'] = '1' if args.scaled_cache else '0'
+    if args.touch_first:
+        helper=runtime/'drawer-helper'
+        helper.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$XDG_RUNTIME_DIR/drawer-request"\n')
+        helper.chmod(0o700)
+        env['SWAY_K230_CARD_TOUCH_FIRST']='1'
+        env['SWAY_K230_CARD_DRAWER_HELPER']=str(helper)
     if args.native_touch: env['SWAY_K230_CARD_TEST_INPUT']='1'
     processes=[]
     keyboard=None
@@ -115,6 +123,42 @@ def main():
         if args.benchmark:
             command('benchmark injected'); time.sleep(3.1)
         command('enter')
+        if args.touch_first:
+            wait_for(lambda:'K230_CARD_SHELL mirror id=' in logs())
+            # This was the legacy Back button. A touch-first deck must not
+            # restore the app or consume it as a permanent control.
+            command('down 81 500 80')
+            command('up 81')
+            command('next')
+            assert 'restored focus=' not in logs()
+            command('down 80 284 1200')
+            command('motion 80 284 1100')
+            command('up 80')
+            request=runtime/'drawer-request'
+            wait_for(request.exists)
+            assert request.read_text().splitlines()==['--surface','drawer']
+            # The helper may exit without mapping; the deck remains usable.
+            command('next')
+            assert 'restored focus=' not in logs()
+            if args.drawer_layer_client:
+                subprocess.run(['grim',str(runtime/'before-drawer.png')],env=env,check=True)
+                layer_log=(runtime/'drawer.log').open('w')
+                drawer=subprocess.Popen([args.drawer_layer_client],env=env,
+                                        stdout=layer_log,stderr=layer_log)
+                processes.append(drawer)
+                wait_for(lambda:'drawer mapped' in (runtime/'drawer.log').read_text())
+                subprocess.run(['grim',str(runtime/'with-drawer.png')],env=env,check=True)
+                before=Image.open(runtime/'before-drawer.png').convert('RGB')
+                with_drawer=Image.open(runtime/'with-drawer.png').convert('RGB')
+                assert before.getpixel((284,1000)) != (255,0,255)
+                assert with_drawer.getpixel((284,1000)) == (255,0,255)
+                blocked=ipc('card_shell down 85 284 450',check=False)
+                assert not blocked[0]['success'],blocked
+                drawer.terminate();drawer.wait(timeout=10);layer_log.close()
+                command('next')
+            command('back')
+            print('PASS touch-first drawer route: actual cross-built Sway under QEMU; no physical touch',flush=True)
+            return
         # Halfway between cards makes both root/child surfaces visibly sampled.
         # A fully offscreen card correctly receives no frame callbacks.
         command('down 91 284 450');command('motion 91 114 450')

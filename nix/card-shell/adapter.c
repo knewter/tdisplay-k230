@@ -847,6 +847,10 @@ static void prepare_impl(struct sway_output *output) {
 	/* The new drawer overlays live cards. It takes new touches, while an
 	 * already owned card gesture drains through its up without reaching it. */
 	if (drawer_mapped()) {
+		/* Both are children of root->layers.shell_overlay. The card tree is
+		 * created later, so without this the drawer would paint underneath it. */
+		wlr_scene_node_place_above(&output->layers.shell_overlay->node,
+			&shell.ui->node);
 		if (shell.policy.contact || shell.policy.edge.tracking)
 			handle_result(cs_cancel(&shell.policy));
 		if (shell.drawer_gesture.contacts)
