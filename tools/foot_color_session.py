@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import select
 import sys
+import time
 
 from app_appearance import AppAppearanceError, activation_lock, osc_sequences, palette
 from theme_transaction import TransactionError, _pointer
@@ -27,23 +28,66 @@ def observe(state_root: Path, default_generation: Path, last: str | None, stream
         return identity
 
 
-def follow(parent_pid: int, state_root: Path, default_generation: Path,
+class ParentExited(Exception):
+    pass
+
+
+class BoundedTTYWriter:
+    """New nonblocking tty OFD; never change the exec'd app's stdout flags."""
+
+    def __init__(self, parent_pidfd: int, inherited_fd: int = 1, timeout: float = 0.1):
+        self.parent_pidfd = parent_pidfd
+        self.timeout = timeout
+        self.fd = os.open(f"/proc/self/fd/{inherited_fd}",
+                          os.O_WRONLY | os.O_NOCTTY | os.O_NONBLOCK | os.O_CLOEXEC)
+        if (not os.isatty(self.fd) or not os.isatty(inherited_fd)
+                or os.fstat(self.fd).st_rdev != os.fstat(inherited_fd).st_rdev):
+            os.close(self.fd)
+            raise OSError("follower output is not its inherited terminal")
+
+    def write(self, payload: bytes) -> None:
+        deadline = time.monotonic() + self.timeout
+        position = 0
+        while position < len(payload):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("terminal color write deadline")
+            ready = select.poll()
+            ready.register(self.parent_pidfd, select.POLLIN | select.POLLHUP)
+            ready.register(self.fd, select.POLLOUT)
+            events = dict(ready.poll(max(1, int(remaining * 1000))))
+            if self.parent_pidfd in events:
+                raise ParentExited()
+            if self.fd not in events:
+                continue
+            try:
+                position += os.write(self.fd, payload[position:])
+            except BlockingIOError:
+                continue
+
+    def flush(self) -> None:
+        pass
+
+    def close(self) -> None:
+        os.close(self.fd)
+
+
+def follow(parent_pidfd: int, state_root: Path, default_generation: Path,
            interval: float, stream) -> None:
-    pidfd = os.pidfd_open(parent_pid)
     try:
         watcher = select.poll()
-        watcher.register(pidfd, select.POLLIN | select.POLLHUP)
+        watcher.register(parent_pidfd, select.POLLIN | select.POLLHUP)
         last = None
         while not watcher.poll(0):
             try:
                 last = observe(state_root, default_generation, last, stream)
-            except (AppAppearanceError, OSError, ValueError, TransactionError):
+            except (AppAppearanceError, OSError, TimeoutError, ValueError, TransactionError):
                 # A malformed/missing generation or in-flight activation does
                 # not terminate the app. Retry at the next bounded interval.
                 pass
             watcher.poll(int(interval * 1000))
-    finally:
-        os.close(pidfd)
+    except ParentExited:
+        pass
 
 
 def main(argv=None) -> int:
@@ -67,20 +111,29 @@ def main(argv=None) -> int:
         parser.error("foreign theme state root")
     args.state_root.mkdir(parents=True, exist_ok=True, mode=0o700)
     state_root = args.state_root.resolve(strict=True)
+    parent_pidfd = os.pidfd_open(os.getpid())
     try:
         child = os.fork()
     except OSError:
         print("k230-foot-session: color follower unavailable", file=sys.stderr)
+        os.close(parent_pidfd)
         child = None
     if child == 0:
         try:
             if os.isatty(0):
                 os.close(0)
-            follow(os.getppid(), state_root, default_generation,
-                   args.interval, sys.stdout.buffer)
+            writer = BoundedTTYWriter(parent_pidfd)
+            try:
+                follow(parent_pidfd, state_root, default_generation,
+                       args.interval, writer)
+            finally:
+                writer.close()
         except Exception:
             pass
+        os.close(parent_pidfd)
         os._exit(0)
+    if child is not None:
+        os.close(parent_pidfd)
     try:
         os.execvpe(command[0], command, os.environ)
     except OSError as error:

@@ -13,6 +13,7 @@ import tempfile
 import termios
 import time
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -129,6 +130,69 @@ class FootSession(unittest.TestCase):
             result = subprocess.run(command, capture_output=True, env=os.environ | {"TERM": "foot"})
             self.assertNotEqual(result.returncode, 0)
             self.assertNotIn(b"SHOULD-NOT-RUN", result.stdout)
+
+    def test_fast_parent_exit_is_observed_by_prefork_pidfd(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            default = generation(root, "a" * 24, "#111111")
+            read_fd, write_fd = os.pipe()
+            parent = os.fork()
+            if parent == 0:
+                os.close(read_fd)
+                pidfd = os.pidfd_open(os.getpid())
+                child = os.fork()
+                if child == 0:
+                    time.sleep(0.05)  # the exec'd app has already exited
+                    follower.follow(pidfd, root, default, 0.25, io.BytesIO())
+                    os.write(write_fd, b"EXITED")
+                    os._exit(0)
+                os._exit(0)
+            os.close(write_fd)
+            try:
+                os.waitpid(parent, 0)
+                ready, _, _ = select.select([read_fd], [], [], 1)
+                self.assertTrue(ready, "follower watched an adopted PID instead of its parent")
+                self.assertEqual(os.read(read_fd, 32), b"EXITED")
+            finally:
+                os.close(read_fd)
+
+    def test_full_pty_write_has_deadline_and_releases_activation_lock(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            default = generation(root, "a" * 24, "#111111")
+            master, slave = pty.openpty()
+            flags = fcntl.fcntl(slave, fcntl.F_GETFL)
+            pidfd = os.pidfd_open(os.getpid())
+            try:
+                writer = follower.BoundedTTYWriter(pidfd, slave, timeout=0.03)
+                self.assertEqual(fcntl.fcntl(slave, fcntl.F_GETFL), flags)
+                fcntl.fcntl(slave, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+                try:
+                    while True:
+                        os.write(slave, b"x" * 65536)
+                except BlockingIOError:
+                    pass
+                fcntl.fcntl(slave, fcntl.F_SETFL, flags)
+                started = time.monotonic()
+                real_write = follower.os.write
+                def blocked_write(fd, payload):
+                    if fd == writer.fd:
+                        raise BlockingIOError("stopped PTY output")
+                    return real_write(fd, payload)
+                # Some host PTYs accept one more short write after EAGAIN;
+                # inject persistent backpressure at the exact follower OFD.
+                with mock.patch.object(follower.os, "write", side_effect=blocked_write):
+                    with self.assertRaises(TimeoutError):
+                        follower.observe(root, default, None, writer)
+                self.assertLess(time.monotonic() - started, 0.25)
+                with (root / ".activation.lock").open("r") as lock:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self.assertEqual(fcntl.fcntl(slave, fcntl.F_GETFL), flags)
+            finally:
+                writer.close()
+                os.close(pidfd)
+                os.close(master)
+                os.close(slave)
 
 
 if __name__ == "__main__":
