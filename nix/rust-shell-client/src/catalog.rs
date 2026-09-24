@@ -13,13 +13,27 @@ pub fn installed_apps() -> Vec<AppEntry> {
         .into_iter()
         .filter(|app| app.should_show())
         .filter_map(|app| {
+            let id = app.id()?.to_string();
+            if id.is_empty() || id.len() > 160 {
+                return None;
+            }
+            let name: String = app
+                .display_name()
+                .chars()
+                .filter(|character| !character.is_control())
+                .take(96)
+                .collect();
+            if name.trim().is_empty() {
+                return None;
+            }
             Some(AppEntry {
-                id: app.id()?.to_string(),
-                name: app.display_name().to_string(),
+                id,
+                name,
                 icon: app
                     .icon()
                     .and_then(|icon| icon.to_string())
-                    .map(|value| value.to_string()),
+                    .map(|value| value.to_string())
+                    .filter(|value| value.len() <= 512),
             })
         })
         .collect();
@@ -44,6 +58,9 @@ mod tests {
         assert!(apps
             .iter()
             .all(|app| !app.id.is_empty() && !app.name.is_empty()));
+        assert!(apps.iter().all(|app| app.id.len() <= 160
+            && app.name.chars().count() <= 96
+            && app.icon.as_ref().is_none_or(|icon| icon.len() <= 512)));
         assert!(apps.windows(2).all(|pair| {
             (pair[0].name.to_lowercase(), &pair[0].id) <= (pair[1].name.to_lowercase(), &pair[1].id)
         }));

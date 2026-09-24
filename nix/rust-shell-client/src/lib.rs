@@ -1,6 +1,7 @@
 //! Testable state boundaries for the opt-in Rust shell client.
 
 pub mod catalog;
+pub mod icon;
 pub mod protocol;
 pub mod render;
 

@@ -1,6 +1,6 @@
 //! Cairo/Pango software scene for the opt-in shell client.
 //! This first view uses real desktop names and explicit fallback artwork.
-use crate::{catalog::AppEntry, Route};
+use crate::{catalog::AppEntry, icon::IconCache, Route};
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
 use pango::{EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path};
@@ -49,7 +49,15 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
-fn scene(cr: &Context, width: u32, height: u32, route: Route, apps: &[AppEntry], progress: f64) {
+fn scene(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    route: Route,
+    apps: &[AppEntry],
+    progress: f64,
+    icons: &mut IconCache,
+) {
     let w = f64::from(width);
     let h = f64::from(height);
     cr.set_operator(Operator::Source);
@@ -115,14 +123,20 @@ fn scene(cr: &Context, width: u32, height: u32, route: Route, apps: &[AppEntry],
                 rounded(cr, 38.0, y + 15.0, 52.0, 52.0, 12.0);
                 color(cr, 0x375466, 1.0);
                 let _ = cr.fill();
-                let initial = app
-                    .name
-                    .chars()
-                    .next()
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .to_string();
-                text(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, 0xf4f7f8);
+                let painted = app
+                    .icon
+                    .as_deref()
+                    .is_some_and(|icon| icons.paint(cr, icon, 48, 40.0, y + 17.0));
+                if !painted {
+                    let initial = app
+                        .name
+                        .chars()
+                        .next()
+                        .unwrap_or('?')
+                        .to_uppercase()
+                        .to_string();
+                    text(cr, &initial, 53.0, y + 23.0, 34.0, 24.0, 0xf4f7f8);
+                }
                 text(cr, &app.name, 108.0, y + 20.0, w - 156.0, 25.0, 0xf4f7f8);
                 text(
                     cr,
@@ -206,6 +220,26 @@ pub fn draw_shm(
     apps: &[AppEntry],
     progress: f64,
 ) -> Result<(), String> {
+    draw_shm_with_icons(
+        canvas,
+        width,
+        height,
+        route,
+        apps,
+        progress,
+        &mut IconCache::new(),
+    )
+}
+
+fn draw_shm_with_icons(
+    canvas: &mut [u8],
+    width: u32,
+    height: u32,
+    route: Route,
+    apps: &[AppEntry],
+    progress: f64,
+    icons: &mut IconCache,
+) -> Result<(), String> {
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
     if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
         return Err("invalid canvas length".into());
@@ -223,7 +257,7 @@ pub fn draw_shm(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps, progress);
+    scene(&cr, width, height, route, apps, progress, icons);
     drop(cr);
     surface.flush();
     Ok(())
@@ -239,7 +273,7 @@ pub fn export_png(
     let surface = ImageSurface::create(Format::ARgb32, width as i32, height as i32)
         .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps, 1.0);
+    scene(&cr, width, height, route, apps, 1.0, &mut IconCache::new());
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
     surface
@@ -257,6 +291,7 @@ pub struct RendererCache {
     height: u32,
     static_pixels: Vec<u8>,
     rebuilds: u64,
+    icons: IconCache,
 }
 
 impl RendererCache {
@@ -267,6 +302,11 @@ impl RendererCache {
 
     pub fn rebuild_count(&self) -> u64 {
         self.rebuilds
+    }
+
+    pub fn set_icon_theme(&mut self, theme: &str) {
+        self.icons.set_theme(theme);
+        self.invalidate();
     }
 
     pub fn draw(
@@ -288,7 +328,15 @@ impl RendererCache {
         }
         if self.route != Some(route) || self.width != width || self.height != height {
             let mut painted = vec![0; size];
-            draw_shm(&mut painted, width, height, route, apps, 1.0)?;
+            draw_shm_with_icons(
+                &mut painted,
+                width,
+                height,
+                route,
+                apps,
+                1.0,
+                &mut self.icons,
+            )?;
             self.static_pixels = painted;
             self.width = width;
             self.height = height;
@@ -363,5 +411,29 @@ mod tests {
             .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0)
             .unwrap();
         assert_eq!(cache.rebuild_count(), 2);
+    }
+
+    #[test]
+    fn drawer_uses_absolute_svg_app_icon() {
+        let icon = std::env::temp_dir().join(format!(
+            "k230-rust-render-icon-{}-{}.svg",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::write(&icon, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>").unwrap();
+        let apps = vec![AppEntry {
+            id: "foot.desktop".into(),
+            name: "Terminal".into(),
+            icon: Some(icon.to_string_lossy().into_owned()),
+        }];
+        let mut frame = vec![0; 568 * 1232 * 4];
+        draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
+        let pixel = (402 * 568 + 52) * 4;
+        assert!(frame[pixel + 2] > 160, "actual SVG red channel absent");
+        assert!(frame[pixel] < 80, "actual SVG blue channel absent");
+        std::fs::remove_file(icon).unwrap();
     }
 }
