@@ -81,10 +81,12 @@
         "docs/evidence/omarchy-themes/app-appearance-host.md",
         "docs/evidence/omarchy-themes/rust-theme-catalog-bridge-host.md",
         "docs/evidence/omarchy-themes/rust-chooser-host.md",
-        "docs/evidence/omarchy-themes/rust-chooser-qemu.md"
+        "docs/evidence/omarchy-themes/rust-chooser-qemu.md",
+        "docs/evidence/omarchy-themes/bundled-backgrounds-host.md",
+        "docs/evidence/omarchy-themes/bundled-icons.md"
       ],
-      "rationale": "The Rust chooser is landed and cross-built; paired QEMU touch checks with a synthetic command pass. The installed default is still palette-only without wallpaper. Real theme/background packaging and visual token coverage are being implemented; production activation and physical acceptance remain open.",
-      "reviewRevision": "52ff0087"
+      "rationale": "The Rust chooser is landed and cross-built; paired QEMU touch checks with a synthetic command pass. Unchanged pinned Catppuccin and Latte themes, their backgrounds, a real wallpaper default, and matching Yaru icon data are now packaged and landed. The installed preview remains palette-only until the next integrated activation. Actual light/dark surface styling and production board switching remain in progress.",
+      "reviewRevision": "ad01f2ba"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
