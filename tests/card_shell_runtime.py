@@ -41,12 +41,15 @@ def main():
     ap.add_argument('--rgb565',action='store_true',help='request the RGB565 headless render format')
     ap.add_argument('--touch-first',action='store_true',help='exercise opt-in deck-to-drawer route')
     ap.add_argument('--reveal-stream',action='store_true',help='capture persistent drawer/shade progress IPC')
+    ap.add_argument('--rust-reveal-client',help='run the actual RISC-V Rust reveal receiver')
     ap.add_argument('--drawer-layer-client',help='native mapped layer-shell fixture for touch-first route')
     args=ap.parse_args()
     if args.delayed_touch and not args.native_touch:
         ap.error('--delayed-touch requires --native-touch')
     if args.reveal_stream and not args.touch_first:
         ap.error('--reveal-stream requires --touch-first')
+    if args.rust_reveal_client and (not args.touch_first or args.reveal_stream):
+        ap.error('--rust-reveal-client requires --touch-first and excludes --reveal-stream')
     runtime=args.output or Path(tempfile.mkdtemp(prefix='k230-card-headless-'))
     if args.output and runtime.exists() and any(runtime.iterdir()):
         ap.error('--output must be a new or empty directory')
@@ -73,6 +76,9 @@ def main():
                     for line in lines:
                         reveal_messages.append(json.loads(line))
         threading.Thread(target=collect_reveal,daemon=True).start()
+    if args.rust_reveal_client:
+        env['SWAY_K230_CARD_REVEAL_STREAM']='1'
+        env['SWAY_K230_CARD_SURFACE_SOCKET']=str(runtime/'k230-shell-rust.sock')
     if args.touch_first:
         helper=runtime/'drawer-helper'
         helper.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$XDG_RUNTIME_DIR/drawer-request"\n')
@@ -128,6 +134,12 @@ def main():
     try:
         wait_for(lambda:'Running compositor on wayland display' in logs(),60)
         env['WAYLAND_DISPLAY']=next(p.name for p in runtime.glob('wayland-*') if not p.name.endswith('.lock'))
+        if args.rust_reveal_client:
+            rust_log=(runtime/'rust-receiver.log').open('w')
+            rust=subprocess.Popen([args.qemu,args.rust_reveal_client,'--serve'],env=env,
+                                  stdout=rust_log,stderr=rust_log)
+            processes.append(rust)
+            wait_for(lambda:'ready-idle' in (runtime/'rust-receiver.log').read_text())
         one=start_client('k230.card.one',True)
         wait_for(lambda:any(n.get('app_id')=='k230.card.one' for n in tree_nodes(ipc('',4))))
         two=start_client('k230.card.two')
@@ -146,6 +158,48 @@ def main():
         command('enter')
         if args.touch_first:
             wait_for(lambda:'K230_CARD_SHELL mirror id=' in logs())
+            if args.rust_reveal_client:
+                def capture(name):
+                    subprocess.run(['grim',str(runtime/name)],env=env,check=True)
+                    return Image.open(runtime/name).convert('RGB')
+                def receiver_logs(): return (runtime/'rust-receiver.log').read_text()
+                deck=capture('rust-deck.png')
+                command('down 80 284 1200')
+                wait_for(lambda:'map-request' in receiver_logs())
+                wait_for(lambda:'configure 568x1232' in receiver_logs())
+                command('motion 80 284 900')
+                wait_for(lambda:receiver_logs().count('commit')>=2)
+                time.sleep(.1)
+                mid=capture('rust-drawer-mid.png')
+                command('motion 80 284 1180')
+                wait_for(lambda:receiver_logs().count('commit')>=3)
+                time.sleep(.1)
+                reversed_frame=capture('rust-drawer-reversed.png')
+                command('up 80')
+                wait_for(lambda:'unmap' in receiver_logs())
+                assert mid.getpixel((10,1000))!=deck.getpixel((10,1000))
+                assert reversed_frame.getpixel((10,1000))==deck.getpixel((10,1000))
+                assert 'touch-down 80' not in receiver_logs()
+                command('down 81 284 1200')
+                command('motion 81 284 400')
+                command('up 81')
+                wait_for(lambda:'map-request' in receiver_logs())
+                time.sleep(.5)
+                opened=capture('rust-drawer-open.png')
+                assert opened.getpixel((10,1000))!=deck.getpixel((10,1000))
+                command('down 82 284 1000')
+                wait_for(lambda:'touch-down 82' in receiver_logs())
+                command('up 82')
+                subprocess.run([args.qemu,args.rust_reveal_client,'--surface','hide'],env=env,check=True)
+                wait_for(lambda:receiver_logs().count('unmap')>=2)
+                command('down 83 284 10')
+                command('motion 83 284 300')
+                time.sleep(.15)
+                shade=capture('rust-shade-mid.png')
+                command('up 83')
+                assert shade.getpixel((10,100))!=deck.getpixel((10,100))
+                print('PASS Rust reveal receiver: actual QEMU pixels, reversal, settle and input routing; no physical touch',flush=True)
+                return
             if args.reveal_stream:
                 command('down 80 284 1200')
                 wait_for(lambda:any(row['phase']=='begin' for row in reveal_messages))
