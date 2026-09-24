@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA  ccb7f23fc2cb8c7d09b73cb83a7cb094a85e9abfde64a4298dee41cb6b5c5461  docs/evidence/coherent-shell/themed-installed/deck.png
+DATA  fc3d567e4527bb2e4b71e9b0460af75d02aed0c49d86c9275e92926bd50c5888  docs/evidence/coherent-shell/themed-installed/drawer.png
 DATA d9b9127bc6471222aa8a6c8cc99dd257b240e9c1a0a22e4f0504f889506dadbf  docs/evidence/vglite-scene-board/context-lifetime/round-1/gpu/scene-first.png
 DATA 8a535115024cf19364360ea89a99bc71746af6cc7384c724d0a1d2c636a10e2f  docs/evidence/vglite-scene-board/context-lifetime/round-1/gpu/scene-later.png
 DATA d9b9127bc6471222aa8a6c8cc99dd257b240e9c1a0a22e4f0504f889506dadbf  docs/evidence/vglite-scene-board/context-lifetime/round-1/pixman/scene-first.png

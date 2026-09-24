@@ -179,3 +179,26 @@ serving the last good one. The behaviour is what the requirement asks for.
 The cost of it -- a day of a published count that was correct-when-written
 and wrong-by-then, with nothing on the page to say so -- is recorded here
 because it is the argument anyone reopening that decision will need.
+
+
+2026-09-24: evidence and proposal dashboard growth budget
+========================================================
+
+Source 30c73fc4 now builds 259 pages, compared with four in the original
+measurement. A local build of the same site content at b9f393cf produced
+8,366,045 bytes in 20.23 seconds. The twelve output assertions passed;
+blob-scan correctly caught two native captures missing machine MANIFEST
+rows despite having prose inventory entries. This change adds those rows.
+
+Measured output by extension: HTML 6,634,157; PNG 1,319,682; JPEG 256,899;
+CSS 67,044; WebP 41,900; SVG 31,153; JavaScript 15,210 bytes. The largest
+page is the work dashboard (2,538,098 bytes), which includes local proposal
+details and evidence links. The largest log page is the USB enumeration
+record (870,164 bytes). This is accumulated evidence and local detail
+content, not a newly bundled video or JavaScript dependency.
+
+Set the aggregate output ceiling to 16 MiB to allow the requested ongoing
+proposal/media publication. Retain the 120-second build ceiling, evidence
+checks, binary inventory and output assertions. This aggregate ceiling is
+not a per-page load budget; the large dashboard warrants a separate
+payload/loading improvement as proposal history grows.
