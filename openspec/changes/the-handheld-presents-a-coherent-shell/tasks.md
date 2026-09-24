@@ -1,6 +1,13 @@
 All tasks remain unchecked. Groups 1–3 can start after this revised proposal lands. Group 4 consumes the selected `the-shell-has-a-card-composition-plan` interface and `the-shell-manages-apps-as-cards` live-source/focus/cost gates. Group 5 requires a reserved board and installed opt-in image. The current bar is a separate rollback session, never a final navigation element.
 
-The named `tests/test_shell_routes.py`, `tests/test_shell_gestures.py`, `tests/test_shell_motion.py`, `tests/test_shell_icons.py`, `tests/test_device_settings.py`, `tests/test_notification_center.py`, `tools/shell-motion-trace.py`, and `.#handheld-settings`/`.#handheld-notifications` are **interfaces to create**, not currently runnable proof. Their commands state the narrow future gate. Existing Nix, OpenSpec, and capture commands are current.
+The final launcher/drawer/shade/Settings UI client targets Rust. Current C source is a development reference/rollback, while Sway remains the compositor and current Python Settings/notification helpers remain separate services. The Rust probe in group 0 is a feasibility gate, not completion of any gesture, Settings, notification, or physical task. Compare it with the independent Qt Quick software probe before selecting a final rendering toolkit.
+
+Some named host files and narrow packages now exist as source checkpoints; each unchecked case below still requires its own actual implementation and passing command. `tests/test_rust_shell_probe.py`, `tests/test_shell_motion.py` and `tools/shell-motion-trace.py` are **interfaces to create**, not current proof. Existing Nix, OpenSpec, and capture commands are current. No host result substitutes for the physical gates.
+
+## 0. Rust client target and architecture gate (probe, not final UI)
+
+- [ ] 0.1 Pin a minimal Rust Wayland/layer-shell client and software `wl_shm` renderer with `Cargo.lock`, private route request and touch/cancel instrumentation; verify `python3 tests/test_rust_shell_probe.py --case route-timeout --case configure-resize --case buffer-release --case touch-cancel`, then `nix build .#handheld-shell-rust-probe --dry-run`. Record the exact target/closure and compare dependency choices with the Qt Quick software probe. Dry-run is an evaluation gate, not a cross-build.
+- [ ] 0.2 Cross-build `nix build .#handheld-shell-rust-probe --no-link --print-out-paths --max-jobs 1 --cores 4` only in the reserved build slot. On a reserved board, opt in to the probe and record 568×1232 map/unmap, distinguishable software frame, real touch/move/cancel, bounded IPC acknowledgement, cold start, RSS, CPU and touch-to-commit/present cadence against the C reference and Qt probe. Keep this task open until the physical trace and camera evidence are committed. Do not install the probe as the normal session from a build alone.
 
 ## 1. Gesture Home and installed-app drawer (host)
 

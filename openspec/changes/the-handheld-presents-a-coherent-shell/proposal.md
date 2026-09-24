@@ -13,6 +13,7 @@ A person can launch apps, but the current permanent top bar and Back/Home footer
 - Add notification preview, history, dismissal, action, privacy, and interruption rules with recovery routes.
 - Give the empty deck a stable landing and drawer cue, with optional accessibility controls in a deliberately opened aid view. Keep the installed bar only as the reversible development fallback until the full gesture route passes real-glass recovery tests.
 - Stage implementation behind the existing card-composition, app-card, launcher-curation, and recovery changes; require host checks and separate real-glass proof before declaring physical behavior complete.
+- Target a Rust implementation of the final launcher/drawer/shade/Settings UI client while retaining Sway as the live-deck compositor and the existing C launcher as a development reference and rollback. First prove a pinned Rust layer-shell/software-buffer client can cross-build, map, render, and receive touch on this RISC-V board; the probe does not select a final UI toolkit or complete a shell route.
 
 **Non-goals:** A separate Android home grid or hold-for-recents model; permanent Apps/Windows/System/Back/Home controls in the final shell; synthetic universal Back keypresses into arbitrary Wayland apps; Palm assets or pixel copying; LG television webOS patterns; an assumed new compositor/GPU renderer; haptic/vibration integration on this board; a lock screen; telephony, battery, account, or cloud services; replacing the sibling's bounded live-card lifecycle.
 
@@ -30,4 +31,4 @@ A person can launch apps, but the current permanent top bar and Back/Home footer
 
 ## Impact
 
-Planning affects the replacement of the shell bar in the final session, the launcher drawer, the selected opt-in Sway card-scene integration, settings surface, notification shade/service, and Nix image defaults in later implementation. Host mockups and state/trace fixtures need no board. Finger tracking, motion cadence, readability, touch reach, notification timing, focus, and card continuity require a reserved physical board and are explicitly UNVERIFIED until recorded there. No kernel, device-tree, stage-1, or radio change is presumed.
+Planning affects the replacement of the shell bar in the final session, a Rust UI client for the launcher drawer/shade/Settings, the selected opt-in Sway card-scene integration, notification service, and Nix image defaults in later implementation. Host mockups and state/trace fixtures need no board. Finger tracking, motion cadence, readability, touch reach, notification timing, focus, and card continuity require a reserved physical board and are explicitly UNVERIFIED until recorded there. No kernel, device-tree, stage-1, or radio change is presumed.
