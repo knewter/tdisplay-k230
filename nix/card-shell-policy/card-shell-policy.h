@@ -15,7 +15,7 @@ struct cs_card {
     bool focusable;
     bool closeable;
 };
-enum cs_mode { CS_NORMAL, CS_DECK, CS_DRAGGING, CS_CLOSING };
+enum cs_mode { CS_NORMAL, CS_DECK, CS_DRAGGING, CS_CLOSING, CS_ENTERING, CS_EXPANDING };
 enum cs_message {
     CS_MESSAGE_NONE, CS_MESSAGE_EMPTY, CS_MESSAGE_PRIVATE,
     CS_MESSAGE_UNAVAILABLE, CS_MESSAGE_CLOSING, CS_MESSAGE_CLOSE_REFUSED,
@@ -60,6 +60,9 @@ struct cs_policy {
     uint64_t last_time_ms;
     double velocity_origin_y;
     uint64_t velocity_origin_ms;
+	/* 0 displays the original view geometry; 1 displays its deck slot. */
+	double entry_progress;
+	uint64_t entry_id;
     enum { CS_AXIS_NONE, CS_AXIS_HORIZONTAL, CS_AXIS_VERTICAL } axis;
     struct {
         bool tracking;
@@ -114,6 +117,13 @@ struct cs_result cs_edge_down(struct cs_policy *policy, int32_t contact_id,
 struct cs_result cs_edge_motion(struct cs_policy *policy, int32_t contact_id,
     double x, double y, uint64_t time_ms, uint64_t focused_id);
 struct cs_result cs_edge_up(struct cs_policy *policy, int32_t contact_id);
+/* Touch-first entry keeps the live compositor mirror under the finger.
+ * Early/reversed release restores the application without a deck endpoint. */
+struct cs_result cs_begin_entry(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms, uint64_t focused_id);
+struct cs_result cs_entry_motion(struct cs_policy *policy, int32_t contact_id,
+    double x, double y, uint64_t time_ms);
+struct cs_result cs_entry_up(struct cs_policy *policy, int32_t contact_id);
 /* Local edge rejection only; for a complete stream use cs_stream_cancel. */
 void cs_edge_cancel(struct cs_policy *policy);
 

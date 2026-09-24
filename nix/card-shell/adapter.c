@@ -54,6 +54,8 @@ struct card {
 	bool hidden, original_enabled;
 	double scale;
 	int x, y, pixel_x, pixel_y;
+	bool source_valid;
+	int source_x, source_y;
 };
 static struct {
 	struct wl_list cards;
@@ -182,6 +184,7 @@ static void clear_card(struct card *c) {
 	if (c->hidden && live(c->view))
 		wlr_scene_node_set_enabled(&c->view->scene_tree->node, c->original_enabled);
 	c->hidden = false;
+	c->source_valid = false;
 }
 static bool supported_surface(struct wlr_surface *surface) {
 	if (!surface->buffer)
@@ -314,6 +317,12 @@ static struct wlr_box clip_box(void) {
 							cfg->height - cfg->top_reserved - cfg->bottom_reserved -
 								cfg->title_height - cfg->footer_height};
 }
+static struct wlr_box card_clip_box(struct card *c) {
+	if (shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id)
+		return (struct wlr_box){shell.output->lx, shell.output->ly,
+			shell.policy.config.width, shell.policy.config.height};
+	return clip_box();
+}
 /* Mirror traversal follows source paint order. Place each node immediately
  * after its predecessor instead of cycling every node through the top. The
  * wlroots operations are no-ops when sibling order is already correct. */
@@ -412,12 +421,12 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 	wlr_scene_buffer_set_opaque_region(copy, &empty);
 	pixman_region32_fini(&empty);
 	if (!scaled_mirror(m, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
-					clip_box())) {
+					card_clip_box(c))) {
 		if (scaled_cache_enabled()) shell.cache_fallbacks++;
 		if (copy->buffer != source->buffer)
 			wlr_scene_buffer_set_buffer(copy, source->buffer);
 		card_clip_buffer(copy, source, c->scale, x, y, c->x + c->pixel_x, c->y + c->pixel_y,
-					 clip_box());
+					 card_clip_box(c));
 	}
 	order_mirror(previous, copy);
 	return true;
@@ -465,6 +474,23 @@ static void rect_clip(struct wlr_scene_rect *rect, struct wlr_box box, int px, i
 }
 static bool sync_card(struct card *c, size_t index) {
 	struct cs_rect r = cs_card_rect(&shell.policy, index);
+	int source_x, source_y;
+	if (!c->hidden && wlr_scene_node_coords(&c->view->content_tree->node,
+			&source_x, &source_y)) {
+		c->source_x = source_x;
+		c->source_y = source_y;
+		c->source_valid = true;
+	}
+	bool entering = shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id;
+	if (entering) {
+		if (!c->source_valid)
+			return false;
+		double progress = shell.policy.entry_progress;
+		r.x = (c->source_x - shell.output->lx) * (1 - progress) + r.x * progress;
+		r.y = (c->source_y - shell.output->ly) * (1 - progress) + r.y * progress;
+		r.width = c->view->geometry.width * (1 - progress) + r.width * progress;
+		r.height = c->view->geometry.height * (1 - progress) + r.height * progress;
+	}
 	c->x = shell.output->lx + lround(r.x);
 	c->y = shell.output->ly + lround(r.y);
 	if (!c->tree) {
@@ -482,6 +508,8 @@ static bool sync_card(struct card *c, size_t index) {
 							 index == shell.policy.selected ? selected_color : card_color);
 	rect_clip(c->background, (struct wlr_box){c->x, c->y, lround(r.width), lround(r.height)}, c->x,
 			  c->y, clip_box());
+	if (entering)
+		wlr_scene_node_set_enabled(&c->background->node, false);
 	const char *title = c->content == CS_LIVE ? view_get_title(c->view) : cs_card_text(c->content);
 	if (!title || !*title)
 		title = "Application";
@@ -490,13 +518,15 @@ static bool sync_card(struct card *c, size_t index) {
 	if (!label_update(c->tree, &c->label, &c->label_text, text, lround(r.width) - 24, 56, 32))
 		return false;
 	label_clip(c->label, 12, lround(r.height) - 60, c->x, c->y, clip_box());
+	wlr_scene_node_set_enabled(&c->label->node, !entering);
 	if (cs_can_mirror(&shell.policy, c->id)) {
 		int width = c->view->geometry.width, height = c->view->geometry.height;
 		if (width <= 0 || height <= 0)
 			return false;
-		c->scale = fmin(r.width / width, (r.height - 64) / height);
+		double label_space = entering ? 64 * shell.policy.entry_progress : 64;
+		c->scale = fmin(r.width / width, (r.height - label_space) / height);
 		c->pixel_x = lround((r.width - width * c->scale) / 2);
-		c->pixel_y = lround((r.height - 64 - height * c->scale) / 2);
+		c->pixel_y = lround((r.height - label_space - height * c->scale) / 2);
 		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
 		struct mirror *m, *tmp;
 		wl_list_for_each(m, &c->mirrors, link) m->seen = false;
@@ -608,6 +638,8 @@ static bool chrome_impl(void) {
 static bool chrome(void) {
 	uint64_t start = card_bench_input_stage_begin();
 	bool ok = chrome_impl();
+	if (ok && shell.chrome)
+		wlr_scene_node_set_enabled(&shell.chrome->node, shell.policy.mode != CS_ENTERING);
 	card_bench_input_stage_end(CARD_BENCH_CHROME, start);
 	return ok;
 }
@@ -622,6 +654,11 @@ static bool sync_scene_impl(void) {
 	size_t i = 0;
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) if (!sync_card(c, i++)) return false;
+	if (shell.policy.mode == CS_ENTERING) {
+		c = find(shell.policy.entry_id);
+		if (c && c->tree)
+			wlr_scene_node_raise_to_top(&c->tree->node);
+	}
 	/* Every complete card and placeholder exists before hiding originals. */
 	wl_list_for_each(c, &shell.cards, link) {
 		if (!c->hidden) {
@@ -1072,7 +1109,9 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	if (wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
 		seat->cursor->simulating_pointer_from_touch)
 		return false;
-	struct cs_result r = cs_edge_down(&shell.policy, id, x, y, event_ms);
+	struct cs_result r = touch_first() ?
+		cs_begin_entry(&shell.policy, id, x, y, event_ms, focus_id(seat)) :
+		cs_edge_down(&shell.policy, id, x, y, event_ms);
 	if (r.consumed)
 		select_seat(seat);
 	handle_result(r);
@@ -1101,7 +1140,9 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return true;
 	}
 	uint64_t policy_start = card_bench_input_stage_begin();
-	struct cs_result r = shell.policy.mode == CS_NORMAL
+	struct cs_result r = shell.policy.mode == CS_ENTERING
+							 ? cs_entry_motion(&shell.policy, id, x, y, event_ms) :
+							 shell.policy.mode == CS_NORMAL
 							 ? cs_edge_motion(&shell.policy, id, x, y, event_ms, focus_id(seat))
 							 : cs_motion(&shell.policy, id, x, y, event_ms);
 	card_bench_input_stage_end(CARD_BENCH_POLICY, policy_start);
@@ -1142,7 +1183,9 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		chrome();
 		return true;
 	}
-	struct cs_result r = shell.policy.mode == CS_NORMAL && !shell.policy.blocked_until_up
+	struct cs_result r = shell.policy.mode == CS_ENTERING ?
+							 cs_entry_up(&shell.policy, id) :
+							 shell.policy.mode == CS_NORMAL && !shell.policy.blocked_until_up
 							 ? cs_edge_up(&shell.policy, id)
 							 : cs_up(&shell.policy, id, event_ms);
 	handle_result(r);

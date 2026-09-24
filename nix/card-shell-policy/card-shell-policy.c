@@ -73,6 +73,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     reset_drag(p);
     p->edge.tracking=false;
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
+    p->entry_progress=0;p->entry_id=0;
     p->message=CS_MESSAGE_NONE;
     struct cs_result r=result(p,CS_RESTORE|CS_RECONCILE,true);
     r.focus_id=focus;
@@ -98,6 +99,11 @@ struct cs_result cs_set_cards(struct cs_policy *p,const struct cs_card *cards,si
     enum cs_content old_content=old_pressed<p->count ? p->cards[old_pressed].content : CS_UNAVAILABLE;
     uint64_t selected=p->selected<p->count ? p->cards[p->selected].id : 0;
     free(p->cards);p->cards=copy;p->count=count;
+	if (p->mode==CS_ENTERING) {
+		size_t entering=find(p,p->entry_id);
+		if (entering==SIZE_MAX || p->cards[entering].content!=CS_LIVE)
+			return cs_leave(p);
+	}
     size_t index=find(p,selected);
     if (index<count) p->selected=index;
     else if (p->selected>=count) p->selected=count ? count-1 : 0;
@@ -130,6 +136,7 @@ struct cs_result cs_set_cards(struct cs_policy *p,const struct cs_card *cards,si
 struct cs_result cs_set_config(struct cs_policy *p,const struct cs_config *config) {
     if (!valid_config(config)) return fail(p);
     p->config=*config;
+	if (p->mode==CS_ENTERING) return cs_leave(p);
     if (p->contact) {
         reset_drag(p);p->mode=CS_DECK;p->message=CS_MESSAGE_CANCELLED;
         p->blocked_until_up=true;p->blocked_contacts=1;
@@ -297,6 +304,11 @@ struct cs_result cs_request_close(struct cs_policy *p,uint64_t id,uint64_t time_
     return r;
 }
 struct cs_result cs_cancel(struct cs_policy *p) {
+    if (p->mode==CS_ENTERING) {
+        struct cs_result r=cs_leave(p);
+        p->message=CS_MESSAGE_CANCELLED;r.message=p->message;
+        return r;
+    }
     bool owned=p->contact;
     reset_drag(p);
     if (owned) {p->blocked_until_up=true;p->blocked_contacts=1;}
@@ -306,6 +318,12 @@ struct cs_result cs_cancel(struct cs_policy *p) {
     return result(p,p->mode==CS_NORMAL ? 0 : CS_REDRAW,owned);
 }
 struct cs_result cs_stream_cancel(struct cs_policy *p) {
+    if (p->mode==CS_ENTERING) {
+        struct cs_result r=cs_leave(p);
+        p->blocked_until_up=false;p->blocked_contacts=0;
+        p->message=CS_MESSAGE_CANCELLED;r.message=p->message;
+        return r;
+    }
     bool owned=p->contact || p->edge.tracking || p->blocked_until_up;
     reset_drag(p);
     memset(&p->edge,0,sizeof(p->edge));
@@ -357,6 +375,48 @@ struct cs_result cs_edge_up(struct cs_policy *p,int32_t id) {
     bool owned=p->edge.tracking && id==p->edge.contact_id;
     if (owned) p->edge.tracking=false;
     return result(p,0,owned);
+}
+struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y,
+        uint64_t time_ms,uint64_t focused_id) {
+    if (p->mode!=CS_NORMAL || p->blocked_until_up || p->edge.tracking || p->contact ||
+            !contains(cs_content_rect(p),x,y) || p->config.bottom_reserved>0 ||
+            y<p->config.height-p->config.edge_band)
+        return result(p,0,false);
+    struct cs_result r=cs_enter(p,focused_id);
+    if (!r.consumed) return r;
+	/* Empty and private/unavailable cards have no live source rectangle to
+	 * interpolate. Show their truthful endpoint and drain the owned contact. */
+	if (!p->count || !focused_id || p->cards[p->selected].id!=focused_id ||
+			p->cards[p->selected].content!=CS_LIVE) {
+		p->blocked_until_up=true;p->blocked_contacts=1;
+		return r;
+	}
+    p->mode=CS_ENTERING;p->entry_progress=0;
+    p->entry_id=p->selected<p->count ? p->cards[p->selected].id : 0;
+    p->edge.tracking=true;p->edge.contact_id=id;
+    p->edge.x=x;p->edge.y=y;p->edge.time_ms=time_ms;
+    return r;
+}
+struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {
+    if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
+        return result(p,0,false);
+    if (!isfinite(x) || !isfinite(y) || time_ms<p->edge.time_ms) {
+        struct cs_result r=cs_leave(p);
+        p->blocked_until_up=true;p->blocked_contacts=1;
+        return r;
+    }
+    double dy=p->edge.y-y;
+    p->entry_progress=fmax(0,fmin(1,dy/p->config.entry_distance));
+    return result(p,CS_REDRAW,true);
+}
+struct cs_result cs_entry_up(struct cs_policy *p,int32_t id) {
+    if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
+        return result(p,0,false);
+    p->edge.tracking=false;
+    if (p->entry_progress<1)
+        return cs_leave(p);
+    p->mode=CS_DECK;p->entry_progress=1;p->entry_id=0;
+    return result(p,CS_REDRAW,true);
 }
 void cs_edge_cancel(struct cs_policy *p) {
     if (p->edge.tracking) {p->blocked_until_up=true;p->blocked_contacts=1;}

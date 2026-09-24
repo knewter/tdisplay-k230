@@ -214,6 +214,35 @@ static void edge(void) {
     cs_edge_up(&p,3);cs_edge_up(&p,4);
     cs_finish(&p);
 }
+static void tracked_entry(void) {
+    struct cs_policy p=setup();
+    struct cs_result r=cs_begin_entry(&p,1,200,1220,10,101);
+    assert(r.consumed && (r.actions&CS_SHRINK) && p.mode==CS_ENTERING);
+    assert(p.entry_id==101 && p.entry_progress==0 && cs_can_mirror(&p,101));
+    r=cs_entry_motion(&p,1,200,1184,20);
+    assert(r.consumed && (r.actions&CS_REDRAW) && p.entry_progress==.5);
+    cs_entry_motion(&p,1,200,1210,30);
+    assert(p.entry_progress<.2); /* reverse uses current finger position */
+    r=cs_entry_up(&p,1);
+    assert((r.actions&CS_RESTORE) && r.focus_id==101 && p.mode==CS_NORMAL);
+    assert(!p.blocked_until_up && !cs_can_mirror(&p,101));
+    cs_begin_entry(&p,2,200,1220,40,101);
+    cs_entry_motion(&p,2,200,1100,50);
+    assert(p.entry_progress==1);
+    r=cs_entry_up(&p,2);
+    assert(r.consumed && p.mode==CS_DECK && cs_can_mirror(&p,101));
+    cs_leave(&p);
+    r=cs_begin_entry(&p,3,200,1220,60,303);
+    assert(r.consumed && p.mode==CS_DECK && p.blocked_until_up);
+    assert(!cs_can_mirror(&p,303));
+    cs_up(&p,3,61);cs_leave(&p);
+    cs_begin_entry(&p,4,200,1220,70,101);
+    const struct cs_card changed[]={{101,CS_PRIVATE,true,true},{202,CS_LIVE,true,true}};
+    r=cs_set_cards(&p,changed,2);
+    assert(r.actions&CS_RESTORE && p.mode==CS_NORMAL && p.blocked_until_up);
+    cs_up(&p,4,71);assert(!p.blocked_until_up);
+    cs_finish(&p);
+}
 static void keyboard_and_geometry(void) {
     struct cs_policy p=setup();
     struct cs_config c=p.config;c.bottom_reserved=400;
@@ -364,6 +393,7 @@ int main(int argc,char **argv) {
         {"repeated-timestamp-throw",repeated_timestamp_throw},
         {"repeated-timestamp-rejection",repeated_timestamp_rejection},
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
+        {"tracked-entry",tracked_entry},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},
         {"buttons",buttons},{"stream-cancel",stream_cancel},

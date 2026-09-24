@@ -50,6 +50,9 @@ static struct wlr_scene_tree *wlr_scene_tree_create(struct wlr_scene_tree *paren
 static void wlr_scene_node_set_position(struct wlr_scene_node *node, int x, int y) {
     node->x=x; node->y=y;
 }
+static void wlr_scene_node_set_enabled(struct wlr_scene_node *node, bool enabled) {
+    (void)node; (void)enabled;
+}
 static bool button(struct wlr_scene_tree *parent, int x, int y, int w,
                    const char *text, bool pressed) {
     (void)parent; (void)w; (void)text; (void)pressed;

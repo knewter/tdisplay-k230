@@ -169,6 +169,23 @@ def main():
             command('up 91')
             wait_for(request.exists)
             assert request.read_text().splitlines()==['--surface','shade']
+            before_restore=logs().count('restored focus=')
+            command('down 92 284 1200')
+            subprocess.run(['grim',str(runtime/'entry-start.png')],env=env,check=True)
+            command('motion 92 284 1164')
+            subprocess.run(['grim',str(runtime/'entry-middle.png')],env=env,check=True)
+            command('motion 92 284 1120')
+            subprocess.run(['grim',str(runtime/'entry-end.png')],env=env,check=True)
+            from PIL import ImageChops
+            start=Image.open(runtime/'entry-start.png').convert('RGB')
+            middle=Image.open(runtime/'entry-middle.png').convert('RGB')
+            end=Image.open(runtime/'entry-end.png').convert('RGB')
+            assert ImageChops.difference(start,middle).getbbox()
+            assert ImageChops.difference(middle,end).getbbox()
+            assert all(len(image.getcolors(1_000_000) or [])>5 for image in (start,middle,end))
+            command('motion 92 284 1198')
+            command('up 92')
+            wait_for(lambda:logs().count('restored focus=')>before_restore)
             print('PASS touch-first drawer route: actual cross-built Sway under QEMU; no physical touch',flush=True)
             return
         # Halfway between cards makes both root/child surfaces visibly sampled.
