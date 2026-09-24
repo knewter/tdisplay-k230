@@ -67,17 +67,13 @@ const items = await Promise.all(work.items.map(async (item) => ({
       {work.lanes.map((lane) => <section class={`work-lane lane-${lane.id}`} id={lane.id} aria-labelledby={`${lane.id}-title`}>
         <div class="lane-head"><span class="lane-mark" aria-hidden="true"></span><div><h2 id={`${lane.id}-title`}>{names[lane.id].title}<span class="lane-count">{lane.count}</span></h2><p>{names[lane.id].hint}</p></div></div>
         <div class="lane-items">
-          {items.filter((item) => item.lane === lane.id).map((item) => <article class="work-card" id={item.id} data-work-id={item.id}>
+          {items.filter((item) => item.lane === lane.id).map((item) => <a class="work-card" id={item.id} data-work-id={item.id} href={`${url("work/")}?work=${encodeURIComponent(item.id)}`} aria-haspopup="dialog">
             <div class="card-top"><span class="card-kind">{item.archived ? "Archived change" : "Draft proposal"}</span><span class="card-count">{item.done}/{item.total} tasks</span></div>
             <h3>{item.title}</h3>
             <div class="card-progress" role="img" aria-label={`${item.done} of ${item.total} tasks checked`}><span style={`width:${item.total ? Math.round(100 * item.done / item.total) : 0}%`}></span></div>
             <div class="card-states"><span>{sourceLabel[item.source]}</span><span>{physicalLabel[item.physical]}</span></div>
             <div class="card-next"><strong>{item.archived ? "Closed record" : "Next gate"}</strong><p>{item.next}</p></div>
-            <button class="card-open" type="button" data-open-work={item.id} aria-haspopup="dialog">View details <span aria-hidden="true">↗</span></button>
-            {item.dependencies.length > 0 && <p class="card-deps"><strong>Depends on</strong>{item.dependencies.map((id) => <a href={`#${id}`}>{byId[id]?.title ?? id}</a>)}</p>}
-            <div class="card-links"><button type="button" data-open-work={item.id} data-open-section="0">Proposal</button><button type="button" data-open-work={item.id} data-open-section="2">Tasks</button>{item.acceptedSpecs.map((path) => <a href={accepted(path)}>Spec: {path.split("/").slice(2, 4).join(" / ")}</a>)}{item.evidence.map((path) => <a href={evidenceLink(path)}>{specs.evidence.some((file) => file.path === path) ? "Evidence" : "Evidence source ↗"}</a>)}</div>
-            {item.rationale && <details class="card-basis"><summary>Status basis</summary><p>{item.rationale}</p><p>Reviewed from <a href={`https://github.com/knewter/tdisplay-k230/commit/${item.reviewRevision}`}><code>{item.reviewRevision?.slice(0, 12)}</code></a>.</p></details>}
-          </article>)}
+          </a>)}
         </div>
       </section>)}
     </div>
@@ -89,6 +85,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
   {items.map((item) => <div class="detail-template" hidden id={`work-detail-${item.id}`}>
     <div class="detail-body" data-detail-id={item.id}>
       <header class="detail-summary"><p class="detail-kind">{item.archived ? "Archived change" : "Draft proposal"} · {names[item.lane].title}</p><h2>{item.title}</h2><p class="detail-revision">Snapshot {work.sourceRevision.slice(0, 12)} · {work.generated}</p><div class="detail-states"><span>{item.done}/{item.total} tasks</span><span>{sourceLabel[item.source]}</span><span>{physicalLabel[item.physical]}</span></div><p class="detail-gate"><strong>{item.archived ? "Closed record" : "Next gate"}</strong>{item.next}</p></header>
+      {(item.dependencies.length > 0 || item.acceptedSpecs.length > 0 || item.evidence.length > 0 || item.rationale) && <aside class="detail-related"><strong>Related records</strong>{item.dependencies.map((id) => <a href={`${url("work/")}?work=${encodeURIComponent(id)}`}>Depends on: {byId[id]?.title ?? id}</a>)}{item.acceptedSpecs.map((path) => <a href={accepted(path)}>Accepted spec: {path.split("/").slice(2, 4).join(" / ")}</a>)}{item.evidence.map((path) => <a href={evidenceLink(path)}>{specs.evidence.some((file) => file.path === path) ? "Evidence" : "Evidence source ↗"}</a>)}{item.rationale && <p>Status basis: {item.rationale} <a href={`https://github.com/knewter/tdisplay-k230/commit/${item.reviewRevision}`}>Reviewed {item.reviewRevision?.slice(0, 12)} ↗</a></p>}</aside>}
       <nav class="detail-toc" aria-label={`Documents for ${item.title}`}><strong>In this change</strong>{item.rendered.map((doc, index) => <button type="button" data-work-section={index}>{doc.label}</button>)}</nav>
       <div class="detail-documents">{item.rendered.map((doc, index) => <section class="detail-document" data-section={index}><div class="detail-document-heading"><h3>{doc.label}</h3><span>{doc.path}</span></div><article class="work-markdown" set:html={doc.html} /></section>)}</div>
       <footer class="detail-sources"><strong>Source files at this revision</strong>{item.rendered.map((doc) => <a href={github(doc.path)}>{doc.label} ↗</a>)}</footer>
@@ -105,7 +102,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
 
   function show(id: string, section = 0, push = true): void {
     const template = document.getElementById(`work-detail-${id}`);
-    const trigger = document.querySelector<HTMLElement>(`[data-open-work="${CSS.escape(id)}"]`);
+    const trigger = document.querySelector<HTMLElement>(`[data-work-id="${CSS.escape(id)}"]`);
     if (!dialog || !content || !template || !trigger) return;
     returnFocus = trigger;
     const clone = template.firstElementChild?.cloneNode(true);
@@ -148,14 +145,12 @@ const items = await Promise.all(work.items.map(async (item) => ({
     }
   }
 
-  document.querySelectorAll<HTMLElement>("[data-work-id]").forEach((card) => {
+  document.querySelectorAll<HTMLAnchorElement>("[data-work-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
-      if ((event.target as Element).closest("a, button, summary, details")) return;
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
       show(card.dataset.workId ?? "", 0, true);
     });
-  });
-  document.querySelectorAll<HTMLButtonElement>("[data-open-work]").forEach((button) => {
-    button.addEventListener("click", () => show(button.dataset.openWork ?? "", Number(button.dataset.openSection ?? 0), true));
   });
   closeButton?.addEventListener("click", requestClose);
   dialog?.addEventListener("cancel", (event) => { event.preventDefault(); requestClose(); });
@@ -185,7 +180,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
 <style>
   :global(body:has(.work-page)) { padding-inline: clamp(16px, 3vw, 40px); }
   .work-page { max-width: 1540px; margin: 0 auto 5rem; }
-  .work-breadcrumb, .work-kicker, .work-meta, .work-jump, .lane-head, .card-top, .card-states, .card-next strong, .card-deps strong, .card-links, .card-basis { font-family: var(--mono); }
+  .work-breadcrumb, .work-kicker, .work-meta, .work-jump, .lane-head, .card-top, .card-states, .card-next strong { font-family: var(--mono); }
   .work-breadcrumb { display:flex; gap:.7rem; font-size:.77rem; color:var(--muted); margin-bottom:clamp(1.5rem,3vw,2.5rem); }
   .work-intro { max-width:1100px; }
   .work-kicker { color:var(--accent); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; font-weight:600; }
@@ -207,7 +202,9 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .lane-verification .lane-head { border-color:var(--soc); } .lane-verification .lane-mark { background:var(--soc); }
   .lane-archived .lane-head { border-color:var(--grounded); } .lane-archived .lane-mark { background:var(--grounded); }
   .lane-items { display:grid; gap:.75rem; }
-  .work-card { min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface); box-shadow:var(--shadow); overflow-wrap:anywhere; }
+  .work-card { display:block; min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface); color:var(--ink); text-decoration:none; box-shadow:var(--shadow); overflow-wrap:anywhere; cursor:pointer; }
+  .work-card:hover,.work-card:focus-visible { border-color:var(--accent); box-shadow:0 5px 24px #122b2730; }
+  .work-card:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
   .card-top { display:flex; justify-content:space-between; gap:.4rem; color:var(--muted); font-size:.63rem; line-height:1.3; }
   .card-kind { text-transform:uppercase; letter-spacing:.07em; }
   .card-count { white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -217,19 +214,8 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .card-states { display:flex; flex-wrap:wrap; gap:.3rem; margin:.8rem 0 1rem; }
   .card-states span { padding:.2rem .35rem; border:1px solid var(--rule); border-radius:3px; font-size:.59rem; line-height:1.35; color:var(--ink-2); }
   .card-next { padding:.65rem .7rem; background:var(--surface-2); border-left:2px solid var(--accent); }
-  .card-next strong,.card-deps strong { display:block; color:var(--accent); font-size:.61rem; text-transform:uppercase; letter-spacing:.08em; }
+  .card-next strong { display:block; color:var(--accent); font-size:.61rem; text-transform:uppercase; letter-spacing:.08em; }
   .card-next p { font-family:var(--sans); font-size:.86rem; line-height:1.43; margin:.38rem 0 0; }
-  .card-open { width:100%; display:flex; justify-content:space-between; align-items:center; gap:.7rem; min-height:44px; margin:.8rem 0 0; padding:.55rem .7rem; background:var(--accent); border:1px solid var(--accent); border-radius:4px; color:var(--surface); font:600 .78rem var(--mono); cursor:pointer; text-align:left; }
-  .card-open:hover,.card-open:focus-visible { filter:brightness(1.12); outline:2px solid var(--accent); outline-offset:2px; }
-  .card-open span { font-size:1.15rem; line-height:1; }
-  .card-deps { display:flex; flex-direction:column; gap:.22rem; font-size:.7rem; margin:.9rem 0 0; }
-  .card-links { display:flex; flex-wrap:wrap; gap:.35rem .7rem; border-top:1px solid var(--rule-2); padding-top:.75rem; margin-top:.85rem; font-size:.66rem; }
-  .card-links a,.card-links button { min-height:30px; display:inline-flex; align-items:center; font:inherit; color:var(--accent); text-decoration:underline; }
-  .card-links button { padding:0; border:0; background:none; cursor:pointer; }
-  .card-links button:hover,.card-links button:focus-visible { color:var(--ink); outline:2px solid var(--accent); outline-offset:2px; }
-  .card-basis { border-top:1px solid var(--rule-2); font-size:.65rem; color:var(--muted); padding-top:.5rem; }
-  .card-basis summary { cursor:pointer; color:var(--ink-2); }
-  .card-basis p { margin:.4rem 0; }
   .work-notes { max-width:830px; border-top:1px solid var(--rule); margin:3rem 0 0; padding-top:1rem; }
   .work-notes h2 { font-family:var(--sans); font-size:1.2rem; }
   .work-notes p { color:var(--ink-2); font-size:.94rem; }
@@ -243,7 +229,7 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .dialog-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scroll-behavior:smooth; }
   .detail-body { max-width:880px; margin:0 auto; padding:clamp(1rem,3vw,2.4rem); }
   .detail-summary { padding-bottom:1.2rem; border-bottom:1px solid var(--rule); }
-  .detail-kind,.detail-revision,.detail-states,.detail-gate strong,.detail-toc,.detail-document-heading,.detail-sources { font-family:var(--mono); }
+  .detail-kind,.detail-revision,.detail-states,.detail-gate strong,.detail-related,.detail-toc,.detail-document-heading,.detail-sources { font-family:var(--mono); }
   .detail-kind { margin:0 0 .5rem; font-size:.69rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
   .detail-summary h2 { font-family:var(--sans); font-size:clamp(1.7rem,3.5vw,2.8rem); line-height:1.08; margin:0 0 .65rem; }
   .detail-revision { color:var(--muted); font-size:.68rem; margin:0 0 1.1rem; }
@@ -251,6 +237,10 @@ const items = await Promise.all(work.items.map(async (item) => ({
   .detail-states span { padding:.25rem .45rem; border:1px solid var(--rule); border-radius:3px; font-size:.64rem; }
   .detail-gate { display:grid; gap:.35rem; margin:1.1rem 0 0; padding:.8rem 1rem; background:var(--surface-2); border-left:3px solid var(--accent); font-family:var(--sans); font-size:.97rem; }
   .detail-gate strong { color:var(--accent); font-size:.66rem; text-transform:uppercase; letter-spacing:.08em; }
+  .detail-related { display:flex; flex-wrap:wrap; gap:.45rem .9rem; padding:1rem 0; border-bottom:1px solid var(--rule); font-size:.68rem; line-height:1.5; }
+  .detail-related strong { flex-basis:100%; color:var(--ink-2); text-transform:uppercase; letter-spacing:.05em; }
+  .detail-related p { flex-basis:100%; margin:.15rem 0 0; color:var(--ink-2); }
+  .detail-related a { color:var(--accent); }
   .detail-toc { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin:1.2rem 0 2.2rem; font-size:.7rem; }
   .detail-toc strong { margin-right:.4rem; color:var(--muted); }
   .detail-toc button { min-height:36px; padding:.35rem .55rem; border:1px solid var(--rule); border-radius:4px; background:var(--surface-2); color:var(--ink); font:inherit; cursor:pointer; }

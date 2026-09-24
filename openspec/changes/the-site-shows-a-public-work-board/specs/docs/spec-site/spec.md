@@ -65,11 +65,11 @@ The work board SHALL be generated from committed repository state at an identifi
 ### Requirement: A work card opens its committed detail inside the dashboard
 
 <!-- UNVERIFIED: The in-dashboard detail view is planned; built interaction and revised deployment proof are pending. -->
-The work board SHALL let a reader select a card and read its committed proposal, design, tasks and delta specification inside the dashboard, with readable headings, tables, code and links rather than raw source text. The detail SHALL identify the same status, task progress and snapshot revision as the card. Published evidence links SHALL remain on the site where a local evidence page exists, and pinned external source links SHALL be secondary. The reader SHALL be able to close the detail with touch, keyboard Escape or browser Back and return focus to the selected card; a direct detail URL SHALL reopen the item. The detail SHALL use only committed content from the displayed snapshot, without a live GitHub fetch.
+The work board SHALL make each entire card a single keyboard-accessible control that opens its committed proposal, design, tasks and delta specification inside the dashboard, with readable headings, tables, code and links rather than raw source text. The detail SHALL identify the same status, task progress and snapshot revision as the card. Published evidence links SHALL remain on the site where a local evidence page exists, and pinned external source links SHALL be secondary. The reader SHALL be able to close the detail with touch, keyboard Escape or browser Back and return focus to the selected card; a direct detail URL SHALL reopen the item. The detail SHALL use only committed content from the displayed snapshot, without a live GitHub fetch.
 
 #### Scenario: A reader opens a card
 
-- **WHEN** the reader taps a card or its View details control
+- **WHEN** the reader taps a card or activates it from the keyboard
 - **THEN** a scrollable in-dashboard detail shows formatted proposal, design, tasks and delta spec sections for that card
 
 #### Scenario: A reader returns to the board

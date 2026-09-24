@@ -181,9 +181,10 @@ class TestBuiltSite(unittest.TestCase):
         data = json.loads((REPO / "site" / "src" / "data" / "work.json").read_text())
         self.assertIn('id="work-detail-dialog"', page)
         self.assertIn('id="work-detail-close"', page)
+        self.assertNotIn('class="card-open"', page)
         for item in data["items"]:
             self.assertIn(f'id="work-detail-{item["id"]}"', page)
-            self.assertIn(f'data-open-work="{item["id"]}"', page)
+            self.assertRegex(page, rf'<a class="work-card" id="{re.escape(item["id"])}" data-work-id="{re.escape(item["id"])}"[^>]+aria-haspopup="dialog"')
             for doc in item["details"]:
                 self.assertIn(doc["path"], page)
         self.assertIn('class="work-markdown"', page)
