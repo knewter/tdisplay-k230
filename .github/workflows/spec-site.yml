@@ -96,6 +96,7 @@ jobs:
           python3 tests/test_shell_gestures.py
           python3 tests/test_shell_routes.py
           python3 tests/test_card_shell_route.py
+          python3 tests/test_card_shell_reveal.py
           python3 tests/test_handheld_theme_rendering.py
 
       - name: Check opt-in shell appearance receiver and theme transaction
@@ -104,6 +105,8 @@ jobs:
           python3 tests/test_omarchy_theme_activation.py
           python3 tests/test_omarchy_theme_transaction.py
           python3 tests/test_theme_catalog.py
+          python3 tests/test_theme_preferences.py
+          python3 tests/test_handheld_app_themes.py
           python3 tests/test_shell_appearance_receiver.py
 
       - name: Check unattended flash target refusals

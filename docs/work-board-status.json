@@ -5,16 +5,18 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Cross-build and check the landed finger-tracked entry and reversible card expansion in the real compositor; then repeat presentation, CPU/frame and physical touch acceptance.",
+      "next": "Integrate the continuous drawer/shade stream with the actual Rust renderer; then repeat reserved-board presentation, CPU/frame and physical touch acceptance.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/card-shell/tracked-motion-host.md",
         "docs/evidence/card-shell/touch-first-route/README.md",
         "docs/evidence/card-shell/touch-first-shade/README.md",
-        "docs/evidence/card-shell/scaled-cache-board/README.md"
+        "docs/evidence/card-shell/scaled-cache-board/README.md",
+        "docs/evidence/card-shell/tracked-motion-qemu/README.md",
+        "docs/evidence/coherent-shell/reveal-stream-host.md"
       ],
-      "rationale": "Drawer and shade routing have cross-build/headless proof. Finger-tracked entry, partial-release reversal and card expansion are now host-tested source; their exact cross-build/runtime and physical acceptance remain open. A policy dwell is not proof of panel presentation.",
-      "reviewRevision": "4459983f"
+      "rationale": "Finger-tracked app entry, reversal and card expansion now have exact cross-build and headless QEMU pixel evidence. Continuous drawer/shade progress has QEMU sender and overlay-stacking proof; actual Rust receiver pixels and physical acceptance remain open. Existing board CPU/frame budgets are still unmet.",
+      "reviewRevision": "d9b24140"
     },
     "the-system-enables-proven-c908-extensions": {
       "lane": "verification",
@@ -32,7 +34,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Evaluate the Rust software-rendered shell client alongside the Qt Quick probe; integrate themed drawer, Settings and notifications with live cards, then verify the image on the board.",
+      "next": "Finish real Rust gesture, icon and theme consumption, connect Settings and notifications, and build/deploy the coherent image for board trials.",
       "dependencies": [
         "the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -42,16 +44,19 @@
         "docs/evidence/coherent-shell/settings-backend.md",
         "docs/evidence/coherent-shell/notification-backend.md",
         "docs/evidence/coherent-shell/prototype-launcher-build.md",
-        "docs/evidence/coherent-shell/rust-probe-host.md"
+        "docs/evidence/coherent-shell/rust-probe-host.md",
+        "docs/evidence/coherent-shell/rust-probe-board/README.md",
+        "docs/evidence/coherent-shell/rust-frontend-source.md",
+        "docs/evidence/coherent-shell/reveal-stream-host.md"
       ],
-      "rationale": "The final UI targets Rust. Its opt-in software layer-shell probe has host checks and target evaluation; cross-build and device comparison remain open. The C drawer reference and Settings/notification backends are landed, while full themed surfaces and physical acceptance remain open.",
-      "reviewRevision": "6f1a5a0c"
+      "rationale": "The Rust diagnostic probe mapped and restored the real board session; that proves diagnostic pixels, not the final UI or real touch. A separate Cairo/Pango/GIO frontend now cross-builds from exact committed source. Its service integration and full interactive themed surfaces remain in progress.",
+      "reviewRevision": "d9b24140"
     },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Connect the real chooser to the landed JSON catalog and acknowledged preview/apply interface; finish all-surface colors, icons and backgrounds, then verify selection and persistence on the board.",
+      "next": "Wire the Rust chooser and all-surface appearance, including live deck and app palette updates; then verify theme/background switching and reboot persistence on the board.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -59,10 +64,12 @@
         "docs/evidence/omarchy-themes/launcher-receiver.md",
         "docs/evidence/omarchy-themes/persistent-default.md",
         "docs/evidence/omarchy-themes/native-token-checkpoint.md",
-        "docs/evidence/omarchy-themes/catalog-host.md"
+        "docs/evidence/omarchy-themes/catalog-host.md",
+        "docs/evidence/omarchy-themes/wallpaper-memory-host.md",
+        "docs/evidence/omarchy-themes/app-appearance-host.md"
       ],
-      "rationale": "Pinned helpers, appearance tokens, acknowledged selection and persistent defaults have host/build checkpoints. The JSON catalog and staged background selection pass host checks. Real chooser/rendering, wallpaper playback and physical acceptance remain open.",
-      "reviewRevision": "6f1a5a0c"
+      "rationale": "The catalog, acknowledged theme swap and remembered wallpaper choices are landed. Generated Foot palettes, fresh-home defaults and post-ACK app sync pass host tests. Full chooser rendering, background playback and physical acceptance remain open.",
+      "reviewRevision": "5f9c46eb"
     },
     "the-shell-trials-vglite-composition": {
       "lane": "in-progress",
@@ -80,13 +87,13 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish the Qt Quick software probe cross-build, inspect target closure and QML configuration, then measure pixels, touch and combined client/compositor cost on the reserved board before a Quickshell trial.",
+      "next": "Resume the queued Qt Quick cross-build after integrated-shell builds, inspect target closure/QML configuration, then measure the plain app on the board before a Quickshell trial.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/qtquick/minimal-probe-prebuild.md"
       ],
-      "rationale": "The research and opt-in Qt Quick probe are on master. Host QML parsing and Nix target evaluation passed; the actual cross-build is underway. No Qt or Quickshell board performance result or toolkit adoption is claimed.",
-      "reviewRevision": "6f1a5a0c"
+      "rationale": "Research and opt-in Qt probe source are on master. The build was deliberately interrupted to prioritize shell integration; dependency outputs are cached, but Qt and the probe have not built. No Qt/Quickshell board result or toolkit adoption is claimed.",
+      "reviewRevision": "c92160d8"
     }
   }
 }
