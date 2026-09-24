@@ -431,6 +431,13 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 			if (portion==1) {
 				uint64_t target=p->entry_target_id;
 				if (target && !entry_focusable(p,target)) return cs_leave(p);
+				/* A private or unavailable target has a neutral card but no
+				 * mirror to expand. Restore and raise its existing view only
+				 * after the centered neutral endpoint. */
+				if (target && p->cards[find(p,target)].content!=CS_LIVE) {
+					p->selected=find(p,target);p->saved_focus_id=target;
+					return cs_leave(p);
+				}
 				p->entry_id=0;p->entry_settling=false;
 				free(p->entry_order);p->entry_order=NULL;p->entry_count=0;
 				if (target) {
