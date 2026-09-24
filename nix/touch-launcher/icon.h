@@ -17,5 +17,8 @@ enum k230_icon_use {
 gboolean k230_icon_draw(cairo_t *cr, GIcon *icon, enum k230_icon_use use,
                         double x, double y);
 void k230_icon_cache_invalidate(void);
+/* Select the accepted appearance generation's freedesktop theme. NULL
+ * returns to the session environment. A changed selection drops cached art. */
+void k230_icon_set_theme(const char *name);
 guint k230_icon_cache_count(void);
 guint k230_icon_decode_count(void);

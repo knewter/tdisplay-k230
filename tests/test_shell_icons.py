@@ -13,7 +13,7 @@ import unittest
 import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ["theme", "missing", "cache-bound", "notification-icon", "private-no-identity", "absolute", "svg"]
+CASES = ["theme", "theme-switch", "missing", "cache-bound", "notification-icon", "private-no-identity", "absolute", "svg"]
 
 PROBE = r'''
 #include "icon.h"
@@ -53,6 +53,15 @@ int main(int argc,char **argv) {
   int ok=0;
   if (!strcmp(which,"theme")) ok=draw(icon,K230_ICON_DRAWER,output)
     && k230_icon_cache_count()==1 && k230_icon_decode_count()==1;
+  else if (!strcmp(which,"theme-switch")) {
+    ok=draw(icon,K230_ICON_DRAWER,NULL) && k230_icon_cache_count()==1;
+    k230_icon_set_theme("hicolor");
+    ok=ok && k230_icon_cache_count()==0 && draw(icon,K230_ICON_DRAWER,output)
+      && k230_icon_decode_count()==2 && k230_icon_cache_count()==1;
+    k230_icon_set_theme("../invalid");
+    ok=ok && k230_icon_cache_count()==0 && draw(icon,K230_ICON_DRAWER,NULL)
+      && k230_icon_decode_count()==3;
+  }
   else if (!strcmp(which,"missing")) ok=!draw(icon,K230_ICON_DRAWER,output)
     && k230_icon_cache_count()==1 && !strcmp(g_app_info_get_display_name(G_APP_INFO(app)),"Missing App");
   else if (!strcmp(which,"notification-icon")) ok=draw(icon,K230_ICON_NOTIFICATION,output)
@@ -126,6 +135,7 @@ class IconCases(unittest.TestCase):
                 + "[48x48/apps]\nSize=48\nType=Fixed\n"
                 + "[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n")
         (data / "icons/cedar/48x48/apps/brand.png").write_bytes(png_bytes(210, 68, 58))
+        (data / "icons/hicolor/48x48/apps/brand.png").write_bytes(png_bytes(35, 140, 90))
         (data / "icons/hicolor/48x48/apps/inherited.png").write_bytes(png_bytes(35, 140, 90))
         for i in range(20):
             (data / f"icons/cedar/48x48/apps/many-{i:02d}.png").write_bytes(png_bytes(i * 10, 40, 90))
@@ -164,6 +174,9 @@ class IconCases(unittest.TestCase):
     def test_missing(self):
         self.run_case("missing", "absent")
 
+    def test_theme_switch(self):
+        self.run_case("theme-switch", "brand")
+
     def test_cache_bound(self):
         self.run_case("cache-bound", "brand")
 
@@ -197,7 +210,7 @@ if __name__ == "__main__":
     chosen = parser.parse_args().case
     tests = unittest.defaultTestLoader.loadTestsFromTestCase(IconCases)
     if chosen:
-        names = {"theme": "test_theme", "missing": "test_missing", "cache-bound": "test_cache_bound",
+        names = {"theme": "test_theme", "theme-switch": "test_theme_switch", "missing": "test_missing", "cache-bound": "test_cache_bound",
                  "notification-icon": "test_notification_icon", "private-no-identity": "test_private_no_identity",
                  "absolute": "test_absolute", "svg": "test_svg"}
         tests = unittest.TestSuite(IconCases(names[c]) for c in dict.fromkeys(chosen))

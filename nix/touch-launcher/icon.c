@@ -21,6 +21,7 @@ struct icon_entry {
 };
 static GPtrArray *cache;
 static char *environment_key;
+static char *selected_theme;
 static guint64 touch_clock;
 static guint decode_count;
 
@@ -49,6 +50,13 @@ static gboolean safe_component(const char *name) {
   for (const unsigned char *p = (const unsigned char *)name; *p; p++)
     if (!g_ascii_isalnum(*p) && *p != '_' && *p != '-' && *p != '.' && *p != '+') return FALSE;
   return strcmp(name, ".") && strcmp(name, "..");
+}
+void k230_icon_set_theme(const char *name) {
+  const char *accepted=safe_component(name) ? name : NULL;
+  if (!g_strcmp0(selected_theme,accepted)) return;
+  g_free(selected_theme);
+  selected_theme=g_strdup(accepted);
+  k230_icon_cache_invalidate();
 }
 static gboolean usable_file(const char *path, struct stat *st) {
   return path && stat(path, st) == 0 && S_ISREG(st->st_mode) &&
@@ -165,7 +173,7 @@ static char *resolve_icon(GIcon *icon, int size) {
   }
   if (!G_IS_THEMED_ICON(icon)) return NULL;
   GPtrArray *roots = data_roots();
-  const char *theme = g_getenv("K230_ICON_THEME");
+  const char *theme = selected_theme ? selected_theme : g_getenv("K230_ICON_THEME");
   if (!safe_component(theme)) theme = "hicolor";
   char *path = NULL;
   const char * const *names = g_themed_icon_get_names(G_THEMED_ICON(icon));
@@ -223,7 +231,7 @@ static cairo_surface_t *decode_icon(const char *path, int size) {
 static void check_environment(void) {
   const char *home = g_getenv("XDG_DATA_HOME");
   const char *dirs = g_getenv("XDG_DATA_DIRS");
-  const char *theme = g_getenv("K230_ICON_THEME");
+  const char *theme = selected_theme ? selected_theme : g_getenv("K230_ICON_THEME");
   char *key = g_strdup_printf("%s\n%s\n%s", home ? home : "",
     dirs ? dirs : "", theme ? theme : "");
   if (g_strcmp0(key, environment_key)) {
