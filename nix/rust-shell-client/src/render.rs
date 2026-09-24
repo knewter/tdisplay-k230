@@ -316,8 +316,29 @@ fn scene(
             }
             service_card(cr, 24.0, 186.0, w - 48.0, 72.0);
             if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
-                text(cr, &preview.source, 42.0, 197.0, w - 84.0, 17.0, 0x78d7cb);
-                text(cr, &preview.summary, 42.0, 220.0, w - 84.0, 21.0, 0xf4f7f8);
+                let painted = preview
+                    .icon
+                    .as_deref()
+                    .is_some_and(|icon| icons.paint(cr, icon, 38, 42.0, 203.0));
+                if !painted {
+                    text(
+                        cr,
+                        &preview
+                            .source
+                            .chars()
+                            .next()
+                            .unwrap_or('?')
+                            .to_uppercase()
+                            .to_string(),
+                        51.0,
+                        209.0,
+                        30.0,
+                        21.0,
+                        0xf4f7f8,
+                    );
+                }
+                text(cr, &preview.source, 94.0, 197.0, w - 132.0, 17.0, 0x78d7cb);
+                text(cr, &preview.summary, 94.0, 220.0, w - 132.0, 21.0, 0xf4f7f8);
             } else {
                 let empty = if items.is_none() {
                     "Loading preview"
@@ -718,7 +739,8 @@ mod tests {
     use super::*;
     use crate::appearance::BrushStop;
     use crate::service_data::{
-        Control, ControlState, NotificationEvent, NotificationSnapshot, Priority, SettingsSnapshot,
+        Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
+        Priority, SettingsSnapshot,
     };
     use std::collections::BTreeMap;
 
@@ -796,6 +818,55 @@ mod tests {
         renderer.draw(&mut failed, params, &[]).unwrap();
         let region = (355 * 568 * 4)..(375 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    #[test]
+    fn broker_preview_uses_its_named_app_icon() {
+        let root = std::env::temp_dir().join(format!("k230-preview-icon-{}", std::process::id()));
+        let apps_dir = root.join("icons/hicolor/scalable/apps");
+        std::fs::create_dir_all(&apps_dir).unwrap();
+        std::fs::write(root.join("icons/hicolor/index.theme"), "[Icon Theme]\nName=hicolor\nDirectories=scalable/apps\n[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n").unwrap();
+        std::fs::write(apps_dir.join("fixture-preview.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>").unwrap();
+        let mut renderer = RendererCache::default();
+        renderer.set_icon_theme("hicolor");
+        renderer.icons.use_fixture_root(root.clone());
+        let view = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 0,
+                events: vec![],
+                preview: Some(NotificationPreview {
+                    id: 7,
+                    source: "Terminal".into(),
+                    icon: Some("fixture-preview".into()),
+                    summary: "Ready".into(),
+                    priority: Priority::Ordinary,
+                    ongoing: false,
+                }),
+            }),
+            ..ServiceView::default()
+        };
+        renderer.set_services(view);
+        let mut frame = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut frame,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Shade,
+                    progress: 1.0,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        assert_eq!(renderer.icons.decode_count(), 1);
+        let pixel = (220 * 568 + 59) * 4;
+        assert!(
+            frame[pixel + 2] > 160,
+            "preview app icon red channel absent"
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
