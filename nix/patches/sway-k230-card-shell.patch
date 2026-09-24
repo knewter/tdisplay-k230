@@ -38,7 +38,9 @@
 @@ -1,1 +1,2 @@
 +#include "sway/card_shell.h"
  #include <stdbool.h>
-@@ -98,1 +99,2 @@
+@@ -94,0 +95,1 @@
++	card_shell_keyboard_adjust_usable(output, &usable_area);
+@@ -98,1 +100,2 @@
 -		arrange_output(output);
 +		arrange_output(output);
 +		card_shell_usable_area_changed(output);
@@ -166,9 +168,10 @@
  	}
 --- a/sway/meson.build
 +++ b/sway/meson.build
-@@ -1,4 +1,12 @@
+@@ -1,4 +1,13 @@
  sway_sources = files(
 +	'card_shell.c',
++	'card-keyboard-gesture.c',
 +	'card_shell_appearance.c',
 +	'card_shell_route.c',
 +	'card-shell-policy.c',

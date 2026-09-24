@@ -20,6 +20,15 @@ let
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
   cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
+  keyboardGestureSignal = pkgs.writeShellScriptBin "k230-keyboard-gesture-signal" ''
+    set -eu
+    case "''${1:-}" in
+      show) signal=USR2 ;;
+      hide) signal=USR1 ;;
+      *) exit 2 ;;
+    esac
+    exec ${pkgs.procps}/bin/pkill -"$signal" -u "$(${pkgs.coreutils}/bin/id -u)" -x wvkbd-mobintl
+  '';
   # Built only when frameTiming is selected. The patch measures monotonic
   # wall-clock elapsed time across wlroots scene building/Pixman submission
   # and KMS commit submission; it neither waits for nor claims panel scanout.
@@ -761,6 +770,9 @@ in
         SWAY_K230_CARD_SURFACE_SOCKET = "/run/shell/k230-shell-rust.sock";
         SWAY_K230_CARD_REVEAL_STREAM = "1";
         SWAY_K230_CARD_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
+        SWAY_K230_KEYBOARD_GESTURES = "1";
+        SWAY_K230_KEYBOARD_HEIGHT = toString cfg.keyboardHeight;
+        SWAY_K230_KEYBOARD_SIGNAL = "${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_CARD_SCALED_CACHE = "0";
       } // lib.optionalAttrs cfg.initialSplash {

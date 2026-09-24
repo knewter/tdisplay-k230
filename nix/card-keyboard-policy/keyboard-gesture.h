@@ -15,6 +15,10 @@ struct kg_policy {
 	double grip_start, start_progress, progress, velocity;
 	double height;
 	bool first_live, second_live, reduced_motion, target_shown;
+	bool show_requested;
+	int32_t owned[16];
+	unsigned owned_count;
+	unsigned overflow_contacts;
 };
 void kg_init(struct kg_policy *p, double height, bool reduced_motion);
 /* `claimed_card` is true after one-finger card motion has qualified. */
