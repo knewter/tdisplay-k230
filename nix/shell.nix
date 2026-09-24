@@ -168,7 +168,7 @@ let
   themeTools = pkgs.callPackage ./omarchy-theme-tools { };
   themeDefault = pkgs.callPackage ./handheld-theme-default { };
   themeIcons = pkgs.callPackage ./handheld-theme-icons { };
-  themeDefaultId = (builtins.fromJSON (builtins.readFile ./handheld-theme-default/default-report.json)).generation;
+  themeDefaultId = (builtins.fromJSON (builtins.readFile ./handheld-theme-default/bundled-report.json)).generation;
   themeCommand = pkgs.callPackage ./handheld-theme-command.nix {
     omarchyThemeTools = themeTools;
     inherit themeDefault;

@@ -1,0 +1,48 @@
+{
+  "backgrounds": [
+    "backgrounds/1-totoro.webp",
+    "backgrounds/2-waves.webp",
+    "backgrounds/3-blue-eye.webp",
+    "backgrounds/omarchy.webp"
+  ],
+  "generation": "0d16475245f13b3d7d3f036f",
+  "icon_theme": "Yaru-purple",
+  "palette": {
+    "accent": "#89b4fa",
+    "background": "#1e1e2e",
+    "blue": "#89b4fa",
+    "bright_blue": "#89b4fa",
+    "bright_cyan": "#94e2d5",
+    "bright_foreground": "#cdd6f4",
+    "bright_green": "#a6e3a1",
+    "bright_magenta": "#f5c2e7",
+    "bright_red": "#f38ba8",
+    "bright_yellow": "#f9e2af",
+    "brown": "#7b5b55",
+    "cyan": "#94e2d5",
+    "dark_background": "#161622",
+    "dark_foreground": "#6c7086",
+    "darker_background": "#101019",
+    "foreground": "#cdd6f4",
+    "green": "#a6e3a1",
+    "light_foreground": "#bac2de",
+    "lighter_background": "#313244",
+    "magenta": "#f5c2e7",
+    "mode": "dark",
+    "muted": "#585b70",
+    "orange": "#f6b6ab",
+    "red": "#f38ba8",
+    "selection": "#45475a",
+    "yellow": "#f9e2af"
+  },
+  "selected_background": "backgrounds/2-waves.webp",
+  "source": "omacom/omarchy@28ceaae70ebac3a0edcc21f2faa77a90dc6d404c/themes/catppuccin",
+  "source_file_sha256": {
+    "backgrounds/2-waves.webp": "5fe347ef9814dbf1d5bc73a96381b8fe4908ed0f7e4293d2c3c8d860b46041ce",
+    "colors.toml": "a7eddcf3342ee0bee5df5ed7aad71c0e8c07ba5549bba7e040064fc5abc09eea",
+    "icons.theme": "fabce71aa1d6dff7a151d3ac1ce842c22ee11399e0279b311f97cfcfca30f7ad"
+  },
+  "source_revision": "28ceaae70ebac3a0edcc21f2faa77a90dc6d404c",
+  "source_sha256": "72e8f8f39a1209893b30b651fece6c1d1ce47ec643df9e596c7cd282ea97d4c6",
+  "unavailable": []
+}

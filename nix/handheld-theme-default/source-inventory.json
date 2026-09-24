@@ -1,0 +1,29 @@
+{
+  "files": {
+    "themes/catppuccin-latte/backgrounds/1-color-fade.webp": "c4cb211770713984e630ef6eebfb6cfb03169124c98765fd52f82ee0bfd36603",
+    "themes/catppuccin-latte/backgrounds/omarchy.webp": "8482e189755138084295e90f353b8efe8d3e575d7bc3fc3ed756d1e890242d32",
+    "themes/catppuccin-latte/colors.toml": "071e27fe9b0dd7ee0063c7a3a55288648dcc6ac05a6cf7702caeb51c9ca4398e",
+    "themes/catppuccin-latte/icons.theme": "75be55b00f24a3cfc708db729e9bca23765e8ef0991d6889fbb2fd4d29581209",
+    "themes/catppuccin-latte/neovim.lua": "5f2c59a34e3219aecf7a164be47a2095f234d678198f6b68d9dc56a8f62d6feb",
+    "themes/catppuccin-latte/preview-unlock.png": "a8c127138391c9aa24fdd8ab921472c56134b275d44fa17fbe64ad8844038a92",
+    "themes/catppuccin-latte/preview.png": "82bd7506b370214407cdfef1f324555b122d290249a03e80462dda0d7ca69360",
+    "themes/catppuccin-latte/unlock.png": "a1dd165e51caa847473d49070d798ad4d7db76ee2c7a40bf1496a1e352d4dcfa",
+    "themes/catppuccin-latte/vscode.json": "da729941402bd5373758031444373c9470e34e1ee5acac4228de40e33eb430bf",
+    "themes/catppuccin/backgrounds/1-totoro.webp": "4896da620ed3016b7e52eede8db8169591a9fa4856064db4039521be96f724b6",
+    "themes/catppuccin/backgrounds/2-waves.webp": "5fe347ef9814dbf1d5bc73a96381b8fe4908ed0f7e4293d2c3c8d860b46041ce",
+    "themes/catppuccin/backgrounds/3-blue-eye.webp": "70743c244575253b72f17978060f87239e0125575195f64e288479666129954a",
+    "themes/catppuccin/backgrounds/omarchy.webp": "24cb9211e2191edefadd093976526d3606167343a636eb9ff123b40d4e594329",
+    "themes/catppuccin/colors.toml": "a7eddcf3342ee0bee5df5ed7aad71c0e8c07ba5549bba7e040064fc5abc09eea",
+    "themes/catppuccin/icons.theme": "fabce71aa1d6dff7a151d3ac1ce842c22ee11399e0279b311f97cfcfca30f7ad",
+    "themes/catppuccin/neovim.lua": "896b06b0a72e69e3478169898f228f82bdde2ffff95ef8402464ba9548e322db",
+    "themes/catppuccin/preview-unlock.png": "56f15b95a596622edbee1401ef06c539891ee74b44e79ac6146e35a7e80f908b",
+    "themes/catppuccin/preview.png": "0ee9898c900f40ef83ac785afdb9997e893be22dcd1b70595c77316ee5275792",
+    "themes/catppuccin/unlock.png": "cbfa11cbb5f9028099087e942e8e80648eaf6edf24b733aaf07ba01d1c69162e",
+    "themes/catppuccin/vscode.json": "7618ba0f071991effc4a2a923e4e241e661821968fc078d4fe188b9fa18e82fc"
+  },
+  "revision": "28ceaae70ebac3a0edcc21f2faa77a90dc6d404c",
+  "source_sha256": {
+    "catppuccin": "72e8f8f39a1209893b30b651fece6c1d1ce47ec643df9e596c7cd282ea97d4c6",
+    "catppuccin-latte": "11ea23e5a4659b09ecda0658dd86921489d6f536b86ffa60af2f601912a70cdc"
+  }
+}
