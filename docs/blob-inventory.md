@@ -731,6 +731,12 @@ DATA bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54  docs/evid
 DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
 DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
 DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
+DATA 01bd1a7535e53eebef58a0fcc087dfc9b305704984018be99583876c88657543  docs/evidence/omarchy-themes/paired-endpoints-qemu/app-after.png
+DATA 5f6661ca7c2b0e81615c6f8d2ace3d50bcd4c56ee64d6a1f60d7ef85af975fc9  docs/evidence/omarchy-themes/paired-endpoints-qemu/restarted-deck.png
+DATA 96cecf526f58f4ea7af374974c70640a80e484f3a20202e1c7454a26c796de1f  docs/evidence/omarchy-themes/paired-endpoints-qemu/restarted-drawer.png
+DATA 085a00f2d55edf2e0073788f1fd302f41548e3ade7dd9a07640f020b53ea7971  docs/evidence/omarchy-themes/paired-endpoints-qemu/rollback-deck.png
+DATA d5b3e47bf88596e75dc8ba1f22d456de2ea478e68df4443d53d0e0489ce41f13  docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-deck.png
+DATA d2b189f2421e5b2421b091ae8cbfb403e57e784a2b70f3853f8b26945ecf089e  docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-drawer.png
 
 DATA 5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236  docs/evidence/shell-features/startup-portrait/20260922T172430Z-portrait-image-startup.mp4
 DATA 3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947  docs/evidence/shell-features/startup-portrait/demo.mp4
@@ -1496,3 +1502,18 @@ reviewed and contain no private app content. Source/package identity, command,
 pixel observations and limits are in that directory's README. They are not
 physical-panel captures.
 
+### Paired theme endpoint QEMU captures
+
+`docs/evidence/omarchy-themes/paired-endpoints-qemu/` contains six original
+headless QEMU DATA captures of a public synthetic live card, a two-color
+wallpaper, and four temporary public desktop labels. The exact Sway/Rust
+packages, fanout command, pixel checks, and physical limits are in its README.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/app-after.png` | 4926 | DATA | `01bd1a7535e53eebef58a0fcc087dfc9b305704984018be99583876c88657543` |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/restarted-deck.png` | 18333 | DATA | `5f6661ca7c2b0e81615c6f8d2ace3d50bcd4c56ee64d6a1f60d7ef85af975fc9` |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/restarted-drawer.png` | 39509 | DATA | `96cecf526f58f4ea7af374974c70640a80e484f3a20202e1c7454a26c796de1f` |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/rollback-deck.png` | 18312 | DATA | `085a00f2d55edf2e0073788f1fd302f41548e3ade7dd9a07640f020b53ea7971` |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-deck.png` | 18346 | DATA | `d5b3e47bf88596e75dc8ba1f22d456de2ea478e68df4443d53d0e0489ce41f13` |
+| `docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-drawer.png` | 39422 | DATA | `d2b189f2421e5b2421b091ae8cbfb403e57e784a2b70f3853f8b26945ecf089e` |

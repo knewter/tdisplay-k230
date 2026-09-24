@@ -1,0 +1,25 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-paired-appearance",
+  "sway": "/nix/store/qwja5838kgidxzvii70l0smf72snzsqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/rx393c3q7j3ch30zk3l3w0ws8hyi96b1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "wallpaper_upper": [
+    240,
+    20,
+    20
+  ],
+  "wallpaper_lower": [
+    20,
+    20,
+    240
+  ],
+  "drawer": [
+    34,
+    170,
+    34
+  ],
+  "rollback_pointer": "111111111111111111111111",
+  "background_did_not_obscure_app": true,
+  "injected_failure_rolled_back_both": true,
+  "restart_preserved_selected_generation": true
+}
