@@ -28,13 +28,13 @@ cargo fmt --manifest-path nix/rust-shell-client/Cargo.toml --check
   PASS
 cargo run --manifest-path nix/rust-shell-client/Cargo.toml --locked -- --render-fixture drawer /tmp/k230-rust-frontend-drawer.png
   PASS: local 568x1232 PNG visually reviewed; it contains workstation desktop names
-nix build .#handheld-shell-rust --max-jobs 1 --cores 4 --no-link --print-out-paths
-  PASS: /nix/store/gfgfp39jxbpfk0wymd9jk37jqjb8kkgb-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0
+nix build "git+file://$PWD?rev=813b32e1041de7bee1b8a02b99a3ca8e7288676b#handheld-shell-rust" --max-jobs 1 --cores 4 --no-link --print-out-paths
+  PASS: exact committed source /nix/store/l3zfl8v2av47sq62wgp1apk3050gpsdz-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0
 ```
 
 The target output is ELF64 RISC-V LP64D, dynamically linked against the
 expected Cairo/Pango/GIO/GLib and libc libraries. `nix path-info -S
---closure-size` reports 86,357,080 bytes for this partial package and its
+--closure-size` reports 86,357,104 bytes for this exact committed package and its
 recursive runtime closure; neither that number nor the host PNG measures
 board RSS, CPU, touch latency or panel rendering. It is not installed as the
 normal session. The board's diagnostic probe observation is recorded
