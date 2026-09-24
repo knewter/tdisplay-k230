@@ -726,6 +726,10 @@ DATA 30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73  docs/evid
 DATA 13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png
 DATA 6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png
 DATA bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-scrolled.png
+DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
+DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
+DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
+
 DATA 5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236  docs/evidence/shell-features/startup-portrait/20260922T172430Z-portrait-image-startup.mp4
 DATA 3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947  docs/evidence/shell-features/startup-portrait/demo.mp4
 DATA 70ac27055e70e2add02b8460b8596b1c4597aacfad212e8f1793257606536cfa  docs/evidence/shell-features/startup-portrait/screen.png
@@ -1480,4 +1484,13 @@ limits are in the adjacent README. They are not physical-panel captures.
 `docs/evidence/work-card-media/` files `gallery-desktop.png` and `file-mobile.png` capture the
 viewport media gallery and rendered document modal at source `046ae608`.
 They are reviewed local-browser captures with the same provenance limits.
+
+### Deck appearance QEMU captures
+
+`docs/evidence/omarchy-themes/deck-appearance-qemu/{before,themed,restored}.png`
+are original headless QEMU DATA captures of a public synthetic card and a
+synthetic red/blue canvas plus green/yellow card brush. They were visually
+reviewed and contain no private app content. Source/package identity, command,
+pixel observations and limits are in that directory's README. They are not
+physical-panel captures.
 

@@ -1,0 +1,35 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-appearance",
+  "before_canvas": [
+    30,
+    30,
+    46
+  ],
+  "themed_canvas_left": [
+    250,
+    0,
+    5
+  ],
+  "themed_canvas_right": [
+    4,
+    0,
+    251
+  ],
+  "themed_card_left": [
+    8,
+    255,
+    0
+  ],
+  "themed_card_right": [
+    242,
+    255,
+    0
+  ],
+  "restored_canvas": [
+    30,
+    30,
+    46
+  ],
+  "sway": "/nix/store/qwja5838kgidxzvii70l0smf72snzsqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway"
+}
