@@ -2,6 +2,7 @@
 
 pub mod catalog;
 pub mod icon;
+pub mod navigation;
 pub mod protocol;
 pub mod render;
 

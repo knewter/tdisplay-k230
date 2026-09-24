@@ -1,12 +1,14 @@
 //! Opt-in layer-shell/SHM client. Live app pixels stay with Sway.
 //! The layer/event plumbing began from the pinned Rust probe, which follows
 //! Smithay Client Toolkit's MIT-licensed v0.20.0 simple_layer example.
+use gio::prelude::*;
 use k230_shell_rust::{
     catalog::{installed_apps, AppEntry},
     configure_size, frame_bytes,
+    navigation::{DrawerAction, DrawerNavigation},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
-    render::{export_png, RendererCache},
+    render::{export_png, RenderParams, RendererCache},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
@@ -41,6 +43,9 @@ use std::{
         },
     },
     path::PathBuf,
+    process::{Command, Stdio},
+    sync::mpsc::{self, Receiver, Sender},
+    thread,
     time::{Duration, Instant},
 };
 use wayland_client::{
@@ -349,6 +354,43 @@ impl Drop for RouteServer {
     }
 }
 
+fn swaymsg_back(swaymsg: &std::path::Path) -> Result<(), String> {
+    if !swaymsg.is_absolute() || !swaymsg.is_file() {
+        return Err("K230_SWAYMSG must name an absolute executable".into());
+    }
+    let mut child = Command::new(swaymsg)
+        .args(["card_shell", "back"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|error| error.to_string())?;
+    let deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) if status.success() => return Ok(()),
+            Ok(Some(_)) => return Err("card_shell back failed".into()),
+            Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(10)),
+            Ok(None) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err("card_shell back timed out".into());
+            }
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+}
+
+fn launch_selected(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
+    swaymsg_back(swaymsg)?;
+    let app = gio::DesktopAppInfo::new(id).ok_or("installed app disappeared")?;
+    if !app.should_show() {
+        return Err("installed app is no longer visible".into());
+    }
+    app.launch(&[], None::<&gio::AppLaunchContext>)
+        .map_err(|error| error.to_string())
+}
+
 struct ShellClient {
     compositor: CompositorState,
     layer_shell: LayerShell,
@@ -369,6 +411,13 @@ struct ShellClient {
     frame_pending: bool,
     started: Instant,
     apps: Vec<AppEntry>,
+    nav: DrawerNavigation,
+    nav_tick: Instant,
+    launch_sender: Sender<Result<(), String>>,
+    launch_results: Receiver<Result<(), String>>,
+    launching: bool,
+    launch_started: Option<Instant>,
+    swaymsg: Option<PathBuf>,
     renderer: RendererCache,
     reveal: RevealState,
     input_ready: bool,
@@ -381,6 +430,28 @@ impl ShellClient {
             "rust-shell {}ms {event}",
             self.started.elapsed().as_millis()
         );
+    }
+
+    fn launch_app(&mut self, index: usize) {
+        if self.launching || self.route != Route::Drawer {
+            return;
+        }
+        let Some(app) = self.apps.get(index) else {
+            return;
+        };
+        let id = app.id.clone();
+        let swaymsg = self.swaymsg.clone();
+        let sender = self.launch_sender.clone();
+        self.hide(); // existing live deck remains beneath this overlay
+        self.launching = true;
+        self.launch_started = Some(Instant::now());
+        thread::spawn(move || {
+            let result = swaymsg
+                .as_deref()
+                .ok_or_else(|| "K230_SWAYMSG is unavailable".into())
+                .and_then(|path| launch_selected(&id, path));
+            let _ = sender.send(result);
+        });
     }
 
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -417,6 +488,9 @@ impl ShellClient {
             return true;
         }
         self.reveal.clear();
+        if self.route != route {
+            self.nav = DrawerNavigation::default();
+        }
         self.route = route;
         if !self.ensure_layer(qh) {
             return false;
@@ -480,6 +554,7 @@ impl ShellClient {
 
     fn hide(&mut self) {
         self.touch.cancel();
+        self.nav = DrawerNavigation::default();
         self.reveal.clear();
         self.layer.take();
         self.configured = false;
@@ -542,11 +617,18 @@ impl ShellClient {
         };
         if let Err(error) = self.renderer.draw(
             canvas,
-            self.width,
-            self.height,
-            self.route,
+            RenderParams {
+                width: self.width,
+                height: self.height,
+                route: self.route,
+                progress,
+                scroll: if self.route == Route::Drawer {
+                    self.nav.scroll
+                } else {
+                    0.0
+                },
+            },
             &self.apps,
-            progress,
         ) {
             self.log(&format!("render-failed {error}"));
             return;
@@ -695,9 +777,9 @@ impl TouchHandler for ShellClient {
     fn down(
         &mut self,
         _: &Connection,
-        qh: &QueueHandle<Self>,
+        _qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
-        _: u32,
+        time_ms: u32,
         _: u32,
         surface: wl_surface::WlSurface,
         id: i32,
@@ -710,11 +792,14 @@ impl TouchHandler for ShellClient {
         {
             if self.touch.down(id, pos) {
                 self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
+                if self.route == Route::Drawer && self.input_ready {
+                    self.nav.down(id, pos, time_ms);
+                }
             } else {
                 self.log("touch-second-cancel");
+                self.nav.cancel();
             }
-            self.dirty = true;
-            self.draw(qh);
+            // The contact itself is invisible; only a changed scene paints.
         }
     }
     fn up(
@@ -722,14 +807,26 @@ impl TouchHandler for ShellClient {
         _: &Connection,
         qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
-        _: u32,
+        time_ms: u32,
         _: u32,
         id: i32,
     ) {
+        let point = self.touch.position;
         if self.touch.up(id) {
             self.log(&format!("touch-up {id}"));
-            self.dirty = true;
-            self.draw(qh);
+            if self.route == Route::Drawer && self.input_ready {
+                match self
+                    .nav
+                    .up(id, point, time_ms, self.height, self.apps.len())
+                {
+                    Some(DrawerAction::Launch(index)) => self.launch_app(index),
+                    Some(DrawerAction::Close) => self.hide(),
+                    None => {}
+                }
+            }
+            if self.dirty {
+                self.draw(qh);
+            }
         }
     }
     fn motion(
@@ -737,14 +834,23 @@ impl TouchHandler for ShellClient {
         _: &Connection,
         qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
-        _: u32,
+        time_ms: u32,
         id: i32,
         pos: (f64, f64),
     ) {
         if self.touch.motion(id, pos) {
             self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
-            self.dirty = true;
-            self.draw(qh);
+            if self.route == Route::Drawer
+                && self.input_ready
+                && self
+                    .nav
+                    .motion(id, pos, time_ms, self.height, self.apps.len())
+            {
+                self.dirty = true;
+            }
+            if self.dirty {
+                self.draw(qh);
+            }
         }
     }
     fn shape(
@@ -768,6 +874,7 @@ impl TouchHandler for ShellClient {
     }
     fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
         self.touch.cancel();
+        self.nav.cancel();
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -805,6 +912,7 @@ fn serve() -> Result<(), String> {
     let layer_shell = LayerShell::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let shm = Shm::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let pool = SlotPool::new(568 * 1232 * 4 * 3, &shm).map_err(|e| e.to_string())?;
+    let (launch_sender, launch_results) = mpsc::channel();
     let mut state = ShellClient {
         compositor,
         layer_shell,
@@ -825,6 +933,13 @@ fn serve() -> Result<(), String> {
         frame_pending: false,
         started: Instant::now(),
         apps,
+        nav: DrawerNavigation::default(),
+        nav_tick: Instant::now(),
+        launch_sender,
+        launch_results,
+        launching: false,
+        launch_started: None,
+        swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
         reveal: RevealState::default(),
         input_ready: false,
@@ -839,6 +954,39 @@ fn serve() -> Result<(), String> {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        if let Ok(result) = state.launch_results.try_recv() {
+            if !state.launching {
+                state.log("late-app-launch-result");
+            } else {
+                state.launching = false;
+                state.launch_started = None;
+                if let Err(error) = result {
+                    state.log(&format!("app-launch-failed {error}"));
+                    state.show(&qh, Route::Drawer);
+                } else {
+                    state.log("app-launch-requested");
+                }
+            }
+        }
+        if state.launching
+            && state
+                .launch_started
+                .is_some_and(|started| started.elapsed() >= Duration::from_secs(3))
+        {
+            state.launching = false;
+            state.launch_started = None;
+            state.log("app-launch-timeout");
+            state.show(&qh, Route::Drawer);
+        }
+        let now = Instant::now();
+        let elapsed = now
+            .duration_since(state.nav_tick)
+            .as_millis()
+            .min(u128::from(u32::MAX)) as u32;
+        state.nav_tick = now;
+        if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
+            state.dirty = true;
+        }
         if state
             .reveal
             .tick(state.started.elapsed().as_millis() as u64)
@@ -876,7 +1024,7 @@ fn serve() -> Result<(), String> {
                 revents: 0,
             },
         ];
-        let timeout = if state.reveal.settling() || routes.has_line() {
+        let timeout = if state.reveal.settling() || state.nav.coasting() || routes.has_line() {
             16
         } else {
             100
@@ -959,6 +1107,24 @@ mod route_tests {
     use std::os::unix::fs::DirBuilderExt;
 
     #[test]
+    fn sway_back_failure_blocks_launch_handoff() {
+        let script = std::env::temp_dir().join(format!(
+            "k230-sway-back-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::write(&script, "#!/bin/sh\nexit 2\n").unwrap();
+        fs::set_permissions(&script, fs::Permissions::from_mode(0o700)).unwrap();
+        assert!(swaymsg_back(&script).is_err());
+        fs::write(&script, "#!/bin/sh\nexit 0\n").unwrap();
+        assert!(swaymsg_back(&script).is_ok());
+        fs::remove_file(script).unwrap();
+    }
+
+    #[test]
     fn split_stream_finish_and_premature_eof() {
         let runtime = std::env::temp_dir().join(format!(
             "k230-shell-route-{}-{}",
@@ -981,8 +1147,17 @@ mod route_tests {
             panic!("missing begin");
         };
         assert_eq!(message.phase, Phase::Begin);
+        client.shutdown(std::net::Shutdown::Both).unwrap();
         drop(client);
-        assert!(matches!(server.receive(), Some(Received::Abort)));
+        let mut aborted = false;
+        for _ in 0..10 {
+            if matches!(server.receive(), Some(Received::Abort)) {
+                aborted = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert!(aborted);
 
         let mut client = UnixStream::connect(&path).unwrap();
         server.accept();

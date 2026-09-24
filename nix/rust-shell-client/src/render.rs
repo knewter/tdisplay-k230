@@ -1,6 +1,11 @@
 //! Cairo/Pango software scene for the opt-in shell client.
 //! This first view uses real desktop names and explicit fallback artwork.
-use crate::{catalog::AppEntry, icon::IconCache, Route};
+use crate::{
+    catalog::AppEntry,
+    icon::IconCache,
+    navigation::{list_top, ROW_HEIGHT, ROW_VISIBLE_HEIGHT},
+    Route,
+};
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
 use pango::{EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path};
@@ -49,15 +54,23 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
-fn scene(
-    cr: &Context,
-    width: u32,
-    height: u32,
-    route: Route,
-    apps: &[AppEntry],
-    progress: f64,
-    icons: &mut IconCache,
-) {
+#[derive(Clone, Copy)]
+pub struct RenderParams {
+    pub width: u32,
+    pub height: u32,
+    pub route: Route,
+    pub progress: f64,
+    pub scroll: f64,
+}
+
+fn scene(cr: &Context, params: RenderParams, apps: &[AppEntry], icons: &mut IconCache) {
+    let RenderParams {
+        width,
+        height,
+        route,
+        progress,
+        scroll,
+    } = params;
     let w = f64::from(width);
     let h = f64::from(height);
     cr.set_operator(Operator::Source);
@@ -111,13 +124,17 @@ fn scene(
                 18.0,
                 0xc8d7dd,
             );
-            let row_start = panel_y + 144.0;
-            for (index, app) in apps.iter().take(7).enumerate() {
-                let y = row_start + index as f64 * 94.0;
-                if y + 82.0 > h - 28.0 {
+            let row_start = list_top(height);
+            let _ = cr.save();
+            cr.rectangle(0.0, row_start, w, (h - 28.0 - row_start).max(0.0));
+            cr.clip();
+            let first = (scroll / ROW_HEIGHT).floor().max(0.0) as usize;
+            for (index, app) in apps.iter().enumerate().skip(first).take(10) {
+                let y = row_start + index as f64 * ROW_HEIGHT - scroll;
+                if y >= h - 28.0 {
                     break;
                 }
-                rounded(cr, 24.0, y, w - 48.0, 82.0, 16.0);
+                rounded(cr, 24.0, y, w - 48.0, ROW_VISIBLE_HEIGHT, 16.0);
                 color(cr, 0x263946, 1.0);
                 let _ = cr.fill();
                 rounded(cr, 38.0, y + 15.0, 52.0, 52.0, 12.0);
@@ -148,6 +165,7 @@ fn scene(
                     0xc8d7dd,
                 );
             }
+            let _ = cr.restore();
             if apps.is_empty() {
                 text(
                     cr,
@@ -222,24 +240,25 @@ pub fn draw_shm(
 ) -> Result<(), String> {
     draw_shm_with_icons(
         canvas,
-        width,
-        height,
-        route,
+        RenderParams {
+            width,
+            height,
+            route,
+            progress,
+            scroll: 0.0,
+        },
         apps,
-        progress,
         &mut IconCache::new(),
     )
 }
 
 fn draw_shm_with_icons(
     canvas: &mut [u8],
-    width: u32,
-    height: u32,
-    route: Route,
+    params: RenderParams,
     apps: &[AppEntry],
-    progress: f64,
     icons: &mut IconCache,
 ) -> Result<(), String> {
+    let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
     if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
         return Err("invalid canvas length".into());
@@ -257,7 +276,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps, progress, icons);
+    scene(&cr, params, apps, icons);
     drop(cr);
     surface.flush();
     Ok(())
@@ -273,7 +292,18 @@ pub fn export_png(
     let surface = ImageSurface::create(Format::ARgb32, width as i32, height as i32)
         .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
-    scene(&cr, width, height, route, apps, 1.0, &mut IconCache::new());
+    scene(
+        &cr,
+        RenderParams {
+            width,
+            height,
+            route,
+            progress: 1.0,
+            scroll: 0.0,
+        },
+        apps,
+        &mut IconCache::new(),
+    );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
     surface
@@ -292,6 +322,7 @@ pub struct RendererCache {
     static_pixels: Vec<u8>,
     rebuilds: u64,
     icons: IconCache,
+    scroll: f64,
 }
 
 impl RendererCache {
@@ -312,12 +343,16 @@ impl RendererCache {
     pub fn draw(
         &mut self,
         canvas: &mut [u8],
-        width: u32,
-        height: u32,
-        route: Route,
+        params: RenderParams,
         apps: &[AppEntry],
-        progress: f64,
     ) -> Result<(), String> {
+        let RenderParams {
+            width,
+            height,
+            route,
+            progress,
+            scroll,
+        } = params;
         let size = usize::try_from(width)
             .ok()
             .and_then(|w| w.checked_mul(height as usize))
@@ -326,21 +361,26 @@ impl RendererCache {
         if canvas.len() != size {
             return Err("invalid canvas length".into());
         }
-        if self.route != Some(route) || self.width != width || self.height != height {
+        if self.route != Some(route)
+            || self.width != width
+            || self.height != height
+            || (self.scroll - scroll).abs() >= 0.25
+        {
             let mut painted = vec![0; size];
             draw_shm_with_icons(
                 &mut painted,
-                width,
-                height,
-                route,
+                RenderParams {
+                    progress: 1.0,
+                    ..params
+                },
                 apps,
-                1.0,
                 &mut self.icons,
             )?;
             self.static_pixels = painted;
             self.width = width;
             self.height = height;
             self.route = Some(route);
+            self.scroll = scroll;
             self.rebuilds += 1;
         }
         canvas.fill(0);
@@ -397,18 +437,37 @@ mod tests {
         }];
         let mut cache = RendererCache::default();
         let mut frame = vec![0; 568 * 1232 * 4];
-        cache
-            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 0.2)
-            .unwrap();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Drawer,
+            progress: 0.2,
+            scroll: 0.0,
+        };
+        cache.draw(&mut frame, params, &apps).unwrap();
         let partial = frame.clone();
         cache
-            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 0.8)
+            .draw(
+                &mut frame,
+                RenderParams {
+                    progress: 0.8,
+                    ..params
+                },
+                &apps,
+            )
             .unwrap();
         assert_ne!(frame, partial);
         assert_eq!(cache.rebuild_count(), 1);
         cache.invalidate();
         cache
-            .draw(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0)
+            .draw(
+                &mut frame,
+                RenderParams {
+                    progress: 1.0,
+                    ..params
+                },
+                &apps,
+            )
             .unwrap();
         assert_eq!(cache.rebuild_count(), 2);
     }
@@ -435,5 +494,46 @@ mod tests {
         assert!(frame[pixel + 2] > 160, "actual SVG red channel absent");
         assert!(frame[pixel] < 80, "actual SVG blue channel absent");
         std::fs::remove_file(icon).unwrap();
+    }
+
+    #[test]
+    fn scrolling_repaints_clipped_rows_but_keeps_header() {
+        let apps = (0..30)
+            .map(|index| AppEntry {
+                id: format!("app{index}.desktop"),
+                name: format!("App {index}"),
+                icon: None,
+            })
+            .collect::<Vec<_>>();
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Drawer,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let mut cache = RendererCache::default();
+        let mut frame = vec![0; 568 * 1232 * 4];
+        cache.draw(&mut frame, params, &apps).unwrap();
+        let before = frame.clone();
+        cache
+            .draw(
+                &mut frame,
+                RenderParams {
+                    scroll: 188.0,
+                    ..params
+                },
+                &apps,
+            )
+            .unwrap();
+        assert_eq!(
+            &frame[300 * 568 * 4..301 * 568 * 4],
+            &before[300 * 568 * 4..301 * 568 * 4]
+        );
+        assert_ne!(
+            &frame[400 * 568 * 4..460 * 568 * 4],
+            &before[400 * 568 * 4..460 * 568 * 4]
+        );
+        assert_eq!(cache.rebuild_count(), 2);
     }
 }
