@@ -234,7 +234,12 @@ class Trial:
                 "bytes": image.stat().st_size}
 
     def theme(self, action: str, *args: str) -> dict:
-        return self.call([self.m["theme_command"], action, *args, "--json"])
+        # Pin the state root and both ACK endpoints to the same candidate used
+        # for restoration, independently of HOME or wrapper defaults.
+        return self.call([self.m["theme_command"], "--state-root", self.m["state_root"],
+                          "--rust-socket", self.m["rust_socket"],
+                          "--deck-socket", self.m["deck_socket"],
+                          action, *args, "--json"])
 
     def run(self, output: Path, raw: Path) -> dict:
         workload = self.m["workload"]

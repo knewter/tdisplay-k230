@@ -76,14 +76,17 @@ class Fixture(unittest.TestCase):
             raise OSError("fake failed ACK")
 
     def call(self, argv):
-        action = argv[1]
+        self.assertEqual(argv[argv.index("--state-root") + 1], str(self.state))
+        self.assertEqual(argv[argv.index("--rust-socket") + 1], str(self.endpoints[0]))
+        self.assertEqual(argv[argv.index("--deck-socket") + 1], str(self.endpoints[1]))
+        action = next(value for value in argv if value in ("list", "preview", "activate"))
         entries = [{"name": "catppuccin", "origin": "builtin", "id": "a" * 24},
                    {"name": "catppuccin-latte", "origin": "builtin", "id": "b" * 24}]
         if action == "list":
             pointer = _pointer(self.state)
             return {"schema": 1, "themes": entries,
                     "active": {"generation": pointer.name if pointer else None}}
-        theme_id = argv[2]
+        theme_id = argv[argv.index(action) + 1]
         generation = self.dark if theme_id == "a" * 24 else self.light
         if action == "preview":
             if self.fail_role == "light" and generation == self.light:
