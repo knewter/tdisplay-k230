@@ -23,8 +23,8 @@ INPUT_UNIT = 'k230-card-shell-input.service'
 STORE = re.compile(r'^/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._/-]+)?$')
 DEVICE_NAME = 'K230 injected touchscreen'
 BENCH_KEYS = {'v','run','event','t_ns','clock','backend','renderer','width','height','output_format','input','cards','input_id','gesture_id','kind','source','frame_id','update_cpu_ns','final','presented','phase','cpu_ns','memory_bytes','scope'}
-CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts'}
-CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost','repaint-cost'}
+CARD_KEYS = {'id','class','cards','mode','actions','message','input','operation','accepted','focus','format','width','height','stride','commits','sampled','frame-done','output-presented','run','frame_id','total_cpu_ns','render_cpu_ns','input_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts','hits','misses','fallbacks','bytes'}
+CARD_EVENTS = {'map','mirror','mirror-release','state','close-request','source-gone','unmap','restored','live','frame-cost','repaint-cost','scaled-cache'}
 
 
 def trusted(path: str) -> str:
@@ -39,6 +39,13 @@ def pixman_policy_environment(policy):
     # Empty explicitly clears any inherited disable list without bypassing
     # Pixman's runtime hwprobe gate. Apply only to the transient compositor.
     return '--setenv=PIXMAN_DISABLE='+('rvv' if policy == 'no-rvv' else '')
+
+
+def scaled_cache_environment(policy):
+    if policy not in ('off', 'on'):
+        raise ValueError('unknown scaled cache policy')
+    # Set both states explicitly so a trial cannot inherit an enabled cache.
+    return '--setenv=SWAY_K230_CARD_SCALED_CACHE='+('1' if policy == 'on' else '0')
 
 
 def exec_identity(value: str) -> str:
@@ -81,6 +88,10 @@ def normalized_journal(text: str) -> str:
                     continue
             if row.startswith('K230_CARD_SHELL repaint-cost '):
                 expected = {'run','frame_id','render_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts'}
+                if len(fields) != len(expected) or {pair[0] for pair in fields} != expected or not all(len(pair) == 2 and re.fullmatch(r'[0-9]+', pair[1]) for pair in fields):
+                    continue
+            if row.startswith('K230_CARD_SHELL scaled-cache '):
+                expected = {'hits','misses','fallbacks','bytes'}
                 if len(fields) != len(expected) or {pair[0] for pair in fields} != expected or not all(len(pair) == 2 and re.fullmatch(r'[0-9]+', pair[1]) for pair in fields):
                     continue
             if fields and all(len(pair) == 2 and pair[0] in allowed and re.fullmatch(r'[A-Za-z0-9_.:-]+', pair[1]) for pair in fields):
@@ -207,6 +218,8 @@ class Session:
 
     def arm(self, plan):
         pixman_policy_environment(plan.get('pixman_policy', 'auto'))
+        cache_policy = plan.get('scaled_cache', 'off')
+        scaled_cache_environment(cache_policy)
         if not self.system.active('shell.service') or not self.system.active('seatd.service'):
             raise RuntimeError('normal shell and seatd must be active before reservation')
         if self.system.prop('shell.service','User') != 'shell':
@@ -221,7 +234,7 @@ class Session:
                 self.system.call(['systemctl','stop',self.state['watchdog']+suffix], check=False)
         token = uuid.uuid4().hex
         watchdog = 'k230-card-shell-recovery-'+token
-        self.state = {**plan, 'schema':1, 'token':token, 'watchdog':watchdog, 'closed':False,
+        self.state = {**plan, 'scaled_cache':cache_policy, 'schema':1, 'token':token, 'watchdog':watchdog, 'closed':False,
                       'phase':'armed', 'normal_exec':normal, 'invocation':None, 'device':None,
                       'tools':self.system.tools, 'python':self.system.python,
                       'created_at':dt.datetime.now(dt.timezone.utc).isoformat()}
@@ -275,6 +288,7 @@ class Session:
                           '--setenv=LIBSEAT_BACKEND=seatd','--setenv=WLR_RENDERER=pixman',
                           '--setenv=SWAY_K230_CARD_BENCH_CGROUP=1',
                           pixman_policy_environment(self.state.get('pixman_policy', 'auto')),
+                          scaled_cache_environment(self.state.get('scaled_cache', 'off')),
                           self.state['package']+'/bin/card-shell','--sway','--debug','--config',str(config)])
         invocation = self.system.prop(UNIT,'InvocationID')
         if not re.fullmatch(r'[a-f0-9]{32}', invocation):
@@ -332,7 +346,7 @@ class Session:
             journal = self.system.call(['journalctl','_SYSTEMD_INVOCATION_ID='+invocation,'--no-pager','-o','cat','--grep=K230_CARD_(BENCH|SHELL)','-n','20000']).stdout
             (output/'telemetry.log').write_text(normalized_journal(journal[:16*1024*1024]))
         # Protect internal ExecStart, dependency environment and service state.
-        manifest = {key:self.state[key] for key in ('schema','package','source_revision','created_at','normal_config','phase','device','invocation','pixman_policy') if key in self.state}
+        manifest = {key:self.state[key] for key in ('schema','package','source_revision','created_at','normal_config','phase','device','invocation','pixman_policy','scaled_cache') if key in self.state}
         manifest.update(evidence_class='board-session-telemetry', physical_touch='UNVERIFIED', normal_controls='UNVERIFIED')
         atomic_json(output/'session.json', manifest)
         if (self.runtime/'session.jsonl').exists():
@@ -348,7 +362,9 @@ def plan_from(args):
         raise ValueError('source device must be an explicit input event device')
     policy = getattr(args, 'pixman_policy', 'auto')
     pixman_policy_environment(policy)
-    return {'pixman_policy':policy, 'package':trusted(args.package), 'normal_config':trusted(args.config), 'client':trusted(args.client),
+    cache_policy = getattr(args, 'scaled_cache', 'off')
+    scaled_cache_environment(cache_policy)
+    return {'pixman_policy':policy, 'scaled_cache':cache_policy, 'package':trusted(args.package), 'normal_config':trusted(args.config), 'client':trusted(args.client),
             'source_revision':args.revision, 'duration':args.duration, 'source_device':args.source_device}
 
 
@@ -367,6 +383,7 @@ def main(argv=None):
     parser.add_argument('--revision');parser.add_argument('--duration',type=int,default=300)
     parser.add_argument('--source-device',default='/dev/input/event0')
     parser.add_argument('--pixman-policy', choices=('auto','no-rvv'), default='auto')
+    parser.add_argument('--scaled-cache', choices=('off','on'), default='off')
     parser.add_argument('--output',type=Path,default=Path('card-shell-session'))
     args = parser.parse_args(argv)
     try:
