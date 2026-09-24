@@ -1172,10 +1172,10 @@ void card_shell_unmap(struct sway_view *view) {
 		 seat_get_focused_container(shell.seat) == view->container)) {
 		struct card *next =
 			shell.policy.count ? find(shell.policy.cards[shell.policy.selected].id) : NULL;
-			if (next && live(next->view)) {
-				seat_set_focus_container(shell.seat, next->view->container);
-				container_raise_floating(next->view->container);
-			} else if (shell.output->current.active_workspace)
+		if (next && live(next->view)) {
+			seat_set_focus_container(shell.seat, next->view->container);
+			container_raise_floating(next->view->container);
+		} else if (shell.output->current.active_workspace)
 			seat_set_focus_workspace(shell.seat, shell.output->current.active_workspace);
 		transaction_commit_dirty();
 	}
