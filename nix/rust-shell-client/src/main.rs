@@ -413,9 +413,11 @@ struct ShellClient {
     apps: Vec<AppEntry>,
     nav: DrawerNavigation,
     nav_tick: Instant,
-    launch_sender: Sender<Result<(), String>>,
-    launch_results: Receiver<Result<(), String>>,
+    launch_sender: Sender<(u64, Result<(), String>)>,
+    launch_results: Receiver<(u64, Result<(), String>)>,
     launching: bool,
+    launch_in_flight: bool,
+    launch_seq: u64,
     launch_started: Option<Instant>,
     swaymsg: Option<PathBuf>,
     renderer: RendererCache,
@@ -433,7 +435,10 @@ impl ShellClient {
     }
 
     fn launch_app(&mut self, index: usize) {
-        if self.launching || self.route != Route::Drawer {
+        if self.launch_in_flight || self.route != Route::Drawer {
+            if self.launch_in_flight {
+                self.log("app-launch-worker-still-running");
+            }
             return;
         }
         let Some(app) = self.apps.get(index) else {
@@ -442,15 +447,18 @@ impl ShellClient {
         let id = app.id.clone();
         let swaymsg = self.swaymsg.clone();
         let sender = self.launch_sender.clone();
+        self.launch_seq = self.launch_seq.wrapping_add(1);
+        let attempt = self.launch_seq;
         self.hide(); // existing live deck remains beneath this overlay
         self.launching = true;
+        self.launch_in_flight = true;
         self.launch_started = Some(Instant::now());
         thread::spawn(move || {
             let result = swaymsg
                 .as_deref()
                 .ok_or_else(|| "K230_SWAYMSG is unavailable".into())
                 .and_then(|path| launch_selected(&id, path));
-            let _ = sender.send(result);
+            let _ = sender.send((attempt, result));
         });
     }
 
@@ -779,8 +787,8 @@ impl TouchHandler for ShellClient {
         _: &Connection,
         _qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
-        time_ms: u32,
         _: u32,
+        time_ms: u32,
         surface: wl_surface::WlSurface,
         id: i32,
         pos: (f64, f64),
@@ -807,8 +815,8 @@ impl TouchHandler for ShellClient {
         _: &Connection,
         qh: &QueueHandle<Self>,
         _: &wl_touch::WlTouch,
-        time_ms: u32,
         _: u32,
+        time_ms: u32,
         id: i32,
     ) {
         let point = self.touch.position;
@@ -938,6 +946,8 @@ fn serve() -> Result<(), String> {
         launch_sender,
         launch_results,
         launching: false,
+        launch_in_flight: false,
+        launch_seq: 0,
         launch_started: None,
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
@@ -954,18 +964,26 @@ fn serve() -> Result<(), String> {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
-        if let Ok(result) = state.launch_results.try_recv() {
-            if !state.launching {
-                state.log("late-app-launch-result");
-            } else {
-                state.launching = false;
-                state.launch_started = None;
-                if let Err(error) = result {
-                    state.log(&format!("app-launch-failed {error}"));
-                    state.show(&qh, Route::Drawer);
+        for _ in 0..4 {
+            let Ok((attempt, result)) = state.launch_results.try_recv() else {
+                break;
+            };
+            if attempt == state.launch_seq {
+                state.launch_in_flight = false;
+                if state.launching {
+                    state.launching = false;
+                    state.launch_started = None;
+                    if let Err(error) = result {
+                        state.log(&format!("app-launch-failed {error}"));
+                        state.show(&qh, Route::Drawer);
+                    } else {
+                        state.log("app-launch-requested");
+                    }
                 } else {
-                    state.log("app-launch-requested");
+                    state.log("late-app-launch-result");
                 }
+            } else {
+                state.log("stale-app-launch-result");
             }
         }
         if state.launching
