@@ -30,6 +30,15 @@ rejects drift. The static files extend the package output without changing
 the existing palette/appearance generation identity. A fresh home can use
 those Nix-store files before a mutable active pointer exists.
 
+The host coordinator now calls app sync only after a shell commit ACK and
+after releasing the activation lock. Sync reacquires that lock and checks the
+expected generation, preventing a late first activation from overwriting a
+newer app selection. `omarchy-theme-set` and the JSON chooser return an
+`app_appearance` result separate from shell activation: `applied`, `failed`
+or `superseded`. An app failure does not falsely roll back an acknowledged
+shell theme. The host failure fixture verifies the shell pointer and phase
+history stay committed when app sync fails.
+
 Coverage is deliberately bounded: htop, nano and nnn inherit Foot's terminal
 colors; mpv's video surface is not a terminal-color consumer; Help uses shell
 tokens; the on-screen keyboard remains a separate shell-surface integration.
@@ -41,8 +50,11 @@ separate status from the shell generation ACK; it must not be reported as a
 successful existing-session recolor.
 
 ```text
-python3 tests/test_handheld_app_themes.py   PASS 7 host tests
+python3 tests/test_handheld_app_themes.py   PASS 9 host tests
 python3 tests/test_handheld_theme_default.py  PASS 2 host tests
+python3 tests/test_omarchy_theme_transaction.py  PASS 13 host tests
+python3 tests/test_theme_catalog.py  PASS 9 host tests
+python3 tests/test_omarchy_theme_activation.py  PASS 9 host tests
 python3 tools/generate_default_foot.py --check  PASS
 python3 -m py_compile tools/app_appearance.py  PASS
 openspec validate the-shell-loads-omarchy-themes --strict  PASS

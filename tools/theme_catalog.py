@@ -189,8 +189,9 @@ def main(argv=None):
                 preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
                                              report["selected_background"], report["backgrounds"],
                                              explicit=args.background is not None)
-                activate_generation(generation, state_root=args.state_root, endpoint=args.socket,
-                                    preference=preference)
+                result["app_appearance"] = activate_generation(
+                    generation, state_root=args.state_root, endpoint=args.socket,
+                    preference=preference)
                 result["activated"] = True
         print(json.dumps(result, sort_keys=True))
         return 0

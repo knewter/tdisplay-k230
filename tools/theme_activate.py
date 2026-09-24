@@ -274,13 +274,15 @@ def main():
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
                                   background_choice=args.background)
+    app_status = None
     if args.activate:
         preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
                                      report["selected_background"], report["backgrounds"],
                                      explicit=args.background is not None)
-        activate_generation(destination, state_root=args.state_root, endpoint=args.socket,
-                            preference=preference)
-    print(json.dumps({"generation_path": str(destination), "report": report}, indent=2, sort_keys=True))
+        app_status = activate_generation(destination, state_root=args.state_root, endpoint=args.socket,
+                                         preference=preference)
+    print(json.dumps({"generation_path": str(destination), "report": report,
+                      "app_appearance": app_status}, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

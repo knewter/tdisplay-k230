@@ -107,7 +107,7 @@ def _public_links(root: Path) -> list[Path]:
 
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                         transport=exchange, lock_timeout: float = 2.0,
-                        preference=None) -> None:
+                        preference=None, app_sync=None) -> dict:
     """Publish one prepared generation only after phase-checked shell acks.
 
     The lock covers the whole transaction, including failure recovery. The
@@ -171,3 +171,17 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
             raise TransactionError("commit failed; previous generation restored") from error
     finally:
         os.close(descriptor)
+    # App refresh is a later phase. It must not convert an acknowledged shell
+    # generation into a failed theme transaction or roll back the shell.
+    # The adapter re-acquires this lock and refuses an outdated generation.
+    from app_appearance import AppAppearanceSuperseded, sync as default_app_sync
+    if app_sync is None:
+        app_sync = default_app_sync
+    try:
+        app_sync(state_root, expected_generation=generation.name)
+    except AppAppearanceSuperseded:
+        return {"state": "superseded", "error": "newer-generation-active"}
+    except Exception as error:
+        return {"state": "failed", "error": "app-sync-failed",
+                "kind": type(error).__name__}
+    return {"state": "applied", "generation": generation.name}

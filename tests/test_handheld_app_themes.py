@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import app_appearance as app
 import theme_activate
+import theme_transaction as tx
 
 
 COLORS = ('background="#101820"\nforeground="#e0e5e8"\naccent="#778899"\n'
@@ -130,6 +131,43 @@ class AppAppearance(unittest.TestCase):
             stream = CheckedStream()
             app.emit_current(state, stream)
             self.assertEqual(stream.getvalue(), app.osc_sequences(app.palette(generation)))
+
+    def test_post_ack_app_sync_reports_separate_success_and_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, state, generation = prepared(Path(temporary))
+            phases = []
+            def ack(_endpoint, phase, _generation):
+                phases.append(phase)
+            success = tx.activate_generation(generation, state_root=state,
+                                             endpoint=state / "unused.sock", transport=ack)
+            self.assertEqual(success, {"state": "applied", "generation": generation.name})
+            self.assertEqual((state / "app-appearance/active").resolve().name,
+                             app.sync(state).name)
+            self.assertEqual(phases, ["prepare", "commit"])
+            def fail_app(_root, *, expected_generation):
+                self.assertEqual(expected_generation, generation.name)
+                raise OSError("injected adapter failure")
+            failure = tx.activate_generation(generation, state_root=state,
+                                             endpoint=state / "unused.sock", transport=ack,
+                                             app_sync=fail_app)
+            self.assertEqual(failure["state"], "failed")
+            self.assertEqual(failure["error"], "app-sync-failed")
+            self.assertEqual(tx._pointer(state), generation)
+            self.assertEqual(phases, ["prepare", "commit", "prepare", "commit"])
+
+    def test_late_app_sync_never_reselects_prior_generation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            _, state, first = prepared(base)
+            other = state / "generations" / ("a" * 24)
+            other.mkdir()
+            second_report = json.loads((first / "report.json").read_text())
+            second_report["generation"] = other.name
+            (other / "report.json").write_text(json.dumps(second_report))
+            (state / "active").symlink_to(other)
+            with self.assertRaisesRegex(app.AppAppearanceSuperseded, "newer generation"):
+                app.sync(state, expected_generation=first.name)
+            self.assertFalse((state / "app-appearance/active").exists())
 
 
 if __name__ == "__main__":

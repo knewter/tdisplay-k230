@@ -24,6 +24,10 @@ class AppAppearanceError(Exception):
     pass
 
 
+class AppAppearanceSuperseded(AppAppearanceError):
+    pass
+
+
 COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
 IDENTITY = re.compile(r"[0-9a-f]{24}\Z")
 MAX_REPORT = 64 * 1024
@@ -156,13 +160,16 @@ def activation_lock(root: Path, timeout: float):
         os.close(fd)
 
 
-def sync(state_root: Path, *, lock_timeout: float = 2.0) -> Path:
+def sync(state_root: Path, *, expected_generation: str | None = None,
+         lock_timeout: float = 2.0) -> Path:
     """Update future-launch config only after caller has completed shell ACK."""
     root = state_root.resolve(strict=True)
     with activation_lock(root, lock_timeout):
         current = _pointer(root)
         if current is None:
             raise AppAppearanceError("no acknowledged active generation")
+        if expected_generation is not None and current.name != expected_generation:
+            raise AppAppearanceSuperseded("app sync superseded by newer generation")
         target = prepare(current, root)
         parent = root / "app-appearance"
         link = parent / "active"
