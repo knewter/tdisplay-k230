@@ -736,6 +736,11 @@ DATA c23edc5813c65d9e399719aac6ea29cb53c62e9bff02ce2acbe530005a941dc6  docs/evid
 DATA 9f15515cc8abb69f4b67ab5164fe46367996d4b935cd002b18431c64e4597a99  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-cancelled.png
 DATA befdaf2fcf1e0e7b1be1acdfdcc043e73ea6c194ee21ceaa22fc628a3b2b8c81  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-multitouch.png
 DATA 1dbdad98f99abd866138ab1e98c11b835be610c37c2aeed1824105666f6630ad  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/shade-open.png
+DATA d66a40dc8b6c65138c7d967754d8f0823684dff5925e61b4c247be0826140aff  docs/evidence/coherent-shell/rust-service-surface-qemu/settings-confirm.png
+DATA 291e10cae0bb67a7896650b20f14569cd510caddaa448cff9af2a3fe66af4651  docs/evidence/coherent-shell/rust-service-surface-qemu/settings-fake-power-denied.png
+DATA c3042ea320cd424f589b8844ca738c48723ca7ea32c3b0427d3a2fc83754aee1  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-action-error.png
+DATA babc311f3246bcb5ba9acc391cc061362f983a8af941660c927f19d4e33542b2  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-private-first.png
+DATA 9db3bbd5425e546f6abfe2a35de98f433f34b617abdcaa6cdfbe520896f7a8b9  docs/evidence/coherent-shell/rust-service-surface-qemu/shade-private-second.png
 DATA 53d0d27b07ddda9408816436dc3ceaa0b2f84664b8b3b91f100165309cc733e0  docs/evidence/omarchy-themes/deck-appearance-qemu/before.png
 DATA 3830cb9114a3aed6ad4234aad7485626108212b26da1f2588c14c8595d5d8959  docs/evidence/omarchy-themes/deck-appearance-qemu/restored.png
 DATA fa5007d0bbbe7e2a592a0b372c3221aa7b4006cbd1fa4b46bcda1aaa24cee9cd  docs/evidence/omarchy-themes/deck-appearance-qemu/themed.png
@@ -1540,4 +1545,3 @@ QEMU DATA captures of the public synthetic card, empty notification shade,
 and its cancellation, unmap, and live-underlay behavior. The adjacent README
 records the exact old and corrected packages, command, observations, and
 physical limits. No private notifications or real app pixels are included.
-
