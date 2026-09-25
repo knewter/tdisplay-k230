@@ -10,11 +10,11 @@ use crate::{
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_carousel,
-    theme_catalog::{BackgroundKind, ThemePreview, ThemeRequest},
+    theme_catalog::BackgroundKind,
     theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
-        BACKGROUND_CAROUSEL_TOP, PREVIEW_FOOTER_Y, THEME_CAROUSEL_TOP,
+        BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
     },
     wifi_settings::Security,
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
@@ -452,16 +452,6 @@ fn control_text(control: &Control) -> String {
     }
 }
 
-fn palette_rgb(value: &str) -> Option<u32> {
-    let hex = value.strip_prefix('#')?;
-    let rgb = match hex.len() {
-        6 => hex,
-        8 => &hex[2..],
-        _ => return None,
-    };
-    u32::from_str_radix(rgb, 16).ok()
-}
-
 /// The decode target size for a cached thumbnail variant under a given
 /// carousel's own geometry (see `theme_thumbnails.rs`'s "Two geometries, so
 /// two sizes per variant"): `Expanded` decodes at the centered slice's own
@@ -609,8 +599,16 @@ fn paint_theme_chooser(
     h: f64,
     view: &ThemeView,
     theme: Option<&AppearanceSnapshot>,
-    preview_image: Option<&ImageSurface>,
-    preview_error: bool,
+    // The still-image decode worker (`poll_theme_image`/`ThemeImageKey`)
+    // that used to feed a large "screen crop" preview on a now-removed
+    // separate Preview page is left wired up in `RendererCache` (task:
+    // tap-to-apply, 2026-09-25) rather than torn out in the same change --
+    // both carousels already show their own thumbnails via `thumbnails`
+    // below, so neither parameter is painted here any more. Pruning the
+    // now-unused worker itself is a follow-up, named in this task's own
+    // evidence rather than done silently here.
+    _preview_image: Option<&ImageSurface>,
+    _preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
     pulse_phase: f64,
 ) {
@@ -623,484 +621,211 @@ fn paint_theme_chooser(
     let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
     text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
     text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
-    match view.page {
-        ThemePage::Controls => return,
-        ThemePage::List => {
-            heading(cr, "Themes", 28.0, 112.0, w - 56.0, 36.0, style.text);
-            text(
-                cr,
-                "Drag to browse · tap the centre to choose",
-                28.0,
-                166.0,
-                w - 56.0,
-                18.0,
-                style.muted,
-            );
-            match &view.list {
-                Some(list) if !list.themes.is_empty() => {
-                    let center_x = w / 2.0;
-                    let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
-                    let centered = view
-                        .theme_position
-                        .round()
-                        .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
-                    // A tap on the centered slice submits a bare
-                    // `Preview{background_id: None}` (see
-                    // `ThemeView::preview_request`); while that reply is
-                    // outstanding, the slice that was tapped shows a
-                    // spinner instead of going quiet for as long as a
-                    // Python theme-tool invocation takes.
-                    let busy = matches!(
-                        &view.pending,
-                        Some(ThemeRequest::Preview {
-                            background_id: None,
-                            ..
-                        })
-                    )
-                    .then_some(centered);
-                    paint_carousel(
-                        cr,
-                        theme,
-                        dim_color,
-                        style,
-                        thumbnails,
-                        &theme_carousel::THEME_GEOMETRY,
-                        view.theme_position,
-                        &ids,
-                        center_x,
-                        THEME_CAROUSEL_TOP,
-                        view.theme_pressed,
-                        busy,
-                        pulse_phase,
-                    );
-                    let entry = &list.themes[centered];
-                    let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
-                    let label_y =
-                        THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 24.0;
-                    heading(cr, &entry.label, 28.0, label_y, w - 56.0, 30.0, style.text);
-                    let status = if is_current {
-                        "Current theme"
-                    } else {
-                        match entry.origin {
-                            crate::theme_catalog::ThemeOrigin::Builtin => "Built in",
-                            crate::theme_catalog::ThemeOrigin::User => "User theme",
-                        }
-                    };
-                    text(cr, status, 28.0, label_y + 32.0, w - 56.0, 18.0, style.muted);
-                }
-                Some(_) => {
-                    text(
-                        cr,
-                        "No themes available",
-                        28.0,
-                        THEME_CAROUSEL_TOP + 22.0,
-                        w - 56.0,
-                        20.0,
-                        style.muted,
-                    );
-                }
-                None => {
-                    text(
-                        cr,
-                        "Loading themes",
-                        28.0,
-                        THEME_CAROUSEL_TOP + 22.0,
-                        w - 56.0,
-                        20.0,
-                        style.muted,
-                    );
-                }
-            }
-        }
-        ThemePage::Preview => {
-            let Some(preview) = view.preview.as_ref() else {
-                return;
-            };
-            heading(
-                cr,
-                &preview.theme.label,
-                28.0,
-                112.0,
-                w - 56.0,
-                34.0,
-                style.text,
-            );
-            text(
-                cr,
-                if preview.activated {
-                    "Current theme"
-                } else {
-                    "Preview · no change applied"
-                },
-                28.0,
-                160.0,
-                w - 56.0,
-                18.0,
-                style.muted,
-            );
-            text(cr, "Palette", 28.0, 219.0, w - 56.0, 20.0, style.muted);
-            for (index, (name, value)) in preview.palette.iter().take(5).enumerate() {
-                let x = 28.0 + index as f64 * ((w - 56.0) / 5.0);
-                rounded(cr, x, 257.0, 66.0, 66.0, 12.0);
-                color(cr, palette_rgb(value).unwrap_or(0x425661), 1.0);
-                let _ = cr.fill();
-                rounded(cr, x + 0.75, 257.75, 64.5, 64.5, 11.25);
-                cr.set_line_width(1.5);
-                color(cr, style.muted, 0.65);
-                let _ = cr.stroke();
-                text(cr, name, x, 334.0, 86.0, 13.0, style.muted);
-            }
-            let selected = preview.backgrounds.iter().find(|row| row.selected);
-            text(
-                cr,
-                "Selected background",
-                28.0,
-                373.0,
-                w - 56.0,
-                18.0,
-                style.muted,
-            );
-            text(
-                cr,
-                &format!(
-                    "{} supported · {} unavailable",
-                    preview.compatibility.applied.len(),
-                    preview.compatibility.unavailable.len()
-                ),
-                w - 274.0,
-                373.0,
-                246.0,
-                14.0,
-                style.muted,
-            );
-            let image_x = 28.0;
-            let image_y = 399.0;
-            let image_w = w - 56.0;
-            let image_h = 176.0;
-            // 16.0 everywhere else in this panel-scale family (finding
-            // P2-1); this frame was the one 1px drift with no reason for it.
-            const PREVIEW_RADIUS: f64 = 16.0;
-            rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
-            color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
-            let _ = cr.fill();
-            if let Some(image) = preview_image {
-                // The worker decodes the same portrait crop as the persistent
-                // wallpaper. Scale that output down as a phone silhouette;
-                // cropping it again to this wide panel would hide the visible
-                // top and bottom of the selected background.
-                let phone_h = image_h - 12.0;
-                let phone_w = phone_h * f64::from(image.width()) / f64::from(image.height());
-                let phone_x = image_x + 16.0;
-                let phone_y = image_y + 6.0;
-                let _ = cr.save();
-                rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
-                cr.clip();
-                cr.translate(phone_x, phone_y);
-                cr.scale(
-                    phone_w / f64::from(image.width()),
-                    phone_h / f64::from(image.height()),
-                );
-                if cr.set_source_surface(image, 0.0, 0.0).is_ok() {
-                    let _ = cr.paint();
-                }
-                let _ = cr.restore();
-                rounded(cr, phone_x, phone_y, phone_w, phone_h, 6.0);
-                cr.set_line_width(1.5);
-                color(cr, style.muted, 0.8);
-                let _ = cr.stroke();
-                text(
-                    cr,
-                    "Screen crop",
-                    phone_x + phone_w + 22.0,
-                    image_y + 66.0,
-                    image_w - phone_w - 54.0,
-                    20.0,
-                    style.text,
-                );
-                text(
-                    cr,
-                    "Full-height preview",
-                    phone_x + phone_w + 22.0,
-                    image_y + 94.0,
-                    image_w - phone_w - 54.0,
-                    17.0,
-                    style.muted,
-                );
-            } else {
-                // A flat fill here reads as an intentional two-color
-                // wallpaper choice rather than a missing preview (finding
-                // P1-3). Hatch it so a fallback is never mistaken for
-                // authored imagery, independent of the message beneath it.
-                let _ = cr.save();
-                rounded(cr, image_x, image_y, image_w, image_h, PREVIEW_RADIUS);
-                cr.clip();
-                color(cr, style.muted, 0.16);
-                cr.set_line_width(2.0);
-                let mut x = image_x - image_h;
-                while x < image_x + image_w {
-                    cr.move_to(x, image_y + image_h);
-                    cr.line_to(x + image_h, image_y);
-                    x += 26.0;
-                }
-                let _ = cr.stroke();
-                let _ = cr.restore();
-                let preparing = selected.is_some()
-                    && !preview_error
-                    && !selected.is_some_and(|row| row.kind == BackgroundKind::Video);
-                let message = if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
-                    "Video preview unavailable"
-                } else if preview_error {
-                    "Still preview unavailable"
-                } else if selected.is_some() {
-                    "Preparing still preview"
-                } else {
-                    "Choose a background"
-                };
-                if preparing {
-                    // The still-preview decode (`RendererCache::
-                    // poll_theme_image`, which now reuses the generation's
-                    // `background.cache` when one exists -- see
-                    // `theme_ui::ThemeImageKey`) can still take a moment on
-                    // a cold generation; a spinner here means this box is
-                    // never mistaken for a stalled/broken preview.
-                    spinner(cr, 44.0 + 14.0, image_y + 46.0, 13.0, pulse_phase, style.accent);
-                }
-                text(
-                    cr,
-                    message,
-                    44.0,
-                    image_y + 72.0,
-                    image_w - 32.0,
-                    20.0,
-                    style.muted,
-                );
-            }
-            if let Some(background) = selected {
-                let detail = if background.kind == BackgroundKind::Video {
-                    "video preview unavailable"
-                } else {
-                    "screen crop, scaled to preview"
-                };
-                text(
-                    cr,
-                    &format!("{} · {detail}", background_display_label(&background.label),),
-                    28.0,
-                    580.0,
-                    w - 56.0,
-                    16.0,
-                    style.muted,
-                );
-            }
-            text(cr, "Backgrounds", 28.0, 615.0, w - 56.0, 22.0, style.text);
-            // The carousel's height never depends on how many backgrounds a
-            // theme has, so the footer is a fixed offset below it now (see
-            // `theme_ui::PREVIEW_FOOTER_Y`) rather than floating with a
-            // variable-height row list.
-            if preview.backgrounds.is_empty() {
-                text(
-                    cr,
-                    "No backgrounds available",
-                    28.0,
-                    BACKGROUND_CAROUSEL_TOP + 22.0,
-                    w - 56.0,
-                    20.0,
-                    style.muted,
-                );
-            } else {
-                let center_x = w / 2.0;
-                let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
-                let centered_background = view
-                    .background_position
-                    .round()
-                    .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
-                // Same busy-spinner rule as the theme carousel above, but for
-                // a background confirm (`Preview{background_id: Some(_)}}`).
-                let busy = matches!(
-                    &view.pending,
-                    Some(ThemeRequest::Preview {
-                        background_id: Some(_),
-                        ..
-                    })
-                )
-                .then_some(centered_background);
-                paint_carousel(
-                    cr,
-                    theme,
-                    dim_color,
-                    style,
-                    thumbnails,
-                    &theme_carousel::BACKGROUND_GEOMETRY,
-                    view.background_position,
-                    &ids,
-                    center_x,
-                    BACKGROUND_CAROUSEL_TOP,
-                    view.background_pressed,
-                    busy,
-                    pulse_phase,
-                );
-                let background = &preview.backgrounds[centered_background];
-                let label_y = BACKGROUND_CAROUSEL_TOP
-                    + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
-                    + 24.0;
-                heading(
-                    cr,
-                    &background_display_label(&background.label),
-                    28.0,
-                    label_y,
-                    w - 56.0,
-                    28.0,
-                    style.text,
-                );
-                let status = if background.kind == BackgroundKind::Video {
-                    "Video unavailable"
-                } else if background.selected {
-                    "Selected still"
-                } else {
-                    "Tap to preview still"
-                };
-                text(
-                    cr,
-                    status,
-                    28.0,
-                    label_y + 30.0,
-                    w - 56.0,
-                    16.0,
-                    if background.kind == BackgroundKind::Video {
-                        style.error
-                    } else {
-                        style.muted
-                    },
-                );
-            }
-            service_card(cr, theme, "controls", 24.0, PREVIEW_FOOTER_Y, w - 48.0, 86.0, true);
-            // The pressed highlight, the Cancel/Apply text and its busy
-            // spinner, and the status line below (`Preparing…`/an error/a
-            // message) are deliberately *not* painted here: see
-            // `RendererCache::draw`'s own trailing call to
-            // `paint_preview_footer_status`, which paints all of that live,
-            // on every `draw()` call, on top of whatever body this function
-            // produced (a fresh rebuild or an adopted pre-render alike).
-            // None of it needs this function's own expensive icon/chrome
-            // work to repaint, and it changes on nearly every tick (an
-            // Apply tap's own `pending` transition, the busy spinner's own
-            // pulse) -- exactly what made Optimistic Apply's own pre-render
-            // go stale before a person's Apply tap could ever reach it
-            // (board evidence, 2026-09-28).
-        }
-    }
-    // The List page has no pinned footer of its own; anchor its own
-    // pending/error/message line just below the carousel's fixed-height
-    // content (the carousel itself, its name label, and its caption). The
-    // `90.0` gap (not `70.0`, which left this line nearly touching the
-    // status caption above it once measured precisely) clears the status
-    // caption's own text height with a few pixels to spare.
-    // The Preview page's own status line (`Preparing…`/an error/a message)
-    // is painted live instead -- see `paint_preview_footer_status`'s own
-    // doc, called from `RendererCache::draw` -- for the same reason its
-    // Apply/Cancel footer is. The List page has no such live overlay, so
-    // its own status line (a different position, computed here) is
-    // unchanged: still baked into the cached body, exactly as before this
-    // task.
-    let message_y = (THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0).min(h - 167.0);
     if view.page != ThemePage::List {
         return;
     }
-    if view.pending.is_some() {
-        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
-    }
-    if let Some(error) = &view.error {
-        text(cr, error, 28.0, message_y, w - 56.0, 17.0, style.error);
-    }
-    if let Some(message) = &view.message {
-        text(cr, message, 28.0, message_y, w - 56.0, 17.0, style.muted);
-    }
-}
-
-/// The Preview page's dynamic Apply/Cancel footer: the pressed highlight,
-/// the Apply button's own text/color and busy spinner (idle / applying /
-/// applied), and the status line below it (`Preparing…`/an error/a
-/// message). Extracted out of `paint_theme_chooser` (task: pre-render at
-/// prepare time, 2026-09-28) and called separately, live, by
-/// `RendererCache::draw` on every call, on top of whatever body
-/// `paint_theme_chooser` produced -- a fresh rebuild or an adopted
-/// pre-render alike. None of it needs `paint_theme_chooser`'s own
-/// expensive icon/chrome work to repaint (only the already-resolved
-/// `style`'s accent/muted/error colors and, when authored, a `controls`
-/// brush token), while it changes on nearly every tick: an Apply tap's
-/// own `pending` transition, the busy spinner's own pulse. Baking it into
-/// the cached body forced a full rebuild on every such tick, which is
-/// exactly what made an Optimistic Apply pre-render go stale before a
-/// person's own Apply tap could ever reach it (board evidence,
-/// 2026-09-28: `optimistic-apply prerendered` computed twice roughly one
-/// pulse interval apart, then still `prerendered=false` at the tap
-/// itself).
-fn paint_preview_footer_status(
-    cr: &Context,
-    w: f64,
-    theme: Option<&AppearanceSnapshot>,
-    view: &ThemeView,
-    preview: &ThemePreview,
-    style: VisualStyle,
-    pulse_phase: f64,
-) {
-    let footer_y = PREVIEW_FOOTER_Y;
-    if view.pending.is_some() {
-        let alpha = match theme.and_then(|snapshot| snapshot.token("controls", "pressed-fill-alpha")) {
-            Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
-            _ => 0.22,
-        };
-        let _ = cr.save();
-        rounded(cr, w / 2.0, footer_y, w / 2.0 - 24.0, 86.0, 16.0);
-        cr.clip();
-        overlay_brush(
-            cr,
-            theme_brush(theme, "controls", "normal-color"),
-            w / 2.0,
-            footer_y,
-            w / 2.0 - 24.0,
-            86.0,
-            alpha,
-            style.accent,
-        );
-        let _ = cr.restore();
-    }
+    // Task: tap-to-apply (2026-09-25, user decision: "tap theme in the
+    // theme picker, apply immediately, so i can compare them easily").
+    // There is only one chooser page now: the theme carousel, the active
+    // theme's own background carousel below it, and a plain-text "Current
+    // theme"/"Current background" marker under whichever slice of each is
+    // centred and durably active -- no separate Preview page, no
+    // Apply/Cancel footer. A tap on the *centred* slice of either carousel
+    // applies immediately (`Carousel::up`'s own `Confirm`-only-when-
+    // centred rule; see `theme_ui::ThemeView::tap_theme`/`tap_background`);
+    // dragging only ever recentres.
+    heading(cr, "Themes", 28.0, 84.0, w - 56.0, 26.0, style.text);
     text(
         cr,
-        "Cancel",
-        48.0,
-        footer_y + 25.0,
-        w / 2.0 - 50.0,
-        22.0,
+        "Drag to browse · tap the centre to apply",
+        28.0,
+        112.0,
+        w - 56.0,
+        16.0,
         style.muted,
     );
-    let activating = matches!(&view.pending, Some(ThemeRequest::Activate { .. }));
-    text(
-        cr,
-        if activating {
-            "Applying…"
-        } else if preview.activated {
-            "Apply again"
-        } else {
-            "Apply"
-        },
-        w / 2.0 + 18.0,
-        footer_y + 25.0,
-        w / 2.0 - (if activating { 76.0 } else { 46.0 }),
-        22.0,
-        if view.selection_error || view.pending.is_some() {
-            style.muted
-        } else {
-            style.accent
-        },
-    );
-    if activating {
-        // The one request that cannot be cancelled once dispatched
-        // (`ThemeView::back`'s own doc) gets the clearest busy affordance
-        // in the chooser: a spinner right on the button that was tapped,
-        // for as long as activation takes.
-        spinner(cr, w - 58.0, footer_y + 18.0, 11.0, pulse_phase, style.muted);
+    match &view.list {
+        Some(list) if !list.themes.is_empty() => {
+            let center_x = w / 2.0;
+            let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
+            let centered = view
+                .theme_position
+                .round()
+                .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
+            // A tap on the centred slice submits a request through
+            // `ThemeView::tap_theme`/`advance` and stays `view.pending`
+            // until it settles (a `Preview` round trip for a cold
+            // generation, or straight to `Activate` for one this process
+            // already learned via prepare-ahead/`known_generations`); for
+            // as long as that request targets this slice specifically
+            // (`ThemeView::applying_theme_index`), it shows a spinner
+            // instead of going quiet. Once a warm theme's own optimistic
+            // show adopts a matching pre-render, the tapped slice already
+            // *looks* applied and the spinner correctly stops (see
+            // `show_theme_optimistically`'s own doc for why the pre-
+            // rendered frame -- computed with nothing pending -- is
+            // exactly right for that moment, not stale).
+            paint_carousel(
+                cr,
+                theme,
+                dim_color,
+                style,
+                thumbnails,
+                &theme_carousel::THEME_GEOMETRY,
+                view.theme_position,
+                &ids,
+                center_x,
+                THEME_CAROUSEL_TOP,
+                view.theme_pressed,
+                view.applying_theme_index(),
+                pulse_phase,
+            );
+            let entry = &list.themes[centered];
+            let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
+            let label_y = THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 12.0;
+            heading(cr, &entry.label, 28.0, label_y, w - 56.0, 24.0, style.text);
+            let status = if is_current {
+                "Current theme"
+            } else {
+                match entry.origin {
+                    crate::theme_catalog::ThemeOrigin::Builtin => "Built in",
+                    crate::theme_catalog::ThemeOrigin::User => "User theme",
+                }
+            };
+            text(cr, status, 28.0, label_y + 26.0, w - 56.0, 16.0, style.muted);
+        }
+        Some(_) => {
+            text(
+                cr,
+                "No themes available",
+                28.0,
+                THEME_CAROUSEL_TOP + 22.0,
+                w - 56.0,
+                20.0,
+                style.muted,
+            );
+        }
+        None => {
+            text(
+                cr,
+                "Loading themes",
+                28.0,
+                THEME_CAROUSEL_TOP + 22.0,
+                w - 56.0,
+                20.0,
+                style.muted,
+            );
+        }
     }
-    let message_y = footer_y - 41.0;
+    // `view.preview` is the *active* theme's own detail (see `ThemeView`'s
+    // own doc) -- this background carousel always reflects whichever
+    // theme is currently, durably active, not whatever the theme carousel
+    // above happens to be centred on mid-browse; it updates only once a
+    // tapped theme's own activation actually settles.
+    heading(
+        cr,
+        "Backgrounds",
+        28.0,
+        BACKGROUND_CAROUSEL_TOP - 30.0,
+        w - 56.0,
+        22.0,
+        style.text,
+    );
+    match view.preview.as_ref() {
+        Some(preview) if !preview.backgrounds.is_empty() => {
+            let center_x = w / 2.0;
+            let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
+            let centered = view
+                .background_position
+                .round()
+                .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
+            paint_carousel(
+                cr,
+                theme,
+                dim_color,
+                style,
+                thumbnails,
+                &theme_carousel::BACKGROUND_GEOMETRY,
+                view.background_position,
+                &ids,
+                center_x,
+                BACKGROUND_CAROUSEL_TOP,
+                view.background_pressed,
+                view.applying_background_index(),
+                pulse_phase,
+            );
+            let background = &preview.backgrounds[centered];
+            let label_y =
+                BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 12.0;
+            heading(
+                cr,
+                &background_display_label(&background.label),
+                28.0,
+                label_y,
+                w - 56.0,
+                24.0,
+                style.text,
+            );
+            let status = if background.kind == BackgroundKind::Video {
+                "Video unavailable"
+            } else if background.selected {
+                "Current background"
+            } else {
+                "Tap to apply"
+            };
+            text(
+                cr,
+                status,
+                28.0,
+                label_y + 26.0,
+                w - 56.0,
+                16.0,
+                if background.kind == BackgroundKind::Video {
+                    style.error
+                } else {
+                    style.muted
+                },
+            );
+        }
+        Some(_) => {
+            text(
+                cr,
+                "No backgrounds available",
+                28.0,
+                BACKGROUND_CAROUSEL_TOP + 22.0,
+                w - 56.0,
+                20.0,
+                style.muted,
+            );
+        }
+        None => {
+            text(
+                cr,
+                "Loading backgrounds",
+                28.0,
+                BACKGROUND_CAROUSEL_TOP + 22.0,
+                w - 56.0,
+                20.0,
+                style.muted,
+            );
+        }
+    }
+    // A single pending/error/message line anchors below the background
+    // carousel's own fixed-height content. Unlike the removed Preview
+    // page's own Apply/Cancel footer, none of this needs a live overlay
+    // painted outside the cached body: `RendererCache::set_theme_view`
+    // still calls `invalidate()` unconditionally on every `ThemeView`
+    // change (including a `pending` transition or a pulse tick), so the
+    // ordinary rebuild path already repaints it fresh every time -- the
+    // only frame that ever skips a fresh rebuild is an *adopted*
+    // pre-render, and by the exact moment one is adopted (Optimistic
+    // Apply's own `show_theme_optimistically`) the applied theme already
+    // looks done, so a stale "nothing pending" snapshot baked into that
+    // one frame is correct, not stale (board evidence, 2026-09-28, in
+    // this task's own evidence doc).
+    let message_y = (BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
+        + 64.0)
+        .min(h - 30.0);
     if view.pending.is_some() {
         text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
     }
@@ -1553,17 +1278,17 @@ fn wifi_content_bottom(view: &WifiPublic) -> f64 {
     }
 }
 
-/// Themes' List page is content-sized the same way as Wi-Fi's; the Preview
-/// page keeps the full height (its own footer sits at the fixed
-/// `theme_ui::PREVIEW_FOOTER_Y` inside `paint_theme_chooser`, which does not
-/// require shrinking the whole panel). The carousel's own height never
-/// depends on the theme count, unlike the row list it replaced.
+/// Themes' one List page (task: tap-to-apply, 2026-09-25 -- there is no
+/// longer a separate Preview page) is content-sized the same way as
+/// Wi-Fi's: both carousels plus their labels and the pending/error/
+/// message line below them, matching `paint_theme_chooser`'s own fixed
+/// layout exactly.
 fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
     match view.page {
         ThemePage::List => {
-            THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0
+            BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 100.0
         }
-        ThemePage::Preview | ThemePage::Controls => f64::MAX,
+        ThemePage::Controls => f64::MAX,
     }
 }
 
@@ -2778,20 +2503,22 @@ pub struct RendererCache {
     content_generation: u64,
 }
 
-/// Whether two `ThemeView`s would paint a different cached body --
-/// `paint_theme_chooser`'s own output, now that `paint_preview_footer_
-/// status` (task: pre-render at prepare time, 2026-09-28) carries
-/// everything driven by `pending`/`pending_id`/`selection_error`/`error`/
-/// `message`/`pulse_phase`, painted live on every `draw()` call instead.
-/// None of those fields belong in this comparison any more: an Apply
-/// tap's own `pending` transition, or the busy spinner's own pulse tick,
-/// must not by itself mark a computed pre-render stale (board evidence,
-/// 2026-09-28: exactly this was why `optimistic-apply prerendered` was
-/// computed twice roughly one pulse interval apart, and still
-/// `prerendered=false` at the tap itself). `theme_position`/
-/// `background_position` use the same small tolerance `RendererCache::
-/// draw`'s own `scroll` check already does, so a settle animation
-/// converging by a fraction of a pixel does not itself count either.
+/// Whether two `ThemeView`s would make the *pre-render freshness check*
+/// (`content_generation`, above) treat a computed candidate as stale --
+/// deliberately a narrower question than whether `paint_theme_chooser`'s
+/// own cached body would actually paint differently. `pending`/
+/// `pending_id`/`error`/`message`/`pulse_phase` are excluded on purpose:
+/// an Apply tap's own `pending` transition, or the busy spinner's own
+/// pulse tick, must not by itself mark a computed pre-render stale (board
+/// evidence, 2026-09-28: exactly this was why `optimistic-apply
+/// prerendered` was computed twice roughly one pulse interval apart, and
+/// still `prerendered=false` at the tap itself). This is safe precisely
+/// because none of those excluded fields is what makes the *adopted*
+/// pre-render frame correct at the moment it is shown -- see
+/// `paint_theme_chooser`'s own doc. `theme_position`/`background_
+/// position` use the same small tolerance `RendererCache::draw`'s own
+/// `scroll` check already does, so a settle animation converging by a
+/// fraction of a pixel does not itself count either.
 fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
     old.page != new.page
         || old.list != new.list
@@ -2826,34 +2553,21 @@ impl RendererCache {
     }
     /// Nonblocking dispatch hook. Only a selected staged still is decoded;
     /// the one-entry worker cache and result channel bound memory and work.
-    pub fn poll_theme_image(&mut self, width: u32, height: u32) -> bool {
-        let desired = self.chooser.as_ref().and_then(|view| {
-            let preview = (view.page == ThemePage::Preview)
-                .then_some(view.preview.as_ref())
-                .flatten()?;
-            // `appearance_path` is `<generation_root>/appearance.json` (see
-            // `theme_catalog::parse_preview`), so its parent is the exact
-            // directory `tools/theme_activate.py`'s `prepare()` already
-            // wrote this same width/height/`FitMode::Crop` decode into as
-            // `background.cache`; passing it through lets the worker reuse
-            // that file instead of a fresh full-source decode.
-            let generation_root = preview.appearance_path.parent()?.to_path_buf();
-            preview
-                .backgrounds
-                .iter()
-                .find(|row| row.selected && row.kind == BackgroundKind::Image)
-                .and_then(|row| {
-                    (width > 0 && width <= 1024 && height > 0 && height <= 2048).then(|| {
-                        ThemeImageKey {
-                            generation: preview.generation.clone(),
-                            path: row.path.clone(),
-                            generation_root: generation_root.clone(),
-                            width,
-                            height,
-                        }
-                    })
-                })
-        });
+    ///
+    /// Task: tap-to-apply (2026-09-25) removed the separate Preview page
+    /// this fed -- a large "screen crop" still preview of the selected
+    /// background, distinct from the small per-slice thumbnails
+    /// `ThemeThumbnailCache` already decodes for both carousels on the
+    /// one remaining List page. Nothing paints this any more (see
+    /// `paint_theme_chooser`'s own doc), so `desired` is now always
+    /// `None`: a deliberate no-op that never requests a decode, rather
+    /// than wasted background CPU/memory work for a surface nobody shows.
+    /// `preview_worker`/`preview_key`/`preview_requested`/
+    /// `preview_surface`/`ThemeImageWorker`/`ThemeImageKey` are left in
+    /// place rather than torn out in the same change; a follow-up can
+    /// remove this whole method and its fields outright.
+    pub fn poll_theme_image(&mut self, _width: u32, _height: u32) -> bool {
+        let desired: Option<ThemeImageKey> = None;
         let mut changed = false;
         if desired != self.preview_key {
             self.preview_key = desired.clone();
@@ -2924,9 +2638,13 @@ impl RendererCache {
         };
         match chooser.page {
             ThemePage::List => {
-                let Some(list) = chooser.list.as_ref() else {
-                    return changed;
-                };
+                // Theme and background thumbnails are requested
+                // independently below -- neither `chooser.list` nor
+                // `chooser.preview` being absent should skip the other
+                // (board evidence would otherwise show a background
+                // carousel that never gets its own art whenever its own
+                // detail loads before, or without, a fresh theme list).
+                if let Some(list) = chooser.list.as_ref() {
                 // `visible_slices` is sorted ascending by paint z-order --
                 // farthest neighbor first, the centered slice last -- which
                 // is the right order to *paint* (so the centered slice ends
@@ -2970,36 +2688,39 @@ impl RendererCache {
                         }
                     }
                 }
-            }
-            ThemePage::Preview => {
-                let Some(preview) = chooser.preview.as_ref() else {
-                    return changed;
-                };
-                // Centered-outward request order; see the List branch above.
-                for slice in theme_carousel::visible_slices(
-                    &theme_carousel::BACKGROUND_GEOMETRY,
-                    chooser.background_position,
-                    preview.backgrounds.len(),
-                    0.0,
-                    0.0,
-                )
-                .into_iter()
-                .rev()
-                {
-                    let Some(background) = preview.backgrounds.get(slice.index) else {
-                        continue;
-                    };
-                    if background.kind == BackgroundKind::Image {
-                        for variant in [Variant::Expanded, Variant::Slice] {
-                            let (width, height) =
-                                variant_size(&theme_carousel::BACKGROUND_GEOMETRY, variant);
-                            self.thumbnails.request(ThumbnailKey {
-                                id: background.id.clone(),
-                                path: background.path.clone(),
-                                variant,
-                                width,
-                                height,
-                            });
+                }
+                // Task: tap-to-apply (2026-09-25) put the active theme's own
+                // background carousel on this same List page, below the
+                // theme carousel -- its nearby thumbnails are requested
+                // here too now, rather than only while a now-removed
+                // separate Preview page was open. Independent of the
+                // `list` block above -- see this function's own doc.
+                if let Some(preview) = chooser.preview.as_ref() {
+                    for slice in theme_carousel::visible_slices(
+                        &theme_carousel::BACKGROUND_GEOMETRY,
+                        chooser.background_position,
+                        preview.backgrounds.len(),
+                        0.0,
+                        0.0,
+                    )
+                    .into_iter()
+                    .rev()
+                    {
+                        let Some(background) = preview.backgrounds.get(slice.index) else {
+                            continue;
+                        };
+                        if background.kind == BackgroundKind::Image {
+                            for variant in [Variant::Expanded, Variant::Slice] {
+                                let (width, height) =
+                                    variant_size(&theme_carousel::BACKGROUND_GEOMETRY, variant);
+                                self.thumbnails.request(ThumbnailKey {
+                                    id: background.id.clone(),
+                                    path: background.path.clone(),
+                                    variant,
+                                    width,
+                                    height,
+                                });
+                            }
                         }
                     }
                 }
@@ -3034,16 +2755,14 @@ impl RendererCache {
         };
         match chooser.page {
             ThemePage::List => {
-                let Some(list) = chooser.list.as_ref() else {
-                    return false;
-                };
-                theme_carousel::visible_slices(
-                    &theme_carousel::THEME_GEOMETRY,
-                    chooser.theme_position,
-                    list.themes.len(),
-                    0.0,
-                    0.0,
-                )
+                let themes_pending = chooser.list.as_ref().is_some_and(|list| {
+                    theme_carousel::visible_slices(
+                        &theme_carousel::THEME_GEOMETRY,
+                        chooser.theme_position,
+                        list.themes.len(),
+                        0.0,
+                        0.0,
+                    )
                     .into_iter()
                     .filter_map(|slice| list.themes.get(slice.index))
                     .filter(|entry| entry.preview_path.is_some())
@@ -3051,52 +2770,39 @@ impl RendererCache {
                         !self.thumbnails.is_resolved(&entry.id, Variant::Expanded)
                             || !self.thumbnails.is_resolved(&entry.id, Variant::Slice)
                     })
-            }
-            ThemePage::Preview => {
-                let Some(preview) = chooser.preview.as_ref() else {
-                    return false;
-                };
-                theme_carousel::visible_slices(
-                    &theme_carousel::BACKGROUND_GEOMETRY,
-                    chooser.background_position,
-                    preview.backgrounds.len(),
-                    0.0,
-                    0.0,
-                )
-                .into_iter()
-                .filter_map(|slice| preview.backgrounds.get(slice.index))
-                .filter(|background| background.kind == BackgroundKind::Image)
-                .any(|background| {
-                    !self.thumbnails.is_resolved(&background.id, Variant::Expanded)
-                        || !self.thumbnails.is_resolved(&background.id, Variant::Slice)
-                })
+                });
+                // Task: tap-to-apply (2026-09-25) -- the active theme's own
+                // background carousel sits on this same page now; its
+                // nearby thumbnails count toward "still decoding" too.
+                let backgrounds_pending = chooser.preview.as_ref().is_some_and(|preview| {
+                    theme_carousel::visible_slices(
+                        &theme_carousel::BACKGROUND_GEOMETRY,
+                        chooser.background_position,
+                        preview.backgrounds.len(),
+                        0.0,
+                        0.0,
+                    )
+                    .into_iter()
+                    .filter_map(|slice| preview.backgrounds.get(slice.index))
+                    .filter(|background| background.kind == BackgroundKind::Image)
+                    .any(|background| {
+                        !self.thumbnails.is_resolved(&background.id, Variant::Expanded)
+                            || !self.thumbnails.is_resolved(&background.id, Variant::Slice)
+                    })
+                });
+                themes_pending || backgrounds_pending
             }
             ThemePage::Controls => false,
         }
     }
 
-    /// Whether the Preview page's single "Selected background" still image
-    /// (`poll_theme_image`, above) is waiting on a decode: a background is
-    /// selected, nothing failed, and no surface has arrived yet. Same
-    /// contract as `theme_thumbnails_pending` -- for driving `main.rs`'s
-    /// throttled loading-spinner pulse, never for forcing an unconditional
-    /// redraw.
+    /// Always `false` now: `poll_theme_image` (above) is a deliberate
+    /// no-op since task: tap-to-apply (2026-09-25) removed the separate
+    /// Preview page its single "Selected background" still image used to
+    /// feed. Kept, rather than removed, only so `main.rs`'s existing
+    /// pulse-gating call sites need no further change.
     pub fn theme_preview_image_pending(&self) -> bool {
-        let Some(chooser) = self.chooser.as_ref() else {
-            return false;
-        };
-        if chooser.page != ThemePage::Preview {
-            return false;
-        }
-        let Some(preview) = chooser.preview.as_ref() else {
-            return false;
-        };
-        preview
-            .backgrounds
-            .iter()
-            .any(|row| row.selected && row.kind == BackgroundKind::Image)
-            && self.preview_surface.is_none()
-            && !self.preview_error
+        false
     }
 
     pub fn set_services(&mut self, services: ServiceView) {
@@ -3325,46 +3031,18 @@ impl RendererCache {
             canvas[target..target + row_bytes]
                 .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
         }
-        // The Preview page's own Apply/Cancel footer and status line are
-        // never baked into `static_pixels` (see `paint_preview_footer_
-        // status`'s own doc) -- painted here, live, on every call,
-        // whether this call just rebuilt the cached body above or reused
-        // it (or, via `adopt_prerendered_overlay`, adopted a pre-rendered
-        // one): the one place this always runs regardless keeps the
-        // Apply-tap-to-"Applying…" transition (and any error/message)
-        // correct without forcing a rebuild for it.
-        if route == Route::Settings {
-            let footer = self.chooser.as_ref().and_then(|view| {
-                (view.page == ThemePage::Preview)
-                    .then(|| view.preview.as_ref().map(|preview| (view, preview)))
-                    .flatten()
-            });
-            if let Some((view, preview)) = footer {
-                if let Ok(surface) = unsafe {
-                    ImageSurface::create_for_data_unsafe(
-                        canvas.as_mut_ptr(),
-                        Format::ARgb32,
-                        width as i32,
-                        height as i32,
-                        (width * 4) as i32,
-                    )
-                } {
-                    if let Ok(cr) = Context::new(&surface) {
-                        let style = visual_style(self.theme.as_ref(), "image-picker");
-                        paint_preview_footer_status(
-                            &cr,
-                            f64::from(width),
-                            self.theme.as_ref(),
-                            view,
-                            preview,
-                            style,
-                            view.pulse_phase,
-                        );
-                    }
-                    drop(surface);
-                }
-            }
-        }
+        // Task: tap-to-apply (2026-09-25) removed the Preview page's own
+        // Apply/Cancel footer entirely, along with the live-overlay paint
+        // that used to keep it correct on top of a cached/pre-rendered
+        // body (`paint_preview_footer_status`, removed the same task).
+        // The single List page's own busy spinner and pending/error/
+        // message line are baked straight into `static_pixels` by the
+        // ordinary rebuild above instead: `set_theme_view` still calls
+        // `invalidate()` unconditionally on every `ThemeView` change, so
+        // nothing here needs a second, live paint pass any more. See
+        // `paint_theme_chooser`'s own doc for why an *adopted* pre-render
+        // (the one case that skips a fresh rebuild) is still correct at
+        // the exact moment it is shown.
         Ok(())
     }
 
@@ -3446,7 +3124,7 @@ mod tests {
     use crate::service_ui::NotificationSwipe;
     use crate::theme_catalog::{
         ActiveTheme, BackgroundChoice, Compatibility, ThemeEntry, ThemeList, ThemeOrigin,
-        ThemePreview,
+        ThemePreview, ThemeRequest,
     };
     use std::collections::BTreeMap;
     use std::path::PathBuf;
@@ -3751,6 +3429,10 @@ mod tests {
             origin: ThemeOrigin::Builtin,
             preview_path,
         };
+        // Task: tap-to-apply (2026-09-25) folded the separate Preview
+        // page's own background carousel into this same view
+        // (`ThemeView::preview`, now the *active* theme's own detail
+        // shown alongside the theme carousel, not a distinct page).
         let chooser = ThemeView {
             page: ThemePage::List,
             list: Some(ThemeList {
@@ -3769,10 +3451,6 @@ mod tests {
                     generation: None,
                 },
             }),
-            ..ThemeView::default()
-        };
-        let preview = ThemeView {
-            page: ThemePage::Preview,
             preview: Some(ThemePreview {
                 theme: theme_entry,
                 generation: snapshot.generation.clone(),
@@ -3808,31 +3486,25 @@ mod tests {
             ("drawer", Route::Drawer, None),
             ("shade", Route::Shade, None),
             ("settings", Route::Settings, None),
+            // Task: tap-to-apply (2026-09-25) merged the old "themes"
+            // (theme carousel only) and "preview" (background carousel
+            // only, its own separate page) fixtures into this one --
+            // `chooser` now carries both the theme list and the active
+            // theme's own background detail at once.
             ("themes", Route::Settings, Some(chooser)),
-            ("preview", Route::Settings, Some(preview)),
         ] {
             if let Some(view) = theme_view {
                 renderer.set_theme_view(view);
             }
-            if name == "preview" {
-                let deadline = std::time::Instant::now() + std::time::Duration::from_secs(8);
-                while std::time::Instant::now() < deadline {
-                    renderer.poll_theme_image(568, 1232);
-                    if renderer.preview_surface.is_some() || renderer.preview_error {
-                        break;
-                    }
-                    std::thread::sleep(std::time::Duration::from_millis(5));
-                }
-                if std::env::var_os("K230_VISUAL_REQUIRE_BACKGROUND").is_some() {
-                    assert!(
-                        renderer.preview_surface.is_some(),
-                        "actual staged still must render: key={:?} requested={:?} error={}",
-                        renderer.preview_key,
-                        renderer.preview_requested,
-                        renderer.preview_error
-                    );
-                }
-            }
+            // `K230_VISUAL_REQUIRE_BACKGROUND` used to require the
+            // separate Preview page's own full-image still decode to
+            // finish before capturing that fixture; task: tap-to-apply
+            // (2026-09-25) removed that page and made `poll_theme_image`
+            // a permanent no-op (see its own doc), so nothing here still
+            // waits on a decode -- both carousels' own thumbnails
+            // (`thumbnails.request`) render synchronously as fixture
+            // artwork or a placeholder either way, exactly like every
+            // other route captured in this same loop.
             let mut frame = vec![0; 568 * 1232 * 4];
             renderer
                 .draw(
@@ -3930,8 +3602,11 @@ mod tests {
         renderer.draw(&mut scrolled, params, &[]).unwrap();
         assert_ne!(list, scrolled);
         // Browsing the carousel leaves the header unchanged while
-        // repainting the carousel band and its name label below it.
-        assert_eq!(&list[..568 * 180 * 4], &scrolled[..568 * 180 * 4]);
+        // repainting the carousel band and its name label below it. Row
+        // bound follows `THEME_CAROUSEL_TOP` (132.0, task: tap-to-apply,
+        // 2026-09-25 moved this up from 204.0 to leave room for the
+        // background carousel below).
+        assert_eq!(&list[..568 * 128 * 4], &scrolled[..568 * 128 * 4]);
         let wallpaper =
             std::env::temp_dir().join(format!("k230-theme-screen-crop-{}.png", std::process::id()));
         image::RgbaImage::from_fn(80, 160, |_, y| {
@@ -3943,7 +3618,10 @@ mod tests {
         })
         .save(&wallpaper)
         .unwrap();
-        view.page = ThemePage::Preview;
+        // Task: tap-to-apply (2026-09-25) removed the separate Preview
+        // page; the active theme's own background carousel now paints on
+        // this same `ThemePage::List` page whenever `view.preview` is
+        // set, so `view.page` stays `List` here.
         view.background_position = 0.0;
         view.preview = Some(ThemePreview {
             theme: entry,
@@ -3982,15 +3660,10 @@ mod tests {
         });
         renderer.set_theme_view(view);
         let mut preview = vec![0; controls.len()];
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
-        while renderer.preview_surface.is_none() && std::time::Instant::now() < deadline {
-            renderer.poll_theme_image(568, 1232);
-            std::thread::sleep(std::time::Duration::from_millis(5));
-        }
-        assert_eq!(
-            renderer.preview_surface.as_ref().map(ImageSurface::height),
-            Some(1232)
-        );
+        // No decode to wait on any more (`poll_theme_image` is a
+        // deliberate no-op, see its own doc) -- the background carousel's
+        // own thumbnails and name/status text paint synchronously, same
+        // as the theme carousel above.
         renderer.draw(&mut preview, params, &[]).unwrap();
         assert_ne!(preview, list);
         if let Ok(path) = std::env::var("K230_THEME_FIXTURE_PNG") {
@@ -4013,10 +3686,12 @@ mod tests {
     #[test]
     fn pressed_and_activating_states_change_painted_pixels() {
         // Goal 1 (immediate feedback): a tapped-and-held slice must look
-        // different within the same frame, and Apply must look visibly
-        // busy while an activation is in flight -- both painted straight
-        // from `ThemeView` fields, no decode/worker needed, so this is a
-        // synchronous, deterministic pixel-diff check.
+        // different within the same frame, and the tapped slice itself
+        // must look visibly busy while its own request is in flight --
+        // both painted straight from `ThemeView` fields (via `ThemeView::
+        // applying_theme_index`/`applying_background_index`), no decode/
+        // worker needed, so this is a synchronous, deterministic
+        // pixel-diff check.
         let mut renderer = RendererCache::default();
         let entry = ThemeEntry {
             id: "fixture-a".into(),
@@ -4087,7 +3762,7 @@ mod tests {
             app_appearance: None,
         };
         let preview_view = ThemeView {
-            page: ThemePage::Preview,
+            page: ThemePage::List,
             preview: Some(preview),
             pending: None,
             ..ThemeView::default()
@@ -4108,7 +3783,7 @@ mod tests {
         renderer.draw(&mut activating_footer, params, &[]).unwrap();
         assert_ne!(
             idle_footer, activating_footer,
-            "a pending Activate must paint a visibly busy Apply button"
+            "a pending Activate targeting the centred background slice must paint it visibly busy"
         );
     }
 
@@ -4251,7 +3926,7 @@ mod tests {
         );
 
         renderer.set_theme_view(ThemeView {
-            page: ThemePage::Preview,
+            page: ThemePage::List,
             preview: Some(ThemePreview {
                 theme: illustrated_entry,
                 generation: "fixture-generation".into(),
@@ -4300,12 +3975,19 @@ mod tests {
     }
 
     #[test]
-    fn cancelled_still_result_never_reappears_in_chooser() {
-        let path =
-            std::env::temp_dir().join(format!("k230-cancelled-still-{}.png", std::process::id()));
-        image::RgbaImage::from_pixel(4, 4, image::Rgba([90, 40, 150, 255]))
-            .save(&path)
-            .unwrap();
+    fn poll_theme_image_is_a_permanent_no_op_since_tap_to_apply() {
+        // Task: tap-to-apply (2026-09-25) removed the separate Preview
+        // page's own single large "screen crop" still preview -- both
+        // carousels on the one remaining List page show their own
+        // thumbnails via `ThemeThumbnailCache`/`poll_theme_thumbnails`
+        // instead (see `list_and_background_rows_paint_their_own_
+        // thumbnail_once_decoded`, above). `poll_theme_image` is kept,
+        // rather than torn out, purely so existing call sites need no
+        // further change -- this pins down that it never requests a
+        // decode or reports a change, for any `ThemeView`, replacing the
+        // old cancel-race regression test this same function used to
+        // need (a stale decode racing a since-cancelled selection can no
+        // longer surface: nothing is ever requested to race).
         let entry = ThemeEntry {
             id: "fixture".into(),
             name: "Fixture".into(),
@@ -4315,7 +3997,7 @@ mod tests {
         };
         let mut renderer = RendererCache::default();
         renderer.set_theme_view(ThemeView {
-            page: ThemePage::Preview,
+            page: ThemePage::List,
             preview: Some(ThemePreview {
                 theme: entry,
                 generation: "fixture-generation".into(),
@@ -4326,7 +4008,7 @@ mod tests {
                     id: "still".into(),
                     label: "1-still.png".into(),
                     kind: BackgroundKind::Image,
-                    path: path.canonicalize().unwrap(),
+                    path: "/tmp/nonexistent-fixture-still.png".into(),
                     selected: true,
                     decode_status: "unverified".into(),
                 }],
@@ -4340,25 +4022,10 @@ mod tests {
             }),
             ..ThemeView::default()
         });
-        assert!(renderer.poll_theme_image(568, 1232));
-        assert_eq!(
-            renderer
-                .preview_key
-                .as_ref()
-                .map(|key| (key.width, key.height)),
-            Some((568, 1232))
-        );
-        renderer.set_theme_view(ThemeView::default());
-        assert!(renderer.poll_theme_image(568, 1232));
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
-        while renderer.preview_requested.is_some() && std::time::Instant::now() < deadline {
-            renderer.poll_theme_image(568, 1232);
-            std::thread::sleep(std::time::Duration::from_millis(5));
-        }
+        assert!(!renderer.poll_theme_image(568, 1232));
+        assert!(renderer.preview_key.is_none());
         assert!(renderer.preview_requested.is_none());
         assert!(renderer.preview_surface.is_none());
-        assert!(renderer.preview_key.is_none());
-        std::fs::remove_file(path).unwrap();
     }
 
     #[test]
@@ -4986,14 +4653,18 @@ mod tests {
         // `content_generation_bumps_on_content_changes_but_not_on_
         // appearance_changes`): an Apply tap's own `pending` transition,
         // or the busy spinner's own `pulse_phase`, must not bump
-        // `content_generation` either, now that neither is baked into the
-        // cached body any more (`paint_preview_footer_status` carries
-        // both, painted live). Board evidence, 2026-09-28: this exact gap
-        // was why a computed pre-render always went stale before a
-        // person's own Apply tap could ever reach it.
+        // `content_generation`, even though both *are* baked into the
+        // ordinary cached body (`set_theme_view`'s own `invalidate()`
+        // still runs unconditionally -- see its doc). `content_
+        // generation` is read only by the pre-render freshness check,
+        // which must judge a computed candidate by what a person will
+        // eventually tap, not by an unrelated pulse tick in between.
+        // Board evidence, 2026-09-28: this exact gap was why a computed
+        // pre-render always went stale before a person's own Apply tap
+        // could ever reach it.
         let mut renderer = RendererCache::default();
         let view = ThemeView {
-            page: ThemePage::Preview,
+            page: ThemePage::List,
             preview: Some(fixture_preview("aaaaaaaaaaaaaaaaaaaaaaaa")),
             ..ThemeView::default()
         };
@@ -5019,18 +4690,21 @@ mod tests {
     }
 
     #[test]
-    fn adopted_prerender_still_shows_the_live_pending_state_via_the_overlay() {
-        // The correctness property the whole split exists for: even
-        // though the pre-rendered candidate's own baked pixels reflect an
-        // idle Apply button (pending was None when it was computed), the
-        // frame `draw()` actually produces once that candidate is adopted
-        // must always reflect the *current* pending state, painted live
-        // -- never a stale "Apply" shown while an Activate the durable
-        // commit will go on to reuse (`may_reuse_optimistic_frame`) is
-        // genuinely in flight.
+    fn a_theme_view_change_after_adopting_still_rebuilds_and_shows_pending() {
+        // Adopting a pre-render (`show_theme_optimistically`'s own path)
+        // bypasses a rebuild for exactly one `draw()` -- the frame that
+        // shows the tapped theme as already applied, correctly with
+        // nothing pending baked in (see `paint_theme_chooser`'s own doc
+        // for why that is correct, not stale). But any *subsequent*
+        // `ThemeView` change -- here, `pending` flipping back to `Some`
+        // once the real commit machinery notices this generation is not
+        // yet durably active -- must still force an ordinary rebuild via
+        // `set_theme_view`'s own unconditional `invalidate()`, so the
+        // panel never gets stuck showing the adopted candidate's frozen
+        // pixels while the live state has moved on.
         let mut renderer = RendererCache::default();
         let mut view = ThemeView {
-            page: ThemePage::Preview,
+            page: ThemePage::List,
             preview: Some(fixture_preview("bbbbbbbbbbbbbbbbbbbbbbbb")),
             ..ThemeView::default()
         };
@@ -5064,8 +4738,8 @@ mod tests {
         renderer.draw(&mut activating, SETTINGS_PARAMS, &[]).unwrap();
         assert_ne!(
             idle, activating,
-            "the live overlay must paint the Applying state even though \
-             the cached body was never rebuilt for it"
+            "a ThemeView change after adopting a pre-render must still \
+             force a fresh rebuild reflecting the new pending state"
         );
     }
 }

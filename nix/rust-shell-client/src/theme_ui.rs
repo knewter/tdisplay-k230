@@ -1,12 +1,22 @@
 //! Touch-only theme chooser state. All command I/O belongs to `ThemeWorker`.
-//! Preview is reversible; only an explicit Apply may request activation.
+//!
+//! User decision (2026-09-28, verbatim): "i don't really think we need an
+//! 'apply' window for themes at all. tap theme in the theme picker, apply
+//! immediately, so i can compare them easily." Tapping a theme (or a
+//! background of the active theme) applies it right away, through the
+//! optimistic path; there is no separate preview page and no Apply/Cancel
+//! step. Swiping/dragging only browses (`theme_carousel::Carousel`'s own
+//! `Confirm`-only-when-already-centred rule makes this automatic). Rapid
+//! taps coalesce onto `desired`: at most one request is ever in flight, and
+//! a reply that no longer matches `desired` is discarded, with `advance()`
+//! immediately moving on to whatever is now desired instead.
 
 use crate::background_decode::{BackgroundCache, FitMode};
 use crate::theme_catalog::{
     BackgroundKind, ThemeList, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
 };
 use std::{
-    collections::VecDeque,
+    collections::{HashMap, VecDeque},
     path::PathBuf,
     sync::mpsc::{self, Receiver, SyncSender, TryRecvError},
     thread,
@@ -97,19 +107,45 @@ pub fn background_display_label(label: &str) -> String {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ThemePage {
     Controls,
+    /// The one chooser page now: the theme carousel, the active theme's
+    /// own background carousel below it, and a "Current"/ring marker on
+    /// whichever slice of each is currently, durably active.
     List,
-    Preview,
+}
+
+/// The theme (and, once a theme is active, which of its own backgrounds)
+/// a tap most recently asked for. Coalescing owns this: a new tap always
+/// overwrites it, whether or not a request for the previous one is still
+/// in flight, and a reply that no longer matches it is discarded rather
+/// than shown.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Desired {
+    theme_id: String,
+    background_id: Option<String>,
+    /// Learned once the matching `Preview` reply arrives; `Activate` (the
+    /// real, durable step) needs it and cannot be sent before then.
+    generation: Option<String>,
+    /// True when this target was already the reported active theme/
+    /// background at the moment it was set (the initial chooser-open
+    /// load, or a re-tap of what is already active): settling then never
+    /// needs an `Activate` at all, just the one `Preview` to (re)load its
+    /// own detail.
+    already_active: bool,
 }
 
 #[derive(Clone, Debug)]
 pub struct ThemeView {
     pub page: ThemePage,
     pub list: Option<ThemeList>,
+    /// The *active* theme's own detail (palette/backgrounds) -- what the
+    /// background carousel below the theme carousel is drawn from. Kept
+    /// stable while a candidate is merely being applied (optimistically
+    /// shown or durably settling): this only ever changes once a tap's own
+    /// target actually becomes active (an `activated: true`/`already_
+    /// active` reply), matching what is genuinely on screen.
     pub preview: Option<ThemePreview>,
     pub pending: Option<ThemeRequest>,
     pub pending_id: Option<u64>,
-    /// A failed background choice must not leave the previous Apply enabled.
-    pub selection_error: bool,
     pub error: Option<String>,
     pub message: Option<String>,
     /// The theme carousel's continuous position (`theme_carousel::Carousel`
@@ -117,7 +153,7 @@ pub struct ThemeView {
     /// latest value, mirrored here so the renderer -- which only ever sees
     /// a cloned `ThemeView`, never the live carousel -- can paint it).
     pub theme_position: f64,
-    /// Same, for the Preview page's background carousel.
+    /// Same, for the background carousel.
     pub background_position: f64,
     /// Which theme-carousel slice, if any, currently shows an immediate
     /// "pressed" highlight -- mirrored each frame from
@@ -125,18 +161,18 @@ pub struct ThemeView {
     /// carousel; the renderer only ever sees this cloned snapshot). See
     /// `render.rs::paint_carousel`.
     pub theme_pressed: Option<usize>,
-    /// Same, for the Preview page's background carousel.
+    /// Same, for the background carousel.
     pub background_pressed: Option<usize>,
     /// A slow, deliberately throttled 0.0..1.0 animation phase driving every
     /// loading spinner this page paints (pending thumbnails, a preparing
-    /// still preview, a pending Apply). `main.rs` advances this on its own
-    /// bounded cadence -- see its `THEME_PULSE_INTERVAL` -- rather than
-    /// every event-loop tick, which is what previously caused a continuous
-    /// full redraw at rest while thumbnails were still decoding (the
-    /// idle-redraw fix this field is part of).
+    /// still preview, a tap still being applied). `main.rs` advances this on
+    /// its own bounded cadence -- see its `THEME_PULSE_INTERVAL` -- rather
+    /// than every event-loop tick, which is what previously caused a
+    /// continuous full redraw at rest while thumbnails were still decoding
+    /// (the idle-redraw fix this field is part of).
     pub pulse_phase: f64,
     /// Task 3.2: index whose centred dwell time is accumulating, on the
-    /// Themes list page only. Reset (to `None`/`0`) whenever the carousel
+    /// theme carousel only. Reset (to `None`/`0`) whenever the carousel
     /// is not settled on one index -- a drag, a coast, or a settle
     /// animation in progress -- so a fast flick across many themes never
     /// fires a warm-up per slice ("cancelled on scroll-away"). `pub` only
@@ -169,14 +205,30 @@ pub struct ThemeView {
     /// slot is free, so this never competes with -- or delays -- warming
     /// whatever a person is actually looking at right now.
     pub pending_neighbor_warms: VecDeque<usize>,
+    /// The generation a warm-up (`poll_prepare_ahead`) reply reported for
+    /// a theme id, remembered even though the reply itself is otherwise
+    /// discarded (`prepare_ahead_reply`) -- the optimistic-apply pre-render
+    /// trigger (`main.rs`) needs a centred-but-not-yet-tapped theme's own
+    /// generation to know what to pre-render *for*, and re-deriving it
+    /// with a fresh Preview call there would itself cost the round trip
+    /// this cache exists to avoid. Bounded only by the theme catalog's own
+    /// size (typically well under a hundred entries); never persisted.
+    pub known_generations: HashMap<String, String>,
+    /// What a tap most recently asked for; see `Desired`'s own doc. `pub`
+    /// only because `render.rs`'s test fixtures build a `ThemeView` with
+    /// `..` struct-update syntax, same as `prepare_ahead_watch` and its
+    /// neighbours above -- nothing outside this module has a reason to
+    /// read or set it directly; use `tap_theme`/`tap_background`/
+    /// `advance`/`accept` instead.
+    pub desired: Option<Desired>,
 }
 
 /// How long a theme must stay the carousel's centred item, with the
 /// carousel otherwise at rest, before task 3.2 treats it as "browsed to"
-/// and warms it ahead of a possible Apply. Long enough that a flick past
-/// several themes on the way to a specific one fires nothing for the ones
-/// only passed through; short enough that a person who pauses to look at a
-/// theme is very likely already warmed by the time they decide to open it.
+/// and warms it ahead of a possible tap-apply. Long enough that a flick
+/// past several themes on the way to a specific one fires nothing for the
+/// ones only passed through; short enough that a person who pauses to
+/// look at a theme is very likely already warmed by the time they tap it.
 const PREPARE_AHEAD_DEBOUNCE_MS: u32 = 220;
 
 impl Default for ThemeView {
@@ -187,7 +239,6 @@ impl Default for ThemeView {
             preview: None,
             pending: None,
             pending_id: None,
-            selection_error: false,
             error: None,
             message: None,
             theme_position: 0.0,
@@ -200,6 +251,8 @@ impl Default for ThemeView {
             prepare_ahead_sent_for: None,
             prepare_ahead_inflight: None,
             pending_neighbor_warms: VecDeque::new(),
+            known_generations: HashMap::new(),
+            desired: None,
         }
     }
 }
@@ -209,42 +262,57 @@ pub enum ThemeIntent {
     Open,
     Back,
     Close,
+    /// Tap-confirm on the theme carousel's own centred slice (never an
+    /// off-centre one -- `theme_carousel::Carousel::up`'s own
+    /// `Confirm`-only-when-already-centred rule keeps a mere recentring
+    /// tap from reaching here at all): apply that theme now.
     Theme(usize),
+    /// Same, for the background carousel: apply that background of the
+    /// active theme now.
     Background(usize),
-    Apply,
 }
 
 /// Top of the theme carousel band (below the "Themes" heading/subtext).
-/// This page's carousel is the Themes page's hero content (see
-/// `theme_carousel::THEME_GEOMETRY`'s own doc), so almost everything below
-/// this line is the carousel itself, its name label, and its origin
-/// caption -- the page is otherwise deliberately uncluttered.
-pub const THEME_CAROUSEL_TOP: f64 = 204.0;
-/// Top of the background carousel band on the Preview page (below the
-/// palette swatches, screen-crop preview, and "Backgrounds" heading). This
-/// carousel is smaller than the Themes page's hero
-/// (`theme_carousel::BACKGROUND_GEOMETRY`) because everything above this
-/// line already fills a meaningful share of the page.
-pub const BACKGROUND_CAROUSEL_TOP: f64 = 662.0;
-/// The Preview page's Cancel/Apply footer card's own top y. Unlike the old
-/// scrolling row list, the background carousel's height never depends on
-/// how many backgrounds a theme has, so this footer is a fixed offset
-/// below the carousel band, not a floating one. The `120.0` gap (not the
-/// smaller `104.0` this used before the carousel grew) leaves clear space
-/// between the background's own name/status caption and this footer, both
-/// of which now share this same headroom regardless of geometry size.
-pub const PREVIEW_FOOTER_Y: f64 =
-    BACKGROUND_CAROUSEL_TOP + crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 120.0;
+/// Task: tap-to-apply (2026-09-25) put the active theme's own background
+/// carousel on this same page, below this one, so this moved up from the
+/// old single-carousel page's own `204.0` to leave the extra room a
+/// second carousel plus its own labels need within the fixed 1232-tall
+/// panel (board evidence still outstanding for this exact layout -- see
+/// this task's own evidence doc).
+pub const THEME_CAROUSEL_TOP: f64 = 132.0;
+/// Top of the background carousel band, directly below the theme
+/// carousel's own name label and origin caption (`paint_theme_chooser`'s
+/// own fixed layout: a 12px gap, a 24px name line, a 26px-offset 16px
+/// status line, a 16px gap, a 22px "Backgrounds" heading, then an 8px
+/// gap -- `100.0` total). Both carousels live on the one chooser page
+/// now; there is no longer a separate page transition between them.
+pub const BACKGROUND_CAROUSEL_TOP: f64 =
+    THEME_CAROUSEL_TOP + crate::theme_carousel::THEME_GEOMETRY.expanded_h + 100.0;
+
+fn request_target(request: &ThemeRequest) -> Option<(&str, Option<&str>)> {
+    match request {
+        ThemeRequest::Preview {
+            theme_id,
+            background_id,
+        }
+        | ThemeRequest::Activate {
+            theme_id,
+            background_id,
+            ..
+        } => Some((theme_id.as_str(), background_id.as_deref())),
+        ThemeRequest::List => None,
+    }
+}
 
 impl ThemeView {
     pub fn open(&mut self) -> ThemeRequest {
         self.page = ThemePage::List;
         self.preview = None;
-        self.selection_error = false;
         self.error = None;
         self.message = None;
         self.theme_pressed = None;
         self.background_pressed = None;
+        self.desired = None;
         self.reset_prepare_ahead_debounce();
         ThemeRequest::List
     }
@@ -252,37 +320,32 @@ impl ThemeView {
     /// Clears task 3.2's debounce/dedupe bookkeeping (never the one
     /// in-flight request id: that reply, whenever it lands, must still be
     /// recognised by `prepare_ahead_reply` rather than falling through to
-    /// `accept`). Called whenever the list page's own centred-item context
-    /// stops applying -- leaving the page, or reloading the list.
+    /// `accept`). Called whenever the theme carousel's own centred-item
+    /// context stops applying -- leaving the page, or reloading the list.
     fn reset_prepare_ahead_debounce(&mut self) {
         self.prepare_ahead_watch = None;
         self.prepare_ahead_elapsed_ms = 0;
         self.prepare_ahead_sent_for = None;
-        // A fresh `list` reply (from re-opening, or from `back()`'s own
-        // re-fetch) always repopulates this with that reply's own active
-        // theme's neighbours in `accept()`; a queue left over from a
-        // now-stale list would otherwise persist and warm the wrong themes.
+        // A fresh `list` reply (from re-opening) always repopulates this
+        // with that reply's own active theme's neighbours in `accept()`; a
+        // queue left over from a now-stale list would otherwise persist
+        // and warm the wrong themes.
         self.pending_neighbor_warms.clear();
     }
 
     pub fn back(&mut self) -> Option<ThemeRequest> {
         if matches!(self.pending, Some(ThemeRequest::Activate { .. })) {
-            return None; // Activation cannot be cancelled after dispatch.
+            return None; // A durable activation cannot be cancelled after dispatch.
         }
-        self.pending = None; // A late preview/activation reply must not reopen a dismissed view.
+        self.pending = None; // A late reply must not reopen a dismissed view.
         self.pending_id = None;
-        self.selection_error = false;
+        self.desired = None;
         self.error = None;
         self.message = None;
         self.theme_pressed = None;
         self.background_pressed = None;
         self.reset_prepare_ahead_debounce();
         match self.page {
-            ThemePage::Preview => {
-                self.page = ThemePage::List;
-                self.preview = None;
-                Some(ThemeRequest::List)
-            }
             ThemePage::List => {
                 self.page = ThemePage::Controls;
                 None
@@ -292,15 +355,6 @@ impl ThemeView {
     }
 
     pub fn submitted(&mut self, request: ThemeRequest, id: u64) {
-        if matches!(
-            &request,
-            ThemeRequest::Preview {
-                background_id: Some(_),
-                ..
-            }
-        ) {
-            self.selection_error = true;
-        }
         self.pending = Some(request);
         self.pending_id = Some(id);
         self.error = None;
@@ -311,30 +365,27 @@ impl ThemeView {
         self.error = Some(error.into());
     }
 
-    pub fn selection_failed(&mut self, error: &str) {
-        self.selection_error = true;
-        self.failed_to_submit(error);
-    }
-
     pub fn accept(&mut self, reply: ThemeReply) -> bool {
         if self.pending_id != Some(reply.id) || self.pending.as_ref() != Some(&reply.request) {
             return false;
         }
         self.pending = None;
         self.pending_id = None;
-        let was_background_choice = matches!(
-            &reply.request,
-            ThemeRequest::Preview {
-                background_id: Some(_),
-                ..
-            }
-        );
+        let matches_desired = request_target(&reply.request).is_some_and(|(theme_id, background_id)| {
+            self.desired
+                .as_ref()
+                .is_some_and(|desired| desired.theme_id == theme_id && desired.background_id.as_deref() == background_id)
+        });
         match reply.result {
             Err(error) => {
-                if was_background_choice {
-                    self.selection_error = true;
+                if matches_desired {
+                    self.error = Some(error);
+                    self.desired = None;
                 }
-                self.error = Some(error);
+                // A stale error (superseded by a later tap) is silently
+                // discarded: `advance()` moves on to whatever is now
+                // desired instead of reporting a failure for something no
+                // longer wanted.
             }
             Ok(ThemeResponse::List(list)) => {
                 // Center the theme carousel on the currently active theme,
@@ -358,38 +409,141 @@ impl ThemeView {
                         }
                     }
                 }
+                // Load the active theme's own detail (backgrounds, for the
+                // background carousel) right away, exactly like a re-tap
+                // of it would -- see `Desired::already_active`'s own doc.
+                if let Some(active_id) = list.active.id.clone() {
+                    self.desired = Some(Desired {
+                        theme_id: active_id,
+                        background_id: None,
+                        generation: None,
+                        already_active: true,
+                    });
+                }
                 self.list = Some(list);
                 self.page = ThemePage::List;
                 self.error = None;
             }
             Ok(ThemeResponse::Preview(preview)) => {
-                self.message = if preview.activated {
-                    Some(match preview.app_appearance.as_ref() {
-                        Some(app) if app.state != "applied" => {
-                            format!("Theme applied; app reload {}", app.state)
-                        }
-                        _ => "Theme applied".into(),
-                    })
+                if !matches_desired {
+                    // Superseded by a later tap; `advance()` (called by the
+                    // caller right after `accept`) moves on to whatever is
+                    // now desired instead.
+                } else if preview.activated || self.desired.as_ref().is_some_and(|d| d.already_active) {
+                    // Durably settled -- this theme/background is now (or
+                    // already was) genuinely active. Only now does the
+                    // background carousel switch to it.
+                    self.message = if preview.activated {
+                        Some(match preview.app_appearance.as_ref() {
+                            Some(app) if app.state != "applied" => {
+                                format!("Theme applied; app reload {}", app.state)
+                            }
+                            _ => "Theme applied".into(),
+                        })
+                    } else {
+                        None
+                    };
+                    self.background_position = preview
+                        .backgrounds
+                        .iter()
+                        .position(|row| row.selected)
+                        .unwrap_or(0) as f64;
+                    self.preview = Some(*preview);
+                    self.desired = None;
+                    self.error = None;
                 } else {
-                    None
-                };
-                // Center the background carousel on whichever background
-                // this preview reports selected.
-                self.background_position = preview
-                    .backgrounds
-                    .iter()
-                    .position(|row| row.selected)
-                    .unwrap_or(0) as f64;
-                self.preview = Some(*preview);
-                self.selection_error = false;
-                self.page = ThemePage::Preview;
-                self.error = None;
+                    // The preview step of a real apply completed: the
+                    // generation `Activate` needs is now known. The
+                    // background carousel deliberately does not switch yet
+                    // -- see `preview`'s own doc -- so this only records
+                    // the generation.
+                    if let Some(desired) = self.desired.as_mut() {
+                        desired.generation = Some(preview.generation.clone());
+                    }
+                    self.error = None;
+                }
             }
         }
         true
     }
 
-    /// Task 3.2: called once per tick while the Themes list page is shown.
+    /// Builds the next request toward `desired`, if any, and if nothing is
+    /// already in flight: a `Preview` while the generation is not yet
+    /// known (or the target was already active and only needs its own
+    /// detail (re)loaded), or the real `Activate` once it is. The caller
+    /// submits this exactly like any other request (`main.rs`'s
+    /// `submit_theme`); this is what actually drives coalescing -- called
+    /// once right after every `accept()` that returns `true`, it is what
+    /// lets a reply that turned out stale immediately move on to whatever
+    /// is now desired instead, with no separate "cancel" step needed.
+    pub fn advance(&mut self) -> Option<ThemeRequest> {
+        if self.pending.is_some() {
+            return None;
+        }
+        let desired = self.desired.as_ref()?;
+        if desired.already_active && desired.generation.is_some() {
+            return None; // settled by `accept` already; nothing further to do
+        }
+        Some(match &desired.generation {
+            Some(generation) if !desired.already_active => ThemeRequest::Activate {
+                theme_id: desired.theme_id.clone(),
+                expected_generation: generation.clone(),
+                background_id: desired.background_id.clone(),
+            },
+            _ => ThemeRequest::Preview {
+                theme_id: desired.theme_id.clone(),
+                background_id: desired.background_id.clone(),
+            },
+        })
+    }
+
+    /// Tapping the theme carousel's own already-centred slice: sets it as
+    /// the newest desired target (superseding whatever was previously
+    /// desired, in flight or not -- see `Desired`'s own doc) and returns
+    /// the first step toward applying it, if nothing else is already in
+    /// flight.
+    pub fn tap_theme(&mut self, index: usize) -> Option<ThemeRequest> {
+        let list = self.list.as_ref()?;
+        let theme = list.themes.get(index)?;
+        let already_active = list.active.id.as_deref() == Some(theme.id.as_str());
+        self.desired = Some(Desired {
+            theme_id: theme.id.clone(),
+            background_id: None,
+            generation: None,
+            already_active,
+        });
+        self.error = None;
+        self.advance()
+    }
+
+    /// Tapping the background carousel's own already-centred slice: same
+    /// shape as `tap_theme`, for one of the *active* theme's own
+    /// backgrounds (the only kind shown -- see `preview`'s own doc).
+    /// Unlike a theme tap, the target's own generation is already known
+    /// (`preview.generation`, loaded alongside this same list of
+    /// backgrounds) -- so this goes straight to `Activate`, with no
+    /// `Preview` round trip first.
+    pub fn tap_background(&mut self, index: usize) -> Option<ThemeRequest> {
+        let preview = self.preview.as_ref()?;
+        let background = preview.backgrounds.get(index)?;
+        if background.kind == BackgroundKind::Video {
+            self.error = Some("Video playback is not available in this shell".into());
+            return None;
+        }
+        if background.selected {
+            return None; // already the active background: nothing to do
+        }
+        self.desired = Some(Desired {
+            theme_id: preview.theme.id.clone(),
+            background_id: Some(background.id.clone()),
+            generation: Some(preview.generation.clone()),
+            already_active: false, // a background change always needs a real Activate
+        });
+        self.error = None;
+        self.advance()
+    }
+
+    /// Task 3.2: called once per tick while the theme carousel is shown.
     /// `centered` is the carousel's committed index when it is not
     /// mid-drag/coast/settle, `None` otherwise. Returns a warm-up request
     /// once the same index has stayed centred, at rest, for
@@ -423,7 +577,7 @@ impl ThemeView {
             return None;
         }
         if self.pending.is_some() {
-            // A real, explicit request (a confirm tap's own Preview, or an
+            // A real, explicit request (a tap-apply's own Preview or
             // Activate) is awaiting its reply. `ThemeWorker` processes
             // requests strictly in submission order, and each receiver
             // keeps only its single most-recently-prepared candidate
@@ -432,13 +586,11 @@ impl ThemeView {
             // reach that same slot *after* the real request's own
             // "prepare" and silently replace it with an unrelated theme's
             // generation before its reply is even back, exactly the race
-            // that made an otherwise-already-prepared Apply miss its own
-            // optimistic show (board evidence, 2026-09-26: a neighbour
-            // warm-up drained here overwrote `appearance.prepared` between
-            // the confirm tap's own Preview reply and the Apply that
-            // followed it). Warming simply resumes the next tick once
-            // `pending` clears; the dwell clock above keeps accumulating
-            // in the meantime, so nothing already waited out is lost.
+            // that made an otherwise-already-prepared apply miss its own
+            // optimistic show (board evidence, 2026-09-26). Warming simply
+            // resumes the next tick once `pending` clears; the dwell clock
+            // above keeps accumulating in the meantime, so nothing already
+            // waited out is lost.
             return None;
         }
         if let Some(index) = centered {
@@ -469,7 +621,7 @@ impl ThemeView {
         let list = self.list.as_ref()?;
         let theme = list.themes.get(index)?;
         if list.active.id.as_deref() == Some(theme.id.as_str()) {
-            return None; // already active/applied: nothing to warm
+            return None; // already active: nothing to warm
         }
         Some(ThemeRequest::Preview {
             theme_id: theme.id.clone(),
@@ -486,10 +638,12 @@ impl ThemeView {
 
     /// True (and clears the in-flight slot) when `reply` is this chooser's
     /// own warm-up call. `main.rs` checks this before `accept`, so a
-    /// warm-up reply is always discarded -- it is never mistaken for the
-    /// (structurally identical) reply to a real, navigational Preview
-    /// request, because `submitted`/`self.pending`/`self.pending_id` were
-    /// never touched for it in the first place.
+    /// warm-up reply is always discarded from the chooser's own navigation
+    /// state -- it is never mistaken for the (structurally identical)
+    /// reply to a real, tap-driven Preview request, because `submitted`/
+    /// `self.pending`/`self.pending_id` were never touched for it in the
+    /// first place. The reply's own generation, if any, is still worth
+    /// keeping -- see `record_known_generation`.
     pub fn prepare_ahead_reply(&mut self, reply: &ThemeReply) -> bool {
         if self.prepare_ahead_inflight == Some(reply.id) {
             self.prepare_ahead_inflight = None;
@@ -499,53 +653,50 @@ impl ThemeView {
         }
     }
 
-    pub fn preview_request(&self, index: usize) -> Option<ThemeRequest> {
-        let theme = self.list.as_ref()?.themes.get(index)?;
-        Some(ThemeRequest::Preview {
-            theme_id: theme.id.clone(),
-            background_id: None,
-        })
+    /// Remembers a warm-up reply's own `(theme_id, generation)` in
+    /// `known_generations`, even though the reply itself is otherwise
+    /// entirely discarded (`prepare_ahead_reply`). This is what lets the
+    /// optimistic-apply pre-render trigger (`main.rs`) target a centred,
+    /// already-warmed-but-not-yet-tapped theme without a fresh Preview
+    /// round trip.
+    pub fn record_known_generation(&mut self, theme_id: &str, generation: &str) {
+        self.known_generations
+            .insert(theme_id.to_owned(), generation.to_owned());
     }
 
-    pub fn background_request(&self, index: usize) -> Result<ThemeRequest, &'static str> {
-        let preview = self.preview.as_ref().ok_or("Preview unavailable")?;
-        let background = preview
+    /// Which theme-carousel slice, if any, a tap-apply currently pending
+    /// (`self.pending`) targets -- painted with a brief, in-place busy
+    /// indicator (`render.rs`'s own live overlay) rather than blocking the
+    /// carousel. `None` whenever the pending request is a background
+    /// selection instead (`background_id.is_some()`) or nothing is pending.
+    pub fn applying_theme_index(&self) -> Option<usize> {
+        let (theme_id, background_id) = request_target(self.pending.as_ref()?)?;
+        if background_id.is_some() {
+            return None;
+        }
+        self.list
+            .as_ref()?
+            .themes
+            .iter()
+            .position(|entry| entry.id == theme_id)
+    }
+
+    /// Same, for the background carousel: which of the active theme's own
+    /// backgrounds a pending background-selection tap-apply targets.
+    pub fn applying_background_index(&self) -> Option<usize> {
+        let (_, background_id) = request_target(self.pending.as_ref()?)?;
+        let background_id = background_id?;
+        self.preview
+            .as_ref()?
             .backgrounds
-            .get(index)
-            .ok_or("Background unavailable")?;
-        if background.kind == BackgroundKind::Video {
-            return Err("Video playback is not available in this shell");
-        }
-        Ok(ThemeRequest::Preview {
-            theme_id: preview.theme.id.clone(),
-            background_id: Some(background.id.clone()),
-        })
+            .iter()
+            .position(|row| row.id == background_id)
     }
 
-    pub fn apply_request(&self) -> Result<ThemeRequest, &'static str> {
-        let preview = self.preview.as_ref().ok_or("Preview unavailable")?;
-        if self.pending.is_some() {
-            return Err("Wait for theme preview");
-        }
-        if self.selection_error {
-            return Err("Select an available background before applying");
-        }
-        let selected = preview.backgrounds.iter().find(|row| row.selected);
-        if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
-            return Err("Video playback is not available in this shell");
-        }
-        Ok(ThemeRequest::Activate {
-            theme_id: preview.theme.id.clone(),
-            expected_generation: preview.generation.clone(),
-            background_id: selected.map(|row| row.id.clone()),
-        })
-    }
-
-    /// Header (Back/Close) and, on the Preview page, footer (Cancel/Apply)
-    /// chrome hits. Everything in between belongs to a carousel band now --
-    /// `theme_carousel::Carousel::up` resolves those touches directly (see
-    /// `main.rs`), returning `CarouselOutcome::Consumed` for anything that
-    /// should not fall through to here.
+    /// Header (Back/Close) hits. Everything else belongs to a carousel band
+    /// now -- `theme_carousel::Carousel::up` resolves those touches
+    /// directly (see `main.rs`), returning `CarouselOutcome::Consumed` for
+    /// anything that should not fall through to here.
     pub fn hit(&self, start: (f64, f64), end: (f64, f64), width: u32, _height: u32) -> Option<ThemeIntent> {
         let w = f64::from(width);
         let dx = end.0 - start.0;
@@ -560,7 +711,7 @@ impl ThemeView {
             ThemePage::Controls => {
                 ((104.0..162.0).contains(&end.1) && end.0 > w - 185.0).then_some(ThemeIntent::Open)
             }
-            ThemePage::List | ThemePage::Preview => {
+            ThemePage::List => {
                 if end.1 < 104.0 {
                     return if end.0 < 190.0 {
                         Some(ThemeIntent::Back)
@@ -568,20 +719,6 @@ impl ThemeView {
                         Some(ThemeIntent::Close)
                     } else {
                         None
-                    };
-                }
-                if self.pending.is_some() {
-                    return None;
-                }
-                if self.page == ThemePage::Preview
-                    && (PREVIEW_FOOTER_Y..PREVIEW_FOOTER_Y + 86.0).contains(&end.1)
-                {
-                    return if end.0 < w / 2.0 {
-                        Some(ThemeIntent::Back)
-                    } else if self.selection_error {
-                        None
-                    } else {
-                        Some(ThemeIntent::Apply)
                     };
                 }
                 None
@@ -642,145 +779,318 @@ mod tests {
         }
     }
 
-    #[test]
-    fn explicit_preview_apply_identity_and_video_limit() {
-        let mut view = ThemeView::default();
-        assert_eq!(
-            view.hit((500.0, 130.0), (500.0, 130.0), 568, 1232),
-            Some(ThemeIntent::Open)
-        );
-        let list_request = view.open();
-        view.submitted(list_request.clone(), 1);
-        let list = ThemeList {
-            themes: vec![preview().theme],
+    fn theme_list(active_index: Option<usize>) -> ThemeList {
+        theme_list_of(3, active_index)
+    }
+
+    fn theme_list_of(count: usize, active_index: Option<usize>) -> ThemeList {
+        let themes: Vec<ThemeEntry> = (0..count)
+            .map(|index| {
+                let mut theme = preview().theme;
+                theme.id = std::iter::repeat_n(
+                    char::from_digit(index as u32, 16).expect("test fixture stays under 16 themes"),
+                    24,
+                )
+                .collect();
+                theme
+            })
+            .collect();
+        ThemeList {
             active: ActiveTheme {
-                id: None,
+                id: active_index.map(|index| themes[index].id.clone()),
                 generation: None,
             },
-        };
+            themes,
+        }
+    }
+
+    /// Drives a `List` reply through the same `submitted`/`accept` path
+    /// `main.rs` uses for a real list load, so the neighbour queue (and, for
+    /// the active theme, `desired`) is populated the way it would be on the
+    /// board, not poked directly.
+    fn load_list(view: &mut ThemeView, count: usize, active_index: Option<usize>) {
+        let list = theme_list_of(count, active_index);
+        view.submitted(ThemeRequest::List, 1);
         assert!(view.accept(ThemeReply {
             id: 1,
-            request: list_request,
-            result: Ok(ThemeResponse::List(list))
+            request: ThemeRequest::List,
+            result: Ok(ThemeResponse::List(list)),
         }));
-        // Which slice a tap lands on is `theme_carousel::Carousel::up`'s job
-        // now (covered by its own tests); `ThemeView` just needs to build
-        // the right request once a caller says "confirm index 0".
-        let request = view.preview_request(0).unwrap();
-        view.submitted(request.clone(), 2);
+    }
+
+    #[test]
+    fn tap_theme_on_a_cold_slice_previews_then_activates_and_switches_the_background_carousel() {
+        // The full tap-to-apply round trip for a theme the receiver has
+        // never prepared before (task: tap-to-apply, 2026-09-25, user
+        // decision: "tap theme in the theme picker, apply immediately").
+        // `known_generations` starts empty, so `tap_theme` must send a
+        // `Preview` first -- there is no way to build a valid `Activate`
+        // (it needs `expected_generation`) without first learning it.
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        // The just-loaded active theme (index 0) has its own `desired`
+        // pending from `accept`'s own List handling; settle it out of the
+        // way first so it does not interfere with the tap under test.
+        let settle = view.advance().expect("active theme detail loads itself");
+        view.submitted(settle.clone(), 50);
+        assert!(view.accept(ThemeReply {
+            id: 50,
+            request: settle,
+            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+        }));
+        assert_eq!(view.advance(), None, "already-active target needs no Activate");
+
+        let target_id = view.list.as_ref().unwrap().themes[1].id.clone();
+        let request = view.tap_theme(1).expect("index 1 exists");
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: target_id.clone(),
+                background_id: None,
+            },
+            "a theme with no known generation previews first"
+        );
+        assert_eq!(view.applying_theme_index(), None, "not submitted yet");
+        view.submitted(request.clone(), 1);
+        assert_eq!(view.applying_theme_index(), Some(1));
+
+        let mut candidate = preview();
+        candidate.theme.id = target_id.clone();
+        candidate.generation = id('e');
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate))),
+        }));
+        // The generation is now known, but nothing has actually activated
+        // yet -- the background carousel must not have switched.
+        assert_eq!(view.preview.as_ref().unwrap().theme.id, id('a'));
+
+        let activate = view.advance().expect("generation now known");
+        assert_eq!(
+            activate,
+            ThemeRequest::Activate {
+                theme_id: target_id.clone(),
+                expected_generation: id('e'),
+                background_id: None,
+            }
+        );
+        view.submitted(activate.clone(), 2);
+        assert_eq!(view.applying_theme_index(), Some(1));
+
+        let mut activated = preview();
+        activated.theme.id = target_id.clone();
+        activated.generation = id('e');
+        activated.activated = true;
         assert!(view.accept(ThemeReply {
             id: 2,
-            request,
-            result: Ok(ThemeResponse::Preview(Box::new(preview())))
+            request: activate,
+            result: Ok(ThemeResponse::Preview(Box::new(activated))),
         }));
+        assert_eq!(view.applying_theme_index(), None, "settled");
         assert_eq!(
-            view.apply_request().unwrap(),
+            view.preview.as_ref().unwrap().theme.id,
+            target_id,
+            "the background carousel now reflects the newly-active theme"
+        );
+        assert_eq!(view.message.as_deref(), Some("Theme applied"));
+        assert_eq!(view.advance(), None);
+    }
+
+    #[test]
+    fn tap_theme_on_the_already_active_slice_never_sends_an_activate() {
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let active_id = view.list.as_ref().unwrap().active.id.clone().unwrap();
+
+        let request = view.tap_theme(0).expect("index 0 exists");
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: active_id.clone(),
+                background_id: None,
+            }
+        );
+        view.submitted(request.clone(), 9);
+        let mut own_detail = preview();
+        own_detail.theme.id = active_id.clone();
+        assert!(view.accept(ThemeReply {
+            id: 9,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(own_detail))),
+        }));
+        // `already_active` settles straight from the `Preview` reply --
+        // never needs (or sends) an `Activate` at all.
+        assert_eq!(view.advance(), None);
+        assert_eq!(view.preview.as_ref().unwrap().theme.id, active_id);
+    }
+
+    /// `preview()` (above) has only one non-video background, and it is
+    /// already `selected` -- no valid target for a *successful* background
+    /// tap. This variant adds a second, unselected still specifically for
+    /// that case.
+    fn preview_with_an_unselected_still() -> ThemePreview {
+        let mut view = preview();
+        view.backgrounds.push(BackgroundChoice {
+            id: id('e'),
+            label: "Dawn".into(),
+            kind: BackgroundKind::Image,
+            path: PathBuf::from("/tmp/dawn.png"),
+            selected: false,
+            decode_status: "unverified".into(),
+        });
+        view
+    }
+
+    #[test]
+    fn tap_background_activates_directly_since_the_generation_is_already_known() {
+        // Unlike a theme tap, a background tap always already knows the
+        // active theme's own generation (from `preview.generation`, just
+        // loaded), so it goes straight to `Activate` -- no `Preview` step.
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview_with_an_unselected_still()),
+            ..ThemeView::default()
+        };
+        let request = view.tap_background(2).expect("index 2 (Dawn) is not yet selected");
+        assert_eq!(
+            request,
             ThemeRequest::Activate {
                 theme_id: id('a'),
                 expected_generation: id('b'),
-                background_id: Some(id('c'))
+                background_id: Some(id('e')),
             }
-        );
-        assert!(view.background_request(1).is_err());
-        assert_eq!(
-            view.hit(
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                568,
-                1232
-            ),
-            Some(ThemeIntent::Apply)
         );
     }
 
     #[test]
-    fn stale_reply_after_cancel_and_app_sync_status_are_explicit() {
-        let mut view = ThemeView::default();
-        view.page = ThemePage::List;
-        view.submitted(
-            ThemeRequest::Preview {
-                theme_id: id('a'),
-                background_id: None,
-            },
-            1,
-        );
-        view.back();
-        assert!(!view.accept(ThemeReply {
-            id: 1,
-            request: ThemeRequest::Preview {
-                theme_id: id('a'),
-                background_id: None
-            },
-            result: Ok(ThemeResponse::Preview(Box::new(preview())))
-        }));
-        assert_eq!(view.page, ThemePage::Controls);
-        view.page = ThemePage::Preview;
-        let mut applied = preview();
-        applied.activated = true;
-        applied.app_appearance = Some(AppAppearance {
-            state: "failed".into(),
-            generation: Some(id('b')),
-            error: Some("reload-failed".into()),
-            kind: None,
-        });
-        let request = ThemeRequest::Activate {
-            theme_id: id('a'),
-            expected_generation: id('b'),
-            background_id: Some(id('c')),
+    fn tap_background_on_the_video_slice_sets_a_visible_error_and_sends_nothing() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            ..ThemeView::default()
         };
+        // Index 1 (`Motion`) is `BackgroundKind::Video` in the `preview()`
+        // fixture -- video playback is not available in this shell.
+        assert_eq!(view.tap_background(1), None);
+        assert_eq!(
+            view.error.as_deref(),
+            Some("Video playback is not available in this shell")
+        );
+    }
+
+    #[test]
+    fn tap_background_on_the_already_selected_slice_is_a_silent_no_op() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            ..ThemeView::default()
+        };
+        assert_eq!(view.tap_background(0), None, "index 0 (Still) is already selected");
+        assert_eq!(view.error, None);
+    }
+
+    #[test]
+    fn rapid_taps_across_themes_coalesce_onto_the_last_one() {
+        // "Rapid taps across themes should coalesce: the last tap wins,
+        // with no queue of stale activations, and an in-flight apply is
+        // superseded safely" (user requirement, verbatim).
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let settle = view.advance().unwrap();
+        view.submitted(settle.clone(), 50);
+        assert!(view.accept(ThemeReply {
+            id: 50,
+            request: settle,
+            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+        }));
+
+        let theme1 = view.list.as_ref().unwrap().themes[1].id.clone();
+        let theme2 = view.list.as_ref().unwrap().themes[2].id.clone();
+
+        let first_request = view.tap_theme(1).expect("index 1");
+        view.submitted(first_request.clone(), 1);
+        assert_eq!(view.applying_theme_index(), Some(1));
+
+        // Before the first tap's own reply lands, a second tap on a
+        // *different* theme supersedes it -- `desired` is overwritten
+        // immediately, with no queue.
+        let second_request = view.tap_theme(2);
+        assert_eq!(
+            second_request, None,
+            "a request is already in flight; advance() has nothing to submit yet"
+        );
+        // The visible busy state is bounded by `pending` (what is
+        // physically in flight), not by `desired` (what is now wanted):
+        // slice 1 keeps showing busy until its own stale reply actually
+        // lands and clears `pending` -- the documented tradeoff (see this
+        // task's own evidence) is that a second rapid tap's own visible
+        // effect is bounded by the first tap's own in-flight round trip,
+        // not instantaneous.
+        assert_eq!(view.applying_theme_index(), Some(1));
+
+        // The first tap's own (now-stale) reply arrives: discarded, not
+        // shown, and `pending`/`pending_id` still clear correctly.
+        let mut stale_candidate = preview();
+        stale_candidate.theme.id = theme1.clone();
+        stale_candidate.generation = id('f');
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request: first_request,
+            result: Ok(ThemeResponse::Preview(Box::new(stale_candidate))),
+        }));
+        assert_eq!(view.pending, None);
+        assert_eq!(
+            view.preview.as_ref().unwrap().theme.id,
+            id('a'),
+            "the stale reply must never be shown"
+        );
+
+        // `advance()` immediately moves on to what is now desired: theme 2.
+        let request = view.advance().expect("theme 2 is still desired");
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: theme2.clone(),
+                background_id: None,
+            }
+        );
         view.submitted(request.clone(), 2);
+        let mut candidate2 = preview();
+        candidate2.theme.id = theme2.clone();
+        candidate2.generation = id('g');
         assert!(view.accept(ThemeReply {
             id: 2,
             request,
-            result: Ok(ThemeResponse::Preview(Box::new(applied)))
+            result: Ok(ThemeResponse::Preview(Box::new(candidate2))),
         }));
+        let activate = view.advance().expect("theme 2's generation is now known");
         assert_eq!(
-            view.message.as_deref(),
-            Some("Theme applied; app reload failed")
+            activate,
+            ThemeRequest::Activate {
+                theme_id: theme2,
+                expected_generation: id('g'),
+                background_id: None,
+            }
         );
     }
 
     #[test]
-    fn activation_cannot_be_cancelled_mid_transaction() {
-        let mut view = ThemeView {
-            page: ThemePage::Preview,
-            preview: Some(preview()),
-            ..ThemeView::default()
-        };
-        let activation = view.apply_request().unwrap();
-        view.submitted(activation, 1);
-        assert_eq!(view.back(), None);
-        assert_eq!(view.page, ThemePage::Preview);
-        assert_eq!(
-            view.hit(
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                568,
-                1232
-            ),
-            None,
-            "a pending activation blocks the footer, not just carousel taps"
-        );
-    }
-
-    #[test]
-    fn a_failed_activate_clears_pending_and_surfaces_a_visible_error() {
-        // Optimistic Apply's own rollback contract: whatever the receiver
-        // showed ahead of the durable commit, once that commit's own
-        // reply reports failure the chooser must clear the stalled Apply
-        // state and show a specific, visible error -- this is that
-        // existing `Err` handling in `accept` (unchanged by that
-        // feature), proven here for an Activate reply specifically, not
-        // just the Preview/background failure other coverage exercises.
-        let mut view = ThemeView {
-            page: ThemePage::Preview,
-            preview: Some(preview()),
-            ..ThemeView::default()
-        };
-        let request = view.apply_request().unwrap();
-        view.submitted(request.clone(), 9);
+    fn a_failed_activate_rolls_back_with_a_visible_error_and_clears_pending() {
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let settle = view.advance().unwrap();
+        view.submitted(settle.clone(), 50);
         assert!(view.accept(ThemeReply {
-            id: 9,
+            id: 50,
+            request: settle,
+            result: Ok(ThemeResponse::Preview(Box::new(preview_with_an_unselected_still()))),
+        }));
+
+        let request = view.tap_background(2).expect("Dawn is not selected");
+        view.submitted(request.clone(), 3);
+        assert!(view.accept(ThemeReply {
+            id: 3,
             request,
             result: Err("commit failed; previous generation restored".into()),
         }));
@@ -790,102 +1100,92 @@ mod tests {
         );
         assert_eq!(view.pending, None);
         assert_eq!(view.pending_id, None);
-    }
-
-    #[test]
-    fn list_and_preview_loads_center_the_carousels_on_the_active_selection() {
-        let mut view = ThemeView::default();
-        let themes: Vec<ThemeEntry> = (0..5)
-            .map(|index| {
-                let mut theme = preview().theme;
-                theme.id = std::iter::repeat_n(char::from_digit(index, 10).unwrap(), 24).collect();
-                theme
-            })
-            .collect();
-        let active_id = themes[3].id.clone();
-        let request = view.open();
-        view.submitted(request.clone(), 1);
-        assert!(view.accept(ThemeReply {
-            id: 1,
-            request,
-            result: Ok(ThemeResponse::List(ThemeList {
-                themes,
-                active: ActiveTheme {
-                    id: Some(active_id),
-                    generation: None,
-                },
-            })),
-        }));
-        assert_eq!(view.theme_position, 3.0);
-
-        let mut staged = preview();
-        staged.backgrounds[1].selected = true;
-        staged.backgrounds[0].selected = false;
-        let request = view.preview_request(0).unwrap();
-        view.submitted(request.clone(), 2);
-        assert!(view.accept(ThemeReply {
-            id: 2,
-            request,
-            result: Ok(ThemeResponse::Preview(Box::new(staged))),
-        }));
-        assert_eq!(view.background_position, 1.0);
-    }
-
-    #[test]
-    fn reopened_list_rejects_old_equal_request_and_failed_background_blocks_apply() {
-        let mut view = ThemeView::default();
-        let old_request = view.open();
-        view.submitted(old_request.clone(), 1);
-        view.back();
-        let new_request = view.open();
-        view.submitted(new_request.clone(), 2);
-        let list = ThemeList {
-            themes: vec![preview().theme],
-            active: ActiveTheme {
-                id: None,
-                generation: None,
-            },
-        };
-        assert!(!view.accept(ThemeReply {
-            id: 1,
-            request: old_request,
-            result: Ok(ThemeResponse::List(list.clone())),
-        }));
-        assert_eq!(view.pending_id, Some(2));
-        assert!(view.accept(ThemeReply {
-            id: 2,
-            request: new_request,
-            result: Ok(ThemeResponse::List(list)),
-        }));
-        view.page = ThemePage::Preview;
-        view.preview = Some(preview());
-        let choice = view.background_request(0).unwrap();
-        view.submitted(choice.clone(), 3);
-        assert!(view.accept(ThemeReply {
-            id: 3,
-            request: choice,
-            result: Err("background preparation failed".into()),
-        }));
-        assert!(view.selection_error);
-        assert!(view.apply_request().is_err());
+        assert_eq!(view.advance(), None, "a failed target is no longer desired");
         assert_eq!(
-            view.hit(
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                (430.0, PREVIEW_FOOTER_Y + 20.0),
-                568,
-                1232
-            ),
-            None
+            view.applying_background_index(),
+            None,
+            "rollback must not leave the slice looking busy"
         );
-        let retry = view.background_request(0).unwrap();
-        view.submitted(retry.clone(), 4);
+    }
+
+    #[test]
+    fn app_reload_status_reaches_the_message_on_a_successful_activate() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            desired: Some(Desired {
+                theme_id: id('a'),
+                background_id: Some(id('d')),
+                generation: Some(id('b')),
+                already_active: false,
+            }),
+            ..ThemeView::default()
+        };
+        let request = ThemeRequest::Activate {
+            theme_id: id('a'),
+            expected_generation: id('b'),
+            background_id: Some(id('d')),
+        };
+        view.submitted(request.clone(), 2);
+        let mut applied = preview();
+        applied.activated = true;
+        applied.app_appearance = Some(AppAppearance {
+            state: "failed".into(),
+            generation: Some(id('b')),
+            error: Some("reload-failed".into()),
+            kind: None,
+        });
         assert!(view.accept(ThemeReply {
-            id: 4,
-            request: retry,
-            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+            id: 2,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(applied))),
         }));
-        assert!(!view.selection_error);
-        assert!(view.apply_request().is_ok());
+        assert_eq!(
+            view.message.as_deref(),
+            Some("Theme applied; app reload failed")
+        );
+    }
+
+    #[test]
+    fn applying_theme_index_ignores_a_pending_background_selection() {
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        view.preview = Some(preview());
+        view.pending = Some(ThemeRequest::Activate {
+            theme_id: id('a'),
+            expected_generation: id('b'),
+            background_id: Some(id('d')),
+        });
+        assert_eq!(view.applying_theme_index(), None);
+        assert_eq!(view.applying_background_index(), Some(1));
+    }
+
+    #[test]
+    fn record_known_generation_is_read_by_the_map_directly() {
+        let mut view = ThemeView::default();
+        assert!(view.known_generations.is_empty());
+        view.record_known_generation("theme-x", "generation-x");
+        assert_eq!(
+            view.known_generations.get("theme-x"),
+            Some(&"generation-x".to_string())
+        );
+    }
+
+    #[test]
+    fn activation_cannot_be_cancelled_mid_transaction() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            ..ThemeView::default()
+        };
+        let activation = ThemeRequest::Activate {
+            theme_id: id('a'),
+            expected_generation: id('b'),
+            background_id: Some(id('c')),
+        };
+        view.submitted(activation, 1);
+        assert_eq!(view.back(), None);
+        assert_eq!(view.page, ThemePage::List);
     }
 
     #[test]
@@ -898,6 +1198,11 @@ mod tests {
 
     #[test]
     fn still_preview_worker_returns_output_crop_outside_dispatch() {
+        // `ThemeImageWorker` itself is unused by any paint path now (task:
+        // tap-to-apply, 2026-09-25 removed the single large still preview
+        // it fed -- see `RendererCache::poll_theme_image`'s own doc), but
+        // the worker's own decode contract is still exercised here in case
+        // a later task revives a consumer for it.
         let path = std::env::temp_dir().join(format!(
             "k230-theme-preview-{}-{}.png",
             std::process::id(),
@@ -931,9 +1236,6 @@ mod tests {
         assert_eq!(reply.key, key);
         let pixels = reply.pixels.unwrap();
         assert_eq!(pixels.len(), 56 * 123 * 4);
-        // Both vertical regions visible in the actual portrait wallpaper
-        // must survive the asynchronous chooser sample. A wide 512x176 crop
-        // would sample a different source region.
         assert_eq!(&pixels[..4], &[30, 40, 220, 255]);
         assert_eq!(&pixels[pixels.len() - 4..], &[220, 80, 20, 255]);
         std::fs::remove_file(path).unwrap();
@@ -941,14 +1243,6 @@ mod tests {
 
     #[test]
     fn still_preview_reuses_the_generations_background_cache_instead_of_redecoding() {
-        // The activation flow (`tools/theme_activate.py`'s `prepare()`)
-        // already writes a `background.cache` for the selected background at
-        // exactly this width/height/FitMode::Crop (see
-        // `background_decode.rs`). The chooser's "Selected background" still
-        // preview must reuse that file through `generation_root` rather than
-        // repeating a full source decode -- proven here by deleting the
-        // source file after the cache is written: a worker that still
-        // succeeds only read the cache.
         let generation_root = std::env::temp_dir().join(format!(
             "k230-theme-preview-cache-reuse-{}-{}",
             std::process::id(),
@@ -962,9 +1256,6 @@ mod tests {
         let source_path = source_path.canonicalize().unwrap();
         crate::background_decode::write_wallpaper_cache(&source_path, &generation_root, 20, 40)
             .expect("cache precompute must succeed while the source still exists");
-        // Now remove the source: any code path that falls through to a full
-        // decode fails from here on, so a successful reply proves the cache
-        // was actually used.
         std::fs::remove_file(&source_path).unwrap();
 
         let worker = ThemeImageWorker::default();
@@ -995,47 +1286,17 @@ mod tests {
         std::fs::remove_dir_all(&generation_root).unwrap();
     }
 
-    fn theme_list(active_index: Option<usize>) -> ThemeList {
-        theme_list_of(3, active_index)
-    }
-
-    fn theme_list_of(count: usize, active_index: Option<usize>) -> ThemeList {
-        let themes: Vec<ThemeEntry> = (0..count)
-            .map(|index| {
-                let mut theme = preview().theme;
-                theme.id = std::iter::repeat_n(
-                    char::from_digit(index as u32, 16).expect("test fixture stays under 16 themes"),
-                    24,
-                )
-                .collect();
-                theme
-            })
-            .collect();
-        ThemeList {
-            active: ActiveTheme {
-                id: active_index.map(|index| themes[index].id.clone()),
-                generation: None,
-            },
-            themes,
-        }
-    }
-
     #[test]
     fn prepare_ahead_waits_out_the_debounce_and_never_resends_for_the_same_index() {
         let mut view = ThemeView::default();
         view.page = ThemePage::List;
         view.list = Some(theme_list(None));
 
-        // A fast flick (never settled, `centered` is `None` each tick) asks
-        // for nothing.
         assert_eq!(view.poll_prepare_ahead(50, None), None);
         assert_eq!(view.poll_prepare_ahead(50, None), None);
 
-        // Settling on index 1 starts the debounce timer; short of the
-        // threshold, still nothing.
         assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
         assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
-        // Crossing the threshold (100+100+50 >= 220) fires exactly once.
         let (index, request) = view
             .poll_prepare_ahead(50, Some(1))
             .expect("debounce elapsed while centred on the same index");
@@ -1049,9 +1310,6 @@ mod tests {
         );
         view.prepare_ahead_submitted(1, 7);
 
-        // Still centred on 1: no repeat while the in-flight slot is held,
-        // and none once it clears either, since index 1 was already asked
-        // for.
         assert_eq!(view.poll_prepare_ahead(1000, Some(1)), None);
         assert!(view.prepare_ahead_reply(&ThemeReply {
             id: 7,
@@ -1060,7 +1318,6 @@ mod tests {
         }));
         assert_eq!(view.poll_prepare_ahead(1000, Some(1)), None);
 
-        // Moving to a different index resets the dedupe and debounce.
         assert_eq!(view.poll_prepare_ahead(50, Some(2)), None);
         let (second_index, second_request) = view
             .poll_prepare_ahead(200, Some(2))
@@ -1076,18 +1333,41 @@ mod tests {
     }
 
     #[test]
+    fn prepare_ahead_reply_records_the_known_generation() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        view.list = Some(theme_list(None));
+        let (index, request) = view
+            .poll_prepare_ahead(PREPARE_AHEAD_DEBOUNCE_MS, Some(1))
+            .expect("debounce elapsed");
+        view.prepare_ahead_submitted(index, 7);
+        let mut warmed = preview();
+        warmed.theme.id = view.list.as_ref().unwrap().themes[1].id.clone();
+        warmed.generation = id('z');
+        assert!(view.prepare_ahead_reply(&ThemeReply {
+            id: 7,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(warmed))),
+        }));
+        // `main.rs`'s own `theme_reply` is what actually calls
+        // `record_known_generation` (the warm-up reply's `Ok` payload is
+        // available to it, not to `prepare_ahead_reply` itself, which only
+        // ever sees the *request*) -- proven directly here instead.
+        view.record_known_generation(&view.list.as_ref().unwrap().themes[1].id.clone(), &id('z'));
+        assert_eq!(
+            view.known_generations.get(&view.list.as_ref().unwrap().themes[1].id),
+            Some(&id('z'))
+        );
+    }
+
+    #[test]
     fn prepare_ahead_skips_the_already_active_theme_and_a_stray_reply_never_reaches_accept() {
         let mut view = ThemeView::default();
         view.page = ThemePage::List;
         view.list = Some(theme_list(Some(0)));
 
-        // Index 0 is already active: nothing to warm even after a long dwell.
         assert_eq!(view.poll_prepare_ahead(500, Some(0)), None);
 
-        // A reply for a request this view never tracked as in-flight (a
-        // stray/late id) is not claimed by `prepare_ahead_reply`, so
-        // `main.rs` would fall through to `accept`, which independently
-        // rejects it via the ordinary pending/pending_id mismatch check.
         let stray = ThemeReply {
             id: 999,
             request: ThemeRequest::Preview {
@@ -1111,9 +1391,6 @@ mod tests {
         assert_eq!(view.back(), None); // List -> Controls
         assert_eq!(view.page, ThemePage::Controls);
 
-        // The in-flight request's own reply must still be recognised (and
-        // discarded) even after navigating away, never treated as a real
-        // Preview reply that could reopen/repaint the chooser.
         let reply = ThemeReply {
             id: 3,
             request: ThemeRequest::Preview {
@@ -1123,19 +1400,6 @@ mod tests {
             result: Err("irrelevant".into()),
         };
         assert!(view.prepare_ahead_reply(&reply));
-    }
-
-    /// Drives a `List` reply through the same `submitted`/`accept` path
-    /// `main.rs` uses for a real list load, so the neighbour queue is
-    /// populated the way it would be on the board, not poked directly.
-    fn load_list(view: &mut ThemeView, count: usize, active_index: Option<usize>) {
-        let list = theme_list_of(count, active_index);
-        view.submitted(ThemeRequest::List, 1);
-        assert!(view.accept(ThemeReply {
-            id: 1,
-            request: ThemeRequest::List,
-            result: Ok(ThemeResponse::List(list)),
-        }));
     }
 
     #[test]
@@ -1168,8 +1432,6 @@ mod tests {
         load_list(&mut view, 1, Some(0));
 
         assert!(view.pending_neighbor_warms.is_empty());
-        // Nothing to warm and the active theme is already selected, so
-        // polling never manufactures a request out of an empty queue.
         assert_eq!(view.poll_prepare_ahead(500, Some(0)), None);
     }
 
@@ -1179,9 +1441,6 @@ mod tests {
         view.page = ThemePage::List;
         load_list(&mut view, 3, Some(1));
 
-        // No centred index this tick (e.g. the carousel is mid-animation):
-        // the dwell path has nothing to say, so the queued neighbour at
-        // index 0 goes out immediately, without waiting on the debounce.
         let (index, request) = view.poll_prepare_ahead(16, None).expect("a queued neighbour");
         assert_eq!(index, 0);
         assert_eq!(
@@ -1193,7 +1452,6 @@ mod tests {
         );
         view.prepare_ahead_submitted(index, 42);
 
-        // The other neighbour is still queued behind it.
         assert_eq!(view.pending_neighbor_warms, std::collections::VecDeque::from([2]));
     }
 
@@ -1207,10 +1465,6 @@ mod tests {
             std::collections::VecDeque::from([0, 2])
         );
 
-        // A freshly-centred index whose very first tick already meets the
-        // debounce (a long single tick, or a caller that primed the watch
-        // elsewhere) fires the dwell-driven warm immediately, winning over
-        // the still-populated neighbour queue rather than draining it.
         let (index, request) = view
             .poll_prepare_ahead(PREPARE_AHEAD_DEBOUNCE_MS, Some(2))
             .expect("dwell-driven warm");
@@ -1223,8 +1477,6 @@ mod tests {
             }
         );
 
-        // The neighbour queue is untouched -- it will be drained on a later
-        // tick once nothing dwell-driven is due.
         assert_eq!(
             view.pending_neighbor_warms,
             std::collections::VecDeque::from([0, 2])
@@ -1233,20 +1485,6 @@ mod tests {
 
     #[test]
     fn a_pending_confirm_pauses_every_warm_up_until_its_own_reply_lands() {
-        // Board evidence (2026-09-26): opened the chooser (queuing
-        // neighbours 0 and 2 of the active theme at index 1), warmed
-        // neighbour 0, then swiped to and tapped-confirmed theme 2 (the
-        // *other* queued neighbour). While that confirm's own real Preview
-        // was still pending, a later tick drained neighbour 2 from the
-        // queue anyway and submitted its own warm-up "prepare" -- which
-        // `ThemeWorker` (one request at a time, strict submission order)
-        // delivered to the Rust receiver's single `prepared` slot *after*
-        // the confirm's own "prepare" had already staged theme 2 there,
-        // silently overwriting it before Apply ever ran. This proves the
-        // fix: once a real request is pending, `poll_prepare_ahead` emits
-        // nothing at all -- not the remaining queued neighbour, not a
-        // fresh dwell on the centred index -- however many ticks pass,
-        // until that request's own reply clears `pending`.
         let mut view = ThemeView::default();
         view.page = ThemePage::List;
         load_list(&mut view, 3, Some(1));
@@ -1255,7 +1493,6 @@ mod tests {
             std::collections::VecDeque::from([0, 2])
         );
 
-        // Neighbour 0 warms first, its own reply lands, nothing pending.
         let (index, warm_request) = view
             .poll_prepare_ahead(16, None)
             .expect("neighbour 0 warms while nothing is pending");
@@ -1271,18 +1508,10 @@ mod tests {
             std::collections::VecDeque::from([2])
         );
 
-        // The person swipes to, and taps to confirm, index 2 -- the same
-        // theme still sitting in the neighbour queue. A real, explicit
-        // Preview is now pending.
-        let confirm = view.preview_request(2).expect("index 2 exists");
+        let confirm = view.tap_theme(2).expect("index 2 exists");
         view.submitted(confirm.clone(), 101);
         assert_eq!(view.pending, Some(confirm.clone()));
 
-        // Before that reply lands, however many ticks pass -- whether the
-        // carousel is reported centred on 2 (matching both a dwell
-        // opportunity and the still-queued neighbour) or not settled at
-        // all -- nothing is emitted, and the queue itself is left intact
-        // rather than silently drained and discarded.
         for centered in [Some(2), Some(2), None, Some(2)] {
             assert_eq!(view.poll_prepare_ahead(500, centered), None);
         }
@@ -1291,27 +1520,23 @@ mod tests {
             std::collections::VecDeque::from([2])
         );
 
-        // The confirm's own reply lands: `pending` clears, the page moves
-        // to Preview, and Apply now targets exactly the generation that
-        // reply reported -- never a later, different theme's.
         let mut preview_of_two = preview();
         preview_of_two.theme.id = view.list.as_ref().unwrap().themes[2].id.clone();
         preview_of_two.generation = id('e');
         assert!(view.accept(ThemeReply {
-            id: 101,
+            id: view.pending_id.unwrap(),
             request: confirm,
             result: Ok(ThemeResponse::Preview(Box::new(preview_of_two))),
         }));
         assert_eq!(view.pending, None);
-        assert_eq!(view.page, ThemePage::Preview);
 
-        let apply = view.apply_request().expect("a loaded preview, nothing pending");
+        let activate = view.advance().expect("generation now known, not already active");
         assert_eq!(
-            apply,
+            activate,
             ThemeRequest::Activate {
-                theme_id: view.preview.as_ref().unwrap().theme.id.clone(),
+                theme_id: view.list.as_ref().unwrap().themes[2].id.clone(),
                 expected_generation: id('e'),
-                background_id: Some(id('c')),
+                background_id: None,
             }
         );
     }

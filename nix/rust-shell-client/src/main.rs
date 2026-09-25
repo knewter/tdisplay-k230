@@ -21,7 +21,7 @@ use k230_shell_rust::{
         ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
-    theme_catalog::{ThemeReply, ThemeRequest, ThemeWorker},
+    theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
     theme_ui::{
         ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
     },
@@ -1209,11 +1209,11 @@ impl ShellClient {
         }
     }
 
-    /// Same as `sync_theme_pressed`, for the Preview page's background
-    /// carousel.
+    /// Same as `sync_theme_pressed`, for the active theme's own background
+    /// carousel, below the theme carousel on this same List page.
     fn sync_background_pressed(&mut self) {
         let center_x = f64::from(self.width) / 2.0;
-        let want = (self.theme_view.page == ThemePage::Preview)
+        let want = (self.theme_view.page == ThemePage::List)
             .then(|| {
                 let count = self
                     .theme_view
@@ -1243,19 +1243,7 @@ impl ShellClient {
                 }
                 self.theme_view.submitted(request, id);
             }
-            Err(error) => {
-                if matches!(
-                    request,
-                    ThemeRequest::Preview {
-                        background_id: Some(_),
-                        ..
-                    }
-                ) {
-                    self.theme_view.selection_failed(error);
-                } else {
-                    self.theme_view.failed_to_submit(error);
-                }
-            }
+            Err(error) => self.theme_view.failed_to_submit(error),
         }
         self.theme_dirty();
     }
@@ -1267,29 +1255,45 @@ impl ShellClient {
         // that would (harmlessly, since pending_id never matches, but
         // needlessly) be indistinguishable in principle from a real
         // navigational Preview reply. `prepare_ahead_reply` recognises and
-        // consumes exactly its own request id and nothing else.
+        // consumes exactly its own request id and nothing else, and its own
+        // generation (if any) is still worth remembering -- see
+        // `ThemeView::record_known_generation`'s own doc.
         if self.theme_view.prepare_ahead_reply(&reply) {
+            if let Ok(ThemeResponse::Preview(preview)) = &reply.result {
+                self.theme_view
+                    .record_known_generation(&preview.theme.id, &preview.generation);
+            }
             return;
         }
+        let theme_position_before = self.theme_view.theme_position;
+        let background_position_before = self.theme_view.background_position;
         if self.theme_view.accept(reply) {
-            // `ThemeView::accept` just centered `theme_position`/
-            // `background_position` on the freshly-loaded active theme or
-            // selected background; jump the matching physics carousel
-            // there too, with no animation (a fresh list/preview is not a
-            // browsing gesture). Only the carousel for the page just
-            // loaded is touched, so an in-flight drag on the *other*
-            // carousel (e.g. background_carousel while a stray List reply
-            // for an unrelated re-open lands) is never interrupted.
-            match self.theme_view.page {
-                ThemePage::List => self
-                    .theme_carousel
-                    .set_index(self.theme_view.theme_position.max(0.0).round() as usize),
-                ThemePage::Preview => self
-                    .background_carousel
-                    .set_index(self.theme_view.background_position.max(0.0).round() as usize),
-                ThemePage::Controls => {}
+            // `ThemeView::accept` may have just centered `theme_position`
+            // (a freshly (re)loaded list) and/or `background_position`
+            // (the active theme's own detail settling); jump the matching
+            // physics carousel there too, with no animation (a fresh
+            // list/preview is not a browsing gesture) -- but only the one
+            // whose position this reply actually moved, so an in-flight
+            // drag on the *other* carousel (both now live on the same
+            // page) is never interrupted by an unrelated reply.
+            if self.theme_view.theme_position != theme_position_before {
+                self.theme_carousel
+                    .set_index(self.theme_view.theme_position.max(0.0).round() as usize);
             }
-            self.theme_dirty();
+            if self.theme_view.background_position != background_position_before {
+                self.background_carousel
+                    .set_index(self.theme_view.background_position.max(0.0).round() as usize);
+            }
+            // Coalescing: immediately move on to whatever is now desired
+            // -- either the next step toward the same target (a Preview's
+            // generation now known -> Activate), or, if a later tap
+            // superseded this one while it was in flight, straight to
+            // that instead. See `ThemeView::advance`'s own doc.
+            if let Some(request) = self.theme_view.advance() {
+                self.submit_theme(request);
+            } else {
+                self.theme_dirty();
+            }
         }
     }
 
@@ -1308,24 +1312,19 @@ impl ShellClient {
             }
             ThemeIntent::Close => self.hide(),
             ThemeIntent::Theme(index) => {
-                if let Some(request) = self.theme_view.preview_request(index) {
+                if let Some(request) = self.theme_view.tap_theme(index) {
                     self.submit_theme(request);
+                } else {
+                    self.theme_dirty();
                 }
             }
-            ThemeIntent::Background(index) => match self.theme_view.background_request(index) {
-                Ok(request) => self.submit_theme(request),
-                Err(error) => {
-                    self.theme_view.selection_failed(error);
+            ThemeIntent::Background(index) => {
+                if let Some(request) = self.theme_view.tap_background(index) {
+                    self.submit_theme(request);
+                } else {
                     self.theme_dirty();
                 }
-            },
-            ThemeIntent::Apply => match self.theme_view.apply_request() {
-                Ok(request) => self.submit_theme(request),
-                Err(error) => {
-                    self.theme_view.failed_to_submit(error);
-                    self.theme_dirty();
-                }
-            },
+            }
         }
     }
 
@@ -1424,6 +1423,20 @@ impl ShellClient {
             )
         };
         let prerendered = mismatch_reason.is_none().then_some(stored).flatten();
+        // Per-stage timing (coordinator ask, board evidence 2026-09-28: a
+        // *matched* pre-render still took 161ms touch-up-to-commit on the
+        // K230, far above the ~30ms target -- this breakdown is what a
+        // later board run reads to find which stage actually dominates).
+        // `adopt_ms` covers `adopt_prerendered_overlay`'s own pixel copy
+        // (or, on a miss, `set_appearance`'s cache invalidation);
+        // `wallpaper_ms` and `overlay_ms` each cover one surface's whole
+        // `draw_*` call -- attach, damage, and `wl_surface::commit` all
+        // happen inside those calls and are not separately timed here
+        // (a finer breakdown inside `draw`/`draw_wallpaper` themselves,
+        // and the wallpaper-buffer-attach optimization the same board
+        // evidence asked for, are named as deferred follow-up work in
+        // this task's own evidence doc, not attempted this stage).
+        let stage_start = Instant::now();
         if let Some(candidate) = prerendered {
             self.renderer.adopt_prerendered_overlay(
                 Some(snapshot.clone()),
@@ -1435,16 +1448,21 @@ impl ShellClient {
         } else {
             self.renderer.set_appearance(Some(snapshot.clone()));
         }
+        let adopt_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
         self.dirty = true;
         self.wallpaper.dirty = true;
+        let stage_start = Instant::now();
         let background = self.draw_wallpaper(qh);
+        let wallpaper_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
         if !background {
             self.log(&format!(
                 "optimistic-apply skipped reason=draw-wallpaper-failed ms={:.1}",
                 elapsed_ms()
             ));
         }
+        let stage_start = Instant::now();
         let foreground = self.layer.is_none() || self.draw(qh);
+        let overlay_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
         if background && !foreground {
             self.log(&format!(
                 "optimistic-apply skipped reason=draw-failed ms={:.1}",
@@ -1452,7 +1470,9 @@ impl ShellClient {
             ));
         }
         self.appearance_pending = true;
+        let stage_start = Instant::now();
         let flushed = queue.flush().is_ok();
+        let flush_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
         self.appearance_pending = false;
         if background && foreground && !flushed {
             self.log(&format!(
@@ -1468,7 +1488,7 @@ impl ShellClient {
             self.optimistic_active = Some(snapshot.generation.clone());
             // Named stage marker (task 6.6's own board re-check): how long
             // the Apply tap took to reach a real, flushed frame carrying
-            // the new theme -- this is the number the ~100 ms target is
+            // the new theme -- this is the number the ~30 ms target is
             // measured against. `prerendered` distinguishes a cache hit
             // (the panel's own scene reused, not rebuilt) from a full
             // synchronous rebuild; `reason=...` (only present when
@@ -1486,6 +1506,9 @@ impl ShellClient {
                     elapsed_ms()
                 )),
             }
+            self.log(&format!(
+                "optimistic-apply stage adopt_ms={adopt_ms:.1} wallpaper_ms={wallpaper_ms:.1} overlay_ms={overlay_ms:.1} flush_ms={flush_ms:.1}"
+            ));
         }
     }
 
@@ -2688,23 +2711,23 @@ impl TouchHandler for ShellClient {
                         // `valid_list` gate: an accidental down on the
                         // header/footer chrome must never later be
                         // mistaken for a carousel drag.
-                        match self.theme_view.page {
-                            ThemePage::List
-                                if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h)
-                                    .contains(&pos.1) =>
+                        // Task: tap-to-apply (2026-09-25) put both
+                        // carousels on the one List page at once; each is
+                        // armed independently by its own band, rather than
+                        // by which page is showing.
+                        if self.theme_view.page == ThemePage::List {
+                            if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h)
+                                .contains(&pos.1)
                             {
                                 self.theme_carousel.down(id, pos, time_ms);
                                 self.sync_theme_pressed();
-                            }
-                            ThemePage::Preview
-                                if (BACKGROUND_CAROUSEL_TOP
-                                    ..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h)
-                                    .contains(&pos.1) =>
+                            } else if (BACKGROUND_CAROUSEL_TOP
+                                ..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h)
+                                .contains(&pos.1)
                             {
                                 self.background_carousel.down(id, pos, time_ms);
                                 self.sync_background_pressed();
                             }
-                            _ => {}
                         }
                     }
                 }
@@ -2844,49 +2867,61 @@ impl TouchHandler for ShellClient {
                                 }
                             } else {
                                 let center_x = f64::from(self.width) / 2.0;
-                                let carousel_outcome = match self.theme_view.page {
-                                    ThemePage::List => {
-                                        let count = self
+                                // Task: tap-to-apply (2026-09-25): both
+                                // carousels live on the one List page now.
+                                // `Carousel::up` returns `None` for a
+                                // touch id it never armed (see its own
+                                // doc), so trying the theme carousel
+                                // first and falling through to the
+                                // background carousel only on `None`
+                                // correctly finds whichever one (if
+                                // either) actually owns this touch,
+                                // regardless of which is visually
+                                // "current".
+                                let (carousel_outcome, from_background) =
+                                    if self.theme_view.page == ThemePage::List {
+                                        let theme_count = self
                                             .theme_view
                                             .list
                                             .as_ref()
                                             .map_or(0, |list| list.themes.len());
-                                        self.theme_carousel.up(
+                                        let outcome = self.theme_carousel.up(
                                             id,
                                             point,
                                             time_ms,
-                                            count,
+                                            theme_count,
                                             center_x,
                                             THEME_CAROUSEL_TOP,
-                                        )
-                                    }
-                                    ThemePage::Preview => {
-                                        let count = self
-                                            .theme_view
-                                            .preview
-                                            .as_ref()
-                                            .map_or(0, |preview| preview.backgrounds.len());
-                                        self.background_carousel.up(
-                                            id,
-                                            point,
-                                            time_ms,
-                                            count,
-                                            center_x,
-                                            BACKGROUND_CAROUSEL_TOP,
-                                        )
-                                    }
-                                    ThemePage::Controls => None,
-                                };
+                                        );
+                                        if outcome.is_some() {
+                                            (outcome, false)
+                                        } else {
+                                            let background_count = self
+                                                .theme_view
+                                                .preview
+                                                .as_ref()
+                                                .map_or(0, |preview| preview.backgrounds.len());
+                                            let outcome = self.background_carousel.up(
+                                                id,
+                                                point,
+                                                time_ms,
+                                                background_count,
+                                                center_x,
+                                                BACKGROUND_CAROUSEL_TOP,
+                                            );
+                                            (outcome, true)
+                                        }
+                                    } else {
+                                        (None, false)
+                                    };
                                 self.sync_theme_pressed();
                                 self.sync_background_pressed();
                                 match carousel_outcome {
                                     Some(CarouselOutcome::Confirm(index)) => {
-                                        let intent = match self.theme_view.page {
-                                            ThemePage::List => ThemeIntent::Theme(index),
-                                            ThemePage::Preview => ThemeIntent::Background(index),
-                                            ThemePage::Controls => unreachable!(
-                                                "a carousel outcome only comes from List/Preview"
-                                            ),
+                                        let intent = if from_background {
+                                            ThemeIntent::Background(index)
+                                        } else {
+                                            ThemeIntent::Theme(index)
                                         };
                                         self.theme_action(intent);
                                     }
@@ -3083,40 +3118,33 @@ impl TouchHandler for ShellClient {
                 }
             } else if self.route == Route::Settings
                 && self.input_ready
-                && self.theme_view.page != ThemePage::Controls
+                && self.theme_view.page == ThemePage::List
                 && self.wifi_view.page == WifiPage::Closed
             {
-                let count = match self.theme_view.page {
-                    ThemePage::List => self.theme_view.list.as_ref().map_or(0, |l| l.themes.len()),
-                    ThemePage::Preview => self
-                        .theme_view
-                        .preview
-                        .as_ref()
-                        .map_or(0, |p| p.backgrounds.len()),
-                    ThemePage::Controls => 0,
-                };
-                let moved = match self.theme_view.page {
-                    ThemePage::List => self.theme_carousel.motion(id, pos, time_ms, count),
-                    ThemePage::Preview => self.background_carousel.motion(id, pos, time_ms, count),
-                    ThemePage::Controls => false,
-                };
-                if moved {
-                    match self.theme_view.page {
-                        ThemePage::List => {
-                            self.theme_view.theme_position = self.theme_carousel.position();
-                        }
-                        ThemePage::Preview => {
-                            self.theme_view.background_position = self.background_carousel.position();
-                        }
-                        ThemePage::Controls => {}
-                    }
+                // Task: tap-to-apply (2026-09-25): both carousels are live
+                // at once now; `Carousel::motion` is keyed by its own
+                // armed `contact.id` internally, so calling it on both
+                // unconditionally is safe -- only the one actually
+                // holding this touch id (if either) moves.
+                let theme_count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
+                let background_count = self
+                    .theme_view
+                    .preview
+                    .as_ref()
+                    .map_or(0, |p| p.backgrounds.len());
+                if self.theme_carousel.motion(id, pos, time_ms, theme_count) {
+                    self.theme_view.theme_position = self.theme_carousel.position();
                     self.theme_dirty();
                 }
-                match self.theme_view.page {
-                    ThemePage::List => self.sync_theme_pressed(),
-                    ThemePage::Preview => self.sync_background_pressed(),
-                    ThemePage::Controls => {}
+                if self
+                    .background_carousel
+                    .motion(id, pos, time_ms, background_count)
+                {
+                    self.theme_view.background_position = self.background_carousel.position();
+                    self.theme_dirty();
                 }
+                self.sync_theme_pressed();
+                self.sync_background_pressed();
             }
             if self.dirty {
                 self.draw(qh);
@@ -3780,48 +3808,40 @@ fn serve() -> Result<(), String> {
         }
         state.tick_notifications(elapsed);
         if state.route == Route::Settings {
-            let count = match state.theme_view.page {
-                ThemePage::List => state.theme_view.list.as_ref().map_or(0, |l| l.themes.len()),
-                ThemePage::Preview => state
-                    .theme_view
-                    .preview
-                    .as_ref()
-                    .map_or(0, |p| p.backgrounds.len()),
-                ThemePage::Controls => 0,
-            };
-            let moved = match state.theme_view.page {
-                ThemePage::List => state.theme_carousel.tick(elapsed, count),
-                ThemePage::Preview => state.background_carousel.tick(elapsed, count),
-                ThemePage::Controls => false,
-            };
-            if moved {
-                match state.theme_view.page {
-                    ThemePage::List => {
-                        state.theme_view.theme_position = state.theme_carousel.position();
-                    }
-                    ThemePage::Preview => {
-                        state.theme_view.background_position = state.background_carousel.position();
-                    }
-                    ThemePage::Controls => {}
-                }
+            let theme_count = state.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
+            let background_count = state
+                .theme_view
+                .preview
+                .as_ref()
+                .map_or(0, |p| p.backgrounds.len());
+            // Task: tap-to-apply (2026-09-25): both carousels tick every
+            // frame now, independent of which (if either) currently has
+            // an armed touch -- `Carousel::tick` drives momentum/settle
+            // physics purely from elapsed time, not touch ownership, and
+            // both are visible at once on the one List page.
+            if state.theme_carousel.tick(elapsed, theme_count) {
+                state.theme_view.theme_position = state.theme_carousel.position();
+                state.theme_dirty();
+            }
+            if state.background_carousel.tick(elapsed, background_count) {
+                state.theme_view.background_position = state.background_carousel.position();
                 state.theme_dirty();
             }
             // Task 3.2 (+ neighbour warm-up): as a theme becomes (and stays)
             // the carousel's centred item on the List page, warm it ahead
             // of a possible Apply -- see `ThemeView::poll_prepare_ahead`'s
             // own doc. Only considered while the carousel itself is at rest
-            // (`!moved` is not sufficient: `moved` is false on an
-            // already-settled frame too, but `is_animating()` is what
-            // actually distinguishes "a drag/coast/settle is still live"
-            // from "nothing is moving"), so a fast flick fires nothing
-            // until the finger actually settles somewhere. When nothing is
-            // dwell-driven, the same call also drains a queued neighbour
-            // warm-up (the index returned may not be `centered` in that
-            // case -- `poll_prepare_ahead` reports exactly which one it
-            // means).
+            // (`is_animating()` distinguishes "a drag/coast/settle is
+            // still live" from "nothing is moving"), so a fast flick
+            // fires nothing until the finger actually settles somewhere.
+            // When nothing is dwell-driven, the same call also drains a
+            // queued neighbour warm-up (the index returned may not be
+            // `centered` in that case -- `poll_prepare_ahead` reports
+            // exactly which one it means). Theme-carousel only, same as
+            // before this task.
             if state.theme_view.page == ThemePage::List {
-                let centered = (!state.theme_carousel.is_animating() && count > 0)
-                    .then(|| state.theme_carousel.index(count));
+                let centered = (!state.theme_carousel.is_animating() && theme_count > 0)
+                    .then(|| state.theme_carousel.index(theme_count));
                 if let Some((index, request)) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
                     if let Ok(id) = state.themes.try_submit(request) {
                         state.theme_view.prepare_ahead_submitted(index, id);
@@ -4011,31 +4031,40 @@ fn serve() -> Result<(), String> {
         // the render below is real, synchronous Cairo work -- the same
         // ~200ms cost Apply's own optimistic show pays without this --
         // and running it earlier in this same iteration would delay
-        // sending whatever this tick's own draw already queued,
-        // including the very Preview-page frame that makes this
-        // eligible in the first place. It only ever targets the Preview
-        // page's own currently-loaded candidate, never a merely-warmed
-        // neighbour still being browsed past, and requires nothing at
-        // all pending -- not just excluding an Activate specifically --
-        // because the background carousel's own busy-spinner state (a
-        // `Preview{background_id: Some(_)}` request in flight) is baked
-        // into the cached body the same as everything else `content_
-        // generation` does not track (`paint_preview_footer_status`'s
-        // own live overlay does not cover that spinner, only the
-        // Apply/Cancel footer and status line), so computing while
-        // anything is pending risks caching a stale busy indicator no
-        // later live paint would ever correct.
+        // sending whatever this tick's own draw already queued.
+        //
+        // Task: tap-to-apply (2026-09-25) retargeted this from the old
+        // separate Preview page's own currently-loaded theme to the
+        // theme carousel's own *centred* candidate on this one List
+        // page -- whatever a tap right now would actually apply -- using
+        // `known_generations` (populated by `poll_prepare_ahead`'s own
+        // warm-up replies, via `record_known_generation`) rather than a
+        // fresh Preview round trip, so this never itself becomes the
+        // thing a tap has to wait on. Requires nothing at all pending --
+        // not just excluding an Activate specifically -- because the
+        // busy-spinner state a request in flight paints is baked into
+        // the ordinary cached body the same as everything else `content_
+        // generation` does not track, so computing while anything is
+        // pending risks caching a stale busy indicator.
         if state.route == Route::Settings
             && state.configured
-            && state.theme_view.page == ThemePage::Preview
+            && state.theme_view.page == ThemePage::List
             && pending_appearance.is_none()
             && state.theme_view.pending.is_none()
         {
-            if let Some(generation) = state
-                .theme_view
-                .preview
-                .as_ref()
-                .map(|preview| preview.generation.clone())
+            let centered_theme_id = state.theme_view.list.as_ref().and_then(|list| {
+                if list.themes.is_empty() {
+                    return None;
+                }
+                let index = state
+                    .theme_view
+                    .theme_position
+                    .round()
+                    .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
+                list.themes.get(index).map(|entry| entry.id.clone())
+            });
+            if let Some(generation) = centered_theme_id
+                .and_then(|id| state.theme_view.known_generations.get(&id).cloned())
             {
                 let content_generation = state.renderer.content_generation();
                 let fresh = state.prerendered_overlay.as_ref().is_some_and(|candidate| {
