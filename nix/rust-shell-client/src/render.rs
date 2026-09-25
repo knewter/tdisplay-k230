@@ -134,6 +134,19 @@ fn palette_rgb_or(theme: Option<&AppearanceSnapshot>, key: &str, fallback: u32) 
     u32::from(value.red) << 16 | u32::from(value.green) << 8 | u32::from(value.blue)
 }
 
+/// The icon theme name a given appearance resolves to -- the same lookup
+/// `RendererCache::set_appearance` already did inline, factored out so
+/// `render_candidate_overlay` can resolve the *candidate*'s own icon
+/// theme without disturbing `self.icons`.
+fn icon_theme_name_for(theme: Option<&AppearanceSnapshot>) -> String {
+    let configured = std::env::var("K230_ICON_THEME").ok();
+    theme
+        .and_then(|value| value.icon_theme.as_deref())
+        .or(configured.as_deref())
+        .unwrap_or("hicolor")
+        .to_owned()
+}
+
 #[derive(Clone, Copy)]
 struct VisualStyle {
     text: u32,
@@ -2701,11 +2714,27 @@ pub struct RendererCache {
     preview_surface: Option<ImageSurface>,
     preview_error: bool,
     thumbnails: ThemeThumbnailCache,
+    /// Bumped by every change to `services`/`chooser`/`pressed`/
+    /// `preview_surface`/`preview_error`/`thumbnails` -- everything
+    /// `render_candidate_overlay` reads from `self` besides the theme it
+    /// is explicitly given -- and *only* those. Deliberately not bumped by
+    /// `set_appearance`/`set_icon_theme`: those are exactly what a
+    /// candidate pre-render is expected to differ from `self.theme` on.
+    /// The caller (`ShellClient`'s own optimistic-apply pre-render) reads
+    /// this before and after computing a pre-render; a mismatch means
+    /// something this render actually depends on changed underneath it,
+    /// and the pre-render must be treated as stale.
+    content_generation: u64,
 }
 
 impl RendererCache {
+    pub fn content_generation(&self) -> u64 {
+        self.content_generation
+    }
+
     pub fn set_theme_view(&mut self, view: ThemeView) {
         self.chooser = Some(view);
+        self.content_generation = self.content_generation.wrapping_add(1);
         self.invalidate();
     }
     /// Nonblocking dispatch hook. Only a selected staged still is decoded;
@@ -2783,6 +2812,9 @@ impl RendererCache {
                 self.preview_requested = Some(key.clone());
             }
         }
+        if changed {
+            self.content_generation = self.content_generation.wrapping_add(1);
+        }
         changed
     }
     /// Requests both cached-bitmap variants (see `theme_thumbnails.rs`) for
@@ -2797,6 +2829,7 @@ impl RendererCache {
     pub fn poll_theme_thumbnails(&mut self) -> bool {
         let changed = self.thumbnails.poll();
         if changed {
+            self.content_generation = self.content_generation.wrapping_add(1);
             self.invalidate();
         }
         let Some(chooser) = self.chooser.as_ref() else {
@@ -2981,24 +3014,21 @@ impl RendererCache {
 
     pub fn set_services(&mut self, services: ServiceView) {
         self.services = Some(services);
+        self.content_generation = self.content_generation.wrapping_add(1);
         self.invalidate();
     }
     pub fn set_drawer_pressed(&mut self, pressed: Option<usize>) -> bool {
         if self.pressed != pressed {
             self.pressed = pressed;
+            self.content_generation = self.content_generation.wrapping_add(1);
             self.invalidate();
             return true;
         }
         false
     }
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
-        let configured = std::env::var("K230_ICON_THEME").ok();
-        let name = theme
-            .as_ref()
-            .and_then(|value| value.icon_theme.as_deref())
-            .or(configured.as_deref())
-            .unwrap_or("hicolor");
-        self.icons.set_theme(name);
+        let name = icon_theme_name_for(theme.as_ref());
+        self.icons.set_theme(&name);
         self.theme = theme;
         self.invalidate();
     }
@@ -3014,6 +3044,88 @@ impl RendererCache {
     pub fn set_icon_theme(&mut self, theme: &str) {
         self.icons.set_theme(theme);
         self.invalidate();
+    }
+
+    /// Renders the full overlay/settings scene *for `theme`* -- which need
+    /// not be, and for the optimistic-apply pre-render never is, `self`'s
+    /// own live `self.theme` -- entirely off `self`'s own persistent cache
+    /// (`static_pixels`/`route`/`self.icons`): a fresh `IconCache` pays its
+    /// own lazy icon-decode cost independently, and nothing here is
+    /// written back to `self`. Every *other* input `draw_shm_with_icons`
+    /// needs (`services`/`chooser`/`pressed`/`preview_surface`/
+    /// `preview_error`/`thumbnails`) is read live from `self`, which is
+    /// exactly what makes this safe to call well ahead of when `theme`
+    /// might actually be applied: the caller records `content_generation()`
+    /// alongside the result, and must discard it once that counter no
+    /// longer matches (see `content_generation`'s own doc) rather than
+    /// re-checking every one of these fields itself.
+    pub fn render_candidate_overlay(
+        &self,
+        theme: Option<&AppearanceSnapshot>,
+        route: Route,
+        width: u32,
+        height: u32,
+        apps: &[AppEntry],
+    ) -> Result<Vec<u8>, String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid candidate overlay geometry")?;
+        let mut icons = IconCache::new();
+        icons.set_theme(&icon_theme_name_for(theme));
+        let mut pixels = vec![0u8; size];
+        draw_shm_with_icons(
+            &mut pixels,
+            RenderParams {
+                width,
+                height,
+                route,
+                progress: 1.0,
+                // `draw()`'s own rebuild call always passes 0.0 here for
+                // every route but Drawer (`self.nav.scroll` otherwise);
+                // Optimistic Apply's pre-render only ever targets
+                // `Route::Settings` (the theme chooser's own route), so
+                // this matches exactly, deliberately, rather than reading
+                // `self.scroll`, which could still hold a stale Drawer
+                // value while Settings is the live route.
+                scroll: 0.0,
+            },
+            apps,
+            &mut icons,
+            theme,
+            self.services.as_ref(),
+            self.chooser.as_ref(),
+            self.preview_surface.as_ref(),
+            self.preview_error,
+            Some(&self.thumbnails),
+            self.pressed,
+        )?;
+        Ok(pixels)
+    }
+
+    /// Adopts an overlay raster `render_candidate_overlay` already
+    /// computed, as though it had just been rebuilt normally -- the
+    /// counterpart to that method's own doc: the caller has already
+    /// checked `content_generation()` still matches what it was when the
+    /// raster was computed. `draw()`'s own next call then sees
+    /// `self.route`/`width`/`height`/`scroll` all already matching and
+    /// takes its cheap cached-shift-and-copy path instead of rebuilding.
+    pub fn adopt_prerendered_overlay(
+        &mut self,
+        theme: Option<AppearanceSnapshot>,
+        route: Route,
+        width: u32,
+        height: u32,
+        pixels: Vec<u8>,
+    ) {
+        self.icons.set_theme(&icon_theme_name_for(theme.as_ref()));
+        self.theme = theme;
+        self.static_pixels = pixels;
+        self.route = Some(route);
+        self.width = width;
+        self.height = height;
+        self.scroll = 0.0;
     }
 
     /// Full-output opaque scene behind Sway's live deck. The selected still
@@ -3210,6 +3322,7 @@ mod tests {
         ThemePreview,
     };
     use std::collections::BTreeMap;
+    use std::path::PathBuf;
 
     // Host-only visual review reads the actual immutable generation emitted by
     // `theme_activate.py --prepare-only`; production parsing stays in appearance.rs.
@@ -4555,5 +4668,164 @@ mod tests {
         let other = ((other_y as usize + 3) * 568 + (other_x + other_width / 2.0) as usize) * 4;
         assert_eq!(&before[other..other + 4], &after[other..other + 4]);
         assert!(renderer.set_drawer_pressed(None));
+    }
+
+    fn fixture_theme(generation: &str, background: (u8, u8, u8)) -> AppearanceSnapshot {
+        let (red, green, blue) = background;
+        // An explicit `controls` (Route::Settings's own `section`)
+        // background brush, not just the palette's own "background" role:
+        // without one, `scene()`'s panel fill falls through to a fixed,
+        // theme-independent gradient fallback (no card/controls/menu
+        // brush authored), which would make two differently-paletted
+        // fixture themes paint byte-identical panels -- exactly the
+        // false negative this fixture exists to avoid in tests that
+        // assert two themes' own frames differ.
+        AppearanceSnapshot {
+            generation: generation.into(),
+            path: PathBuf::from("/tmp/fixture-generation"),
+            icon_theme: None,
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette: BTreeMap::from([(
+                "background".into(),
+                PaletteValue::Color(PaletteColor {
+                    red,
+                    green,
+                    blue,
+                    alpha: 255,
+                }),
+            )]),
+            sections: BTreeMap::from([(
+                "controls".into(),
+                BTreeMap::from([(
+                    "background".into(),
+                    AppearanceToken::Brush(Brush {
+                        stops: vec![BrushStop {
+                            offset: 0.0,
+                            argb: format!("#ff{red:02x}{green:02x}{blue:02x}"),
+                        }],
+                        angle_degrees: 0.0,
+                        alpha: 1.0,
+                    }),
+                )]),
+            )]),
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        }
+    }
+
+    const SETTINGS_PARAMS: RenderParams = RenderParams {
+        width: 568,
+        height: 1232,
+        route: Route::Settings,
+        progress: 1.0,
+        scroll: 0.0,
+    };
+
+    #[test]
+    fn content_generation_bumps_on_content_changes_but_not_on_appearance_changes() {
+        // Optimistic Apply's own pre-render freshness check (task: pre-
+        // render at prepare time) trusts this counter to mean "nothing
+        // render_candidate_overlay read besides the theme itself changed
+        // since it was computed." Prove both halves of that: it must bump
+        // for the things a candidate render legitimately depends on
+        // (theme_view/services/pressed), and must *not* bump merely
+        // because the live appearance/icon theme changed -- a candidate
+        // render is expected to differ from that on purpose.
+        let mut renderer = RendererCache::default();
+        let baseline = renderer.content_generation();
+
+        renderer.set_theme_view(ThemeView::default());
+        assert_ne!(renderer.content_generation(), baseline);
+        let after_theme_view = renderer.content_generation();
+
+        renderer.set_services(ServiceView::default());
+        assert_ne!(renderer.content_generation(), after_theme_view);
+        let after_services = renderer.content_generation();
+
+        assert!(renderer.set_drawer_pressed(Some(2)));
+        assert_ne!(renderer.content_generation(), after_services);
+        let after_pressed = renderer.content_generation();
+        // Setting the same pressed index again is not a change; the
+        // return value already says so, and the counter must agree.
+        assert!(!renderer.set_drawer_pressed(Some(2)));
+        assert_eq!(renderer.content_generation(), after_pressed);
+
+        renderer.set_appearance(Some(fixture_theme(
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            (10, 20, 30),
+        )));
+        assert_eq!(renderer.content_generation(), after_pressed);
+        renderer.set_icon_theme("hicolor");
+        assert_eq!(renderer.content_generation(), after_pressed);
+    }
+
+    #[test]
+    fn render_candidate_overlay_never_mutates_the_live_cache() {
+        // The whole point of a separate method (rather than calling
+        // set_appearance + draw + set_appearance-back): the live
+        // renderer's own theme/cache must be provably untouched by
+        // computing a candidate's own frame, however different that
+        // candidate's colors are, so nothing can flash the wrong theme
+        // before Apply.
+        let mut renderer = RendererCache::default();
+        renderer.set_appearance(Some(fixture_theme(
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            (10, 20, 30),
+        )));
+        let mut baseline = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut baseline, SETTINGS_PARAMS, &[]).unwrap();
+        let rebuilds_before = renderer.rebuild_count();
+
+        let candidate = fixture_theme("bbbbbbbbbbbbbbbbbbbbbbbb", (200, 100, 50));
+        let _ = renderer
+            .render_candidate_overlay(Some(&candidate), Route::Settings, 568, 1232, &[])
+            .unwrap();
+
+        // The live cache's own theme is untouched: a fresh draw with the
+        // exact same live params reuses the cache (no extra rebuild) and
+        // produces byte-identical pixels to the pre-candidate baseline.
+        assert_eq!(renderer.rebuild_count(), rebuilds_before);
+        let mut after = vec![0; baseline.len()];
+        renderer.draw(&mut after, SETTINGS_PARAMS, &[]).unwrap();
+        assert_eq!(baseline, after);
+    }
+
+    #[test]
+    fn adopt_prerendered_overlay_is_a_cache_hit_with_the_candidates_own_pixels() {
+        let mut renderer = RendererCache::default();
+        renderer.set_appearance(Some(fixture_theme(
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            (10, 20, 30),
+        )));
+        let mut before = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut before, SETTINGS_PARAMS, &[]).unwrap();
+
+        let candidate = fixture_theme("bbbbbbbbbbbbbbbbbbbbbbbb", (200, 100, 50));
+        let pixels = renderer
+            .render_candidate_overlay(Some(&candidate), Route::Settings, 568, 1232, &[])
+            .unwrap();
+        // Distinct from the live (still-active) theme's own frame -- the
+        // whole point of pre-rendering a different theme.
+        assert_ne!(pixels, before);
+
+        renderer.adopt_prerendered_overlay(
+            Some(candidate),
+            Route::Settings,
+            568,
+            1232,
+            pixels.clone(),
+        );
+        let rebuilds_after_adopt = renderer.rebuild_count();
+        let mut shown = vec![0; before.len()];
+        renderer.draw(&mut shown, SETTINGS_PARAMS, &[]).unwrap();
+        // Adopting seeded route/width/height/scroll to already match this
+        // exact draw call, so it is a cache hit (no rebuild) ...
+        assert_eq!(renderer.rebuild_count(), rebuilds_after_adopt);
+        // ... and the shown frame is exactly the pre-rendered candidate's
+        // own pixels, not a fresh (possibly different) rebuild of it.
+        assert_eq!(shown, pixels);
     }
 }
