@@ -745,6 +745,35 @@ mod tests {
     }
 
     #[test]
+    fn a_failed_activate_clears_pending_and_surfaces_a_visible_error() {
+        // Optimistic Apply's own rollback contract: whatever the receiver
+        // showed ahead of the durable commit, once that commit's own
+        // reply reports failure the chooser must clear the stalled Apply
+        // state and show a specific, visible error -- this is that
+        // existing `Err` handling in `accept` (unchanged by that
+        // feature), proven here for an Activate reply specifically, not
+        // just the Preview/background failure other coverage exercises.
+        let mut view = ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(preview()),
+            ..ThemeView::default()
+        };
+        let request = view.apply_request().unwrap();
+        view.submitted(request.clone(), 9);
+        assert!(view.accept(ThemeReply {
+            id: 9,
+            request,
+            result: Err("commit failed; previous generation restored".into()),
+        }));
+        assert_eq!(
+            view.error.as_deref(),
+            Some("commit failed; previous generation restored")
+        );
+        assert_eq!(view.pending, None);
+        assert_eq!(view.pending_id, None);
+    }
+
+    #[test]
     fn list_and_preview_loads_center_the_carousels_on_the_active_selection() {
         let mut view = ThemeView::default();
         let themes: Vec<ThemeEntry> = (0..5)

@@ -63,7 +63,7 @@ use std::{
             net::{UnixListener, UnixStream},
         },
     },
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::mpsc::{self, Receiver, Sender},
     thread,
@@ -214,6 +214,90 @@ fn video_identity(snapshot: Option<&AppearanceSnapshot>) -> (Option<String>, Opt
         .find(|choice| choice.selected && choice.is_video)
         .map(|choice| choice.relative.clone());
     (Some(snapshot.generation.clone()), relative)
+}
+
+/// The user's decision (2026-09-25 coordinator message: "theme swaps
+/// should be instant"; they approved optimistic apply): when an Apply tap
+/// targets a generation this receiver already holds `prepare`d -- staged
+/// by task 3.2's browse-ahead, or by an identical repeat Apply -- the new
+/// appearance may be shown on the very next frame, ahead of the durable
+/// two-phase commit `request` (still submitted to `ThemeWorker`
+/// unchanged, still running to completion asynchronously). A cold,
+/// never-prepared generation is deliberately excluded: nothing here may
+/// ever trigger preparing one early or shorten its own real decode/stage
+/// cost, only skip *waiting* for a receiver's own already-finished
+/// preparation. Pure and independent of `AppearanceSnapshot` so it is
+/// trivially testable without a real receiver or filesystem fixture.
+fn should_apply_optimistically(request: &ThemeRequest, prepared_generation: Option<&str>) -> bool {
+    matches!(request, ThemeRequest::Activate { expected_generation, .. }
+        if Some(expected_generation.as_str()) == prepared_generation)
+}
+
+/// Whether a fresh optimistic-apply attempt is due this tick: exactly once
+/// per distinct `pending_id` (`ThemeWorker` hands out a fresh, higher id
+/// for every request, including a repeat Activate of the same theme), and
+/// never while nothing is pending. This is what makes a rapid double Apply
+/// safe: the first Apply's own id (attempted, whether or not it actually
+/// rendered) never suppresses a second, later Apply's own distinct id, and
+/// a still-pending Apply is never re-attempted tick after tick.
+fn optimistic_apply_due(already_attempted_for: Option<u64>, pending_id: Option<u64>) -> bool {
+    pending_id.is_some() && already_attempted_for != pending_id
+}
+
+const CARD_APPEARANCE_SOCKET_ENV: &str = "K230_CARD_APPEARANCE_SOCKET";
+
+/// The card-shell compositor's own appearance socket, for the best-effort
+/// "show" side channel only (never for the durable two-phase protocol,
+/// which stays entirely in `tools/theme_transaction.py`). Matches
+/// `SWAY_K230_CARD_APPEARANCE_SOCKET`'s own production default
+/// (`nix/shell.nix`) so this works with no further wiring once the
+/// compositor is listening there; an explicitly empty env var disables it,
+/// the same convention `K230_THEME_HELPER_SOCKET`/`K230_THEME_COMMAND`
+/// already use.
+fn card_appearance_socket_path() -> Option<PathBuf> {
+    match std::env::var_os(CARD_APPEARANCE_SOCKET_ENV) {
+        Some(value) if value.is_empty() => None,
+        Some(value) => Some(PathBuf::from(value)),
+        None => Some(PathBuf::from("/run/shell/k230-card-appearance.sock")),
+    }
+}
+
+/// Best-effort, fire-and-forget "show" message to the card-shell
+/// compositor's own appearance socket (task: optimistic Apply). The
+/// compositor only ever acts on this if it independently already holds
+/// this exact generation `prepare`d (`card-shell/appearance.c`'s own
+/// `service.prepared`/`candidate` check) -- this function cannot know
+/// that from here, and does not need to: a rejected or ignored "show" can
+/// only cost the one message, never correctness, because the real
+/// two-phase commit this chooser is still driving settles the
+/// compositor's actual state regardless of whether this ever arrives.
+/// Never reads a reply -- a connected stream socket's already-queued
+/// bytes are still delivered after this end closes, so there is nothing
+/// to wait on -- and every failure (missing socket, refused connection, a
+/// slow/unresponsive peer past its own short write deadline) is silently
+/// ignored so this can never stall the caller beyond that bound.
+fn show_appearance_optimistically(socket_path: &Path, generation: &str, path: &Path) {
+    let Some(path_str) = path.to_str() else {
+        return;
+    };
+    let message = serde_json::json!({
+        "protocol": 1,
+        "phase": "show",
+        "generation": generation,
+        "path": path_str,
+    });
+    let Ok(mut bytes) = serde_json::to_vec(&message) else {
+        return;
+    };
+    bytes.push(b'\n');
+    if let Ok(mut stream) = UnixStream::connect(socket_path) {
+        if stream
+            .set_write_timeout(Some(Duration::from_millis(50)))
+            .is_ok()
+        {
+            let _ = stream.write_all(&bytes);
+        }
+    }
 }
 
 struct VideoPlayback {
@@ -778,6 +862,24 @@ struct ShellClient {
     /// same reason `self.touch: TouchTrace` keeps its own `.position` for
     /// the overlay surface.
     home_last_point: (f64, f64),
+    /// Set the instant an Apply tap submits a `ThemeRequest::Activate`
+    /// (see `theme_action`'s `ThemeIntent::Apply` arm), read once by the
+    /// optimistic-apply check in `serve`'s own loop to log how long the
+    /// tap took to reach a shown frame. Not meaningful once
+    /// `theme_optimistic_shown_for` has consumed it for this Apply.
+    theme_apply_tapped_at: Option<Instant>,
+    /// The `pending_id` (see `ThemeView::pending_id`) an optimistic show
+    /// has already been attempted for -- whether or not it actually
+    /// rendered (cold, not ready, video-backed) -- so a still-pending
+    /// Activate is never re-attempted on a later tick, and a second,
+    /// unrelated Apply (a new `pending_id`) is always free to try again.
+    theme_optimistic_shown_for: Option<u64>,
+    /// The card-shell compositor's own appearance socket, best-effort and
+    /// advisory only -- see `show_appearance_optimistically`'s doc. `None`
+    /// (an unset or empty `K230_CARD_APPEARANCE_SOCKET`) disables this
+    /// side channel entirely; the compositor still settles correctly from
+    /// the durable two-phase commit either way.
+    card_appearance_socket: Option<PathBuf>,
 }
 
 #[derive(Default)]
@@ -980,7 +1082,17 @@ impl ShellClient {
 
     fn submit_theme(&mut self, request: ThemeRequest) {
         match self.themes.try_submit(request.clone()) {
-            Ok(id) => self.theme_view.submitted(request, id),
+            Ok(id) => {
+                // A fresh id always means a fresh optimistic-apply
+                // opportunity for *this* request; a stale attempt against
+                // an old id could otherwise linger and suppress a later,
+                // unrelated Apply's own optimistic check.
+                if matches!(request, ThemeRequest::Activate { .. }) {
+                    self.theme_apply_tapped_at = Some(Instant::now());
+                    self.theme_optimistic_shown_for = None;
+                }
+                self.theme_view.submitted(request, id);
+            }
             Err(error) => {
                 if matches!(
                     request,
@@ -1064,6 +1176,82 @@ impl ShellClient {
                     self.theme_dirty();
                 }
             },
+        }
+    }
+
+    /// Optimistic Apply (2026-09-25, user-approved: "theme swaps should be
+    /// instant"). `snapshot` is `appearance`'s own already-validated
+    /// `prepared` snapshot for the exact generation `submit_theme` just
+    /// dispatched to `ThemeWorker` as a durable `Activate` -- see
+    /// `should_apply_optimistically`'s doc for why this is safe to render
+    /// ahead of that transaction's own real commit. This call never
+    /// touches `appearance`'s `active`/`prepared` bookkeeping or the
+    /// `Activate` request itself, both of which are left entirely to the
+    /// real `AppearancePhase::Commit`/`Rollback` handling in `serve`'s own
+    /// loop -- unchanged by this feature -- to settle authoritatively:
+    /// on success that handling redraws (harmlessly redundant) and
+    /// records the new `active` snapshot; on failure it redraws the
+    /// *previous* generation and records that instead, which is exactly
+    /// how a failed durable commit is rolled back visually. Skips (no
+    /// draw, no log) for a video-backed selection, an unrenderable
+    /// snapshot (defensive -- an already-prepared one should never fail
+    /// this), or an overlay/wallpaper not immediately ready for a new
+    /// frame; a real transaction's own commit/rollback readiness-retry
+    /// handling covers all three correctly regardless of whether this
+    /// optimistic attempt ran.
+    fn show_theme_optimistically(
+        &mut self,
+        qh: &QueueHandle<Self>,
+        queue: &mut wayland_client::EventQueue<Self>,
+        snapshot: &AppearanceSnapshot,
+        tapped_at: Instant,
+    ) {
+        if self.appearance_pending {
+            return; // a real transaction's own commit/rollback draw already owns this tick
+        }
+        let geometry = self
+            .wallpaper
+            .configured
+            .then_some((self.wallpaper.width, self.wallpaper.height));
+        if geometry.is_some_and(|size| selected_video(Some(snapshot), size).is_some()) {
+            return; // a video swap needs its own decode/ready gate regardless
+        }
+        if appearance_renderable(Some(snapshot), &mut self.background_cache, geometry).is_err() {
+            return; // defensive: an already-prepared snapshot should decode cleanly
+        }
+        let overlay_ready = self.layer.is_none() || (self.configured && !self.frame_pending);
+        if !(self.wallpaper.configured && overlay_ready) {
+            return; // not ready for a new frame yet -- the real commit event retries this
+        }
+        self.wallpaper_path = fallback_still(Some(snapshot));
+        self.wallpaper_generation_root = Some(snapshot.path.clone());
+        self.video_display = None;
+        self.renderer.set_appearance(Some(snapshot.clone()));
+        self.dirty = true;
+        self.wallpaper.dirty = true;
+        let background = self.draw_wallpaper(qh);
+        if !background {
+            self.log("optimistic-apply-rejected draw-wallpaper-failed");
+        }
+        let foreground = self.layer.is_none() || self.draw(qh);
+        if background && !foreground {
+            self.log("optimistic-apply-rejected draw-failed");
+        }
+        self.appearance_pending = true;
+        let flushed = queue.flush().is_ok();
+        self.appearance_pending = false;
+        if background && foreground && !flushed {
+            self.log("optimistic-apply-rejected flush-failed");
+        }
+        if background && foreground && flushed {
+            // Named stage marker (task 6.6's own board re-check): how long
+            // the Apply tap took to reach a real, flushed frame carrying
+            // the new theme -- this is the number the ~100 ms target is
+            // measured against.
+            self.log(&format!(
+                "optimistic-apply shown ms={:.1}",
+                tapped_at.elapsed().as_secs_f64() * 1000.0
+            ));
         }
     }
 
@@ -2867,6 +3055,9 @@ fn serve() -> Result<(), String> {
         home_state_path,
         home_touch_id: None,
         home_last_point: (0.0, 0.0),
+        theme_apply_tapped_at: None,
+        theme_optimistic_shown_for: None,
+        card_appearance_socket: card_appearance_socket_path(),
     };
     state.service_view.keyboard_gesture_hint =
         std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1");
@@ -2884,6 +3075,36 @@ fn serve() -> Result<(), String> {
         queue
             .dispatch_pending(&mut state)
             .map_err(|e| e.to_string())?;
+        // Optimistic Apply: `dispatch_pending` above is where a Settings
+        // touch-up would have just called `theme_action(ThemeIntent::
+        // Apply)` -> `submit_theme`, setting `theme_view.pending`/
+        // `pending_id` and `theme_apply_tapped_at`. Checked once per fresh
+        // `pending_id` (never re-armed until the next `submit_theme` call,
+        // including on a genuinely cold generation -- see
+        // `should_apply_optimistically`'s doc), so this never repeats work
+        // across ticks for the same still-pending Activate, and a rapid
+        // second Apply (a new, higher `pending_id`, only possible once the
+        // first Activate's own reply has cleared `pending`) always gets its
+        // own fresh check.
+        if optimistic_apply_due(state.theme_optimistic_shown_for, state.theme_view.pending_id) {
+            if let (Some(request), Some(tapped_at)) =
+                (state.theme_view.pending.clone(), state.theme_apply_tapped_at)
+            {
+                state.theme_optimistic_shown_for = state.theme_view.pending_id;
+                let prepared = appearance
+                    .prepared()
+                    .filter(|snapshot| {
+                        should_apply_optimistically(&request, Some(snapshot.generation.as_str()))
+                    })
+                    .cloned();
+                if let Some(snapshot) = prepared {
+                    state.show_theme_optimistically(&qh, &mut queue, &snapshot, tapped_at);
+                    if let Some(socket) = state.card_appearance_socket.clone() {
+                        show_appearance_optimistically(&socket, &snapshot.generation, &snapshot.path);
+                    }
+                }
+            }
+        }
         for _ in 0..8 {
             let Some(reply) = state.services.try_recv() else {
                 break;
@@ -3767,6 +3988,56 @@ mod route_tests {
             ),
             VideoSlot::Candidate
         );
+    }
+
+    #[test]
+    fn optimistic_apply_fires_only_for_an_activate_matching_the_prepared_generation() {
+        let target = "aaaaaaaaaaaaaaaaaaaaaaaa".to_string();
+        let other = "bbbbbbbbbbbbbbbbbbbbbbbb".to_string();
+        let activate = ThemeRequest::Activate {
+            theme_id: "gruvbox".into(),
+            expected_generation: target.clone(),
+            background_id: None,
+        };
+        // Warm: the receiver's own prepared snapshot is this exact
+        // generation.
+        assert!(should_apply_optimistically(&activate, Some(target.as_str())));
+        // Cold: nothing prepared at all -- must keep today's (non-
+        // optimistic) behaviour.
+        assert!(!should_apply_optimistically(&activate, None));
+        // Stale/mismatched: prepared, but for a *different* generation --
+        // e.g. a since-superseded browse-ahead. Never optimistic for the
+        // wrong theme.
+        assert!(!should_apply_optimistically(&activate, Some(other.as_str())));
+        // A Preview (not an Apply) is never eligible, even if it happens
+        // to name a generation that is already prepared -- only an
+        // explicit Activate may show ahead of its own durable commit.
+        let preview = ThemeRequest::Preview {
+            theme_id: "gruvbox".into(),
+            background_id: None,
+        };
+        assert!(!should_apply_optimistically(&preview, Some(target.as_str())));
+        assert!(!should_apply_optimistically(&ThemeRequest::List, Some(target.as_str())));
+    }
+
+    #[test]
+    fn optimistic_apply_due_is_scoped_to_each_fresh_pending_id_for_a_rapid_double_apply() {
+        // Nothing pending: never due.
+        assert!(!optimistic_apply_due(None, None));
+        // A fresh Apply (id 7), nothing attempted yet: due.
+        assert!(optimistic_apply_due(None, Some(7)));
+        // Already attempted for this exact id (rendered or not): not due
+        // again on a later tick while it is still the same pending Apply.
+        assert!(!optimistic_apply_due(Some(7), Some(7)));
+        // Rapid double Apply: id 7's own reply lands (main.rs's
+        // `ThemeView::accept` clears `pending_id` back to `None`), so
+        // nothing is due in the gap...
+        assert!(!optimistic_apply_due(Some(7), None));
+        // ...then a second Apply is submitted immediately as a fresh,
+        // higher id 8 (`submit_theme` also resets
+        // `theme_optimistic_shown_for` to `None`, but even without that
+        // reset this check alone already treats a new id as due).
+        assert!(optimistic_apply_due(Some(7), Some(8)));
     }
 
     #[test]
