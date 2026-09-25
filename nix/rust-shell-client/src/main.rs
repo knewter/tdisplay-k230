@@ -1629,6 +1629,7 @@ impl ShellClient {
         self.home.layout.pin(app.id.clone(), apps_per_page);
         self.persist_home_layout();
         self.home_mark_dirty();
+        self.log("home-pinned");
     }
 
     /// Called after any Home layout mutation (pin/unpin/reorder/page move);
