@@ -193,3 +193,20 @@ settles its display correctly regardless of whether this arrives.
 - **THEN** each Apply's own optimistic check and shown appearance are
   scoped to that Apply's own request, and the second Apply is never
   suppressed or corrupted by bookkeeping left over from the first
+
+#### Scenario: Rendering ahead of Apply never shows anything before it is confirmed
+
+- **WHEN** a candidate theme's appearance is rendered ahead of time, while
+  it is only being previewed
+- **THEN** that rendering never becomes visible on any surface, and never
+  alters what any ordinary (non-Apply) redraw shows, until an Apply tap
+  actually requests it
+
+#### Scenario: A render made ahead of Apply is discarded, not reused, if anything it depended on changed
+
+- **WHEN** a theme's appearance was rendered ahead of an Apply tap, and
+  before that tap the surface's geometry changed, the chooser navigated to
+  a different page, or other on-screen content it captured changed
+- **THEN** Apply falls back to rendering fresh rather than showing that
+  stale render, with no incorrect or outdated content ever reaching the
+  screen

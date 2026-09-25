@@ -591,11 +591,124 @@ fix, not re-run since (board not touched by this task).
   doc for the reasoning and what the new `ms=` fields will show.
 
 Proof for 7.1-7.3, 7.5, 7.7: the tests named above, all passing on this
-host; 7.4/7.6 are the board results quoted above; 7.8 is instrumentation
-only, its own board data not yet collected.
+host; 7.4/7.6 are the board results quoted above; 7.8's own instrumentation
+answered its own question on the very next board run -- see task 8 below,
+which its board evidence directly motivates: `optimistic-apply shown
+ms=222.7` is (almost) entirely the synchronous overlay-scene rebuild
+Apply's own optimistic show pays inline, not event-loop or dispatch
+latency.
+
+## 8. Pre-render at prepare time; reuse the durable commit's own frame
+
+<!-- Grounding: board re-run of 7.7 (coordinator, master `e2ba1d7e`,
+     installed as `s376wb46...`): the optimistic path fires
+     (`optimistic-apply shown ms=222.7`, 224 ms after touch-up), but (a)
+     that 222.7 ms *is* the cost -- a full synchronous overlay-scene
+     rebuild (Cairo, icon decode) triggered by `set_appearance`'s own
+     `invalidate()` -- and (b) the optimistic draw left no free wallpaper
+     buffer, so the durable commit's own `draw_wallpaper` failed
+     ("appearance-commit-rejected draw-wallpaper-failed"), forcing a full
+     prepare+commit retry that roughly doubled `activate_generation`'s own
+     time (452.4 ms). Coordinator's own design: pre-render the wallpaper
+     and panel/overlay frames ahead, at prepare time, into spare buffers;
+     attach+commit only at Apply; invalidate on geometry/page/content
+     change; bound to one pre-rendered candidate; a third buffer (or a
+     reservation) so the durable commit never fails for lack of one; the
+     durable commit accepts an already-shown generation instead of
+     redrawing, while still acking only after a real frame. -->
+
+- [x] 8.1 A third wallpaper buffer: `draw_wallpaper()`'s own buffer-pool
+  exhaustion check raised from `>= 2` to `>= 3` (the overlay surface's own
+  pool was already bounded to 3), and the SHM pool's own initial-size hint
+  raised from `* 5` to `* 6` slots (568x1232x4 bytes each, ~2.8 MB, matching
+  the coordinator's own figure) -- an estimate only, since `SlotPool`
+  itself grows automatically on any further allocation regardless
+  (confirmed by reading `smithay-client-toolkit`'s own `SlotPool::resize`
+  doc: "the pool automatically resizes when you allocate new slots").
+  This alone (independent of pre-rendering) is what stops the durable
+  commit's own redraw from ever again failing merely because an
+  optimistic draw is still holding a buffer the compositor has not yet
+  released.
+- [x] 8.2 `RendererCache` (`render.rs`) gains `content_generation: u64`
+  (bumped by `set_theme_view`/`set_services`/a real `set_drawer_pressed`
+  change/a `poll_theme_image`- or `poll_theme_thumbnails`-detected change
+  -- every non-appearance input a scene render depends on -- and
+  deliberately *not* by `set_appearance`/`set_icon_theme`, which a
+  candidate pre-render is expected to differ from `self.theme` on, on
+  purpose), `render_candidate_overlay(theme, route, width, height, apps)`
+  (computes a full overlay-scene raster for an arbitrary `theme` using a
+  *fresh*, isolated `IconCache` and every other input read live from
+  `self` -- `services`/`chooser`/`pressed`/`preview_surface`/
+  `preview_error`/`thumbnails` -- provably never touching `self.theme`/
+  `self.icons`/`static_pixels`/`route`, so nothing can flash the wrong
+  theme before Apply), and `adopt_prerendered_overlay(theme, route,
+  width, height, pixels)` (seeds `self.theme`/`self.icons`/
+  `static_pixels`/`route`/`width`/`height`/`scroll` directly from an
+  already-computed raster, so `draw()`'s own next call sees a cache hit
+  and takes its cheap shift-and-copy path instead of rebuilding). Verify
+  with `cargo test --offline --lib render::tests` (adds
+  `content_generation_bumps_on_content_changes_but_not_on_appearance_
+  changes`, `render_candidate_overlay_never_mutates_the_live_cache`,
+  `adopt_prerendered_overlay_is_a_cache_hit_with_the_candidates_own_
+  pixels`).
+- [x] 8.3 `main.rs`'s own event loop computes the pre-render once per
+  (generation, route, geometry, `content_generation`) tuple whenever the
+  Preview page's own currently-loaded candidate is already the receiver's
+  own `prepare`d snapshot (the same precondition Optimistic Apply itself
+  checks -- never a cold generation, never a merely-warmed neighbour still
+  being browsed past), bounded to one slot (`ShellClient::
+  prerendered_overlay: Option<PrerenderedOverlay>`), and only *after* that
+  tick's own `queue.flush()` -- never earlier in the same iteration --
+  so the real, synchronous Cairo cost this pays is never charged against
+  flushing the very Preview-page frame that made it eligible. Skipped
+  entirely while an Activate is already in flight. Verify with `cargo
+  test --offline --lib route_tests`
+  (`prerendered_overlay_matches_requires_every_field_to_agree`, the pure
+  matching predicate this trigger and Apply-time consumption both share).
+- [x] 8.4 `show_theme_optimistically` consumes the stored pre-render
+  (always taking the one bounded slot, matching or not, so a stale one
+  never lingers for a later Apply) when it matches this exact Apply's own
+  generation, route, geometry, and `content_generation`; on a match it
+  calls `adopt_prerendered_overlay` instead of `set_appearance` (skipping
+  the rebuild entirely); on any mismatch it falls back to `set_appearance`
+  exactly as before this task. The `optimistic-apply shown ms=...` log
+  gains `prerendered=true/false`. Verify with the 8.2/8.3 tests above
+  (the underlying primitives) plus `route_tests::
+  optimistic_apply_fires_only_for_an_activate_matching_the_prepared_
+  generation` and the existing Optimistic Apply suite, all still passing
+  unmodified.
+- [x] 8.5 The durable commit reuses an already-shown Optimistic Apply
+  frame instead of redrawing it: `ShellClient::optimistic_active:
+  Option<String>` records the generation a successful optimistic show
+  just flushed; the very next `Commit`/`Rollback` event's own handling
+  checks `may_reuse_optimistic_frame` (pure: true only for a `Commit`
+  whose own generation matches exactly -- a `Rollback`'s own target is by
+  definition the *previous* generation, never the one just shown) and
+  clears `optimistic_active` unconditionally either way, so it can only
+  ever be read by that one next event. A match skips `draw_wallpaper`/
+  `draw`/`flush` entirely (`pending_appearance`'s own new
+  `reuse_optimistic` element) and goes straight to the same video-state
+  bookkeeping (`adopt_committed_video_state`, factored out of what was
+  previously inline in the redraw-success branch so both paths share it)
+  and the ack -- still sent only after a real, already-flushed frame,
+  never before one. Verify with `cargo test --offline --lib route_tests`
+  (`may_reuse_optimistic_frame_only_for_a_commit_matching_exactly`).
+- [ ] 8.6 Board re-check: confirm `optimistic-apply shown ms=` drops close
+  to the ~30 ms target (a cache-hit shift-and-copy plus an attach+commit,
+  not a rebuild) with `prerendered=true` for a warm Apply; confirm no
+  `appearance-commit-rejected draw-wallpaper-failed` on the success path
+  (the third buffer); confirm the durable commit's own log shows
+  `appearance-commit-accepted reused=optimistic` and `activate_generation`
+  no longer carries a retry's own doubled cost; confirm a geometry, page,
+  or content change between prepare and Apply correctly falls back to a
+  full rebuild (`prerendered=false`) rather than showing stale content.
+  Needs the reserved board; not run by this task.
+
+Proof for 8.1-8.5: the tests named above, all passing on this host; proof
+for 8.6 is the reserved board, not run here.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, and a re-run of 7.4/7.6 with this fix
-installed have board results; 3.3b is named here so it is not silently
-dropped or claimed done without a board result. Task 5.4's board result is
-recorded above (board-chooser-2026-09-25.md).
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and 8.6 have board results; 3.3b is
+named here so it is not silently dropped or claimed done without a board
+result. Task 5.4's board result is recorded above
+(board-chooser-2026-09-25.md).
