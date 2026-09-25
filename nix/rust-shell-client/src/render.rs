@@ -10,7 +10,7 @@ use crate::{
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_carousel,
-    theme_catalog::{BackgroundKind, ThemeRequest},
+    theme_catalog::{BackgroundKind, ThemePreview, ThemeRequest},
     theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
@@ -621,10 +621,6 @@ fn paint_theme_chooser(
     // Upstream's `dimColor: Color.background` -- tints unselected carousel
     // slices, not the panel's own background wash above.
     let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
-    // The Preview page's Cancel/Apply footer sits a fixed distance below
-    // the background carousel (`theme_ui::PREVIEW_FOOTER_Y`); this default
-    // only matters while no chooser page has overridden it below.
-    let mut footer_y = h - 126.0;
     text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
     text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
     match view.page {
@@ -900,7 +896,6 @@ fn paint_theme_chooser(
             // theme has, so the footer is a fixed offset below it now (see
             // `theme_ui::PREVIEW_FOOTER_Y`) rather than floating with a
             // variable-height row list.
-            footer_y = PREVIEW_FOOTER_Y;
             if preview.backgrounds.is_empty() {
                 text(
                     cr,
@@ -977,65 +972,20 @@ fn paint_theme_chooser(
                     },
                 );
             }
-            service_card(cr, theme, "controls", 24.0, footer_y, w - 48.0, 86.0, true);
-            if view.pending.is_some() {
-                let alpha = match theme
-                    .and_then(|snapshot| snapshot.token("controls", "pressed-fill-alpha"))
-                {
-                    Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
-                    _ => 0.22,
-                };
-                let _ = cr.save();
-                rounded(cr, w / 2.0, footer_y, w / 2.0 - 24.0, 86.0, 16.0);
-                cr.clip();
-                overlay_brush(
-                    cr,
-                    theme_brush(theme, "controls", "normal-color"),
-                    w / 2.0,
-                    footer_y,
-                    w / 2.0 - 24.0,
-                    86.0,
-                    alpha,
-                    style.accent,
-                );
-                let _ = cr.restore();
-            }
-            text(
-                cr,
-                "Cancel",
-                48.0,
-                footer_y + 25.0,
-                w / 2.0 - 50.0,
-                22.0,
-                style.muted,
-            );
-            let activating = matches!(&view.pending, Some(ThemeRequest::Activate { .. }));
-            text(
-                cr,
-                if activating {
-                    "Applying…"
-                } else if preview.activated {
-                    "Apply again"
-                } else {
-                    "Apply"
-                },
-                w / 2.0 + 18.0,
-                footer_y + 25.0,
-                w / 2.0 - (if activating { 76.0 } else { 46.0 }),
-                22.0,
-                if view.selection_error || view.pending.is_some() {
-                    style.muted
-                } else {
-                    style.accent
-                },
-            );
-            if activating {
-                // The one request that cannot be cancelled once dispatched
-                // (`ThemeView::back`'s own doc) gets the clearest busy
-                // affordance in the chooser: a spinner right on the button
-                // that was tapped, for as long as activation takes.
-                spinner(cr, w - 58.0, footer_y + 18.0, 11.0, pulse_phase, style.muted);
-            }
+            service_card(cr, theme, "controls", 24.0, PREVIEW_FOOTER_Y, w - 48.0, 86.0, true);
+            // The pressed highlight, the Cancel/Apply text and its busy
+            // spinner, and the status line below (`Preparing…`/an error/a
+            // message) are deliberately *not* painted here: see
+            // `RendererCache::draw`'s own trailing call to
+            // `paint_preview_footer_status`, which paints all of that live,
+            // on every `draw()` call, on top of whatever body this function
+            // produced (a fresh rebuild or an adopted pre-render alike).
+            // None of it needs this function's own expensive icon/chrome
+            // work to repaint, and it changes on nearly every tick (an
+            // Apply tap's own `pending` transition, the busy spinner's own
+            // pulse) -- exactly what made Optimistic Apply's own pre-render
+            // go stale before a person's Apply tap could ever reach it
+            // (board evidence, 2026-09-28).
         }
     }
     // The List page has no pinned footer of its own; anchor its own
@@ -1044,12 +994,113 @@ fn paint_theme_chooser(
     // `90.0` gap (not `70.0`, which left this line nearly touching the
     // status caption above it once measured precisely) clears the status
     // caption's own text height with a few pixels to spare.
-    let message_y = match view.page {
-        ThemePage::List => {
-            (THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0).min(h - 167.0)
-        }
-        _ => footer_y - 41.0,
-    };
+    // The Preview page's own status line (`Preparing…`/an error/a message)
+    // is painted live instead -- see `paint_preview_footer_status`'s own
+    // doc, called from `RendererCache::draw` -- for the same reason its
+    // Apply/Cancel footer is. The List page has no such live overlay, so
+    // its own status line (a different position, computed here) is
+    // unchanged: still baked into the cached body, exactly as before this
+    // task.
+    let message_y = (THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 90.0).min(h - 167.0);
+    if view.page != ThemePage::List {
+        return;
+    }
+    if view.pending.is_some() {
+        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
+    }
+    if let Some(error) = &view.error {
+        text(cr, error, 28.0, message_y, w - 56.0, 17.0, style.error);
+    }
+    if let Some(message) = &view.message {
+        text(cr, message, 28.0, message_y, w - 56.0, 17.0, style.muted);
+    }
+}
+
+/// The Preview page's dynamic Apply/Cancel footer: the pressed highlight,
+/// the Apply button's own text/color and busy spinner (idle / applying /
+/// applied), and the status line below it (`Preparing…`/an error/a
+/// message). Extracted out of `paint_theme_chooser` (task: pre-render at
+/// prepare time, 2026-09-28) and called separately, live, by
+/// `RendererCache::draw` on every call, on top of whatever body
+/// `paint_theme_chooser` produced -- a fresh rebuild or an adopted
+/// pre-render alike. None of it needs `paint_theme_chooser`'s own
+/// expensive icon/chrome work to repaint (only the already-resolved
+/// `style`'s accent/muted/error colors and, when authored, a `controls`
+/// brush token), while it changes on nearly every tick: an Apply tap's
+/// own `pending` transition, the busy spinner's own pulse. Baking it into
+/// the cached body forced a full rebuild on every such tick, which is
+/// exactly what made an Optimistic Apply pre-render go stale before a
+/// person's own Apply tap could ever reach it (board evidence,
+/// 2026-09-28: `optimistic-apply prerendered` computed twice roughly one
+/// pulse interval apart, then still `prerendered=false` at the tap
+/// itself).
+fn paint_preview_footer_status(
+    cr: &Context,
+    w: f64,
+    theme: Option<&AppearanceSnapshot>,
+    view: &ThemeView,
+    preview: &ThemePreview,
+    style: VisualStyle,
+    pulse_phase: f64,
+) {
+    let footer_y = PREVIEW_FOOTER_Y;
+    if view.pending.is_some() {
+        let alpha = match theme.and_then(|snapshot| snapshot.token("controls", "pressed-fill-alpha")) {
+            Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
+            _ => 0.22,
+        };
+        let _ = cr.save();
+        rounded(cr, w / 2.0, footer_y, w / 2.0 - 24.0, 86.0, 16.0);
+        cr.clip();
+        overlay_brush(
+            cr,
+            theme_brush(theme, "controls", "normal-color"),
+            w / 2.0,
+            footer_y,
+            w / 2.0 - 24.0,
+            86.0,
+            alpha,
+            style.accent,
+        );
+        let _ = cr.restore();
+    }
+    text(
+        cr,
+        "Cancel",
+        48.0,
+        footer_y + 25.0,
+        w / 2.0 - 50.0,
+        22.0,
+        style.muted,
+    );
+    let activating = matches!(&view.pending, Some(ThemeRequest::Activate { .. }));
+    text(
+        cr,
+        if activating {
+            "Applying…"
+        } else if preview.activated {
+            "Apply again"
+        } else {
+            "Apply"
+        },
+        w / 2.0 + 18.0,
+        footer_y + 25.0,
+        w / 2.0 - (if activating { 76.0 } else { 46.0 }),
+        22.0,
+        if view.selection_error || view.pending.is_some() {
+            style.muted
+        } else {
+            style.accent
+        },
+    );
+    if activating {
+        // The one request that cannot be cancelled once dispatched
+        // (`ThemeView::back`'s own doc) gets the clearest busy affordance
+        // in the chooser: a spinner right on the button that was tapped,
+        // for as long as activation takes.
+        spinner(cr, w - 58.0, footer_y + 18.0, 11.0, pulse_phase, style.muted);
+    }
+    let message_y = footer_y - 41.0;
     if view.pending.is_some() {
         text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
     }
@@ -2727,14 +2778,50 @@ pub struct RendererCache {
     content_generation: u64,
 }
 
+/// Whether two `ThemeView`s would paint a different cached body --
+/// `paint_theme_chooser`'s own output, now that `paint_preview_footer_
+/// status` (task: pre-render at prepare time, 2026-09-28) carries
+/// everything driven by `pending`/`pending_id`/`selection_error`/`error`/
+/// `message`/`pulse_phase`, painted live on every `draw()` call instead.
+/// None of those fields belong in this comparison any more: an Apply
+/// tap's own `pending` transition, or the busy spinner's own pulse tick,
+/// must not by itself mark a computed pre-render stale (board evidence,
+/// 2026-09-28: exactly this was why `optimistic-apply prerendered` was
+/// computed twice roughly one pulse interval apart, and still
+/// `prerendered=false` at the tap itself). `theme_position`/
+/// `background_position` use the same small tolerance `RendererCache::
+/// draw`'s own `scroll` check already does, so a settle animation
+/// converging by a fraction of a pixel does not itself count either.
+fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
+    old.page != new.page
+        || old.list != new.list
+        || old.preview != new.preview
+        || (old.theme_position - new.theme_position).abs() >= 0.25
+        || (old.background_position - new.background_position).abs() >= 0.25
+        || old.theme_pressed != new.theme_pressed
+        || old.background_pressed != new.background_pressed
+}
+
 impl RendererCache {
     pub fn content_generation(&self) -> u64 {
         self.content_generation
     }
 
     pub fn set_theme_view(&mut self, view: ThemeView) {
+        if self
+            .chooser
+            .as_ref()
+            .is_none_or(|old| theme_view_cache_key_differs(old, &view))
+        {
+            self.content_generation = self.content_generation.wrapping_add(1);
+        }
         self.chooser = Some(view);
-        self.content_generation = self.content_generation.wrapping_add(1);
+        // `invalidate()` stays unconditional: a live `draw()` call still
+        // rebuilds `static_pixels` on every theme_view change exactly as
+        // before this task (correctness for the cached body itself is
+        // unaffected by this function; only `content_generation` -- read
+        // solely by Optimistic Apply's own pre-render freshness check --
+        // is now selective).
         self.invalidate();
     }
     /// Nonblocking dispatch hook. Only a selected staged still is decoded;
@@ -3237,6 +3324,46 @@ impl RendererCache {
             let target = target_y as usize * row_bytes;
             canvas[target..target + row_bytes]
                 .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
+        }
+        // The Preview page's own Apply/Cancel footer and status line are
+        // never baked into `static_pixels` (see `paint_preview_footer_
+        // status`'s own doc) -- painted here, live, on every call,
+        // whether this call just rebuilt the cached body above or reused
+        // it (or, via `adopt_prerendered_overlay`, adopted a pre-rendered
+        // one): the one place this always runs regardless keeps the
+        // Apply-tap-to-"Applying…" transition (and any error/message)
+        // correct without forcing a rebuild for it.
+        if route == Route::Settings {
+            let footer = self.chooser.as_ref().and_then(|view| {
+                (view.page == ThemePage::Preview)
+                    .then(|| view.preview.as_ref().map(|preview| (view, preview)))
+                    .flatten()
+            });
+            if let Some((view, preview)) = footer {
+                if let Ok(surface) = unsafe {
+                    ImageSurface::create_for_data_unsafe(
+                        canvas.as_mut_ptr(),
+                        Format::ARgb32,
+                        width as i32,
+                        height as i32,
+                        (width * 4) as i32,
+                    )
+                } {
+                    if let Ok(cr) = Context::new(&surface) {
+                        let style = visual_style(self.theme.as_ref(), "image-picker");
+                        paint_preview_footer_status(
+                            &cr,
+                            f64::from(width),
+                            self.theme.as_ref(),
+                            view,
+                            preview,
+                            style,
+                            view.pulse_phase,
+                        );
+                    }
+                    drop(surface);
+                }
+            }
         }
         Ok(())
     }
@@ -4827,5 +4954,118 @@ mod tests {
         // ... and the shown frame is exactly the pre-rendered candidate's
         // own pixels, not a fresh (possibly different) rebuild of it.
         assert_eq!(shown, pixels);
+    }
+
+    fn fixture_preview(generation: &str) -> ThemePreview {
+        ThemePreview {
+            theme: ThemeEntry {
+                id: "fixture".into(),
+                name: "Fixture".into(),
+                label: "Fixture".into(),
+                origin: ThemeOrigin::Builtin,
+                preview_path: None,
+            },
+            generation: generation.into(),
+            appearance_path: PathBuf::from("/tmp/fixture-appearance.json"),
+            palette: BTreeMap::new(),
+            icon_theme: None,
+            backgrounds: vec![],
+            compatibility: Compatibility {
+                applied: vec![],
+                unavailable: vec![],
+                unknown: vec![],
+            },
+            activated: false,
+            app_appearance: None,
+        }
+    }
+
+    #[test]
+    fn a_pending_only_theme_view_change_does_not_bump_content_generation() {
+        // The other half of the freshness contract (see
+        // `content_generation_bumps_on_content_changes_but_not_on_
+        // appearance_changes`): an Apply tap's own `pending` transition,
+        // or the busy spinner's own `pulse_phase`, must not bump
+        // `content_generation` either, now that neither is baked into the
+        // cached body any more (`paint_preview_footer_status` carries
+        // both, painted live). Board evidence, 2026-09-28: this exact gap
+        // was why a computed pre-render always went stale before a
+        // person's own Apply tap could ever reach it.
+        let mut renderer = RendererCache::default();
+        let view = ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(fixture_preview("aaaaaaaaaaaaaaaaaaaaaaaa")),
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(view.clone());
+        let baseline = renderer.content_generation();
+
+        let mut applying = view.clone();
+        applying.pending = Some(ThemeRequest::Activate {
+            theme_id: "fixture".into(),
+            expected_generation: "aaaaaaaaaaaaaaaaaaaaaaaa".into(),
+            background_id: None,
+        });
+        applying.pulse_phase = 0.5;
+        renderer.set_theme_view(applying);
+        assert_eq!(renderer.content_generation(), baseline);
+
+        // A genuine content change (a different preview generation) still
+        // bumps it, same as before this task.
+        let mut different = view;
+        different.preview = Some(fixture_preview("bbbbbbbbbbbbbbbbbbbbbbbb"));
+        renderer.set_theme_view(different);
+        assert_ne!(renderer.content_generation(), baseline);
+    }
+
+    #[test]
+    fn adopted_prerender_still_shows_the_live_pending_state_via_the_overlay() {
+        // The correctness property the whole split exists for: even
+        // though the pre-rendered candidate's own baked pixels reflect an
+        // idle Apply button (pending was None when it was computed), the
+        // frame `draw()` actually produces once that candidate is adopted
+        // must always reflect the *current* pending state, painted live
+        // -- never a stale "Apply" shown while an Activate the durable
+        // commit will go on to reuse (`may_reuse_optimistic_frame`) is
+        // genuinely in flight.
+        let mut renderer = RendererCache::default();
+        let mut view = ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(fixture_preview("bbbbbbbbbbbbbbbbbbbbbbbb")),
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(view.clone());
+
+        let candidate = fixture_theme("bbbbbbbbbbbbbbbbbbbbbbbb", (200, 100, 50));
+        let pixels = renderer
+            .render_candidate_overlay(Some(&candidate), Route::Settings, 568, 1232, &[])
+            .unwrap();
+        renderer.adopt_prerendered_overlay(Some(candidate), Route::Settings, 568, 1232, pixels);
+
+        let mut idle = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut idle, SETTINGS_PARAMS, &[]).unwrap();
+
+        // Tap Apply: exactly the change board evidence showed must not
+        // invalidate a matching pre-render.
+        view.pending = Some(ThemeRequest::Activate {
+            theme_id: "fixture".into(),
+            expected_generation: "bbbbbbbbbbbbbbbbbbbbbbbb".into(),
+            background_id: None,
+        });
+        let generation_before = renderer.content_generation();
+        renderer.set_theme_view(view);
+        assert_eq!(
+            renderer.content_generation(),
+            generation_before,
+            "a pending-only change must not itself invalidate the pre-render"
+        );
+
+        let mut activating = vec![0; idle.len()];
+        renderer.draw(&mut activating, SETTINGS_PARAMS, &[]).unwrap();
+        assert_ne!(
+            idle, activating,
+            "the live overlay must paint the Applying state even though \
+             the cached body was never rebuilt for it"
+        );
     }
 }
