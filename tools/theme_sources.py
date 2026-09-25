@@ -42,10 +42,18 @@ def source_dir(root: Path, member: str | None = None) -> Path:
     return theme
 
 
-def source_digest(theme: Path) -> str:
-    digest = hashlib.sha256()
+def _walk(theme: Path):
+    """Yield `(relative_posix_path, absolute_path, os.stat_result)` for
+    every file under `theme`, sorted, depth- and entry-count-bounded, with
+    every non-file/non-directory entry (symlinks included) rejected --
+    shared by `source_digest` (which hashes each file's content) and
+    `source_fingerprint` (which only records each file's size/mtime), so
+    the two can never structurally disagree about what "the theme's files"
+    means; only the per-file work each does with what this yields differs.
+    """
     entries = total = 0
-    def visit(base: Path, depth: int) -> None:
+
+    def visit(base: Path, depth: int):
         nonlocal entries, total
         if depth > MAX_DEPTH:
             raise ValueError("source nesting exceeds bound")
@@ -69,30 +77,48 @@ def source_digest(theme: Path) -> str:
                     raise ValueError(f"unsafe source entry: {Path(entry.path).relative_to(theme)}")
         for name in sorted(files):
             path = base / name
-            size = path.stat().st_size
-            total += size
-            if size > MAX_FILE_BYTES or total > MAX_TOTAL_BYTES:
+            stat = path.stat()
+            total += stat.st_size
+            if stat.st_size > MAX_FILE_BYTES or total > MAX_TOTAL_BYTES:
                 raise ValueError("source bytes exceed bound")
-            encoded = path.relative_to(theme).as_posix().encode()
-            digest.update(len(encoded).to_bytes(4, "big"))
-            digest.update(encoded)
-            digest.update(size.to_bytes(8, "big"))
-            file_digest = hashlib.sha256()
-            observed = 0
-            with path.open("rb") as stream:
-                while chunk := stream.read(1024 * 1024):
-                    observed += len(chunk)
-                    if observed > size or observed > MAX_FILE_BYTES:
-                        raise ValueError("source changed or exceeded bound while hashing")
-                    file_digest.update(chunk)
-            if observed != size:
-                raise ValueError("source changed while hashing")
-            digest.update(file_digest.digest())
+            yield path.relative_to(theme).as_posix(), path, stat
         for name in sorted(directories):
-            visit(base / name, depth + 1)
+            yield from visit(base / name, depth + 1)
 
-    visit(theme, 0)
+    yield from visit(theme, 0)
+
+
+def source_digest(theme: Path) -> str:
+    digest = hashlib.sha256()
+    for relative, path, stat in _walk(theme):
+        size = stat.st_size
+        encoded = relative.encode()
+        digest.update(len(encoded).to_bytes(4, "big"))
+        digest.update(encoded)
+        digest.update(size.to_bytes(8, "big"))
+        file_digest = hashlib.sha256()
+        observed = 0
+        with path.open("rb") as stream:
+            while chunk := stream.read(1024 * 1024):
+                observed += len(chunk)
+                if observed > size or observed > MAX_FILE_BYTES:
+                    raise ValueError("source changed or exceeded bound while hashing")
+                file_digest.update(chunk)
+        if observed != size:
+            raise ValueError("source changed while hashing")
+        digest.update(file_digest.digest())
     return digest.hexdigest()
+
+
+def source_fingerprint(theme: Path) -> tuple:
+    """A cheap (stat-only: no file content is read, no hashing beyond
+    tuple-equality) fingerprint of exactly the files `source_digest` would
+    hash, in the exact same traversal `_walk` performs for both -- so a
+    cache keyed on this can tell "nothing `source_digest` would see has
+    changed" without paying for the content read/hash itself. Raises the
+    exact same errors `source_digest` would for the same malformed tree.
+    """
+    return tuple((relative, stat.st_size, stat.st_mtime_ns) for relative, _path, stat in _walk(theme))
 
 
 def inspect(root: Path, member: str | None = None) -> dict:

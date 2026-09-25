@@ -20,7 +20,7 @@ import sys
 import tempfile
 import tomllib
 
-from theme_sources import source_dir, source_digest
+from theme_sources import source_dir, source_digest, source_fingerprint
 from theme_preferences import SelectionIntent, choice as remembered_choice
 from theme_tokens import TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
@@ -147,9 +147,11 @@ def background_listing(theme: Path) -> list[str]:
     used by `prepare()`'s fast path to pick `selected_background` (and so
     compute the generation identity) without paying that loop's real cost.
     Safe to skip the loop's own symlink/suffix bookkeeping here: `prepare()`
-    always calls `source_digest(theme)` first, which already walks the
-    whole tree and raises on any symlink, so nothing under `theme` --
-    `backgrounds/` included -- can be a symlink by the time this runs.
+    always calls `theme_digest(theme)` first, which either hashes fresh or
+    validates a cached digest's own fingerprint via `source_fingerprint()`
+    -- both walk the whole tree via the same shared traversal and raise on
+    any symlink, so nothing under `theme` -- `backgrounds/` included -- can
+    be a symlink by the time this runs.
     """
     directory = theme / "backgrounds"
     if not directory.is_dir():
@@ -200,10 +202,9 @@ def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
 #: life of *this* process either way, so caching it indefinitely, keyed by
 #: its resolved path, is safe: a bare CLI process only ever calls this
 #: once anyway (empty cache, no behavior change), and the daemon's `tools`
-#: value never changes between requests without a restart. Unlike the
-#: theme's own `source_hash` just above (a person can edit their own
-#: theme's files while the daemon keeps running), there is no plausible
-#: mid-process change to miss here.
+#: value never changes between requests without a restart. The theme's own
+#: `source_hash` (below) cannot be cached the same, unconditional way: a
+#: person can edit their own theme's files while the daemon keeps running.
 _helper_hash_cache: dict[str, str] = {}
 
 
@@ -217,6 +218,34 @@ def helper_digest(tools: Path) -> str:
     return digest
 
 
+#: Per-process cache of `source_digest(theme)`, keyed by the theme's own
+#: resolved path, invalidated by `source_fingerprint(theme)` -- a cheap,
+#: stat-only check (no file content read) of exactly the files
+#: `source_digest` would hash. Board evidence (2026-09-25): even with
+#: `helper_digest()` above removing the tools tree's own share,
+#: `prepare_entry` still cost ~91 ms on an otherwise-cached generation --
+#: re-hashing this theme's own files (background images included) on every
+#: single call, even though nothing had changed since the previous call
+#: moments earlier. Accepted, narrow blind spot (matching this whole
+#: change's existing risk posture elsewhere): a file rewritten with the
+#: exact same size and mtime as before would not be noticed -- a real edit
+#: (from a text editor, a `git checkout`, this project's own theme-fetch
+#: tooling) changes at least one of those. A bare CLI process only ever
+#: calls this once per invocation (empty cache, no behaviour change).
+_theme_hash_cache: dict[str, tuple[tuple, str]] = {}
+
+
+def theme_digest(theme: Path) -> str:
+    key = str(theme.resolve(strict=True))
+    fingerprint = source_fingerprint(theme)
+    cached = _theme_hash_cache.get(key)
+    if cached is not None and cached[0] == fingerprint:
+        return cached[1]
+    digest = source_digest(theme)
+    _theme_hash_cache[key] = (fingerprint, digest)
+    return digest
+
+
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
             background_choice: str | None = None,
@@ -225,7 +254,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     root, theme = choose_source(name, source, user_themes, builtins)
     remembered = remembered_choice(state_root, theme) if background_choice is None else None
     stopwatch = theme_timing.Stopwatch()
-    source_hash = source_digest(theme)
+    source_hash = theme_digest(theme)
     stopwatch.lap("source_hash")
     helper_hash = helper_digest(tools)
     stopwatch.lap("helper_hash")
@@ -393,7 +422,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         (work / "appearance.json").write_text(serialized)
         if report["selected_background"]:
             (work / "background").symlink_to("theme/" + report["selected_background"])
-        if source_digest(theme) != source_hash:
+        if theme_digest(theme) != source_hash:
             raise ThemeError("theme source changed during preparation")
         stopwatch.lap("recheck_source")
         def reuse_existing():

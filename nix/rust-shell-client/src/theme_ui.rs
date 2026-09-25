@@ -6,6 +6,7 @@ use crate::theme_catalog::{
     BackgroundKind, ThemeList, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
 };
 use std::{
+    collections::VecDeque,
     path::PathBuf,
     sync::mpsc::{self, Receiver, SyncSender, TryRecvError},
     thread,
@@ -158,6 +159,16 @@ pub struct ThemeView {
     /// two in flight": it also keeps this from crowding the same
     /// `ThemeWorker` queue a real Preview/Activate tap needs.
     pub prepare_ahead_inflight: Option<u64>,
+    /// Indices still queued for an unconditional, dwell-independent
+    /// warm-up: the active theme's immediate carousel neighbours, queued
+    /// once when its own `list` reply lands (board evidence, 2026-09-25:
+    /// browsing to a never-before-prepared theme cost ~4 s the first time,
+    /// dominating the felt "instant" experience even after Apply itself
+    /// got fast). Drained one at a time, only when `poll_prepare_ahead` has
+    /// no dwell-driven request of its own to make and the single in-flight
+    /// slot is free, so this never competes with -- or delays -- warming
+    /// whatever a person is actually looking at right now.
+    pub pending_neighbor_warms: VecDeque<usize>,
 }
 
 /// How long a theme must stay the carousel's centred item, with the
@@ -188,6 +199,7 @@ impl Default for ThemeView {
             prepare_ahead_elapsed_ms: 0,
             prepare_ahead_sent_for: None,
             prepare_ahead_inflight: None,
+            pending_neighbor_warms: VecDeque::new(),
         }
     }
 }
@@ -246,6 +258,11 @@ impl ThemeView {
         self.prepare_ahead_watch = None;
         self.prepare_ahead_elapsed_ms = 0;
         self.prepare_ahead_sent_for = None;
+        // A fresh `list` reply (from re-opening, or from `back()`'s own
+        // re-fetch) always repopulates this with that reply's own active
+        // theme's neighbours in `accept()`; a queue left over from a
+        // now-stale list would otherwise persist and warm the wrong themes.
+        self.pending_neighbor_warms.clear();
     }
 
     pub fn back(&mut self) -> Option<ThemeRequest> {
@@ -322,11 +339,25 @@ impl ThemeView {
             Ok(ThemeResponse::List(list)) => {
                 // Center the theme carousel on the currently active theme,
                 // like Quattro's own picker opening on `selectedImage`.
-                self.theme_position = list
+                let active_index = list
                     .themes
                     .iter()
                     .position(|entry| Some(entry.id.as_str()) == list.active.id.as_deref())
-                    .unwrap_or(0) as f64;
+                    .unwrap_or(0);
+                self.theme_position = active_index as f64;
+                // Queue the active theme's immediate neighbours for an
+                // unconditional warm-up (see `pending_neighbor_warms`'s own
+                // doc): whichever way a person scrolls first from the
+                // theme they are already on, that first move is very
+                // likely into one of these two.
+                self.pending_neighbor_warms.clear();
+                for neighbor in [active_index.checked_sub(1), active_index.checked_add(1)] {
+                    if let Some(index) = neighbor {
+                        if index < list.themes.len() && index != active_index {
+                            self.pending_neighbor_warms.push_back(index);
+                        }
+                    }
+                }
                 self.list = Some(list);
                 self.page = ThemePage::List;
                 self.error = None;
@@ -376,24 +407,46 @@ impl ThemeView {
         &mut self,
         elapsed_ms: u32,
         centered: Option<usize>,
-    ) -> Option<ThemeRequest> {
-        let Some(index) = centered else {
+    ) -> Option<(usize, ThemeRequest)> {
+        if let Some(index) = centered {
+            if self.prepare_ahead_watch != Some(index) {
+                self.prepare_ahead_watch = Some(index);
+                self.prepare_ahead_elapsed_ms = elapsed_ms;
+            } else {
+                self.prepare_ahead_elapsed_ms = self.prepare_ahead_elapsed_ms.saturating_add(elapsed_ms);
+            }
+        } else {
             self.prepare_ahead_watch = None;
             self.prepare_ahead_elapsed_ms = 0;
-            return None;
-        };
-        if self.prepare_ahead_watch != Some(index) {
-            self.prepare_ahead_watch = Some(index);
-            self.prepare_ahead_elapsed_ms = elapsed_ms;
-        } else {
-            self.prepare_ahead_elapsed_ms = self.prepare_ahead_elapsed_ms.saturating_add(elapsed_ms);
         }
-        if self.prepare_ahead_inflight.is_some()
-            || self.prepare_ahead_sent_for == Some(index)
-            || self.prepare_ahead_elapsed_ms < PREPARE_AHEAD_DEBOUNCE_MS
-        {
+        if self.prepare_ahead_inflight.is_some() {
             return None;
         }
+        if let Some(index) = centered {
+            if self.prepare_ahead_sent_for != Some(index)
+                && self.prepare_ahead_elapsed_ms >= PREPARE_AHEAD_DEBOUNCE_MS
+            {
+                if let Some(request) = self.warm_request_for(index) {
+                    return Some((index, request));
+                }
+            }
+        }
+        // Nothing dwell-driven is due right now: spend the one free slot on
+        // the neighbour queue instead (see `pending_neighbor_warms`'s own
+        // doc), so it can never delay whatever a person is actually
+        // settled on -- that branch above always takes priority.
+        while let Some(index) = self.pending_neighbor_warms.pop_front() {
+            if self.prepare_ahead_sent_for == Some(index) {
+                continue;
+            }
+            if let Some(request) = self.warm_request_for(index) {
+                return Some((index, request));
+            }
+        }
+        None
+    }
+
+    fn warm_request_for(&self, index: usize) -> Option<ThemeRequest> {
         let list = self.list.as_ref()?;
         let theme = list.themes.get(index)?;
         if list.active.id.as_deref() == Some(theme.id.as_str()) {
@@ -895,10 +948,18 @@ mod tests {
     }
 
     fn theme_list(active_index: Option<usize>) -> ThemeList {
-        let themes: Vec<ThemeEntry> = (0..3)
+        theme_list_of(3, active_index)
+    }
+
+    fn theme_list_of(count: usize, active_index: Option<usize>) -> ThemeList {
+        let themes: Vec<ThemeEntry> = (0..count)
             .map(|index| {
                 let mut theme = preview().theme;
-                theme.id = std::iter::repeat_n(char::from_digit(index, 10).unwrap(), 24).collect();
+                theme.id = std::iter::repeat_n(
+                    char::from_digit(index as u32, 16).expect("test fixture stays under 16 themes"),
+                    24,
+                )
+                .collect();
                 theme
             })
             .collect();
@@ -927,9 +988,10 @@ mod tests {
         assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
         assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
         // Crossing the threshold (100+100+50 >= 220) fires exactly once.
-        let request = view
+        let (index, request) = view
             .poll_prepare_ahead(50, Some(1))
             .expect("debounce elapsed while centred on the same index");
+        assert_eq!(index, 1);
         assert_eq!(
             request,
             ThemeRequest::Preview {
@@ -952,11 +1014,12 @@ mod tests {
 
         // Moving to a different index resets the dedupe and debounce.
         assert_eq!(view.poll_prepare_ahead(50, Some(2)), None);
-        let second = view
+        let (second_index, second_request) = view
             .poll_prepare_ahead(200, Some(2))
             .expect("a new centred index gets its own debounce window");
+        assert_eq!(second_index, 2);
         assert_eq!(
-            second,
+            second_request,
             ThemeRequest::Preview {
                 theme_id: view.list.as_ref().unwrap().themes[2].id.clone(),
                 background_id: None,
@@ -1012,5 +1075,111 @@ mod tests {
             result: Err("irrelevant".into()),
         };
         assert!(view.prepare_ahead_reply(&reply));
+    }
+
+    /// Drives a `List` reply through the same `submitted`/`accept` path
+    /// `main.rs` uses for a real list load, so the neighbour queue is
+    /// populated the way it would be on the board, not poked directly.
+    fn load_list(view: &mut ThemeView, count: usize, active_index: Option<usize>) {
+        let list = theme_list_of(count, active_index);
+        view.submitted(ThemeRequest::List, 1);
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request: ThemeRequest::List,
+            result: Ok(ThemeResponse::List(list)),
+        }));
+    }
+
+    #[test]
+    fn a_list_reply_queues_both_neighbours_of_a_mid_list_active_theme() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 3, Some(1));
+
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([0, 2])
+        );
+    }
+
+    #[test]
+    fn a_list_reply_queues_only_the_one_neighbour_at_each_end_of_the_list() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 3, Some(0));
+        assert_eq!(view.pending_neighbor_warms, std::collections::VecDeque::from([1]));
+
+        load_list(&mut view, 3, Some(2));
+        assert_eq!(view.pending_neighbor_warms, std::collections::VecDeque::from([1]));
+    }
+
+    #[test]
+    fn a_single_theme_list_queues_no_neighbours() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 1, Some(0));
+
+        assert!(view.pending_neighbor_warms.is_empty());
+        // Nothing to warm and the active theme is already selected, so
+        // polling never manufactures a request out of an empty queue.
+        assert_eq!(view.poll_prepare_ahead(500, Some(0)), None);
+    }
+
+    #[test]
+    fn the_neighbour_queue_drains_when_nothing_is_dwell_driven() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 3, Some(1));
+
+        // No centred index this tick (e.g. the carousel is mid-animation):
+        // the dwell path has nothing to say, so the queued neighbour at
+        // index 0 goes out immediately, without waiting on the debounce.
+        let (index, request) = view.poll_prepare_ahead(16, None).expect("a queued neighbour");
+        assert_eq!(index, 0);
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[0].id.clone(),
+                background_id: None,
+            }
+        );
+        view.prepare_ahead_submitted(index, 42);
+
+        // The other neighbour is still queued behind it.
+        assert_eq!(view.pending_neighbor_warms, std::collections::VecDeque::from([2]));
+    }
+
+    #[test]
+    fn a_dwell_driven_request_takes_priority_over_the_neighbour_queue() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 3, Some(1));
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([0, 2])
+        );
+
+        // A freshly-centred index whose very first tick already meets the
+        // debounce (a long single tick, or a caller that primed the watch
+        // elsewhere) fires the dwell-driven warm immediately, winning over
+        // the still-populated neighbour queue rather than draining it.
+        let (index, request) = view
+            .poll_prepare_ahead(PREPARE_AHEAD_DEBOUNCE_MS, Some(2))
+            .expect("dwell-driven warm");
+        assert_eq!(index, 2);
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[2].id.clone(),
+                background_id: None,
+            }
+        );
+
+        // The neighbour queue is untouched -- it will be drained on a later
+        // tick once nothing dwell-driven is due.
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([0, 2])
+        );
     }
 }

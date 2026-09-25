@@ -98,6 +98,16 @@ class Helperd:
         self.fixed_argv = fixed_flags_argv(fixed)
         self.listen = listen
         self.lock = threading.Lock()
+        # Board evidence (2026-09-25): a request's own "parse" phase cost
+        # 65 ms -- on this daemon's slow single core, building a fresh
+        # `argparse.ArgumentParser` (three subcommands, ~15 flags) turned
+        # out to be real, repeated cost, not bare JSON decoding. Built once
+        # per `argparse.ArgumentParser`'s own contract that `parse_args()`
+        # never mutates the parser itself, so reusing one instance across
+        # every request -- exactly like reusing any other stateless,
+        # thread-safe-under-this-daemon's-own-single-request-at-a-time-lock
+        # object -- is safe and behaves identically to a fresh one each time.
+        self.parser = theme_catalog.build_parser()
 
     def handle_line(self, line: bytes) -> tuple[dict, int]:
         stopwatch = theme_timing.Stopwatch()
@@ -110,9 +120,8 @@ class Helperd:
             theme_timing.log("helperd", "malformed", stopwatch, error=str(error)[:80])
             return {"schema": 1, "error": f"malformed request: {error}", "activated": False}, 1
         action = argv[len(self.fixed_argv)] if len(argv) > len(self.fixed_argv) else "-"
-        parser = theme_catalog.build_parser()
         try:
-            args = parser.parse_args(argv)
+            args = self.parser.parse_args(argv)
         except SystemExit:
             theme_timing.log("helperd", action, stopwatch, outcome="invalid-arguments")
             return {"schema": 1, "error": "invalid request arguments", "activated": False}, 1

@@ -268,20 +268,25 @@ class ThemePreparation(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(first_report, second_report)
 
-    def test_helper_digest_is_cached_across_repeated_preparations(self):
+    def test_theme_and_helper_digests_are_cached_across_repeated_preparations(self):
         # theme_helperd.py's own daemon calls prepare() many times per
-        # process lifetime with the *same* --tools path (a fixed Nix store
-        # path in production, immutable for the daemon's whole lifetime);
-        # board evidence attributed part of prepare_entry's 73 ms to
-        # re-hashing that tree from scratch on every single call, cache hit
-        # or not. The theme's own source_hash is deliberately still
-        # recomputed every time (a person can edit their own theme's files
-        # while the daemon keeps running); only the tools digest is cached.
+        # process lifetime against the *same* --tools path (a fixed Nix
+        # store path in production, immutable for the daemon's whole
+        # lifetime) and, in the ordinary preview-then-activate chooser flow,
+        # the *same*, unedited theme. Board evidence attributed part of
+        # prepare_entry's 73-91 ms to re-hashing both trees from scratch on
+        # every single call, cache hit or not. `helper_digest()` caches the
+        # tools tree unconditionally (it cannot change mid-process);
+        # `theme_digest()` caches the theme's own tree too, but only until
+        # `source_fingerprint()` (a cheap stat-only check) notices a real
+        # change -- a person can still edit their own theme's files while
+        # the daemon keeps running.
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)
             theme, state = base / "theme", base / "state"
             source(theme)
             activation._helper_hash_cache.clear()
+            activation._theme_hash_cache.clear()
             calls = []
             original = activation.source_digest
 
@@ -294,14 +299,33 @@ class ThemePreparation(unittest.TestCase):
                 after_first = len(calls)
                 call("theme", theme, state)
                 after_second = len(calls)
-        # First call is a cache miss (slow path): source_hash, helper_hash,
-        # and the slow path's own end-of-staging "did the theme change
-        # during preparation" recheck of the theme -- 3 total.
-        self.assertEqual(after_first, 3)
-        # Second call is a cache hit (fast path, returns before that
-        # recheck exists): only source_hash again; helper_hash is cached.
-        self.assertEqual(after_second - after_first, 1,
-                         "second call must only re-hash the theme, not the cached tools digest")
+        # First call is a cache miss for both trees (slow path): one real
+        # hash each for source_hash and helper_hash. The slow path's own
+        # end-of-staging "did the theme change during preparation" recheck
+        # fingerprints the theme again but finds nothing changed, so it is
+        # itself a cache hit -- no third real hash.
+        self.assertEqual(after_first, 2)
+        # Second call is a cache hit for both trees (fast path, returns
+        # before the recheck even exists): no new real hashes at all.
+        self.assertEqual(after_second, after_first,
+                         "second call must not re-hash either tree once both are cached")
+
+    def test_theme_digest_cache_is_invalidated_by_an_edit_between_preparations(self):
+        # theme_digest()'s cache must never let a real edit to the theme's
+        # own files go unnoticed -- only the tools tree (helper_digest) is
+        # safe to trust unconditionally.
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            activation._theme_hash_cache.clear()
+            first = activation.theme_digest(theme)
+            self.assertEqual(activation.theme_digest(theme), first,
+                             "an unedited theme must reuse the cached digest")
+            (theme / "colors.toml").write_text(COLORS.replace("#101820", "#202830"))
+            second = activation.theme_digest(theme)
+            self.assertNotEqual(second, first, "an edited theme must not reuse a stale digest")
+            self.assertEqual(activation.theme_digest(theme), second)
 
     def test_repeated_preparation_reports_a_newly_missing_remembered_background(self):
         # The one field a cache hit still has to (cheaply) recompute rather

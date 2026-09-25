@@ -3251,24 +3251,25 @@ fn serve() -> Result<(), String> {
                 }
                 state.theme_dirty();
             }
-            // Task 3.2: as a theme becomes (and stays) the carousel's
-            // centred item on the List page, warm it ahead of a possible
-            // Apply -- see `ThemeView::poll_prepare_ahead`'s own doc. Only
-            // considered while the carousel itself is at rest (`!moved` is
-            // not sufficient: `moved` is false on an already-settled frame
-            // too, but `is_animating()` is what actually distinguishes "a
-            // drag/coast/settle is still live" from "nothing is moving"),
-            // so a fast flick fires nothing until the finger actually
-            // settles somewhere.
+            // Task 3.2 (+ neighbour warm-up): as a theme becomes (and stays)
+            // the carousel's centred item on the List page, warm it ahead
+            // of a possible Apply -- see `ThemeView::poll_prepare_ahead`'s
+            // own doc. Only considered while the carousel itself is at rest
+            // (`!moved` is not sufficient: `moved` is false on an
+            // already-settled frame too, but `is_animating()` is what
+            // actually distinguishes "a drag/coast/settle is still live"
+            // from "nothing is moving"), so a fast flick fires nothing
+            // until the finger actually settles somewhere. When nothing is
+            // dwell-driven, the same call also drains a queued neighbour
+            // warm-up (the index returned may not be `centered` in that
+            // case -- `poll_prepare_ahead` reports exactly which one it
+            // means).
             if state.theme_view.page == ThemePage::List {
                 let centered = (!state.theme_carousel.is_animating() && count > 0)
                     .then(|| state.theme_carousel.index(count));
-                if let Some(request) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
+                if let Some((index, request)) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
                     if let Ok(id) = state.themes.try_submit(request) {
-                        state.theme_view.prepare_ahead_submitted(
-                            centered.expect("poll_prepare_ahead only returns Some for a centred index"),
-                            id,
-                        );
+                        state.theme_view.prepare_ahead_submitted(index, id);
                     } // queue full/unavailable: the next settled tick tries again
                 }
             }

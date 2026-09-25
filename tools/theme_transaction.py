@@ -27,6 +27,33 @@ MAX_REPLY = 4096
 EXCHANGE_TIMEOUT_S = 8.0
 
 
+#: Per-process, per-endpoint memory of the generation each receiver's own
+#: `prepared` slot should currently hold, updated by every successful
+#: exchange below -- the same transitions `appearance.rs`'s `respond()`
+#: (and `nix/card-shell/appearance.c`'s `request()`) make to their own
+#: `prepared`/`self.prepared` field: a successful "prepare" sets it, a
+#: successful "commit" or "rollback" clears it (the receiver's own slot is
+#: consumed the same way). `activate_generation()` reads this to skip a
+#: "prepare" it already knows is redundant (board evidence: the Rust shell
+#: re-received a "prepare" mid-Apply for a generation the chooser's own
+#: prepare-ahead had already prepared moments earlier). Advisory only, like
+#: everything else this comment's siblings describe as such: a stale entry
+#: (some other process, such as the client's own subprocess fallback,
+#: touched a receiver without this process knowing) only ever means
+#: `activate_generation()` retries with a real prepare, per its own doc --
+#: it can never cause a wrong commit, because the receiver's own protocol
+#: check ("commit does not match prepared generation") still runs either
+#: way and is what a retry there responds to.
+_prepared_state: dict[Path, str] = {}
+
+
+def _remember(endpoint: Path, phase: str, generation: Path | None) -> None:
+    if phase == "prepare" and generation is not None:
+        _prepared_state[endpoint] = generation.name
+    elif phase in ("commit", "rollback"):
+        _prepared_state.pop(endpoint, None)
+
+
 def exchange(endpoint: Path, phase: str, generation: Path | None, *,
              timeout: float = EXCHANGE_TIMEOUT_S) -> None:
     identity = generation.name if generation is not None else None
@@ -62,6 +89,7 @@ def exchange(endpoint: Path, phase: str, generation: Path | None, *,
                 or reply.get("phase") != phase or reply.get("generation") != identity
                 or reply.get("status") != "ok"):
             raise TransactionError(f"shell rejected {phase}")
+        _remember(endpoint, phase, generation)
     finally:
         # Named per-endpoint round-trip cost (coordinator's own question:
         # "how long does the Rust or deck ack take"). Logged unconditionally,
@@ -178,6 +206,7 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
     future shell receiver must implement prepare/commit/rollback as one scene
     generation protocol; these host fakes do not prove that it does so.
     """
+    stopwatch = theme_timing.Stopwatch()
     state_root = state_root.resolve(strict=True)
     generations = state_root / "generations"
     generation = generation.resolve(strict=True)
@@ -201,10 +230,20 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                 if time.monotonic() >= deadline:
                     raise TransactionError("activation lock timed out") from error
                 time.sleep(min(0.01, max(0, deadline - time.monotonic())))
+        stopwatch.lap("lock_wait")
         previous = _pointer(state_root)
         missing_links = _public_links(state_root)
         if preference is not None:
             preference.guard()
+        stopwatch.lap("guard")
+        # Skip a "prepare" this process already knows is redundant -- see
+        # `_prepared_state`'s own doc. `warm` is exactly the targets this
+        # optimism applies to; `commit` below retries those specifically
+        # (and only those) with a real prepare if their commit turns out to
+        # have been wrong to skip, so a stale assumption costs one extra
+        # round trip, never a wrong or failed activation.
+        warm = {target for target in targets if _prepared_state.get(target) == generation.name}
+        to_prepare = [target for target in targets if target not in warm]
         if len(targets) == 2:
             def rollback_all():
                 failures = []
@@ -216,25 +255,47 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                 return failures
 
             try:
-                for target in targets:
+                for target in to_prepare:
                     transport(target, "prepare", generation)
             except Exception as error:
                 if rollback_all():
                     raise TransactionError("fanout prepare failed and rollback was not acknowledged") from error
                 raise TransactionError("fanout prepare failed; both receivers restored") from error
-        else:
+        elif to_prepare:
             transport(endpoint, "prepare", generation)
+        stopwatch.lap("prepare_phase")
         created_links = []
         try:
             _swap_pointer(state_root, generation)
             for path in missing_links:
                 path.symlink_to("active/" + path.name)
                 created_links.append(path)
+            stopwatch.lap("swap_pointer")
             for target in targets:
-                transport(target, "commit", generation)
+                try:
+                    transport(target, "commit", generation)
+                except TransactionError:
+                    if target not in warm:
+                        raise
+                    # This target's prepare was skipped as redundant, but
+                    # its commit just disagreed (some other process,
+                    # unknown to this one, touched this receiver since --
+                    # see `_prepared_state`'s own doc). Retry once with a
+                    # real prepare before treating this as a genuine commit
+                    # failure; this is the only place a stale assumption
+                    # here can cost anything, and it costs time, not
+                    # correctness.
+                    transport(target, "prepare", generation)
+                    transport(target, "commit", generation)
             if preference is not None:
                 preference.commit()
+            stopwatch.lap("commit_phase")
+            theme_timing.log("activate_generation", generation.name[:12], stopwatch,
+                             warm=len(warm), targets=len(targets))
         except Exception as error:
+            stopwatch.lap("commit_phase_failed")
+            theme_timing.log("activate_generation", generation.name[:12], stopwatch,
+                             warm=len(warm), targets=len(targets), outcome="rolling-back")
             preference_error = None
             pointer_error = None
             try:

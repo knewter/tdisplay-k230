@@ -109,6 +109,35 @@ class ThemeSources(unittest.TestCase):
                 sources.acquire_one(str(one), "HEAD", base / "invalid")
             self.assertFalse((base / "invalid").exists())
 
+    def test_fingerprint_matches_digest_sensitivity_without_reading_content(self):
+        # source_fingerprint() must notice exactly what source_digest() would
+        # (a changed, added, or removed file), and agree when nothing did,
+        # without ever reading a file's content (its accepted, narrow blind
+        # spot -- an edit that leaves size and mtime both unchanged -- is
+        # documented on its own cached caller, theme_activate.theme_digest,
+        # not re-demonstrated here).
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            (base / "colors.toml").write_text('background = "#101820"\n')
+            (base / "backgrounds").mkdir()
+            (base / "backgrounds" / "one.png").write_bytes(b"original bytes")
+
+            first_fingerprint = sources.source_fingerprint(base)
+            first_digest = sources.source_digest(base)
+            self.assertEqual(sources.source_fingerprint(base), first_fingerprint)
+            self.assertEqual(sources.source_digest(base), first_digest)
+
+            # A real edit: different content, different size.
+            (base / "backgrounds" / "one.png").write_bytes(b"replaced, longer bytes")
+            self.assertNotEqual(sources.source_fingerprint(base), first_fingerprint)
+            self.assertNotEqual(sources.source_digest(base), first_digest)
+
+            second_fingerprint = sources.source_fingerprint(base)
+            second_digest = sources.source_digest(base)
+            (base / "backgrounds" / "new.jpg").write_bytes(b"another file")
+            self.assertNotEqual(sources.source_fingerprint(base), second_fingerprint)
+            self.assertNotEqual(sources.source_digest(base), second_digest)
+
     def test_sparse_large_file_and_entry_count_fail_before_unbounded_hashing(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)

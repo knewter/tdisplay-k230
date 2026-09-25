@@ -151,6 +151,17 @@ class HelperDaemonTests(unittest.TestCase):
         status, _ = self.run_via_daemon("list", "--json")
         self.assertEqual(status, 0)
 
+    def test_the_argument_parser_is_built_once_not_once_per_request(self):
+        # Board evidence (2026-09-25): a request's own "parse" phase cost
+        # 65 ms, attributed to building a fresh `argparse.ArgumentParser`
+        # on every single request rather than JSON decoding itself.
+        theme(self.builtins / "catppuccin")
+        with mock.patch.object(catalog, "build_parser",
+                               side_effect=AssertionError("must not rebuild the parser per request")):
+            _, listing = self.run_via_daemon("list", "--json")
+            entry_id = listing["themes"][0]["id"]
+            self.run_via_daemon("preview", "--json", entry_id)
+
     def test_client_subprocess_never_imports_theme_catalog_when_the_daemon_answers(self):
         """The whole point of `theme_client.py` not importing `theme_catalog`
         eagerly: board evidence attributes most of the ~1.2 s per

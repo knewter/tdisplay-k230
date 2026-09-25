@@ -64,6 +64,169 @@ class ThemeTransaction(unittest.TestCase):
             self.assertIsNone(tx._pointer(root))
             self.assertFalse((root / ".activation.lock").exists())
 
+    def test_activate_skips_a_prepare_already_warm_for_both_receivers(self):
+        # Board evidence (2026-09-25): the Rust shell re-received a
+        # "prepare" mid-Apply for a generation the chooser's own
+        # prepare-ahead had already prepared moments earlier -- a real,
+        # measured cost with no correctness purpose once both receivers'
+        # `prepared` slot already holds the exact right generation.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            tx._prepared_state.clear()
+            tx._prepared_state[rust] = candidate.name
+            tx._prepared_state[deck] = candidate.name
+            events = []
+            def ack(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+            try:
+                result = tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                                endpoints=(rust, deck), transport=ack,
+                                                app_sync=lambda *a, **k: None)
+            finally:
+                tx._prepared_state.clear()
+            self.assertEqual(result, {"state": "applied", "generation": candidate.name})
+            self.assertEqual(events, [("rust.sock", "commit", candidate),
+                                      ("deck.sock", "commit", candidate)])
+
+    def test_activate_prepares_only_the_receiver_that_was_not_already_warm(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            tx._prepared_state.clear()
+            tx._prepared_state[rust] = candidate.name  # deck was never warmed
+            events = []
+            def ack(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+            try:
+                tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                       endpoints=(rust, deck), transport=ack,
+                                       app_sync=lambda *a, **k: None)
+            finally:
+                tx._prepared_state.clear()
+            self.assertEqual(events, [("deck.sock", "prepare", candidate),
+                                      ("rust.sock", "commit", candidate),
+                                      ("deck.sock", "commit", candidate)])
+
+    def test_stale_warm_assumption_retries_with_a_real_prepare_and_still_succeeds(self):
+        # A receiver whose `prepared` slot this process *thinks* still
+        # matches (stale -- some other process, unknown to this one, is
+        # the only realistic cause) rejects the optimistic commit; the
+        # skip must be transparently corrected by a real prepare and a
+        # second commit attempt, with the activation still succeeding --
+        # a stale assumption here costs one extra round trip, never a
+        # wrong or failed activation.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            tx._prepared_state.clear()
+            tx._prepared_state[rust] = candidate.name
+            tx._prepared_state[deck] = candidate.name
+            events = []
+            rust_commit_attempts = []
+
+            def ack(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+                if endpoint == rust and phase == "commit":
+                    rust_commit_attempts.append(1)
+                    if len(rust_commit_attempts) == 1:
+                        raise tx.TransactionError("stale prepared generation")
+            try:
+                result = tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                                endpoints=(rust, deck), transport=ack,
+                                                app_sync=lambda *a, **k: None)
+            finally:
+                tx._prepared_state.clear()
+            self.assertEqual(result, {"state": "applied", "generation": candidate.name})
+            # targets = (rust, deck), so rust's commit (fail, then retried
+            # via a real prepare) is attempted before deck's own, unaffected
+            # first-ever commit.
+            self.assertEqual(events, [("rust.sock", "commit", candidate),
+                                      ("rust.sock", "prepare", candidate),
+                                      ("rust.sock", "commit", candidate),
+                                      ("deck.sock", "commit", candidate)])
+
+    def test_a_genuine_commit_failure_for_a_warm_receiver_still_rolls_back_fully(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            old, candidate = prepared(root, "old"), prepared(root, "candidate")
+            (root / "active").symlink_to(old)
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            tx._prepared_state.clear()
+            tx._prepared_state[rust] = candidate.name
+            events = []
+
+            def fail(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+                if endpoint == rust and phase == "commit":
+                    raise tx.TransactionError("rust commit genuinely rejected")
+            try:
+                with self.assertRaisesRegex(tx.TransactionError, "previous generation restored"):
+                    tx.activate_generation(candidate, state_root=root, endpoint=rust,
+                                           endpoints=(rust, deck), transport=fail,
+                                           app_sync=lambda *a, **k: self.fail("app sync after a failed commit"))
+            finally:
+                tx._prepared_state.clear()
+            self.assertEqual(tx._pointer(root), old)
+            # deck was never warm, so it is prepared up front; rust is
+            # attempted first in the commit loop (targets = (rust, deck)),
+            # fails, and both commit attempts (the optimistic one and the
+            # retry after a real prepare) fail -- a genuine failure, so
+            # deck's own commit is never even attempted, and both receivers
+            # are rolled back, exactly like an unwarmed commit failure would.
+            self.assertEqual([item[:2] for item in events],
+                             [("deck.sock", "prepare"),
+                              ("rust.sock", "commit"),
+                              ("rust.sock", "prepare"),
+                              ("rust.sock", "commit"),
+                              ("rust.sock", "rollback"),
+                              ("deck.sock", "rollback")])
+
+    def test_exchange_tracks_prepared_state_across_prepare_commit_rollback(self):
+        # A focused proof of `_remember`'s own bookkeeping via the real
+        # `exchange()` function (not a mocked transport), using the same
+        # fixture receiver pattern `test_real_socket_rejects_mismatched_ack`
+        # uses.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            endpoint = root / "shell.sock"
+            tx._prepared_state.clear()
+
+            def serve_one(reply):
+                endpoint.unlink(missing_ok=True)
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                listener.bind(str(endpoint))
+                listener.listen(1)
+
+                def run():
+                    connection, _ = listener.accept()
+                    connection.recv(4096)
+                    connection.sendall(json.dumps(reply).encode() + b"\n")
+                    connection.close()
+                    listener.close()
+                thread = threading.Thread(target=run)
+                thread.start()
+                return thread
+
+            try:
+                thread = serve_one({"protocol": 1, "phase": "prepare",
+                                    "generation": candidate.name, "status": "ok"})
+                tx.exchange(endpoint, "prepare", candidate)
+                thread.join(timeout=2)
+                self.assertEqual(tx._prepared_state.get(endpoint), candidate.name)
+
+                thread = serve_one({"protocol": 1, "phase": "commit",
+                                    "generation": candidate.name, "status": "ok"})
+                tx.exchange(endpoint, "commit", candidate)
+                thread.join(timeout=2)
+                self.assertNotIn(endpoint, tx._prepared_state)
+            finally:
+                tx._prepared_state.clear()
+
     def test_prepare_only_does_not_take_the_activation_lock(self):
         """A person still browsing (repeated prepare_only calls) must never
         be blocked by, or block, an unrelated in-flight
