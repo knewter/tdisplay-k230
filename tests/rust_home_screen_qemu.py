@@ -374,6 +374,15 @@ def main():
         return spawn(prefix + "-rust", [qemu, str(args.rust), "--serve"],
                      {"K230_THEME_DEFAULT_GENERATION": str(generation)})
 
+    def wait_for_ready(prefix):
+        # `ready-idle` logs before the compositor has necessarily painted a
+        # first real frame; a capture taken immediately after can race a
+        # still-uninitialized headless output and "stabilize" on a
+        # transient black frame instead of the real one.
+        wait_for(lambda: "ready-idle" in text(prefix), 30)
+        wait_for(lambda: "wallpaper-commit" in text(prefix) and "home-configure" in text(prefix), 15)
+        time.sleep(0.3)
+
     checks = {}
     try:
         spawn("sway", [qemu, str(args.sway), "-c", str(config), "-d"])
@@ -386,7 +395,7 @@ def main():
 
         # --- Dark pass: full sequence. ---
         rust = start_pass(dark, "dark")
-        wait_for(lambda: "ready-idle" in text("dark-rust"), 30)
+        wait_for_ready("dark-rust")
 
         page1 = capture("home-dark-page1.png")
 
@@ -485,7 +494,7 @@ def main():
         )
 
         restarted = start_pass(dark, "dark-restarted")
-        wait_for(lambda: "ready-idle" in text("dark-restarted-rust"), 30)
+        wait_for_ready("dark-restarted-rust")
         after_restart = capture("home-dark-after-restart.png")
         checks["stable_after_restart"] = not bool(
             ImageChops.difference(page1, after_restart).getbbox()
@@ -498,7 +507,7 @@ def main():
 
         # --- Light pass: headline captures only. ---
         light_rust = start_pass(light, "light")
-        wait_for(lambda: "ready-idle" in text("light-rust"), 30)
+        wait_for_ready("light-rust")
         light_page1 = capture("home-light-page1.png")
         light_y = swipe_y()
         light_start_x = WIDTH - SWIPE_MARGIN
@@ -575,20 +584,8 @@ def main():
             processes.append(process)
             return process
 
-        def wait_for_first_paint(prefix):
-            # `ready-idle` logs before the compositor has necessarily
-            # painted a first real frame; without another IPC round-trip
-            # first (as every other pass above already has, incidentally,
-            # by the time it takes its own first capture), a capture taken
-            # immediately after can race a still-uninitialized black
-            # headless output and "stabilize" on that instead.
-            wait_for(lambda: "wallpaper-commit" in text(prefix)
-                     and "home-configure" in text(prefix), 15)
-            time.sleep(0.3)
-
         showcase_dark = start_showcase(dark, "showcase-dark")
-        wait_for(lambda: "ready-idle" in text("showcase-dark-rust"), 30)
-        wait_for_first_paint("showcase-dark-rust")
+        wait_for_ready("showcase-dark-rust")
         capture("home-dark-showcase.png")
         showcase_dark.terminate()
         try:
@@ -597,8 +594,7 @@ def main():
             showcase_dark.kill()
 
         showcase_light = start_showcase(light, "showcase-light")
-        wait_for(lambda: "ready-idle" in text("showcase-light-rust"), 30)
-        wait_for_first_paint("showcase-light-rust")
+        wait_for_ready("showcase-light-rust")
         capture("home-light-showcase.png")
         showcase_light.terminate()
         try:
