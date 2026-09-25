@@ -28,6 +28,11 @@ def arguments():
     parser.add_argument("--check-restart", action="store_true")
     parser.add_argument("--deck-visual-states", action="store_true",
                         help="capture private and empty deck states after the paired transaction")
+    parser.add_argument("--wallpaper-cache-tool", type=Path,
+                        help="k230-shell-rust binary (any arch: this only runs host-side) to "
+                             "precompute background.cache for the prepared generations, so this "
+                             "run exercises BackgroundCache's cache-hit path (background_decode.rs) "
+                             "instead of only the full-decode path a bare `prepare()` takes")
     return parser.parse_args()
 
 
@@ -46,11 +51,27 @@ def main():
     latte, latte_report = prepare(
         "catppuccin-latte", source=source_root / "catppuccin-latte",
         state_root=state, user_themes=out / "empty-user-themes", builtins=None,
-        tools=root / "nix/omarchy-theme-tools/upstream")
+        tools=root / "nix/omarchy-theme-tools/upstream",
+        wallpaper_cache_tool=args.wallpaper_cache_tool)
     dark, dark_report = prepare(
         "catppuccin", source=source_root / "catppuccin",
         state_root=state, user_themes=out / "empty-user-themes", builtins=None,
-        tools=root / "nix/omarchy-theme-tools/upstream")
+        tools=root / "nix/omarchy-theme-tools/upstream",
+        wallpaper_cache_tool=args.wallpaper_cache_tool)
+    if args.wallpaper_cache_tool is not None:
+        # Prove this run actually exercises BackgroundCache's cache-hit path
+        # (background_decode.rs's load_cached), not only the full-decode
+        # fallback every other invocation of this test takes: a bare
+        # `prepare()` call above already ran `--write-wallpaper-cache` for
+        # each generation whose background is a still image, exactly as
+        # `handheld-theme-command.nix` does on the real board (see
+        # `tools/theme_activate.py`'s `build_wallpaper_cache`).
+        for generation, report in ((latte, latte_report), (dark, dark_report)):
+            selected = report["selected_background"]
+            if selected and Path(selected).suffix.lower() != ".mp4":
+                cache_file = generation / "background.cache"
+                assert cache_file.is_file() and cache_file.stat().st_size > 0, \
+                    f"{generation.name}: --wallpaper-cache-tool did not produce background.cache"
     assert latte_report["icon_theme"] == "Yaru-blue"
     assert dark_report["icon_theme"] == "Yaru-purple"
 
@@ -273,6 +294,7 @@ def main():
             assert private.size == empty.size == (568, 1232)
         summary = {"result": "PASS", "class": "headless-qemu-paired-appearance",
                    "sway": args.sway, "rust": args.rust,
+                   "wallpaper_cache_exercised": args.wallpaper_cache_tool is not None,
                    "default_generation": default.name,
                    "default_background": bundled["selected_background"],
                    "default_wallpaper_sample": baseline.getpixel(baseline_point),

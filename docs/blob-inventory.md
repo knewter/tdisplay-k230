@@ -786,6 +786,10 @@ DATA 96cecf526f58f4ea7af374974c70640a80e484f3a20202e1c7454a26c796de1f  docs/evid
 DATA 085a00f2d55edf2e0073788f1fd302f41548e3ade7dd9a07640f020b53ea7971  docs/evidence/omarchy-themes/paired-endpoints-qemu/rollback-deck.png
 DATA d5b3e47bf88596e75dc8ba1f22d456de2ea478e68df4443d53d0e0489ce41f13  docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-deck.png
 DATA d2b189f2421e5b2421b091ae8cbfb403e57e784a2b70f3853f8b26945ecf089e  docs/evidence/omarchy-themes/paired-endpoints-qemu/themed-drawer.png
+DATA 7ff575e09fa305a06f6b7e179ffa2136a4dbdbf70db77a1f157639c08f157c38  docs/evidence/omarchy-themes/wallpaper-visibility-board-report/default-deck.png
+DATA 62de4f7fa2009241ca2e1ccfb1ce933f7bfa3bff27a1b108a64b506d99cef90f  docs/evidence/omarchy-themes/wallpaper-visibility-board-report/latte-deck-cache-hit.png
+DATA bb056c18d3c66b61b8ee11da40b7d18a4dd07fcd4be3ab4877d6a9a4ce573688  docs/evidence/omarchy-themes/wallpaper-visibility-board-report/latte-deck.png
+DATA 760ef9193a99e8cb2c527c320170ad5195e3010d73a98ec4b55fc7613ff27ec7  docs/evidence/omarchy-themes/wallpaper-visibility-board-report/latte-drawer.png
 
 DATA 5414b90fd68924d1bae90f78982c7897ac9b75c3ff64e173f9352dd5ff1fb236  docs/evidence/shell-features/startup-portrait/20260922T172430Z-portrait-image-startup.mp4
 DATA 3fd760e13e69c0bb5c640e901d3b64cc059e20b546ae8b3bcf022bb86ed6b947  docs/evidence/shell-features/startup-portrait/demo.mp4
