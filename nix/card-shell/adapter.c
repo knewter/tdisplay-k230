@@ -287,6 +287,7 @@ static void handle_result(struct cs_result result);
 static bool snapshot(void);
 static bool chrome(void);
 static void keyboard_refresh(void);
+static void ordinary_backdrop_sync(struct sway_output *output);
 static struct sway_layer_surface *keyboard_layer(struct sway_output *output);
 static bool appearance_canvas_refresh(void) {
 	if (!shell.canvas || !shell.deck || !shell.output) return true;
@@ -1231,6 +1232,11 @@ static void restore(struct cs_result result) {
 	scaled_cache_log();
 	if (shell.deck)
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
+	/* Re-admit the ordinary-maximized backdrop now that the deck (whose
+	 * own canvas made the wallpaper-reveal decision while active) is
+	 * gone; see ordinary_backdrop_sync's comment. */
+	if (shell.output)
+		ordinary_backdrop_sync(shell.output);
 	if (shell.seat && !server.session_lock.lock) {
 		c = find(result.focus_id);
 		if (c && live(c->view)) {
@@ -1272,6 +1278,11 @@ static void handle_result(struct cs_result r) {
 		shell.active = true;
 		card_bench_phase(true, shell.policy.count);
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
+		/* Withdraw the ordinary-maximized backdrop now that the deck is
+		 * taking over the wallpaper-reveal decision; see
+		 * ordinary_backdrop_sync's comment. */
+		if (shell.output)
+			ordinary_backdrop_sync(shell.output);
 	}
 	if (r.actions & CS_CLOSE) {
 		/* Gesture recognition uses device time, but give the client its full
@@ -1612,17 +1623,33 @@ static void ordinary_backdrop_sync(struct sway_output *output) {
 	if (!shell.ordinary_backdrop)
 		return;
 	bool any = false;
-	struct card *card;
-	wl_list_for_each(card, &shell.cards, link) {
-		struct sway_view *view = card->view;
-		if (live(view) && view->container &&
-			view->container->card_shell_ordinary_maximized &&
-			container_is_floating(view->container) &&
-			!view->container->scratchpad &&
-			view->container->pending.workspace &&
-			view->container->pending.workspace->output == output) {
-			any = true;
-			break;
+	/* This rect lives in output->layers.tiling, which sits above
+	 * layers.shell_background (the wallpaper) in Sway's fixed scene
+	 * order -- see include/sway/tree/root.h's layer list. It is meant
+	 * to fill the margin behind a single ordinary-maximized app while
+	 * its own resize catches up (ensure_ui's comment), never to cover
+	 * the desktop generally. An ordinarily-maximized card stays flagged
+	 * that way while the deck/card overview is open to look at it (the
+	 * flag is per-container UX state, not "not currently being viewed
+	 * in overview"), so without this gate the overview's own
+	 * deck/canvas -- which does the real, appearance-aware decision
+	 * about whether to reveal the wallpaper -- would always lose to
+	 * this opaque rect sitting below it but still above the wallpaper.
+	 * That is exactly the flat, wallpaper-less card overview reported
+	 * on the board with a real maximized Terminal card. */
+	if (!shell.active) {
+		struct card *card;
+		wl_list_for_each(card, &shell.cards, link) {
+			struct sway_view *view = card->view;
+			if (live(view) && view->container &&
+				view->container->card_shell_ordinary_maximized &&
+				container_is_floating(view->container) &&
+				!view->container->scratchpad &&
+				view->container->pending.workspace &&
+				view->container->pending.workspace->output == output) {
+				any = true;
+				break;
+			}
 		}
 	}
 	wlr_scene_node_set_enabled(&shell.ordinary_backdrop->node, any);
@@ -2094,9 +2121,67 @@ bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, 
 	card_bench_input_end(consumed && (active || shell.active), shell.policy.mode != CS_DRAGGING);
 	return consumed;
 }
+/* Self-evident diagnosis for "the wallpaper is not visible": lists every
+ * scene node this file itself creates that can sit at or above the
+ * wallpaper's own background layer (layers.shell_background), with the
+ * facts that decide whether each one currently covers it. `journalctl -u
+ * shell` shows the resulting K230_CARD_SHELL_DEBUG_SCENE line; the IPC
+ * reply carries the same text for a synchronous read over `swaymsg`. Never
+ * reads or writes anything outside this process's own scene-graph state --
+ * a read-only probe, not a scene mutation. */
+static void rect_summary(char *out, size_t cap, const char *name, struct wlr_scene_rect *rect) {
+	if (!rect) {
+		snprintf(out, cap, "%s=absent", name);
+		return;
+	}
+	snprintf(out, cap,
+		"%s enabled=%d pos=%d,%d size=%dx%d rgba=%.3f,%.3f,%.3f,%.3f",
+		name, rect->node.enabled, rect->node.x, rect->node.y, rect->width, rect->height,
+		(double)rect->color[0], (double)rect->color[1], (double)rect->color[2],
+		(double)rect->color[3]);
+}
+static char *debug_scene_text(void) {
+	char canvas[160], ordinary[160], gradient[96];
+	rect_summary(canvas, sizeof(canvas), "canvas", shell.canvas);
+	rect_summary(ordinary, sizeof(ordinary), "ordinary_backdrop", shell.ordinary_backdrop);
+	snprintf(gradient, sizeof(gradient), "canvas_gradient enabled=%d",
+		shell.canvas_gradient ? shell.canvas_gradient->node.enabled : -1);
+	unsigned ordinary_maximized_cards = 0;
+	struct card *c;
+	wl_list_for_each(c, &shell.cards, link)
+		if (c->view && c->view->container && c->view->container->card_shell_ordinary_maximized)
+			ordinary_maximized_cards++;
+	size_t capacity = 512;
+	char *text = malloc(capacity);
+	if (!text)
+		return NULL;
+	int written = snprintf(text, capacity,
+		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
+		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
+		"appearance_canvas_authored=%d",
+		shell.active, shell.deck ? shell.deck->node.enabled : -1,
+		canvas, gradient, ordinary,
+		ordinary_maximized_cards, shell.appearance_enabled,
+		shell.appearance_enabled ? shell.appearance.wallpaper : -1,
+		shell.appearance_enabled ? shell.appearance.canvas_authored : -1);
+	if (written < 0) {
+		free(text);
+		return NULL;
+	}
+	return text;
+}
 struct cmd_results *cmd_card_shell(int argc, char **argv) {
 	if (!enabled() || config->reading)
 		return cmd_results_new(CMD_FAILURE, "card shell is disabled");
+	if (argc == 1 && strcmp(argv[0], "debug-scene") == 0) {
+		char *text = debug_scene_text();
+		if (!text)
+			return cmd_results_new(CMD_FAILURE, "debug-scene formatting failed");
+		sway_log(SWAY_INFO, "%s", text);
+		struct cmd_results *result = cmd_results_new(CMD_SUCCESS, "%s", text);
+		free(text);
+		return result;
+	}
 	if (argc == 1 && strcmp(argv[0], "ordinary") == 0) {
 		struct sway_container *con = config->handler_context.container;
 		if (!con || !con->view)

@@ -203,7 +203,40 @@ def main():
         assert close(lower, lower_expected), (lower, lower_expected)
         assert lower != baseline.getpixel(lower_point)
 
+        # Regression for the board bug: a real ordinary-maximized app (the
+        # board's Terminal/foot for_window config: floating enable; resize
+        # set 100 ppt 100 ppt; move position 0 0, then `card_shell
+        # ordinary`) must not cover the wallpaper while the deck overview
+        # is showing. ordinary_backdrop_sync used to enable an opaque,
+        # output-sized rect in layers.tiling (above layers.shell_background,
+        # the wallpaper) whenever any card was flagged
+        # card_shell_ordinary_maximized, with no check for whether the deck
+        # was the thing actually being looked at. This marks the already-
+        # live k230.card.one card ordinary in place, rather than mapping a
+        # second window mid-overview (card-shell's overview snapshot is not
+        # designed to admit a brand new card while active): the rect's
+        # enable decision never depended on the flagged card's own size or
+        # position, only on the flag and the deck's active state, so this
+        # exercises the identical code path the board's real, full-output
+        # ordinary window does.
+        ipc('[app_id="k230.card.one"] card_shell ordinary')
+
+        def debug_scene():
+            return ipc("card_shell debug-scene")[0]["error"]
+
+        scene_while_active = wait(lambda: "ordinary_maximized_cards=1" in debug_scene() and
+                                  debug_scene())
+        assert "active=1" in scene_while_active, scene_while_active
+        assert "ordinary_backdrop enabled=0" in scene_while_active, scene_while_active
+        still_themed = capture("latte-deck-with-ordinary.png")
+        assert close(still_themed.getpixel(upper_point), upper_expected), \
+            (still_themed.getpixel(upper_point), upper_expected, scene_while_active)
+        assert close(still_themed.getpixel(lower_point), lower_expected), \
+            (still_themed.getpixel(lower_point), lower_expected, scene_while_active)
+
         ipc("card_shell back")
+        scene_after_back = wait(lambda: "active=0" in debug_scene() and debug_scene())
+        assert "ordinary_backdrop enabled=1" in scene_after_back, scene_after_back
         # The app expansion settles over several compositor frames; wait for
         # the actual live pixel instead of assuming a timer means presented.
         def expanded_app():

@@ -1,5 +1,18 @@
 # "Why don't I ever see a background image": QEMU root-cause investigation
 
+**UPDATE 2026-09-24, later the same day:** the coordinator reproduced this on
+the real board with the exact real state this investigation's first pass
+below could not fault (fresh generation, correct `background.cache`,
+correct `appearance.json`), with one difference this pass's fixture never
+exercised: **a real ordinary-maximized app (Terminal) was mapped**. That is
+the missing variable. The root cause, fix, and a QEMU regression that
+reproduces it are in
+`docs/evidence/omarchy-themes/ordinary-backdrop-covers-wallpaper/README.md`.
+Everything below is the investigation that ruled out the decode/cache/
+appearance-parsing path -- correctly, it turns out, since none of it was at
+fault -- kept as the record of what was checked and why this update was
+needed, not a conclusion to act on by itself.
+
 Filed against the user report that catppuccin-latte's selected background
 ("Color fade", `backgrounds/1-color-fade.webp`) never appears -- the card
 overview and drawer show a flat, uniform fill in latte's own palette
