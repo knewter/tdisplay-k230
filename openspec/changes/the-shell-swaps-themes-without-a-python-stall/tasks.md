@@ -796,8 +796,192 @@ Proof for 9.1-9.4: the tests named above, all passing on this host
 (9.1's own regression test independently confirmed to fail against the
 pre-fix code); proof for 9.5 is the reserved board, not run here.
 
+## 10. Tap-to-apply: no separate Preview page, no Apply/Cancel step
+
+<!-- Grounding: user decision (2026-09-25, verbatim): "i don't really think
+     we need an 'apply' window for themes at all. tap theme in the theme
+     picker, apply immediately, so i can compare them easily." Also folds
+     in a second coordinator message, board re-check of task 9 (master
+     `644cd061`, installed `n44hk9js...`): a *matched* pre-render still
+     took 161ms touch-up-to-commit on the K230 (target ~30ms), and
+     `optimistic-apply prerendered` was still computed twice, ~154ms
+     apart, for the same generation. -->
+
+- [x] 10.1 `theme_ui.rs` rewritten: `ThemePage::Preview` removed (only
+  `Controls`/`List` remain -- the theme carousel, the active theme's own
+  background carousel below it, and a plain "Current theme"/"Current
+  background" label under whichever slice of each is centred and durably
+  active, all on one page). A new `Desired`/`ThemeView::advance` state
+  machine (`desired`, private-but-`pub`-for-struct-update, same convention
+  as `prepare_ahead_watch`) coalesces rapid taps: a fresh tap always
+  overwrites `desired`; `advance()` submits the next step toward it only
+  when nothing is already in flight; a reply that no longer matches
+  `desired` is discarded, and the caller's own follow-up `advance()` call
+  immediately moves on to whatever is now desired -- bounding in-flight
+  work to one request, with the documented tradeoff that a second rapid
+  tap's own visible effect is bounded by the first tap's own in-flight
+  round trip, not instantaneous (proven directly:
+  `rapid_taps_across_themes_coalesce_onto_the_last_one`). New `ThemeView::
+  tap_theme`/`tap_background` replace `preview_request`/`background_request`/
+  `apply_request`; `ThemeIntent::Apply` and `ThemeView::selection_error`/
+  `selection_failed` are removed. A background tap already knows its own
+  theme's generation (loaded alongside the backgrounds themselves), so it
+  goes straight to `Activate`, no `Preview` step; a theme tap does not
+  (the target theme's own generation is not necessarily known), so it
+  always previews first. New `known_generations: HashMap<String, String>`
+  remembers a warm-up reply's own `(theme_id, generation)` (via
+  `record_known_generation`, wired from `main.rs`'s `theme_reply` on a
+  `prepare_ahead_reply` hit) so the pre-render trigger (10.3) can target a
+  centred-but-not-tapped theme without its own fresh round trip. New
+  `ThemeView::applying_theme_index`/`applying_background_index` drive a
+  brief, in-place busy spinner on the tapped slice (`render.rs::
+  paint_carousel`'s existing `busy: Option<usize>` parameter, unchanged)
+  instead of blocking the carousel. Verify with `cargo test --offline
+  --lib theme_ui::tests` (24 tests, all passing, including tap-apply of a
+  cold theme, tap-apply of the already-active theme, background tap-apply,
+  the video/already-selected background no-ops, rapid-tap coalescing, and
+  rollback-on-failure with a visible error).
+- [x] 10.2 `render.rs`'s `paint_theme_chooser` merges the old List and
+  Preview branches into one: the theme carousel, its "Current theme"/
+  origin label, the "Backgrounds" heading, the background carousel, its
+  own "Current background"/"Tap to apply" label, then one pending/error/
+  message line -- all on the fixed layout `theme_ui::THEME_CAROUSEL_TOP`
+  (moved from `204.0` to `132.0`) and `BACKGROUND_CAROUSEL_TOP` (now a
+  const-expr `THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h + 100.0` =
+  `872.0`, not board-verified for fit/spacing -- see this task's own
+  evidence). `paint_preview_footer_status` (the Preview page's own live
+  Apply/Cancel footer overlay, task 9.1) and `RendererCache::draw`'s own
+  call to it are removed outright: with no Apply button, nothing needs a
+  second, live paint pass any more -- `set_theme_view`'s own unconditional
+  `invalidate()` (task 9.2's own doc) already forces the ordinary rebuild
+  path to repaint the busy spinner and pending/error/message line fresh on
+  every `ThemeView` change, and the one case that skips a fresh rebuild
+  (an *adopted* pre-render) is correct exactly because, at the moment it
+  is shown, the applied theme already looks done -- proven by
+  `a_theme_view_change_after_adopting_still_rebuilds_and_shows_pending`
+  (renamed/re-reasoned from 9.1's own regression test) and
+  `a_pending_only_theme_view_change_does_not_bump_content_generation`
+  (re-targeted to the one List page, doc updated). The single large
+  "screen crop" still-image preview (`RendererCache::poll_theme_image`/
+  `preview_surface`, `theme_preview_image_pending`) is now a deliberate,
+  documented permanent no-op -- both carousels already show their own
+  thumbnails via `ThemeThumbnailCache`, so nothing paints a decoded still
+  any more; `ThemeImageWorker`/`ThemeImageKey` and the worker's own two
+  tests are kept, unused, as a named follow-up to prune rather than a
+  silent removal. Verify with `cargo test --offline --lib render::tests`
+  (all passing, including the fixed
+  `list_and_background_rows_paint_their_own_thumbnail_once_decoded`,
+  which caught a real bug this task introduced and fixed in the same
+  commit: the merged `poll_theme_thumbnails` match arm used to `return`
+  early when `chooser.list` was `None`, skipping the background carousel's
+  own thumbnail requests whenever its own detail loaded without a list --
+  the two are now requested independently).
+- [x] 10.3 `main.rs`'s touch-down/motion/up/tick handlers no longer branch
+  on `ThemePage::List`/`Preview` to pick a carousel: both carousels are
+  probed independently now that both are visible at once --
+  `Carousel::down`/`motion`/`tick` are called unconditionally (each is
+  keyed by its own armed `contact.id` internally, safe to call on both;
+  `tick` has no touch-ownership concept at all and always advances both),
+  and `Carousel::up` is tried on the theme carousel first, falling
+  through to the background carousel only on `None` (a touch id it never
+  armed), which correctly finds whichever one, if either, owns a given
+  touch. `theme_reply` now compares `theme_position`/`background_position`
+  before and after `accept()` to decide which physics carousel (if
+  either) to re-index, instead of branching on page -- precise, since
+  only `accept()`'s own List/settling-Preview handling ever changes those
+  fields, never a concurrent drag. The pre-render trigger (task 8.3) is
+  retargeted from the removed Preview page's own loaded candidate to the
+  theme carousel's own *centred* candidate on the List page, using
+  `known_generations` (10.1) rather than a fresh Preview round trip, so
+  pre-rendering the very next likely tap-apply never itself costs a round
+  trip. `show_theme_optimistically` gained per-stage `ms=` instrumentation
+  (`optimistic-apply stage adopt_ms=... wallpaper_ms=... overlay_ms=...
+  flush_ms=...`, logged alongside the existing summary line) -- the
+  coordinator's own ask, board evidence 2026-09-28: a *matched*
+  pre-render still took 161ms touch-up-to-commit, target ~30ms. This
+  instrumentation is coarse (one line per `draw_wallpaper`/`draw` call,
+  since attach/damage/`wl_surface::commit` all happen inside those calls
+  and are not separately timed); a finer breakdown inside `draw`/
+  `draw_wallpaper` themselves, and the wallpaper-buffer-attach
+  optimization the same board evidence asked for (pre-build the actual
+  `wl_buffer` at prepare time so adopting is attach-only, no pixel copy),
+  are **not attempted this task** -- named as deferred follow-up work in
+  this task's own evidence doc, since implementing and tuning either
+  without a way to measure them on the actual board (this task did not
+  touch the board) risks a change that looks right in a diff and is
+  wrong, or merely neutral, in practice. Verify with `cargo test --offline`
+  (`route_tests`, 14 tests, unchanged and passing -- `should_apply_
+  optimistically`/`optimistic_apply_due`/`may_reuse_optimistic_frame`/
+  `prerendered_overlay_matches` are pure functions this task did not
+  touch, confirming the optimistic-apply/pre-render machinery's own
+  correctness is intact under the new single-page model).
+- [x] 10.4 Investigated the coordinator's third observation (the same
+  generation's own pre-render computed twice, ~154ms apart) by code
+  review rather than board access. On master `644cd061` (before this
+  task), the Preview page's own `RendererCache::poll_theme_image` was
+  actively decoding the selected background's "screen crop" still image
+  asynchronously; that decode completing bumps `content_generation` (its
+  own `changed` branch) independently of `theme_view_cache_key_differs`
+  (task 9.2's fix only excludes `ThemeView` fields, not this separate
+  decode-completion signal) -- a ~150ms async decode completing shortly
+  after the Preview page loads exactly matches the reported ~154ms gap
+  and a "computed twice for the same generation" symptom (the second
+  compute reacting to the image arriving, not a fresh tap). This task's
+  own 10.2 makes `poll_theme_image` a permanent no-op (nothing paints a
+  decoded still any more, both carousels use `ThemeThumbnailCache`
+  instead), which removes this specific trigger structurally: there is no
+  longer an asynchronous decode running that could bump `content_
+  generation` a second time while a person dwells on an unchanged
+  candidate. This is reasoned from the code, not re-verified against
+  fresh board evidence this session (the reserved board was not used, per
+  this task's own constraint); 10.6's board re-check is where that gets
+  confirmed or refuted.
+- [x] 10.5 OpenSpec: added "Tapping a theme or background applies it
+  immediately, with no separate preview-then-Apply step" to `specs/
+  runtime/shell-themes/spec.md` (this change's own delta -- the capability
+  has not been archived into `openspec/specs/` yet, so every requirement
+  here, including this one, is still `ADDED`), with the user's verbatim
+  decision as its grounding, and lightly reworded "A warm Apply shows..."
+  to note that "Apply tap" now means a tap on either carousel's own
+  centred slice, not a since-removed button -- the mechanism that
+  requirement describes is unchanged. `openspec validate
+  the-shell-swaps-themes-without-a-python-stall --strict` passes.
+- [ ] 10.6 `tests/rust_theme_chooser_qemu.py` rewritten for the one-page
+  flow: opens the chooser, waits for the active theme's own detail to
+  auto-load (no tap needed), browses the theme carousel by drag and by a
+  side-slice recentre-tap (still never applies), confirms a warmed theme
+  applies on a single centred tap with no further tap (screen repaints,
+  exactly one `activate` for it, `--expected-generation` correct),
+  browses and tap-applies a background of that theme directly (`activate`
+  with `--background`, and specifically asserts no `preview` call was
+  needed for it), then proves rapid-tap coalescing: `THEME_COMMAND` sleeps
+  1.5s before answering a `preview` call for one designated theme
+  (`K230_TEST_THEME_SLOW_ID`), giving a reliable window to tap a
+  *different* theme while the first is in flight; asserts the superseded
+  theme's own request was genuinely sent but never activates, and the
+  second tap's theme does. Run (real QEMU, synthetic theme command, no
+  physical touch -- see this task's own evidence doc for the exact
+  command and result).
+- [ ] 10.7 Board re-check: confirm the one-page tap-to-apply flow reads
+  and behaves correctly in dark and light themes on the actual panel;
+  confirm `optimistic-apply stage adopt_ms=... wallpaper_ms=...
+  overlay_ms=... flush_ms=...` for a warm tap-apply, and whether the
+  total (`optimistic-apply shown ms=...`) has moved from the 161ms board
+  baseline toward the ~30ms target now that the double-pre-render trigger
+  is structurally removed (10.4); confirm the new
+  `THEME_CAROUSEL_TOP`/`BACKGROUND_CAROUSEL_TOP` layout (10.2) actually
+  fits the 1232px panel without clipping or crowding. Needs the reserved
+  board; not run by this task.
+
+Proof for 10.1-10.3, 10.5-10.6: the tests and commands named above, all
+passing/PASS on this host; proof for 10.4 is code review, named as such,
+not board evidence; proof for 10.7 is the reserved board, not run here.
+The wallpaper-buffer-attach optimization and a finer per-stage
+attach/damage/commit breakdown (both asked for alongside 10.3) are
+deferred follow-up work, not attempted this task -- see 10.3's own doc.
+
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, and 9.5 have board results; 3.3b is
-named here so it is not silently dropped or claimed done without a board
-result. Task 5.4's board result is recorded above
+per `AGENTS.md`) until 2.3, 3.4, 6.6, 9.5, and 10.7 have board results;
+3.3b is named here so it is not silently dropped or claimed done without
+a board result. Task 5.4's board result is recorded above
 (board-chooser-2026-09-25.md).

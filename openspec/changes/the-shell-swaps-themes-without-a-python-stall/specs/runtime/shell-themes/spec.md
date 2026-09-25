@@ -1,5 +1,83 @@
 ## ADDED Requirements
 
+### Requirement: Tapping a theme or background applies it immediately, with no separate preview-then-Apply step
+
+<!-- Grounding: user decision (2026-09-25, verbatim): "i don't really think
+     we need an 'apply' window for themes at all. tap theme in the theme
+     picker, apply immediately, so i can compare them easily." This
+     replaces the chooser's earlier two-page, tap-to-preview-then-tap-
+     Apply/Cancel flow with a single page: the theme carousel, the active
+     theme's own background carousel below it, and a plain "Current
+     theme"/"Current background" label under whichever slice of each is
+     centred and durably active. The two-phase prepare/commit/rollback
+     protocol, the pre-render-ahead-of-Apply and prepare-ahead-of-a-likely-
+     Apply mechanisms, and the optimistic-show requirement below are all
+     unchanged by this requirement -- only what triggers them moved, from a
+     separate Apply button to the carousel tap itself. Proof:
+     nix/rust-shell-client/src/theme_ui.rs (`ThemeView::tap_theme`/
+     `tap_background`/`advance`/`accept`, and their own unit tests) and
+     tests/rust_theme_chooser_qemu.py. -->
+
+The theme chooser SHALL present the theme carousel and the active theme's
+own background carousel on one page, with no separate preview page and no
+Apply/Cancel footer. A tap on a carousel's own already-centred slice SHALL
+apply that theme or background immediately, through the same
+`preview`(learn the generation)/`activate` request pair an explicit Apply
+button previously sent, chained automatically with no further tap needed.
+Dragging or tapping an off-centre slice SHALL only recentre the carousel on
+that slice; it SHALL NOT itself apply anything. Rapid taps across different
+targets SHALL coalesce onto the most recently tapped one: at most one
+request for this chooser SHALL be in flight at a time, a reply that no
+longer matches the most recently tapped target SHALL be discarded rather
+than shown or applied, and the chooser SHALL move on to the now-desired
+target as soon as that discarded reply is recognised, with no queue of
+stale, superseded activations ever building up or later firing.
+
+#### Scenario: Tapping the centred theme slice applies it with no further tap
+
+- **WHEN** a person taps the theme carousel's own already-centred slice
+- **THEN** that theme is applied immediately (through the existing
+  `preview`/`activate` pair, and the existing optimistic-show path when the
+  receiver already has it prepared), with no separate confirm or Apply step
+
+#### Scenario: Tapping the centred background slice applies it with no further tap
+
+- **WHEN** a person taps the active theme's own background carousel's
+  already-centred slice
+- **THEN** that background is applied immediately, the same way, without
+  navigating to a different page first
+
+#### Scenario: Dragging or tapping off-centre only browses
+
+- **WHEN** a person drags either carousel, or taps a slice that is not
+  already centred
+- **THEN** the carousel only recentres on that slice; nothing is applied,
+  and no `activate` request is sent
+
+#### Scenario: A tap on a not-yet-prepared theme shows a brief busy state in place
+
+- **WHEN** a person taps a theme or background the receiver has not already
+  prepared
+- **THEN** that slice shows a brief, in-place busy indicator while it
+  applies, and the carousel itself remains visible and draggable the whole
+  time -- the tap never blocks or hides the carousel
+
+#### Scenario: Rapid taps across different themes coalesce onto the last one
+
+- **WHEN** a person taps a theme, and before that tap's own request has
+  settled taps a different theme
+- **THEN** the first theme's own request, if already sent, is still
+  answered but its reply is discarded rather than applied; the chooser
+  applies the second, most recently tapped theme instead, and at no point
+  does the first one become the active theme
+
+#### Scenario: A failed apply rolls back with a visible, in-place error
+
+- **WHEN** a tap-applied theme or background's durable commit fails
+- **THEN** the chooser rolls back to the previous appearance, exactly as
+  the optimistic-show rollback already does, and shows a specific, visible
+  error in place, with no separate footer or dialog needed to see it
+
 ### Requirement: A theme swap does not pay Python start-up on the hot path
 
 <!-- Grounding: docs/evidence/omarchy-themes/background-decode-cache-qemu/README.md
@@ -128,7 +206,12 @@ itself cause a warm-up request.
      to be drawn. Proof: nix/rust-shell-client/src/main.rs
      (`should_apply_optimistically`, `optimistic_apply_due`,
      `show_theme_optimistically`), nix/card-shell/appearance.c (the `show`
-     phase), and their own tests. -->
+     phase), and their own tests. "Apply tap" below now means a tap on the
+     theme or background carousel's own already-centred slice (see "Tapping
+     a theme or background applies it immediately", above) rather than a
+     since-removed separate Apply button; the mechanism this requirement
+     describes -- what the receiver does once that tap's own `activate`
+     request is dispatched -- is unchanged by that later decision. -->
 
 When an Apply tap's target generation is already the Rust receiver's own
 `prepare`d snapshot, the chooser SHALL render that appearance -- the
