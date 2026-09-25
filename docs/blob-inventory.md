@@ -1305,6 +1305,19 @@ DATA 10597fa96b5525fce30c17450ed602125dce37da517564c0df80a9c9826579c6 docs/evide
 DATA b01410da3d537d7867888487260117cbb6dc7cc5f3851c33e324767e5bfe980b docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-018-18-motion-x120.png
 DATA 65bc647424da961ff94be4e73062035807df5f57ae4f727f0683a2e5e3c8d40d docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-019-90-up.png
 DATA 3fa695d004f85751bff63bc5bb2ac4be847629997e06e75902b14cf8435588c1 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-025-96-settle.png
+DATA 50137bbe127149a714c7a7fc8d601f80fe868a4b39541b5120e17e5e5e1863e1 docs/evidence/home-screen/qemu/home-dark-after-restart.png
+DATA 50137bbe127149a714c7a7fc8d601f80fe868a4b39541b5120e17e5e5e1863e1 docs/evidence/home-screen/qemu/home-dark-back-to-page1.png
+DATA a8cc14fd9077e9786e79612ad3ace6d685fa87797808b78b12dc9be931f023bd docs/evidence/home-screen/qemu/home-dark-drawer.png
+DATA 10a26392421ca991a7656c111be0fd0141813e519dfae06aa4e2923e44d15fc2 docs/evidence/home-screen/qemu/home-dark-mid-swipe.png
+DATA 50137bbe127149a714c7a7fc8d601f80fe868a4b39541b5120e17e5e5e1863e1 docs/evidence/home-screen/qemu/home-dark-page1.png
+DATA f7d01e4a913d05ed26426ffa9e648dcf521d2a8da7906e8692423c3a6a6ef632 docs/evidence/home-screen/qemu/home-dark-page2.png
+DATA 678047b137b567121a746ef7f889cb047b0ad3cc3ed0bb105dcec98eb83b6631 docs/evidence/home-screen/qemu/home-dark-pin-flow.png
+DATA d6680cbb12ae2b601a1dccfe57e3d8e08e7f1246303d35fc43b86fc2db7107a3 docs/evidence/home-screen/qemu/home-dark-rearrange.png
+DATA a983b174707bed9b0e171321c7b0f37ddcab72910e5369a02e773e0e8e4f6e19 docs/evidence/home-screen/qemu/home-dark-removed.png
+DATA 9c38113a2aff8af1aaad237c309f01eab8af4aa640ce30e007900b14c8314e23 docs/evidence/home-screen/qemu/home-dark-showcase.png
+DATA a452550ada5094cb740069898b573642fb52fd88b49200f57872802b1ccb1d2c docs/evidence/home-screen/qemu/home-light-page1.png
+DATA 99caaaa21b4eb8d894e4afbca853a2e2ad9625180db627ec126e54df2e000d70 docs/evidence/home-screen/qemu/home-light-page2.png
+DATA 53f2d5c5291ec1ef815ff705f197ca795f95365e2dacac9934cf14a20623b103 docs/evidence/home-screen/qemu/home-light-showcase.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
