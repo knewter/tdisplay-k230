@@ -257,6 +257,14 @@ impl HomeScreen {
         self.pager.cancel();
     }
 
+    /// True while the pager is coasting/settling, or a rearrange drag is
+    /// held near a page edge accumulating toward an auto-page-turn -- the
+    /// caller should poll at the fast tick rate in either case rather than
+    /// waiting for the next Wayland event.
+    pub fn is_animating(&self) -> bool {
+        self.pager.is_animating() || (self.drag.is_some() && self.edge_side != 0)
+    }
+
     /// Which slot, if any, should show an immediate "pressed" highlight:
     /// the finger is down on a filled icon and hasn't started a page drag
     /// or a rearrange drag yet.
@@ -267,6 +275,58 @@ impl HomeScreen {
         }
         self.filled_slot_at(contact.start, width, height)
     }
+}
+
+/// Best-effort match between a running Sway container's `app_id` and a
+/// desktop-entry id (or its `Exec` binary's basename, as a fallback hint).
+/// See `design.md` decision 6: no stable desktop-entry-id-to-`app_id`
+/// mapping exists in this stack, so this is a heuristic a caller falls back
+/// from on any miss, never treated as authoritative.
+pub fn app_id_matches(app_id: &str, entry_id: &str, exec_hint: Option<&str>) -> bool {
+    let normalized_entry = entry_id.strip_suffix(".desktop").unwrap_or(entry_id).to_lowercase();
+    let app_id_lower = app_id.to_lowercase();
+    if app_id_lower == normalized_entry {
+        return true;
+    }
+    exec_hint.is_some_and(|hint| !hint.is_empty() && app_id_lower == hint.to_lowercase())
+}
+
+/// Walks an already-parsed `swaymsg -t get_tree` JSON tree for the first
+/// container whose `app_id` matches `entry_id`/`exec_hint`
+/// ([`app_id_matches`]), returning its `id` (for a `[con_id=...] focus`
+/// command). Mirrors `tools/notification_center.py`'s own `get_tree` walk:
+/// a bounded node budget, not just recursion, so a malformed or huge tree
+/// cannot hang this call.
+pub fn find_running_con_id(
+    tree: &serde_json::Value,
+    entry_id: &str,
+    exec_hint: Option<&str>,
+) -> Option<i64> {
+    let mut pending = vec![tree];
+    let mut budget = 4096;
+    while let Some(node) = pending.pop() {
+        if budget == 0 {
+            break;
+        }
+        budget -= 1;
+        let Some(object) = node.as_object() else {
+            continue;
+        };
+        if object.get("type").and_then(|value| value.as_str()) == Some("con") {
+            if let Some(app_id) = object.get("app_id").and_then(|value| value.as_str()) {
+                if app_id_matches(app_id, entry_id, exec_hint) {
+                    return object.get("id").and_then(|value| value.as_i64());
+                }
+            }
+        }
+        if let Some(nodes) = object.get("nodes").and_then(|value| value.as_array()) {
+            pending.extend(nodes);
+        }
+        if let Some(nodes) = object.get("floating_nodes").and_then(|value| value.as_array()) {
+            pending.extend(nodes);
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -425,5 +485,50 @@ mod tests {
         screen.down(1, point, 0, WIDTH, HEIGHT);
         screen.down(2, (10.0, 10.0), 5, WIDTH, HEIGHT);
         assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+    }
+
+    #[test]
+    fn app_id_matches_the_stripped_entry_id_case_insensitively() {
+        assert!(app_id_matches("foot", "foot.desktop", None));
+        assert!(app_id_matches("Foot", "foot.desktop", None));
+        assert!(!app_id_matches("footclient", "foot.desktop", None));
+        assert!(!app_id_matches("other", "foot.desktop", Some("")));
+    }
+
+    #[test]
+    fn app_id_matches_falls_back_to_the_exec_hint() {
+        assert!(app_id_matches("org.gnome.texteditor", "gnome-text-editor.desktop", Some("org.gnome.TextEditor")));
+        assert!(!app_id_matches("unrelated", "gnome-text-editor.desktop", Some("org.gnome.TextEditor")));
+    }
+
+    #[test]
+    fn find_running_con_id_walks_nested_nodes_and_floating_nodes() {
+        let tree = serde_json::json!({
+            "type": "root",
+            "nodes": [
+                {"type": "output", "nodes": [
+                    {"type": "con", "app_id": "htop", "id": 11},
+                ]},
+            ],
+            "floating_nodes": [
+                {"type": "con", "app_id": "foot", "id": 22},
+            ],
+        });
+        assert_eq!(find_running_con_id(&tree, "foot.desktop", None), Some(22));
+        assert_eq!(find_running_con_id(&tree, "htop.desktop", None), Some(11));
+        assert_eq!(find_running_con_id(&tree, "gone.desktop", None), None);
+    }
+
+    #[test]
+    fn find_running_con_id_uses_exec_hint_when_app_id_differs() {
+        let tree = serde_json::json!({
+            "type": "root",
+            "nodes": [{"type": "con", "app_id": "org.gnome.TextEditor", "id": 5}],
+        });
+        assert_eq!(
+            find_running_con_id(&tree, "gnome-text-editor.desktop", Some("org.gnome.TextEditor")),
+            Some(5)
+        );
+        assert_eq!(find_running_con_id(&tree, "gnome-text-editor.desktop", None), None);
     }
 }

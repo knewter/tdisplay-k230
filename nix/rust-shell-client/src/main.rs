@@ -7,6 +7,8 @@ use k230_shell_rust::{
     background_decode::{BackgroundCache, FitMode},
     catalog::{installed_apps, AppEntry},
     configure_size, frame_bytes,
+    home_grid, home_state,
+    home_screen::{HomeAction, HomeScreen},
     navigation::{DrawerAction, DrawerNavigation},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
@@ -605,6 +607,54 @@ fn launch_selected(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+/// Home's tap behavior: focus an already-running instance when one can be
+/// identified, otherwise fall back to the exact same launch path the drawer
+/// already uses. The focus lookup is a best-effort heuristic (see
+/// `home_screen::app_id_matches`'s own doc); any miss or IPC failure simply
+/// falls through to `launch_selected` rather than doing nothing.
+fn focus_or_launch(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
+    if let Some(con_id) = running_con_id(id, swaymsg) {
+        if focus_con(con_id, swaymsg).is_ok() {
+            return Ok(());
+        }
+    }
+    launch_selected(id, swaymsg)
+}
+
+/// Runs `swaymsg -r -t get_tree` (the same invocation
+/// `tools/notification_center.py`'s `SwayActions.refresh` already uses) and
+/// looks for a container matching `id`. `None` on any failure -- a timeout,
+/// a missing binary, an oversized or unparsable reply -- so a lookup
+/// problem always degrades to an ordinary launch, never a stuck tap.
+fn running_con_id(id: &str, swaymsg: &std::path::Path) -> Option<i64> {
+    let exec_hint = gio::DesktopAppInfo::new(id).and_then(|app| {
+        app.executable()
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+    });
+    let output = Command::new(swaymsg)
+        .args(["-r", "-t", "get_tree"])
+        .output()
+        .ok()?;
+    if !output.status.success() || output.stdout.len() > 2 * 1024 * 1024 {
+        return None;
+    }
+    let tree: serde_json::Value = serde_json::from_slice(&output.stdout).ok()?;
+    k230_shell_rust::home_screen::find_running_con_id(&tree, id, exec_hint.as_deref())
+}
+
+fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
+    let output = Command::new(swaymsg)
+        .args(["-r", &format!("[con_id={con_id}] focus")])
+        .output()
+        .map_err(|error| error.to_string())?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err("focus command failed".into())
+    }
+}
+
 fn shade_close_swipe(start: (f64, f64), end: (f64, f64)) -> bool {
     let dx = end.0 - start.0;
     let dy = end.1 - start.1;
@@ -706,6 +756,28 @@ struct ShellClient {
     /// per-iteration `dirty = true` that redrew an unchanged frame at rest
     /// while thumbnails were still decoding.
     theme_pulse_at: Instant,
+    /// The Home screen's always-mapped `Layer::Bottom` surface: sits above
+    /// the wallpaper (`Layer::Background`) and below every ordinary
+    /// toplevel and the drawer/shade/settings overlay (`Layer::Overlay`),
+    /// so a focused app or an open overlay occludes it with no explicit
+    /// "is anything else showing" check in this client at all. See
+    /// `openspec/changes/the-shell-presents-a-pinned-home-screen/design.md`
+    /// decision 1.
+    home_surface: HomeSurface,
+    home: HomeScreen,
+    home_state_path: Option<PathBuf>,
+    /// Which touch id, if any, `down()` routed to Home. `wl_touch`'s
+    /// `up`/`motion` events carry no surface, only an id, so this is how
+    /// this client remembers which of its two independently interactive
+    /// surfaces (the on-demand overlay's own `self.touch`, or this) owns a
+    /// live contact -- the same role `self.touch`'s tracked id already
+    /// plays for the overlay.
+    home_touch_id: Option<i32>,
+    /// The last position `down()`/`motion()` observed for `home_touch_id`.
+    /// `wl_touch`'s `up` event carries no position (only `id`/`time`), the
+    /// same reason `self.touch: TouchTrace` keeps its own `.position` for
+    /// the overlay surface.
+    home_last_point: (f64, f64),
 }
 
 #[derive(Default)]
@@ -719,6 +791,24 @@ struct WallpaperState {
     dirty: bool,
     recreate_after: Option<Instant>,
     map_started: Option<Instant>,
+}
+
+/// Home's own layer-shell surface state, deliberately parallel to
+/// [`WallpaperState`]: a small, independently buffered surface with its own
+/// configure/frame lifecycle, rather than a mode of the drawer/shade/
+/// settings overlay (which sits on `Layer::Overlay`, always above normal
+/// windows -- wrong side of the stack for something that must yield to a
+/// focused app).
+#[derive(Default)]
+struct HomeSurface {
+    layer: Option<LayerSurface>,
+    buffers: Vec<Buffer>,
+    width: u32,
+    height: u32,
+    configured: bool,
+    frame_pending: bool,
+    dirty: bool,
+    recreate_after: Option<Instant>,
 }
 
 impl ShellClient {
@@ -1236,6 +1326,105 @@ impl ShellClient {
         true
     }
 
+    /// Maps Home's own `Layer::Bottom` surface. Unlike the on-demand
+    /// drawer/shade/settings overlay, this is created once, at startup, and
+    /// stays mapped for the life of the process -- Home is what shows
+    /// through whenever nothing else covers it, so there is no "hide" state
+    /// for this surface to toggle. A full input region is set once here and
+    /// never narrowed: `Layer::Bottom` already sits beneath every ordinary
+    /// toplevel and the overlay surface, so wlroots only ever routes a
+    /// touch here when nothing above it claims that point first.
+    fn ensure_home(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if self.home_surface.layer.is_some() {
+            return true;
+        }
+        let surface = self.compositor.create_surface(qh);
+        let layer = self.layer_shell.create_layer_surface(
+            qh,
+            surface,
+            Layer::Bottom,
+            Some("k230-shell-home"),
+            None,
+        );
+        layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
+        layer.set_size(0, 0);
+        layer.set_exclusive_zone(0);
+        layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+        layer.commit();
+        self.home_surface.layer = Some(layer);
+        self.home_surface.configured = false;
+        self.home_surface.dirty = true;
+        self.log("home-map-request");
+        true
+    }
+
+    fn draw_home(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if !self.home_surface.configured || self.home_surface.frame_pending {
+            return false;
+        }
+        let (width, height) = (self.home_surface.width, self.home_surface.height);
+        if frame_bytes(width, height).is_none() {
+            return false;
+        }
+        let stride = (width * 4) as i32;
+        self.home_surface
+            .buffers
+            .retain(|b| b.stride() == stride && b.height() == height as i32);
+        let available: Vec<bool> = self
+            .home_surface
+            .buffers
+            .iter()
+            .map(|b| b.canvas(&mut self.pool).is_some())
+            .collect();
+        let (index, canvas) = if let Some(index) = released_slot(&available) {
+            (
+                index,
+                self.home_surface.buffers[index]
+                    .canvas(&mut self.pool)
+                    .expect("released home slot"),
+            )
+        } else {
+            if self.home_surface.buffers.len() >= 2 {
+                self.home_surface.dirty = true;
+                return false;
+            }
+            let Ok((buffer, canvas)) = self.pool.create_buffer(
+                width as i32,
+                height as i32,
+                stride,
+                wl_shm::Format::Argb8888,
+            ) else {
+                self.log("home-shm-allocate-failed");
+                return false;
+            };
+            self.home_surface.buffers.push(buffer);
+            (self.home_surface.buffers.len() - 1, canvas)
+        };
+        if let Err(error) = self.renderer.draw_home(canvas, width, height, &self.apps, &self.home) {
+            self.home_surface.dirty = false;
+            self.log(&format!("home-render-failed {error}"));
+            return false;
+        }
+        let Some(layer) = self.home_surface.layer.as_ref() else {
+            return false;
+        };
+        layer
+            .wl_surface()
+            .damage_buffer(0, 0, width as i32, height as i32);
+        layer.wl_surface().frame(qh, layer.wl_surface().clone());
+        if self.home_surface.buffers[index]
+            .attach_to(layer.wl_surface())
+            .is_err()
+        {
+            self.log("home-attach-failed");
+            return false;
+        }
+        layer.commit();
+        self.home_surface.frame_pending = true;
+        self.home_surface.dirty = false;
+        true
+    }
+
     fn draw_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
         // Do not gate drawing on the wallpaper's own outstanding frame
         // callback. The wallpaper sits on the background layer, which an
@@ -1391,6 +1580,71 @@ impl ShellClient {
                 .and_then(|path| launch_selected(&id, path));
             let _ = sender.send((attempt, result));
         });
+    }
+
+    /// Home's tap-to-launch-or-focus, by desktop-entry id rather than a
+    /// drawer index. Home has no overlay to dismiss first (it already sits
+    /// beneath everything by construction -- see `HomeSurface`'s own doc),
+    /// so unlike `launch_app` this does not call `self.hide()` or set
+    /// `self.launching` (that flag exists only to let a failed drawer
+    /// launch reopen the drawer it dismissed).
+    fn launch_home_app(&mut self, id: String) {
+        if self.launch_in_flight {
+            self.log("app-launch-worker-still-running");
+            return;
+        }
+        let Some(swaymsg) = self.swaymsg.clone() else {
+            self.log("home-launch-failed K230_SWAYMSG is unavailable");
+            return;
+        };
+        let sender = self.launch_sender.clone();
+        self.launch_seq = self.launch_seq.wrapping_add(1);
+        let attempt = self.launch_seq;
+        self.launch_in_flight = true;
+        thread::spawn(move || {
+            let result = focus_or_launch(&id, &swaymsg);
+            let _ = sender.send((attempt, result));
+        });
+    }
+
+    /// "Add to Home": a held (not tapped) drawer tile pins that app
+    /// directly, a no-op if it is already pinned somewhere (see
+    /// `home_state::HomeLayout::pin`'s own doc). No confirmation sheet --
+    /// see `design.md` decision 5 for why a direct pin, matching a
+    /// long-press-to-place gesture, was chosen over a two-step dialog.
+    fn pin_app_from_drawer(&mut self, index: usize) {
+        let Some(app) = self.apps.get(index) else {
+            return;
+        };
+        // Falls back to the panel's reference height (matching the initial
+        // seed in `serve()`) if Home has not yet received its first
+        // `configure`, so a pin before that point still lands in a
+        // correctly-shaped page rather than a degenerate one-row page.
+        let reference_height = if self.home_surface.height == 0 {
+            1232
+        } else {
+            self.home_surface.height
+        };
+        let apps_per_page = home_grid::apps_per_page(reference_height);
+        self.home.layout.pin(app.id.clone(), apps_per_page);
+        self.persist_home_layout();
+        self.home_mark_dirty();
+    }
+
+    /// Called after any Home layout mutation (pin/unpin/reorder/page move);
+    /// persists it to `home_state_path`, matching every other pinned
+    /// desktop-entry id in a page or the dock.
+    fn persist_home_layout(&self) {
+        let Some(path) = self.home_state_path.as_deref() else {
+            return;
+        };
+        if let Err(error) = home_state::save(path, &self.home.layout) {
+            self.log(&format!("home-layout-save-failed {error}"));
+        }
+    }
+
+    fn home_mark_dirty(&mut self) {
+        self.home_surface.dirty = true;
     }
 
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -1679,6 +1933,18 @@ impl CompositorHandler for ShellClient {
             }
             return;
         }
+        if self
+            .home_surface
+            .layer
+            .as_ref()
+            .is_some_and(|l| l.wl_surface() == surface)
+        {
+            self.home_surface.frame_pending = false;
+            if self.home_surface.dirty {
+                self.draw_home(qh);
+            }
+            return;
+        }
         if !self
             .layer
             .as_ref()
@@ -1734,6 +2000,23 @@ impl LayerShellHandler for ShellClient {
             self.log("wallpaper-closed");
             return;
         }
+        if self
+            .home_surface
+            .layer
+            .as_ref()
+            .is_some_and(|home| home.wl_surface() == layer.wl_surface())
+        {
+            // Home is meant to be always mapped; unlike the wallpaper, a
+            // closed Home surface is remapped immediately on the next
+            // `ensure_home` call rather than after a delay, since nothing
+            // else shows a person their pinned icons in the meantime.
+            self.home_surface = HomeSurface {
+                recreate_after: Some(Instant::now() + Duration::from_millis(500)),
+                ..HomeSurface::default()
+            };
+            self.log("home-closed");
+            return;
+        }
         self.hide();
     }
     fn configure(
@@ -1769,6 +2052,28 @@ impl LayerShellHandler for ShellClient {
             self.wallpaper.map_started = None;
             self.log(&format!("wallpaper-configure {width}x{height}"));
             self.draw_wallpaper(qh);
+            return;
+        }
+        if self
+            .home_surface
+            .layer
+            .as_ref()
+            .is_some_and(|home| home.wl_surface() == layer.wl_surface())
+        {
+            let mut geometry = (self.home_surface.width, self.home_surface.height);
+            if configure_size(&mut geometry, width, height).is_none() {
+                self.log("home-configure-rejected");
+                return;
+            }
+            let page_width_changed = (self.home_surface.width, self.home_surface.height) != geometry;
+            (self.home_surface.width, self.home_surface.height) = geometry;
+            self.home_surface.configured = true;
+            self.home_surface.dirty = true;
+            if page_width_changed {
+                self.home.pager.set_page_width(f64::from(geometry.0));
+            }
+            self.log(&format!("home-configure {width}x{height}"));
+            self.draw_home(qh);
             return;
         }
         let mut geometry = (self.width, self.height);
@@ -1950,6 +2255,23 @@ impl TouchHandler for ShellClient {
             if self.dirty {
                 self.draw(qh);
             }
+        } else if self
+            .home_surface
+            .layer
+            .as_ref()
+            .is_some_and(|l| l.wl_surface() == &surface)
+            && self.home_surface.configured
+        {
+            self.home_touch_id = Some(id);
+            self.home_last_point = pos;
+            self.home.down(id, pos, time_ms, self.home_surface.width, self.home_surface.height);
+            // A touch-down on a filled icon shows an immediate pressed
+            // highlight (the same "feedback within one frame" convention
+            // `theme_carousel.rs`'s own `pressed()` doc describes), so this
+            // always redraws rather than trying to detect the highlight
+            // change first.
+            self.home_mark_dirty();
+            self.draw_home(qh);
         }
     }
     fn up(
@@ -1961,6 +2283,24 @@ impl TouchHandler for ShellClient {
         time_ms: u32,
         id: i32,
     ) {
+        if self.home_touch_id == Some(id) {
+            self.home_touch_id = None;
+            if let Some(action) = self.home.up(
+                id,
+                self.home_last_point,
+                time_ms,
+                self.home_surface.width,
+                self.home_surface.height,
+            ) {
+                match action {
+                    HomeAction::Launch(app_id) => self.launch_home_app(app_id),
+                    HomeAction::LayoutChanged => self.persist_home_layout(),
+                }
+            }
+            self.home_mark_dirty();
+            self.draw_home(qh);
+            return;
+        }
         let point = self.touch.position;
         if self.touch.up(id) {
             if self.wifi_view.page == WifiPage::Closed {
@@ -1975,6 +2315,7 @@ impl TouchHandler for ShellClient {
                     .up(id, point, time_ms, self.width, self.height, self.apps.len())
                 {
                     Some(DrawerAction::Launch(index)) => self.launch_app(index),
+                    Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
                     Some(DrawerAction::Close) => self.hide(),
                     None => {}
                 }
@@ -2147,6 +2488,14 @@ impl TouchHandler for ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if self.home_touch_id == Some(id) {
+            self.home_last_point = pos;
+            if self.home.motion(id, pos, time_ms, self.home_surface.width, self.home_surface.height) {
+                self.home_mark_dirty();
+                self.draw_home(qh);
+            }
+            return;
+        }
         if self.touch.motion(id, pos) {
             if self.wifi_view.page == WifiPage::Closed {
                 self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
@@ -2335,6 +2684,11 @@ impl TouchHandler for ShellClient {
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
+        if self.home_touch_id.take().is_some() {
+            self.home.cancel();
+            self.home_mark_dirty();
+            self.draw_home(qh);
+        }
     }
 }
 
@@ -2392,6 +2746,19 @@ fn serve() -> Result<(), String> {
         .map(PathBuf::from)
         .unwrap_or_default();
     let themes = ThemeWorker::spawn(theme_command);
+    // The panel is always 568x1232 on this board (`width`/`height` below use
+    // the same literal default); Home's own initial layout is seeded/loaded
+    // against that same reference geometry before the first `configure`
+    // ever arrives, exactly like every other fixed-geometry assumption this
+    // client already makes at construction.
+    let home_state_path = home_state::state_path();
+    let home_layout = home_state::load_or_seed(
+        home_state_path.as_deref(),
+        &apps,
+        home_grid::DOCK_SLOTS,
+        home_grid::apps_per_page(1232),
+    );
+    let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
         compositor,
         layer_shell,
@@ -2488,6 +2855,11 @@ fn serve() -> Result<(), String> {
                 .as_deref(),
         ),
         theme_pulse_at: Instant::now(),
+        home_surface: HomeSurface::default(),
+        home,
+        home_state_path,
+        home_touch_id: None,
+        home_last_point: (0.0, 0.0),
     };
     state.service_view.keyboard_gesture_hint =
         std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1");
@@ -2496,6 +2868,9 @@ fn serve() -> Result<(), String> {
     state.renderer.set_theme_view(state.theme_view.clone());
     if !state.ensure_wallpaper(&qh) {
         return Err("wallpaper layer unavailable".into());
+    }
+    if !state.ensure_home(&qh) {
+        return Err("home layer unavailable".into());
     }
     state.log("ready-idle");
     loop {
@@ -2553,6 +2928,19 @@ fn serve() -> Result<(), String> {
             } else {
                 state.wallpaper.recreate_after = Some(Instant::now() + Duration::from_secs(1));
                 state.log("wallpaper-remap-deferred");
+            }
+        }
+        if state.home_surface.layer.is_none()
+            && state
+                .home_surface
+                .recreate_after
+                .is_some_and(|when| Instant::now() >= when)
+        {
+            if state.ensure_home(&qh) {
+                state.home_surface.recreate_after = None;
+            } else {
+                state.home_surface.recreate_after = Some(Instant::now() + Duration::from_secs(1));
+                state.log("home-remap-deferred");
             }
         }
         if state.wallpaper.layer.is_some()
@@ -2782,17 +3170,22 @@ fn serve() -> Result<(), String> {
             };
             if attempt == state.launch_seq {
                 state.launch_in_flight = false;
-                if state.launching {
+                // `launching` is set only for a drawer-initiated launch,
+                // which owns a dismissed overlay to recover on failure; a
+                // Home-initiated launch/focus has no overlay to restore, so
+                // it only logs its own outcome.
+                let was_drawer_launch = state.launching;
+                if was_drawer_launch {
                     state.launching = false;
                     state.launch_started = None;
-                    if let Err(error) = result {
-                        state.log(&format!("app-launch-failed {error}"));
+                }
+                if let Err(error) = result {
+                    state.log(&format!("app-launch-failed {error}"));
+                    if was_drawer_launch {
                         state.show(&qh, Route::Drawer);
-                    } else {
-                        state.log("app-launch-requested");
                     }
                 } else {
-                    state.log("late-app-launch-result");
+                    state.log("app-launch-requested");
                 }
             } else {
                 state.log("stale-app-launch-result");
@@ -2816,6 +3209,12 @@ fn serve() -> Result<(), String> {
         state.nav_tick = now;
         if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
             state.dirty = true;
+        }
+        if state.home.tick(elapsed) {
+            state.home_surface.dirty = true;
+        }
+        if state.home_surface.dirty {
+            state.draw_home(&qh);
         }
         state.tick_notifications(elapsed);
         if state.route == Route::Settings {
@@ -3101,6 +3500,7 @@ fn serve() -> Result<(), String> {
             || state.notification_wait.is_some()
             || routes.has_line()
             || pending_appearance.is_some()
+            || state.home.is_animating()
             || (state.route == Route::Settings
                 && (state.theme_carousel.is_animating()
                     || state.background_carousel.is_animating()
