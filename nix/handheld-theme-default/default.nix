@@ -88,29 +88,34 @@ stdenvNoCC.mkDerivation {
     # `slice_w/h`=68x582, rounded -- same numbers that geometry documents
     # against upstream's own ratios), and every background image gets the
     # Preview page's smaller background carousel's two sizes
-    # (`BACKGROUND_GEOMETRY`: 420x260, 59x237). `theme_thumbnails.rs`'s
-    # worker checks for these at a fixed mirrored path (a `thumbs/` tree
-    # alongside `themes/`, never *inside* a theme's own directory --
-    # `tools/theme_sources.py::source_digest` hashes that directory
-    # recursively for every generation identity, so a cache file living
-    # there would silently change what the theme hashes to; see
-    # `theme_thumbnails::builtin_thumbnail_path`'s own doc) before its own
-    # runtime disk cache or a full decode, so the very first view of a
-    # bundled theme on the board never pays for one. Written after the
-    # resize step above so a bounded theme's own thumbnail is decoded from
-    # its final (already-downscaled) bytes. Advisory, like the wallpaper
-    # cache below: any failure here just means that theme falls through to
-    # the same slower, fully correct path every theme used before this
-    # optimization existed.
+    # (`BACKGROUND_GEOMETRY`: 420x260, 59x237), into a single read-only,
+    # content-hash-keyed seed directory (`$out/share/omarchy/thumbs-by-hash`,
+    # wired to the shell process as `K230_THEME_THUMBNAIL_SEED` by
+    # `nix/shell.nix`). Keyed by hash, not by path: `tools/theme_activate.py`
+    # ::prepare stages a byte-for-byte copy of a theme's background under a
+    # generation directory before the chooser ever decodes it, so a
+    # path-based lookup could never find a thumbnail built from this
+    # package's own copy of the same file -- see
+    # `theme_thumbnails::write_builtin_thumbnail`'s own doc for the exact
+    # regression this replaced. `theme_thumbnails.rs`'s worker checks this
+    # seed before its own runtime disk cache or a full decode, so the very
+    # first view of a bundled theme's art on the board -- its own preview,
+    # or any of its backgrounds, staged copy or not -- never pays for one.
+    # Written after the resize step above so a bounded theme's own
+    # thumbnail is decoded from its final (already-downscaled) bytes.
+    # Advisory, like the wallpaper cache below: any failure here just means
+    # that theme falls through to the same slower, fully correct path every
+    # theme used before this optimization existed.
+    thumbnailSeedDir="$out/share/omarchy/thumbs-by-hash"
     for name in ${lib.concatStringsSep " " themeNames}; do
       themeDir="$out/share/omarchy/themes/$name"
       for previewName in preview.png preview.jpg preview.jpeg preview.webp preview.gif preview.bmp; do
         if [ -f "$themeDir/$previewName" ]; then
           "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
-            "$themeDir/$previewName" expanded 480 640 \
+            "$themeDir/$previewName" "$thumbnailSeedDir" expanded 480 640 \
             || echo "handheld-theme-default: theme thumbnail precompute skipped ($name expanded)" >&2
           "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
-            "$themeDir/$previewName" slice 68 582 \
+            "$themeDir/$previewName" "$thumbnailSeedDir" slice 68 582 \
             || echo "handheld-theme-default: theme thumbnail precompute skipped ($name slice)" >&2
           break
         fi
@@ -121,10 +126,10 @@ stdenvNoCC.mkDerivation {
           -print0 |
         while IFS= read -r -d "" background; do
           "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
-            "$background" expanded 420 260 \
+            "$background" "$thumbnailSeedDir" expanded 420 260 \
             || echo "handheld-theme-default: background thumbnail precompute skipped ($background expanded)" >&2
           "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
-            "$background" slice 59 237 \
+            "$background" "$thumbnailSeedDir" slice 59 237 \
             || echo "handheld-theme-default: background thumbnail precompute skipped ($background slice)" >&2
         done
       fi

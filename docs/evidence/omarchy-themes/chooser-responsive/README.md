@@ -83,7 +83,15 @@ and changed are decoupled) plus the QEMU idle-window measurement below.
 
 ## Fast thumbnails (goal 3)
 
-- **(a) Build-time thumbnails for bundled themes.** A new hidden CLI verb,
+- **(a) Build-time thumbnails for bundled themes.** **Superseded by the
+  "Follow-up: staged-generation-copy fix" section at the end of this
+  document** -- the path-mirroring lookup described in this bullet missed
+  every staged generation copy (the actual path the chooser decodes) and
+  has been replaced with content-hash keying. Left as-is below for the
+  historical record of why the mirrored-tree layout was chosen over
+  putting the cache inside a theme's own directory, which is still
+  accurate and still the reason the seed lives in a directory of its own.
+  A new hidden CLI verb,
   `--write-thumbnail-cache SOURCE expanded|slice WIDTH HEIGHT`
   (`theme_thumbnails::write_builtin_thumbnail`), precomputes a decoded,
   cropped-to-size `.rgba` file at a path that *mirrors* `share/omarchy/
@@ -243,3 +251,65 @@ same `sway-unwrapped` binary from `.#card-shell`'s closure
 (`nix-store -qR`), via `qemu-riscv64-static` and, for the throttled rows,
 `cpulimit -l 50 -i -z --` (the exact binary
 `tests/test_theme_commit_under_occlusion_runtime.py` also pins).
+
+## Follow-up: staged-generation-copy fix (branch `fix/chooser-staged-thumbs`)
+
+The board run after landing the above (system `xzb322jc`) caught a real
+miss: the Backgrounds carousel was still spinning ~16s after the tap (40
+commits in 5s at the pulse rate, i.e. genuinely pending, not idle redraw).
+The build-time seed thumbnails existed in the store, but
+`theme_thumbnails::write_builtin_thumbnail`'s original lookup was keyed by
+mirroring the source's own *path* (`share/omarchy/themes/<name>/<rest>` ->
+`share/omarchy/thumbs/<name>/<rest>`). `tools/theme_activate.py::prepare`
+stages a byte-for-byte copy of a theme's background under
+`~/.local/state/omarchy/current/generations/<gen>/theme/backgrounds/...`
+before the chooser ever decodes it -- the Rust client only ever sees that
+staged path, which has no `themes` component, so the precomputed thumbnail
+was silently never found and every first view paid for a full 4K decode.
+
+**Fix:** both disk caches (build-time seed and runtime) are now keyed by the
+*same* mechanism -- the source file's own content hash, exactly like the
+runtime cache already was -- rather than by path. The seed ships as a flat,
+read-only, content-hash-named directory
+(`share/omarchy/thumbs-by-hash/<hash>-<variant>-<w>x<h>.rgba`) inside
+`handheld-theme-default`, wired to the shell process as
+`K230_THEME_THUMBNAIL_SEED` by `nix/shell.nix` (same pattern as the existing
+`K230_THEME_DEFAULT_GENERATION`). A staged copy's bytes are identical to the
+pinned source's (`checked_copy` never re-encodes), so its hash matches
+regardless of which of the two paths -- or any future third one -- asked.
+Checked also for the theme list's own `preview.png` (never staged, already
+worked, and still works identically under the new key) and the "Selected
+background" still preview (already fixed by reusing `background.cache`
+directly in the previous commit, an unrelated and unaffected code path).
+
+**Real, non-board verification that the exact reported gap is closed**
+(`tests/test_handheld_theme_bundle.py`'s own `theme_activate.prepare()`
+call, against the newly built package, no synthetic fixture): staging
+`catppuccin` produces
+`generations/<gen>/theme/backgrounds/1-totoro.webp` (the exact background
+named in both the original report and the coordinator's follow-up); its
+SHA-256 matches the pinned source's, and a `share/omarchy/thumbs-by-hash/
+<that hash>-{expanded,slice}-*.rgba` pair exists in the built package.
+
+**Quick throttled-QEMU timing, real command, real bundled theme** (not the
+synthetic-fixture harness above -- this drives the actual built
+`handheld-theme-command`'s `k230-theme` against the actual built
+`handheld-theme-default`, under a fresh `$HOME` so a real generation gets
+staged, with `K230_THEME_THUMBNAIL_SEED` wired exactly as `shell.nix` does):
+opening the Themes carousel and confirming the first-discovered theme
+(`catppuccin`) settles its background carousel (a full-resolution Totoro/
+waves/blue-eye/omarchy set) in **2.45s at 50% cpulimit throttle** (6 total
+commits) and 2.55s unthrottled -- versus the reported ~16s/40-commits this
+branch fixes. `timing-staged-fix-real-catppuccin-{unthrottled,throttled50}.json`.
+
+Proof commands for this follow-up: `cargo test --offline` (134 passed, 0
+failed, including the new regression test
+`theme_thumbnails::tests::resolve_finds_a_seed_thumbnail_for_a_staged_generation_copy_at_a_different_path`),
+`nix build --no-link --print-out-paths --max-jobs 1 --cores 6
+.#handheld-shell-rust .#handheld-theme-default .#handheld-theme-command
+.#card-shell`, `nix eval
+.#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel.drvPath`,
+`python3 tests/rust_theme_chooser_qemu.py`, `test_handheld_theme_bundle.py`
+plus every `test_handheld_theme_*`/`test_theme_*`/`test_omarchy_theme_*`
+host suite (all pass), `python3 tools/blob-scan.py` (exit 0). Host and QEMU
+only; the board was not touched for this follow-up.

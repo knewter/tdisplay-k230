@@ -330,6 +330,13 @@ let
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
+    # Read-only, content-hash-keyed build-time thumbnails for every bundled
+    # theme's preview/background art (nix/handheld-theme-default's own
+    # `--write-thumbnail-cache` step); theme_thumbnails.rs checks this
+    # before its own runtime disk cache or a full decode. Keyed by hash, not
+    # path, so it still hits for a staged generation's byte-identical copy
+    # of a bundled background -- see theme_thumbnails::write_builtin_thumbnail.
+    export K230_THEME_THUMBNAIL_SEED="${themeDefault}/share/omarchy/thumbs-by-hash"
     export K230_WALLPAPER_FFMPEG=${videoProbe.ffmpeg}/bin/ffmpeg
     export K230_WALLPAPER_FFPROBE=${videoProbe.ffmpeg}/bin/ffprobe
     export K230_WALLPAPER_COVER_PATH=/run/shell/k230-wallpaper-cover.json

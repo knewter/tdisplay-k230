@@ -55,26 +55,42 @@ use std::{
 ///
 /// Beyond the in-memory cache (bounded, cleared when the chooser process
 /// exits), two on-disk mechanisms make a *first* view of a given (source,
-/// size) fast too, not just a second view within one run:
+/// size) fast too, not just a second view within one run. Both are keyed
+/// identically -- the source file's own content hash plus variant/size (see
+/// [`hashed_cache_file`]) -- rather than by source *path*:
 ///
-/// - **Build-time, for the bundled built-in themes.** `nix/handheld-theme-
-///   default/default.nix` runs this same binary's hidden
+/// - **Build-time seed, for the bundled built-in themes.** `nix/handheld-
+///   theme-default/default.nix` runs this same binary's hidden
 ///   `--write-thumbnail-cache` verb over every pinned theme's `preview.png`
 ///   and background images, at exactly the sizes `theme_carousel`'s two
-///   geometries need, into a `thumbs/` tree that mirrors the installed
-///   `themes/` tree one level up (see [`builtin_thumbnail_path`] for why
-///   *not* a sibling inside each theme's own directory). These never change
-///   after being built (a theme's sources are read-only Nix store paths),
-///   so lookup is by source *path*, not a content hash -- cheaper, and
-///   there is nothing to bound or evict: the Nix store's own garbage
-///   collection owns their lifetime, same as the sources they mirror.
-/// - **Runtime, for everything else (chiefly user themes).** A small,
-///   size-bounded cache under the shell user's `$XDG_CACHE_HOME` (see
-///   [`disk_cache_dir`]), keyed by the source file's own content hash plus
-///   the requested size: the first view in the *worker* thread (never the
-///   render thread -- this module's whole point, see the module doc) pays
-///   a full decode and persists the result; a later view, even after a
-///   restart, loads the small already-cropped file directly.
+///   geometries need, into a read-only directory shipped inside the
+///   package (`share/omarchy/thumbs-by-hash/`, wired to this process via
+///   `K230_THEME_THUMBNAIL_SEED` -- see [`builtin_seed_dir`]). Checked
+///   first, never written to at runtime; the Nix store's own garbage
+///   collection owns its lifetime.
+/// - **Runtime, for everything else (chiefly user themes, and any seed
+///   miss).** A small, size-bounded cache under the shell user's
+///   `$XDG_CACHE_HOME` (see [`disk_cache_dir`]): the first view in the
+///   *worker* thread (never the render thread -- this module's whole
+///   point, see the module doc) pays a full decode and persists the
+///   result; a later view, even after a restart, loads the small
+///   already-cropped file directly.
+///
+/// **Why content hash, not source path.** An earlier version of the
+/// build-time seed looked a precomputed thumbnail up by mirroring the
+/// source's own path (`share/omarchy/themes/<name>/<rest>` ->
+/// `share/omarchy/thumbs/<name>/<rest>`). That broke the moment a theme was
+/// actually *used*: `tools/theme_activate.py::prepare` stages a byte-for-
+/// byte copy of a theme's background under `~/.local/state/omarchy/current/
+/// generations/<gen>/theme/<rest>` before the chooser ever sees its path,
+/// and the Rust client only ever decodes that staged copy -- which has no
+/// `themes` path component to mirror, so the precomputed file was silently
+/// never found and every first view paid for a full 4K decode anyway (a
+/// real gap the board caught: 16s and 40 commits for a background carousel
+/// that should have been instant). A staged copy's *bytes* are identical to
+/// the pinned source's, though (`checked_copy` never re-encodes), so
+/// content-hash keying finds the same precomputed entry regardless of which
+/// of the two paths -- or any future third one -- asked for it.
 ///
 /// Both are strictly advisory: a missing, unreadable, or geometry-mismatched
 /// file of either kind is exactly the same, slower, fully correct full
@@ -261,63 +277,54 @@ fn content_hash(path: &Path) -> Option<String> {
     Some(format!("{:x}", hasher.finalize()))
 }
 
-fn runtime_cache_file(dir: &Path, hash: &str, variant: Variant, width: u32, height: u32) -> PathBuf {
+/// The on-disk filename for a given content hash/variant/size, shared by
+/// both the read-only build-time seed and the writable runtime cache --
+/// they are the same key format at two different roots (see the module
+/// doc's "Two disk caches" section). The full hash (not a path or stem)
+/// makes collisions a non-concern.
+fn hashed_cache_file(dir: &Path, hash: &str, variant: Variant, width: u32, height: u32) -> PathBuf {
     dir.join(format!("{hash}-{}-{width}x{height}.rgba", variant.tag()))
 }
 
-/// Where a build-time-precomputed thumbnail for `source` at `variant`/
-/// `width`/`height` lives, if `nix/handheld-theme-default` ever built one
-/// (see the module doc's "Two disk caches" section).
-///
-/// Deliberately *not* a sibling of `source` inside the theme's own
-/// directory: `tools/theme_sources.py::source_digest` -- and hence every
-/// generation identity `tools/theme_activate.py::prepare` computes, both at
-/// runtime and for the pinned bundled generation baked into
-/// `nix/handheld-theme-default/{bundled,default}-report.json` -- hashes a
-/// theme's directory *recursively*. A thumbnail cache file sitting inside
-/// that tree would silently change what every theme using it hashes to,
-/// breaking generation-identity comparisons no test then exercises against
-/// this cache. Instead, `.../share/omarchy/themes/<name>/<rest>` mirrors to
-/// a sibling `.../share/omarchy/thumbs/<name>/<rest>-<variant>-<w>x<h>.rgba`
-/// -- a `themes` path component is required to anchor the mirror, so this
-/// only ever resolves under the fixed layout `default.nix` installs (a user
-/// theme's path has no such component and simply returns `None`, falling
-/// through to the runtime disk cache instead). The full original filename
-/// (not just its stem) avoids two same-stem, different-extension sources in
-/// one directory colliding.
-pub fn builtin_thumbnail_path(source: &Path, variant: Variant, width: u32, height: u32) -> Option<PathBuf> {
-    let components: Vec<std::ffi::OsString> =
-        source.components().map(|c| c.as_os_str().to_os_string()).collect();
-    let themes_index = components
-        .iter()
-        .rposition(|component| component == "themes")?;
-    let mut mirrored = PathBuf::new();
-    for component in &components[..themes_index] {
-        mirrored.push(component);
+/// `$K230_THEME_THUMBNAIL_SEED`, if set and non-empty: the read-only,
+/// build-time-populated seed directory `nix/handheld-theme-default` ships
+/// (wired to this process by `nix/shell.nix`, mirroring how
+/// `K230_THEME_DEFAULT_GENERATION` is wired). `None` when unset -- exactly
+/// as if every seed lookup missed, falling straight through to the runtime
+/// disk cache.
+fn builtin_seed_dir() -> Option<PathBuf> {
+    builtin_seed_dir_from(std::env::var("K230_THEME_THUMBNAIL_SEED").ok().as_deref())
+}
+
+/// `builtin_seed_dir`'s actual logic, taking its env var reading as a plain
+/// argument (see `disk_cache_dir_from`'s own doc for why).
+fn builtin_seed_dir_from(value: Option<&str>) -> Option<PathBuf> {
+    let value = value?;
+    if value.trim().is_empty() {
+        return None;
     }
-    mirrored.push("thumbs");
-    for component in &components[themes_index + 1..] {
-        mirrored.push(component);
-    }
-    let name = mirrored.file_name()?.to_str()?.to_string();
-    mirrored.set_file_name(format!("{name}-{}-{width}x{height}.rgba", variant.tag()));
-    Some(mirrored)
+    Some(PathBuf::from(value))
 }
 
 /// Precomputes and persists a build-time thumbnail for `source` at
-/// `variant`/`width`/`height`, at [`builtin_thumbnail_path`]. Used only by
-/// the hidden `--write-thumbnail-cache` CLI verb, invoked by a native-arch
-/// build of this binary from `nix/handheld-theme-default/default.nix` (the
-/// same pattern as `background_decode::write_wallpaper_cache`). Never runs
-/// on the board.
+/// `variant`/`width`/`height` into `dest_dir` (the seed directory
+/// `nix/handheld-theme-default/default.nix` builds and ships -- see the
+/// module doc's "Two disk caches" section), keyed by `source`'s own content
+/// hash so a later lookup finds it regardless of which path -- the pinned
+/// Nix store source, or a staged generation's byte-identical copy -- asked.
+/// Used only by the hidden `--write-thumbnail-cache` CLI verb, invoked by a
+/// native-arch build of this binary from `nix/handheld-theme-default/
+/// default.nix` (the same pattern as
+/// `background_decode::write_wallpaper_cache`). Never runs on the board.
 pub fn write_builtin_thumbnail(
     source: &Path,
+    dest_dir: &Path,
     variant: Variant,
     width: u32,
     height: u32,
 ) -> Result<(), String> {
-    let destination =
-        builtin_thumbnail_path(source, variant, width, height).ok_or("thumbnail path unavailable")?;
+    let hash = content_hash(source).ok_or("source unreadable or exceeds the size bound")?;
+    let destination = hashed_cache_file(dest_dir, &hash, variant, width, height);
     let mut cache = BackgroundCache::new();
     let pixels = cache
         .render(source, None, width, height, FitMode::Crop)?
@@ -325,32 +332,38 @@ pub fn write_builtin_thumbnail(
     write_disk_cache(&destination, width, height, &pixels)
 }
 
-/// Resolves one thumbnail decode, preferring (in order) a build-time
-/// precomputed file, then a runtime disk-cache hit, before paying for a
-/// full decode -- and, on a full decode, persists the result to the
-/// runtime disk cache for the next view (this run or a later restart). See
-/// the module doc's "Two disk caches" section.
+/// Resolves one thumbnail decode, preferring (in order) a build-time seed
+/// hit, then a runtime disk-cache hit, before paying for a full decode --
+/// and, on a full decode, persists the result to the runtime disk cache for
+/// the next view (this run or a later restart; never to the read-only
+/// seed). See the module doc's "Two disk caches" section.
 fn resolve(cache: &mut BackgroundCache, key: &ThumbnailKey) -> Result<Vec<u8>, String> {
-    resolve_with_dir(cache, key, disk_cache_dir())
+    resolve_with_dirs(cache, key, builtin_seed_dir(), disk_cache_dir())
 }
 
-/// `resolve`'s actual logic, taking the runtime disk-cache directory as a
-/// plain argument (see `disk_cache_dir_from`'s own doc for why: tests
-/// exercise this directly with a fixture directory rather than mutating
+/// `resolve`'s actual logic, taking both cache directories as plain
+/// arguments (see `disk_cache_dir_from`'s own doc for why: tests exercise
+/// this directly with fixture directories rather than mutating
 /// process-wide environment state).
-fn resolve_with_dir(
+fn resolve_with_dirs(
     cache: &mut BackgroundCache,
     key: &ThumbnailKey,
+    seed_dir: Option<PathBuf>,
     runtime_dir: Option<PathBuf>,
 ) -> Result<Vec<u8>, String> {
-    if let Some(builtin) = builtin_thumbnail_path(&key.path, key.variant, key.width, key.height) {
-        if let Some(pixels) = read_disk_cache(&builtin, key.width, key.height) {
+    let hash = if seed_dir.is_some() || runtime_dir.is_some() {
+        content_hash(&key.path)
+    } else {
+        None
+    };
+    if let (Some(dir), Some(hash)) = (seed_dir.as_ref(), hash.as_ref()) {
+        let file = hashed_cache_file(dir, hash, key.variant, key.width, key.height);
+        if let Some(pixels) = read_disk_cache(&file, key.width, key.height) {
             return Ok(pixels);
         }
     }
-    let hash = runtime_dir.as_ref().and_then(|_| content_hash(&key.path));
     if let (Some(dir), Some(hash)) = (runtime_dir.as_ref(), hash.as_ref()) {
-        let file = runtime_cache_file(dir, hash, key.variant, key.width, key.height);
+        let file = hashed_cache_file(dir, hash, key.variant, key.width, key.height);
         if let Some(pixels) = read_disk_cache(&file, key.width, key.height) {
             return Ok(pixels);
         }
@@ -359,7 +372,7 @@ fn resolve_with_dir(
         .render(&key.path, None, key.width, key.height, FitMode::Crop)?
         .to_vec();
     if let (Some(dir), Some(hash)) = (runtime_dir.as_ref(), hash.as_ref()) {
-        let file = runtime_cache_file(dir, hash, key.variant, key.width, key.height);
+        let file = hashed_cache_file(dir, hash, key.variant, key.width, key.height);
         if write_disk_cache(&file, key.width, key.height, &pixels).is_ok() {
             evict_oldest(dir);
         }
@@ -737,33 +750,30 @@ mod tests {
     }
 
     #[test]
-    fn resolve_prefers_a_precomputed_builtin_thumbnail_over_a_fresh_decode() {
-        // The source path must contain a `themes` component for
-        // `builtin_thumbnail_path` to anchor its mirrored `thumbs` tree on
-        // (see its own doc for why it never sits inside the theme's own
-        // directory) -- mirrors `nix/handheld-theme-default`'s real
-        // `share/omarchy/themes/<name>/...` layout.
+    fn resolve_prefers_a_precomputed_seed_thumbnail_over_a_fresh_decode() {
+        // The source must stay present and unchanged (a content-hash key
+        // can only be looked up by reading the source), so this is proven
+        // the same way as the runtime-cache-hit test below: seed the file
+        // with pixels a real decode of the source would never produce, and
+        // confirm those exact seeded pixels come back rather than the
+        // source's own, different content.
         let root = temp_subdir("builtin");
-        let theme_dir = root.join("themes").join("fixture-theme");
-        std::fs::create_dir_all(&theme_dir).unwrap();
-        let source = theme_dir.join("preview.png");
+        let seed_dir = root.join("seed");
+        let source = root.join("preview.png");
         image::RgbaImage::from_pixel(30, 30, image::Rgba([55, 66, 77, 255]))
             .save(&source)
             .unwrap();
         let source = source.canonicalize().unwrap();
-        write_builtin_thumbnail(&source, Variant::Expanded, 12, 16).unwrap();
-        let builtin_path = builtin_thumbnail_path(&source, Variant::Expanded, 12, 16).unwrap();
-        assert!(
-            builtin_path.is_file(),
-            "precompute must write the mirrored thumbs file"
-        );
-        assert!(
-            !builtin_path.starts_with(&theme_dir),
-            "a precomputed thumbnail must never sit inside the theme's own hashed directory"
-        );
-        // Deleting the source proves a later `resolve()` used the
-        // precomputed file rather than falling through to a full decode.
-        std::fs::remove_file(&source).unwrap();
+        write_builtin_thumbnail(&source, &seed_dir, Variant::Expanded, 12, 16).unwrap();
+        let hash = content_hash(&source).unwrap();
+        let seed_file = hashed_cache_file(&seed_dir, &hash, Variant::Expanded, 12, 16);
+        let precomputed = read_disk_cache(&seed_file, 12, 16).expect("precompute must write the seed file");
+        // Overwrite the seed entry with distinctive pixels no decode of
+        // `source` would ever produce, so a later hit is unambiguous.
+        let distinctive = vec![250u8; 12 * 16 * 4];
+        assert_ne!(precomputed, distinctive, "fixture must actually differ from a real decode");
+        write_disk_cache(&seed_file, 12, 16, &distinctive).unwrap();
+
         let mut cache = BackgroundCache::new();
         let key = ThumbnailKey {
             id: "builtin-fixture".into(),
@@ -772,22 +782,68 @@ mod tests {
             width: 12,
             height: 16,
         };
-        let pixels = resolve(&mut cache, &key)
-            .expect("a precomputed builtin thumbnail must resolve without the source file");
-        assert_eq!(pixels.len(), 12 * 16 * 4);
+        let pixels = resolve_with_dirs(&mut cache, &key, Some(seed_dir), None)
+            .expect("a precomputed seed thumbnail must resolve");
+        assert_eq!(
+            pixels, distinctive,
+            "the seed entry must be returned as-is, not overwritten by a fresh decode"
+        );
         std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]
-    fn builtin_thumbnail_path_has_no_themes_anchor_for_a_user_theme_path() {
-        // A user theme's path never has a `themes` path component to anchor
-        // the mirrored tree on -- it must simply miss, falling through to
-        // the runtime disk cache/full decode, never panic or guess a path.
-        let path = PathBuf::from("/home/user/.local/share/omarchy/user-theme/preview.png");
-        assert_eq!(
-            builtin_thumbnail_path(&path, Variant::Expanded, 480, 640),
-            None
+    fn resolve_finds_a_seed_thumbnail_for_a_staged_generation_copy_at_a_different_path() {
+        // Regression test for the exact gap the coordinator's board run
+        // caught: `tools/theme_activate.py::prepare` stages a byte-for-byte
+        // copy of a theme's background under `~/.local/state/omarchy/
+        // current/generations/<gen>/theme/backgrounds/...` (no `themes`
+        // path component at all) before the chooser ever sees its path, so
+        // a lookup keyed by source *path* can never find a precomputed
+        // thumbnail built from the theme's original, differently-located
+        // source. Content-hash keying must find it anyway, since the staged
+        // copy's bytes are identical to the pinned source's.
+        let root = temp_subdir("staged-regression");
+        let pinned_source = root
+            .join("share/omarchy/themes/fixture-theme/backgrounds")
+            .join("1-fixture.webp");
+        std::fs::create_dir_all(pinned_source.parent().unwrap()).unwrap();
+        image::RgbaImage::from_pixel(40, 24, image::Rgba([10, 20, 30, 255]))
+            .save(&pinned_source)
+            .unwrap();
+        let seed_dir = root.join("seed");
+        write_builtin_thumbnail(&pinned_source, &seed_dir, Variant::Slice, 8, 10).unwrap();
+
+        // A path shaped exactly like a real staged generation copy -- no
+        // `themes` component anywhere in it -- holding the same bytes.
+        let staged_copy = root
+            .join(".local/state/omarchy/current/generations")
+            .join("a".repeat(24))
+            .join("theme/backgrounds/1-fixture.webp");
+        std::fs::create_dir_all(staged_copy.parent().unwrap()).unwrap();
+        std::fs::copy(&pinned_source, &staged_copy).unwrap();
+        assert!(
+            !staged_copy
+                .components()
+                .any(|c| c.as_os_str() == "themes"),
+            "the fixture must actually exercise a path with no `themes` component"
         );
+
+        let mut cache = BackgroundCache::new();
+        let key = ThumbnailKey {
+            id: "staged-fixture".into(),
+            path: staged_copy.clone(),
+            variant: Variant::Slice,
+            width: 8,
+            height: 10,
+        };
+        // Delete the pinned source (but keep the staged copy): only a
+        // content-hash hit against the seed can still succeed from here.
+        std::fs::remove_file(&pinned_source).unwrap();
+        let pixels = resolve_with_dirs(&mut cache, &key, Some(seed_dir), None).expect(
+            "a staged generation copy must still hit the seed thumbnail built from its pinned source",
+        );
+        assert_eq!(pixels.len(), 8 * 10 * 4);
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]
@@ -807,10 +863,10 @@ mod tests {
             height: 11,
         };
         let mut cache = BackgroundCache::new();
-        let decoded = resolve_with_dir(&mut cache, &key, Some(cache_root.clone()))
+        let decoded = resolve_with_dirs(&mut cache, &key, None, Some(cache_root.clone()))
             .expect("first decode must succeed");
         let hash = content_hash(&source).unwrap();
-        let cache_file = runtime_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
+        let cache_file = hashed_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
         assert_eq!(
             read_disk_cache(&cache_file, 10, 11),
             Some(decoded),
@@ -824,12 +880,12 @@ mod tests {
     fn resolve_prefers_an_existing_runtime_cache_hit_over_a_fresh_decode() {
         // The source stays present and unchanged throughout (a content-hash
         // key can only be looked up by reading the source, so unlike the
-        // build-time-path lookup above, this cache cannot be proven by
-        // deleting the source). Instead: seed the cache file with pixels a
-        // real decode of this source would never produce, then confirm
-        // `resolve_with_dir` returns exactly those seeded pixels rather than
-        // the source's actual, different content -- proof the cache was
-        // read instead of decoding.
+        // seed lookup above, this cache cannot be proven by deleting the
+        // source). Instead: seed the cache file with pixels a real decode of
+        // this source would never produce, then confirm `resolve_with_dirs`
+        // returns exactly those seeded pixels rather than the source's
+        // actual, different content -- proof the cache was read instead of
+        // decoding.
         let cache_root = temp_subdir("runtime-cache-hit-home");
         let source_dir = temp_subdir("runtime-cache-hit-source");
         let source = source_dir.join("wallpaper.png");
@@ -845,11 +901,11 @@ mod tests {
             height: 11,
         };
         let hash = content_hash(&source).unwrap();
-        let cache_file = runtime_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
+        let cache_file = hashed_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
         let seeded = vec![250u8; 10 * 11 * 4];
         write_disk_cache(&cache_file, 10, 11, &seeded).unwrap();
         let mut cache = BackgroundCache::new();
-        let result = resolve_with_dir(&mut cache, &key, Some(cache_root.clone()))
+        let result = resolve_with_dirs(&mut cache, &key, None, Some(cache_root.clone()))
             .expect("a seeded runtime cache entry must resolve");
         assert_eq!(
             result, seeded,
@@ -857,6 +913,66 @@ mod tests {
         );
         std::fs::remove_dir_all(&cache_root).unwrap();
         std::fs::remove_dir_all(&source_dir).unwrap();
+    }
+
+    #[test]
+    fn builtin_seed_dir_ignores_an_unset_or_empty_env_var() {
+        assert_eq!(builtin_seed_dir_from(None), None);
+        assert_eq!(builtin_seed_dir_from(Some("")), None);
+        assert_eq!(builtin_seed_dir_from(Some("   ")), None);
+        assert_eq!(
+            builtin_seed_dir_from(Some("/nix/store/xyz-handheld-theme-default/share/omarchy/thumbs-by-hash")),
+            Some(PathBuf::from(
+                "/nix/store/xyz-handheld-theme-default/share/omarchy/thumbs-by-hash"
+            ))
+        );
+    }
+
+    #[test]
+    fn resolve_prefers_a_seed_hit_over_a_runtime_cache_hit_when_both_exist() {
+        // Seed is read-only and shipped by Nix; if a runtime-cache entry
+        // ever also exists for the same key (e.g. left over from before a
+        // theme got its own seed), the seed still wins -- it is checked
+        // first, and never overwritten.
+        let root = temp_subdir("seed-precedence");
+        let source = root.join("bg.png");
+        image::RgbaImage::from_pixel(20, 20, image::Rgba([1, 1, 1, 255]))
+            .save(&source)
+            .unwrap();
+        let source = source.canonicalize().unwrap();
+        let hash = content_hash(&source).unwrap();
+
+        let seed_dir = root.join("seed");
+        let seeded = vec![7u8; 6 * 6 * 4];
+        write_disk_cache(
+            &hashed_cache_file(&seed_dir, &hash, Variant::Expanded, 6, 6),
+            6,
+            6,
+            &seeded,
+        )
+        .unwrap();
+        let runtime_dir = root.join("runtime");
+        let runtime_seeded = vec![9u8; 6 * 6 * 4];
+        write_disk_cache(
+            &hashed_cache_file(&runtime_dir, &hash, Variant::Expanded, 6, 6),
+            6,
+            6,
+            &runtime_seeded,
+        )
+        .unwrap();
+
+        let mut cache = BackgroundCache::new();
+        let key = ThumbnailKey {
+            id: "precedence-fixture".into(),
+            path: source,
+            variant: Variant::Expanded,
+            width: 6,
+            height: 6,
+        };
+        let result =
+            resolve_with_dirs(&mut cache, &key, Some(seed_dir), Some(runtime_dir)).unwrap();
+        assert_eq!(result, seeded, "the seed entry must win over a runtime-cache entry");
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]

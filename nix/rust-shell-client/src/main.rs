@@ -3147,14 +3147,17 @@ fn main() {
                 _ => Err("invalid wallpaper cache geometry".into()),
             }
         }
-        [_, flag, source, variant, width, height] if flag == "--write-thumbnail-cache" => {
+        [_, flag, source, dest_dir, variant, width, height] if flag == "--write-thumbnail-cache" => {
             // Precompute a build-time thumbnail for one of the bundled
             // built-in themes' `preview.png` or background images, at one
             // of `theme_carousel`'s two carousel geometries' two variant
-            // sizes, so the chooser's very first view of a bundled theme
-            // never pays a full source decode -- see
-            // `theme_thumbnails::write_builtin_thumbnail`'s own doc. Used
-            // only by `nix/handheld-theme-default/default.nix`, via a
+            // sizes, keyed by `source`'s own content hash into `dest_dir` --
+            // the read-only seed directory this package ships -- so the
+            // chooser's very first view of a bundled theme never pays a
+            // full source decode, whether it reads the pinned Nix store
+            // path or a later byte-identical staged generation copy of it
+            // (see `theme_thumbnails::write_builtin_thumbnail`'s own doc).
+            // Used only by `nix/handheld-theme-default/default.nix`, via a
             // native-arch build of this same binary. Never touches Wayland.
             let parsed_variant = match variant.as_str() {
                 "expanded" => Ok(k230_shell_rust::theme_thumbnails::Variant::Expanded),
@@ -3165,6 +3168,7 @@ fn main() {
                 (Ok(variant), Ok(width), Ok(height)) => {
                     k230_shell_rust::theme_thumbnails::write_builtin_thumbnail(
                         std::path::Path::new(source),
+                        std::path::Path::new(dest_dir),
                         variant,
                         width,
                         height,
@@ -3174,7 +3178,7 @@ fn main() {
             }
         }
         _ => Err(
-            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png | --write-wallpaper-cache SOURCE GENERATION_ROOT WIDTH HEIGHT | --write-thumbnail-cache SOURCE expanded|slice WIDTH HEIGHT".into(),
+            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png | --write-wallpaper-cache SOURCE GENERATION_ROOT WIDTH HEIGHT | --write-thumbnail-cache SOURCE DEST_DIR expanded|slice WIDTH HEIGHT".into(),
         ),
     };
     if let Err(error) = outcome {
