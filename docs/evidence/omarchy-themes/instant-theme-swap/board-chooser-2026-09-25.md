@@ -32,3 +32,27 @@ faster, but it still misses the ~100 ms target. The remaining cost is
 even though the chooser already prepared the same generation, plus 65 ms of
 request parsing and 91 ms of `prepare_entry`. Real-finger timing and a camera
 check of when the new theme becomes visible remain open.
+
+## Re-check after skip-redundant-prepare (master `bc0cf82f`)
+
+The installed system is `/nix/store/v84gna5s1qnabg5mqhwa55anml2q8amh-…`. The
+flow is the same injected chooser run, except the carousel was swiped one slot
+before tapping the centre, so the applied theme was one the chooser had only
+warmed by prepare-ahead (id `b801d916…`), not the active theme.
+
+| Step | Journal evidence | Time |
+| --- | --- | ---: |
+| Neighbour prepare-ahead after the swipe (cold) | `theme-command preview b801… ms=2417` | 2417 ms |
+| Tap centre, preview of the warmed theme | `theme-command preview b801… ms=162` | 162 ms |
+| **Tap Apply → Rust `appearance-commit-accepted`** | touch-down 77049 ms → commit 77446 ms | **397 ms** |
+| Apply round trip | `theme-command activate … path=socket ms=313` | 313 ms |
+
+This time no `appearance-prepare-accepted` appeared between the Apply tap and
+the commit, so the redundant prepare is gone. The helper reported
+`parse=2.2ms` (down from 65 ms), `prepare_entry=63.0ms`,
+`activate_generation=226.2ms` and total 307 ms. Tap-to-commit went from
+556 ms to 397 ms (about 4.2 s originally). The ~100 ms target is still not
+met. The remaining cost is inside `activate_generation` and `prepare_entry`;
+showing the theme optimistically at tap time was deliberately left out to keep
+the post-frame ack and rollback guarantees. Cold prepare-ahead of an unvisited
+theme still takes 2.4–6.8 s, spent while the user browses.
