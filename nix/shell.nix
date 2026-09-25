@@ -771,6 +771,38 @@ in
       };
     };
 
+    # Board evidence (docs/evidence/omarchy-themes/background-decode-cache-qemu/README.md)
+    # measured about 1.2 s of Python interpreter start-up per `k230-theme`
+    # call on the K230's slower core, and a chooser Apply calls it twice
+    # (preview then activate) -- close to a second of the 2.8-3.5 s a swap
+    # took. This daemon keeps that interpreter warm; `k230-theme` (built by
+    # handheld-theme-command.nix as theme_client.py) talks to it over
+    # `/run/shell/theme-helper.sock` when it is up, and falls straight back
+    # to the unchanged fresh-process path otherwise, so a stopped or
+    # mid-restart daemon degrades speed only, never correctness.
+    systemd.services.theme-helper = lib.mkIf cfg.coherentShell {
+      description = "Persistent theme-catalog helper (warm Python for k230-theme)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "shell.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        ExecStart = "${themeCommand}/bin/k230-theme-helperd" +
+          " --listen /run/shell/theme-helper.sock" +
+          " --state-root ${config.users.users.shell.home}/.local/state/omarchy/current" +
+          " --socket /run/shell/appearance.sock" +
+          " --keyboard-runtime-dir /run/shell";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
     systemd.services.shell-ui = lib.mkIf cfg.coherentShell {
       description = "Rust handheld drawer and system surfaces";
       wantedBy = [ "shell.service" ];
