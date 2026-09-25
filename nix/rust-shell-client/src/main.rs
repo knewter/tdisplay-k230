@@ -994,11 +994,42 @@ fn prerendered_overlay_matches(
     height: u32,
     content_generation: u64,
 ) -> bool {
-    candidate.generation == generation
-        && candidate.route == route
-        && candidate.width == width
-        && candidate.height == height
-        && candidate.content_generation == content_generation
+    prerendered_overlay_mismatch_reason(Some(candidate), generation, route, width, height, content_generation)
+        .is_none()
+}
+
+/// The same check as `prerendered_overlay_matches`, but naming *why* not
+/// when the answer is no -- board evidence, 2026-09-28: a plain
+/// `prerendered=false` told the coordinator only that a stored pre-render
+/// was not used, not which field made it stale. Checked in a fixed order
+/// (no stored pre-render at all; generation; route; geometry; then
+/// `content_generation`, the catch-all for everything else a render
+/// depends on) so a candidate failing several checks at once still
+/// reports one specific, reproducible reason rather than an arbitrary
+/// one. Logged verbatim as `optimistic-apply shown ms=... prerendered=
+/// false reason=<this>`.
+fn prerendered_overlay_mismatch_reason(
+    candidate: Option<&PrerenderedOverlay>,
+    generation: &str,
+    route: Route,
+    width: u32,
+    height: u32,
+    content_generation: u64,
+) -> Option<&'static str> {
+    let Some(candidate) = candidate else {
+        return Some("no-prerender-computed");
+    };
+    if candidate.generation != generation {
+        Some("generation")
+    } else if candidate.route != route {
+        Some("route")
+    } else if candidate.width != width || candidate.height != height {
+        Some("geometry")
+    } else if candidate.content_generation != content_generation {
+        Some("content-changed")
+    } else {
+        None
+    }
 }
 
 #[derive(Default)]
@@ -1379,18 +1410,20 @@ impl ShellClient {
         // any mismatch falls back to `set_appearance`'s own ordinary
         // rebuild, exactly as if no pre-render had ever run.
         let content_generation = self.renderer.content_generation();
-        let prerendered = self.prerendered_overlay.take().filter(|candidate| {
-            self.route == Route::Settings
-                && prerendered_overlay_matches(
-                    candidate,
-                    &snapshot.generation,
-                    Route::Settings,
-                    self.width,
-                    self.height,
-                    content_generation,
-                )
-        });
-        let used_prerender = prerendered.is_some();
+        let stored = self.prerendered_overlay.take();
+        let mismatch_reason = if self.route != Route::Settings {
+            Some("not-on-settings-route")
+        } else {
+            prerendered_overlay_mismatch_reason(
+                stored.as_ref(),
+                &snapshot.generation,
+                Route::Settings,
+                self.width,
+                self.height,
+                content_generation,
+            )
+        };
+        let prerendered = mismatch_reason.is_none().then_some(stored).flatten();
         if let Some(candidate) = prerendered {
             self.renderer.adopt_prerendered_overlay(
                 Some(snapshot.clone()),
@@ -1438,11 +1471,21 @@ impl ShellClient {
             // the new theme -- this is the number the ~100 ms target is
             // measured against. `prerendered` distinguishes a cache hit
             // (the panel's own scene reused, not rebuilt) from a full
-            // synchronous rebuild.
-            self.log(&format!(
-                "optimistic-apply shown ms={:.1} prerendered={used_prerender}",
-                elapsed_ms()
-            ));
+            // synchronous rebuild; `reason=...` (only present when
+            // `prerendered=false`) names exactly which field made a
+            // stored pre-render not match, so a board run states the
+            // cause directly instead of requiring a fresh multi-step
+            // reconstruction each time (board evidence, 2026-09-28).
+            match mismatch_reason {
+                Some(reason) => self.log(&format!(
+                    "optimistic-apply shown ms={:.1} prerendered=false reason={reason}",
+                    elapsed_ms()
+                )),
+                None => self.log(&format!(
+                    "optimistic-apply shown ms={:.1} prerendered=true",
+                    elapsed_ms()
+                )),
+            }
         }
     }
 
@@ -3972,14 +4015,21 @@ fn serve() -> Result<(), String> {
         // including the very Preview-page frame that makes this
         // eligible in the first place. It only ever targets the Preview
         // page's own currently-loaded candidate, never a merely-warmed
-        // neighbour still being browsed past, and is skipped entirely
-        // while an Activate is already in flight (nothing to gain, and
-        // the CPU is better spent letting that transaction settle).
+        // neighbour still being browsed past, and requires nothing at
+        // all pending -- not just excluding an Activate specifically --
+        // because the background carousel's own busy-spinner state (a
+        // `Preview{background_id: Some(_)}` request in flight) is baked
+        // into the cached body the same as everything else `content_
+        // generation` does not track (`paint_preview_footer_status`'s
+        // own live overlay does not cover that spinner, only the
+        // Apply/Cancel footer and status line), so computing while
+        // anything is pending risks caching a stale busy indicator no
+        // later live paint would ever correct.
         if state.route == Route::Settings
             && state.configured
             && state.theme_view.page == ThemePage::Preview
             && pending_appearance.is_none()
-            && !matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }))
+            && state.theme_view.pending.is_none()
         {
             if let Some(generation) = state
                 .theme_view
@@ -4545,6 +4595,89 @@ mod route_tests {
             1232,
             4
         ));
+    }
+
+    #[test]
+    fn prerendered_overlay_mismatch_reason_names_the_specific_field() {
+        // Board evidence, 2026-09-28: a plain `prerendered=false` told
+        // the coordinator only that a stored pre-render was not used, not
+        // which of generation/route/geometry/content_generation made it
+        // stale. Checked in a fixed order, so a candidate failing several
+        // checks at once still reports one specific, reproducible reason.
+        let candidate = PrerenderedOverlay {
+            generation: "aaaaaaaaaaaaaaaaaaaaaaaa".into(),
+            route: Route::Settings,
+            width: 568,
+            height: 1232,
+            content_generation: 3,
+            pixels: Vec::new(),
+        };
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                None,
+                "aaaaaaaaaaaaaaaaaaaaaaaa",
+                Route::Settings,
+                568,
+                1232,
+                3
+            ),
+            Some("no-prerender-computed")
+        );
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                Some(&candidate),
+                "bbbbbbbbbbbbbbbbbbbbbbbb",
+                Route::Settings,
+                568,
+                1232,
+                3
+            ),
+            Some("generation")
+        );
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                Some(&candidate),
+                "aaaaaaaaaaaaaaaaaaaaaaaa",
+                Route::Drawer,
+                568,
+                1232,
+                3
+            ),
+            Some("route")
+        );
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                Some(&candidate),
+                "aaaaaaaaaaaaaaaaaaaaaaaa",
+                Route::Settings,
+                600,
+                1232,
+                3
+            ),
+            Some("geometry")
+        );
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                Some(&candidate),
+                "aaaaaaaaaaaaaaaaaaaaaaaa",
+                Route::Settings,
+                568,
+                1232,
+                4
+            ),
+            Some("content-changed")
+        );
+        assert_eq!(
+            prerendered_overlay_mismatch_reason(
+                Some(&candidate),
+                "aaaaaaaaaaaaaaaaaaaaaaaa",
+                Route::Settings,
+                568,
+                1232,
+                3
+            ),
+            None
+        );
     }
 
     #[test]
