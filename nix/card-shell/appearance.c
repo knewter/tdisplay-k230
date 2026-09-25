@@ -30,6 +30,7 @@ static struct {
 	bool prepared;
 	bool owns_socket;
 	card_appearance_apply_fn apply;
+	card_appearance_prepare_fn prepare;
 	void *apply_data;
 } service = {.listener = -1, .client = -1};
 
@@ -328,6 +329,14 @@ static void request(void) {
 					sizeof(service.previous_path));
 			service.prepared = true;
 			ok = true;
+			/* Advisory warm-up hook (task 3.1b): give the caller a chance to
+			 * pre-build whatever commit will want for this exact candidate.
+			 * Runs only after `load()` above has fully validated `next`, so
+			 * `service.candidate` is never a partially parsed or rejected
+			 * appearance -- and before `answer()` below, so its own
+			 * (possibly nonzero) cost is paid before this prepare's ack,
+			 * same as the Rust receiver's own prepare-time decode. */
+			if (service.prepare) service.prepare(&service.candidate, service.apply_data);
 		}
 	} else if (valid && phase && !strcmp(phase, "commit") && identity(id) &&
 		service.prepared && !strcmp(service.candidate.generation, id)) {
@@ -363,7 +372,8 @@ done:
 }
 
 bool card_appearance_start(const char *socket_path, const char *state_root,
-		const char *default_generation, card_appearance_apply_fn apply, void *data) {
+		const char *default_generation, card_appearance_apply_fn apply,
+		card_appearance_prepare_fn prepare, void *data) {
 	if (!socket_path || !state_root || !default_generation || !apply ||
 		strlen(socket_path) >= sizeof(service.socket_path) ||
 		strlen(state_root) >= sizeof(service.state_root) ||
@@ -397,6 +407,7 @@ bool card_appearance_start(const char *socket_path, const char *state_root,
 		}
 	}
 	service.apply = apply;
+	service.prepare = prepare;
 	service.apply_data = data;
 	char parent[sizeof(service.socket_path)];
 	strcpy(parent, socket_path);

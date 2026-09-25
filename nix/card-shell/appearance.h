@@ -26,10 +26,18 @@ struct card_appearance {
 };
 
 typedef bool (*card_appearance_apply_fn)(const struct card_appearance *, void *);
+/* Called once per successfully validated `prepare`, before its ack, with the
+ * *candidate* appearance -- a chance to warm anything commit will want (see
+ * adapter.c's `appearance_prepare`). Advisory only: it has no return value
+ * and cannot affect whether prepare is acknowledged, matching
+ * `background.cache`'s own posture in background_decode.rs -- a missed or
+ * skipped warm-up can only cost time, never correctness. May be NULL. */
+typedef void (*card_appearance_prepare_fn)(const struct card_appearance *, void *);
 
 /* Enabled only with an explicit state root and private runtime socket. */
 bool card_appearance_start(const char *socket_path, const char *state_root,
-	const char *default_generation, card_appearance_apply_fn apply, void *data);
+	const char *default_generation, card_appearance_apply_fn apply,
+	card_appearance_prepare_fn prepare, void *data);
 void card_appearance_poll(void);
 void card_appearance_stop(void);
 const struct card_appearance *card_appearance_current(void);

@@ -89,6 +89,10 @@ class AppearanceReceiver(unittest.TestCase):
         prepare = self.exchange('prepare', NEXT_ID, self.next, **prior)
         self.assertEqual(prepare, {'protocol': 1, 'phase': 'prepare',
                                    'generation': NEXT_ID, 'status': 'ok'})
+        # Task 3.1b's advisory warm-up hook fires once per successfully
+        # validated prepare, strictly before that prepare's own ack is
+        # observable to the client -- see card_appearance_receiver.c.
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
         self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
@@ -114,6 +118,7 @@ class AppearanceReceiver(unittest.TestCase):
         foreign.symlink_to(self.next)
         self.assertEqual(self.exchange('prepare', NEXT_ID, foreign,
                                        previous_generation=None, previous_path=None)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
         # A real foreign tree cannot resolve to the prepared cache.
         other = self.root / 'other'
         other.mkdir()
@@ -168,6 +173,7 @@ class AppearanceReceiver(unittest.TestCase):
         report.write_text(json.dumps(data))
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
                                        previous_generation=None, previous_path=None)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
 
     def test_fifo_payload_rejected_without_blocking_compositor(self):
         payload = self.next / 'appearance.json'

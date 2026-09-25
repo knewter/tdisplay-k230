@@ -96,6 +96,15 @@ static struct {
 	struct wlr_scene_buffer *canvas_gradient;
 	struct card_brush canvas_brush;
 	int canvas_width, canvas_height;
+	/* Task 3.1b: a deck gradient built ahead of commit, at prepare time, for
+	 * a *candidate* generation -- see appearance_prepare's doc. Strictly
+	 * advisory, like background.cache: a missing, stale, or
+	 * dimension-mismatched entry falls back to appearance_canvas_refresh's
+	 * own inline build, so it can only cost time, never correctness. */
+	struct wlr_scene_buffer *prepared_canvas_gradient;
+	struct card_brush prepared_canvas_brush;
+	char prepared_canvas_generation[25];
+	int prepared_canvas_width, prepared_canvas_height;
 	struct card_appearance appearance;
 	bool appearance_enabled;
 	struct wl_event_source *timer;
@@ -289,6 +298,56 @@ static bool chrome(void);
 static void keyboard_refresh(void);
 static void ordinary_backdrop_sync(struct sway_output *output);
 static struct sway_layer_surface *keyboard_layer(struct sway_output *output);
+/* Task 3.1b: drop any gradient built ahead of commit for a candidate that
+ * was superseded (a newer prepare, a rollback, or a live geometry change)
+ * before it was ever adopted. It was never attached anywhere but `shell.deck`
+ * itself and never enabled, so destroying it here cannot affect anything
+ * currently visible. */
+static void prepared_canvas_gradient_drop(void) {
+	if (shell.prepared_canvas_gradient)
+		wlr_scene_node_destroy(&shell.prepared_canvas_gradient->node);
+	shell.prepared_canvas_gradient = NULL;
+	shell.prepared_canvas_generation[0] = 0;
+}
+/* Registered as `card_appearance_start`'s advisory `prepare` callback.
+ * Pre-builds the deck's gradient scene buffer for a *candidate* theme while
+ * it is only prepared, not committed, so `appearance_canvas_refresh` can
+ * later adopt an already-painted buffer instead of running Cairo's
+ * linear-gradient paint over the full deck canvas inside the commit path.
+ * The built node is created disabled and is never reachable from
+ * `shell.canvas`/`shell.canvas_gradient` until a matching commit promotes
+ * it, so a candidate that is superseded or never committed only wastes the
+ * one buffer -- never touches anything live. Bounded to the same single
+ * slot as `shell.canvas_gradient` itself (mirroring background_decode.rs's
+ * `BackgroundCache`), since only the most recently prepared candidate can
+ * plausibly be the next Apply. */
+static void appearance_prepare(const struct card_appearance *candidate, void *data) {
+	(void)data;
+	if (!shell.canvas || !shell.deck || !shell.output || candidate->canvas.count <= 1)
+		return; // nothing to warm: no scene yet, or this candidate has no gradient to build
+	const struct cs_config *cfg = &shell.policy.config;
+	int width = cfg->width;
+	int height = cfg->height - cfg->top_reserved - cfg->bottom_reserved;
+	if (width <= 0 || height <= 0) return;
+	if (shell.prepared_canvas_gradient &&
+		!strcmp(shell.prepared_canvas_generation, candidate->generation) &&
+		shell.prepared_canvas_width == width && shell.prepared_canvas_height == height &&
+		!memcmp(&shell.prepared_canvas_brush, &candidate->canvas, sizeof(candidate->canvas)))
+		return; // already warm for this exact candidate/geometry -- e.g. a
+			// browsed-ahead theme (task 3.2) re-prepared by Apply's own
+			// internal prepare immediately before commit
+	prepared_canvas_gradient_drop();
+	struct wlr_scene_buffer *built = card_brush_scene(shell.deck, &candidate->canvas, width, height);
+	if (!built) return; // advisory: appearance_canvas_refresh falls back to its own inline build
+	wlr_scene_node_place_above(&built->node, &shell.canvas->node);
+	wlr_scene_node_set_enabled(&built->node, false);
+	wlr_scene_node_set_position(&built->node, shell.output->lx, shell.output->ly + cfg->top_reserved);
+	shell.prepared_canvas_gradient = built;
+	shell.prepared_canvas_brush = candidate->canvas;
+	strcpy(shell.prepared_canvas_generation, candidate->generation);
+	shell.prepared_canvas_width = width;
+	shell.prepared_canvas_height = height;
+}
 static bool appearance_canvas_refresh(void) {
 	if (!shell.canvas || !shell.deck || !shell.output) return true;
 	const struct cs_config *cfg = &shell.policy.config;
@@ -297,7 +356,27 @@ static bool appearance_canvas_refresh(void) {
 	if (width <= 0 || height <= 0) return false;
 	const struct card_brush *brush = &shell.appearance.canvas;
 	bool gradient = shell.appearance_enabled && brush->count > 1;
-	if (gradient && (!shell.canvas_gradient ||
+	if (gradient && shell.prepared_canvas_gradient &&
+		!strcmp(shell.prepared_canvas_generation, shell.appearance.generation) &&
+		shell.prepared_canvas_width == width && shell.prepared_canvas_height == height &&
+		!memcmp(&shell.prepared_canvas_brush, brush, sizeof(*brush))) {
+		/* Task 3.1b: this exact candidate was already warmed at prepare
+		 * time -- adopt it instead of repainting. Commit becomes a pointer
+		 * swap plus the enable/position calls below, not a Cairo paint. */
+		if (shell.canvas_gradient) wlr_scene_node_destroy(&shell.canvas_gradient->node);
+		shell.canvas_gradient = shell.prepared_canvas_gradient;
+		shell.canvas_brush = *brush;
+		shell.canvas_width = width;
+		shell.canvas_height = height;
+		shell.prepared_canvas_gradient = NULL;
+		shell.prepared_canvas_generation[0] = 0;
+		/* Named stage marker (task 1): tools/theme-swap-jank.py's merged
+		 * timeline picks this up via its K230_CARD_SHELL journal parsing,
+		 * so a before/after board capture can show the Cairo paint moving
+		 * off the commit path once task 3.2's browse-ahead has run. */
+		sway_log(SWAY_INFO, "K230_CARD_SHELL appearance-canvas-gradient-adopted generation=%s",
+			shell.appearance.generation);
+	} else if (gradient && (!shell.canvas_gradient ||
 		memcmp(&shell.canvas_brush, brush, sizeof(*brush)) != 0 ||
 		shell.canvas_width != width || shell.canvas_height != height)) {
 		struct wlr_scene_buffer *replacement = card_brush_scene(shell.deck, brush, width, height);
@@ -309,6 +388,10 @@ static bool appearance_canvas_refresh(void) {
 		shell.canvas_brush = *brush;
 		shell.canvas_width = width;
 		shell.canvas_height = height;
+		if (gradient)
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL appearance-canvas-gradient-built generation=%s",
+				shell.appearance.generation);
 	}
 	if (shell.canvas_gradient) {
 		wlr_scene_node_set_enabled(&shell.canvas_gradient->node, gradient);
@@ -1348,6 +1431,12 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	shell.chrome = NULL;
 	shell.canvas = NULL;
 	shell.canvas_gradient = NULL;
+	/* Recursively destroyed with `shell.ui` above (it was always just a
+	 * disabled child of `shell.deck`, same as `shell.canvas_gradient`);
+	 * drop the now-dangling pointer so a later `appearance_prepare` never
+	 * touches or re-destroys freed scene-graph memory. */
+	shell.prepared_canvas_gradient = NULL;
+	shell.prepared_canvas_generation[0] = 0;
 	shell.status = NULL;
 	free(shell.status_text);
 	shell.status_text = NULL;
@@ -1463,7 +1552,8 @@ static bool ensure_ui(struct sway_output *output) {
 	if (appearance_socket && *appearance_socket &&
 		!card_appearance_start(appearance_socket,
 			getenv("SWAY_K230_CARD_THEME_STATE_ROOT"),
-			getenv("SWAY_K230_CARD_THEME_DEFAULT"), appearance_apply, NULL))
+			getenv("SWAY_K230_CARD_THEME_DEFAULT"), appearance_apply,
+			appearance_prepare, NULL))
 		sway_log(SWAY_ERROR, "K230_CARD_SHELL appearance receiver unavailable");
 	wl_event_source_timer_update(shell.timer, 16);
 	return true;
