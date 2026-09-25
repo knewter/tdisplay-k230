@@ -1250,7 +1250,13 @@ static bool rebuild_chrome(void) {
 	if (touch_first()) {
 		if (!shell.active)
 			return true;
-		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Home", 176, 40, 24,
+		/* Retitled from "Home" now that the Rust client's own pinned-icon
+		 * Home screen (nix/rust-shell-client/src/home_screen.rs) is the
+		 * literal Home; this remains the live app-card overview/switcher,
+		 * entered the same way it always was. See
+		 * openspec/changes/the-shell-presents-a-pinned-home-screen/design.md
+		 * decision 2. */
+		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Overview", 176, 40, 24,
 			appearance_text(false));
 		if (!title)
 			return false;

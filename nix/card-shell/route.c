@@ -250,7 +250,15 @@ uint16_t card_shell_reveal_progress(const struct card_shell_drawer_gesture *gest
 }
 
 bool card_shell_launch_surface(const char *surface) {
-	if (!surface || (strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0))
+	/* "home" is accepted for forward compatibility with a future
+	 * compositor-driven refresh of the Rust client's own always-mapped Home
+	 * surface (nix/rust-shell-client/src/home_screen.rs); nothing in this
+	 * compositor calls this with "home" yet, since that surface stays
+	 * mapped for the life of the process and needs no reveal/launch
+	 * request of its own. See
+	 * openspec/changes/the-shell-presents-a-pinned-home-screen/. */
+	if (!surface || (strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0
+			&& strcmp(surface, "home") != 0))
 		return false;
 	const char *path = getenv("SWAY_K230_CARD_SURFACE_HELPER");
 	if (!path)
