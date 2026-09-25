@@ -289,6 +289,28 @@ fn optimistic_apply_due(already_attempted_for: Option<u64>, pending_id: Option<u
     pending_id.is_some() && already_attempted_for != pending_id
 }
 
+/// Whether a `Commit`/`Rollback` event's own redraw may be skipped
+/// because Optimistic Apply already rendered and flushed the exact frame
+/// this event would otherwise redraw. `phase` restricts this to `Commit`
+/// only: a `Rollback`'s own target is, by definition, the *previous*
+/// generation, never the one Optimistic Apply just showed, so it could
+/// never legitimately match anyway -- checking `phase` here is belt and
+/// braces, not load-bearing on its own, but makes that guarantee explicit
+/// rather than incidental. `optimistic_active`/`event_generation` are
+/// `None` whenever there is nothing to reuse (no optimistic show ran, or
+/// this event carries no generation at all, e.g. a rollback to the
+/// packaged default) -- `None == None` is deliberately never treated as a
+/// match.
+fn may_reuse_optimistic_frame(
+    phase: AppearancePhase,
+    optimistic_active: Option<&str>,
+    event_generation: Option<&str>,
+) -> bool {
+    phase == AppearancePhase::Commit
+        && optimistic_active.is_some()
+        && optimistic_active == event_generation
+}
+
 const CARD_APPEARANCE_SOCKET_ENV: &str = "K230_CARD_APPEARANCE_SOCKET";
 
 /// The card-shell compositor's own appearance socket, for the best-effort
@@ -925,6 +947,58 @@ struct ShellClient {
     /// side channel entirely; the compositor still settles correctly from
     /// the durable two-phase commit either way.
     card_appearance_socket: Option<PathBuf>,
+    /// The generation `show_theme_optimistically` most recently rendered
+    /// and successfully flushed, if any -- read once, by the very next
+    /// `AppearancePhase::Commit` event's own handling, to skip a redundant
+    /// redraw of a frame already on screen (see `pending_appearance`'s own
+    /// `reuse_optimistic` element). Cleared unconditionally the moment any
+    /// `Commit`/`Rollback` event is received, matching or not, so it can
+    /// never be read by any event but the very next one.
+    optimistic_active: Option<String>,
+    /// A generation this receiver has already rendered ahead of Apply --
+    /// see `PrerenderedOverlay`'s own doc. Bounded to one; a fresh
+    /// computation (or a mismatch found at Apply time) always replaces or
+    /// clears whatever was here, never grows.
+    prerendered_overlay: Option<PrerenderedOverlay>,
+}
+
+/// An overlay/settings-panel frame rendered ahead of Apply for a specific,
+/// not-yet-active candidate generation -- see `render_candidate_overlay`'s
+/// own doc for what it does and does not capture. Valid only while every
+/// field here still matches the live state at the moment it would be
+/// used: a mismatch on any one of them (a different generation, a resized
+/// or re-routed surface, or `content_generation` -- everything else
+/// `render_candidate_overlay` read from `self` at compute time) means
+/// something this render depended on may have changed, and the pre-render
+/// must be discarded rather than risk showing stale content.
+struct PrerenderedOverlay {
+    generation: String,
+    route: Route,
+    width: u32,
+    height: u32,
+    content_generation: u64,
+    pixels: Vec<u8>,
+}
+
+/// Whether `candidate` may still be used as-is: an exact match on the
+/// generation it was computed for and on every other input its own
+/// content depended on (route, geometry, and everything the theme itself
+/// does not capture, bundled into `content_generation`). Pure and
+/// independent of `ShellClient`/`RendererCache` so it is trivially
+/// testable without either.
+fn prerendered_overlay_matches(
+    candidate: &PrerenderedOverlay,
+    generation: &str,
+    route: Route,
+    width: u32,
+    height: u32,
+    content_generation: u64,
+) -> bool {
+    candidate.generation == generation
+        && candidate.route == route
+        && candidate.width == width
+        && candidate.height == height
+        && candidate.content_generation == content_generation
 }
 
 #[derive(Default)]
@@ -1296,7 +1370,38 @@ impl ShellClient {
         self.wallpaper_path = fallback_still(Some(snapshot));
         self.wallpaper_generation_root = Some(snapshot.path.clone());
         self.video_display = None;
-        self.renderer.set_appearance(Some(snapshot.clone()));
+        // A pre-render (task: pre-render at prepare time) is bounded to
+        // one slot and always consumed here, matching or not -- a stale
+        // one must never linger for a later, unrelated Apply to trip
+        // over. Only ever adopted when it matches this exact generation,
+        // this exact geometry/route, and `content_generation` (everything
+        // else the render depended on) unchanged since it was computed;
+        // any mismatch falls back to `set_appearance`'s own ordinary
+        // rebuild, exactly as if no pre-render had ever run.
+        let content_generation = self.renderer.content_generation();
+        let prerendered = self.prerendered_overlay.take().filter(|candidate| {
+            self.route == Route::Settings
+                && prerendered_overlay_matches(
+                    candidate,
+                    &snapshot.generation,
+                    Route::Settings,
+                    self.width,
+                    self.height,
+                    content_generation,
+                )
+        });
+        let used_prerender = prerendered.is_some();
+        if let Some(candidate) = prerendered {
+            self.renderer.adopt_prerendered_overlay(
+                Some(snapshot.clone()),
+                Route::Settings,
+                candidate.width,
+                candidate.height,
+                candidate.pixels,
+            );
+        } else {
+            self.renderer.set_appearance(Some(snapshot.clone()));
+        }
         self.dirty = true;
         self.wallpaper.dirty = true;
         let background = self.draw_wallpaper(qh);
@@ -1323,12 +1428,68 @@ impl ShellClient {
             ));
         }
         if background && foreground && flushed {
+            // The durable commit event for this exact generation, once it
+            // arrives, may now skip redrawing entirely and just adopt
+            // this already-flushed frame -- see `optimistic_active`'s own
+            // doc and `pending_appearance`'s `reuse_optimistic` element.
+            self.optimistic_active = Some(snapshot.generation.clone());
             // Named stage marker (task 6.6's own board re-check): how long
             // the Apply tap took to reach a real, flushed frame carrying
             // the new theme -- this is the number the ~100 ms target is
-            // measured against.
-            self.log(&format!("optimistic-apply shown ms={:.1}", elapsed_ms()));
+            // measured against. `prerendered` distinguishes a cache hit
+            // (the panel's own scene reused, not rebuilt) from a full
+            // synchronous rebuild.
+            self.log(&format!(
+                "optimistic-apply shown ms={:.1} prerendered={used_prerender}",
+                elapsed_ms()
+            ));
         }
+    }
+
+    /// The bookkeeping a successful commit/rollback always needs from
+    /// `self.video_display` (already set) and `snapshot` (the event's own
+    /// reported generation), whether this tick actually redrew the frame
+    /// or is reusing one Optimistic Apply already drew and flushed (see
+    /// `pending_appearance`'s own `reuse_optimistic` element). Never
+    /// touches `appearance_pending`, the ack, or the "accepted" log line --
+    /// the two call sites differ only in whether they draw first, and in
+    /// exactly what they log.
+    fn adopt_committed_video_state(&mut self, snapshot: Option<&AppearanceSnapshot>) {
+        self.video_source = self.video_display.as_ref().map(|key| key.path.clone());
+        self.video_start_attempted = self.video_source.is_some();
+        let identity = video_identity(snapshot);
+        self.video_generation = identity.0;
+        self.video_relative = identity.1;
+        self.video_error = None;
+        self.video_submitted = 0;
+        self.video_callbacks = 0;
+        self.video_last_decoded_ms = None;
+        self.video_last_submitted_ms = None;
+        self.video_last_callback_ms = None;
+        let slot = resolve_video_slot(
+            self.video_display.as_ref(),
+            self.video_active.as_ref().map(|video| &video.decoder.key),
+            self.video_candidate.as_ref().map(|video| &video.decoder.key),
+            self.video_previous.as_ref().map(|video| &video.decoder.key),
+        );
+        if slot != VideoSlot::Active {
+            let mut former = self.video_active.take();
+            if let Some(video) = former.as_mut() {
+                video.pause();
+            }
+            self.video_active = match slot {
+                VideoSlot::Candidate => self.video_candidate.take(),
+                VideoSlot::Previous => self.video_previous.take(),
+                VideoSlot::Active | VideoSlot::None => None,
+            };
+            self.video_previous = former;
+        }
+        if let Some(video) = self.video_active.as_mut() {
+            if self.video_covered || self.reduced_motion {
+                video.pause();
+            }
+        }
+        self.video_candidate = None;
     }
 
     fn refresh_route(&mut self, route: Route) {
@@ -1729,7 +1890,15 @@ impl ShellClient {
                     .expect("released wallpaper slot"),
             )
         } else {
-            if self.wallpaper.buffers.len() >= 2 {
+            // Three, not two: an optimistic show (task: Optimistic Apply)
+            // can commit a frame the compositor has not yet released when
+            // the durable commit's own redraw follows moments later --
+            // board evidence, 2026-09-27 ("appearance-commit-rejected
+            // draw-wallpaper-failed" right after a successful optimistic
+            // show). Two buffers were exactly enough for ordinary
+            // prepare/commit pacing; a third absorbs one extra in-flight
+            // frame from the optimistic path without starving anything.
+            if self.wallpaper.buffers.len() >= 3 {
                 self.wallpaper.dirty = true;
                 return false;
             }
@@ -2984,7 +3153,11 @@ fn serve() -> Result<(), String> {
         appearance_socket_path()?,
         std::env::var_os("K230_THEME_DEFAULT_GENERATION").map(PathBuf::from),
     )?;
-    let mut pending_appearance: Option<(AppearanceEvent, Instant, Option<AppearanceSnapshot>)> =
+    // The trailing `bool` is `reuse_optimistic`: true when this event's own
+    // target generation is exactly what an earlier Optimistic Apply already
+    // rendered and flushed, so the deferred completion below skips drawing
+    // again entirely (see `optimistic_active`'s own doc).
+    let mut pending_appearance: Option<(AppearanceEvent, Instant, Option<AppearanceSnapshot>, bool)> =
         None;
     let mut pending_video_prepare: Option<(AppearanceEvent, Instant, VideoKey)> = None;
     let conn = Connection::connect_to_env().map_err(|e| e.to_string())?;
@@ -2993,7 +3166,13 @@ fn serve() -> Result<(), String> {
     let compositor = CompositorState::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let layer_shell = LayerShell::bind(&globals, &qh).map_err(|e| e.to_string())?;
     let shm = Shm::bind(&globals, &qh).map_err(|e| e.to_string())?;
-    let pool = SlotPool::new(568 * 1232 * 4 * 5, &shm).map_err(|e| e.to_string())?;
+    // 6, not 5: the overlay surface's own pool (up to 3 buffers) plus the
+    // wallpaper surface's own (now up to 3, not 2 -- see draw_wallpaper's
+    // own comment). This is only a pre-allocation size hint; the pool
+    // itself grows automatically on any further allocation regardless
+    // (`SlotPool::resize`'s own doc), so an under-estimate here would
+    // cost an extra mmap resize, never a hard failure.
+    let pool = SlotPool::new(568 * 1232 * 4 * 6, &shm).map_err(|e| e.to_string())?;
     let (launch_sender, launch_results) = mpsc::channel();
     let settings_command = std::env::var_os("K230_SETTINGS")
         .map(PathBuf::from)
@@ -3133,6 +3312,8 @@ fn serve() -> Result<(), String> {
         theme_apply_tapped_at: None,
         theme_optimistic_shown_for: None,
         card_appearance_socket: card_appearance_socket_path(),
+        optimistic_active: None,
+        prerendered_overlay: None,
     };
     state.service_view.keyboard_gesture_hint =
         std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1");
@@ -3436,49 +3617,65 @@ fn serve() -> Result<(), String> {
                     }
                     AppearancePhase::Commit | AppearancePhase::Rollback => {
                         let previous = appearance.active().cloned();
-                        let geometry = state
-                            .wallpaper
-                            .configured
-                            .then_some((state.wallpaper.width, state.wallpaper.height));
-                        let video_key =
-                            geometry.and_then(|size| selected_video(event.snapshot.as_ref(), size));
-                        let video_ready = video_key.as_ref().is_none_or(|key| {
-                            state.video_candidate.as_ref().is_some_and(|video| {
-                                &video.decoder.key == key
-                                    && video.frame.is_some()
-                                    && video.error.is_none()
-                            }) || state.video_active.as_ref().is_some_and(|video| {
-                                &video.decoder.key == key
-                                    && video.frame.is_some()
-                                    && video.error.is_none()
-                            }) || state.video_previous.as_ref().is_some_and(|video| {
-                                &video.decoder.key == key && video.frame.is_some()
-                            })
-                        });
-                        let renderable = if !video_ready {
-                            Err("video frame unavailable".into())
-                        } else if video_key.is_some() {
-                            Ok(())
+                        // Reuse an already-shown Optimistic Apply frame
+                        // instead of redrawing an identical one -- see
+                        // `may_reuse_optimistic_frame`'s own doc. Cleared
+                        // unconditionally, matching or not, so it can only
+                        // ever be read by the very next Commit/Rollback
+                        // event, never a later, unrelated one.
+                        let reuse_optimistic = may_reuse_optimistic_frame(
+                            event.phase,
+                            state.optimistic_active.as_deref(),
+                            event.snapshot.as_ref().map(|snapshot| snapshot.generation.as_str()),
+                        );
+                        state.optimistic_active = None;
+                        if reuse_optimistic {
+                            pending_appearance = Some((event, Instant::now(), previous, true));
                         } else {
-                            appearance_renderable(
-                                event.snapshot.as_ref(),
-                                &mut state.background_cache,
-                                geometry,
-                            )
-                        };
-                        if let Err(error) = renderable {
-                            state.log(&format!("appearance-commit-rejected {error}"));
-                            let _ = appearance.respond(event, false);
-                        } else {
-                            state.wallpaper_path = fallback_still(event.snapshot.as_ref());
-                            state.wallpaper_generation_root =
-                                event.snapshot.as_ref().map(|snapshot| snapshot.path.clone());
-                            state.video_display = video_key;
-                            state.renderer.set_appearance(event.snapshot.clone());
-                            state.appearance_pending = true;
-                            state.dirty = true;
-                            state.wallpaper.dirty = true;
-                            pending_appearance = Some((event, Instant::now(), previous));
+                            let geometry = state
+                                .wallpaper
+                                .configured
+                                .then_some((state.wallpaper.width, state.wallpaper.height));
+                            let video_key = geometry
+                                .and_then(|size| selected_video(event.snapshot.as_ref(), size));
+                            let video_ready = video_key.as_ref().is_none_or(|key| {
+                                state.video_candidate.as_ref().is_some_and(|video| {
+                                    &video.decoder.key == key
+                                        && video.frame.is_some()
+                                        && video.error.is_none()
+                                }) || state.video_active.as_ref().is_some_and(|video| {
+                                    &video.decoder.key == key
+                                        && video.frame.is_some()
+                                        && video.error.is_none()
+                                }) || state.video_previous.as_ref().is_some_and(|video| {
+                                    &video.decoder.key == key && video.frame.is_some()
+                                })
+                            });
+                            let renderable = if !video_ready {
+                                Err("video frame unavailable".into())
+                            } else if video_key.is_some() {
+                                Ok(())
+                            } else {
+                                appearance_renderable(
+                                    event.snapshot.as_ref(),
+                                    &mut state.background_cache,
+                                    geometry,
+                                )
+                            };
+                            if let Err(error) = renderable {
+                                state.log(&format!("appearance-commit-rejected {error}"));
+                                let _ = appearance.respond(event, false);
+                            } else {
+                                state.wallpaper_path = fallback_still(event.snapshot.as_ref());
+                                state.wallpaper_generation_root =
+                                    event.snapshot.as_ref().map(|snapshot| snapshot.path.clone());
+                                state.video_display = video_key;
+                                state.renderer.set_appearance(event.snapshot.clone());
+                                state.appearance_pending = true;
+                                state.dirty = true;
+                                state.wallpaper.dirty = true;
+                                pending_appearance = Some((event, Instant::now(), previous, false));
+                            }
                         }
                     }
                 }
@@ -3627,124 +3824,97 @@ fn serve() -> Result<(), String> {
         }
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
-        if let Some((event, started, previous)) = pending_appearance.take() {
-            // Neither `draw_wallpaper()` nor `draw()` require their own
-            // outstanding frame callback to have fired any more (see
-            // `redraw_entry_ready`'s own doc): either surface can be fully
-            // occluded -- the background layer by a maximized app or the
-            // card deck's own backdrop, the overlay/settings layer by
-            // nothing more than an earlier redraw of itself the
-            // compositor has not yet acked -- and a compositor is not
-            // obligated to keep sending frame-done callbacks for a
-            // surface nothing is presently compositing. Mirror that same
-            // relaxed condition here so this readiness check does not
-            // itself keep the transaction pending, waiting on a signal
-            // that may never arrive (board evidence, 2026-09-27:
-            // Optimistic Apply's own one-shot check hit exactly this,
-            // with `overlay-frame-pending=true` while a free buffer slot
-            // was available).
-            let overlay_ready = state.layer.is_none() || state.configured;
-            let ready = state.wallpaper.configured && overlay_ready;
-            if !ready && started.elapsed() < Duration::from_millis(1400) {
-                pending_appearance = Some((event, started, previous));
-            } else {
-                let accepted = if ready {
-                    state.appearance_pending = false;
-                    let background = state.draw_wallpaper(&qh);
-                    if !background {
-                        state.log("appearance-commit-rejected draw-wallpaper-failed");
-                    }
-                    let foreground = state.layer.is_none() || state.draw(&qh);
-                    if background && !foreground {
-                        state.log("appearance-commit-rejected draw-failed");
-                    }
-                    state.appearance_pending = true;
-                    let flushed = queue.flush().is_ok();
-                    if background && foreground && !flushed {
-                        state.log("appearance-commit-rejected flush-failed");
-                    }
-                    let accepted = background && foreground && flushed;
-                    if accepted {
-                        // Named stage marker (task 1): the redrawn/flushed
-                        // frame carrying the new theme's wallpaper has just
-                        // been submitted to the compositor -- this is the
-                        // Rust-shell side of "tap to visible", paired with
-                        // "wallpaper-commit"/"commit" a real frame-done
-                        // callback later confirms was actually presented.
-                        state.log("appearance-commit-accepted");
-                    }
-                    accepted
-                } else {
-                    state.log(&format!(
-                        "appearance-commit-rejected ready-timeout \
-                         wallpaper-configured={} wallpaper-frame-pending={} \
-                         overlay-layer-present={} overlay-configured={} overlay-frame-pending={}",
-                        state.wallpaper.configured,
-                        state.wallpaper.frame_pending,
-                        state.layer.is_some(),
-                        state.configured,
-                        state.frame_pending,
-                    ));
-                    false
-                };
-                if !accepted {
-                    state.wallpaper_path = fallback_still(previous.as_ref());
-                    state.wallpaper_generation_root =
-                        previous.as_ref().map(|snapshot| snapshot.path.clone());
-                    state.video_display = selected_video(
-                        previous.as_ref(),
-                        (state.wallpaper.width, state.wallpaper.height),
-                    );
-                    state.renderer.set_appearance(previous);
-                    state.dirty = true;
-                    state.wallpaper.dirty = true;
-                    state.video_candidate = None;
-                } else {
-                    state.video_source = state.video_display.as_ref().map(|key| key.path.clone());
-                    state.video_start_attempted = state.video_source.is_some();
-                    let identity = video_identity(event.snapshot.as_ref());
-                    state.video_generation = identity.0;
-                    state.video_relative = identity.1;
-                    state.video_error = None;
-                    state.video_submitted = 0;
-                    state.video_callbacks = 0;
-                    state.video_last_decoded_ms = None;
-                    state.video_last_submitted_ms = None;
-                    state.video_last_callback_ms = None;
-                    let slot = resolve_video_slot(
-                        state.video_display.as_ref(),
-                        state.video_active.as_ref().map(|video| &video.decoder.key),
-                        state
-                            .video_candidate
-                            .as_ref()
-                            .map(|video| &video.decoder.key),
-                        state
-                            .video_previous
-                            .as_ref()
-                            .map(|video| &video.decoder.key),
-                    );
-                    if slot != VideoSlot::Active {
-                        let mut former = state.video_active.take();
-                        if let Some(video) = former.as_mut() {
-                            video.pause();
-                        }
-                        state.video_active = match slot {
-                            VideoSlot::Candidate => state.video_candidate.take(),
-                            VideoSlot::Previous => state.video_previous.take(),
-                            VideoSlot::Active | VideoSlot::None => None,
-                        };
-                        state.video_previous = former;
-                    }
-                    if let Some(video) = state.video_active.as_mut() {
-                        if state.video_covered || state.reduced_motion {
-                            video.pause();
-                        }
-                    }
-                    state.video_candidate = None;
-                }
+        if let Some((event, started, previous, reuse_optimistic)) = pending_appearance.take() {
+            if reuse_optimistic {
+                // Already drawn and flushed by Optimistic Apply -- see
+                // `optimistic_active`'s own doc. Nothing left to render;
+                // only the bookkeeping and the ack, still only sent after
+                // that already-real frame, never before one.
+                state.adopt_committed_video_state(event.snapshot.as_ref());
                 state.appearance_pending = false;
-                if let Err(error) = appearance.respond(event, accepted) {
+                state.log("appearance-commit-accepted reused=optimistic");
+                if let Err(error) = appearance.respond(event, true) {
                     state.log(&format!("appearance-ack-failed {error}"));
+                }
+            } else {
+                // Neither `draw_wallpaper()` nor `draw()` require their own
+                // outstanding frame callback to have fired any more (see
+                // `redraw_entry_ready`'s own doc): either surface can be fully
+                // occluded -- the background layer by a maximized app or the
+                // card deck's own backdrop, the overlay/settings layer by
+                // nothing more than an earlier redraw of itself the
+                // compositor has not yet acked -- and a compositor is not
+                // obligated to keep sending frame-done callbacks for a
+                // surface nothing is presently compositing. Mirror that same
+                // relaxed condition here so this readiness check does not
+                // itself keep the transaction pending, waiting on a signal
+                // that may never arrive (board evidence, 2026-09-27:
+                // Optimistic Apply's own one-shot check hit exactly this,
+                // with `overlay-frame-pending=true` while a free buffer slot
+                // was available).
+                let overlay_ready = state.layer.is_none() || state.configured;
+                let ready = state.wallpaper.configured && overlay_ready;
+                if !ready && started.elapsed() < Duration::from_millis(1400) {
+                    pending_appearance = Some((event, started, previous, false));
+                } else {
+                    let accepted = if ready {
+                        state.appearance_pending = false;
+                        let background = state.draw_wallpaper(&qh);
+                        if !background {
+                            state.log("appearance-commit-rejected draw-wallpaper-failed");
+                        }
+                        let foreground = state.layer.is_none() || state.draw(&qh);
+                        if background && !foreground {
+                            state.log("appearance-commit-rejected draw-failed");
+                        }
+                        state.appearance_pending = true;
+                        let flushed = queue.flush().is_ok();
+                        if background && foreground && !flushed {
+                            state.log("appearance-commit-rejected flush-failed");
+                        }
+                        let accepted = background && foreground && flushed;
+                        if accepted {
+                            // Named stage marker (task 1): the redrawn/flushed
+                            // frame carrying the new theme's wallpaper has just
+                            // been submitted to the compositor -- this is the
+                            // Rust-shell side of "tap to visible", paired with
+                            // "wallpaper-commit"/"commit" a real frame-done
+                            // callback later confirms was actually presented.
+                            state.log("appearance-commit-accepted");
+                        }
+                        accepted
+                    } else {
+                        state.log(&format!(
+                            "appearance-commit-rejected ready-timeout \
+                             wallpaper-configured={} wallpaper-frame-pending={} \
+                             overlay-layer-present={} overlay-configured={} overlay-frame-pending={}",
+                            state.wallpaper.configured,
+                            state.wallpaper.frame_pending,
+                            state.layer.is_some(),
+                            state.configured,
+                            state.frame_pending,
+                        ));
+                        false
+                    };
+                    if !accepted {
+                        state.wallpaper_path = fallback_still(previous.as_ref());
+                        state.wallpaper_generation_root =
+                            previous.as_ref().map(|snapshot| snapshot.path.clone());
+                        state.video_display = selected_video(
+                            previous.as_ref(),
+                            (state.wallpaper.width, state.wallpaper.height),
+                        );
+                        state.renderer.set_appearance(previous);
+                        state.dirty = true;
+                        state.wallpaper.dirty = true;
+                        state.video_candidate = None;
+                    } else {
+                        state.adopt_committed_video_state(event.snapshot.as_ref());
+                    }
+                    state.appearance_pending = false;
+                    if let Err(error) = appearance.respond(event, accepted) {
+                        state.log(&format!("appearance-ack-failed {error}"));
+                    }
                 }
             }
         }
@@ -3792,6 +3962,81 @@ fn serve() -> Result<(), String> {
             }
         }
         queue.flush().map_err(|e| e.to_string())?;
+        // Optimistic Apply's own pre-render (task: pre-render at prepare
+        // time so Apply itself is just an attach+commit). Deliberately
+        // placed *after* this tick's own flush above, never before it:
+        // the render below is real, synchronous Cairo work -- the same
+        // ~200ms cost Apply's own optimistic show pays without this --
+        // and running it earlier in this same iteration would delay
+        // sending whatever this tick's own draw already queued,
+        // including the very Preview-page frame that makes this
+        // eligible in the first place. It only ever targets the Preview
+        // page's own currently-loaded candidate, never a merely-warmed
+        // neighbour still being browsed past, and is skipped entirely
+        // while an Activate is already in flight (nothing to gain, and
+        // the CPU is better spent letting that transaction settle).
+        if state.route == Route::Settings
+            && state.configured
+            && state.theme_view.page == ThemePage::Preview
+            && pending_appearance.is_none()
+            && !matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }))
+        {
+            if let Some(generation) = state
+                .theme_view
+                .preview
+                .as_ref()
+                .map(|preview| preview.generation.clone())
+            {
+                let content_generation = state.renderer.content_generation();
+                let fresh = state.prerendered_overlay.as_ref().is_some_and(|candidate| {
+                    prerendered_overlay_matches(
+                        candidate,
+                        &generation,
+                        Route::Settings,
+                        state.width,
+                        state.height,
+                        content_generation,
+                    )
+                });
+                // Only the receiver's own already-`prepare`d generation --
+                // the same precondition Optimistic Apply itself checks --
+                // is eligible: this never triggers preparing a cold
+                // generation early, only pre-rendering one this process
+                // already validated and staged.
+                let prepared_snapshot = (!fresh)
+                    .then(|| appearance.prepared())
+                    .flatten()
+                    .filter(|snapshot| snapshot.generation == generation)
+                    .cloned();
+                if let Some(snapshot) = prepared_snapshot {
+                    match state.renderer.render_candidate_overlay(
+                        Some(&snapshot),
+                        Route::Settings,
+                        state.width,
+                        state.height,
+                        &state.apps,
+                    ) {
+                        Ok(pixels) => {
+                            state.prerendered_overlay = Some(PrerenderedOverlay {
+                                generation: generation.clone(),
+                                route: Route::Settings,
+                                width: state.width,
+                                height: state.height,
+                                content_generation,
+                                pixels,
+                            });
+                            state.log(&format!(
+                                "optimistic-apply prerendered generation={}",
+                                &generation[..12.min(generation.len())]
+                            ));
+                        }
+                        Err(error) => {
+                            state.log(&format!("optimistic-apply prerender-failed {error}"));
+                        }
+                    }
+                }
+            }
+        }
         let Some(read_guard) = queue.prepare_read() else {
             continue;
         };
@@ -4199,6 +4444,107 @@ mod route_tests {
         // `theme_optimistic_shown_for` to `None`, but even without that
         // reset this check alone already treats a new id as due).
         assert!(optimistic_apply_due(Some(7), Some(8)));
+    }
+
+    #[test]
+    fn may_reuse_optimistic_frame_only_for_a_commit_matching_exactly() {
+        // The ordinary case: a Commit for exactly the generation
+        // Optimistic Apply already showed.
+        assert!(may_reuse_optimistic_frame(
+            AppearancePhase::Commit,
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+        ));
+        // Nothing was ever shown optimistically: never reused.
+        assert!(!may_reuse_optimistic_frame(
+            AppearancePhase::Commit,
+            None,
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+        ));
+        // A stale/mismatched generation (some other transaction's own
+        // commit landed instead): never reused.
+        assert!(!may_reuse_optimistic_frame(
+            AppearancePhase::Commit,
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+            Some("bbbbbbbbbbbbbbbbbbbbbbbb"),
+        ));
+        // A Rollback can never reuse the optimistic frame, even if its own
+        // (synthetic, would-never-happen) generation happened to match --
+        // a rollback's own target is by definition the previous
+        // generation, not the one just optimistically shown.
+        assert!(!may_reuse_optimistic_frame(
+            AppearancePhase::Rollback,
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+            Some("aaaaaaaaaaaaaaaaaaaaaaaa"),
+        ));
+        // Neither side names a generation (a rollback to the packaged
+        // default): `None == None` is never treated as a match.
+        assert!(!may_reuse_optimistic_frame(AppearancePhase::Commit, None, None));
+    }
+
+    #[test]
+    fn prerendered_overlay_matches_requires_every_field_to_agree() {
+        let candidate = PrerenderedOverlay {
+            generation: "aaaaaaaaaaaaaaaaaaaaaaaa".into(),
+            route: Route::Settings,
+            width: 568,
+            height: 1232,
+            content_generation: 3,
+            pixels: Vec::new(),
+        };
+        assert!(prerendered_overlay_matches(
+            &candidate,
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            Route::Settings,
+            568,
+            1232,
+            3
+        ));
+        // A different generation (a different theme entirely): no match.
+        assert!(!prerendered_overlay_matches(
+            &candidate,
+            "bbbbbbbbbbbbbbbbbbbbbbbb",
+            Route::Settings,
+            568,
+            1232,
+            3
+        ));
+        // A different route (page change): no match.
+        assert!(!prerendered_overlay_matches(
+            &candidate,
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            Route::Drawer,
+            568,
+            1232,
+            3
+        ));
+        // A different geometry (resize/rotate): no match.
+        assert!(!prerendered_overlay_matches(
+            &candidate,
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            Route::Settings,
+            600,
+            1232,
+            3
+        ));
+        assert!(!prerendered_overlay_matches(
+            &candidate,
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            Route::Settings,
+            568,
+            1200,
+            3
+        ));
+        // A stale content_generation (theme_view/services/pressed/
+        // thumbnails/preview changed since this was computed): no match.
+        assert!(!prerendered_overlay_matches(
+            &candidate,
+            "aaaaaaaaaaaaaaaaaaaaaaaa",
+            Route::Settings,
+            568,
+            1232,
+            4
+        ));
     }
 
     #[test]
