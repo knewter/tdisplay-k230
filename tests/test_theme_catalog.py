@@ -4,8 +4,10 @@ from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 from pathlib import Path
+import stat
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -13,6 +15,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import theme_catalog as catalog
 from theme_sources import source_digest
 from theme_transaction import activate_generation, TransactionError
+
+
+def fake_pkill(returncode: int, log: Path):
+    """A tiny script standing in for procps' pkill, recording its argv --
+    same fixture as tests/test_handheld_keyboard_theme.py's own."""
+    script = log.parent / "pkill"
+    script.write_text(
+        "#!/bin/sh\n"
+        f"printf '%s\\n' \"$@\" >> {log}\n"
+        f"exit {returncode}\n")
+    script.chmod(script.stat().st_mode | stat.S_IEXEC)
+    return script
 
 
 COLORS = ('background="#101820"\nforeground="#e0e5e8"\naccent="#778899"\n'
@@ -40,12 +54,16 @@ class CatalogTests(unittest.TestCase):
     def entries(self):
         return catalog.discover(self.user, self.builtins)
 
-    def run_cli(self, *args):
+    def run_cli(self, *args, keyboard_runtime_dir=None, pkill=None):
         out, err = io.StringIO(), io.StringIO()
+        prefix = ["--user-themes", str(self.user), "--builtins", str(self.builtins),
+                  "--state-root", str(self.state), "--socket", str(self.base / "missing.sock")]
+        if keyboard_runtime_dir is not None:
+            prefix += ["--keyboard-runtime-dir", str(keyboard_runtime_dir)]
+        if pkill is not None:
+            prefix += ["--pkill", str(pkill)]
         with redirect_stdout(out), redirect_stderr(err):
-            status = catalog.main(["--user-themes", str(self.user), "--builtins", str(self.builtins),
-                                   "--state-root", str(self.state), "--socket", str(self.base / "missing.sock"),
-                                   *args])
+            status = catalog.main(prefix + list(args))
         return status, json.loads(out.getvalue() if status == 0 else err.getvalue())
 
     def test_discovery_is_metadata_only_stable_and_keeps_duplicate_origins(self):
@@ -152,6 +170,46 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(phases, ["prepare", "commit"])
         status, listing = self.run_cli("list", "--json")
         self.assertEqual(listing["active"], {"id": entry.id, "generation": candidate["generation"]})
+
+    def test_activate_reports_keyboard_sync_as_deferred_but_it_still_completes(self):
+        # Task 4: the keyboard restart must not block this response (the
+        # JSON shows "deferred" immediately), but a bare CLI invocation
+        # exits `python3 theme_catalog.py` via a non-daemon thread, and the
+        # interpreter already waits for a non-daemon thread at process exit
+        # -- so by the time `run_cli` returns, the deferred work is done.
+        theme(self.user / "night")
+        entry = self.entries()[0]
+        _, candidate = self.run_cli("preview", entry.id)
+        runtime = self.base / "runtime"
+        runtime.mkdir()
+        (runtime / "k230-keyboard-supervised").write_text("1")
+        log = runtime / "pkill.log"
+        script = fake_pkill(0, log)
+
+        def commit(generation, **kwargs):
+            activate_generation(generation, **kwargs, transport=lambda *_: None)
+
+        with mock.patch.object(catalog, "activate_generation", side_effect=commit):
+            status, result = self.run_cli(
+                "activate", entry.id, "--expected-generation", candidate["generation"],
+                keyboard_runtime_dir=runtime, pkill=script)
+        self.assertEqual(status, 0, result)
+        self.assertEqual(result["keyboard_appearance"], {"state": "deferred"})
+        # The real, eventual outcome: a supervised keyboard's pkill was
+        # actually invoked, and its colours were actually published --
+        # proving the deferred thread's own work still ran to completion,
+        # not just that the response returned quickly. A *real* subprocess
+        # invocation would already have this done by the time `run_cli`
+        # returns (Python waits for a non-daemon thread at process exit);
+        # this in-process test calls `main()` directly with no such exit to
+        # wait on, so it polls instead.
+        deadline = time.monotonic() + 2.0
+        while not log.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        self.assertIn("wvkbd-mobintl", log.read_text())
+        active = self.state / "keyboard-appearance/active"
+        self.assertTrue(active.is_symlink())
+        self.assertTrue((active / "wvkbd.args").is_file())
 
     def test_commit_failure_rolls_back_and_reports_failure(self):
         source = theme(self.user / "night")

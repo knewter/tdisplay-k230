@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import threading
 
 import theme_activate as activation
 from theme_transaction import TransactionError, _pointer, activate_generation, prepare_only
@@ -224,6 +225,26 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _deferred_keyboard_sync(state_root: Path, generation_name: str, runtime_dir: Path,
+                            pkill_path: str) -> None:
+    """Background-thread body for the keyboard recolour/restart (task 4).
+
+    `keyboard_appearance.sync_and_restart` already catches and reports every
+    failure of its own as a `{"state": ...}` dict rather than raising (see
+    its own doc); this wrapper only guards against something genuinely
+    unexpected so a bug here can never surface as an unhandled exception in
+    a background thread (which Python would otherwise print to stderr and
+    silently drop with no effect on the caller either way, but never as a
+    crash of the interpreter that started it).
+    """
+    try:
+        keyboard_appearance.sync_and_restart(
+            state_root, expected_generation=generation_name,
+            runtime_dir=runtime_dir, pkill_path=pkill_path)
+    except Exception as error:  # noqa: BLE001 - last-resort background-thread guard
+        print(f"k230-theme: deferred keyboard sync failed: {error}", file=sys.stderr)
+
+
 def handle(args) -> tuple[dict, int]:
     """Run one already-parsed request and return `(result, exit_code)`.
 
@@ -272,9 +293,33 @@ def handle(args) -> tuple[dict, int]:
                     preference=preference,
                     endpoints=(args.rust_socket, args.deck_socket)
                     if args.rust_socket is not None else None)
-                result["keyboard_appearance"] = keyboard_appearance.sync_and_restart(
-                    args.state_root, expected_generation=generation.name,
-                    runtime_dir=args.keyboard_runtime_dir, pkill_path=args.pkill)
+                # Task 4 (visible side effects off the critical path): the
+                # panel is already showing the new theme by this point --
+                # activate_generation() above only returns after both
+                # receivers' two-phase commit is acknowledged. wvkbd has no
+                # live-recolor IPC (see keyboard_appearance.py's own doc), so
+                # applying its new colours means restarting the process; that
+                # restart has no bearing on whether *this* activation
+                # succeeded (keyboard_appearance.py's own docstring: failure
+                # here "never rolls back or fails the shell's own
+                # acknowledged generation"), so it does not need to complete
+                # before this response is observable. Run it on a background
+                # thread rather than inline: `theme-helper.service`'s
+                # request loop (tools/theme_helperd.py) sends its reply the
+                # moment `handle()` returns, independent of this thread, so
+                # the daemon-served chooser path sees this restart's cost
+                # removed entirely. A non-daemon thread is used deliberately
+                # so a bare `python3 theme_catalog.py activate` (or the
+                # client's own in-process fallback) is unaffected: the
+                # interpreter already waits for non-daemon threads at exit,
+                # so that path's total wall-clock time is unchanged from
+                # before this reordering -- only the daemon path's *observed*
+                # latency (the client's read of the response) improves.
+                result["keyboard_appearance"] = {"state": "deferred"}
+                threading.Thread(
+                    target=_deferred_keyboard_sync,
+                    args=(args.state_root, generation.name, args.keyboard_runtime_dir, args.pkill),
+                ).start()
                 result["activated"] = True
         return result, 0
     except (OSError, ValueError, activation.ThemeError, TransactionError,
