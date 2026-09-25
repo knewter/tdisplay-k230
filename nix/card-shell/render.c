@@ -201,6 +201,51 @@ void card_brush_solid_color(const struct card_brush *brush, float out[4]) {
 	out[2] = (color & 255) / 255.0f;
 	out[3] = ((color >> 24) & 255) / 255.0f * (float)brush->alpha;
 }
+/* Paints brush's linear gradient (or flat colour, for a one-stop brush) into
+ * the current cairo path/clip. Shared by the plain gradient buffer and the
+ * rounded card plate below so the two never drift in how a brush renders. */
+static bool paint_brush_pattern(cairo_t *cr, const struct card_brush *brush,
+		int width, int height) {
+	/* CSS-like angle: zero points up and 90 degrees points right. */
+	double radians = brush->angle_degrees * 3.14159265358979323846 / 180.0;
+	double dx = sin(radians), dy = -cos(radians);
+	double span = fabs(dx) * width + fabs(dy) * height;
+	double cx = width / 2.0, cy = height / 2.0;
+	cairo_pattern_t *pattern = cairo_pattern_create_linear(
+		cx - dx * span / 2, cy - dy * span / 2,
+		cx + dx * span / 2, cy + dy * span / 2);
+	if (cairo_pattern_status(pattern) != CAIRO_STATUS_SUCCESS) {
+		cairo_pattern_destroy(pattern);
+		return false;
+	}
+	for (size_t i = 0; i < brush->count; ++i) {
+		uint32_t color = brush->stops[i].argb;
+		cairo_pattern_add_color_stop_rgba(pattern, brush->stops[i].offset,
+			((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0,
+			(color & 255) / 255.0,
+			((color >> 24) & 255) / 255.0 * brush->alpha);
+	}
+	cairo_set_source(cr, pattern);
+	cairo_paint(cr);
+	bool painted = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+	cairo_pattern_destroy(pattern);
+	return painted;
+}
+/* Outer-corner rounded rectangle path, radius clamped to half the shorter
+ * side so a small plate never self-intersects. */
+static void rounded_rect_path(cairo_t *cr, double width, double height, double radius) {
+	const double pi = 3.14159265358979323846;
+	double r = radius;
+	if (r * 2 > width) r = width / 2.0;
+	if (r * 2 > height) r = height / 2.0;
+	if (r < 0) r = 0;
+	cairo_new_sub_path(cr);
+	cairo_arc(cr, width - r, r, r, -pi / 2, 0);
+	cairo_arc(cr, width - r, height - r, r, 0, pi / 2);
+	cairo_arc(cr, r, height - r, r, pi / 2, pi);
+	cairo_arc(cr, r, r, r, pi, 3 * pi / 2);
+	cairo_close_path(cr);
+}
 struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height) {
 	if (!tree || !brush || !brush->count || width <= 0 || height <= 0 ||
@@ -218,29 +263,51 @@ struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
 		cairo_destroy(cr); cairo_surface_destroy(b->surface); free(b); return NULL;
 	}
-	/* CSS-like angle: zero points up and 90 degrees points right. */
-	double radians = brush->angle_degrees * 3.14159265358979323846 / 180.0;
-	double dx = sin(radians), dy = -cos(radians);
-	double span = fabs(dx) * width + fabs(dy) * height;
-	double cx = width / 2.0, cy = height / 2.0;
-	cairo_pattern_t *pattern = cairo_pattern_create_linear(
-		cx - dx * span / 2, cy - dy * span / 2,
-		cx + dx * span / 2, cy + dy * span / 2);
-	if (cairo_pattern_status(pattern) != CAIRO_STATUS_SUCCESS) {
-		cairo_pattern_destroy(pattern); cairo_destroy(cr);
+	bool painted = paint_brush_pattern(cr, brush, width, height);
+	cairo_destroy(cr);
+	if (!painted) { cairo_surface_destroy(b->surface); free(b); return NULL; }
+	cairo_surface_flush(b->surface);
+	b->gradient_bytes = bytes;
+	wlr_buffer_init(&b->base, &impl, width, height);
+	gradient_bytes += bytes;
+	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
+	wlr_buffer_drop(&b->base);
+	return node;
+}
+struct wlr_scene_buffer *card_plate_scene(struct wlr_scene_tree *tree,
+		const struct card_brush *brush, int width, int height, double radius,
+		const float stroke_rgba[4], double stroke_width) {
+	if (!tree || !brush || !brush->count || width <= 0 || height <= 0 ||
+		width > 4096 || height > 4096 || (size_t)width * height > 4u * 1024u * 1024u)
+		return NULL;
+	size_t bytes = (size_t)width * (size_t)height * 4;
+	if (bytes > GRADIENT_BYTES_LIMIT - gradient_bytes) return NULL;
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b) return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(b->surface); free(b); return NULL;
 	}
-	for (size_t i = 0; i < brush->count; ++i) {
-		uint32_t color = brush->stops[i].argb;
-		cairo_pattern_add_color_stop_rgba(pattern, brush->stops[i].offset,
-			((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0,
-			(color & 255) / 255.0,
-			((color >> 24) & 255) / 255.0 * brush->alpha);
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr); cairo_surface_destroy(b->surface); free(b); return NULL;
 	}
-	cairo_set_source(cr, pattern);
-	cairo_paint(cr);
-	bool painted = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
-	cairo_pattern_destroy(pattern);
+	cairo_save(cr);
+	rounded_rect_path(cr, width, height, radius);
+	cairo_clip(cr);
+	bool painted = paint_brush_pattern(cr, brush, width, height);
+	cairo_restore(cr);
+	/* Stroked on the same path with double the visible width: cairo centers
+	 * a stroke on its path, so only the inner half lands inside the buffer
+	 * and the outer half is clipped away by the surface edge, leaving a
+	 * clean inset rim rather than a hard-edged ring. */
+	if (painted && stroke_width > 0 && stroke_rgba && stroke_rgba[3] > 0) {
+		rounded_rect_path(cr, width, height, radius);
+		cairo_set_line_width(cr, stroke_width * 2);
+		cairo_set_source_rgba(cr, stroke_rgba[0], stroke_rgba[1], stroke_rgba[2], stroke_rgba[3]);
+		cairo_stroke(cr);
+		painted = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+	}
 	cairo_destroy(cr);
 	if (!painted) { cairo_surface_destroy(b->surface); free(b); return NULL; }
 	cairo_surface_flush(b->surface);

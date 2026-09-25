@@ -34,6 +34,14 @@ struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char lette
 		uint32_t bg_argb, uint32_t fg_argb);
 struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height);
+/* A rounded-rect card plate: the brush fill clipped to a rounded rectangle,
+ * with an optional stroked rim (stroke_rgba[3] <= 0 or stroke_width <= 0
+ * skips the stroke). Used for both the live-card bezel and the non-live
+ * placeholder shape, so a themed brush colours either one (webOS-style card
+ * fix: no full-bleed coloured plate behind a live snapshot). */
+struct wlr_scene_buffer *card_plate_scene(struct wlr_scene_tree *tree,
+		const struct card_brush *brush, int width, int height, double radius,
+		const float stroke_rgba[4], double stroke_width);
 void card_brush_solid_color(const struct card_brush *brush, float out[4]);
 struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height);
 size_t card_scaled_buffer_bytes(void);
