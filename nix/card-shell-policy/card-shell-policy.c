@@ -8,7 +8,7 @@ static bool valid_config(const struct cs_config *c) {
     if (!c) return false;
     const double values[]={c->width,c->height,c->top_reserved,c->bottom_reserved,
         c->inset,c->gap,c->title_height,c->footer_height,c->card_width,c->card_height,
-        c->entry_card_width,c->entry_card_height,
+        c->card_top_offset,c->entry_card_width,c->entry_card_height,
         c->edge_band,c->entry_distance,c->tap_slop,
         c->throw_distance,c->throw_speed,c->entry_select_fraction,c->entry_flick_speed};
     for (size_t i=0;i<sizeof(values)/sizeof(values[0]);i++)
@@ -19,6 +19,7 @@ static bool valid_config(const struct cs_config *c) {
         c->title_height>=56 && c->card_width>=56 && c->card_height>=56 &&
         c->card_width<=c->width-2*c->inset &&
         c->card_height<=available-c->title_height-c->footer_height-2*c->inset &&
+        c->card_top_offset+c->card_height<=available-c->title_height-c->footer_height &&
         c->entry_card_width>=56 && c->entry_card_height>=56 &&
         c->entry_card_width<=c->width-2*c->inset &&
         c->entry_card_height<=available-c->title_height-c->footer_height-2*c->inset &&
@@ -29,16 +30,31 @@ static bool valid_config(const struct cs_config *c) {
         c->throw_distance>c->tap_slop && c->throw_speed>0 &&
         c->close_timeout_ms>0 && c->close_timeout_ms<=60000;
 }
+/* Card header layout, a rendering-only concern (icon+app-name, drawn by
+ * adapter.c/render.c above each card) that this file does not otherwise
+ * track -- but cs_default_config's own card_top_offset below must still
+ * center the (header+card) block using the SAME two numbers adapter.c's
+ * runtime recompute uses, or the two would visibly disagree. Keep both in
+ * sync by hand, the same "duplicated constant, commented" pattern already
+ * used for entry_card_height's .72 fraction (adapter.c's prepare_impl). */
+#define CS_CARD_HEADER_H 44.0
+#define CS_CARD_HEADER_GAP 14.0
 struct cs_config cs_default_config(double width,double height) {
     return (struct cs_config){.width=width,.height=height,.top_reserved=56,
         .inset=24,.gap=10,.title_height=100,.footer_height=56,
-        /* webOS-fan overview: ~46% of the panel width per card (2-3 visible
-         * at once, per docs/design/shell-ux-critique.md #3 and the user's
-         * chosen direction over a wider single-card carousel), close to the
-         * panel's own portrait aspect so a card's aspect-fit live content
-         * fills its slot with little letterboxing. The slot leaves room
-         * above it for adapter.c's icon+app-name header. */
-        .card_width=.5*(width-48),.card_height=.56*(height-56-100-56-48),
+        /* webOS-fan overview, revised 2026-09-25 after board/real-glass
+         * review: a center card about half the panel's width and 60% of
+         * its height (55-65% requested), with clear neighbours either
+         * side -- substantially larger than the original pass, which left
+         * about half the panel empty below the cards. */
+        .card_width=.5*width,.card_height=.6*height,
+        /* Vertically centers (header+card) in the space between the title
+         * and the footer (where the "Swipe up for apps" hint sits),
+         * instead of sitting flush under the title -- see
+         * card_top_offset's own doc comment in the header. */
+        .card_top_offset=
+            ((height-56-100-56)-(.6*height+CS_CARD_HEADER_GAP+CS_CARD_HEADER_H))/2
+            +CS_CARD_HEADER_GAP+CS_CARD_HEADER_H,
         /* The direct-switch (bottom-edge) entry gesture's own target slot:
          * intentionally the pre-fan geometry, unaffected by card_width
          * above -- see cs_entry_target_rect. */
@@ -225,7 +241,7 @@ struct cs_rect cs_card_rect(const struct cs_policy *p,size_t index) {
     }
     return (struct cs_rect){
         .x=(p->config.width-p->config.card_width)/2+offset*pitch+translation,
-        .y=p->config.top_reserved+p->config.title_height+p->config.inset+
+        .y=p->config.top_reserved+p->config.title_height+p->config.card_top_offset+
             (p->cards[index].id==p->pressed_id && p->axis==CS_AXIS_VERTICAL ? p->dy : 0),
         .width=p->config.card_width,.height=p->config.card_height};
 }
@@ -811,15 +827,22 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
 	double target_anchor_x=target_x+anchor_x*target_width;
 	double shift=source_anchor_x-target_anchor_x;
 	if (!isfinite(shift)) return false;
-	/* cs_entry_visual_rect blends toward the OVERVIEW's own card_height
-	 * (which may differ from target_height here -- see cs_entry_target_rect
-	 * vs cs_card_rect), reusing the same `progress` this target_height
-	 * established. shift_y is the correction that keeps the anchor point
-	 * exactly under the finger despite that height mismatch: without it,
-	 * the visual interpolation implicitly assumes the blend target's height
-	 * equals target_height, which is no longer guaranteed once the overview
-	 * and the direct-switch entry slot are sized independently. */
-	double shift_y=anchor*(target_height-p->config.card_height);
+	/* cs_entry_visual_rect blends toward the OVERVIEW's own card rect
+	 * (cs_card_rect: card_top_offset/card_height), which may differ from
+	 * this call's target_y/target_height (cs_entry_target_rect: inset/
+	 * entry_card_height) in BOTH its y-anchor and its height now that the
+	 * two are sized/positioned independently. shift_y corrects for both,
+	 * so the anchor point stays exactly under the finger: the y-anchor
+	 * term is entry_target.y-visual_target.y, i.e. (top_reserved+
+	 * title_height+inset)-(top_reserved+title_height+card_top_offset) =
+	 * inset-card_top_offset (top_reserved/title_height cancel, since both
+	 * rects share them); the height term is the same anchor-weighted
+	 * height difference as before. Without this, the visual interpolation
+	 * implicitly assumes the blend target's y/height equal target_y/
+	 * target_height, no longer guaranteed once the overview and the
+	 * direct-switch entry slot are sized and positioned independently. */
+	double shift_y=(p->config.inset-p->config.card_top_offset)+
+		anchor*(target_height-p->config.card_height);
 	if (!isfinite(shift_y)) return false;
 	p->entry_travel=travel;
 	p->entry_anchor_shift=shift;

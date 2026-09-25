@@ -53,8 +53,9 @@ static void horizontal(void) {
     assert(p.scroll_settling);
     /* Continuous at release: card 1's x here equals its dragged position
      * (b.x-180, checked above) now re-expressed relative to the new
-     * selected index -- dx_new = dx_old + delta*pitch = -180+270 = 90. */
-    assert(fabs(cs_card_rect(&p,1).x-(a.x+90))<.001);
+     * selected index -- dx_new = dx_old + delta*pitch = -180+294 = 114
+     * (pitch = card_width(284)+gap(10) at this policy's current sizing). */
+    assert(fabs(cs_card_rect(&p,1).x-(a.x+114))<.001);
     cs_tick(&p,101+240);
     assert(!p.scroll_settling);
     assert(fabs(cs_card_rect(&p,1).x-a.x)<.001);
@@ -81,18 +82,35 @@ static void overview_geometry(void) {
      * is never more than barely on screen. */
     double third_visible=c->width-(half_gap+2*pitch);
     assert(third_visible<.15*c->card_width);
-    /* Decoupling: the direct-switch entry target stays the pre-fan, near-
-     * full-screen single slot, unaffected by card_width/card_height above --
+    /* Decoupling: the direct-switch entry target stays exactly its own
+     * fixed pre-fan formula regardless of card_width/card_height above --
      * this is what keeps that gesture's 30% width threshold, flick
-     * velocity, 1:1 tracking and full-size neighbour feel unchanged. */
+     * velocity, 1:1 tracking and full-size neighbour feel unchanged. (Now
+     * that the overview's own card is a substantial 60% of the panel
+     * height too, per board/real-glass review, the entry target is no
+     * longer necessarily larger than it -- exact-formula match, not a
+     * size comparison, is the real proof of independence.) */
     struct cs_rect entry_target=cs_entry_target_rect(&p);
-    assert(entry_target.width>c->card_width*1.5);
-    assert(entry_target.height>c->card_height*1.2);
     assert(fabs(entry_target.width-.84*(c->width-48))<.001);
     assert(fabs(entry_target.height-.72*(c->height-56-128-56-48))<.001);
     assert(c->card_width<=c->width-2*c->inset);
     assert(c->card_height<=c->height-c->top_reserved-c->bottom_reserved-
         c->title_height-c->footer_height-2*c->inset);
+    /* The user's requested 55-65% of the panel height, vertically centered
+     * (via card_top_offset) in the space between the title and the
+     * footer/hint, not sitting flush under the title. */
+    assert(c->card_height>=.55*c->height && c->card_height<=.65*c->height);
+    double band=c->height-c->top_reserved-c->bottom_reserved-c->title_height-c->footer_height;
+    double block=c->card_top_offset+c->card_height;
+    assert(block<=band);
+    /* Centered: the leftover margin above the header and below the card
+     * are within a pixel of each other. card_top_offset itself is
+     * center_margin+header_gap+header_h (it anchors the card, not the
+     * header), so the header/gap constants (matching
+     * card-shell-policy.c's CS_CARD_HEADER_GAP/CS_CARD_HEADER_H) have to
+     * come back out to compare like with like. */
+    double margin_above=c->card_top_offset-14.0-44.0,margin_below=band-block;
+    assert(fabs(margin_above-margin_below)<2.0);
     cs_finish(&p);
 }
 /* Overview horizontal scroll physics, requested directly after a real-glass
@@ -234,7 +252,10 @@ static void adjacent_throw(void) {
     cs_down(&p,1,b.x+2,b.y+200,1);
     cs_motion(&p,1,b.x+2,b.y+50,101);
     assert(cs_card_rect(&p,0).y==a.y);
-    assert(cs_card_rect(&p,1).y==b.y-150);
+    /* Epsilon, not exact equality: card_top_offset is a computed (not
+     * round-constant) value, so (a+dy) and (a)-|dy| can differ in the last
+     * float bit despite being mathematically identical. */
+    assert(fabs(cs_card_rect(&p,1).y-(b.y-150))<.001);
     struct cs_result r=cs_up(&p,1,102);
     assert((r.actions&CS_CLOSE) && r.close_id==202 && p.selected==1);
     cs_finish(&p);
@@ -529,6 +550,10 @@ static void two_axis_conflicts(void) {
 
     struct cs_config keyboard=p.config;
     keyboard.bottom_reserved=180;
+    /* A real keyboard reservation shrinks available height; a caller
+     * changing bottom_reserved must recompute card_height/card_top_offset
+     * for it too (same note as keyboard_and_geometry's own fix). */
+    keyboard.card_height=300;keyboard.card_top_offset=24;
     assert(cs_set_config(&p,&keyboard).message!=CS_MESSAGE_FAILED);
     assert(!cs_begin_entry(&p,3,284,1220,390,101).consumed);
     keyboard.bottom_reserved=0;

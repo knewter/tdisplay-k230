@@ -45,17 +45,25 @@ struct cs_config {
     double top_reserved, bottom_reserved; /* bar and keyboard; never intercepted */
     double inset, gap, title_height, footer_height;
     /* card_width/card_height/gap are the OVERVIEW's own webOS-fan card slot:
-     * small enough that 2-3 sit on screen at once (design.md decision 1 of
-     * the-shell-behaves-as-one-coherent-system). The slot's own top portion
-     * is reserved by the adapter/render layer for the card's icon+app-name
-     * header (a rendering-only subdivision of the unchanged cs_card_rect,
-     * deliberately not a policy field -- see nix/card-shell/adapter.c's
-     * CARD_HEADER_HEIGHT), so this rect's y/height stay exactly the
-     * pre-fan formula and cannot perturb entry geometry below. These are
-     * deliberately independent of entry_card_width/entry_card_height below:
-     * the direct bottom-edge app-switch gesture's anchor/travel geometry
-     * must not move when the overview's card size changes. */
+     * roughly half the panel's width and 55-65% of its height (2-3 cards
+     * visible across, a substantially larger card than the panel-sparse
+     * original pass -- design.md decision 1 of
+     * the-shell-behaves-as-one-coherent-system, revised 2026-09-25 after
+     * board/real-glass review). These are deliberately independent of
+     * entry_card_width/entry_card_height below: the direct bottom-edge
+     * app-switch gesture's anchor/travel geometry must not move when the
+     * overview's card size changes. */
     double card_width, card_height;
+    /* Vertical anchor for cs_card_rect's y, replacing a fixed `inset` there
+     * (inset itself is unchanged and still used elsewhere, including
+     * cs_entry_target_rect, so this cannot perturb entry geometry): chosen
+     * by the caller so the icon+name header (drawn above the card by
+     * adapter.c/render.c, a rendering-only concern this field does not
+     * track directly) plus the card vertically centers in the space
+     * between the title and the footer, instead of sitting flush under
+     * the title. See card-shell-policy.c's cs_default_config and
+     * adapter.c's matching runtime recompute for the actual formula. */
+    double card_top_offset;
     /* The single centered slot the direct-switch entry gesture tracks
      * (cs_entry_target_rect): historically the same value as card_width/
      * card_height, now kept as its own field so shrinking the overview's

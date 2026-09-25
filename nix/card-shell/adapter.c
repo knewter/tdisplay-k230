@@ -1236,19 +1236,27 @@ static bool sync_card(struct card *c, size_t index) {
 	 * instead of the old below-the-card caption. Not shown for the
 	 * placeholder text cs_card_text() returns for non-live content. */
 	bool show_icon = c->content == CS_LIVE;
-	int icon_size = compact ? 28 : 32;
-	int header_h = compact ? 34 : 40;
-	int header_gap = compact ? 8 : 10;
+	/* Icon/label sizes and header_gap/header_h must match
+	 * card-shell-policy.c's CS_CARD_HEADER_GAP/CS_CARD_HEADER_H, which
+	 * reserve exactly this much room above cs_card_rect's y so the header
+	 * never overlaps the title above it -- see that constant's comment.
+	 * Sized per board/real-glass review (icon 32-40px; a label legible at
+	 * arm's length, close to the chrome title's own 24px/14px scale, not
+	 * the much smaller original pass), not the old compact/non-compact
+	 * split, which no longer matters at this card size. */
+	int icon_size = 36;
+	int header_h = 44;
+	int header_gap = 14;
 	int header_top = c->box_y - header_gap - header_h;
 	int header_x = c->box_x;
 	int text_x = header_x;
 	int text_w = c->box_width;
 	if (show_icon) {
-		text_x += icon_size + (compact ? 6 : 8);
-		text_w -= icon_size + (compact ? 6 : 8);
+		text_x += icon_size + 10;
+		text_w -= icon_size + 10;
 	}
 	if (text_w < 0) text_w = 0;
-	int text_size = compact ? 14 : 16;
+	int text_size = 20;
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
 			text_w, header_h, text_size,
 			appearance_text(selected)))
@@ -1469,6 +1477,16 @@ static bool sync_scene_impl(void) {
 	if (shell.policy.mode == CS_ENTERING || shell.policy.mode == CS_EXPANDING) {
 		c = find(shell.policy.mode == CS_ENTERING ? shell.policy.entry_id :
 			shell.policy.expand_id);
+		if (c && c->tree)
+			wlr_scene_node_raise_to_top(&c->tree->node);
+	} else if (shell.policy.mode == CS_DECK && shell.policy.count &&
+			shell.policy.selected < shell.policy.count) {
+		/* The webOS-fan overview packs cards tightly (gap only, no longer a
+		 * wide sliver of dead space between them); raise the selected card
+		 * above its neighbours so a momentum-coast frame or any rounding
+		 * at the shared edge never shows a neighbour's own rim/plate
+		 * painted over the selected card. */
+		c = find(shell.policy.cards[shell.policy.selected].id);
 		if (c && c->tree)
 			wlr_scene_node_raise_to_top(&c->tree->node);
 	}
@@ -2041,17 +2059,30 @@ static void prepare_impl(struct sway_output *output) {
 		fmax(56, output->usable_area.y);
 	cfg.bottom_reserved =
 		fmax(0, output->height - output->usable_area.y - output->usable_area.height);
-	/* cs_default_config's own card_height/entry_card_height use hardcoded
-	 * top/bottom-reserved constants (56/0); recompute both here against the
-	 * output's real usable_area the same way, keeping the overview's own
-	 * .56 fraction and the direct-switch entry slot's .72 fraction in sync
-	 * with card-shell-policy.c's cs_default_config -- see its comment on
-	 * entry_card_width/entry_card_height staying independent of the
-	 * overview's own card_width/card_height. */
+	/* cs_default_config's own entry_card_height uses hardcoded
+	 * top/bottom-reserved constants (56/0); recompute it here against the
+	 * output's real usable_area the same way, keeping the direct-switch
+	 * entry slot's .72 fraction in sync with card-shell-policy.c's
+	 * cs_default_config -- see its comment on entry_card_width/
+	 * entry_card_height staying independent of the overview's own
+	 * card_width/card_height. */
 	double available = cfg.height - cfg.top_reserved - cfg.bottom_reserved -
 						cfg.title_height - cfg.footer_height - 2 * cfg.inset;
-	cfg.card_height = .56 * available;
 	cfg.entry_card_height = .72 * available;
+	/* The overview's own card: ~50% of the panel width, 60% of its height
+	 * (55-65% requested), matching cs_default_config's own fractions --
+	 * see that function's comment. */
+	cfg.card_width = .5 * cfg.width;
+	cfg.card_height = .6 * cfg.height;
+	/* Vertically centers (header+card) in the space between the title and
+	 * the footer, matching cs_default_config's own formula and
+	 * CS_CARD_HEADER_GAP(14)/CS_CARD_HEADER_H(44) -- kept in sync with
+	 * adapter.c's own header-drawing constants in sync_card by hand, the
+	 * same "duplicated constant, commented" pattern as the fractions
+	 * above. */
+	double band = cfg.height - cfg.top_reserved - cfg.bottom_reserved -
+				   cfg.title_height - cfg.footer_height;
+	cfg.card_top_offset = (band - (cfg.card_height + 14.0 + 44.0)) / 2 + 14.0 + 44.0;
 	cfg.reduced_motion = getenv("SWAY_K230_CARD_REDUCED_MOTION") &&
 						 strcmp(getenv("SWAY_K230_CARD_REDUCED_MOTION"), "1") == 0;
 	cfg.touch_first_motion = touch_first();

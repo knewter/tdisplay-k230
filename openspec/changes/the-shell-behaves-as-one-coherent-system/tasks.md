@@ -63,6 +63,54 @@ own tracking for whether to unify them later.
   existing clipping (`label_clip`, `clip_box`) at the new card width.
   Verify: `nix build .#card-shell --max-jobs 1 --cores 6 --no-link
   --print-out-paths` (succeeds) plus the headless-QEMU captures below.
+- [x] A.5 Board-driven polish pass (two coordinator messages, one carrying a
+  real board report from installed `w51crww9`, one a real-glass scroll
+  report): (a) cards were too small (~45% of the panel's own height per
+  the board, sitting flush under the title with about half the panel
+  empty below) — resized to ~50% of the panel width and 60% of its height
+  (55-65% requested), vertically centered between the title and the
+  footer hint via a new `card_top_offset` (`cs_card_rect`'s y anchor,
+  replacing a fixed `inset` there only — `inset` itself and
+  `cs_entry_target_rect` are unchanged), with a new `entry_anchor_shift_y`
+  term correcting the direct-switch gesture's y-tracking for the resulting
+  overview/entry y-offset mismatch (previously only height was corrected).
+  (b) Icon/label sizes increased (32-40px icon, a 20px label consistent
+  with the chrome's own type scale, ellipsis already handled by the
+  existing Pango layout). (c) The overview's own card raises to the top of
+  its scene stacking order in `CS_DECK`, not just `CS_ENTERING`/
+  `CS_EXPANDING`, as a defensive z-order fix. (d) The board report's real
+  gap — "Monitor" showed a letter badge, not a real icon, under the real
+  installed theme — was PNG-only decoding missing an SVG-only resolution
+  path; `nix/card-shell/icon.c` now decodes SVG via librsvg (linked
+  directly, the same two calls `icon.rs` uses, no gio/gdk-pixbuf), and
+  follows the active theme's own `icon_theme` (`report.json`, via
+  `appearance_apply`), not just `K230_ICON_THEME`. (e) The real-glass
+  scroll report — "i can't flick to swipe through multiple cards quickly,
+  it snaps to each card as i go" — was the deck's momentum coast being
+  limited to ±1 card; replaced with a velocity-projected physics fling
+  (`CS_SCROLL_OMEGA`) that can carry several cards, reusing the direct
+  bottom-edge app-switch gesture's own recency-windowed velocity estimator
+  (`touch_window_span`, factored out of `entry_release_velocity`) via a
+  separate `scroll_history` buffer; a slow release still snaps to the
+  nearest card; a fresh touch mid-coast catches it and continues 1:1 (no
+  jump, via a new `cs_down` catch path); the ends clamp with a soft
+  rubber band (a damped, shorter coast), not a hard stop. Also fixed a
+  latent bug this pass's own QEMU capture caught: `adapter.c`'s runtime
+  card-height recompute had its own stale copy of an old fraction that
+  silently overrode the policy default. Verify: `python3 -m unittest
+  test_card_shell_state` (run from `tests/`) — 34/34 cases pass, including
+  four new scroll-physics cases (`scroll-fling-multi-card`,
+  `scroll-slow-release-snaps-nearest`, `scroll-catch-mid-coast`,
+  `scroll-end-clamp-soft`) and every direct-switch case with unchanged
+  numeric assertions; `nix build .#card-shell --max-jobs 1 --cores 6`
+  succeeds; recaptured headless-QEMU evidence
+  (`docs/evidence/card-shell/webos-fan-switcher/`, dark+light) with an
+  "ordinary maximized" app-window fixture (`card_shell ordinary`,
+  `floating enable`, `resize set 100 ppt 100 ppt`, `move position 0 0`,
+  matching production) that also incidentally resolved an odd-looking
+  overlapping-card artifact and a broken composite "opened" frame in the
+  prior capture generation, both traced to that earlier capture's smaller,
+  inconsistent floating-window fixture size, not to card-shell itself.
 - [ ] A.4 On a reserved board, confirm the webOS-fan overview (2-3 cards,
   real icons/names, scroll momentum, close, open) is actually legible and
   usable at arm's length with a real theme and real running apps, and that

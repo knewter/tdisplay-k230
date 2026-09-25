@@ -96,8 +96,17 @@ def run_theme(args, name, theme):
     config.write_text(
         'output HEADLESS-1 mode 568x1232\nseat seat0 fallback true\n'
         'focus_follows_mouse no\n'
+        # The real shell marks each app window "ordinary maximized" (a
+        # full-output floating window, not a small fixed size): card_shell
+        # ordinary, floating enable, resize set 100 ppt 100 ppt, move
+        # position 0 0, per the coordinator's own recipe -- matching this
+        # keeps the deck's aspect-fit content consistent across cards
+        # (a smaller/inconsistent test fixture window size was the root
+        # cause of an earlier capture's odd-looking overlapping card) and
+        # makes the tap-to-open capture reflect a real full-bleed app
+        # frame, not a synthetic small floating window.
         'for_window [app_id="^k230.card."] floating enable, border none, '
-        'resize set 520 1040, move position 24 48\n')
+        'resize set 100 ppt 100 ppt, move position 0 0, card_shell ordinary\n')
     xdg_data_dirs = ':'.join(str(p) for p in (fixtures / 'share', args.icon_roots / 'share'))
     env = dict(os.environ, XDG_RUNTIME_DIR=str(scenario_dir), WLR_BACKENDS='headless',
                WLR_HEADLESS_OUTPUTS='1', WLR_RENDERER='pixman', SWAY_K230_CARD_SHELL='1',
@@ -208,13 +217,13 @@ def run_theme(args, name, theme):
         # coast settle (cs_tick-driven, not an instant snap).
         row_y = 550
         t0 = 1000
-        touch('down', 1, 460, row_y, t0)
+        touch('down', 1, 380, row_y, t0)  # within the card (x in [142,426] at this sizing)
         for i in range(1, 9):
-            touch('motion', 1, 460 - i * 22, row_y, t0 + i * 8)
+            touch('motion', 1, 380 - i * 22, row_y, t0 + i * 8)
         touch('up', 1, t0 + 9 * 8)
         time.sleep(.05)
         shot('02-scrolling')
-        time.sleep(.4)  # let the momentum coast (<=240ms) settle
+        time.sleep(.9)  # let the momentum coast (<=760ms) settle
         shot('03-scrolled-settled')
 
         # Close: a flick-up throw on the now-selected card. Y coordinates
