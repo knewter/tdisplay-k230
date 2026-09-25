@@ -496,28 +496,56 @@ for 6.6 is the reserved board, not run here.
   the wire ack contract itself; a cross-process optimistic-shown flag).
   Verified with `openspec validate the-shell-swaps-themes-without-a-
   python-stall --strict`.
-- [ ] 7.4 Board re-check: confirm `optimistic-apply shown ms=` appears in
-  the Rust journal for a warm Apply, well under the ~100 ms target from
-  tap; confirm a durable-commit-failure scenario (e.g. a second receiver
-  briefly unreachable) still ends with the previous theme visibly active
-  and a specific error in the chooser, never a theme the transaction did
-  not durably commit; confirm a cold theme still shows the pre-existing
-  busy state with no `optimistic-apply shown` line. Needs the reserved
-  board; not run by this task. A genuine touch-driven QEMU proof of this
-  same behaviour (real Sway + real Rust shell + real touch injection +
-  the real `theme-helper`/two-phase backend, rather than the existing
-  chooser harness's synthetic `K230_THEME_COMMAND` stand-in, which never
-  populates a real `prepared` snapshot and so cannot exercise this code at
-  all) was not built in this task either -- existing coverage is the C
-  receiver's own real-socket tests (7.2) plus the pure Rust decision-logic
-  tests (7.1); this is a named, explicit gap for a follow-up, not a
-  claimed pass.
+- [x] 7.4 Board re-check (coordinator, master `4b947d13`, installed as
+  `i3dxi8y0...`): **the optimistic path did not fire.** No
+  `optimistic-apply shown` line anywhere in the journal for an Apply of a
+  neighbour-warmed, then explicitly confirmed, theme; the durable path
+  alone still ran (`activate ... ms=441`, helper `activate_generation=
+  356.6ms`). This is task 7.5's own starting point, below -- see its
+  grounding comment for the exact log sequence and root cause.
+- [x] 7.5 Root-cause and fix for 7.4: `ThemeView::poll_prepare_ahead`
+  never checked `self.pending`, so while a real, explicit request (a
+  confirm tap's own `Preview`, submitted via `submitted()`) was still
+  awaiting its reply -- the page stays `List` until that reply lands, so
+  `main.rs`'s own `page == ThemePage::List` gate did not stop it either --
+  the same per-tick call could *also* drain `pending_neighbor_warms` and
+  submit an unrelated neighbour's own warm-up `Preview`. `ThemeWorker`
+  processes requests strictly in submission order on one thread, and each
+  appearance receiver keeps only a single most-recently-`prepare`d
+  candidate; the neighbour's later "prepare" therefore silently
+  overwrote what the confirm's own "prepare" had just staged in
+  `AppearanceReceiver::prepared` -- before its own reply was even back --
+  so by the time Apply ran, `appearance.prepared()` named a different
+  generation than the one just confirmed, and `optimistic_apply_skip_
+  reason` correctly (if unhelpfully, before this task) returned
+  `generation-mismatch`. Fix: `poll_prepare_ahead` now returns `None`
+  unconditionally whenever `self.pending.is_some()` -- no dwell-driven
+  warm-up, no neighbour-queue drain -- resuming on whatever tick `pending`
+  next clears; the dwell clock keeps accumulating in the meantime, so
+  nothing already waited out is lost. Also adds a debug log,
+  `rust-shell <ms>ms optimistic-apply skipped reason=<reason>`, on every
+  Apply tap that does not show optimistically (`not-prepared`,
+  `generation-mismatch`, `commit-draw-in-flight`, `video-background`,
+  `unrenderable-snapshot`, `not-ready-for-a-frame`, `draw-wallpaper-
+  failed`, `draw-failed`, `flush-failed`), via the new pure
+  `optimistic_apply_skip_reason` (`should_apply_optimistically` now
+  delegates to it). Verify with `cargo test --offline` (adds
+  `theme_ui::tests::a_pending_confirm_pauses_every_warm_up_until_its_own_
+  reply_lands` -- reproduces the exact board sequence: warm neighbour A,
+  swipe to and confirm neighbour B, assert nothing is emitted for any
+  number of ticks while B's own Preview is pending, confirm Apply then
+  targets exactly B's own reported generation; confirmed this test fails
+  without the fix -- `left: Some((2, Preview {...}))  right: None` -- and
+  passes with it -- and `route_tests::optimistic_apply_skip_reason_names_
+  the_specific_cause`).
 
-Proof for 7.1-7.3: the tests named above, all passing on this host; proof
-for 7.4 is the reserved board (or a new QEMU harness), not run here.
+Proof for 7.1-7.3, 7.5: the tests named above, all passing on this host
+(7.5's own regression test independently confirmed to fail against the
+pre-fix code); 7.4 is the board result quoted above, negative before this
+fix, not re-run since (board not touched by this task).
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, and 7.4 have board results; 3.3b is
-named here so it is not silently dropped or claimed done without a board
-result. Task 5.4's board result is recorded above
-(board-chooser-2026-09-25.md).
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and a re-run of 7.4 with this fix
+installed have board results; 3.3b is named here so it is not silently
+dropped or claimed done without a board result. Task 5.4's board result is
+recorded above (board-chooser-2026-09-25.md).
