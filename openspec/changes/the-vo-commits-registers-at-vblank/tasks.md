@@ -44,7 +44,7 @@
 
 ## 4. Outstanding (hardware-only; keep this change open until done)
 
-- [ ] 4.1 Board re-check: flash the image built in 1.3 (
+- [x] 4.1 Board re-check: flash the image built in 1.3 (
   `docs/evidence/card-shell/bottom-band-flicker/kernel-board-test.md` has
   the exact commands and a card-reader fallback), confirm the new kernel
   is running (`uname -a`), and repeat the real-finger bottom-edge gesture
@@ -54,3 +54,20 @@
   also on the flashed image) to see whether the flickering band is gone,
   reduced, or unchanged. Not performed here: no board/`/dev/ttyACM0`
   access in this task.
+  Result (2026-09-25, board camera frames plus operator report): the
+  patched kernel ran as system `f102jiy0` and the band was unchanged; see
+  `docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md`.
+
+## 5. Withdrawn from the build
+
+- [x] 5.1 Remove `canaan-drm-defer-reg-load-to-vblank.patch` from
+  `nix/kernel.nix`. The patch did not fix the flicker (Sway
+  `max_render_time 8` did), and a kernel carrying it panicked at boot once
+  in two attempts (`docs/evidence/card-shell/bottom-band-flicker/
+  kernel-patch-boot-panic.md`). Verify with `nix build .#sdImage-coherent
+  --max-jobs 1 --cores 6`.
+- [ ] 5.2 Board: boot the patch-free kernel persistently and confirm on
+  camera that the bottom band stays stable with `max_render_time 8` alone.
+- [ ] 5.3 Decide this change's fate: its `display/panel` delta describes a
+  vblank-latched commit that the shipped kernel no longer performs, so it
+  must not be archived as written. Drop the change or rewrite the delta.

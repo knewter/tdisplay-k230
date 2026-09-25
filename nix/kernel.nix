@@ -53,16 +53,11 @@ buildLinux (args // {
       # supposed to have set. Diagnostic only; failures are logged, never
       # fatal to prepare().
       ../nix/patches/canaan-panel-read-back-id-and-power-mode.patch
-      # Board evidence (docs/evidence/card-shell/bottom-band-flicker/):
-      # canaan_crtc_atomic_flush wrote the VO's shadow-register "commit"
-      # bit (VO_REG_LOAD_CTL) synchronously, at arbitrary atomic-commit
-      # time, not synchronized to the panel's actual scan position. Defer
-      # that write to the vblank IRQ handler instead, so the shadow
-      # registers a frame staged (plane address, size, position -- all
-      # written earlier in the same commit, unchanged here) are only
-      # applied at the hardware's own vblank window. See
-      # docs/evidence/card-shell/bottom-band-flicker/kernel-vblank-latch.md.
-      ../nix/patches/canaan-drm-defer-reg-load-to-vblank.patch
+      # canaan-drm-defer-reg-load-to-vblank.patch is deliberately NOT applied:
+      # it left the bottom-band flicker unchanged (sway max_render_time 8
+      # fixed it) and a kernel carrying it panicked at boot in
+      # __insert_inode_hash right after canaan-drm bound. See
+      # docs/evidence/card-shell/bottom-band-flicker/kernel-patch-boot-panic.md.
     ];
 
     postPatch = ''
