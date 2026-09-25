@@ -22,11 +22,11 @@
     "showcase_light_is_not_a_blank_frame": true
   },
   "sway": "/nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
-  "rust": "/nix/store/az5gicvhw6jirvkpy31xasw20ylgyzfn-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust": "/nix/store/cx1linpyyr7xdib4r6n6ay1ry8lnhbla-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
   "theme_bundle": "/nix/store/2idwl586jkz327w3rypg1mfw41pmbgrj-handheld-theme-default-28ceaae7",
   "icons": "/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3",
   "dark_generation": "0d16475245f13b3d7d3f036f",
   "dark_selected_background": "backgrounds/2-waves.webp",
-  "light_generation": "5cceec94081ad6f749f372a4",
+  "light_generation": "8c4f2f493b2f30afbe437737",
   "light_selected_background": "backgrounds/1-color-fade.webp"
 }

@@ -1,8 +1,9 @@
 # Polished pinned Home screen: headless QEMU injected-touch acceptance
 
-Observed 2026-09-24, source branch `fix/home-screen-polish` (base `origin/master`
-`c575479b`; the change this polishes is
-`openspec/changes/the-shell-presents-a-pinned-home-screen/`). Superseded
+Observed 2026-09-24, source branch `fix/home-screen-polish`, commit `084d550c`
+(rebased onto `origin/master`'s `9ff0462c`; the change this polishes is
+`openspec/changes/the-shell-presents-a-pinned-home-screen/`, itself based on
+`c575479b`). Superseded
 capture of the same suite: a first cut of this same test (icons capped at
 60px, no wallpaper, flat-color fixture icons, a black dock bar) is described
 in this file's own prior revision; every observation below is from the
@@ -11,7 +12,7 @@ redesigned rendering (`home_grid.rs`, `home_screen.rs`, `render.rs`).
 This ran the cross-built Sway with the card-shell patch
 (`/nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`,
 found via `nix-store -qR` on `.#card-shell`) and the Rust shell client
-(`/nix/store/az5gicvhw6jirvkpy31xasw20ylgyzfn-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`)
+(`/nix/store/cx1linpyyr7xdib4r6n6ay1ry8lnhbla-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`)
 under `qemu-riscv64-static` with a 568x1232 headless Pixman output. The
 compositor's native `card_shell test-touch` route supplied synthetic Wayland
 touch events (`SWAY_K230_CARD_SHELL=1 SWAY_K230_CARD_TOUCH_FIRST=1
@@ -26,7 +27,7 @@ SWAY_K230_CARD_TEST_INPUT=1`, matching the real integrated session).
   `background.cache` already built); the light pass runs the repository's own
   theme-activation pipeline (`tools/theme_activate.prepare`) against that same
   bundle's pinned `catppuccin-latte` Omarchy source tree, producing generation
-  `5cceec94081ad6f749f372a4` with `backgrounds/1-color-fade.webp`. Both are
+  `8c4f2f493b2f30afbe437737` with `backgrounds/1-color-fade.webp`. Both are
   real Omarchy themes with real wallpaper files decoded through the real
   `background_decode`/`draw_wallpaper` path, not a palette-only fixture with
   `"backgrounds": []`;
@@ -58,7 +59,7 @@ Reproduce with the committed runner and exact executables:
 python3 tests/rust_home_screen_qemu.py \
   --sway /nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
   --swaymsg /nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/swaymsg \
-  --rust /nix/store/az5gicvhw6jirvkpy31xasw20ylgyzfn-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust \
+  --rust /nix/store/cx1linpyyr7xdib4r6n6ay1ry8lnhbla-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust \
   --theme-bundle /nix/store/2idwl586jkz327w3rypg1mfw41pmbgrj-handheld-theme-default-28ceaae7 \
   --icons /nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3 \
   --output /tmp/k230-hp-N
