@@ -299,20 +299,64 @@ decoded art, because this fixture never waits on `poll_theme_thumbnails`'s
 own worker thread the way the interactive QEMU/board path does -- expected
 and unchanged from every prior visual fixture in this directory.
 
-## QEMU touch-injection run
+## QEMU touch-injection run: attempted, environment-blocked, not a code regression
+
+The `sway-unwrapped` build (a large dependency chain -- wlroots, xwayland,
+and their own dependents, built serially at `--max-jobs 1`) finished
+successfully: `/nix/store/rvjwy2wiqs9cnkawqvg7hmglj7a46fgl-sway-unwrapped-
+riscv64-unknown-linux-gnu-1.12` (the patched, `card_shell`-IPC-capable
+build already produced as a side effect of the earlier `.#card-shell`
+build, found at `swaybar`/`swaymsg`/`swaynag`'s own resolved symlink
+target next to it -- `.#nixosConfigurations.k230.pkgs.sway-unwrapped`
+turned out to be plain upstream sway, missing the `card_shell` IPC
+commands this test needs; corrected once found).
 
 ```
-nix build --no-link --print-out-paths --max-jobs 1 --cores 6 '.#nixosConfigurations.k230.pkgs.sway-unwrapped'
 python3 tests/rust_theme_chooser_qemu.py \
-  --sway <sway-unwrapped store path>/bin/sway \
+  --sway /nix/store/rvjwy2wiqs9cnkawqvg7hmglj7a46fgl-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
   --rust /nix/store/sz4rjr4qx7jvygnb04c9waxinnz3mlyj-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust \
-  --output /tmp/k230-tap-to-apply-qemu
+  --output /tmp/k230-tap-to-apply-qemu-run2
 ```
 
-(recorded in a follow-up append to this file once the `sway-unwrapped`
-build -- a large dependency chain: wlroots, xwayland, and their own
-dependents, built serially at `--max-jobs 1` -- finishes; it was still
-running in the background when this section was written.)
+Run twice; both times the harness failed at `k230-shell-rust: route timed
+out` (`main.rs::request`, a pre-existing 500ms deadline for the short-lived
+`--surface settings` helper invocation's own socket round trip to the
+already-running `--serve` process), **before reaching any theme-chooser-
+specific code** -- sway itself started correctly and accepted the harness's
+own `card_shell test-touch init` IPC command first (see `sway.log`: "K230_
+CARD_SHELL input=injected operation=test-touch accepted=1"), and the
+`--serve` process's own log showed a normal, complete startup (`wallpaper-
+configure`, `home-configure`, `ready-idle`) with no error.
+
+Confirmed via `git diff 80817e3d..HEAD -- nix/rust-shell-client/src/
+main.rs` that this task's own diff touches neither `fn request` nor
+`poll_until` nor their 500ms deadline at all -- this is not a regression
+in this task's own code. This machine was running several other
+concurrent agents' own heavy builds and at least one other agent's own
+`qemu-riscv64-static`-based sway test at the same time (`ps aux` during
+this investigation), so the most likely explanation is CPU contention on
+a shared host making the existing 500ms deadline too tight right now, not
+a functional break in the route-request mechanism itself. This was not
+chased further by loosening the timeout or by other environment
+workarounds, since that code is outside this task's own scope and
+changing it without being sure of the actual cause risks masking a real
+problem elsewhere.
+
+**Not obtained this session**: the QEMU touch-injection proof of the new
+tap-to-apply flow (warm/cold tap-apply, background tap-apply, rapid-tap
+coalescing) that `tests/rust_theme_chooser_qemu.py`'s own rewrite (this
+task) was built to produce. The script itself is written and committed;
+running it to a real result -- on a less contended host, or after
+investigating the route-timeout separately -- remains open. The state
+machine and touch-mechanics it would exercise are covered instead by the
+24 `theme_ui::tests` (host, `cargo test`) and the two dark/light host
+visual fixtures (above); neither substitutes for an actual touch-injected
+run.
+
+## Remaining gates: QEMU rerun (any host) and board-verification
+
+- The QEMU touch-injection run itself (`tests/rust_theme_chooser_qemu.py`,
+  committed, not run to completion this session -- see above).
 
 ## Board-verification gate this task still needs
 

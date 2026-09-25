@@ -946,7 +946,7 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   centred slice, not a since-removed button -- the mechanism that
   requirement describes is unchanged. `openspec validate
   the-shell-swaps-themes-without-a-python-stall --strict` passes.
-- [ ] 10.6 `tests/rust_theme_chooser_qemu.py` rewritten for the one-page
+- [x] 10.6a `tests/rust_theme_chooser_qemu.py` rewritten for the one-page
   flow: opens the chooser, waits for the active theme's own detail to
   auto-load (no tap needed), browses the theme carousel by drag and by a
   side-slice recentre-tap (still never applies), confirms a warmed theme
@@ -959,9 +959,24 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   (`K230_TEST_THEME_SLOW_ID`), giving a reliable window to tap a
   *different* theme while the first is in flight; asserts the superseded
   theme's own request was genuinely sent but never activates, and the
-  second tap's theme does. Run (real QEMU, synthetic theme command, no
-  physical touch -- see this task's own evidence doc for the exact
-  command and result).
+  second tap's theme does. Written and syntax-checked; not yet run to a
+  real result (10.6b).
+- [ ] 10.6b Run 10.6a's script to a real PASS. Attempted twice this
+  session (patched, IPC-capable `sway-unwrapped`, built after finding
+  `.#nixosConfigurations.k230.pkgs.sway-unwrapped` is plain upstream
+  sway without the `card_shell` commands this harness needs -- the
+  correct binary is a side effect of `.#card-shell`, at its own
+  `swaybar`/`swaymsg`/`swaynag` symlink target). Both attempts failed at
+  `k230-shell-rust: route timed out` (`main.rs::request`'s pre-existing
+  500ms socket-round-trip deadline for the `--surface` helper
+  invocation) *before* reaching any theme-chooser-specific code --
+  confirmed via `git diff 80817e3d..HEAD -- main.rs` to be outside this
+  task's own diff, and the shared host was running several other
+  concurrent agents' own builds and at least one other `qemu-riscv64-
+  static` session at the same time, so contention rather than a code
+  regression is the leading explanation. Not chased further by loosening
+  a timeout this task does not own. See this task's own evidence doc for
+  the full account.
 - [ ] 10.7 Board re-check: confirm the one-page tap-to-apply flow reads
   and behaves correctly in dark and light themes on the actual panel;
   confirm `optimistic-apply stage adopt_ms=... wallpaper_ms=...
@@ -973,15 +988,15 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   fits the 1232px panel without clipping or crowding. Needs the reserved
   board; not run by this task.
 
-Proof for 10.1-10.3, 10.5-10.6: the tests and commands named above, all
+Proof for 10.1-10.3, 10.5, 10.6a: the tests and commands named above, all
 passing/PASS on this host; proof for 10.4 is code review, named as such,
-not board evidence; proof for 10.7 is the reserved board, not run here.
+not board evidence; 10.6b and 10.7 are not run/not obtained this task.
 The wallpaper-buffer-attach optimization and a finer per-stage
 attach/damage/commit breakdown (both asked for alongside 10.3) are
 deferred follow-up work, not attempted this task -- see 10.3's own doc.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, 9.5, and 10.7 have board results;
+per `AGENTS.md`) until 2.3, 3.4, 6.6, 9.5, 10.6b, and 10.7 have results;
 3.3b is named here so it is not silently dropped or claimed done without
 a board result. Task 5.4's board result is recorded above
 (board-chooser-2026-09-25.md).
