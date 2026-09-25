@@ -1334,6 +1334,12 @@ DATA bfc76c3bdd2e5a8db51e19243912529761bf0c382c314e09b20573bc5800eb08  docs/evid
 DATA 6586a5ab19bf085c36f82d397939157b112e08380e2d16367b746c9b8d7b659d  docs/evidence/card-shell/overview-home-bleed-through/entry-01-touch-down.png
 DATA 857caa9d6ea4de5d6ae24a55b67f5a71368ff178d7cce9f84f72f284e988109e  docs/evidence/card-shell/overview-home-bleed-through/entry-02-mid-drag.png
 DATA 5824d7199bb74acd571aa8a0e7bbaa986f664e10fdbdcec5e9e91570f9db3a98  docs/evidence/card-shell/overview-home-bleed-through/entry-03-home-idle-reveal.png
+DATA e25dd43c6c9aca1f1dc57ace48a2de2a682760c5d35c095cd2536603e4e6761d  docs/evidence/card-shell/app-switch-neighbour-render/after-full-neighbour.png
+DATA 099a47af0e5726fe78af086c0dc9cbbad1b6f4a9c88b30bbdcba5e22f780c980  docs/evidence/card-shell/app-switch-neighbour-render/after-held-1.png
+DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evidence/card-shell/app-switch-neighbour-render/after-held-2.png
+DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
+DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
+DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1916,3 +1922,16 @@ These DATA screenshots are headless-QEMU captures of synthetic fixture clients s
 | `docs/evidence/card-shell/overview-home-bleed-through/entry-01-touch-down.png` | 4896 | DATA | `6586a5ab19bf085c36f82d397939157b112e08380e2d16367b746c9b8d7b659d` |
 | `docs/evidence/card-shell/overview-home-bleed-through/entry-02-mid-drag.png` | 4959 | DATA | `857caa9d6ea4de5d6ae24a55b67f5a71368ff178d7cce9f84f72f284e988109e` |
 | `docs/evidence/card-shell/overview-home-bleed-through/entry-03-home-idle-reveal.png` | 4706 | DATA | `5824d7199bb74acd571aa8a0e7bbaa986f664e10fdbdcec5e9e91570f9db3a98` |
+
+### App-switch neighbour full-output clip: headless QEMU captures
+
+These DATA screenshots are headless-QEMU captures of synthetic ordinary-maximized clients during a held injected bottom-edge drag, before and after the neighbour clip fix. The adjacent README records commands and limits; no physical claim.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-shell/app-switch-neighbour-render/after-full-neighbour.png` | 4925 | DATA | `e25dd43c6c9aca1f1dc57ace48a2de2a682760c5d35c095cd2536603e4e6761d` |
+| `docs/evidence/card-shell/app-switch-neighbour-render/after-held-1.png` | 4915 | DATA | `099a47af0e5726fe78af086c0dc9cbbad1b6f4a9c88b30bbdcba5e22f780c980` |
+| `docs/evidence/card-shell/app-switch-neighbour-render/after-held-2.png` | 4932 | DATA | `55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1` |
+| `docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png` | 4904 | DATA | `f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c` |
+| `docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png` | 4905 | DATA | `07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328` |
+| `docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png` | 4924 | DATA | `1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692` |
