@@ -54,6 +54,27 @@ def tile_center(slot):
     return (x + w / 2.0, y + h / 2.0)
 
 
+# A page swipe only needs to cross half the panel width to settle onto the
+# neighboring page (see home_pager.rs's own round-to-nearest-page settle);
+# this stays well short of that but far enough on either side of it that a
+# drag started and released near one edge never asks for an off-panel
+# touch coordinate.
+SWIPE_DISTANCE = 380.0
+SWIPE_MARGIN = 40.0
+
+
+def swipe_y():
+    return tile_center(0)[1]
+
+
+def apps_per_page():
+    """Mirrors home_grid.rs's rows_per_page/apps_per_page exactly."""
+    grid_bottom = (HEIGHT - DOCK_HEIGHT) - DOTS_HEIGHT
+    available = max(grid_bottom - GRID_TOP, 0.0)
+    rows = max(int(available // ROW_HEIGHT), 1)
+    return COLUMNS * rows
+
+
 def dock_top():
     return HEIGHT - DOCK_HEIGHT
 
@@ -101,6 +122,14 @@ def theme_generation(root, source, label):
     report = json.loads((source / "default-report.json").read_text())
     generation = ("a" if label == "dark" else "b") * 24
     appearance["generation"] = report["generation"] = generation
+    # The loaded appearance's own icon_theme (normally "Yaru-purple", the
+    # default's real icon set) overrides whatever K230_ICON_THEME the
+    # process started with (appearance.rs applies each snapshot's own
+    # icon_theme to the shared IconCache) -- point both appearance.json and
+    # report.json at this test's private fixture theme instead (they must
+    # agree, or the whole snapshot is rejected as a mismatch), so Home/
+    # drawer icon painting actually exercises a real decoded icon.
+    appearance["icon_theme"] = report["icon_theme"] = "fixture"
     if label == "light":
         palette = report["palette"]
         palette.update({"background": "#eff1f5", "foreground": "#34384d",
@@ -227,6 +256,7 @@ def main():
         WLR_HEADLESS_OUTPUTS="1",
         WLR_RENDERER="pixman",
         SWAY_K230_CARD_SHELL="1",
+        SWAY_K230_CARD_TOUCH_FIRST="1",
         SWAY_K230_CARD_TEST_INPUT="1",
         K230_SWAYMSG=str(swaymsg_wrapper),
     )
@@ -360,25 +390,27 @@ def main():
 
         page1 = capture("home-dark-page1.png")
 
-        # A full page-width drag to page 1, captured partway through (a
-        # genuine "mid-swipe" frame while the touch is still down) and then
-        # completed and released well past the 50% settle threshold, so
-        # release reliably rounds forward to page 1 rather than snapping
-        # back to page 0.
-        start_x, drag_y = tile_center(0)
-        end_x = start_x - WIDTH
+        # A leftward drag from near the right edge, well past the 50%
+        # settle threshold but never past the left edge, captured partway
+        # through (a genuine "mid-swipe" frame while the touch is still
+        # down) and then completed and released, so release reliably
+        # rounds forward to page 1 rather than snapping back to page 0.
+        drag_y = swipe_y()
+        start_x = WIDTH - SWIPE_MARGIN
+        end_x = start_x - SWIPE_DISTANCE
         contact_id = contact
         contact += 1
         ipc(f"card_shell test-touch down {contact_id} {start_x} {drag_y}")
-        half_x = start_x - WIDTH * 0.5
-        for step_x in (start_x - WIDTH * 0.2, start_x - WIDTH * 0.35, half_x):
+        for fraction in (0.2, 0.35, 0.5):
+            step_x = start_x - SWIPE_DISTANCE * fraction
             ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
             time.sleep(0.03)
         mid_swipe = capture("home-dark-mid-swipe.png", timeout=1.5, stable_frames=1)
         checks["mid_swipe_differs_from_page1"] = bool(
             ImageChops.difference(page1, mid_swipe).getbbox()
         )
-        for step_x in (start_x - WIDTH * 0.7, start_x - WIDTH * 0.9, end_x):
+        for fraction in (0.7, 0.9, 1.0):
+            step_x = start_x - SWIPE_DISTANCE * fraction
             ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
             time.sleep(0.03)
         settle_and_release(contact_id, end_x, drag_y)
@@ -392,8 +424,9 @@ def main():
         wait_for(lambda: marker.exists() and "terminal" in marker.read_text())
 
         # --- Back to page 1, then the pin flow via the drawer. ---
-        back_start_x, back_y = tile_center(0)
-        back_end_x = back_start_x + WIDTH
+        back_y = swipe_y()
+        back_start_x = SWIPE_MARGIN
+        back_end_x = back_start_x + SWIPE_DISTANCE
         drag_id = drag_steps(back_start_x, back_end_x, back_y)
         settle_and_release(drag_id, back_end_x, back_y)
         capture("home-dark-back-to-page1.png")
@@ -467,8 +500,9 @@ def main():
         light_rust = start_pass(light, "light")
         wait_for(lambda: "ready-idle" in text("light-rust"), 30)
         light_page1 = capture("home-light-page1.png")
-        light_start_x, light_y = tile_center(0)
-        light_end_x = light_start_x - WIDTH
+        light_y = swipe_y()
+        light_start_x = WIDTH - SWIPE_MARGIN
+        light_end_x = light_start_x - SWIPE_DISTANCE
         light_id = drag_steps(light_start_x, light_end_x, light_y)
         settle_and_release(light_id, light_end_x, light_y)
         light_page2 = capture("home-light-page2.png")
@@ -483,6 +517,94 @@ def main():
             light_rust.wait(timeout=5)
         except subprocess.TimeoutExpired:
             light_rust.kill()
+
+        # --- Showcase pass: a believable, fully-populated fresh Home, for
+        # visual evidence rather than interaction coverage (the sparse
+        # 2-3-app fixture above is deliberately minimal for the
+        # paging/tap/pin/rearrange checks; this is what a real Home with a
+        # handful of pinned apps actually looks like). ---
+        showcase_data = root / "showcase-data"
+        showcase_apps = showcase_data / "applications"
+        showcase_apps.mkdir(parents=True)
+        showcase_icons = showcase_data / "icons/fixture/scalable/apps"
+        showcase_icons.mkdir(parents=True)
+        (showcase_data / "icons/fixture/index.theme").write_text(
+            "[Icon Theme]\nName=fixture\nDirectories=scalable/apps\n"
+            "[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n"
+        )
+        showcase_layout = {
+            "terminal": ("Terminal", "#78d7cb"),
+            "files": ("Files", "#f9c96e"),
+            "editor": ("Text Editor", "#89b4fa"),
+            "monitor": ("System Monitor", "#cba6f7"),
+            "video": ("Video Player", "#f38ba8"),
+            "settings": ("Settings", "#a6e3a1"),
+            "browser": ("Browser", "#f6a35e"),
+            "notes": ("Notes", "#94e2d5"),
+        }
+        for app_id, (label, hex_color) in showcase_layout.items():
+            (showcase_icons / f"{app_id}.svg").write_text(
+                f'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">'
+                f'<rect width="48" height="48" rx="10" fill="{hex_color}"/></svg>'
+            )
+            (showcase_apps / f"k230-showcase-{app_id}.desktop").write_text(
+                "[Desktop Entry]\nType=Application\n"
+                f"Name={label}\nExec=/bin/true {app_id}\nIcon={app_id}\n"
+            )
+        showcase_state = root / "showcase-state"
+        showcase_json = showcase_state / "k230-shell/home.json"
+        showcase_json.parent.mkdir(parents=True)
+        ids = [f"k230-showcase-{app_id}.desktop" for app_id in showcase_layout]
+        per_page = apps_per_page()
+        page0 = ids[4:8] + [None] * (per_page - 4)
+        showcase_json.write_text(json.dumps({
+            "schema": 1,
+            "pages": [page0],
+            "dock": ids[0:4],
+        }))
+        showcase_env = dict(env, XDG_DATA_HOME=str(showcase_data), XDG_DATA_DIRS=str(showcase_data),
+                             XDG_STATE_HOME=str(showcase_state))
+
+        def start_showcase(generation, prefix):
+            (root / f"{prefix}-rust.log").touch()
+            run_env = dict(showcase_env, K230_THEME_DEFAULT_GENERATION=str(generation))
+            log = (root / f"{prefix}-rust.log").open("a")
+            logs[prefix + "-rust"] = log
+            process = subprocess.Popen([qemu, str(args.rust), "--serve"], env=run_env,
+                                        stdout=log, stderr=log)
+            processes.append(process)
+            return process
+
+        def wait_for_first_paint(prefix):
+            # `ready-idle` logs before the compositor has necessarily
+            # painted a first real frame; without another IPC round-trip
+            # first (as every other pass above already has, incidentally,
+            # by the time it takes its own first capture), a capture taken
+            # immediately after can race a still-uninitialized black
+            # headless output and "stabilize" on that instead.
+            wait_for(lambda: "wallpaper-commit" in text(prefix)
+                     and "home-configure" in text(prefix), 15)
+            time.sleep(0.3)
+
+        showcase_dark = start_showcase(dark, "showcase-dark")
+        wait_for(lambda: "ready-idle" in text("showcase-dark-rust"), 30)
+        wait_for_first_paint("showcase-dark-rust")
+        capture("home-dark-showcase.png")
+        showcase_dark.terminate()
+        try:
+            showcase_dark.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            showcase_dark.kill()
+
+        showcase_light = start_showcase(light, "showcase-light")
+        wait_for(lambda: "ready-idle" in text("showcase-light-rust"), 30)
+        wait_for_first_paint("showcase-light-rust")
+        capture("home-light-showcase.png")
+        showcase_light.terminate()
+        try:
+            showcase_light.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            showcase_light.kill()
 
         failed = [name for name, ok in checks.items() if not ok]
         assert not failed, f"failed checks: {failed}"
