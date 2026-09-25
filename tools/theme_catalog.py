@@ -22,6 +22,7 @@ import theme_activate as activation
 from theme_transaction import TransactionError, _pointer, activate_generation, prepare_only
 from theme_preferences import SelectionIntent
 import keyboard_appearance
+import theme_timing
 
 
 MAX_ENTRIES = 512
@@ -237,10 +238,14 @@ def _deferred_keyboard_sync(state_root: Path, generation_name: str, runtime_dir:
     silently drop with no effect on the caller either way, but never as a
     crash of the interpreter that started it).
     """
+    stopwatch = theme_timing.Stopwatch()
     try:
-        keyboard_appearance.sync_and_restart(
+        outcome = keyboard_appearance.sync_and_restart(
             state_root, expected_generation=generation_name,
             runtime_dir=runtime_dir, pkill_path=pkill_path)
+        stopwatch.lap("sync_and_restart")
+        theme_timing.log("keyboard_deferred", "activate", stopwatch,
+                         generation=generation_name[:12], state=outcome.get("state", "?"))
     except Exception as error:  # noqa: BLE001 - last-resort background-thread guard
         print(f"k230-theme: deferred keyboard sync failed: {error}", file=sys.stderr)
 
@@ -255,16 +260,20 @@ def handle(args) -> tuple[dict, int]:
     a local, a fresh import-module-level cache keyed by its own arguments,
     or the immutable, hash-identified on-disk generation store).
     """
+    stopwatch = theme_timing.Stopwatch()
     try:
         entries = discover(args.user_themes, args.builtins)
+        stopwatch.lap("discover")
         if args.action == "list":
             result = {"schema": 1, "themes": [entry.public() for entry in entries],
                       "active": selected(args.state_root, entries)}
+            stopwatch.lap("selected")
         else:
             entry = choose(entries, args.id)
             generation, report = prepare_entry(entry, state_root=args.state_root,
                                                tools=args.tools, background_id=args.background,
                                                wallpaper_cache_tool=args.wallpaper_cache_tool)
+            stopwatch.lap("prepare_entry")
             result = preview(entry, generation, report)
             if args.action == "preview" and args.rust_socket is not None:
                 # Best-effort: warm both receivers' Prepare-phase state (in
@@ -282,6 +291,7 @@ def handle(args) -> tuple[dict, int]:
                                 endpoints=(args.rust_socket, args.deck_socket))
                 except (OSError, TransactionError):
                     pass
+                stopwatch.lap("prepare_only_warmup")
             if args.action == "activate":
                 if args.expected_generation != generation.name:
                     raise activation.ThemeError("theme changed since preview; preview it again")
@@ -293,6 +303,7 @@ def handle(args) -> tuple[dict, int]:
                     preference=preference,
                     endpoints=(args.rust_socket, args.deck_socket)
                     if args.rust_socket is not None else None)
+                stopwatch.lap("activate_generation")
                 # Task 4 (visible side effects off the critical path): the
                 # panel is already showing the new theme by this point --
                 # activate_generation() above only returns after both
@@ -320,10 +331,15 @@ def handle(args) -> tuple[dict, int]:
                     target=_deferred_keyboard_sync,
                     args=(args.state_root, generation.name, args.keyboard_runtime_dir, args.pkill),
                 ).start()
+                stopwatch.lap("keyboard_deferred_dispatch")
                 result["activated"] = True
+        theme_timing.log("handle", args.action, stopwatch,
+                         id=getattr(args, "id", "-"), outcome="ok")
         return result, 0
     except (OSError, ValueError, activation.ThemeError, TransactionError,
             subprocess.SubprocessError) as error:
+        theme_timing.log("handle", args.action, stopwatch,
+                         id=getattr(args, "id", "-"), outcome="error", error=str(error)[:80])
         return {"schema": 1, "error": str(error), "activated": False}, 1
 
 

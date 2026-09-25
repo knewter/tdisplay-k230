@@ -12,6 +12,8 @@ import socket
 import tempfile
 import time
 
+import theme_timing
+
 
 class TransactionError(Exception):
     pass
@@ -35,29 +37,38 @@ def exchange(endpoint: Path, phase: str, generation: Path | None, *,
         message["previous_generation"] = previous.name if previous is not None else None
         message["previous_path"] = str(previous) if previous is not None else None
     deadline = time.monotonic() + timeout
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
-        connection.settimeout(max(0.001, deadline - time.monotonic()))
-        connection.connect(str(endpoint))
-        connection.settimeout(max(0.001, deadline - time.monotonic()))
-        connection.sendall(json.dumps(message, sort_keys=True).encode() + b"\n")
-        data = bytearray()
-        while not data.endswith(b"\n"):
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise TransactionError(f"{phase} acknowledgement timed out")
-            connection.settimeout(remaining)
-            chunk = connection.recv(1)
-            if not chunk or len(data) >= MAX_REPLY:
-                raise TransactionError(f"invalid {phase} acknowledgement")
-            data.extend(chunk)
+    started = theme_timing.now_ms()
     try:
-        reply = json.loads(data)
-    except (ValueError, UnicodeDecodeError) as error:
-        raise TransactionError(f"invalid {phase} acknowledgement") from error
-    if (not isinstance(reply, dict) or reply.get("protocol") != 1
-            or reply.get("phase") != phase or reply.get("generation") != identity
-            or reply.get("status") != "ok"):
-        raise TransactionError(f"shell rejected {phase}")
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+            connection.settimeout(max(0.001, deadline - time.monotonic()))
+            connection.connect(str(endpoint))
+            connection.settimeout(max(0.001, deadline - time.monotonic()))
+            connection.sendall(json.dumps(message, sort_keys=True).encode() + b"\n")
+            data = bytearray()
+            while not data.endswith(b"\n"):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TransactionError(f"{phase} acknowledgement timed out")
+                connection.settimeout(remaining)
+                chunk = connection.recv(1)
+                if not chunk or len(data) >= MAX_REPLY:
+                    raise TransactionError(f"invalid {phase} acknowledgement")
+                data.extend(chunk)
+        try:
+            reply = json.loads(data)
+        except (ValueError, UnicodeDecodeError) as error:
+            raise TransactionError(f"invalid {phase} acknowledgement") from error
+        if (not isinstance(reply, dict) or reply.get("protocol") != 1
+                or reply.get("phase") != phase or reply.get("generation") != identity
+                or reply.get("status") != "ok"):
+            raise TransactionError(f"shell rejected {phase}")
+    finally:
+        # Named per-endpoint round-trip cost (coordinator's own question:
+        # "how long does the Rust or deck ack take"). Logged unconditionally,
+        # including on a timeout/rejection, since a slow *failing* exchange
+        # is exactly as diagnostically interesting as a slow successful one.
+        theme_timing.log("exchange", phase, endpoint=endpoint.name,
+                         generation=identity or "-", ms=f"{theme_timing.now_ms() - started:.1f}")
 
 
 def _pointer(root: Path) -> Path | None:

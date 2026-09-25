@@ -147,9 +147,15 @@ impl ThemeWorker {
         let (requests, incoming) = mpsc::sync_channel(QUEUE);
         let (outgoing, replies) = mpsc::sync_channel(QUEUE);
         let outstanding = Arc::new(AtomicUsize::new(0));
+        // Close enough to `main.rs`'s own `state.started` (set a few lines
+        // after this worker is spawned) for this thread's own
+        // `rust-shell <ms>ms <event>` log lines to sort correctly into the
+        // same merged timeline `tools/theme-swap-jank.py` already builds
+        // from `main.rs`'s `fn log`.
+        let process_started = Instant::now();
         thread::spawn(move || {
             while let Ok((id, request)) = incoming.recv() {
-                let result = execute(&command, &request);
+                let result = execute(&command, &request, process_started);
                 if outgoing
                     .send(ThemeReply {
                         id,
@@ -225,7 +231,7 @@ fn valid_request(request: &ThemeRequest) -> bool {
     }
 }
 
-fn execute(command: &Path, request: &ThemeRequest) -> Result<ThemeResponse, String> {
+fn execute(command: &Path, request: &ThemeRequest, process_started: Instant) -> Result<ThemeResponse, String> {
     if !command.is_absolute() || !valid_request(request) {
         return Err("theme command or request is invalid".into());
     }
@@ -257,7 +263,27 @@ fn execute(command: &Path, request: &ThemeRequest) -> Result<ThemeResponse, Stri
             }
         }
     }
-    let (stdout, stderr, success) = run(command, &args)?;
+    let call_name = args.first().copied().unwrap_or("-");
+    let theme_id = args.get(1).copied().unwrap_or("-");
+    let call_started = Instant::now();
+    let outcome = run(command, &args);
+    // Named stage marker (coordinator's own ask: "make sure that [chooser]
+    // path uses the daemon too, and time it"): this is the whole `k230-theme`
+    // subprocess's wall time as the chooser actually waits on it -- whether
+    // that command itself was served by `theme-helper.service` or fell back
+    // is `theme_client.py`'s own THEME_TIMING syslog line (journalctl), not
+    // observable from here; this line is what the chooser's own worker
+    // thread (not the Wayland thread -- see this module's own doc) actually
+    // blocked on for this one request, logged regardless of success so a
+    // spawn failure is timed too. Same `rust-shell <ms>ms <event>` shape
+    // `main.rs`'s own `fn log` uses, so `tools/theme-swap-jank.py`'s
+    // existing journal parsing (`RUST_LOG_RE`) picks this up for free.
+    eprintln!(
+        "rust-shell {}ms theme-command {call_name} {theme_id} duration={}ms",
+        process_started.elapsed().as_millis(),
+        call_started.elapsed().as_millis()
+    );
+    let (stdout, stderr, success) = outcome?;
     if !success {
         return Err(command_error(&stderr));
     }

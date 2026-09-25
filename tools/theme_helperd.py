@@ -40,6 +40,7 @@ import threading
 from pathlib import Path
 
 import theme_catalog
+import theme_timing
 
 MAX_REQUEST = 8192
 PEER_DEADLINE_S = 2.0
@@ -99,32 +100,52 @@ class Helperd:
         self.lock = threading.Lock()
 
     def handle_line(self, line: bytes) -> tuple[dict, int]:
+        stopwatch = theme_timing.Stopwatch()
         try:
             request = json.loads(line)
             if not isinstance(request, dict):
                 raise ValueError("request must be a JSON object")
             argv = request_argv(self.fixed_argv, request)
         except (json.JSONDecodeError, ValueError) as error:
+            theme_timing.log("helperd", "malformed", stopwatch, error=str(error)[:80])
             return {"schema": 1, "error": f"malformed request: {error}", "activated": False}, 1
+        action = argv[len(self.fixed_argv)] if len(argv) > len(self.fixed_argv) else "-"
         parser = theme_catalog.build_parser()
         try:
             args = parser.parse_args(argv)
         except SystemExit:
+            theme_timing.log("helperd", action, stopwatch, outcome="invalid-arguments")
             return {"schema": 1, "error": "invalid request arguments", "activated": False}, 1
         if (args.rust_socket is None) != (args.deck_socket is None):
+            theme_timing.log("helperd", action, stopwatch, outcome="socket-flags-mismatch")
             return {"schema": 1, "error": "--rust-socket and --deck-socket must be supplied together",
                     "activated": False}, 1
+        stopwatch.lap("parse")
         # theme_catalog's own functions never raise anything this daemon has
         # not already seen reported as a normal `{"error": ...}` result from
         # a one-shot CLI call -- but this loop must survive an unexpected
         # exception too, or one bad request would take down every later
         # swap until systemd restarts it.
         with self.lock:  # theme_catalog's module-level state is not designed for concurrent calls
+            stopwatch.lap("lock_wait")
             try:
-                return theme_catalog.handle(args)
+                result, code = theme_catalog.handle(args)
             except Exception as error:  # noqa: BLE001 - see docstring: never let this kill the daemon
+                stopwatch.lap("handle")
+                theme_timing.log("helperd", action, stopwatch,
+                                 id=getattr(args, "id", "-"), outcome="internal-error")
                 return {"schema": 1, "error": f"helper internal error: {error}",
                         "activated": False}, 1
+        stopwatch.lap("handle")
+        # `handle()` already logged its own per-phase THEME_TIMING line
+        # (component "handle"); this one is the daemon-specific envelope
+        # around it -- request parsing and time actually spent waiting for
+        # `self.lock` (the coordinator's own question: "does the daemon
+        # hold a lock ... on every call") -- so a slow request is
+        # attributable to one or the other from the journal alone.
+        theme_timing.log("helperd", action, stopwatch, id=getattr(args, "id", "-"),
+                         outcome="ok" if code == 0 else "error")
+        return result, code
 
     def serve_one(self, connection: socket.socket) -> None:
         connection.settimeout(PEER_DEADLINE_S)
