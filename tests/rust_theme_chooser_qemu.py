@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Paired Sway/Rust theme carousel touch proof with a synthetic theme command.
 
+Task: tap-to-apply (2026-09-25, user decision: "tap theme in the theme
+picker, apply immediately, so i can compare them easily"). There is no
+longer a separate Preview page or Apply/Cancel footer: tapping the
+already-centred slice of either carousel applies it right away, through
+the same "preview" (learn the generation)/"activate" pair the old
+Apply button used to send, chained automatically.
+
 The fixture never calls the real theme transaction or modifies user themes.
 Synthetic Wayland touch and headless screenshots are not physical panel proof.
 """
@@ -20,11 +27,20 @@ from PIL import Image, ImageChops
 
 
 THEME_COMMAND = '''#!/usr/bin/env python3
-import json, os, sys
+import json, os, sys, time
 from pathlib import Path
 args = sys.argv[1:]
 with open(os.environ["K230_TEST_THEME_LOG"], "a") as log:
     log.write(json.dumps(args) + "\\n")
+# Rapid-tap coalescing proof (task: tap-to-apply, 2026-09-25): a "preview"
+# call naming this theme id (env var, unset by default) sleeps before
+# replying, giving the test a reliable window to tap a *different* theme
+# while this one is still in flight -- the Rust client's own `Desired`
+# coalescing must discard this reply once it lands late, never activate
+# it, and move straight on to whatever was tapped in the meantime.
+slow_id = os.environ.get("K230_TEST_THEME_SLOW_ID")
+if args and args[0] == "preview" and len(args) > 1 and args[1] == slow_id:
+    time.sleep(1.5)
 generation = "b" * 24
 # Every row points at the same real fixture PNG (K230_TEST_THEME_PREVIEW),
 # matching Omarchy's per-theme preview.png convention closely enough to
@@ -81,9 +97,11 @@ THEME_GEOMETRY = {"expanded_w": 480.0, "expanded_h": 640.0, "slice_w": 68.0,
                   "slice_h": 582.0, "spacing": -19.0}
 BACKGROUND_GEOMETRY = {"expanded_w": 420.0, "expanded_h": 260.0, "slice_w": 59.0,
                        "slice_h": 237.0, "spacing": -16.0}
-THEME_TOP = 204.0
-BACKGROUND_TOP = 662.0
-PREVIEW_FOOTER_Y = BACKGROUND_TOP + BACKGROUND_GEOMETRY["expanded_h"] + 120.0
+# Task: tap-to-apply (2026-09-25) put both carousels on one page; these
+# mirror theme_ui.rs's own `THEME_CAROUSEL_TOP`/`BACKGROUND_CAROUSEL_TOP`
+# exactly (204.0/662.0 were the old, separate-page values).
+THEME_TOP = 132.0
+BACKGROUND_TOP = THEME_TOP + THEME_GEOMETRY["expanded_h"] + 100.0
 
 
 def item_step(geometry):
@@ -166,12 +184,18 @@ def main():
         generation_dir.mkdir(parents=True)
         Image.new("RGB", (64, 128), (32, 96, 214)).save(generation_dir / "one.png")
         Image.new("RGB", (64, 128), (214, 176, 32)).save(generation_dir / "two.png")
+        # Rapid-tap coalescing (task: tap-to-apply, 2026-09-25): theme 8's
+        # own "preview" call is made to sleep before replying (see
+        # THEME_COMMAND above), giving a reliable window to tap a
+        # *different* theme while it is still in flight.
+        slow_theme_id = f"{8:024x}"
         env = dict(os.environ, XDG_RUNTIME_DIR=str(root), WLR_BACKENDS="headless",
                    WLR_HEADLESS_OUTPUTS="1", WLR_RENDERER="pixman",
                    SWAY_K230_CARD_SHELL="1", SWAY_K230_CARD_TEST_INPUT="1",
                    K230_THEME_COMMAND=str(command), K230_TEST_THEME_LOG=str(log),
                    K230_TEST_THEME_GENERATION=str(root / "generations"),
-                   K230_TEST_THEME_PREVIEW=str(preview))
+                   K230_TEST_THEME_PREVIEW=str(preview),
+                   K230_TEST_THEME_SLOW_ID=slow_theme_id)
         sway_log = (root / "sway.log").open("w")
         rust_log = (root / "rust.log").open("w")
         sway = subprocess.Popen([args.qemu, str(args.sway), "-c", str(config), "-d"],
@@ -270,12 +294,21 @@ def main():
             wait_for(lambda: commits() >= 1)
             controls = capture("settings.png")
 
+            active_theme_id = f"{0:024x}"
+
             # --- Open the theme carousel, centered on the active theme. ---
             tap(475, 130)
-            wait_for(lambda: calls() == [["list"]])
-            # The list reply, its thumbnail decodes, and the carousel's own
-            # first paint are each a separate repaint; wait for all of them
-            # to finish landing rather than assuming a fixed commit count.
+            wait_for(lambda: any(row == ["list"] for row in calls()))
+            # Task: tap-to-apply (2026-09-25): the active theme's own detail
+            # (feeding the background carousel below the theme carousel)
+            # loads itself automatically once the list arrives -- no tap
+            # needed, see `ThemeView::accept`'s own `already_active` doc.
+            wait_for(lambda: any(row[:2] == ["preview", active_theme_id] and "--background" not in row
+                                 for row in calls()))
+            # The list reply, its thumbnail decodes, the active theme's own
+            # auto-loaded detail, and the carousel's own first paint are
+            # each a separate repaint; wait for all of them to finish
+            # landing rather than assuming a fixed commit count.
             listing = capture("theme-list.png")
             assert ImageChops.difference(controls, listing).getbbox(), "carousel was not painted"
             assert all(row[0] != "activate" for row in calls())
@@ -336,62 +369,80 @@ def main():
             # theme should already have been warmed in the background --
             # not merely "browsing didn't break", but "browsing actually
             # warms a candidate ahead of Apply", the behavior this task adds.
-            assert any(row[0] == "preview" and "--background" not in row for row in calls()), \
-                "browsing should have warmed at least one theme by now (task 3.2)"
+            assert any(row[0] == "preview" and "--background" not in row and row[1] != active_theme_id
+                       for row in calls()), \
+                "browsing should have warmed at least one non-active theme by now (task 3.2)"
 
-            # --- Confirm: tap the now-centered slice. ---
+            # --- Tap-to-apply: tapping the now-centred slice applies it
+            # immediately -- no separate Preview page, no Apply/Cancel
+            # footer (task: tap-to-apply, 2026-09-25, user decision: "tap
+            # theme in the theme picker, apply immediately"). ---
+            theme7_id = f"{7:024x}"
             tap(*theme_center)  # slice_center's (0,0) case is centre-independent of `selected`
-            wait_for(lambda: any(row[0] == "preview" for row in calls()))
-            preview_capture = capture("theme-preview.png")
-            assert ImageChops.difference(recentered, preview_capture).getbbox(), "preview was not painted"
-            assert all(row[0] != "activate" for row in calls())
-            preview_calls = [row for row in calls() if row[0] == "preview"]
-            # Browsing itself may now have already queued one or more warm-up
-            # previews (task 3.2); what must still hold is that the *last*
-            # one by the time the Preview page is actually showing is this
-            # explicit confirm's own request, for the centred (non-active)
-            # theme -- proven here by the page having visibly navigated
-            # (the diff assertion just above), which a discarded prepare-
-            # ahead reply alone never causes.
-            selected_theme = preview_calls[-1][1]
-            assert selected_theme != f"{0:024x}", \
-                "confirming after browsing away from the active theme must select a different one"
+            wait_for(lambda: any(row[0] == "activate" and row[1] == theme7_id for row in calls()), 20)
+            tapped = capture("theme-tap-apply.png")
+            assert ImageChops.difference(recentered, tapped).getbbox(), \
+                "tapping the centred slice must apply it (and repaint) immediately"
+            activation = [row for row in calls() if row[0] == "activate"]
+            assert len(activation) == 1 and activation[0][1] == theme7_id
+            assert "--expected-generation" in activation[0]
+            assert activation[0][activation[0].index("--expected-generation") + 1] == "b" * 24
+            assert theme7_id != active_theme_id, \
+                "confirming after browsing away from the active theme must apply a different one"
 
-            # --- Background carousel: browse by drag, then confirm. ---
+            # --- Background carousel: below the theme carousel on this
+            # same page (not a separate page reached by confirming a
+            # theme); browse by drag, then tap-to-apply directly. ---
             bg_step = item_step(BACKGROUND_GEOMETRY)
             bg_center = slice_center(BACKGROUND_GEOMETRY, 0, 0, center_x, BACKGROUND_TOP)
             drag(bg_center[0], bg_center[0] - bg_step, bg_center[1])  # one slot: still 0 -> still 1
             bg_dragged = capture("theme-background-dragged.png")
             bg_band = (20, int(BACKGROUND_TOP), 548,
                        int(BACKGROUND_TOP + BACKGROUND_GEOMETRY["expanded_h"]))
-            assert ImageChops.difference(preview_capture.crop(bg_band), bg_dragged.crop(bg_band)).getbbox(), \
+            assert ImageChops.difference(tapped.crop(bg_band), bg_dragged.crop(bg_band)).getbbox(), \
                 "drag did not move the background carousel"
-            assert all(row[0] != "activate" for row in calls())
+            assert all(row[0] != "activate" or row[1] != theme7_id or "--background" not in row
+                       for row in calls())
             tap(*bg_center)
-            wait_for(lambda: any(row[:2] == ["preview", selected_theme] and "--background" in row
+            wait_for(lambda: any(row[0] == "activate" and row[1] == theme7_id and "--background" in row
                                  for row in calls()), 20)
-            selected = capture("theme-background-selected.png")
-            assert ImageChops.difference(bg_dragged, selected).getbbox(), \
-                "confirming a different background did not update the preview"
-            background_call = [row for row in calls() if row[0] == "preview" and "--background" in row][-1]
-            assert background_call[background_call.index("--background") + 1] == "d" * 24
-            assert all(row[0] != "activate" for row in calls())
+            bg_selected = capture("theme-background-selected.png")
+            assert ImageChops.difference(bg_dragged, bg_selected).getbbox(), \
+                "applying a different background did not repaint"
+            background_activation = [row for row in calls()
+                                     if row[0] == "activate" and row[1] == theme7_id and "--background" in row]
+            assert len(background_activation) == 1
+            call = background_activation[0]
+            assert call[call.index("--background") + 1] == "d" * 24
+            # A background tap already knows its own theme's generation (it
+            # was loaded right alongside the backgrounds themselves), so it
+            # applies straight through `Activate` -- no `Preview` round trip
+            # first, unlike a theme tap targeting a never-loaded generation.
+            assert not any(row[0] == "preview" and "--background" in row for row in calls()), \
+                "a background tap-apply must never need its own Preview step"
 
-            # --- Cancel returns to the carousel without activating. ---
-            tap(120, PREVIEW_FOOTER_Y + 25.0)
-            wait_for(lambda: calls()[-1] == ["list"])
-            capture("_after-cancel.png")  # only for its stabilization wait
-            assert all(row[0] != "activate" for row in calls())
+            # --- Rapid taps across themes coalesce onto the last one: no
+            # queue of stale activations, and an in-flight apply (theme 8,
+            # whose own "preview" reply is made to sleep -- see
+            # THEME_COMMAND above) is superseded safely by theme 9. ---
+            theme9_id = f"{9:024x}"
+            drag(center_x, center_x - theme_step, theme_center[1])  # one slot: 7 -> 8
+            tap(*theme_center)  # confirm theme 8; its own reply is in flight (slow)
+            wait_for(lambda: any(row[:2] == ["preview", slow_theme_id] for row in calls()))
+            drag(center_x, center_x - theme_step, theme_center[1])  # one slot: 8 -> 9, while theme 8 is pending
+            tap(*theme_center)  # confirm theme 9 before theme 8's own reply lands
+            wait_for(lambda: any(row[0] == "activate" and row[1] == theme9_id for row in calls()), 20)
+            coalesced = capture("theme-rapid-tap-coalesced.png")
+            assert ImageChops.difference(bg_selected, coalesced).getbbox(), \
+                "the superseding tap (theme 9) must still repaint once it settles"
+            assert not any(row[0] == "activate" and row[1] == slow_theme_id for row in calls()), \
+                "a superseded in-flight apply (theme 8) must never itself activate"
+            assert any(row[:2] == ["preview", slow_theme_id] for row in calls()), \
+                "the superseded tap's own request must still have been sent, not silently skipped"
+            activations = [row for row in calls() if row[0] == "activate"]
+            assert [row[1] for row in activations] == [theme7_id, theme7_id, theme9_id], \
+                "exactly one activation per genuinely-settled apply, no stale queue"
 
-            # --- Re-confirm and Apply: only this explicit action activates. ---
-            tap(*theme_center)
-            wait_for(lambda: calls()[-1][0] == "preview")
-            capture("_before-apply.png")  # only for its stabilization wait
-            tap(430, PREVIEW_FOOTER_Y + 25.0)
-            wait_for(lambda: any(row[0] == "activate" for row in calls()))
-            activation = [row for row in calls() if row[0] == "activate"]
-            assert len(activation) == 1 and "--expected-generation" in activation[0]
-            assert activation[0][activation[0].index("--expected-generation") + 1] == "b" * 24
             print("PASS paired Sway/Rust theme carousel QEMU touch, synthetic backend; no physical touch")
         finally:
             if rust is not None:
