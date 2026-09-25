@@ -109,6 +109,21 @@ def slice_center(geometry, selected, index, center_x, top_y):
     return x + slice_w / 2.0, y + slice_h / 2.0
 
 
+def browse_calls_are_safe(rows):
+    """Task 3.2: once a theme has been the carousel's centred item, at
+    rest, for its debounce interval, browsing alone may now itself trigger
+    a background warm-up "preview" call (no `--background` flag, since
+    that only ever accompanies an explicit background selection on the
+    Preview page) -- see `theme_ui.rs`'s `poll_prepare_ahead`. That call's
+    reply is discarded before it can reach `ThemeView::accept` (proven by
+    this test's own screenshot diffs never showing a navigation at these
+    call sites, not by the log alone), so "browsing must never activate or
+    select a background" is still the real invariant, not "browsing must
+    never call preview at all"."""
+    return all(row[0] == "list" or (row[0] == "preview" and "--background" not in row)
+               for row in rows)
+
+
 def wait_for(predicate, seconds=25):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -281,7 +296,8 @@ def main():
             band = (20, int(THEME_TOP), 548, int(THEME_TOP + THEME_GEOMETRY["expanded_h"]) + 90)
             assert ImageChops.difference(listing.crop(band), dragged.crop(band)).getbbox(), \
                 "drag did not move the theme carousel"
-            assert calls() == [["list"]], "browsing must never itself request a preview"
+            assert browse_calls_are_safe(calls()), \
+                "browsing must never select a background or activate"
 
             # --- Browse by tap: a side slice recenters, still no confirm. ---
             # The exact slot the preceding drag settled on is a timing
@@ -312,7 +328,16 @@ def main():
                     break
             else:
                 raise AssertionError("tapping a side slice did not bring it to the centre")
-            assert calls() == [["list"]], "a side-slice tap must only browse, never confirm"
+            assert browse_calls_are_safe(calls()), \
+                "a side-slice tap must only browse, never confirm or activate"
+            # Task 3.2 proof: two settle-and-dwell cycles have now each sat
+            # comfortably past the debounce interval during `capture`'s own
+            # multi-frame stabilization wait, so at least one non-active
+            # theme should already have been warmed in the background --
+            # not merely "browsing didn't break", but "browsing actually
+            # warms a candidate ahead of Apply", the behavior this task adds.
+            assert any(row[0] == "preview" and "--background" not in row for row in calls()), \
+                "browsing should have warmed at least one theme by now (task 3.2)"
 
             # --- Confirm: tap the now-centered slice. ---
             tap(*theme_center)  # slice_center's (0,0) case is centre-independent of `selected`
@@ -321,7 +346,13 @@ def main():
             assert ImageChops.difference(recentered, preview_capture).getbbox(), "preview was not painted"
             assert all(row[0] != "activate" for row in calls())
             preview_calls = [row for row in calls() if row[0] == "preview"]
-            assert len(preview_calls) == 1, "browsing must never queue an extra preview request"
+            # Browsing itself may now have already queued one or more warm-up
+            # previews (task 3.2); what must still hold is that the *last*
+            # one by the time the Preview page is actually showing is this
+            # explicit confirm's own request, for the centred (non-active)
+            # theme -- proven here by the page having visibly navigated
+            # (the diff assertion just above), which a discarded prepare-
+            # ahead reply alone never causes.
             selected_theme = preview_calls[-1][1]
             assert selected_theme != f"{0:024x}", \
                 "confirming after browsing away from the active theme must select a different one"

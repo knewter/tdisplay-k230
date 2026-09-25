@@ -134,7 +134,39 @@ pub struct ThemeView {
     /// full redraw at rest while thumbnails were still decoding (the
     /// idle-redraw fix this field is part of).
     pub pulse_phase: f64,
+    /// Task 3.2: index whose centred dwell time is accumulating, on the
+    /// Themes list page only. Reset (to `None`/`0`) whenever the carousel
+    /// is not settled on one index -- a drag, a coast, or a settle
+    /// animation in progress -- so a fast flick across many themes never
+    /// fires a warm-up per slice ("cancelled on scroll-away"). `pub` only
+    /// because `render.rs`'s test fixtures build a `ThemeView` with `..`
+    /// struct-update syntax, same as every other field here; nothing
+    /// outside this module has a reason to read or set these directly --
+    /// use `poll_prepare_ahead`/`prepare_ahead_submitted`/
+    /// `prepare_ahead_reply` instead.
+    pub prepare_ahead_watch: Option<usize>,
+    pub prepare_ahead_elapsed_ms: u32,
+    /// The index a warm-up request has already been sent (or is in flight)
+    /// for, so a long dwell on the same item does not resend once it has
+    /// been asked for once.
+    pub prepare_ahead_sent_for: Option<usize>,
+    /// The single in-flight warm-up request's id, recognised and consumed
+    /// by `prepare_ahead_reply` so `main.rs` never feeds that reply to
+    /// `accept` -- it must never navigate or repaint the chooser, only free
+    /// this one slot for the next settled candidate. Bounding this to one
+    /// (rather than a queue) is deliberately the stricter half of "one or
+    /// two in flight": it also keeps this from crowding the same
+    /// `ThemeWorker` queue a real Preview/Activate tap needs.
+    pub prepare_ahead_inflight: Option<u64>,
 }
+
+/// How long a theme must stay the carousel's centred item, with the
+/// carousel otherwise at rest, before task 3.2 treats it as "browsed to"
+/// and warms it ahead of a possible Apply. Long enough that a flick past
+/// several themes on the way to a specific one fires nothing for the ones
+/// only passed through; short enough that a person who pauses to look at a
+/// theme is very likely already warmed by the time they decide to open it.
+const PREPARE_AHEAD_DEBOUNCE_MS: u32 = 220;
 
 impl Default for ThemeView {
     fn default() -> Self {
@@ -152,6 +184,10 @@ impl Default for ThemeView {
             theme_pressed: None,
             background_pressed: None,
             pulse_phase: 0.0,
+            prepare_ahead_watch: None,
+            prepare_ahead_elapsed_ms: 0,
+            prepare_ahead_sent_for: None,
+            prepare_ahead_inflight: None,
         }
     }
 }
@@ -197,7 +233,19 @@ impl ThemeView {
         self.message = None;
         self.theme_pressed = None;
         self.background_pressed = None;
+        self.reset_prepare_ahead_debounce();
         ThemeRequest::List
+    }
+
+    /// Clears task 3.2's debounce/dedupe bookkeeping (never the one
+    /// in-flight request id: that reply, whenever it lands, must still be
+    /// recognised by `prepare_ahead_reply` rather than falling through to
+    /// `accept`). Called whenever the list page's own centred-item context
+    /// stops applying -- leaving the page, or reloading the list.
+    fn reset_prepare_ahead_debounce(&mut self) {
+        self.prepare_ahead_watch = None;
+        self.prepare_ahead_elapsed_ms = 0;
+        self.prepare_ahead_sent_for = None;
     }
 
     pub fn back(&mut self) -> Option<ThemeRequest> {
@@ -211,6 +259,7 @@ impl ThemeView {
         self.message = None;
         self.theme_pressed = None;
         self.background_pressed = None;
+        self.reset_prepare_ahead_debounce();
         match self.page {
             ThemePage::Preview => {
                 self.page = ThemePage::List;
@@ -307,6 +356,75 @@ impl ThemeView {
             }
         }
         true
+    }
+
+    /// Task 3.2: called once per tick while the Themes list page is shown.
+    /// `centered` is the carousel's committed index when it is not
+    /// mid-drag/coast/settle, `None` otherwise. Returns a warm-up request
+    /// once the same index has stayed centred, at rest, for
+    /// `PREPARE_AHEAD_DEBOUNCE_MS` -- the caller submits it directly to the
+    /// `ThemeWorker` (bypassing `submitted`/`self.pending`, since this must
+    /// never be mistaken for a real navigational Preview) and reports the
+    /// id back via `prepare_ahead_submitted`.
+    ///
+    /// This reuses the existing `Preview` request/action rather than adding
+    /// a new one: `tools/theme_catalog.py`'s `preview` action already calls
+    /// `prepare_only()` (task 3.1a) whenever `--rust-socket`/`--deck-socket`
+    /// are configured, so a discarded `Preview` reply here has exactly the
+    /// warming side effect this task wants, with no new protocol.
+    pub fn poll_prepare_ahead(
+        &mut self,
+        elapsed_ms: u32,
+        centered: Option<usize>,
+    ) -> Option<ThemeRequest> {
+        let Some(index) = centered else {
+            self.prepare_ahead_watch = None;
+            self.prepare_ahead_elapsed_ms = 0;
+            return None;
+        };
+        if self.prepare_ahead_watch != Some(index) {
+            self.prepare_ahead_watch = Some(index);
+            self.prepare_ahead_elapsed_ms = elapsed_ms;
+        } else {
+            self.prepare_ahead_elapsed_ms = self.prepare_ahead_elapsed_ms.saturating_add(elapsed_ms);
+        }
+        if self.prepare_ahead_inflight.is_some()
+            || self.prepare_ahead_sent_for == Some(index)
+            || self.prepare_ahead_elapsed_ms < PREPARE_AHEAD_DEBOUNCE_MS
+        {
+            return None;
+        }
+        let list = self.list.as_ref()?;
+        let theme = list.themes.get(index)?;
+        if list.active.id.as_deref() == Some(theme.id.as_str()) {
+            return None; // already active/applied: nothing to warm
+        }
+        Some(ThemeRequest::Preview {
+            theme_id: theme.id.clone(),
+            background_id: None,
+        })
+    }
+
+    /// Records that `poll_prepare_ahead`'s request for `index` was actually
+    /// submitted to the worker as request `id`.
+    pub fn prepare_ahead_submitted(&mut self, index: usize, id: u64) {
+        self.prepare_ahead_sent_for = Some(index);
+        self.prepare_ahead_inflight = Some(id);
+    }
+
+    /// True (and clears the in-flight slot) when `reply` is this chooser's
+    /// own warm-up call. `main.rs` checks this before `accept`, so a
+    /// warm-up reply is always discarded -- it is never mistaken for the
+    /// (structurally identical) reply to a real, navigational Preview
+    /// request, because `submitted`/`self.pending`/`self.pending_id` were
+    /// never touched for it in the first place.
+    pub fn prepare_ahead_reply(&mut self, reply: &ThemeReply) -> bool {
+        if self.prepare_ahead_inflight == Some(reply.id) {
+            self.prepare_ahead_inflight = None;
+            true
+        } else {
+            false
+        }
     }
 
     pub fn preview_request(&self, index: usize) -> Option<ThemeRequest> {
@@ -774,5 +892,125 @@ mod tests {
             .expect("a matching background.cache must be used instead of a failed re-decode");
         assert_eq!(pixels.len(), 20 * 40 * 4);
         std::fs::remove_dir_all(&generation_root).unwrap();
+    }
+
+    fn theme_list(active_index: Option<usize>) -> ThemeList {
+        let themes: Vec<ThemeEntry> = (0..3)
+            .map(|index| {
+                let mut theme = preview().theme;
+                theme.id = std::iter::repeat_n(char::from_digit(index, 10).unwrap(), 24).collect();
+                theme
+            })
+            .collect();
+        ThemeList {
+            active: ActiveTheme {
+                id: active_index.map(|index| themes[index].id.clone()),
+                generation: None,
+            },
+            themes,
+        }
+    }
+
+    #[test]
+    fn prepare_ahead_waits_out_the_debounce_and_never_resends_for_the_same_index() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        view.list = Some(theme_list(None));
+
+        // A fast flick (never settled, `centered` is `None` each tick) asks
+        // for nothing.
+        assert_eq!(view.poll_prepare_ahead(50, None), None);
+        assert_eq!(view.poll_prepare_ahead(50, None), None);
+
+        // Settling on index 1 starts the debounce timer; short of the
+        // threshold, still nothing.
+        assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
+        assert_eq!(view.poll_prepare_ahead(100, Some(1)), None);
+        // Crossing the threshold (100+100+50 >= 220) fires exactly once.
+        let request = view
+            .poll_prepare_ahead(50, Some(1))
+            .expect("debounce elapsed while centred on the same index");
+        assert_eq!(
+            request,
+            ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[1].id.clone(),
+                background_id: None,
+            }
+        );
+        view.prepare_ahead_submitted(1, 7);
+
+        // Still centred on 1: no repeat while the in-flight slot is held,
+        // and none once it clears either, since index 1 was already asked
+        // for.
+        assert_eq!(view.poll_prepare_ahead(1000, Some(1)), None);
+        assert!(view.prepare_ahead_reply(&ThemeReply {
+            id: 7,
+            request,
+            result: Err("irrelevant".into()),
+        }));
+        assert_eq!(view.poll_prepare_ahead(1000, Some(1)), None);
+
+        // Moving to a different index resets the dedupe and debounce.
+        assert_eq!(view.poll_prepare_ahead(50, Some(2)), None);
+        let second = view
+            .poll_prepare_ahead(200, Some(2))
+            .expect("a new centred index gets its own debounce window");
+        assert_eq!(
+            second,
+            ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[2].id.clone(),
+                background_id: None,
+            }
+        );
+    }
+
+    #[test]
+    fn prepare_ahead_skips_the_already_active_theme_and_a_stray_reply_never_reaches_accept() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        view.list = Some(theme_list(Some(0)));
+
+        // Index 0 is already active: nothing to warm even after a long dwell.
+        assert_eq!(view.poll_prepare_ahead(500, Some(0)), None);
+
+        // A reply for a request this view never tracked as in-flight (a
+        // stray/late id) is not claimed by `prepare_ahead_reply`, so
+        // `main.rs` would fall through to `accept`, which independently
+        // rejects it via the ordinary pending/pending_id mismatch check.
+        let stray = ThemeReply {
+            id: 999,
+            request: ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[1].id.clone(),
+                background_id: None,
+            },
+            result: Err("irrelevant".into()),
+        };
+        assert!(!view.prepare_ahead_reply(&stray));
+        assert!(!view.accept(stray));
+    }
+
+    #[test]
+    fn leaving_the_list_page_resets_the_debounce_but_keeps_the_in_flight_slot_recognisable() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        view.list = Some(theme_list(None));
+        assert!(view.poll_prepare_ahead(300, Some(1)).is_some());
+        view.prepare_ahead_submitted(1, 3);
+
+        assert_eq!(view.back(), None); // List -> Controls
+        assert_eq!(view.page, ThemePage::Controls);
+
+        // The in-flight request's own reply must still be recognised (and
+        // discarded) even after navigating away, never treated as a real
+        // Preview reply that could reopen/repaint the chooser.
+        let reply = ThemeReply {
+            id: 3,
+            request: ThemeRequest::Preview {
+                theme_id: view.list.as_ref().unwrap().themes[1].id.clone(),
+                background_id: None,
+            },
+            result: Err("irrelevant".into()),
+        };
+        assert!(view.prepare_ahead_reply(&reply));
     }
 }

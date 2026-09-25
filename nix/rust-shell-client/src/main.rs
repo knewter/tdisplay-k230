@@ -909,6 +909,16 @@ impl ShellClient {
     }
 
     fn theme_reply(&mut self, reply: ThemeReply) {
+        // Task 3.2: a warm-up call issued by `poll_prepare_ahead` reuses the
+        // ordinary `Preview` request/reply shape but was never registered
+        // via `submitted`, so it must never reach `ThemeView::accept` --
+        // that would (harmlessly, since pending_id never matches, but
+        // needlessly) be indistinguishable in principle from a real
+        // navigational Preview reply. `prepare_ahead_reply` recognises and
+        // consumes exactly its own request id and nothing else.
+        if self.theme_view.prepare_ahead_reply(&reply) {
+            return;
+        }
         if self.theme_view.accept(reply) {
             // `ThemeView::accept` just centered `theme_position`/
             // `background_position` on the freshly-loaded active theme or
@@ -2700,6 +2710,15 @@ fn serve() -> Result<(), String> {
                         let accepted = result.is_ok();
                         if let Err(error) = result {
                             state.log(&format!("appearance-prepare-rejected {error}"));
+                        } else {
+                            // Named stage marker for tools/theme-swap-jank.py's
+                            // merged timeline (task 1): when this candidate is
+                            // browsed ahead (task 3.2) or activate_generation's
+                            // own internal re-prepare lands, this is the exact
+                            // point the wallpaper decode either hit
+                            // `state.background_cache`'s in-memory LRU or paid
+                            // a `background.cache` read/full decode.
+                            state.log("appearance-prepare-accepted");
                         }
                         if let Err(error) = appearance.respond(event, accepted) {
                             state.log(&format!("appearance-prepare-ack-failed {error}"));
@@ -2826,6 +2845,27 @@ fn serve() -> Result<(), String> {
                 }
                 state.theme_dirty();
             }
+            // Task 3.2: as a theme becomes (and stays) the carousel's
+            // centred item on the List page, warm it ahead of a possible
+            // Apply -- see `ThemeView::poll_prepare_ahead`'s own doc. Only
+            // considered while the carousel itself is at rest (`!moved` is
+            // not sufficient: `moved` is false on an already-settled frame
+            // too, but `is_animating()` is what actually distinguishes "a
+            // drag/coast/settle is still live" from "nothing is moving"),
+            // so a fast flick fires nothing until the finger actually
+            // settles somewhere.
+            if state.theme_view.page == ThemePage::List {
+                let centered = (!state.theme_carousel.is_animating() && count > 0)
+                    .then(|| state.theme_carousel.index(count));
+                if let Some(request) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
+                    if let Ok(id) = state.themes.try_submit(request) {
+                        state.theme_view.prepare_ahead_submitted(
+                            centered.expect("poll_prepare_ahead only returns Some for a centred index"),
+                            id,
+                        );
+                    } // queue full/unavailable: the next settled tick tries again
+                }
+            }
             // Idle-redraw fix: this used to unconditionally set `dirty =
             // true` every single iteration while any thumbnail was pending,
             // regardless of whether anything actually changed that
@@ -2893,7 +2933,17 @@ fn serve() -> Result<(), String> {
                     if background && foreground && !flushed {
                         state.log("appearance-commit-rejected flush-failed");
                     }
-                    background && foreground && flushed
+                    let accepted = background && foreground && flushed;
+                    if accepted {
+                        // Named stage marker (task 1): the redrawn/flushed
+                        // frame carrying the new theme's wallpaper has just
+                        // been submitted to the compositor -- this is the
+                        // Rust-shell side of "tap to visible", paired with
+                        // "wallpaper-commit"/"commit" a real frame-done
+                        // callback later confirms was actually presented.
+                        state.log("appearance-commit-accepted");
+                    }
+                    accepted
                 } else {
                     state.log(&format!(
                         "appearance-commit-rejected ready-timeout \
