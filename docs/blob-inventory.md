@@ -1354,6 +1354,7 @@ DATA a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1  docs/evid
 DATA e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png
 DATA 656e18b2eeb9bc304411d42cc656d366bd2e8947e7692536d3f1a36b2f8c7903  docs/evidence/card-shell/bottom-band-flicker/after-max-render-time.png
 DATA 839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a  docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png
+DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1977,3 +1978,4 @@ These DATA images tile 16 consecutive full-resolution webcam frames of the physi
 | --- | ---: | --- | --- |
 | `docs/evidence/card-shell/bottom-band-flicker/after-max-render-time.png` | 1760722 | DATA | `656e18b2eeb9bc304411d42cc656d366bd2e8947e7692536d3f1a36b2f8c7903` |
 | `docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png` | 1552620 | DATA | `839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a` |
+| `docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png` | 1873557 | DATA | `cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a` |

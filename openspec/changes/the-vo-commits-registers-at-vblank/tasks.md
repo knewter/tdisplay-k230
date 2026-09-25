@@ -66,8 +66,11 @@
   in two attempts (`docs/evidence/card-shell/bottom-band-flicker/
   kernel-patch-boot-panic.md`). Verify with `nix build .#sdImage-coherent
   --max-jobs 1 --cores 6`.
-- [ ] 5.2 Board: boot the patch-free kernel persistently and confirm on
+- [x] 5.2 Board: boot the patch-free kernel persistently and confirm on
   camera that the bottom band stays stable with `max_render_time 8` alone.
+  Done with injected gestures (camera + serial evidence in
+  `kernel-patch-boot-panic.md`). <!-- UNVERIFIED: no real-finger session
+  on this build yet. -->
 - [ ] 5.3 Decide this change's fate: its `display/panel` delta describes a
   vblank-latched commit that the shipped kernel no longer performs, so it
   must not be archived as written. Drop the change or rewrite the delta.

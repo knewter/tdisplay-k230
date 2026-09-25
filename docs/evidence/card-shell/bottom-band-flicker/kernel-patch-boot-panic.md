@@ -65,3 +65,27 @@ for reference). Recovery used U-Boot, with no reflash: a one-shot
 `ext4load mmc 1:2` boot of the backed-up original files from
 `/var/lib/k230/boot-prev/`, then those files were copied back to `/boot` and
 checked against their `SHA256SUMS` (`BOOT_RESTORED_OK`).
+
+## Verification of the patch-free build
+
+System `x2glknys…-nixos-system-nixos-26.11.20260919.20b1ddd` (this branch;
+Image sha256 `29727ff3…`, `max_render_time 8` in the live
+`k230-sway.conf`):
+
+- Board serial: booted once one-shot from `/var/lib/k230/boot-new` via
+  U-Boot, then was installed into `/boot` (`SWAP_INSTALLED`, previous files
+  kept in `/var/lib/k230/boot-prev`) and booted again through the normal
+  autoboot path. Both boots reached login with no oops; `shell`,
+  `shell-keyboard` and `theme-helper` were active and there were no failed
+  units.
+- Board camera, with injected touch (not a real finger): a 24 s webcam
+  recording (1280×720 MJPEG, 30 fps) while `/run/k230-gesture-loop.sh` ran
+  four cycles of bottom-edge swipe-up to the overview, a horizontal card
+  flick, a tap to open a card, and a bottom-edge app switch. Sixteen
+  consecutive full-resolution frames of the panel's bottom end
+  (`without-kernel-patch-injected-gestures.png`, crop 480×260 at 800,180
+  from t = 2.5 s) show no stale or black band. Across all 720 frames, the
+  mean luminance of a 300×120 crop over that end stayed within 114.8–126.6
+  and never showed a one-frame spike above 6 levels against both
+  neighbours.
+- Not yet obtained: a real-finger session on this build.
