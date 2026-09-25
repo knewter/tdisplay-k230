@@ -1071,11 +1071,20 @@ static bool sync_card(struct card *c, size_t index) {
 	if (entering) {
 		if (!c->source_valid)
 			return false;
-		if (c->id == shell.policy.entry_id && !cs_entry_set_geometry(&shell.policy,
-				c->source_x - shell.output->lx, c->source_y - shell.output->ly,
-				c->view->geometry.width, c->view->geometry.height,
-				r.x - shell.policy.entry_dx, r.y, r.width, r.height))
-			return false;
+		if (c->id == shell.policy.entry_id) {
+			/* The direct-switch entry gesture anchors against its own
+			 * fixed target slot (cs_entry_target_rect), never the
+			 * overview's own (possibly much smaller) webOS-fan card_rect --
+			 * see card-shell-policy.h's cs_config comment on
+			 * entry_card_width/entry_card_height. */
+			struct cs_rect entry_target = cs_entry_target_rect(&shell.policy);
+			if (!cs_entry_set_geometry(&shell.policy,
+					c->source_x - shell.output->lx, c->source_y - shell.output->ly,
+					c->view->geometry.width, c->view->geometry.height,
+					entry_target.x - shell.policy.entry_dx, entry_target.y,
+					entry_target.width, entry_target.height))
+				return false;
+		}
 		struct card *origin = find(shell.policy.entry_id);
 		bool common_full_frame = origin && origin->view->container &&
 			origin->view->container->card_shell_ordinary_maximized &&
@@ -1385,7 +1394,9 @@ static bool sync_scene_impl(void) {
 		for (size_t j = 0; j < shell.policy.count; ++j)
 			if (shell.policy.cards[j].id == source->id) { index = j; break; }
 		if (index == shell.policy.count) return false;
-		struct cs_rect card = cs_card_rect(&shell.policy, index);
+		/* See sync_card's identical note: the entry target is its own
+		 * fixed slot, decoupled from the overview's card_rect. */
+		struct cs_rect card = cs_entry_target_rect(&shell.policy);
 		if (!cs_entry_set_geometry(&shell.policy, sx - shell.output->lx,
 				sy - shell.output->ly, source->view->geometry.width,
 				source->view->geometry.height, card.x - shell.policy.entry_dx,

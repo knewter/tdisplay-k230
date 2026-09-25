@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ('enter-expand horizontal adjacent-tap adjacent-throw privacy privacy-transition '
+CASES = ('enter-expand horizontal overview-geometry scroll-momentum adjacent-tap adjacent-throw privacy privacy-transition '
          'close-recovery slow-drag repeated-timestamp-throw repeated-timestamp-rejection source-loss restore-gesture multi-contact edge '
          'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons stream-cancel stream-cancel-multitouch tracked-entry two-axis-entry two-axis-conflicts direct-carousel app-switch-swipe tracked-expansion randomized').split()
 

@@ -8,7 +8,8 @@ static bool valid_config(const struct cs_config *c) {
     if (!c) return false;
     const double values[]={c->width,c->height,c->top_reserved,c->bottom_reserved,
         c->inset,c->gap,c->title_height,c->footer_height,c->card_width,c->card_height,
-        c->edge_band,c->entry_distance,c->tap_slop,c->select_fraction,
+        c->entry_card_width,c->entry_card_height,
+        c->edge_band,c->entry_distance,c->tap_slop,c->select_fraction,c->select_flick_speed,
         c->throw_distance,c->throw_speed,c->entry_select_fraction,c->entry_flick_speed};
     for (size_t i=0;i<sizeof(values)/sizeof(values[0]);i++)
         if (!isfinite(values[i]) || values[i]<0) return false;
@@ -18,9 +19,12 @@ static bool valid_config(const struct cs_config *c) {
         c->title_height>=56 && c->card_width>=56 && c->card_height>=56 &&
         c->card_width<=c->width-2*c->inset &&
         c->card_height<=available-c->title_height-c->footer_height-2*c->inset &&
+        c->entry_card_width>=56 && c->entry_card_height>=56 &&
+        c->entry_card_width<=c->width-2*c->inset &&
+        c->entry_card_height<=available-c->title_height-c->footer_height-2*c->inset &&
         c->edge_band>0 && c->edge_band<=available && c->entry_distance>c->tap_slop &&
         c->entry_distance<available && c->tap_slop>0 &&
-        c->select_fraction>0 && c->select_fraction<=1 &&
+        c->select_fraction>0 && c->select_fraction<=1 && c->select_flick_speed>0 &&
         c->entry_select_fraction>0 && c->entry_select_fraction<=1 &&
         c->entry_flick_speed>0 &&
         c->throw_distance>c->tap_slop && c->throw_speed>0 &&
@@ -28,9 +32,20 @@ static bool valid_config(const struct cs_config *c) {
 }
 struct cs_config cs_default_config(double width,double height) {
     return (struct cs_config){.width=width,.height=height,.top_reserved=56,
-        .inset=24,.gap=16,.title_height=128,.footer_height=56,
-        .card_width=.84*(width-48),.card_height=.72*(height-56-128-56-48),
+        .inset=24,.gap=10,.title_height=128,.footer_height=56,
+        /* webOS-fan overview: ~46% of the panel width per card (2-3 visible
+         * at once, per docs/design/shell-ux-critique.md #3 and the user's
+         * chosen direction over a wider single-card carousel). The slot is
+         * tall enough that adapter.c's CARD_HEADER_HEIGHT reservation for
+         * the icon+app-name header still leaves a legible live-content
+         * thumbnail below it. */
+        .card_width=.5*(width-48),.card_height=.51*(height-56-128-56-48),
+        /* The direct-switch (bottom-edge) entry gesture's own target slot:
+         * intentionally the pre-fan geometry, unaffected by card_width
+         * above -- see cs_entry_target_rect. */
+        .entry_card_width=.84*(width-48),.entry_card_height=.72*(height-56-128-56-48),
         .edge_band=48,.entry_distance=72,.tap_slop=12,.select_fraction=.25,
+        .select_flick_speed=.5,
         /* Android-style paging thresholds: roughly a third of the screen
          * width travelled, or a decisive flick, whichever comes first.
          * See docs/evidence/card-shell/app-switch-swipe/ for the derivation. */
@@ -71,7 +86,12 @@ static uint64_t fallback(const struct cs_policy *p) {
     return 0;
 }
 static void reset_drag(struct cs_policy *p) {
-    p->contact=false;p->pressed_id=0;p->dx=0;p->dy=0;p->velocity_y=0;p->axis=CS_AXIS_NONE;
+    p->contact=false;p->pressed_id=0;p->dx=0;p->dy=0;p->velocity_y=0;p->velocity_x=0;
+    p->axis=CS_AXIS_NONE;
+    /* Any drag reset (fresh down, cancel, stream-cancel, step, close
+     * request) also cancels an in-flight overview scroll coast; cs_up
+     * re-enables it afterward when a horizontal release actually starts one. */
+    p->scroll_settling=false;
 }
 static enum cs_message card_message(const struct cs_policy *p) {
     if (!p->count) return CS_MESSAGE_EMPTY;
@@ -90,7 +110,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
     free(p->entry_order);p->entry_order=NULL;p->entry_count=0;p->entry_origin=0;
     p->entry_left_id=0;p->entry_right_id=0;p->entry_target_id=0;
-    p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
+    p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;p->entry_anchor_shift_y=0;
     p->entry_anchor_factor=0;p->entry_release_dx=0;p->entry_settle_dx=0;
     p->entry_reverse_dx=0;p->entry_reverse_anchor=0;
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
@@ -196,7 +216,9 @@ struct cs_rect cs_card_rect(const struct cs_policy *p,size_t index) {
     if (index>=p->count) return (struct cs_rect){0};
     double pitch=p->config.card_width+p->config.gap;
     double offset=(double)index-(double)p->selected;
-    double translation=p->axis==CS_AXIS_HORIZONTAL ? p->dx : 0;
+    /* A live drag tracks 1:1; a released horizontal drag keeps tracking its
+     * own scroll_from_dx momentum coast (cs_up/cs_tick) until it settles. */
+    double translation=(p->axis==CS_AXIS_HORIZONTAL || p->scroll_settling) ? p->dx : 0;
     if (p->mode==CS_ENTERING) {
         size_t stable=entry_order_index(p,p->cards[index].id);
         offset=stable==SIZE_MAX ? -4*p->config.width/pitch :
@@ -208,6 +230,12 @@ struct cs_rect cs_card_rect(const struct cs_policy *p,size_t index) {
         .y=p->config.top_reserved+p->config.title_height+p->config.inset+
             (p->cards[index].id==p->pressed_id && p->axis==CS_AXIS_VERTICAL ? p->dy : 0),
         .width=p->config.card_width,.height=p->config.card_height};
+}
+struct cs_rect cs_entry_target_rect(const struct cs_policy *p) {
+    return (struct cs_rect){
+        .x=(p->config.width-p->config.entry_card_width)/2,
+        .y=p->config.top_reserved+p->config.title_height+p->config.inset,
+        .width=p->config.entry_card_width,.height=p->config.entry_card_height};
 }
 struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
         struct cs_rect source,bool common_full_frame) {
@@ -224,7 +252,8 @@ struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
     double full_x=source.x+offset*p->config.width;
     r.x=full_x*(1-progress)+(r.x-p->entry_dx)*progress+p->entry_dx+
         p->entry_anchor_shift*progress*p->entry_anchor_factor;
-    r.y=source.y*(1-progress)+r.y*progress;
+    r.y=source.y*(1-progress)+r.y*progress+
+        p->entry_anchor_shift_y*progress*p->entry_anchor_factor;
     r.width=source.width*(1-progress)+r.width*progress;
     r.height=source.height*(1-progress)+r.height*progress;
     return r;
@@ -251,6 +280,14 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
     if (p->blocked_until_up) {
         if (p->blocked_contacts<UINT_MAX) p->blocked_contacts++;
         return result(p,0,true);
+    }
+    if (p->mode==CS_DECK && p->scroll_settling) {
+        /* A fresh touch cancels the overview scroll coast outright: land at
+         * its rest position (dx 0, the already-committed p->selected) first,
+         * then let the ordinary down handling below begin an honest new
+         * drag from there. No mid-flight dx rebase is needed because the
+         * coast only ever animates toward 0. */
+        p->scroll_settling=false;p->dx=0;
     }
 	if (p->mode==CS_ENTERING && p->entry_settling) {
 		cs_tick(p,time_ms);
@@ -292,7 +329,7 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
     /* Do not recenter on down: the adjacent card stays under the finger. */
     p->pressed_id=p->cards[index].id;
     p->down_x=p->last_x=x;p->down_y=p->last_y=y;p->last_time_ms=time_ms;
-    p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
+    p->velocity_origin_x=x;p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
     p->dx=p->dy=p->velocity_y=0;p->axis=CS_AXIS_NONE;
     p->message=card_message(p);
     return result(p,CS_REDRAW,true);
@@ -310,17 +347,19 @@ struct cs_result cs_motion(struct cs_policy *p,int32_t contact_id,double x,doubl
         p->axis=fabs(dx)>=fabs(dy) ? CS_AXIS_HORIZONTAL : CS_AXIS_VERTICAL;
     uint64_t elapsed=time_ms-p->last_time_ms;
     if (elapsed) {
-        p->velocity_origin_y=p->last_y;p->velocity_origin_ms=p->last_time_ms;
+        p->velocity_origin_x=p->last_x;p->velocity_origin_y=p->last_y;
+        p->velocity_origin_ms=p->last_time_ms;
     } else if (y>p->last_y) {
         /* A same-time downward reversal has no measurable speed. Never
          * carry the preceding upward velocity through it into a close. */
-        p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
+        p->velocity_origin_x=x;p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
     }
     /* Coalesce equal-millisecond samples against the preceding distinct
      * timestamp. A duplicate endpoint does not mean the finger stopped.
      * All motion in a single timestamp remains unmeasurable and cannot throw. */
     elapsed=time_ms-p->velocity_origin_ms;
     p->velocity_y=elapsed ? (y-p->velocity_origin_y)/(double)elapsed : 0;
+    p->velocity_x=elapsed ? (x-p->velocity_origin_x)/(double)elapsed : 0;
     p->last_x=x;p->last_y=y;p->last_time_ms=time_ms;p->dx=dx;p->dy=dy;
     return result(p,CS_REDRAW,true);
 }
@@ -363,15 +402,41 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
             p->cards[index].closeable) {
         p->contact=false; /* This up completes the owned contact. */
         return cs_request_close(p,p->cards[index].id,time_ms);
-    } else if (p->axis==CS_AXIS_HORIZONTAL && p->count) {
+    }
+    bool scroll=false;
+    double scroll_from_dx=0,scroll_velocity=0;
+    if (!tap && !thrown && p->axis==CS_AXIS_HORIZONTAL && p->count) {
         double pitch=p->config.card_width+p->config.gap;
-        if (fabs(p->dx)>=pitch*p->config.select_fraction) {
+        size_t old_selected=p->selected;
+        /* A decisive flick pages even under the full distance threshold,
+         * the same "distance or flick" shape as the direct-switch gesture's
+         * own entry_select_fraction/entry_flick_speed gate, but using the
+         * overview's own independent thresholds. */
+        bool flick=p->dx!=0 && fabs(p->velocity_x)>=p->config.select_flick_speed &&
+            (p->dx<0)==(p->velocity_x<0);
+        if (fabs(p->dx)>=pitch*p->config.select_fraction ||
+                (flick && fabs(p->dx)>=pitch*p->config.select_fraction*.5)) {
             size_t steps=(size_t)fmax(1,round(fabs(p->dx)/pitch));
             if (p->dx<0) p->selected+=steps>p->count-1-p->selected ? p->count-1-p->selected : steps;
             else p->selected-=steps>p->selected ? p->selected : steps;
         }
+        /* Continuity: the settled card's on-screen x must not jump at the
+         * instant of release. cs_card_rect's x for card `index` is
+         * center+(index-selected)*pitch+dx; solving for the dx that keeps
+         * that expression constant across the selected-index change gives
+         * dx_new = dx_old + (selected_new-selected_old)*pitch. cs_tick then
+         * decays this residual toward 0 (the settled card's true rest x). */
+        double delta=(double)p->selected-(double)old_selected;
+        scroll_from_dx=p->dx+delta*pitch;
+        scroll_velocity=p->velocity_x;
+        scroll=true;
     }
     reset_drag(p);p->mode=CS_DECK;p->message=card_message(p);
+    if (scroll) {
+        p->scroll_settling=true;p->scroll_from_dx=scroll_from_dx;
+        p->scroll_release_velocity=scroll_velocity;p->scroll_started_ms=time_ms;
+        p->dx=scroll_from_dx;
+    }
     return result(p,CS_REDRAW,true);
 }
 struct cs_result cs_step(struct cs_policy *p,int direction) {
@@ -514,6 +579,26 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 		struct cs_result r=cs_leave(p);
 		r.actions|=CS_EXPAND;
 		return r;
+	}
+	if (p->mode==CS_DECK && p->scroll_settling) {
+		uint64_t elapsed=time_ms>=p->scroll_started_ms ? time_ms-p->scroll_started_ms : 0;
+		double duration=p->config.reduced_motion ? 100 : 240;
+		/* Fixed, gentle damping: the residual here is bounded to roughly a
+		 * pitch's worth (cs_up's continuity math), far smaller than a
+		 * full-screen entry swap, so a single fixed omega (unlike
+		 * cs_tick's velocity-scaled entry omega) already stays smooth
+		 * without overshoot large enough to look wrong. */
+		double omega=.02;
+		double t=fmin((double)elapsed,duration);
+		double e=exp(-omega*t);
+		double from=p->scroll_from_dx,v0=p->scroll_release_velocity;
+		p->dx=(from+(v0+omega*from)*t)*e;
+		double pitch=p->config.card_width+p->config.gap;
+		p->dx=fmax(-pitch,fmin(pitch,p->dx));
+		if ((double)elapsed>=duration) {
+			p->dx=0;p->scroll_settling=false;
+		}
+		return result(p,CS_REDRAW,false);
 	}
     if (p->mode!=CS_CLOSING || time_ms<p->close_deadline_ms) return result(p,0,false);
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_DECK;
@@ -662,8 +747,19 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
 	double target_anchor_x=target_x+anchor_x*target_width;
 	double shift=source_anchor_x-target_anchor_x;
 	if (!isfinite(shift)) return false;
+	/* cs_entry_visual_rect blends toward the OVERVIEW's own card_height
+	 * (which may differ from target_height here -- see cs_entry_target_rect
+	 * vs cs_card_rect), reusing the same `progress` this target_height
+	 * established. shift_y is the correction that keeps the anchor point
+	 * exactly under the finger despite that height mismatch: without it,
+	 * the visual interpolation implicitly assumes the blend target's height
+	 * equals target_height, which is no longer guaranteed once the overview
+	 * and the direct-switch entry slot are sized independently. */
+	double shift_y=anchor*(target_height-p->config.card_height);
+	if (!isfinite(shift_y)) return false;
 	p->entry_travel=travel;
 	p->entry_anchor_shift=shift;
+	p->entry_anchor_shift_y=shift_y;
 	p->entry_full_rect=(struct cs_rect){source_x,source_y,source_width,source_height};
 	return true;
 }

@@ -46,9 +46,86 @@ static void horizontal(void) {
     assert(cs_card_rect(&p,0).y==a.y);
     struct cs_result r=cs_up(&p,1,101);
     assert(!(r.actions&(CS_EXPAND|CS_CLOSE)) && p.selected==1 && p.mode==CS_DECK);
-    assert(cs_card_rect(&p,1).x==a.x);
+    /* Release begins a momentum coast, not an instant snap: the selected
+     * index is already correct, but the visual position keeps tracking a
+     * decaying scroll_from_dx (continuous with the dragged position) until
+     * cs_tick settles it. */
+    assert(p.scroll_settling);
+    /* Continuous at release: card 1's x here equals its dragged position
+     * (b.x-180, checked above) now re-expressed relative to the new
+     * selected index -- dx_new = dx_old + delta*pitch = -180+270 = 90. */
+    assert(fabs(cs_card_rect(&p,1).x-(a.x+90))<.001);
+    cs_tick(&p,101+240);
+    assert(!p.scroll_settling);
+    assert(fabs(cs_card_rect(&p,1).x-a.x)<.001);
     down(&p,200);cs_motion(&p,1,p.down_x+1000,p.down_y,300);cs_up(&p,1,301);
     assert(p.selected==0); /* clamp deck beginning; never unsigned underflow */
+    cs_finish(&p);
+}
+/* The user's chosen webOS-fan overview: small enough that 2-3 cards sit on
+ * screen at once (docs/design/shell-ux-critique.md #3), with the direct
+ * bottom-edge app-switch gesture's own entry-target slot kept fully
+ * independent of that sizing (card-shell-policy.h's cs_config comment). */
+static void overview_geometry(void) {
+    struct cs_policy p=setup();
+    const struct cs_config *c=&p.config;
+    assert(c->card_width>=.45*c->width && c->card_width<=.55*c->width);
+    double pitch=c->card_width+c->gap;
+    double half_gap=(c->width-c->card_width)/2;
+    assert(fabs(half_gap-cs_card_rect(&p,p.selected).x)<.001);
+    /* A legible neighbour peek at rest: at least 30% of a neighbour's own
+     * width on screen, versus the pre-fix ~8.7% the critique measured. */
+    double right_neighbor_visible=c->width-(half_gap+pitch);
+    assert(right_neighbor_visible>=.3*c->card_width);
+    /* This is a 2-3 card fan, not a wider multi-up carousel: a third card
+     * is never more than barely on screen. */
+    double third_visible=c->width-(half_gap+2*pitch);
+    assert(third_visible<.15*c->card_width);
+    /* Decoupling: the direct-switch entry target stays the pre-fan, near-
+     * full-screen single slot, unaffected by card_width/card_height above --
+     * this is what keeps that gesture's 30% width threshold, flick
+     * velocity, 1:1 tracking and full-size neighbour feel unchanged. */
+    struct cs_rect entry_target=cs_entry_target_rect(&p);
+    assert(entry_target.width>c->card_width*1.5);
+    assert(entry_target.height>c->card_height*1.2);
+    assert(fabs(entry_target.width-.84*(c->width-48))<.001);
+    assert(fabs(entry_target.height-.72*(c->height-56-128-56-48))<.001);
+    assert(c->card_width<=c->width-2*c->inset);
+    assert(c->card_height<=c->height-c->top_reserved-c->bottom_reserved-
+        c->title_height-c->footer_height-2*c->inset);
+    cs_finish(&p);
+}
+/* Overview horizontal scroll: 1:1 finger tracking, then a momentum coast
+ * (not an instant snap) that decays toward the newly-selected card's rest
+ * position, with a decisive flick able to page even under the plain
+ * distance threshold -- and a fresh touch cleanly cancels an in-flight
+ * coast rather than corrupting the next hit-test. */
+static void scroll_momentum(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);
+    double pitch=p.config.card_width+p.config.gap;
+    double threshold=pitch*p.config.select_fraction;
+    down(&p,10);
+    cs_motion(&p,1,p.down_x-54,p.down_y,18); /* real ~8ms cadence, fast */
+    assert(fabs(p.dx)<threshold && fabs(p.dx)>=threshold*.5); /* below full distance */
+    assert(fabs(p.velocity_x)>=p.config.select_flick_speed);
+    struct cs_result r=cs_up(&p,1,19);
+    assert((r.actions&CS_REDRAW) && p.selected==1); /* flick paged it anyway */
+    assert(p.scroll_settling && p.dx!=0); /* coast starts at the dragged position */
+    double previous=fabs(p.dx);
+    cs_tick(&p,19+40);
+    assert(fabs(p.dx)<previous); /* decays monotonically toward rest */
+    cs_tick(&p,19+240);
+    assert(!p.scroll_settling && p.dx==0);
+    assert(fabs(cs_card_rect(&p,1).x-(p.config.width-p.config.card_width)/2)<.001);
+
+    /* A fresh touch during the coast cancels it outright. */
+    down(&p,300);
+    cs_motion(&p,1,p.down_x-54,p.down_y,308);
+    struct cs_result release=cs_up(&p,1,309);
+    assert((release.actions&CS_REDRAW) && p.scroll_settling);
+    assert(cs_down(&p,2,p.down_x,p.down_y,310).consumed);
+    assert(!p.scroll_settling && p.dx==0);
+    cs_up(&p,2,311);
     cs_finish(&p);
 }
 static void adjacent_tap(void) {
@@ -218,7 +295,13 @@ static double entry_finger_y(const struct cs_policy *p) {
     struct cs_rect target=cs_card_rect(p,p->selected);
     double anchor=(1220.0-56.0)/1176.0;
     double progress=p->entry_progress;
+    /* Mirrors entry_finger_x: includes the same entry_anchor_shift_y
+     * correction cs_entry_visual_rect applies, which keeps the anchor
+     * point under the finger exact even though the overview's card_height
+     * (used to blend target.height here) is independent of the
+     * entry_card_height that established entry_travel/the anchor fraction. */
     return 56.0*(1-progress)+target.y*progress+
+        p->entry_anchor_shift_y*progress*p->entry_anchor_factor+
         anchor*(1176.0*(1-progress)+target.height*progress);
 }
 static double entry_finger_x(const struct cs_policy *p, double source_x) {
@@ -234,7 +317,11 @@ static double entry_finger_x(const struct cs_policy *p, double source_x) {
         anchor*(568.0*(1-progress)+target.width*progress);
 }
 static void entry_geometry(struct cs_policy *p) {
-    struct cs_rect target=cs_card_rect(p,p->selected);
+    /* The direct-switch entry gesture anchors against its own fixed slot
+     * (cs_entry_target_rect), decoupled from the overview's own card_rect
+     * geometry -- see card-shell-policy.c's cs_entry_target_rect and the
+     * adapter.c sync_card/sync_scene_impl call sites it mirrors. */
+    struct cs_rect target=cs_entry_target_rect(p);
     assert(cs_entry_set_geometry(p,0,56,568,1176,
                                  target.x,target.y,target.width,target.height));
 }
@@ -492,7 +579,7 @@ static void tracked_entry(void) {
     struct cs_result r=cs_begin_entry(&p,1,200,1220,10,101);
     assert(r.consumed && (r.actions&CS_SHRINK) && p.mode==CS_ENTERING);
     assert(p.entry_id==101 && p.entry_progress==0 && cs_can_mirror(&p,101));
-    struct cs_rect target=cs_card_rect(&p,p.selected);
+    struct cs_rect target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     assert(p.entry_travel>300 && p.entry_travel<400);
     double captured_travel=p.entry_travel;
@@ -522,7 +609,7 @@ static void tracked_entry(void) {
     assert(!p.blocked_until_up && !cs_can_mirror(&p,101));
     /* A new touch during reversal is owned, not delivered to the app. */
     cs_begin_entry(&p,5,200,1220,82,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,5,200,1184,83);
     cs_entry_up(&p,5);
@@ -531,7 +618,7 @@ static void tracked_entry(void) {
     cs_tick(&p,90);cs_tick(&p,325);
     assert(p.mode==CS_NORMAL && !p.blocked_until_up);
     cs_begin_entry(&p,2,200,1220,190,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,2,200,1100,200);
     assert(p.entry_progress<.4 && fabs(entry_finger_y(&p)-1100)<.001);
@@ -545,7 +632,7 @@ static void tracked_entry(void) {
     cs_leave(&p);
     /* A fresh touch interrupts post-release settling from visible geometry. */
     cs_begin_entry(&p,9,200,1220,401,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,9,200,1100,410);
     cs_entry_up(&p,9);
@@ -571,7 +658,7 @@ static void tracked_entry(void) {
     const struct cs_card restored[]={{101,CS_LIVE,true,true},{202,CS_LIVE,true,true}};
     cs_set_cards(&p,restored,2);
     cs_begin_entry(&p,4,200,1220,240,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,4,200,1130,245);
     const struct cs_card changed[]={{101,CS_PRIVATE,true,true},{202,CS_LIVE,true,true}};
@@ -581,7 +668,7 @@ static void tracked_entry(void) {
     cs_up(&p,4,241);assert(!p.blocked_until_up);
     cs_set_cards(&p,restored,2);
     cs_begin_entry(&p,11,200,1220,250,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,11,200,1120,260);
     const struct cs_card source_gone[]={{202,CS_LIVE,true,true}};
@@ -591,7 +678,7 @@ static void tracked_entry(void) {
     assert(p.blocked_until_up && cs_up(&p,11,261).consumed);
     cs_set_cards(&p,restored,2);
     cs_begin_entry(&p,12,200,1220,270,101);
-    target=cs_card_rect(&p,p.selected);
+    target=cs_entry_target_rect(&p);
     assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
     cs_entry_motion(&p,12,200,1160,280);
     r=cs_stream_cancel(&p);
@@ -754,7 +841,12 @@ static void tracked_expansion(void) {
 static void keyboard_and_geometry(void) {
     struct cs_policy p=setup();
     struct cs_config c=p.config;c.bottom_reserved=400;
-    c.card_height=300;cs_set_config(&p,&c);
+    /* A real keyboard reservation shrinks available height for both the
+     * overview's own slot and the (independent) direct-switch entry slot;
+     * a caller changing bottom_reserved must recompute both, per the
+     * header's "Recompute card dimensions after changing keyboard
+     * reservation" note. */
+    c.card_height=300;c.entry_card_height=300;cs_set_config(&p,&c);
     assert(!cs_edge_down(&p,1,200,1200,1).consumed);
     cs_enter(&p,101);
     assert(!cs_down(&p,1,200,20,1).consumed); /* bar still owned by bar */
@@ -895,7 +987,9 @@ static void randomized(void) {
 }
 int main(int argc,char **argv) {
     struct {const char *name;void (*run)(void);} cases[]={
-        {"enter-expand",enter_expand},{"horizontal",horizontal},{"adjacent-tap",adjacent_tap},
+        {"enter-expand",enter_expand},{"horizontal",horizontal},
+        {"overview-geometry",overview_geometry},{"scroll-momentum",scroll_momentum},
+        {"adjacent-tap",adjacent_tap},
         {"adjacent-throw",adjacent_throw},{"privacy",privacy},{"privacy-transition",privacy_transition},
         {"close-recovery",close_recovery},{"slow-drag",slow_drag},{"source-loss",source_loss},
         {"repeated-timestamp-throw",repeated_timestamp_throw},

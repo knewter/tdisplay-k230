@@ -44,9 +44,31 @@ struct cs_config {
     double width, height;
     double top_reserved, bottom_reserved; /* bar and keyboard; never intercepted */
     double inset, gap, title_height, footer_height;
+    /* card_width/card_height/gap are the OVERVIEW's own webOS-fan card slot:
+     * small enough that 2-3 sit on screen at once (design.md decision 1 of
+     * the-shell-behaves-as-one-coherent-system). The slot's own top portion
+     * is reserved by the adapter/render layer for the card's icon+app-name
+     * header (a rendering-only subdivision of the unchanged cs_card_rect,
+     * deliberately not a policy field -- see nix/card-shell/adapter.c's
+     * CARD_HEADER_HEIGHT), so this rect's y/height stay exactly the
+     * pre-fan formula and cannot perturb entry geometry below. These are
+     * deliberately independent of entry_card_width/entry_card_height below:
+     * the direct bottom-edge app-switch gesture's anchor/travel geometry
+     * must not move when the overview's card size changes. */
     double card_width, card_height;
+    /* The single centered slot the direct-switch entry gesture tracks
+     * (cs_entry_target_rect): historically the same value as card_width/
+     * card_height, now kept as its own field so shrinking the overview's
+     * fan cards cannot perturb entry_travel/entry_anchor_shift or the
+     * mid-drag "full-size neighbour" feel. */
+    double entry_card_width, entry_card_height;
     double edge_band, entry_distance, tap_slop;
     double select_fraction, throw_distance, throw_speed; /* logical pixels/ms */
+    /* Overview horizontal-scroll flick gate: a release velocity (logical
+     * pixels/ms) high enough to page even when the drag distance is only
+     * half of select_fraction*pitch. Independent of entry_flick_speed
+     * below, which gates the unrelated direct-switch gesture. */
+    double select_flick_speed;
     /* Entry (edge-swipe app switch) lateral gate, kept separate from the
      * in-deck select_fraction above: a fraction of the full screen width,
      * not of the card pitch, and a release-velocity flick threshold in
@@ -66,10 +88,16 @@ struct cs_policy {
     bool contact, blocked_until_up;
     unsigned blocked_contacts;
     int32_t contact_id;
-    double down_x, down_y, last_x, last_y, dx, dy, velocity_y;
+    double down_x, down_y, last_x, last_y, dx, dy, velocity_y, velocity_x;
     uint64_t last_time_ms;
-    double velocity_origin_y;
+    double velocity_origin_y, velocity_origin_x;
     uint64_t velocity_origin_ms;
+    /* Overview horizontal-scroll momentum: a released drag continues to
+     * coast dx toward the newly-selected card's rest position (0) instead
+     * of snapping there instantly. See card-shell-policy.c cs_up/cs_tick. */
+    bool scroll_settling;
+    double scroll_from_dx, scroll_release_velocity;
+    uint64_t scroll_started_ms;
 	/* 0 displays the original view geometry; 1 displays its deck slot. */
 	double entry_progress;
 	uint64_t entry_id;
@@ -82,6 +110,13 @@ struct cs_policy {
 	size_t entry_count, entry_origin;
 	uint64_t entry_left_id, entry_right_id, entry_target_id;
 	double entry_dx, entry_raw_dx, entry_anchor_shift, entry_anchor_factor;
+	/* Vertical analog of entry_anchor_shift: corrects cs_entry_visual_rect's
+	 * y interpolation for the gap between entry_card_height (what
+	 * entry_travel/the anchor fraction were established against) and the
+	 * overview's own, independently-sized card_height -- see
+	 * cs_entry_set_geometry and cs_entry_visual_rect. Zero whenever the two
+	 * heights coincide. */
+	double entry_anchor_shift_y;
 	double entry_release_dx, entry_settle_dx, entry_reverse_dx, entry_reverse_anchor;
 	double entry_reverse_from;
 	double entry_settle_from;
@@ -177,6 +212,11 @@ void cs_edge_cancel(struct cs_policy *policy);
 bool cs_can_mirror(const struct cs_policy *policy, uint64_t id);
 struct cs_rect cs_content_rect(const struct cs_policy *policy);
 struct cs_rect cs_card_rect(const struct cs_policy *policy, size_t index);
+/* The single centered slot the direct-switch (bottom-edge entry) gesture
+ * anchors/travels against -- entry_card_width/entry_card_height, never the
+ * overview's own (possibly much smaller) card_width/card_height. Call this,
+ * not cs_card_rect, to build cs_entry_set_geometry's target argument. */
+struct cs_rect cs_entry_target_rect(const struct cs_policy *policy);
 /* Geometry of one live or neutral carousel slot during app entry. Source is
  * the output-local full view rectangle; no pixels or titles enter policy. */
 struct cs_rect cs_entry_visual_rect(const struct cs_policy *policy,
