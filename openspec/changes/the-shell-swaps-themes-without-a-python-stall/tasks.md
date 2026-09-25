@@ -63,21 +63,80 @@ produced them.
   receivers when `--rust-socket`/`--deck-socket` are configured. Verify
   with `python3 -m unittest tests.test_omarchy_theme_transaction
   tests.test_theme_catalog`.
-- [ ] 3.1b The actual in-memory buffer swap on commit: even with 3.1a's
-  warm-up, `activate`'s commit still calls `BackgroundCache::render` in
-  the Rust event loop, which is a cache-hit file read, not a zero-copy
-  pointer swap of an already-in-process buffer. Owned by the wallpaper/
-  appearance-apply path (this change's lane), not started.
-- [ ] 3.2 Call `prepare_only()` (3.1a) as a theme becomes the centred
-  carousel item, before Apply. Owned by the chooser UI
-  (`theme_carousel.rs`/`theme_ui.rs`), explicitly out of this change's
-  owned paths -- 3.1a is the "clean API" left for that hook.
-- [ ] 3.3 Defer `wvkbd`/Foot recolour until after the visible swap commits,
-  so neither blocks `activated: true`. Not started.
+- [x] 3.1b The actual in-memory buffer swap on commit, on both receivers:
+  - Rust chooser (`background_decode.rs`): `BackgroundCache` was a
+    single-slot cache, so browsing a *different* candidate (task 3.2, or
+    the Preview page's own background carousel) evicted an
+    already-prepared one before its own commit landed, falling back to a
+    `background.cache` file read. It is now a small bounded LRU
+    (`CACHE_CAPACITY = 4`), so commit is a guaranteed in-memory hit for
+    any of the last few prepared candidates, not just the single most
+    recent. Verify with `cargo test --offline --test
+    background_decode_module` (adds
+    `multiple_recent_candidates_stay_warm_without_evicting_each_other`).
+  - Compositor (`nix/card-shell/appearance.c`/`adapter.c`): `appearance.c`
+    gained an advisory `card_appearance_prepare_fn` hook, called once per
+    successfully validated `prepare`, before its ack (never able to affect
+    prepare's own accept/reject decision). `adapter.c`'s
+    `appearance_prepare` uses it to pre-build the deck's gradient
+    (`card_brush_scene`) for the *candidate* generation, disabled/detached
+    until a matching commit; `appearance_canvas_refresh` adopts it at
+    commit (destroy old, promote pointer, enable+position) instead of
+    repainting, falling back to today's inline build whenever nothing
+    warm matches (dimension/brush/generation changed, or nothing was
+    prepared ahead) -- purely advisory, like `background.cache` itself.
+    Verify with `python3 -m unittest tests.test_card_shell_appearance`
+    (extended for the new `PREPARE` hook line) and `nix build --no-link
+    --print-out-paths --max-jobs 1 --cores 6 .#card-shell` (real
+    wlroots/Sway types; this task's C changes cannot be host-unit-tested
+    beyond the protocol-level hook).
+- [x] 3.2 Call `prepare_only()` (3.1a) as a theme becomes the centred
+  carousel item, before Apply. Implemented in `theme_ui.rs`
+  (`ThemeView::poll_prepare_ahead`/`prepare_ahead_submitted`/
+  `prepare_ahead_reply`) and wired from `main.rs`'s existing per-tick
+  carousel-settle loop: once the centred index is unchanged for 220 ms
+  with the carousel at rest (`!Carousel::is_animating()`), it submits the
+  existing `ThemeRequest::Preview` (background id `None`) directly to the
+  shared `ThemeWorker`, bounded to one in-flight warm-up at a time (the
+  stricter half of "one or two"), and the very next settled index simply
+  replaces the desired target rather than queuing a backlog --
+  "cancelled on scroll-away" in the sense that a candidate passed through
+  while still moving, or superseded before its debounce elapsed, is never
+  submitted. Its reply is recognised by `prepare_ahead_reply` and
+  discarded before `ThemeView::accept` ever sees it, so it can never
+  navigate or repaint the chooser. Reuses the existing `preview` action
+  (already calling `prepare_only()` per 3.1a) rather than adding a new
+  verb or protocol. Verify with `cargo test --offline --lib theme_ui`.
+- [x] 3.3a Defer `wvkbd` recolour/restart until after the visible swap
+  commits and this response is otherwise ready, so it never blocks
+  `activated: true`. `theme_catalog.py`'s `activate` action now reports
+  `keyboard_appearance: {"state": "deferred"}` immediately and runs
+  `keyboard_appearance.sync_and_restart` on a background (non-daemon)
+  thread; `theme-helper.service`'s request loop sends its reply the
+  moment `handle()` returns, independent of that thread, so the
+  daemon-served path drops this cost entirely, while a bare CLI
+  subprocess is unaffected (the interpreter already waits for a
+  non-daemon thread at process exit, so its total wall-clock time is
+  unchanged). Verify with `python3 -m unittest tests.test_theme_catalog`
+  (adds `test_activate_reports_keyboard_sync_as_deferred_but_it_still_completes`).
+- [ ] 3.3b Defer Foot recolour the same way. Not started -- `foot`'s own
+  recolour (`tools/app_appearance.py`) is folded into
+  `activate_generation()`'s own `app_sync` call (inside
+  `theme_transaction.py`, not `theme_catalog.py`), whose return value
+  (`app_appearance`'s `state`) is part of that function's existing,
+  tested, synchronous return contract; deferring it needs either
+  restructuring that contract or a second, separate deferred call, which
+  this task deliberately left alone given the risk of touching a
+  load-bearing two-phase-transaction return value under this task's
+  budget. In practice its OSC recolour is opt-in and scoped to a caller
+  invoked from within a Foot session (see `app_appearance.py`'s own doc),
+  which `k230-theme activate` is not, so the config-file write this path
+  actually does is small; still an open cost, not claimed fixed here.
 - [ ] 3.4 Re-run `tools/analyze-theme-swap-jank.py`'s tap-to-visible metric
   against the board once 3.1b/3.2/3.3 land, and report against the ~100 ms
-  target. Needs the reserved board and 3.1b/3.2/3.3.
+  target. Needs the reserved board; 3.1b/3.2/3.3a landed above, 3.3b is
+  the one remaining piece of "3.3" left open.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3 has a board result; 3.1b-3.4 are named here so
-they are not silently dropped, not claimed as this change's own scope.
+per `AGENTS.md`) until 2.3 and 3.4 have board results; 3.3b is named here
+so it is not silently dropped, not claimed as done.

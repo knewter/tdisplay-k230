@@ -41,38 +41,53 @@ touch and animation never stalling.
 
 ## What This Does Not Do (explicit remainder, not a silent gap)
 
-Removing the interpreter-start-up tax is the single largest, cleanly
-separable, host-and-QEMU-provable piece of the instant-swap target; it is
-not the whole target. Left open, and not claimed complete here:
+Removing the interpreter-start-up tax was the first, cleanly separable,
+host-and-QEMU-provable piece of the instant-swap target. Three more pieces
+have since landed in this same change:
 
-- **In-memory buffer swap on commit.** `tools/theme_transaction.py` now has
-  a `prepare_only()` API (see `design.md`) that lets a caller warm both
-  appearance receivers' Prepare-phase state for a candidate ahead of Apply
-  -- the Rust receiver's `appearance.rs` already decodes/caches the
-  wallpaper during Prepare, so this makes an eventual commit for the *same*
-  generation a cache hit. What it does not yet do: commit itself still
-  calls `BackgroundCache::render` in the Rust event loop (a cache-hit file
-  read), not a zero-copy in-process buffer swap.
-- **Prepare-ahead on carousel centering.** `prepare_only()` is the clean
-  API a chooser hook calls as a theme becomes the centred item, before
-  Apply; actually wiring that call is chooser UI territory
-  (`theme_carousel.rs`/`theme_ui.rs`), explicitly out of this change's
-  owned paths (see coordination note in the task that produced this
-  change) -- `tools/theme_catalog.py`'s `preview` action already calls it
-  when rust/deck sockets are configured, covering any chooser path that
-  already calls `preview` per candidate.
-- **Deferred keyboard/foot recolour.** `keyboard_appearance.sync_and_restart`
-  (a `wvkbd` process restart) and Foot's OSC recolour still run
-  synchronously inside `activate`'s response, before `activated: true` is
-  reported; making the visible swap not wait on them is a follow-up.
+- **In-memory buffer swap on commit** (task 3.1b, done). The Rust
+  chooser's `BackgroundCache` (`background_decode.rs`) is now a small
+  bounded LRU rather than a single slot, so browsing a second candidate no
+  longer evicts a first one's decode before its own commit lands. The
+  compositor (`nix/card-shell/appearance.c`/`adapter.c`) gained a matching
+  advisory `prepare` hook that pre-builds the deck's gradient
+  (`card_brush_scene`) for the *candidate* generation, adopted at commit
+  instead of repainted -- with the same "missing/stale falls back to the
+  old inline path, never breaks correctness" posture `background.cache`
+  itself already had.
+- **Prepare-ahead on carousel centering** (task 3.2, done). `theme_ui.rs`'s
+  `ThemeView::poll_prepare_ahead`, wired from `main.rs`'s existing per-tick
+  carousel-settle loop, warms a theme once it has been the carousel's
+  centred item, at rest, for a short debounce -- reusing the existing
+  `preview` action/reply (already calling `prepare_only()`) with no new
+  protocol, and never surfacing that reply to the chooser's own navigation
+  state.
+- **Deferred keyboard recolour** (task 3.3a, done).
+  `keyboard_appearance.sync_and_restart` (the `wvkbd` restart) now runs on
+  a background thread from `theme_catalog.py`'s `activate` handling, so
+  `theme-helper.service`'s reply to the chooser no longer waits on it.
+
+Left open, and not claimed complete here:
+
+- **Deferred Foot recolour** (task 3.3b). Foot's OSC/config-file recolour
+  is folded into `activate_generation()`'s own `app_sync` call inside
+  `theme_transaction.py`, whose return value is part of that function's
+  existing, tested, synchronous contract; deferring it needs either
+  restructuring that contract or a second, separate deferred call, left
+  for a follow-up rather than risked here.
 - **Two-phase transaction reordering.** No requirement or code path here
   changes prepare/commit/rollback's ordering or its acknowledgement
   contract; every activation observed in this change's tests goes through
-  the exact existing protocol.
+  the exact existing protocol -- the buffer-swap and warm-up work above
+  changes only how much re-decoding/repainting a commit still has to do,
+  never the protocol shape.
+- **The board number** (tasks 2.3/3.4). Every board measurement this
+  change's own tasks call for still needs the reserved board; this
+  change's throttled-QEMU captures are directional estimates in the
+  meantime (see `docs/evidence/omarchy-themes/theme-swap-jank/`).
 
-A successor change should pick up the remainder; this one is deliberately
-kept to the piece it can prove end to end without touching either the
-chooser UI or the Rust commit path.
+A successor change should pick up 3.3b; this one now covers the buffer-swap
+and prepare-ahead pieces end to end, still without the board's own number.
 
 ## Capabilities
 
