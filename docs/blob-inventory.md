@@ -1340,6 +1340,16 @@ DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evid
 DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
 DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
 DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
+DATA 8b29440dc04ea2f3fc884c37a5a739d3dffe1a8affbfc69b5021b64ceaad71a4 docs/evidence/card-shell/webos-fan-switcher/dark-01-overview.png
+DATA 94fbce9896a461b5b705c11739b6c0110b80a9e8ee4927707f955cb0ae807b61 docs/evidence/card-shell/webos-fan-switcher/dark-02-scrolling.png
+DATA f9480d9c3ad586781acb4243f2a749766ff43dd12ccbb54206f3e570e9ab6446 docs/evidence/card-shell/webos-fan-switcher/dark-03-scrolled-settled.png
+DATA 890bef3e5ed4498ec3c8501e5ac2ecfc12f0738d013957e93b39e0e0c4ee4a3f docs/evidence/card-shell/webos-fan-switcher/dark-04-after-close.png
+DATA 8d85b086ab42f6bd3aea87233a4dcf50a3f3f26b2be215e358e0adfcd594d93d docs/evidence/card-shell/webos-fan-switcher/dark-05-opened.png
+DATA fd5ee4df21a4c0716b8dce53d8c32abd764075905a60caac58c1edafbbb5e1b1 docs/evidence/card-shell/webos-fan-switcher/light-01-overview.png
+DATA 307efea6181cbc439047b97cf6491f4ffd8339857bd2505934121b414b1fa138 docs/evidence/card-shell/webos-fan-switcher/light-02-scrolling.png
+DATA d64cc1ae5966e6dde50985670fc1f46c53f3fc10308f9d106ecc5f293af845cc docs/evidence/card-shell/webos-fan-switcher/light-03-scrolled-settled.png
+DATA ee760c972dd147e42d556cd5a03bc16ef635684414fba87578b1cb3d1744bba6 docs/evidence/card-shell/webos-fan-switcher/light-04-after-close.png
+DATA ce4d400cc15f392270bb1639441fe34f14616b60f90f9b23d2bae1ac663d9c52 docs/evidence/card-shell/webos-fan-switcher/light-05-opened.png
 DATA a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png
 DATA e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png
 ```
@@ -1937,6 +1947,16 @@ These DATA screenshots are headless-QEMU captures of synthetic ordinary-maximize
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png` | 4904 | DATA | `f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c` |
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png` | 4905 | DATA | `07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328` |
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png` | 4924 | DATA | `1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692` |
+| `docs/evidence/card-shell/webos-fan-switcher/dark-01-overview.png` | 13894 | DATA | `8b29440dc04ea2f3fc884c37a5a739d3dffe1a8affbfc69b5021b64ceaad71a4` |
+| `docs/evidence/card-shell/webos-fan-switcher/dark-02-scrolling.png` | 11705 | DATA | `94fbce9896a461b5b705c11739b6c0110b80a9e8ee4927707f955cb0ae807b61` |
+| `docs/evidence/card-shell/webos-fan-switcher/dark-03-scrolled-settled.png` | 11719 | DATA | `f9480d9c3ad586781acb4243f2a749766ff43dd12ccbb54206f3e570e9ab6446` |
+| `docs/evidence/card-shell/webos-fan-switcher/dark-04-after-close.png` | 14401 | DATA | `890bef3e5ed4498ec3c8501e5ac2ecfc12f0738d013957e93b39e0e0c4ee4a3f` |
+| `docs/evidence/card-shell/webos-fan-switcher/dark-05-opened.png` | 4559 | DATA | `8d85b086ab42f6bd3aea87233a4dcf50a3f3f26b2be215e358e0adfcd594d93d` |
+| `docs/evidence/card-shell/webos-fan-switcher/light-01-overview.png` | 13424 | DATA | `fd5ee4df21a4c0716b8dce53d8c32abd764075905a60caac58c1edafbbb5e1b1` |
+| `docs/evidence/card-shell/webos-fan-switcher/light-02-scrolling.png` | 13199 | DATA | `307efea6181cbc439047b97cf6491f4ffd8339857bd2505934121b414b1fa138` |
+| `docs/evidence/card-shell/webos-fan-switcher/light-03-scrolled-settled.png` | 13216 | DATA | `d64cc1ae5966e6dde50985670fc1f46c53f3fc10308f9d106ecc5f293af845cc` |
+| `docs/evidence/card-shell/webos-fan-switcher/light-04-after-close.png` | 14170 | DATA | `ee760c972dd147e42d556cd5a03bc16ef635684414fba87578b1cb3d1744bba6` |
+| `docs/evidence/card-shell/webos-fan-switcher/light-05-opened.png` | 4575 | DATA | `ce4d400cc15f392270bb1639441fe34f14616b60f90f9b23d2bae1ac663d9c52` |
 
 ### Tap-to-apply theme chooser: host fixture renders
 

@@ -32,14 +32,14 @@ static bool valid_config(const struct cs_config *c) {
 }
 struct cs_config cs_default_config(double width,double height) {
     return (struct cs_config){.width=width,.height=height,.top_reserved=56,
-        .inset=24,.gap=10,.title_height=128,.footer_height=56,
+        .inset=24,.gap=10,.title_height=100,.footer_height=56,
         /* webOS-fan overview: ~46% of the panel width per card (2-3 visible
          * at once, per docs/design/shell-ux-critique.md #3 and the user's
-         * chosen direction over a wider single-card carousel). The slot is
-         * tall enough that adapter.c's CARD_HEADER_HEIGHT reservation for
-         * the icon+app-name header still leaves a legible live-content
-         * thumbnail below it. */
-        .card_width=.5*(width-48),.card_height=.51*(height-56-128-56-48),
+         * chosen direction over a wider single-card carousel), close to the
+         * panel's own portrait aspect so a card's aspect-fit live content
+         * fills its slot with little letterboxing. The slot leaves room
+         * above it for adapter.c's icon+app-name header. */
+        .card_width=.5*(width-48),.card_height=.56*(height-56-100-56-48),
         /* The direct-switch (bottom-edge) entry gesture's own target slot:
          * intentionally the pre-fan geometry, unaffected by card_width
          * above -- see cs_entry_target_rect. */

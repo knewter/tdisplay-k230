@@ -2033,8 +2033,17 @@ static void prepare_impl(struct sway_output *output) {
 		fmax(56, output->usable_area.y);
 	cfg.bottom_reserved =
 		fmax(0, output->height - output->usable_area.y - output->usable_area.height);
-	cfg.card_height = .72 * (cfg.height - cfg.top_reserved - cfg.bottom_reserved -
-							 cfg.title_height - cfg.footer_height - 2 * cfg.inset);
+	/* cs_default_config's own card_height/entry_card_height use hardcoded
+	 * top/bottom-reserved constants (56/0); recompute both here against the
+	 * output's real usable_area the same way, keeping the overview's own
+	 * .56 fraction and the direct-switch entry slot's .72 fraction in sync
+	 * with card-shell-policy.c's cs_default_config -- see its comment on
+	 * entry_card_width/entry_card_height staying independent of the
+	 * overview's own card_width/card_height. */
+	double available = cfg.height - cfg.top_reserved - cfg.bottom_reserved -
+						cfg.title_height - cfg.footer_height - 2 * cfg.inset;
+	cfg.card_height = .56 * available;
+	cfg.entry_card_height = .72 * available;
 	cfg.reduced_motion = getenv("SWAY_K230_CARD_REDUCED_MOTION") &&
 						 strcmp(getenv("SWAY_K230_CARD_REDUCED_MOTION"), "1") == 0;
 	cfg.touch_first_motion = touch_first();
