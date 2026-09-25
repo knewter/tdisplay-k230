@@ -28,11 +28,19 @@
 @@ -310,6 +311,7 @@
  		return;
  	}
- 
+
 +	card_shell_observe(view);
  	struct wlr_box *new_geo = &xdg_surface->geometry;
  	bool new_size = new_geo->width != view->geometry.width ||
  			new_geo->height != view->geometry.height ||
+@@ -334,6 +336,7 @@
+ 		view_center_and_clip_surface(view);
+ 	}
+
++	card_shell_commit(view);
+ 	if (view->container->node.instruction) {
+ 		bool successful = transaction_notify_view_ready_by_serial(view,
+ 				xdg_surface->current.configure_serial);
 --- a/sway/desktop/layer_shell.c
 +++ b/sway/desktop/layer_shell.c
 @@ -1,1 +1,2 @@

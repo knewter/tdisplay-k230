@@ -1318,6 +1318,12 @@ DATA 9c38113a2aff8af1aaad237c309f01eab8af4aa640ce30e007900b14c8314e23 docs/evide
 DATA a452550ada5094cb740069898b573642fb52fd88b49200f57872802b1ccb1d2c docs/evidence/home-screen/qemu/home-light-page1.png
 DATA 99caaaa21b4eb8d894e4afbca853a2e2ad9625180db627ec126e54df2e000d70 docs/evidence/home-screen/qemu/home-light-page2.png
 DATA 53f2d5c5291ec1ef815ff705f197ca795f95365e2dacac9934cf14a20623b103 docs/evidence/home-screen/qemu/home-light-showcase.png
+DATA 420942042e5084921da630bc779963b29bfa4311c13745073572351a8f8a0a94 docs/evidence/card-shell/ordinary-resize-race-fix/before-frame-000-baseline.png
+DATA a0d38fec44b51778592fc3b019ccdaabf2d013e865b1ed77d2b231096fe4a563 docs/evidence/card-shell/ordinary-resize-race-fix/before-frame-009-motion-x280.png
+DATA 313dffeabb458ee2c5bc809de39d86f3f4190c46158f6531cecc7c4ce6d20b12 docs/evidence/card-shell/ordinary-resize-race-fix/before-frame-025-settle.png
+DATA ee4ab6fcc41de1a785277120f9689053e56d953e30df4f2481e55f6527141df4 docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-000-baseline.png
+DATA cfaca5ad4ca5f68342ce533adfd0807ddf557d8ec118e039eafe0b077057a87f docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-009-motion-x280.png
+DATA 6a5e807f6511eadc8055ff9a4a92f6b417fc27335cc02f3d316a536139195556 docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-025-settle.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

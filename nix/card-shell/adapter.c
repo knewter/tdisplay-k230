@@ -1943,10 +1943,34 @@ void card_shell_observe(struct sway_view *view) {
 	c->content = CS_UNAVAILABLE;
 	wl_list_init(&c->mirrors);
 	wl_list_insert(shell.cards.prev, &c->link);
-	if (ordinary_resize(view, shell.output))
-		transaction_commit_dirty();
+	card_shell_commit(view);
 	snapshot();
 	sway_log(SWAY_INFO, "K230_CARD_SHELL map id=%" PRIu64 " class=%d", c->id, c->content);
+}
+/* Sway's xdg_shell handle_commit runs card_shell_observe (above) once, at
+ * registration, and then -- on the SAME commit and on every commit after --
+ * its own view_update_size(): a client's own natural, pre-configure surface
+ * geometry (whatever it committed on the mapping commit, before it has
+ * reacted to any compositor-driven resize) is taken at face value and
+ * written straight into a still-floating container's pending size. That
+ * happens even when this file's `resize set 100 ppt 100 ppt` for_window
+ * command already resized the container to the output's full usable area
+ * moments earlier in the very same view_map(): the client's stale geometry
+ * simply overwrites it again. A card that is not currently the one being
+ * shown never earns a client repaint (wlr_scene only sends frame-done to
+ * surfaces it actually composites), so it never commits again at its real
+ * size and stays wrongly sized forever -- see docs/evidence/card-shell/
+ * app-switch-swipe-frame-capture/README.md, "Finding 2". Re-asserting the
+ * ordinary-maximized geometry after every commit, not only once at map
+ * time, closes that race unconditionally: whatever the client's own commit
+ * just did to the container's pending size, an ordinary-maximized card is
+ * put back to the output's usable area before the next frame renders. */
+void card_shell_commit(struct sway_view *view) {
+	if (!enabled() || !live(view) || root->outputs->length != 1 ||
+		!ensure_ui(root->outputs->items[0]))
+		return;
+	if (ordinary_resize(view, shell.output))
+		transaction_commit_dirty();
 }
 void card_shell_unmap(struct sway_view *view) {
 	if (!shell.initialized || !view->container)
