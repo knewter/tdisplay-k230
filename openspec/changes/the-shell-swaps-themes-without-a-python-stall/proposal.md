@@ -66,6 +66,37 @@ have since landed in this same change:
   `keyboard_appearance.sync_and_restart` (the `wvkbd` restart) now runs on
   a background thread from `theme_catalog.py`'s `activate` handling, so
   `theme-helper.service`'s reply to the chooser no longer waits on it.
+- **Skip a redundant re-prepare on an already-warm Apply** (task 6.3,
+  done). `theme_transaction.activate_generation()` now remembers, per
+  receiver, which generation it last successfully prepared, and skips
+  sending a second `prepare` to a receiver already holding the exact
+  generation being committed -- retrying with a real prepare, transparently,
+  if a stale assumption turns out wrong, so correctness never depends on
+  the memory being right.
+- **Optimistic Apply** (task 6, done; see this change's own spec delta's
+  new requirement). Board evidence after the above still showed 397 ms
+  from tap to commit -- short of the user's original ~100 ms target. The
+  user explicitly approved showing an already-prepared generation
+  immediately, ahead of the durable commit, rather than continuing to trim
+  the durable path's own remaining cost (a pointer swap, preference
+  write, and app-sync round trip that cannot itself be skipped without
+  risking correctness). This does not touch the two-phase protocol's own
+  acknowledgement contract -- see the next paragraph, revised from an
+  earlier version of this proposal that read as ruling this out
+  permanently, which is no longer accurate now that the user has approved
+  it.
+
+**On the two-phase transaction's acknowledgement contract specifically**:
+no requirement or code path in this change ever alters what a receiver's
+own `prepare`/`commit`/`rollback` exchange requires to succeed, or the
+"ack only after a real, flushed frame" rule each receiver's own handling
+already applied before this change. Optimistic Apply adds a rendering side
+effect *alongside* that protocol -- gated strictly on a receiver's own,
+already-prepared state, never substituting for or shortening the real
+exchange -- so every activation still goes through the exact same
+prepare/commit/rollback acknowledgement sequence as before; only when the
+chooser's own *display* reflects a generation the receiver already holds
+prepared has changed, not when that generation becomes durably active.
 
 Left open, and not claimed complete here:
 
@@ -75,12 +106,24 @@ Left open, and not claimed complete here:
   existing, tested, synchronous contract; deferring it needs either
   restructuring that contract or a second, separate deferred call, left
   for a follow-up rather than risked here.
-- **Two-phase transaction reordering.** No requirement or code path here
-  changes prepare/commit/rollback's ordering or its acknowledgement
-  contract; every activation observed in this change's tests goes through
-  the exact existing protocol -- the buffer-swap and warm-up work above
-  changes only how much re-decoding/repainting a commit still has to do,
-  never the protocol shape.
+- **Two-phase transaction ordering and acknowledgement contract.** Still
+  unchanged, including by Optimistic Apply above: no requirement or code
+  path here reorders prepare/commit/rollback or alters what a receiver's
+  own exchange requires to ack. What did change (with the user's explicit
+  approval) is *when the chooser's own display* reflects an already-
+  prepared generation, which is now allowed to run ahead of, rather than
+  strictly after, that generation's own durable commit -- see this
+  proposal's "Optimistic Apply" paragraph above and this change's spec
+  delta for the exact, narrow scope of that difference.
+- **Compositor fanout wiring.** This change's Optimistic Apply work adds a
+  best-effort "show" message the chooser may send directly to the
+  compositor's own appearance socket, but does not wire the two-phase
+  transaction's own `--rust-socket`/`--deck-socket` fanout into
+  `nix/shell.nix`'s `theme-helper.service` -- that remains whatever other,
+  separate work is landing it (see `impl/card-appearance-endpoint` in this
+  repository's own worktree list). Until that fanout is wired, the
+  compositor side of this requirement is present and tested in isolation
+  but has nothing live to receive it from in production.
 - **The board number** (tasks 2.3/3.4). Every board measurement this
   change's own tasks call for still needs the reserved board; this
   change's throttled-QEMU captures are directional estimates in the

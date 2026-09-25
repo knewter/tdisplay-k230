@@ -113,3 +113,83 @@ itself cause a warm-up request.
 
 - **WHEN** the carousel settles on the theme that is already active
 - **THEN** no warm-up request is issued, since there is nothing to prepare
+
+### Requirement: A warm Apply shows the new appearance ahead of the durable commit
+
+<!-- Grounding: user decision (2026-09-25 coordinator message): "The user
+     has explicitly approved the optimistic theme apply." Justification:
+     board evidence (docs/evidence/omarchy-themes/instant-theme-swap/
+     board-chooser-2026-09-25.md) showed tap-to-commit at 397 ms even after
+     removing the redundant re-prepare, still short of the user's original
+     ~100 ms target ("theme swaps should be instant"), with the remaining
+     cost inside the durable two-phase commit's own pointer-swap,
+     preference, and app-sync work -- none of which the receivers'
+     already-prepared, already-validated resources need to wait on merely
+     to be drawn. Proof: nix/rust-shell-client/src/main.rs
+     (`should_apply_optimistically`, `optimistic_apply_due`,
+     `show_theme_optimistically`), nix/card-shell/appearance.c (the `show`
+     phase), and their own tests. -->
+
+When an Apply tap's target generation is already the Rust receiver's own
+`prepare`d snapshot, the chooser SHALL render that appearance -- the
+wallpaper, and every other Rust-shell surface driven by it -- on the very
+next frame, without waiting for the durable two-phase commit (still
+dispatched, unchanged, and left to settle to completion asynchronously).
+This SHALL NOT alter the two-phase protocol's own acknowledgement contract
+in any way: a receiver's `prepared`/`active` bookkeeping, and the "ack only
+after a real, flushed frame" rule each receiver's `commit`/`rollback`
+handling already applies, remain exactly as before this requirement: the
+optimistic render is a side effect additional to that protocol, never a
+substitute for its own eventual, authoritative commit or rollback. A
+generation that is not already prepared SHALL continue to show the
+pre-existing busy/pending state on Apply and SHALL NOT be prepared early
+merely to make it eligible for this requirement. When the compositor can be
+reached directly, the same already-prepared candidate MAY also be shown
+there immediately, on the same advisory, side-effect-only basis (never
+altering its own two-phase bookkeeping either); this is a best-effort
+optimization, not a correctness requirement in its own right, since the
+durable commit's own real `commit`/`rollback` message to the compositor
+settles its display correctly regardless of whether this arrives.
+
+#### Scenario: An already-prepared Apply shows on the next frame
+
+- **WHEN** a person taps Apply for a theme the chooser has already prepared
+  (by browsing to it, by prepare-ahead of a carousel neighbour, or by a
+  previous identical Apply) and the wallpaper surface is ready for a new
+  frame
+- **THEN** the new appearance is rendered and flushed before the durable
+  commit's own reply arrives, and the tap-to-shown latency is logged
+
+#### Scenario: The durable commit later succeeds
+
+- **WHEN** an Apply was shown optimistically and the durable two-phase
+  commit subsequently acknowledges successfully
+- **THEN** the receiver's own `active` snapshot and every other durable
+  record (the active pointer, preferences, app appearance) settle to match
+  exactly what is already on screen, with no further visible change
+
+#### Scenario: The durable commit later fails
+
+- **WHEN** an Apply was shown optimistically and the durable two-phase
+  commit subsequently fails for any reason
+- **THEN** the visible appearance is rolled back to the previous
+  generation and the chooser shows a clear, specific error; at no point
+  after the transaction settles does the screen show a theme that is not
+  the durably active one
+
+#### Scenario: A cold, unprepared theme is never shown optimistically
+
+- **WHEN** an Apply targets a generation the chooser's receiver has not
+  already prepared
+- **THEN** the chooser shows its pre-existing busy/pending state and waits
+  for the durable commit, exactly as before this requirement, with no
+  early or speculative preparation triggered merely to qualify
+
+#### Scenario: A rapid second Apply is not confused by the first
+
+- **WHEN** a person applies one already-prepared theme, and before or
+  shortly after that transaction settles applies a second, different
+  already-prepared theme
+- **THEN** each Apply's own optimistic check and shown appearance are
+  scoped to that Apply's own request, and the second Apply is never
+  suppressed or corrupted by bookkeeping left over from the first

@@ -412,7 +412,112 @@ for 5.4 is the board run quoted above.
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.
 
+## 7. Optimistic Apply: show an already-prepared generation ahead of the durable commit
+
+<!-- Grounding: user decision (2026-09-25 coordinator message): "The user
+     has explicitly approved the optimistic theme apply." Board evidence
+     (docs/evidence/omarchy-themes/instant-theme-swap/
+     board-chooser-2026-09-25.md, re-check after 6.1-6.3): tap-to-commit
+     397 ms, still short of the ~100 ms target, with the remaining cost
+     inside activate_generation's own durable pointer-swap/preference/
+     app-sync work. See this change's design.md's own new section for the
+     full design reasoning and openspec/changes/.../specs/runtime/
+     shell-themes/spec.md's new "A warm Apply shows the new appearance
+     ahead of the durable commit" requirement for the exact, narrow scope
+     of what changed. -->
+
+- [x] 7.1 `nix/rust-shell-client/src/main.rs` gains `should_apply_
+  optimistically` (pure: is the just-submitted `Activate` request's own
+  target generation exactly the local `AppearanceReceiver`'s own
+  `prepared` snapshot) and `optimistic_apply_due` (pure: has this exact
+  `pending_id` already been checked this Apply), checked once per fresh
+  Apply right after Wayland event dispatch in `serve`'s own loop -- the
+  same tick a touch-up calling `theme_action(ThemeIntent::Apply)` would
+  have run in. When eligible, `show_theme_optimistically` renders the
+  already-validated prepared snapshot through the same `draw_wallpaper`/
+  `draw`/flush calls the real commit path already uses (skipping only for
+  a video-backed selection, an unrenderable snapshot, or an overlay not
+  immediately ready for a new frame -- each of which the real commit
+  event's own existing readiness handling still covers correctly), and
+  logs `rust-shell <ms>ms optimistic-apply shown ms=<tap-to-frame>`. This
+  never touches `AppearanceReceiver`'s own `prepared`/`active` bookkeeping,
+  the `Activate` request `submit_theme` already dispatched to `ThemeWorker`
+  unchanged, or the wire acknowledgement contract in any way -- the real
+  `AppearancePhase::Commit`/`Rollback` handling (unmodified) is what
+  authoritatively settles both the receiver's own state and the visible
+  appearance once the durable transaction actually completes, which is
+  also what correctly reverts the display and (via `ThemeView::accept`'s
+  existing, unmodified `Err` handling) surfaces a visible error on a
+  durable commit failure. A cold/unprepared generation is unaffected: it
+  is never prepared early to qualify, and Apply shows the pre-existing
+  busy state exactly as before. Verify with `cargo test --offline`
+  (`route_tests::optimistic_apply_fires_only_for_an_activate_matching_the_
+  prepared_generation`, `route_tests::optimistic_apply_due_is_scoped_to_
+  each_fresh_pending_id_for_a_rapid_double_apply`, and
+  `theme_ui::tests::a_failed_activate_clears_pending_and_surfaces_a_
+  visible_error`).
+- [x] 7.2 `nix/card-shell/appearance.c` gains an additive `"show"` protocol
+  phase: renders `service.candidate` immediately when it is already
+  `service.prepared` and matches the requested id/path, exactly like the
+  existing `commit` branch's own render call and with the same best-effort
+  restore-on-failure as that branch, but never touches `service.prepared`/
+  `service.candidate_path`/`service.current` -- so a real `commit` or
+  `rollback` for the same candidate behaves identically whether or not
+  `show` was ever sent. `main.rs`'s `show_appearance_optimistically` sends
+  this best-effort, fire-and-forget (a short write deadline, no reply
+  read -- any failure is silently ignored) to `K230_CARD_APPEARANCE_SOCKET`
+  (defaulting to `nix/shell.nix`'s existing `SWAY_K230_CARD_APPEARANCE_
+  SOCKET` production path), *after* its own local render/log so a slow or
+  unreachable compositor never inflates the logged tap-to-frame latency.
+  This channel is only reachable once the two-phase transaction's own
+  `--rust-socket`/`--deck-socket` fanout is wired into `theme-helper.
+  service` (a separate, not-yet-landed task -- see `proposal.md`'s own
+  note); until then it is dormant, correct, and tested in isolation.
+  Verify with `python3 -m unittest tests.test_card_shell_appearance`
+  (adds `test_show_renders_a_prepared_candidate_without_disturbing_the_
+  two_phase_state`, `test_show_is_rejected_for_a_generation_that_was_
+  never_prepared`, and `test_show_never_blocks_a_later_rollback_from_
+  restoring_the_previous_generation`, all against the real compiled
+  `appearance.c` over a real socket).
+- [x] 7.3 OpenSpec: the delta spec gains the new "A warm Apply shows the
+  new appearance ahead of the durable commit" requirement (five
+  scenarios: warm Apply shows next frame, durable success settles with no
+  further visible change, durable failure rolls back visibly with an
+  error, a cold theme is unaffected, a rapid second Apply is scoped
+  independently). `proposal.md`'s "What This Does Not Do" section is
+  revised: its former "Two-phase transaction reordering" bullet read as
+  ruling out any such change permanently, which stopped being accurate
+  once the user approved this; it now explains precisely what did and did
+  not change (the chooser's own display timing, never the wire
+  acknowledgement contract). `design.md` gains a new "Optimistic Apply"
+  section recording why gating on "already prepared locally" is
+  sufficient for correctness, why the compositor side is best-effort
+  rather than a precondition, and the two alternatives rejected (relaxing
+  the wire ack contract itself; a cross-process optimistic-shown flag).
+  Verified with `openspec validate the-shell-swaps-themes-without-a-
+  python-stall --strict`.
+- [ ] 7.4 Board re-check: confirm `optimistic-apply shown ms=` appears in
+  the Rust journal for a warm Apply, well under the ~100 ms target from
+  tap; confirm a durable-commit-failure scenario (e.g. a second receiver
+  briefly unreachable) still ends with the previous theme visibly active
+  and a specific error in the chooser, never a theme the transaction did
+  not durably commit; confirm a cold theme still shows the pre-existing
+  busy state with no `optimistic-apply shown` line. Needs the reserved
+  board; not run by this task. A genuine touch-driven QEMU proof of this
+  same behaviour (real Sway + real Rust shell + real touch injection +
+  the real `theme-helper`/two-phase backend, rather than the existing
+  chooser harness's synthetic `K230_THEME_COMMAND` stand-in, which never
+  populates a real `prepared` snapshot and so cannot exercise this code at
+  all) was not built in this task either -- existing coverage is the C
+  receiver's own real-socket tests (7.2) plus the pure Rust decision-logic
+  tests (7.1); this is a named, explicit gap for a follow-up, not a
+  claimed pass.
+
+Proof for 7.1-7.3: the tests named above, all passing on this host; proof
+for 7.4 is the reserved board (or a new QEMU harness), not run here.
+
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, and 5.4 have board results; 3.3b and 5.4
-are named here so neither is silently dropped or claimed done without a
-board result.
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and 7.4 have board results; 3.3b is
+named here so it is not silently dropped or claimed done without a board
+result. Task 5.4's board result is recorded above
+(board-chooser-2026-09-25.md).

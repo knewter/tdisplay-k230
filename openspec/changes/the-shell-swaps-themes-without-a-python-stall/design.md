@@ -36,6 +36,83 @@ different acceptance decision -- the *daemon's* copy of `theme_catalog`'s
 real parser is what actually validates and acts on every request, whichever
 path reached it.
 
+## Optimistic Apply (2026-09-25, user-approved)
+
+Board evidence after task 6.3's skip-redundant-prepare fix still showed
+397 ms from Apply tap to the Rust shell's own commit-accepted marker --
+short of the user's original ~100 ms target. The remaining cost lives
+inside `activate_generation()`'s own durable work (the atomic pointer
+swap, missing-public-link creation, `fsync`, the wallpaper preference
+commit, and the app-sync round trip), none of which can be skipped or
+reordered without risking exactly the correctness this protocol exists
+for. Rather than continue trimming that durable path, the user approved
+showing the new appearance immediately when it is already safe to do so.
+
+**Why gating on "already prepared" is sufficient for correctness.** A
+receiver only ever holds a `prepared` candidate after successfully
+validating it byte-for-byte against the same `load()`/`load_snapshot()`
+checks a real `prepare` exchange already runs (bounds, symlink rejection,
+generation-identity match, palette/background integrity). Rendering that
+already-validated candidate early therefore risks nothing a real `prepare`
+ack would not already have accepted -- there is no new, less-trusted data
+path. What optimism cannot know in advance is whether the *durable* commit
+will actually land (a second receiver's commit can still fail, the app-sync
+step can still fail); that is why the optimistic render never touches a
+receiver's own `prepared`/`active` bookkeeping or the wire acknowledgement
+contract at all (see `nix/rust-shell-client/src/main.rs`'s
+`show_theme_optimistically` and `nix/card-shell/appearance.c`'s new `show`
+phase, both pure rendering side effects). The real `commit`/`rollback`
+event -- unmodified, still gated on a real flushed frame the same as
+before this task -- is what settles the receiver's actual state
+authoritatively; a failed durable commit's own existing rollback handling
+is what makes the screen correct again, not new code this task adds.
+
+**Why the client-side check, not a server-side flag.** `should_apply_
+optimistically`/`optimistic_apply_due` (`main.rs`) are pure functions
+comparing the just-submitted `Activate` request's own `expected_generation`
+against the *local* receiver's own `prepared` snapshot -- no round trip,
+no new IPC for the primary (Rust-surface) case, since the chooser and that
+receiver are the same process. This is why the target generation must
+already be prepared *in this same process*: nothing here can safely infer
+that a remote receiver (the compositor) is also warm, which is exactly why
+the compositor side is deliberately advisory/best-effort (see below)
+rather than a precondition this feature waits on.
+
+**The compositor's `show` phase.** A new, additive protocol-1 phase in
+`nix/card-shell/appearance.c`'s `request()`: renders `service.candidate`
+immediately when it is already `prepared` and matches the requested
+id/path, exactly like the existing `commit` branch's own render call, but
+never touches `service.prepared`/`service.candidate_path`/`service.
+current` -- so a subsequent real `commit` or `rollback` for the same
+candidate behaves identically to a world where `show` was never sent.
+Sent best-effort, fire-and-forget, from the Rust chooser directly to the
+compositor's own socket (`K230_CARD_APPEARANCE_SOCKET`, defaulting to
+`nix/shell.nix`'s existing `SWAY_K230_CARD_APPEARANCE_SOCKET` production
+path) with a short write deadline and no reply read; any failure (socket
+missing, refused, a rejected mismatch) is silently ignored. This channel
+is presently reachable only once the two-phase transaction's own
+`--rust-socket`/`--deck-socket` fanout is wired into `theme-helper.service`
+(tracked separately, not by this task); until then it is dormant, correct,
+and tested in isolation, not a regression risk.
+
+**Rejected: relaxing the wire acknowledgement contract itself** (e.g.
+having a receiver ack `prepare` early, or ack `commit` before its own
+frame is flushed). Rejected because that contract is what task 1's own
+instrumentation and every existing transaction test assume; loosening it
+would have widened this task far past "show something already known-good
+early" into "change what every receiver promises," for a benefit this
+narrower design already captures.
+
+**Rejected: an optimistic-shown flag inside `ThemeView`/the durable
+transaction, coordinated across processes.** Would need new state
+(un)winding on every possible interleaving (rapid double Apply, a
+receiver restart mid-flight, a stale prepared-state assumption already
+handled defensively in task 6.3). The chosen design needs none of that:
+the optimistic render is *stateless* with respect to the durable
+transaction (it reads `prepared`, renders, and is done), so there is
+nothing to reconcile if the two ever disagree -- the real commit/rollback
+event, unaware optimism ever ran, always wins.
+
 ## Rejected alternatives
 
 - **Rewrite `k230-theme` as a long-running client that keeps a persistent
