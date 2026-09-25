@@ -229,8 +229,31 @@ fn video_identity(snapshot: Option<&AppearanceSnapshot>) -> (Option<String>, Opt
 /// preparation. Pure and independent of `AppearanceSnapshot` so it is
 /// trivially testable without a real receiver or filesystem fixture.
 fn should_apply_optimistically(request: &ThemeRequest, prepared_generation: Option<&str>) -> bool {
-    matches!(request, ThemeRequest::Activate { expected_generation, .. }
-        if Some(expected_generation.as_str()) == prepared_generation)
+    optimistic_apply_skip_reason(request, prepared_generation).is_none()
+}
+
+/// The same decision as `should_apply_optimistically`, but naming *why*
+/// not when the answer is no -- `None` means "eligible, show it"; `Some`
+/// carries a short, `journalctl`-greppable reason. Board evidence
+/// (2026-09-26) needed this: a generation-mismatch skip that looked
+/// identical to a plain cold-theme skip from the outside was actually a
+/// second, unrelated warm-up's `prepare` overwriting the receiver's
+/// single `prepared` slot after this Apply's own target had already
+/// staged there -- see `ThemeView::poll_prepare_ahead`'s own fix for that
+/// race. Logged verbatim as `optimistic-apply skipped reason=<this>` at
+/// the one call site in `serve`'s loop.
+fn optimistic_apply_skip_reason(
+    request: &ThemeRequest,
+    prepared_generation: Option<&str>,
+) -> Option<&'static str> {
+    let ThemeRequest::Activate { expected_generation, .. } = request else {
+        return Some("not-an-activate-request");
+    };
+    match prepared_generation {
+        None => Some("not-prepared"),
+        Some(generation) if generation != expected_generation => Some("generation-mismatch"),
+        Some(_) => None,
+    }
 }
 
 /// Whether a fresh optimistic-apply attempt is due this tick: exactly once
@@ -1207,6 +1230,7 @@ impl ShellClient {
         tapped_at: Instant,
     ) {
         if self.appearance_pending {
+            self.log("optimistic-apply skipped reason=commit-draw-in-flight");
             return; // a real transaction's own commit/rollback draw already owns this tick
         }
         let geometry = self
@@ -1214,13 +1238,16 @@ impl ShellClient {
             .configured
             .then_some((self.wallpaper.width, self.wallpaper.height));
         if geometry.is_some_and(|size| selected_video(Some(snapshot), size).is_some()) {
+            self.log("optimistic-apply skipped reason=video-background");
             return; // a video swap needs its own decode/ready gate regardless
         }
         if appearance_renderable(Some(snapshot), &mut self.background_cache, geometry).is_err() {
+            self.log("optimistic-apply skipped reason=unrenderable-snapshot");
             return; // defensive: an already-prepared snapshot should decode cleanly
         }
         let overlay_ready = self.layer.is_none() || (self.configured && !self.frame_pending);
         if !(self.wallpaper.configured && overlay_ready) {
+            self.log("optimistic-apply skipped reason=not-ready-for-a-frame");
             return; // not ready for a new frame yet -- the real commit event retries this
         }
         self.wallpaper_path = fallback_still(Some(snapshot));
@@ -1231,17 +1258,17 @@ impl ShellClient {
         self.wallpaper.dirty = true;
         let background = self.draw_wallpaper(qh);
         if !background {
-            self.log("optimistic-apply-rejected draw-wallpaper-failed");
+            self.log("optimistic-apply skipped reason=draw-wallpaper-failed");
         }
         let foreground = self.layer.is_none() || self.draw(qh);
         if background && !foreground {
-            self.log("optimistic-apply-rejected draw-failed");
+            self.log("optimistic-apply skipped reason=draw-failed");
         }
         self.appearance_pending = true;
         let flushed = queue.flush().is_ok();
         self.appearance_pending = false;
         if background && foreground && !flushed {
-            self.log("optimistic-apply-rejected flush-failed");
+            self.log("optimistic-apply skipped reason=flush-failed");
         }
         if background && foreground && flushed {
             // Named stage marker (task 6.6's own board re-check): how long
@@ -3091,16 +3118,32 @@ fn serve() -> Result<(), String> {
                 (state.theme_view.pending.clone(), state.theme_apply_tapped_at)
             {
                 state.theme_optimistic_shown_for = state.theme_view.pending_id;
-                let prepared = appearance
-                    .prepared()
-                    .filter(|snapshot| {
-                        should_apply_optimistically(&request, Some(snapshot.generation.as_str()))
-                    })
-                    .cloned();
-                if let Some(snapshot) = prepared {
-                    state.show_theme_optimistically(&qh, &mut queue, &snapshot, tapped_at);
-                    if let Some(socket) = state.card_appearance_socket.clone() {
-                        show_appearance_optimistically(&socket, &snapshot.generation, &snapshot.path);
+                // Only an Activate is ever eligible (see
+                // `optimistic_apply_skip_reason`'s own `not-an-activate-
+                // request` case); logging is scoped to that case too, so
+                // this line is exactly "the decision on the Apply tap"
+                // the board's own diagnosis needs, not noise from every
+                // List/Preview reply this same one-shot check also runs
+                // against.
+                if matches!(request, ThemeRequest::Activate { .. }) {
+                    let prepared = appearance.prepared().cloned();
+                    let prepared_generation =
+                        prepared.as_ref().map(|snapshot| snapshot.generation.as_str());
+                    if should_apply_optimistically(&request, prepared_generation) {
+                        let snapshot =
+                            prepared.expect("should_apply_optimistically implies a prepared match");
+                        state.show_theme_optimistically(&qh, &mut queue, &snapshot, tapped_at);
+                        if let Some(socket) = state.card_appearance_socket.clone() {
+                            show_appearance_optimistically(
+                                &socket,
+                                &snapshot.generation,
+                                &snapshot.path,
+                            );
+                        }
+                    } else {
+                        let reason = optimistic_apply_skip_reason(&request, prepared_generation)
+                            .unwrap_or("prepared-snapshot-vanished");
+                        state.log(&format!("optimistic-apply skipped reason={reason}"));
                     }
                 }
             }
@@ -4018,6 +4061,34 @@ mod route_tests {
         };
         assert!(!should_apply_optimistically(&preview, Some(target.as_str())));
         assert!(!should_apply_optimistically(&ThemeRequest::List, Some(target.as_str())));
+    }
+
+    #[test]
+    fn optimistic_apply_skip_reason_names_the_specific_cause() {
+        // Board evidence (2026-09-26): a plain bool told the coordinator
+        // *that* the optimistic path did not fire, not *why* -- this is
+        // the diagnostic surface `optimistic-apply skipped reason=...`
+        // logs verbatim.
+        let target = "aaaaaaaaaaaaaaaaaaaaaaaa".to_string();
+        let other = "bbbbbbbbbbbbbbbbbbbbbbbb".to_string();
+        let activate = ThemeRequest::Activate {
+            theme_id: "gruvbox".into(),
+            expected_generation: target.clone(),
+            background_id: None,
+        };
+        assert_eq!(optimistic_apply_skip_reason(&activate, Some(target.as_str())), None);
+        assert_eq!(
+            optimistic_apply_skip_reason(&activate, None),
+            Some("not-prepared")
+        );
+        assert_eq!(
+            optimistic_apply_skip_reason(&activate, Some(other.as_str())),
+            Some("generation-mismatch")
+        );
+        assert_eq!(
+            optimistic_apply_skip_reason(&ThemeRequest::List, Some(target.as_str())),
+            Some("not-an-activate-request")
+        );
     }
 
     #[test]

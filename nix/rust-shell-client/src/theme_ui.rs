@@ -422,6 +422,25 @@ impl ThemeView {
         if self.prepare_ahead_inflight.is_some() {
             return None;
         }
+        if self.pending.is_some() {
+            // A real, explicit request (a confirm tap's own Preview, or an
+            // Activate) is awaiting its reply. `ThemeWorker` processes
+            // requests strictly in submission order, and each receiver
+            // keeps only its single most-recently-prepared candidate
+            // (`AppearanceReceiver::prepared`/`card-shell`'s own
+            // `service.prepared`) -- so a warm-up submitted now could
+            // reach that same slot *after* the real request's own
+            // "prepare" and silently replace it with an unrelated theme's
+            // generation before its reply is even back, exactly the race
+            // that made an otherwise-already-prepared Apply miss its own
+            // optimistic show (board evidence, 2026-09-26: a neighbour
+            // warm-up drained here overwrote `appearance.prepared` between
+            // the confirm tap's own Preview reply and the Apply that
+            // followed it). Warming simply resumes the next tick once
+            // `pending` clears; the dwell clock above keeps accumulating
+            // in the meantime, so nothing already waited out is lost.
+            return None;
+        }
         if let Some(index) = centered {
             if self.prepare_ahead_sent_for != Some(index)
                 && self.prepare_ahead_elapsed_ms >= PREPARE_AHEAD_DEBOUNCE_MS
@@ -1209,6 +1228,91 @@ mod tests {
         assert_eq!(
             view.pending_neighbor_warms,
             std::collections::VecDeque::from([0, 2])
+        );
+    }
+
+    #[test]
+    fn a_pending_confirm_pauses_every_warm_up_until_its_own_reply_lands() {
+        // Board evidence (2026-09-26): opened the chooser (queuing
+        // neighbours 0 and 2 of the active theme at index 1), warmed
+        // neighbour 0, then swiped to and tapped-confirmed theme 2 (the
+        // *other* queued neighbour). While that confirm's own real Preview
+        // was still pending, a later tick drained neighbour 2 from the
+        // queue anyway and submitted its own warm-up "prepare" -- which
+        // `ThemeWorker` (one request at a time, strict submission order)
+        // delivered to the Rust receiver's single `prepared` slot *after*
+        // the confirm's own "prepare" had already staged theme 2 there,
+        // silently overwriting it before Apply ever ran. This proves the
+        // fix: once a real request is pending, `poll_prepare_ahead` emits
+        // nothing at all -- not the remaining queued neighbour, not a
+        // fresh dwell on the centred index -- however many ticks pass,
+        // until that request's own reply clears `pending`.
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 3, Some(1));
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([0, 2])
+        );
+
+        // Neighbour 0 warms first, its own reply lands, nothing pending.
+        let (index, warm_request) = view
+            .poll_prepare_ahead(16, None)
+            .expect("neighbour 0 warms while nothing is pending");
+        assert_eq!(index, 0);
+        view.prepare_ahead_submitted(0, 100);
+        assert!(view.prepare_ahead_reply(&ThemeReply {
+            id: 100,
+            request: warm_request,
+            result: Err("irrelevant".into()),
+        }));
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([2])
+        );
+
+        // The person swipes to, and taps to confirm, index 2 -- the same
+        // theme still sitting in the neighbour queue. A real, explicit
+        // Preview is now pending.
+        let confirm = view.preview_request(2).expect("index 2 exists");
+        view.submitted(confirm.clone(), 101);
+        assert_eq!(view.pending, Some(confirm.clone()));
+
+        // Before that reply lands, however many ticks pass -- whether the
+        // carousel is reported centred on 2 (matching both a dwell
+        // opportunity and the still-queued neighbour) or not settled at
+        // all -- nothing is emitted, and the queue itself is left intact
+        // rather than silently drained and discarded.
+        for centered in [Some(2), Some(2), None, Some(2)] {
+            assert_eq!(view.poll_prepare_ahead(500, centered), None);
+        }
+        assert_eq!(
+            view.pending_neighbor_warms,
+            std::collections::VecDeque::from([2])
+        );
+
+        // The confirm's own reply lands: `pending` clears, the page moves
+        // to Preview, and Apply now targets exactly the generation that
+        // reply reported -- never a later, different theme's.
+        let mut preview_of_two = preview();
+        preview_of_two.theme.id = view.list.as_ref().unwrap().themes[2].id.clone();
+        preview_of_two.generation = id('e');
+        assert!(view.accept(ThemeReply {
+            id: 101,
+            request: confirm,
+            result: Ok(ThemeResponse::Preview(Box::new(preview_of_two))),
+        }));
+        assert_eq!(view.pending, None);
+        assert_eq!(view.page, ThemePage::Preview);
+
+        let apply = view.apply_request().expect("a loaded preview, nothing pending");
+        assert_eq!(
+            apply,
+            ThemeRequest::Activate {
+                theme_id: view.preview.as_ref().unwrap().theme.id.clone(),
+                expected_generation: id('e'),
+                background_id: Some(id('c')),
+            }
         );
     }
 }
