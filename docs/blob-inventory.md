@@ -1327,6 +1327,13 @@ DATA 313dffeabb458ee2c5bc809de39d86f3f4190c46158f6531cecc7c4ce6d20b12 docs/evide
 DATA ee4ab6fcc41de1a785277120f9689053e56d953e30df4f2481e55f6527141df4 docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-000-baseline.png
 DATA cfaca5ad4ca5f68342ce533adfd0807ddf557d8ec118e039eafe0b077057a87f docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-009-motion-x280.png
 DATA 6a5e807f6511eadc8055ff9a4a92f6b417fc27335cc02f3d316a536139195556 docs/evidence/card-shell/ordinary-resize-race-fix/after-frame-025-settle.png
+DATA 2d4f8420c1db9d1f40c9217ee3d4ba646270226f2525ea4eeb8918a3e3cb50a0  docs/evidence/card-shell/overview-home-bleed-through/after-overview-home-hidden.png
+DATA a4d56bc27c4eba894cb36931c3030a018f1d0945414129a800295786787dd217  docs/evidence/card-shell/overview-home-bleed-through/before-app-focused.png
+DATA a1a9df92965e1208b1f2bc1d3f1b20a7f1bc26d4f9d4322db2ec18ff47e618de  docs/evidence/card-shell/overview-home-bleed-through/before-overview-home-bleeds-through.png
+DATA bfc76c3bdd2e5a8db51e19243912529761bf0c382c314e09b20573bc5800eb08  docs/evidence/card-shell/overview-home-bleed-through/entry-00-origin.png
+DATA 6586a5ab19bf085c36f82d397939157b112e08380e2d16367b746c9b8d7b659d  docs/evidence/card-shell/overview-home-bleed-through/entry-01-touch-down.png
+DATA 857caa9d6ea4de5d6ae24a55b67f5a71368ff178d7cce9f84f72f284e988109e  docs/evidence/card-shell/overview-home-bleed-through/entry-02-mid-drag.png
+DATA 5824d7199bb74acd571aa8a0e7bbaa986f664e10fdbdcec5e9e91570f9db3a98  docs/evidence/card-shell/overview-home-bleed-through/entry-03-home-idle-reveal.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1895,3 +1902,17 @@ These DATA screenshots are native `grim` captures of the installed board composi
 | --- | ---: | --- | --- |
 | `docs/evidence/omarchy-themes/commit-fix-board/drawer-catppuccin.png` | 38880 | DATA | `a61bde5110afc2a8affad06c7cfdd78190e9b2759563646d71a80f8105a3fc13` |
 | `docs/evidence/omarchy-themes/commit-fix-board/drawer-community.png` | 40915 | DATA | `bc925fa4c5725f3fc35f682feb9f64869a300a786df0548b62329bcef4a9a75d` |
+
+### Overview hides the Home layer: headless QEMU captures
+
+These DATA screenshots are headless-QEMU captures of synthetic fixture clients showing the Home layer bleeding through the overview before the fix and hidden after it. The adjacent README records commands and limits; no physical claim.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-shell/overview-home-bleed-through/after-overview-home-hidden.png` | 24294 | DATA | `2d4f8420c1db9d1f40c9217ee3d4ba646270226f2525ea4eeb8918a3e3cb50a0` |
+| `docs/evidence/card-shell/overview-home-bleed-through/before-app-focused.png` | 7292 | DATA | `a4d56bc27c4eba894cb36931c3030a018f1d0945414129a800295786787dd217` |
+| `docs/evidence/card-shell/overview-home-bleed-through/before-overview-home-bleeds-through.png` | 24358 | DATA | `a1a9df92965e1208b1f2bc1d3f1b20a7f1bc26d4f9d4322db2ec18ff47e618de` |
+| `docs/evidence/card-shell/overview-home-bleed-through/entry-00-origin.png` | 4887 | DATA | `bfc76c3bdd2e5a8db51e19243912529761bf0c382c314e09b20573bc5800eb08` |
+| `docs/evidence/card-shell/overview-home-bleed-through/entry-01-touch-down.png` | 4896 | DATA | `6586a5ab19bf085c36f82d397939157b112e08380e2d16367b746c9b8d7b659d` |
+| `docs/evidence/card-shell/overview-home-bleed-through/entry-02-mid-drag.png` | 4959 | DATA | `857caa9d6ea4de5d6ae24a55b67f5a71368ff178d7cce9f84f72f284e988109e` |
+| `docs/evidence/card-shell/overview-home-bleed-through/entry-03-home-idle-reveal.png` | 4706 | DATA | `5824d7199bb74acd571aa8a0e7bbaa986f664e10fdbdcec5e9e91570f9db3a98` |
