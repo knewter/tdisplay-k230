@@ -178,6 +178,32 @@ class HelperDaemonTests(unittest.TestCase):
             self.assertNotIn(heavy, imported,
                              f"{heavy} was imported on the daemon-reachable fast path")
 
+    def test_client_stays_on_the_daemon_for_a_legitimately_slow_but_working_reply(self):
+        # Board evidence (2026-09-24): `theme_client.py`'s old 0.3 s
+        # `--helper-timeout-s` default was shorter than a legitimate
+        # `preview`/`activate` could take even through a *working* daemon
+        # (`theme_activate.prepare()`'s own real cost, not Python start-up),
+        # so the client abandoned an in-flight daemon reply and fell back to
+        # the full in-process path -- paying for both. A daemon that takes
+        # noticeably longer than the old 0.3 s default (but comfortably
+        # inside the current one) must still be used, never abandoned.
+        theme(self.builtins / "catppuccin")
+        original_handle = catalog.handle
+
+        def slow_handle(args):
+            time.sleep(0.6)  # well past the old 0.3s default, well under the current one
+            return original_handle(args)
+
+        with mock.patch.object(catalog, "handle", side_effect=slow_handle), \
+             mock.patch.object(client, "fallback",
+                               side_effect=AssertionError("must not fall back for a slow-but-working daemon")):
+            started = time.monotonic()
+            status, result = self.run_via_daemon("list", "--json")
+            elapsed = time.monotonic() - started
+        self.assertEqual(status, 0)
+        self.assertEqual(result["themes"][0]["name"], "catppuccin")
+        self.assertGreaterEqual(elapsed, 0.6)
+
     def test_client_falls_back_to_the_direct_path_when_no_daemon_is_listening(self):
         theme(self.builtins / "catppuccin")
         missing_socket = self.base / "no-such-daemon.sock"
