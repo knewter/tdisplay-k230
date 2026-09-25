@@ -65,11 +65,19 @@ already been implemented, not merely specified — see `tasks.md` group E.
 
 ## What Changes
 
-- **Deck legibility**: widen the card overview's neighbor peek so an
-  adjacent card's icon badge is identifiable without paging to it, replacing
-  the current ~8.7%-of-card-width sliver. Independent of, and a prerequisite
-  for maximum value from, `the-handheld-presents-a-coherent-shell` task 1.4
-  (real card icons) — a legible icon needs enough peek width to show it.
+- **Deck legibility (superseded 2026-09-25 to the user's chosen direction)**:
+  rather than merely widening the existing single-card deck's peek, shrink
+  the deck's own cards to a webOS-style fan — 2-3 cards visible at once,
+  tight spacing — with a real resolved icon and app name in a header above
+  each card, replacing both the current ~8.7%-of-card-width sliver and the
+  raw-title letter badge. This folds in the C-compositor half of
+  `the-handheld-presents-a-coherent-shell` task 1.4 (real card icons)
+  directly, rather than merely widening room for it, and is implemented as
+  the same `CS_DECK` mode and gestures — not a second, separately-entered
+  Overview destination (see `design.md` decision 1). The direct bottom-edge
+  app-switch gesture's own geometry is explicitly decoupled from the
+  deck's new card size so its existing feel (30% threshold, flick,
+  1:1 tracking, full-size neighbour) is unaffected.
 - **Shade quick toggles**: add a small row of at-a-glance capability toggles
   (brightness step, keyboard show/hide, and any other Settings capability
   already exposed as a single-tap action) to the notification shade itself,
@@ -122,7 +130,13 @@ None.
   shade/drawer/keyboard → `the-handheld-presents-a-coherent-shell` tasks 2.2
   and 4.4, still open; slice E's bottom-edge escape and dismiss-direction
   fix are bounded, narrower fixes that do not complete those tasks.
-- Card headers/switcher not showing a real app icon → same change, task 1.4.
+- Card headers/switcher not showing a real app icon → the C-compositor half
+  is now implemented directly by this slice's A.3 (see above); task 1.4
+  itself stays owned by `the-handheld-presents-a-coherent-shell` for any
+  remaining drawer/notification-side or shared-resolver-architecture work
+  (this slice's resolver, `nix/card-shell/icon.c`, is independent of the
+  drawer's own `icon.rs`, not a shared process — see `design.md`'s
+  Non-Goals).
 - Card header showing a raw, live-changing window title →
   `docs/design/webos-polish-review.md` P0-1 (not an OpenSpec change; a
   correction against currently shipped code with no open proposal of its
@@ -142,20 +156,27 @@ None.
   as a recommendation for the coordinator in `shell-ux-critique.md` §4, not
   acted on here without explicit authorization to reverse a recorded
   rejection.
-- A distinct, deliberately-entered multi-card grid "Overview" mode
-  (considered in `design.md` decision 1 as an alternative to widening the
-  existing deck's peek, and set aside here as too large a single slice —
-  illustrated only as one option in `docs/design/shell-ux-critique-switcher.svg`,
-  not committed).
+- A distinct, deliberately-entered multi-card grid "Overview" mode as a
+  *second, separately-entered destination* remains out of scope and
+  rejected (`design.md` decision 1) — the webOS-fan card sizing this slice
+  implements lives inside the existing `CS_DECK` mode and gestures, which
+  is exactly the property that keeps it a bounded slice rather than the
+  full redesign a second destination would be.
 
 ## Impact
 
 Userspace only, split across the two existing shell processes:
 
-- Deck legibility touches `nix/card-shell-policy/card-shell-policy.c`
-  (`cs_default_config`, the deck layout math) and `nix/card-shell/adapter.c`/
-  `render.c` (badge/label sizing at the new peek width). No device tree,
-  kernel, boot, radio, or second-core change.
+- Deck legibility (webOS fan) touches `nix/card-shell-policy/card-shell-policy.c`
+  (`cs_default_config`, the deck layout math, the new
+  `entry_card_width`/`entry_card_height`/`cs_entry_target_rect` split, and
+  scroll momentum), `nix/card-shell/adapter.c` (icon/name resolution,
+  header layout, the two `cs_entry_set_geometry` call sites) and
+  `render.c` (the new `card_icon_header`), plus a new
+  `nix/card-shell/icon.c`/`.h` (no new library dependency — Cairo's native
+  PNG decoder only) registered in `nix/card-shell.nix`/
+  `nix/patches/sway-k230-card-shell.patch`. No device tree, kernel, boot,
+  radio, or second-core change.
 - Shade quick toggles touch `nix/rust-shell-client/src/service_ui.rs`
   (`panel_intent`'s `Route::Shade` arm) and `render.rs` (Shade painting) only;
   reuses the existing `ServiceRequest::Brightness`/`KeyboardToggle` request
@@ -188,9 +209,13 @@ discipline. Slice E's own physical acceptance (does the bottom-edge escape
 and unified dismiss direction feel right on real glass, from a real finger)
 is likewise open and unverified — see task E.4.
 
-Slices A-D make **no source changes**; they remain planning only, produced
-under `AGENTS.md`'s instruction that several other agents are concurrently
-editing the compositor and the Rust shell, and implementation for them is a
-separate, later, authorized step. Slice E is implemented, host- and
-QEMU-tested, and its host/QEMU commands are recorded in `tasks.md`; its
-board task remains open.
+This proposal originally made **no source changes**; it was planning only,
+produced under `AGENTS.md`'s instruction that several other agents are
+concurrently editing the compositor and the Rust shell. Two slices have
+since been implemented as authorized follow-ons: slice A (deck legibility,
+superseded to the user's chosen webOS-fan direction — see `tasks.md`
+A.1-A.3 and `docs/evidence/card-shell/webos-fan-switcher/`) and slice E
+(bottom-edge overlay escape and consistent dismiss direction — host- and
+QEMU-tested, its commands recorded in `tasks.md`). Each keeps its own board
+acceptance task open (A.4, E.4). Slices B and C (shade quick toggles,
+vision accessibility) remain planning-only.

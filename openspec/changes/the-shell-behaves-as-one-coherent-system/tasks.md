@@ -2,44 +2,81 @@ Three independent slices (A, B, C) plus a shared evidence/spec task, plus a
 fourth slice (E) added later and already implemented. Each slice touches a
 disjoint file set and can be implemented, tested, and landed in parallel by
 separate worktrees without coordination beyond the usual
-`python3 tools/work-status.py` check, per `AGENTS.md`. Slices A-C's tasks
-below are `[ ]` open for a future implementer; slice E's host/QEMU tasks are
-ticked with their evidence, its board task is left open per `AGENTS.md`'s
-"do not tick physical tasks" and the k230-spec-change skill's QEMU-vs-board
-distinction.
+`python3 tools/work-status.py` check, per `AGENTS.md`. Slice A's host/QEMU
+tasks (A.1-A.3) and slice E's host/QEMU tasks are ticked with their
+evidence; slices B and C remain `[ ]` open for a future implementer. Every
+slice's board task (A.4, E.4) is left open per `AGENTS.md`'s "do not tick
+physical tasks" and the k230-spec-change skill's QEMU-vs-board distinction.
 
-## A. Deck legibility (host, C compositor policy + render)
+## A. Deck legibility: webOS-fan overview (host, C compositor policy + render)
 
-- [ ] A.1 Choose and record a target neighbor-peek fraction (replacing the
-  current ~8.7%-of-card-width sliver computed from
-  `card_width=.84*(width-48)`, `gap=16`) large enough to show a legible icon
-  badge at the existing card-header badge size, with the arithmetic and
-  rendered comparison committed under `docs/evidence/`. Verify by computing
-  the resulting `pitch`/edge-peek numbers for the real 568×1232 panel and
-  confirming `valid_config()`'s existing bounds
-  (`card-shell-policy.c:7-28`) still accept them.
-- [ ] A.2 Update `cs_default_config` and the deck layout math
-  (`card-shell-policy.c:29-38,192-210`) to the chosen peek, without changing
-  `cs_entry_motion`/`cs_entry_up_at`'s drag-time geometry (design.md risk
-  note — confirm the two-axis carousel's "full or near-full" feel during an
-  active drag is unaffected, only the released/idle layout). Verify with
-  `python3 -m unittest test_card_shell_state` (run from `tests/`; all
-  existing cases must still pass) plus any new case this task adds for the
-  new peek geometry.
-- [ ] A.3 Confirm card labels/badges at the new card width remain within
-  `render.c`'s existing clipping (`label_clip`, `clip_box`) and do not
-  overflow into the now-larger neighbor gutter. Verify with
-  `nix build .#card-shell --max-jobs 1 --cores 4 --no-link --print-out-paths`
-  and a host render comparison screenshot committed to
-  `docs/evidence/card-shell/deck-legibility/`.
-- [ ] A.4 On a reserved board, confirm the widened peek is actually legible
-  at arm's length with a real theme and real running apps, and that it does
-  not regress the two-axis quick-switch drag feel. Operator command:
-  `python3 tools/capture-feature.py deck-legibility --provenance real-touch
-  --duration 30 --description 'Card overview neighbor peek legibility' 
-  --output-dir docs/evidence/card-shell/deck-legibility`. Keep this task
-  open until that capture is committed; a host/QEMU render alone does not
-  complete it.
+Superseded 2026-09-25: the user chose the richer webOS-fan direction
+(2-3 small cards visible, real icon + app name header per card) over the
+originally-scoped "widen the existing single-card peek," on the condition
+that it stay the same `CS_DECK` mode/gestures, not a second destination —
+see `design.md` decision 1's superseding note. This also folds in the
+C-compositor half of `the-handheld-presents-a-coherent-shell` task 1.4
+(real card-header icons): that task's own architecture note ("needs a
+resolver reachable from the C compositor... build or share an icon
+resolver on both sides of the Wayland boundary") is resolved here as an
+independent, PNG-only resolver (`nix/card-shell/icon.c`), not a shared
+process/library with `nix/rust-shell-client/src/icon.rs` — see that task's
+own tracking for whether to unify them later.
+
+- [x] A.1 Choose and record the webOS-fan card size (replacing the prior
+  ~8.7%-of-card-width sliver and the originally-scoped "widened peek"):
+  `card_width` ≈ 46% of panel width (`.5*(width-2*inset)`), `card_height`
+  sized close to the panel's own portrait aspect, `gap=10`, giving 2-3
+  cards visible with a >30%-of-card-width neighbor peek at the real
+  568×1232 panel. Recorded in `card-shell-policy.c`'s `cs_default_config`
+  comments and the policy driver's `overview-geometry` test case (below).
+  `valid_config()`'s bounds extended for the new independent
+  `entry_card_width`/`entry_card_height` fields and still accept the
+  chosen sizes.
+- [x] A.2 Update `cs_default_config` and the deck layout math
+  (`card-shell-policy.c`) to the webOS-fan size, and split the direct
+  bottom-edge app-switch gesture's own geometry into
+  `entry_card_width`/`entry_card_height` (a new `cs_entry_target_rect()`,
+  used by both `nix/card-shell/adapter.c` call sites that previously fed
+  `cs_entry_set_geometry` from the shared `cs_card_rect`) plus a new
+  `entry_anchor_shift_y` vertical tracking correction, so the two-axis
+  carousel's "full or near-full" feel, 30% threshold, flick velocity and
+  1:1 tracking are provably unaffected (`tests/card_shell_policy_driver.c`'s
+  `two-axis-entry`/`two-axis-conflicts`/`direct-carousel`/
+  `app-switch-swipe`/`tracked-entry`/`tracked-expansion` keep their
+  pre-existing numeric assertions unchanged). Also added momentum + snap to
+  the deck's own horizontal scroll (`scroll_settling`/`scroll_from_dx`,
+  `select_flick_speed`) and two new cases, `overview-geometry` and
+  `scroll-momentum`. Verify: `python3 -m unittest test_card_shell_state`
+  (run from `tests/`) — 31/31 cases pass.
+- [x] A.3 Real card-header icon + name (folding in task 1.4's C-compositor
+  half): `nix/card-shell/adapter.c`'s `desktop_identity_icon` (extends the
+  existing `.desktop` Name= parser to also read `Icon=` in the same file
+  pass) plus new `nix/card-shell/icon.c` (freedesktop icon-theme
+  resolution — `index.theme` `Directories=`/`Inherits=` scoring, hicolor
+  fallback, `pixmaps/` fallback, PNG-only via Cairo's native decoder, no
+  gio/gdk-pixbuf dependency — mirroring `icon.rs`'s algorithm), wired
+  through `render.c`'s new `card_icon_header` (real icon, falling back to
+  the existing letter badge when none resolves). Verified standalone
+  against the real installed Yaru/hicolor icon paths for foot/htop/folder
+  before wiring into the build. Card labels/icons stay within `render.c`'s
+  existing clipping (`label_clip`, `clip_box`) at the new card width.
+  Verify: `nix build .#card-shell --max-jobs 1 --cores 6 --no-link
+  --print-out-paths` (succeeds) plus the headless-QEMU captures below.
+- [ ] A.4 On a reserved board, confirm the webOS-fan overview (2-3 cards,
+  real icons/names, scroll momentum, close, open) is actually legible and
+  usable at arm's length with a real theme and real running apps, and that
+  the direct bottom-edge app-switch gesture's feel is unchanged. Host/QEMU
+  evidence exists (`docs/evidence/card-shell/webos-fan-switcher/`: dark +
+  light headless-QEMU captures of the overview, a scroll, a close and an
+  open, driven through the real `card_shell test-touch` input path) but is
+  explicitly not a substitute — see that evidence's own README for what it
+  does and does not show. Operator command: `python3
+  tools/capture-feature.py webos-fan-switcher --provenance real-touch
+  --duration 30 --description 'webOS-fan card overview: icons, names,
+  scroll, close, open' --output-dir
+  docs/evidence/card-shell/webos-fan-switcher`. Keep this task open until
+  that capture is committed; a host/QEMU render alone does not complete it.
 
 ## B. Shade quick toggles (host, Rust client)
 

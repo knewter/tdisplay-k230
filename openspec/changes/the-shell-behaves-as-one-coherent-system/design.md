@@ -49,37 +49,95 @@ other in-flight branches (`fix/app-switch-swipe`, `fix/bare-app-cards`,
 per `python3 tools/work-status.py` at proposal time) are actively changing.
 
 **Non-Goals:** re-specifying anything `the-handheld-presents-a-coherent-shell`
-already specifies (navigation-gesture consistency, real card icons,
-non-color pressed states — see that document's still-open tasks 1.4, 2.2,
-4.4); re-deriving any `webos-polish-review.md` finding; reopening the
-recorded "search remains deferred" decision; a new multi-card grid Overview
-*mode* distinct from the existing deck (considered below and set aside as
-too large for a bounded, parallelizable slice); haptic feedback (no
+already specifies beyond the card-header icon piece this slice now folds in
+(navigation-gesture consistency and non-color pressed states remain that
+document's still-open tasks 2.2/4.4 — not touched here); re-deriving any
+`webos-polish-review.md` finding; reopening the recorded "search remains
+deferred" decision; a *second, separately-entered* Overview destination
+distinct from the existing deck (still rejected — see decision 1's
+2026-09-25 update: the webOS-fan card sizing lives inside the same
+`CS_DECK` mode and gestures, not a new screen); haptic feedback (no
 actuator on this board, per `motion-research.md`'s schematic search);
-battery/telephony.
+battery/telephony; live appearance-driven icon-theme switching for card
+headers (`nix/card-shell/icon.c` reads `K230_ICON_THEME` once; threading
+the active theme's own icon set to the C compositor over the existing
+`card_appearance` IPC, which today carries only colors, is the
+cross-boundary resolver architecture `shell-ux-critique.md` #1.2 flagged as
+undesigned — still undesigned after this slice, left for a future change).
 
 ## Decisions
 
-1. **Fix deck legibility by widening the existing peek, not by adding a
-   second Overview mode.** Considered alternative: a distinct multi-up grid
+1. **Superseded 2026-09-25: fix deck legibility with a webOS-style card
+   "fan" inside the existing deck, not by merely widening its peek, and not
+   by adding a second, separately-entered Overview mode.** The user was
+   shown both options — the originally-planned "widen the existing single-
+   card peek" (below, kept for record) and the richer multi-card option
+   illustrated in `docs/design/shell-ux-critique-switcher.svg` — and chose
+   the richer direction, with one constraint: it must not be a second,
+   separately-entered destination. The shipped shape is still the *same*
+   `CS_DECK` mode and the *same* entry/exit gestures (bottom-edge swipe up,
+   tap-to-expand, flick-to-close) — no fourth state machine, no new
+   affordance to enter it — but the deck's own card geometry shrinks to
+   roughly 46% of the panel width (`card_width`/`card_height`/`gap` in
+   `cs_default_config`, `nix/card-shell-policy/card-shell-policy.c`) so 2-3
+   cards sit on screen at once with a legible peek on each side, each
+   carrying a resolved icon and app name in a header above it (task 1.4 of
+   `the-handheld-presents-a-coherent-shell`, folded into this slice — see
+   "Modified Capabilities" below). This still satisfies the original
+   requirement text ("enough of each neighbor to identify it") with a wider
+   margin than a minimally-widened single-card peek would have.
+
+   The direct bottom-edge app-switch gesture (`cs_begin_entry`/
+   `cs_entry_motion`/`cs_entry_up_at`) is a *different* destination
+   (entered from inside an app, not from the deck) that the user separately
+   confirmed must keep its exact current feel: a 30% width threshold, flick
+   velocity, 1:1 tracking, and a full-size neighbour mid-switch. Because
+   that gesture's geometry (`cs_entry_set_geometry`'s target, via the new
+   `cs_entry_target_rect`) previously came from the *same* `card_width`/
+   `card_height` the deck now shrinks, `cs_config` splits them:
+   `entry_card_width`/`entry_card_height` keep the old near-full-screen
+   slot the direct-switch gesture anchors against, independent of the
+   deck's own (now smaller) card size. `entry_anchor_shift_y` (new,
+   mirroring the existing x-axis `entry_anchor_shift`) corrects the
+   resulting height mismatch in `cs_entry_visual_rect`'s vertical
+   interpolation so a plain swipe-up-to-enter-deck gesture still tracks the
+   finger exactly, not just the lateral switch. `tests/card_shell_policy_driver.c`
+   confirms this: every direct-switch test case (`two-axis-entry`,
+   `two-axis-conflicts`, `direct-carousel`, `app-switch-swipe`,
+   `tracked-entry`, `tracked-expansion`) keeps its original numeric
+   assertions unchanged, because `entry_geometry()`'s helper now builds
+   `cs_entry_set_geometry`'s target from `cs_entry_target_rect()` (numerically
+   identical to the old single-field geometry) instead of `cs_card_rect()`.
+
+   The deck's own horizontal scroll also gained momentum + snap (a released
+   drag coasts via `cs_tick`-driven `scroll_settling`/`scroll_from_dx`
+   toward the newly-selected card's rest position, and a decisive flick
+   pages under the plain distance threshold via `select_flick_speed`) — a
+   physics improvement the smaller, tighter-packed cards make more
+   noticeable, not a new requirement of its own.
+
+   **Original 2026-09-24 decision, superseded above, kept for record:** fix
+   deck legibility by widening the existing peek, not by adding a second
+   Overview mode. Considered alternative: a distinct multi-up grid
    "Overview" screen (illustrated as one option in
    `docs/design/shell-ux-critique-switcher.svg`'s proposed panel, closer to
    webOS/LuneOS's Exposé-like views or Android's grid-style recents) entered
    from its own affordance, separate from the existing single-card deck.
-   Rejected for this bounded proposal: it is a new navigation destination
+   Rejected for that bounded proposal: it is a new navigation destination
    (a fourth state machine layered on the three `shell-ux-critique.md` §2
    already found: C card policy, Rust overlay routes, Rust Home surface),
    with its own entry/exit gestures, its own empty/loading/private states,
    and its own physical-acceptance gate — a full redesign, not a narrow
    slice, and it risks re-litigating `the-handheld-presents-a-coherent-shell`
    design decision 11's carousel geometry rather than sitting beside it.
-   Widening the existing deck's peek fraction is a single-function change
-   (`cs_default_config`'s `card_width`/`gap`, and the layout math that
-   consumes them) with no new state, no new gesture, and no new screen —
-   implementable and testable independent of every other in-flight card
-   branch. The richer Overview-mode option remains recorded here as a
-   candidate a future proposal can pick up if a widened peek proves
-   insufficient once tried.
+   Widening the existing deck's peek fraction was scoped as a single-
+   function change (`cs_default_config`'s `card_width`/`gap`, and the
+   layout math that consumes them) with no new state, no new gesture, and
+   no new screen. The user's subsequent choice above keeps that same
+   "no new destination" property while going further on card size/count,
+   which the risk this decision flagged (re-litigating design decision 11)
+   is addressed by the `entry_card_width`/`entry_card_height` split, not by
+   staying conservative on card size.
 2. **Shade quick toggles reuse existing request types instead of a new
    settings/notification bridge.** The shade already has an IPC path to the
    same service broker Settings uses (`ServiceRequest`, `service_data.rs`);
@@ -187,14 +245,18 @@ battery/telephony.
 
 ## Risks / Trade-offs
 
-- Widening the deck peek necessarily shrinks the selected card, which
+- Shrinking the deck's own cards for the webOS fan necessarily shrinks the
+  selected card far more than a mere widened-peek would have, which
   interacts with `the-handheld-presents-a-coherent-shell` design decision
-  11's "full or near-full app carousel" language during a two-axis drag.
-  This proposal's requirement is scoped to the *released, idle* layout only
-  (see its "mid-drag" scenario) specifically to avoid touching that decision;
-  an implementer must confirm the drag-time geometry genuinely stays
-  independent of the idle peek constant, not merely assume it from this
-  document.
+  11's "full or near-full app carousel" language during the direct-switch
+  two-axis drag. This proposal's requirement is scoped to the *released,
+  idle* layout only (see its "mid-drag" scenario) specifically to avoid
+  touching that decision; the implementation confirms the drag-time
+  geometry stays independent of the idle deck's card size via the
+  `entry_card_width`/`entry_card_height`/`cs_entry_target_rect` split
+  (decision 1) rather than merely asserting it from this document — proven
+  by `tests/card_shell_policy_driver.c`'s direct-switch cases keeping their
+  original numeric assertions unchanged.
 - The exact peek fraction and text-scale step are left as evidence-gated
   choices for implementation (`tasks.md`), not fixed numbers here, because
   neither can be justified from a source read alone — both need a rendered
