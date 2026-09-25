@@ -1291,6 +1291,20 @@ DATA 465ae2500f90aaf1656ca0dda867475968c6be0a16811b0c30c56d70d5983fd1  docs/evid
 DATA 595bfaf33d24ea6714705f1f44656385a1461533ad72624f0d859c96e8f4e396  docs/evidence/omarchy-themes/chooser-responsive/screens/02-pressed-highlight.png
 DATA b7f8b3fecc4c02339978264670f42919822754d30bff9835ecafb49edcfd8134  docs/evidence/omarchy-themes/chooser-responsive/screens/04-backgrounds-mid-decode.png
 DATA 227ce511962a7b82e6732016e4e309c53af1e8edba8c29121dcab00e92edec90  docs/evidence/omarchy-themes/chooser-responsive/screens/07-background-selected-resolved.png
+DATA 39e1d467340c2a0b25993e2625f172c6450de74947af924ddf6c7639741515ad docs/evidence/bare-app-cards/1-apps-dark.png
+DATA acb886d6e28aebf11dae1a9e63747e4a0fffdd50619f527b9e78aabac7f3a3e9 docs/evidence/bare-app-cards/1-apps-light.png
+DATA 36e88179571e102210cc5f8818153b64fd4ffdc88e108a560df74b21e765f6c9 docs/evidence/bare-app-cards/2-apps-dark.png
+DATA 4ae990d98333d98547d0ea4bab6cb69c3baf7a450e53f883cddb10927bb9035e docs/evidence/bare-app-cards/2-apps-light.png
+DATA 158c738d0c5a5586594ca66f302c9f608e58a61cfc0129aec6dcb096595ae852 docs/evidence/bare-app-cards/3-apps-dark.png
+DATA 9ce5c5a1a99261edbfcbebffd5c62e63abb2f8ff70e7569f22f714e0088074fe docs/evidence/bare-app-cards/3-apps-light.png
+DATA 6b3340162ca2f6193401c440bfe2d88992bab733f70145941c18ced0213a2818 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-000-00-baseline-one-focused.png
+DATA 7f14fbed81d4e8b990f44b9b64737206a5deb77a3ef344fce8fe4e5365873ee2 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-002-02-motion-x420.png
+DATA 5ebdbde6ff181ad86d78ef240b328737a3383c7b0aee9a25052b58b0f9b78f90 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-009-09-motion-x280.png
+DATA 79581b7f7ef9107a4f428f08f0a7e39522507876ed457b15df2311047ad4cc37 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-015-15-motion-x160.png
+DATA 10597fa96b5525fce30c17450ed602125dce37da517564c0df80a9c9826579c6 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-015-15-motion-x160-run2.png
+DATA b01410da3d537d7867888487260117cbb6dc7cc5f3851c33e324767e5bfe980b docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-018-18-motion-x120.png
+DATA 65bc647424da961ff94be4e73062035807df5f57ae4f727f0683a2e5e3c8d40d docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-019-90-up.png
+DATA 3fa695d004f85751bff63bc5bb2ac4be847629997e06e75902b14cf8435588c1 docs/evidence/card-shell/app-switch-swipe-frame-capture/frame-025-96-settle.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
