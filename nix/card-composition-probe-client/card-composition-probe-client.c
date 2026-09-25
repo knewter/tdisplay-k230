@@ -146,7 +146,8 @@ static void draw(struct plane *p) {
     p->wanted=false;
     /* Moving bands and a binary counter make stale content obvious on glass. */
     uint32_t base=p->child ? 0x00e09020 :
-        (!strcmp(p->app->id,"k230.card.one") ? 0x002070b0 : 0x00903080);
+        (!strcmp(p->app->id,"k230.card.one") ? 0x002070b0 :
+            !strcmp(p->app->id,"k230.card.two") ? 0x00903080 : 0x00308050);
     for (int y=0;y<p->height;y++) for (int x=0;x<p->width;x++) {
         bool band=((x+(int)p->frames*5)/24)%2;
         uint32_t color=band ? base : base/2;
@@ -253,9 +254,10 @@ int main(int argc,char **argv) {
             char *end; unsigned long n=strtoul(argv[++i],&end,10);
             if (*end || n>60000) return 64;
             a.stall_resize_ms=(unsigned)n;
-        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two [--refuse-close] [--duration 1..600] [--stall-resize-ms 0..60000]\n");return 64;}
+        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two|k230.card.three [--refuse-close] [--duration 1..600] [--stall-resize-ms 0..60000]\n");return 64;}
     }
-    if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two")) return 64;
+    if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two") && strcmp(a.id,"k230.card.three"))
+        return 64;
     a.start=now_ms();
     a.main=(struct plane){.app=&a,.width=480,.height=720,.last_callback=a.start};
     a.child=(struct plane){.app=&a,.width=128,.height=96,.child=true,.last_callback=a.start};
