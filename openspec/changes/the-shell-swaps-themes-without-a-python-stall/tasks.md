@@ -544,8 +544,58 @@ Proof for 7.1-7.3, 7.5: the tests named above, all passing on this host
 pre-fix code); 7.4 is the board result quoted above, negative before this
 fix, not re-run since (board not touched by this task).
 
+- [x] 7.6 Board re-check of 7.5 (coordinator, master `2b575dba`, installed
+  as `nmdf96j1...`): the race is fixed and the decision is reached, but
+  **two new problems**: (a) `optimistic-apply skipped reason=not-ready-
+  for-a-frame` -- the same class of bug `cd36242b` fixed for
+  `draw_wallpaper()`'s own entry guard and the durable commit path's
+  `ready` predicate, but `draw()`'s own entry guard (the theme chooser's
+  own overlay/settings surface) still gated on `self.frame_pending`, and
+  so did `show_theme_optimistically`'s own separate readiness pre-check
+  (copied from the durable path before this task noticed the durable
+  path's own `overlay_ready` term had the identical gap); (b) about
+  300 ms from the Apply touch-down to the optimistic decision, not yet
+  root-caused with board timing data.
+- [x] 7.7 Fix for 7.6(a): a new pure `redraw_entry_ready(appearance_
+  pending, configured, layer_present)` (`main.rs`) is `draw()`'s entry
+  guard now, with no parameter to gate on any surface's own outstanding
+  frame callback -- structurally the same fix `cd36242b` already applied
+  to `draw_wallpaper()`, extended to the overlay surface, whose own entry
+  guard that earlier fix never touched. `show_theme_optimistically`'s own
+  separate `overlay_ready`/`ready` pre-check is removed entirely: it now
+  attempts `draw_wallpaper()`/`draw()` directly and reads their own
+  return values, exactly like the durable commit path's `ready == true`
+  branch already does (with no 1400 ms retry window, since unlike a
+  durable commit, a missed optimistic frame costs only the optimism
+  itself -- the real commit/rollback event still lands and settles
+  correctly regardless). The durable commit path's own `overlay_ready`
+  term (`serve`'s own `pending_appearance` handling) is fixed the same
+  way, closing the identical latent gap there too (previously invisible
+  behind its own 1400 ms retry loop). Verify with `cargo test --offline`
+  (adds `route_tests::redraw_entry_never_gates_on_a_surfaces_own_
+  outstanding_frame_callback`, whose signature -- no frame-pending
+  parameter at all -- is itself the regression proof: this mistake cannot
+  be reintroduced by accident).
+- [ ] 7.8 Instrumentation for 7.6(b): every `optimistic-apply skipped
+  reason=...`/`shown` log now carries `ms=<tap-to-decision-or-frame>`, so
+  a board re-run can attribute the remaining latency precisely (input
+  recognition before `submit_theme` sets `theme_apply_tapped_at` --
+  already close to the existing `touch-up <id>` log, since `submit_theme`
+  runs synchronously in the same call chain -- versus this task's own
+  decision/draw/flush cost, which reading `main.rs`'s code found no
+  blocking calls in: `try_submit` is `try_send` (never blocks),
+  `AppearanceSnapshot::clone()` carries no pixel data, and (after 7.7) the
+  draw calls no longer wait on any frame callback). Root-causing the
+  remaining gap precisely needs this instrumentation's own board data;
+  not claimed found or fixed by this task -- see this task's own evidence
+  doc for the reasoning and what the new `ms=` fields will show.
+
+Proof for 7.1-7.3, 7.5, 7.7: the tests named above, all passing on this
+host; 7.4/7.6 are the board results quoted above; 7.8 is instrumentation
+only, its own board data not yet collected.
+
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, and a re-run of 7.4 with this fix
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and a re-run of 7.4/7.6 with this fix
 installed have board results; 3.3b is named here so it is not silently
 dropped or claimed done without a board result. Task 5.4's board result is
 recorded above (board-chooser-2026-09-25.md).
