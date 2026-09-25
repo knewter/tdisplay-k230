@@ -278,22 +278,139 @@ Proof for 4.1-4.5: the tests named above (host), plus the board run above.
   `test_helper_digest_is_cached_across_repeated_preparations`, counting
   `source_digest` calls across two `prepare()` calls for the same tools
   path).
-- [ ] 5.4 Re-run the coordinator's own board commands once 5.1-5.3 are
-  installed, and confirm the chooser's own Apply-to-visible time. Expected,
-  from the numbers above: `discover`/`prepare_entry` reduced by roughly
-  their `helper_hash`/catalog-walk share (the theme's own `source_hash`
-  and `activate_generation`'s 128 ms -- the two-phase exchange plus
-  `app_appearance`/preference-commit filesystem work -- are unchanged by
-  this task, deliberately: `activate_generation` is the part *load-bearing*
-  for correctness, not a caching candidate), plus the direct socket
-  removing essentially all of the ~1.0 s subprocess/Python start-up
-  the coordinator's own board run isolated. This worktree's own honest
-  estimate is close to, and may not fully clear, the ~150 ms target
-  purely from `activate_generation`'s own remaining cost; the board run is
-  what actually answers it. Needs the reserved board; not run by this task.
+- [x] 5.4 Re-run the coordinator's own board commands once 5.1-5.3 are
+  installed, and confirm the chooser's own Apply-to-visible time. **Board
+  result (coordinator, system `phj9y4fggpb177b0hgaawbh510chhwil`, `master`
+  `f4f75998`, `docs/evidence/omarchy-themes/instant-theme-swap/
+  board-chooser-2026-09-25.md`):** `list` `path=socket` 166 ms, warm
+  `preview` 206 ms, cold prepare-ahead (carousel opens) 4071 ms, tap
+  Apply -> Rust `appearance-commit-accepted` 556 ms, `activate`
+  `path=socket` 509 ms with helper breakdown `parse=65.0ms discover=2.0ms
+  prepare_entry=90.6ms activate_generation=336.0ms` (handler total
+  438.6 ms, helper total 504.1 ms). The direct socket removed essentially
+  all of the ~1.0 s subprocess/Python start-up as predicted (roughly 8x
+  faster than the pre-daemon baseline), but still misses the ~150 ms
+  target: `activate_generation` re-runs the two-phase prepare exchange
+  during Apply even though the chooser's own prepare-ahead already
+  prepared that exact generation, and `parse`/`prepare_entry` cost more
+  than a cache hit should. This is section 6's own starting point below.
 
 Proof for 5.1-5.3: the tests named above, all passing on this host; proof
-for 5.4 is the reserved board, not run here.
+for 5.4 is the board run quoted above.
+
+## 6. Skip the redundant re-prepare on Apply; cut per-request parse/hash cost; warm neighbours early
+
+<!-- Grounding: coordinator's own board run above (system phj9y4fg...):
+     activate_generation (336 ms) re-runs prepare against both receivers
+     even when the chooser's own prepare-ahead already prepared that exact
+     generation; parse costs 65 ms because theme_helperd.py rebuilt an
+     argparse.ArgumentParser on every request; prepare_entry costs 91 ms
+     partly from rehashing the theme's own source tree on every call even
+     when nothing on disk changed since the last prepare. -->
+
+- [x] 6.1 Root-cause: `theme_helperd.py`'s `Helperd.handle_line()` called
+  `theme_catalog.build_parser()` (constructing a fresh `argparse.
+  ArgumentParser`, with all its subparsers/actions) on *every* request,
+  not once at daemon start -- the board's 65 ms `parse` phase was almost
+  entirely this construction, not argument parsing itself. Fix: build the
+  parser once in `Helperd.__init__()` and reuse it. Verify with
+  `python3 -m unittest tests.test_theme_helper_daemon` (adds
+  `test_the_argument_parser_is_built_once_not_once_per_request`, counting
+  `build_parser` calls across several requests on one daemon instance).
+- [x] 6.2 Root-cause (part of `prepare_entry`'s 91 ms): `theme_activate.
+  prepare()` re-hashed the *theme's own* source tree
+  (`source_digest(theme)`, a full content read/hash of every file) on
+  every call, even for a generation prepared moments before by the same
+  unchanged theme -- deliberately never cached before this task, because a
+  person can edit their own theme's files while the daemon keeps running.
+  Fix: `tools/theme_sources.py` gains `source_fingerprint(theme)`, a
+  stat-only walk (name, size, `st_mtime_ns` per file, no content read) of
+  exactly the same tree `source_digest()` walks; `theme_activate.
+  theme_digest()` wraps `source_digest()` with a cache keyed by the
+  theme's resolved path, invalidated only when `source_fingerprint()`
+  itself changes -- so an edited file (which changes its size and/or
+  mtime) is still re-hashed, and an unchanged theme is not. Verify with
+  `python3 -m unittest tests.test_omarchy_theme_sources` (adds
+  `test_fingerprint_matches_digest_sensitivity_without_reading_content`)
+  and `tests.test_omarchy_theme_activation` (renames the existing digest-
+  caching test to `test_theme_and_helper_digests_are_cached_across_
+  repeated_preparations` and adds `test_theme_digest_cache_is_invalidated_
+  by_an_edit_between_preparations`, editing a theme file between two
+  `prepare()` calls and asserting a fresh digest/generation).
+- [x] 6.3 Root-cause (the largest single piece, `activate_generation`'s
+  336 ms): `tools/theme_transaction.py`'s `activate_generation()` always
+  sent a fresh `prepare` to *both* receivers before `commit`, even when a
+  receiver already held that exact generation staged from an earlier
+  `exchange()` call (task 5's own prepare-ahead, or the chooser's own
+  warm `preview`) -- there was no memory of which receiver was already
+  warm for which generation. Fix: `exchange()` now records, per endpoint,
+  the generation last successfully prepared for it
+  (`_prepared_state: dict[Path, str]`, cleared on that endpoint's own
+  commit or rollback); `activate_generation()` partitions its `targets`
+  into `warm` (already holding this exact generation) and `to_prepare`,
+  sends `prepare` only to `to_prepare`, and commits all `targets`
+  unconditionally. If a "warm" receiver's commit is rejected anyway (the
+  tracking was stale -- e.g. a concurrent caller reset that receiver
+  without this process's knowledge), the code transparently falls back to
+  a real `prepare` + `commit` for that one receiver before re-raising on
+  any further failure, so a stale assumption degrades to exactly today's
+  behaviour rather than a wrong commit, and full rollback correctness
+  (all-or-nothing across receivers) is unchanged. Verify with `python3 -m
+  unittest tests.test_omarchy_theme_transaction` (adds
+  `test_activate_skips_a_prepare_already_warm_for_both_receivers`,
+  `test_activate_prepares_only_the_receiver_that_was_not_already_warm`,
+  `test_stale_warm_assumption_retries_with_a_real_prepare_and_still_
+  succeeds`, `test_a_genuine_commit_failure_for_a_warm_receiver_still_
+  rolls_back_fully`, and `test_exchange_tracks_prepared_state_across_
+  prepare_commit_rollback`).
+- [x] 6.4 Considered and explicitly **not implemented**: showing the new
+  theme optimistically in the chooser UI on the tap frame, ahead of the
+  durable two-phase commit finishing. This would mean the chooser's own
+  displayed state could diverge from the receivers' actual committed
+  state if the (now-mostly-skipped, but still real for a cold or stale
+  generation) commit subsequently failed and rolled back -- exactly the
+  "ack only after a real frame"/rollback-safety invariant task 1 and this
+  change's own proposal treat as load-bearing. It is also unverifiable
+  without the board (the whole point is perceived, on-glass timing), and
+  6.1-6.3 already remove the *avoidable* cost 6.4 was aimed at (a warm
+  Apply no longer re-prepares at all). Left as an explicit candidate
+  follow-up, not attempted here; see this task's own evidence doc for the
+  full reasoning.
+- [x] 6.5 Extend task 3.2's prepare-ahead beyond the one centred/dwelled
+  theme: `nix/rust-shell-client/src/theme_ui.rs`'s `ThemeView` gains
+  `pending_neighbor_warms`, populated with the active theme's immediate
+  list neighbours (one or two, whichever exist) every time a `list` reply
+  is accepted -- covering both chooser-open and the return from Preview/
+  Cancel back to List. `poll_prepare_ahead()` still prioritises a real
+  dwell-driven warm-up (task 3.2's own 220 ms centred-and-at-rest debounce)
+  every tick, and only drains the neighbour queue (one request per idle
+  tick, still bounded to one in flight, still discarded before reaching
+  `ThemeView::accept`) when nothing dwell-driven is due -- so a person
+  actively browsing is never delayed behind a neighbour warm-up, but a
+  static chooser (or one returning from Preview) starts warming the two
+  themes a first swipe is most likely to land on without waiting on any
+  dwell at all. Verify with `cargo test --offline --lib theme_ui` (adds
+  `a_list_reply_queues_both_neighbours_of_a_mid_list_active_theme`,
+  `a_list_reply_queues_only_the_one_neighbour_at_each_end_of_the_list`,
+  `a_single_theme_list_queues_no_neighbours`,
+  `the_neighbour_queue_drains_when_nothing_is_dwell_driven`, and
+  `a_dwell_driven_request_takes_priority_over_the_neighbour_queue`).
+- [ ] 6.6 Re-run the coordinator's own board commands once 6.1-6.5 are
+  installed, and confirm Apply of an already-prepared generation is well
+  under 150 ms end to end, with `journalctl` showing `activate_generation`
+  skip the redundant `prepare` for both receivers (a `warm=2` -- or
+  similar -- log line, or simply the absence of a second `appearance-
+  prepare-accepted` between the chooser's own warm-up and its Apply) and
+  `parse`/`prepare_entry` dropping close to their cache-hit floor. Also
+  confirm the cold-open case: with 6.5 installed, the *second* theme a
+  person previews after opening the chooser (having not touched the first
+  one long enough to trigger its own dwell) should already be warm from
+  the neighbour queue, not a fresh ~4 s `preview`. Needs the reserved
+  board; not run by this task -- see this task's own evidence doc for the
+  exact commands.
+
+Proof for 6.1-6.5: the tests named above, all passing on this host; proof
+for 6.6 is the reserved board, not run here.
 
 Keep this change open (or split at review time into an explicit successor
 per `AGENTS.md`) until 2.3, 3.4, and 5.4 have board results; 3.3b and 5.4
