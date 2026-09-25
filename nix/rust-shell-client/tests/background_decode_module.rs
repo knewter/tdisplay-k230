@@ -186,3 +186,66 @@ fn wallpaper_cache_write_rejects_a_video_or_unsupported_destination() {
     assert!(background_decode::write_wallpaper_cache(&path, &fixture.root, 4, 4).is_err());
     assert!(!fixture.path("background.cache").exists());
 }
+
+#[test]
+fn multiple_recent_candidates_stay_warm_without_evicting_each_other() {
+    // Task 3.1b: browsing several candidates (task 3.2's carousel warm-up,
+    // or the Preview page's own background carousel) must not evict an
+    // earlier candidate's decode just because a different one was prepared
+    // in between -- commit for *any* of the last few prepared candidates
+    // should still be a guaranteed in-memory hit, not a `background.cache`
+    // file re-read (still correct, just slower).
+    let fixture = Fixture::new();
+    let mut cache = BackgroundCache::new();
+    let mut paths = Vec::new();
+    for (index, color) in [
+        Rgba([255, 0, 0, 255]), // candidate 0: red
+        Rgba([0, 255, 0, 255]), // candidate 1: green
+        Rgba([0, 0, 255, 255]), // candidate 2: blue
+        Rgba([255, 255, 0, 255]), // candidate 3: yellow
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let path = fixture.path(&format!("candidate-{index}.png"));
+        save(&path, RgbaImage::from_pixel(2, 2, color));
+        assert!(cache.render(&path, None, 2, 2, FitMode::Crop).is_ok());
+        paths.push(path);
+    }
+    // Most-recently-used first: [3, 2, 1, 0].
+    assert_eq!(cache.len(), 4, "all four distinct candidates fit within capacity");
+
+    // Re-rendering the *first* candidate (now the least recently used) must
+    // not require its source file to still exist for a decode -- proving
+    // this came from the cache, not a fresh read -- and moves it back to
+    // most-recently-used: [0, 3, 2, 1].
+    fs::remove_file(&paths[0]).unwrap();
+    let revisited = cache
+        .render(&paths[0], None, 2, 2, FitMode::Crop)
+        .expect("an in-memory hit never touches the now-missing source file")
+        .to_vec();
+    assert_eq!(pixel(&revisited, 2, 0, 0), &[0, 0, 255, 255]); // BGRA of solid red.
+
+    // A fifth distinct candidate evicts the *least recently used* entry --
+    // candidate 1, since candidate 0 was just re-touched above -- never a
+    // more recently touched one: order becomes [4, 0, 3, 2].
+    let fifth = fixture.path("candidate-4.png");
+    save(&fifth, RgbaImage::from_pixel(2, 2, Rgba([9, 9, 9, 255])));
+    assert!(cache.render(&fifth, None, 2, 2, FitMode::Crop).is_ok());
+    assert_eq!(cache.len(), 4, "capacity is never exceeded");
+
+    // Candidates 0 and 3 must still be warm (never touch disk again);
+    // candidate 1 must have been genuinely evicted (a live re-decode of its
+    // still-present, unchanged source still succeeds, so this only proves
+    // eviction when combined with the in-memory proofs above/below).
+    fs::remove_file(&paths[3]).unwrap();
+    assert!(
+        cache.render(&paths[0], None, 2, 2, FitMode::Crop).is_ok(),
+        "the twice-revisited first candidate must still be warm"
+    );
+    assert!(
+        cache.render(&paths[3], None, 2, 2, FitMode::Crop).is_ok(),
+        "the fourth (yellow) candidate must still be warm with its file gone"
+    );
+    assert_eq!(cache.len(), 4, "still bounded after two more hits");
+}

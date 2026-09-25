@@ -157,9 +157,27 @@ struct CacheKey {
     mode: FitMode,
 }
 
+/// How many distinct (path, width, height, mode) entries `BackgroundCache`
+/// keeps decoded simultaneously. A single slot (this cache's design before
+/// task 3.1b) already made an *immediately preceding* prepare-then-commit for
+/// the same candidate a guaranteed in-memory hit, but evicted that entry the
+/// moment any other candidate was prepared -- e.g. task 3.2 warming a
+/// different theme while the person kept browsing, or the Preview page's own
+/// background carousel stepping through a theme's other wallpapers -- so an
+/// Apply that landed on anything but the single most-recently-viewed
+/// candidate still paid at least a `background.cache` file read at commit.
+/// A small bounded LRU keeps a short recent history warm instead, so commit
+/// is a guaranteed in-memory hit for any of the last few candidates actually
+/// prepared, not just the last one.
+const CACHE_CAPACITY: usize = 4;
+
 #[derive(Default)]
 pub struct BackgroundCache {
-    cached: Option<(CacheKey, Result<Vec<u8>, String>)>,
+    /// Most-recently-used first. Bounded to `CACHE_CAPACITY` entries; never
+    /// reallocated beyond it, so memory stays proportional to a small,
+    /// fixed recent-candidate history, not to how many themes were ever
+    /// browsed.
+    entries: Vec<(CacheKey, Result<Vec<u8>, String>)>,
 }
 
 impl BackgroundCache {
@@ -169,7 +187,9 @@ impl BackgroundCache {
 
     /// Returns native little-endian Cairo ARGB32 bytes (B,G,R,255). The
     /// wallpaper is composited against opaque black, including Fit letterbox.
-    /// A single success or failure stays cached until key changes.
+    /// Up to `CACHE_CAPACITY` distinct keys' results stay cached at once,
+    /// most-recently-used first; a key beyond that bound evicts the least
+    /// recently used entry.
     ///
     /// `generation_root`, when given, is the prepared theme generation
     /// directory that `path` lives under (see `AppearanceSnapshot::path`).
@@ -190,25 +210,38 @@ impl BackgroundCache {
             height,
             mode,
         };
-        if self
-            .cached
-            .as_ref()
-            .is_none_or(|(previous, _)| previous != &key)
-        {
-            let rendered = generation_root
-                .and_then(|root| load_cached(root, width, height, mode))
-                .map(Ok)
-                .unwrap_or_else(|| render_uncached(path, width, height, mode));
-            self.cached = Some((key, rendered));
+        let position = self.entries.iter().position(|(found, _)| found == &key);
+        let index = match position {
+            Some(index) => index,
+            None => {
+                let rendered = generation_root
+                    .and_then(|root| load_cached(root, width, height, mode))
+                    .map(Ok)
+                    .unwrap_or_else(|| render_uncached(path, width, height, mode));
+                self.entries.insert(0, (key, rendered));
+                if self.entries.len() > CACHE_CAPACITY {
+                    self.entries.pop();
+                }
+                0
+            }
+        };
+        if index != 0 {
+            let entry = self.entries.remove(index);
+            self.entries.insert(0, entry);
         }
-        match &self.cached.as_ref().expect("cache populated").1 {
+        match &self.entries[0].1 {
             Ok(bytes) => Ok(bytes),
             Err(error) => Err(error.clone()),
         }
     }
 
     pub fn clear(&mut self) {
-        self.cached = None;
+        self.entries.clear();
+    }
+
+    #[cfg(test)]
+    pub fn len(&self) -> usize {
+        self.entries.len()
     }
 }
 
