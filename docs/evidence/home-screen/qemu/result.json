@@ -15,6 +15,6 @@
     "light_page2_differs_from_page1": true,
     "light_differs_from_dark": true
   },
-  "sway": "/nix/store/fgzvdd4nfz1cynj77adhmgd697yp8d04-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
-  "rust": "/nix/store/4vwq285cbg1w0s4is25s76gq6nk49abf-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+  "sway": "/nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/8bifbbv1z8qhkzqkmpwisvhbyw9b5nwi-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
 }

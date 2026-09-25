@@ -1,12 +1,13 @@
 # Pinned Home screen: headless QEMU injected-touch acceptance
 
-Observed 2026-09-25 02:29 UTC, source `94fa1125` (branch `feat/home-screen-impl`,
+Observed 2026-09-25 03:05 UTC, source `cf034d0a` (branch
+`feat/home-screen-impl`, rebased onto `origin/master`'s `fa1f54e6`;
 proposal `openspec/changes/the-shell-presents-a-pinned-home-screen/`). This
 ran the cross-built Sway with the card-shell patch
-(`/nix/store/3gk7wpcrj11hpivfsq4ph9qzyxf55pwg-k230-card-shell`, unwrapped
-binary `/nix/store/fgzvdd4nfz1cynj77adhmgd697yp8d04-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`)
+(`/nix/store/3fnyjj7zi1h78aqhfg4q1iy6k5rjm6qn-k230-card-shell`, unwrapped
+binary `/nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`)
 and the Rust shell client
-(`/nix/store/4vwq285cbg1w0s4is25s76gq6nk49abf-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`)
+(`/nix/store/8bifbbv1z8qhkzqkmpwisvhbyw9b5nwi-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`)
 under `qemu-riscv64-static` with a 568x1232 headless Pixman output. The
 compositor's native `card_shell test-touch` route supplied synthetic Wayland
 touch events (`SWAY_K230_CARD_SHELL=1 SWAY_K230_CARD_TOUCH_FIRST=1
@@ -18,9 +19,9 @@ Reproduce with the committed runner and exact executables:
 
 ```sh
 python3 tests/rust_home_screen_qemu.py \
-  --sway /nix/store/fgzvdd4nfz1cynj77adhmgd697yp8d04-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
-  --swaymsg /nix/store/fgzvdd4nfz1cynj77adhmgd697yp8d04-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/swaymsg \
-  --rust /nix/store/4vwq285cbg1w0s4is25s76gq6nk49abf-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust \
+  --sway /nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
+  --swaymsg /nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/swaymsg \
+  --rust /nix/store/8bifbbv1z8qhkzqkmpwisvhbyw9b5nwi-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust \
   --theme-source nix/handheld-theme-default \
   --output /tmp/k230-hs-N
 ```
@@ -115,5 +116,10 @@ appearance/report generation loaded. Both `appearance.json` and
 `report.json` must declare the same `icon_theme` (a mismatch is rejected
 outright), so `theme_generation()` now sets both. A second prior run also
 showed the old rollback-session "Cards" button drawn over Home, from
-omitting `SWAY_K230_CARD_TOUCH_FIRST=1`. Both are fixed in the committed
-test and reflected in every capture above.
+omitting `SWAY_K230_CARD_TOUCH_FIRST=1`. A third prior run (after rebasing
+onto a newer `origin/master`) intermittently captured a solid black frame
+for a pass's very first screenshot: `ready-idle` only proves the process
+logged its own startup line, not that the compositor painted a first real
+frame. All three are fixed in the committed test and reflected in every
+capture above; the harness was rerun three times after the last fix with
+no recurrence.
