@@ -12,7 +12,7 @@
 </defs>
 <rect width="924" height="700" class="bg"/>
 <text x="20" y="30" class="title">SETTINGS: "SHOULD BE LIKE ANY APP"</text>
-<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §1, Finding N-1</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §1.1</text>
 
 <!-- TODAY -->
 <g transform="translate(40 76)">

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Today's shade with duplicate preview and no toggles, next to a shade with quick toggles and deduplicated history">
+<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Today's shade with no quick toggles, next to a shade with a Wi-Fi quick toggle added">
 <defs><style>
 .bg{fill:#0a1017}.phone{fill:#101822}.surface{fill:#1b2934}.card{fill:#263946}.tile{fill:#2f4859}
 .text{fill:#f4f7f8}.muted{fill:#c8d7dd}.teal{fill:#78d7cb}.amber{fill:#ffc27a}
@@ -11,7 +11,7 @@
 </defs>
 <rect width="924" height="700" class="bg"/>
 <text x="20" y="30" class="title">SHADE: NO QUICK TOGGLES — EVERY CONTROL IS A TRIP INTO SETTINGS</text>
-<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §4, Finding SH-1</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §5</text>
 
 <!-- TODAY -->
 <g transform="translate(40 76)">
@@ -26,7 +26,8 @@
 <text x="30" y="114" class="body">Connection needs attention</text>
 <text x="30" y="130" class="tiny">Open Settings for details</text>
 <text x="18" y="166" class="tiny" fill="#7a8a92">(singular count and duplicate preview/</text>
-<text x="18" y="180" class="tiny" fill="#7a8a92">history text are already fixed — SH-2)</text>
+<text x="18" y="180" class="tiny" fill="#7a8a92">history text are already fixed — see</text>
+<text x="18" y="194" class="tiny" fill="#7a8a92">webos-polish-review.md P1-4)</text>
 <text x="18" y="212" class="badtag">No toggle tiles anywhere in the shade —</text>
 <text x="18" y="228" class="badtag">every control is a trip into Settings,</text>
 <text x="18" y="244" class="badtag">even to flip Wi-Fi on or off.</text>
@@ -60,9 +61,9 @@
 <text x="18" y="268" class="goodtag">(design.md/tasks.md name others later).</text>
 <text x="18" y="292" class="goodtag">Reuses existing wifi_settings.rs state —</text>
 <text x="18" y="307" class="goodtag">no new backend, just a shade-level view.</text>
-<text x="18" y="331" class="hint">History/count unchanged from today (SH-2</text>
-<text x="18" y="346" class="hint">was already fixed before this proposal).</text>
+<text x="18" y="331" class="hint">History/count unchanged from today (that</text>
+<text x="18" y="346" class="hint">fix already landed before this proposal).</text>
 </g>
-<text x="20" y="674" class="hint">Left: nix/rust-shell-client/src/render.rs Route::Shade branch, read directly; docs/evidence/coherent-shell/rust-visual-themes-host/dark/shade.png for the general layout (that capture predates the SH-2 fix and is not used for the count/duplicate text here).</text>
-<text x="20" y="690" class="hint">Right: openspec/changes/the-shell-behaves-as-one-coherent-system/'s runtime/notification-center quick-toggle requirement (Finding SH-1). Panel heights shortened here for the mockup; webos-polish-review.md P0-2 covers content-sizing the real panel and is unrelated to this proposal.</text>
+<text x="20" y="674" class="hint">Left: nix/rust-shell-client/src/render.rs Route::Shade branch, read directly; docs/evidence/coherent-shell/rust-visual-themes-host/dark/shade.png for the general layout (that capture predates the singular/duplicate-preview fix and is not used for the count/duplicate text here).</text>
+<text x="20" y="690" class="hint">Right: openspec/changes/the-shell-behaves-as-one-coherent-system/'s runtime/notification-center "shade offers quick-toggle controls" and "shade tap targets meet the 48dp floor" requirements (task group B). Panel heights shortened here for the mockup; webos-polish-review.md P0-2 covers content-sizing the real panel and is unrelated to this proposal.</text>
 </svg>

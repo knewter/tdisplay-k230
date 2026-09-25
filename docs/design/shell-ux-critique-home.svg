@@ -14,7 +14,7 @@
 </defs>
 <rect width="924" height="700" class="bg"/>
 <text x="20" y="30" class="title">HOME: A SEARCH FIELD FOR THE PINNED GRID AND DOCK</text>
-<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §3, Finding H-1</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §4 (search is a recorded, deliberate deferral — see caption below)</text>
 
 <!-- TODAY -->
 <g transform="translate(40 76)">
