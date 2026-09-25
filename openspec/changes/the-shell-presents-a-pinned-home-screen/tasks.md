@@ -110,9 +110,12 @@
   for the coordinator (see task 8.1).
 - [x] 7.2 Keep the blob scan passing; verify with `python3
   tools/blob-scan.py` and check its exit code directly. Done: exit 0.
-- [ ] 7.3 Rebase onto the latest `origin/master` before final report;
+- [x] 7.3 Rebase onto the latest `origin/master` before final report;
   verify with `git -C <worktree> fetch origin && git -C <worktree> rebase
-  origin/master` and re-run 6.1-6.3, 7.2.
+  origin/master` and re-run 6.1-6.3, 7.2. Done: rebased cleanly (no
+  conflicts) onto `fa1f54e6`; 6.1/6.2 and the QEMU harness (6.3) all
+  re-passed against the rebuilt store paths, and 7.2 (`blob-scan`) passes
+  after adding inventory rows the rebase's upstream commit newly required.
 
 ## 8. Board acceptance (explicitly out of scope for this pass)
 
