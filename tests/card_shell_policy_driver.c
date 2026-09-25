@@ -95,38 +95,128 @@ static void overview_geometry(void) {
         c->title_height-c->footer_height-2*c->inset);
     cs_finish(&p);
 }
-/* Overview horizontal scroll: 1:1 finger tracking, then a momentum coast
- * (not an instant snap) that decays toward the newly-selected card's rest
- * position, with a decisive flick able to page even under the plain
- * distance threshold -- and a fresh touch cleanly cancels an in-flight
- * coast rather than corrupting the next hit-test. */
-static void scroll_momentum(void) {
+/* Overview horizontal scroll physics, requested directly after a real-glass
+ * report ("i can't flick to swipe through multiple cards quickly, it snaps
+ * to each card as i go"): a fling projects its resting card from the
+ * release velocity (v0/CS_SCROLL_OMEGA total signed displacement, the
+ * closed form of an exponential-decay coast), so a fast flick can carry
+ * several cards, not just the adjacent one; a slow release still snaps to
+ * the nearest card (the same formula with v0~=0); a fresh touch mid-coast
+ * catches it and continues 1:1 with no jump; the ends clamp with a soft
+ * rubber band, not a hard stop. */
+static void scroll_fling_multi_card(void) {
+    struct cs_policy p=setup();cs_enter(&p,101); /* 4 cards, selected=0 */
+    double pitch=p.config.card_width+p.config.gap;
+    down(&p,10);
+    /* Two real ~8ms-cadence samples with a clean, known velocity: the same
+     * touch_window_span selects exactly this pair (dt=8>=CS_ENTRY_MIN_SPAN_MS). */
+    cs_motion(&p,1,p.down_x-20,p.down_y,18);
+    cs_motion(&p,1,p.down_x-40,p.down_y,26);
+    assert(fabs(p.dx-(-40))<.001);
+    /* Independently recompute the expected target from the documented
+     * formula (mirrors production, not a call into it): v0=-2.5px/ms,
+     * projected_dx=dx+v0/CS_SCROLL_OMEGA=-40+(-2.5/.006)=~-456.7, landing
+     * at card round(0-projected_dx/pitch)=round(1.69)=2 -- two cards away,
+     * not the single adjacent one a distance-threshold model would give. */
+    double v0=(-40.0-(-20.0))/8.0;
+    double projected_dx=-40.0+v0/.006;
+    size_t expected=(size_t)lround(fmax(0.0,fmin(3.0,0.0-projected_dx/pitch)));
+    assert(expected==2);
+    struct cs_rect before[4];
+    for (size_t i=0;i<4;i++) before[i]=cs_card_rect(&p,i);
+    struct cs_result r=cs_up(&p,1,26);
+    assert(r.actions&CS_REDRAW);
+    /* A fast flick must carry several cards: this one lands well past the
+     * single adjacent card, not snapped to it. */
+    assert(p.selected==expected);
+    assert(p.scroll_settling);
+    /* Continuity at release, generalized to a multi-card jump: the newly
+     * selected card's on-screen x must equal where it already was under
+     * the finger (before[selected].x, captured pre-release with the same
+     * dx already baked into cs_card_rect's translation term), not a jump
+     * to its eventual rest position. */
+    assert(fabs(cs_card_rect(&p,p.selected).x-before[p.selected].x)<.001);
+    double previous=fabs(p.dx);
+    cs_tick(&p,26+60);
+    assert(fabs(p.dx)<previous); /* decays monotonically toward rest */
+    cs_tick(&p,26+(uint64_t)p.scroll_duration+5);
+    assert(!p.scroll_settling && p.dx==0);
+    assert(fabs(cs_card_rect(&p,p.selected).x-(p.config.width-p.config.card_width)/2)<.001);
+    cs_finish(&p);
+}
+static void scroll_slow_release_snaps_nearest(void) {
     struct cs_policy p=setup();cs_enter(&p,101);
     double pitch=p.config.card_width+p.config.gap;
-    double threshold=pitch*p.config.select_fraction;
+    /* A slow drag well past half a pitch, released gently (no measurable
+     * flick): still snaps forward one card, the same "nearest card to the
+     * released distance" a fling reduces to at v0~=0. */
     down(&p,10);
-    cs_motion(&p,1,p.down_x-54,p.down_y,18); /* real ~8ms cadence, fast */
-    assert(fabs(p.dx)<threshold && fabs(p.dx)>=threshold*.5); /* below full distance */
-    assert(fabs(p.velocity_x)>=p.config.select_flick_speed);
-    struct cs_result r=cs_up(&p,1,19);
-    assert((r.actions&CS_REDRAW) && p.selected==1); /* flick paged it anyway */
-    assert(p.scroll_settling && p.dx!=0); /* coast starts at the dragged position */
-    double previous=fabs(p.dx);
-    cs_tick(&p,19+40);
-    assert(fabs(p.dx)<previous); /* decays monotonically toward rest */
-    cs_tick(&p,19+240);
+    cs_motion(&p,1,p.down_x-pitch*.6,p.down_y,500); /* one slow sample: no history pair, v0=0 */
+    assert(cs_up(&p,1,501).actions&CS_REDRAW);
+    assert(p.selected==1);
+    cs_tick(&p,501+(uint64_t)p.scroll_duration+5);
     assert(!p.scroll_settling && p.dx==0);
-    assert(fabs(cs_card_rect(&p,1).x-(p.config.width-p.config.card_width)/2)<.001);
 
-    /* A fresh touch during the coast cancels it outright. */
-    down(&p,300);
-    cs_motion(&p,1,p.down_x-54,p.down_y,308);
-    struct cs_result release=cs_up(&p,1,309);
-    assert((release.actions&CS_REDRAW) && p.scroll_settling);
-    assert(cs_down(&p,2,p.down_x,p.down_y,310).consumed);
-    assert(!p.scroll_settling && p.dx==0);
-    cs_up(&p,2,311);
+    /* A short drag well under half a pitch returns to the same card. */
+    down(&p,600);
+    cs_motion(&p,1,p.down_x-pitch*.2,p.down_y,1100);
+    assert(cs_up(&p,1,1101).actions&CS_REDRAW);
+    assert(p.selected==1); /* unchanged */
     cs_finish(&p);
+}
+static void scroll_catch_mid_coast(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);
+    /* A single slow sample (no measurable velocity, the same shape as the
+     * horizontal() test's own drag) keeps the coast's whole magnitude
+     * (~90px, one pitch's worth of continuity residual) comfortably
+     * on-screen throughout, unlike a hard flick's much larger excursion. */
+    down(&p,10);
+    cs_motion(&p,1,p.down_x-180,p.down_y+3,100);
+    assert(cs_up(&p,1,101).actions&CS_REDRAW);
+    assert(p.selected==1 && p.scroll_settling);
+    cs_tick(&p,101+30); /* partway through the coast */
+    struct cs_rect mid=cs_card_rect(&p,p.selected);
+    double mid_x=mid.x,touch_y=mid.y+5;
+    /* A fresh touch at the card's current (mid-coast) screen position
+     * catches it: consumed, no jump, and the coast stops settling on its
+     * own (it is now an ordinary held drag). */
+    assert(cs_down(&p,2,mid_x+5,touch_y,101+30).consumed);
+    assert(!p.scroll_settling);
+    assert(fabs(cs_card_rect(&p,p.selected).x-mid_x)<.001); /* no jump on catch */
+    /* Continues 1:1 from there: a further 15px drag moves the card by
+     * exactly 15px from the caught position. */
+    cs_motion(&p,2,mid_x+5-15,touch_y,101+38);
+    assert(fabs(cs_card_rect(&p,p.selected).x-(mid_x-15))<.001);
+    cs_up(&p,2,101+39);
+    cs_finish(&p);
+}
+static void scroll_end_clamp_soft(void) {
+    struct cs_policy p=setup();cs_enter(&p,101); /* selected=0, the first card */
+    /* A hard fling further into the deck's start end: never underflows
+     * past card 0, and the coast's velocity is damped (soft rubber band),
+     * not a hard stop at the same magnitude as an unclamped fling. */
+    down(&p,10);
+    cs_motion(&p,1,p.down_x+20,p.down_y,18);
+    cs_motion(&p,1,p.down_x+40,p.down_y,26); /* v0 = +2.5px/ms, well past the deck start */
+    assert(cs_up(&p,1,26).actions&CS_REDRAW);
+    assert(p.selected==0); /* clamped, never wraps/underflows */
+    assert(fabs(p.scroll_release_velocity)<2.5); /* damped below the raw flick velocity */
+    cs_tick(&p,26+(uint64_t)p.scroll_duration+5);
+    assert(!p.scroll_settling && p.dx==0);
+    assert(fabs(cs_card_rect(&p,0).x-(p.config.width-p.config.card_width)/2)<.001);
+    cs_finish(&p);
+
+    /* Same at the deck's other end. */
+    struct cs_policy q=setup();cs_enter(&q,101);
+    down(&q,10);cs_motion(&q,1,q.down_x-2000,q.down_y,18); /* land on the last card first */
+    cs_up(&q,1,19);cs_tick(&q,19+(uint64_t)q.scroll_duration+5);
+    assert(q.selected==q.count-1 && !q.scroll_settling);
+    down(&q,200);
+    cs_motion(&q,1,q.down_x-20,q.down_y,208);
+    cs_motion(&q,1,q.down_x-40,q.down_y,216); /* fling further past the last card */
+    assert(cs_up(&q,1,216).actions&CS_REDRAW);
+    assert(q.selected==q.count-1); /* clamped, never runs past the end */
+    cs_finish(&q);
 }
 static void adjacent_tap(void) {
     struct cs_policy p=setup();cs_enter(&p,101);
@@ -988,7 +1078,11 @@ static void randomized(void) {
 int main(int argc,char **argv) {
     struct {const char *name;void (*run)(void);} cases[]={
         {"enter-expand",enter_expand},{"horizontal",horizontal},
-        {"overview-geometry",overview_geometry},{"scroll-momentum",scroll_momentum},
+        {"overview-geometry",overview_geometry},
+        {"scroll-fling-multi-card",scroll_fling_multi_card},
+        {"scroll-slow-release-snaps-nearest",scroll_slow_release_snaps_nearest},
+        {"scroll-catch-mid-coast",scroll_catch_mid_coast},
+        {"scroll-end-clamp-soft",scroll_end_clamp_soft},
         {"adjacent-tap",adjacent_tap},
         {"adjacent-throw",adjacent_throw},{"privacy",privacy},{"privacy-transition",privacy_transition},
         {"close-recovery",close_recovery},{"slow-drag",slow_drag},{"source-loss",source_loss},

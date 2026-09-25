@@ -23,6 +23,13 @@ struct card_appearance {
 	struct card_brush canvas, card, selected;
 	uint32_t text, selected_text;
 	bool wallpaper, canvas_authored;
+	/* The active theme's own icon-theme name (report.json's top-level
+	 * "icon_theme" string, the same field
+	 * nix/rust-shell-client/src/render.rs's icon_theme_name_for prefers
+	 * over K230_ICON_THEME) -- empty when the report does not specify one,
+	 * in which case the card-header icon resolver's own env/default
+	 * fallback applies instead (see nix/card-shell/icon.c). */
+	char icon_theme[64];
 };
 
 typedef bool (*card_appearance_apply_fn)(const struct card_appearance *, void *);

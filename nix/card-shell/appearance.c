@@ -227,6 +227,13 @@ static bool load(const char *path, const char *id, bool allow_default,
 	}
 	if (okay) {
 		strcpy(next.generation, id);
+		/* Optional: report.json's own top-level icon_theme, when the active
+		 * theme names one (same field the Rust drawer's icon_theme_name_for
+		 * prefers). Absent/non-string/oversized leaves icon_theme empty,
+		 * which the card-header icon resolver treats as "no theme override". */
+		const char *icon_theme = string(report, "icon_theme");
+		if (icon_theme && strlen(icon_theme) < sizeof(next.icon_theme))
+			strcpy(next.icon_theme, icon_theme);
 		*out = next;
 	}
 	if (report) json_object_put(report);

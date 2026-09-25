@@ -4,6 +4,7 @@
 #include "sway/card-keyboard-gesture.h"
 #include "sway/card_shell_appearance.h"
 #include "sway/card_shell.h"
+#include "sway/card_shell_icon.h"
 #include "sway/card_shell_render.h"
 #include "sway/card_shell_route.h"
 #include "sway/card_shell_telemetry.h"
@@ -495,6 +496,13 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 	(void)data;
 	shell.appearance = *next;
 	shell.appearance_enabled = true;
+	/* Follow the active theme's own icon-theme selection for card headers,
+	 * the same field nix/rust-shell-client/src/render.rs's
+	 * icon_theme_name_for prefers over K230_ICON_THEME -- an empty field
+	 * (this theme names none) leaves icon.c's own env/hicolor default in
+	 * place instead of resetting it. */
+	if (next->icon_theme[0])
+		card_icon_set_theme(next->icon_theme);
 	if (shell.keyboard_grip && shell.keyboard_grip_line) {
 		float bg[4], line[4];
 		card_brush_solid_color(&next->card, bg);

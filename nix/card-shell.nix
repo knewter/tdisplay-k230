@@ -1,7 +1,13 @@
-{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash }:
+{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg }:
 let
   unwrapped = (swayUnwrapped.override { enableXWayland = false; }).overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-card-shell.patch ];
+    # Card-header icon resolution (nix/card-shell/icon.c) decodes SVG icons
+    # via librsvg directly, the same real-icon path the Rust drawer already
+    # uses (nix/rust-shell-client/default.nix's own librsvg buildInput) --
+    # a real installed theme resolves most app icons to SVG, not PNG, per
+    # board evidence (docs/evidence/card-shell/webos-fan-switcher/).
+    buildInputs = (old.buildInputs or [ ]) ++ [ librsvg ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/adapter.c} sway/card_shell.c
       cp ${./card-shell/appearance.c} sway/card_shell_appearance.c

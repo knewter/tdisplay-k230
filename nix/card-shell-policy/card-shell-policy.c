@@ -9,7 +9,7 @@ static bool valid_config(const struct cs_config *c) {
     const double values[]={c->width,c->height,c->top_reserved,c->bottom_reserved,
         c->inset,c->gap,c->title_height,c->footer_height,c->card_width,c->card_height,
         c->entry_card_width,c->entry_card_height,
-        c->edge_band,c->entry_distance,c->tap_slop,c->select_fraction,c->select_flick_speed,
+        c->edge_band,c->entry_distance,c->tap_slop,
         c->throw_distance,c->throw_speed,c->entry_select_fraction,c->entry_flick_speed};
     for (size_t i=0;i<sizeof(values)/sizeof(values[0]);i++)
         if (!isfinite(values[i]) || values[i]<0) return false;
@@ -24,7 +24,6 @@ static bool valid_config(const struct cs_config *c) {
         c->entry_card_height<=available-c->title_height-c->footer_height-2*c->inset &&
         c->edge_band>0 && c->edge_band<=available && c->entry_distance>c->tap_slop &&
         c->entry_distance<available && c->tap_slop>0 &&
-        c->select_fraction>0 && c->select_fraction<=1 && c->select_flick_speed>0 &&
         c->entry_select_fraction>0 && c->entry_select_fraction<=1 &&
         c->entry_flick_speed>0 &&
         c->throw_distance>c->tap_slop && c->throw_speed>0 &&
@@ -44,8 +43,7 @@ struct cs_config cs_default_config(double width,double height) {
          * intentionally the pre-fan geometry, unaffected by card_width
          * above -- see cs_entry_target_rect. */
         .entry_card_width=.84*(width-48),.entry_card_height=.72*(height-56-128-56-48),
-        .edge_band=48,.entry_distance=72,.tap_slop=12,.select_fraction=.25,
-        .select_flick_speed=.5,
+        .edge_band=48,.entry_distance=72,.tap_slop=12,
         /* Android-style paging thresholds: roughly a third of the screen
          * width travelled, or a decisive flick, whichever comes first.
          * See docs/evidence/card-shell/app-switch-swipe/ for the derivation. */
@@ -281,13 +279,18 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
         if (p->blocked_contacts<UINT_MAX) p->blocked_contacts++;
         return result(p,0,true);
     }
+    /* A fresh touch during an overview scroll coast catches it: advance
+     * to exactly "now" (cs_tick, discarding its own result/redraw signal --
+     * the caller's own down-handling below already returns CS_REDRAW) so
+     * both the upcoming hit-test and the continued drag see the true
+     * mid-flight position, not the eventual rest position. scroll_settling
+     * stays true through the hit-test below (cs_card_rect's translation
+     * needs it) and is only cleared once a real drag or a miss is decided. */
+    bool scroll_catch=false;
+    double scroll_catch_dx=0;
     if (p->mode==CS_DECK && p->scroll_settling) {
-        /* A fresh touch cancels the overview scroll coast outright: land at
-         * its rest position (dx 0, the already-committed p->selected) first,
-         * then let the ordinary down handling below begin an honest new
-         * drag from there. No mid-flight dx rebase is needed because the
-         * coast only ever animates toward 0. */
-        p->scroll_settling=false;p->dx=0;
+        cs_tick(p,time_ms);
+        if (p->scroll_settling) {scroll_catch=true;scroll_catch_dx=p->dx;}
     }
 	if (p->mode==CS_ENTERING && p->entry_settling) {
 		cs_tick(p,time_ms);
@@ -317,26 +320,106 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
         return result(p,0,true);
     }
     if (p->contact || p->edge.tracking) return multiple_contacts(p);
-    if (p->mode==CS_NORMAL || !contains(cs_content_rect(p),x,y)) return result(p,0,false);
+    if (p->mode==CS_NORMAL || !contains(cs_content_rect(p),x,y)) {
+        p->scroll_settling=false; /* the touch missed; the coast does not resume */
+        return result(p,0,false);
+    }
     if (p->mode==CS_CLOSING) {
+        p->scroll_settling=false;
         p->blocked_until_up=true;p->blocked_contacts=1;return result(p,0,true);
     }
     size_t index=cs_hit_test(p,x,y);
     if (index==SIZE_MAX) {
+        p->scroll_settling=false;
         p->blocked_until_up=true;p->blocked_contacts=1;return result(p,0,true);
     }
+    p->scroll_settling=false; /* the catch above, if any, is now resolved */
     p->contact=true;p->contact_id=contact_id;p->mode=CS_DRAGGING;
     /* Do not recenter on down: the adjacent card stays under the finger. */
     p->pressed_id=p->cards[index].id;
-    p->down_x=p->last_x=x;p->down_y=p->last_y=y;p->last_time_ms=time_ms;
+    /* A caught coast continues 1:1 from its current visual position (no
+     * jump): down_x is offset so cs_motion's x-down_x reproduces
+     * scroll_catch_dx at this exact finger position, then tracks its own
+     * movement from there. An ordinary tap-on-a-card keeps the existing
+     * "do not recenter" dx=0 start. */
+    p->down_x=x-scroll_catch_dx;p->last_x=x;p->down_y=y;p->last_y=y;p->last_time_ms=time_ms;
     p->velocity_origin_x=x;p->velocity_origin_y=y;p->velocity_origin_ms=time_ms;
-    p->dx=p->dy=p->velocity_y=0;p->axis=CS_AXIS_NONE;
+    p->dx=scroll_catch_dx;p->dy=0;p->velocity_y=0;p->velocity_x=0;
+    p->axis=scroll_catch ? CS_AXIS_HORIZONTAL : CS_AXIS_NONE;
+    p->scroll_history_count=0;
     p->message=card_message(p);
     return result(p,CS_REDRAW,true);
 }
 static double bound(double value,double extent) {
     return fmax(-extent,fmin(extent,value));
 }
+/* Recency-biased backward walk shared by the direct-switch entry gesture's
+ * own release-velocity estimate and the overview scroll's: real reports
+ * arrive roughly every 8ms (docs/evidence/touch-reports.md), but dispatch
+ * under load can space them out, and a same/near-timestamp duplicate is
+ * common right after a direction change. Never look further back than
+ * CS_ENTRY_WINDOW_MS (wide enough to bridge a sparse ~100ms cadence), but
+ * stop as soon as the span reaches CS_ENTRY_MIN_SPAN_MS so a genuine
+ * last-instant reversal is not diluted by averaging over the whole window. */
+#define CS_ENTRY_WINDOW_MS 120.0
+#define CS_ENTRY_MIN_SPAN_MS 6.0
+/* How stale the newest sample may be relative to the up event before the
+ * drag is treated as already stopped: bigger than the old fixed 80ms gate
+ * (which zeroed momentum whenever dispatch lagged or the last sample
+ * preceded a slightly later release), but still well under a deliberate
+ * held pause. */
+#define CS_ENTRY_FRESHNESS_MS 160.0
+static void touch_history_push(struct cs_entry_touch_sample *history,size_t *count,
+        double x,double y,uint64_t t) {
+    size_t n=*count;
+    if (n && history[n-1].t==t) {
+        history[n-1].x=x;history[n-1].y=y;
+        return;
+    }
+    if (n==CS_ENTRY_HISTORY_CAP) {
+        memmove(&history[0],&history[1],(CS_ENTRY_HISTORY_CAP-1)*sizeof(history[0]));
+        n--;
+    }
+    history[n]=(struct cs_entry_touch_sample){x,y,t};
+    *count=n+1;
+}
+/* Selects the [oldest,newest] sample pair the recency window would use for
+ * a release at up_time, or returns false if there is no usable history (no
+ * samples, or the newest is stale relative to up_time). Callers derive
+ * their own velocity (with their own scale/clamp) from the pair. */
+static bool touch_window_span(const struct cs_entry_touch_sample *history,size_t count,
+        uint64_t up_time,const struct cs_entry_touch_sample **oldest_out,
+        const struct cs_entry_touch_sample **newest_out) {
+    if (!count) return false;
+    const struct cs_entry_touch_sample *newest=&history[count-1];
+    if (up_time<newest->t || up_time-newest->t>CS_ENTRY_FRESHNESS_MS) return false;
+    size_t idx=count-1;
+    while (idx>0) {
+        double span=(double)(newest->t-history[idx-1].t);
+        if (span>CS_ENTRY_WINDOW_MS) break;
+        idx--;
+        if (span>=CS_ENTRY_MIN_SPAN_MS) break;
+    }
+    const struct cs_entry_touch_sample *oldest=&history[idx];
+    if ((double)(newest->t-oldest->t)<4) return false;
+    *oldest_out=oldest;*newest_out=newest;
+    return true;
+}
+/* Overview horizontal-scroll fling: the release velocity (unclamped, unlike
+ * the entry gesture's own +-3px/ms cap -- a strong flick legitimately needs
+ * to carry several cards, and cs_up's soft rubber band separately bounds
+ * the result at the deck's ends), in logical pixels/ms. */
+static double scroll_release_velocity_x(const struct cs_policy *p,uint64_t up_time) {
+    const struct cs_entry_touch_sample *oldest,*newest;
+    if (!touch_window_span(p->scroll_history,p->scroll_history_count,up_time,&oldest,&newest))
+        return 0;
+    return (newest->x-oldest->x)/(double)(newest->t-oldest->t);
+}
+/* Fixed damping for the overview's own momentum coast: an exponential-decay
+ * fling travels a total signed distance of v0/CS_SCROLL_OMEGA as t->infinity
+ * (closed form of the integral of v0*e^{-omega t}), which cs_up uses to
+ * project the resting card from the release velocity -- see its comment. */
+#define CS_SCROLL_OMEGA .006
 struct cs_result cs_motion(struct cs_policy *p,int32_t contact_id,double x,double y,uint64_t time_ms) {
     if (p->blocked_until_up) return result(p,0,true);
     if (!p->contact || contact_id!=p->contact_id) return result(p,0,false);
@@ -361,6 +444,7 @@ struct cs_result cs_motion(struct cs_policy *p,int32_t contact_id,double x,doubl
     p->velocity_y=elapsed ? (y-p->velocity_origin_y)/(double)elapsed : 0;
     p->velocity_x=elapsed ? (x-p->velocity_origin_x)/(double)elapsed : 0;
     p->last_x=x;p->last_y=y;p->last_time_ms=time_ms;p->dx=dx;p->dy=dy;
+    touch_history_push(p->scroll_history,&p->scroll_history_count,x,y,time_ms);
     return result(p,CS_REDRAW,true);
 }
 struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) {
@@ -404,22 +488,22 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
         return cs_request_close(p,p->cards[index].id,time_ms);
     }
     bool scroll=false;
-    double scroll_from_dx=0,scroll_velocity=0;
+    double scroll_from_dx=0,scroll_velocity=0,scroll_duration=0;
     if (!tap && !thrown && p->axis==CS_AXIS_HORIZONTAL && p->count) {
         double pitch=p->config.card_width+p->config.gap;
         size_t old_selected=p->selected;
-        /* A decisive flick pages even under the full distance threshold,
-         * the same "distance or flick" shape as the direct-switch gesture's
-         * own entry_select_fraction/entry_flick_speed gate, but using the
-         * overview's own independent thresholds. */
-        bool flick=p->dx!=0 && fabs(p->velocity_x)>=p->config.select_flick_speed &&
-            (p->dx<0)==(p->velocity_x<0);
-        if (fabs(p->dx)>=pitch*p->config.select_fraction ||
-                (flick && fabs(p->dx)>=pitch*p->config.select_fraction*.5)) {
-            size_t steps=(size_t)fmax(1,round(fabs(p->dx)/pitch));
-            if (p->dx<0) p->selected+=steps>p->count-1-p->selected ? p->count-1-p->selected : steps;
-            else p->selected-=steps>p->selected ? p->selected : steps;
-        }
+        double v0=scroll_release_velocity_x(p,time_ms);
+        /* Physics fling, not a +-1-card snap: an exponential-decay coast
+         * with damping CS_SCROLL_OMEGA travels a total signed distance of
+         * v0/CS_SCROLL_OMEGA as t->infinity (see that constant's comment),
+         * so projecting the resting card from released_dx+that distance
+         * lets a fast flick carry several cards. A slow release (v0~=0)
+         * reduces this to "nearest card to the released drag distance,"
+         * which is also the plain-drag-and-release case. */
+        double projected_dx=p->dx+v0/CS_SCROLL_OMEGA;
+        double raw_target=(double)old_selected-projected_dx/pitch;
+        double clamped_target=fmax(0.0,fmin((double)p->count-1,raw_target));
+        p->selected=(size_t)lround(clamped_target);
         /* Continuity: the settled card's on-screen x must not jump at the
          * instant of release. cs_card_rect's x for card `index` is
          * center+(index-selected)*pitch+dx; solving for the dx that keeps
@@ -428,13 +512,27 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
          * decays this residual toward 0 (the settled card's true rest x). */
         double delta=(double)p->selected-(double)old_selected;
         scroll_from_dx=p->dx+delta*pitch;
-        scroll_velocity=p->velocity_x;
+        /* Soft rubber band at the ends: a fling whose raw (unrounded)
+         * projection reached past the first/last card settles with a
+         * gentler, shorter coast -- scaled down by how far past the end it
+         * wanted to go -- instead of the full unclamped momentum, so
+         * hitting the end feels like a light give rather than an identical
+         * hard stop regardless of how hard the flick was. */
+        double overshoot=raw_target<0 ? -raw_target :
+            raw_target>(double)p->count-1 ? raw_target-((double)p->count-1) : 0;
+        scroll_velocity=overshoot>0 ? v0/(1+overshoot*1.5) : v0;
+        /* Duration scales with how far the coast actually has to travel
+         * (a multi-card fling visibly takes longer than a one-card snap),
+         * clamped to a sensible range; reduced motion stays fixed-short. */
+        scroll_duration=p->config.reduced_motion ? 100 :
+            fmax(220,fmin(760,fabs(scroll_from_dx)/1.6));
         scroll=true;
     }
     reset_drag(p);p->mode=CS_DECK;p->message=card_message(p);
     if (scroll) {
         p->scroll_settling=true;p->scroll_from_dx=scroll_from_dx;
         p->scroll_release_velocity=scroll_velocity;p->scroll_started_ms=time_ms;
+        p->scroll_duration=scroll_duration;
         p->dx=scroll_from_dx;
     }
     return result(p,CS_REDRAW,true);
@@ -582,19 +680,20 @@ struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 	}
 	if (p->mode==CS_DECK && p->scroll_settling) {
 		uint64_t elapsed=time_ms>=p->scroll_started_ms ? time_ms-p->scroll_started_ms : 0;
-		double duration=p->config.reduced_motion ? 100 : 240;
-		/* Fixed, gentle damping: the residual here is bounded to roughly a
-		 * pitch's worth (cs_up's continuity math), far smaller than a
-		 * full-screen entry swap, so a single fixed omega (unlike
-		 * cs_tick's velocity-scaled entry omega) already stays smooth
-		 * without overshoot large enough to look wrong. */
-		double omega=.02;
+		/* cs_up already chose a duration scaled to this fling's own
+		 * distance (a multi-card fling visibly takes longer than a
+		 * one-card snap); CS_SCROLL_OMEGA is the same fixed damping used
+		 * to choose the target card, so the two stay self-consistent. */
+		double duration=p->scroll_duration;
+		double omega=CS_SCROLL_OMEGA;
 		double t=fmin((double)elapsed,duration);
 		double e=exp(-omega*t);
 		double from=p->scroll_from_dx,v0=p->scroll_release_velocity;
 		p->dx=(from+(v0+omega*from)*t)*e;
-		double pitch=p->config.card_width+p->config.gap;
-		p->dx=fmax(-pitch,fmin(pitch,p->dx));
+		/* A generous safety bound only (not a per-card clamp: a multi-card
+		 * fling's own residual can legitimately exceed one pitch), matching
+		 * cs_motion's own drag-extent bound. */
+		p->dx=bound(p->dx,2*p->config.width);
 		if ((double)elapsed>=duration) {
 			p->dx=0;p->scroll_settling=false;
 		}
@@ -640,54 +739,19 @@ struct cs_result cs_edge_up(struct cs_policy *p,int32_t id) {
     if (owned) p->edge.tracking=false;
     return result(p,0,owned);
 }
-/* Recency-biased backward walk: real reports arrive roughly every 8ms
- * (docs/evidence/touch-reports.md), but dispatch under load can space
- * them out, and a same/near-timestamp duplicate is common right after a
- * direction change. Never look further back than CS_ENTRY_WINDOW_MS (wide
- * enough to bridge a sparse ~100ms cadence), but stop as soon as the span
- * reaches CS_ENTRY_MIN_SPAN_MS so a genuine last-instant reversal is not
- * diluted by averaging over the whole window. */
-#define CS_ENTRY_WINDOW_MS 120.0
-#define CS_ENTRY_MIN_SPAN_MS 6.0
-/* How stale the newest sample may be relative to the up event before the
- * drag is treated as already stopped: bigger than the old fixed 80ms gate
- * (which zeroed momentum whenever dispatch lagged or the last sample
- * preceded a slightly later release), but still well under a deliberate
- * held pause. */
-#define CS_ENTRY_FRESHNESS_MS 160.0
-static void entry_history_push(struct cs_policy *p,double x,double y,uint64_t t) {
-    size_t n=p->entry_history_count;
-    if (n && p->entry_history[n-1].t==t) {
-        p->entry_history[n-1].x=x;p->entry_history[n-1].y=y;
-        return;
-    }
-    if (n==CS_ENTRY_HISTORY_CAP) {
-        memmove(&p->entry_history[0],&p->entry_history[1],
-            (CS_ENTRY_HISTORY_CAP-1)*sizeof(p->entry_history[0]));
-        n--;
-    }
-    p->entry_history[n]=(struct cs_entry_touch_sample){x,y,t};
-    p->entry_history_count=n+1;
-}
 /* vy is in progress units per ms (matches the historical entry_velocity_progress
- * scaling: signed so upward motion is positive, divided by entry_travel). */
+ * scaling: signed so upward motion is positive, divided by entry_travel).
+ * Shares its recency-window sample selection (touch_window_span) with the
+ * overview scroll's own scroll_release_velocity_x, but keeps its own
+ * clamps: +-3px/ms for x, and a progress-space (not pixel-space) y scaled
+ * by entry_travel -- both specific to this gesture's geometry. */
 static void entry_release_velocity(const struct cs_policy *p,uint64_t up_time,
         double *vx,double *vy) {
     *vx=0;*vy=0;
-    size_t n=p->entry_history_count;
-    if (!n) return;
-    const struct cs_entry_touch_sample *newest=&p->entry_history[n-1];
-    if (up_time<newest->t || up_time-newest->t>CS_ENTRY_FRESHNESS_MS) return;
-    size_t idx=n-1;
-    while (idx>0) {
-        double span=(double)(newest->t-p->entry_history[idx-1].t);
-        if (span>CS_ENTRY_WINDOW_MS) break;
-        idx--;
-        if (span>=CS_ENTRY_MIN_SPAN_MS) break;
-    }
-    const struct cs_entry_touch_sample *oldest=&p->entry_history[idx];
+    const struct cs_entry_touch_sample *oldest,*newest;
+    if (!touch_window_span(p->entry_history,p->entry_history_count,up_time,&oldest,&newest))
+        return;
     double dt=(double)(newest->t-oldest->t);
-    if (dt<4) return;
     *vx=fmax(-3,fmin(3,(newest->x-oldest->x)/dt));
     if (p->entry_travel>0)
         *vy=fmax(-.012,fmin(.012,(oldest->y-newest->y)/dt/p->entry_travel));
@@ -717,7 +781,7 @@ struct cs_result cs_begin_entry(struct cs_policy *p,int32_t id,double x,double y
 	p->entry_anchor_factor=1;
 	p->entry_sample_x=x;p->entry_sample_y=y;p->entry_sample_ms=time_ms;
 	p->entry_history_count=0;
-	entry_history_push(p,x,y,time_ms);
+	touch_history_push(p->entry_history,&p->entry_history_count,x,y,time_ms);
     p->edge.tracking=true;p->edge.contact_id=id;
     p->edge.x=x;p->edge.y=y;p->edge.time_ms=time_ms;
 	return r;
@@ -784,7 +848,7 @@ struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double 
 	p->entry_dx=fmax(-limit,fmin(limit,dx));
 	if (time_ms>p->entry_sample_ms) {
 		p->entry_sample_x=x;p->entry_sample_y=y;p->entry_sample_ms=time_ms;
-		entry_history_push(p,x,y,time_ms);
+		touch_history_push(p->entry_history,&p->entry_history_count,x,y,time_ms);
 	}
 	return result(p,CS_REDRAW,true);
 }

@@ -63,12 +63,7 @@ struct cs_config {
      * mid-drag "full-size neighbour" feel. */
     double entry_card_width, entry_card_height;
     double edge_band, entry_distance, tap_slop;
-    double select_fraction, throw_distance, throw_speed; /* logical pixels/ms */
-    /* Overview horizontal-scroll flick gate: a release velocity (logical
-     * pixels/ms) high enough to page even when the drag distance is only
-     * half of select_fraction*pitch. Independent of entry_flick_speed
-     * below, which gates the unrelated direct-switch gesture. */
-    double select_flick_speed;
+    double throw_distance, throw_speed; /* logical pixels/ms */
     /* Entry (edge-swipe app switch) lateral gate, kept separate from the
      * in-deck select_fraction above: a fraction of the full screen width,
      * not of the card pitch, and a release-velocity flick threshold in
@@ -94,10 +89,19 @@ struct cs_policy {
     uint64_t velocity_origin_ms;
     /* Overview horizontal-scroll momentum: a released drag continues to
      * coast dx toward the newly-selected card's rest position (0) instead
-     * of snapping there instantly. See card-shell-policy.c cs_up/cs_tick. */
+     * of snapping there instantly, projecting the resting card from the
+     * release velocity so a fast flick can carry several cards, not just
+     * the adjacent one. See card-shell-policy.c cs_up/cs_tick and
+     * touch_window_span (shared with the entry gesture's own estimator). */
     bool scroll_settling;
-    double scroll_from_dx, scroll_release_velocity;
+    double scroll_from_dx, scroll_release_velocity, scroll_duration;
     uint64_t scroll_started_ms;
+    /* Recent raw touch samples for the overview drag's own recency-biased
+     * release-velocity estimate -- same shape and window as entry_history
+     * below, reused via touch_window_span, but a separate buffer: the two
+     * gestures run independently and must never share state. */
+    struct cs_entry_touch_sample scroll_history[CS_ENTRY_HISTORY_CAP];
+    size_t scroll_history_count;
 	/* 0 displays the original view geometry; 1 displays its deck slot. */
 	double entry_progress;
 	uint64_t entry_id;

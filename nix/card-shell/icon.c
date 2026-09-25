@@ -1,17 +1,23 @@
 #include "sway/card_shell_icon.h"
 #include <limits.h>
+#include <librsvg/rsvg.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
-/* See icon.h: PNG-only, no gio/gdk-pixbuf. This mirrors the shape of
- * nix/rust-shell-client/src/icon.rs's resolver (freedesktop icon theme spec:
- * index.theme Directories=/Inherits=, per-directory Size=/Type=/MinSize=/
- * MaxSize=/Scale=, hicolor fallback, pixmaps/ fallback) using the same
- * hand-rolled text-parsing style adapter.c already uses for .desktop files,
- * instead of GKeyFile. */
+/* This mirrors the shape of nix/rust-shell-client/src/icon.rs's resolver
+ * (freedesktop icon theme spec: index.theme Directories=/Inherits=,
+ * per-directory Size=/Type=/MinSize=/MaxSize=/Scale=, hicolor fallback,
+ * pixmaps/ fallback) using the same hand-rolled text-parsing style
+ * adapter.c already uses for .desktop files, instead of GKeyFile. PNG
+ * decodes via Cairo's own decoder; SVG decodes via librsvg
+ * (rsvg_handle_new_from_file/rsvg_handle_render_document), the same two
+ * calls icon.rs itself uses (there via raw FFI; here via the real
+ * librsvg-2.0 C headers) -- librsvg is already a build input of this
+ * compositor's sway-unwrapped derivation. No gio/gdk-pixbuf *usage*: only
+ * librsvg's own headers/link are added, not a GdkPixbuf-based loader path. */
 
 /* Every path/name buffer below is explicitly bounded (snprintf never
  * overflows; a too-long component is simply, safely truncated and then
@@ -167,17 +173,24 @@ static bool icon_dir_safe(const char *dir) {
 	}
 	return true;
 }
-/* <root>/icons/<theme>/<dir>/<name>.png, only if it exists and is a sane
- * regular file. NULL on any path overflow or missing/oversized file. */
+/* <root>/icons/<theme>/<dir>/<name>.{png,svg}, only if it exists and is a
+ * sane regular file. PNG preferred over SVG when a directory somehow has
+ * both, matching icon.rs's own try_file() order; in practice a themed
+ * directory is one or the other, not both. NULL on any path overflow or
+ * missing/oversized file. */
 static char *icon_try_file(const char *root, const char *theme, const char *dir,
 		const char *name) {
 	if (!icon_dir_safe(dir))
 		return NULL;
-	char path[PATH_MAX];
-	int n = snprintf(path, sizeof(path), "%s/icons/%s/%s/%s.png", root, theme, dir, name);
-	if (n <= 0 || (size_t)n >= sizeof(path))
-		return NULL;
-	return icon_file_usable(path) ? strdup(path) : NULL;
+	static const char *const exts[] = {"png", "svg"};
+	for (size_t e = 0; e < sizeof(exts) / sizeof(exts[0]); e++) {
+		char path[PATH_MAX];
+		int n = snprintf(path, sizeof(path), "%s/icons/%s/%s/%s.%s", root, theme, dir, name,
+			exts[e]);
+		if (n > 0 && (size_t)n < sizeof(path) && icon_file_usable(path))
+			return strdup(path);
+	}
+	return NULL;
 }
 
 static int icon_dir_score(bool scalable, int decl_size, int min_size, int max_size,
@@ -368,19 +381,63 @@ static char *icon_resolve(const char *icon_name, int wanted) {
 	}
 	if (!found) {
 		for (size_t i = 0; i < roots.count && !found; i++) {
-			char path[PATH_MAX];
-			int n = snprintf(path, sizeof(path), "%s/pixmaps/%s.png", roots.paths[i], icon_name);
-			if (n > 0 && (size_t)n < sizeof(path) && icon_file_usable(path))
-				found = strdup(path);
+			static const char *const exts[] = {"png", "svg"};
+			for (size_t e = 0; e < sizeof(exts) / sizeof(exts[0]) && !found; e++) {
+				char path[PATH_MAX];
+				int n = snprintf(path, sizeof(path), "%s/pixmaps/%s.%s", roots.paths[i],
+					icon_name, exts[e]);
+				if (n > 0 && (size_t)n < sizeof(path) && icon_file_usable(path))
+					found = strdup(path);
+			}
 		}
 	}
 	icon_roots_free(&roots);
 	return found;
 }
 
+static bool icon_path_has_suffix(const char *path, const char *suffix) {
+	size_t plen = strlen(path), slen = strlen(suffix);
+	return plen >= slen && strcmp(path + (plen - slen), suffix) == 0;
+}
+
+/* librsvg render, the same two calls icon.rs uses (rsvg_handle_new_from_file
+ * then rsvg_handle_render_document into a viewport the size of the target
+ * surface -- librsvg itself preserves aspect and centers within it). */
+static cairo_surface_t *icon_decode_svg(const char *path, int size) {
+	GError *error = NULL;
+	RsvgHandle *handle = rsvg_handle_new_from_file(path, &error);
+	if (!handle) {
+		if (error)
+			g_error_free(error);
+		return NULL;
+	}
+	cairo_surface_t *out = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	if (cairo_surface_status(out) != CAIRO_STATUS_SUCCESS) {
+		g_object_unref(handle);
+		cairo_surface_destroy(out);
+		return NULL;
+	}
+	cairo_t *cr = cairo_create(out);
+	RsvgRectangle viewport = {.x = 0, .y = 0, .width = size, .height = size};
+	bool rendered = rsvg_handle_render_document(handle, cr, &viewport, &error);
+	if (!rendered && error)
+		g_error_free(error);
+	bool ok = rendered && cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+	cairo_destroy(cr);
+	g_object_unref(handle);
+	cairo_surface_flush(out);
+	if (!ok) {
+		cairo_surface_destroy(out);
+		return NULL;
+	}
+	return out;
+}
+
 static cairo_surface_t *icon_decode(const char *path, int size) {
 	if (!icon_file_usable(path) || size < 8 || size > 512)
 		return NULL;
+	if (icon_path_has_suffix(path, ".svg"))
+		return icon_decode_svg(path, size);
 	cairo_surface_t *source = cairo_image_surface_create_from_png(path);
 	if (!source)
 		return NULL;
