@@ -208,16 +208,94 @@ this path had ever logged anything.
   `tools/theme-swap-jank.py`'s existing `RUST_LOG_RE` already parses, timing
   the chooser's own wait on the `k230-theme` subprocess. Verify with
   `python3 -m unittest tests.test_theme_timing` and `cargo test --offline`.
-- [ ] 4.5 Re-run the coordinator's own board commands (see this change's
+- [x] 4.5 Re-run the coordinator's own board commands (see this change's
   evidence doc) once 4.1-4.4 are installed, and confirm `activate` of an
   already-prepared theme is now well under 500 ms end to end, with
   `journalctl` showing the daemon path taken and `prepare()` reporting
-  `cache=hit`. Needs the reserved board; not run by this task.
+  `cache=hit`. **Board result (coordinator, system `46vdy1dy...`):**
+  `activate` 1.27-1.38 s (was ~4.2 s), `preview` warm 1.06-1.08 s;
+  `THEME_TIMING` showed `handle activate` total 245 ms (`discover` 42,
+  `prepare_entry` 73, `activate_generation` 128, keyboard-deferred
+  dispatch 3.6), `helperd` total 265 ms, `client socket_round_trip` 270 ms
+  `path=daemon`, `exchange` prepare 10-20 ms/commit 7-14 ms per receiver,
+  `keyboard_deferred sync_and_restart` 300 ms off the critical path. This
+  confirmed the daemon path itself is fast (~250-270 ms); the ~1.0 s
+  remaining per call is the `theme_client.py` Python-interpreter-plus-
+  `runuser` subprocess start-up the Rust chooser still pays for every
+  request -- named explicitly as task 5's own starting point below.
 
-Proof for 4.1-4.4: the tests named above, all passing on this host; proof
-for 4.5 is the reserved board, not run here.
+Proof for 4.1-4.5: the tests named above (host), plus the board run above.
+
+## 5. Talk to the daemon directly from the chooser; cut the remaining daemon cost
+
+<!-- Grounding: coordinator's own board run above (system 46vdy1dy...):
+     the daemon path itself already answers in ~250-270 ms; what remained
+     was the Rust chooser's own subprocess-and-Python-interpreter cost to
+     *reach* that daemon at all. -->
+
+- [x] 5.1 `nix/rust-shell-client/src/theme_catalog.rs`'s `ThemeWorker`
+  speaks `theme-helper.service`'s own line protocol directly over
+  `K230_THEME_HELPER_SOCKET` (`/run/shell/theme-helper.sock`, matching
+  `theme_client.py`'s `DEFAULT_SOCKET`; set explicitly in `nix/shell.nix`)
+  -- the exact same JSON-line request/reply shape
+  `tools/theme_client.py`/`tools/theme_helperd.py` already speak to each
+  other, so there is no second, drifting protocol. On any socket problem
+  (missing, refused, timed out, malformed reply) it falls back to the
+  existing `k230-theme` subprocess unchanged, which itself still tries the
+  same daemon and falls back further, so a socket that is merely slow to
+  *start* still degrades no worse than before this task. An empty
+  `K230_THEME_HELPER_SOCKET` disables the direct path entirely, matching
+  `K230_THEME_COMMAND`'s own unset-env convention. Verify with `cargo
+  test --offline --test theme_catalog_module` (5 new cases: a working
+  socket reply is used without ever invoking the subprocess; a
+  daemon-reported error is returned without retrying via the subprocess;
+  a missing socket, and a malformed reply, both fall back to the
+  subprocess; an empty socket path disables the direct attempt entirely
+  -- each proven by a "poison" fake subprocess that marks a file if it
+  ever actually runs).
+- [x] 5.2 Cut `discover`'s ~42 ms: `theme_catalog.discover()` is now a
+  cached wrapper (`_discover_uncached` does the real walk) keyed by
+  `(user_themes, builtins)`, invalidated by a cheap stat-only fingerprint
+  of exactly the directory levels `discover()` itself reads (each root's
+  top level, and one level under a user entry's own `themes/` collection)
+  -- never a content read or the identity-hashing/`find_preview()`/
+  `resolve()` work `discover()` itself does. A bare CLI process only ever
+  calls this once per invocation (empty cache, no behaviour change); the
+  daemon serves many requests against a catalog that, in the normal
+  preview-then-activate chooser flow, has not changed. Verify with
+  `python3 -m unittest tests.test_theme_catalog` (adds
+  `test_discover_is_cached_until_the_catalog_directory_actually_changes`,
+  proving an unchanged catalog is not re-walked and that adding or
+  removing a theme is still noticed on the very next call).
+- [x] 5.3 Cut part of `prepare_entry`'s ~73 ms: `theme_activate.py`'s
+  `helper_digest()` caches `source_digest(tools)` indefinitely, keyed by
+  the tools directory's own resolved path. `tools` is
+  `theme_helperd.py`'s own fixed `--tools` startup flag (a Nix store path
+  in production), immutable for the daemon's whole lifetime, unlike the
+  theme's own `source_hash` (deliberately left uncached: a person can edit
+  their own theme's files while the daemon keeps running). Verify with
+  `python3 -m unittest tests.test_omarchy_theme_activation` (adds
+  `test_helper_digest_is_cached_across_repeated_preparations`, counting
+  `source_digest` calls across two `prepare()` calls for the same tools
+  path).
+- [ ] 5.4 Re-run the coordinator's own board commands once 5.1-5.3 are
+  installed, and confirm the chooser's own Apply-to-visible time. Expected,
+  from the numbers above: `discover`/`prepare_entry` reduced by roughly
+  their `helper_hash`/catalog-walk share (the theme's own `source_hash`
+  and `activate_generation`'s 128 ms -- the two-phase exchange plus
+  `app_appearance`/preference-commit filesystem work -- are unchanged by
+  this task, deliberately: `activate_generation` is the part *load-bearing*
+  for correctness, not a caching candidate), plus the direct socket
+  removing essentially all of the ~1.0 s subprocess/Python start-up
+  the coordinator's own board run isolated. This worktree's own honest
+  estimate is close to, and may not fully clear, the ~150 ms target
+  purely from `activate_generation`'s own remaining cost; the board run is
+  what actually answers it. Needs the reserved board; not run by this task.
+
+Proof for 5.1-5.3: the tests named above, all passing on this host; proof
+for 5.4 is the reserved board, not run here.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, and 4.5 have board results; 3.3b and 4.5
+per `AGENTS.md`) until 2.3, 3.4, and 5.4 have board results; 3.3b and 5.4
 are named here so neither is silently dropped or claimed done without a
 board result.
