@@ -354,6 +354,7 @@ static bool snapshot(void);
 static bool chrome(void);
 static void keyboard_refresh(void);
 static void ordinary_backdrop_sync(struct sway_output *output);
+static void home_layer_sync(struct sway_output *output);
 static struct sway_layer_surface *keyboard_layer(struct sway_output *output);
 /* Task 3.1b: drop any gradient built ahead of commit for a candidate that
  * was superseded (a newer prepare, a rollback, or a live geometry change)
@@ -1404,9 +1405,12 @@ static void restore(struct cs_result result) {
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 	/* Re-admit the ordinary-maximized backdrop now that the deck (whose
 	 * own canvas made the wallpaper-reveal decision while active) is
-	 * gone; see ordinary_backdrop_sync's comment. */
-	if (shell.output)
+	 * gone; see ordinary_backdrop_sync's comment. Home comes back for the
+	 * same reason -- see home_layer_sync's comment. */
+	if (shell.output) {
 		ordinary_backdrop_sync(shell.output);
+		home_layer_sync(shell.output);
+	}
 	if (shell.seat && !server.session_lock.lock) {
 		c = find(result.focus_id);
 		if (c && live(c->view)) {
@@ -1450,9 +1454,14 @@ static void handle_result(struct cs_result r) {
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 		/* Withdraw the ordinary-maximized backdrop now that the deck is
 		 * taking over the wallpaper-reveal decision; see
-		 * ordinary_backdrop_sync's comment. */
-		if (shell.output)
+		 * ordinary_backdrop_sync's comment. Home is withdrawn for the same
+		 * reason -- see home_layer_sync's comment -- before the deck's
+		 * transparent canvas goes back up a few lines down in sync_scene(),
+		 * so no frame renders with both the deck and Home visible. */
+		if (shell.output) {
 			ordinary_backdrop_sync(shell.output);
+			home_layer_sync(shell.output);
+		}
 	}
 	if (r.actions & CS_CLOSE) {
 		/* Gesture recognition uses device time, but give the client its full
@@ -1842,6 +1851,30 @@ static void ordinary_backdrop_sync(struct sway_output *output) {
 	wlr_scene_node_set_position(&shell.ordinary_backdrop->node,
 		output->lx + usable->x, output->ly + usable->y);
 	wlr_scene_node_lower_to_bottom(&shell.ordinary_backdrop->node);
+}
+/* The Home screen (the Rust client's always-mapped Layer::Bottom surface,
+ * see nix/rust-shell-client/src/main.rs's HomeSurface) sits directly above
+ * layers.shell_background (the wallpaper) and directly below
+ * layers.tiling/fullscreen in Sway's fixed scene order -- the same shelf
+ * ordinary_backdrop_sync describes. The overview's own canvas
+ * (shell.canvas, in root->layers.shell_overlay, above every output layer)
+ * is deliberately transparent so a person sees their wallpaper behind the
+ * cards; before Home existed that transparency only ever revealed the
+ * wallpaper. Now it also reveals Home, whose grid tiles and dock paint over
+ * the deck and the "Swipe up for apps" hint -- the bleed-through fixed by
+ * openspec/changes/fix-overview-home-bleed-through. Hide the whole
+ * shell_bottom layer while the overview is active (mirrors this file's own
+ * shell.deck/ordinary_backdrop enable pairing) and restore it once
+ * restore() hands the screen back; a fullscreen application already
+ * occludes Home by ordinary opaque stacking, so this only needs to handle
+ * the overview's transparent case. Disabling the layer tree, rather than
+ * asking the Rust client to unmap or repaint transparently, costs nothing
+ * more than a scene-graph flag flip with no client round trip, no buffer
+ * churn, and no risk of a black frame from a freshly reattached surface. */
+static void home_layer_sync(struct sway_output *output) {
+	if (!output || !output->layers.shell_bottom)
+		return;
+	wlr_scene_node_set_enabled(&output->layers.shell_bottom->node, !shell.active);
 }
 static void ordinary_sync_usable(struct sway_output *output, bool commit) {
 	ordinary_backdrop_sync(output);
@@ -2356,15 +2389,18 @@ static char *debug_scene_text(void) {
 	char *text = malloc(capacity);
 	if (!text)
 		return NULL;
+	int home_enabled = shell.output && shell.output->layers.shell_bottom ?
+		shell.output->layers.shell_bottom->node.enabled : -1;
 	int written = snprintf(text, capacity,
 		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
 		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
-		"appearance_canvas_authored=%d",
+		"appearance_canvas_authored=%d home_enabled=%d",
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
 		shell.appearance_enabled ? shell.appearance.wallpaper : -1,
-		shell.appearance_enabled ? shell.appearance.canvas_authored : -1);
+		shell.appearance_enabled ? shell.appearance.canvas_authored : -1,
+		home_enabled);
 	if (written < 0) {
 		free(text);
 		return NULL;

@@ -44,6 +44,7 @@ def main():
     ap.add_argument('--reveal-stream',action='store_true',help='capture persistent drawer/shade progress IPC')
     ap.add_argument('--rust-reveal-client',help='run the actual RISC-V Rust reveal receiver')
     ap.add_argument('--drawer-layer-client',help='native mapped layer-shell fixture for touch-first route')
+    ap.add_argument('--home-layer-client',help='native mapped Layer::Bottom fixture standing in for the Home surface')
     args=ap.parse_args()
     if args.delayed_touch and not args.native_touch:
         ap.error('--delayed-touch requires --native-touch')
@@ -137,9 +138,46 @@ def main():
         records=[json.loads(line) for line in path.read_text().splitlines() if line.startswith("{")]
         last=records[-1] if records else {}
         return [last.get("frames",0),last.get("child_frames",0)]
+    def debug_scene():
+        return ipc('card_shell debug-scene')[0]['error']
+    def home_layer_enabled():
+        match=re.search(r'home_enabled=(-?\d+)',debug_scene())
+        assert match,debug_scene()
+        return match.group(1)=='1'
+    def assert_no_home_bleed(image):
+        # The fixture fills its whole surface with opaque green
+        # (0xFF00FF00), a colour no card-shell chrome, card content, or
+        # synthetic app client uses. Any pixel of it in a captured frame
+        # means the Home layer painted through -- the bleed-through this
+        # change fixes (home_layer_sync in nix/card-shell/adapter.c).
+        px=image.load()
+        for y in range(0,image.height,4):
+            for x in range(0,image.width,4):
+                assert px[x,y]!=(0,255,0),('home bleed-through',x,y)
+    def assert_no_black_flash(image,name):
+        # No surface in this suite's palette is ever this dark: the
+        # synthetic clients are blue/purple/red, the deck canvas and
+        # ordinary backdrop are dark navy/teal (never below channel 12),
+        # and chrome text is drawn on those. A large near-black region is
+        # therefore either an unpainted/black mirror or scaled-cache
+        # texture, a client's first commit before it has drawn a frame, or
+        # a compositing gap -- exactly the coordinator's "black" report.
+        px=image.load();total=0;dark=0
+        for y in range(0,image.height,4):
+            for x in range(0,image.width,4):
+                total+=1
+                r,g,b=px[x,y]
+                if r<12 and g<12 and b<12: dark+=1
+        assert dark/total<0.10,('black flash frame',name,dark,total)
+    home_layer=None
     try:
         wait_for(lambda:'Running compositor on wayland display' in logs(),60)
         env['WAYLAND_DISPLAY']=next(p.name for p in runtime.glob('wayland-*') if not p.name.endswith('.lock'))
+        if args.home_layer_client:
+            home_log=(runtime/'home-layer.log').open('w')
+            home_layer=subprocess.Popen([args.home_layer_client],env=env,stdout=home_log,stderr=home_log)
+            processes.append(home_layer)
+            wait_for(lambda:'home mapped' in (runtime/'home-layer.log').read_text())
         if args.rust_reveal_client:
             rust_log=(runtime/'rust-receiver.log').open('w')
             rust=subprocess.Popen([args.qemu,args.rust_reveal_client,'--serve'],env=env,
@@ -191,8 +229,23 @@ def main():
                 return min(xs),min(ys),max(xs),max(ys)
             original=capture('two-axis-origin.png')
             origin=color_box(original,'blue')
+            if args.home_layer_client:
+                # A fullscreen focused app already occludes Home by ordinary
+                # opaque scene stacking; this just confirms the fixture and
+                # the compositor's default (Home mapped, not yet hidden)
+                # agree before the gesture that hides it even starts.
+                assert home_layer_enabled()
+                assert_no_home_bleed(original)
             command('down 70 284 1200')
+            if args.home_layer_client:
+                # `cs_begin_entry` folds `cs_enter`'s CS_SHRINK action into
+                # its own result even though it immediately overwrites the
+                # policy mode to CS_ENTERING (card-shell-policy.c), so
+                # `shell.active` -- and this fix's home_layer_sync -- flips
+                # at first touch-down, before any drag distance at all.
+                assert not home_layer_enabled()
             start=capture('two-axis-start.png')
+            if args.home_layer_client: assert_no_home_bleed(start)
             command('motion 70 284 1100')
             vertical=capture('two-axis-up.png')
             vb=color_box(vertical,'blue')
@@ -299,6 +352,42 @@ def main():
                                 for n in tree_nodes(ipc('',4)))==1)
             command('up 74')
             wait_for(lambda:focused()=='k230.card.one')
+            # No-black-flash regression sweep: every frame this real,
+            # finger-driven entry/drag/quick-switch/close sequence already
+            # captured, checked for a large near-black region. The
+            # coordinator's report was "black / glitching" during exactly
+            # these animated paths; this is independent of the Home-bleed
+            # check below (green is not black) and runs on every two-axis
+            # invocation, not only when a Home fixture is mapped.
+            for png in sorted(runtime.glob('two-axis-*.png'))+[runtime/'first-focused.png']:
+                with Image.open(png) as frame:
+                    assert_no_black_flash(frame.convert('RGB'),png.name)
+            if args.home_layer_client:
+                # Sweep every frame this gesture sequence already captured --
+                # entry, drag, bend, quick-switch, private-neighbor, close,
+                # settle -- for the fixture's unique colour. This is the
+                # animated, finger-driven coverage the confirmed native-
+                # capture bug report (a steady-state overview) could not
+                # exercise by itself: entry starts the moment a finger goes
+                # down, well before the deck visually settles.
+                for png in sorted(runtime.glob('two-axis-*.png'))+[runtime/'first-focused.png']:
+                    with Image.open(png) as frame:
+                        assert_no_home_bleed(frame.convert('RGB'))
+                assert home_layer_enabled(),'Home must be back once the gesture settled on a focused app'
+                # Home is occluded by the still-fullscreen focused app here,
+                # not hidden by home_layer_sync -- close every card and
+                # confirm the fixture's colour actually appears once nothing
+                # covers it, so this suite cannot pass by permanently
+                # disabling shell_bottom instead of toggling it.
+                one.terminate();one.wait(timeout=10)
+                wait_for(lambda:not any(n.get('app_id') in ('k230.card.one','k230.card.two')
+                                         for n in tree_nodes(ipc('',4))))
+                time.sleep(.2)
+                idle=capture('two-axis-home-idle.png')
+                assert home_layer_enabled()
+                px=idle.load()
+                assert any(px[x,y]==(0,255,0) for y in range(0,idle.height,4)
+                           for x in range(0,idle.width,4)), 'Home fixture never reappeared once idle'
             print('PASS two-axis app entry: native QEMU pixels, held/reversed quick switch, direct release, vertical Home settlement, privacy and exit; no physical touch',flush=True)
             return
         if args.benchmark:
