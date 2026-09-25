@@ -126,6 +126,28 @@ fn appearance_socket_path() -> Result<PathBuf, String> {
     Ok(PathBuf::from(runtime).join(APPEARANCE_SOCKET_NAME))
 }
 
+/// Whether `draw()` may even attempt a redraw, before it gets to the
+/// buffer pool's own free-slot bookkeeping (`released_slot`/`buffers.len()`
+/// in `draw()` itself), which is the correct and sufficient readiness gate
+/// beyond this. Deliberately takes no outstanding-frame-callback flag to
+/// gate on: cd36242b already found that a compositor may withhold
+/// frame-done callbacks indefinitely for a surface nothing currently
+/// composites (there, the background/wallpaper layer, fully occluded by a
+/// maximized app or the card deck's own backdrop). The overlay/settings
+/// surface this guards is exactly as occludable -- board evidence
+/// (2026-09-27): Optimistic Apply's own tap-time check skipped with
+/// `reason=not-ready-for-a-frame` while the theme chooser's own panel (the
+/// very thing being drawn) still had an outstanding frame callback from an
+/// earlier redraw the compositor had not yet acked, even though a free
+/// buffer slot was sitting right there. Gating a redraw attempt on that
+/// flag can therefore starve a redraw indefinitely for the same reason
+/// `draw_wallpaper()`'s own entry guard was fixed to stop doing; this
+/// function's signature is what makes that mistake impossible to repeat
+/// here.
+fn redraw_entry_ready(appearance_pending: bool, configured: bool, layer_present: bool) -> bool {
+    !appearance_pending && configured && layer_present
+}
+
 fn appearance_renderable(
     snapshot: Option<&AppearanceSnapshot>,
     cache: &mut BackgroundCache,
@@ -1229,8 +1251,12 @@ impl ShellClient {
         snapshot: &AppearanceSnapshot,
         tapped_at: Instant,
     ) {
+        let elapsed_ms = || tapped_at.elapsed().as_secs_f64() * 1000.0;
         if self.appearance_pending {
-            self.log("optimistic-apply skipped reason=commit-draw-in-flight");
+            self.log(&format!(
+                "optimistic-apply skipped reason=commit-draw-in-flight ms={:.1}",
+                elapsed_ms()
+            ));
             return; // a real transaction's own commit/rollback draw already owns this tick
         }
         let geometry = self
@@ -1238,18 +1264,35 @@ impl ShellClient {
             .configured
             .then_some((self.wallpaper.width, self.wallpaper.height));
         if geometry.is_some_and(|size| selected_video(Some(snapshot), size).is_some()) {
-            self.log("optimistic-apply skipped reason=video-background");
+            self.log(&format!(
+                "optimistic-apply skipped reason=video-background ms={:.1}",
+                elapsed_ms()
+            ));
             return; // a video swap needs its own decode/ready gate regardless
         }
         if appearance_renderable(Some(snapshot), &mut self.background_cache, geometry).is_err() {
-            self.log("optimistic-apply skipped reason=unrenderable-snapshot");
+            self.log(&format!(
+                "optimistic-apply skipped reason=unrenderable-snapshot ms={:.1}",
+                elapsed_ms()
+            ));
             return; // defensive: an already-prepared snapshot should decode cleanly
         }
-        let overlay_ready = self.layer.is_none() || (self.configured && !self.frame_pending);
-        if !(self.wallpaper.configured && overlay_ready) {
-            self.log("optimistic-apply skipped reason=not-ready-for-a-frame");
-            return; // not ready for a new frame yet -- the real commit event retries this
-        }
+        // No further readiness pre-check here: `draw_wallpaper()` and
+        // `draw()` (see `redraw_entry_ready`'s own doc) are themselves the
+        // correct and sufficient gate, via the buffer pool's own
+        // free-slot bookkeeping -- never an outstanding frame callback,
+        // which a compositor may withhold indefinitely for either surface
+        // while it is fully occluded (board evidence, 2026-09-27: a
+        // separate `ready`/`overlay_ready` pre-check here, copied from
+        // the durable commit path, skipped with `reason=not-ready-for-a-
+        // frame` while the chooser's own panel -- the very thing being
+        // drawn -- still had an outstanding callback from an earlier
+        // redraw, even though a buffer slot was free). Attempting the
+        // draws directly and reading their own return values is exactly
+        // what the durable path's own `ready == true` branch already
+        // does; this has no 1400 ms retry window because unlike a durable
+        // commit, a missed optimistic frame costs nothing but the
+        // optimism itself -- the real commit/rollback event still lands.
         self.wallpaper_path = fallback_still(Some(snapshot));
         self.wallpaper_generation_root = Some(snapshot.path.clone());
         self.video_display = None;
@@ -1258,27 +1301,33 @@ impl ShellClient {
         self.wallpaper.dirty = true;
         let background = self.draw_wallpaper(qh);
         if !background {
-            self.log("optimistic-apply skipped reason=draw-wallpaper-failed");
+            self.log(&format!(
+                "optimistic-apply skipped reason=draw-wallpaper-failed ms={:.1}",
+                elapsed_ms()
+            ));
         }
         let foreground = self.layer.is_none() || self.draw(qh);
         if background && !foreground {
-            self.log("optimistic-apply skipped reason=draw-failed");
+            self.log(&format!(
+                "optimistic-apply skipped reason=draw-failed ms={:.1}",
+                elapsed_ms()
+            ));
         }
         self.appearance_pending = true;
         let flushed = queue.flush().is_ok();
         self.appearance_pending = false;
         if background && foreground && !flushed {
-            self.log("optimistic-apply skipped reason=flush-failed");
+            self.log(&format!(
+                "optimistic-apply skipped reason=flush-failed ms={:.1}",
+                elapsed_ms()
+            ));
         }
         if background && foreground && flushed {
             // Named stage marker (task 6.6's own board re-check): how long
             // the Apply tap took to reach a real, flushed frame carrying
             // the new theme -- this is the number the ~100 ms target is
             // measured against.
-            self.log(&format!(
-                "optimistic-apply shown ms={:.1}",
-                tapped_at.elapsed().as_secs_f64() * 1000.0
-            ));
+            self.log(&format!("optimistic-apply shown ms={:.1}", elapsed_ms()));
         }
     }
 
@@ -2023,8 +2072,7 @@ impl ShellClient {
     }
 
     fn draw(&mut self, qh: &QueueHandle<Self>) -> bool {
-        if self.appearance_pending || !self.configured || self.frame_pending || self.layer.is_none()
-        {
+        if !redraw_entry_ready(self.appearance_pending, self.configured, self.layer.is_some()) {
             return false;
         }
         let Some(size) = frame_bytes(self.width, self.height) else {
@@ -3143,7 +3191,10 @@ fn serve() -> Result<(), String> {
                     } else {
                         let reason = optimistic_apply_skip_reason(&request, prepared_generation)
                             .unwrap_or("prepared-snapshot-vanished");
-                        state.log(&format!("optimistic-apply skipped reason={reason}"));
+                        state.log(&format!(
+                            "optimistic-apply skipped reason={reason} ms={:.1}",
+                            tapped_at.elapsed().as_secs_f64() * 1000.0
+                        ));
                     }
                 }
             }
@@ -3577,14 +3628,22 @@ fn serve() -> Result<(), String> {
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
         if let Some((event, started, previous)) = pending_appearance.take() {
-            let overlay_ready = state.layer.is_none() || (state.configured && !state.frame_pending);
-            // `draw_wallpaper()` no longer requires its own outstanding frame
-            // callback to have fired (see its comment): the background layer
-            // can be fully occluded by an ordinary maximized app or the card
-            // deck's backdrop, and a compositor may then never send that
-            // callback at all. Mirror the same relaxed condition here so this
-            // readiness check does not itself keep the transaction pending
-            // forever waiting on a signal that will never arrive.
+            // Neither `draw_wallpaper()` nor `draw()` require their own
+            // outstanding frame callback to have fired any more (see
+            // `redraw_entry_ready`'s own doc): either surface can be fully
+            // occluded -- the background layer by a maximized app or the
+            // card deck's own backdrop, the overlay/settings layer by
+            // nothing more than an earlier redraw of itself the
+            // compositor has not yet acked -- and a compositor is not
+            // obligated to keep sending frame-done callbacks for a
+            // surface nothing is presently compositing. Mirror that same
+            // relaxed condition here so this readiness check does not
+            // itself keep the transaction pending, waiting on a signal
+            // that may never arrive (board evidence, 2026-09-27:
+            // Optimistic Apply's own one-shot check hit exactly this,
+            // with `overlay-frame-pending=true` while a free buffer slot
+            // was available).
+            let overlay_ready = state.layer.is_none() || state.configured;
             let ready = state.wallpaper.configured && overlay_ready;
             if !ready && started.elapsed() < Duration::from_millis(1400) {
                 pending_appearance = Some((event, started, previous));
@@ -4089,6 +4148,37 @@ mod route_tests {
             optimistic_apply_skip_reason(&ThemeRequest::List, Some(target.as_str())),
             Some("not-an-activate-request")
         );
+    }
+
+    #[test]
+    fn redraw_entry_never_gates_on_a_surfaces_own_outstanding_frame_callback() {
+        // Board evidence (2026-09-27): Optimistic Apply's own readiness
+        // check (since removed -- `draw_wallpaper()`/`draw()` are
+        // themselves the gate) skipped with `reason=not-ready-for-a-frame`
+        // while the theme chooser's own overlay panel -- the very surface
+        // being drawn -- still had an outstanding frame callback from an
+        // earlier redraw the compositor had not yet acked, even with a
+        // free buffer slot sitting right there. This is the same class of
+        // bug cd36242b already fixed for the wallpaper/background layer
+        // (a compositor may withhold frame-done callbacks indefinitely
+        // for a surface it is not presently compositing -- there, because
+        // an app fully occluded the wallpaper; here, because nothing
+        // guarantees the overlay's own prior frame is acked before the
+        // next one is wanted) -- `draw()`'s own entry guard had never
+        // received that fix. `redraw_entry_ready`'s signature is the
+        // proof: it has no parameter to gate on a frame-pending flag at
+        // all, for either surface, so this mistake cannot be reintroduced
+        // by accident.
+        assert!(redraw_entry_ready(false, true, true));
+        // A real transaction's own commit/rollback draw already owns this
+        // tick: still correctly refused, on its own explicit flag, never
+        // on a stuck frame callback.
+        assert!(!redraw_entry_ready(true, true, true));
+        // Never configured yet (no `configure` event received): correctly
+        // refused, a real readiness gate distinct from frame_pending.
+        assert!(!redraw_entry_ready(false, false, true));
+        // The overlay surface is not even mapped: correctly refused.
+        assert!(!redraw_entry_ready(false, true, false));
     }
 
     #[test]
