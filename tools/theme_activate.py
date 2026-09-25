@@ -8,6 +8,7 @@ The normal service integration is a later OpenSpec task.
 import argparse
 import fcntl
 import hashlib
+import errno
 import json
 import os
 from pathlib import Path
@@ -271,7 +272,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             (work / "background").symlink_to("theme/" + report["selected_background"])
         if source_digest(theme) != source_hash:
             raise ThemeError("theme source changed during preparation")
-        if destination.exists():
+        def reuse_existing():
             existing = json.loads((destination / "report.json").read_text())
             if (existing["source_sha256"] != source_hash or existing["name"] != name
                     or existing["source"] != str(theme)
@@ -285,9 +286,22 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             # report so the chooser sees that fallback without rewriting the
             # cached generation.
             return destination, report
+        if destination.exists():
+            return reuse_existing()
         if wallpaper_cache_tool is not None and tokens["background"] == "background":
             build_wallpaper_cache(wallpaper_cache_tool, staged / report["selected_background"], work)
-        os.replace(work, destination)
+        try:
+            os.replace(work, destination)
+        except OSError as error:
+            # A concurrent preparation of the same theme (chooser prepare-
+            # ahead, the helper daemon and a client fallback can overlap, and
+            # the wallpaper-cache build above widens the window to seconds on
+            # the K230) may publish the identical generation first. Generation
+            # directories are immutable and content-addressed, so adopt it
+            # after the same identity check instead of failing the preview.
+            if error.errno not in (errno.ENOTEMPTY, errno.EEXIST) or not destination.is_dir():
+                raise
+            return reuse_existing()
         return destination, report
 
 

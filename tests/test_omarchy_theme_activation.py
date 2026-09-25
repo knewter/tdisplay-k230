@@ -60,6 +60,33 @@ class ThemePreparation(unittest.TestCase):
             again, _ = call("Fuchsblau", theme, state)
             self.assertEqual(again, generation)
 
+    def test_concurrent_identical_preparation_is_adopted_not_failed(self):
+        # Chooser prepare-ahead, the helper daemon and a client fallback can
+        # prepare the same theme at once; the slow wallpaper-cache build sits
+        # between the existence check and the publish. The loser must adopt
+        # the winner's identical generation instead of failing with ENOTEMPTY.
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            original = activation.build_wallpaper_cache
+            raced = {}
+
+            def concurrent_winner(tool, background, work):
+                if not raced:
+                    raced["generation"], _ = call("Fuchsblau", theme, state)
+            activation.build_wallpaper_cache = concurrent_winner
+            try:
+                generation, report = activation.prepare(
+                    "Fuchsblau", source=theme, state_root=state,
+                    user_themes=state / "no-user-themes", builtins=None,
+                    tools=activation.HOST_TOOLS, wallpaper_cache_tool=Path("/nonexistent"))
+            finally:
+                activation.build_wallpaper_cache = original
+            self.assertEqual(generation, raced["generation"])
+            self.assertEqual(report["name"], "fuchsblau")
+            self.assertFalse([p for p in generation.parent.iterdir() if p.name.startswith(".prepare-")])
+
     def test_legacy_palette_is_converted_only_in_scratch(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)

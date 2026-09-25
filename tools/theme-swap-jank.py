@@ -203,21 +203,39 @@ def journal_events(since_epoch: float, units: tuple[str, ...],
 
 
 def run_theme_cli(shell_user: str, theme_command: str, theme_id: str,
-                   runuser: str = "runuser") -> dict:
+                   runuser: str = "runuser", runtime_dir: str = "/run/shell") -> dict:
     """`k230-theme preview` then `activate`, exactly as the real chooser
-    does, as `shell_user` (its own session env, not root's)."""
+    does, as `shell_user` with its session runtime directory (the helper
+    socket lives there; plain `runuser` would not set it). `theme_id` may be
+    the catalog's opaque id or a theme name, which is resolved via `list`."""
+    import glob
+    display = next((Path(p).name for p in sorted(glob.glob(runtime_dir + "/wayland-*"))
+                    if not p.endswith(".lock")), None)
+    env = ["env", "XDG_RUNTIME_DIR=" + runtime_dir] + (["WAYLAND_DISPLAY=" + display] if display else [])
 
     def call(*args: str) -> dict:
         result = subprocess.run(
-            [runuser, "-u", shell_user, "--", theme_command, *args],
+            [runuser, "-u", shell_user, "--", *env, theme_command, *args],
             capture_output=True, text=True, timeout=30, check=True,
         )
         return json.loads(result.stdout)
 
+    if not re.fullmatch(r"[0-9a-f]{24}", theme_id):
+        themes = call("list").get("themes", [])
+        match = next((t for t in themes if theme_id in (t.get("name"), t.get("label"))), None)
+        if match is None:
+            raise ValueError(f"unknown theme {theme_id!r}")
+        theme_id = match["id"]
+    started = time.monotonic()
     preview = call("preview", "--json", theme_id)
+    preview_ms = (time.monotonic() - started) * 1000
     generation = preview["generation"]
+    started = time.monotonic()
     activate = call("activate", "--json", theme_id, "--expected-generation", generation)
-    return {"preview": preview, "activate": activate, "generation": generation}
+    activate_ms = (time.monotonic() - started) * 1000
+    return {"preview": preview, "activate": activate, "generation": generation,
+            "theme_id": theme_id, "preview_ms": round(preview_ms, 1),
+            "activate_ms": round(activate_ms, 1)}
 
 
 def capture(args: argparse.Namespace) -> dict:
