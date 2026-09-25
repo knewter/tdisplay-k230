@@ -707,8 +707,97 @@ latency.
 Proof for 8.1-8.5: the tests named above, all passing on this host; proof
 for 8.6 is the reserved board, not run here.
 
+## 9. Split the footer/status from the cached body so a pre-render can actually match at Apply
+
+<!-- Grounding: board re-run of task 8 (coordinator, master `c6f0237a`,
+     installed as `vq6vkvqz...`): the pre-render computes
+     (`optimistic-apply prerendered generation=...`, twice, ~150ms apart
+     -- roughly one THEME_PULSE_INTERVAL), but at the Apply tap itself
+     `optimistic-apply shown ms=224.0 prerendered=false` -- the exact
+     same ~224ms full rebuild as before task 8, even though the durable
+     commit's own reuse (task 8.5) still correctly fired
+     ("appearance-commit-accepted reused=optimistic", no rejection).
+     Root cause: `submit_theme`'s own `theme_dirty()` call (synchronous,
+     in the same touch-up handling that submits the Activate) sets
+     `theme_view.pending = Some(Activate{...})` *before* Optimistic
+     Apply's own check ever runs, and `set_theme_view` bumped
+     `content_generation` unconditionally on every call -- so the tap
+     itself always invalidated the very pre-render it was about to need. -->
+
+- [x] 9.1 The Preview page's dynamic Apply/Cancel footer (the pressed
+  highlight, the Apply button's own text/color/busy spinner across idle/
+  applying/applied, and the `Preparing…`/error/message status line below
+  it) is extracted out of `paint_theme_chooser` into a new, standalone
+  `paint_preview_footer_status` (`render.rs`) and painted live, by
+  `RendererCache::draw()` itself, on every call -- whether that call just
+  rebuilt `static_pixels` or reused it (including an adopted pre-render).
+  `paint_theme_chooser` no longer paints any of it at all (for either
+  page: the List page's own status line is unaffected, still baked into
+  its cached body as before). This is what makes a pre-render computed
+  before an Apply tap still correct *after* one: the tap's own `pending`
+  transition changes only what the live overlay paints, never what the
+  cached/pre-rendered body underneath it has to be rebuilt for. Verify
+  with `cargo test --offline --lib render::tests` (adds
+  `adopted_prerender_still_shows_the_live_pending_state_via_the_overlay`,
+  independently confirmed to fail -- the exact stale-idle-button pixels
+  -- with this task's fix temporarily disabled, and pass with it restored;
+  all 25 pre-existing `render::tests` cases, which exercise the Apply
+  footer's own pixels through the unchanged public `RendererCache::draw`,
+  still pass byte-for-byte unmodified, proving the split is
+  output-equivalent for every case that was already covered).
+- [x] 9.2 `content_generation` (task 8.2) no longer bumps for a
+  `set_theme_view` call that changes only `pending`/`pending_id`/
+  `selection_error`/`error`/`message`/`pulse_phase` -- exactly the fields
+  9.1 moved to the live overlay -- via a new pure `theme_view_cache_key_
+  differs` (comparing `page`/`list`/`preview`/`theme_pressed`/
+  `background_pressed` exactly, `theme_position`/`background_position`
+  with the same small tolerance `RendererCache::draw`'s own `scroll`
+  check already uses). `invalidate()` itself stays unconditional on every
+  `set_theme_view` call, so a live (non-optimistic) `draw()` still
+  rebuilds on every theme_view change exactly as before this task;
+  `content_generation` is now a narrower, pre-render-specific freshness
+  signal, decoupled from that. This also closes the coordinator's own
+  third observation (double pre-render computation ~150ms apart, a full
+  `THEME_PULSE_INTERVAL`): a pulse-only tick can no longer churn
+  `content_generation` either. Verify with `cargo test --offline --lib
+  render::tests` (adds `a_pending_only_theme_view_change_does_not_bump_
+  content_generation`, proving both that pending/pulse changes are now
+  excluded and that a genuine content change -- a different preview --
+  still bumps it as before).
+- [x] 9.3 The pre-render trigger (task 8.3) now requires `theme_view.
+  pending.is_none()` outright, not just "not an Activate": the background
+  carousel's own busy spinner (a `Preview{background_id: Some(_)}`
+  request in flight) is baked into the cached body the same as anything
+  else `content_generation` does not track, and 9.1's live overlay does
+  not cover it (only the Apply/Cancel footer and status line) -- so
+  computing a pre-render while a background selection is still pending
+  risked caching a stale busy indicator no later live paint would ever
+  correct. Requiring nothing at all pending closes that gap by
+  construction rather than adding a second live overlay for it.
+- [x] 9.4 `optimistic-apply shown ms=... prerendered=false` now carries
+  `reason=<field>` (`no-prerender-computed`, `generation`, `route`,
+  `geometry`, `content-changed`, or `not-on-settings-route`) naming
+  exactly which check failed, via a new `prerendered_overlay_mismatch_
+  reason` that `prerendered_overlay_matches` (task 8.3's own pure
+  predicate) now delegates to, so the two can never drift apart. Verify
+  with `cargo test --offline --lib route_tests`
+  (`prerendered_overlay_mismatch_reason_names_the_specific_field`).
+- [ ] 9.5 Board re-check: confirm `optimistic-apply shown ms=<N>
+  prerendered=true` for a warm Apply, with `<N>` close to the ~30 ms
+  target; confirm the earlier double-prerender-computation symptom is
+  gone (at most one `optimistic-apply prerendered` line per genuine
+  content change while dwelling on the Preview page); confirm the
+  screen's own footer text still reads `Applying…` then `Theme applied`/
+  `Apply again` correctly across the transaction, never stuck on a stale
+  `Apply`; if `prerendered=false` still occurs, its own `reason=` field
+  states why directly. Needs the reserved board; not run by this task.
+
+Proof for 9.1-9.4: the tests named above, all passing on this host
+(9.1's own regression test independently confirmed to fail against the
+pre-fix code); proof for 9.5 is the reserved board, not run here.
+
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, and 8.6 have board results; 3.3b is
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and 9.5 have board results; 3.3b is
 named here so it is not silently dropped or claimed done without a board
 result. Task 5.4's board result is recorded above
 (board-chooser-2026-09-25.md).
