@@ -325,6 +325,12 @@ let
     fi
     export K230_SETTINGS=${settingsCommand}/bin/k230-settings
     export K230_THEME_COMMAND=${themeCommand}/bin/k230-theme
+    # nix/rust-shell-client/src/theme_catalog.rs's own direct-socket bridge
+    # target -- the same path theme-helper.service binds (--listen below)
+    # and tools/theme_client.py's DEFAULT_SOCKET. Named explicitly rather
+    # than relying on the Rust binary's own matching default, so the two
+    # never drift apart from this one file.
+    export K230_THEME_HELPER_SOCKET=/run/shell/theme-helper.sock
     export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
     export K230_KEYBOARD_TOUCH_GESTURES=${if cfg.coherentShell then "1" else "0"}
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock

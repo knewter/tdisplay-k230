@@ -2746,7 +2746,13 @@ fn serve() -> Result<(), String> {
     let theme_command = std::env::var_os("K230_THEME_COMMAND")
         .map(PathBuf::from)
         .unwrap_or_default();
-    let themes = ThemeWorker::spawn(theme_command);
+    // Same socket `tools/theme_client.py`'s own `DEFAULT_SOCKET` targets;
+    // an empty path (an explicitly empty env var) disables the direct
+    // socket path, matching `theme_command`'s own unset-env convention.
+    let theme_helper_socket = std::env::var_os("K230_THEME_HELPER_SOCKET")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/run/shell/theme-helper.sock"));
+    let themes = ThemeWorker::spawn(theme_command, theme_helper_socket);
     // The panel is always 568x1232 on this board (`width`/`height` below use
     // the same literal default); Home's own initial layout is seeded/loaded
     // against that same reference geometry before the first `configure`

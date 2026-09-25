@@ -5,11 +5,14 @@
 //! the exact generation returned by preview. Opaque IDs are argv values, not
 //! paths or shell text.
 
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::{
     collections::BTreeMap,
-    io::Read,
-    os::{fd::AsRawFd, unix::process::CommandExt},
+    io::{Read, Write},
+    os::{
+        fd::AsRawFd,
+        unix::{net::UnixStream, process::CommandExt},
+    },
     path::{Component, Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{
@@ -29,6 +32,15 @@ const MAX_BACKGROUNDS: usize = 512;
 const MAX_PALETTE: usize = 512;
 const MAX_COMPATIBILITY: usize = 512;
 const COMMAND_DEADLINE: Duration = Duration::from_secs(20);
+/// Matches `tools/theme_client.py`'s own `DEFAULT_TIMEOUT_S` (raised from
+/// 0.3 to 10.0 for the same reason: comfortably above the slowest
+/// legitimate `theme-helper.service` reply -- see that module's own
+/// comment -- so a working daemon is never abandoned mid-response for the
+/// strictly worse subprocess fallback. This worker thread blocks on it, but
+/// it is never the Wayland thread (see this module's own doc), so a slow
+/// daemon only delays this one theme request, not input or animation.
+const HELPER_SOCKET_TIMEOUT: Duration = Duration::from_secs(10);
+const HELPER_RESPONSE_LIMIT: usize = RESPONSE_LIMIT + 4096;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ThemeRequest {
@@ -143,7 +155,13 @@ pub struct ThemeWorker {
 }
 
 impl ThemeWorker {
-    pub fn spawn(command: PathBuf) -> Self {
+    /// `helper_socket` is `theme-helper.service`'s own socket
+    /// (`/run/shell/theme-helper.sock`, matching `theme_client.py`'s
+    /// `DEFAULT_SOCKET`); an empty path disables the direct-socket path
+    /// entirely (every request goes straight to the `command` subprocess,
+    /// today's behaviour), the same convention `command` itself already
+    /// uses when `K230_THEME_COMMAND` is unset.
+    pub fn spawn(command: PathBuf, helper_socket: PathBuf) -> Self {
         let (requests, incoming) = mpsc::sync_channel(QUEUE);
         let (outgoing, replies) = mpsc::sync_channel(QUEUE);
         let outstanding = Arc::new(AtomicUsize::new(0));
@@ -155,7 +173,7 @@ impl ThemeWorker {
         let process_started = Instant::now();
         thread::spawn(move || {
             while let Ok((id, request)) = incoming.recv() {
-                let result = execute(&command, &request, process_started);
+                let result = execute(&command, &helper_socket, &request, process_started);
                 if outgoing
                     .send(ThemeReply {
                         id,
@@ -231,7 +249,127 @@ fn valid_request(request: &ThemeRequest) -> bool {
     }
 }
 
-fn execute(command: &Path, request: &ThemeRequest, process_started: Instant) -> Result<ThemeResponse, String> {
+/// The exact JSON object `tools/theme_client.py`'s own `as_request()` sends
+/// to `theme-helper.service` -- see that function's doc: `list` carries no
+/// `id`/`background` at all, `preview` adds both (the second nullable),
+/// `activate` adds `expected_generation` too. Kept byte-for-byte
+/// compatible with the daemon's own `theme_helperd.request_argv()`, which
+/// is what actually validates and acts on it -- this is a second caller of
+/// the exact same protocol, never a second, drifting one.
+fn helper_request(request: &ThemeRequest) -> Value {
+    match request {
+        ThemeRequest::List => json!({"action": "list"}),
+        ThemeRequest::Preview {
+            theme_id,
+            background_id,
+        } => json!({"action": "preview", "id": theme_id, "background": background_id}),
+        ThemeRequest::Activate {
+            theme_id,
+            expected_generation,
+            background_id,
+        } => json!({
+            "action": "activate",
+            "id": theme_id,
+            "background": background_id,
+            "expected_generation": expected_generation,
+        }),
+    }
+}
+
+/// One request/reply round trip directly against `theme-helper.service`'s
+/// Unix socket, speaking the exact line protocol `tools/theme_client.py`
+/// and `tools/theme_helperd.py` already speak to each other (one JSON
+/// object, newline-terminated, half-closing the write side; one JSON reply
+/// `{"result": ..., "exit_code": ...}`, also newline-terminated) -- no new
+/// protocol, no subprocess, no Python interpreter start-up. Returns
+/// `Err` for anything that should fall back to the subprocess path
+/// (missing/refused socket, timeout, malformed reply); a *daemon-reported*
+/// theme error (`exit_code != 0`) is returned as `Ok(Err(message))` so the
+/// caller does not retry a request the daemon already validated and
+/// rejected on its merits.
+fn helper_socket_request(
+    socket_path: &Path,
+    request: &ThemeRequest,
+) -> Result<Result<Value, String>, String> {
+    let mut line = serde_json::to_vec(&helper_request(request))
+        .map_err(|_| "theme request encode failed".to_string())?;
+    line.push(b'\n');
+    let deadline = Instant::now() + HELPER_SOCKET_TIMEOUT;
+    let mut stream =
+        UnixStream::connect(socket_path).map_err(|error| format!("helper socket: {error}"))?;
+    stream
+        .set_write_timeout(Some(HELPER_SOCKET_TIMEOUT))
+        .map_err(|error| format!("helper socket: {error}"))?;
+    stream
+        .write_all(&line)
+        .map_err(|error| format!("helper socket write failed: {error}"))?;
+    stream
+        .shutdown(std::net::Shutdown::Write)
+        .map_err(|error| format!("helper socket shutdown failed: {error}"))?;
+    let mut buffer = Vec::new();
+    let mut chunk = [0u8; 65536];
+    loop {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err("helper socket timed out".into());
+        }
+        stream
+            .set_read_timeout(Some(remaining))
+            .map_err(|error| format!("helper socket: {error}"))?;
+        match stream.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(count) => {
+                if buffer.len().saturating_add(count) > HELPER_RESPONSE_LIMIT {
+                    return Err("helper socket response exceeds bound".into());
+                }
+                buffer.extend_from_slice(&chunk[..count]);
+                if buffer.contains(&b'\n') {
+                    break;
+                }
+            }
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
+                ) =>
+            {
+                return Err("helper socket timed out".into());
+            }
+            Err(error) => return Err(format!("helper socket read failed: {error}")),
+        }
+    }
+    let end = buffer
+        .iter()
+        .position(|byte| *byte == b'\n')
+        .ok_or("helper socket reply missing terminator")?;
+    let reply: Value = serde_json::from_slice(&buffer[..end])
+        .map_err(|_| "invalid helper socket reply".to_string())?;
+    let exit_code = reply
+        .get("exit_code")
+        .and_then(Value::as_i64)
+        .ok_or("helper socket reply missing exit_code")?;
+    let result = reply
+        .get("result")
+        .cloned()
+        .ok_or("helper socket reply missing result")?;
+    if exit_code == 0 {
+        Ok(Ok(result))
+    } else {
+        Ok(Err(result
+            .get("error")
+            .and_then(Value::as_str)
+            .filter(|text| text.chars().count() <= 240 && !text.chars().any(char::is_control))
+            .map(str::to_owned)
+            .unwrap_or_else(|| "theme command failed".into())))
+    }
+}
+
+fn execute(
+    command: &Path,
+    helper_socket: &Path,
+    request: &ThemeRequest,
+    process_started: Instant,
+) -> Result<ThemeResponse, String> {
     if !command.is_absolute() || !valid_request(request) {
         return Err("theme command or request is invalid".into());
     }
@@ -265,6 +403,27 @@ fn execute(command: &Path, request: &ThemeRequest, process_started: Instant) -> 
     }
     let call_name = args.first().copied().unwrap_or("-");
     let theme_id = args.get(1).copied().unwrap_or("-");
+
+    if helper_socket.as_os_str().len() > 0 {
+        let call_started = Instant::now();
+        let outcome = helper_socket_request(helper_socket, request);
+        // Coordinator's own ask: "add the Rust-side timing log (rust-shell
+        // … theme-command … path=socket ms=…)". Logged for every attempt,
+        // including one that falls back below, so a board run can see
+        // exactly how much of a request's total time the socket attempt
+        // itself cost even when it did not win.
+        eprintln!(
+            "rust-shell {}ms theme-command {call_name} {theme_id} path=socket ms={}",
+            process_started.elapsed().as_millis(),
+            call_started.elapsed().as_millis()
+        );
+        match outcome {
+            Ok(Ok(value)) => return parse_response_value(request, value),
+            Ok(Err(message)) => return Err(message),
+            Err(_) => {} // socket missing/refused/timed out/malformed: fall back below
+        }
+    }
+
     let call_started = Instant::now();
     let outcome = run(command, &args);
     // Named stage marker (coordinator's own ask: "make sure that [chooser]
@@ -279,7 +438,7 @@ fn execute(command: &Path, request: &ThemeRequest, process_started: Instant) -> 
     // `main.rs`'s own `fn log` uses, so `tools/theme-swap-jank.py`'s
     // existing journal parsing (`RUST_LOG_RE`) picks this up for free.
     eprintln!(
-        "rust-shell {}ms theme-command {call_name} {theme_id} duration={}ms",
+        "rust-shell {}ms theme-command {call_name} {theme_id} path=subprocess ms={}",
         process_started.elapsed().as_millis(),
         call_started.elapsed().as_millis()
     );
@@ -630,6 +789,14 @@ pub fn parse_response(request: &ThemeRequest, bytes: &[u8]) -> Result<ThemeRespo
         return Err("theme response exceeds bound".into());
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid theme JSON")?;
+    parse_response_value(request, value)
+}
+
+/// Same validation/shape checks as `parse_response`, on an already-parsed
+/// `Value` -- used by the direct helper-socket path (`helper_socket_request`
+/// already parsed the reply's `result` object) so a successful daemon
+/// answer is never re-serialized to bytes just to be re-parsed here.
+fn parse_response_value(request: &ThemeRequest, value: Value) -> Result<ThemeResponse, String> {
     if value.get("schema").and_then(Value::as_u64) != Some(1) {
         return Err("unsupported theme catalog schema".into());
     }
