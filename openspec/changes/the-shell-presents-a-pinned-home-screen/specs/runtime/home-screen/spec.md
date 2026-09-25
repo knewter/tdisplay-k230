@@ -64,18 +64,20 @@ grid pages change.
 board observation exists yet. -->
 
 A person SHALL be able to add an installed application to Home by long-
-pressing its entry in the drawer and confirming "Add to Home". A person SHALL
-be able to long-press an icon already on Home to enter a rearrange mode in
-which that icon, or any other pinned icon, can be dragged within a page,
-across a page boundary, into or out of the dock, or off Home entirely
-(unpinning it, without uninstalling it). Rearrange mode SHALL end when a
-person taps empty space or a visible "Done" affordance, and SHALL NOT persist
-as permanent on-screen chrome.
+pressing its entry in the drawer, without a further confirmation step. A
+person SHALL be able to long-press an icon already on Home to enter a
+rearrange mode in which that icon, or any other pinned icon, can be dragged
+within a page, across a page boundary, into or out of the dock, or off Home
+entirely (unpinning it, without uninstalling it). Rearrange mode SHALL end
+when a person taps empty space or a visible "Done" affordance, and SHALL NOT
+persist as permanent on-screen chrome. Long-pressing an application already
+pinned to Home from the drawer SHALL leave its existing placement unchanged
+rather than duplicating or moving it.
 
 #### Scenario: A person pins an app from the drawer
 
 - **WHEN** a person long-presses an installed application's tile in the
-  drawer and confirms "Add to Home"
+  drawer
 - **THEN** that application's icon appears on a Home page with a free grid
   slot, creating a new page if every existing page is full
 

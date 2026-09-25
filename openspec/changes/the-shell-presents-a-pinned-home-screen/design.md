@@ -184,11 +184,16 @@ both reference launchers allow.
 - **Add to Home**: long-press a drawer tile (`navigation.rs`'s existing tap
   timing already distinguishes a held touch from a tap via `down_ms`; a new
   `LONG_PRESS_MS = 500` threshold with the existing `TAP_SLOP` distance gate
-  triggers it) opens a small non-modal confirmation using the same label/
-  button chrome primitives `render.rs` already draws elsewhere (no new widget
-  system). Confirming appends the app to the first page with a free slot,
-  creating a new page if every existing page is full, and persists
-  immediately.
+  now returns `DrawerAction::LongPress` instead of `Launch` on release)
+  pins that app directly to the first page with a free slot, creating a new
+  page if every existing page is full, and persists immediately -- a no-op,
+  not a move, if it is already pinned somewhere (grid or dock). Implemented
+  this way rather than the two-step confirm sheet first sketched here:
+  both reference launchers place a long-press hold as a direct manipulation
+  (grab-then-place), and a confirm/cancel dialog would be a second new
+  modal-widget system for a single yes/no choice this shell has no other
+  use for. A future revision could add a brief transient acknowledgement
+  (e.g. a flash on the drawer tile) without changing this decision's shape.
 - **Rearrange on Home**: long-press an icon on Home enters rearrange mode
   (a visible but small "Done" affordance appears — contextual, not permanent
   chrome, consistent with the "no permanent Back/Home buttons" constraint;
