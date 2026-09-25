@@ -42,3 +42,36 @@ design decision 11 already settles separately.
   `cs_motion`/`cs_entry_motion` paths)
 - **THEN** the live drag geometry and settle behavior are unchanged by this
   requirement; only the released, idle layout's peek width changes
+
+### Requirement: Settings is not represented as a card in the overview
+
+<!-- Design decision, not a code change: Settings is architecturally a
+layer-shell overlay (namespace k230-shell-drawer), never a CS_LIVE toplevel
+card, so this requirement documents and tests the existing construction
+rather than changing behavior. See design.md's "Settings behaves like an
+app without being a card" decision for the full webOS/M3 comparison this
+requirement's rationale summarizes. -->
+
+Reaching the card overview from Settings (per this change's bottom-edge
+escape requirement above) SHALL dismiss Settings and reveal the overview's
+existing cards; Settings itself SHALL NOT appear as a selectable card in the
+deck, before or after that dismissal. Settings is reached through the shade,
+not launched as a running application, and carries no backgroundable
+process or live source a card could represent — unlike webOS's own Settings,
+which ran as an ordinary card-switchable application, and unlike Android's
+standalone Settings app, which is a real backgroundable Activity with its
+own task. Architecturally, this shell's Settings is closer to Android's
+Quick Settings panel (attached to, and dismissed with, the notification
+shade) than to either of those standalone apps, and Quick Settings is not
+represented in Android's recents/overview either. The bottom-edge escape
+requirement above already gives Settings the touch-routing behavior a person
+expects from "acting like any app" — leaving the overview's cards to
+represent only actual running, focusable applications keeps the overview's
+existing live-source/focus/privacy contract (owned by the sibling live-card
+implementation) unextended to a surface that has none of those properties.
+
+#### Scenario: Settings is dismissed into an unchanged overview
+
+- **WHEN** a person reaches the card overview by swiping up from Settings
+- **THEN** the overview shows the same cards it would show had Settings
+  never been open, with no additional card representing Settings itself

@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-injected-input",
+  "sway": "/nix/store/vysdsfyh2i3k00n6sp8wpfa2hj07qvvc-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/3y57vjkizci06plvq8dldqvxdc26yni6-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "settings_bottom_edge_up_reaches_overview": true,
+  "settings_bottom_edge_sideways_switches_app": true,
+  "settings_close_control_reachable": true,
+  "settings_dismiss_direction_matches_shade": true
+}

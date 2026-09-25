@@ -256,9 +256,17 @@ bool card_shell_launch_surface(const char *surface) {
 	 * compositor calls this with "home" yet, since that surface stays
 	 * mapped for the life of the process and needs no reveal/launch
 	 * request of its own. See
-	 * openspec/changes/the-shell-presents-a-pinned-home-screen/. */
+	 * openspec/changes/the-shell-presents-a-pinned-home-screen/.
+	 *
+	 * "hide" lets the compositor's own bottom-edge escape gesture (see
+	 * adapter.c's input_down, the drawer_mapped() bottom-edge carve-out)
+	 * dismiss whichever overlay route (Drawer, Shade, Settings, or any of
+	 * its sub-pages) is currently mapped, the same way
+	 * `k230-shell-rust --surface hide` already does from the command line;
+	 * Route::Hide already exists in the Rust client (nix/rust-shell-client/
+	 * src/lib.rs), this only exposes it to this helper. */
 	if (!surface || (strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0
-			&& strcmp(surface, "home") != 0))
+			&& strcmp(surface, "home") != 0 && strcmp(surface, "hide") != 0))
 		return false;
 	const char *path = getenv("SWAY_K230_CARD_SURFACE_HELPER");
 	if (!path)

@@ -1,9 +1,12 @@
-Three independent slices (A, B, C) plus a shared evidence/spec task. Each
-slice touches a disjoint file set and can be implemented, tested, and landed
-in parallel by separate worktrees without coordination beyond the usual
-`python3 tools/work-status.py` check, per `AGENTS.md`. This proposal itself
-makes no source changes — every task below is `[ ]` open for a future
-implementer.
+Three independent slices (A, B, C) plus a shared evidence/spec task, plus a
+fourth slice (E) added later and already implemented. Each slice touches a
+disjoint file set and can be implemented, tested, and landed in parallel by
+separate worktrees without coordination beyond the usual
+`python3 tools/work-status.py` check, per `AGENTS.md`. Slices A-C's tasks
+below are `[ ]` open for a future implementer; slice E's host/QEMU tasks are
+ticked with their evidence, its board task is left open per `AGENTS.md`'s
+"do not tick physical tasks" and the k230-spec-change skill's QEMU-vs-board
+distinction.
 
 ## A. Deck legibility (host, C compositor policy + render)
 
@@ -91,14 +94,76 @@ implementer.
   option on glass' --output-dir docs/evidence/coherent-shell/accessibility-scale`.
   Keep open until committed.
 
+## E. Bottom-edge overlay escape and dismiss-direction consistency (host + QEMU, implemented)
+
+- [x] E.1 Claim the qualified bottom edge band for the compositor's existing
+  `cs_begin_entry`/`cs_edge_down` (app-entry) and drawer-reveal recognizers
+  even while a Rust overlay (Drawer/Shade/Settings/any sub-page) is mapped,
+  instead of unconditionally ceding the touch
+  (`nix/card-shell/adapter.c` `input_down`'s `drawer_mapped()` bail); signal
+  the overlay to dismiss via the pre-existing `Route::Hide`
+  (`card_shell_launch_surface`, now also accepting `"hide"` —
+  `nix/card-shell/route.c`); protect the claimed gesture from
+  `prepare_impl`'s defensive cancel-on-remap cleanup during the helper's
+  asynchronous round-trip via a new `shell.overlay_escaping` flag. Verify:
+  `nix build .#card-shell --max-jobs 1 --cores 6 --no-link --print-out-paths`,
+  `python3 tests/test_card_shell_route.py`,
+  `python3 -m unittest test_card_shell_state` (run from `tests/`, 29/29,
+  unaffected — this task does not touch `card-shell-policy.c`),
+  `python3 tests/test_card_touch_routing.py --sway <unwrapped card-shell
+  sway>` (7/7 existing cases unaffected), and
+  `CARD_SHELL_SWAY=<unwrapped sway> CARD_SHELL_CLIENT=<probe client>
+  python3 tests/test_card_shell_two_axis_runtime.py` (already-approved
+  two-axis mechanics unaffected).
+- [x] E.2 Add a QEMU injected-touch regression exercising the fix directly:
+  from Settings mapped over a plain running app, a bottom-edge swipe up
+  reaches the overview (`cs_begin_entry` claims it, the overlay unmaps);
+  from Settings mapped over a focused app with a second app running, a
+  bottom-edge sideways swipe switches directly to the neighbour app; a tap
+  on Settings' own top-area Close control is unaffected (no compositor-side
+  card entry fires for it); a downward swipe near the top no longer
+  dismisses Settings and an upward one does. New test:
+  `tests/test_rust_overlay_bottom_escape_runtime.py`. Verify:
+  `python3 tests/test_rust_overlay_bottom_escape_runtime.py --sway <unwrapped
+  card-shell sway> --rust <handheld-shell-rust k230-shell-rust> --client
+  <card-composition-probe-client> --output <dir>`. A negative control against
+  the unmodified pre-fix `adapter.c`/`route.c` reproduces the reported bug
+  (times out waiting for the compositor to claim the gesture at all). See
+  `docs/evidence/coherent-shell/overlay-bottom-escape-qemu/README.md`.
+- [x] E.3 Unify Settings' own local dismiss swipe with Shade's (both
+  top-anchored sheets reached via the same downward path — upward drag near
+  the top dismisses both, sharing `OVERLAY_DISMISS_ZONE_Y`/
+  `OVERLAY_DISMISS_DY`); leave the Drawer's bottom-anchored,
+  scrolled-to-top-only downward convention unchanged
+  (`nix/rust-shell-client/src/service_ui.rs` `panel_intent`). Verify:
+  `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked`
+  (172/172 lib tests plus the new
+  `service_ui::tests::shade_and_settings_share_one_upward_dismiss_direction`
+  case; full workspace 219/219), and E.2's QEMU command (scenarios 3-4 cover
+  this end to end with real injected touch, not just the unit model).
+- [ ] E.4 On a reserved board, confirm the bottom-edge escape from Settings
+  (including the theme chooser and Wi-Fi/password-entry sub-pages) and the
+  unified dismiss direction feel right from a real finger: no perceptible
+  stall or visual glitch during the overlay's asynchronous dismiss, correct
+  destination every time, and the Close/Back controls remain reachable.
+  Operator command: `python3 tools/capture-feature.py
+  overlay-bottom-escape --provenance real-touch --duration 30 --description
+  'Bottom-edge overlay escape and dismiss-direction consistency on glass'
+  --output-dir docs/evidence/coherent-shell/overlay-bottom-escape`. Keep
+  open until that capture is committed; E.1-E.3's host/QEMU proof does not
+  complete this task.
+
 ## D. Shared spec/evidence
 
-- [ ] D.1 Validate this change: `openspec validate
+- [x] D.1 Validate this change: `openspec validate
   the-shell-behaves-as-one-coherent-system --strict`.
 - [ ] D.2 After A/B/C's host tasks land, evaluate the integrated closure:
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
-  (cross-build proof only, not board proof).
+  (cross-build proof only, not board proof). Slice E's own toplevel
+  evaluation was run separately at implementation time (see
+  `docs/evidence/coherent-shell/overlay-bottom-escape-qemu/README.md`); this
+  task still covers A/B/C together once those land.
 - [ ] D.3 Do not archive this change until each slice's board task (A.4,
-  B.4, C.4) is committed, or the coordinator explicitly authorizes archiving
-  a subset with the remaining slices split into a named successor per
-  `AGENTS.md`'s "close deliberately" guidance.
+  B.4, C.4, E.4) is committed, or the coordinator explicitly authorizes
+  archiving a subset with the remaining slices split into a named successor
+  per `AGENTS.md`'s "close deliberately" guidance.

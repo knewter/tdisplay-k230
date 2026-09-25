@@ -45,6 +45,24 @@ searches) — is three findings that genuinely have no owner:
 
 This change turns those three, and only those three, into requirements.
 
+**Addendum (slice E):** a later, more literal operator report on the same
+example this proposal already named — "if in settings swiping up from
+bottom does nothing it should be like any app really" — found that
+`the-handheld-presents-a-coherent-shell` tasks 2.2/4.4 (the routing this
+proposal pointed to above) remain open, and identified the exact single
+cause: `nix/card-shell/adapter.c`'s `input_down` cedes every touch to a
+mapped Drawer/Shade/Settings overlay before the compositor's own
+bottom-edge recognizer runs, at all, for any of the three overlay surfaces.
+Rather than wait on or duplicate tasks 2.2/4.4's larger, still-unspecified
+side-edge Back mechanism, this addendum adds a narrower, bounded,
+independently implementable fourth slice with its own requirements, host
+and QEMU evidence: the bottom-edge gesture wins over any mapped overlay
+(reaching the overview or switching apps exactly as from an app, from any
+Settings sub-page), Settings' own local dismiss gesture is fixed to agree
+with Shade's direction, and Settings' relationship to the card overview
+(not a card) is decided and recorded. Unlike slices A-D, slice E has
+already been implemented, not merely specified — see `tasks.md` group E.
+
 ## What Changes
 
 - **Deck legibility**: widen the card overview's neighbor peek so an
@@ -63,16 +81,34 @@ This change turns those three, and only those three, into requirements.
   (the same mechanism that already carries per-theme colors from Rust to the
   C compositor), distinct from and in addition to the already-planned
   gesture-discovery accessibility aid.
+- **(Slice E) Bottom-edge overlay escape**: while the Drawer, Shade, or
+  Settings (including any sub-page) is mapped, a bottom-edge swipe up or
+  sideways is claimed by the compositor's existing app-entry/quick-switch
+  recognizer instead of being ceded to the overlay, dismissing the overlay
+  as part of the gesture. Reuses the already-approved two-axis mechanics
+  (`the-handheld-presents-a-coherent-shell` design decisions 11/12)
+  unchanged; adds no new gesture, only fixes which surface a touch in the
+  existing qualified bottom edge band is routed to.
+- **(Slice E) Consistent overlay dismiss direction**: Settings' own local
+  dismiss swipe is changed from downward to upward, matching Shade (both
+  top-anchored sheets reached via the same downward path); the Drawer's own
+  bottom-anchored, scrolled-to-top-only downward convention is unchanged.
+- **(Slice E) Settings is not a card**: recorded and tested as a decision,
+  not new behavior — Settings is dismissed into the overview's existing
+  cards, never represented as a card itself, per this proposal's webOS/M3
+  comparison.
 
 ## Capabilities
 
 ### New Capabilities
 
-None. All three requirements are `ADDED` to capabilities other open changes
+None. All requirements are `ADDED` to capabilities other open changes
 already introduce (`runtime/card-shell`, `runtime/notification-center`,
-`runtime/device-settings`); none of those capabilities is archived yet, so
-each `ADDED` requirement here is additive to those changes' own deltas, the
-same pattern `the-shell-loads-omarchy-themes` and
+`runtime/device-settings`, and — slice E only —
+`runtime/handheld-shell-design` from `the-handheld-presents-a-coherent-shell`);
+none of those capabilities is archived yet, so each `ADDED` requirement here
+is additive to those changes' own deltas, the same pattern
+`the-shell-loads-omarchy-themes` and
 `the-shell-swaps-themes-without-a-python-stall` already use for
 `runtime/shell-themes`.
 
@@ -82,9 +118,10 @@ None.
 
 ### Explicitly out of scope (routed elsewhere, not touched here)
 
-- Settings/Drawer/Shade not responding to the shell's bottom-edge or a
-  consistent Back gesture → `the-handheld-presents-a-coherent-shell` tasks
-  2.2 and 4.4.
+- The general side-edge contextual Back mechanism for shell sheet/Settings/
+  shade/drawer/keyboard → `the-handheld-presents-a-coherent-shell` tasks 2.2
+  and 4.4, still open; slice E's bottom-edge escape and dismiss-direction
+  fix are bounded, narrower fixes that do not complete those tasks.
 - Card headers/switcher not showing a real app icon → same change, task 1.4.
 - Card header showing a raw, live-changing window title →
   `docs/design/webos-polish-review.md` P0-1 (not an OpenSpec change; a
@@ -128,6 +165,15 @@ Userspace only, split across the two existing shell processes:
   `nix/card-shell/render.c`, so both renderers pick up the chosen scale/
   contrast consistently — the same cross-renderer consistency gap
   `webos-polish-review.md` P1-1 already flags for fonts generally.
+- (Slice E, implemented) Bottom-edge overlay escape touches
+  `nix/card-shell/adapter.c` (`input_down`'s `drawer_mapped()` carve-out,
+  `prepare_impl`'s cancel-on-remap guard, a new `shell.overlay_escaping`
+  flag) and `nix/card-shell/route.c` (`card_shell_launch_surface` accepts
+  `"hide"`). The dismiss-direction fix touches
+  `nix/rust-shell-client/src/service_ui.rs` (`panel_intent`'s `Route::Shade`
+  and `Route::Settings` arms, now sharing `OVERLAY_DISMISS_ZONE_Y`/
+  `OVERLAY_DISMISS_DY`). Neither touches the overview's card geometry or
+  headers, deliberately, since another agent owns that work concurrently.
 
 Host model tests (`cargo test --manifest-path nix/rust-shell-client/Cargo.toml
 --locked`, the existing `tests/test_card_shell_state.py` /
@@ -138,9 +184,13 @@ does the new accessibility text scale actually help), touch-target size for
 the new shade toggles, and on-glass contrast checking are physical
 acceptance gates that remain open and unverified until a board reservation
 records them, consistent with every sibling change's own evidence
-discipline.
+discipline. Slice E's own physical acceptance (does the bottom-edge escape
+and unified dismiss direction feel right on real glass, from a real finger)
+is likewise open and unverified — see task E.4.
 
-This proposal makes **no source changes**; it is planning only, produced
+Slices A-D make **no source changes**; they remain planning only, produced
 under `AGENTS.md`'s instruction that several other agents are concurrently
-editing the compositor and the Rust shell. Implementation is a separate,
-later, authorized step.
+editing the compositor and the Rust shell, and implementation for them is a
+separate, later, authorized step. Slice E is implemented, host- and
+QEMU-tested, and its host/QEMU commands are recorded in `tasks.md`; its
+board task remains open.

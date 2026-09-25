@@ -90,6 +90,20 @@ pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
 pub const SWIPE_VERTICAL_CANCEL: f64 = 45.0;
 
+/// The single dismiss gesture shared by every top-anchored overlay sheet
+/// (Shade, Settings and its sub-pages): drag back up, toward the top edge
+/// each of them opened from. `docs/design/shell-ux-critique.md` S2 found
+/// Settings using the opposite (downward) direction from Shade despite
+/// both sheets sharing the same top anchor and entry path (Settings opens
+/// from within the shade's own downward pull) -- a one-off inconsistency,
+/// not two legitimate conventions, so both routes read these same two
+/// constants rather than each hand-rolling its own threshold. The Drawer
+/// (`navigation.rs`) is a *bottom*-anchored sheet and correctly keeps its
+/// own reversed convention (drag down, at the top of its already-scrolled
+/// content, to send it back toward the bottom edge it rose from).
+const OVERLAY_DISMISS_ZONE_Y: f64 = 180.0;
+const OVERLAY_DISMISS_DY: f64 = -90.0;
+
 /// Pixel-per-millisecond coast after the finger releases a history list.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct NotificationCoast {
@@ -277,7 +291,7 @@ pub fn panel_intent(
     let w = f64::from(width);
     match route {
         Route::Shade => {
-            if start.1 < 180.0 && dy < -90.0 {
+            if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY {
                 return Some(PanelIntent::Hide);
             }
             if let Some(index) = notification_index(start.1, height, view) {
@@ -319,7 +333,7 @@ pub fn panel_intent(
             None
         }
         Route::Settings => {
-            if start.1 < 130.0 && dy > 90.0 {
+            if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY {
                 return Some(PanelIntent::Hide);
             }
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
@@ -492,6 +506,73 @@ mod tests {
             ),
             None
         );
+    }
+
+    /// Shade and Settings are both top-anchored overlay sheets (Settings
+    /// opens from within the shade's own downward pull -- design.md
+    /// decision 3), so `docs/design/shell-ux-critique.md` S2's "three
+    /// direction-inconsistent dismiss gestures" finding is fixed by giving
+    /// them one shared rule: drag back up, toward their shared top anchor,
+    /// to dismiss. A downward drag near the top -- Settings' old direction
+    /// -- must no longer dismiss either route, and an upward drag must
+    /// dismiss both identically.
+    #[test]
+    fn shade_and_settings_share_one_upward_dismiss_direction() {
+        let settings_view = ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: Control {
+                    state: ControlState::ReadOnly,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                brightness: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                keyboard: Control {
+                    state: ControlState::Action,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                motion: Control {
+                    state: ControlState::ReadOnly,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+            }),
+            ..ServiceView::default()
+        };
+        let shade_view = ServiceView::default();
+        for (route, view) in [(Route::Shade, &shade_view), (Route::Settings, &settings_view)] {
+            // Same start zone, same upward threshold, same result: Hide.
+            assert_eq!(
+                panel_intent(route, (200.0, 150.0), (200.0, 40.0), 568, 1232, view),
+                Some(PanelIntent::Hide),
+                "{route:?} must dismiss on an upward swipe near the top"
+            );
+            // The old, now-retired downward direction must not dismiss
+            // either route anymore.
+            assert_ne!(
+                panel_intent(route, (200.0, 40.0), (200.0, 150.0), 568, 1232, view),
+                Some(PanelIntent::Hide),
+                "{route:?} must not still dismiss on a downward swipe"
+            );
+            // Starting below the shared dismiss zone never dismisses,
+            // regardless of direction.
+            assert_ne!(
+                panel_intent(route, (200.0, 400.0), (200.0, 290.0), 568, 1232, view),
+                Some(PanelIntent::Hide)
+            );
+        }
     }
 
     #[test]

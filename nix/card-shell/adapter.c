@@ -130,6 +130,17 @@ static struct {
 	int button_contact, pressed_button;
 	bool button_down;
 	double button_x, button_y;
+	/* A bottom-edge escape gesture claimed while a Rust overlay (Drawer,
+	 * Shade, Settings and its sub-pages) was still mapped: see input_down's
+	 * drawer_mapped() bottom-edge carve-out. Sends the overlay a "hide"
+	 * request and keeps tracking the same entry/edge gesture an app would
+	 * use, but the overlay's own unmap is asynchronous, so it can still be
+	 * drawer_mapped() on the very next prepare_impl(). This flag tells that
+	 * function's defensive cancel-on-remap cleanup that the active
+	 * contact/edge tracking is this deliberate escape, not stale state left
+	 * over from before the overlay mapped, so it must not be cancelled out
+	 * from under the gesture. Cleared once the overlay actually unmaps. */
+	bool overlay_escaping;
 	struct card_shell_drawer_gesture drawer_gesture;
 	struct card_shell_drawer_gesture shade_gesture;
 	struct card_shell_reveal_stream reveal;
@@ -1414,6 +1425,7 @@ static uint64_t focus_id(struct sway_seat *seat) {
 }
 static void restore(struct cs_result result) {
 	shell.active = false;
+	shell.overlay_escaping = false;
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) clear_card(c);
 	scaled_cache_log();
@@ -1936,13 +1948,22 @@ static void prepare_impl(struct sway_output *output) {
 		 * created later, so without this the drawer would paint underneath it. */
 		wlr_scene_node_place_above(&output->layers.shell_overlay->node,
 			&shell.ui->node);
-		if (shell.policy.contact || shell.policy.edge.tracking ||
-			(shell.policy.mode == CS_EXPANDING && !shell.policy.expand_reversing))
+		/* Do not cancel a bottom-edge escape gesture input_down just claimed
+		 * on our behalf: the overlay's own unmap (requested via the "hide"
+		 * route) is asynchronous, so drawer_mapped() can still read true for
+		 * a frame or two after that gesture legitimately started. Only a
+		 * contact/edge that predates the overlay mapping -- the actual stale
+		 * state this cleanup exists for -- gets cancelled here. */
+		if (!shell.overlay_escaping &&
+			(shell.policy.contact || shell.policy.edge.tracking ||
+			(shell.policy.mode == CS_EXPANDING && !shell.policy.expand_reversing)))
 			handle_result(cs_cancel(&shell.policy));
 		if (shell.drawer_gesture.contacts && !shell.reveal.active)
 			card_shell_drawer_cancel(&shell.drawer_gesture);
 		if (shell.shade_gesture.contacts && !shell.reveal.active)
 			card_shell_drawer_cancel(&shell.shade_gesture);
+	} else {
+		shell.overlay_escaping = false;
 	}
 	wlr_scene_node_set_enabled(&shell.ui->node, true);
 	struct cs_config cfg = cs_default_config(output->width, output->height);
@@ -2127,8 +2148,57 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 			card_shell_reveal_cancel(&shell.reveal);
 		return true;
 	}
-	if (drawer_mapped())
+	if (drawer_mapped()) {
+		/* A bottom-edge swipe wins over any mapped Rust overlay -- Drawer,
+		 * Shade, Settings and any of its sub-pages (theme chooser, Wi-Fi,
+		 * password entry) alike, since drawer_mapped() does not distinguish
+		 * which route the overlay is currently showing. This is the fix for
+		 * "swiping up from the bottom of Settings does nothing": without
+		 * it, every touch is ceded to the overlay before this compositor's
+		 * own bottom-edge recognizer (cs_begin_entry/cs_edge_down, or the
+		 * deck's own drawer-reveal below) ever runs. Claiming the same
+		 * qualified zone with the same calls an app would use gives Home
+		 * and the lateral quick-switch identical thresholds and feel
+		 * whether an overlay is showing or not. Any other touch --
+		 * including the overlay's own top-edge Close/Back controls -- is
+		 * still ceded to the client exactly as before. */
+		bool bottom_edge = shell.policy.config.bottom_reserved <= 0 &&
+			y >= shell.policy.config.height - shell.policy.config.edge_band &&
+			!shell.button_down && !shell.policy.contact && !shell.policy.edge.tracking &&
+			wlr_seat_touch_num_points(seat->wlr_seat) == 0 &&
+			!seat->cursor->simulating_pointer_from_touch;
+		if (bottom_edge && touch_first() && shell.active) {
+			/* Same as the deck's own "continue pulling up reveals the
+			 * drawer" gesture a few lines below: card shell is already
+			 * engaged (an app or the deck itself is under the overlay), so
+			 * the bottom edge continues into the drawer, not a fresh app
+			 * entry. */
+			if (shell.policy.mode == CS_EXPANDING)
+				handle_result(cs_cancel(&shell.policy));
+			card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+			shell.overlay_escaping = true;
+			if (!card_shell_launch_surface("hide"))
+				sway_log(SWAY_INFO, "K230_CARD_SHELL overlay hide helper unavailable");
+			if (card_shell_reveal_enabled() &&
+				!card_shell_reveal_begin(&shell.reveal, "drawer"))
+				sway_log(SWAY_INFO, "K230_CARD_SHELL drawer reveal unavailable; deck retained");
+			return true;
+		}
+		if (bottom_edge && !shell.active) {
+			struct cs_result r = touch_first() ?
+				cs_begin_entry(&shell.policy, id, x, y, event_ms, focus_id(seat)) :
+				cs_edge_down(&shell.policy, id, x, y, event_ms);
+			if (r.consumed) {
+				shell.overlay_escaping = true;
+				if (!card_shell_launch_surface("hide"))
+					sway_log(SWAY_INFO, "K230_CARD_SHELL overlay hide helper unavailable");
+				select_seat(seat);
+				handle_result(r);
+				return true;
+			}
+		}
 		return false;
+	}
 	if (shell.button_down) {
 		shell.button_down = false;
 		handle_result(cs_cancel(&shell.policy));
@@ -2333,6 +2403,7 @@ bool card_shell_cancel(struct sway_seat *seat) {
 	memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
 	shell.button_down = false;
 	shell.pressed_button = 0;
+	shell.overlay_escaping = false;
 	handle_result(cs_stream_cancel(&shell.policy));
 	if (shell.ui)
 		chrome();

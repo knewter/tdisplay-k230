@@ -62,6 +62,13 @@ int main(int argc, char **argv) {
     assert(!card_shell_launch_surface("drawer"));
     setenv("SWAY_K230_CARD_DRAWER_HELPER", argv[1], 1);
     assert(!card_shell_launch_surface("unsupported"));
+    /* "hide" is what the compositor's bottom-edge overlay escape (adapter.c
+     * input_down) spawns to dismiss a mapped Drawer/Shade/Settings route --
+     * see docs/design/shell-ux-critique.md S1.1 and
+     * openspec/changes/the-shell-behaves-as-one-coherent-system/. Checked
+     * before the final "shade" call below so the capture file's last write
+     * (asserted by the Python harness) stays deterministic. */
+    assert(card_shell_launch_surface("hide"));
     assert(card_shell_launch_surface("shade"));
     return 0;
 }

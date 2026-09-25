@@ -1,0 +1,162 @@
+00:00:00.000 [INFO] [sway/main.c:308] Sway version 1.12
+00:00:00.001 [INFO] [sway/main.c:309] wlroots version 0.20.2
+00:00:00.012 [INFO] [sway/main.c:78] Linux solomon 7.1.9-1-MANJARO #1 SMP PREEMPT_DYNAMIC Thu, 20 Aug 2026 02:30:29 +0000 x86_64 GNU/Linux
+00:00:00.013 [INFO] [sway/main.c:94] Contents of /etc/lsb-release:
+00:00:00.013 [INFO] [sway/main.c:78] DISTRIB_ID="ManjaroLinux"
+00:00:00.013 [INFO] [sway/main.c:78] DISTRIB_RELEASE="26.1.1"
+00:00:00.013 [INFO] [sway/main.c:78] DISTRIB_CODENAME="Bian-May"
+00:00:00.013 [INFO] [sway/main.c:78] DISTRIB_DESCRIPTION="Manjaro Linux"
+00:00:00.013 [INFO] [sway/main.c:94] Contents of /etc/os-release:
+00:00:00.013 [INFO] [sway/main.c:78] NAME="Manjaro Linux"
+00:00:00.013 [INFO] [sway/main.c:78] PRETTY_NAME="Manjaro Linux"
+00:00:00.013 [INFO] [sway/main.c:78] ID=manjaro
+00:00:00.013 [INFO] [sway/main.c:78] ID_LIKE=arch
+00:00:00.013 [INFO] [sway/main.c:78] BUILD_ID=rolling
+00:00:00.013 [INFO] [sway/main.c:78] ANSI_COLOR="32;1;24;144;200"
+00:00:00.013 [INFO] [sway/main.c:78] HOME_URL="https://manjaro.org/"
+00:00:00.013 [INFO] [sway/main.c:78] DOCUMENTATION_URL="https://wiki.manjaro.org/"
+00:00:00.013 [INFO] [sway/main.c:78] SUPPORT_URL="https://forum.manjaro.org/"
+00:00:00.013 [INFO] [sway/main.c:78] BUG_REPORT_URL="https://manjaro.org/help/"
+00:00:00.013 [INFO] [sway/main.c:78] PRIVACY_POLICY_URL="https://manjaro.org/privacy-policy/"
+00:00:00.013 [INFO] [sway/main.c:78] LOGO=manjarolinux
+00:00:00.013 [INFO] [sway/main.c:66] LD_LIBRARY_PATH=
+00:00:00.014 [INFO] [sway/main.c:66] LD_PRELOAD=
+00:00:00.014 [INFO] [sway/main.c:66] PATH=/home/jadams/.grok/bin:/home/jadams/.grok/bin:/home/jadams/.opencode/bin:/home/jadams/.asdf/installs/elixir/1.18.3-otp-27/.mix/escripts:/home/jadams/.asdf/installs/elixir/1.19.4-otp-28/.mix/escripts:/home/jadams/.bun/bin:/opt/miniconda3/condabin:/home/jadams/.asdf/shims:/home/jadams/.asdf/bin:/home/jadams/.fly/bin:/home/jadams/bin:/home/jadams/software/nRF-Command-Line-Tools_10_12_2_Linux-amd64/nrfjprog/:/home/jadams/.deno/bin:/home/jadams/.cargo/bin:/home/jadams/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/home/jadams/.local/bin:/opt/google-cloud-cli/bin:/usr/local/bin:/usr/bin:/var/lib/snapd/snap/bin:/usr/local/sbin:/opt/cuda/bin:/usr/lib/emscripten:/home/jadams/.local/share/flatpak/exports/bin:/var/lib/flatpak/exports/bin:/opt/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/opt/rocm/bin:/home/jadams/.local/share/JetBrains/Toolbox/scripts:/home/jadams/.pub-cache/bin:/home/jadams/.roswell/bin:/home/jadams/.dotnet/tools:/home/jadams/.krew/bin:/opt/gerbil/bin:/home/jadams/software/roc_nightly-linux_x86_64-2024-07-13-070d14a/:/home/jadams/.fzf/bin:/home/jadams/.maestro/bin:/home/jadams/.claude/plugins/cache/claude-plugins-official/rust-analyzer-lsp/1.0.0/bin:/home/jadams/.claude/plugins/cache/claude-plugins-official/ralph-loop/1.0.0/bin:/home/jadams/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/bin:/home/jadams/.claude/plugins/cache/claude-plugins-official/frontend-design/6bfd4e0c6d3d/bin
+00:00:00.014 [INFO] [sway/main.c:66] SWAYSOCK=
+00:00:00.019 [INFO] [sway/main.c:338] Starting sway version 1.12
+00:00:00.019 [DEBUG] [sway/server.c:247] Initializing Wayland server
+00:00:00.022 [INFO] [wlr] [backend/backend.c:342] Loading user-specified backends due to WLR_BACKENDS: headless
+00:00:00.022 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.025 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.025 [INFO] [wlr] [render/pixman/renderer.c:328] Creating pixman renderer
+00:00:00.026 [DEBUG] [wlr] [render/allocator/allocator.c:132] Trying to create shm allocator
+00:00:00.026 [DEBUG] [wlr] [render/allocator/shm.c:119] Created shm allocator
+00:00:00.029 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:679] No DRM backend supplied, failed to create wlr_drm_lease_v1_manager
+00:00:00.029 [DEBUG] [sway/server.c:498] Failed to create wlr_drm_lease_device_v1
+00:00:00.029 [INFO] [sway/server.c:499] VR will not be available
+00:00:00.031 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.103 [INFO] [sway/config.c:423] Loading config from /tmp/k230-sa-neg/sway.conf
+00:00:00.106 [DEBUG] [sway/config.c:782] Read line 1: output HEADLESS-1 mode 568x1232
+00:00:00.107 [INFO] [sway/commands.c:382] Config command: output HEADLESS-1 mode 568x1232
+00:00:00.108 [INFO] [sway/commands.c:405] After replacement: output HEADLESS-1 mode 568x1232
+00:00:00.108 [DEBUG] [sway/commands.c:437] Subcommand: mode 568x1232
+00:00:00.110 [DEBUG] [sway/config/output.c:279] Config stored for output HEADLESS-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform -1) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:00.111 [DEBUG] [sway/config.c:782] Read line 2: seat seat0 fallback true
+00:00:00.111 [INFO] [sway/commands.c:382] Config command: seat seat0 fallback true
+00:00:00.111 [INFO] [sway/commands.c:405] After replacement: seat seat0 fallback true
+00:00:00.112 [DEBUG] [sway/commands.c:437] Subcommand: fallback true
+00:00:00.112 [DEBUG] [sway/config/seat.c:65] Adding non-wildcard seat config
+00:00:00.112 [DEBUG] [sway/config/seat.c:82] Config stored for seat seat0
+00:00:00.112 [DEBUG] [sway/config.c:782] Read line 3: focus_follows_mouse no
+00:00:00.112 [INFO] [sway/commands.c:382] Config command: focus_follows_mouse no
+00:00:00.112 [INFO] [sway/commands.c:405] After replacement: focus_follows_mouse no
+00:00:00.113 [DEBUG] [sway/config.c:782] Read line 4: for_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48
+00:00:00.113 [INFO] [sway/commands.c:382] Config command: for_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48
+00:00:00.113 [INFO] [sway/commands.c:405] After replacement: for_window [app_id="^k230.card."] floating enable, border none, resize set 520 1040, move position 24 48
+00:00:00.113 [DEBUG] [sway/criteria.c:841] Found pair: app_id=^k230.card.
+00:00:00.116 [DEBUG] [sway/commands/for_window.c:34] for_window: '[app_id="^k230.card."]' -> 'floating enable, border none, resize set 520 1040, move position 24 48' added
+00:00:00.591 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+00:00:00.592 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/yhh05srfyhf81cdrm0f9ckxajjgh9qql-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+00:00:00.606 [INFO] [sway/server.c:789] Starting backend on wayland display 'wayland-1'
+00:00:00.606 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.606 [DEBUG] [sway/desktop/output.c:555] New output 0x55555560ebf0: HEADLESS-1 (non-desktop: 0)
+00:00:00.613 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.614 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+00:00:00.615 [DEBUG] [sway/config/output.c:769] Output state for HEADLESS-1
+00:00:00.615 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+00:00:00.615 [DEBUG] [sway/config/output.c:775]     render_format: XR24
+00:00:00.615 [DEBUG] [sway/config/output.c:780]     custom mode:   568x1232@0mHz
+00:00:00.615 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+00:00:00.615 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+00:00:00.616 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+00:00:00.616 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+00:00:00.618 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+00:00:00.620 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 568x1232
+00:00:00.633 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+00:00:00.636 [DEBUG] [sway/config/output.c:1080] Finalizing config for HEADLESS-1
+00:00:00.639 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output HEADLESS-1
+00:00:00.639 [DEBUG] [sway/tree/output.c:166] Creating default workspace 1
+00:00:00.639 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output HEADLESS-1
+00:00:00.642 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+00:00:00.642 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+00:00:00.643 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.644 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+00:00:00.644 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.645 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555836ff0 committing with 2 instructions
+00:00:00.645 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555836ff0
+00:00:00.716 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (63 available cursors)
+00:00:00.717 [INFO] [sway/server.c:801] Running compositor on wayland display 'wayland-1'
+2026-09-25 14:20:38 - [main.c:328] Could not find config for output HEADLESS-1 ((null))
+00:00:01.053 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x55555583f590 (res 0x55555583f960)
+00:00:01.054 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x55555583f9f0 (res 0x55555583fb40)
+00:00:01.054 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace k230-shell-wallpaper layer 0 anchor 0 size 0x0 margin 0,0,0,0,
+00:00:01.058 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x55555583ffa0 (res 0x55555583fef0)
+00:00:01.058 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x555555840370 (res 0x5555558404c0)
+00:00:01.058 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace k230-shell-home layer 1 anchor 0 size 0x0 margin 0,0,0,0,
+00:00:01.064 [DEBUG] [sway/ipc-server.c:196] New client: fd 20
+00:00:01.073 [INFO] [sway/ipc-server.c:570] IPC Client 20 disconnected
+00:00:01.074 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x5555558666f0 (res 0x555555866ac0)
+00:00:01.074 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x555555866b50 (res 0x555555866cb0)
+00:00:01.075 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:01.076 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555865cf0 (res 0x5555558660c0)
+00:00:01.088 [DEBUG] [sway/tree/view.c:529] View 0x555555866460 updated CSD to 1
+00:00:01.176 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+00:00:01.176 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:01.176 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7f53f5dfb228 horizontally
+00:00:01.179 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230.card."]
+00:00:01.179 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230.card."]' matches view 0x555555866460, cmd: 'floating enable, border none, resize set 520 1040, move position 24 48'
+00:00:01.179 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:01.181 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+00:00:01.181 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:01.181 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:01.181 [DEBUG] [sway/tree/view.c:517] Telling view 0x555555866460 to set CSD to 0
+00:00:01.181 [INFO] [sway/commands.c:262] Handling command 'resize set 520 1040'
+00:00:01.182 [INFO] [sway/commands.c:262] Handling command 'move position 24 48'
+00:00:01.195 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x5555558725c0 committing with 3 instructions
+00:00:01.197 [DEBUG] [sway/card_shell.c:1505] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=1
+00:00:01.197 [INFO] [sway/card_shell.c:1997] K230_CARD_SHELL map id=5 class=2
+00:00:01.206 [DEBUG] [sway/ipc-server.c:196] New client: fd 25
+00:00:01.498 [DEBUG] [sway/desktop/transaction.c:779] Transaction 0x5555558725c0 timed out (1 waiting)
+00:00:01.500 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x5555558725c0
+00:00:01.510 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x5555558654f0 committing with 1 instructions
+00:00:01.512 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x5555558654f0
+00:00:01.513 [INFO] [sway/ipc-server.c:570] IPC Client 25 disconnected
+00:00:01.513 [DEBUG] [sway/ipc-server.c:196] New client: fd 25
+00:00:01.515 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x55555586fae0 committing with 1 instructions
+00:00:01.515 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x55555586fae0
+00:00:01.523 [INFO] [sway/commands.c:262] Handling command 'card_shell test-touch init'
+00:00:01.524 [DEBUG] [sway/input/input-manager.c:240] adding device: '0:0:Card_shell_headless_fixture'
+00:00:01.524 [DEBUG] [sway/input/seat.c:946] adding device 0:0:Card_shell_headless_fixture to seat seat0
+00:00:01.524 [DEBUG] [sway/input/seat.c:695] Applying input mapping to 0:0:Card_shell_headless_fixture
+00:00:01.525 [INFO] [sway/card_shell.c:2504] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:01.527 [INFO] [sway/ipc-server.c:570] IPC Client 25 disconnected
+00:00:01.528 [DEBUG] [sway/ipc-server.c:196] New client: fd 25
+00:00:01.534 [INFO] [sway/ipc-server.c:570] IPC Client 25 disconnected
+00:00:01.539 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x5555558e68e0 (res 0x555555868a50)
+00:00:01.540 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x5555558e6cb0 (res 0x555555824ef0)
+00:00:01.540 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace k230-shell-drawer layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+00:00:02.784 [DEBUG] [sway/ipc-server.c:196] New client: fd 26
+00:00:02.785 [INFO] [sway/commands.c:262] Handling command 'card_shell test-touch down 10 284 1200'
+00:00:02.791 [INFO] [sway/card_shell.c:2504] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:02.794 [INFO] [sway/ipc-server.c:570] IPC Client 26 disconnected
+00:00:02.795 [DEBUG] [sway/ipc-server.c:196] New client: fd 26
+00:00:02.795 [INFO] [sway/commands.c:262] Handling command 'card_shell test-touch motion 10 284 1100'
+00:00:02.796 [INFO] [sway/card_shell.c:2504] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:02.797 [INFO] [sway/ipc-server.c:570] IPC Client 26 disconnected
+00:00:02.797 [DEBUG] [sway/ipc-server.c:196] New client: fd 26
+00:00:02.797 [INFO] [sway/commands.c:262] Handling command 'card_shell test-touch up 10'
+00:00:02.798 [INFO] [sway/card_shell.c:2504] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:02.799 [INFO] [sway/ipc-server.c:570] IPC Client 26 disconnected
+00:00:07.819 [DEBUG] [sway/card_shell.c:1505] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=0
+00:00:07.819 [INFO] [sway/card_shell.c:2035] K230_CARD_SHELL unmap id=5
+00:00:07.821 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+00:00:07.821 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:07.821 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555863cc0 committing with 2 instructions
+00:00:07.822 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555863cc0
+00:00:07.831 [INFO] [sway/main.c:399] Shutting down sway
+00:00:07.831 [DEBUG] [sway/input/input-manager.c:208] removing device: '0:0:Card_shell_headless_fixture'
+00:00:07.832 [DEBUG] [sway/input/seat.c:967] removing device 0:0:Card_shell_headless_fixture from seat seat0
+00:00:07.834 [INFO] [sway/card_shell.c:1445] K230_CARD_SHELL restored focus=0 message=0
+00:00:07.835 [DEBUG] [sway/tree/output.c:290] Disabling output 'HEADLESS-1'
+00:00:07.835 [DEBUG] [sway/tree/workspace.c:300] Destroying workspace '1'
+00:00:07.836 [DEBUG] [sway/tree/output.c:307] Destroying output 'HEADLESS-1'

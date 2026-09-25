@@ -1,0 +1,91 @@
+rust-shell 13ms wallpaper-map-request
+rust-shell 15ms home-map-request
+rust-shell 15ms ready-idle
+rust-shell 38ms wallpaper-configure 568x1232
+rust-shell 54ms wallpaper-commit
+rust-shell 54ms home-configure 568x1232
+rust-shell 78ms wallpaper-configure 568x1232
+rust-shell 82ms wallpaper-commit
+rust-shell 264ms home-configure 568x1232
+rust-shell 264ms wallpaper-configure 568x1232
+rust-shell 266ms wallpaper-commit
+rust-shell 266ms home-configure 568x1232
+rust-shell 266ms wallpaper-configure 568x1232
+rust-shell 271ms wallpaper-commit
+rust-shell 445ms touch-capability
+rust-shell 453ms map-request
+rust-shell 457ms configure 568x1232
+rust-shell 1141ms commit
+rust-shell 1142ms home-configure 568x1232
+rust-shell 1146ms wallpaper-configure 568x1232
+rust-shell 1148ms wallpaper-commit
+rust-shell 1152ms configure 568x1232
+rust-shell 1292ms commit
+rust-shell 1292ms home-configure 568x1232
+rust-shell 1292ms wallpaper-configure 568x1232
+rust-shell 1295ms wallpaper-commit
+rust-shell 1301ms frame-done
+rust-shell 1445ms frame-done
+rust-shell 1538ms unmap
+rust-shell 1940ms home-configure 568x1232
+rust-shell 1947ms wallpaper-configure 568x1232
+rust-shell 1950ms wallpaper-commit
+rust-shell 2344ms map-request
+rust-shell 2357ms configure 568x1232
+rust-shell 2452ms commit
+rust-shell 2452ms home-configure 568x1232
+rust-shell 2456ms wallpaper-configure 568x1232
+rust-shell 2458ms wallpaper-commit
+rust-shell 2460ms configure 568x1232
+rust-shell 2545ms commit
+rust-shell 2545ms home-configure 568x1232
+rust-shell 2545ms wallpaper-configure 568x1232
+rust-shell 2547ms wallpaper-commit
+rust-shell 2571ms frame-done
+rust-shell 2680ms frame-done
+rust-shell 2748ms unmap
+rust-shell 2766ms home-configure 568x1232
+rust-shell 2770ms wallpaper-configure 568x1232
+rust-shell 2772ms wallpaper-commit
+rust-shell 3069ms map-request
+rust-shell 3072ms configure 568x1232
+rust-shell 3172ms commit
+rust-shell 3172ms home-configure 568x1232
+rust-shell 3176ms wallpaper-configure 568x1232
+rust-shell 3178ms wallpaper-commit
+rust-shell 3242ms configure 568x1232
+rust-shell 3339ms commit
+rust-shell 3339ms home-configure 568x1232
+rust-shell 3339ms wallpaper-configure 568x1232
+rust-shell 3341ms wallpaper-commit
+rust-shell 3344ms frame-done
+rust-shell 3462ms frame-done
+rust-shell 3469ms touch-down 12 520.0 50.0
+rust-shell 3470ms touch-up 12
+rust-shell 3471ms unmap
+rust-shell 3472ms home-configure 568x1232
+rust-shell 3476ms wallpaper-configure 568x1232
+rust-shell 3494ms wallpaper-commit
+rust-shell 3520ms map-request
+rust-shell 3524ms configure 568x1232
+rust-shell 3622ms commit
+rust-shell 3622ms home-configure 568x1232
+rust-shell 3622ms wallpaper-configure 568x1232
+rust-shell 3624ms wallpaper-commit
+rust-shell 3628ms configure 568x1232
+rust-shell 3718ms commit
+rust-shell 3718ms home-configure 568x1232
+rust-shell 3718ms wallpaper-configure 568x1232
+rust-shell 3720ms wallpaper-commit
+rust-shell 3720ms frame-done
+rust-shell 3839ms frame-done
+rust-shell 3840ms touch-down 13 200.0 60.0
+rust-shell 3840ms touch-move 13 200.0 400.0
+rust-shell 3840ms touch-up 13
+rust-shell 4006ms touch-down 14 200.0 150.0
+rust-shell 4006ms touch-move 14 200.0 40.0
+rust-shell 4006ms touch-up 14
+rust-shell 4006ms unmap
+rust-shell 4007ms home-configure 568x1232
+rust-shell 4012ms wallpaper-configure 568x1232
+rust-shell 4013ms wallpaper-commit
