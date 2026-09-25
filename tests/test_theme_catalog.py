@@ -8,6 +8,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from unittest import mock
@@ -63,8 +64,15 @@ class CatalogTests(unittest.TestCase):
             prefix += ["--keyboard-runtime-dir", str(keyboard_runtime_dir)]
         if pkill is not None:
             prefix += ["--pkill", str(pkill)]
+        before = set(threading.enumerate())
         with redirect_stdout(out), redirect_stderr(err):
             status = catalog.main(prefix + list(args))
+        # A real CLI process waits for activate's deferred keyboard-sync
+        # thread at exit; this in-process call must join it explicitly, or
+        # it can still be writing under state/ when the temporary directory
+        # is removed.
+        for thread in set(threading.enumerate()) - before:
+            thread.join(timeout=10)
         return status, json.loads(out.getvalue() if status == 0 else err.getvalue())
 
     def test_discovery_is_metadata_only_stable_and_keeps_duplicate_origins(self):
