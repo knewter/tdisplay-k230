@@ -3,6 +3,10 @@
 pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
+pub mod home_grid;
+pub mod home_pager;
+pub mod home_screen;
+pub mod home_state;
 pub mod icon;
 pub mod navigation;
 pub mod protocol;

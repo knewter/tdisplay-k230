@@ -13,7 +13,12 @@ use std::{
 
 const FILE_LIMIT: u64 = 512 * 1024;
 const INDEX_LIMIT: u64 = 64 * 1024;
-const CACHE_LIMIT: usize = 12;
+/// Bumped from the drawer-era 12 so a full Home page (up to a 4-column grid)
+/// plus its dock can stay resident without every icon evicting its own
+/// neighbor on each frame -- see `home_grid.rs`'s `apps_per_page`/
+/// `DOCK_SLOTS`. Still small enough that one full cache is a bounded,
+/// modest amount of decoded ARGB32 memory at the icon sizes this shell uses.
+const CACHE_LIMIT: usize = 24;
 const MAX_ROOTS: usize = 16;
 const MAX_DIRS: usize = 128;
 const MAX_DEPTH: usize = 4;

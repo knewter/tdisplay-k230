@@ -64,8 +64,20 @@ fn max_scroll(height: u32, apps: usize) -> f64 {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DrawerAction {
     Launch(usize),
+    /// A tile was held past [`LONG_PRESS_MS`] without moving past the tap
+    /// slop, then released -- "Add to Home" rather than an ordinary launch.
+    /// Detected on release (not while still held) so this needs no new
+    /// polling/tick path in a navigation model whose `tick` already skips
+    /// entirely while a contact is down.
+    LongPress(usize),
     Close,
 }
+
+/// A tile held at least this long, without exceeding the existing tap
+/// slop/duration-independent gesture, is a long-press rather than a tap.
+/// Matches `home_pager::LONG_PRESS_MS` so a hold feels the same length
+/// whether it is pinning from the drawer or rearranging on Home.
+pub const LONG_PRESS_MS: u32 = 500;
 
 #[derive(Clone, Copy, Debug)]
 struct Contact {
@@ -154,11 +166,20 @@ impl DrawerNavigation {
             self.velocity = 0.0;
             return Some(DrawerAction::Close);
         }
-        if dx.abs() <= 12.0 && dy.abs() <= 12.0 && time_ms.wrapping_sub(contact.down_ms) < 800 {
+        if dx.abs() <= 12.0 && dy.abs() <= 12.0 {
+            let held_ms = time_ms.wrapping_sub(contact.down_ms);
             if let Some(index) = tile_at(point, width, height, apps, self.scroll) {
                 if tile_at(contact.start, width, height, apps, contact.start_scroll) == Some(index)
                 {
-                    return Some(DrawerAction::Launch(index));
+                    // `LONG_PRESS_MS` (500ms) is below the pre-existing 800ms
+                    // tap ceiling, so every stationary release is exactly
+                    // one or the other -- a quick tap launches, a held tap
+                    // is "Add to Home" instead.
+                    return Some(if held_ms >= LONG_PRESS_MS {
+                        DrawerAction::LongPress(index)
+                    } else {
+                        DrawerAction::Launch(index)
+                    });
                 }
             }
         }
@@ -314,6 +335,30 @@ mod tests {
         assert!(
             !nav.coasting(),
             "held finger cannot reuse old flick velocity"
+        );
+    }
+
+    #[test]
+    fn a_held_tile_releases_as_a_long_press_not_a_launch() {
+        let mut nav = DrawerNavigation::default();
+        let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        assert!(nav.down(1, point, 0));
+        assert_eq!(
+            nav.up(1, point, LONG_PRESS_MS, 568, 1232, 7),
+            Some(DrawerAction::LongPress(2))
+        );
+    }
+
+    #[test]
+    fn a_quick_tap_still_launches() {
+        let mut nav = DrawerNavigation::default();
+        let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        assert!(nav.down(1, point, 0));
+        assert_eq!(
+            nav.up(1, point, LONG_PRESS_MS - 1, 568, 1232, 7),
+            Some(DrawerAction::Launch(2))
         );
     }
 

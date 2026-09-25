@@ -3,6 +3,8 @@
 use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
     catalog::AppEntry,
+    home_grid::{self, HomeSlot},
+    home_screen::HomeScreen,
     icon::IconCache,
     navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
     service_data::{Control, ControlValue, Priority},
@@ -2209,6 +2211,177 @@ fn scene(
     }
 }
 
+fn app_by_id<'a>(apps: &'a [AppEntry], id: &str) -> Option<&'a AppEntry> {
+    apps.iter().find(|app| app.id == id)
+}
+
+/// Paints one Home icon: its resolved app's icon (or an initial-letter
+/// fallback plate, matching the drawer's own fallback exactly) and its name
+/// label beneath. `pressed` draws the same immediate tap-highlight ring
+/// every other tappable surface in this shell uses.
+fn paint_home_icon(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    app: &AppEntry,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    pressed: bool,
+) {
+    let style = visual_style(theme, "launcher");
+    if pressed {
+        rounded(cr, x - 6.0, y - 6.0, w + 12.0, h + 12.0, 18.0);
+        color(cr, style.accent, 0.16);
+        let _ = cr.fill();
+    }
+    let icon_size = w.min(60.0);
+    let icon_x = x + (w - icon_size) / 2.0;
+    let painted = app
+        .icon
+        .as_deref()
+        .is_some_and(|icon| icons.paint(cr, icon, icon_size as i32, icon_x, y));
+    if !painted {
+        service_card(cr, theme, "launcher", icon_x, y, icon_size, icon_size, true);
+        let initial = app.name.chars().next().unwrap_or('?').to_uppercase().to_string();
+        centered_label(cr, &initial, icon_x, y + icon_size / 2.0 - 14.0, icon_size, 27.0, style.accent);
+    }
+    centered_label(
+        cr,
+        &app.name,
+        x,
+        y + icon_size + 6.0,
+        w,
+        18.0,
+        brush_rgb(theme, "launcher", "text", style.text),
+    );
+}
+
+/// Paints the Home screen: the pinned-icon grid for the pager's current
+/// (possibly mid-drag) page, the non-tappable page-count dots, the fixed
+/// quick-launch dock, and -- only while `home.rearranging` -- the Done/
+/// Remove affordances and any icon currently being dragged. Deliberately
+/// paints nothing opaque outside those elements: this surface sits on
+/// `Layer::Bottom`, directly above the existing wallpaper layer, and relies
+/// on that layer showing through everywhere Home itself has no content.
+pub fn paint_home(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    theme: Option<&AppearanceSnapshot>,
+    home: &HomeScreen,
+    apps: &[AppEntry],
+    icons: &mut IconCache,
+) {
+    cr.set_operator(Operator::Source);
+    cr.set_source_rgba(0.0, 0.0, 0.0, 0.0);
+    let _ = cr.paint();
+    cr.set_operator(Operator::Over);
+    let style = visual_style(theme, "launcher");
+
+    let page_count = home.page_count();
+    let position = home.pager.position();
+    let page_width = f64::from(width);
+    let pressed = home.pressed(width, height);
+    for offset in [-1i64, 0, 1] {
+        let page = position.round() as i64 + offset;
+        if page < 0 || page as usize >= page_count {
+            continue;
+        }
+        let page = page as usize;
+        let shift = (page as f64 - position) * page_width;
+        // Only the two pages nearest the settled position are ever close
+        // enough to be on-panel during a drag; skip painting the rest to
+        // keep this bounded regardless of how many pages exist.
+        if shift.abs() > page_width + 1.0 {
+            continue;
+        }
+        let _ = cr.save();
+        cr.translate(shift, 0.0);
+        if let Some(row) = home.layout.pages.get(page) {
+            for (slot, entry) in row.iter().enumerate() {
+                let Some(id) = entry else { continue };
+                if home.drag.is_some_and(|(dragged, _)| dragged == HomeSlot::Grid { page, slot }) {
+                    continue; // painted last, floating at the finger instead
+                }
+                let Some(app) = app_by_id(apps, id) else { continue };
+                let (x, y, w, h) = home_grid::tile_rect(width, height, slot);
+                paint_home_icon(
+                    cr,
+                    theme,
+                    icons,
+                    app,
+                    x,
+                    y,
+                    w,
+                    h,
+                    pressed == Some(HomeSlot::Grid { page, slot }),
+                );
+            }
+        }
+        let _ = cr.restore();
+    }
+
+    if page_count > 1 {
+        let dot_y = home_grid::dots_center_y(height);
+        let spacing = 20.0;
+        let start_x = f64::from(width) / 2.0 - spacing * (page_count as f64 - 1.0) / 2.0;
+        for page in 0..page_count {
+            let cx = start_x + spacing * page as f64;
+            let active = (position - page as f64).abs() < 0.5;
+            cr.arc(cx, dot_y, if active { 4.5 } else { 3.5 }, 0.0, std::f64::consts::TAU);
+            color(cr, style.text, if active { 0.9 } else { 0.35 });
+            let _ = cr.fill();
+        }
+    }
+
+    let dock_top = home_grid::dock_top(height);
+    rounded(cr, 12.0, dock_top + 8.0, f64::from(width) - 24.0, f64::from(height) - dock_top - 20.0, 24.0);
+    color(cr, 0x000000, 0.22);
+    let _ = cr.fill();
+    for slot in 0..home_grid::DOCK_SLOTS {
+        let Some(id) = home.layout.dock.get(slot).and_then(Option::as_deref) else {
+            continue;
+        };
+        if home.drag.is_some_and(|(dragged, _)| dragged == HomeSlot::Dock { slot }) {
+            continue;
+        }
+        let Some(app) = app_by_id(apps, id) else { continue };
+        let (x, y, w, h) = home_grid::dock_rect(width, height, slot);
+        paint_home_icon(cr, theme, icons, app, x, y, w, h, pressed == Some(HomeSlot::Dock { slot }));
+    }
+
+    if home.rearranging {
+        let done = home_grid::done_button_rect(width);
+        service_card(cr, theme, "controls", done.0, done.1, done.2, done.3, false);
+        centered_label(cr, "Done", done.0, done.1 + done.3 / 2.0 - 11.0, done.2, 22.0, style.accent);
+        let remove = home_grid::remove_target_rect(width);
+        service_card(cr, theme, "controls", remove.0, remove.1, remove.2, remove.3, false);
+        centered_label(cr, "Remove", remove.0, remove.1 + remove.3 / 2.0 - 11.0, remove.2, 22.0, 0xffb2a8);
+    }
+
+    if let Some((slot, point)) = home.drag {
+        let id = home.layout.get(slot).map(str::to_string);
+        if let Some(id) = id {
+            if let Some(app) = app_by_id(apps, &id) {
+                let size = 64.0;
+                paint_home_icon(
+                    cr,
+                    theme,
+                    icons,
+                    app,
+                    point.0 - size / 2.0,
+                    point.1 - size / 2.0,
+                    size,
+                    size,
+                    true,
+                );
+            }
+        }
+    }
+}
+
 pub fn draw_shm(
     canvas: &mut [u8],
     width: u32,
@@ -2282,6 +2455,39 @@ fn draw_shm_with_icons(
         thumbnails,
         pressed,
     );
+    drop(cr);
+    surface.flush();
+    Ok(())
+}
+
+/// Renders Home directly into a borrowed SHM canvas -- the `Layer::Bottom`
+/// surface's own draw path, parallel to `draw_shm_with_icons` for the
+/// Drawer/Shade/Settings overlay above it.
+fn draw_home_shm(
+    canvas: &mut [u8],
+    width: u32,
+    height: u32,
+    apps: &[AppEntry],
+    icons: &mut IconCache,
+    theme: Option<&AppearanceSnapshot>,
+    home: &HomeScreen,
+) -> Result<(), String> {
+    let stride = width.checked_mul(4).ok_or("invalid stride")?;
+    if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
+        return Err("invalid canvas length".into());
+    }
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(
+            canvas.as_mut_ptr(),
+            Format::ARgb32,
+            width as i32,
+            height as i32,
+            stride as i32,
+        )
+    }
+    .map_err(|error| error.to_string())?;
+    let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    paint_home(&cr, width, height, theme, home, apps, icons);
     drop(cr);
     surface.flush();
     Ok(())
@@ -2771,6 +2977,22 @@ impl RendererCache {
                 .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
         }
         Ok(())
+    }
+
+    /// Renders Home's `Layer::Bottom` surface. Unlike [`Self::draw`], there
+    /// is no reveal-progress slide-in to cache/shift here -- Home is always
+    /// mapped, its own pager/drag animation already lives in `HomeScreen`,
+    /// and this simply repaints straight into the caller's buffer whenever
+    /// `main.rs` decides Home is dirty.
+    pub fn draw_home(
+        &mut self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        apps: &[AppEntry],
+        home: &HomeScreen,
+    ) -> Result<(), String> {
+        draw_home_shm(canvas, width, height, apps, &mut self.icons, self.theme.as_ref(), home)
     }
 }
 
