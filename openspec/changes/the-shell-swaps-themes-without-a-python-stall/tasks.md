@@ -51,22 +51,33 @@ Proof for 2.1/2.2: the two tools' own `--self-test`. Proof for 2.3: the
 committed before/after JSON reports and the exact board commands that
 produced them.
 
-## 3. Explicit remainder (successor work, not started here)
+## 3. Explicit remainder (successor work, partially started here)
 
-- [ ] 3.1 In-memory buffer swap for a previewed theme's decoded wallpaper,
-  so `activate`'s commit is a pointer/buffer swap in the Rust event loop
-  rather than a fresh cache-hit read or decode. Owned by the wallpaper/
+- [x] 3.1a Expose the clean prepare-ahead API: `tools/theme_transaction.py`'s
+  `prepare_only(generation, ...)` sends the two-phase protocol's existing
+  "prepare" message (the same one `activate_generation()` already sends
+  immediately before every commit -- `appearance.rs`'s Prepare handling
+  already decodes/caches the wallpaper there) without committing, taking
+  no lock, safe to call repeatedly for different candidates. Wired into
+  `theme_catalog.py`'s `preview` action so browsing already warms both
+  receivers when `--rust-socket`/`--deck-socket` are configured. Verify
+  with `python3 -m unittest tests.test_omarchy_theme_transaction
+  tests.test_theme_catalog`.
+- [ ] 3.1b The actual in-memory buffer swap on commit: even with 3.1a's
+  warm-up, `activate`'s commit still calls `BackgroundCache::render` in
+  the Rust event loop, which is a cache-hit file read, not a zero-copy
+  pointer swap of an already-in-process buffer. Owned by the wallpaper/
   appearance-apply path (this change's lane), not started.
-- [ ] 3.2 Prepare-ahead (including `background.cache`) when a theme becomes
-  the centred carousel item, before Apply. Owned by the chooser UI
+- [ ] 3.2 Call `prepare_only()` (3.1a) as a theme becomes the centred
+  carousel item, before Apply. Owned by the chooser UI
   (`theme_carousel.rs`/`theme_ui.rs`), explicitly out of this change's
-  owned paths.
+  owned paths -- 3.1a is the "clean API" left for that hook.
 - [ ] 3.3 Defer `wvkbd`/Foot recolour until after the visible swap commits,
   so neither blocks `activated: true`. Not started.
 - [ ] 3.4 Re-run `tools/analyze-theme-swap-jank.py`'s tap-to-visible metric
-  against the board once 3.1-3.3 land, and report against the ~100 ms
-  target. Needs the reserved board and 3.1-3.3.
+  against the board once 3.1b/3.2/3.3 land, and report against the ~100 ms
+  target. Needs the reserved board and 3.1b/3.2/3.3.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3 has a board result; 3.1-3.4 are named here so
+per `AGENTS.md`) until 2.3 has a board result; 3.1b-3.4 are named here so
 they are not silently dropped, not claimed as this change's own scope.

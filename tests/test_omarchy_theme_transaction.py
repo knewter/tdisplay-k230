@@ -47,6 +47,50 @@ class ThemeTransaction(unittest.TestCase):
                                       ("deck.sock", "commit", candidate),
                                       ("app", "sync", candidate)])
 
+    def test_prepare_only_sends_prepare_to_both_receivers_without_committing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            events = []
+            def ack(endpoint, phase, generation):
+                events.append((endpoint.name, phase, generation))
+            tx.prepare_only(candidate, state_root=root, endpoint=rust,
+                            endpoints=(rust, deck), transport=ack)
+            self.assertEqual(events, [("rust.sock", "prepare", candidate),
+                                      ("deck.sock", "prepare", candidate)])
+            # No pointer change, no lock file left held, no public links
+            # created -- this is browsing, not activation.
+            self.assertIsNone(tx._pointer(root))
+            self.assertFalse((root / ".activation.lock").exists())
+
+    def test_prepare_only_does_not_take_the_activation_lock(self):
+        """A person still browsing (repeated prepare_only calls) must never
+        be blocked by, or block, an unrelated in-flight
+        activate_generation() -- prepare_only takes no lock at all."""
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = prepared(root, "candidate")
+            rust, deck = root / "rust.sock", root / "deck.sock"
+            descriptor = os.open(root / ".activation.lock", os.O_CREAT | os.O_RDWR, 0o600)
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                tx.prepare_only(candidate, state_root=root, endpoint=rust,
+                                endpoints=(rust, deck), transport=lambda *a: None)
+            finally:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+                os.close(descriptor)
+
+    def test_prepare_only_rejects_a_generation_outside_the_prepared_cache(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            prepared(root, "candidate")  # ensures root/generations exists
+            outside = Path(temp) / "elsewhere"
+            outside.mkdir()
+            (outside / "report.json").write_text("{}")
+            with self.assertRaises(tx.TransactionError):
+                tx.prepare_only(outside, state_root=root, endpoint=root / "rust.sock")
+
     def test_second_prepare_failure_rolls_back_both_without_publication(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

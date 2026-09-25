@@ -111,6 +111,52 @@ def _public_links(root: Path) -> list[Path]:
     return missing
 
 
+def prepare_only(generation: Path, *, state_root: Path, endpoint: Path,
+                 transport=exchange, endpoints: tuple[Path, Path] | None = None) -> None:
+    """Warm both appearance receivers' Prepare-phase state for `generation`
+    without changing the active pointer and without a matching commit or
+    rollback -- the clean hook a chooser UI calls as a person browses
+    (e.g. once per newly-centred carousel candidate), so that a later
+    `activate_generation()` for the *same* generation has its own internal
+    Prepare arrive as a cache hit instead of a first decode.
+
+    This is not a new mechanism: `activate_generation()` already sends this
+    exact "prepare" message immediately before every commit
+    (`nix/rust-shell-client/src/appearance.rs`'s Prepare handling already
+    decodes/caches the wallpaper via `appearance_renderable()` at that
+    point, before any commit). Calling it early, apart from a commit, only
+    changes *when* that decode happens, matching `background.cache`'s own
+    "advisory, never load-bearing for correctness" posture: `commit`'s own
+    internal re-prepare (still sent by `activate_generation()` regardless
+    of whether this ran first) is what the receiver actually validates
+    against (`"commit does not match prepared generation"` in
+    `appearance.rs`), so a stale, superseded, or never-issued warm-up can
+    only cost time, never correctness.
+
+    Each receiver keeps only its most recently prepared candidate (a
+    single slot, matching `BackgroundCache`'s own single-slot design), so
+    calling this again for a different generation while browsing simply
+    replaces what was warmed -- there is no cache to explicitly evict and
+    no lock to contend with an in-flight `activate_generation()` of a
+    *different* generation (deliberately: a still-browsing person must
+    never be blocked by, or block, someone else's unrelated commit).
+    """
+    state_root = state_root.resolve(strict=True)
+    generations = state_root / "generations"
+    generation = generation.resolve(strict=True)
+    if (not generation.is_relative_to(generations.resolve(strict=True))
+            or not (generation / "report.json").is_file()):
+        raise TransactionError("generation is outside the prepared cache")
+    if endpoints is None:
+        targets = (endpoint,)
+    else:
+        if len(endpoints) != 2 or endpoints[0] == endpoints[1]:
+            raise TransactionError("fanout requires two distinct appearance endpoints")
+        targets = endpoints
+    for target in targets:
+        transport(target, "prepare", generation)
+
+
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                         transport=exchange, lock_timeout: float = 2.0,
                         preference=None, app_sync=None,

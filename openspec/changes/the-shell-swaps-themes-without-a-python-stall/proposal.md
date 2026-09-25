@@ -45,15 +45,22 @@ Removing the interpreter-start-up tax is the single largest, cleanly
 separable, host-and-QEMU-provable piece of the instant-swap target; it is
 not the whole target. Left open, and not claimed complete here:
 
-- **In-memory buffer swap on commit.** The wallpaper's decoded/cached pixels
-  are not yet held in memory for a previewed-but-not-yet-applied theme;
-  commit still triggers `BackgroundCache::render`'s normal cache-hit or
-  decode path in the Rust event loop, not a pure pointer/buffer swap.
-- **Prepare-ahead on carousel centering.** Preparing a generation (and its
-  `background.cache`) when a theme becomes the centred chooser item, before
-  Apply, is chooser UI territory (`theme_carousel.rs`/`theme_ui.rs`),
-  explicitly out of this change's owned paths (see coordination note in the
-  task that produced this change).
+- **In-memory buffer swap on commit.** `tools/theme_transaction.py` now has
+  a `prepare_only()` API (see `design.md`) that lets a caller warm both
+  appearance receivers' Prepare-phase state for a candidate ahead of Apply
+  -- the Rust receiver's `appearance.rs` already decodes/caches the
+  wallpaper during Prepare, so this makes an eventual commit for the *same*
+  generation a cache hit. What it does not yet do: commit itself still
+  calls `BackgroundCache::render` in the Rust event loop (a cache-hit file
+  read), not a zero-copy in-process buffer swap.
+- **Prepare-ahead on carousel centering.** `prepare_only()` is the clean
+  API a chooser hook calls as a theme becomes the centred item, before
+  Apply; actually wiring that call is chooser UI territory
+  (`theme_carousel.rs`/`theme_ui.rs`), explicitly out of this change's
+  owned paths (see coordination note in the task that produced this
+  change) -- `tools/theme_catalog.py`'s `preview` action already calls it
+  when rust/deck sockets are configured, covering any chooser path that
+  already calls `preview` per candidate.
 - **Deferred keyboard/foot recolour.** `keyboard_appearance.sync_and_restart`
   (a `wvkbd` process restart) and Foot's OSC recolour still run
   synchronously inside `activate`'s response, before `activated: true` is

@@ -18,7 +18,7 @@ import subprocess
 import sys
 
 import theme_activate as activation
-from theme_transaction import TransactionError, _pointer, activate_generation
+from theme_transaction import TransactionError, _pointer, activate_generation, prepare_only
 from theme_preferences import SelectionIntent
 import keyboard_appearance
 
@@ -245,6 +245,22 @@ def handle(args) -> tuple[dict, int]:
                                                tools=args.tools, background_id=args.background,
                                                wallpaper_cache_tool=args.wallpaper_cache_tool)
             result = preview(entry, generation, report)
+            if args.action == "preview" and args.rust_socket is not None:
+                # Best-effort: warm both receivers' Prepare-phase state (in
+                # particular the Rust receiver's in-memory wallpaper cache)
+                # for this candidate while it is only being browsed, so an
+                # Apply that follows without changing the selection commits
+                # against an already-decoded buffer instead of a fresh
+                # decode. Purely a latency optimisation -- activate_generation
+                # below always re-sends its own "prepare" immediately before
+                # every commit regardless, which is what the receiver
+                # actually validates the commit against, so a failure here
+                # can only cost time, never make Apply wrong.
+                try:
+                    prepare_only(generation, state_root=args.state_root, endpoint=args.socket,
+                                endpoints=(args.rust_socket, args.deck_socket))
+                except (OSError, TransactionError):
+                    pass
             if args.action == "activate":
                 if args.expected_generation != generation.name:
                     raise activation.ThemeError("theme changed since preview; preview it again")

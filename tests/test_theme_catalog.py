@@ -218,6 +218,49 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(listing, {"schema": 1, "themes": [], "active": {"id": None, "generation": None}})
         self.assertFalse(self.state.exists())
 
+    def preview_with_sockets(self, entry_id, *, prepare_only_effect=None):
+        args = ["--user-themes", str(self.user), "--builtins", str(self.builtins),
+                "--state-root", str(self.state), "--socket", str(self.base / "missing.sock"),
+                "--rust-socket", str(self.base / "rust.sock"),
+                "--deck-socket", str(self.base / "deck.sock"),
+                "preview", entry_id]
+        out = io.StringIO()
+        with redirect_stdout(out), mock.patch.object(
+                catalog, "prepare_only", side_effect=prepare_only_effect) as prepared:
+            status = catalog.main(args)
+        return status, json.loads(out.getvalue()), prepared
+
+    def test_preview_warms_the_wallpaper_cache_when_endpoints_are_configured(self):
+        """Browsing (preview) should hint both receivers' Prepare-phase
+        state for the candidate, so a later Apply of the *same* selection
+        commits against an already-decoded buffer -- see
+        tools/theme_transaction.py's prepare_only()."""
+        theme(self.user / "night")
+        entry = self.entries()[0]
+        status, result, prepared = self.preview_with_sockets(entry.id)
+        self.assertEqual(status, 0)
+        prepared.assert_called_once()
+        (generation,), kwargs = prepared.call_args
+        self.assertEqual(generation.name, result["generation"])
+        self.assertEqual(kwargs["endpoints"], (self.base / "rust.sock", self.base / "deck.sock"))
+
+    def test_preview_survives_a_warm_up_transport_failure(self):
+        theme(self.user / "night")
+        entry = self.entries()[0]
+        status, result, prepared = self.preview_with_sockets(
+            entry.id, prepare_only_effect=TransactionError("receiver unreachable"))
+        self.assertEqual(status, 0)
+        prepared.assert_called_once()
+        self.assertIn("generation", result)
+
+    def test_preview_does_not_warm_without_rust_socket_configured(self):
+        theme(self.user / "night")
+        entry = self.entries()[0]
+        with mock.patch.object(catalog, "prepare_only",
+                              side_effect=AssertionError("should not be called")):
+            status, _ = self.run_cli("preview", entry.id)
+        self.assertEqual(status, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
