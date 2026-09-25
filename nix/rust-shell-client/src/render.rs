@@ -2215,56 +2215,135 @@ fn app_by_id<'a>(apps: &'a [AppEntry], id: &str) -> Option<&'a AppEntry> {
     apps.iter().find(|app| app.id == id)
 }
 
-/// Paints one Home icon: its resolved app's icon (or an initial-letter
-/// fallback plate, matching the drawer's own fallback exactly) and its name
-/// label beneath. `pressed` draws the same immediate tap-highlight ring
-/// every other tappable surface in this shell uses.
-fn paint_home_icon(
+/// Label legibility over any wallpaper (Home has no opaque panel behind it,
+/// unlike every other surface this shell paints -- see `paint_home`'s own
+/// doc comment): a soft dark shadow pass behind the themed label text, not
+/// just the plain themed color alone.
+fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Bold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(pango::Alignment::Center);
+    layout.set_ellipsize(EllipsizeMode::End);
+    color(cr, 0x000000, 0.55);
+    cr.move_to(x, y + 1.4);
+    pangocairo::functions::show_layout(cr, &layout);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// Paints one icon's rounded "squircle" plate (webOS/iOS-style tile) and its
+/// resolved app icon, or an initial-letter fallback matching the drawer's
+/// own fallback, centered within the plate. Shared by grid and dock icons,
+/// which differ only in plate/icon size and whether a label follows.
+/// `pressed` reuses `service_card`'s own selected-state theming for the
+/// tap highlight, instead of a separately hand-drawn ring, so a pressed
+/// icon picks up exactly the same themed feedback every other tappable
+/// surface in this shell already does.
+fn paint_icon_plate(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
     icons: &mut IconCache,
     app: &AppEntry,
-    x: f64,
-    y: f64,
-    w: f64,
-    h: f64,
+    plate_x: f64,
+    plate_y: f64,
+    plate_size: f64,
+    icon_size: f64,
     pressed: bool,
 ) {
     let style = visual_style(theme, "launcher");
-    if pressed {
-        rounded(cr, x - 6.0, y - 6.0, w + 12.0, h + 12.0, 18.0);
-        color(cr, style.accent, 0.16);
-        let _ = cr.fill();
-    }
-    let icon_size = w.min(60.0);
-    let icon_x = x + (w - icon_size) / 2.0;
+    // Guards against inheriting a stray current point from whatever was
+    // painted just before this tile (see `paint_remove_badge`'s own note):
+    // `service_card`'s themed border stroke builds a path via `rounded()`
+    // before checking whether its gradient source could actually be set,
+    // so a failed `set_source` on one tile could otherwise leave a
+    // dangling line into the next.
+    cr.new_path();
+    service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, pressed);
+    let icon_x = plate_x + (plate_size - icon_size) / 2.0;
+    let icon_y = plate_y + (plate_size - icon_size) / 2.0;
     let painted = app
         .icon
         .as_deref()
-        .is_some_and(|icon| icons.paint(cr, icon, icon_size as i32, icon_x, y));
+        .is_some_and(|icon| icons.paint(cr, icon, icon_size as i32, icon_x, icon_y));
     if !painted {
-        service_card(cr, theme, "launcher", icon_x, y, icon_size, icon_size, true);
         let initial = app.name.chars().next().unwrap_or('?').to_uppercase().to_string();
-        centered_label(cr, &initial, icon_x, y + icon_size / 2.0 - 14.0, icon_size, 27.0, style.accent);
+        centered_label(
+            cr,
+            &initial,
+            plate_x,
+            plate_y + plate_size / 2.0 - icon_size * 0.27,
+            plate_size,
+            icon_size * 0.55,
+            style.accent,
+        );
     }
-    centered_label(
-        cr,
-        &app.name,
-        x,
-        y + icon_size + 6.0,
-        w,
-        18.0,
-        brush_rgb(theme, "launcher", "text", style.text),
-    );
+}
+
+/// Rearrange mode's per-icon remove badge (iOS/webOS's jiggle-mode
+/// affordance): a small red circle with a white "remove" bar, anchored at
+/// the icon plate's top-left corner. Its drawn size is smaller than its
+/// actual hit target (`home_grid::REMOVE_BADGE_HIT_RADIUS`) -- a visually
+/// heavier badge would crowd a tightly packed grid, but the tap target
+/// underneath it still needs to be finger-sized.
+fn paint_remove_badge(cr: &Context, theme: Option<&AppearanceSnapshot>, corner: (f64, f64)) {
+    let style = visual_style(theme, "launcher");
+    let radius = home_grid::REMOVE_BADGE_RADIUS;
+    let (cx, cy) = corner;
+    let _ = cr.save();
+    // `cairo_arc` draws an implicit connecting line from any leftover
+    // current point (e.g. a themed border path a preceding `service_card`
+    // call built but never stroked, if its gradient source failed to set)
+    // to this arc's start -- an explicit fresh path guarantees this badge
+    // never inherits a stray line from whatever was painted just before it.
+    cr.new_path();
+    cr.arc(cx, cy, radius, 0.0, std::f64::consts::TAU);
+    color(cr, style.error, 0.96);
+    let _ = cr.fill_preserve();
+    color(cr, 0xffffff, 0.9);
+    cr.set_line_width(1.5);
+    let _ = cr.stroke();
+    cr.move_to(cx - radius * 0.45, cy);
+    cr.line_to(cx + radius * 0.45, cy);
+    cr.set_line_width(2.2);
+    cr.set_line_cap(cairo::LineCap::Round);
+    color(cr, 0xffffff, 1.0);
+    let _ = cr.stroke();
+    let _ = cr.restore();
+}
+
+/// Rearrange mode's visible drop-target highlight: the whole cell the
+/// dragged icon would land on if released right now, not just its own
+/// (much smaller) plate, so the target reads clearly at a glance while a
+/// finger is covering the icon itself.
+fn paint_drop_target(cr: &Context, theme: Option<&AppearanceSnapshot>, rect: (f64, f64, f64, f64)) {
+    let style = visual_style(theme, "launcher");
+    let (x, y, w, h) = rect;
+    cr.new_path();
+    rounded(cr, x, y, w, h, 22.0);
+    color(cr, style.accent, 0.20);
+    let _ = cr.fill_preserve();
+    color(cr, style.accent, 0.7);
+    cr.set_line_width(2.0);
+    let _ = cr.stroke();
 }
 
 /// Paints the Home screen: the pinned-icon grid for the pager's current
-/// (possibly mid-drag) page, the non-tappable page-count dots, the fixed
-/// quick-launch dock, and -- only while `home.rearranging` -- the Done/
-/// Remove affordances and any icon currently being dragged. Deliberately
-/// paints nothing opaque outside those elements: this surface sits on
-/// `Layer::Bottom`, directly above the existing wallpaper layer, and relies
-/// on that layer showing through everywhere Home itself has no content.
+/// (possibly mid-drag) page, the non-tappable page-count dots, the
+/// translucent quick-launch dock, and -- only while `home.rearranging` --
+/// the Done/Remove affordances, each filled icon's remove badge, the live
+/// drop-target highlight, and any icon currently being dragged.
+/// Deliberately paints nothing opaque outside those elements: this surface
+/// sits on `Layer::Bottom`, directly above the existing wallpaper layer,
+/// and relies on that layer showing through everywhere Home itself has no
+/// content -- which is exactly why every label here gets its own shadow
+/// pass ([`shadowed_label`]) instead of relying on an opaque backing.
 pub fn paint_home(
     cr: &Context,
     width: u32,
@@ -2284,6 +2363,9 @@ pub fn paint_home(
     let position = home.pager.position();
     let page_width = f64::from(width);
     let pressed = home.pressed(width, height);
+    let dragged_slot = home.drag.map(|(slot, _)| slot);
+    let drop_target = home.drop_target(width, height);
+    let show_drop_target = home.rearranging && drop_target.is_some() && drop_target != dragged_slot;
     for offset in [-1i64, 0, 1] {
         let page = position.round() as i64 + offset;
         if page < 0 || page as usize >= page_count {
@@ -2299,25 +2381,45 @@ pub fn paint_home(
         }
         let _ = cr.save();
         cr.translate(shift, 0.0);
+        if show_drop_target {
+            if let Some(HomeSlot::Grid { page: target_page, slot }) = drop_target {
+                if target_page == page {
+                    paint_drop_target(cr, theme, home_grid::tile_rect(width, height, slot));
+                }
+            }
+        }
         if let Some(row) = home.layout.pages.get(page) {
             for (slot, entry) in row.iter().enumerate() {
                 let Some(id) = entry else { continue };
-                if home.drag.is_some_and(|(dragged, _)| dragged == HomeSlot::Grid { page, slot }) {
+                let this_slot = HomeSlot::Grid { page, slot };
+                if home.drag.is_some_and(|(dragged, _)| dragged == this_slot) {
                     continue; // painted last, floating at the finger instead
                 }
                 let Some(app) = app_by_id(apps, id) else { continue };
-                let (x, y, w, h) = home_grid::tile_rect(width, height, slot);
-                paint_home_icon(
+                let content = home_grid::tile_content(width, height, slot);
+                paint_icon_plate(
                     cr,
                     theme,
                     icons,
                     app,
-                    x,
-                    y,
-                    w,
-                    h,
-                    pressed == Some(HomeSlot::Grid { page, slot }),
+                    content.plate_x,
+                    content.plate_y,
+                    content.plate_size,
+                    home_grid::ICON_SIZE,
+                    pressed == Some(this_slot),
                 );
+                shadowed_label(
+                    cr,
+                    &app.name,
+                    content.plate_x,
+                    content.label_y,
+                    content.plate_size,
+                    15.0,
+                    brush_rgb(theme, "launcher", "text", style.text),
+                );
+                if home.rearranging {
+                    paint_remove_badge(cr, theme, (content.plate_x, content.plate_y));
+                }
             }
         }
         let _ = cr.restore();
@@ -2325,57 +2427,105 @@ pub fn paint_home(
 
     if page_count > 1 {
         let dot_y = home_grid::dots_center_y(height);
-        let spacing = 20.0;
+        let spacing = 22.0;
         let start_x = f64::from(width) / 2.0 - spacing * (page_count as f64 - 1.0) / 2.0;
         for page in 0..page_count {
             let cx = start_x + spacing * page as f64;
             let active = (position - page as f64).abs() < 0.5;
-            cr.arc(cx, dot_y, if active { 4.5 } else { 3.5 }, 0.0, std::f64::consts::TAU);
-            color(cr, style.text, if active { 0.9 } else { 0.35 });
-            let _ = cr.fill();
+            if active {
+                // The active page reads as a short pill, not just a bigger
+                // dot -- a subtle, common refinement over a plain dot row
+                // that still costs nothing extra to hit-test (dots are
+                // purely decorative; nothing here is tappable).
+                rounded(cr, cx - 9.0, dot_y - 3.5, 18.0, 7.0, 3.5);
+                color(cr, style.accent, 0.95);
+                let _ = cr.fill();
+            } else {
+                cr.arc(cx, dot_y, 3.5, 0.0, std::f64::consts::TAU);
+                color(cr, style.text, 0.38);
+                let _ = cr.fill();
+            }
         }
     }
 
-    let dock_top = home_grid::dock_top(height);
-    rounded(cr, 12.0, dock_top + 8.0, f64::from(width) - 24.0, f64::from(height) - dock_top - 20.0, 24.0);
-    color(cr, 0x000000, 0.22);
-    let _ = cr.fill();
+    // The dock: a translucent themed tray (matching the "launcher" section's
+    // own background/border brushes, exactly like every other floating
+    // panel this shell draws via `service_card`) holding its own, visibly
+    // larger, unlabeled icon plates -- webOS Quick Launch / Android hotseat
+    // convention, not a flat solid-color bar.
+    let dock_band = (
+        12.0,
+        home_grid::dock_top(height) + 6.0,
+        f64::from(width) - 24.0,
+        f64::from(height) - home_grid::dock_top(height) - 18.0,
+    );
+    service_card(cr, theme, "launcher", dock_band.0, dock_band.1, dock_band.2, dock_band.3, false);
     for slot in 0..home_grid::DOCK_SLOTS {
         let Some(id) = home.layout.dock.get(slot).and_then(Option::as_deref) else {
             continue;
         };
-        if home.drag.is_some_and(|(dragged, _)| dragged == HomeSlot::Dock { slot }) {
+        let this_slot = HomeSlot::Dock { slot };
+        if home.drag.is_some_and(|(dragged, _)| dragged == this_slot) {
             continue;
         }
         let Some(app) = app_by_id(apps, id) else { continue };
-        let (x, y, w, h) = home_grid::dock_rect(width, height, slot);
-        paint_home_icon(cr, theme, icons, app, x, y, w, h, pressed == Some(HomeSlot::Dock { slot }));
+        let content = home_grid::dock_content(width, height, slot);
+        if show_drop_target && drop_target == Some(this_slot) {
+            paint_drop_target(cr, theme, home_grid::dock_rect(width, height, slot));
+        }
+        paint_icon_plate(
+            cr,
+            theme,
+            icons,
+            app,
+            content.plate_x,
+            content.plate_y,
+            content.plate_size,
+            home_grid::DOCK_ICON_SIZE,
+            pressed == Some(this_slot),
+        );
+        if home.rearranging {
+            paint_remove_badge(cr, theme, (content.plate_x, content.plate_y));
+        }
     }
 
     if home.rearranging {
         let done = home_grid::done_button_rect(width);
         service_card(cr, theme, "controls", done.0, done.1, done.2, done.3, false);
-        centered_label(cr, "Done", done.0, done.1 + done.3 / 2.0 - 11.0, done.2, 22.0, style.accent);
+        centered_label(cr, "Done", done.0, done.1 + done.3 / 2.0 - 12.0, done.2, 24.0, style.accent);
         let remove = home_grid::remove_target_rect(width);
-        service_card(cr, theme, "controls", remove.0, remove.1, remove.2, remove.3, false);
-        centered_label(cr, "Remove", remove.0, remove.1 + remove.3 / 2.0 - 11.0, remove.2, 22.0, 0xffb2a8);
+        // A drag hovering directly over Remove gets the same "selected"
+        // themed treatment as any other armed control in this shell, so the
+        // pending delete is obvious before the finger lifts.
+        let over_remove = home
+            .drag
+            .is_some_and(|(_, point)| home_grid::hits(point, remove));
+        service_card(cr, theme, "controls", remove.0, remove.1, remove.2, remove.3, over_remove);
+        centered_label(cr, "Remove", remove.0, remove.1 + remove.3 / 2.0 - 12.0, remove.2, 24.0, style.error);
     }
 
     if let Some((slot, point)) = home.drag {
         let id = home.layout.get(slot).map(str::to_string);
         if let Some(id) = id {
             if let Some(app) = app_by_id(apps, &id) {
-                let size = 64.0;
-                paint_home_icon(
+                // A dragged icon lifts slightly larger than its resting
+                // plate (matching iOS/webOS's jiggle-mode "pick up" scale)
+                // and always shows its label, regardless of whether it
+                // started in the grid or the dock, so what is being moved
+                // stays legible under the finger.
+                let plate_size = home_grid::ICON_PLATE_SIZE * 1.08;
+                let icon_size = home_grid::ICON_SIZE * 1.08;
+                let plate_x = point.0 - plate_size / 2.0;
+                let plate_y = point.1 - plate_size / 2.0;
+                paint_icon_plate(cr, theme, icons, app, plate_x, plate_y, plate_size, icon_size, true);
+                shadowed_label(
                     cr,
-                    theme,
-                    icons,
-                    app,
-                    point.0 - size / 2.0,
-                    point.1 - size / 2.0,
-                    size,
-                    size,
-                    true,
+                    &app.name,
+                    plate_x,
+                    plate_y + plate_size + 8.0,
+                    plate_size,
+                    15.0,
+                    brush_rgb(theme, "launcher", "text", style.text),
                 );
             }
         }

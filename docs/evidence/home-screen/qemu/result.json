@@ -8,13 +8,25 @@
     "drawer_opened": true,
     "drawer_long_press_pinned": true,
     "pinned_icon_visible": true,
-    "rearrange_mode_shows_done_and_remove": true,
-    "removed_from_saved_layout": true,
+    "rearrange_mode_shows_done_remove_and_badges": true,
+    "remove_badge_tap_changed_the_screen": true,
+    "still_rearranging_after_badge_removal": true,
+    "drop_target_highlight_visible": true,
+    "badge_removed_from_saved_layout": true,
+    "drag_removed_from_saved_layout": true,
     "dock_survives_the_removal": true,
     "stable_after_restart": true,
     "light_page2_differs_from_page1": true,
-    "light_differs_from_dark": true
+    "light_differs_from_dark": true,
+    "showcase_dark_is_not_a_blank_frame": true,
+    "showcase_light_is_not_a_blank_frame": true
   },
   "sway": "/nix/store/cwpfizab7mz285vcyha1kci64ij2m511-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
-  "rust": "/nix/store/8bifbbv1z8qhkzqkmpwisvhbyw9b5nwi-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+  "rust": "/nix/store/az5gicvhw6jirvkpy31xasw20ylgyzfn-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "theme_bundle": "/nix/store/2idwl586jkz327w3rypg1mfw41pmbgrj-handheld-theme-default-28ceaae7",
+  "icons": "/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3",
+  "dark_generation": "0d16475245f13b3d7d3f036f",
+  "dark_selected_background": "backgrounds/2-waves.webp",
+  "light_generation": "5cceec94081ad6f749f372a4",
+  "light_selected_background": "backgrounds/1-color-fade.webp"
 }

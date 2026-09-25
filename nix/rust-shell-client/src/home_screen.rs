@@ -24,6 +24,11 @@ struct Contact {
     held_ms: u32,
     long_fired: bool,
     slot_at_down: Option<HomeSlot>,
+    /// Set at `down` when this touch landed on a filled icon's remove badge
+    /// while already rearranging. A badge press never becomes a drag (see
+    /// `down`): `up` removes that icon outright, matching iOS/webOS's
+    /// jiggle-mode badge, which is a tap gesture, not a drag-to-target one.
+    badge_at_down: Option<HomeSlot>,
 }
 
 /// How long an icon must be dragged against the pager's edge, while in
@@ -85,11 +90,34 @@ impl HomeScreen {
             .filter(|slot| self.layout.get(*slot).is_some())
     }
 
+    /// Which filled slot's remove badge (if any) `point` lands in, while
+    /// rearranging -- checked across every filled slot on the current page
+    /// plus the dock, since a badge sits at a plate's corner, outside that
+    /// icon's own tile-cell hit region (`filled_slot_at`'s test).
+    fn badge_at(&self, point: (f64, f64), width: u32, height: u32) -> Option<HomeSlot> {
+        let page = self.pager.page(self.page_count());
+        let apps_per_page = home_grid::apps_per_page(height);
+        let candidates = (0..apps_per_page)
+            .map(|slot| HomeSlot::Grid { page, slot })
+            .chain((0..home_grid::DOCK_SLOTS).map(|slot| HomeSlot::Dock { slot }));
+        candidates
+            .filter(|slot| self.layout.get(*slot).is_some())
+            .find(|slot| {
+                let corner = home_grid::plate_top_left(width, height, *slot);
+                home_grid::hits_circle(point, corner, home_grid::REMOVE_BADGE_HIT_RADIUS)
+            })
+    }
+
     pub fn down(&mut self, id: i32, point: (f64, f64), time_ms: u32, width: u32, height: u32) {
         if self.contact.is_some() {
             self.cancel();
             return;
         }
+        let badge_at_down = if self.rearranging {
+            self.badge_at(point, width, height)
+        } else {
+            None
+        };
         let slot_at_down = self.filled_slot_at(point, width, height);
         self.contact = Some(Contact {
             id,
@@ -100,14 +128,19 @@ impl HomeScreen {
             // so mark the long-press as already "used" up front.
             long_fired: self.rearranging,
             slot_at_down,
+            badge_at_down,
         });
         if self.rearranging {
             // A fresh touch on any filled icon grabs it immediately,
             // exactly as real launchers' own "jiggle mode" lets any icon
-            // be picked up without holding again. Touching empty space, or
-            // a non-drag tap on an icon, is resolved at `up` instead.
-            if let Some(slot) = slot_at_down {
-                self.drag = Some((slot, point));
+            // be picked up without holding again -- unless it landed on
+            // that icon's own remove badge instead, which never drags.
+            // Touching empty space, or a non-drag tap on an icon, is
+            // resolved at `up` instead.
+            if badge_at_down.is_none() {
+                if let Some(slot) = slot_at_down {
+                    self.drag = Some((slot, point));
+                }
             }
         } else {
             self.pager.down(point, time_ms);
@@ -206,6 +239,13 @@ impl HomeScreen {
         if contact.id != id {
             return None;
         }
+        if let Some(slot) = contact.badge_at_down {
+            // The badge is a tap gesture, not a drag-to-target one (see
+            // `down`): releasing anywhere removes the icon it belonged to.
+            let removed = self.layout.get(slot)?.to_string();
+            self.layout.remove_id(&removed);
+            return Some(HomeAction::LayoutChanged);
+        }
         if let Some((slot, _)) = self.drag.take() {
             return self.drop_dragged_icon(slot, point, width, height);
         }
@@ -280,10 +320,19 @@ impl HomeScreen {
     /// or a rearrange drag yet.
     pub fn pressed(&self, width: u32, height: u32) -> Option<HomeSlot> {
         let contact = self.contact.as_ref()?;
-        if self.drag.is_some() || self.pager.dragging() {
+        if self.drag.is_some() || self.pager.dragging() || contact.badge_at_down.is_some() {
             return None;
         }
         self.filled_slot_at(contact.start, width, height)
+    }
+
+    /// While a rearrange drag is live, the slot it would land on if
+    /// released right now -- the renderer highlights this as a visible drop
+    /// target, matching the affordance every reference launcher gives a
+    /// dragged icon.
+    pub fn drop_target(&self, width: u32, height: u32) -> Option<HomeSlot> {
+        let (_, point) = self.drag?;
+        self.slot_at(point, width, height)
     }
 }
 
@@ -486,6 +535,58 @@ mod tests {
     fn tile_center_for_test(slot: usize) -> (f64, f64) {
         let (x, y, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, slot);
         (x + w / 2.0, y + h / 2.0)
+    }
+
+    #[test]
+    fn tapping_a_grid_icons_remove_badge_removes_it_without_dragging() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.rearranging = true;
+        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 });
+        screen.down(1, badge, 0, WIDTH, HEIGHT);
+        assert!(screen.drag.is_none(), "a badge press never arms a drag");
+        assert_eq!(screen.up(1, badge, 20, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }), None);
+        assert!(screen.rearranging, "removing one icon does not itself end rearrange mode");
+    }
+
+    #[test]
+    fn tapping_a_dock_icons_remove_badge_removes_it() {
+        let mut screen = screen_with(&[Some("dock.desktop"), None, None, None]);
+        screen.rearranging = true;
+        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Dock { slot: 0 });
+        screen.down(1, badge, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, badge, 20, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
+        assert_eq!(screen.layout.get(HomeSlot::Dock { slot: 0 }), None);
+    }
+
+    #[test]
+    fn a_remove_badge_only_fires_while_rearranging() {
+        // Outside rearrange mode, a touch at the same point is simply an
+        // ordinary tap on the icon underneath (the badge does not exist
+        // there yet), so it launches instead of removing anything.
+        let mut screen = screen_with(&[None; 4]);
+        let point = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 });
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, point, 20, WIDTH, HEIGHT),
+            Some(HomeAction::Launch("a.desktop".into()))
+        );
+    }
+
+    #[test]
+    fn drop_target_tracks_the_slot_under_the_dragged_icon() {
+        let mut screen = screen_with(&[None; 4]);
+        let start = tile_center_for_test(0);
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.drop_target(WIDTH, HEIGHT), Some(HomeSlot::Grid { page: 0, slot: 0 }));
+        let target = tile_center_for_test(1);
+        screen.motion(1, target, 500, WIDTH, HEIGHT);
+        assert_eq!(screen.drop_target(WIDTH, HEIGHT), Some(HomeSlot::Grid { page: 0, slot: 1 }));
     }
 
     #[test]

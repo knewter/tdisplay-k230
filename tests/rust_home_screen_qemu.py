@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Headless QEMU proof of the pinned Home screen: page swipe, dock tap
-launch, long-press pin from the drawer, rearrange/remove, and persistence
-across a restart -- captured under a dark and a light theme.
+"""Headless QEMU proof of the polished pinned Home screen: page swipe, dock
+tap launch, long-press pin from the drawer, rearrange (both the drag-to-
+Remove-pill flow and the per-icon remove-badge tap), and persistence across
+a restart -- captured under a dark and a light theme, each with a real
+Omarchy wallpaper, a real bundled icon theme, and (for the interactive
+scenarios) desktop entries whose Name/Icon exactly match this image's own
+real ones (`nix/handheld-desktop-entries.nix`).
 
-Synthetic touch injection (card_shell test-touch), a private desktop
-catalog, and a pre-staged layout file; never physical panel evidence. This
-proves wiring/layout under QEMU's headless Pixman backend, not real-glass
-touch feel, contrast, or panel readability -- see
+Synthetic touch injection (card_shell test-touch) and a private desktop
+catalog; never physical panel evidence. This proves wiring/layout under
+QEMU's headless Pixman backend, not real-glass touch feel, contrast, or
+panel readability -- see
 openspec/changes/the-shell-presents-a-pinned-home-screen/tasks.md's
 board-acceptance task for what remains open.
 """
@@ -17,22 +21,39 @@ from pathlib import Path
 import socket
 import struct
 import subprocess
+import sys
 import time
 
 from PIL import Image, ImageChops
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+from theme_activate import prepare  # noqa: E402
+
 # Mirrors home_grid.rs's own constants exactly, so this black-box test can
 # derive exact tap points instead of guessing coordinates. The layout math
 # itself is covered by that module's own unit tests; this only needs
-# "some point solidly inside slot N" and "the dock/Done/Remove bands".
+# "some point solidly inside slot N" and "the dock/Done/Remove/badge bands".
 COLUMNS = 4
 DOCK_SLOTS = 4
-SIDE_MARGIN = 20.0
-TILE_GAP = 10.0
-ROW_HEIGHT = 138.0
-GRID_TOP = 72.0
-DOTS_HEIGHT = 40.0
-DOCK_HEIGHT = 148.0
+SIDE_MARGIN = 22.0
+TILE_GAP = 18.0
+ROW_HEIGHT = 184.0
+# The compositor's own top-edge "pull down for shade" gesture band
+# (card-shell-policy.c's default edge_band=48): a fresh tap with y<48 never
+# reaches this client at all under SWAY_K230_CARD_TOUCH_FIRST=1 (set for
+# every real session). Rearrange mode's Done/Remove pills sit just below it.
+EDGE_BAND = 48.0
+PILL_TOP = EDGE_BAND + 4.0
+PILL_HEIGHT = 56.0
+GRID_TOP = PILL_TOP + PILL_HEIGHT + 12.0
+DOTS_HEIGHT = 34.0
+ICON_PLATE_SIZE = 108.0
+ICON_LABEL_GAP = 8.0
+LABEL_HEIGHT = 20.0
+DOCK_PLATE_SIZE = 108.0
+DOCK_HEIGHT = 156.0
+REMOVE_BADGE_HIT_RADIUS = 22.0
 WIDTH = 568
 HEIGHT = 1232
 
@@ -52,6 +73,23 @@ def tile_rect(slot):
 def tile_center(slot):
     x, y, w, h = tile_rect(slot)
     return (x + w / 2.0, y + h / 2.0)
+
+
+def tile_plate_corner(slot):
+    """The grid icon plate's top-left corner -- where its remove badge sits
+    while rearranging (home_grid.rs's `tile_content`/`plate_top_left`)."""
+    x, y, w, h = tile_rect(slot)
+    content_h = ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT
+    top = y + max((h - content_h) / 2.0, 0.0)
+    plate_x = x + (w - ICON_PLATE_SIZE) / 2.0
+    return (plate_x, top)
+
+
+def dock_plate_corner(slot):
+    x, y, w, h = dock_rect(slot)
+    plate_x = x + (w - DOCK_PLATE_SIZE) / 2.0
+    plate_y = y + (h - DOCK_PLATE_SIZE) / 2.0
+    return (plate_x, plate_y)
 
 
 # A page swipe only needs to cross half the panel width to settle onto the
@@ -79,12 +117,15 @@ def dock_top():
     return HEIGHT - DOCK_HEIGHT
 
 
-def dock_center(slot):
+def dock_rect(slot):
     tile_width = (WIDTH - 2 * SIDE_MARGIN - (DOCK_SLOTS - 1) * TILE_GAP) / DOCK_SLOTS
     x = SIDE_MARGIN + slot * (tile_width + TILE_GAP)
-    y = dock_top() + 18.0
-    h = DOCK_HEIGHT - 36.0
-    return (x + tile_width / 2.0, y + h / 2.0)
+    return (x, dock_top(), tile_width, DOCK_HEIGHT)
+
+
+def dock_center(slot):
+    x, y, w, h = dock_rect(slot)
+    return (x + w / 2.0, y + h / 2.0)
 
 
 def drawer_tile_center(index):
@@ -103,70 +144,69 @@ def drawer_tile_center(index):
 
 
 def done_button_point():
-    w = 108.0
-    return (WIDTH - SIDE_MARGIN - w + w / 2.0, 16.0 + (GRID_TOP - 28.0) / 2.0)
+    w = 128.0
+    return (WIDTH - SIDE_MARGIN - w + w / 2.0, PILL_TOP + PILL_HEIGHT / 2.0)
 
 
 def remove_target_point():
-    w = 108.0
-    return (SIDE_MARGIN + w / 2.0, 16.0 + (GRID_TOP - 28.0) / 2.0)
+    w = 128.0
+    return (SIDE_MARGIN + w / 2.0, PILL_TOP + PILL_HEIGHT / 2.0)
 
 
-def theme_generation(root, source, label):
-    """Copies the repo's own vetted default appearance/report tokens,
-    darkening or lightening the palette -- the same fixture shape
-    tests/rust_wifi_settings_qemu.py's own theme() helper already
-    establishes for this test suite, so a themed capture here is
-    comparable to every other themed QEMU capture in this repo."""
-    appearance = json.loads((source / "default-appearance.json").read_text())
-    report = json.loads((source / "default-report.json").read_text())
-    generation = ("a" if label == "dark" else "b") * 24
-    appearance["generation"] = report["generation"] = generation
-    # The loaded appearance's own icon_theme (normally "Yaru-purple", the
-    # default's real icon set) overrides whatever K230_ICON_THEME the
-    # process started with (appearance.rs applies each snapshot's own
-    # icon_theme to the shared IconCache) -- point both appearance.json and
-    # report.json at this test's private fixture theme instead (they must
-    # agree, or the whole snapshot is rejected as a mismatch), so Home/
-    # drawer icon painting actually exercises a real decoded icon.
-    appearance["icon_theme"] = report["icon_theme"] = "fixture"
-    if label == "light":
-        palette = report["palette"]
-        palette.update({"background": "#eff1f5", "foreground": "#34384d",
-                        "light_foreground": "#565a73", "accent": "#1e66f5",
-                        "mode": "light"})
-        for section in appearance["sections"].values():
-            for key, token in section.items():
-                if not isinstance(token, dict) or token.get("kind") != "brush":
-                    continue
-                if "text" in key or key in ("foreground", "active"):
-                    color = "#ff34384d"
-                elif "selected" in key:
-                    color = "#ffd7e3fa"
-                elif "border" in key:
-                    color = "#ff9aa4b6"
-                else:
-                    color = "#ffeff1f5"
-                for stop in token["stops"]:
-                    stop["argb"] = color
-    directory = root / f"theme-{label}" / generation
-    directory.mkdir(parents=True)
-    (directory / "appearance.json").write_text(json.dumps(appearance))
-    (directory / "report.json").write_text(json.dumps(report))
-    return directory
+def real_dark_generation(bundle):
+    """The bundled default itself: a real Catppuccin palette, real icon
+    theme selection (Yaru-purple), and a real Omarchy wallpaper
+    (backgrounds/2-waves.webp, with its background.cache already built) --
+    this is the exact generation the real image ships as its fresh-install
+    default (`nix/handheld-theme-default/bundled-report.json`), not a
+    palette-only/backgroundless fixture."""
+    bundled = json.loads((ROOT / "nix/handheld-theme-default/bundled-report.json").read_text())
+    generation = bundle / "generations" / bundled["generation"]
+    assert generation.is_dir(), f"missing bundled generation: {generation}"
+    on_disk = json.loads((generation / "report.json").read_text())
+    assert on_disk == bundled, "the built bundle's default generation drifted from the committed report"
+    assert on_disk["backgrounds"] and on_disk["selected_background"], \
+        "the bundled default must carry a real wallpaper, not the palette-only fixture"
+    return generation, bundled
+
+
+def real_light_generation(bundle, state_root, scratch):
+    """A freshly prepared real Omarchy theme (Catppuccin Latte) from the
+    same bundle's pinned upstream source tree, using the repository's own
+    theme-activation pipeline (`tools/theme_activate.prepare`) -- the exact
+    code path a real theme swap runs, not a hand-mutated palette fixture."""
+    source_root = bundle / "share/omarchy/themes"
+    generation, report = prepare(
+        "catppuccin-latte",
+        source=source_root / "catppuccin-latte",
+        state_root=state_root,
+        user_themes=scratch / "empty-user-themes",
+        builtins=None,
+        tools=ROOT / "nix/omarchy-theme-tools/upstream",
+    )
+    assert report["backgrounds"] and report["selected_background"], \
+        "catppuccin-latte must carry a real wallpaper"
+    return generation, report
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for field in ("sway", "swaymsg", "rust"):
         parser.add_argument("--" + field, required=True, type=Path)
-    parser.add_argument("--theme-source", required=True, type=Path)
+    parser.add_argument("--theme-bundle", required=True, type=Path,
+                        help="built nix/handheld-theme-default store path")
+    parser.add_argument("--icons", required=True, type=Path,
+                        help="built nix/handheld-theme-icons store path")
     parser.add_argument("--qemu", default="/usr/bin/qemu-riscv64-static")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     for path in (args.sway, args.swaymsg, args.rust):
         if not path.is_file():
             parser.error(f"exact cross-built executable must exist: {path}")
+    bundle = args.theme_bundle.resolve(strict=True)
+    icons_share = args.icons.resolve(strict=True) / "share"
+    if not icons_share.is_dir():
+        parser.error(f"--icons has no share/ directory: {icons_share}")
     root = args.output
     root.mkdir(mode=0o700, exist_ok=False)
     qemu = str(args.qemu)
@@ -177,22 +217,18 @@ def main():
     swaymsg_wrapper.write_text(f"#!/bin/sh\nexec {qemu} {args.swaymsg} \"$@\"\n")
     swaymsg_wrapper.chmod(0o700)
 
-    # A real, decodable fixture icon (not the initial-letter fallback) for
-    # one app, staged under a private icon theme -- exactly icon.rs's own
-    # test fixture shape, proving Home really resolves and paints an
-    # installed app's icon rather than only ever falling back.
+    # --- Interactive-fixture desktop entries: Name/Icon match this image's
+    # own real entries exactly (nix/handheld-desktop-entries.nix), so icon
+    # resolution below exercises the real bundled icon theme with the real
+    # production names, not a private fixture theme. `Exec` is swapped for
+    # a controllable marker script -- spawning the real foot/htop/nnn
+    # binaries as live Wayland clients inside this headless compositor is
+    # out of scope here; this test proves Home's own wiring, which reference
+    # launcher already covers separately. Real "foot" has no bundled icon
+    # in Yaru either (confirmed against the built icon theme), so "Terminal"
+    # is expected to show the initial-letter fallback plate here exactly as
+    # it would on the real image today. ---
     data_home = root / "data"
-    icons_dir = data_home / "icons/fixture/scalable/apps"
-    icons_dir.mkdir(parents=True)
-    (data_home / "icons/fixture/index.theme").write_text(
-        "[Icon Theme]\nName=fixture\nDirectories=scalable/apps\n"
-        "[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n"
-    )
-    (icons_dir / "fixture-terminal.svg").write_text(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">'
-        '<rect width="48" height="48" fill="#78d7cb"/></svg>'
-    )
-
     apps_dir = data_home / "applications"
     apps_dir.mkdir(parents=True)
     marker = root / "launch-marker"
@@ -201,27 +237,36 @@ def main():
         '#!/bin/sh\nprintf "%s\\n" "$1" >> "$XDG_RUNTIME_DIR/launch-marker"\n'
     )
     launch_script.chmod(0o700)
-    # Carries the real SVG icon staged above, and is placed in the
-    # pre-staged layout's dock slot 0 (below) -- proving Home paints and
-    # taps a real decoded icon, not just an initial-letter fallback.
     (apps_dir / "k230-fixture-terminal.desktop").write_text(
-        "[Desktop Entry]\nType=Application\nName=Fixture Terminal\n"
-        f"Exec={launch_script} terminal\nIcon=fixture-terminal\n"
+        "[Desktop Entry]\nType=Application\nName=Terminal\n"
+        f"Exec={launch_script} terminal\nIcon=foot\n"
     )
-    # "Fixture Extra" matches no curated default keyword, so a fresh Home
-    # never shows it until it is explicitly pinned from the drawer.
+    # Pre-pinned at page 0 slot 0 from boot, so this test can exercise the
+    # per-icon remove *badge* tap on an icon that was never dragged, kept
+    # distinct from "Fixture Extra" below (pinned live via the drawer, then
+    # removed via the older drag-to-Remove-pill flow) so both removal paths
+    # are proven in the same rearrange session without interfering.
+    (apps_dir / "k230-fixture-badge.desktop").write_text(
+        "[Desktop Entry]\nType=Application\nName=Fixture Badge\n"
+        f"Exec={launch_script} badge\nIcon=htop\n"
+    )
+    # Matches no curated default keyword, so a fresh Home never shows it
+    # until it is explicitly pinned from the drawer. No Icon=, proving the
+    # initial-letter fallback plate still renders correctly at the new,
+    # larger tile size.
     (apps_dir / "k230-fixture-extra.desktop").write_text(
         "[Desktop Entry]\nType=Application\nName=Fixture Extra\n"
         f"Exec={launch_script} extra\n"
     )
     # A second page's sole occupant, staged directly into the layout file
-    # below rather than by pinning 28+ filler apps to fill page 0 -- this
+    # below rather than by pinning 20+ filler apps to fill page 0 -- this
     # test proves paging/rendering across pages, not how many real icons a
     # 4-column grid holds before it needs a second page (home_grid.rs's own
-    # unit tests already cover that layout math exactly).
+    # unit tests already cover that layout math exactly). Icon=folder
+    # matches the real Files entry's own icon name.
     (apps_dir / "k230-fixture-page-two.desktop").write_text(
         "[Desktop Entry]\nType=Application\nName=Fixture Page Two\n"
-        f"Exec={launch_script} page-two\n"
+        f"Exec={launch_script} page-two\nIcon=folder\n"
     )
 
     state_home = root / "state"
@@ -236,22 +281,23 @@ def main():
     home_json.write_text(json.dumps({
         "schema": 1,
         "pages": [
-            [None, None, None, None],
+            ["k230-fixture-badge.desktop", None, None, None],
             ["k230-fixture-page-two.desktop", None, None, None],
         ],
         "dock": ["k230-fixture-terminal.desktop", None, None, None],
     }))
 
-    dark = theme_generation(root, args.theme_source, "dark")
-    light = theme_generation(root, args.theme_source, "light")
+    theme_state = root / "theme-state"
+    theme_state.mkdir()
+    dark, dark_report = real_dark_generation(bundle)
+    light, light_report = real_light_generation(bundle, theme_state, root)
 
     env = dict(
         os.environ,
         XDG_RUNTIME_DIR=str(root),
         XDG_DATA_HOME=str(data_home),
-        XDG_DATA_DIRS=str(data_home),
+        XDG_DATA_DIRS=f"{icons_share}:{data_home}",
         XDG_STATE_HOME=str(state_home),
-        K230_ICON_THEME="fixture",
         WLR_BACKENDS="headless",
         WLR_HEADLESS_OUTPUTS="1",
         WLR_RENDERER="pixman",
@@ -350,7 +396,7 @@ def main():
         subprocess.run([qemu, str(args.rust), "--surface", surface], env=env,
                         check=True, stdout=subprocess.DEVNULL)
 
-    def capture(name, timeout=8.0, stable_frames=3, interval=0.1):
+    def capture(name, timeout=8.0, stable_frames=6, interval=0.1):
         path = root / name
         previous = None
         stable = 0
@@ -369,7 +415,7 @@ def main():
             time.sleep(interval)
         raise AssertionError(f"display never stabilized before capturing {name}")
 
-    def start_pass(generation, prefix, rust_log_mode="w"):
+    def start_pass(generation, prefix):
         (root / f"{prefix}-rust.log").touch()
         return spawn(prefix + "-rust", [qemu, str(args.rust), "--serve"],
                      {"K230_THEME_DEFAULT_GENERATION": str(generation)})
@@ -443,13 +489,14 @@ def main():
         route("drawer")
         drawer_open = capture("home-dark-drawer.png")
         checks["drawer_opened"] = bool(ImageChops.difference(page1, drawer_open).getbbox())
-        # "Fixture Extra" is the second alphabetical entry after "Fixture
-        # Page Two"/"Fixture Terminal" -- locate it by row 0..N; the
-        # drawer's own tile geometry is navigation.rs's, not home_grid.rs's,
-        # so this taps the first row's first column, which fixture naming
-        # ("Fixture Extra" sorts before "Fixture Page Two"/"Fixture
-        # Terminal") places "Fixture Extra" at.
-        long_press(*drawer_tile_center(0))
+        # The drawer lists every desktop entry regardless of Home pin state
+        # (sorted case-insensitively by name): "Fixture Badge", "Fixture
+        # Extra", "Fixture Page Two", "Terminal" -- so index 1 is "Fixture
+        # Extra", the one deliberately left unpinned so this long-press
+        # actually adds a new icon (pinning an already-pinned app, like
+        # "Fixture Badge" at index 0, is defined as a no-op). The drawer's
+        # own tile geometry is navigation.rs's, not home_grid.rs's.
+        long_press(*drawer_tile_center(1))
         wait_for(lambda: "home-pinned" in text("dark-rust"), 5)
         checks["drawer_long_press_pinned"] = True
         route("hide")
@@ -457,27 +504,55 @@ def main():
         pinned = capture("home-dark-pin-flow.png")
         checks["pinned_icon_visible"] = bool(ImageChops.difference(page1, pinned).getbbox())
 
-        # --- Rearrange mode: long-press the newly pinned icon, drag to Remove. ---
-        # `long_press` holds in place past LONG_PRESS_MS then releases; the
-        # release itself is what `HomeScreen::up` sees as a rearrange-mode
-        # drop (of nothing yet moved), so entering rearrange mode is
-        # already complete by the time this call returns.
-        long_press(*tile_center(0))
+        # --- Rearrange mode: long-press "Fixture Extra" (now at slot 1;
+        # slot 0 holds the pre-pinned "Fixture Badge"). ---
+        long_press(*tile_center(1))
         rearranging = capture("home-dark-rearrange.png")
-        checks["rearrange_mode_shows_done_and_remove"] = bool(
+        checks["rearrange_mode_shows_done_remove_and_badges"] = bool(
             ImageChops.difference(pinned, rearranging).getbbox()
         )
-        # A fresh press-and-drag on the same (now-lifted-mode) icon, over to
-        # the Remove target -- a real diagonal drag, not a same-row one.
-        remove_id = drag_steps_2d(tile_center(0), remove_target_point())
+
+        # --- Remove-badge tap: "Fixture Badge" (slot 0) is removed by a
+        # single tap on its badge, with no drag at all -- the newer,
+        # more-discoverable removal affordance, distinct from the
+        # drag-to-Remove-pill flow exercised next. ---
+        tap(*tile_plate_corner(0))
+        badge_removed = capture("home-dark-badge-removed.png")
+        checks["remove_badge_tap_changed_the_screen"] = bool(
+            ImageChops.difference(rearranging, badge_removed).getbbox()
+        )
+        checks["still_rearranging_after_badge_removal"] = bool(
+            ImageChops.difference(badge_removed, rearranging).getbbox()
+        )
+
+        # --- Drag-to-Remove-pill: "Fixture Extra" is still at slot 1 (badge
+        # removal above did not compact slots). A fresh press-and-drag
+        # grabs it (already-rearranging jiggle-mode pickup), paused
+        # mid-drag over an ordinary empty slot to capture the visible
+        # drop-target highlight, then continued onto Remove and released. ---
+        drag_id = drag_steps_2d(tile_center(1), tile_center(2))
+        drop_target_frame = capture("home-dark-drop-target.png", timeout=1.5, stable_frames=1)
+        checks["drop_target_highlight_visible"] = bool(
+            ImageChops.difference(badge_removed, drop_target_frame).getbbox()
+        )
         remove_x, remove_y = remove_target_point()
-        settle_and_release(remove_id, remove_x, remove_y)
+        settle_and_release(drag_id, remove_x, remove_y)
         capture("home-dark-removed.png")
-        # The authoritative check for the remove flow is the persisted
+        # The authoritative check for both remove flows is the persisted
         # layout file itself, read after the restart below
         # ("removed_from_saved_layout") -- a visual diff here would be
-        # fragile (the removed icon's former slot is simply empty grid
+        # fragile (a removed icon's former slot is simply empty grid
         # space, which can look identical to other empty slots).
+
+        # Done exits rearrange mode (a tap on any non-icon point does, per
+        # home_screen.rs's own "tap elsewhere stops jiggling" behavior; the
+        # Done pill is simply the obvious, labeled place to do it) -- this
+        # settled, non-rearranging frame, not `page1` (which still shows the
+        # now-removed "Fixture Badge"), is the correct baseline for the
+        # restart-stability check below, since both icons removed above are
+        # gone from the persisted layout for good.
+        tap(*done_button_point())
+        settled_after_removals = capture("home-dark-rearrange-done.png")
 
         # --- Restart proves persistence. ---
         rust.terminate()
@@ -485,19 +560,16 @@ def main():
             rust.wait(timeout=5)
         except subprocess.TimeoutExpired:
             rust.kill()
-        layout_after_removal = json.loads(home_json.read_text())
-        checks["removed_from_saved_layout"] = "k230-fixture-extra.desktop" not in json.dumps(
-            layout_after_removal
-        )
-        checks["dock_survives_the_removal"] = (
-            "k230-fixture-terminal.desktop" in json.dumps(layout_after_removal)
-        )
+        layout_after_removal = json.dumps(json.loads(home_json.read_text()))
+        checks["badge_removed_from_saved_layout"] = "k230-fixture-badge.desktop" not in layout_after_removal
+        checks["drag_removed_from_saved_layout"] = "k230-fixture-extra.desktop" not in layout_after_removal
+        checks["dock_survives_the_removal"] = "k230-fixture-terminal.desktop" in layout_after_removal
 
         restarted = start_pass(dark, "dark-restarted")
         wait_for_ready("dark-restarted-rust")
         after_restart = capture("home-dark-after-restart.png")
         checks["stable_after_restart"] = not bool(
-            ImageChops.difference(page1, after_restart).getbbox()
+            ImageChops.difference(settled_after_removals, after_restart).getbbox()
         )
         restarted.terminate()
         try:
@@ -527,51 +599,62 @@ def main():
         except subprocess.TimeoutExpired:
             light_rust.kill()
 
-        # --- Showcase pass: a believable, fully-populated fresh Home, for
-        # visual evidence rather than interaction coverage (the sparse
-        # 2-3-app fixture above is deliberately minimal for the
-        # paging/tap/pin/rearrange checks; this is what a real Home with a
-        # handful of pinned apps actually looks like). ---
+        # --- Showcase pass: a believable, fully-populated Home (not the
+        # sparse interactive fixture above), for visual evidence rather than
+        # interaction coverage. Every icon here resolves against the real
+        # bundled icon theme (`--icons`); the four dock entries' Name/Icon
+        # match this image's own real desktop entries plus Settings.
+        # Twenty distinct grid apps exactly fill one page
+        # (apps_per_page() == 20 at this panel's reference height), so this
+        # is what a fully pinned, single-page Home actually looks like, not
+        # a half-empty one. ---
         showcase_data = root / "showcase-data"
         showcase_apps = showcase_data / "applications"
         showcase_apps.mkdir(parents=True)
-        showcase_icons = showcase_data / "icons/fixture/scalable/apps"
-        showcase_icons.mkdir(parents=True)
-        (showcase_data / "icons/fixture/index.theme").write_text(
-            "[Icon Theme]\nName=fixture\nDirectories=scalable/apps\n"
-            "[scalable/apps]\nSize=48\nType=Scalable\nMinSize=16\nMaxSize=128\n"
-        )
-        showcase_layout = {
-            "terminal": ("Terminal", "#78d7cb"),
-            "files": ("Files", "#f9c96e"),
-            "editor": ("Text Editor", "#89b4fa"),
-            "monitor": ("System Monitor", "#cba6f7"),
-            "video": ("Video Player", "#f38ba8"),
-            "settings": ("Settings", "#a6e3a1"),
-            "browser": ("Browser", "#f6a35e"),
-            "notes": ("Notes", "#94e2d5"),
+        dock_apps = {
+            "terminal": ("Terminal", "foot"),
+            "monitor": ("Monitor", "htop"),
+            "files": ("Files", "folder"),
+            "settings": ("Settings", "gnome-control-center"),
         }
-        for app_id, (label, hex_color) in showcase_layout.items():
-            (showcase_icons / f"{app_id}.svg").write_text(
-                f'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">'
-                f'<rect width="48" height="48" rx="10" fill="{hex_color}"/></svg>'
-            )
+        grid_apps = {
+            "editor": ("Text Editor", "accessories-text-editor"),
+            "browser": ("Browser", "internet-web-browser"),
+            "video": ("Video", "multimedia-video-player"),
+            "calculator": ("Calculator", "gnome-calculator"),
+            "calendar": ("Calendar", "gnome-calendar"),
+            "weather": ("Weather", "gnome-weather"),
+            "music": ("Music", "gnome-music"),
+            "photos": ("Photos", "gnome-photos"),
+            "maps": ("Maps", "gnome-maps"),
+            "clocks": ("Clocks", "gnome-clocks"),
+            "contacts": ("Contacts", "gnome-contacts"),
+            "characters": ("Characters", "gnome-characters"),
+            "screenshot": ("Screenshot", "gnome-screenshot"),
+            "disks": ("Disks", "gnome-disks"),
+            "help": ("Help", "gnome-help"),
+            "logs": ("Logs", "gnome-logs"),
+            "books": ("Books", "gnome-books"),
+            "sysmon": ("System Monitor", "gnome-system-monitor"),
+            "filebrowser": ("File Browser", "nautilus"),
+            "console": ("Console", "gnome-terminal"),
+        }
+        assert len(grid_apps) == apps_per_page(), "the showcase page must exactly fill one page"
+        for app_id, (label, icon_name) in {**dock_apps, **grid_apps}.items():
             (showcase_apps / f"k230-showcase-{app_id}.desktop").write_text(
                 "[Desktop Entry]\nType=Application\n"
-                f"Name={label}\nExec=/bin/true {app_id}\nIcon={app_id}\n"
+                f"Name={label}\nExec=/bin/true {app_id}\nIcon={icon_name}\n"
             )
         showcase_state = root / "showcase-state"
         showcase_json = showcase_state / "k230-shell/home.json"
         showcase_json.parent.mkdir(parents=True)
-        ids = [f"k230-showcase-{app_id}.desktop" for app_id in showcase_layout]
-        per_page = apps_per_page()
-        page0 = ids[4:8] + [None] * (per_page - 4)
         showcase_json.write_text(json.dumps({
             "schema": 1,
-            "pages": [page0],
-            "dock": ids[0:4],
+            "pages": [[f"k230-showcase-{app_id}.desktop" for app_id in grid_apps]],
+            "dock": [f"k230-showcase-{app_id}.desktop" for app_id in dock_apps],
         }))
-        showcase_env = dict(env, XDG_DATA_HOME=str(showcase_data), XDG_DATA_DIRS=str(showcase_data),
+        showcase_env = dict(env, XDG_DATA_HOME=str(showcase_data),
+                             XDG_DATA_DIRS=f"{icons_share}:{showcase_data}",
                              XDG_STATE_HOME=str(showcase_state))
 
         def start_showcase(generation, prefix):
@@ -584,9 +667,23 @@ def main():
             processes.append(process)
             return process
 
+        # The showcase catalog decodes 24 real icons on first paint (vs. the
+        # interactive fixture's 1-2) -- under qemu-riscv64-static emulation
+        # that decode can outlast `wait_for_ready`'s ordinary settle time,
+        # so a still-decoding (near-blank) frame can itself sit stable long
+        # enough to fool `capture`'s stability heuristic. A previous run of
+        # this exact scenario captured a solid black frame this way; this
+        # extra settle is deliberately generous rather than tightly tuned.
         showcase_dark = start_showcase(dark, "showcase-dark")
         wait_for_ready("showcase-dark-rust")
-        capture("home-dark-showcase.png")
+        time.sleep(1.5)
+        showcase_dark_image = capture("home-dark-showcase.png")
+        # A guard against exactly the blank/black-frame race described
+        # above ever recurring silently (these captures are otherwise never
+        # diffed against anything).
+        checks["showcase_dark_is_not_a_blank_frame"] = bool(
+            ImageChops.difference(showcase_dark_image, Image.new("RGB", showcase_dark_image.size)).getbbox()
+        )
         showcase_dark.terminate()
         try:
             showcase_dark.wait(timeout=5)
@@ -595,7 +692,11 @@ def main():
 
         showcase_light = start_showcase(light, "showcase-light")
         wait_for_ready("showcase-light-rust")
-        capture("home-light-showcase.png")
+        time.sleep(1.5)
+        showcase_light_image = capture("home-light-showcase.png")
+        checks["showcase_light_is_not_a_blank_frame"] = bool(
+            ImageChops.difference(showcase_light_image, Image.new("RGB", showcase_light_image.size)).getbbox()
+        )
         showcase_light.terminate()
         try:
             showcase_light.wait(timeout=5)
@@ -605,7 +706,12 @@ def main():
         failed = [name for name, ok in checks.items() if not ok]
         assert not failed, f"failed checks: {failed}"
         result = {"result": "PASS", "class": "headless-qemu-native-touch",
-                  "checks": checks, "sway": str(args.sway), "rust": str(args.rust)}
+                  "checks": checks, "sway": str(args.sway), "rust": str(args.rust),
+                  "theme_bundle": str(bundle), "icons": str(args.icons),
+                  "dark_generation": dark_report["generation"],
+                  "dark_selected_background": dark_report["selected_background"],
+                  "light_generation": light_report["generation"],
+                  "light_selected_background": light_report["selected_background"]}
         (root / "result.json").write_text(json.dumps(result, indent=2) + "\n")
         print(json.dumps(result, indent=2))
         print("PASS paired Sway/Rust Home screen QEMU touch, synthetic backend; no physical touch")
