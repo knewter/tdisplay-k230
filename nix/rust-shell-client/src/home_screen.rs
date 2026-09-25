@@ -95,13 +95,23 @@ impl HomeScreen {
             id,
             start: point,
             held_ms: 0,
-            long_fired: false,
+            // Already in rearrange mode: no fresh long-press timer is
+            // needed (a grab below, or a plain tap, decides this touch),
+            // so mark the long-press as already "used" up front.
+            long_fired: self.rearranging,
             slot_at_down,
         });
-        if !self.rearranging {
+        if self.rearranging {
+            // A fresh touch on any filled icon grabs it immediately,
+            // exactly as real launchers' own "jiggle mode" lets any icon
+            // be picked up without holding again. Touching empty space, or
+            // a non-drag tap on an icon, is resolved at `up` instead.
+            if let Some(slot) = slot_at_down {
+                self.drag = Some((slot, point));
+            }
+        } else {
             self.pager.down(point, time_ms);
         }
-        let _ = time_ms;
     }
 
     pub fn motion(
@@ -197,21 +207,19 @@ impl HomeScreen {
             return None;
         }
         if let Some((slot, _)) = self.drag.take() {
-            return Some(self.drop_dragged_icon(slot, point, width, height));
+            return self.drop_dragged_icon(slot, point, width, height);
         }
         if self.pager.dragging() {
             self.pager.up(self.page_count());
             return None;
         }
         if self.rearranging {
-            if home_grid::hits(point, home_grid::done_button_rect(width)) {
-                self.rearranging = false;
-                return None;
-            }
-            if self.filled_slot_at(point, width, height).is_some() {
-                return None; // tapping another icon while rearranging is a no-op
-            }
-            self.rearranging = false; // tap on empty space exits, like both references
+            // A touch on a filled icon always armed `self.drag` immediately
+            // in `down` (above), so reaching here with `self.rearranging`
+            // still true means this touch started on empty space or the
+            // Done pill -- either way, exit rearrange mode, matching both
+            // reference launchers' "tap elsewhere to stop jiggling".
+            self.rearranging = false;
             return None;
         }
         self.filled_slot_at(point, width, height).and_then(|slot| {
@@ -221,32 +229,34 @@ impl HomeScreen {
         })
     }
 
+    /// `None` when the drop changed nothing (a plain tap-release on an
+    /// already-grabbed icon, with no actual move) -- the caller then skips
+    /// persisting, so tapping icons while rearranging does not write to
+    /// disk on every touch.
     fn drop_dragged_icon(
         &mut self,
         from: HomeSlot,
         point: (f64, f64),
         width: u32,
         height: u32,
-    ) -> HomeAction {
+    ) -> Option<HomeAction> {
         let apps_per_page = home_grid::apps_per_page(height);
         if home_grid::hits(point, home_grid::remove_target_rect(width)) {
-            if let Some(id) = self.layout.get(from) {
-                self.layout.remove_id(&id.to_string());
-            }
-            return HomeAction::LayoutChanged;
+            let id = self.layout.get(from)?.to_string();
+            self.layout.remove_id(&id);
+            return Some(HomeAction::LayoutChanged);
         }
-        let Some(id) = self.layout.get(from).map(str::to_string) else {
-            return HomeAction::LayoutChanged;
-        };
+        let id = self.layout.get(from)?.to_string();
         let target = self.slot_at(point, width, height).unwrap_or(from);
-        if target != from {
-            // Swap rather than overwrite, so dropping onto an occupied slot
-            // never silently deletes the icon that was already there.
-            let displaced = self.layout.get(target).map(str::to_string);
-            self.layout.set(target, Some(id), apps_per_page);
-            self.layout.set(from, displaced, apps_per_page);
+        if target == from {
+            return None;
         }
-        HomeAction::LayoutChanged
+        // Swap rather than overwrite, so dropping onto an occupied slot
+        // never silently deletes the icon that was already there.
+        let displaced = self.layout.get(target).map(str::to_string);
+        self.layout.set(target, Some(id), apps_per_page);
+        self.layout.set(from, displaced, apps_per_page);
+        Some(HomeAction::LayoutChanged)
     }
 
     pub fn cancel(&mut self) {
@@ -441,6 +451,41 @@ mod tests {
             screen.layout.get(HomeSlot::Grid { page: 0, slot: 1 }),
             Some("a.desktop")
         );
+    }
+
+    #[test]
+    fn already_rearranging_a_fresh_drag_moves_an_icon_without_a_second_long_press() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.rearranging = true;
+        let (x0, y0, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, 0);
+        let start = (x0 + w / 2.0, y0 + h / 2.0);
+        let (x1, y1, w1, h1) = home_grid::tile_rect(WIDTH, HEIGHT, 1);
+        let target = (x1 + w1 / 2.0, y1 + h1 / 2.0);
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        assert!(screen.drag.is_some(), "a filled icon is grabbed immediately while rearranging");
+        screen.motion(1, target, 20, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, target, 40, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some("a.desktop"));
+        assert!(screen.rearranging, "still rearranging after one successful move");
+    }
+
+    #[test]
+    fn a_plain_tap_release_while_rearranging_does_not_persist() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.rearranging = true;
+        let point = tile_center_for_test(0);
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+        assert!(screen.rearranging, "a tap on the grabbed icon itself does not exit rearrange mode");
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }), Some("a.desktop"));
+    }
+
+    fn tile_center_for_test(slot: usize) -> (f64, f64) {
+        let (x, y, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, slot);
+        (x + w / 2.0, y + h / 2.0)
     }
 
     #[test]

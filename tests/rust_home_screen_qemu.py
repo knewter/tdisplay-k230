@@ -292,13 +292,21 @@ def main():
         ipc(f"card_shell test-touch up {this_contact}")
 
     def drag_steps(x1, x2, y, steps=6):
+        """Horizontal-only drag (constant y) -- page swipes."""
+        return drag_steps_2d((x1, y), (x2, y), steps)
+
+    def drag_steps_2d(start, end, steps=6):
+        """General 2D drag, for a rearrange-mode icon drag to a target that
+        is not on the same horizontal line as the lifted icon (e.g. the
+        Done/Remove band in the top inset, well above the grid)."""
         nonlocal contact
         this_contact = contact
         contact += 1
-        ipc(f"card_shell test-touch down {this_contact} {x1} {y}")
+        ipc(f"card_shell test-touch down {this_contact} {start[0]} {start[1]}")
         for step in range(1, steps + 1):
-            x = x1 + (x2 - x1) * step / steps
-            ipc(f"card_shell test-touch motion {this_contact} {x:.1f} {y}")
+            x = start[0] + (end[0] - start[0]) * step / steps
+            y = start[1] + (end[1] - start[1]) * step / steps
+            ipc(f"card_shell test-touch motion {this_contact} {x:.1f} {y:.1f}")
             time.sleep(0.03)
         return this_contact
 
@@ -352,13 +360,28 @@ def main():
 
         page1 = capture("home-dark-page1.png")
 
-        contact_id = drag_steps(*[tile_center(0)[0] + 250, tile_center(0)[0] - 250, tile_center(0)[1]])
-        time.sleep(0.05)
+        # A full page-width drag to page 1, captured partway through (a
+        # genuine "mid-swipe" frame while the touch is still down) and then
+        # completed and released well past the 50% settle threshold, so
+        # release reliably rounds forward to page 1 rather than snapping
+        # back to page 0.
+        start_x, drag_y = tile_center(0)
+        end_x = start_x - WIDTH
+        contact_id = contact
+        contact += 1
+        ipc(f"card_shell test-touch down {contact_id} {start_x} {drag_y}")
+        half_x = start_x - WIDTH * 0.5
+        for step_x in (start_x - WIDTH * 0.2, start_x - WIDTH * 0.35, half_x):
+            ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
+            time.sleep(0.03)
         mid_swipe = capture("home-dark-mid-swipe.png", timeout=1.5, stable_frames=1)
         checks["mid_swipe_differs_from_page1"] = bool(
             ImageChops.difference(page1, mid_swipe).getbbox()
         )
-        settle_and_release(contact_id, tile_center(0)[0] - 250, tile_center(0)[1])
+        for step_x in (start_x - WIDTH * 0.7, start_x - WIDTH * 0.9, end_x):
+            ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
+            time.sleep(0.03)
+        settle_and_release(contact_id, end_x, drag_y)
         page2 = capture("home-dark-page2.png")
         checks["page2_differs_from_page1"] = bool(ImageChops.difference(page1, page2).getbbox())
 
@@ -369,8 +392,10 @@ def main():
         wait_for(lambda: marker.exists() and "terminal" in marker.read_text())
 
         # --- Back to page 1, then the pin flow via the drawer. ---
-        drag_id = drag_steps(tile_center(0)[0] - 250, tile_center(0)[0] + 250, tile_center(0)[1])
-        settle_and_release(drag_id, tile_center(0)[0] + 250, tile_center(0)[1])
+        back_start_x, back_y = tile_center(0)
+        back_end_x = back_start_x + WIDTH
+        drag_id = drag_steps(back_start_x, back_end_x, back_y)
+        settle_and_release(drag_id, back_end_x, back_y)
         capture("home-dark-back-to-page1.png")
 
         route("drawer")
@@ -391,14 +416,20 @@ def main():
         checks["pinned_icon_visible"] = bool(ImageChops.difference(page1, pinned).getbbox())
 
         # --- Rearrange mode: long-press the newly pinned icon, drag to Remove. ---
+        # `long_press` holds in place past LONG_PRESS_MS then releases; the
+        # release itself is what `HomeScreen::up` sees as a rearrange-mode
+        # drop (of nothing yet moved), so entering rearrange mode is
+        # already complete by the time this call returns.
         long_press(*tile_center(0))
-        wait_for(lambda: "app-launch-requested" not in text("dark-rust")[-40:], 1)
         rearranging = capture("home-dark-rearrange.png")
         checks["rearrange_mode_shows_done_and_remove"] = bool(
             ImageChops.difference(pinned, rearranging).getbbox()
         )
-        remove_id = drag_steps(tile_center(0)[0], remove_target_point()[0], remove_target_point()[1])
-        settle_and_release(remove_id, remove_target_point()[0], remove_target_point()[1])
+        # A fresh press-and-drag on the same (now-lifted-mode) icon, over to
+        # the Remove target -- a real diagonal drag, not a same-row one.
+        remove_id = drag_steps_2d(tile_center(0), remove_target_point())
+        remove_x, remove_y = remove_target_point()
+        settle_and_release(remove_id, remove_x, remove_y)
         capture("home-dark-removed.png")
         # The authoritative check for the remove flow is the persisted
         # layout file itself, read after the restart below
@@ -436,8 +467,10 @@ def main():
         light_rust = start_pass(light, "light")
         wait_for(lambda: "ready-idle" in text("light-rust"), 30)
         light_page1 = capture("home-light-page1.png")
-        light_id = drag_steps(tile_center(0)[0] + 250, tile_center(0)[0] - 250, tile_center(0)[1])
-        settle_and_release(light_id, tile_center(0)[0] - 250, tile_center(0)[1])
+        light_start_x, light_y = tile_center(0)
+        light_end_x = light_start_x - WIDTH
+        light_id = drag_steps(light_start_x, light_end_x, light_y)
+        settle_and_release(light_id, light_end_x, light_y)
         light_page2 = capture("home-light-page2.png")
         checks["light_page2_differs_from_page1"] = bool(
             ImageChops.difference(light_page1, light_page2).getbbox()
