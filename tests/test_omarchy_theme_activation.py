@@ -268,6 +268,41 @@ class ThemePreparation(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(first_report, second_report)
 
+    def test_helper_digest_is_cached_across_repeated_preparations(self):
+        # theme_helperd.py's own daemon calls prepare() many times per
+        # process lifetime with the *same* --tools path (a fixed Nix store
+        # path in production, immutable for the daemon's whole lifetime);
+        # board evidence attributed part of prepare_entry's 73 ms to
+        # re-hashing that tree from scratch on every single call, cache hit
+        # or not. The theme's own source_hash is deliberately still
+        # recomputed every time (a person can edit their own theme's files
+        # while the daemon keeps running); only the tools digest is cached.
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            activation._helper_hash_cache.clear()
+            calls = []
+            original = activation.source_digest
+
+            def counting_digest(path):
+                calls.append(path)
+                return original(path)
+
+            with mock.patch.object(activation, "source_digest", side_effect=counting_digest):
+                call("theme", theme, state)
+                after_first = len(calls)
+                call("theme", theme, state)
+                after_second = len(calls)
+        # First call is a cache miss (slow path): source_hash, helper_hash,
+        # and the slow path's own end-of-staging "did the theme change
+        # during preparation" recheck of the theme -- 3 total.
+        self.assertEqual(after_first, 3)
+        # Second call is a cache hit (fast path, returns before that
+        # recheck exists): only source_hash again; helper_hash is cached.
+        self.assertEqual(after_second - after_first, 1,
+                         "second call must only re-hash the theme, not the cached tools digest")
+
     def test_repeated_preparation_reports_a_newly_missing_remembered_background(self):
         # The one field a cache hit still has to (cheaply) recompute rather
         # than trust verbatim from the on-disk report: whether *this*

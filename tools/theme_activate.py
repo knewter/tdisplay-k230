@@ -189,6 +189,34 @@ def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
     ).hexdigest()[:24]
 
 
+#: Per-process cache of `source_digest(tools)`, keyed by the tools
+#: directory's own resolved path. Board evidence (2026-09-24,
+#: `theme-helper.service` reachable): `prepare_entry` cost 73 ms per
+#: `preview`/`activate` even on a cache hit for the generation itself,
+#: because both digests below were still recomputed from scratch every
+#: call. `tools` is `theme_helperd.py`'s own fixed `--tools` startup flag
+#: (a Nix store path in production, or `theme_catalog.py`'s own
+#: `--tools`/`HOST_TOOLS` default for a bare CLI run) -- immutable for the
+#: life of *this* process either way, so caching it indefinitely, keyed by
+#: its resolved path, is safe: a bare CLI process only ever calls this
+#: once anyway (empty cache, no behavior change), and the daemon's `tools`
+#: value never changes between requests without a restart. Unlike the
+#: theme's own `source_hash` just above (a person can edit their own
+#: theme's files while the daemon keeps running), there is no plausible
+#: mid-process change to miss here.
+_helper_hash_cache: dict[str, str] = {}
+
+
+def helper_digest(tools: Path) -> str:
+    key = str(tools.resolve(strict=True))
+    cached = _helper_hash_cache.get(key)
+    if cached is not None:
+        return cached
+    digest = source_digest(tools)
+    _helper_hash_cache[key] = digest
+    return digest
+
+
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
             background_choice: str | None = None,
@@ -199,7 +227,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     stopwatch = theme_timing.Stopwatch()
     source_hash = source_digest(theme)
     stopwatch.lap("source_hash")
-    helper_hash = source_digest(tools)
+    helper_hash = helper_digest(tools)
     stopwatch.lap("helper_hash")
     adapter_hash = hashlib.sha256(Path(__file__).read_bytes()
                                   + (Path(__file__).with_name("theme_tokens.py")).read_bytes()).hexdigest()
