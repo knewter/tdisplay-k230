@@ -244,6 +244,71 @@ class ThemePreparation(unittest.TestCase):
             self.assertEqual((state / "background").resolve(),
                              (generation / "theme/backgrounds/portrait.png").resolve())
 
+    def test_repeated_preparation_of_an_existing_generation_skips_staging_and_helpers(self):
+        # Board evidence (2026-09-24, `theme-helper.service` reachable):
+        # `preview`/`activate` of an already-prepared catppuccin/-latte still
+        # took 3.95-4.26 s each, because this function used to check whether
+        # the destination already existed only at the very end, after
+        # staging every asset again and re-invoking the external
+        # omarchy-theme-* helpers -- all of it discarded once the check
+        # finally ran. This proves the fast path now taken for an existing
+        # generation touches neither `checked_copy` (no asset bytes are
+        # copied) nor `invoke` (no external helper is spawned), and returns
+        # the exact same report a full re-preparation would.
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            source(theme)
+            first, first_report = call("theme", theme, state)
+            with mock.patch.object(activation, "checked_copy",
+                                   side_effect=AssertionError("must not stage on a cache hit")), \
+                 mock.patch.object(activation, "invoke",
+                                   side_effect=AssertionError("must not spawn a helper on a cache hit")):
+                second, second_report = call("theme", theme, state)
+            self.assertEqual(first, second)
+            self.assertEqual(first_report, second_report)
+
+    def test_repeated_preparation_reports_a_newly_missing_remembered_background(self):
+        # The one field a cache hit still has to (cheaply) recompute rather
+        # than trust verbatim from the on-disk report: whether *this*
+        # request's remembered background choice is still one of the
+        # generation's own assets, without mutating the shared, immutable,
+        # on-disk report.json other callers may also be reading. `source()`
+        # ships a single background (portrait.png), so a `None` remembered
+        # choice and a *missing* remembered choice both fall back to the
+        # exact same `selected_background` -- and therefore the exact same
+        # (cached, content-addressed) generation -- letting this test change
+        # only the remembered preference between the two calls, not the
+        # theme content, and still land on the same generation both times.
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            theme, state = base / "theme", base / "state"
+            state.mkdir()
+            source(theme)
+            first, first_report = call("theme", theme, state)
+            self.assertEqual(first_report["selected_background"], "backgrounds/portrait.png")
+            self.assertNotIn("remembered background removed; using theme default",
+                            first_report["unavailable"])
+            # Simulate a background remembered from a theme revision that no
+            # longer exists (the theme itself is unchanged here, only the
+            # remembered preference references an asset it never had).
+            intent = activation.SelectionIntent(
+                state, theme, "backgrounds/second.jpg",
+                {"backgrounds/second.jpg"}, explicit=True)
+            intent.guard()
+            intent.commit()
+            self.assertEqual(activation.remembered_choice(state, theme), "backgrounds/second.jpg")
+            with mock.patch.object(activation, "invoke",
+                                   side_effect=AssertionError("must not spawn a helper on a cache hit")):
+                again, report = call("theme", theme, state)
+            self.assertEqual(again, first)
+            self.assertEqual(report["selected_background"], "backgrounds/portrait.png")
+            self.assertIn("remembered background removed; using theme default",
+                          report["unavailable"])
+            on_disk = json.loads((first / "report.json").read_text())
+            self.assertNotIn("remembered background removed; using theme default",
+                             on_disk["unavailable"])
+
 
 if __name__ == "__main__":
     unittest.main()

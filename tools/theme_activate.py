@@ -25,6 +25,7 @@ from theme_preferences import SelectionIntent, choice as remembered_choice
 from theme_tokens import TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 import keyboard_appearance
+import theme_timing
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -139,6 +140,55 @@ def build_wallpaper_cache(wallpaper_cache_tool: Path, background_path: Path, wor
         pass
 
 
+def background_listing(theme: Path) -> list[str]:
+    """The theme's background asset *names* only (a directory listing, no
+    file content read) -- exactly the `report["backgrounds"]` value
+    `prepare()`'s staging loop below would build from copying every asset,
+    used by `prepare()`'s fast path to pick `selected_background` (and so
+    compute the generation identity) without paying that loop's real cost.
+    Safe to skip the loop's own symlink/suffix bookkeeping here: `prepare()`
+    always calls `source_digest(theme)` first, which already walks the
+    whole tree and raises on any symlink, so nothing under `theme` --
+    `backgrounds/` included -- can be a symlink by the time this runs.
+    """
+    directory = theme / "backgrounds"
+    if not directory.is_dir():
+        return []
+    return sorted(
+        f"backgrounds/{asset.name}" for asset in directory.iterdir()
+        if asset.suffix.lower() in STILLS | VIDEOS
+    )
+
+
+def select_background(backgrounds: list[str], background_choice: str | None,
+                      remembered: str | None) -> tuple[str | None, bool]:
+    """`report["selected_background"]` and whether the remembered choice was
+    unavailable and silently replaced -- the one piece of `prepare()`'s
+    report that depends on request-time state (`remembered_choice()`) rather
+    than the theme's own content, so a cache hit still has to recompute it
+    (cheaply) rather than trusting an on-disk report from a possibly
+    different request."""
+    if background_choice is not None:
+        if background_choice not in backgrounds:
+            raise ThemeError("selected background is not a staged theme asset")
+        return background_choice, False
+    if remembered is not None and remembered in backgrounds:
+        return remembered, False
+    fallback = next((asset for asset in backgrounds if Path(asset).suffix.lower() in STILLS),
+                    next(iter(backgrounds), None))
+    return fallback, remembered is not None
+
+
+def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
+                        adapter_hash: str, name: str, selected_background: str | None) -> str:
+    return hashlib.sha256(
+        json.dumps({"source": source_hash, "source_path": source_path,
+                    "helpers": helper_hash, "adapter": adapter_hash,
+                    "name": name, "selected_background": selected_background,
+                    "version": 1}, sort_keys=True).encode()
+    ).hexdigest()[:24]
+
+
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
             background_choice: str | None = None,
@@ -146,12 +196,52 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     name = normalize_name(name)
     root, theme = choose_source(name, source, user_themes, builtins)
     remembered = remembered_choice(state_root, theme) if background_choice is None else None
+    stopwatch = theme_timing.Stopwatch()
     source_hash = source_digest(theme)
+    stopwatch.lap("source_hash")
     helper_hash = source_digest(tools)
+    stopwatch.lap("helper_hash")
     adapter_hash = hashlib.sha256(Path(__file__).read_bytes()
                                   + (Path(__file__).with_name("theme_tokens.py")).read_bytes()).hexdigest()
     generations = state_root / "generations"
     generations.mkdir(parents=True, exist_ok=True)
+
+    # Fast path: this exact (content-addressed) generation may already be
+    # prepared. Everything needed to know that is cheap -- the two digests
+    # above and a plain directory listing, never a copy of any asset's
+    # bytes or a real (subprocess-spawning) omarchy-theme-tools invocation
+    # -- so check it *before* paying for the staging/build work below, not
+    # after (board evidence: an already-prepared catppuccin/-latte still
+    # took 3.95-4.26 s per `preview`/`activate` before this change, because
+    # that check used to run only at the very end of this function).
+    backgrounds = background_listing(theme)
+    selected_background, remembered_missing = select_background(
+        backgrounds, background_choice, remembered)
+    stopwatch.lap("background_listing")
+    generation_id = generation_identity(
+        source_hash=source_hash, source_path=str(theme), helper_hash=helper_hash,
+        adapter_hash=adapter_hash, name=name, selected_background=selected_background)
+    destination = generations / generation_id
+    if destination.exists():
+        existing = json.loads((destination / "report.json").read_text())
+        if (existing["source_sha256"] != source_hash or existing["name"] != name
+                or existing["source"] != str(theme)
+                or existing.get("selected_background") != selected_background
+                or existing["helper_sha256"] != helper_hash
+                or existing["adapter_sha256"] != adapter_hash):
+            raise ThemeError("generation identity collision")
+        if remembered_missing:
+            # Request-specific, not a property of the (immutable, shared)
+            # generation itself: do not mutate the cached on-disk report.
+            existing = {**existing, "unavailable": [
+                *existing["unavailable"],
+                "remembered background removed; using theme default",
+            ]}
+        stopwatch.lap("cache_hit")
+        theme_timing.log("prepare", name, stopwatch, generation=generation_id[:12], cache="hit")
+        return destination, existing
+    stopwatch.lap("cache_miss_check")
+
     with tempfile.TemporaryDirectory(prefix=".prepare-", dir=generations) as temporary:
         work = Path(temporary)
         staged = work / "theme"
@@ -201,15 +291,19 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 raise ThemeError("theme exceeds total staging bound")
         if not (staged / "colors.toml").is_file():
             raise ThemeError("theme has no usable palette")
-        if background_choice is not None and background_choice not in report["backgrounds"]:
-            raise ThemeError("selected background is not a staged theme asset")
-        if remembered is not None and remembered not in report["backgrounds"]:
+        # `selected_background`/`remembered_missing` were already resolved
+        # (and, for an invalid `background_choice`, already raised) from
+        # `background_listing()`'s cheap pre-pass above; `report["backgrounds"]`,
+        # just built by this loop's own copies, is the same set of names by
+        # construction. Reusing them here (rather than re-deriving from a
+        # second copy of this same selection logic) keeps a single source of
+        # truth; the unconditional `source_digest(theme) != source_hash`
+        # recheck below still catches a real theme content change during
+        # staging and refuses to publish, exactly as before.
+        stopwatch.lap("staging_copy")
+        if remembered_missing:
             report["unavailable"].append("remembered background removed; using theme default")
-        report["selected_background"] = (background_choice if background_choice is not None
-                                         else remembered if remembered in report["backgrounds"]
-                                         else next((asset for asset in report["backgrounds"]
-                                                    if Path(asset).suffix.lower() in STILLS),
-                                                   next(iter(report["backgrounds"]), None)))
+        report["selected_background"] = selected_background
         try:
             with (staged / "colors.toml").open("rb") as stream:
                 raw = tomllib.load(stream)
@@ -222,6 +316,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 report["unknown"].append(f"palette.{key}: preserved; no current role mapping")
         resolved = invoke(tools, "omarchy-theme-color", "--file", str(staged / "colors.toml"), "--all")
         report["palette"] = dict(line.split("\t", 1) for line in resolved.splitlines())
+        stopwatch.lap("omarchy_theme_color")
         # Curate trusted outputs before invoking the upstream template engine.
         curated = work / "templates"
         curated.mkdir()
@@ -233,6 +328,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                             "OMARCHY_THEME_USER_TEMPLATES_DIR": str(user_templates),
                             "OMARCHY_THEME_STAGING_DIR": str(staged)}
         invoke(tools, "omarchy-theme-set-templates", env=env)
+        stopwatch.lap("omarchy_theme_set_templates")
         for filename in ("shell.toml", "foot.ini"):
             path = staged / filename
             if not path.is_file() or path.stat().st_size > MAX_CONFIG:
@@ -251,12 +347,12 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             if not ICON_NAME.fullmatch(selected):
                 raise ThemeError("invalid icon theme selector")
             report["icon_theme"] = selected
-        report["generation"] = hashlib.sha256(
-            json.dumps({"source": source_hash, "source_path": str(theme),
-                        "helpers": helper_hash, "adapter": adapter_hash,
-                        "name": name, "selected_background": report["selected_background"],
-                        "version": 1}, sort_keys=True).encode()
-        ).hexdigest()[:24]
+        # `generation_id`/`destination` were already computed in the fast-path
+        # prelude above from the same inputs (`selected_background` is the
+        # exact value just assigned to `report["selected_background"]`), and
+        # `destination` was confirmed not to exist yet at that point -- no
+        # need to recompute the identical hash a second time.
+        report["generation"] = generation_id
         tokens["generation"] = report["generation"]
         tokens["icon_theme"] = report["icon_theme"]
         tokens["background"] = ("background" if report["selected_background"]
@@ -264,7 +360,6 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         serialized = json.dumps(tokens, indent=2, sort_keys=True) + "\n"
         if len(serialized.encode()) > 256 * 1024:
             raise ThemeError("appearance payload exceeds bound")
-        destination = generations / report["generation"]
         (work / "theme.name").write_text(name + "\n")
         (work / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
         (work / "appearance.json").write_text(serialized)
@@ -272,6 +367,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             (work / "background").symlink_to("theme/" + report["selected_background"])
         if source_digest(theme) != source_hash:
             raise ThemeError("theme source changed during preparation")
+        stopwatch.lap("recheck_source")
         def reuse_existing():
             existing = json.loads((destination / "report.json").read_text())
             if (existing["source_sha256"] != source_hash or existing["name"] != name
@@ -287,9 +383,15 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             # cached generation.
             return destination, report
         if destination.exists():
-            return reuse_existing()
+            # Lost a race against a concurrent preparer of the identical
+            # (content-addressed) generation between the fast-path check
+            # above and here -- adopt their result instead of failing.
+            result = reuse_existing()
+            theme_timing.log("prepare", name, stopwatch, generation=generation_id[:12], cache="race")
+            return result
         if wallpaper_cache_tool is not None and tokens["background"] == "background":
             build_wallpaper_cache(wallpaper_cache_tool, staged / report["selected_background"], work)
+        stopwatch.lap("wallpaper_cache")
         try:
             os.replace(work, destination)
         except OSError as error:
@@ -301,7 +403,11 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             # after the same identity check instead of failing the preview.
             if error.errno not in (errno.ENOTEMPTY, errno.EEXIST) or not destination.is_dir():
                 raise
-            return reuse_existing()
+            result = reuse_existing()
+            theme_timing.log("prepare", name, stopwatch, generation=generation_id[:12], cache="race")
+            return result
+        stopwatch.lap("publish")
+        theme_timing.log("prepare", name, stopwatch, generation=generation_id[:12], cache="miss")
         return destination, report
 
 
