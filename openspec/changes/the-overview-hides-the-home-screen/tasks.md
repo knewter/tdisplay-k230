@@ -53,3 +53,35 @@
   plus a photograph of the panel; requires the board and its serial port
   reserved by one operator, per `AGENTS.md`. Not performed by this task
   (QEMU-only scope, no board/`/dev/ttyACM0` access).
+
+## 6. Follow-up: self-healing against unrelated focus changes
+
+Found while investigating a separate, unrelated report (bottom-band panel
+flicker, `docs/evidence/card-shell/bottom-band-flicker/hypotheses.md`):
+`home_layer_sync` ran only from `handle_result`'s `CS_SHRINK` branch and
+`restore()`, so it depended entirely on `card_shell`'s own state machine
+running again to correct any drift. An unrelated Sway focus change while
+the overview stayed open (an IPC `[app_id=...] focus` command reaching an
+already-mapped card) was observed to re-enable `layers.shell_bottom`'s
+scene node without `shell.active` or `shell.policy.mode` changing at all --
+nothing in `card_shell`'s state machine would ever run `home_layer_sync`
+again to notice or correct it.
+
+- [x] 6.1 Call `home_layer_sync(output)` unconditionally from
+  `prepare_impl` (`nix/card-shell/adapter.c`), on every frame, before that
+  frame's scene is ever built or committed -- idempotent (a single
+  scene-node-enabled read, at most one write) and self-healing regardless
+  of what caused the drift. Verify with `nix build .#card-shell --max-jobs
+  1 --cores 6`.
+- [x] 6.2 Add `tests/test_card_shell_home_layer_self_heal.py`: opens the
+  overview, sends two unrelated `focus` IPC commands while it stays open,
+  and asserts `debug-scene`'s `home_enabled` never flips back to `1` (then
+  confirms Home genuinely returns once the overview is actually left, so
+  the fix cannot pass by disabling Home forever). Verified failing against
+  the unfixed adapter (a `home_layer_sync` call removed) and passing
+  against the fixed one (3/3 consecutive passes observed). Verify with
+  `python3 -m unittest test_card_shell_home_layer_self_heal` (run from
+  `tests/`).
+- [x] 6.3 Add the new scenario to this change's `runtime/shell` delta;
+  verify with `openspec validate the-overview-hides-the-home-screen
+  --strict`.

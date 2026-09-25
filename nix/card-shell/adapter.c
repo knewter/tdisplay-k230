@@ -97,6 +97,18 @@ struct card {
 	 * card_clip_box() reads this so the incoming neighbour's mirrored
 	 * content is never clipped to the small deck viewport mid-drag. */
 	bool full_clip;
+	/* k230-video-software/k230-video-mvx (see video_app_id): true for the
+	 * life of the card, set once at card_shell_observe time. A playing
+	 * video keeps committing new decoded frames whether or not its card is
+	 * ever looked at, so continuously letting it drive sync_node's mirror
+	 * rescale while it is only a small, un-selected deck thumbnail pays
+	 * real per-frame decode-to-thumbnail scaling cost for motion nobody can
+	 * see at that size -- exactly the cost "video and transient views stay
+	 * unmarked" used to avoid by keeping video out of the deck entirely.
+	 * sync_node freezes the mirror on its most recently captured frame
+	 * whenever this is true and the card is not currently shown at full
+	 * panel size (card_clip_box's own CS_ENTERING/CS_EXPANDING cases). */
+	bool video_view;
 };
 static struct {
 	struct wl_list cards;
@@ -328,6 +340,19 @@ static uint64_t event_time_ms(uint32_t time_msec) {
 static bool enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SHELL");
 	return s && strcmp(s, "1") == 0;
+}
+/* k230-video-software (software H.264) and k230-video-mvx (the MVX hardware
+ * decode experiment) -- see nix/video-session.py's `--wayland-app-id`. Both
+ * are mpv, launched by k230-video-session; neither is a genuine transient
+ * or popup surface. They used to be excluded from `card_shell ordinary`
+ * (kept as small floating windows) alongside real transient views, which
+ * left them with no card, no swipe-up-to-close, and no way to dismiss them
+ * short of restarting the session -- see docs/evidence/card-shell/
+ * video-card/. They are now ordinary cards like any other app; only real
+ * transient/popup views (wants_floating) stay unmarked. */
+static bool video_app_id(const char *app_id) {
+	return app_id && (strcmp(app_id, "k230-video-software") == 0 ||
+		strcmp(app_id, "k230-video-mvx") == 0);
 }
 static bool scaled_cache_enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SCALED_CACHE");
@@ -918,6 +943,17 @@ static struct wlr_box clip_box(void) {
 							cfg->height - cfg->top_reserved - cfg->bottom_reserved -
 								cfg->title_height - cfg->footer_height};
 }
+/* True while `c` is being rendered at full panel size rather than a small
+ * deck card: the entry gesture's shared full-panel frame (c->full_clip, or
+ * the outgoing entry_id card itself) or a tap-to-expand preview
+ * (CS_EXPANDING's expand_id). Shared by card_clip_box (the mirror must not
+ * be clipped to the small deck viewport here) and sync_node's video-mirror
+ * freeze gate (a video card genuinely being looked at full-size must still
+ * update live; only its small, un-selected deck thumbnail freezes). */
+static bool card_shown_large(const struct card *c) {
+	return (shell.policy.mode == CS_ENTERING && (c->id == shell.policy.entry_id || c->full_clip)) ||
+		(shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id);
+}
 static struct wlr_box card_clip_box(struct card *c) {
 	/* c->full_clip mirrors the entry_id special case for every card sharing
 	 * the entry gesture's common full-panel frame (see sync_card): the
@@ -926,8 +962,7 @@ static struct wlr_box card_clip_box(struct card *c) {
 	 * be clipped down to the small deck viewport either. This box is always
 	 * a superset of clip_box(), so once a card has actually shrunk into the
 	 * deck grid (entry_progress near 1) the wider clip is a no-op. */
-	if ((shell.policy.mode == CS_ENTERING && (c->id == shell.policy.entry_id || c->full_clip)) ||
-		(shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id))
+	if (card_shown_large(c))
 		return (struct wlr_box){shell.output->lx, shell.output->ly,
 			shell.policy.config.width, shell.policy.config.height};
 	return clip_box();
@@ -975,8 +1010,15 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	if (width <= 0 || height <= 0 || ax < clip.x || ay < clip.y ||
 		ax + width > clip.x + clip.width || ay + height > clip.y + clip.height)
 		return false;
-	if (!m->scaled || m->scaled_generation != m->generation ||
-		m->scaled_width != width || m->scaled_height != height) {
+	/* struct card's video_view doc: once a video card has a real captured
+	 * thumbnail and is not currently shown at full panel size, stop
+	 * rebuilding the scaled copy on every new decoded frame -- the size
+	 * check stays live unconditionally, so a resize (output change, entry/
+	 * expand transition ending) still snaps the frozen thumbnail to the
+	 * correct geometry instead of showing a stale size. */
+	bool frozen = m->card->video_view && m->scaled && !card_shown_large(m->card);
+	if (!m->scaled || m->scaled_width != width || m->scaled_height != height ||
+		(!frozen && m->scaled_generation != m->generation)) {
 		if (m->scaled) { wlr_buffer_drop(m->scaled); m->scaled = NULL; }
 		m->scaled = card_scaled_buffer_create(source->buffer, width, height);
 		shell.cache_misses++;
@@ -1588,6 +1630,9 @@ static void handle_result(struct cs_result r) {
 		struct card *c = find(r.close_id);
 		if (c && live(c->view) && c->content == CS_LIVE) {
 			view_close(c->view);
+			if (c->video_view && !card_shell_video_stop())
+				sway_log(SWAY_INFO,
+					"K230_CARD_SHELL video-stop-helper unavailable; relying on xdg close alone");
 			sway_log(SWAY_INFO, "K230_CARD_SHELL close-request id=%" PRIu64, r.close_id);
 		} else {
 			handle_result(cs_close_result(&shell.policy, r.close_id, false));
@@ -2038,6 +2083,26 @@ static void prepare_impl(struct sway_output *output) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
 	shell.preparing = true;
+	/* Self-healing, not merely a CS_SHRINK/CS_RESTORE side effect: an
+	 * unrelated Sway focus change during the overview (an IPC `focus`
+	 * command, or any other code path that reassigns seat focus while
+	 * shell.active is still true) has been observed to re-enable
+	 * layers.shell_bottom's scene node without shell.active itself
+	 * changing -- home_layer_sync's own two call sites (handle_result's
+	 * CS_SHRINK branch and restore()) never run again to correct it, so
+	 * Home would stay wrongly visible underneath the overview's
+	 * deliberately transparent canvas for the rest of that session. This
+	 * runs every frame (prepare_impl/card_shell_prepare is called from both
+	 * output.c render paths on every repaint) and is idempotent -- a single
+	 * scene-node-enabled flag read plus, at most, one write -- so any such
+	 * drift is corrected before the very next frame is ever built or
+	 * committed, well before it could reach the panel. See
+	 * docs/evidence/card-shell/bottom-band-flicker/hypotheses.md for the
+	 * reproduction (`card_shell enter` then an unrelated `[app_id=...]
+	 * focus` IPC command while still in the overview) -- a real,
+	 * independent defect from the reported hardware flicker that document
+	 * investigates, not a claimed fix for it. */
+	home_layer_sync(output);
 	ordinary_sync_usable(output, true);
 	bool blocked =
 		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
@@ -2145,6 +2210,7 @@ void card_shell_observe(struct sway_view *view) {
 	c->view = view;
 	c->id = view->container->node.id;
 	c->content = CS_UNAVAILABLE;
+	c->video_view = video_app_id(view_get_app_id(view));
 	wl_list_init(&c->mirrors);
 	wl_list_insert(shell.cards.prev, &c->link);
 	card_shell_commit(view);
@@ -2606,22 +2672,56 @@ static char *debug_scene_text(void) {
 	wl_list_for_each(c, &shell.cards, link)
 		if (c->view && c->view->container && c->view->container->card_shell_ordinary_maximized)
 			ordinary_maximized_cards++;
-	size_t capacity = 512;
+	size_t capacity = 768;
 	char *text = malloc(capacity);
 	if (!text)
 		return NULL;
 	int home_enabled = shell.output && shell.output->layers.shell_bottom ?
 		shell.output->layers.shell_bottom->node.enabled : -1;
+	/* The bottom strip (the last edge_band-ish slice of the output) is
+	 * compositor-scene content painted by whichever of these is currently
+	 * enabled: the chrome tree (title/status/footer buttons/"Swipe up for
+	 * apps" hint, all children of shell.chrome, toggled off during
+	 * CS_ENTERING/CS_EXPANDING by chrome()), the drawer/shade on-demand
+	 * overlay layer surface (namespace "k230-shell-drawer",
+	 * drawer_mapped()), Home's own always-mapped Layer::Bottom surface
+	 * (home_enabled above), and the on-screen keyboard's layer surface. A
+	 * test asserting a stable bottom strip reads this line alongside a
+	 * pixel capture to attribute any frame-to-frame *scene-content* change
+	 * to one specific surface instead of guessing -- it says nothing about
+	 * post-composition scanout/panel behavior (see docs/evidence/card-shell/
+	 * bottom-band-flicker/hypotheses.md, which is about exactly that gap). */
+	int chrome_enabled = shell.chrome ? shell.chrome->node.enabled : -1;
+	int drawer_mapped_now = drawer_mapped() ? 1 : 0;
+	int keyboard_mapped_now = keyboard_layer(shell.output) ? 1 : 0;
+	/* The deck's own notion of "selected" (shell.policy.selected, an index
+	 * into shell.policy.cards[]) is never the same thing as Sway's real
+	 * seat focus while merely browsing the deck: restore() only reassigns
+	 * seat focus at CS_RESTORE (leaving the overview), so a test stepping
+	 * through cards with `previous`/`next` needs its own ground truth
+	 * instead of polling the IPC tree's "focused" node, which does not
+	 * move until the deck is actually left. "(none)" covers every case
+	 * with no meaningful selection (deck empty, or no current card). */
+	const char *selected_app_id = "(none)";
+	if (shell.policy.count && shell.policy.selected < shell.policy.count) {
+		struct card *selected_card = find(shell.policy.cards[shell.policy.selected].id);
+		if (selected_card && selected_card->view) {
+			const char *id = view_get_app_id(selected_card->view);
+			if (id) selected_app_id = id;
+		}
+	}
 	int written = snprintf(text, capacity,
 		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
 		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
-		"appearance_canvas_authored=%d home_enabled=%d",
+		"appearance_canvas_authored=%d home_enabled=%d mode=%d entry_progress=%.4f "
+		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s",
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
 		shell.appearance_enabled ? shell.appearance.wallpaper : -1,
 		shell.appearance_enabled ? shell.appearance.canvas_authored : -1,
-		home_enabled);
+		home_enabled, (int)shell.policy.mode, shell.policy.entry_progress,
+		chrome_enabled, drawer_mapped_now, keyboard_mapped_now, selected_app_id);
 	if (written < 0) {
 		free(text);
 		return NULL;
@@ -2645,11 +2745,10 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		if (!con || !con->view)
 			return cmd_results_new(CMD_INVALID, "ordinary requires an app container");
 		const char *app_id = view_get_app_id(con->view);
-		if (!app_id || strcmp(app_id, "k230-video-software") == 0 ||
-			strcmp(app_id, "k230-video-mvx") == 0 ||
-			(con->view->impl->wants_floating &&
+		if (!app_id ||
+			(!video_app_id(app_id) && con->view->impl->wants_floating &&
 			con->view->impl->wants_floating(con->view)))
-			return cmd_results_new(CMD_FAILURE, "video and transient views stay unmarked");
+			return cmd_results_new(CMD_FAILURE, "transient views stay unmarked");
 		con->card_shell_ordinary_maximized = true;
 		return cmd_results_new(CMD_SUCCESS, NULL);
 	}

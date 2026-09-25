@@ -28,3 +28,14 @@ hands the screen back to a focused application or to the idle/no-app state.
   focused
 - **THEN** the Home screen becomes visible again, exactly as it would have
   been had the overview never opened
+
+#### Scenario: An unrelated focus change while the overview is open does not reshow Home
+
+- **WHEN** anything reassigns keyboard/seat focus while the overview
+  remains open (for example an IPC `focus` command reaching an already-
+  mapped card, or any other code path outside `card_shell`'s own gesture
+  and button handling), and the overview's own state does not otherwise
+  change
+- **THEN** the Home screen stays hidden; correcting this is not limited to
+  the specific moments `card_shell`'s state machine itself toggles
+  visibility (entering, leaving)

@@ -442,16 +442,33 @@ let
     ${lib.optionalString cfg.coherentShell ''
       # Sway classifies transients as floating before for_window matching.
       # Maximize ordinary tiling apps, preserving dialog geometry and the
-      # more specific video rules below. Home is the live deck, not a tab strip.
+      # video rule below. Home is the live deck, not a tab strip.
       floating_maximum_size -1 x -1
       default_floating_border none
       for_window [tiling app_id="^(?!k230-video-(software|mvx)$).+"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
+
+      # k230-video-software/k230-video-mvx (mpv, see video-session.py) used
+      # to stay a small 480x270/568x320 floating window with no card, no
+      # swipe-up-to-close, and no other close affordance in this touch-only
+      # shell -- see nix/card-shell/adapter.c's now-removed "video and
+      # transient views stay unmarked" exclusion and docs/evidence/
+      # card-shell/video-card/. mpv's wlshm surface maps floating rather
+      # than tiling (the same reason the rule above needs [tiling]), so it
+      # needs its own rule here to reach the identical ordinary-maximized,
+      # swipeable, closable treatment every other app gets. card_shell.c's
+      # `ordinary` handler keeps refusing a real transient/popup view even
+      # under this same app_id match.
+      for_window [app_id="^k230-video-(software|mvx)$"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
     ''}
 
-    # mpv's wlshm surface is explicitly floating so its profile geometry is
-    # honored by Sway on the portrait panel and remains touchable.
-    for_window [app_id="k230-video-software"] floating enable, resize set 480 px 270 px, move position center
-    for_window [app_id="k230-video-mvx"] floating enable, resize set 568 px 320 px, move position center
+    ${lib.optionalString (!cfg.coherentShell) ''
+      # The plain (non-card-shell) touch launcher has no deck to close a
+      # card from, so video keeps its old small, centered floating window
+      # here -- card_shell is disabled in this mode, so it could not be
+      # made an ordinary card in the first place.
+      for_window [app_id="k230-video-software"] floating enable, resize set 480 px 270 px, move position center
+      for_window [app_id="k230-video-mvx"] floating enable, resize set 568 px 320 px, move position center
+    ''}
 
     default_border none
     font pango:DejaVu Sans Mono 15
@@ -911,6 +928,12 @@ in
         SWAY_K230_KEYBOARD_SIGNAL = "${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_CARD_SCALED_CACHE = "0";
+        # card-shell's own close request always sends the video card's
+        # xdg_toplevel a close event first; this additionally asks the
+        # video-session.py controller itself to stop, so a close cannot be
+        # mistaken for a decode failure and relaunch a fallback mpv -- see
+        # card_shell_video_stop's doc in nix/card-shell/route.h.
+        SWAY_K230_CARD_VIDEO_STOP = "${videoSession}/bin/k230-video-session";
       } // lib.optionalAttrs cfg.initialSplash {
         # The derivation validates the fixed raw B,G,R,X asset before adding
         # it above layer-shell backgrounds. It is absent from the daily service.

@@ -254,9 +254,15 @@ int main(int argc,char **argv) {
             char *end; unsigned long n=strtoul(argv[++i],&end,10);
             if (*end || n>60000) return 64;
             a.stall_resize_ms=(unsigned)n;
-        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two|k230.card.three [--refuse-close] [--duration 1..600] [--stall-resize-ms 0..60000]\n");return 64;}
+        } else {fprintf(stderr,"usage: card-composition-probe-client --app-id k230.card.one|k230.card.two|k230.card.three|k230-video-software|k230-video-mvx [--refuse-close] [--duration 1..600] [--stall-resize-ms 0..60000]\n");return 64;}
     }
-    if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two") && strcmp(a.id,"k230.card.three"))
+    /* k230-video-software/k230-video-mvx: real mpv app IDs, accepted here so
+     * video-card QEMU regressions (tests/test_card_shell_video_card.py) can
+     * exercise card_shell's video_app_id() routing with a real mapped
+     * surface instead of the synthetic k230.card.* fixtures, which the
+     * compositor's video_app_id() check would never match. */
+    if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two") && strcmp(a.id,"k230.card.three") &&
+        strcmp(a.id,"k230-video-software") && strcmp(a.id,"k230-video-mvx"))
         return 64;
     a.start=now_ms();
     a.main=(struct plane){.app=&a,.width=480,.height=720,.last_callback=a.start};
