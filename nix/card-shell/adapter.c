@@ -59,10 +59,12 @@ struct card {
 	uint64_t id;
 	enum cs_content content;
 	struct wlr_scene_tree *tree, *pixels;
-	struct wlr_scene_rect *background;
-	struct wlr_scene_buffer *gradient;
-	struct card_brush gradient_brush;
-	int gradient_width, gradient_height;
+	/* The card's own rounded, bordered bezel: tight to the live content's
+	 * aspect-fit box, never the full deck slot (finding: bare-app-cards --
+	 * a full-slot coloured plate read as letterboxing around the snapshot). */
+	struct wlr_scene_buffer *plate;
+	struct card_brush plate_brush;
+	int plate_width, plate_height;
 	struct wlr_scene_buffer *label;
 	char *label_text;
 	struct wlr_scene_buffer *label_icon;
@@ -71,6 +73,12 @@ struct card {
 	bool hidden, original_enabled;
 	double scale;
 	int x, y, pixel_x, pixel_y;
+	/* The plate: the content's aspect-fit box padded out by CARD_PLATE_PAD on
+	 * every side, so the rounded/bordered plate is never fully hidden behind
+	 * the (square-cornered) live pixels it sits under. box_x/box_y is its
+	 * origin, box_width/box_height its size; pixel_x/pixel_y (the mirror
+	 * origin) sits CARD_PLATE_PAD inside it. */
+	int box_x, box_y, box_width, box_height;
 	bool source_valid;
 	int source_x, source_y;
 	bool expand_start_valid;
@@ -125,6 +133,55 @@ static struct {
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
 static const float selected_color[4] = {.184, .420, .310, 1};
+/* webOS-style card plate: a small rounded, bordered bezel hugging the live
+ * snapshot's own aspect-fit box, not a full-bleed rectangle behind it. The
+ * radius stays a couple of px under the pad any caller leaves around the
+ * mirrored content, so the bezel's rounded corner never cuts into the
+ * (square-cornered) live pixels sitting on top of it. */
+#define CARD_PLATE_RADIUS 8.0
+#define CARD_PLATE_STROKE_UNSELECTED 1.5
+#define CARD_PLATE_STROKE_SELECTED 3.0
+/* Per-side margin between the live snapshot and the plate's outer edge.
+ * Must stay >= CARD_PLATE_RADIUS: the plate's rounded corner is cut within
+ * this margin, so the (square) live content inset by this much never pokes
+ * out past the rounded silhouette, and the stroked rim always has room to
+ * show. */
+#define CARD_PLATE_PAD 10.0
+static uint32_t argb_from_float(const float rgba[4]) {
+	uint32_t a = (uint32_t)lround(rgba[3] * 255.0f) & 0xff;
+	uint32_t r = (uint32_t)lround(rgba[0] * 255.0f) & 0xff;
+	uint32_t g = (uint32_t)lround(rgba[1] * 255.0f) & 0xff;
+	uint32_t b = (uint32_t)lround(rgba[2] * 255.0f) & 0xff;
+	return (a << 24) | (r << 16) | (g << 8) | b;
+}
+/* A themed card/selected brush already differs by colour; the unthemed
+ * default becomes a one-stop brush of the same fixed colours so every card
+ * plate -- themed or not -- draws through the one card_plate_scene path. */
+static const struct card_brush *card_brush_for(bool selected) {
+	static struct card_brush fallback_card, fallback_selected;
+	static bool ready;
+	if (!ready) {
+		fallback_card = (struct card_brush){.count = 1, .alpha = 1,
+			.stops = {{.argb = argb_from_float(card_color), .offset = 0}}};
+		fallback_selected = (struct card_brush){.count = 1, .alpha = 1,
+			.stops = {{.argb = argb_from_float(selected_color), .offset = 0}}};
+		ready = true;
+	}
+	if (shell.appearance_enabled)
+		return selected ? &shell.appearance.selected : &shell.appearance.card;
+	return selected ? &fallback_selected : &fallback_card;
+}
+/* A subtle, always-visible rim around the plate: blended toward white rather
+ * than reusing the fill colour outright, since a themed fill can be fully
+ * opaque (identical fill/rim would vanish) or translucent by design. Selected
+ * cards get a stronger, brighter rim instead of a differently coloured plate. */
+static void plate_stroke_color(const float fill[4], bool selected, float out[4]) {
+	float mix = selected ? 0.5f : 0.22f;
+	out[0] = fill[0] * (1 - mix) + mix;
+	out[1] = fill[1] * (1 - mix) + mix;
+	out[2] = fill[2] * (1 - mix) + mix;
+	out[3] = 1.0f;
+}
 static uint32_t appearance_text(bool selected) {
 	return shell.appearance_enabled ?
 		(selected ? shell.appearance.selected_text : shell.appearance.text) : 0xfff7faff;
@@ -484,8 +541,7 @@ static void clear_card(struct card *c) {
 	c->label = NULL;
 	c->label_icon = NULL;
 	c->label_icon_letter = 0;
-	c->background = NULL;
-	c->gradient = NULL;
+	c->plate = NULL;
 	free(c->label_text);
 	c->label_text = NULL;
 	if (c->hidden && live(c->view))
@@ -940,46 +996,38 @@ static void label_clip(struct wlr_scene_buffer *label, int x, int y, int px, int
 	source.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	card_clip_buffer(label, &source, 1, x, y, px, py, clip);
 }
-static void rect_clip(struct wlr_scene_rect *rect, struct wlr_box box, int px, int py,
-					  struct wlr_box clip) {
-	int x = box.x > clip.x ? box.x : clip.x, y = box.y > clip.y ? box.y : clip.y;
-	int right = box.x + box.width < clip.x + clip.width ? box.x + box.width : clip.x + clip.width;
-	int bottom =
-		box.y + box.height < clip.y + clip.height ? box.y + box.height : clip.y + clip.height;
-	wlr_scene_node_set_enabled(&rect->node, right > x && bottom > y);
-	if (right > x && bottom > y) {
-		wlr_scene_rect_set_size(rect, right - x, bottom - y);
-		wlr_scene_node_set_position(&rect->node, x - px, y - py);
-	}
-}
+/* The card IS the live snapshot: a small rounded, bordered plate sized to
+ * c->box_width/box_height (the content's own aspect-fit box, set by the
+ * caller before this runs), positioned at c->pixel_x/pixel_y within the
+ * card's tree -- never the full deck slot. A themed or default brush colours
+ * the plate/rim; `selected` picks the brush and rim already used to
+ * distinguish the current card, so selection reads as an outline change,
+ * not a differently coloured full-bleed plate. */
 static bool card_background(struct card *c, bool selected, bool hidden) {
-	const struct card_brush *brush = selected ? &shell.appearance.selected : &shell.appearance.card;
-	bool gradient = shell.appearance_enabled && brush->count > 1;
-	int width = c->last_width, height = c->last_height;
-	if (gradient && !hidden && (!c->gradient ||
-		memcmp(&c->gradient_brush, brush, sizeof(*brush)) != 0 ||
-		c->gradient_width != width || c->gradient_height != height)) {
-		struct wlr_scene_buffer *next = card_brush_scene(c->tree, brush, width, height);
+	const struct card_brush *brush = card_brush_for(selected);
+	int width = c->box_width, height = c->box_height;
+	bool show = !hidden && width > 0 && height > 0;
+	if (show && (!c->plate || memcmp(&c->plate_brush, brush, sizeof(*brush)) != 0 ||
+			c->plate_width != width || c->plate_height != height)) {
+		float fill[4], stroke[4];
+		card_brush_solid_color(brush, fill);
+		plate_stroke_color(fill, selected, stroke);
+		double stroke_width =
+			selected ? CARD_PLATE_STROKE_SELECTED : CARD_PLATE_STROKE_UNSELECTED;
+		struct wlr_scene_buffer *next = card_plate_scene(c->tree, brush, width, height,
+			CARD_PLATE_RADIUS, stroke, stroke_width);
 		if (!next) return false;
 		wlr_scene_node_place_below(&next->node, &c->pixels->node);
-		if (c->gradient) wlr_scene_node_destroy(&c->gradient->node);
-		c->gradient = next;
-		c->gradient_brush = *brush;
-		c->gradient_width = width;
-		c->gradient_height = height;
+		if (c->plate) wlr_scene_node_destroy(&c->plate->node);
+		c->plate = next;
+		c->plate_brush = *brush;
+		c->plate_width = width;
+		c->plate_height = height;
 	}
-	if (c->gradient) {
-		wlr_scene_node_set_enabled(&c->gradient->node, gradient && !hidden);
-		if (gradient) label_clip(c->gradient, 0, 0, c->x, c->y, clip_box());
+	if (c->plate) {
+		wlr_scene_node_set_enabled(&c->plate->node, show);
+		if (show) label_clip(c->plate, c->box_x, c->box_y, c->x, c->y, clip_box());
 	}
-	float rgba[4];
-	if (shell.appearance_enabled) card_brush_solid_color(brush, rgba);
-	else memcpy(rgba, selected ? selected_color : card_color, sizeof(rgba));
-	wlr_scene_rect_set_color(c->background, rgba);
-	rect_clip(c->background, (struct wlr_box){c->x, c->y, width, height}, c->x,
-		c->y, clip_box());
-	wlr_scene_node_set_enabled(&c->background->node, !gradient && !hidden &&
-		c->background->node.enabled);
 	return true;
 }
 static bool sync_card(struct card *c, size_t index) {
@@ -1028,13 +1076,36 @@ static bool sync_card(struct card *c, size_t index) {
 		c->tree = wlr_scene_tree_create(shell.deck);
 		if (!c->tree)
 			return false;
-		c->background =
-			wlr_scene_rect_create(c->tree, lround(r.width), lround(r.height), card_color);
 		c->pixels = wlr_scene_tree_create(c->tree);
-		if (!c->background || !c->pixels)
+		if (!c->pixels)
 			return false;
 	}
 	wlr_scene_node_set_position(&c->tree->node, c->x, c->y);
+	/* The content's own aspect-fit box within this frame's slot -- the whole
+	 * point of the fix: size the card from the app's aspect and the
+	 * available slot, not a full-bleed plate. Every content class (live,
+	 * private, unavailable) uses the view's real geometry, so a denied card
+	 * gets the same sensible card shape as a live one; geometry.width/height
+	 * is 0 only in a degenerate case, and then the slot itself stands in. */
+	{
+		int content_w = c->view->geometry.width, content_h = c->view->geometry.height;
+		if (content_w <= 0 || content_h <= 0) {
+			content_w = lround(r.width);
+			content_h = lround(r.height);
+		}
+		double fit_w = r.width - 2 * CARD_PLATE_PAD, fit_h = r.height - 2 * CARD_PLATE_PAD;
+		if (fit_w < 1) fit_w = r.width;
+		if (fit_h < 1) fit_h = r.height;
+		c->scale = fmin(fit_w / content_w, fit_h / content_h);
+		double scaled_w = content_w * c->scale, scaled_h = content_h * c->scale;
+		c->pixel_x = lround((r.width - scaled_w) / 2);
+		c->pixel_y = lround((r.height - scaled_h) / 2);
+		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
+		c->box_x = c->pixel_x - (int)CARD_PLATE_PAD;
+		c->box_y = c->pixel_y - (int)CARD_PLATE_PAD;
+		c->box_width = lround(scaled_w) + 2 * (int)CARD_PLATE_PAD;
+		c->box_height = lround(scaled_h) + 2 * (int)CARD_PLATE_PAD;
+	}
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
 	bool compact = touch_first();
@@ -1063,19 +1134,24 @@ static bool sync_card(struct card *c, size_t index) {
 	 * returns for other content states. */
 	bool show_icon = c->content == CS_LIVE;
 	int badge_size = compact ? 32 : 40;
-	int label_x = compact ? 16 : 12;
-	int label_w = compact ? lround(r.width) - 32 : lround(r.width) - 24;
+	/* The caption now lives outside the card, on the wallpaper below it
+	 * (webOS style), instead of overlaid on the bottom of the snapshot --
+	 * so it never needs a plate behind it to stay legible. */
+	int label_h = compact ? 44 : 56;
+	int label_gap = 10;
+	int label_top = c->box_y + c->box_height + label_gap;
+	int label_x = c->box_x + (compact ? 16 : 12);
+	int label_w = c->box_width - (compact ? 32 : 24);
 	if (show_icon) {
 		label_x += badge_size + 10;
 		label_w -= badge_size + 10;
 	}
 	if (label_w < 0) label_w = 0;
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
-			label_w, compact ? 44 : 56, compact ? 24 : 32,
+			label_w, label_h, compact ? 24 : 32,
 			appearance_text(selected)))
 		return false;
 	c->label_selected = selected;
-	int label_top = lround(r.height) - (compact ? 50 : 60);
 	label_clip(c->label, label_x, label_top, c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
 	char letter = show_icon ? card_badge_letter(display_title) : 0;
@@ -1093,21 +1169,13 @@ static bool sync_card(struct card *c, size_t index) {
 			c->label_icon_letter = letter;
 		}
 		if (c->label_icon) {
-			int badge_y = label_top + ((compact ? 44 : 56) - badge_size) / 2;
-			label_clip(c->label_icon, compact ? 16 : 12, badge_y, c->x, c->y, clip_box());
+			int badge_y = label_top + (label_h - badge_size) / 2;
+			label_clip(c->label_icon, c->box_x + (compact ? 16 : 12), badge_y, c->x, c->y,
+				clip_box());
 			wlr_scene_node_set_enabled(&c->label_icon->node, !entering && !expanding);
 		}
 	}
 	if (cs_can_mirror(&shell.policy, c->id)) {
-		int width = c->view->geometry.width, height = c->view->geometry.height;
-		if (width <= 0 || height <= 0)
-			return false;
-		double label_space = entering ? 64 * shell.policy.entry_progress :
-			expanding ? 64 * (1 - shell.policy.expand_progress) : 64;
-		c->scale = fmin(r.width / width, (r.height - label_space) / height);
-		c->pixel_x = lround((r.width - width * c->scale) / 2);
-		c->pixel_y = lround((r.height - label_space - height * c->scale) / 2);
-		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
 		struct mirror *m, *tmp;
 		wl_list_for_each(m, &c->mirrors, link) m->seen = false;
 		struct wlr_scene_node *previous = NULL;
