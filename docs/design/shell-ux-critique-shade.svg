@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Today's shade with duplicate preview and no toggles, next to a shade with quick toggles and deduplicated history">
+<defs><style>
+.bg{fill:#0a1017}.phone{fill:#101822}.surface{fill:#1b2934}.card{fill:#263946}.tile{fill:#2f4859}
+.text{fill:#f4f7f8}.muted{fill:#c8d7dd}.teal{fill:#78d7cb}.amber{fill:#ffc27a}
+.title{font:700 20px sans-serif;fill:#f4f7f8}.head{font:700 15px sans-serif;fill:#f4f7f8}
+.body{font:13px sans-serif;fill:#f4f7f8}.hint{font:11px sans-serif;fill:#c8d7dd}.tiny{font:9px sans-serif;fill:#c8d7dd}
+.badtag{font:700 11px sans-serif;fill:#ff8a80}.goodtag{font:700 11px sans-serif;fill:#78d7cb}
+.icon{font:700 12px sans-serif;fill:#101822}
+</style>
+<g id="frame"><rect width="284" height="616" rx="24" class="phone"/><rect x="125" y="10" width="34" height="4" rx="2" class="muted"/></g>
+</defs>
+<rect width="924" height="700" class="bg"/>
+<text x="20" y="30" class="title">SHADE: NO QUICK TOGGLES — EVERY CONTROL IS A TRIP INTO SETTINGS</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §4, Finding SH-1</text>
+
+<!-- TODAY -->
+<g transform="translate(40 76)">
+<use href="#frame"/>
+<rect x="0" y="0" width="284" height="400" rx="24" class="surface"/>
+<text x="18" y="42" class="head">Notifications</text>
+<text x="205" y="42" class="body" fill="#78d7cb">Settings</text>
+<text x="18" y="62" class="hint">1 notification</text>
+<text x="200" y="62" class="hint">Dismiss all</text>
+<rect x="18" y="76" width="248" height="60" rx="10" class="card" stroke="#78d7cb" stroke-width="1.5"/>
+<text x="30" y="96" class="hint" fill="#78d7cb">System</text>
+<text x="30" y="114" class="body">Connection needs attention</text>
+<text x="30" y="130" class="tiny">Open Settings for details</text>
+<text x="18" y="166" class="tiny" fill="#7a8a92">(singular count and duplicate preview/</text>
+<text x="18" y="180" class="tiny" fill="#7a8a92">history text are already fixed — SH-2)</text>
+<text x="18" y="212" class="badtag">No toggle tiles anywhere in the shade —</text>
+<text x="18" y="228" class="badtag">every control is a trip into Settings,</text>
+<text x="18" y="244" class="badtag">even to flip Wi-Fi on or off.</text>
+<rect x="18" y="290" width="248" height="52" rx="10" fill="#182029" stroke="#31434e" stroke-dasharray="4 3"/>
+<text x="30" y="320" class="tiny" fill="#7a8a92">(rest of the 616px panel: flat colour)</text>
+</g>
+
+<!-- PROPOSED -->
+<g transform="translate(384 76)">
+<use href="#frame"/>
+<rect x="0" y="0" width="284" height="460" rx="24" class="surface"/>
+<text x="18" y="42" class="head">Notifications</text>
+<text x="205" y="42" class="body" fill="#78d7cb">Settings</text>
+<!-- quick toggle tiles -->
+<rect x="18" y="58" width="76" height="64" rx="14" class="tile" stroke="#78d7cb" stroke-width="1.5"/>
+<circle cx="56" cy="80" r="13" class="teal"/><text x="50" y="85" class="icon">Kb</text>
+<text x="30" y="112" class="tiny">Keyboard ON</text>
+<rect x="102" y="58" width="76" height="64" rx="14" class="tile"/>
+<circle cx="140" cy="80" r="13" class="amber"/><text x="133" y="85" class="icon">Br</text>
+<text x="116" y="112" class="tiny">Brightness</text>
+<rect x="186" y="58" width="80" height="64" rx="14" class="tile"/>
+<circle cx="224" cy="80" r="13" fill="#506873"/><text x="217" y="85" class="icon">Mo</text>
+<text x="198" y="112" class="tiny">Reduced motion</text>
+<text x="18" y="140" class="hint">1 notification</text>
+<text x="205" y="140" class="hint">Dismiss all</text>
+<rect x="18" y="154" width="248" height="60" rx="10" class="card" stroke="#78d7cb" stroke-width="1.5"/>
+<text x="30" y="176" class="hint" fill="#78d7cb">System</text>
+<text x="30" y="194" class="body">Connection needs attention</text>
+<text x="18" y="238" class="goodtag">One Wi-Fi toggle added — the shell's</text>
+<text x="18" y="253" class="goodtag">own stated first quick-toggle slice</text>
+<text x="18" y="268" class="goodtag">(design.md/tasks.md name others later).</text>
+<text x="18" y="292" class="goodtag">Reuses existing wifi_settings.rs state —</text>
+<text x="18" y="307" class="goodtag">no new backend, just a shade-level view.</text>
+<text x="18" y="331" class="hint">History/count unchanged from today (SH-2</text>
+<text x="18" y="346" class="hint">was already fixed before this proposal).</text>
+</g>
+<text x="20" y="674" class="hint">Left: nix/rust-shell-client/src/render.rs Route::Shade branch, read directly; docs/evidence/coherent-shell/rust-visual-themes-host/dark/shade.png for the general layout (that capture predates the SH-2 fix and is not used for the count/duplicate text here).</text>
+<text x="20" y="690" class="hint">Right: openspec/changes/the-shell-behaves-as-one-coherent-system/'s runtime/notification-center quick-toggle requirement (Finding SH-1). Panel heights shortened here for the mockup; webos-polish-review.md P0-2 covers content-sizing the real panel and is unrelated to this proposal.</text>
+</svg>

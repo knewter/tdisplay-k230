@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Today's Home grid with no search, next to Home with a search field added above the grid">
+<defs><style>
+.bg{fill:#0a1017}.phone{fill:#101822}.surface{fill:#1b2934}.tile{fill:#263946}
+.text{fill:#f4f7f8}.muted{fill:#c8d7dd}.teal{fill:#78d7cb}.amber{fill:#ffc27a}
+.title{font:700 20px sans-serif;fill:#f4f7f8}.head{font:700 15px sans-serif;fill:#f4f7f8}
+.body{font:12px sans-serif;fill:#f4f7f8}.hint{font:11px sans-serif;fill:#c8d7dd}.tiny{font:9px sans-serif;fill:#c8d7dd}
+.badtag{font:700 11px sans-serif;fill:#ff8a80}.goodtag{font:700 11px sans-serif;fill:#78d7cb}
+.icon{font:700 11px sans-serif;fill:#101822}
+</style>
+<g id="frame"><rect width="284" height="616" rx="24" class="phone"/><rect x="125" y="10" width="34" height="4" rx="2" class="muted"/></g>
+<g id="grid4x4">
+  <!-- 4 columns x 3 rows of tiles, generic -->
+</g>
+</defs>
+<rect width="924" height="700" class="bg"/>
+<text x="20" y="30" class="title">HOME: A SEARCH FIELD FOR THE PINNED GRID AND DOCK</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §3, Finding H-1</text>
+
+<!-- TODAY -->
+<g transform="translate(40 76)">
+<use href="#frame"/>
+<text x="18" y="40" class="head">Home</text>
+<text x="18" y="58" class="hint">Page 1 of 2</text>
+<!-- 4x3 grid -->
+<g transform="translate(18 76)">
+<g id="row0">
+<rect width="56" height="56" rx="12" class="tile"/><circle cx="28" cy="28" r="14" class="teal"/>
+<rect x="66" width="56" height="56" rx="12" class="tile"/><circle cx="94" cy="28" r="14" class="amber"/>
+<rect x="132" width="56" height="56" rx="12" class="tile"/><circle cx="160" cy="28" r="14" class="teal"/>
+<rect x="198" width="56" height="56" rx="12" class="tile"/><circle cx="226" cy="28" r="14" class="amber"/>
+</g>
+<g transform="translate(0 78)"><use href="#row0"/></g>
+<g transform="translate(0 156)"><use href="#row0"/></g>
+</g>
+<text x="18" y="330" class="hint">(fourth row, dock below)</text>
+<rect x="18" y="500" width="248" height="80" rx="16" class="surface"/>
+<circle cx="66" cy="540" r="20" class="teal"/><circle cx="132" cy="540" r="20" class="amber"/>
+<circle cx="198" cy="540" r="20" class="teal"/><circle cx="248" cy="540" r="20" class="amber"/>
+<text x="18" y="602" class="badtag">No way to find an app by typing —</text>
+<text x="18" y="616" class="badtag">scan every page and the dock by eye.</text>
+</g>
+
+<!-- PROPOSED -->
+<g transform="translate(384 76)">
+<use href="#frame"/>
+<text x="18" y="40" class="head">Home</text>
+<rect x="18" y="52" width="248" height="40" rx="14" class="surface" stroke="#78d7cb" stroke-width="1.5"/>
+<text x="30" y="77" class="hint">🔍 Search apps</text>
+<g transform="translate(18 108)">
+<g id="row1">
+<rect width="56" height="56" rx="12" class="tile"/><circle cx="28" cy="28" r="14" class="teal"/>
+<rect x="66" width="56" height="56" rx="12" class="tile"/><circle cx="94" cy="28" r="14" class="amber"/>
+<rect x="132" width="56" height="56" rx="12" class="tile"/><circle cx="160" cy="28" r="14" class="teal"/>
+<rect x="198" width="56" height="56" rx="12" class="tile"/><circle cx="226" cy="28" r="14" class="amber"/>
+</g>
+<g transform="translate(0 78)"><use href="#row1"/></g>
+</g>
+<rect x="18" y="500" width="248" height="80" rx="16" class="surface"/>
+<circle cx="66" cy="540" r="20" class="teal"/><circle cx="132" cy="540" r="20" class="amber"/>
+<circle cx="198" cy="540" r="20" class="teal"/><circle cx="248" cy="540" r="20" class="amber"/>
+<text x="18" y="600" class="goodtag">Typing filters the grid in place —</text>
+<text x="18" y="614" class="goodtag">tap anywhere else, or clear, to return</text>
+<text x="18" y="628" class="goodtag">to the normal pinned/paged view.</text>
+</g>
+<text x="20" y="674" class="hint">Left: nix/rust-shell-client/src/home_grid.rs (COLUMNS=4, DOCK_SLOTS=4) and home_screen.rs — grep for "search"/"filter_query" across the same module returns nothing but an unrelated doc comment.</text>
+<text x="20" y="690" class="hint">Right: illustrative only, NOT a committed requirement in openspec/changes/the-shell-behaves-as-one-coherent-system/. That change deliberately does not reopen the recorded "search remains deferred" decision (the-handheld-presents-a-coherent-shell/design.md decision 2); shell-ux-critique.md §4 flags revisiting it as a recommendation for the coordinator only. Field placement/wording illustrative only; not this shell's installed UI, not physically verified.</text>
+</svg>

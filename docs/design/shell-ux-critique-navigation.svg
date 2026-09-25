@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Settings today, where swiping up from the bottom does nothing, next to Settings behaving like any app">
+<defs><style>
+.bg{fill:#0a1017}.phone{fill:#101822}.surface{fill:#1b2934}.card{fill:#263946}
+.text{fill:#f4f7f8}.muted{fill:#c8d7dd}.teal{fill:#78d7cb}.amber{fill:#ffc27a}.bad{fill:#ff8a80}
+.line{stroke:#78d7cb;stroke-width:2;fill:none}.badline{stroke:#ff8a80;stroke-width:3;fill:none}
+.title{font:700 20px sans-serif;fill:#f4f7f8}.head{font:700 15px sans-serif;fill:#f4f7f8}
+.body{font:13px sans-serif;fill:#f4f7f8}.hint{font:11px sans-serif;fill:#c8d7dd}.tiny{font:9px sans-serif;fill:#c8d7dd}
+.badtag{font:700 11px sans-serif;fill:#ff8a80}.goodtag{font:700 11px sans-serif;fill:#78d7cb}
+.mono{font:11px monospace;fill:#c8d7dd}
+</style>
+<g id="frame"><rect width="284" height="616" rx="24" class="phone"/><rect x="125" y="10" width="34" height="4" rx="2" class="muted"/></g>
+</defs>
+<rect width="924" height="700" class="bg"/>
+<text x="20" y="30" class="title">SETTINGS: "SHOULD BE LIKE ANY APP"</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §1, Finding N-1</text>
+
+<!-- TODAY -->
+<g transform="translate(40 76)">
+<use href="#frame"/>
+<rect x="0" y="0" width="284" height="616" rx="24" class="surface"/>
+<text x="18" y="46" class="head">Settings</text>
+<text x="205" y="46" class="body" fill="#78d7cb">Done</text>
+<rect x="18" y="70" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="98" class="body">Network link</text>
+<text x="30" y="118" class="hint">Unavailable</text>
+<rect x="18" y="150" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="178" class="body">Brightness</text>
+<text x="30" y="198" class="hint">Unavailable</text>
+<rect x="18" y="230" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="258" class="body">Keyboard</text>
+<text x="30" y="278" class="hint">Unavailable</text>
+<!-- finger swipe up from bottom, crossed out -->
+<g transform="translate(142 560)">
+<path d="M0 0v-70" class="badline"/>
+<path d="M-9 -55 0 -70 9 -55" class="badline"/>
+<circle r="16" fill="#ff8a80" fill-opacity="0.25" stroke="#ff8a80" stroke-width="2"/>
+<line x1="-11" y1="-11" x2="11" y2="11" stroke="#ff8a80" stroke-width="3"/>
+<line x1="11" y1="-11" x2="-11" y2="11" stroke="#ff8a80" stroke-width="3"/>
+</g>
+<text x="46" y="600" class="badtag">Swipe up from bottom: NOTHING</text>
+<text x="18" y="440" class="tiny" fill="#c8d7dd">service_ui.rs Route::Settings arm has no</text>
+<text x="18" y="454" class="tiny" fill="#c8d7dd">bottom-edge-up case at all — only:</text>
+<text x="18" y="472" class="mono">start.y&lt;130 &amp;&amp; dy&gt;90 → Hide (swipe DOWN)</text>
+<text x="18" y="488" class="mono">tap "Done" region → Hide</text>
+<text x="18" y="506" class="badtag">Only way out: tap Done, or swipe down</text>
+<text x="18" y="521" class="badtag">near the very top. Nothing else works.</text>
+</g>
+
+<!-- PROPOSED -->
+<g transform="translate(384 76)">
+<use href="#frame"/>
+<rect x="0" y="0" width="284" height="616" rx="24" class="surface"/>
+<text x="18" y="46" class="head">Settings</text>
+<text x="205" y="46" class="body" fill="#78d7cb">Done</text>
+<rect x="18" y="70" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="98" class="body">Network link</text>
+<text x="30" y="118" class="hint">Unavailable</text>
+<rect x="18" y="150" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="178" class="body">Brightness</text>
+<text x="30" y="198" class="hint">Unavailable</text>
+<rect x="18" y="230" width="248" height="70" rx="12" class="card"/>
+<text x="30" y="258" class="body">Keyboard</text>
+<text x="30" y="278" class="hint">Unavailable</text>
+<g transform="translate(142 560)">
+<path d="M0 0v-70" class="line"/>
+<path d="M-9 -55 0 -70 9 -55" class="line"/>
+</g>
+<text x="46" y="600" class="goodtag">Swipe up from bottom → Home deck</text>
+<text x="18" y="440" class="tiny" fill="#c8d7dd">Same shared bottom_home_swipe() check</text>
+<text x="18" y="454" class="tiny" fill="#c8d7dd">used by Drawer, Shade and every app.</text>
+<text x="18" y="472" class="goodtag">Contextual Back (edge) also returns</text>
+<text x="18" y="487" class="goodtag">to the shade Settings was opened from.</text>
+<text x="18" y="506" class="goodtag">Done and swipe-down near top still work</text>
+<text x="18" y="521" class="goodtag">too — this adds parity, removes nothing.</text>
+</g>
+<text x="20" y="674" class="hint">Left: nix/rust-shell-client/src/service_ui.rs panel_intent(), Route::Settings arm — verified by direct code read, not inferred.</text>
+<text x="20" y="690" class="hint">Right: not this proposal's scope — the behavior shown is already specified by the-handheld-presents-a-coherent-shell's "Shade and contextual Back preserve the task" requirement (tasks 2.2/4.4, both still open). Shown here so the dead end (left) and its already-approved fix (right) are visible side by side.</text>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="924" height="700" viewBox="0 0 924 700" role="img" aria-label="Today's one-card filmstrip switcher next to a proposed multi-card overview with icons">
+<defs><style>
+.bg{fill:#0a1017}.phone{fill:#101822}.surface{fill:#1b2934}.card{fill:#263946}.cardhi{fill:#2f4859}
+.text{fill:#f4f7f8}.muted{fill:#c8d7dd}.teal{fill:#78d7cb}.amber{fill:#ffc27a}.bad{fill:#ff8a80}
+.line{stroke:#78d7cb;stroke-width:2;fill:none}.badline{stroke:#ff8a80;stroke-width:2;fill:none;stroke-dasharray:4 3}
+.title{font:700 20px sans-serif;fill:#f4f7f8}.head{font:700 15px sans-serif;fill:#f4f7f8}
+.body{font:13px sans-serif;fill:#f4f7f8}.hint{font:11px sans-serif;fill:#c8d7dd}.tiny{font:9px sans-serif;fill:#c8d7dd}
+.icon{font:700 12px sans-serif;fill:#101822}.badtag{font:700 11px sans-serif;fill:#ff8a80}
+.goodtag{font:700 11px sans-serif;fill:#78d7cb}
+</style>
+<g id="frame"><rect width="284" height="616" rx="24" class="phone"/><rect x="125" y="10" width="34" height="4" rx="2" class="muted"/></g>
+<g id="term-icon"><rect width="26" height="26" rx="7" class="teal"/><text x="6" y="18" class="icon">&gt;_</text></g>
+<g id="mon-icon"><rect width="26" height="26" rx="7" class="amber"/><rect x="6" y="13" width="3" height="7" class="phone"/><rect x="11" y="9" width="3" height="11" class="phone"/><rect x="16" y="5" width="3" height="15" class="phone"/></g>
+<g id="vid-icon"><rect width="26" height="26" rx="7" class="teal"/><path d="M9 6v14l11-7z" fill="#101822"/></g>
+<g id="edit-icon"><rect width="26" height="26" rx="7" class="amber"/><path d="M7 19l2-6 9-9 4 4-9 9-6 2z" fill="#101822"/></g>
+</defs>
+<rect width="924" height="700" class="bg"/>
+<text x="20" y="30" class="title">CARD SWITCHER — TODAY VS. PROPOSED OVERVIEW</text>
+<text x="20" y="50" class="hint">568×1232 logical px at 50% · illustrative, original schematic, not board evidence · see shell-ux-critique.md §2, Findings S-1/S-2/S-3</text>
+
+<!-- TODAY -->
+<g transform="translate(40 76)">
+<use href="#frame"/>
+<text x="18" y="48" class="head">Home</text>
+<rect x="30" y="80" width="224" height="420" rx="18" class="cardhi" stroke="#78d7cb" stroke-width="2"/>
+<rect x="42" y="92" width="200" height="330" rx="10" fill="#172b36"/>
+<text x="54" y="118" class="tiny">$ selected card, live content</text>
+<text x="42" y="440" class="hint">Terminal</text>
+<!-- sliver of neighbour, 49.6/568 of panel width scaled to this frame (~24px at this 284-wide frame) -->
+<rect x="254" y="80" width="24" height="420" rx="4" class="card"/>
+<text x="42" y="470" class="badtag">Only one card on screen at rest.</text>
+<text x="42" y="486" class="badtag">Neighbour: ~8.7% sliver, no icon, no name.</text>
+<text x="42" y="502" class="badtag">Raw window title, no icon on the card at all.</text>
+<path d="M141 555v-35m-7 8 7-8 7 8" class="badline"/>
+<text x="60" y="575" class="tiny">swipe = next single card</text>
+</g>
+
+<!-- PROPOSED -->
+<g transform="translate(384 76)">
+<use href="#frame"/>
+<text x="18" y="42" class="head">Overview</text>
+<text x="180" y="42" class="tiny" fill="#78d7cb">‹ Home</text>
+<!-- 2-column grid of 4 cards -->
+<rect x="18" y="60" width="120" height="170" rx="14" class="cardhi" stroke="#78d7cb" stroke-width="2"/>
+<use href="#term-icon" x="30" y="72"/><text x="62" y="90" class="body">Terminal</text>
+<rect x="30" y="102" width="96" height="118" rx="8" fill="#172b36"/>
+<circle cx="128" cy="70" r="9" fill="#31434e"/><text x="123" y="74" class="tiny">×</text>
+
+<rect x="146" y="60" width="120" height="170" rx="14" class="card"/>
+<use href="#mon-icon" x="158" y="72"/><text x="190" y="90" class="body">Monitor</text>
+<rect x="158" y="102" width="96" height="118" rx="8" fill="#172b36"/>
+<circle cx="256" cy="70" r="9" fill="#31434e"/><text x="251" y="74" class="tiny">×</text>
+
+<rect x="18" y="240" width="120" height="170" rx="14" class="card"/>
+<use href="#vid-icon" x="30" y="252"/><text x="62" y="270" class="body">Video</text>
+<rect x="30" y="282" width="96" height="118" rx="8" fill="#172b36"/>
+<circle cx="128" cy="250" r="9" fill="#31434e"/><text x="123" y="254" class="tiny">×</text>
+
+<rect x="146" y="240" width="120" height="170" rx="14" class="card"/>
+<use href="#edit-icon" x="158" y="252"/><text x="190" y="270" class="body">Editor</text>
+<rect x="158" y="282" width="96" height="118" rx="8" fill="#172b36"/>
+<circle cx="256" cy="250" r="9" fill="#31434e"/><text x="251" y="254" class="tiny">×</text>
+
+<text x="18" y="440" class="goodtag">All open apps visible at once.</text>
+<text x="18" y="456" class="goodtag">Icon + name on every card.</text>
+<text x="18" y="472" class="goodtag">Small × closes; drag still works too.</text>
+<text x="18" y="488" class="hint">Ordered by recency of use, not creation</text>
+<text x="18" y="504" class="hint">order (today's deck is creation-order; S-3).</text>
+<path d="M141 555v-35m-7 8 7-8 7 8" class="line"/>
+<text x="30" y="575" class="tiny">tap a card = same expand as today</text>
+<text x="55" y="593" class="tiny">one possible entry point: a small icon-button</text>
+<text x="60" y="608" class="tiny">in the deck's own chrome (illustrative only)</text>
+</g>
+<text x="20" y="674" class="hint">Left: geometry computed from nix/card-shell-policy/card-shell-policy.c cs_default_config/cs_up (card_width=.84*(width-48)=436.8, gap=16, pitch=452.8 on a 568px panel; neighbour on-screen sliver = 568-518.4 = 49.6px, 8.7% of panel width).</text>
+<text x="20" y="690" class="hint">Right: openspec/changes/the-shell-behaves-as-one-coherent-system/'s runtime/card-shell requirements (Findings S-1 density/dim, S-2 real icons via nix/rust-shell-client/src/icon.rs, S-3 recency order). A 2×2 grid is one illustrative layout; the bounded requirement is a legible, dimmed neighbour peek plus real icons — see design.md decision 2 for the measured-budget constraint on any 3D/tilt treatment. Neither frame is installed shell UI or physically verified.</text>
+</svg>
