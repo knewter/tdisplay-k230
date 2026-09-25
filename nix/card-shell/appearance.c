@@ -363,10 +363,31 @@ static void request(void) {
 			service.prepared = false;
 			ok = true;
 		}
+	} else if (valid && phase && !strcmp(phase, "show") && identity(id) &&
+		service.prepared && !strcmp(service.candidate.generation, id)) {
+		/* Optimistic Apply (2026-09-25, user-approved): render an
+		 * already-`prepare`d candidate immediately, ahead of its own
+		 * matching `commit`. Deliberately side-effect only: unlike
+		 * "commit" above, this never touches `service.current`/
+		 * `service.prepared`/`service.candidate_path`, so the real
+		 * two-phase state machine -- and whatever `commit` or `rollback`
+		 * this candidate's own transaction sends next -- is completely
+		 * unaffected by whether this ever arrives, is late, or is
+		 * duplicated. A caller that gets this wrong (a stale/mismatched
+		 * id, or one this receiver never actually prepared) only fails
+		 * this one advisory message; it can never desynchronise
+		 * `service.current` from what `commit`/`rollback` will still
+		 * authoritatively settle. */
+		char canonical[1025];
+		if (under_generations(path, id, false, canonical, sizeof(canonical)) &&
+			!strcmp(canonical, service.candidate_path)) {
+			if (service.apply(&service.candidate, service.apply_data)) ok = true;
+			else (void)service.apply(&service.current, service.apply_data);
+		}
 	}
 done:
 	if (phase && (!strcmp(phase, "prepare") || !strcmp(phase, "commit") ||
-		!strcmp(phase, "rollback"))) answer(phase, id, ok);
+		!strcmp(phase, "rollback") || !strcmp(phase, "show"))) answer(phase, id, ok);
 	else close_client();
 	json_object_put(message);
 }

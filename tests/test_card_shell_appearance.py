@@ -175,6 +175,52 @@ class AppearanceReceiver(unittest.TestCase):
                                        previous_generation=None, previous_path=None)['status'], 'ok')
         self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
 
+    def test_show_renders_a_prepared_candidate_without_disturbing_the_two_phase_state(self):
+        # Optimistic Apply (2026-09-25, user-approved): "show" is a pure
+        # rendering side effect. It must render the already-`prepare`d
+        # candidate immediately, then leave `commit` and `rollback`
+        # exactly as able to succeed as if "show" had never been sent.
+        prior = {'previous_generation': None, 'previous_path': None}
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        # A second "show" for the same still-prepared candidate is equally
+        # harmless (idempotent, not a one-shot).
+        self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        # The real commit this "show" only anticipated still succeeds,
+        # proving "show" never touched `service.prepared`/`candidate`.
+        self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+
+    def test_show_is_rejected_for_a_generation_that_was_never_prepared(self):
+        # Cold/unprepared: "show" must never render anything this receiver
+        # has not itself already validated and staged via a real prepare.
+        self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'error')
+        self.assertIsNone(self.process.poll())
+        # A mismatched id (a stale/superseded browse-ahead) is rejected the
+        # same way, even while a *different* candidate is genuinely
+        # prepared.
+        prior = {'previous_generation': None, 'previous_path': None}
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.exchange('show', DEFAULT_ID, self.default)['status'], 'error')
+
+    def test_show_never_blocks_a_later_rollback_from_restoring_the_previous_generation(self):
+        # A "show" that ran ahead of a commit that ultimately never lands
+        # (the durable transaction failed on some other receiver) must
+        # still leave a completely ordinary rollback path -- the visible
+        # proof that "show" cannot leave the screen showing anything but
+        # what eventually settles as durably active.
+        prior = {'previous_generation': DEFAULT_ID, 'previous_path': str(self.default)}
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.exchange('rollback', DEFAULT_ID, self.default)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+
     def test_fifo_payload_rejected_without_blocking_compositor(self):
         payload = self.next / 'appearance.json'
         payload.unlink()
