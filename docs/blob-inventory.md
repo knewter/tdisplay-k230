@@ -1340,6 +1340,8 @@ DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evid
 DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
 DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
 DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
+DATA a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png
+DATA e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1935,3 +1937,12 @@ These DATA screenshots are headless-QEMU captures of synthetic ordinary-maximize
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png` | 4904 | DATA | `f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c` |
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png` | 4905 | DATA | `07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328` |
 | `docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png` | 4924 | DATA | `1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692` |
+
+### Tap-to-apply theme chooser: host fixture renders
+
+These DATA screenshots are host-rendered fixtures of the one-page tap-to-apply chooser under staged Catppuccin and Latte generations. The adjacent README records commands and limits; no physical claim.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png` | 38562 | DATA | `a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1` |
+| `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png` | 38356 | DATA | `e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c` |
