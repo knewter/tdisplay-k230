@@ -1086,14 +1086,27 @@ static bool sync_card(struct card *c, size_t index) {
 	 * available slot, not a full-bleed plate. Every content class (live,
 	 * private, unavailable) uses the view's real geometry, so a denied card
 	 * gets the same sensible card shape as a live one; geometry.width/height
-	 * is 0 only in a degenerate case, and then the slot itself stands in. */
+	 * is 0 only in a degenerate case, and then the slot itself stands in.
+	 *
+	 * The plate's pad is interpolated by the same entry/expand progress used
+	 * for r itself (matching label_space's old treatment below, before it
+	 * moved outside the card): at progress 0 -- the source view's own exact
+	 * geometry -- pad must be exactly 0, or the mirrored content starts life
+	 * a few px smaller than the real window it is shrinking from/growing
+	 * into, breaking the direct 1:1 finger-tracked scene the two-axis entry
+	 * gesture depends on (test_card_shell_two_axis_runtime.py measures the
+	 * tracked content's edge against the drag distance in raw pixels). Only
+	 * once the card has fully settled into the steady deck does it get the
+	 * full pad. */
 	{
 		int content_w = c->view->geometry.width, content_h = c->view->geometry.height;
 		if (content_w <= 0 || content_h <= 0) {
 			content_w = lround(r.width);
 			content_h = lround(r.height);
 		}
-		double fit_w = r.width - 2 * CARD_PLATE_PAD, fit_h = r.height - 2 * CARD_PLATE_PAD;
+		double pad = entering ? CARD_PLATE_PAD * shell.policy.entry_progress :
+			expanding ? CARD_PLATE_PAD * (1 - shell.policy.expand_progress) : CARD_PLATE_PAD;
+		double fit_w = r.width - 2 * pad, fit_h = r.height - 2 * pad;
 		if (fit_w < 1) fit_w = r.width;
 		if (fit_h < 1) fit_h = r.height;
 		c->scale = fmin(fit_w / content_w, fit_h / content_h);
@@ -1101,10 +1114,10 @@ static bool sync_card(struct card *c, size_t index) {
 		c->pixel_x = lround((r.width - scaled_w) / 2);
 		c->pixel_y = lround((r.height - scaled_h) / 2);
 		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
-		c->box_x = c->pixel_x - (int)CARD_PLATE_PAD;
-		c->box_y = c->pixel_y - (int)CARD_PLATE_PAD;
-		c->box_width = lround(scaled_w) + 2 * (int)CARD_PLATE_PAD;
-		c->box_height = lround(scaled_h) + 2 * (int)CARD_PLATE_PAD;
+		c->box_x = c->pixel_x - (int)lround(pad);
+		c->box_y = c->pixel_y - (int)lround(pad);
+		c->box_width = lround(scaled_w) + 2 * (int)lround(pad);
+		c->box_height = lround(scaled_h) + 2 * (int)lround(pad);
 	}
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
