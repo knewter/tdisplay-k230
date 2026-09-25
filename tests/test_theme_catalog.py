@@ -4,6 +4,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 from pathlib import Path
+import shutil
 import stat
 import sys
 import tempfile
@@ -81,6 +82,39 @@ class CatalogTests(unittest.TestCase):
         (first / "colors.toml").write_text("temporarily invalid palette")
         self.assertEqual([entry.id for entry in self.entries()], identities)
         self.assertFalse(self.state.exists())
+
+    def test_discover_is_cached_until_the_catalog_directory_actually_changes(self):
+        # Board evidence (2026-09-24, theme-helper.service reachable):
+        # discover() cost ~42 ms per preview/activate call even though the
+        # catalog had not changed since the previous call moments earlier --
+        # real cost inside the daemon's own long-lived process, unrelated to
+        # Python start-up. A repeat call against an unchanged catalog must
+        # reuse the cached result; adding or removing a theme must still be
+        # noticed on the very next call.
+        theme(self.user / "night")
+        catalog._discover_cache.clear()
+        calls = []
+        original = catalog._discover_uncached
+
+        def counting_discover(user_themes, builtins):
+            calls.append(1)
+            return original(user_themes, builtins)
+
+        with mock.patch.object(catalog, "_discover_uncached", side_effect=counting_discover):
+            first = self.entries()
+            second = self.entries()
+            self.assertEqual(len(calls), 1, "an unchanged catalog must not be re-walked")
+            self.assertEqual([entry.id for entry in first], [entry.id for entry in second])
+
+            theme(self.user / "day")
+            third = self.entries()
+            self.assertEqual(len(calls), 2, "a newly added theme must invalidate the cache")
+            self.assertEqual(len(third), 2)
+
+            shutil.rmtree(self.user / "night")
+            fourth = self.entries()
+            self.assertEqual(len(calls), 3, "a removed theme must invalidate the cache")
+            self.assertEqual([entry.name for entry in fourth], ["day"])
 
     def test_preview_asset_prefers_own_image_then_first_still_background(self):
         with_own_preview = theme(self.user / "aurora")

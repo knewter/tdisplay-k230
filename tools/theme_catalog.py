@@ -78,7 +78,68 @@ def find_preview(path: Path) -> Path | None:
     return None
 
 
+def _listing_signature(directory: Path) -> tuple | None:
+    """A cheap (stat-only, no content read, no hashing, no `resolve()`)
+    fingerprint of one directory's immediate children: name, mtime, and
+    whether each is a directory. `None` if the directory is unreadable/
+    missing, distinct from `()` (readable and empty)."""
+    try:
+        with os.scandir(directory) as scan:
+            return tuple(sorted(
+                (item.name, item.stat(follow_symlinks=False).st_mtime_ns,
+                 item.is_dir(follow_symlinks=False))
+                for item in scan
+            ))
+    except OSError:
+        return None
+
+
+def _catalog_signature(user_themes: Path, builtins: Path | None) -> tuple:
+    """A fingerprint of exactly the directory levels `discover()` itself
+    reads (each root's own top level, and -- for a user-origin entry that
+    is a directory -- one level deeper under its own `themes/`, the
+    collection case) so a cache keyed on this can tell "nothing `discover()`
+    would see has changed" without paying `discover()`'s own, more
+    expensive per-entry cost (`Entry.id`'s hashing, `has_palette()`'s and
+    `find_preview()`'s extra stats, `path.resolve(strict=True)`)."""
+    signature = []
+    for origin, directory in (("user", user_themes), ("builtin", builtins)):
+        if directory is None:
+            signature.append((origin, None))
+            continue
+        top = _listing_signature(directory)
+        signature.append((origin, top))
+        if origin == "user" and top:
+            for name, _mtime, is_dir in top:
+                if is_dir:
+                    signature.append((origin, name, _listing_signature(directory / name / "themes")))
+    return tuple(signature)
+
+
+#: Per-process cache of `_discover_uncached()`'s result, keyed by
+#: (user_themes, builtins) and invalidated by `_catalog_signature()`. Board
+#: evidence (2026-09-24): `discover()` cost ~42 ms per `preview`/`activate`
+#: call even though the theme catalog itself had not changed since the
+#: previous call moments earlier -- real, in `theme-helper.service`'s own
+#: process, unrelated to Python start-up. A bare CLI process only ever
+#: calls this once per invocation anyway (empty cache, no behavior change);
+#: the daemon serves many requests against a catalog that, in the normal
+#: preview-then-activate chooser flow, has not changed at all.
+_discover_cache: dict[tuple[str, str | None], tuple[tuple, list["Entry"]]] = {}
+
+
 def discover(user_themes: Path, builtins: Path | None) -> list[Entry]:
+    key = (str(user_themes), str(builtins) if builtins is not None else None)
+    signature = _catalog_signature(user_themes, builtins)
+    cached = _discover_cache.get(key)
+    if cached is not None and cached[0] == signature:
+        return cached[1]
+    entries = _discover_uncached(user_themes, builtins)
+    _discover_cache[key] = (signature, entries)
+    return entries
+
+
+def _discover_uncached(user_themes: Path, builtins: Path | None) -> list[Entry]:
     """Read only cheap directory metadata; hash/resolve only on explicit preview.
 
     A user child can be a standalone clone or a collection containing themes/.
