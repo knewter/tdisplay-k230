@@ -1,0 +1,13 @@
+{
+  "label": "after-throttled",
+  "throttle": "50",
+  "tap_to_preview_page_s": 0.372,
+  "tap_to_thumbnails_visible_s": 4.807,
+  "pending_window_s": 5.179,
+  "pending_commits": 15,
+  "pending_commits_per_s": 2.9,
+  "idle_window_s": 5.0,
+  "idle_commits": 1,
+  "idle_frame_done": 2,
+  "idle_new_log_lines": 3
+}

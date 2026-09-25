@@ -1,0 +1,10 @@
+{
+  "label": "before",
+  "throttle": null,
+  "tap_to_preview_page_s": 0.276,
+  "tap_to_thumbnails_visible_s": 3.419,
+  "idle_window_s": 5.0,
+  "idle_commits": 0,
+  "idle_frame_done": 0,
+  "idle_new_log_lines": 0
+}

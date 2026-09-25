@@ -1281,6 +1281,10 @@ DATA 050f538c1c0e8d443bffae5c7ae38ca2d962f5aaeb84365c44903623c1352490  docs/evid
 DATA 827b909568a30991a3cf458295b8bf56c232b57908dbabd0b42eb14f26a86dfc  docs/evidence/omarchy-themes/quattro-carousel/theme-carousel-rest-dark.png
 DATA a61bde5110afc2a8affad06c7cfdd78190e9b2759563646d71a80f8105a3fc13  docs/evidence/omarchy-themes/commit-fix-board/drawer-catppuccin.png
 DATA bc925fa4c5725f3fc35f682feb9f64869a300a786df0548b62329bcef4a9a75d  docs/evidence/omarchy-themes/commit-fix-board/drawer-community.png
+DATA 465ae2500f90aaf1656ca0dda867475968c6be0a16811b0c30c56d70d5983fd1  docs/evidence/omarchy-themes/chooser-responsive/screens/01-list-open.png
+DATA 595bfaf33d24ea6714705f1f44656385a1461533ad72624f0d859c96e8f4e396  docs/evidence/omarchy-themes/chooser-responsive/screens/02-pressed-highlight.png
+DATA b7f8b3fecc4c02339978264670f42919822754d30bff9835ecafb49edcfd8134  docs/evidence/omarchy-themes/chooser-responsive/screens/04-backgrounds-mid-decode.png
+DATA 227ce511962a7b82e6732016e4e309c53af1e8edba8c29121dcab00e92edec90  docs/evidence/omarchy-themes/chooser-responsive/screens/07-background-selected-resolved.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
