@@ -190,7 +190,14 @@ def preview(entry: Entry, generation: Path, report: dict) -> dict:
             "activated": False}
 
 
-def main(argv=None):
+def build_parser() -> argparse.ArgumentParser:
+    """The single source of truth for this CLI's flags and subcommands.
+
+    Shared with `tools/theme_helperd.py`'s persistent daemon so a warmed,
+    long-lived process parses and validates a request identically to a
+    fresh `python3 theme_catalog.py` invocation -- no separate protocol to
+    let drift in.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tools", type=Path, default=activation.HOST_TOOLS)
     parser.add_argument("--wallpaper-cache-tool", type=Path,
@@ -214,9 +221,19 @@ def main(argv=None):
         if action == "activate":
             command.add_argument("--expected-generation", required=True,
                                  help="generation reviewed in preview; reject changed sources")
-    args = parser.parse_args(argv)
-    if (args.rust_socket is None) != (args.deck_socket is None):
-        parser.error("--rust-socket and --deck-socket must be supplied together")
+    return parser
+
+
+def handle(args) -> tuple[dict, int]:
+    """Run one already-parsed request and return `(result, exit_code)`.
+
+    Pure with respect to process lifetime: never calls `sys.exit`, `print`,
+    or reads `sys.argv`, so a persistent daemon can call this once per
+    request, on the same warmed interpreter, without any risk that one
+    request's state leaks into the next (every value it touches is either
+    a local, a fresh import-module-level cache keyed by its own arguments,
+    or the immutable, hash-identified on-disk generation store).
+    """
     try:
         entries = discover(args.user_themes, args.builtins)
         if args.action == "list":
@@ -243,12 +260,20 @@ def main(argv=None):
                     args.state_root, expected_generation=generation.name,
                     runtime_dir=args.keyboard_runtime_dir, pkill_path=args.pkill)
                 result["activated"] = True
-        print(json.dumps(result, sort_keys=True))
-        return 0
+        return result, 0
     except (OSError, ValueError, activation.ThemeError, TransactionError,
             subprocess.SubprocessError) as error:
-        print(json.dumps({"schema": 1, "error": str(error), "activated": False}), file=sys.stderr)
-        return 1
+        return {"schema": 1, "error": str(error), "activated": False}, 1
+
+
+def main(argv=None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if (args.rust_socket is None) != (args.deck_socket is None):
+        parser.error("--rust-socket and --deck-socket must be supplied together")
+    result, code = handle(args)
+    print(json.dumps(result, sort_keys=True), file=sys.stderr if code else sys.stdout)
+    return code
 
 
 if __name__ == "__main__":
