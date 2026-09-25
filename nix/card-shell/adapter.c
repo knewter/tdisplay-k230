@@ -84,6 +84,13 @@ struct card {
 	bool expand_start_valid;
 	int last_width, last_height;
 	double expand_x, expand_y, expand_width, expand_height;
+	/* True while this card is being rendered at the entry gesture's shared
+	 * full-panel frame (cs_entry_visual_rect's common_full_frame case, set
+	 * in sync_card) -- i.e. it, not only the outgoing entry_id card, is
+	 * drawn as a full-screen adjacent strip rather than a small deck card.
+	 * card_clip_box() reads this so the incoming neighbour's mirrored
+	 * content is never clipped to the small deck viewport mid-drag. */
+	bool full_clip;
 };
 static struct {
 	struct wl_list cards;
@@ -853,7 +860,14 @@ static struct wlr_box clip_box(void) {
 								cfg->title_height - cfg->footer_height};
 }
 static struct wlr_box card_clip_box(struct card *c) {
-	if ((shell.policy.mode == CS_ENTERING && c->id == shell.policy.entry_id) ||
+	/* c->full_clip mirrors the entry_id special case for every card sharing
+	 * the entry gesture's common full-panel frame (see sync_card): the
+	 * incoming neighbour is drawn full-screen right alongside the outgoing
+	 * app during a direct app-switch drag, so its mirrored content must not
+	 * be clipped down to the small deck viewport either. This box is always
+	 * a superset of clip_box(), so once a card has actually shrunk into the
+	 * deck grid (entry_progress near 1) the wider clip is a no-op. */
+	if ((shell.policy.mode == CS_ENTERING && (c->id == shell.policy.entry_id || c->full_clip)) ||
 		(shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id))
 		return (struct wlr_box){shell.output->lx, shell.output->ly,
 			shell.policy.config.width, shell.policy.config.height};
@@ -1042,6 +1056,7 @@ static bool sync_card(struct card *c, size_t index) {
 	}
 	bool entering = shell.policy.mode == CS_ENTERING;
 	bool expanding = shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id;
+	c->full_clip = false;
 	if (entering) {
 		if (!c->source_valid)
 			return false;
@@ -1054,6 +1069,7 @@ static bool sync_card(struct card *c, size_t index) {
 		bool common_full_frame = origin && origin->view->container &&
 			origin->view->container->card_shell_ordinary_maximized &&
 			c->view->container && c->view->container->card_shell_ordinary_maximized;
+		c->full_clip = common_full_frame;
 		r = cs_entry_visual_rect(&shell.policy, index, (struct cs_rect){
 			c->source_x - shell.output->lx, c->source_y - shell.output->ly,
 			c->view->geometry.width, c->view->geometry.height}, common_full_frame);
