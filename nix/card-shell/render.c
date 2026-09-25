@@ -1,5 +1,6 @@
 #include "sway/card_shell_render.h"
 #include "sway/card_shell_appearance.h"
+#include "sway/card_shell_icon.h"
 #include "sway/card_shell_scaled_cache.h"
 #include <cairo.h>
 #include <drm_fourcc.h>
@@ -140,26 +141,10 @@ struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *tex
 		int height, int size) {
 	return card_label_color(tree, text, width, height, size, 0xfff7faff);
 }
-struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char letter, int size,
-		uint32_t bg_argb, uint32_t fg_argb) {
-	struct label_buffer *b = calloc(1, sizeof(*b));
-	if (!b)
-		return NULL;
-	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
-	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
-		cairo_surface_destroy(b->surface);
-		free(b);
-		return NULL;
-	}
-	cairo_t *cr = cairo_create(b->surface);
-	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
-		cairo_destroy(cr);
-		cairo_surface_destroy(b->surface);
-		free(b);
-		return NULL;
-	}
-	/* Avoid M_PI: not guaranteed under the strict C standard flags this file
-	 * builds with (see card_brush_scene's own literal below). */
+/* Avoid M_PI: not guaranteed under the strict C standard flags this file
+ * builds with (see card_brush_scene's own literal below). */
+static void paint_badge_glyph(cairo_t *cr, int size, char letter, uint32_t bg_argb,
+		uint32_t fg_argb) {
 	const double pi = 3.14159265358979323846;
 	double r = size * 0.28;
 	cairo_new_sub_path(cr);
@@ -187,6 +172,60 @@ struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char lette
 	pango_cairo_show_layout(cr, layout);
 	g_object_unref(layout);
 	pango_font_description_free(font);
+}
+struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char letter, int size,
+		uint32_t bg_argb, uint32_t fg_argb) {
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b)
+		return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	paint_badge_glyph(cr, size, letter, bg_argb, fg_argb);
+	cairo_destroy(cr);
+	cairo_surface_flush(b->surface);
+	wlr_buffer_init(&b->base, &impl, size, size);
+	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
+	wlr_buffer_drop(&b->base);
+	return node;
+}
+/* The card header's icon (docs/design/shell-ux-critique.md #1.2, task 1.4 of
+ * the-handheld-presents-a-coherent-shell): resolves the app's real
+ * .desktop Icon= through the installed icon theme (card_icon_paint, backed
+ * by nix/card-shell/icon.c) and falls back to the same letter badge
+ * card_icon_badge already drew when no themed icon resolves, so a card
+ * never regresses to a blank header. `icon_name` may be NULL (content
+ * classes other than a live app, or a card with no resolved Icon=). */
+struct wlr_scene_buffer *card_icon_header(struct wlr_scene_tree *tree, const char *icon_name,
+		char fallback_letter, int size, uint32_t bg_argb, uint32_t fg_argb) {
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b)
+		return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(b->surface);
+		free(b);
+		return NULL;
+	}
+	if (!icon_name || !card_icon_paint(cr, icon_name, size, 0, 0))
+		paint_badge_glyph(cr, size, fallback_letter, bg_argb, fg_argb);
 	cairo_destroy(cr);
 	cairo_surface_flush(b->surface);
 	wlr_buffer_init(&b->base, &impl, size, size);

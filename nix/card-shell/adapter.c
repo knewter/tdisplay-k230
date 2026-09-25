@@ -69,6 +69,11 @@ struct card {
 	char *label_text;
 	struct wlr_scene_buffer *label_icon;
 	char label_icon_letter;
+	/* NULL when the header icon is currently the fallback badge; otherwise
+	 * the resolved Icon= name it was last built from, so a card whose
+	 * .desktop identity resolves to a different icon (or stops resolving
+	 * one) rebuilds label_icon instead of keeping a stale image. */
+	char *label_icon_key;
 	bool label_selected;
 	bool hidden, original_enabled;
 	double scale;
@@ -512,6 +517,8 @@ static bool appearance_apply(const struct card_appearance *next, void *data) {
 		if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
 		c->label_icon = NULL;
 		c->label_icon_letter = 0;
+		free(c->label_icon_key);
+		c->label_icon_key = NULL;
 	}
 	shell.chrome_valid = false;
 	return (!shell.active || sync_scene()) && chrome();
@@ -560,6 +567,8 @@ static void clear_card(struct card *c) {
 	c->label = NULL;
 	c->label_icon = NULL;
 	c->label_icon_letter = 0;
+	free(c->label_icon_key);
+	c->label_icon_key = NULL;
 	c->plate = NULL;
 	free(c->label_text);
 	c->label_text = NULL;
@@ -642,6 +651,12 @@ static enum cs_content classify(struct card *c) {
 struct desktop_identity_entry {
 	char *app_id;
 	char *name;
+	/* The raw Icon= value (a themed icon name or an absolute path), resolved
+	 * through the installed icon theme by nix/card-shell/icon.c at draw
+	 * time -- never a decoded image here, matching the drawer's own
+	 * separation of "find the desktop entry" from "resolve the icon file"
+	 * (nix/rust-shell-client/src/icon.rs). NULL when the entry has none. */
+	char *icon;
 };
 static struct desktop_identity_entry desktop_identity_cache[DESKTOP_IDENTITY_CACHE_MAX];
 static size_t desktop_identity_cache_count;
@@ -680,25 +695,31 @@ static bool desktop_file_matches(const char *path, const char *app_id) {
 		blen -= 8;
 	return strlen(app_id) == blen && strncmp(base, app_id, blen) == 0;
 }
-static char *parse_desktop_name(const char *path) {
+/* Single pass over the matched .desktop file for both Name= and Icon=, so
+ * resolving a card's header identity never scans the file twice. Either
+ * out-param may be left NULL by the caller to skip that field; each is set
+ * at most once, from the file's first [Desktop Entry] group, matching
+ * freedesktop's own "first Name/Icon key in the main group wins" reading. */
+static void parse_desktop_entry(const char *path, char **name_out, char **icon_out) {
 	FILE *f = fopen(path, "r");
 	if (!f)
-		return NULL;
+		return;
 	char line[512];
 	bool in_entry = false;
-	char *name = NULL;
-	while (!name && fgets(line, sizeof(line), f)) {
+	while (fgets(line, sizeof(line), f) &&
+			!((!name_out || *name_out) && (!icon_out || *icon_out))) {
 		size_t len = strlen(line);
 		while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = 0;
 		if (desktop_entry_group_line(&in_entry, line))
 			continue;
 		if (!in_entry)
 			continue;
-		if (strncmp(line, "Name=", 5) == 0 && line[5])
-			name = strdup(line + 5);
+		if (name_out && !*name_out && strncmp(line, "Name=", 5) == 0 && line[5])
+			*name_out = strdup(line + 5);
+		else if (icon_out && !*icon_out && strncmp(line, "Icon=", 5) == 0 && line[5])
+			*icon_out = strdup(line + 5);
 	}
 	fclose(f);
-	return name;
 }
 /* GCC's -Wformat-truncation cannot see that `dir` (one XDG_DATA_DIRS
  * segment) and `entry->d_name` (bounded by struct dirent) never actually
@@ -708,15 +729,15 @@ static char *parse_desktop_name(const char *path) {
  * out to its declared size. */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-truncation"
-static char *resolve_desktop_name(const char *app_id) {
+static void resolve_desktop_entry(const char *app_id, char **name_out, char **icon_out) {
 	const char *xdg = getenv("XDG_DATA_DIRS");
 	if (!xdg || !*xdg)
 		xdg = "/run/current-system/sw/share:/usr/local/share:/usr/share";
 	char *dirs = strdup(xdg);
 	if (!dirs)
-		return NULL;
-	char *name = NULL;
-	for (char *dir = strtok(dirs, ":"); dir && !name; dir = strtok(NULL, ":")) {
+		return;
+	bool done = false;
+	for (char *dir = strtok(dirs, ":"); dir && !done; dir = strtok(NULL, ":")) {
 		char appdir[PATH_MAX];
 		if (strlen(dir) + strlen("/applications") >= sizeof(appdir))
 			continue;
@@ -725,7 +746,7 @@ static char *resolve_desktop_name(const char *app_id) {
 		if (!d)
 			continue;
 		struct dirent *entry;
-		while (!name && (entry = readdir(d))) {
+		while (!done && (entry = readdir(d))) {
 			size_t len = strlen(entry->d_name);
 			if (len < 9 || strcmp(entry->d_name + len - 8, ".desktop") != 0)
 				continue;
@@ -733,32 +754,51 @@ static char *resolve_desktop_name(const char *app_id) {
 			if (strlen(appdir) + 1 + len >= sizeof(path))
 				continue;
 			snprintf(path, sizeof(path), "%s/%s", appdir, entry->d_name);
-			if (desktop_file_matches(path, app_id))
-				name = parse_desktop_name(path);
+			if (desktop_file_matches(path, app_id)) {
+				parse_desktop_entry(path, name_out, icon_out);
+				done = true;
+			}
 		}
 		closedir(d);
 	}
 	free(dirs);
-	return name;
 }
 #pragma GCC diagnostic pop
 /* Desktop entries are static after boot; a bounded per-app_id cache avoids
- * re-scanning every applications/ directory on every card redraw. */
-static const char *desktop_identity_name(const char *app_id) {
+ * re-scanning every applications/ directory on every card redraw. Returns
+ * the cache entry itself (name/icon may each individually be NULL when the
+ * matched .desktop file lacks that key, or no entry matched at all) so a
+ * single lookup serves both the card header's name and its icon. */
+static const struct desktop_identity_entry *desktop_identity(const char *app_id) {
 	if (!app_id || !*app_id)
 		return NULL;
 	for (size_t i = 0; i < desktop_identity_cache_count; i++)
 		if (strcmp(desktop_identity_cache[i].app_id, app_id) == 0)
-			return desktop_identity_cache[i].name;
-	char *name = resolve_desktop_name(app_id);
+			return &desktop_identity_cache[i];
+	char *name = NULL, *icon = NULL;
+	resolve_desktop_entry(app_id, &name, &icon);
 	if (desktop_identity_cache_count < DESKTOP_IDENTITY_CACHE_MAX) {
 		struct desktop_identity_entry *e = &desktop_identity_cache[desktop_identity_cache_count++];
 		e->app_id = strdup(app_id);
 		e->name = name;
-		return e->name;
+		e->icon = icon;
+		return e;
 	}
 	free(name);
+	free(icon);
 	return NULL;
+}
+static const char *desktop_identity_name(const char *app_id) {
+	const struct desktop_identity_entry *e = desktop_identity(app_id);
+	return e ? e->name : NULL;
+}
+/* The resolved Icon= value for app_id (a themed icon name or absolute path,
+ * not yet decoded), or NULL if the matched entry has none or none matched.
+ * card_icon_header (render.c, backed by icon.c) resolves this through the
+ * installed icon theme at draw time. */
+static const char *desktop_identity_icon(const char *app_id) {
+	const struct desktop_identity_entry *e = desktop_identity(app_id);
+	return e ? e->icon : NULL;
 }
 /* The badge glyph is the resolved title's own first letter, matching the
  * drawer's fallback-initial treatment when no icon image is available
@@ -1159,10 +1199,11 @@ static bool sync_card(struct card *c, size_t index) {
 	if (!card_background(c, index == shell.policy.selected, entering || expanding))
 		return false;
 	bool compact = touch_first();
+	const char *app_id = c->content == CS_LIVE ? view_get_app_id(c->view) : NULL;
 	char name_buf[128];
 	const char *display_title = c->content == CS_LIVE ?
 		card_display_title(c->content, view_get_title(c->view),
-			view_get_app_id(c->view), compact, name_buf, sizeof(name_buf)) :
+			app_id, compact, name_buf, sizeof(name_buf)) :
 		card_display_title(c->content, NULL, NULL, compact, name_buf, sizeof(name_buf));
 	const char *title = display_title;
 	char rollback_title[512];
@@ -1178,50 +1219,60 @@ static bool sync_card(struct card *c, size_t index) {
 		free(c->label_text);
 		c->label_text = NULL;
 	}
-	/* A small icon glyph beside the name, matching the drawer's own
-	 * icon-tile fallback treatment (finding P0-1), for any card that
-	 * represents a running app -- not the placeholder text cs_card_text()
-	 * returns for other content states. */
+	/* The card header: a real resolved icon (task 1.4 of
+	 * the-handheld-presents-a-coherent-shell; docs/design/shell-ux-critique.md
+	 * #1.2) plus the app's real .desktop Name= (never the raw, live-changing
+	 * window title), drawn ABOVE each card -- the user's chosen webOS-fan
+	 * overview, like webOS/Android's recents always pairing an identity
+	 * badge with a card regardless of the live screenshot's own content --
+	 * instead of the old below-the-card caption. Not shown for the
+	 * placeholder text cs_card_text() returns for non-live content. */
 	bool show_icon = c->content == CS_LIVE;
-	int badge_size = compact ? 32 : 40;
-	/* The caption now lives outside the card, on the wallpaper below it
-	 * (webOS style), instead of overlaid on the bottom of the snapshot --
-	 * so it never needs a plate behind it to stay legible. */
-	int label_h = compact ? 44 : 56;
-	int label_gap = 10;
-	int label_top = c->box_y + c->box_height + label_gap;
-	int label_x = c->box_x + (compact ? 16 : 12);
-	int label_w = c->box_width - (compact ? 32 : 24);
+	int icon_size = compact ? 28 : 32;
+	int header_h = compact ? 34 : 40;
+	int header_gap = compact ? 8 : 10;
+	int header_top = c->box_y - header_gap - header_h;
+	int header_x = c->box_x;
+	int text_x = header_x;
+	int text_w = c->box_width;
 	if (show_icon) {
-		label_x += badge_size + 10;
-		label_w -= badge_size + 10;
+		text_x += icon_size + (compact ? 6 : 8);
+		text_w -= icon_size + (compact ? 6 : 8);
 	}
-	if (label_w < 0) label_w = 0;
+	if (text_w < 0) text_w = 0;
+	int text_size = compact ? 14 : 16;
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
-			label_w, label_h, compact ? 24 : 32,
+			text_w, header_h, text_size,
 			appearance_text(selected)))
 		return false;
 	c->label_selected = selected;
-	label_clip(c->label, label_x, label_top, c->x, c->y, clip_box());
+	int text_y = header_top + (header_h - (text_size + 6)) / 2;
+	label_clip(c->label, text_x, text_y, c->x, c->y, clip_box());
 	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
 	char letter = show_icon ? card_badge_letter(display_title) : 0;
-	if (!show_icon || letter == 0) {
+	const char *icon_name = show_icon ? desktop_identity_icon(app_id) : NULL;
+	if (!show_icon) {
 		if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
 		c->label_icon = NULL;
 		c->label_icon_letter = 0;
+		free(c->label_icon_key);
+		c->label_icon_key = NULL;
 	} else {
-		if (!c->label_icon || c->label_icon_letter != letter ||
-				c->label_icon->buffer->width != badge_size) {
+		bool key_changed = (icon_name != NULL) != (c->label_icon_key != NULL) ||
+			(icon_name && c->label_icon_key && strcmp(icon_name, c->label_icon_key) != 0);
+		if (!c->label_icon || c->label_icon->buffer->width != icon_size ||
+				c->label_icon_letter != letter || key_changed) {
 			if (c->label_icon) wlr_scene_node_destroy(&c->label_icon->node);
 			uint32_t fg = appearance_text(selected);
 			uint32_t bg = (fg & 0x00ffffff) | 0x2e000000;
-			c->label_icon = card_icon_badge(c->tree, letter, badge_size, bg, fg);
+			c->label_icon = card_icon_header(c->tree, icon_name, letter, icon_size, bg, fg);
 			c->label_icon_letter = letter;
+			free(c->label_icon_key);
+			c->label_icon_key = icon_name ? strdup(icon_name) : NULL;
 		}
 		if (c->label_icon) {
-			int badge_y = label_top + (label_h - badge_size) / 2;
-			label_clip(c->label_icon, c->box_x + (compact ? 16 : 12), badge_y, c->x, c->y,
-				clip_box());
+			int icon_y = header_top + (header_h - icon_size) / 2;
+			label_clip(c->label_icon, header_x, icon_y, c->x, c->y, clip_box());
 			wlr_scene_node_set_enabled(&c->label_icon->node, !entering && !expanding);
 		}
 	}

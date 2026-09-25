@@ -32,6 +32,12 @@ struct wlr_scene_buffer *card_label_weight(struct wlr_scene_tree *tree, const ch
  * header identity fix (finding P0-1). */
 struct wlr_scene_buffer *card_icon_badge(struct wlr_scene_tree *tree, char letter, int size,
 		uint32_t bg_argb, uint32_t fg_argb);
+/* Real-icon-first header glyph: resolves icon_name through the installed
+ * icon theme (nix/card-shell/icon.c) and falls back to card_icon_badge's
+ * own letter-badge painting when it does not resolve. icon_name may be
+ * NULL. */
+struct wlr_scene_buffer *card_icon_header(struct wlr_scene_tree *tree, const char *icon_name,
+		char fallback_letter, int size, uint32_t bg_argb, uint32_t fg_argb);
 struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height);
 /* A rounded-rect card plate: the brush fill clipped to a rounded rectangle,

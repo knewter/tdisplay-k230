@@ -178,7 +178,7 @@
  	}
 --- a/sway/meson.build
 +++ b/sway/meson.build
-@@ -1,4 +1,13 @@
+@@ -1,4 +1,14 @@
  sway_sources = files(
 +	'card_shell.c',
 +	'card-keyboard-gesture.c',
@@ -186,6 +186,7 @@
 +	'card_shell_route.c',
 +	'card-shell-policy.c',
 +	'card_shell_render.c',
++	'card_shell_icon.c',
 +	'card_shell_scaled_cache.c',
 +	'card_shell_telemetry.c',
 +	'card_shell_test_input.c',

@@ -15,6 +15,8 @@ let
       cp ${./card-shell/telemetry.h} include/sway/card_shell_telemetry.h
       cp ${./card-shell/render.c} sway/card_shell_render.c
       cp ${./card-shell/render.h} include/sway/card_shell_render.h
+      cp ${./card-shell/icon.c} sway/card_shell_icon.c
+      cp ${./card-shell/icon.h} include/sway/card_shell_icon.h
       cp ${./card-shell/scaled-cache.c} sway/card_shell_scaled_cache.c
       cp ${./card-shell/scaled-cache.h} include/sway/card_shell_scaled_cache.h
       cp ${./card-shell-policy/card-shell-policy.c} sway/card-shell-policy.c
