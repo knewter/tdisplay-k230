@@ -8,7 +8,7 @@ use crate::{
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
     theme_carousel,
-    theme_catalog::BackgroundKind,
+    theme_catalog::{BackgroundKind, ThemeRequest},
     theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
@@ -329,6 +329,30 @@ fn rounded(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
     cr.close_path();
 }
 
+/// A small rotating-arc "loading" spinner, centered at `(cx, cy)`. `phase`
+/// (0.0..1.0, wrapping) drives the rotation -- callers advance it on a slow,
+/// deliberately throttled cadence (`main.rs`'s `THEME_PULSE_INTERVAL`), not
+/// every render, so this is genuinely an animation the render loop redraws
+/// *for* (goal: "render only while something actually changes"), never a
+/// disguised idle poll. Used for every pending-decode affordance the theme
+/// chooser paints: an unresolved carousel thumbnail, a preparing still
+/// preview, and a background/theme confirm still waiting on its reply.
+fn spinner(cr: &Context, cx: f64, cy: f64, radius: f64, phase: f64, rgb: u32) {
+    if radius <= 0.0 {
+        return;
+    }
+    let start = phase.fract().abs() * std::f64::consts::TAU;
+    let sweep = 1.6; // a partial ring, not a full circle, so rotation reads clearly
+    let _ = cr.save();
+    cr.set_line_width((radius * 0.22).max(1.5));
+    cr.set_line_cap(cairo::LineCap::Round);
+    color(cr, rgb, 0.85);
+    cr.new_sub_path();
+    cr.arc(cx, cy, radius, start, start + sweep);
+    let _ = cr.stroke();
+    let _ = cr.restore();
+}
+
 fn service_card(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
@@ -440,6 +464,7 @@ fn variant_size(geometry: &theme_carousel::CarouselGeometry, variant: Variant) -
 /// carousel (Preview page) -- both are the same component upstream too
 /// (`ImagePicker.qml`, shared by `omarchy-theme-switcher` and
 /// `omarchy-theme-bg-switcher`).
+#[allow(clippy::too_many_arguments)]
 fn paint_carousel(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
@@ -451,6 +476,9 @@ fn paint_carousel(
     ids: &[&str],
     center_x: f64,
     top_y: f64,
+    pressed: Option<usize>,
+    busy: Option<usize>,
+    pulse_phase: f64,
 ) {
     if ids.is_empty() {
         return;
@@ -486,7 +514,8 @@ fn paint_carousel(
         } else {
             Variant::Slice
         };
-        if let Some(image) = thumbnails.and_then(|cache| cache.get(id, variant)) {
+        let image = thumbnails.and_then(|cache| cache.get(id, variant));
+        if let Some(image) = image {
             let iw = f64::from(image.width());
             let ih = f64::from(image.height());
             if iw > 0.0 && ih > 0.0 {
@@ -507,6 +536,19 @@ fn paint_carousel(
         // 0 : 0.42)`, continuous here instead of a hard boolean.
         color(cr, dim_color, 0.42 * slice.blend);
         let _ = cr.paint();
+        // A slice with no decoded thumbnail yet gets a spinner instead of a
+        // silent flat fill, so a slow decode (goal: never a frozen-looking
+        // UI) reads as "loading", not "missing" or "broken".
+        if image.is_none() {
+            spinner(
+                cr,
+                slice.x + slice.width / 2.0,
+                slice.y + slice.height / 2.0,
+                (slice.width.min(slice.height) * 0.16).max(6.0),
+                pulse_phase,
+                style.accent,
+            );
+        }
         let _ = cr.restore(); // drop the clip
 
         let selected = slice.index == centered;
@@ -518,9 +560,34 @@ fn paint_carousel(
             if selected { 1.0 } else { 0.5 },
         );
         let _ = cr.stroke();
+
+        // Immediate, same-frame feedback for a tap in flight: a tinted wash
+        // over the slice the finger is currently down on (cleared the
+        // instant it becomes a drag or the touch ends -- see
+        // `Carousel::pressed`), or, once that tap has been confirmed and is
+        // waiting on its reply, a spinner in place of the wash.
+        if Some(slice.index) == busy {
+            let _ = cr.save();
+            parallelogram(cr);
+            cr.clip();
+            spinner(
+                cr,
+                slice.x + slice.width / 2.0,
+                slice.y + slice.height / 2.0,
+                (slice.width.min(slice.height) * 0.22).max(8.0),
+                pulse_phase,
+                style.accent,
+            );
+            let _ = cr.restore();
+        } else if Some(slice.index) == pressed {
+            parallelogram(cr);
+            color(cr, style.accent, 0.28);
+            let _ = cr.fill();
+        }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn paint_theme_chooser(
     cr: &Context,
     w: f64,
@@ -530,6 +597,7 @@ fn paint_theme_chooser(
     preview_image: Option<&ImageSurface>,
     preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
+    pulse_phase: f64,
 ) {
     let style = visual_style(theme, "image-picker");
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
@@ -561,6 +629,24 @@ fn paint_theme_chooser(
                 Some(list) if !list.themes.is_empty() => {
                     let center_x = w / 2.0;
                     let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
+                    let centered = view
+                        .theme_position
+                        .round()
+                        .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
+                    // A tap on the centered slice submits a bare
+                    // `Preview{background_id: None}` (see
+                    // `ThemeView::preview_request`); while that reply is
+                    // outstanding, the slice that was tapped shows a
+                    // spinner instead of going quiet for as long as a
+                    // Python theme-tool invocation takes.
+                    let busy = matches!(
+                        &view.pending,
+                        Some(ThemeRequest::Preview {
+                            background_id: None,
+                            ..
+                        })
+                    )
+                    .then_some(centered);
                     paint_carousel(
                         cr,
                         theme,
@@ -572,11 +658,10 @@ fn paint_theme_chooser(
                         &ids,
                         center_x,
                         THEME_CAROUSEL_TOP,
+                        view.theme_pressed,
+                        busy,
+                        pulse_phase,
                     );
-                    let centered = view
-                        .theme_position
-                        .round()
-                        .clamp(0.0, (list.themes.len() - 1) as f64) as usize;
                     let entry = &list.themes[centered];
                     let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
                     let label_y =
@@ -748,6 +833,9 @@ fn paint_theme_chooser(
                 }
                 let _ = cr.stroke();
                 let _ = cr.restore();
+                let preparing = selected.is_some()
+                    && !preview_error
+                    && !selected.is_some_and(|row| row.kind == BackgroundKind::Video);
                 let message = if selected.is_some_and(|row| row.kind == BackgroundKind::Video) {
                     "Video preview unavailable"
                 } else if preview_error {
@@ -757,6 +845,15 @@ fn paint_theme_chooser(
                 } else {
                     "Choose a background"
                 };
+                if preparing {
+                    // The still-preview decode (`RendererCache::
+                    // poll_theme_image`, which now reuses the generation's
+                    // `background.cache` when one exists -- see
+                    // `theme_ui::ThemeImageKey`) can still take a moment on
+                    // a cold generation; a spinner here means this box is
+                    // never mistaken for a stalled/broken preview.
+                    spinner(cr, 44.0 + 14.0, image_y + 46.0, 13.0, pulse_phase, style.accent);
+                }
                 text(
                     cr,
                     message,
@@ -802,6 +899,20 @@ fn paint_theme_chooser(
             } else {
                 let center_x = w / 2.0;
                 let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
+                let centered_background = view
+                    .background_position
+                    .round()
+                    .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
+                // Same busy-spinner rule as the theme carousel above, but for
+                // a background confirm (`Preview{background_id: Some(_)}}`).
+                let busy = matches!(
+                    &view.pending,
+                    Some(ThemeRequest::Preview {
+                        background_id: Some(_),
+                        ..
+                    })
+                )
+                .then_some(centered_background);
                 paint_carousel(
                     cr,
                     theme,
@@ -813,12 +924,11 @@ fn paint_theme_chooser(
                     &ids,
                     center_x,
                     BACKGROUND_CAROUSEL_TOP,
+                    view.background_pressed,
+                    busy,
+                    pulse_phase,
                 );
-                let centered = view
-                    .background_position
-                    .round()
-                    .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
-                let background = &preview.backgrounds[centered];
+                let background = &preview.backgrounds[centered_background];
                 let label_y = BACKGROUND_CAROUSEL_TOP
                     + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
                     + 24.0;
@@ -884,16 +994,19 @@ fn paint_theme_chooser(
                 22.0,
                 style.muted,
             );
+            let activating = matches!(&view.pending, Some(ThemeRequest::Activate { .. }));
             text(
                 cr,
-                if preview.activated {
+                if activating {
+                    "Applying…"
+                } else if preview.activated {
                     "Apply again"
                 } else {
                     "Apply"
                 },
                 w / 2.0 + 18.0,
                 footer_y + 25.0,
-                w / 2.0 - 46.0,
+                w / 2.0 - (if activating { 76.0 } else { 46.0 }),
                 22.0,
                 if view.selection_error || view.pending.is_some() {
                     style.muted
@@ -901,6 +1014,13 @@ fn paint_theme_chooser(
                     style.accent
                 },
             );
+            if activating {
+                // The one request that cannot be cancelled once dispatched
+                // (`ThemeView::back`'s own doc) gets the clearest busy
+                // affordance in the chooser: a spinner right on the button
+                // that was tapped, for as long as activation takes.
+                spinner(cr, w - 58.0, footer_y + 18.0, 11.0, pulse_phase, style.muted);
+            }
         }
     }
     // The List page has no pinned footer of its own; anchor its own
@@ -1905,6 +2025,7 @@ fn scene(
                     preview_image,
                     preview_error,
                     thumbnails,
+                    view.pulse_phase,
                 );
                 return;
             }
@@ -2238,6 +2359,13 @@ impl RendererCache {
             let preview = (view.page == ThemePage::Preview)
                 .then_some(view.preview.as_ref())
                 .flatten()?;
+            // `appearance_path` is `<generation_root>/appearance.json` (see
+            // `theme_catalog::parse_preview`), so its parent is the exact
+            // directory `tools/theme_activate.py`'s `prepare()` already
+            // wrote this same width/height/`FitMode::Crop` decode into as
+            // `background.cache`; passing it through lets the worker reuse
+            // that file instead of a fresh full-source decode.
+            let generation_root = preview.appearance_path.parent()?.to_path_buf();
             preview
                 .backgrounds
                 .iter()
@@ -2247,6 +2375,7 @@ impl RendererCache {
                         ThemeImageKey {
                             generation: preview.generation.clone(),
                             path: row.path.clone(),
+                            generation_root: generation_root.clone(),
                             width,
                             height,
                         }
@@ -2406,12 +2535,23 @@ impl RendererCache {
 
     /// Whether some carousel slice within `theme_carousel::NEARBY_LIMIT`
     /// still has an unresolved bitmap (queued, or dropped by a full worker
-    /// queue and waiting on a future `poll_theme_thumbnails` retry). A
-    /// caller that keeps redrawing while this is true is what makes that
-    /// retry actually happen once the touch gesture that first opened the
-    /// carousel has ended -- without it, a request dropped near the end of
-    /// a drag would never resolve until some *unrelated* future redraw
-    /// happened to call `poll_theme_thumbnails` again.
+    /// queue and waiting on a future `poll_theme_thumbnails` retry).
+    ///
+    /// This says only whether the event loop should keep *polling*
+    /// (`main.rs` shortens its `libc::poll` timeout while this is true, so a
+    /// completed decode is drained promptly) -- it must never by itself
+    /// force a redraw. `poll_theme_thumbnails` is already called
+    /// unconditionally every loop iteration regardless of this value, so
+    /// retries and channel draining happen either way; only its own
+    /// `changed` return value (a decode actually completed, or one of this
+    /// module's caches actually changed) should ever set `dirty`. A caller
+    /// that instead redraws a fully unchanged frame just because this is
+    /// true is the idle-redraw bug this doc used to justify: a continuous
+    /// full re-render at rest while thumbnails were still decoding,
+    /// competing for the same single core the decode itself needed. The
+    /// loading spinner this module's caller paints for a pending slice
+    /// (`render.rs::paint_carousel`) is instead animated by `ThemeView::
+    /// pulse_phase`, advanced on `main.rs`'s own throttled cadence.
     pub fn theme_thumbnails_pending(&self) -> bool {
         let Some(chooser) = self.chooser.as_ref() else {
             return false;
@@ -2457,6 +2597,30 @@ impl RendererCache {
             }
             ThemePage::Controls => false,
         }
+    }
+
+    /// Whether the Preview page's single "Selected background" still image
+    /// (`poll_theme_image`, above) is waiting on a decode: a background is
+    /// selected, nothing failed, and no surface has arrived yet. Same
+    /// contract as `theme_thumbnails_pending` -- for driving `main.rs`'s
+    /// throttled loading-spinner pulse, never for forcing an unconditional
+    /// redraw.
+    pub fn theme_preview_image_pending(&self) -> bool {
+        let Some(chooser) = self.chooser.as_ref() else {
+            return false;
+        };
+        if chooser.page != ThemePage::Preview {
+            return false;
+        }
+        let Some(preview) = chooser.preview.as_ref() else {
+            return false;
+        };
+        preview
+            .backgrounds
+            .iter()
+            .any(|row| row.selected && row.kind == BackgroundKind::Image)
+            && self.preview_surface.is_none()
+            && !self.preview_error
     }
 
     pub fn set_services(&mut self, services: ServiceView) {
@@ -3232,6 +3396,166 @@ mod tests {
             surface.write_to_png(&mut file).unwrap();
         }
         std::fs::remove_file(wallpaper).unwrap();
+    }
+
+    #[test]
+    fn pressed_and_activating_states_change_painted_pixels() {
+        // Goal 1 (immediate feedback): a tapped-and-held slice must look
+        // different within the same frame, and Apply must look visibly
+        // busy while an activation is in flight -- both painted straight
+        // from `ThemeView` fields, no decode/worker needed, so this is a
+        // synchronous, deterministic pixel-diff check.
+        let mut renderer = RendererCache::default();
+        let entry = ThemeEntry {
+            id: "fixture-a".into(),
+            name: "Fixture A".into(),
+            label: "Fixture A".into(),
+            origin: ThemeOrigin::Builtin,
+            preview_path: None,
+        };
+        let params = RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Settings,
+            progress: 1.0,
+            scroll: 0.0,
+        };
+        let list_view = ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: (0..5)
+                    .map(|index| ThemeEntry {
+                        id: format!("fixture-{index}"),
+                        label: format!("Fixture {index}"),
+                        ..entry.clone()
+                    })
+                    .collect(),
+                active: ActiveTheme {
+                    id: Some("fixture-0".into()),
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(list_view.clone());
+        let mut unpressed = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut unpressed, params, &[]).unwrap();
+
+        renderer.set_theme_view(ThemeView {
+            theme_pressed: Some(0),
+            ..list_view
+        });
+        let mut pressed = vec![0; unpressed.len()];
+        renderer.draw(&mut pressed, params, &[]).unwrap();
+        assert_ne!(
+            unpressed, pressed,
+            "a pressed centered slice must paint differently from an unpressed one"
+        );
+
+        let preview = ThemePreview {
+            theme: entry,
+            generation: "fixture-generation".into(),
+            appearance_path: "/tmp/fixture-appearance.json".into(),
+            palette: BTreeMap::new(),
+            icon_theme: None,
+            backgrounds: vec![BackgroundChoice {
+                id: "fixture-bg".into(),
+                label: "Still".into(),
+                kind: BackgroundKind::Image,
+                path: "/tmp/nonexistent-fixture-bg.png".into(),
+                selected: true,
+                decode_status: "unverified".into(),
+            }],
+            compatibility: Compatibility {
+                applied: vec![],
+                unavailable: vec![],
+                unknown: vec![],
+            },
+            activated: false,
+            app_appearance: None,
+        };
+        let preview_view = ThemeView {
+            page: ThemePage::Preview,
+            preview: Some(preview),
+            pending: None,
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(preview_view.clone());
+        let mut idle_footer = vec![0; unpressed.len()];
+        renderer.draw(&mut idle_footer, params, &[]).unwrap();
+
+        renderer.set_theme_view(ThemeView {
+            pending: Some(ThemeRequest::Activate {
+                theme_id: "fixture-a".into(),
+                expected_generation: "fixture-generation".into(),
+                background_id: Some("fixture-bg".into()),
+            }),
+            ..preview_view
+        });
+        let mut activating_footer = vec![0; unpressed.len()];
+        renderer.draw(&mut activating_footer, params, &[]).unwrap();
+        assert_ne!(
+            idle_footer, activating_footer,
+            "a pending Activate must paint a visibly busy Apply button"
+        );
+    }
+
+    #[test]
+    fn pending_thumbnails_do_not_by_themselves_report_a_change() {
+        // The idle-redraw fix (see `main.rs`'s own doc on
+        // `THEME_PULSE_INTERVAL` and `theme_thumbnails_pending`): a caller
+        // may keep *polling* while `theme_thumbnails_pending()` is true, but
+        // must never redraw on that alone -- only `poll_theme_thumbnails`'s
+        // own `changed` return value (something actually arrived) may mark
+        // a frame dirty. This is exactly the invariant that makes it safe
+        // for `main.rs` to stop forcing `dirty = true` merely because
+        // something is pending.
+        let entry = ThemeEntry {
+            id: "fixture-pending".into(),
+            name: "Fixture Pending".into(),
+            label: "Fixture Pending".into(),
+            origin: ThemeOrigin::Builtin,
+            preview_path: Some(std::env::temp_dir().join(format!(
+                "k230-theme-thumb-pending-{}-{}.png",
+                std::process::id(),
+                line!()
+            ))),
+        };
+        image::RgbaImage::from_pixel(24, 24, image::Rgba([1, 1, 1, 255]))
+            .save(entry.preview_path.as_ref().unwrap())
+            .unwrap();
+        let path = entry.preview_path.clone().unwrap().canonicalize().unwrap();
+        let mut renderer = RendererCache::default();
+        renderer.set_theme_view(ThemeView {
+            page: ThemePage::List,
+            list: Some(ThemeList {
+                themes: vec![ThemeEntry {
+                    preview_path: Some(path),
+                    ..entry
+                }],
+                active: ActiveTheme {
+                    id: None,
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        });
+        // This very call is what first issues the decode request (see
+        // `poll_theme_thumbnails`'s own doc): nothing can have arrived on
+        // the reply channel yet, so `changed` must be false here even
+        // though the entry is (correctly) still pending.
+        assert!(renderer.theme_thumbnails_pending());
+        assert!(
+            !renderer.poll_theme_thumbnails(),
+            "issuing a decode request must not itself report a change"
+        );
+        // And immediately calling it again, before the worker thread has
+        // plausibly finished a real decode, must still report no change --
+        // repeated polling alone is never a reason to redraw.
+        assert!(
+            !renderer.poll_theme_thumbnails(),
+            "polling again with nothing new must still report no change"
+        );
     }
 
     /// A theme's own preview image (or a representative background, chosen

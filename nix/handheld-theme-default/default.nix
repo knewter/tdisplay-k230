@@ -82,6 +82,54 @@ stdenvNoCC.mkDerivation {
         magick mogrify -auto-orient -resize 'x${toString backgroundMaxHeight}>' \
           -quality ${toString backgroundQuality} -strip
 
+    # Build-time thumbnails for every bundled built-in theme: a theme's own
+    # preview.* gets the Themes page hero carousel's two cached sizes
+    # (`theme_carousel::THEME_GEOMETRY`'s `expanded_w/h`=480x640,
+    # `slice_w/h`=68x582, rounded -- same numbers that geometry documents
+    # against upstream's own ratios), and every background image gets the
+    # Preview page's smaller background carousel's two sizes
+    # (`BACKGROUND_GEOMETRY`: 420x260, 59x237). `theme_thumbnails.rs`'s
+    # worker checks for these at a fixed mirrored path (a `thumbs/` tree
+    # alongside `themes/`, never *inside* a theme's own directory --
+    # `tools/theme_sources.py::source_digest` hashes that directory
+    # recursively for every generation identity, so a cache file living
+    # there would silently change what the theme hashes to; see
+    # `theme_thumbnails::builtin_thumbnail_path`'s own doc) before its own
+    # runtime disk cache or a full decode, so the very first view of a
+    # bundled theme on the board never pays for one. Written after the
+    # resize step above so a bounded theme's own thumbnail is decoded from
+    # its final (already-downscaled) bytes. Advisory, like the wallpaper
+    # cache below: any failure here just means that theme falls through to
+    # the same slower, fully correct path every theme used before this
+    # optimization existed.
+    for name in ${lib.concatStringsSep " " themeNames}; do
+      themeDir="$out/share/omarchy/themes/$name"
+      for previewName in preview.png preview.jpg preview.jpeg preview.webp preview.gif preview.bmp; do
+        if [ -f "$themeDir/$previewName" ]; then
+          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+            "$themeDir/$previewName" expanded 480 640 \
+            || echo "handheld-theme-default: theme thumbnail precompute skipped ($name expanded)" >&2
+          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+            "$themeDir/$previewName" slice 68 582 \
+            || echo "handheld-theme-default: theme thumbnail precompute skipped ($name slice)" >&2
+          break
+        fi
+      done
+      if [ -d "$themeDir/backgrounds" ]; then
+        find "$themeDir/backgrounds" -maxdepth 1 -type f \
+          \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' -o -iname '*.bmp' \) \
+          -print0 |
+        while IFS= read -r -d "" background; do
+          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+            "$background" expanded 420 260 \
+            || echo "handheld-theme-default: background thumbnail precompute skipped ($background expanded)" >&2
+          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+            "$background" slice 59 237 \
+            || echo "handheld-theme-default: background thumbnail precompute skipped ($background slice)" >&2
+        done
+      fi
+    done
+
     # The pinned fresh-home default is a derived Catppuccin generation
     # (full upstream resolution; see fullResolutionThemes above), matching
     # the digest recorded in bundled-report.json.

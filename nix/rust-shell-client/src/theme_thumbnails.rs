@@ -40,12 +40,332 @@
 
 use crate::background_decode::{BackgroundCache, FitMode};
 use cairo::{Format, ImageSurface};
+use sha2::{Digest, Sha256};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
-    path::PathBuf,
+    fs::OpenOptions,
+    io::{Read, Write},
+    os::unix::fs::OpenOptionsExt,
+    path::{Path, PathBuf},
     sync::mpsc::{self, Receiver, SyncSender},
     thread,
 };
+
+/// ## Two disk caches, ahead of the in-memory `ThemeThumbnailCache` above
+///
+/// Beyond the in-memory cache (bounded, cleared when the chooser process
+/// exits), two on-disk mechanisms make a *first* view of a given (source,
+/// size) fast too, not just a second view within one run:
+///
+/// - **Build-time, for the bundled built-in themes.** `nix/handheld-theme-
+///   default/default.nix` runs this same binary's hidden
+///   `--write-thumbnail-cache` verb over every pinned theme's `preview.png`
+///   and background images, at exactly the sizes `theme_carousel`'s two
+///   geometries need, into a `thumbs/` tree that mirrors the installed
+///   `themes/` tree one level up (see [`builtin_thumbnail_path`] for why
+///   *not* a sibling inside each theme's own directory). These never change
+///   after being built (a theme's sources are read-only Nix store paths),
+///   so lookup is by source *path*, not a content hash -- cheaper, and
+///   there is nothing to bound or evict: the Nix store's own garbage
+///   collection owns their lifetime, same as the sources they mirror.
+/// - **Runtime, for everything else (chiefly user themes).** A small,
+///   size-bounded cache under the shell user's `$XDG_CACHE_HOME` (see
+///   [`disk_cache_dir`]), keyed by the source file's own content hash plus
+///   the requested size: the first view in the *worker* thread (never the
+///   render thread -- this module's whole point, see the module doc) pays
+///   a full decode and persists the result; a later view, even after a
+///   restart, loads the small already-cropped file directly.
+///
+/// Both are strictly advisory: a missing, unreadable, or geometry-mismatched
+/// file of either kind is exactly the same, slower, fully correct full
+/// decode this cache didn't exist to skip.
+const DISK_CACHE_MAGIC: &[u8; 8] = b"K230THC1";
+/// 8 (magic) + 4 (width) + 4 (height).
+const DISK_CACHE_HEADER_LEN: u64 = 16;
+/// Bounds the runtime on-disk cache's total footprint -- a small, fixed,
+/// explicitly stated bound, the same engineering choice `CACHE_CAP` above
+/// and `background_decode.rs`'s own cache make. Comparable to (slightly
+/// above) this process's own in-memory bound, since the disk cache serves
+/// every chooser session on this device, not just the current one.
+const DISK_CACHE_MAX_BYTES: u64 = 24 * 1024 * 1024;
+/// Source files larger than this are still decoded and shown normally, but
+/// never content-hashed or persisted: hashing a large file just to persist
+/// a small thumbnail of it spends more I/O than a single decode saves, and
+/// the persistent win this cache exists for is *repeat* views across
+/// restarts, not the very first one. Matches
+/// `background_decode.rs::MAX_SOURCE_BYTES`.
+const DISK_CACHE_MAX_SOURCE_BYTES: u64 = 32 * 1024 * 1024;
+
+fn output_len(width: u32, height: u32) -> Option<u64> {
+    u64::from(width)
+        .checked_mul(u64::from(height))?
+        .checked_mul(4)
+}
+
+/// Read a disk-cached thumbnail file if it exists and matches `width`/
+/// `height` exactly. Any structural problem (wrong size, bad magic,
+/// unreadable, a symlink) is a cache miss, never an error -- same
+/// contract as `background_decode.rs::load_cached`.
+fn read_disk_cache(path: &Path, width: u32, height: u32) -> Option<Vec<u8>> {
+    let expected_pixels = output_len(width, height)?;
+    let file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .ok()?;
+    let metadata = file.metadata().ok()?;
+    let expected_len = DISK_CACHE_HEADER_LEN.checked_add(expected_pixels)?;
+    if !metadata.is_file() || metadata.len() != expected_len {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    file.take(expected_len + 1).read_to_end(&mut bytes).ok()?;
+    if bytes.len() as u64 != expected_len {
+        return None;
+    }
+    if &bytes[0..8] != DISK_CACHE_MAGIC {
+        return None;
+    }
+    let cached_width = u32::from_le_bytes(bytes[8..12].try_into().ok()?);
+    let cached_height = u32::from_le_bytes(bytes[12..16].try_into().ok()?);
+    if cached_width != width || cached_height != height {
+        return None;
+    }
+    bytes.drain(0..DISK_CACHE_HEADER_LEN as usize);
+    Some(bytes)
+}
+
+/// Write `pixels` as a disk-cache file at exactly `path`, via a sibling
+/// temporary file and an atomic rename so a concurrent reader never sees a
+/// partial file. The parent directory is created if missing. Advisory:
+/// callers treat any failure as a missed optimization, never a hard error.
+fn write_disk_cache(path: &Path, width: u32, height: u32, pixels: &[u8]) -> Result<(), String> {
+    let expected = output_len(width, height).ok_or("thumbnail geometry overflow")?;
+    if pixels.len() as u64 != expected {
+        return Err("thumbnail cache payload size mismatch".into());
+    }
+    let parent = path.parent().ok_or("thumbnail cache path has no parent")?;
+    std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    let temporary = parent.join(format!(".tmp-{}-{}", std::process::id(), fastrand_suffix()));
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .custom_flags(libc::O_NOFOLLOW)
+        .mode(0o600)
+        .open(&temporary)
+        .map_err(|error| error.to_string())?;
+    file.write_all(DISK_CACHE_MAGIC)
+        .and_then(|_| file.write_all(&width.to_le_bytes()))
+        .and_then(|_| file.write_all(&height.to_le_bytes()))
+        .and_then(|_| file.write_all(pixels))
+        .and_then(|_| file.sync_all())
+        .map_err(|error| error.to_string())?;
+    drop(file);
+    std::fs::rename(&temporary, path).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+/// A cheap per-call disambiguator for the temporary write path -- this
+/// process is single-threaded for thumbnail decodes (one worker thread),
+/// but the PID alone would collide if a stale temp file from a killed
+/// previous run were ever left behind at the same PID.
+fn fastrand_suffix() -> u64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos() as u64)
+        .unwrap_or(0)
+}
+
+/// Evicts oldest-modified files under `dir` until its total size is back
+/// under `DISK_CACHE_MAX_BYTES`. Called after every write; a directory this
+/// small (a few dozen files at most) is cheap to scan fully each time, and
+/// needs no separate index to go stale.
+fn evict_oldest(dir: &Path) {
+    evict_until(dir, DISK_CACHE_MAX_BYTES);
+}
+
+/// `evict_oldest`'s actual logic, parameterized on the cap so tests can
+/// exercise real eviction behavior against a tiny cap instead of writing
+/// tens of megabytes of fixture data to trigger it.
+fn evict_until(dir: &Path, cap: u64) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let mut files: Vec<(PathBuf, u64, std::time::SystemTime)> = entries
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let metadata = entry.metadata().ok()?;
+            if !metadata.is_file() {
+                return None;
+            }
+            let modified = metadata.modified().ok()?;
+            Some((entry.path(), metadata.len(), modified))
+        })
+        .collect();
+    let mut total: u64 = files.iter().map(|(_, size, _)| *size).sum();
+    if total <= cap {
+        return;
+    }
+    files.sort_by_key(|(_, _, modified)| *modified);
+    for (path, size, _) in files {
+        if total <= cap {
+            break;
+        }
+        if std::fs::remove_file(&path).is_ok() {
+            total = total.saturating_sub(size);
+        }
+    }
+}
+
+/// `$XDG_CACHE_HOME/k230-shell/thumbs`, or `$HOME/.cache/k230-shell/thumbs`
+/// when `XDG_CACHE_HOME` is unset or empty. `None` when neither is
+/// available (e.g. a stripped test environment): callers simply skip the
+/// runtime disk cache in that case, exactly as if every lookup missed.
+fn disk_cache_dir() -> Option<PathBuf> {
+    disk_cache_dir_from(
+        std::env::var("XDG_CACHE_HOME").ok().as_deref(),
+        std::env::var("HOME").ok().as_deref(),
+    )
+}
+
+/// `disk_cache_dir`'s actual logic, taking its two env var readings as
+/// plain arguments so tests can exercise the XDG/HOME fallback without
+/// mutating real process-wide environment state (`std::env::set_var` is
+/// unsound across concurrently running tests in one process).
+fn disk_cache_dir_from(xdg_cache_home: Option<&str>, home: Option<&str>) -> Option<PathBuf> {
+    if let Some(dir) = xdg_cache_home {
+        if !dir.trim().is_empty() {
+            return Some(PathBuf::from(dir).join("k230-shell/thumbs"));
+        }
+    }
+    let home = home?;
+    if home.trim().is_empty() {
+        return None;
+    }
+    Some(PathBuf::from(home).join(".cache/k230-shell/thumbs"))
+}
+
+/// Content hash of `path`'s current bytes, hex-encoded, or `None` if the
+/// file is missing, not a regular file, or larger than
+/// `DISK_CACHE_MAX_SOURCE_BYTES` (see its own doc).
+fn content_hash(path: &Path) -> Option<String> {
+    let metadata = std::fs::metadata(path).ok()?;
+    if !metadata.is_file() || metadata.len() > DISK_CACHE_MAX_SOURCE_BYTES {
+        return None;
+    }
+    let bytes = std::fs::read(path).ok()?;
+    let mut hasher = Sha256::new();
+    hasher.update(&bytes);
+    Some(format!("{:x}", hasher.finalize()))
+}
+
+fn runtime_cache_file(dir: &Path, hash: &str, variant: Variant, width: u32, height: u32) -> PathBuf {
+    dir.join(format!("{hash}-{}-{width}x{height}.rgba", variant.tag()))
+}
+
+/// Where a build-time-precomputed thumbnail for `source` at `variant`/
+/// `width`/`height` lives, if `nix/handheld-theme-default` ever built one
+/// (see the module doc's "Two disk caches" section).
+///
+/// Deliberately *not* a sibling of `source` inside the theme's own
+/// directory: `tools/theme_sources.py::source_digest` -- and hence every
+/// generation identity `tools/theme_activate.py::prepare` computes, both at
+/// runtime and for the pinned bundled generation baked into
+/// `nix/handheld-theme-default/{bundled,default}-report.json` -- hashes a
+/// theme's directory *recursively*. A thumbnail cache file sitting inside
+/// that tree would silently change what every theme using it hashes to,
+/// breaking generation-identity comparisons no test then exercises against
+/// this cache. Instead, `.../share/omarchy/themes/<name>/<rest>` mirrors to
+/// a sibling `.../share/omarchy/thumbs/<name>/<rest>-<variant>-<w>x<h>.rgba`
+/// -- a `themes` path component is required to anchor the mirror, so this
+/// only ever resolves under the fixed layout `default.nix` installs (a user
+/// theme's path has no such component and simply returns `None`, falling
+/// through to the runtime disk cache instead). The full original filename
+/// (not just its stem) avoids two same-stem, different-extension sources in
+/// one directory colliding.
+pub fn builtin_thumbnail_path(source: &Path, variant: Variant, width: u32, height: u32) -> Option<PathBuf> {
+    let components: Vec<std::ffi::OsString> =
+        source.components().map(|c| c.as_os_str().to_os_string()).collect();
+    let themes_index = components
+        .iter()
+        .rposition(|component| component == "themes")?;
+    let mut mirrored = PathBuf::new();
+    for component in &components[..themes_index] {
+        mirrored.push(component);
+    }
+    mirrored.push("thumbs");
+    for component in &components[themes_index + 1..] {
+        mirrored.push(component);
+    }
+    let name = mirrored.file_name()?.to_str()?.to_string();
+    mirrored.set_file_name(format!("{name}-{}-{width}x{height}.rgba", variant.tag()));
+    Some(mirrored)
+}
+
+/// Precomputes and persists a build-time thumbnail for `source` at
+/// `variant`/`width`/`height`, at [`builtin_thumbnail_path`]. Used only by
+/// the hidden `--write-thumbnail-cache` CLI verb, invoked by a native-arch
+/// build of this binary from `nix/handheld-theme-default/default.nix` (the
+/// same pattern as `background_decode::write_wallpaper_cache`). Never runs
+/// on the board.
+pub fn write_builtin_thumbnail(
+    source: &Path,
+    variant: Variant,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    let destination =
+        builtin_thumbnail_path(source, variant, width, height).ok_or("thumbnail path unavailable")?;
+    let mut cache = BackgroundCache::new();
+    let pixels = cache
+        .render(source, None, width, height, FitMode::Crop)?
+        .to_vec();
+    write_disk_cache(&destination, width, height, &pixels)
+}
+
+/// Resolves one thumbnail decode, preferring (in order) a build-time
+/// precomputed file, then a runtime disk-cache hit, before paying for a
+/// full decode -- and, on a full decode, persists the result to the
+/// runtime disk cache for the next view (this run or a later restart). See
+/// the module doc's "Two disk caches" section.
+fn resolve(cache: &mut BackgroundCache, key: &ThumbnailKey) -> Result<Vec<u8>, String> {
+    resolve_with_dir(cache, key, disk_cache_dir())
+}
+
+/// `resolve`'s actual logic, taking the runtime disk-cache directory as a
+/// plain argument (see `disk_cache_dir_from`'s own doc for why: tests
+/// exercise this directly with a fixture directory rather than mutating
+/// process-wide environment state).
+fn resolve_with_dir(
+    cache: &mut BackgroundCache,
+    key: &ThumbnailKey,
+    runtime_dir: Option<PathBuf>,
+) -> Result<Vec<u8>, String> {
+    if let Some(builtin) = builtin_thumbnail_path(&key.path, key.variant, key.width, key.height) {
+        if let Some(pixels) = read_disk_cache(&builtin, key.width, key.height) {
+            return Ok(pixels);
+        }
+    }
+    let hash = runtime_dir.as_ref().and_then(|_| content_hash(&key.path));
+    if let (Some(dir), Some(hash)) = (runtime_dir.as_ref(), hash.as_ref()) {
+        let file = runtime_cache_file(dir, hash, key.variant, key.width, key.height);
+        if let Some(pixels) = read_disk_cache(&file, key.width, key.height) {
+            return Ok(pixels);
+        }
+    }
+    let pixels = cache
+        .render(&key.path, None, key.width, key.height, FitMode::Crop)?
+        .to_vec();
+    if let (Some(dir), Some(hash)) = (runtime_dir.as_ref(), hash.as_ref()) {
+        let file = runtime_cache_file(dir, hash, key.variant, key.width, key.height);
+        if write_disk_cache(&file, key.width, key.height, &pixels).is_ok() {
+            evict_oldest(dir);
+        }
+    }
+    Ok(pixels)
+}
 
 /// Which cache slot a bitmap belongs to for a given catalog id -- the wide
 /// centered crop, or the narrow collapsed-slice crop. The actual decode
@@ -130,10 +450,7 @@ impl Default for ThumbnailWorker {
         thread::spawn(move || {
             let mut cache = BackgroundCache::new();
             while let Ok(key) = incoming.recv() {
-                let (width, height) = (key.width, key.height);
-                let pixels = cache
-                    .render(&key.path, None, width, height, FitMode::Crop)
-                    .map(<[u8]>::to_vec);
+                let pixels = resolve(&mut cache, &key);
                 if outgoing.send(ThumbnailReply { key, pixels }).is_err() {
                     break;
                 }
@@ -365,5 +682,199 @@ mod tests {
         assert!(cache.get("shared-id-space-b", Variant::Slice).is_some());
         std::fs::remove_file(&theme_path).unwrap();
         std::fs::remove_file(&background_path).unwrap();
+    }
+
+    fn temp_subdir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "k230-thumb-{name}-{}-{}",
+            std::process::id(),
+            fastrand_suffix()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn disk_cache_round_trips_and_rejects_mismatched_geometry() {
+        let dir = temp_subdir("round-trip");
+        let file = dir.join("entry.rgba");
+        let pixels = vec![7u8; 4 * 5 * 4];
+        write_disk_cache(&file, 4, 5, &pixels).unwrap();
+        assert_eq!(read_disk_cache(&file, 4, 5), Some(pixels));
+        assert_eq!(
+            read_disk_cache(&file, 5, 4),
+            None,
+            "a size mismatch must be a cache miss, not stale/garbled pixels"
+        );
+        assert_eq!(read_disk_cache(&dir.join("missing.rgba"), 4, 5), None);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn evict_until_removes_oldest_files_first_until_back_under_the_cap() {
+        let dir = temp_subdir("evict");
+        let now = std::time::SystemTime::now();
+        for (name, age_secs) in [("oldest", 30), ("middle", 20), ("newest", 10)] {
+            let path = dir.join(name);
+            std::fs::write(&path, vec![0u8; 10]).unwrap();
+            let file = OpenOptions::new().write(true).open(&path).unwrap();
+            file.set_modified(now - std::time::Duration::from_secs(age_secs))
+                .unwrap();
+        }
+        // Three 10-byte files (30 bytes total) against a 25-byte cap: only
+        // the single oldest file needs to go.
+        evict_until(&dir, 25);
+        let remaining: std::collections::HashSet<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(
+            remaining,
+            std::collections::HashSet::from(["middle".to_string(), "newest".to_string()]),
+            "the oldest file is evicted first, newer ones are kept"
+        );
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn resolve_prefers_a_precomputed_builtin_thumbnail_over_a_fresh_decode() {
+        // The source path must contain a `themes` component for
+        // `builtin_thumbnail_path` to anchor its mirrored `thumbs` tree on
+        // (see its own doc for why it never sits inside the theme's own
+        // directory) -- mirrors `nix/handheld-theme-default`'s real
+        // `share/omarchy/themes/<name>/...` layout.
+        let root = temp_subdir("builtin");
+        let theme_dir = root.join("themes").join("fixture-theme");
+        std::fs::create_dir_all(&theme_dir).unwrap();
+        let source = theme_dir.join("preview.png");
+        image::RgbaImage::from_pixel(30, 30, image::Rgba([55, 66, 77, 255]))
+            .save(&source)
+            .unwrap();
+        let source = source.canonicalize().unwrap();
+        write_builtin_thumbnail(&source, Variant::Expanded, 12, 16).unwrap();
+        let builtin_path = builtin_thumbnail_path(&source, Variant::Expanded, 12, 16).unwrap();
+        assert!(
+            builtin_path.is_file(),
+            "precompute must write the mirrored thumbs file"
+        );
+        assert!(
+            !builtin_path.starts_with(&theme_dir),
+            "a precomputed thumbnail must never sit inside the theme's own hashed directory"
+        );
+        // Deleting the source proves a later `resolve()` used the
+        // precomputed file rather than falling through to a full decode.
+        std::fs::remove_file(&source).unwrap();
+        let mut cache = BackgroundCache::new();
+        let key = ThumbnailKey {
+            id: "builtin-fixture".into(),
+            path: source,
+            variant: Variant::Expanded,
+            width: 12,
+            height: 16,
+        };
+        let pixels = resolve(&mut cache, &key)
+            .expect("a precomputed builtin thumbnail must resolve without the source file");
+        assert_eq!(pixels.len(), 12 * 16 * 4);
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn builtin_thumbnail_path_has_no_themes_anchor_for_a_user_theme_path() {
+        // A user theme's path never has a `themes` path component to anchor
+        // the mirrored tree on -- it must simply miss, falling through to
+        // the runtime disk cache/full decode, never panic or guess a path.
+        let path = PathBuf::from("/home/user/.local/share/omarchy/user-theme/preview.png");
+        assert_eq!(
+            builtin_thumbnail_path(&path, Variant::Expanded, 480, 640),
+            None
+        );
+    }
+
+    #[test]
+    fn resolve_persists_a_fresh_decode_to_the_runtime_disk_cache_for_next_time() {
+        let cache_root = temp_subdir("runtime-cache-home");
+        let source_dir = temp_subdir("runtime-cache-source");
+        let source = source_dir.join("wallpaper.png");
+        image::RgbaImage::from_pixel(25, 25, image::Rgba([1, 2, 3, 255]))
+            .save(&source)
+            .unwrap();
+        let source = source.canonicalize().unwrap();
+        let key = ThumbnailKey {
+            id: "runtime-fixture".into(),
+            path: source.clone(),
+            variant: Variant::Slice,
+            width: 10,
+            height: 11,
+        };
+        let mut cache = BackgroundCache::new();
+        let decoded = resolve_with_dir(&mut cache, &key, Some(cache_root.clone()))
+            .expect("first decode must succeed");
+        let hash = content_hash(&source).unwrap();
+        let cache_file = runtime_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
+        assert_eq!(
+            read_disk_cache(&cache_file, 10, 11),
+            Some(decoded),
+            "a fresh decode's exact pixels must be persisted to the runtime disk cache"
+        );
+        std::fs::remove_dir_all(&cache_root).unwrap();
+        std::fs::remove_dir_all(&source_dir).unwrap();
+    }
+
+    #[test]
+    fn resolve_prefers_an_existing_runtime_cache_hit_over_a_fresh_decode() {
+        // The source stays present and unchanged throughout (a content-hash
+        // key can only be looked up by reading the source, so unlike the
+        // build-time-path lookup above, this cache cannot be proven by
+        // deleting the source). Instead: seed the cache file with pixels a
+        // real decode of this source would never produce, then confirm
+        // `resolve_with_dir` returns exactly those seeded pixels rather than
+        // the source's actual, different content -- proof the cache was
+        // read instead of decoding.
+        let cache_root = temp_subdir("runtime-cache-hit-home");
+        let source_dir = temp_subdir("runtime-cache-hit-source");
+        let source = source_dir.join("wallpaper.png");
+        image::RgbaImage::from_pixel(25, 25, image::Rgba([9, 9, 9, 255]))
+            .save(&source)
+            .unwrap();
+        let source = source.canonicalize().unwrap();
+        let key = ThumbnailKey {
+            id: "runtime-fixture-hit".into(),
+            path: source.clone(),
+            variant: Variant::Slice,
+            width: 10,
+            height: 11,
+        };
+        let hash = content_hash(&source).unwrap();
+        let cache_file = runtime_cache_file(&cache_root, &hash, Variant::Slice, 10, 11);
+        let seeded = vec![250u8; 10 * 11 * 4];
+        write_disk_cache(&cache_file, 10, 11, &seeded).unwrap();
+        let mut cache = BackgroundCache::new();
+        let result = resolve_with_dir(&mut cache, &key, Some(cache_root.clone()))
+            .expect("a seeded runtime cache entry must resolve");
+        assert_eq!(
+            result, seeded,
+            "an existing runtime cache entry must be returned as-is, not overwritten by a fresh decode"
+        );
+        std::fs::remove_dir_all(&cache_root).unwrap();
+        std::fs::remove_dir_all(&source_dir).unwrap();
+    }
+
+    #[test]
+    fn disk_cache_dir_prefers_xdg_cache_home_then_falls_back_to_home_then_none() {
+        assert_eq!(
+            disk_cache_dir_from(Some("/xdg"), Some("/home/user")),
+            Some(PathBuf::from("/xdg/k230-shell/thumbs"))
+        );
+        assert_eq!(
+            disk_cache_dir_from(None, Some("/home/user")),
+            Some(PathBuf::from("/home/user/.cache/k230-shell/thumbs"))
+        );
+        assert_eq!(
+            disk_cache_dir_from(Some(""), Some("/home/user")),
+            Some(PathBuf::from("/home/user/.cache/k230-shell/thumbs")),
+            "an empty XDG_CACHE_HOME must fall back to HOME, not join an empty path"
+        );
+        assert_eq!(disk_cache_dir_from(None, None), None);
+        assert_eq!(disk_cache_dir_from(Some(""), Some("")), None);
     }
 }

@@ -77,6 +77,20 @@ const SOCKET_NAME: &str = "k230-shell-rust.sock";
 const APPEARANCE_SOCKET_NAME: &str = "k230-shell-rust-appearance.sock";
 const MAX_PENDING_BYTES: usize = 4096;
 const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
+/// How often the theme chooser's loading-spinner pulse is allowed to force
+/// a redraw while something real is still in flight (a thumbnail decode, a
+/// still-preview decode, a pending Activate). This is the *only* thing that
+/// keeps the render loop busy while the chooser is otherwise at rest --
+/// deliberately coarse (well under the panel's own ~15fps compositor
+/// cadence, not a vsync-rate animation), because this redraw exists purely
+/// to advance a decorative spinner, not to reflect anything that changed
+/// visually more than a few times a second. Replaces a previous unconditional
+/// per-event-loop-iteration `dirty = true` that ran at whatever rate the
+/// loop happened to wake up (effectively the panel's own frame rate),
+/// burning single-core CPU that competed with the very decode work a
+/// pending thumbnail or preview was waiting on -- see
+/// `RendererCache::theme_thumbnails_pending`'s doc for the full story.
+const THEME_PULSE_INTERVAL: Duration = Duration::from_millis(160);
 
 fn panel_input_rect(
     route: Route,
@@ -686,6 +700,12 @@ struct ShellClient {
     input_ready: bool,
     input_region_key: Option<(Route, u32, u32, bool)>,
     reduced_motion: bool,
+    /// Last time the theme chooser's loading-spinner pulse actually
+    /// advanced and forced a redraw. See `THEME_PULSE_INTERVAL`'s own doc:
+    /// this is the bounded replacement for the old unconditional
+    /// per-iteration `dirty = true` that redrew an unchanged frame at rest
+    /// while thumbnails were still decoding.
+    theme_pulse_at: Instant,
 }
 
 #[derive(Default)]
@@ -825,6 +845,47 @@ impl ShellClient {
     fn theme_dirty(&mut self) {
         self.renderer.set_theme_view(self.theme_view.clone());
         self.dirty = true;
+    }
+
+    /// Mirrors `theme_carousel`'s own live "pressed" state (see
+    /// `Carousel::pressed`) into `theme_view` so the renderer's next `draw`
+    /// -- which only ever sees this cloned snapshot, never the live carousel
+    /// -- shows the same-frame highlight goal 1 asks for. Called after
+    /// every touch event that can change either carousel's contact (down,
+    /// motion, up, cancel); a no-op (no redraw) when nothing changed.
+    fn sync_theme_pressed(&mut self) {
+        let center_x = f64::from(self.width) / 2.0;
+        let want = (self.theme_view.page == ThemePage::List)
+            .then(|| {
+                let count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
+                self.theme_carousel.pressed(count, center_x, THEME_CAROUSEL_TOP)
+            })
+            .flatten();
+        if self.theme_view.theme_pressed != want {
+            self.theme_view.theme_pressed = want;
+            self.theme_dirty();
+        }
+    }
+
+    /// Same as `sync_theme_pressed`, for the Preview page's background
+    /// carousel.
+    fn sync_background_pressed(&mut self) {
+        let center_x = f64::from(self.width) / 2.0;
+        let want = (self.theme_view.page == ThemePage::Preview)
+            .then(|| {
+                let count = self
+                    .theme_view
+                    .preview
+                    .as_ref()
+                    .map_or(0, |p| p.backgrounds.len());
+                self.background_carousel
+                    .pressed(count, center_x, BACKGROUND_CAROUSEL_TOP)
+            })
+            .flatten();
+        if self.theme_view.background_pressed != want {
+            self.theme_view.background_pressed = want;
+            self.theme_dirty();
+        }
     }
 
     fn submit_theme(&mut self, request: ThemeRequest) {
@@ -1842,6 +1903,7 @@ impl TouchHandler for ShellClient {
                                     .contains(&pos.1) =>
                             {
                                 self.theme_carousel.down(id, pos, time_ms);
+                                self.sync_theme_pressed();
                             }
                             ThemePage::Preview
                                 if (BACKGROUND_CAROUSEL_TOP
@@ -1849,6 +1911,7 @@ impl TouchHandler for ShellClient {
                                     .contains(&pos.1) =>
                             {
                                 self.background_carousel.down(id, pos, time_ms);
+                                self.sync_background_pressed();
                             }
                             _ => {}
                         }
@@ -1870,6 +1933,8 @@ impl TouchHandler for ShellClient {
                 }
                 self.theme_carousel.cancel();
                 self.background_carousel.cancel();
+                self.sync_theme_pressed();
+                self.sync_background_pressed();
                 self.wifi_dragged = false;
             }
             if self.dirty {
@@ -1985,6 +2050,8 @@ impl TouchHandler for ShellClient {
                                     }
                                     ThemePage::Controls => None,
                                 };
+                                self.sync_theme_pressed();
+                                self.sync_background_pressed();
                                 match carousel_outcome {
                                     Some(CarouselOutcome::Confirm(index)) => {
                                         let intent = match self.theme_view.page {
@@ -2210,6 +2277,11 @@ impl TouchHandler for ShellClient {
                     }
                     self.theme_dirty();
                 }
+                match self.theme_view.page {
+                    ThemePage::List => self.sync_theme_pressed(),
+                    ThemePage::Preview => self.sync_background_pressed(),
+                    ThemePage::Controls => {}
+                }
             }
             if self.dirty {
                 self.draw(qh);
@@ -2248,6 +2320,8 @@ impl TouchHandler for ShellClient {
         self.renderer.set_services(self.service_view.clone());
         self.theme_carousel.cancel();
         self.background_carousel.cancel();
+        self.sync_theme_pressed();
+        self.sync_background_pressed();
         self.log("touch-cancel");
         self.dirty = true;
         self.draw(qh);
@@ -2403,6 +2477,7 @@ fn serve() -> Result<(), String> {
                 .ok()
                 .as_deref(),
         ),
+        theme_pulse_at: Instant::now(),
     };
     state.service_view.keyboard_gesture_hint =
         std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1");
@@ -2751,13 +2826,31 @@ fn serve() -> Result<(), String> {
                 }
                 state.theme_dirty();
             }
-            // A drag/settle can move on to a slice whose bitmap the worker
-            // hasn't decoded yet, or drop a request when its bounded queue
-            // was briefly full; keep scheduling redraws (each one retries
-            // `poll_theme_thumbnails`) until every nearby slice is resolved,
-            // not only while the carousel itself is still animating.
-            if state.renderer.theme_thumbnails_pending() {
-                state.dirty = true;
+            // Idle-redraw fix: this used to unconditionally set `dirty =
+            // true` every single iteration while any thumbnail was pending,
+            // regardless of whether anything actually changed that
+            // iteration. `poll_theme_thumbnails`/`poll_theme_image` (called
+            // unconditionally near the top of this loop, every iteration,
+            // independent of `dirty` or this block) already retry dropped
+            // requests and already set `dirty` themselves the moment a
+            // decode actually completes -- so forcing it here too bought
+            // nothing but a full scene render + Wayland commit at whatever
+            // rate the loop happened to wake (effectively the panel's own
+            // ~15fps), burning single-core CPU that competed with the very
+            // decode work a pending thumbnail, still preview, or activation
+            // was waiting on. The one legitimate reason left to redraw
+            // without anything having changed is to advance the loading
+            // spinner itself, and that only needs a few frames a second --
+            // see `THEME_PULSE_INTERVAL`'s own doc.
+            let waiting_on_background_work = state.renderer.theme_thumbnails_pending()
+                || state.renderer.theme_preview_image_pending()
+                || matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }));
+            if waiting_on_background_work
+                && now.duration_since(state.theme_pulse_at) >= THEME_PULSE_INTERVAL
+            {
+                state.theme_pulse_at = now;
+                state.theme_view.pulse_phase = (state.theme_view.pulse_phase + 0.12) % 1.0;
+                state.theme_dirty();
             }
         }
         if state
@@ -2961,7 +3054,9 @@ fn serve() -> Result<(), String> {
             || (state.route == Route::Settings
                 && (state.theme_carousel.is_animating()
                     || state.background_carousel.is_animating()
-                    || state.renderer.theme_thumbnails_pending()))
+                    || state.renderer.theme_thumbnails_pending()
+                    || state.renderer.theme_preview_image_pending()
+                    || matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }))))
         {
             16
         } else {
@@ -3052,8 +3147,34 @@ fn main() {
                 _ => Err("invalid wallpaper cache geometry".into()),
             }
         }
+        [_, flag, source, variant, width, height] if flag == "--write-thumbnail-cache" => {
+            // Precompute a build-time thumbnail for one of the bundled
+            // built-in themes' `preview.png` or background images, at one
+            // of `theme_carousel`'s two carousel geometries' two variant
+            // sizes, so the chooser's very first view of a bundled theme
+            // never pays a full source decode -- see
+            // `theme_thumbnails::write_builtin_thumbnail`'s own doc. Used
+            // only by `nix/handheld-theme-default/default.nix`, via a
+            // native-arch build of this same binary. Never touches Wayland.
+            let parsed_variant = match variant.as_str() {
+                "expanded" => Ok(k230_shell_rust::theme_thumbnails::Variant::Expanded),
+                "slice" => Ok(k230_shell_rust::theme_thumbnails::Variant::Slice),
+                _ => Err("invalid thumbnail cache variant".to_string()),
+            };
+            match (parsed_variant, width.parse::<u32>(), height.parse::<u32>()) {
+                (Ok(variant), Ok(width), Ok(height)) => {
+                    k230_shell_rust::theme_thumbnails::write_builtin_thumbnail(
+                        std::path::Path::new(source),
+                        variant,
+                        width,
+                        height,
+                    )
+                }
+                _ => Err("invalid thumbnail cache geometry".into()),
+            }
+        }
         _ => Err(
-            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png | --write-wallpaper-cache SOURCE GENERATION_ROOT WIDTH HEIGHT".into(),
+            "usage: k230-shell-rust --serve | --surface drawer|shade|settings|hide | --render-fixture drawer|shade|settings OUTPUT.png | --write-wallpaper-cache SOURCE GENERATION_ROOT WIDTH HEIGHT | --write-thumbnail-cache SOURCE expanded|slice WIDTH HEIGHT".into(),
         ),
     };
     if let Err(error) = outcome {

@@ -333,6 +333,7 @@ pub fn hit_test(
 struct Contact {
     id: i32,
     start_x: f64,
+    start_y: f64,
     start_position: f64,
     last_x: f64,
     last_ms: u32,
@@ -417,12 +418,38 @@ impl Carousel {
         self.contact.is_some() || self.velocity != 0.0 || self.settle.is_some()
     }
 
+    /// Which slice, if any, should show an immediate "pressed" highlight
+    /// this frame: the finger is down inside the carousel band and hasn't
+    /// moved past `TAP_SLOP` into a real drag yet. Goal is a highlight
+    /// visible within one frame of the touch landing (see `render.rs`'s
+    /// `paint_carousel`), using the touch's own down point -- not its
+    /// current point -- so the highlighted slice never flickers to a
+    /// neighbor from a sub-slop wobble. Returns `None` once a drag starts
+    /// (`Contact::dragged`), the contact is cancelled, or the touch has
+    /// ended (`contact` is `None`), so callers never need to clear this
+    /// explicitly on release.
+    pub fn pressed(&self, count: usize, center_x: f64, top_y: f64) -> Option<usize> {
+        let contact = self.contact.as_ref()?;
+        if contact.dragged || contact.cancelled || count == 0 {
+            return None;
+        }
+        hit_test(
+            &self.geometry,
+            (contact.start_x, contact.start_y),
+            self.position,
+            count,
+            center_x,
+            top_y,
+        )
+    }
+
     pub fn down(&mut self, id: i32, point: (f64, f64), time_ms: u32) {
         self.velocity = 0.0; // touching a coasting/settling carousel stops it
         self.settle = None;
         self.contact = Some(Contact {
             id,
             start_x: point.0,
+            start_y: point.1,
             start_position: self.position,
             last_x: point.0,
             last_ms: time_ms,
@@ -754,6 +781,58 @@ mod tests {
         carousel.set_index(7);
         assert!(!carousel.is_animating());
         assert_eq!(carousel.index(22), 7);
+    }
+
+    #[test]
+    fn pressed_shows_immediately_on_down_and_clears_on_drag_or_release() {
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        carousel.set_index(4);
+        let center_x = 284.0;
+        let top_y = 200.0;
+        let centered = visible_slices(&THEME_GEOMETRY, 4.0, 22, center_x, top_y)
+            .into_iter()
+            .find(|slice| slice.index == 4)
+            .unwrap();
+        let point = (center_x, top_y + centered.height / 2.0);
+        assert_eq!(
+            carousel.pressed(22, center_x, top_y),
+            None,
+            "nothing is pressed before any touch lands"
+        );
+        carousel.down(1, point, 0);
+        assert_eq!(
+            carousel.pressed(22, center_x, top_y),
+            Some(4),
+            "the tapped slice reads as pressed on the very same frame as the touch-down"
+        );
+        // A small wobble under TAP_SLOP must not clear the press.
+        carousel.motion(1, (point.0 + 2.0, point.1), 10, 22);
+        assert_eq!(carousel.pressed(22, center_x, top_y), Some(4));
+        // Once the drag exceeds TAP_SLOP, this is a drag, not a tap: the
+        // pressed highlight must clear even though the finger is still down.
+        carousel.motion(1, (point.0 + 40.0, point.1), 20, 22);
+        assert_eq!(
+            carousel.pressed(22, center_x, top_y),
+            None,
+            "a real drag must not keep showing a stale press highlight"
+        );
+        carousel.up(1, (point.0 + 40.0, point.1), 30, 22, center_x, top_y);
+        assert_eq!(carousel.pressed(22, center_x, top_y), None);
+        // The drag above moved the carousel itself; reset to a clean,
+        // known-settled position 4 before the next tap-and-release check so
+        // `point` (computed once, above, for position 4) is still where
+        // slice 4 actually sits.
+        carousel.set_index(4);
+
+        // A clean tap-and-release also clears the press once the touch ends.
+        carousel.down(2, point, 100);
+        assert_eq!(carousel.pressed(22, center_x, top_y), Some(4));
+        carousel.up(2, point, 110, 22, center_x, top_y);
+        assert_eq!(
+            carousel.pressed(22, center_x, top_y),
+            None,
+            "press highlight clears once the touch is released"
+        );
     }
 
     #[test]

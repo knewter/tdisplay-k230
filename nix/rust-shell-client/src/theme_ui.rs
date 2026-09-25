@@ -17,6 +17,15 @@ use std::{
 pub struct ThemeImageKey {
     pub generation: String,
     pub path: PathBuf,
+    /// The prepared generation directory `path` lives under (the parent of
+    /// its `appearance.json` -- see `theme_catalog::ThemePreview::
+    /// appearance_path`). `tools/theme_activate.py`'s `prepare()` already
+    /// writes this same width/height/`FitMode::Crop` decode as
+    /// `background.cache` at generation-prepare time (see
+    /// `background_decode.rs`); passing this through lets the worker load
+    /// that file directly instead of repeating a full source decode the
+    /// activation flow already paid for.
+    pub generation_root: PathBuf,
     pub width: u32,
     pub height: u32,
 }
@@ -39,7 +48,13 @@ impl Default for ThemeImageWorker {
             let mut cache = BackgroundCache::new();
             while let Ok(key) = incoming.recv() {
                 let pixels = cache
-                    .render(&key.path, None, key.width, key.height, FitMode::Crop)
+                    .render(
+                        &key.path,
+                        Some(key.generation_root.as_path()),
+                        key.width,
+                        key.height,
+                        FitMode::Crop,
+                    )
                     .map(<[u8]>::to_vec);
                 if outgoing.send(ThemeImageReply { key, pixels }).is_err() {
                     break;
@@ -103,6 +118,22 @@ pub struct ThemeView {
     pub theme_position: f64,
     /// Same, for the Preview page's background carousel.
     pub background_position: f64,
+    /// Which theme-carousel slice, if any, currently shows an immediate
+    /// "pressed" highlight -- mirrored each frame from
+    /// `theme_carousel::Carousel::pressed` (`main.rs` owns the live
+    /// carousel; the renderer only ever sees this cloned snapshot). See
+    /// `render.rs::paint_carousel`.
+    pub theme_pressed: Option<usize>,
+    /// Same, for the Preview page's background carousel.
+    pub background_pressed: Option<usize>,
+    /// A slow, deliberately throttled 0.0..1.0 animation phase driving every
+    /// loading spinner this page paints (pending thumbnails, a preparing
+    /// still preview, a pending Apply). `main.rs` advances this on its own
+    /// bounded cadence -- see its `THEME_PULSE_INTERVAL` -- rather than
+    /// every event-loop tick, which is what previously caused a continuous
+    /// full redraw at rest while thumbnails were still decoding (the
+    /// idle-redraw fix this field is part of).
+    pub pulse_phase: f64,
 }
 
 impl Default for ThemeView {
@@ -118,6 +149,9 @@ impl Default for ThemeView {
             message: None,
             theme_position: 0.0,
             background_position: 0.0,
+            theme_pressed: None,
+            background_pressed: None,
+            pulse_phase: 0.0,
         }
     }
 }
@@ -161,6 +195,8 @@ impl ThemeView {
         self.selection_error = false;
         self.error = None;
         self.message = None;
+        self.theme_pressed = None;
+        self.background_pressed = None;
         ThemeRequest::List
     }
 
@@ -173,6 +209,8 @@ impl ThemeView {
         self.selection_error = false;
         self.error = None;
         self.message = None;
+        self.theme_pressed = None;
+        self.background_pressed = None;
         match self.page {
             ThemePage::Preview => {
                 self.page = ThemePage::List;
@@ -657,6 +695,7 @@ mod tests {
         let key = ThemeImageKey {
             generation: "fixture-generation".into(),
             path: path.canonicalize().unwrap(),
+            generation_root: std::env::temp_dir(),
             width: 56,
             height: 123,
         };
@@ -679,5 +718,61 @@ mod tests {
         assert_eq!(&pixels[..4], &[30, 40, 220, 255]);
         assert_eq!(&pixels[pixels.len() - 4..], &[220, 80, 20, 255]);
         std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn still_preview_reuses_the_generations_background_cache_instead_of_redecoding() {
+        // The activation flow (`tools/theme_activate.py`'s `prepare()`)
+        // already writes a `background.cache` for the selected background at
+        // exactly this width/height/FitMode::Crop (see
+        // `background_decode.rs`). The chooser's "Selected background" still
+        // preview must reuse that file through `generation_root` rather than
+        // repeating a full source decode -- proven here by deleting the
+        // source file after the cache is written: a worker that still
+        // succeeds only read the cache.
+        let generation_root = std::env::temp_dir().join(format!(
+            "k230-theme-preview-cache-reuse-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        std::fs::create_dir_all(&generation_root).unwrap();
+        let source_path = generation_root.join("source.png");
+        image::RgbaImage::from_pixel(40, 80, image::Rgba([9, 99, 199, 255]))
+            .save(&source_path)
+            .unwrap();
+        let source_path = source_path.canonicalize().unwrap();
+        crate::background_decode::write_wallpaper_cache(&source_path, &generation_root, 20, 40)
+            .expect("cache precompute must succeed while the source still exists");
+        // Now remove the source: any code path that falls through to a full
+        // decode fails from here on, so a successful reply proves the cache
+        // was actually used.
+        std::fs::remove_file(&source_path).unwrap();
+
+        let worker = ThemeImageWorker::default();
+        let key = ThemeImageKey {
+            generation: "fixture-generation-cache-reuse".into(),
+            path: source_path,
+            generation_root: generation_root.clone(),
+            width: 20,
+            height: 40,
+        };
+        assert!(worker.try_request(key.clone()));
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        let reply = loop {
+            if let Some(reply) = worker.try_recv() {
+                break reply;
+            }
+            assert!(
+                std::time::Instant::now() < deadline,
+                "worker never replied"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        };
+        assert_eq!(reply.key, key);
+        let pixels = reply
+            .pixels
+            .expect("a matching background.cache must be used instead of a failed re-decode");
+        assert_eq!(pixels.len(), 20 * 40 * 4);
+        std::fs::remove_dir_all(&generation_root).unwrap();
     }
 }
