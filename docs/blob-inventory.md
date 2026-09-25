@@ -1352,6 +1352,8 @@ DATA 05afe2e3c70959c1c95ed4ce05b827f21ddd6a09290ad50a5aa2bdd4354a8118 docs/evide
 DATA c62d2f6b3a7fd1c4f6439955443fb0517524fb1c28617325865e24c5a0242c1c docs/evidence/card-shell/webos-fan-switcher/light-05-opened.png
 DATA a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png
 DATA e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c  docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png
+DATA 656e18b2eeb9bc304411d42cc656d366bd2e8947e7692536d3f1a36b2f8c7903  docs/evidence/card-shell/bottom-band-flicker/after-max-render-time.png
+DATA 839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a  docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1966,3 +1968,12 @@ These DATA screenshots are host-rendered fixtures of the one-page tap-to-apply c
 | --- | ---: | --- | --- |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png` | 38562 | DATA | `a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1` |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png` | 38356 | DATA | `e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c` |
+
+### Bottom-band flicker before/after max_render_time: webcam frame sheets
+
+These DATA images tile 16 consecutive full-resolution webcam frames of the physical panel's bottom end before and after `max_render_time 8`. The adjacent README records context and limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-shell/bottom-band-flicker/after-max-render-time.png` | 1760722 | DATA | `656e18b2eeb9bc304411d42cc656d366bd2e8947e7692536d3f1a36b2f8c7903` |
+| `docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png` | 1552620 | DATA | `839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a` |

@@ -430,13 +430,23 @@ let
   # canaan-drm primary plane advertises, where wlroots' default XRGB8888 is
   # absent and fails at output_pick_format. docs/evidence/drm-info.txt.
   #
+  # max_render_time 8 fixes the flickering bottom band seen during finger
+  # gestures (docs/evidence/card-shell/bottom-band-flicker/). Without it,
+  # sway starts compositing right after the previous page flip, so a busy
+  # gesture frame's DDR traffic overlaps the VO's scanout of the panel's
+  # last lines, which then come out stale or black. The compositor's own
+  # frames and flip timestamps were clean, and the vblank register latch
+  # alone did not help. Rendering 8 ms before vblank moves that traffic
+  # away from the end of the scan. Board-verified on 2026-09-25 by the
+  # operator on real glass, plus webcam frames.
+  #
   # map_to_output is written explicitly rather than trusting sway's
   # built-in heuristic (sway/input/seat.c get_builtin_output_name), so the
   # mapping does not depend on the output being named DSI-* or on the touch
   # device's udev ID_PATH. Whether the heuristic would have fired is
   # recorded in docs/evidence/shell-session.txt.
   swayConfig = pkgs.writeText "k230-sway.conf" ''
-    output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6
+    output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6 max_render_time 8
     input type:touch map_to_output DSI-1
 
     ${lib.optionalString cfg.coherentShell ''
