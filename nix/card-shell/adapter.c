@@ -1692,7 +1692,31 @@ static int tick_impl(void *data) {
 					 shell.presents);
 		if (shell.active && shell.ticks % 60 == 0)
 			scaled_cache_log();
-		if (shell.active)
+		/* Board evidence (docs/evidence/card-shell/bottom-band-flicker/):
+		 * this compositor was rendering continuously at ~42fps even during
+		 * idle stretches, one contributor being this call firing every
+		 * 16ms for the entire time the overview was open, whether or not
+		 * anything in it was actually moving. Schedule a frame only while
+		 * something could still be changing: an active touch/drag
+		 * (contact, the in-deck browse gesture; edge.tracking, the whole
+		 * touch-first entry gesture from first touch-down through release)
+		 * or a running time-based animation (cs_tick's own dispatch:
+		 * CS_ENTERING's settle/reverse, CS_EXPANDING, or CS_CLOSING's
+		 * timeout countdown -- see card-shell-policy.c's cs_tick). A
+		 * settled, untouched overview (CS_DECK with neither) needs no
+		 * frame until the next real input or state change, which already
+		 * has its own path to visible pixels (handle_result's CS_REDRAW
+		 * branch calls sync_scene/chrome synchronously from the input
+		 * handlers) and does not depend on this timer to be seen -- only
+		 * on wlr_output_schedule_frame having been called recently enough
+		 * that the output is still willing to render again, which an
+		 * active drag or animation already guarantees moment to moment. */
+		bool card_animating =
+			(shell.policy.mode == CS_ENTERING &&
+				(shell.policy.entry_reversing || shell.policy.entry_settling)) ||
+			shell.policy.mode == CS_EXPANDING || shell.policy.mode == CS_CLOSING ||
+			shell.policy.contact || shell.policy.edge.tracking;
+		if (shell.active && card_animating)
 			wlr_output_schedule_frame(shell.output->wlr_output);
 		wl_event_source_timer_update(shell.timer, 16);
 	}

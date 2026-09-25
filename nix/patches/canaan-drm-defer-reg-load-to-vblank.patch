@@ -1,0 +1,88 @@
+diff -ruN a/drivers/gpu/drm/canaan/canaan_crtc.c b/drivers/gpu/drm/canaan/canaan_crtc.c
+--- a/drivers/gpu/drm/canaan/canaan_crtc.c	2026-09-25 16:06:11.241208206 -0500
++++ b/drivers/gpu/drm/canaan/canaan_crtc.c	2026-09-25 16:06:35.997622344 -0500
+@@ -95,7 +95,13 @@
+ 	struct drm_pending_vblank_event *event = crtc->state->event;
+ 
+ 	DRM_DEBUG_DRIVER("Flush the configuration\n");
+-	canaan_vo_flush_config(vo);
++	/* Stage the shadow-register commit for the vblank IRQ handler to
++	 * apply, rather than writing VO_REG_LOAD_CTL here at arbitrary
++	 * atomic-commit time, unsynchronized with the panel's actual scan
++	 * position -- see canaan_vo_arm_flush's own doc and
++	 * docs/evidence/card-shell/bottom-band-flicker/
++	 * kernel-vblank-latch.md. */
++	canaan_vo_arm_flush(vo);
+ 
+ 	if (event) {
+ 		WARN_ON(drm_crtc_vblank_get(crtc) != 0);
+diff -ruN a/drivers/gpu/drm/canaan/canaan_vo.c b/drivers/gpu/drm/canaan/canaan_vo.c
+--- a/drivers/gpu/drm/canaan/canaan_vo.c	2026-09-25 16:06:11.239082820 -0500
++++ b/drivers/gpu/drm/canaan/canaan_vo.c	2026-09-25 16:06:35.997538606 -0500
+@@ -489,6 +489,24 @@
+ 
+ 	canaan_vo_write(vo, VO_DISP_IRQ_STATUS, 0xffffffff);
+ 
++	/* Apply any plane/CRTC shadow-register writes staged since the last
++	 * vblank (canaan_vo_arm_flush, called from canaan_crtc_atomic_flush)
++	 * right here, at the hardware's own vblank interrupt, instead of
++	 * wherever in the current scanout the atomic commit happened to run.
++	 * Board evidence: real bottom-edge gestures showed a flickering
++	 * band on the physical panel specifically on frames whose render
++	 * time ran long, while wlroots' own present-timestamp feedback
++	 * stayed cleanly vblank-aligned throughout -- consistent with the
++	 * previous synchronous, arbitrarily-timed VO_REG_LOAD_CTL write
++	 * landing mid-scan. Ordered before drm_crtc_handle_vblank so the
++	 * completion event that unblocks (drm_crtc_arm_vblank_event,
++	 * canaan_crtc_atomic_flush) corresponds to a frame whose registers
++	 * were actually just applied, not one still pending. See
++	 * docs/evidence/card-shell/bottom-band-flicker/
++	 * kernel-vblank-latch.md. */
++	if (atomic_xchg(&vo->flush_pending, 0))
++		canaan_vo_flush_config(vo);
++
+ 	// printk("canaan_vo_irq_handler---------------\n");
+ 	if (atomic_read(&vo->vsync_enabled))
+ 		drm_crtc_handle_vblank(&canaan_crtc->base);
+@@ -680,6 +698,18 @@
+ 	writel(0x11, vo->reg_base + VO_REG_LOAD_CTL);
+ }
+ 
++/* Stage a shadow-register commit (VO_REG_LOAD_CTL) for the vblank IRQ
++ * handler to actually apply, instead of canaan_crtc_atomic_flush writing
++ * it directly at arbitrary atomic-commit time. canaan_crtc_atomic_flush
++ * already requests a vblank (drm_crtc_vblank_get, for the completion
++ * event every real commit carries) in the same call, so the next
++ * hardware vblank interrupt -- which is already enabled by the time this
++ * runs -- is guaranteed to consume this within one frame period. */
++void canaan_vo_arm_flush(struct canaan_vo *vo)
++{
++	atomic_set(&vo->flush_pending, 1);
++}
++
+ static const uint32_t video_plane_formats[] = {
+ 	DRM_FORMAT_NV12,
+ 	DRM_FORMAT_NV21,
+diff -ruN a/drivers/gpu/drm/canaan/canaan_vo.h b/drivers/gpu/drm/canaan/canaan_vo.h
+--- a/drivers/gpu/drm/canaan/canaan_vo.h	2026-09-25 16:06:11.237351027 -0500
++++ b/drivers/gpu/drm/canaan/canaan_vo.h	2026-09-25 16:06:35.997383813 -0500
+@@ -18,6 +18,12 @@
+ 	void __iomem *reg_base;
+ 	int irq;
+ 	atomic_t vsync_enabled;
++	/* Set by canaan_vo_arm_flush() (canaan_crtc_atomic_flush) at atomic-
++	 * commit time; consumed by canaan_vo_irq_handler() at the hardware's
++	 * own vblank interrupt, which is where the deferred
++	 * canaan_vo_flush_config() (VO_REG_LOAD_CTL) write now actually
++	 * happens. See canaan_vo_arm_flush's own doc. */
++	atomic_t flush_pending;
+ 
+ 	struct canaan_crtc *canaan_crtc;
+ 	struct canaan_plane *canaan_plane[CANAAN_PLANE_NUMBER];
+@@ -43,5 +49,6 @@
+ void canaan_vo_disable_crtc(struct canaan_vo *vo,
+ 			    struct canaan_crtc *canaan_crtc);
+ void canaan_vo_flush_config(struct canaan_vo *vo);
++void canaan_vo_arm_flush(struct canaan_vo *vo);
+ 
+ #endif /* __CANAAN_VO_H__ */
