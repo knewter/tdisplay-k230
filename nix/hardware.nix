@@ -35,6 +35,7 @@ let
   };
   wifiSettingsBroker = pkgs.callPackage ./wifi-settings-broker.nix { };
   splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
+  k230SpeakerTest = pkgs.callPackage ./k230-speaker-test.nix { };
 in
 {
   imports = [ ./panel-console.nix ./root-growth-service.nix ];
@@ -175,6 +176,22 @@ in
     iw
     wpa_supplicant
     wireless-regdb
+
+    # the-handheld-plays-through-its-speaker: neither the Inno codec's
+    # line-out nor the optional MAX98357A route had ever been exercised by
+    # any userspace tool before this change.
+    #
+    #   alsa-utils   amixer/aplay/speaker-test -- the actual playback and
+    #                the "External I2S Output Switch" route control added
+    #                by nix/patches/canaan-audio-external-i2s-switch.patch
+    #   libgpiod     gpioset/gpioget/gpiodetect/gpioinfo -- GPIO34 is the
+    #                MAX98357A's plain SDMODE shutdown/enable pin (not
+    #                behind the XL9555 expander; see
+    #                docs/evidence/max98357a-speaker.md), and this kernel
+    #                has no CONFIG_GPIO_SYSFS to fall back to
+    alsa-utils
+    libgpiod
+    k230SpeakerTest
   ];
 
   # A root operator may place a protected wpa_supplicant configuration at

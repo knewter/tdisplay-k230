@@ -62,7 +62,66 @@
 		canaan,model                = "K230_I2S_INNO";
 		canaan,k230-i2s-controller  = <&i2s>;
 		canaan,k230-audio-codec     = <&inno_codec>;
+
+		// Deliberately absent: canaan,external-i2s-output-default. Leaving
+		// it unset keeps this board booting through the Inno codec
+		// (headphone/line-out) exactly as before; the external route below
+		// is opt-in at runtime via the "External I2S Output Switch" ALSA
+		// control (nix/patches/canaan-audio-external-i2s-switch.patch).
 	};
+};
+
+// MAX98357A external I2S amplifier -- the-handheld-plays-through-its-speaker.
+//
+// LILYGO's own BSP (Xinyuan-LilyGO/T-Display-K230,
+// k230_bsp/docs/HARDWARE_PINMAP.md) places this part on the OPTIONAL
+// "nRF52840 BLE / Audio / Sensor" add-on board, not the main T-Display-K230
+// board and not the nRF9151 keyboard base -- confirmed by that same file's
+// three-way board grouping and by CHANGELOG.MD listing it alongside the
+// nRF52840/nRF9151/LoRa presets under "Included Hardware Support". Whether
+// THIS board has that add-on attached is UNVERIFIED; nothing in this repo
+// has recorded one before this change.
+//
+//   BCLK   GPIO32   I2S bit clock, shared with the Inno codec's I2S output
+//   LRCK   GPIO33   I2S word-select, shared with the Inno codec's I2S output
+//   DOUT   GPIO35   I2S data, shared with the Inno codec's I2S output
+//   SDMODE GPIO34   plain GPIO, high enables the amp, low shuts it down
+//
+// Grounding for all four: k230_bsp/docs/HARDWARE_PINMAP.md's "nRF52840 BLE /
+// Audio / Sensor Base Board" table, and
+// k230_bsp/overlay/buildroot-overlay/linux/0058-riscv-dts-rm69a10-add-audio-fan-sensor-pins.patch
+// (commit 6b5d4c3a, same repo). GPIO34 is a plain GPIO, not behind the
+// XL9555 expander -- that expander is documented in the same file under the
+// SEPARATE nRF9151 keyboard base, for its own LEDs and keyboard matrix only.
+//
+// UNVERIFIED: whether GPIO32/33/35 are actually muxed to their I2S
+// alternate function on THIS board. This SoC's FPIOA pin mux is set by
+// U-Boot, not by the Linux device tree -- there is no pinctrl driver
+// anywhere in the pinned kernel tree (see docs/dts-evidence.md, "There is
+// no pinctrl in the Linux device tree"), and LILYGO's own pinctrl-based
+// patch (0058, above) targets a pinctrl-k230 driver that patch series does
+// not otherwise add here and that this pinned tree does not carry. Setting
+// the ALSA route to "external" only tells the SAI peripheral to stop
+// feeding the Inno codec and drive these pads directly; it says nothing
+// about whether U-Boot already muxed them for I2S rather than plain GPIO.
+// See docs/evidence/max98357a-speaker.md.
+//
+// GPIO34 needs no device-tree node to be usable: it is a plain,
+// unclaimed line on the existing always-on gpio1_ports controller
+// (k230.dtsi:415-421), driven directly by libgpiod from userspace --
+// exactly how LILYGO's own launcher does it (ui_hardware.c:1655-1731,
+// AMP_SHUTDOWN_GPIO 34). A "maxim,max98357a" ALSA codec DT node was
+// deliberately NOT added: that driver claims its sdmode-gpios exclusively
+// via devm_gpiod_get, which would conflict with a userspace helper toggling
+// the same line, and nothing here ever wires such a node into a dai-link
+// for its DAPM power sequencing to have anything to switch. Naming the pin
+// below is documentation only; it claims nothing.
+&gpio1_ports {
+	gpio-line-names =
+		"MAX98357A_I2S_BCLK",
+		"MAX98357A_I2S_LRCK",
+		"MAX98357A_SDMODE",
+		"MAX98357A_I2S_DOUT";
 };
 
 &uart0 {

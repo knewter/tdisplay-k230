@@ -58,6 +58,22 @@ buildLinux (args // {
       # fixed it) and a kernel carrying it panicked at boot in
       # __insert_inode_hash right after canaan-drm bound. See
       # docs/evidence/card-shell/bottom-band-flicker/kernel-patch-boot-panic.md.
+
+      # Expose the SAI's internal-codec/external-I2S-pad route switch as
+      # an ALSA control instead of leaving it hardcoded to the internal
+      # Inno codec. sound/soc/canaan/canaan_k230_inno.c already calls
+      # audio_i2s_enable_audio_codec(true) unconditionally at probe; that
+      # exported function (canaan_k230_audio.c:50-59) is the SoC's own
+      # digital mux between the on-die codec and the raw I2S pads a
+      # MAX98357A amp listens to -- there is no second sound card and no
+      # DAPM path involved. This patch is a close port of LILYGO's own
+      # T-Display-K230 kernel fork,
+      # k230_bsp/overlay/buildroot-overlay/linux/0059-asoc-canaan-add-external-i2s-output-switch.patch
+      # in Xinyuan-LilyGO/T-Display-K230 (commit 37b66b38, "ASoC: canaan:
+      # add external I2S output switch"), which this file matches
+      # byte-for-byte at the hunk context, so it applies unmodified to our
+      # pinned tree. See docs/evidence/max98357a-speaker.md.
+      ../nix/patches/canaan-audio-external-i2s-switch.patch
     ];
 
     postPatch = ''
