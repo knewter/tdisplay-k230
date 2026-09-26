@@ -1202,10 +1202,33 @@ static bool sync_card(struct card *c, size_t index) {
 	c->full_clip = false;
 	if (entering) {
 		if (!c->source_valid) {
+			if (c->id == shell.policy.entry_id) {
+				/* The outgoing card itself -- the one actually being
+				 * dragged away from its live position -- must have a real
+				 * position; there is no sane fallback for it. */
+				sway_log(SWAY_INFO,
+					"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=entry-source-invalid",
+					c->id);
+				return false;
+			}
+			/* Any OTHER card can appear mid-transition: a view can finish
+			 * its xdg_shell map handshake (card_shell_observe) while the
+			 * deck is already entering, before wlr_scene_node_coords has
+			 * ever succeeded for it once -- see this function's own
+			 * unconditional attempt at the top. Failing the whole scene
+			 * sync for that alone used to abort the ENTIRE transition
+			 * (cs_leave with CS_MESSAGE_FAILED) and leave a stray
+			 * blocked_until_up behind, matching the report "once i open
+			 * the cards list i can't do anything no touches register" --
+			 * see docs/evidence/card-shell/video-card-gestures/. Skip
+			 * drawing just this one card for the remainder of the entry
+			 * animation instead of aborting the whole transition; once
+			 * CS_DECK is reached it renders normally like any other card
+			 * (DECK-mode layout never depends on source_valid). */
 			sway_log(SWAY_INFO,
-				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=entry-source-invalid",
+				"K230_CARD_SHELL sync_card defer id=%" PRIu64 " reason=entry-source-not-ready",
 				c->id);
-			return false;
+			return true;
 		}
 		if (c->id == shell.policy.entry_id) {
 			/* The direct-switch entry gesture anchors against its own
