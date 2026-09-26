@@ -1,0 +1,265 @@
+--- a/include/wlr/types/wlr_scene.h
++++ b/include/wlr/types/wlr_scene.h
+@@ -187,6 +187,10 @@
+ 	 */
+ 	struct wlr_scene_output *primary_output;
+ 
++	/* Destination-local rounded clip, independent of source crop/transform.
++	 * Empty disables it. Local extension implemented by the Pixman renderer. */
++	struct wlr_box rounded_clip;
++	int rounded_radius;
+ 	float opacity;
+ 	enum wlr_scale_filter_mode filter_mode;
+ 	struct wlr_fbox src_box;
+@@ -551,6 +555,12 @@
+ /**
+ * Sets the opacity of this buffer
+ */
++/** Set a rounded destination clip in node-local coordinates (Pixman only).
++ * NULL disables it. Radius is clamped to half the box dimensions, 0..256.
++ * Changes participate in scene damage and opaque-region accounting. */
++void wlr_scene_buffer_set_rounded_clip(struct wlr_scene_buffer *scene_buffer,
++	const struct wlr_box *box, int radius);
++
+ void wlr_scene_buffer_set_opacity(struct wlr_scene_buffer *scene_buffer,
+ 	float opacity);
+ 
+--- a/include/wlr/render/pass.h
++++ b/include/wlr/render/pass.h
+@@ -95,6 +95,9 @@
+ 	const float *alpha;
+ 	/* Clip region, leave NULL to disable clipping */
+ 	const pixman_region32_t *clip;
++	/* Pixman destination-space rounded clipping; empty disables it. */
++	struct wlr_box rounded_clip;
++	int rounded_radius;
+ 	/* Transform applied to the source texture */
+ 	enum wl_output_transform transform;
+ 	/* Filtering */
+@@ -147,6 +150,9 @@
+ 	struct wlr_render_color color;
+ 	/* Clip region, leave NULL to disable clipping */
+ 	const pixman_region32_t *clip;
++	/* Pixman destination-space rounded clipping; empty disables it. */
++	struct wlr_box rounded_clip;
++	int rounded_radius;
+ 	/* Blend mode */
+ 	enum wlr_render_blend_mode blend_mode;
+ };
+--- a/types/scene/wlr_scene.c
++++ b/types/scene/wlr_scene.c
+@@ -256,6 +256,24 @@
+ 	return _scene_nodes_in_box(node, box, iterator, user_data, x, y);
+ }
+ 
++/* Conservatively retain wallpaper under the four corner squares. The
++ * interior cross stays opaque, preserving normal occlusion savings. */
++static void scene_buffer_clip_opaque(struct wlr_scene_node *node,
++		int x, int y, pixman_region32_t *opaque) {
++	if (node->type != WLR_SCENE_NODE_BUFFER) return;
++	struct wlr_scene_buffer *buffer = wlr_scene_buffer_from_node(node);
++	struct wlr_box box = buffer->rounded_clip;
++	if (wlr_box_empty(&box)) return;
++	int radius = buffer->rounded_radius;
++	pixman_region32_t interior;
++	pixman_region32_init_rect(&interior, x + box.x + radius, y + box.y,
++		box.width - 2 * radius, box.height);
++	pixman_region32_union_rect(&interior, &interior, x + box.x, y + box.y + radius,
++		box.width, box.height - 2 * radius);
++	pixman_region32_intersect(opaque, opaque, &interior);
++	pixman_region32_fini(&interior);
++}
++
+ static void scene_node_opaque_region(struct wlr_scene_node *node, int x, int y,
+ 		pixman_region32_t *opaque) {
+ 	int width, height;
+@@ -281,12 +299,14 @@
+ 			pixman_region32_copy(opaque, &scene_buffer->opaque_region);
+ 			pixman_region32_intersect_rect(opaque, opaque, 0, 0, width, height);
+ 			pixman_region32_translate(opaque, x, y);
++			scene_buffer_clip_opaque(node, x, y, opaque);
+ 			return;
+ 		}
+ 	}
+ 
+ 	pixman_region32_fini(opaque);
+ 	pixman_region32_init_rect(opaque, x, y, width, height);
++	scene_buffer_clip_opaque(node, x, y, opaque);
+ }
+ 
+ struct scene_update_data {
+@@ -1124,6 +1144,20 @@
+ 	}
+ }
+ 
++void wlr_scene_buffer_set_rounded_clip(struct wlr_scene_buffer *buffer,
++		const struct wlr_box *box, int radius) {
++	struct wlr_box clip = box ? *box : (struct wlr_box){0};
++	if (wlr_box_empty(&clip)) clip = (struct wlr_box){0};
++	if (radius < 0) radius = 0;
++	if (radius > 256) radius = 256;
++	if (radius > clip.width / 2) radius = clip.width / 2;
++	if (radius > clip.height / 2) radius = clip.height / 2;
++	if (wlr_box_equal(&buffer->rounded_clip, &clip) && buffer->rounded_radius == radius) return;
++	buffer->rounded_clip = clip;
++	buffer->rounded_radius = radius;
++	scene_node_update(&buffer->node, NULL);
++}
++
+ void wlr_scene_buffer_set_opacity(struct wlr_scene_buffer *scene_buffer,
+ 		float opacity) {
+ 	if (scene_buffer->opacity == opacity) {
+@@ -1499,10 +1533,21 @@
+ 	case WLR_SCENE_NODE_BUFFER:;
+ 		struct wlr_scene_buffer *scene_buffer = wlr_scene_buffer_from_node(node);
+ 
++		struct wlr_box rounded_clip = scene_buffer->rounded_clip;
++		int rounded_radius = 0;
++		if (!wlr_box_empty(&rounded_clip)) {
++			rounded_clip.x += x;
++			rounded_clip.y += y;
++			transform_output_box(&rounded_clip, data);
++			rounded_radius = round(scene_buffer->rounded_radius * data->scale);
++		}
++
+ 		if (scene_buffer->is_single_pixel_buffer) {
+ 			// Render the buffer as a rect, this is likely to be more efficient
+ 			wlr_render_pass_add_rect(data->render_pass, &(struct wlr_render_rect_options){
+ 				.box = dst_box,
++				.rounded_clip = rounded_clip,
++				.rounded_radius = rounded_radius,
+ 				.color = {
+ 					.r = (float)scene_buffer->single_pixel_buffer_color[0] / (float)UINT32_MAX,
+ 					.g = (float)scene_buffer->single_pixel_buffer_color[1] / (float)UINT32_MAX,
+@@ -1542,6 +1587,8 @@
+ 			.texture = texture,
+ 			.src_box = scene_buffer->src_box,
+ 			.dst_box = dst_box,
++			.rounded_clip = rounded_clip,
++			.rounded_radius = rounded_radius,
+ 			.transform = transform,
+ 			.clip = &render_region,
+ 			.alpha = &scene_buffer->opacity,
+@@ -1918,7 +1965,8 @@
+ };
+ 
+ static bool scene_buffer_is_black_opaque(struct wlr_scene_buffer *scene_buffer) {
+-	return scene_buffer->is_single_pixel_buffer &&
++	return wlr_box_empty(&scene_buffer->rounded_clip) &&
++		scene_buffer->is_single_pixel_buffer &&
+ 		scene_buffer->single_pixel_buffer_color[0] == 0 &&
+ 		scene_buffer->single_pixel_buffer_color[1] == 0 &&
+ 		scene_buffer->single_pixel_buffer_color[2] == 0 &&
+@@ -2084,7 +2132,7 @@
+ 	}
+ 
+ 	struct wlr_scene_buffer *buffer = wlr_scene_buffer_from_node(node);
+-	if (buffer->buffer == NULL) {
++	if (buffer->buffer == NULL || !wlr_box_empty(&buffer->rounded_clip)) {
+ 		return SCANOUT_INELIGIBLE;
+ 	}
+ 
+--- a/render/pixman/pass.c
++++ b/render/pixman/pass.c
+@@ -21,9 +21,10 @@
+ 
+ 	wlr_buffer_end_data_ptr_access(pass->buffer->buffer);
+ 	wlr_buffer_unlock(pass->buffer->buffer);
++	bool okay = !pass->failed;
+ 	free(pass);
+ 
+-	return true;
++	return okay;
+ }
+ 
+ static pixman_op_t get_pixman_blending(enum wlr_render_blend_mode mode) {
+@@ -36,6 +37,10 @@
+ 	abort();
+ }
+ 
++static struct k230_round_box round_box(struct wlr_box box) {
++	return (struct k230_round_box){box.x, box.y, box.width, box.height};
++}
++
+ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 		const struct wlr_render_texture_options *options) {
+ 	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
+@@ -172,20 +177,19 @@
+ 		// width,height part of source crop is done here by the width and height we pass:
+ 		// because of the scaling, cropping at the end by dst_box.{width,height} is
+ 		// equivalent to if we cropped at the start by src_box.{width,height}.
+-		pixman_image_composite32(op, texture->image, mask, buffer->image,
+-			0, 0, // source x,y
+-			0, 0, // mask x,y
+-			dst_box.x, dst_box.y, // dest x,y
+-			dst_box.width, dst_box.height // composite width,height
+-		);
++		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
++				texture->image, mask, buffer->image, 0, 0, round_box(dst_box),
++				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
++			pass->failed = true;
+ 
+ 		pixman_image_set_transform(texture->image, NULL);
+ 	} else {
+ 		// No transforms or crop needed, just a straight blit from the source
+ 		pixman_image_set_transform(texture->image, NULL);
+-		pixman_image_composite32(op, texture->image, mask, buffer->image,
+-			src_box.x, src_box.y, 0, 0, dst_box.x, dst_box.y,
+-			src_box.width, src_box.height);
++		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
++				texture->image, mask, buffer->image, src_box.x, src_box.y, round_box(dst_box),
++				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
++			pass->failed = true;
+ 	}
+ 
+ 	pixman_image_set_clip_region32(buffer->image, NULL);
+@@ -219,8 +223,11 @@
+ 	pixman_image_t *fill = pixman_image_create_solid_fill(&color);
+ 
+ 	pixman_image_set_clip_region32(buffer->image, options->clip);
+-	pixman_image_composite32(op, fill, NULL, buffer->image,
+-		0, 0, 0, 0, box.x, box.y, box.width, box.height);
++	/* The solid source already carries color alpha; the corner mask only
++	 * adds geometric coverage. */
++	if (!k230_round_composite(&buffer->renderer->rounded_cache, op, fill, NULL, buffer->image,
++			0, 0, round_box(box), round_box(options->rounded_clip), options->rounded_radius, 65535))
++		pass->failed = true;
+ 	pixman_image_set_clip_region32(buffer->image, NULL);
+ 
+ 	pixman_image_unref(fill);
+--- a/include/render/pixman.h
++++ b/include/render/pixman.h
+@@ -6,6 +6,7 @@
+ #include <wlr/render/pixman.h>
+ #include <wlr/render/wlr_renderer.h>
+ #include "render/pixel_format.h"
++#include "render/k230_rounded_clip.h"
+ 
+ struct wlr_pixman_pixel_format {
+ 	uint32_t drm_format;
+@@ -21,6 +22,7 @@
+ 	struct wl_list textures; // wlr_pixman_texture.link
+ 
+ 	struct wlr_drm_format_set drm_formats;
++	struct k230_round_cache rounded_cache;
+ };
+ 
+ struct wlr_pixman_buffer {
+@@ -48,6 +50,7 @@
+ 
+ struct wlr_pixman_render_pass {
+ 	struct wlr_render_pass base;
++	bool failed;
+ 	struct wlr_pixman_buffer *buffer;
+ };
+ 
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -289,6 +289,7 @@
+ 
+ 	wlr_drm_format_set_finish(&renderer->drm_formats);
+ 
++	k230_round_cache_finish(&renderer->rounded_cache);
+ 	free(renderer);
+ }
+ 

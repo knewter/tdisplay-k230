@@ -1,6 +1,15 @@
-{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg }:
+{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20 }:
 let
-  unwrapped = (swayUnwrapped.override { enableXWayland = false; }).overrideAttrs (old: {
+  roundedWlroots = wlroots_0_20.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ];
+    postPatch = (old.postPatch or "") + ''
+      cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
+    '';
+  });
+  unwrapped = (swayUnwrapped.override {
+    enableXWayland = false;
+    wlroots_0_20 = roundedWlroots;
+  }).overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-card-shell.patch ];
     # Card-header icon resolution (nix/card-shell/icon.c) decodes SVG icons
     # via librsvg directly, the same real-icon path the Rust drawer already

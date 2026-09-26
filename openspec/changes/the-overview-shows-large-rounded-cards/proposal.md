@@ -36,12 +36,11 @@ card.
   the operator had separately, explicitly rejected ("the cards have some
   background behind them that's no good they should just be cards"). Live
   cards now have **no plate**: the mirrored content fills the entire card
-  slot, and rounding is achieved by four small corner-mask patches painted
-  *over* the content's own square corners, in the deck's backdrop colour,
-  cheap enough to cache per card and rebuild only when a card's own radius
-  or the canvas colour changes. Non-live placeholder cards (private/
-  unavailable, no live pixels of their own) keep a plate, since there is
-  nothing else to draw for them.
+  slot. Rounding now uses a destination-space clip in the compositor's
+  ordinary Pixman draw path, shared by every live mirrored descendant.
+  Pixels outside the rounded shape reveal the actual wallpaper. This
+  replaces the original backdrop-colored corner overlays, which could
+  only match a solid canvas. Placeholder cards keep their own plate.
 - The corner radius (26px, up from the prior pass's 8px, sized for the new,
   much larger card) still interpolates from 0 at full screen to 26px in the
   settled deck, but now only for the card(s) actually changing size
@@ -81,6 +80,8 @@ card.
   no-longer-shipped launcher mode).
 - Affected code: `nix/card-shell-policy/card-shell-policy.{c,h}`,
   `nix/card-shell/adapter.c`, `nix/card-shell/render.{c,h}`,
+  `nix/card-shell/rounded-clip.h`, `nix/card-shell.nix`,
+  `nix/patches/wlroots-k230-rounded-clip.patch`,
   `tests/card_shell_policy_driver.c`.
 - Evidence: `docs/evidence/card-shell/android-sized-cards/` (headless-QEMU
   before/after screenshots).

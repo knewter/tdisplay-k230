@@ -1,6 +1,6 @@
-One slice: a bounded C-compositor geometry/rendering change, fully
-implemented and host/QEMU-proved in this change. The board task at the end
-is the only open item.
+The initial geometry and solid-canvas implementation has host/QEMU proof.
+Group F corrects its wallpaper corner rendering; its proof is tracked
+separately. Real-finger acceptance remains open.
 
 ## A. Geometry: Android-recents-sized card
 
@@ -41,7 +41,7 @@ is the only open item.
   that binary, and `python3 -m pytest tests/test_card_shell_state.py -q`:
   36 passed. **Host build proof**, no board.
 
-## B. Corner radius: no plate, corner-mask patches over live content
+## B. Original corner approximation — historical, superseded by F
 
 Revised after coordinator review of the first pass's screenshots, which
 kept a padded plate behind live content — exactly what the operator had
@@ -127,3 +127,24 @@ they should just be cards"). See `design.md` decisions 3-5.
 
 **Narrow command for this whole change, once E.1 lands:**
 `openspec validate the-overview-shows-large-rounded-cards --strict`.
+
+## F. Transparent corners over the real wallpaper
+
+- [x] F.1 Replace backdrop-colored overlays with rounded destination
+  clipping in pinned wlroots/Pixman. Preserve the RGB565 cache and apply
+  one card-space shape to all mirrors, including cropped neighbors and
+  subsurfaces. Verify premultiplied alpha, transforms, partial descendants,
+  changing radii, damaged regions and RGB565 output against an independent
+  full-mask pixel oracle: `python3 tests/test_card_rounded_clip.py` (288
+  comparisons, host only). Existing policy/cache tests remain required.
+- [ ] F.2 Cross-build `nix build .#card-shell --max-jobs 1 --cores 4
+  --no-link --print-out-paths`; capture the actual compositor over a
+  patterned wallpaper under headless QEMU, checking corner pixels against
+  an unobscured wallpaper baseline. Record source/artifacts/limits under
+  `docs/evidence/card-shell/transparent-corners/`. This is QEMU proof only.
+- [ ] F.3 On the reserved board, install the matching system, capture a
+  native screenshot with wallpaper and live cards, and verify that the
+  wallpaper shows through rounded corners. Keep E.1's real-finger motion
+  acceptance separate. Operator: `python3 tools/console.py /dev/ttyACM0
+  --wait=3 '<matching-session grim capture>'` after coordinated activation;
+  record exact installed paths and the capture command with the evidence.

@@ -24,10 +24,12 @@ throughout.
 
 *Grounding: `nix/card-shell-policy/card-shell-policy.c`'s `cs_default_config`
 (`card_width=.8*width, card_height=.8*height`) and `nix/card-shell/adapter.c`'s
-matching runtime recompute; `CARD_CORNER_RADIUS=26.0` and `card_corners_sync`
-(four cached `card_corner_mask_scene` patches painted over the live mirror's
-own corners, no plate, no pad) in the same file, gated on `card_shown_large`
-so only the actually-morphing card's radius interpolates. Non-live
+matching runtime recompute. The original corner-overlay evidence below
+predates the transparent-corner correction. Current implementation uses
+`wlr_scene_buffer_set_rounded_clip` and `nix/card-shell/rounded-clip.h` in
+the pinned Pixman compositor; `tests/card_rounded_clip.c` independently
+compares its pixels over a patterned backdrop. The correction's board
+wallpaper result remains UNVERIFIED until task F.3. Non-live
 (private/unavailable) cards keep the pre-existing `card_background` plate,
 since they have no live pixels to protect from a background.
 `tests/card_shell_policy_driver.c`'s `overview_geometry` case asserts the

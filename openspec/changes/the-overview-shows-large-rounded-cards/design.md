@@ -3,7 +3,8 @@
 Layer: userspace, the C compositor's card policy
 (`nix/card-shell-policy/card-shell-policy.c`) and its adapter/renderer
 (`nix/card-shell/adapter.c`, `nix/card-shell/render.c`). No device tree,
-kernel, or Nix packaging change.
+kernel change. The transparent-corner correction extends pinned wlroots
+through `nix/card-shell.nix`; other compositor packages stay unchanged.
 
 `the-shell-behaves-as-one-coherent-system`'s `design.md` decision 1 already
 records one revision of this same number (an original small pass, then a
@@ -59,38 +60,41 @@ live pixels of its own to round) are the one remaining user of a plate
 nothing else to draw for those and no live content to protect from a
 background.
 
-**4. Rounding a live card: four small corner-mask patches painted OVER the
-content, not a mask/clip underneath it.** With no plate, the live mirror's
-own four corners are square. `card_corner_mask_scene` (`render.c`) paints
-a small (`radius`×`radius`) patch per corner, in the deck's own backdrop
-colour, opaque everywhere except within a quarter-circle arc curving
-toward the card's centre — placed on top of the mirrored content
-(`wlr_scene_node_place_above`, the inverse of the old plate's
-`place_below`). Visually this "erases" the content's true square corner
-back to whatever colour is already behind the card, reading as a rounded
-corner without touching the mirrored pixels, clipping the whole card, or
-drawing a frame around it. Each card caches its own four patches
-(`struct card`'s new `corner[4]`/`corner_radius_px`/`corner_color` fields)
-and only rebuilds them when its own quantised (whole-pixel) radius or the
-canvas's colour changes — the same "compare, then rebuild only if
-changed" discipline `card_background` already used for the plate, just
-keyed on a much smaller (4×26×26px, ~10.8KB total) raster instead of one
-card-sized one. In steady state (every card not currently morphing) nothing
-rebuilds at all, ever; only the one or two cards actually growing/shrinking
-between full screen and deck size pay any Cairo cost, and only for as long
-as their own radius keeps changing.
+**4. Round the ordinary compositor draw, revealing the real wallpaper.**
+The initial implementation painted backdrop-colored squares over each live
+corner. That only matched a solid canvas; it was not a rounded clip. The
+operator explicitly rejected this approximation. Its original host/QEMU
+captures remain historical evidence, not proof of wallpaper correctness.
 
-*Rejected within this corner-mask design:* rotating one shared cached
-raster via `wlr_scene_buffer_set_transform` to serve all four corners of
-every card from a single buffer, cutting the raster count from "up to 4
-per card" to "up to 4 total, ever." This is very likely also correct and
-cheaper, but the transform math for a *decorative* (non-output-related)
-buffer is unfamiliar territory for wlroots' scene API in this codebase,
-and it cannot be verified without a board or a much deeper wlroots read
-than this change's time budget allows; a demonstrably-correct, slightly
-less-shared per-card cache was chosen over a plausibly-more-clever one
-that could not be verified here. Left as a documented, easy follow-up
-optimisation, not attempted.
+The pinned wlroots 0.20 scene API has rectangular subsurface clips and
+render-pass region clips, but no rounded scene clip. A narrow local
+extension adds destination-local rounded bounds to a scene buffer and
+passes them through to Pixman. The adapter sets the same card-space shape
+on every mirrored descendant after its ordinary rectangular crop. Thus
+partially visible neighbors, alpha clients, subsurfaces, transformed source
+buffers, and cached RGB565 thumbnails all use the same shape. No app
+surface is mutated; no full-card alpha copy or snapshot is introduced.
+
+Pixman draws the interior normally and composites the four corner squares
+through small antialiased A8 coverage masks. An eight-entry renderer-owned
+LRU caches radius/opacity masks (at most 2 MiB with the 256px guard; normal
+26px masks use 2,704 bytes each), freed with the renderer. Source crop,
+source transform, destination position, and damage clipping keep their
+ordinary render-pass semantics. Scene damage handles radius changes.
+Opaque-region accounting retains only the interior cross so the wallpaper
+is rendered under corners. Rounded nodes cannot bypass clipping through
+direct scanout. Allocation/unsupported-radius failure rejects the render
+pass instead of silently drawing square corners.
+
+This extension is implemented for the production Pixman renderer only;
+VG-Lite/GLES/Vulkan rounding is not claimed. The experimental GPU package
+is unchanged. The card-shell package explicitly uses Pixman.
+
+Rejected: the inherited alpha-thumbnail draft. It doubled the RGB565 cache
+memory, only rounded fully visible opaque SHM buffers, missed clipped
+neighbors and alpha/subsurface cases, and mutated cached pixels without
+scene damage. Repairing that optimization into a second general renderer
+would duplicate the compositor's existing source handling.
 
 **5. Radius interpolation only for the card(s) actually changing size, not
 every card in the deck.** `sync_card`'s `entering` flag is mode-wide (true
@@ -110,7 +114,7 @@ interpolated value but fed it to a plate that was unconditionally hidden
 for the *entire* duration of any entering/expanding transition (the
 pre-existing `hidden = entering || expanding` gate on the old
 `card_background` call), so the interpolation, while present in the code,
-was never actually visible in any capture. Corner masks are not hidden
+was never actually visible in any capture. Rounded clips are not hidden
 during the transition — they are the only rounding a live card has, and
 the whole point is to see the radius grow in as the card grows into the
 deck — so this version of the interpolation is the first one that is
