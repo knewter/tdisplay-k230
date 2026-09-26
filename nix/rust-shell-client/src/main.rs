@@ -15,11 +15,12 @@ use k230_shell_rust::{
     render::{export_png, panel_travel_height, RenderParams, RendererCache},
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
-        action_message, close_drag_engaged, close_drag_progress, close_drag_release_target,
-        backdrop_tap, close_drag_zone, notification_max_scroll, notification_swipe_hit,
-        notification_swipe_offset, notification_swipe_release, notification_swipe_start,
-        notification_swipe_valid, panel_intent, Confirmation, NotificationCoast,
-        NotificationSwipeSettle, PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
+        action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
+        close_drag_release_target, close_drag_zone, drawer_close_drag_zone,
+        notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
+        notification_swipe_release, notification_swipe_start, notification_swipe_valid,
+        panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelClose,
+        PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
@@ -2732,6 +2733,20 @@ impl TouchHandler for ShellClient {
                     )) {
                         self.dirty = true;
                     }
+                    // Shares `panel_start`/`panel_close*` with Shade/Settings
+                    // below rather than a second set of fields -- only one
+                    // route is ever open at a time. `nav.down` above still
+                    // always runs too, so an eligible-zone touch that never
+                    // engages still resolves as an ordinary tap/long-press
+                    // at release (`nav.up` only needs `contact.start`/the
+                    // final release point, never the intermediate motion
+                    // this close drag may intercept -- see `motion`'s own
+                    // doc on this branch).
+                    self.panel_start = Some((id, pos));
+                    self.panel_close_candidate = !self.panel_close.active()
+                        && drawer_close_drag_zone(pos.1, self.height, self.nav.scroll);
+                    self.panel_close_sample = Some((pos.1, time_ms));
+                    self.panel_close_velocity = 0.0;
                 } else if matches!(self.route, Route::Shade | Route::Settings) && self.input_ready {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
@@ -2884,14 +2899,40 @@ impl TouchHandler for ShellClient {
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
                 }
-                match self
-                    .nav
-                    .up(id, point, time_ms, self.width, self.height, self.apps.len())
-                {
-                    Some(DrawerAction::Launch(index)) => self.launch_app(index),
-                    Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
-                    Some(DrawerAction::Close) => self.hide(),
-                    None => {}
+                let engaged_close = self.panel_start.is_some_and(|(start_id, _)| start_id == id)
+                    && self.panel_close.tracking();
+                self.panel_start = None;
+                self.panel_close_candidate = false;
+                if engaged_close {
+                    // Live close-drag release: settle to whichever endpoint
+                    // `close_drag_release_target` picks from wherever the
+                    // finger left it -- `nav.up` is not consulted at all,
+                    // matching Shade/Settings (a touch this deep into a
+                    // close drag was never a tap/scroll/long-press
+                    // candidate any more).
+                    let velocity = self.panel_close_velocity;
+                    let target = close_drag_release_target(self.panel_close.progress(), velocity);
+                    let now = self.started.elapsed().as_millis() as u64;
+                    self.panel_close
+                        .release(id, target, now, self.reduced_motion);
+                    self.panel_close_sample = None;
+                    self.panel_close_velocity = 0.0;
+                    self.dirty = true;
+                } else {
+                    match self
+                        .nav
+                        .up(id, point, time_ms, self.width, self.height, self.apps.len())
+                    {
+                        Some(DrawerAction::Launch(index)) => self.launch_app(index),
+                        Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
+                        // `nav`'s own release-only "dy > 110 && scroll <=
+                        // 0.5" check is now just a backstop for whatever
+                        // reason the live drag above never engaged (see
+                        // its own doc); animate it the same way a released
+                        // close drag settles, instead of vanishing.
+                        Some(DrawerAction::Close) => self.begin_animated_close(),
+                        None => {}
+                    }
                 }
             } else if self.input_ready {
                 if let Some((start_id, start)) = self.panel_start.take() {
@@ -3098,18 +3139,68 @@ impl TouchHandler for ShellClient {
                 self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
             }
             if self.route == Route::Drawer && self.input_ready {
-                if self
-                    .nav
-                    .motion(id, pos, time_ms, self.height, self.apps.len())
+                // A close drag only ever *takes over* this touch once it
+                // actually engages (`close_drag_engaged`, downward for the
+                // Drawer); until then, every motion sample still reaches
+                // `nav.motion` below exactly as it would with no close-drag
+                // feature at all. This matters here in a way it does not
+                // for Shade/Settings: an eligible Drawer close-drag zone
+                // can be the scrollable grid itself (when already at its
+                // top), and an ordinary "scroll down through the list"
+                // drag starts with the same *upward* finger motion whether
+                // or not the grid happens to be at its top already -- only
+                // once the drag turns out to go the other way (downward,
+                // toward closing) does this stop calling `nav.motion` for
+                // it.
+                let mut engaged_this_sample = false;
+                if self.panel_start.is_some_and(|(start_id, _)| start_id == id)
+                    && (self.panel_close.tracking() || self.panel_close_candidate)
                 {
-                    self.dirty = true;
+                    let (_, start) = self
+                        .panel_start
+                        .expect("checked by this branch's own guard");
+                    let dx = pos.0 - start.0;
+                    let dy = pos.1 - start.1;
+                    if !self.panel_close.tracking() && close_drag_engaged(Route::Drawer, dx, dy) {
+                        self.panel_close.begin(id);
+                    }
+                    if self.panel_close.tracking() {
+                        let travel = self.panel_travel();
+                        if self
+                            .panel_close
+                            .update(id, close_drag_progress(Route::Drawer, dy, travel))
+                        {
+                            self.dirty = true;
+                        }
+                        if let Some((last_y, last_time)) = self.panel_close_sample {
+                            let dt = time_ms.wrapping_sub(last_time);
+                            if (1..=120).contains(&dt) {
+                                // Drawer closes downward: positive velocity
+                                // means downward, toward closing -- the
+                                // mirror image of Shade/Settings' upward
+                                // convention just below.
+                                self.panel_close_velocity =
+                                    ((pos.1 - last_y) / f64::from(dt)).clamp(-2.5, 2.5);
+                            }
+                        }
+                        self.panel_close_sample = Some((pos.1, time_ms));
+                        engaged_this_sample = true;
+                    }
                 }
-                if self.renderer.set_drawer_pressed(self.nav.pressed(
-                    self.width,
-                    self.height,
-                    self.apps.len(),
-                )) {
-                    self.dirty = true;
+                if !engaged_this_sample {
+                    if self
+                        .nav
+                        .motion(id, pos, time_ms, self.height, self.apps.len())
+                    {
+                        self.dirty = true;
+                    }
+                    if self.renderer.set_drawer_pressed(self.nav.pressed(
+                        self.width,
+                        self.height,
+                        self.apps.len(),
+                    )) {
+                        self.dirty = true;
+                    }
                 }
             } else if matches!(self.route, Route::Shade | Route::Settings)
                 && self.input_ready
@@ -3130,12 +3221,15 @@ impl TouchHandler for ShellClient {
                     .expect("checked by this branch's own guard");
                 let dx = pos.0 - start.0;
                 let dy = pos.1 - start.1;
-                if !self.panel_close.tracking() && close_drag_engaged(dx, dy) {
+                if !self.panel_close.tracking() && close_drag_engaged(self.route, dx, dy) {
                     self.panel_close.begin(id);
                 }
                 if self.panel_close.tracking() {
                     let travel = self.panel_travel();
-                    if self.panel_close.update(id, close_drag_progress(dy, travel)) {
+                    if self
+                        .panel_close
+                        .update(id, close_drag_progress(self.route, dy, travel))
+                    {
                         self.dirty = true;
                     }
                     if let Some((last_y, last_time)) = self.panel_close_sample {
@@ -4459,11 +4553,15 @@ mod route_tests {
             "top dismiss band is an eligible start"
         );
         assert!(
-            close_drag_engaged(touch.position.0 - start.0, touch.position.1 - start.1),
+            close_drag_engaged(
+                Route::Shade,
+                touch.position.0 - start.0,
+                touch.position.1 - start.1
+            ),
             "a real upward drag from there engages"
         );
         assert!(
-            !close_drag_engaged(2.0, -2.0),
+            !close_drag_engaged(Route::Shade, 2.0, -2.0),
             "a sub-slop wobble must not engage"
         );
         // Starting on the live notification list itself is never an
@@ -4477,7 +4575,58 @@ mod route_tests {
         ));
         // The backdrop below the panel is eligible too.
         assert!(close_drag_zone(Route::Shade, travel + 50.0, travel));
-        assert_eq!(close_drag_progress(0.0, travel), 1.0);
+        assert_eq!(close_drag_progress(Route::Shade, 0.0, travel), 1.0);
+    }
+
+    #[test]
+    fn drawer_downward_drag_engages_only_from_an_eligible_zone_past_slop() {
+        // The Drawer's own mirror of the Shade test above: bottom-anchored,
+        // so it closes on a *downward* drag instead of upward, and its
+        // eligible zones are the header/handle band (always) or the tile
+        // grid itself (only once already scrolled to its own top) --
+        // `drawer_close_drag_zone`, not `close_drag_zone`, since it needs
+        // scroll state Shade/Settings never do.
+        let travel = panel_travel_height(Route::Drawer, 1232, None, None);
+        let header_top = f64::from(1232u32) * 0.19;
+        let mut touch = TouchTrace::default();
+        assert!(touch.down(3, (280.0, header_top + 20.0)));
+        assert!(touch.motion(3, (282.0, header_top + 60.0)));
+        assert!(touch.up(3));
+        let start = (280.0, header_top + 20.0);
+        assert!(
+            drawer_close_drag_zone(start.1, 1232, 0.0),
+            "top handle band is an eligible start regardless of scroll"
+        );
+        assert!(
+            close_drag_engaged(
+                Route::Drawer,
+                touch.position.0 - start.0,
+                touch.position.1 - start.1
+            ),
+            "a real downward drag from there engages"
+        );
+        assert!(
+            !close_drag_engaged(Route::Drawer, 2.0, 2.0),
+            "a sub-slop wobble must not engage"
+        );
+        assert!(
+            !close_drag_engaged(Route::Drawer, 0.0, -20.0),
+            "an upward drag (scrolling down through the list) never engages a Drawer close"
+        );
+        // The grid is only an eligible start once already scrolled to its
+        // own top -- otherwise this must stay a plain scroll, never a
+        // close-drag candidate.
+        let grid_y = k230_shell_rust::navigation::list_top(1232) + 10.0;
+        assert!(
+            drawer_close_drag_zone(grid_y, 1232, 0.0),
+            "grid start, scrolled to top, is eligible"
+        );
+        assert!(
+            !drawer_close_drag_zone(grid_y, 1232, 300.0),
+            "grid start, scrolled away from the top, must not hijack scrolling"
+        );
+        assert_eq!(close_drag_progress(Route::Drawer, 0.0, travel), 1.0);
+        assert_eq!(close_drag_progress(Route::Drawer, travel, travel), 0.0);
     }
 
     #[test]

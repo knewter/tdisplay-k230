@@ -4394,6 +4394,84 @@ mod tests {
     }
 
     #[test]
+    fn drawer_close_drag_progress_shifts_the_panel_downward() {
+        // The Drawer's own mirror of the Shade test above: it opens from
+        // the bottom, so a close drag shifts it *down*, off the bottom of
+        // the screen, rather than up. `RendererCache::draw`'s shift sign
+        // for `Route::Drawer` is already `+1` (see its own `panel_height`/
+        // `shift` computation) -- this proves that existing sign actually
+        // produces the right pixels for a live, partially-closed drag, not
+        // just for the compositor's own opening reveal it was written for.
+        // Unlike Shade/Settings, the Drawer has no backdrop at all today
+        // (`apply_tray_backdrop` only covers those two routes), so the
+        // area the panel has shifted away from should read as fully
+        // transparent, not dimmed.
+        let mut renderer = RendererCache::default();
+        let alpha_at = |frame: &[u8], y: usize| -> u8 { frame[(y * 568 + 280) * 4 + 3] };
+        let apps = vec![AppEntry {
+            id: "foot.desktop".into(),
+            name: "Terminal".into(),
+            icon: Some("foot".into()),
+        }];
+
+        let mut open = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut open,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Drawer,
+                    progress: 1.0,
+                    scroll: 0.0,
+                },
+                &apps,
+            )
+            .unwrap();
+        assert_eq!(
+            alpha_at(&open, 500),
+            255,
+            "fully open: the panel already covers row 500"
+        );
+
+        let mut closing = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut closing,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Drawer,
+                    progress: 0.4,
+                    scroll: 0.0,
+                },
+                &apps,
+            )
+            .unwrap();
+        assert_eq!(
+            renderer.rebuild_count(),
+            1,
+            "progress alone must not rebuild the bake"
+        );
+        // 40% open: only the bottom ~40% of the panel's own travel is
+        // still on screen, so a row near the bottom is still opaque
+        // panel...
+        assert_eq!(
+            alpha_at(&closing, 1000),
+            255,
+            "40% open: the panel still reaches row 1000, near the bottom"
+        );
+        // ...while row 500, covered when fully open, has been shifted
+        // away entirely -- and reads as plain transparency (no backdrop
+        // to fade in), not still-opaque panel.
+        assert_eq!(
+            alpha_at(&closing, 500),
+            0,
+            "40% open: row 500 has shifted off screen; the Drawer has no backdrop to show there"
+        );
+    }
+
+    #[test]
     fn notification_swipe_moves_only_a_dismissible_row_and_reverses() {
         let mut renderer = RendererCache::default();
         let params = RenderParams {

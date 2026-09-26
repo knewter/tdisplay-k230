@@ -2,6 +2,7 @@
 //! Service I/O remains in `service_data::ServiceWorker` off the Wayland loop.
 
 use crate::{
+    navigation::{list_top, GRID_BOTTOM_INSET},
     render::{settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H},
     service_data::{
         ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction, Priority,
@@ -121,26 +122,43 @@ pub const CLOSE_DISMISS_PROGRESS: f64 = 0.6;
 /// already sits in.
 pub const CLOSE_FLING_VELOCITY: f64 = 0.8;
 
-/// Live progress for an in-flight close drag: 1.0 where the drag began
-/// (fully open) down to 0.0 once the finger has pulled the panel entirely
-/// away (`-dy >= panel_travel`). `dy` is `current.1 - start.1`, so a
-/// downward move (`dy > 0`) only ever pushes progress back *toward* 1.0
-/// (clamped there, never past it) -- "a downward drag during a close drag
-/// just moves the panel back down" falls out of the clamp, not a special
-/// case.
-pub fn close_drag_progress(dy: f64, panel_travel: f64) -> f64 {
-    (1.0 - (-dy) / panel_travel.max(1.0)).clamp(0.0, 1.0)
+/// Which sign of `dy` is "closing" for `route`'s own sheet: the top-
+/// anchored Shade/Settings close by dragging up (`dy` negative), the
+/// bottom-anchored Drawer (`navigation.rs`) closes by dragging down (`dy`
+/// positive) -- the one place that direction difference lives, so
+/// `close_drag_progress`/`close_drag_engaged` share one shape instead of
+/// each route re-deriving its own mirrored copy.
+fn close_direction(route: Route) -> f64 {
+    if route == Route::Drawer {
+        1.0
+    } else {
+        -1.0
+    }
 }
 
-/// The small-slop + direction lock that turns a touch already in
-/// `close_drag_zone` into a *live* close drag, mirrored from the same
-/// tap-vs-drag convention `DrawerNavigation`/`notification_swipe_start` use
-/// (a minimum travel before committing, dominant along the axis that
-/// matters) rather than reacting to the very first pixel of motion. A
-/// touch that never clears this must still resolve as an ordinary tap at
-/// release (`panel_intent`), not a partial drag.
-pub fn close_drag_engaged(dx: f64, dy: f64) -> bool {
-    dy <= -CLOSE_DRAG_SLOP && dy.abs() > dx.abs()
+/// Live progress for an in-flight close drag: 1.0 where the drag began
+/// (fully open) down to 0.0 once the finger has pulled the panel entirely
+/// away in its own closing direction (`close_direction`) by a full
+/// `panel_travel`. A move in the *opposite* direction only ever pushes
+/// progress back *toward* 1.0 (clamped there, never past it) -- "a
+/// [downward] drag during a close drag just moves the panel back [down]"
+/// (Shade's own wording; Drawer's is the mirror image) falls out of the
+/// clamp, not a special case.
+pub fn close_drag_progress(route: Route, dy: f64, panel_travel: f64) -> f64 {
+    (1.0 - (dy * close_direction(route)) / panel_travel.max(1.0)).clamp(0.0, 1.0)
+}
+
+/// The small-slop + direction lock that turns a touch already in an
+/// eligible zone (`close_drag_zone`/the Drawer's own) into a *live* close
+/// drag, mirrored from the same tap-vs-drag convention
+/// `DrawerNavigation`/`notification_swipe_start` use (a minimum travel
+/// before committing, dominant along the axis that matters) rather than
+/// reacting to the very first pixel of motion. A touch that never clears
+/// this must still resolve as an ordinary tap/scroll at release
+/// (`panel_intent`, or the Drawer's own tap/long-press/scroll), not a
+/// partial drag.
+pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
+    dy * close_direction(route) >= CLOSE_DRAG_SLOP && dy.abs() > dx.abs()
 }
 
 /// Where a close drag may originate: the existing top dismiss zone, or at
@@ -156,6 +174,23 @@ pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
+/// Where a Drawer close drag may originate: its own top edge/handle band
+/// (`navigation::list_top`'s own header, above the tile grid -- always
+/// eligible, the same way Shade's dismiss zone is regardless of scroll),
+/// or the tile grid itself once already scrolled to its own top (mirrors
+/// `DrawerNavigation::up`'s pre-existing "dy > 110 && scroll <= 0.5" release
+/// check, now live instead of release-only, so an ordinary scroll away
+/// from the top is never hijacked). The dock band (`GRID_BOTTOM_INSET`) is
+/// excluded -- its pinned tiles must stay tappable. The Drawer has no
+/// backdrop above it today (unlike Shade/Settings; `apply_tray_backdrop`
+/// only covers those two), so there is no third "backdrop" zone here.
+pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
+    let panel_y = f64::from(height) * 0.19;
+    let header_bottom = list_top(height);
+    let dock_top = f64::from(height) - GRID_BOTTOM_INSET;
+    (y >= panel_y && y < header_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
+}
+
 /// A tap (no drag past the tap slop) that starts and ends on the dim
 /// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
 /// outside a sheet does everywhere else.
@@ -168,10 +203,15 @@ pub fn backdrop_tap(route: Route, start: (f64, f64), end: (f64, f64), panel_trav
 }
 
 /// Where a released close drag settles: fully closed (`0.0`) or back open
-/// (`1.0`). A fast upward flick commits to closing outright; otherwise it
-/// is a plain threshold on how much of the panel was already pulled away.
-pub fn close_drag_release_target(progress: f64, upward_velocity: f64) -> f64 {
-    if upward_velocity >= CLOSE_FLING_VELOCITY || progress < CLOSE_DISMISS_PROGRESS {
+/// (`1.0`). A fast release in the closing direction commits to closing
+/// outright; otherwise it is a plain threshold on how much of the panel
+/// was already pulled away. `closing_velocity` uses the same sign
+/// convention as `close_drag_progress`'s own `dy` after `close_direction`
+/// is applied: positive means "moving in this route's own closing
+/// direction", regardless of whether that is up (Shade/Settings) or down
+/// (Drawer).
+pub fn close_drag_release_target(progress: f64, closing_velocity: f64) -> f64 {
+    if closing_velocity >= CLOSE_FLING_VELOCITY || progress < CLOSE_DISMISS_PROGRESS {
         0.0
     } else {
         1.0
@@ -633,22 +673,25 @@ mod tests {
     #[test]
     fn close_drag_progress_is_one_at_start_and_zero_at_full_travel() {
         let travel = 800.0;
-        assert_eq!(close_drag_progress(0.0, travel), 1.0);
-        assert_eq!(close_drag_progress(-travel, travel), 0.0);
-        assert_eq!(close_drag_progress(-travel / 2.0, travel), 0.5);
+        assert_eq!(close_drag_progress(Route::Shade, 0.0, travel), 1.0);
+        assert_eq!(close_drag_progress(Route::Shade, -travel, travel), 0.0);
+        assert_eq!(
+            close_drag_progress(Route::Shade, -travel / 2.0, travel),
+            0.5
+        );
         // Overshooting past full travel clamps at 0, never negative.
-        assert_eq!(close_drag_progress(-travel * 2.0, travel), 0.0);
+        assert_eq!(close_drag_progress(Route::Shade, -travel * 2.0, travel), 0.0);
         // A downward move from the drag's own start only ever pushes back
         // toward 1.0, clamped there -- "a downward drag during a close
         // drag just moves the panel back down" falls out of the clamp.
-        assert_eq!(close_drag_progress(120.0, travel), 1.0);
+        assert_eq!(close_drag_progress(Route::Shade, 120.0, travel), 1.0);
     }
 
     #[test]
     fn close_drag_progress_is_monotonic_in_upward_travel() {
         let travel = 800.0;
         let samples: Vec<f64> = (0..=20)
-            .map(|step| close_drag_progress(-travel * f64::from(step) / 20.0, travel))
+            .map(|step| close_drag_progress(Route::Shade, -travel * f64::from(step) / 20.0, travel))
             .collect();
         for pair in samples.windows(2) {
             assert!(
@@ -659,18 +702,57 @@ mod tests {
     }
 
     #[test]
+    fn close_drag_progress_mirrors_direction_for_the_bottom_anchored_drawer() {
+        // Drawer closes downward (positive dy), the exact mirror image of
+        // Shade/Settings closing upward -- same shape, opposite sign.
+        let travel = 800.0;
+        assert_eq!(close_drag_progress(Route::Drawer, 0.0, travel), 1.0);
+        assert_eq!(close_drag_progress(Route::Drawer, travel, travel), 0.0);
+        assert_eq!(
+            close_drag_progress(Route::Drawer, travel / 2.0, travel),
+            0.5
+        );
+        // An upward move (the wrong direction for a Drawer close) only
+        // ever pushes back toward 1.0, clamped there.
+        assert_eq!(close_drag_progress(Route::Drawer, -120.0, travel), 1.0);
+    }
+
+    #[test]
     fn close_drag_engaged_needs_slop_and_vertical_dominance() {
         // Under slop: still a tap/wobble candidate.
-        assert!(!close_drag_engaged(0.0, -CLOSE_DRAG_SLOP + 1.0));
+        assert!(!close_drag_engaged(
+            Route::Shade,
+            0.0,
+            -CLOSE_DRAG_SLOP + 1.0
+        ));
         // Exactly at slop, upward, no sideways drift: engaged.
-        assert!(close_drag_engaged(0.0, -CLOSE_DRAG_SLOP));
-        // Downward motion never engages a close drag.
-        assert!(!close_drag_engaged(0.0, CLOSE_DRAG_SLOP + 20.0));
+        assert!(close_drag_engaged(Route::Shade, 0.0, -CLOSE_DRAG_SLOP));
+        // Downward motion never engages a Shade/Settings close drag.
+        assert!(!close_drag_engaged(
+            Route::Shade,
+            0.0,
+            CLOSE_DRAG_SLOP + 20.0
+        ));
         // Past slop upward, but more sideways than vertical: not engaged
         // (this is a horizontal gesture, not a vertical close drag).
-        assert!(!close_drag_engaged(40.0, -20.0));
+        assert!(!close_drag_engaged(Route::Shade, 40.0, -20.0));
         // Past slop, vertical-dominant: engaged even with a little drift.
-        assert!(close_drag_engaged(4.0, -20.0));
+        assert!(close_drag_engaged(Route::Shade, 4.0, -20.0));
+    }
+
+    #[test]
+    fn close_drag_engaged_is_reversed_for_the_drawer() {
+        // The Drawer closes on a downward drag -- the exact opposite of
+        // Shade/Settings above, using the same slop/dominance shape.
+        assert!(!close_drag_engaged(
+            Route::Drawer,
+            0.0,
+            CLOSE_DRAG_SLOP - 1.0
+        ));
+        assert!(close_drag_engaged(Route::Drawer, 0.0, CLOSE_DRAG_SLOP));
+        assert!(!close_drag_engaged(Route::Drawer, 0.0, -(CLOSE_DRAG_SLOP + 20.0)));
+        assert!(!close_drag_engaged(Route::Drawer, 40.0, 20.0));
+        assert!(close_drag_engaged(Route::Drawer, 4.0, 20.0));
     }
 
     #[test]
@@ -701,6 +783,51 @@ mod tests {
         }
         assert!(!close_drag_zone(Route::Drawer, 0.0, travel));
         assert!(!close_drag_zone(Route::Hide, 0.0, travel));
+    }
+
+    #[test]
+    fn drawer_close_drag_zone_is_the_header_always_and_the_grid_only_at_top() {
+        let height = 1232;
+        let panel_y = f64::from(height) * 0.19; // 234.08
+        let header_bottom = list_top(height); // 415.08
+        let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1160.0
+
+        // The header/handle band is eligible regardless of scroll --
+        // scrolled deep into the list or not, the handle is still there.
+        for scroll in [0.0, 5_000.0] {
+            assert!(
+                drawer_close_drag_zone(panel_y, height, scroll),
+                "top edge, scroll={scroll}"
+            );
+            assert!(
+                drawer_close_drag_zone(header_bottom - 1.0, height, scroll),
+                "just above the grid, scroll={scroll}"
+            );
+        }
+        // The grid itself: eligible only once scrolled to (approximately)
+        // its own top -- the same "at the top" idea
+        // `DrawerNavigation::up`'s own release check already used.
+        assert!(
+            drawer_close_drag_zone(header_bottom, height, 0.0),
+            "grid start, scrolled to top"
+        );
+        assert!(
+            !drawer_close_drag_zone(header_bottom, height, 50.0),
+            "grid start, scrolled away from top must not hijack scrolling"
+        );
+        assert!(
+            drawer_close_drag_zone(dock_top - 1.0, height, 0.0),
+            "just above the dock, at top, is still the grid"
+        );
+        // The dock band (pinned tiles) is excluded regardless of scroll.
+        assert!(!drawer_close_drag_zone(dock_top, height, 0.0));
+        assert!(!drawer_close_drag_zone(
+            f64::from(height) - 1.0,
+            height,
+            0.0
+        ));
+        // Above the panel entirely (Home showing through) is not a zone.
+        assert!(!drawer_close_drag_zone(panel_y - 1.0, height, 0.0));
     }
 
     #[test]
