@@ -285,4 +285,46 @@ in
       RestartSec = 1;
     };
   };
+
+  # --- the-panel-brightness-is-adjustable ---------------------------------
+  # The kernel now registers a real /sys/class/backlight device (see
+  # nix/kernel.nix); tools/device_settings.py already reads and writes
+  # /sys/class/backlight/*/brightness generically and already runs as the
+  # unprivileged `shell` user (nix/shell.nix defines that user/group; the
+  # Rust shell client spawns k230-settings directly, no sudo). The only
+  # remaining gap is write permission on that sysfs attribute. A udev rule
+  # is the narrowest of the three options the working agreement names (a
+  # udev rule, a group, or a helper-daemon broker) -- see
+  # openspec/changes/the-panel-brightness-is-adjustable/design.md decision 7.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="backlight", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chgrp shell /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
+  '';
+
+  # --- the-handheld-talks-bluetooth ---------------------------------------
+  # The kernel's Bluetooth stack and USB HCI driver are enabled in
+  # nix/kernel.nix; this is the standard NixOS module that runs BlueZ on
+  # top of them. No device tree change, no new package beyond what this
+  # module already pulls in.
+  hardware.bluetooth.enable = true;
+
+  # --- the-clock-survives-a-reboot -----------------------------------------
+  # RTC_DRV_K230 (nix/kernel.nix) makes /dev/rtc0 exist; services.timesyncd
+  # is already enabled by default and writes a synced time back to a
+  # present RTC on its own. This unit makes that contract explicit and
+  # independently auditable (systemctl status / the journal are the
+  # evidence) rather than resting solely on timesyncd's internal ~hourly
+  # write-back cadence. Ordered after time-sync.target, not merely after
+  # systemd-timesyncd starts, so it never writes an unsynced time -- see
+  # openspec/changes/the-clock-survives-a-reboot/design.md decision 2.
+  systemd.services.k230-rtc-sync = {
+    description = "Write the synchronized system clock to the K230 RTC";
+    after = [ "time-sync.target" ];
+    wants = [ "time-sync.target" ];
+    wantedBy = [ "multi-user.target" ];
+    unitConfig.ConditionPathExists = "/dev/rtc0";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.util-linux}/bin/hwclock --systohc";
+    };
+  };
 }

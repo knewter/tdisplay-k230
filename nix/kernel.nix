@@ -421,6 +421,77 @@ EOM
         drivers/gpu/drm/canaan/canaan_dsi.c
       grep -q 'canaan,hsfreqrange' drivers/gpu/drm/canaan/canaan_dsi.c
 
+      # ---------------------------------------------------------------
+      # the-panel-brightness-is-adjustable
+      #
+      # A DSI-command backlight for the RM69A10, adapted from this pinned
+      # tree's own drivers/gpu/drm/panel/panel-samsung-s6d7aa0.c
+      # (s6d7aa0_create_backlight/s6d7aa0_bl_update_status), not invented
+      # from scratch -- and matching the DT property names LILYGO's own
+      # k230_bsp patch
+      # 0049-drm-panel-canaan-universal-add-rm69a10-dsi-backlight.patch
+      # uses. See docs/research/board-capability-inventory.md and
+      # openspec/changes/the-panel-brightness-is-adjustable/design.md.
+      #
+      # Kept as its own clearly delimited block: feat/speaker is
+      # concurrently editing this same file for audio Kconfig, and touches
+      # none of the lines below.
+      # ---------------------------------------------------------------
+
+      sed -i 's|#include <linux/module.h>|#include <linux/module.h>\n#include <linux/backlight.h>|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q '#include <linux/backlight.h>' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # New per-panel state: whether this panel opted into a DSI-command
+      # backlight, its default/max brightness from the device tree, the
+      # registered backlight_device, and whether the panel is currently
+      # enabled -- this guards every DSI brightness write against arriving
+      # while the panel is mid-reset or not yet enabled.
+      sed -i 's|\tbool stage1_splash;|\tbool stage1_splash;\n\tbool prepared;\n\tbool dsi_command_backlight;\n\tu32 default_brightness;\n\tu32 max_brightness;\n\tstruct backlight_device *bl;|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'struct backlight_device \*bl;' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Parse the three DT properties. Default to today's fixed brightness
+      # (0xFE of 255) so a board that does not set the boolean opt-in is
+      # completely unaffected.
+      sed -i 's|\tof_property_read_u32(np, "panel-dsi-lane", \&ctx->lan_num);|\tof_property_read_u32(np, "panel-dsi-lane", \&ctx->lan_num);\n\n\tctx->default_brightness = 254;\n\tctx->max_brightness = 255;\n\tof_property_read_u32(np, "default-brightness", \&ctx->default_brightness);\n\tof_property_read_u32(np, "max-brightness", \&ctx->max_brightness);\n\tctx->dsi_command_backlight = of_property_read_bool(np, "canaan,dsi-command-backlight");|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan,dsi-command-backlight' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # The backlight ops. get_brightness is deliberately left unset -- the
+      # backlight core then returns the cached bl->props.brightness rather
+      # than issuing an unproven MIPI_DCS_GET_DISPLAY_BRIGHTNESS (0x52)
+      # read; only RDDID/RDDPM reads are proven against this panel so far
+      # (see the diagnostic block already in canaan_panel_prepare()).
+      # update_status no-ops while the panel is not enabled, since a DSI
+      # write to a mid-reset or not-yet-enabled controller is exactly the
+      # class of hang this kernel's other postPatch history (bounded PHY
+      # waits, bounded thermal loop) has already had to fix.
+      sed -i 's|static int canaan_panel_get_modes(struct drm_panel \*panel,|static int canaan_panel_apply_brightness(struct canaan_panel *p, u16 brightness)\n{\n\t/* BCTRL, DD, BL: brightness control block, dimming, backlight all on. */\n\tu8 ctrl = 0x24;\n\tint ret;\n\n\tret = mipi_dsi_dcs_write(p->dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, \&ctrl, 1);\n\tif (ret < 0)\n\t\tdev_err(p->panel.dev, "failed to enable brightness control: %d\\n", ret);\n\n\tret = mipi_dsi_dcs_set_display_brightness(p->dsi, brightness);\n\tif (ret < 0)\n\t\tdev_err(p->panel.dev, "failed to set display brightness: %d\\n", ret);\n\n\treturn ret;\n}\n\nstatic int canaan_panel_bl_update_status(struct backlight_device *bl)\n{\n\tstruct canaan_panel *p = bl_get_data(bl);\n\n\tif (!p->prepared)\n\t\treturn 0;\n\n\treturn canaan_panel_apply_brightness(p, backlight_get_brightness(bl));\n}\n\nstatic const struct backlight_ops canaan_panel_bl_ops = {\n\t.update_status = canaan_panel_bl_update_status,\n};\n\nstatic int canaan_panel_get_modes(struct drm_panel *panel,|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan_panel_bl_update_status' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Register the backlight once DT properties are parsed and the DRM
+      # panel is initialized, so ctx->panel.backlight is valid before
+      # drm_panel_add(). drm_panel_enable()/drm_panel_disable() -- already
+      # called by canaan_dsi.c's encoder enable/disable path on every
+      # modeset -- then drive it automatically via backlight_enable()/
+      # backlight_disable(), which is what makes a brightness value
+      # survive a later modeset or DPMS cycle. See design.md decision 4.
+      sed -i 's|\tdrm_panel_add(\&ctx->panel);|\tif (ctx->dsi_command_backlight) {\n\t\tconst struct backlight_properties bl_props = {\n\t\t\t.type = BACKLIGHT_RAW,\n\t\t\t.brightness = ctx->default_brightness,\n\t\t\t.max_brightness = ctx->max_brightness,\n\t\t};\n\n\t\tctx->bl = devm_backlight_device_register(\&dsi->dev,\n\t\t\t\t"canaan-dsi-backlight", \&dsi->dev, ctx,\n\t\t\t\t\&canaan_panel_bl_ops, \&bl_props);\n\t\tif (IS_ERR(ctx->bl)) {\n\t\t\tdev_err(\&dsi->dev, "failed to register backlight: %ld\\n",\n\t\t\t\tPTR_ERR(ctx->bl));\n\t\t\tctx->bl = NULL;\n\t\t} else {\n\t\t\tctx->panel.backlight = ctx->bl;\n\t\t}\n\t}\n\n\tdrm_panel_add(\&ctx->panel);|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'canaan-dsi-backlight' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Mark the panel enabled/disabled, scoped to each function
+      # individually (both bodies are otherwise the identical `return 0;`,
+      # so the range address is what disambiguates them).
+      sed -i '/^static int canaan_panel_enable(struct drm_panel \*panel)/,/^}/ s|\treturn 0;|\tstruct canaan_panel *p = panel_to_canaan_panel(panel);\n\n\tp->prepared = true;\n\n\treturn 0;|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      sed -i '/^static int canaan_panel_disable(struct drm_panel \*panel)/,/^}/ s|\treturn 0;|\tstruct canaan_panel *p = panel_to_canaan_panel(panel);\n\n\tp->prepared = false;\n\n\treturn 0;|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'p->prepared = true;' drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'p->prepared = false;' drivers/gpu/drm/panel/panel-canaan-universal.c
+
     '';
   };
 
@@ -540,6 +611,30 @@ EOM
 
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
+
+    # --- the-handheld-talks-bluetooth -----------------------------------
+    # Kconfig only: no device tree, no kernel patch. drivers/bluetooth/
+    # btusb.c is already mainline code present in this pinned tree; it was
+    # simply never turned on. Modules, so a board with no dongle attached
+    # loads none of this. BT_HCIBTUSB_RTL matches the CSR8510-clone dongle
+    # (0a12:0001) this project's accessory kit bundles -- see
+    # docs/research/board-capability-inventory.md and
+    # openspec/changes/the-handheld-talks-bluetooth/design.md. Kept as its
+    # own delimited block: feat/speaker's concurrent audio Kconfig edits
+    # touch none of these symbols.
+    BT = module;
+    BT_HCIBTUSB = module;
+    BT_HCIBTUSB_RTL = yes;
+
+    # --- the-clock-survives-a-reboot -------------------------------------
+    # One line: rtc@0x91000c00 (compatible "canaan,k230-rtc") is already
+    # status-enabled by default in k230.dtsi; drivers/rtc/rtc-k230.c
+    # already exists in this pinned tree, gated only by this symbol
+    # (`default n`). Built in, not a module -- the RTC is wanted from very
+    # early boot, before any module-loading userspace runs. See
+    # docs/research/board-capability-inventory.md and
+    # openspec/changes/the-clock-survives-a-reboot/design.md.
+    RTC_DRV_K230 = yes;
   };
 
   extraMeta = {

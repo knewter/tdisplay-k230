@@ -71,6 +71,20 @@
 
 		panel-dsi-lane = <2>;
 
+		// the-panel-brightness-is-adjustable: opt this panel into a
+		// DSI-command backlight (MIPI_DCS_SET_DISPLAY_BRIGHTNESS,
+		// 0x51, gated by MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x53), driven
+		// by drivers/gpu/drm/panel/panel-canaan-universal.c. Property
+		// names match LILYGO's own k230_bsp patch
+		// 0049-drm-panel-canaan-universal-add-rm69a10-dsi-backlight.patch.
+		// default-brightness matches the fixed 0xFE this board has
+		// always shown (see panel-init-sequence's SET_DISPLAY_BRIGHTNESS
+		// below), so a fresh boot looks unchanged until someone moves
+		// the Settings brightness stepper.
+		canaan,dsi-command-backlight;
+		default-brightness = <254>;
+		max-brightness = <255>;
+
 		// framing: data_type, delay_ms, payload_length, payload...
 		// delay is u8 MILLIseconds. The vendor waits 300us after 0x11 and
 		// 100us after 0x29; neither is expressible, so both become 1 ms,
