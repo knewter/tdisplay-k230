@@ -41,6 +41,7 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_touch.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/box.h>
 extern char **environ;
 struct card;
@@ -53,6 +54,10 @@ struct mirror {
 	struct wlr_buffer *scaled;
 	uint64_t generation, scaled_generation;
 	int scaled_width, scaled_height;
+	/* Wall-clock time (now_ms()) the scaled copy was last regenerated.
+	 * Gates the ~15fps refresh cap applied to any card not currently shown
+	 * at full panel size -- see scaled_mirror's own comment. */
+	uint64_t scaled_at_ms;
 };
 struct card {
 	struct wl_list link, mirrors;
@@ -97,18 +102,6 @@ struct card {
 	 * card_clip_box() reads this so the incoming neighbour's mirrored
 	 * content is never clipped to the small deck viewport mid-drag. */
 	bool full_clip;
-	/* k230-video-software/k230-video-mvx (see video_app_id): true for the
-	 * life of the card, set once at card_shell_observe time. A playing
-	 * video keeps committing new decoded frames whether or not its card is
-	 * ever looked at, so continuously letting it drive sync_node's mirror
-	 * rescale while it is only a small, un-selected deck thumbnail pays
-	 * real per-frame decode-to-thumbnail scaling cost for motion nobody can
-	 * see at that size -- exactly the cost "video and transient views stay
-	 * unmarked" used to avoid by keeping video out of the deck entirely.
-	 * sync_node freezes the mirror on its most recently captured frame
-	 * whenever this is true and the card is not currently shown at full
-	 * panel size (card_clip_box's own CS_ENTERING/CS_EXPANDING cases). */
-	bool video_view;
 };
 static struct {
 	struct wl_list cards;
@@ -344,19 +337,6 @@ static uint64_t event_time_ms(uint32_t time_msec) {
 static bool enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SHELL");
 	return s && strcmp(s, "1") == 0;
-}
-/* k230-video-software (software H.264) and k230-video-mvx (the MVX hardware
- * decode experiment) -- see nix/video-session.py's `--wayland-app-id`. Both
- * are mpv, launched by k230-video-session; neither is a genuine transient
- * or popup surface. They used to be excluded from `card_shell ordinary`
- * (kept as small floating windows) alongside real transient views, which
- * left them with no card, no swipe-up-to-close, and no way to dismiss them
- * short of restarting the session -- see docs/evidence/card-shell/
- * video-card/. They are now ordinary cards like any other app; only real
- * transient/popup views (wants_floating) stay unmarked. */
-static bool video_app_id(const char *app_id) {
-	return app_id && (strcmp(app_id, "k230-video-software") == 0 ||
-		strcmp(app_id, "k230-video-mvx") == 0);
 }
 static bool scaled_cache_enabled(void) {
 	const char *s = getenv("SWAY_K230_CARD_SCALED_CACHE");
@@ -951,12 +931,25 @@ static struct wlr_box clip_box(void) {
  * deck card: the entry gesture's shared full-panel frame (c->full_clip, or
  * the outgoing entry_id card itself) or a tap-to-expand preview
  * (CS_EXPANDING's expand_id). Shared by card_clip_box (the mirror must not
- * be clipped to the small deck viewport here) and sync_node's video-mirror
- * freeze gate (a video card genuinely being looked at full-size must still
- * update live; only its small, un-selected deck thumbnail freezes). */
+ * be clipped to the small deck viewport here) and scaled_mirror's own
+ * refresh-rate cap (a card genuinely being looked at full-size always
+ * updates live; only a small, not-currently-large deck thumbnail is
+ * capped). */
 static bool card_shown_large(const struct card *c) {
 	return (shell.policy.mode == CS_ENTERING && (c->id == shell.policy.entry_id || c->full_clip)) ||
 		(shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id);
+}
+/* True while some touch-driven or time-based animation could still be
+ * changing the scene this moment: an active drag/gesture (contact, the
+ * whole touch-first entry gesture from down through release) or a running
+ * cs_tick dispatch (entry settle/reverse, expand, close timeout). Shared by
+ * tick_impl's own frame-scheduling gate and scaled_mirror's choice of a
+ * cheap filter over the default bilinear one while genuinely moving. */
+static bool scene_in_motion(void) {
+	return (shell.policy.mode == CS_ENTERING &&
+			(shell.policy.entry_reversing || shell.policy.entry_settling)) ||
+		shell.policy.mode == CS_EXPANDING || shell.policy.mode == CS_CLOSING ||
+		shell.policy.contact || shell.policy.edge.tracking;
 }
 static struct wlr_box card_clip_box(struct card *c) {
 	/* c->full_clip mirrors the entry_id special case for every card sharing
@@ -1014,22 +1007,34 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	if (width <= 0 || height <= 0 || ax < clip.x || ay < clip.y ||
 		ax + width > clip.x + clip.width || ay + height > clip.y + clip.height)
 		return false;
-	/* struct card's video_view doc: once a video card has a real captured
-	 * thumbnail and is not currently shown at full panel size, stop
-	 * rebuilding the scaled copy on every new decoded frame -- the size
-	 * check stays live unconditionally, so a resize (output change, entry/
-	 * expand transition ending) still snaps the frozen thumbnail to the
-	 * correct geometry instead of showing a stale size. */
-	bool frozen = m->card->video_view && m->scaled && !card_shown_large(m->card);
+	/* Generic for every card, not just video: a small deck thumbnail that is
+	 * not currently shown at full panel size (card_shown_large) is capped
+	 * to about 15fps (66ms) instead of regenerating on every single client
+	 * commit -- the content still updates, live, just not on every frame,
+	 * which is what actually made the deck sluggish while a fast-committing
+	 * client (video, a game, a busy terminal) sat in it. A card shown large
+	 * (mid entry/expand) is never capped: the size check also stays live
+	 * unconditionally, so a resize (output change, transition ending) still
+	 * snaps the thumbnail to the right geometry immediately regardless of
+	 * the cap. */
+	bool large = card_shown_large(m->card);
+	uint64_t now = now_ms();
+	bool due = large || !m->scaled_at_ms || now - m->scaled_at_ms >= 66;
 	if (!m->scaled || m->scaled_width != width || m->scaled_height != height ||
-		(!frozen && m->scaled_generation != m->generation)) {
+		(due && m->scaled_generation != m->generation)) {
 		if (m->scaled) { wlr_buffer_drop(m->scaled); m->scaled = NULL; }
-		m->scaled = card_scaled_buffer_create(source->buffer, width, height);
+		/* A cheap nearest-neighbor filter while something is actively
+		 * animating/dragging trades a slightly blockier thumbnail for
+		 * avoiding a full bilinear resample on every one of many
+		 * closely-spaced frames; at rest the default bilinear filter runs
+		 * as before. */
+		m->scaled = card_scaled_buffer_create(source->buffer, width, height, scene_in_motion());
 		shell.cache_misses++;
 		if (!m->scaled) return false;
 		m->scaled_generation = m->generation;
 		m->scaled_width = width;
 		m->scaled_height = height;
+		m->scaled_at_ms = now;
 	} else {
 		shell.cache_hits++;
 	}
@@ -1799,9 +1804,6 @@ static void handle_result(struct cs_result r) {
 		struct card *c = find(r.close_id);
 		if (c && live(c->view) && c->content == CS_LIVE) {
 			view_close(c->view);
-			if (c->video_view && !card_shell_video_stop())
-				sway_log(SWAY_INFO,
-					"K230_CARD_SHELL video-stop-helper unavailable; relying on xdg close alone");
 			sway_log(SWAY_INFO, "K230_CARD_SHELL close-request id=%" PRIu64, r.close_id);
 		} else {
 			handle_result(cs_close_result(&shell.policy, r.close_id, false));
@@ -1964,12 +1966,7 @@ static int tick_impl(void *data) {
 		 * on wlr_output_schedule_frame having been called recently enough
 		 * that the output is still willing to render again, which an
 		 * active drag or animation already guarantees moment to moment. */
-		bool card_animating =
-			(shell.policy.mode == CS_ENTERING &&
-				(shell.policy.entry_reversing || shell.policy.entry_settling)) ||
-			shell.policy.mode == CS_EXPANDING || shell.policy.mode == CS_CLOSING ||
-			shell.policy.contact || shell.policy.edge.tracking;
-		if (shell.active && card_animating)
+		if (shell.active && scene_in_motion())
 			wlr_output_schedule_frame(shell.output->wlr_output);
 		wl_event_source_timer_update(shell.timer, 16);
 	}
@@ -2418,7 +2415,6 @@ void card_shell_observe(struct sway_view *view) {
 	c->view = view;
 	c->id = view->container->node.id;
 	c->content = CS_UNAVAILABLE;
-	c->video_view = video_app_id(view_get_app_id(view));
 	wl_list_init(&c->mirrors);
 	wl_list_insert(shell.cards.prev, &c->link);
 	card_shell_commit(view);
@@ -2952,10 +2948,21 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		struct sway_container *con = config->handler_context.container;
 		if (!con || !con->view)
 			return cmd_results_new(CMD_INVALID, "ordinary requires an app container");
-		const char *app_id = view_get_app_id(con->view);
-		if (!app_id ||
-			(!video_app_id(app_id) && con->view->impl->wants_floating &&
-			con->view->impl->wants_floating(con->view)))
+		if (!view_get_app_id(con->view))
+			return cmd_results_new(CMD_FAILURE, "transient views stay unmarked");
+		/* A real transient/popup (an xdg_toplevel with a parent set) stays
+		 * unmarked; every other top-level app window becomes an ordinary
+		 * card, whatever it is. wants_floating()'s OTHER condition (a fixed,
+		 * non-resizable min==max size) is a placement heuristic, not a
+		 * transient test -- a client that simply reports a fixed size (mpv's
+		 * --geometry=WxH, or any other app that never advertises a resizable
+		 * range) is still a real, independent app window the user should be
+		 * able to see, switch to and close like any other; that used to
+		 * need its own app_id carve-out here for video specifically, which
+		 * this replaces with the same treatment for every client. XWayland
+		 * is disabled in this build, so every view here is xdg_shell and
+		 * this union access is always the active member. */
+		if (con->view->wlr_xdg_toplevel && con->view->wlr_xdg_toplevel->parent)
 			return cmd_results_new(CMD_FAILURE, "transient views stay unmarked");
 		con->card_shell_ordinary_maximized = true;
 		return cmd_results_new(CMD_SUCCESS, NULL);

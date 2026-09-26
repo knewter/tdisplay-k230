@@ -17,7 +17,7 @@ static void compare(int sw, int sh, int dw, int dh, uint32_t format) {
 		memcpy(cached, direct, sizeof(direct));
 		memset(scaled, 0, sizeof(scaled));
 		int ss = format == DRM_FORMAT_RGB565 ? sw * 2 : sw * 4;
-		assert(card_scale_rgb565(scaled, dw * 2, dw, dh, source, ss, sw, sh, format));
+		assert(card_scale_rgb565(scaled, dw * 2, dw, dh, source, ss, sw, sh, format, false));
 		if (cycle) assert(memcmp(previous, scaled, (size_t)dw * dh * 2) != 0);
 		else memcpy(previous, scaled, (size_t)dw * dh * 2);
 		pixman_format_code_t sf = format == DRM_FORMAT_RGB565 ? PIXMAN_r5g6b5 : PIXMAN_x8r8g8b8;
@@ -46,6 +46,19 @@ int main(void) {
 	compare(37, 29, 56, 43, DRM_FORMAT_XRGB8888);
 	compare(36, 28, 18, 14, DRM_FORMAT_RGB565);
 	uint32_t source[4] = {0}; uint16_t dest[4] = {0};
-	assert(!card_scale_rgb565(dest, 4, 2, 2, source, 8, 2, 2, DRM_FORMAT_ARGB8888));
+	assert(!card_scale_rgb565(dest, 4, 2, 2, source, 8, 2, 2, DRM_FORMAT_ARGB8888, false));
+	/* fast=true selects nearest-neighbor, a genuinely different filter from
+	 * the default bilinear -- the two must disagree on at least one pixel
+	 * for a non-integer downscale ratio (used while a card is animating). */
+	{
+		uint32_t src2[37 * 29];
+		for (int i = 0; i < 37 * 29; i++) src2[i] = 0xff000000u | (uint32_t)(i * 109123);
+		uint16_t bilinear[18 * 14], nearest[18 * 14];
+		assert(card_scale_rgb565(bilinear, 18 * 2, 18, 14, src2, 37 * 4, 37, 29,
+			DRM_FORMAT_XRGB8888, false));
+		assert(card_scale_rgb565(nearest, 18 * 2, 18, 14, src2, 37 * 4, 37, 29,
+			DRM_FORMAT_XRGB8888, true));
+		assert(memcmp(bilinear, nearest, sizeof(bilinear)) != 0);
+	}
 	puts("PASS scaled opaque RGB565 pixels and reused SHM contents");
 }

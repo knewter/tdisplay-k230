@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-"""Headless QEMU regression for video windows becoming ordinary, closable
-cards (docs/evidence/card-shell/video-card/).
+"""Headless QEMU regression proving mpv's historical app_id gets no special
+treatment: it is an ordinary, closable card exactly like any other window,
+because the compositor no longer special-cases video at all
+(docs/evidence/card-shell/live-card-cost/).
 
-Root cause of "big buck bunny played and I can't close it": k230-video-
-software/k230-video-mvx (mpv, launched by nix/video-session.py) were
-excluded from `card_shell ordinary` alongside real transient/popup views
-(nix/card-shell/adapter.c's now-removed "video and transient views stay
-unmarked" check), so a playing video stayed a small floating window: no
-card, not in the overview, not reachable by the bottom-edge switch gesture,
-and with no other close control in this touch-only shell.
+Original root cause of "big buck bunny played and I can't close it":
+k230-video-software/k230-video-mvx (mpv, launched by nix/video-session.py)
+were excluded from `card_shell ordinary` alongside real transient/popup
+views, so a playing video stayed a small floating window: no card, not in
+the overview, not reachable by the bottom-edge switch gesture, and with no
+other close control in this touch-only shell. That was fixed by making
+video an ordinary card, then later by removing the app_id check entirely
+-- one single `for_window [app_id=".+"]` rule (nix/shell.nix) and one
+generic "a real transient has an xdg_toplevel parent" test
+(adapter.c's `ordinary` command) now cover every app, video included.
+Closing a card sends only the ordinary xdg_toplevel close, like any other
+app; there is no compositor-side video-stop hook -- see
+nix/video-session.py for how the session controller itself now tells "the
+user closed the window" from "the decoder died" (first-frame-seen).
 
 This test uses the synthetic k230-video-software app_id as an ordinary card
 fixture (a real mpv/video decode is out of scope for a headless-QEMU check;
@@ -27,12 +36,8 @@ cross-built Sway under qemu-riscv64-static with injected touch:
     switchability that way rather than guessing a drag direction);
   * requesting its close (the same `card_shell close` route every card
     uses, close-timeout coverage in tests/card_shell_runtime.py's own suite
-    already exercises this exact IPC path) both sends the ordinary
-    xdg_toplevel close and invokes the video-stop helper
-    (`SWAY_K230_CARD_VIDEO_STOP ... stop`) exactly once -- the fix for the
-    session controller otherwise being unable to tell "the user closed it"
-    from "the decoder died" and relaunching a fallback player right after
-    close;
+    already exercises this exact IPC path) sends the ordinary xdg_toplevel
+    close and nothing else compositor-side;
   * the other ordinary card is unaffected and the deck remains usable with
     one fewer card.
 
@@ -57,16 +62,15 @@ SWAY_CONF = (
     'output HEADLESS-1 mode 568x1232\n'
     'seat seat0 fallback true\n'
     'focus_follows_mouse no\n'
-    'for_window [app_id="^k230.card."] card_shell ordinary, floating enable, '
+    # One rule for every app_id, video's historical one included -- proving
+    # it needs no separate match, unlike the two-rule setup this replaced.
+    'for_window [app_id=".+"] card_shell ordinary, floating enable, '
     'border none, resize set 100 ppt 100 ppt, move position 0 0\n'
-    'for_window [app_id="^k230-video-(software|mvx)$"] card_shell ordinary, '
-    'floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0\n'
 )
 
 
 class _Session:
-    def __init__(self, sway, client, directory, video_stop_helper,
-                 qemu='/usr/bin/qemu-riscv64-static'):
+    def __init__(self, sway, client, directory, qemu='/usr/bin/qemu-riscv64-static'):
         self.sway_bin = sway
         self.client_bin = client
         self.qemu = qemu
@@ -74,7 +78,6 @@ class _Session:
         self.children = []
         self.streams = []
         self.log = None
-        self.video_stop_helper = video_stop_helper
 
     def __enter__(self):
         self.dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -83,8 +86,7 @@ class _Session:
         self.env = dict(os.environ, XDG_RUNTIME_DIR=str(self.dir), WLR_BACKENDS='headless',
                          WLR_HEADLESS_OUTPUTS='1', WLR_RENDERER='pixman',
                          SWAY_K230_CARD_SHELL='1', SWAY_K230_CARD_TOUCH_FIRST='1',
-                         SWAY_K230_CARD_TEST_INPUT='1',
-                         SWAY_K230_CARD_VIDEO_STOP=str(self.video_stop_helper))
+                         SWAY_K230_CARD_TEST_INPUT='1')
         self.log = (self.dir / 'sway.log').open('w')
         self.sway = subprocess.Popen([self.qemu, self.sway_bin, '-c', str(config), '-d'],
                                       env=self.env, stdout=self.log, stderr=self.log)
@@ -209,19 +211,12 @@ class _Session:
 
 
 class VideoCardTests(unittest.TestCase):
-    def test_video_is_ordinary_switchable_and_close_stops_controller(self):
+    def test_video_is_ordinary_switchable_and_close_sends_only_xdg_close(self):
         sway, client = binaries()
         names = ['k230.card.one', 'k230-video-software']
         with tempfile.TemporaryDirectory(prefix='card-shell-video-') as directory:
             session_dir = Path(directory) / 'session'
-            stop_log = Path(directory) / 'video-stop-calls.jsonl'
-            helper = Path(directory) / 'video-stop-helper'
-            helper.write_text(
-                '#!/bin/sh\n'
-                f'printf "%s\\n" "$*" >> "{stop_log}"\n'
-            )
-            helper.chmod(0o700)
-            with _Session(sway, client, session_dir, helper) as session:
+            with _Session(sway, client, session_dir) as session:
                 # Started and waited for in sequence, not concurrently: the
                 # deck's own card order (shell.cards, populated in
                 # card_shell_observe's view-map order) follows whichever
@@ -293,20 +288,17 @@ class VideoCardTests(unittest.TestCase):
                 # this IPC path requests a close on the currently selected
                 # card, the same route the bottom-edge throw-to-close
                 # gesture resolves to; not a special video-only control.
-                self.assertFalse(stop_log.exists(), 'stop helper must not fire before a close')
+                # There is no compositor-side video-stop hook to check for
+                # anymore: only the ordinary xdg_toplevel close is sent, and
+                # the fake client here exits on that alone.
                 session.command('close')
                 session._wait(lambda: 'K230_CARD_SHELL close-request' in session._logs())
                 session._wait(lambda: video.poll() is not None, seconds=10)
-                session._wait(lambda: stop_log.exists(), seconds=10)
 
                 # The other ordinary card is unaffected and remains a card.
                 self.assertIsNone(one.poll(), 'the other ordinary card must be unaffected by the close')
                 session._wait(lambda: session.card_count() == 1)
                 self.assertEqual(session.selected_app_id(), 'k230.card.one')
-
-            calls = stop_log.read_text().splitlines()
-            self.assertEqual(calls, ['stop'],
-                              f'video-stop helper must be invoked exactly once with "stop": {calls}')
 
 
 if __name__ == '__main__':

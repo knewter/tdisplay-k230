@@ -150,6 +150,24 @@ class VideoSessionTest(unittest.TestCase):
             self.assertIn("--vd=h264", invocations[1])
             self.assertNotIn("--container-fps-override=30", invocations[1])
 
+    def test_mvx_exit_after_first_frame_does_not_fall_back(self):
+        # A closed window is now indistinguishable, at the process level,
+        # from a decoder that exits non-zero for some other reason after
+        # already playing: there is no compositor-side signal telling this
+        # controller "the user closed it" anymore (card-shell just sends
+        # the ordinary xdg_toplevel close, like any other app). The one
+        # thing that must never happen either way is relaunching the
+        # software fallback once real playback was already shown.
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            player = self.fake_player(root,
+                "printf '%s\\n' 'V:  00:00:01 / 00:10:34 (0%) Dropped: 0'\n"
+                "exit 13\n")
+            result = self.run_session(root, player, "run-mvx")
+            self.assertEqual(result.returncode, 13, result.stderr)
+            self.assertNotIn("falling back", result.stderr)
+            self.assertEqual(len((root / "args").read_text().splitlines()), 1)
+
     def test_unresponsive_player_is_stopped_by_deadline(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)

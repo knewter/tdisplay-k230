@@ -615,24 +615,22 @@ let
 
     ${lib.optionalString cfg.coherentShell ''
       # Sway classifies transients as floating before for_window matching.
-      # Maximize ordinary tiling apps, preserving dialog geometry and the
-      # video rule below. Home is the live deck, not a tab strip.
+      # Maximize every ordinary app window -- tiling or floating alike, so
+      # a client that reports a fixed (non-resizable) size, which sway's
+      # own placement heuristic otherwise treats like a dialog (see
+      # xdg_shell.c's wants_floating: min==max size), still gets the same
+      # ordinary-maximized, swipeable, closable card treatment as any other
+      # app. This one rule used to be two: a [tiling]-only rule for most
+      # apps plus a separate app_id match for mpv (k230-video-software/
+      # k230-video-mvx), whose wlshm surface maps floating rather than
+      # tiling purely because of that same fixed-size heuristic -- nothing
+      # about it was actually video-specific. adapter.c's `ordinary`
+      # command handler still refuses a real transient/popup (one with an
+      # xdg_toplevel parent) under this same match. Home is the live deck,
+      # not a tab strip.
       floating_maximum_size -1 x -1
       default_floating_border none
-      for_window [tiling app_id="^(?!k230-video-(software|mvx)$).+"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
-
-      # k230-video-software/k230-video-mvx (mpv, see video-session.py) used
-      # to stay a small 480x270/568x320 floating window with no card, no
-      # swipe-up-to-close, and no other close affordance in this touch-only
-      # shell -- see nix/card-shell/adapter.c's now-removed "video and
-      # transient views stay unmarked" exclusion and docs/evidence/
-      # card-shell/video-card/. mpv's wlshm surface maps floating rather
-      # than tiling (the same reason the rule above needs [tiling]), so it
-      # needs its own rule here to reach the identical ordinary-maximized,
-      # swipeable, closable treatment every other app gets. card_shell.c's
-      # `ordinary` handler keeps refusing a real transient/popup view even
-      # under this same app_id match.
-      for_window [app_id="^k230-video-(software|mvx)$"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
+      for_window [app_id=".+"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
     ''}
 
     ${lib.optionalString (!cfg.coherentShell) ''
@@ -1101,13 +1099,7 @@ in
         SWAY_K230_KEYBOARD_HEIGHT = toString cfg.keyboardHeight;
         SWAY_K230_KEYBOARD_SIGNAL = "${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
-        SWAY_K230_CARD_SCALED_CACHE = "0";
-        # card-shell's own close request always sends the video card's
-        # xdg_toplevel a close event first; this additionally asks the
-        # video-session.py controller itself to stop, so a close cannot be
-        # mistaken for a decode failure and relaunch a fallback mpv -- see
-        # card_shell_video_stop's doc in nix/card-shell/route.h.
-        SWAY_K230_CARD_VIDEO_STOP = "${videoSession}/bin/k230-video-session";
+        SWAY_K230_CARD_SCALED_CACHE = "1";
       } // lib.optionalAttrs cfg.initialSplash {
         # The derivation validates the fixed raw B,G,R,X asset before adding
         # it above layer-shell backgrounds. It is absent from the daily service.

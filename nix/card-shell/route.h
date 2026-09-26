@@ -38,16 +38,4 @@ uint16_t card_shell_reveal_progress(const struct card_shell_drawer_gesture *gest
 /* Spawns one trusted, absolute helper path with fixed arguments. Never waits
  * inside the compositor event loop for the layer client to map. */
 bool card_shell_launch_surface(const char *surface);
-/* Spawns `$SWAY_K230_CARD_VIDEO_STOP stop` (the k230-video-session
- * controller): sending the xdg_toplevel close request alone leaves the
- * video-session.py controller unsignalled, so it never learns its mpv child
- * exited by request rather than by decode failure -- in MVX mode that
- * looks exactly like "decoder failed" and the controller relaunches a
- * fresh software-fallback mpv/window right after the card was closed. This
- * always additionally asks the controller itself to stop, which sends the
- * session its own SIGTERM, marks it cancelled, and tears down the whole
- * process group -- no orphaned player, no surprise relaunch. Best-effort:
- * a missing/unset helper is not itself a close failure, since the ordinary
- * xdg_toplevel close still applies. */
-bool card_shell_video_stop(void);
 #endif

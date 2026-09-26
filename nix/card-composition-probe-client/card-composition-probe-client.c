@@ -258,9 +258,10 @@ int main(int argc,char **argv) {
     }
     /* k230-video-software/k230-video-mvx: real mpv app IDs, accepted here so
      * video-card QEMU regressions (tests/test_card_shell_video_card.py) can
-     * exercise card_shell's video_app_id() routing with a real mapped
-     * surface instead of the synthetic k230.card.* fixtures, which the
-     * compositor's video_app_id() check would never match. */
+     * exercise the generic ordinary-card path under mpv's own historical
+     * app_id, proving nothing about it is actually special-cased anymore --
+     * the compositor treats it exactly like the synthetic k230.card.*
+     * fixtures below. */
     if (strcmp(a.id,"k230.card.one") && strcmp(a.id,"k230.card.two") && strcmp(a.id,"k230.card.three") &&
         strcmp(a.id,"k230-video-software") && strcmp(a.id,"k230-video-mvx"))
         return 64;

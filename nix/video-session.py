@@ -107,11 +107,20 @@ class PlayerOutput:
     """
     premature = re.compile(
         rb"(?:^|[\r\n])\[ffmpeg\] https?: Stream ends prematurely at ([0-9]+), should be ([0-9]+)[\r\n]")
+    # mpv's own terminal status line ("V:  00:00:01 / 00:10:34 (0%) ...")
+    # appears only once a decoded video frame has actually been shown; a
+    # closed window (the card shell's ordinary xdg_toplevel close, no
+    # different from any other app now) and a decoder that never produced
+    # a frame both make mpv exit, often with the same nonzero code, so this
+    # is the one signal that tells them apart without any compositor-side
+    # hook back to this controller.
+    first_frame_marker = re.compile(rb"(?:^|[\r\n])\s*V:\s")
 
     def __init__(self, stream, public_log=None):
         self.stream, self.public_log = stream, public_log
         self.tail = b''
         self.truncated_http = False
+        self.first_frame_seen = False
         os.set_blocking(stream.fileno(), False)
 
     def feed(self, data):
@@ -119,6 +128,8 @@ class PlayerOutput:
         for match in self.premature.finditer(joined):
             if int(match[1]) < int(match[2]):
                 self.truncated_http = True
+        if self.first_frame_marker.search(joined):
+            self.first_frame_seen = True
         # Bound retained diagnostics; never print this content for runtime URLs.
         self.tail = joined[-512:]
 
@@ -148,6 +159,7 @@ class Session:
         self.lock = None
         self.cancel_deadline = None
         self.transport_failed = False
+        self.first_frame_seen = False
 
     def signal(self, _signum, _frame):
         self.cancelled = True
@@ -220,7 +232,9 @@ class Session:
             if self.child is not None:
                 self.child.wait()
             reap_children()
-            if monitor is not None: monitor.stream.close()
+            if monitor is not None:
+                self.first_frame_seen = self.first_frame_seen or monitor.first_frame_seen
+                monitor.stream.close()
             if output is not None: output.close()
             try: self.socket.unlink()
             except FileNotFoundError: pass
@@ -251,7 +265,17 @@ class Session:
                 raise RuntimeError('MVX mode is limited to the public demo')
             if self.cancelled: return 143
             rc, timed = self.run_once(self.mode, source)
-            if self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled and not self.transport_failed:
+            # A closed window (the card shell's close is now the same
+            # ordinary xdg_toplevel close every app gets, with no
+            # compositor-side hook back to this controller -- see
+            # nix/card-shell/route.c) and a decoder that failed before ever
+            # showing a frame can both make mpv exit nonzero here. Only the
+            # latter is a real reason to fall back: once a frame was shown,
+            # whatever the exit code, the session already did its job and
+            # the user (or the compositor closing the card) is why it
+            # ended, not the decoder.
+            if (self.mode == 'mvx' and rc != 0 and not timed and not self.cancelled
+                    and not self.transport_failed and not self.first_frame_seen):
                 print('MVX decoder failed; falling back to software H.264', file=sys.stderr)
                 if os.environ.get('K230_VIDEO_TEST_FALLBACK_DELAY'):
                     time.sleep(float(os.environ['K230_VIDEO_TEST_FALLBACK_DELAY']))

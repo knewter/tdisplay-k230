@@ -278,12 +278,3 @@ bool card_shell_launch_surface(const char *surface) {
 	/* Sway ignores SIGCHLD, so an exited helper cannot leave a zombie. */
 	return posix_spawn(&pid, path, NULL, NULL, argv, environ) == 0;
 }
-
-bool card_shell_video_stop(void) {
-	const char *path = getenv("SWAY_K230_CARD_VIDEO_STOP");
-	if (!path || path[0] != '/' || !path[1])
-		return false;
-	char *const argv[] = {(char *)path, "stop", NULL};
-	pid_t pid;
-	return posix_spawn(&pid, path, NULL, NULL, argv, environ) == 0;
-}

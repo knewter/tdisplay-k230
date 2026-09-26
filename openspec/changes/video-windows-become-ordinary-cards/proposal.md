@@ -1,3 +1,12 @@
+> **Superseded in part** by `the-card-shell-has-no-video-special-case`:
+> per the user's own principle ("there should not be any special-case
+> shit for video ... it should just show the window because it's a
+> compositor"), task 2.1's `card_shell_video_stop`/
+> `SWAY_K230_CARD_VIDEO_STOP` close hook and task 3.1's video-only
+> frozen-thumbnail path are both removed and replaced by generic
+> mechanisms that apply to every card. This history is left as-is; see
+> the newer change for what actually ships now.
+
 ## Why
 
 A person cannot close network video today. `k230-video-software` and

@@ -4,7 +4,8 @@
 #include <pixman.h>
 
 bool card_scale_rgb565(void *dst, size_t dst_stride, int dst_width, int dst_height,
-		const void *src, size_t src_stride, int src_width, int src_height, uint32_t src_format) {
+		const void *src, size_t src_stride, int src_width, int src_height, uint32_t src_format,
+		bool fast) {
 	if (!dst || !src || dst_width <= 0 || dst_height <= 0 || src_width <= 0 || src_height <= 0 ||
 		(dst_stride & 3) || (src_stride & 3) || dst_stride > INT_MAX || src_stride > INT_MAX ||
 		(size_t)dst_width > SIZE_MAX / 2 || dst_stride < (size_t)dst_width * 2 ||
@@ -33,7 +34,7 @@ bool card_scale_rgb565(void *dst, size_t dst_stride, int dst_width, int dst_heig
 		pixman_double_to_fixed((double)src_height / dst_height));
 	pixman_image_set_transform(source, &transform);
 	pixman_image_set_repeat(source, PIXMAN_REPEAT_PAD);
-	pixman_image_set_filter(source, PIXMAN_FILTER_BILINEAR, NULL, 0);
+	pixman_image_set_filter(source, fast ? PIXMAN_FILTER_NEAREST : PIXMAN_FILTER_BILINEAR, NULL, 0);
 	pixman_image_composite32(PIXMAN_OP_SRC, source, NULL, target, 0, 0, 0, 0, 0, 0,
 		dst_width, dst_height);
 	pixman_image_unref(target);

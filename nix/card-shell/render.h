@@ -49,7 +49,8 @@ struct wlr_scene_buffer *card_plate_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height, double radius,
 		const float stroke_rgba[4], double stroke_width);
 void card_brush_solid_color(const struct card_brush *brush, float out[4]);
-struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height);
+struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height,
+		bool fast);
 size_t card_scaled_buffer_bytes(void);
 void card_clip_buffer(struct wlr_scene_buffer *copy, struct wlr_scene_buffer *source, double scale,
 					  int x, int y, int parent_x, int parent_y, struct wlr_box clip);
