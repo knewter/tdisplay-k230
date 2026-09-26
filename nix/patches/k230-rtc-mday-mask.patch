@@ -1,0 +1,24 @@
+Fix the K230 RTC driver's day-of-month read mask.
+
+k230_rtc_read_time() masks the packed RTC_DATE register's day field with
+0xf (4 bits, max 15) instead of 0x1f (5 bits, needed for 1..31). The write
+side (k230_rtc_set_time()) shifts the full tm_mday into the same field
+with no mask at all, so the hardware register itself holds the correct
+value; only the read-back path truncates it.
+
+Board evidence: `hwclock --set` to day 15 reads back 15 (15 & 0xf == 15,
+masking has no visible effect below 16), but day 26 reads back 10
+(0b11010 & 0b01111 == 0b01010 == 10) -- exactly the bit-4 drop this mask
+produces. See docs/evidence/rtc/ for the full before/after transcript.
+
+--- a/drivers/rtc/rtc-k230.c
++++ b/drivers/rtc/rtc-k230.c
+@@ -133,7 +133,7 @@ static int k230_rtc_read_time(struct device *dev, struct rtc_time *tm)
+ 	tm->tm_hour = (time_value >> TIME_HOUR_OFFSET) & 0x1f;
+ 	tm->tm_wday = (time_value >> TIME_WEEK_OFFSET) & 0x7;
+ 	tm->tm_mon  = ((date_value >> DATE_MONTH_OFFSET) & 0xf) - 1;
+-	tm->tm_mday = (date_value >> DATE_DAY_OFFSET) & 0xf;
++	tm->tm_mday = (date_value >> DATE_DAY_OFFSET) & 0x1f;
+ 	century = (date_value >> DATE_YEAR_H_OFFSET) & 0x7f;
+ 	year = (date_value >> DATE_YEAR_L_OFFSET) & 0x7f;
+ 	tm->tm_year = century * 100 + year;

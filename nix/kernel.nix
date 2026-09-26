@@ -74,6 +74,13 @@ buildLinux (args // {
       # byte-for-byte at the hunk context, so it applies unmodified to our
       # pinned tree. See docs/evidence/max98357a-speaker.md.
       ../nix/patches/canaan-audio-external-i2s-switch.patch
+
+      # the-clock-survives-a-reboot, board finding: k230_rtc_read_time()
+      # masks the day-of-month field with 0xf (4 bits) instead of 0x1f
+      # (5 bits, needed for 1..31), silently dropping bit 4. Board
+      # evidence: day 26 read back as 10 (0b11010 & 0b01111 == 0b01010).
+      # See docs/evidence/rtc/.
+      ../nix/patches/k230-rtc-mday-mask.patch
     ];
 
     postPatch = ''
