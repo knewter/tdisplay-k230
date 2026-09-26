@@ -358,6 +358,55 @@ struct wlr_scene_buffer *card_plate_scene(struct wlr_scene_tree *tree,
 	wlr_buffer_drop(&b->base);
 	return node;
 }
+/* One corner of a rounded-rect mask, painted ON TOP of otherwise-square live
+ * content to make it read as rounded without touching the mirrored pixels
+ * themselves or clipping the whole card every frame: a `size`x`size` patch,
+ * opaque `rgba` everywhere except within a quarter-circle of radius `size`
+ * centered at the patch's *inner* corner (`center_right`/`center_bottom`
+ * pick which corner of the patch that is, i.e. which corner of the card
+ * this patch sits at) -- that circle is left fully transparent, so the
+ * live content underneath still shows through there, while the true outer
+ * corner (square, outside the circle) gets painted over in `rgba`,
+ * visually "cutting" a round corner out of a square card. Four of these
+ * (one per card corner) replace a full plate/bezel behind the content
+ * (finding: the operator rejected a padded plate -- "the cards have some
+ * background behind them ... they should just be cards"). Callers cache
+ * the result per (size, rgba) the same way `card_plate_scene`'s caller
+ * already caches per (width, height, brush, radius); this function itself
+ * does no caching. */
+struct wlr_scene_buffer *card_corner_mask_scene(struct wlr_scene_tree *tree, int size,
+		bool center_right, bool center_bottom, const float rgba[4]) {
+	if (!tree || size <= 0 || size > 256) return NULL;
+	size_t bytes = (size_t)size * (size_t)size * 4;
+	if (bytes > GRADIENT_BYTES_LIMIT - gradient_bytes) return NULL;
+	struct label_buffer *b = calloc(1, sizeof(*b));
+	if (!b) return NULL;
+	b->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	if (cairo_surface_status(b->surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(b->surface); free(b); return NULL;
+	}
+	cairo_t *cr = cairo_create(b->surface);
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr); cairo_surface_destroy(b->surface); free(b); return NULL;
+	}
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, rgba[0], rgba[1], rgba[2], rgba[3]);
+	cairo_paint(cr);
+	cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+	cairo_arc(cr, center_right ? size : 0, center_bottom ? size : 0, size, 0,
+		2 * 3.14159265358979323846);
+	cairo_fill(cr);
+	bool painted = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+	cairo_destroy(cr);
+	if (!painted) { cairo_surface_destroy(b->surface); free(b); return NULL; }
+	cairo_surface_flush(b->surface);
+	b->gradient_bytes = bytes;
+	wlr_buffer_init(&b->base, &impl, size, size);
+	gradient_bytes += bytes;
+	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
+	wlr_buffer_drop(&b->base);
+	return node;
+}
 /* Clip the transformed source in output space, then return to buffer space.
  * The clip is shared by every card descendant, including desynced children. */
 void card_clip_buffer(struct wlr_scene_buffer *copy, struct wlr_scene_buffer *source, double scale,

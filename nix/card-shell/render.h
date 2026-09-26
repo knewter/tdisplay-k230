@@ -42,12 +42,18 @@ struct wlr_scene_buffer *card_brush_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height);
 /* A rounded-rect card plate: the brush fill clipped to a rounded rectangle,
  * with an optional stroked rim (stroke_rgba[3] <= 0 or stroke_width <= 0
- * skips the stroke). Used for both the live-card bezel and the non-live
- * placeholder shape, so a themed brush colours either one (webOS-style card
- * fix: no full-bleed coloured plate behind a live snapshot). */
+ * skips the stroke). Used only for the non-live placeholder shape (private/
+ * unavailable content, which has no live pixels of its own to round) --
+ * live cards use `card_corner_mask_scene` below instead, painted over the
+ * live content rather than behind it, per the operator's rejection of a
+ * visible plate/background behind live cards. */
 struct wlr_scene_buffer *card_plate_scene(struct wlr_scene_tree *tree,
 		const struct card_brush *brush, int width, int height, double radius,
 		const float stroke_rgba[4], double stroke_width);
+/* One corner of a rounded-rect mask painted over otherwise-square live
+ * content -- see the function's own doc comment in render.c. */
+struct wlr_scene_buffer *card_corner_mask_scene(struct wlr_scene_tree *tree, int size,
+		bool center_right, bool center_bottom, const float rgba[4]);
 void card_brush_solid_color(const struct card_brush *brush, float out[4]);
 struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height,
 		bool fast);

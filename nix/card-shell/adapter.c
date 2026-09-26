@@ -65,12 +65,34 @@ struct card {
 	uint64_t id;
 	enum cs_content content;
 	struct wlr_scene_tree *tree, *pixels;
-	/* The card's own rounded, bordered bezel: tight to the live content's
-	 * aspect-fit box, never the full deck slot (finding: bare-app-cards --
-	 * a full-slot coloured plate read as letterboxing around the snapshot). */
+	/* Non-live placeholder only (private/unavailable content): a rounded,
+	 * filled plate standing in for the missing live pixels. A live card has
+	 * none of these four fields ever populated -- see card_corner instead. */
 	struct wlr_scene_buffer *plate;
 	struct card_brush plate_brush;
 	int plate_width, plate_height;
+	/* The radius the plate was last rasterized at: normally exactly
+	 * CARD_CORNER_RADIUS, but interpolated down to 0 while entering/expanding
+	 * (see sync_card) so opening/closing a card morphs the corner radius
+	 * smoothly instead of popping between square and rounded. Tracked
+	 * alongside plate_width/plate_height in the rebuild-if-changed check so
+	 * a mid-transition frame whose box size happens not to change still
+	 * picks up its new radius. */
+	double plate_radius;
+	/* Live content only: four small corner-mask patches (top-left,
+	 * top-right, bottom-left, bottom-right, in that fixed order) painted
+	 * ON TOP of the mirrored content -- see card_corner_mask_scene's own
+	 * doc comment. Each is independently NULL/disabled once the current
+	 * radius is 0 (a full-screen card has square corners and needs none).
+	 * corner_radius_px/corner_color are this card's own last-built radius
+	 * (quantised to whole pixels, bounding rebuild frequency during the
+	 * entry/expand morph to at most once per integer pixel of travel) and
+	 * backdrop colour, compared before rebuilding all four together --
+	 * the same "compare, then rebuild only if changed" pattern
+	 * card_background already uses for the plate. */
+	struct wlr_scene_buffer *corner[4];
+	int corner_radius_px;
+	float corner_color[4];
 	struct wlr_scene_buffer *label;
 	char *label_text;
 	struct wlr_scene_buffer *label_icon;
@@ -84,11 +106,13 @@ struct card {
 	bool hidden, original_enabled;
 	double scale;
 	int x, y, pixel_x, pixel_y;
-	/* The plate: the content's aspect-fit box padded out by CARD_PLATE_PAD on
-	 * every side, so the rounded/bordered plate is never fully hidden behind
-	 * the (square-cornered) live pixels it sits under. box_x/box_y is its
-	 * origin, box_width/box_height its size; pixel_x/pixel_y (the mirror
-	 * origin) sits CARD_PLATE_PAD inside it. */
+	/* The content's own aspect-fit box within the card's slot -- exactly
+	 * equal to pixel_x/pixel_y/(scale*geometry) now that there is no plate
+	 * padding to hold room for (the operator's ask: the card IS the app
+	 * content, no inset margin). Corner masks are positioned at this box's
+	 * four corners, not the slot's, so a letterboxed app (whose own aspect
+	 * ratio differs from the card's) gets its rounding where its visible
+	 * content actually ends, not at the empty slot edges. */
 	int box_x, box_y, box_width, box_height;
 	bool source_valid;
 	int source_x, source_y;
@@ -166,26 +190,48 @@ static struct {
 static const float backdrop[4] = {.067, .094, .153, 1};
 static const float card_color[4] = {.141, .286, .353, 1};
 static const float selected_color[4] = {.184, .420, .310, 1};
-/* webOS-style card plate: a small rounded, bordered bezel hugging the live
- * snapshot's own aspect-fit box, not a full-bleed rectangle behind it. The
- * radius stays a couple of px under the pad any caller leaves around the
- * mirrored content, so the bezel's rounded corner never cuts into the
- * (square-cornered) live pixels sitting on top of it. */
-#define CARD_PLATE_RADIUS 8.0
+/* Android-recents-style corner radius, applied at the card's own scale
+ * (docs/design/shell-polish-review-2026-09.md's requested 24-28px "at the
+ * card's scale", chosen now that the overview's card is itself much larger:
+ * cs_default_config's 80%-of-panel card, up from 50%).
+ *
+ * The operator explicitly rejected a visible plate/background behind live
+ * content: "when i swipe up to see active windows the cards have some
+ * background behind them that's no good they should just be cards." A live
+ * card therefore has NO plate and NO padding margin -- the mirrored content
+ * fills the entire card slot (see sync_card), and rounding is achieved by
+ * painting four small corner-mask patches (`card_corner_mask_scene`,
+ * `card_corners_sync` below) ON TOP of the content's own square corners,
+ * in the deck's backdrop colour, rather than by inset framing. Only the
+ * non-live placeholder shape (private/unavailable content, which has no
+ * live pixels of its own) still uses a plate (`card_background`,
+ * `card_plate_scene`) sized to the same radius, since there rounding the
+ * plate directly is both correct and cheaper -- nothing sits on top of it
+ * to preserve. */
+#define CARD_CORNER_RADIUS 26.0
 #define CARD_PLATE_STROKE_UNSELECTED 1.5
 #define CARD_PLATE_STROKE_SELECTED 3.0
-/* Per-side margin between the live snapshot and the plate's outer edge.
- * Must stay >= CARD_PLATE_RADIUS: the plate's rounded corner is cut within
- * this margin, so the (square) live content inset by this much never pokes
- * out past the rounded silhouette, and the stroked rim always has room to
- * show. */
-#define CARD_PLATE_PAD 10.0
 static uint32_t argb_from_float(const float rgba[4]) {
 	uint32_t a = (uint32_t)lround(rgba[3] * 255.0f) & 0xff;
 	uint32_t r = (uint32_t)lround(rgba[0] * 255.0f) & 0xff;
 	uint32_t g = (uint32_t)lround(rgba[1] * 255.0f) & 0xff;
 	uint32_t b = (uint32_t)lround(rgba[2] * 255.0f) & 0xff;
 	return (a << 24) | (r << 16) | (g << 8) | b;
+}
+/* The deck canvas's representative flat colour: the themed canvas brush's
+ * solid colour when a theme is active, else the fixed default `backdrop`.
+ * Shared by appearance_canvas_refresh (the canvas's own solid-fill
+ * fallback when its brush is not a gradient) and card_corners_sync (a
+ * corner mask must erase to whatever is immediately behind the card, i.e.
+ * this same colour), so the two never drift onto two different notions of
+ * "the backdrop colour". A multi-stop gradient canvas is approximated by
+ * its own solid colour here too: corner masks are a handful of ~26x26px
+ * patches, and the local difference between a gradient's true colour and
+ * this flat approximation over that small an area is not worth sampling
+ * the gradient per pixel for. */
+static void canvas_solid_color(float out[4]) {
+	if (shell.appearance_enabled) card_brush_solid_color(&shell.appearance.canvas, out);
+	else memcpy(out, backdrop, sizeof(float) * 4);
 }
 /* A themed card/selected brush already differs by colour; the unthemed
  * default becomes a one-stop brush of the same fixed colours so every card
@@ -490,8 +536,7 @@ static bool appearance_canvas_refresh(void) {
 			shell.output->lx, shell.output->ly + cfg->top_reserved);
 	}
 	float rgba[4];
-	if (shell.appearance_enabled) card_brush_solid_color(brush, rgba);
-	else memcpy(rgba, backdrop, sizeof(rgba));
+	canvas_solid_color(rgba);
 	if (shell.appearance_enabled && shell.appearance.wallpaper &&
 		!shell.appearance.canvas_authored) rgba[3] = 0;
 	wlr_scene_rect_set_color(shell.canvas, rgba);
@@ -587,6 +632,10 @@ static void clear_card(struct card *c) {
 	free(c->label_icon_key);
 	c->label_icon_key = NULL;
 	c->plate = NULL;
+	c->plate_width = c->plate_height = 0;
+	c->plate_radius = -1;
+	for (int i = 0; i < 4; i++) c->corner[i] = NULL;
+	c->corner_radius_px = -1;
 	free(c->label_text);
 	c->label_text = NULL;
 	if (c->hidden && live(c->view))
@@ -1129,26 +1178,36 @@ static void label_clip(struct wlr_scene_buffer *label, int x, int y, int px, int
 	source.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	card_clip_buffer(label, &source, 1, x, y, px, py, clip);
 }
-/* The card IS the live snapshot: a small rounded, bordered plate sized to
- * c->box_width/box_height (the content's own aspect-fit box, set by the
- * caller before this runs), positioned at c->pixel_x/pixel_y within the
- * card's tree -- never the full deck slot. A themed or default brush colours
- * the plate/rim; `selected` picks the brush and rim already used to
- * distinguish the current card, so selection reads as an outline change,
- * not a differently coloured full-bleed plate. */
-static bool card_background(struct card *c, bool selected, bool hidden) {
+/* Non-live placeholder only (private/unavailable content: see the caller's
+ * content-type gate). There is no live mirror to preserve here, so this
+ * draws a small rounded, filled-and-stroked plate directly at
+ * c->box_width/box_height (the content's nominal aspect-fit box) positioned
+ * at c->pixel_x/pixel_y -- this plate IS the whole visible card, not a
+ * frame around something else. `selected` picks the brush and rim already
+ * used to distinguish the current card.
+ *
+ * `radius` is normally CARD_CORNER_RADIUS, but the caller (sync_card)
+ * interpolates it down to 0 while entering/expanding, matching the live
+ * card's own corner-mask interpolation (card_corners_sync) so a
+ * private/unavailable card morphs identically to a live one. The plate is
+ * a cached, once-per-size Cairo rasterization (card_plate_scene), never a
+ * per-frame per-pixel mask; adding radius to the rebuild-if-changed check
+ * below only adds rebuilds during that card's own brief transition, never
+ * in steady state. */
+static bool card_background(struct card *c, bool selected, double radius) {
 	const struct card_brush *brush = card_brush_for(selected);
 	int width = c->box_width, height = c->box_height;
-	bool show = !hidden && width > 0 && height > 0;
+	bool show = width > 0 && height > 0;
 	if (show && (!c->plate || memcmp(&c->plate_brush, brush, sizeof(*brush)) != 0 ||
-			c->plate_width != width || c->plate_height != height)) {
+			c->plate_width != width || c->plate_height != height ||
+			c->plate_radius != radius)) {
 		float fill[4], stroke[4];
 		card_brush_solid_color(brush, fill);
 		plate_stroke_color(fill, selected, stroke);
 		double stroke_width =
 			selected ? CARD_PLATE_STROKE_SELECTED : CARD_PLATE_STROKE_UNSELECTED;
 		struct wlr_scene_buffer *next = card_plate_scene(c->tree, brush, width, height,
-			CARD_PLATE_RADIUS, stroke, stroke_width);
+			radius, stroke, stroke_width);
 		if (!next) return false;
 		wlr_scene_node_place_below(&next->node, &c->pixels->node);
 		if (c->plate) wlr_scene_node_destroy(&c->plate->node);
@@ -1156,10 +1215,79 @@ static bool card_background(struct card *c, bool selected, bool hidden) {
 		c->plate_brush = *brush;
 		c->plate_width = width;
 		c->plate_height = height;
+		c->plate_radius = radius;
 	}
 	if (c->plate) {
 		wlr_scene_node_set_enabled(&c->plate->node, show);
 		if (show) label_clip(c->plate, c->box_x, c->box_y, c->x, c->y, clip_box());
+	}
+	return true;
+}
+/* Live content only (see the caller's content-type gate): four small
+ * corner-mask patches (card_corner_mask_scene) painted ON TOP of the
+ * mirrored content's own square corners, in the deck's representative
+ * backdrop colour, so the card reads as rounded without any plate/rim
+ * behind it -- the operator's explicit rejection of a visible background:
+ * "when i swipe up to see active windows the cards have some background
+ * behind them that's no good they should just be cards."
+ *
+ * `radius` is normally CARD_CORNER_RADIUS, interpolated toward 0 by the
+ * caller while this specific card is morphing between full screen and a
+ * deck card. Quantised to the nearest whole pixel before comparing against
+ * this card's own last-built radius: over a ~160ms transition this bounds
+ * rebuilds to roughly one per pixel of radius travelled (at most
+ * CARD_CORNER_RADIUS of them, for the one or two cards actually animating)
+ * rather than one per frame at a slightly different fractional radius, at
+ * zero extra cost in steady state, where the quantised value stops
+ * changing entirely and the four cached buffers are simply repositioned
+ * every frame (label_clip only, no Cairo work) exactly like the old plate
+ * was. All four corners share one rebuild decision and one colour, since
+ * they are always painted at the same radius and the same backdrop colour
+ * together -- never a per-frame full-card pass, only ever four ~26x26px
+ * patches. */
+static bool card_corners_sync(struct card *c, double radius) {
+	int width = c->box_width, height = c->box_height;
+	bool show = width > 0 && height > 0;
+	int px = show ? (int)lround(radius) : 0;
+	if (px < 0) px = 0;
+	if (px > width / 2) px = width / 2;
+	if (px > height / 2) px = height / 2;
+	float rgba[4];
+	canvas_solid_color(rgba);
+	/* A fully transparent canvas (a live wallpaper reveal with no authored
+	 * card-deck colour) has no single flat colour a mask could correctly
+	 * erase to; skip rounding rather than paint a visibly wrong opaque
+	 * patch over the wallpaper. Square corners on that rare path are an
+	 * honest, visible degradation, not a silently wrong colour. */
+	bool paint = show && px > 0 && rgba[3] > 0;
+	/* center_right[i]/center_bottom[i]: where this corner's own arc centre
+	 * sits within its patch (card_corner_mask_scene's own convention),
+	 * indexed top-left, top-right, bottom-left, bottom-right -- matching
+	 * struct card's corner[4] order. Each patch's on-screen position is the
+	 * opposite corner of its box (the arc always curves toward the card's
+	 * centre), so the position loop below negates both flags. */
+	static const bool center_right[4] = {true, false, true, false};
+	static const bool center_bottom[4] = {true, true, false, false};
+	if (paint && (c->corner_radius_px != px || memcmp(c->corner_color, rgba, sizeof(rgba)) != 0 ||
+			!c->corner[0])) {
+		for (int i = 0; i < 4; i++) {
+			struct wlr_scene_buffer *next =
+				card_corner_mask_scene(c->tree, px, center_right[i], center_bottom[i], rgba);
+			if (!next) return false;
+			wlr_scene_node_place_above(&next->node, &c->pixels->node);
+			if (c->corner[i]) wlr_scene_node_destroy(&c->corner[i]->node);
+			c->corner[i] = next;
+		}
+		c->corner_radius_px = px;
+		memcpy(c->corner_color, rgba, sizeof(rgba));
+	}
+	for (int i = 0; i < 4; i++) {
+		if (!c->corner[i]) continue;
+		wlr_scene_node_set_enabled(&c->corner[i]->node, paint);
+		if (!paint) continue;
+		int lx = center_right[i] ? c->box_x : c->box_x + width - px;
+		int ly = center_bottom[i] ? c->box_y : c->box_y + height - px;
+		label_clip(c->corner[i], lx, ly, c->x, c->y, clip_box());
 	}
 	return true;
 }
@@ -1316,45 +1444,51 @@ static bool sync_card(struct card *c, size_t index) {
 		}
 	}
 	wlr_scene_node_set_position(&c->tree->node, c->x, c->y);
-	/* The content's own aspect-fit box within this frame's slot -- the whole
-	 * point of the fix: size the card from the app's aspect and the
-	 * available slot, not a full-bleed plate. Every content class (live,
-	 * private, unavailable) uses the view's real geometry, so a denied card
-	 * gets the same sensible card shape as a live one; geometry.width/height
-	 * is 0 only in a degenerate case, and then the slot itself stands in.
-	 *
-	 * The plate's pad is interpolated by the same entry/expand progress used
-	 * for r itself (matching label_space's old treatment below, before it
-	 * moved outside the card): at progress 0 -- the source view's own exact
-	 * geometry -- pad must be exactly 0, or the mirrored content starts life
-	 * a few px smaller than the real window it is shrinking from/growing
-	 * into, breaking the direct 1:1 finger-tracked scene the two-axis entry
-	 * gesture depends on (test_card_shell_two_axis_runtime.py measures the
-	 * tracked content's edge against the drag distance in raw pixels). Only
-	 * once the card has fully settled into the steady deck does it get the
-	 * full pad. */
+	/* The content's own aspect-fit box within this frame's slot, filling it
+	 * exactly -- no plate, no inset margin (the operator's ask: the card IS
+	 * the app content). Every content class (live, private, unavailable)
+	 * uses the view's real geometry, so a denied card gets the same
+	 * sensible card shape as a live one; geometry.width/height is 0 only in
+	 * a degenerate case, and then the slot itself stands in. */
 	{
 		int content_w = c->view->geometry.width, content_h = c->view->geometry.height;
 		if (content_w <= 0 || content_h <= 0) {
 			content_w = lround(r.width);
 			content_h = lround(r.height);
 		}
-		double pad = entering ? CARD_PLATE_PAD * shell.policy.entry_progress :
-			expanding ? CARD_PLATE_PAD * (1 - shell.policy.expand_progress) : CARD_PLATE_PAD;
-		double fit_w = r.width - 2 * pad, fit_h = r.height - 2 * pad;
-		if (fit_w < 1) fit_w = r.width;
-		if (fit_h < 1) fit_h = r.height;
-		c->scale = fmin(fit_w / content_w, fit_h / content_h);
+		c->scale = fmin(r.width / content_w, r.height / content_h);
 		double scaled_w = content_w * c->scale, scaled_h = content_h * c->scale;
 		c->pixel_x = lround((r.width - scaled_w) / 2);
 		c->pixel_y = lround((r.height - scaled_h) / 2);
 		wlr_scene_node_set_position(&c->pixels->node, c->pixel_x, c->pixel_y);
-		c->box_x = c->pixel_x - (int)lround(pad);
-		c->box_y = c->pixel_y - (int)lround(pad);
-		c->box_width = lround(scaled_w) + 2 * (int)lround(pad);
-		c->box_height = lround(scaled_h) + 2 * (int)lround(pad);
+		c->box_x = c->pixel_x;
+		c->box_y = c->pixel_y;
+		c->box_width = lround(scaled_w);
+		c->box_height = lround(scaled_h);
 	}
-	if (!card_background(c, index == shell.policy.selected, entering || expanding)) {
+	/* Corner radius morphs from 0 (a real full-screen app, square corners)
+	 * to CARD_CORNER_RADIUS (the settled deck card), tracking the same
+	 * progress fraction cs_entry_visual_rect/expand_progress already use to
+	 * grow/shrink this specific card's geometry -- but ONLY for the card(s)
+	 * actually undergoing that size morph (card_shown_large: the dragged
+	 * entry_id card, its full_clip companion, or the tap-expanded card),
+	 * not every card in the deck. `entering` alone is a mode-wide flag (true
+	 * for every ordinary, stationary neighbour too, while any app-switch
+	 * gesture is in progress) -- gating on it directly would flash every
+	 * other card's corners square for the duration of any switch gesture,
+	 * which is not what "the transition morphs the radius" means.
+	 * docs/design/shell-polish-review-2026-09.md task 3; corrected here
+	 * from that task's first pass, which computed this interpolation but
+	 * fed it to a plate that was unconditionally hidden throughout
+	 * entering/expanding, so it was never actually visible. */
+	bool morphing = card_shown_large(c);
+	double radius_progress = !morphing ? 1.0 :
+		entering ? shell.policy.entry_progress : 1 - shell.policy.expand_progress;
+	double corner_radius = CARD_CORNER_RADIUS * radius_progress;
+	bool background_ok = c->content == CS_LIVE ?
+		card_corners_sync(c, corner_radius) :
+		card_background(c, index == shell.policy.selected, corner_radius);
+	if (!background_ok) {
 		sway_log(SWAY_INFO,
 			"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=background-failed", c->id);
 		return false;
@@ -2363,11 +2497,13 @@ static void prepare_impl(struct sway_output *output) {
 	double available = cfg.height - cfg.top_reserved - cfg.bottom_reserved -
 						cfg.title_height - cfg.footer_height - 2 * cfg.inset;
 	cfg.entry_card_height = .72 * available;
-	/* The overview's own card: ~50% of the panel width, 60% of its height
-	 * (55-65% requested), matching cs_default_config's own fractions --
-	 * see that function's comment. */
-	cfg.card_width = .5 * cfg.width;
-	cfg.card_height = .6 * cfg.height;
+	/* The overview's own card: Android-recents-sized, 80% of the panel's
+	 * width AND 80% of its height (the same fraction on both axes, so the
+	 * card keeps the panel's own aspect ratio), matching cs_default_config's
+	 * own fractions -- see that function's comment and
+	 * docs/design/shell-polish-review-2026-09.md's overview section. */
+	cfg.card_width = .8 * cfg.width;
+	cfg.card_height = .8 * cfg.height;
 	/* Vertically centers (header+card) in the space between the title and
 	 * the footer, matching cs_default_config's own formula and
 	 * CS_CARD_HEADER_GAP(14)/CS_CARD_HEADER_H(44) -- kept in sync with

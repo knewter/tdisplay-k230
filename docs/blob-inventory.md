@@ -1361,6 +1361,17 @@ DATA 94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9  docs/evid
 DATA 536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c  docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png
 DATA 76883f6aba9647b6ba1a955827e81ff32958b1098926284f53584f3b6c0b63ed  docs/evidence/card-shell/live-card-cost/contact-sheet.png
 DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
+DATA e23a93dd46e8e71e426fe69a64ff62f5b25b6f21d6775569aaaf70d8416eb14b docs/evidence/card-shell/android-sized-cards/before-dark-01-overview.png
+DATA 7ab76ddf535b9afa85a9352c171a04bc6ae0fa13dc1ba9bb30962e218fec32a8 docs/evidence/card-shell/android-sized-cards/after-dark-01-overview.png
+DATA b05dd2e4b9ba2360c3acdde92be7038c434d2a434f1dc64d03a4bcdbdbb090c6 docs/evidence/card-shell/android-sized-cards/after-dark-02-scrolling.png
+DATA 162ddaff23783952002db30d211bafd24dc9077f17b8ee6b66d7e01a29cb4f1b docs/evidence/card-shell/android-sized-cards/after-dark-03-scrolled-settled.png
+DATA 6e7c57bf9caab91dbaf9ff787b461fb8092284f330d253b2be969ecfce203816 docs/evidence/card-shell/android-sized-cards/after-dark-04-after-close.png
+DATA 448bf14c8ddb44dcd4759148eed0aa382c0a15faa5c871f62676d3850ef31e57 docs/evidence/card-shell/android-sized-cards/after-dark-05-opened.png
+DATA 1203ce115fe26c2c265557a2cd5c682d95689cb10d34c77f62a975dd90edecce docs/evidence/card-shell/android-sized-cards/after-light-01-overview.png
+DATA 252fc87612016dd2d35850f6998926262bf8e5bf9430c64f421410c3b9992b11 docs/evidence/card-shell/android-sized-cards/after-light-02-scrolling.png
+DATA 929f38b6fc3e08f3e897a5ebe0ff300f7590d88ffaa0b449adfeeaff24bad795 docs/evidence/card-shell/android-sized-cards/after-light-03-scrolled-settled.png
+DATA 534dce6734787e1dd7592602c1681d5f1dcc05dcb26f8fcb4e15e3d180a1bc37 docs/evidence/card-shell/android-sized-cards/after-light-04-after-close.png
+DATA 3cb7e6ad7c8dea8b739bbd2505b4c0e847163fa8ff501aff6dbfc1376c13d748 docs/evidence/card-shell/android-sized-cards/after-light-05-opened.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

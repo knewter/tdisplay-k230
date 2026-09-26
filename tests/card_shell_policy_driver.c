@@ -40,9 +40,16 @@ static void horizontal(void) {
     struct cs_policy p=setup();cs_enter(&p,101);
     struct cs_rect a=cs_card_rect(&p,0),b=cs_card_rect(&p,1);
     assert(b.x>a.x+a.width && b.y==a.y);
-    down(&p,10);cs_motion(&p,1,p.down_x-180,p.down_y+3,100);
-    assert(fabs(cs_card_rect(&p,0).x-(a.x-180))<.001);
-    assert(fabs(cs_card_rect(&p,1).x-(b.x-180))<.001);
+    /* A drag expressed as a fraction of the pitch (not a fixed pixel
+     * literal) so this test keeps meaning "well past half a card" however
+     * big the overview's own card is -- see overview_geometry's Android-
+     * recents sizing, which made the pitch much wider than the pixel
+     * literal this test used to hardcode. */
+    double pitch=p.config.card_width+p.config.gap;
+    double drag=pitch*.6;
+    down(&p,10);cs_motion(&p,1,p.down_x-drag,p.down_y+3,100);
+    assert(fabs(cs_card_rect(&p,0).x-(a.x-drag))<.001);
+    assert(fabs(cs_card_rect(&p,1).x-(b.x-drag))<.001);
     assert(cs_card_rect(&p,0).y==a.y);
     struct cs_result r=cs_up(&p,1,101);
     assert(!(r.actions&(CS_EXPAND|CS_CLOSE)) && p.selected==1 && p.mode==CS_DECK);
@@ -52,10 +59,10 @@ static void horizontal(void) {
      * cs_tick settles it. */
     assert(p.scroll_settling);
     /* Continuous at release: card 1's x here equals its dragged position
-     * (b.x-180, checked above) now re-expressed relative to the new
-     * selected index -- dx_new = dx_old + delta*pitch = -180+294 = 114
-     * (pitch = card_width(284)+gap(10) at this policy's current sizing). */
-    assert(fabs(cs_card_rect(&p,1).x-(a.x+114))<.001);
+     * (b.x-drag, checked above) now re-expressed relative to the new
+     * selected index -- dx_new = dx_old + delta*pitch = -.6*pitch+pitch =
+     * .4*pitch. */
+    assert(fabs(cs_card_rect(&p,1).x-(a.x+.4*pitch))<.001);
     cs_tick(&p,101+240);
     assert(!p.scroll_settling);
     assert(fabs(cs_card_rect(&p,1).x-a.x)<.001);
@@ -63,43 +70,49 @@ static void horizontal(void) {
     assert(p.selected==0); /* clamp deck beginning; never unsigned underflow */
     cs_finish(&p);
 }
-/* The user's chosen webOS-fan overview: small enough that 2-3 cards sit on
- * screen at once (docs/design/shell-ux-critique.md #3), with the direct
- * bottom-edge app-switch gesture's own entry-target slot kept fully
- * independent of that sizing (card-shell-policy.h's cs_config comment). */
+/* The user's explicit "more like Android does" ask, superseding the earlier
+ * webOS-fan overview (docs/design/shell-ux-critique.md #3): the focused
+ * card is Android-recents-sized -- 80% of the panel on both axes, matching
+ * the panel's own aspect ratio -- with only a thin sliver of each neighbour
+ * peeking at the screen edges, not a 2-3 card fan. The direct bottom-edge
+ * app-switch gesture's own entry-target slot stays fully independent of
+ * that sizing (card-shell-policy.h's cs_config comment). */
 static void overview_geometry(void) {
     struct cs_policy p=setup();
     const struct cs_config *c=&p.config;
-    assert(c->card_width>=.45*c->width && c->card_width<=.55*c->width);
+    assert(c->card_width>=.75*c->width && c->card_width<=.85*c->width);
     double pitch=c->card_width+c->gap;
     double half_gap=(c->width-c->card_width)/2;
     assert(fabs(half_gap-cs_card_rect(&p,p.selected).x)<.001);
-    /* A legible neighbour peek at rest: at least 30% of a neighbour's own
-     * width on screen, versus the pre-fix ~8.7% the critique measured. */
+    /* A thin Android-recents-style peek at rest: some of a neighbour is on
+     * screen (not zero -- a person can still tell something else is open),
+     * but nowhere near the ~46%-of-card-width the prior webOS-fan pass
+     * showed, since the card itself now fills most of the panel. */
     double right_neighbor_visible=c->width-(half_gap+pitch);
-    assert(right_neighbor_visible>=.3*c->card_width);
-    /* This is a 2-3 card fan, not a wider multi-up carousel: a third card
-     * is never more than barely on screen. */
+    assert(right_neighbor_visible>0 && right_neighbor_visible<=.15*c->card_width);
+    /* A third card is never visible at all -- there is no room left once
+     * the focused card is 80% of the panel width, unlike the prior 2-3
+     * card fan. */
     double third_visible=c->width-(half_gap+2*pitch);
-    assert(third_visible<.15*c->card_width);
+    assert(third_visible<0);
     /* Decoupling: the direct-switch entry target stays exactly its own
      * fixed pre-fan formula regardless of card_width/card_height above --
      * this is what keeps that gesture's 30% width threshold, flick
-     * velocity, 1:1 tracking and full-size neighbour feel unchanged. (Now
-     * that the overview's own card is a substantial 60% of the panel
-     * height too, per board/real-glass review, the entry target is no
-     * longer necessarily larger than it -- exact-formula match, not a
-     * size comparison, is the real proof of independence.) */
+     * velocity, 1:1 tracking and full-size neighbour feel unchanged. The
+     * overview's own card is now itself close to full-panel size, so the
+     * entry target is no longer necessarily larger than it -- exact-formula
+     * match, not a size comparison, is the real proof of independence. */
     struct cs_rect entry_target=cs_entry_target_rect(&p);
     assert(fabs(entry_target.width-.84*(c->width-48))<.001);
     assert(fabs(entry_target.height-.72*(c->height-56-128-56-48))<.001);
     assert(c->card_width<=c->width-2*c->inset);
     assert(c->card_height<=c->height-c->top_reserved-c->bottom_reserved-
         c->title_height-c->footer_height-2*c->inset);
-    /* The user's requested 55-65% of the panel height, vertically centered
-     * (via card_top_offset) in the space between the title and the
-     * footer/hint, not sitting flush under the title. */
-    assert(c->card_height>=.55*c->height && c->card_height<=.65*c->height);
+    /* The user's requested ~80-85% of the panel height too, matching the
+     * width fraction so the card keeps the panel's own aspect ratio,
+     * vertically centered (via card_top_offset) in the space between the
+     * title and the footer/hint, not sitting flush under the title. */
+    assert(c->card_height>=.75*c->height && c->card_height<=.85*c->height);
     double band=c->height-c->top_reserved-c->bottom_reserved-c->title_height-c->footer_height;
     double block=c->card_top_offset+c->card_height;
     assert(block<=band);
@@ -127,17 +140,23 @@ static void scroll_fling_multi_card(void) {
     double pitch=p.config.card_width+p.config.gap;
     down(&p,10);
     /* Two real ~8ms-cadence samples with a clean, known velocity: the same
-     * touch_window_span selects exactly this pair (dt=8>=CS_ENTRY_MIN_SPAN_MS). */
-    cs_motion(&p,1,p.down_x-20,p.down_y,18);
-    cs_motion(&p,1,p.down_x-40,p.down_y,26);
-    assert(fabs(p.dx-(-40))<.001);
+     * touch_window_span selects exactly this pair (dt=8>=CS_ENTRY_MIN_SPAN_MS).
+     * The pixel deltas here are bigger than they used to be (-25/-70 rather
+     * than -20/-40) because the overview's card -- and so its pitch -- is
+     * now much wider (Android-recents sizing, overview_geometry): the same
+     * flick speed that used to project past two of the old, narrower cards
+     * needs more raw velocity to still project past two of the new, wider
+     * ones. */
+    cs_motion(&p,1,p.down_x-25,p.down_y,18);
+    cs_motion(&p,1,p.down_x-70,p.down_y,26);
+    assert(fabs(p.dx-(-70))<.001);
     /* Independently recompute the expected target from the documented
-     * formula (mirrors production, not a call into it): v0=-2.5px/ms,
-     * projected_dx=dx+v0/CS_SCROLL_OMEGA=-40+(-2.5/.006)=~-456.7, landing
-     * at card round(0-projected_dx/pitch)=round(1.69)=2 -- two cards away,
+     * formula (mirrors production, not a call into it): v0=-5.625px/ms,
+     * projected_dx=dx+v0/CS_SCROLL_OMEGA=-70+(-5.625/.006)=~-1007.5, landing
+     * at card round(0-projected_dx/pitch)=round(2.17)=2 -- two cards away,
      * not the single adjacent one a distance-threshold model would give. */
-    double v0=(-40.0-(-20.0))/8.0;
-    double projected_dx=-40.0+v0/.006;
+    double v0=(-70.0-(-25.0))/8.0;
+    double projected_dx=-70.0+v0/.006;
     size_t expected=(size_t)lround(fmax(0.0,fmin(3.0,0.0-projected_dx/pitch)));
     assert(expected==2);
     struct cs_rect before[4];
@@ -184,12 +203,15 @@ static void scroll_slow_release_snaps_nearest(void) {
 }
 static void scroll_catch_mid_coast(void) {
     struct cs_policy p=setup();cs_enter(&p,101);
+    double pitch=p.config.card_width+p.config.gap;
     /* A single slow sample (no measurable velocity, the same shape as the
-     * horizontal() test's own drag) keeps the coast's whole magnitude
-     * (~90px, one pitch's worth of continuity residual) comfortably
-     * on-screen throughout, unlike a hard flick's much larger excursion. */
+     * horizontal() test's own drag), expressed as a fraction of the pitch
+     * rather than a fixed pixel literal (see horizontal()'s own comment):
+     * keeps the coast's whole magnitude (a fraction of one pitch's worth of
+     * continuity residual) comfortably on-screen throughout, unlike a hard
+     * flick's much larger excursion. */
     down(&p,10);
-    cs_motion(&p,1,p.down_x-180,p.down_y+3,100);
+    cs_motion(&p,1,p.down_x-pitch*.6,p.down_y+3,100);
     assert(cs_up(&p,1,101).actions&CS_REDRAW);
     assert(p.selected==1 && p.scroll_settling);
     cs_tick(&p,101+30); /* partway through the coast */
@@ -224,10 +246,20 @@ static void scroll_end_clamp_soft(void) {
     assert(fabs(cs_card_rect(&p,0).x-(p.config.width-p.config.card_width)/2)<.001);
     cs_finish(&p);
 
-    /* Same at the deck's other end. */
+    /* Same at the deck's other end. Two fast samples (a real flick, not a
+     * single big drag): with the overview's card now much wider (Android-
+     * recents sizing, overview_geometry), the deck's last card is several
+     * pitches away, well past what a single drag's dx -- itself capped at
+     * 2*width regardless of pitch (cs_motion's own `bound`) -- can reach on
+     * raw position alone. A flick's velocity term is not subject to that
+     * same cap (scroll_release_velocity_x reads the raw, unclamped touch
+     * history), so it reliably lands on the last card however wide the
+     * pitch is. */
     struct cs_policy q=setup();cs_enter(&q,101);
-    down(&q,10);cs_motion(&q,1,q.down_x-2000,q.down_y,18); /* land on the last card first */
-    cs_up(&q,1,19);cs_tick(&q,19+(uint64_t)q.scroll_duration+5);
+    down(&q,10);
+    cs_motion(&q,1,q.down_x-1000,q.down_y,18);
+    cs_motion(&q,1,q.down_x-3000,q.down_y,26); /* land on the last card first */
+    cs_up(&q,1,27);cs_tick(&q,27+(uint64_t)q.scroll_duration+5);
     assert(q.selected==q.count-1 && !q.scroll_settling);
     down(&q,200);
     cs_motion(&q,1,q.down_x-20,q.down_y,208);
@@ -1103,7 +1135,8 @@ static void stream_cancel(void) {
     assert(r.consumed && (r.actions&CS_REDRAW) && p.mode==CS_DECK);
     assert(!p.contact && !p.edge.tracking && !p.blocked_until_up && !p.blocked_contacts);
     assert(p.dx==0 && p.dy==0 && p.selected==0);
-    down(&p,200);cs_motion(&p,1,p.down_x-180,p.down_y,300);cs_up(&p,1,301);
+    double pitch=p.config.card_width+p.config.gap;
+    down(&p,200);cs_motion(&p,1,p.down_x-pitch*.6,p.down_y,300);cs_up(&p,1,301);
     assert(p.selected==1 && p.mode==CS_DECK); /* fresh complete stream works */
     down(&p,400);cs_cancel(&p);assert(p.blocked_until_up);
     cs_stream_cancel(&p); /* device removal after locally rejected gesture */
@@ -1128,7 +1161,8 @@ static void stream_cancel_multitouch(void) {
     assert(!p.blocked_until_up && !p.blocked_contacts && !p.contact);
     assert(!cs_down(&p,3,200,400,3).consumed); /* normal app routing restored */
     cs_enter(&p,101);down(&p,10);
-    cs_motion(&p,1,p.down_x-180,p.down_y,110);cs_up(&p,1,111);
+    double pitch=p.config.card_width+p.config.gap;
+    cs_motion(&p,1,p.down_x-pitch*.6,p.down_y,110);cs_up(&p,1,111);
     assert(p.selected==1 && p.mode==CS_DECK);
     cs_leave(&p);cs_edge_down(&p,4,200,1220,200);
     cs_edge_down(&p,5,100,500,201);assert(p.blocked_contacts==2);

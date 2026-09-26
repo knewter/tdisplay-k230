@@ -41,19 +41,33 @@ static bool valid_config(const struct cs_config *c) {
 #define CS_CARD_HEADER_GAP 14.0
 struct cs_config cs_default_config(double width,double height) {
     return (struct cs_config){.width=width,.height=height,.top_reserved=56,
-        .inset=24,.gap=10,.title_height=100,.footer_height=56,
-        /* webOS-fan overview, revised 2026-09-25 after board/real-glass
-         * review: a center card about half the panel's width and 60% of
-         * its height (55-65% requested), with clear neighbours either
-         * side -- substantially larger than the original pass, which left
-         * about half the panel empty below the cards. */
-        .card_width=.5*width,.card_height=.6*height,
+        .inset=24,.gap=10,
+        /* Trimmed from 100 to 70 (docs/design/shell-polish-review-2026-09.md
+         * §6/§11): the only way to fit an Android-recents-sized, phone-
+         * aspect-ratio card (below) under this panel's fixed footer/inset
+         * budget without shrinking those. The title text itself is
+         * vertically centered within whatever title_height is, so this is
+         * a pure "less empty space above the card" change, not a text
+         * layout change. */
+        .title_height=70,.footer_height=56,
+        /* Android-recents-sized overview, per the operator's explicit ask
+         * ("more like Android does") and docs/design/shell-polish-review-
+         * 2026-09-25's card-overview section: the focused card is 80% of
+         * the panel's width AND 80% of its height -- the same fraction on
+         * both axes so the card's aspect ratio exactly matches the panel's
+         * own (568:1232), i.e. a phone-shaped card, not the previous
+         * webOS-fan pass's mismatched 50%/60% split. This is bigger on
+         * both axes than that pass (which was itself already a revision
+         * of an even smaller original), with neighbours peeking only a
+         * thin sliver at the edges -- Android recents proportions, not a
+         * webOS multi-card fan. See cs_card_rect for the peek arithmetic. */
+        .card_width=.8*width,.card_height=.8*height,
         /* Vertically centers (header+card) in the space between the title
          * and the footer (where the "Swipe up for apps" hint sits),
          * instead of sitting flush under the title -- see
          * card_top_offset's own doc comment in the header. */
         .card_top_offset=
-            ((height-56-100-56)-(.6*height+CS_CARD_HEADER_GAP+CS_CARD_HEADER_H))/2
+            ((height-56-70-56)-(.8*height+CS_CARD_HEADER_GAP+CS_CARD_HEADER_H))/2
             +CS_CARD_HEADER_GAP+CS_CARD_HEADER_H,
         /* The direct-switch (bottom-edge) entry gesture's own target slot:
          * intentionally the pre-fan geometry, unaffected by card_width

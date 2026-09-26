@@ -44,15 +44,19 @@ struct cs_config {
     double width, height;
     double top_reserved, bottom_reserved; /* bar and keyboard; never intercepted */
     double inset, gap, title_height, footer_height;
-    /* card_width/card_height/gap are the OVERVIEW's own webOS-fan card slot:
-     * roughly half the panel's width and 55-65% of its height (2-3 cards
-     * visible across, a substantially larger card than the panel-sparse
-     * original pass -- design.md decision 1 of
-     * the-shell-behaves-as-one-coherent-system, revised 2026-09-25 after
-     * board/real-glass review). These are deliberately independent of
-     * entry_card_width/entry_card_height below: the direct bottom-edge
-     * app-switch gesture's anchor/travel geometry must not move when the
-     * overview's card size changes. */
+    /* card_width/card_height/gap are the OVERVIEW's own focused-card slot:
+     * an Android-recents-sized card, 80% of the panel's width AND 80% of
+     * its height (same fraction on both axes, so the card's aspect ratio
+     * matches the panel's own), with neighbours peeking only a thin sliver
+     * at the screen edges -- revised 2026-09-26 per the operator's explicit
+     * "more like Android does" request and
+     * docs/design/shell-polish-review-2026-09.md's overview section,
+     * superseding the prior 2026-09-25 webOS-fan pass (50%/60%, 2-3 cards
+     * visible across) recorded in design.md decision 1 of
+     * the-shell-behaves-as-one-coherent-system. These are deliberately
+     * independent of entry_card_width/entry_card_height below: the direct
+     * bottom-edge app-switch gesture's anchor/travel geometry must not move
+     * when the overview's card size changes. */
     double card_width, card_height;
     /* Vertical anchor for cs_card_rect's y, replacing a fixed `inset` there
      * (inset itself is unchanged and still used elsewhere, including
