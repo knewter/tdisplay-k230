@@ -1376,6 +1376,9 @@ DATA 2852867146b0c9dadd66e505c6578d3894ec54d367b69b210cf7e59752495898  docs/evid
 DATA 15e78201d27f66325e51d0626d6d0dc0b36b27afa7c4a8f0585b727f09935fea  docs/evidence/launch-splash/qemu/drawer-open.png
 DATA 17dcca16238de352f6777129b43cb8f5133f7efd23ac511b3a6094313d0228ae  docs/evidence/launch-splash/qemu/splash.png
 DATA 4c8619c892cc140a89422463a3f38bd17868ab6159cc9bfa1a28d523ecb7c221  docs/evidence/launch-splash/qemu/handoff.png
+DATA 87b87775c91bf6a05a55dfc61851de34dacfd937cf085713d90a84fd110323bc docs/evidence/backlight/brightness-0.jpg
+DATA b7d742a5b4043c995e39546e348bb8e57d00f7a7b6f6ab96deff25a42a800e22 docs/evidence/backlight/brightness-128.jpg
+DATA 10e963c4961fd33c126f0b49b167aa732c9f050ae04ebadb3ec8d2b37f0629ac docs/evidence/backlight/brightness-255.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

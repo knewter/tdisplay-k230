@@ -499,6 +499,67 @@ EOM
       grep -q 'p->prepared = true;' drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'p->prepared = false;' drivers/gpu/drm/panel/panel-canaan-universal.c
 
+      # ---------------------------------------------------------------
+      # Board finding, fixing the-panel-brightness-is-adjustable:
+      # brightness writes reached the sysfs attribute (no dmesg errors,
+      # read back as set) but the panel's visible brightness never
+      # changed (camera mean luminance 122.7/122.7/122.6 across 25/128/255).
+      #
+      # Root cause, found by reading drivers/gpu/drm/drm_mipi_dsi.c
+      # directly: mipi_dsi_dcs_set_display_brightness() unconditionally
+      # sends brightness as a 2-byte little-endian value --
+      #   u8 payload[2] = { brightness & 0xff, brightness >> 8 };
+      # -- turning the transfer into a 3-byte MIPI_DSI_DCS_LONG_WRITE
+      # (cmd + 2 data bytes). But this exact panel's own proven-working
+      # panel-init-sequence entry for the SAME 0x51 command is
+      # "15 05 02 51 fe": data_type 0x15 (MIPI_DSI_DCS_SHORT_WRITE_PARAM),
+      # payload_length 2 (cmd + ONE data byte). Sending an extra,
+      # unexpected byte is exactly the shape of command a DCS parser
+      # silently rejects: the DSI *link* layer completes the transfer
+      # (canaan_dsi_transfer() routes both message types to the same
+      # canaan_dsi_dcs_write_long(), so nothing errors at that layer),
+      # but the *panel controller* never applies it, matching the board
+      # observation precisely -- no error, no visible change.
+      #
+      # The fix sends exactly one byte, matching the proven command
+      # shape, via mipi_dsi_dcs_write() directly (not the generic
+      # 2-byte helper). It also drops the MIPI_DCS_WRITE_CONTROL_DISPLAY
+      # (0x53) pre-write this file previously added speculatively: the
+      # working panel-init-sequence never sends 0x53 at all -- brightness
+      # already applies from 0x51 alone at boot -- so 0x53 was an
+      # unproven addition, not an established requirement, and is
+      # removed rather than guessed at a second time. Debug logging of
+      # each write and its return code is added per the board request,
+      # so a further mismatch (if any) is visible in dmesg without
+      # another flash cycle.
+      #
+      # BOARD RESULT (see docs/evidence/backlight/board-findings.md):
+      # this fix is real and confirmed by dmesg (every write now returns
+      # 0 with the correct 1-byte framing), but it is NOT sufficient --
+      # a clean, dpms-uninvolved test of 0/128/255 still shows no visible
+      # or measurable panel change. The remaining hypothesis is that this
+      # DSI host's minimal command path (canaan_dsi.c has two literal
+      # // TODO no-op stubs on this exact path) cannot deliver a generic
+      # command while continuous HS video streaming is active, so a
+      # command issued from update_status() post-boot may simply never
+      # reach the panel regardless of its byte-level correctness. Left
+      # open; not fixed by this commit.
+      #
+      # Delete the old ctrl/WRITE_CONTROL_DISPLAY preamble (comment
+      # through the "failed to enable brightness control" dev_err,
+      # inclusive -- this also removes the old `int ret;` decl, which
+      # the next sed re-adds).
+      sed -i '/BCTRL, DD, BL: brightness control block, dimming, backlight all on\./,/failed to enable brightness control/d' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      # Replace the remaining 2-byte brightness call with a logged,
+      # single-byte one. The untouched lines that follow
+      # ("if (ret < 0) dev_err(...); return ret; }") still apply to
+      # this new `ret`.
+      sed -i 's|\tret = mipi_dsi_dcs_set_display_brightness(p->dsi, brightness);|\tu8 val = (u8)brightness;\n\tint ret;\n\n\tdev_info(p->panel.dev, "canaan_panel: DCS write 0x51 (brightness=%u)\\n", val);\n\tret = mipi_dsi_dcs_write(p->dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS, \&val, 1);\n\tdev_info(p->panel.dev, "canaan_panel: DCS write 0x51 returned %d\\n", ret);|' \
+        drivers/gpu/drm/panel/panel-canaan-universal.c
+      grep -q 'DCS write 0x51 returned' drivers/gpu/drm/panel/panel-canaan-universal.c
+      test "$(grep -c 'MIPI_DCS_WRITE_CONTROL_DISPLAY' drivers/gpu/drm/panel/panel-canaan-universal.c)" = 0
+
     '';
   };
 
