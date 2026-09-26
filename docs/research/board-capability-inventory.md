@@ -65,7 +65,7 @@ datasheet, per the SKILL.md ordering. Nothing in this document is tier-1
 | AMOLED panel | RM69A10, 568×1232, MIPI-DSI 2-lane | Main board |
 | Touch | GT9895 (Goodix "Berlin" family) | Main board |
 | Wi-Fi | RTL8189FTV/RTL8189FS, SDIO | Main board |
-| Bluetooth | Generic USB dongle (bundled unit enumerates as a CSR8510 clone, `0a12:0001`) | Accessory over USB host |
+| Bluetooth | Generic USB dongle only — **no onboard BT on this board**; see `docs/research/bluetooth-onboard.md` (bundled test unit enumerates as a CSR8510 clone, `0a12:0001`) | Accessory over USB host |
 | Camera | GC2093, MIPI-CSI2 | Main board |
 | HDMI out | Lontium LT9611 bridge, I2C | Main board (diagnostic; shares GPIO23/24 with touch — mutually exclusive) |
 | USB Ethernet/modem | Generic USB-class (CDC-ECM/NCM/MBIM/RNDIS/QMI) | Accessory over USB host |
@@ -261,7 +261,17 @@ One row only — this is already fully specified and evidenced; see
 #### Bluetooth (generic USB dongle)
 
 - **Part / location**: not on-board silicon — a USB dongle over USB
-  host. LILYGO's bundled test unit enumerates as a CSR8510 clone
+  host. This board's Wi-Fi chip (SDIO vendor/device `0x024c`/`0xf179`,
+  `docs/evidence/wifi-preflight.txt`) is the Wi-Fi-only RTL8188F/RTL8189FS
+  part, not the RTL8723DS combo LILYGO documents as an alternate
+  main-board SKU (distinct SDIO device ID `0xD723`/`0xD724`); the K230 SoC
+  has no Bluetooth IP; the installed nRF9151 base has no Bluetooth (LTE-
+  M/NB-IoT/NTN/DECT/GNSS only); the optional nRF52840 base (not installed)
+  exposes BLE only via a proprietary AT-UART bridge protocol, never a
+  Linux HCI controller. Full analysis, citations, and a read-only board
+  probe (`tools/bt-probe.sh`) are in
+  `docs/research/bluetooth-onboard.md`. LILYGO's bundled test unit
+  enumerates as a CSR8510 clone
   (`0a12:0001`, `bcdDevice=0x8891`); their BSP carries two patches to
   paper over that specific dongle's `HCI_QUIRK_RESET_ON_CLOSE`/init
   quirks (`0056`, `0057-bluetooth-btusb-*.patch`) plus
