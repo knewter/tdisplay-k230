@@ -1372,6 +1372,10 @@ DATA 252fc87612016dd2d35850f6998926262bf8e5bf9430c64f421410c3b9992b11 docs/evide
 DATA 929f38b6fc3e08f3e897a5ebe0ff300f7590d88ffaa0b449adfeeaff24bad795 docs/evidence/card-shell/android-sized-cards/after-light-03-scrolled-settled.png
 DATA 534dce6734787e1dd7592602c1681d5f1dcc05dcb26f8fcb4e15e3d180a1bc37 docs/evidence/card-shell/android-sized-cards/after-light-04-after-close.png
 DATA 3cb7e6ad7c8dea8b739bbd2505b4c0e847163fa8ff501aff6dbfc1376c13d748 docs/evidence/card-shell/android-sized-cards/after-light-05-opened.png
+DATA 2852867146b0c9dadd66e505c6578d3894ec54d367b69b210cf7e59752495898  docs/evidence/launch-splash/qemu/deck.png
+DATA 15e78201d27f66325e51d0626d6d0dc0b36b27afa7c4a8f0585b727f09935fea  docs/evidence/launch-splash/qemu/drawer-open.png
+DATA 17dcca16238de352f6777129b43cb8f5133f7efd23ac511b3a6094313d0228ae  docs/evidence/launch-splash/qemu/splash.png
+DATA 4c8619c892cc140a89422463a3f38bd17868ab6159cc9bfa1a28d523ecb7c221  docs/evidence/launch-splash/qemu/handoff.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
