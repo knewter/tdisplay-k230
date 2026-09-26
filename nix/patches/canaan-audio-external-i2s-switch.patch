@@ -1,0 +1,120 @@
+--- a/sound/soc/canaan/canaan_k230_inno.c	2026-09-25 23:22:33.958060125 -0500
++++ b/sound/soc/canaan/canaan_k230_inno.c	2026-09-25 23:22:33.958867131 -0500
+@@ -34,6 +34,66 @@
+ 	struct clk *pclk;
+ 	struct mutex clk_lock;
+ 	int clk_users;
++	bool external_i2s_output;
++};
++
++/*
++ * Route the shared SAI block (k230.dtsi audio@0x9140f400, mapped by
++ * canaan_k230_audio.c as `sai.base`) either through the on-die Inno codec
++ * or straight out to the external I2S pads (BCLK/WS/DOUT), where a board
++ * can wire a MAX98357A class-D amp that just listens to raw I2S.
++ *
++ * audio_i2s_enable_audio_codec() flips audio_in_pdm_conf_0.audio_codec_bypass
++ * -- canaan_k230_audio.c:50-59 -- which is the one register bit that
++ * actually decides where the digital audio goes; there is no second sound
++ * card and no DAPM path to a MAX98357A codec node here; both destinations
++ * share the same physical I2S peripheral output.
++ */
++static void k230_inno_apply_output_route(struct k230_inno_info *priv)
++{
++	audio_i2s_in_init();
++	audio_i2s_enable_audio_codec(!priv->external_i2s_output);
++	audio_i2s_out_init(true, 32);
++}
++
++static int k230_inno_external_i2s_get(struct snd_kcontrol *kcontrol,
++				      struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
++	struct k230_inno_info *priv = snd_soc_card_get_drvdata(card);
++
++	ucontrol->value.integer.value[0] = priv->external_i2s_output;
++
++	return 0;
++}
++
++static int k230_inno_external_i2s_put(struct snd_kcontrol *kcontrol,
++				      struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
++	struct k230_inno_info *priv = snd_soc_card_get_drvdata(card);
++	bool enable = !!ucontrol->value.integer.value[0];
++
++	if (priv->external_i2s_output == enable)
++		return 0;
++
++	priv->external_i2s_output = enable;
++	k230_inno_apply_output_route(priv);
++
++	return 1;
++}
++
++/*
++ * "External I2S Output Switch" is the exact control name LILYGO's own
++ * T-Display-K230 launcher drives with `amixer -q cset name='...'` --
++ * k230_launcher/k230_phone_ui/src/ui_hardware.c:1736-1751 in
++ * Xinyuan-LilyGO/T-Display-K230. Keeping the same name lets that same
++ * amixer invocation, and any script written against it, work unmodified.
++ */
++static const struct snd_kcontrol_new k230_inno_controls[] = {
++	SOC_SINGLE_BOOL_EXT("External I2S Output Switch", 0,
++			    k230_inno_external_i2s_get,
++			    k230_inno_external_i2s_put),
+ };
+ 
+ static int k230_inno_hw_params(struct snd_pcm_substream *substream,
+@@ -48,6 +108,19 @@
+ 
+ static int k230_inno_startup(struct snd_pcm_substream *substream)
+ {
++	struct snd_soc_pcm_runtime *rtd = asoc_substream_to_rtd(substream);
++	struct snd_soc_card *card = rtd->card;
++	struct k230_inno_info *priv = snd_soc_card_get_drvdata(card);
++
++	/*
++	 * Re-assert the selected route on every stream open. The vendor
++	 * probe path below runs this once at boot; without repeating it
++	 * here a later route change made only via the mixer control (with
++	 * no active stream) would not survive a suspend/resume of the SAI
++	 * clocks.
++	 */
++	k230_inno_apply_output_route(priv);
++
+ 	return 0;
+ }
+ 
+@@ -76,6 +149,8 @@
+ 	.owner = THIS_MODULE,
+ 	.dai_link = &canaan_k230_dailink,
+ 	.num_links = 1,
++	.controls = k230_inno_controls,
++	.num_controls = ARRAY_SIZE(k230_inno_controls),
+ };
+ 
+ static int canaan_k230_inno_probe(struct platform_device *pdev)
+@@ -97,6 +172,8 @@
+ 		return -ENOMEM;
+ 
+ 	mutex_init(&priv->clk_lock);
++	priv->external_i2s_output =
++		of_property_read_bool(np, "canaan,external-i2s-output-default");
+ 
+ 	card->dev = &pdev->dev;
+ 	snd_soc_card_set_drvdata(card, priv);
+@@ -133,9 +210,9 @@
+ 		return ret;
+ 	}
+ 
+-	audio_i2s_in_init();
+-	audio_i2s_enable_audio_codec(true);
+-	audio_i2s_out_init(true, 32);
++	k230_inno_apply_output_route(priv);
++	dev_info(&pdev->dev, "External I2S output %s by default\n",
++		 priv->external_i2s_output ? "enabled" : "disabled");
+ 
+ 	return ret;
+ }
