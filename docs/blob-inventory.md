@@ -651,6 +651,14 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA d5a067cf58487b011cb292b25575beb69455e4de7fdcc496b1fab130c4c0aa27 docs/evidence/card-shell/transparent-corners/argb-child.png
+DATA e2e03191c80b95f5d5447ea6c335ce7562611a3e414c6c1e8b5e2ae3b9f96036 docs/evidence/card-shell/transparent-corners/baseline.png
+DATA 5194b788f0935fc0d1a20f4da641cc65aeca78c6a70c14d4635ddaec56d4fc8c docs/evidence/card-shell/transparent-corners/before.png
+DATA 5e4794e3c282afc053e7e5b4cf66c3bafe0db4e108a7b8f43c9f77d2f58399dd docs/evidence/card-shell/transparent-corners/direct-switch-held.png
+DATA 6340bc84c43783022abf7e8bdd38963fc9d40c618827fac427d802a2c9f13a6b docs/evidence/card-shell/transparent-corners/drag-held.png
+DATA fa57f636aa9465fc361fccf67611d137b7faab3efd60a75ea3c2ad22d2bface1 docs/evidence/card-shell/transparent-corners/entry-held.png
+DATA 6b850edc100741232549e13f28ca72dd247560a691e3b2a993146a31ebbad829 docs/evidence/card-shell/transparent-corners/opened.png
+DATA 9f344e2b4d2f55a3aca4f5afabfdf438d38b493f5db9664e4f1c789f90c7a1f7 docs/evidence/card-shell/transparent-corners/overview.png
 DATA 51a1f993644e3c65fab7988d451d7e2808f8a53f5935e652a4e3b0c4f248b7fd docs/evidence/omarchy-themes/community-board-fixed/community.png
 DATA 478d3f0346f003fba5893ca17b5b85f40d7312709d888ed944d233916fbfb75e docs/evidence/omarchy-themes/community-board/dark.png
 DATA ff4004c2e6c509680505ce48431fc559d949da6413488814ad5fd66185c5cd5c docs/evidence/omarchy-themes/community-board/light.png

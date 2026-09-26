@@ -1,0 +1,60 @@
+{
+  "result": "PASS",
+  "source_revision": "4b33dda91e44ad555d29e4c3a89bb71cea58ec0d",
+  "fixture_sha256": "4802d11c6a0771197a426aa819e1f4e08033c6f0895817864f58eb830012de66",
+  "client_sha256": "541f0732a363426f166a6efadd704f0fee0ea51897976b2068b6060f22695a63",
+  "render_format": "RG16",
+  "cache_samples": [],
+  "evidence_class": "headless-riscv64-qemu",
+  "sway": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "swaybg": "/nix/store/yhh05srfyhf81cdrm0f9ckxajjgh9qql-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg",
+  "scaled_cache": "0",
+  "wallpaper_corner_points": [
+    [
+      58,
+      160
+    ],
+    [
+      509,
+      160
+    ],
+    [
+      58,
+      1143
+    ],
+    [
+      509,
+      1143
+    ],
+    [
+      45,
+      160
+    ],
+    [
+      45,
+      1143
+    ],
+    [
+      522,
+      160
+    ],
+    [
+      522,
+      1143
+    ]
+  ],
+  "live_pixels_changed": true,
+  "captures": [
+    "baseline",
+    "overview",
+    "live-update",
+    "drag-held",
+    "settled",
+    "opened",
+    "direct-switch-held",
+    "direct-switch-settled",
+    "entry-held",
+    "entry-reversed"
+  ],
+  "limits": "Synthetic clients and injected touch; no physical panel or performance claim."
+}

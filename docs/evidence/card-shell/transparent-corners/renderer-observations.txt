@@ -1,0 +1,16 @@
+cache:
+00:00:00.342 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+00:00:06.551 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=291 misses=59 fallbacks=760 bytes=926704
+00:00:07.815 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=434 misses=110 fallbacks=1148 bytes=0
+00:00:08.853 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=440 misses=112 fallbacks=1302 bytes=0
+00:00:10.340 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=452 misses=116 fallbacks=1448 bytes=0
+00:00:11.212 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=452 misses=116 fallbacks=1448 bytes=0
+direct:
+00:00:00.343 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+argb:
+00:00:00.344 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+00:00:08.769 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=0 misses=0 fallbacks=1020 bytes=0
+00:00:10.413 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=0 misses=0 fallbacks=1140 bytes=0
+00:00:11.942 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=0 misses=0 fallbacks=1182 bytes=0
+00:00:12.138 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=0 misses=0 fallbacks=1242 bytes=0
+00:00:13.552 [INFO] [sway/card_shell.c:393] K230_CARD_SHELL scaled-cache hits=0 misses=0 fallbacks=1242 bytes=0

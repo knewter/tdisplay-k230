@@ -137,14 +137,18 @@ they should just be cards"). See `design.md` decisions 3-5.
   changing radii, damaged regions and RGB565 output against an independent
   full-mask pixel oracle: `python3 tests/test_card_rounded_clip.py` (288
   comparisons, host only). Existing policy/cache tests remain required.
-- [ ] F.2 Cross-build `nix build .#card-shell --max-jobs 1 --cores 4
+- [x] F.2 Cross-build `nix build .#card-shell --max-jobs 1 --cores 4
   --no-link --print-out-paths`; capture the actual compositor over a
   patterned wallpaper under headless QEMU, checking corner pixels against
   an unobscured wallpaper baseline. Record source/artifacts/limits under
-  `docs/evidence/card-shell/transparent-corners/`. This is QEMU proof only.
+  `docs/evidence/card-shell/transparent-corners/`. This is QEMU proof only;
+  final package `7pjmarasi…`, source `4b33dda9`, all three positive fixtures
+  passed and the master negative control failed at the first corner.
 - [ ] F.3 On the reserved board, install the matching system, capture a
   native screenshot with wallpaper and live cards, and verify that the
   wallpaper shows through rounded corners. Keep E.1's real-finger motion
   acceptance separate. Operator: `python3 tools/console.py /dev/ttyACM0
-  --wait=3 '<matching-session grim capture>'` after coordinated activation;
+  --wait=3 'runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell
+  /run/current-system/sw/bin/grim /run/shell/rounded-cards.png'` after
+  coordinated activation (set the session's actual WAYLAND_DISPLAY if needed);
   record exact installed paths and the capture command with the evidence.

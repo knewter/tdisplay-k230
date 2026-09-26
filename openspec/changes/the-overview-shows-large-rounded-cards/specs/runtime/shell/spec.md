@@ -28,7 +28,10 @@ matching runtime recompute. The original corner-overlay evidence below
 predates the transparent-corner correction. Current implementation uses
 `wlr_scene_buffer_set_rounded_clip` and `nix/card-shell/rounded-clip.h` in
 the pinned Pixman compositor; `tests/card_rounded_clip.c` independently
-compares its pixels over a patterned backdrop. The correction's board
+compares its pixels over a patterned backdrop.
+`docs/evidence/card-shell/transparent-corners/README.md` records matching
+headless-QEMU wallpaper checks with cached, direct and ARGB/child paths,
+plus a failing pre-fix control. The correction's board
 wallpaper result remains UNVERIFIED until task F.3. Non-live
 (private/unavailable) cards keep the pre-existing `card_background` plate,
 since they have no live pixels to protect from a background.

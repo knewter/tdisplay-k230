@@ -1,0 +1,46 @@
+{
+  "source_revision": "4b33dda91e44ad555d29e4c3a89bb71cea58ec0d",
+  "base_revision": "bb427e198fa4e6e6cb7ac377464f6e943cd288de",
+  "package": "/nix/store/7pjmarasi2x8nbmzsy67anl0n6slnbgy-k230-card-shell",
+  "package_derivation": "/nix/store/18nj399wyychas2py6q2g84bbm02ia2c-k230-card-shell.drv",
+  "sway": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "sway_derivation": "/nix/store/4hldr9144w2n8amypqh7s59d3802xapb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "negative_control_sway": "/nix/store/vvca8zksyarjb7s7vfrs1p9c9lpp9jnn-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "negative_control_result": "Expected failure: wallpaper hidden at rounded corner (58,160): actual RGB (24,28,41), wallpaper (49,81,41)",
+  "proof_class": "host tests, cross-build, headless RISC-V user QEMU",
+  "board_access": false,
+  "captures": {
+    "baseline.png": {
+      "sha256": "e2e03191c80b95f5d5447ea6c335ce7562611a3e414c6c1e8b5e2ae3b9f96036",
+      "captured_utc": "2026-09-26T23:21:28.521013+00:00"
+    },
+    "overview.png": {
+      "sha256": "9f344e2b4d2f55a3aca4f5afabfdf438d38b493f5db9664e4f1c789f90c7a1f7",
+      "captured_utc": "2026-09-26T23:21:32.484065+00:00"
+    },
+    "drag-held.png": {
+      "sha256": "6340bc84c43783022abf7e8bdd38963fc9d40c618827fac427d802a2c9f13a6b",
+      "captured_utc": "2026-09-26T23:21:33.094073+00:00"
+    },
+    "entry-held.png": {
+      "sha256": "fa57f636aa9465fc361fccf67611d137b7faab3efd60a75ea3c2ad22d2bface1",
+      "captured_utc": "2026-09-26T23:21:37.227128+00:00"
+    },
+    "direct-switch-held.png": {
+      "sha256": "5e4794e3c282afc053e7e5b4cf66c3bafe0db4e108a7b8f43c9f77d2f58399dd",
+      "captured_utc": "2026-09-26T23:21:35.816109+00:00"
+    },
+    "opened.png": {
+      "sha256": "6b850edc100741232549e13f28ca72dd247560a691e3b2a993146a31ebbad829",
+      "captured_utc": "2026-09-26T23:21:35.461104+00:00"
+    },
+    "argb-child.png": {
+      "sha256": "d5a067cf58487b011cb292b25575beb69455e4de7fdcc496b1fab130c4c0aa27",
+      "captured_utc": "2026-09-26T23:20:43.853426+00:00"
+    },
+    "before.png": {
+      "sha256": "5194b788f0935fc0d1a20f4da641cc65aeca78c6a70c14d4635ddaec56d4fc8c",
+      "captured_utc": "2026-09-26T23:21:43.182206+00:00"
+    }
+  }
+}

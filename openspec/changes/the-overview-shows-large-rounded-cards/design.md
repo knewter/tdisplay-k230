@@ -155,19 +155,16 @@ end via drag alone" guarantee; only this test assumed it.
 
 ## Rejected alternatives
 
-- **A per-frame per-pixel rounded-rect mask (e.g. redrawing/re-clipping the
-  live mirror content itself every frame).** Rejected: the existing plate
-  mechanism already renders the rounded rect once per unique
-  (brush, size, radius) into a cached `wlr_scene_buffer`, reused unchanged
-  across ordinary frames; a per-pixel mask would cost strictly more for no
-  visual benefit, and the hardware constraint (one slow RISC-V core, no
-  extra full-screen passes) rules it out directly.
+- **A full-card intermediate image or per-frame full-size alpha mask.**
+  Rejected: neither is needed for a rounded rectangle. The renderer draws
+  the interior through its existing path and uses small cached coverage
+  masks only for the four corner squares. This preserves the existing
+  RGB565 thumbnail cache instead of doubling its pixel storage.
 - **A separate `card_radius` field on `cs_config`.** Rejected: radius is a
   rendering-only concern, matching this codebase's existing separation of
   policy (geometry, gesture math) from rendering (colours, radii, fonts) —
   `card-shell-policy.h`'s own header comment states this policy struct
-  "never stores... " rendering concerns. Keeping `CARD_PLATE_RADIUS` in
-  `adapter.c` alongside `CARD_PLATE_PAD` preserves that boundary.
+  "never stores... " rendering concerns. Keeping `CARD_CORNER_RADIUS` in `adapter.c` preserves that boundary.
 - **Keeping the neighbour peek at its prior ~46%-of-card-width fraction.**
   Rejected: at 80% card width there is only ~14% of the panel left for both
   neighbours combined (7% each side before the gap), so a peek anywhere
@@ -179,12 +176,13 @@ end via drag alone" guarantee; only this test assumed it.
 
 ## Migration / rollout
 
-No data migration. The change is a set of policy/rendering constants plus
-their propagation through the one runtime recompute site
-(`adapter.c`'s `card_shell_prepare`-adjacent config block) that already
-existed for the prior revision. No feature flag: the overview always uses
-the new size once this change lands, matching how the prior 50%/60% pass
-also had no flag.
+No data migration. The existing geometry changes remain in the policy and
+its runtime recompute site. The compositor correction is selected by the
+card-shell package's local wlroots override; the separate experimental GPU
+package is unchanged. There is no visual opt-in flag for transparent
+corners. Review and land the source/evidence, then activate a matching
+combined system under the coordinator's board reservation before claiming
+physical proof.
 
 ## Open questions
 

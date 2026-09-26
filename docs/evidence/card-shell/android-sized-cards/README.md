@@ -1,5 +1,9 @@
 # Android-recents-sized, rounded overview cards: headless-QEMU evidence
 
+**Historical corner implementation.** The opaque overlays described here
+were replaced by [actual compositor clipping over wallpaper](../transparent-corners/README.md).
+These original captures remain evidence of the earlier geometry pass.
+
 Evidence for the operator's explicit ask ("i think the cards should have a
 border radius and fill a lot of the screen not be tiny idk more like
 android does") and `docs/design/shell-polish-review-2026-09.md` §6:

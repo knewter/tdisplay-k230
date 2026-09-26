@@ -1,0 +1,19 @@
+{
+  "source_sha256": "654075595aca1790e92ec037bf8868f7b2810a39619c9cf1a8033145a868856c",
+  "binary_sha256": "0f673b27a48b308e88122d24f9c16d76bb818fc51962ef3b8cf7ece109b925ad",
+  "command": [
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "/tmp/k230-rounded-argb-client/client.c",
+    "/tmp/k230-rounded-argb-client/xdg-shell-protocol.c",
+    "-lwayland-client",
+    "-lm",
+    "-o",
+    "/tmp/k230-rounded-argb-client/client"
+  ],
+  "variant": "ARGB8888 parent, half-alpha child at parent origin"
+}
