@@ -278,6 +278,20 @@ static void wallpaper_opaque_buffer(struct wlr_scene_buffer *buffer, int x, int 
 			buffer->dst_width, buffer->dst_height);
 		pixman_region32_translate(&opaque, x, y);
 	}
+	/* Rounded live mirrors reveal wallpaper even when their underlying
+	 * RGB565/XRGB buffer is opaque. Match scene occlusion's conservative
+	 * interior cross before deciding that a video wallpaper can pause. */
+	struct wlr_box rounded = buffer->rounded_clip;
+	if (!wlr_box_empty(&rounded)) {
+		int radius = buffer->rounded_radius;
+		pixman_region32_t interior;
+		pixman_region32_init_rect(&interior, x + rounded.x + radius, y + rounded.y,
+			rounded.width - 2 * radius, rounded.height);
+		pixman_region32_union_rect(&interior, &interior, x + rounded.x, y + rounded.y + radius,
+			rounded.width, rounded.height - 2 * radius);
+		pixman_region32_intersect(&opaque, &opaque, &interior);
+		pixman_region32_fini(&interior);
+	}
 	pixman_region32_union(&cover->opaque, &cover->opaque, &opaque);
 	pixman_region32_fini(&opaque);
 }

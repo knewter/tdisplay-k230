@@ -57,7 +57,7 @@ static void compare(struct k230_round_cache *cache, int radius, bool translucent
 	pixman_region32_init_rect(&clip,damage?8:0,damage?19:0,damage?49:W,damage?56:H);
 	pixman_image_set_clip_region32(out,&clip);
 	pixman_image_set_clip_region32(ref,&clip);
-	assert(k230_round_composite(cache,PIXMAN_OP_OVER,source,opacity,out,2,7,dst,round,radius,alpha));
+	assert(k230_round_composite(cache,translucent?PIXMAN_OP_OVER:PIXMAN_OP_SRC,source,opacity,out,2,7,dst,round,radius,alpha));
 	/* Composite to temporary over a translated mask: Pixman coordinates for
 	 * the mask are output coordinates, not the source's crop/transform. */
 	pixman_image_composite32(PIXMAN_OP_OVER,source,mask,ref,2,7,dst.x,dst.y,
