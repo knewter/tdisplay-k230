@@ -1,0 +1,28 @@
+--- a/drivers/gpu/drm/panel/panel-canaan-universal.c
++++ b/drivers/gpu/drm/panel/panel-canaan-universal.c
+@@ -145,8 +145,8 @@
+ 
+ 	// set power on
+ 	if (p->power_on) {
+-		// gpiod_direction_output(p->power_on, 1);
+-		// gpiod_set_value_cansleep(p->power_on, 1);
++		gpiod_set_value_cansleep(p->power_on, 1);
++		panel_simple_sleep(10);
+ 	}
+ 	// set rst
+ 	if (p->reset) {
+@@ -281,11 +281,13 @@
+ static int canaan_panel_bl_update_status(struct backlight_device *bl)
+ {
+ 	struct canaan_panel *p = bl_get_data(bl);
++	int ret;
+ 
+ 	if (!p->prepared)
+ 		return 0;
+ 
+-	return canaan_panel_apply_brightness(p, backlight_get_brightness(bl));
++	ret = canaan_panel_apply_brightness(p, backlight_get_brightness(bl));
++	return ret < 0 ? ret : 0;
+ }
+ 
+ static const struct backlight_ops canaan_panel_bl_ops = {

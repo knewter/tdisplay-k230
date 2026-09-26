@@ -558,6 +558,9 @@ EOM
       sed -i 's|\tret = mipi_dsi_dcs_set_display_brightness(p->dsi, brightness);|\tu8 val = (u8)brightness;\n\tint ret;\n\n\tdev_info(p->panel.dev, "canaan_panel: DCS write 0x51 (brightness=%u)\\n", val);\n\tret = mipi_dsi_dcs_write(p->dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS, \&val, 1);\n\tdev_info(p->panel.dev, "canaan_panel: DCS write 0x51 returned %d\\n", ret);|' \
         drivers/gpu/drm/panel/panel-canaan-universal.c
       grep -q 'DCS write 0x51 returned' drivers/gpu/drm/panel/panel-canaan-universal.c
+
+      # Reassert the panel enable gate after DPMS; source is already patched above.
+      patch -p1 < ${./patches/canaan-panel-restore-power.patch}
       test "$(grep -c 'MIPI_DCS_WRITE_CONTROL_DISPLAY' drivers/gpu/drm/panel/panel-canaan-universal.c)" = 0
 
     '';

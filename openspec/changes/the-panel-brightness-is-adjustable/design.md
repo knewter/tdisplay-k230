@@ -155,3 +155,31 @@ the kernel and the full system closure in the foreground. A board install
 (`/boot` update, not just activation — this is a kernel and DT change) and
 reboot are required before any board proof. Rollback is reverting this
 commit; the fixed `0xFE` brightness is the starting point either way.
+
+
+## Runtime recovery follow-up (2026-09-26)
+
+The board's negative brightness result remains authoritative. GPIO25 must
+be raised in every non-handoff `prepare()`, symmetrically with the existing
+`unprepare()` low drive. This follows LILYGO's patch
+`0027-panel-canaan-universal-enable-reset-in-prepare.patch` at upstream
+revision `bb831ab358b66f5bd9a87ecd7c580fee4537492e`; our existing reset
+sequence is retained. A successful DSI transfer returns a byte count, so
+the backlight callback normalizes nonnegative results to zero.
+
+Review also found the host dispatch routes DCS short-write-with-parameter
+through a helper that emits long-write type 0x39. The earlier single-byte
+panel change therefore did not correct the wire packet type. Follow the
+kernel's standard packet constructor and bounded FIFO completion semantics.
+Review and test the runtime LP command configuration separately from the
+power gate. The inherited draft's unconditional command/video mode toggling
+is rejected for now: it lacked FIFO drain, missed stage-1 handoff, and could
+race disable. A source hypothesis is not brightness proof.
+
+Prove recovery on a reserved board with the known boot bundle retained:
+first boot the candidate once, then capture display off/on recovery and
+three brightness levels under fixed camera exposure. Check the shell's
+unprivileged brightness path and restoration of a nondefault value after
+DPMS. Keep failure logs and distinguish native screenshots (geometry) from
+camera evidence (panel luminance). Only install the candidate persistently
+after its boot and recovery checks pass.

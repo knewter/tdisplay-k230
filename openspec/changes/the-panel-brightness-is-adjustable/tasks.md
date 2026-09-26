@@ -89,3 +89,21 @@
       later `prepare()` — see board-findings.md) and does not by itself
       demonstrate the brightness value applying. Left unticked; depends on
       resolving 5.1's open root cause first.
+
+
+## 6. Resolve the negative board result
+
+- [ ] 6.1 Restore GPIO25 in panel prepare and normalize the backlight
+      callback's success result. Proof: `nix build .#kernel --max-jobs 1
+      --cores 4 --no-link --print-out-paths` (cross-build only).
+- [ ] 6.2 Correct DSI packet framing/completion and review runtime command
+      delivery against the pinned driver and mainline DesignWare path.
+      Run the focused transport fixtures and the same kernel build;
+      preserve the stage-1 handoff and bounded failure paths.
+- [ ] 6.3 Boot the candidate once, verify display off/on recovery by camera,
+      and demonstrate three distinct brightness levels with fixed camera
+      exposure. Record exact kernel/system identities and commands under
+      `docs/evidence/backlight/`. Sysfs readback alone does not pass.
+- [ ] 6.4 Verify shell-user brightness controls and retention of a chosen
+      nondefault brightness across DPMS. Install persistently only after
+      the candidate checks, then repeat boot/service identity checks.
