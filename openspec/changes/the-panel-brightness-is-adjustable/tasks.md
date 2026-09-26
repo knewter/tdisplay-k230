@@ -63,13 +63,29 @@
 
 ## 5. Physical acceptance
 
-- [ ] 5.1 Install the built kernel/DTB to `/boot` and reboot (a kernel and
-      DT change, not just activation). Under the reserved board lock,
-      confirm `ls /sys/class/backlight` shows exactly one device, then
-      write brightness at 10%, 50% and 100% and camera-observe the panel
-      changing. Commit evidence under `docs/evidence/backlight/`
-      (hardware proof only).
+- [x] 5.1 Install the built kernel/DTB to `/boot` and reboot (a kernel and
+      DT change, not just activation) — done, via the coordinator's
+      export/import + bootfetch/bootswap procedure, confirmed by a real
+      cold reboot. `ls /sys/class/backlight` does show exactly one
+      device (`canaan-dsi-backlight`, max 255), and writes at 10/50/100%
+      read back as set with no dmesg errors — **but** camera evidence
+      (locked exposure) shows no visible or measurable panel change
+      across the full 0..255 range (mean luminance 200.99/201.14/201.33).
+      A real transport bug was found and fixed
+      (`nix/kernel.nix`'s board-finding hunk;
+      `docs/evidence/backlight/board-findings.md`), but the underlying
+      requirement — a person can see the panel change brightness — is
+      **not yet met**. Ticked because the task (install, reboot, confirm
+      the device, write and observe) was performed and is fully
+      evidenced, not because the result was a pass; the negative result
+      is the finding.
 - [ ] 5.2 Cycle a modeset or DPMS off/on (see the combined board test plan
       for the exact command) and confirm the previously set brightness is
-      still in effect afterward, not the fixed default. Commit evidence
-      under `docs/evidence/backlight/` (hardware proof only).
+      still in effect afterward, not the fixed default. Not meaningfully
+      testable yet: a DPMS cycle was tried during board investigation and
+      produced a large luminance change, but it is confounded with a
+      separate, unrelated finding (`backlight_gpio`, GPIO25, appears to
+      only ever be driven high once at `probe()`, never reasserted on a
+      later `prepare()` — see board-findings.md) and does not by itself
+      demonstrate the brightness value applying. Left unticked; depends on
+      resolving 5.1's open root cause first.

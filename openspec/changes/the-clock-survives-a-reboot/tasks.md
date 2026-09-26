@@ -9,6 +9,14 @@
       `/nix/store/78cdif47ayqwv67m7crjpawfzy2mx3af-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`
       (build proof only) — one kernel derivation shared with the
       backlight and Bluetooth Kconfig/driver changes.
+- [x] 1.2 Board finding (found during physical acceptance, task 4.1):
+      `k230_rtc_read_time()` also masked the day-of-month field with
+      `0xf` instead of `0x1f`. Added `nix/patches/k230-rtc-mday-mask.patch`,
+      wired into `nix/kernel.nix`'s `patches` list. Proven:
+      `nix build .#kernel --max-jobs 1 --cores 6 --no-link --print-out-paths`
+      exited 0, producing
+      `/nix/store/16qspvmvblal5q059y8p6zbsn1ynjcdy-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`
+      (build proof), and confirmed on the board (hardware proof, task 4.1).
 
 ## 2. NixOS: use the RTC
 
@@ -33,11 +41,19 @@
 
 ## 4. Physical acceptance
 
-- [ ] 4.1 Install the built kernel to `/boot` and reboot. Under the
+- [x] 4.1 Install the built kernel to `/boot` and reboot. Under the
       reserved board lock, confirm `ls /dev/rtc0`, run `hwclock -r` and
       `timedatectl`, reboot, and run `hwclock -r` again to confirm the
-      clock survived the warm reboot. Commit console output under
-      `docs/evidence/rtc/` (hardware proof only).
+      clock survived the warm reboot. Done, plus a second board finding
+      folded in: `k230_rtc_read_time()`'s day-of-month read mask was
+      `0xf` (should be `0x1f`), dropping bit 4 — see
+      `nix/patches/k230-rtc-mday-mask.patch` and
+      `docs/evidence/rtc/mday-mask-fix.md`. Verified on the board: days
+      15, 16 (the bit-4 boundary), 26 and 31 all read back correctly,
+      and `hctosys` sets the correct time after a real cold reboot from
+      a freshly bootswapped `/boot` (not the kernel's compiled-in
+      epoch). `/proc/cmdline`'s `init=` on that boot confirms the new
+      toplevel was actually running.
 - [ ] 4.2 Leave `UNVERIFIED`: whether the RTC survives a full power-off
       (main power removed, not just a reboot) rather than only a warm
       reboot. Requires a documented backing supply or a separate

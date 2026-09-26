@@ -2,28 +2,34 @@
 
 ### Requirement: The panel exposes a real backlight device
 
-<!-- UNVERIFIED: registered against the pinned kernel source and this
-board's DT properties; no boot log or photograph yet confirms the device
-node appears or that writes change the panel. -->
-
 The system SHALL register exactly one `/sys/class/backlight/<dev>` device
 for the RM69A10 panel, with `max_brightness` reflecting the
 `MIPI_DCS_SET_DISPLAY_BRIGHTNESS` command's 8-bit range and
 `brightness` writable by a process with permission on the device node.
-Writing `brightness` SHALL send `MIPI_DCS_SET_DISPLAY_BRIGHTNESS` (0x51) to
-the panel controller, gated by `MIPI_DCS_WRITE_CONTROL_DISPLAY` (0x53) to
-enable the brightness control block.
+Writing `brightness` SHALL send a single-byte `MIPI_DCS_SET_DISPLAY_BRIGHTNESS`
+(0x51) command to the panel controller, matching the exact command shape
+(`MIPI_DSI_DCS_SHORT_WRITE_PARAM`, cmd + one data byte) already proven
+working in `panel-init-sequence`.
 
 *Grounding: `drivers/gpu/drm/panel/panel-canaan-universal.c` in the pinned
-Xuantie kernel tree registers no backlight device today — `ctx->power_on`
-(DT property `backlight_gpio`, GPIO25) is an on/off enable gate driven once
-at probe, not a brightness control; the fixed value `0xFE` in
-`panel-init-sequence` (`nix/dts/k230-tdisplay.dts`) is the only brightness
-this board has ever shown. `include/video/mipi_display.h` in the same
-pinned tree already defines `MIPI_DCS_SET_DISPLAY_BRIGHTNESS = 0x51` and
-`MIPI_DCS_WRITE_CONTROL_DISPLAY = 0x53`, and `DRM_PANEL_CANAAN_UNIVERSAL`
-already `depends on BACKLIGHT_CLASS_DEVICE`, itself already `=y` in
-`arch/riscv/configs/k230_defconfig` — see design.md's Context.*
+Xuantie kernel tree registers no backlight device by default —
+`ctx->power_on` (DT property `backlight_gpio`, GPIO25) is an on/off enable
+gate driven once at probe, not a brightness control. Confirmed on the
+board: `ls /sys/class/backlight` shows exactly one device
+(`canaan-dsi-backlight`, `max_brightness=255`), and writes at 10/50/100%
+read back as set with no dmesg errors — see
+`docs/evidence/backlight/board-findings.md`.*
+
+<!-- UNVERIFIED / NEGATIVE RESULT, board-confirmed: writing brightness does
+NOT visibly or measurably change the panel. A clean board test (fresh
+boot, no DPMS interference) of 0/128/255 shows near-identical mean
+luminance (200.99/201.14/201.33) with the locked-exposure camera. A real
+transport bug (a malformed 2-byte DCS write) was found and fixed, but the
+fix alone did not close this gap; see board-findings.md for the current
+best hypothesis (this DSI host's command path may not deliver generic
+commands while continuous video streaming is active) and the two
+"Scenario"s below, which restate what the fixed command achieves and does
+not achieve rather than asserting success. -->
 
 #### Scenario: A person lists the backlight class
 
@@ -31,17 +37,24 @@ already `depends on BACKLIGHT_CLASS_DEVICE`, itself already `=y` in
 - **THEN** exactly one device appears, with `max_brightness` and
   `brightness` files
 
-#### Scenario: A person writes a new brightness
+#### Scenario: A person writes a new brightness (not yet met)
 
 - **WHEN** a person writes 10%, 50%, then 100% of `max_brightness` to that
   device's `brightness` file
-- **THEN** the panel's visible brightness changes at each write, observable
-  by camera
+- **THEN** the write is accepted with no error and reads back as set, but
+  **the panel's visible brightness does not yet change** — this scenario
+  is board-confirmed to fail today; see board-findings.md
 
 ### Requirement: Brightness survives a modeset or DPMS cycle
 
-<!-- UNVERIFIED: requires a physical modeset/DPMS cycle on the board with
-brightness observed before and after. -->
+<!-- UNVERIFIED, and now confounded by a separate board finding: a DPMS
+off/on cycle was tried and produced a large luminance change, but
+canaan_panel_unprepare() drives backlight_gpio (GPIO25) low while
+canaan_panel_dsi_probe() only ever drives it high once, at probe() -- so
+that change may be the enable gate getting stuck low, not brightness
+being reapplied. This requirement cannot be considered met until the
+underlying "a person can see the panel change brightness" requirement
+above is met at all; see board-findings.md. -->
 
 A brightness value a person has set SHALL still apply after the panel is
 re-enabled by a later modeset or a DPMS-style off/on cycle. The system
@@ -84,6 +97,12 @@ without it.
   change would show
 
 ### Requirement: The Settings brightness stepper drives the real device
+
+<!-- UNVERIFIED: the stepper does reach /sys/class/backlight's brightness
+attribute (confirmed: the udev rule grants write access, and
+tools/device_settings.py's sysfs path is exercised), but per the
+requirement above, the write reaching the attribute does not yet mean the
+panel visibly changes. -->
 
 The existing Settings brightness stepper (`ServiceRequest::Brightness`,
 already implemented in the Rust shell as a stepper rather than a slider,
