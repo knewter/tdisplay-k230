@@ -191,6 +191,18 @@ pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
     (y >= panel_y && y < header_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
 }
 
+/// Whether an upward drag that starts at `y` on the Shade panel itself
+/// may close the sheet. Anywhere on the panel qualifies, except on the
+/// notification list while it can still scroll further up: there the drag
+/// keeps scrolling the list, as it does today.
+pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
+    if notification_index(y, height, view).is_none() {
+        return true;
+    }
+    let count = view.notifications.as_ref().map_or(0, |items| items.events.len());
+    view.notification_scroll >= notification_max_scroll(count, height) - 0.5
+}
+
 /// A tap (no drag past the tap slop) that starts and ends on the dim
 /// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
 /// outside a sheet does everywhere else.
@@ -906,6 +918,52 @@ mod tests {
         );
         close.tick(160);
         assert!(close.take_settled_closed());
+    }
+
+    #[test]
+    fn a_drag_on_the_shade_panel_closes_unless_it_would_scroll_the_list() {
+        let event = |id| NotificationEvent {
+            id,
+            source: "Terminal".into(),
+            icon: None,
+            summary: "Ready".into(),
+            body: String::new(),
+            priority: Priority::Ordinary,
+            timestamp: 0,
+            error: None,
+            dismissible: true,
+            action_available: false,
+        };
+        let empty = ServiceView::default();
+        // Header, quick controls and an empty list area all close.
+        assert!(shade_panel_close_zone(60.0, 1232, &empty));
+        assert!(shade_panel_close_zone(300.0, 1232, &empty));
+        // One notification: the list cannot scroll, so its row closes too.
+        let one = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 1,
+                events: vec![event(1)],
+                preview: None,
+            }),
+            ..ServiceView::default()
+        };
+        assert!(shade_panel_close_zone(300.0, 1232, &one));
+        // A long list that can still scroll keeps the drag as a scroll...
+        let mut long = ServiceView {
+            notifications: Some(NotificationSnapshot {
+                count: 8,
+                events: (1..=8).map(event).collect(),
+                preview: None,
+            }),
+            ..ServiceView::default()
+        };
+        assert!(!shade_panel_close_zone(300.0, 1232, &long));
+        // ...until it is scrolled to its end.
+        long.notification_scroll = notification_max_scroll(8, 1232);
+        assert!(shade_panel_close_zone(300.0, 1232, &long));
+        // The header above the list always closes.
+        long.notification_scroll = 0.0;
+        assert!(shade_panel_close_zone(60.0, 1232, &long));
     }
 
     #[test]

@@ -16,7 +16,7 @@ use k230_shell_rust::{
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
-        close_drag_release_target, close_drag_zone, drawer_close_drag_zone,
+        close_drag_release_target, close_drag_zone, drawer_close_drag_zone, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
         panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelClose,
@@ -2767,7 +2767,9 @@ impl TouchHandler for ShellClient {
                     // elsewhere), and none of this races an already-
                     // animating close from an earlier gesture.
                     self.panel_close_candidate = !self.panel_close.active()
-                        && close_drag_zone(self.route, pos.1, self.panel_travel());
+                        && (close_drag_zone(self.route, pos.1, self.panel_travel())
+                            || (self.route == Route::Shade
+                                && shade_panel_close_zone(pos.1, self.height, &self.service_view)));
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
                     if self.route == Route::Shade {
