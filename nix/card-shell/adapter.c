@@ -1051,14 +1051,22 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 		wl_list_for_each(n, &t->children, link) if (!sync_node(c, n, x, y, previous)) return false;
 		return true;
 	}
-	if (node->type != WLR_SCENE_NODE_BUFFER)
+	if (node->type != WLR_SCENE_NODE_BUFFER) {
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL sync_node fail id=%" PRIu64 " reason=unexpected-node-type type=%d",
+			c->id, node->type);
 		return false;
+	}
 	struct wlr_scene_buffer *source = wlr_scene_buffer_from_node(node);
 	if (!source->buffer)
 		return true;
 	struct mirror *m = mirror(c, source);
-	if (!m || !m->copy)
+	if (!m || !m->copy) {
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL sync_node fail id=%" PRIu64 " reason=%s",
+			c->id, m ? "mirror-copy-missing" : "mirror-create-failed");
 		return false;
+	}
 	m->seen = true;
 	struct wlr_scene_buffer *copy = m->copy;
 	wlr_scene_buffer_set_opacity(copy, source->opacity);
@@ -1159,8 +1167,12 @@ static bool sync_card(struct card *c, size_t index) {
 	bool expanding = shell.policy.mode == CS_EXPANDING && c->id == shell.policy.expand_id;
 	c->full_clip = false;
 	if (entering) {
-		if (!c->source_valid)
+		if (!c->source_valid) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=entry-source-invalid",
+				c->id);
 			return false;
+		}
 		if (c->id == shell.policy.entry_id) {
 			/* The direct-switch entry gesture anchors against its own
 			 * fixed target slot (cs_entry_target_rect), never the
@@ -1172,8 +1184,12 @@ static bool sync_card(struct card *c, size_t index) {
 					c->source_x - shell.output->lx, c->source_y - shell.output->ly,
 					c->view->geometry.width, c->view->geometry.height,
 					entry_target.x - shell.policy.entry_dx, entry_target.y,
-					entry_target.width, entry_target.height))
+					entry_target.width, entry_target.height)) {
+				sway_log(SWAY_INFO,
+					"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=entry-geometry-rejected",
+					c->id);
 				return false;
+			}
 		}
 		struct card *origin = find(shell.policy.entry_id);
 		bool common_full_frame = origin && origin->view->container &&
@@ -1185,8 +1201,13 @@ static bool sync_card(struct card *c, size_t index) {
 			c->view->geometry.width, c->view->geometry.height}, common_full_frame);
 	}
 	if (expanding) {
-		if (!c->source_valid || !c->expand_start_valid)
+		if (!c->source_valid || !c->expand_start_valid) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=expand-source-invalid "
+				"source_valid=%d expand_start_valid=%d",
+				c->id, c->source_valid, c->expand_start_valid);
 			return false;
+		}
 		double progress = shell.policy.expand_progress;
 		r.x = (c->expand_x - shell.output->lx) * (1 - progress) +
 			(c->source_x - shell.output->lx) * progress;
@@ -1201,11 +1222,17 @@ static bool sync_card(struct card *c, size_t index) {
 	c->last_height = lround(r.height);
 	if (!c->tree) {
 		c->tree = wlr_scene_tree_create(shell.deck);
-		if (!c->tree)
+		if (!c->tree) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=tree-alloc-failed", c->id);
 			return false;
+		}
 		c->pixels = wlr_scene_tree_create(c->tree);
-		if (!c->pixels)
+		if (!c->pixels) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=pixels-alloc-failed", c->id);
 			return false;
+		}
 	}
 	wlr_scene_node_set_position(&c->tree->node, c->x, c->y);
 	/* The content's own aspect-fit box within this frame's slot -- the whole
@@ -1246,8 +1273,11 @@ static bool sync_card(struct card *c, size_t index) {
 		c->box_width = lround(scaled_w) + 2 * (int)lround(pad);
 		c->box_height = lround(scaled_h) + 2 * (int)lround(pad);
 	}
-	if (!card_background(c, index == shell.policy.selected, entering || expanding))
+	if (!card_background(c, index == shell.policy.selected, entering || expanding)) {
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=background-failed", c->id);
 		return false;
+	}
 	bool compact = touch_first();
 	const char *app_id = c->content == CS_LIVE ? view_get_app_id(c->view) : NULL;
 	char name_buf[128];
@@ -1301,8 +1331,11 @@ static bool sync_card(struct card *c, size_t index) {
 	int text_size = 20;
 	if (!label_update(c->tree, &c->label, &c->label_text, title,
 			text_w, header_h, text_size,
-			appearance_text(selected)))
+			appearance_text(selected))) {
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=label-failed", c->id);
 		return false;
+	}
 	c->label_selected = selected;
 	int text_y = header_top + (header_h - (text_size + 6)) / 2;
 	label_clip(c->label, text_x, text_y, c->x, c->y, clip_box());
@@ -1339,15 +1372,27 @@ static bool sync_card(struct card *c, size_t index) {
 		wl_list_for_each(m, &c->mirrors, link) m->seen = false;
 		struct wlr_scene_node *previous = NULL;
 		struct wlr_scene_node *n;
-		wl_list_for_each(n, &c->view->content_tree->children,
-						 link) if (!sync_node(c, n, 0, 0, &previous)) return false;
+		wl_list_for_each(n, &c->view->content_tree->children, link)
+			if (!sync_node(c, n, 0, 0, &previous)) {
+				sway_log(SWAY_INFO,
+					"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=mirror-sync-node-failed",
+					c->id);
+				return false;
+			}
 		wl_list_for_each_safe(m, tmp, &c->mirrors, link) if (!m->seen) free_mirror(m);
-		if (wl_list_empty(&c->mirrors))
+		if (wl_list_empty(&c->mirrors)) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=mirrors-empty", c->id);
 			return false;
+		}
 	} else {
 		/* Denied classes never call the mirror helper or inspect private title text. */
-		if (!wl_list_empty(&c->mirrors))
+		if (!wl_list_empty(&c->mirrors)) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=mirrors-unexpected-for-denied",
+				c->id);
 			return false;
+		}
 	}
 	return true;
 }
@@ -1388,8 +1433,10 @@ static bool rebuild_chrome(void) {
 	shell.status = NULL;
 	free(shell.status_text);
 	shell.status_text = NULL;
-	if (!shell.chrome)
+	if (!shell.chrome) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=tree-alloc-failed");
 		return false;
+	}
 	int x = shell.output->lx, y = shell.output->ly + cfg->top_reserved;
 	/* The integrated shell routes by gesture. Keep the old controls available
 	 * only in the opt-in card trial's rollback mode. */
@@ -1404,15 +1451,19 @@ static bool rebuild_chrome(void) {
 		 * decision 2. */
 		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Overview", 176, 40, 24,
 			appearance_text(false));
-		if (!title)
+		if (!title) {
+			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=title-failed");
 			return false;
+		}
 		wlr_scene_node_set_position(&title->node, x + 24, y + 16);
 		const char *text = touch_deck_status(shell.policy.message);
 		if (text) {
 			int status_y = shell.policy.message == CS_MESSAGE_EMPTY ? y + 210 : y + 64;
 			if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
-					cfg->width - 48, 44, 21, appearance_text(false)))
+					cfg->width - 48, 44, 21, appearance_text(false))) {
+				sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=status-failed");
 				return false;
+			}
 			wlr_scene_node_set_position(&shell.status->node, x + 24, status_y);
 		}
 		/* One gesture-hint typography across the deck footer and the Rust
@@ -1421,36 +1472,48 @@ static bool rebuild_chrome(void) {
 		 * `render.rs`'s own converged hint size. */
 		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
 			"Swipe up for apps", cfg->width - 48, 24, 14, appearance_text_muted(false));
-		if (!cue)
+		if (!cue) {
+			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=cue-failed");
 			return false;
+		}
 		wlr_scene_node_set_position(&cue->node, x + 24,
 			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - 40);
 		return true;
 	}
 	if (!button(shell.chrome, x + cfg->width - 152, y + 8, 128, shell.active ? "Back" : "Cards",
-				shell.button_down && shell.pressed_button == 1))
+				shell.button_down && shell.pressed_button == 1)) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=back-cards-button-failed");
 		return false;
+	}
 	if (!shell.active)
 		return true;
 	struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Cards", 250, 56, 42,
 		appearance_text(false));
-	if (!title)
+	if (!title) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=title-failed");
 		return false;
+	}
 	wlr_scene_node_set_position(&title->node, x + 24, y + 8);
 	const char *text = cs_message_text(shell.policy.message);
 	if (!text || !*text)
 		text = "Drag to browse. Tap to resume.";
 	if (!label_update(shell.chrome, &shell.status, &shell.status_text, text, cfg->width - 48, 56,
-					  21, appearance_text(false)))
+					  21, appearance_text(false))) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=status-failed");
 		return false;
+	}
 	wlr_scene_node_set_position(&shell.status->node, x + 24, y + 72);
 	int footer = shell.output->ly + cfg->height - cfg->bottom_reserved - cfg->footer_height;
-	return button(shell.chrome, x + 24, footer, 152, "Previous",
+	if (!(button(shell.chrome, x + 24, footer, 152, "Previous",
 				  shell.button_down && shell.pressed_button == 2) &&
 		   button(shell.chrome, x + 208, footer, 152, "Next",
 				  shell.button_down && shell.pressed_button == 3) &&
 		   button(shell.chrome, x + 392, footer, 152, "Close",
-				  shell.button_down && shell.pressed_button == 4);
+				  shell.button_down && shell.pressed_button == 4))) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=nav-button-failed");
+		return false;
+	}
+	return true;
 }
 /* Only a complete tree is reusable. Layout and feedback changes invalidate it;
  * card motion alone does not recreate labels or buttons. */
@@ -1465,8 +1528,10 @@ static bool chrome_impl(void) {
 		shell.chrome_footer == cfg->footer_height)
 		return true;
 	shell.chrome_valid = false;
-	if (!rebuild_chrome())
+	if (!rebuild_chrome()) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL chrome fail reason=rebuild-chrome-failed");
 		return false;
+	}
 	shell.chrome_message = shell.policy.message;
 	shell.chrome_active = shell.active;
 	shell.chrome_pressed = pressed;
@@ -1492,30 +1557,51 @@ static bool chrome(void) {
 static bool sync_scene_impl(void) {
 	if (!shell.active)
 		return true;
-	if (!appearance_canvas_refresh()) return false;
+	if (!appearance_canvas_refresh()) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL sync_scene fail reason=appearance-canvas-refresh-failed");
+		return false;
+	}
 	if (shell.policy.mode == CS_ENTERING && shell.policy.entry_travel <= 0) {
 		struct card *source = find(shell.policy.entry_id);
 		int sx, sy;
-		if (!source || !wlr_scene_node_coords(&source->view->content_tree->node, &sx, &sy))
+		if (!source || !wlr_scene_node_coords(&source->view->content_tree->node, &sx, &sy)) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_scene fail reason=entry-source-missing id=%" PRIu64,
+				shell.policy.entry_id);
 			return false;
+		}
 		source->source_x = sx; source->source_y = sy; source->source_valid = true;
 		size_t index = shell.policy.count;
 		for (size_t j = 0; j < shell.policy.count; ++j)
 			if (shell.policy.cards[j].id == source->id) { index = j; break; }
-		if (index == shell.policy.count) return false;
+		if (index == shell.policy.count) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_scene fail reason=entry-source-not-found id=%" PRIu64,
+				source->id);
+			return false;
+		}
 		/* See sync_card's identical note: the entry target is its own
 		 * fixed slot, decoupled from the overview's card_rect. */
 		struct cs_rect card = cs_entry_target_rect(&shell.policy);
 		if (!cs_entry_set_geometry(&shell.policy, sx - shell.output->lx,
 				sy - shell.output->ly, source->view->geometry.width,
 				source->view->geometry.height, card.x - shell.policy.entry_dx,
-				card.y, card.width, card.height)) return false;
+				card.y, card.width, card.height)) {
+			sway_log(SWAY_INFO,
+				"K230_CARD_SHELL sync_scene fail reason=entry-geometry-rejected id=%" PRIu64,
+				source->id);
+			return false;
+		}
 	}
 	size_t i = 0;
 	struct card *c;
 	if (shell.policy.mode != CS_EXPANDING)
 		wl_list_for_each(c, &shell.cards, link) c->expand_start_valid = false;
-	wl_list_for_each(c, &shell.cards, link) if (!sync_card(c, i++)) return false;
+	wl_list_for_each(c, &shell.cards, link) if (!sync_card(c, i++)) {
+		sway_log(SWAY_INFO,
+			"K230_CARD_SHELL sync_scene fail reason=card-sync-failed id=%" PRIu64, c->id);
+		return false;
+	}
 	if (shell.policy.mode == CS_ENTERING || shell.policy.mode == CS_EXPANDING) {
 		c = find(shell.policy.mode == CS_ENTERING ? shell.policy.entry_id :
 			shell.policy.expand_id);
