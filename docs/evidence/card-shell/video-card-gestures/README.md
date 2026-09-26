@@ -167,3 +167,127 @@ is actually running.
 A real-finger check by the user on the glass. Everything above is injected
 touch (open, close) or the compositor's own deterministic step/debug IPC
 (switch); no physical finger touched the panel for this change.
+
+## Follow-up: the overview became unusable after opening ("no touches
+## register"), on `integrate/apps-video-catalog`
+
+Reported after the fix above landed on an integration build carrying the
+apps/live-catalog/shade changes rebased with it: "once i open the cards
+list i can't do anything no touches register". Reproduced with injected
+touch (`/run/k230-vo.sh`: launch video, bottom-edge swipe-up, tap, flick,
+tap) against system
+`p40rq5r8w8pfibl7nyhkr6vq4qs0w3n7-nixos-system-nixos-26.11.20260919.20b1ddd`
+(the first fix's commits rebased onto `integrate/apps-video-catalog`, no
+further change yet). Extended the `state mode=...` debug log with
+`entry_settling/entry_reversing/entry_interrupted_hold/entry_progress/
+blocked_until_up/blocked_contacts` to see the mechanism directly instead of
+guessing from mode numbers alone.
+
+**Root cause 1** (`card-shell-policy.c`, commit `f53f451c`): a touch
+landing during the post-release entry settle triggers `cs_down`'s
+existing "catch and reverse" path, which sets `entry_interrupted_hold`
+and freezes `cs_tick`'s own elapsed-time computation until that same
+contact's `up` clears the hold via `cs_up` -- but adapter.c routes every
+`up` through `cs_entry_up_at` while `mode == CS_ENTERING` (covers both
+settling and reversing), which only ever resolves the *original*
+bottom-edge contact and bails for any other id. The interrupting
+contact's own release can therefore never reach `cs_up`, so the hold has
+no way to clear on its own; a chain of closely-spaced touches (tap, then
+flick, then another tap, each landing before the previous one's hold
+could clear) held the transition frozen far longer than its own ~240ms
+clock. Fix: `entry_interrupt_started_ms` bounds the freeze to one settle
+duration regardless of whether that contact's `up` ever arrives, then
+proceeds on the untouched `entry_started_ms` timeline. New policy test
+`entry_settle_completes_despite_stuck_interrupt` models the worst case
+directly (an interrupting touch that never gets an `up` at all).
+
+**Root cause 2** (`adapter.c`, commit `2c838d0b`, then `1ff6a837`):
+board-reproduced separately -- launching video and swiping up almost
+immediately let the video's `xdg_shell` map (`card_shell_observe`) land
+*while* the deck was already `CS_ENTERING`. The brand-new card had never
+captured a scene position, so `sync_card`'s entering branch hard-failed
+it (`reason=entry-source-invalid`), which failed the whole `sync_scene`,
+which `cs_leave`-with-`CS_MESSAGE_FAILED`'d the entire transition back to
+`CS_NORMAL` with a stray `blocked_until_up` left behind -- matching the
+report exactly:
+```
+K230_CARD_SHELL sync_card fail id=6 reason=entry-source-invalid
+K230_CARD_SHELL sync_scene fail reason=card-sync-failed id=6
+K230_CARD_SHELL restored focus=5 message=10
+```
+Fix: only the `entry_id` card (the one actually being dragged away from
+its live position) needs a real captured position; any other card
+appearing mid-transition is now skipped for the rest of the entry
+animation (`reason=entry-source-not-ready`) instead of aborting the whole
+transition. A follow-up board run then surfaced a second-order bug this
+introduced: `sync_card`'s own position capture was gated on
+`!c->hidden`, and a deferred card is marked `hidden` on the very same
+frame, so it could never become `source_valid` -- a later tap-to-expand
+on that exact card failed the identical way forever
+(`reason=expand-source-invalid`). `1ff6a837` lets a card keep retrying
+its position whenever `!c->hidden || !c->source_valid`, preserving the
+existing freeze-once-valid-and-hidden behavior other cards rely on for
+their entry/expand return-to-source animation.
+
+**Performance finding, not fully resolved** (`adapter.c`, commit
+`ef63a564`): with both correctness bugs fixed, the entry animation still
+took ~4.2-4.4s wall-clock end to end (bottom-edge swipe release to
+`CS_DECK`) against the coordinator's ~400ms target, with `state mode=4`
+steps landing roughly every 150-250ms instead of ~20ms. `handle_result`
+was running a full, synchronous `sync_scene()`+`chrome()` pass for
+*every* raw touch motion sample (tens a second during the drag),
+duplicating what the existing 16ms `tick_impl` timer already guarantees
+moments later. Coalescing that redundant per-sample sync to at most once
+per ~12ms during an active gesture is a safe, real improvement (touch
+dispatch itself is unaffected, since it is computed from policy state
+alone) but did **not** measurably shorten the ~4.2s total, because
+`tick_impl`'s own unconditional per-16ms `sync_scene()` call (via
+`card_shell_prepare`) is equally expensive and is not gated by this
+throttle -- the dominant cost is each `sync_scene()` pass itself taking
+~150-200ms wall time while mpv decodes and Pixman recomposites the whole
+568x1232 output in software, not how many times it is invoked per touch
+sample. The coordinator was explicit that the small preview must stay
+live (no freezing, no pausing mpv), so the only path left to meet the
+timing target is to make each recomposition of the video card's mirror
+cheaper while still updating every commit -- e.g. extending the existing
+`SWAY_K230_CARD_SCALED_CACHE` machinery's cheap pre-scaled-buffer path to
+video cards unconditionally, with its "frozen thumbnail" behavior
+removed, rather than reducing how often the mirror is refreshed. That is
+follow-up work, not done here.
+
+### Board verification (system
+`28qilnk3zqlivjgij78ahqnjvnjz8j5y-nixos-system-nixos-26.11.20260919.20b1ddd`,
+`integrate/apps-video-catalog` at `1ff6a837`)
+
+With all three correctness/coalescing commits applied, a full injected
+`/run/k230-vo.sh` run (swipe-up, tap, flick, tap) and a follow-up
+`swaymsg card_shell` enter/next/close cycle produced **zero**
+`reason=...` failure or defer lines and **zero** `message=10`/restored
+focus with `CS_MESSAGE_FAILED` anywhere in the journal across multiple
+repeated runs. Concretely:
+
+- Bottom-edge swipe-up: `state mode=1` (`CS_DECK`) reached, video's own
+  mirror created (`mirror id=6 ... width=568 height=320`), no failure.
+- A tap on the deck's centered card correctly expanded it
+  (`restored focus=5 message=0`, `message=0` is success, not
+  `CS_MESSAGE_FAILED`).
+- `swaymsg card_shell enter` / `next` / `close` against the video card:
+  `close-request id=6` -> `source-gone id=6` -> `unmap id=6`, and
+  `pgrep -x mpv` empty immediately after -- the video actually stops.
+- The overview never got stuck; every gesture eventually completed and
+  the shell returned to a normal, interactive state.
+
+**Not met**: the ~400ms/~20ms-step timing target, for the performance
+reason above -- entry still takes several real seconds end to end while
+mpv is actively decoding. Contact sheet
+`contact-sheet-overview-freeze.png` (webcam, injected/IPC-driven, not a
+real finger): video full-screen live -> overview open with the video's
+real live thumbnail -> overview after close (video card gone, mpv
+exited). Rollback timer disarmed after activation;
+`readlink -f /run/current-system` confirms `28qilnk3...` is what the
+board is actually running, with no video playing and no failed units.
+
+**Still not established**: a real-finger check, and the deeper
+performance fix (cheap live pre-scaled video mirror, decoupled from
+`SWAY_K230_CARD_SCALED_CACHE`'s frozen-thumbnail behavior) needed to meet
+the entry-timing target while keeping the preview live.

@@ -1358,6 +1358,7 @@ DATA f953614e47ffe4c6f174386ef1b3a5b2dc2a0aa2a9c793a1ff133b2c475ea5a2  docs/evid
 DATA 9cad0390d86d67ce59d06acc430b99ee3aceee7f3592b5e31b814fe9ef664544  docs/evidence/card-shell/shade-backdrop-fade/injected-slow-drag-2fps.png
 DATA c73761499696bd030d92b58e72a4640b749de53c6a187259879397a4b78ae8bb  docs/evidence/card-shell/shade-drag-to-close/injected-close-sequence-2fps.png
 DATA 94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9  docs/evidence/card-shell/video-card-gestures/contact-sheet.png
+DATA 536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c  docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png
 DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
 ```
 
@@ -1998,3 +1999,4 @@ records commands, log lines and limits.
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/card-shell/video-card-gestures/contact-sheet.png` | 1431358 | DATA | `94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9` |
+| `docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png` | 1429489 | DATA | `536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c` |
