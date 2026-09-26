@@ -1154,6 +1154,40 @@ static bool card_background(struct card *c, bool selected, bool hidden) {
 	}
 	return true;
 }
+/* An ordinary-maximized card's true on-screen box is its container's own
+ * committed content box (current.content_width/height) -- always exactly
+ * the output's usable area for this card class -- never the view's own
+ * self-reported geometry. A well-behaved client's geometry tracks the
+ * compositor's resize configure exactly, so the two numbers usually agree;
+ * a client that ignores resize configures entirely (mpv's --vo=wlshm,
+ * forced to its own fixed --geometry=WxH regardless of the container's
+ * real size -- see nix/video-session.py and docs/evidence/card-shell/
+ * video-card-gestures/) keeps reporting its small initial decode buffer
+ * (e.g. 480x270) forever, even once card_shell_commit's ordinary_resize
+ * has put the container at the full panel size. Feeding that stale, tiny
+ * geometry to the direct-switch entry gesture's anchor math as the
+ * "source rect" it is dragged away from puts the anchor point far outside
+ * the screen, so cs_entry_set_geometry's own finger-travel-so-far check
+ * always rejects it -- the video-card trap this fixes (K230_CARD_SHELL
+ * sync_scene fail reason=entry-geometry-rejected, then restored
+ * focus=<video id> message=10/CS_MESSAGE_FAILED, with no way to reach the
+ * overview and stop playback). Every ordinary-maximized card must use its
+ * container's real box for this, matching what wlr_scene_node_coords
+ * already reports for its position. The small deck thumbnail's own
+ * aspect-fit sizing (sync_card's content_w/content_h below) intentionally
+ * keeps using the view's real geometry instead -- that one wants the
+ * decoded video's actual aspect ratio, not the full-panel box. */
+static void card_source_size(struct card *c, int *width, int *height) {
+	struct sway_container *con = c->view->container;
+	if (con && con->card_shell_ordinary_maximized &&
+			con->current.content_width > 0 && con->current.content_height > 0) {
+		*width = lround(con->current.content_width);
+		*height = lround(con->current.content_height);
+		return;
+	}
+	*width = c->view->geometry.width;
+	*height = c->view->geometry.height;
+}
 static bool sync_card(struct card *c, size_t index) {
 	struct cs_rect r = cs_card_rect(&shell.policy, index);
 	int source_x, source_y;
@@ -1180,9 +1214,11 @@ static bool sync_card(struct card *c, size_t index) {
 			 * see card-shell-policy.h's cs_config comment on
 			 * entry_card_width/entry_card_height. */
 			struct cs_rect entry_target = cs_entry_target_rect(&shell.policy);
+			int source_w, source_h;
+			card_source_size(c, &source_w, &source_h);
 			if (!cs_entry_set_geometry(&shell.policy,
 					c->source_x - shell.output->lx, c->source_y - shell.output->ly,
-					c->view->geometry.width, c->view->geometry.height,
+					source_w, source_h,
 					entry_target.x - shell.policy.entry_dx, entry_target.y,
 					entry_target.width, entry_target.height)) {
 				sway_log(SWAY_INFO,
@@ -1196,9 +1232,11 @@ static bool sync_card(struct card *c, size_t index) {
 			origin->view->container->card_shell_ordinary_maximized &&
 			c->view->container && c->view->container->card_shell_ordinary_maximized;
 		c->full_clip = common_full_frame;
+		int visual_w, visual_h;
+		card_source_size(c, &visual_w, &visual_h);
 		r = cs_entry_visual_rect(&shell.policy, index, (struct cs_rect){
 			c->source_x - shell.output->lx, c->source_y - shell.output->ly,
-			c->view->geometry.width, c->view->geometry.height}, common_full_frame);
+			visual_w, visual_h}, common_full_frame);
 	}
 	if (expanding) {
 		if (!c->source_valid || !c->expand_start_valid) {
@@ -1372,19 +1410,25 @@ static bool sync_card(struct card *c, size_t index) {
 		wl_list_for_each(m, &c->mirrors, link) m->seen = false;
 		struct wlr_scene_node *previous = NULL;
 		struct wlr_scene_node *n;
+		bool mirror_ok = true;
 		wl_list_for_each(n, &c->view->content_tree->children, link)
-			if (!sync_node(c, n, 0, 0, &previous)) {
-				sway_log(SWAY_INFO,
-					"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=mirror-sync-node-failed",
-					c->id);
-				return false;
-			}
-		wl_list_for_each_safe(m, tmp, &c->mirrors, link) if (!m->seen) free_mirror(m);
-		if (wl_list_empty(&c->mirrors)) {
+			if (!sync_node(c, n, 0, 0, &previous)) { mirror_ok = false; break; }
+		/* A failed attempt discards every mirror for this card, not only the
+		 * unseen ones -- a partially-synced set (some nodes mirrored before
+		 * the failure, some not) is worse than none. */
+		wl_list_for_each_safe(m, tmp, &c->mirrors, link) if (!mirror_ok || !m->seen) free_mirror(m);
+		/* Safety net (see docs/evidence/card-shell/video-card-gestures/): a
+		 * mirror failure -- a wlshm buffer the compositor can't sample, an
+		 * allocation failure under memory pressure, ... -- must never block
+		 * the whole overview from opening and trap the user behind a
+		 * full-screen card with no way out. This one card instead falls
+		 * back to its plain plate + icon + title (the same placeholder
+		 * CS_PRIVATE/CS_UNAVAILABLE cards already show), with no live
+		 * mirror this frame; sync_card still succeeds and the deck opens. */
+		if (!mirror_ok || wl_list_empty(&c->mirrors))
 			sway_log(SWAY_INFO,
-				"K230_CARD_SHELL sync_card fail id=%" PRIu64 " reason=mirrors-empty", c->id);
-			return false;
-		}
+				"K230_CARD_SHELL sync_card mirror-fallback id=%" PRIu64 " reason=%s",
+				c->id, mirror_ok ? "mirrors-empty" : "mirror-sync-node-failed");
 	} else {
 		/* Denied classes never call the mirror helper or inspect private title text. */
 		if (!wl_list_empty(&c->mirrors)) {
@@ -1583,9 +1627,10 @@ static bool sync_scene_impl(void) {
 		/* See sync_card's identical note: the entry target is its own
 		 * fixed slot, decoupled from the overview's card_rect. */
 		struct cs_rect card = cs_entry_target_rect(&shell.policy);
+		int source_w, source_h;
+		card_source_size(source, &source_w, &source_h);
 		if (!cs_entry_set_geometry(&shell.policy, sx - shell.output->lx,
-				sy - shell.output->ly, source->view->geometry.width,
-				source->view->geometry.height, card.x - shell.policy.entry_dx,
+				sy - shell.output->ly, source_w, source_h, card.x - shell.policy.entry_dx,
 				card.y, card.width, card.height)) {
 			sway_log(SWAY_INFO,
 				"K230_CARD_SHELL sync_scene fail reason=entry-geometry-rejected id=%" PRIu64,

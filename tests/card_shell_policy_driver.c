@@ -436,6 +436,35 @@ static void entry_geometry(struct cs_policy *p) {
     assert(cs_entry_set_geometry(p,0,56,568,1176,
                                  target.x,target.y,target.width,target.height));
 }
+/* Regression for the video-card trap (docs/evidence/card-shell/
+ * video-card-gestures/): mpv's --vo=wlshm ignores the compositor's resize
+ * configure and keeps reporting its small initial decode buffer (e.g.
+ * 480x270) as its view geometry forever, even once its container is really
+ * the full panel. adapter.c's sync_card and sync_scene_impl used to feed
+ * that stale, tiny size straight into cs_entry_set_geometry as the "source
+ * rect" the direct-switch entry gesture drags away from. This shows
+ * exactly why that broke: the identical edge/finger state that opens the
+ * overview with the real full-panel source rect (entry_geometry() above)
+ * is rejected outright with a small one, because the far-oversized anchor
+ * fraction ((edge.y-source_y)/source_height) projects the target anchor
+ * point far past the bottom of the screen, making travel negative.
+ * adapter.c's card_source_size() now always feeds the card's real
+ * committed container box for this -- never the view's own (possibly
+ * stale) geometry -- see its comment. A rejected call must leave the
+ * gesture retryable rather than aborting it: entry_travel stays 0 and a
+ * later call with the correct box still succeeds. */
+static void entry_geometry_rejects_undersized_source(void) {
+    struct cs_policy p=setup();
+    assert(cs_begin_entry(&p,1,284,1220,10,202).consumed);
+    struct cs_rect target=cs_entry_target_rect(&p);
+    assert(!cs_entry_set_geometry(&p,0,56,480,270,
+                                  target.x,target.y,target.width,target.height));
+    assert(p.entry_travel==0);
+    assert(cs_entry_set_geometry(&p,0,56,568,1176,
+                                  target.x,target.y,target.width,target.height));
+    assert(p.entry_travel>0);
+    cs_finish(&p);
+}
 static void finish_entry(struct cs_policy *p,uint64_t time_ms,uint64_t target) {
     assert(cs_entry_up_at(p,p->edge.contact_id,time_ms).consumed);
     assert(p->entry_settling && p->mode==CS_ENTERING);
@@ -1115,6 +1144,7 @@ int main(int argc,char **argv) {
         {"repeated-timestamp-rejection",repeated_timestamp_rejection},
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
         {"tracked-entry",tracked_entry},
+        {"entry-geometry-rejects-undersized-source",entry_geometry_rejects_undersized_source},
         {"two-axis-entry",two_axis_entry},
         {"two-axis-conflicts",two_axis_conflicts},
         {"direct-carousel",direct_carousel},
