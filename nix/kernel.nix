@@ -563,6 +563,9 @@ EOM
       patch -p1 < ${./patches/canaan-panel-restore-power.patch}
       test "$(grep -c 'MIPI_DCS_WRITE_CONTROL_DISPLAY' drivers/gpu/drm/panel/panel-canaan-universal.c)" = 0
 
+      # Use the DSI core's packet framing and bounded, serialized LP command
+      # transport after the earlier panel and stage-1 source edits above.
+      patch -p1 < ${./patches/canaan-dsi-message-transport.patch}
     '';
   };
 

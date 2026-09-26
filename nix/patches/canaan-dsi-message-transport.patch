@@ -1,0 +1,457 @@
+--- a/drivers/gpu/drm/canaan/canaan_dsi.c
++++ b/drivers/gpu/drm/canaan/canaan_dsi.c
+@@ -12,6 +12,7 @@
+ #include <linux/component.h>
+ #include <linux/crc-ccitt.h>
+ #include <linux/module.h>
++#include <linux/iopoll.h>
+ #include <linux/of_address.h>
+ #include <linux/of.h>
+ #include <linux/phy/phy-mipi-dphy.h>
+@@ -65,6 +66,14 @@
+ #define LPCLK_CTRL (0x94)
+ #define PCKHDL_CFG (0x2c)
+ 
++#define DPI_LP_CMD_TIM 0x18
++#define ENABLE_LOW_POWER_CMD BIT(15)
++#define ACK_RQST_EN BIT(1)
++/* DW-MIPI-DSI: short/long generic and DCS packets, reads, max-read-size. */
++#define CMD_MODE_ALL_LP (BIT(24) | GENMASK(19, 16) | GENMASK(14, 8))
++#define OUTVACT_LPCMD_TIME(p) (((p) & 0xff) << 16)
++#define INVACT_LPCMD_TIME(p) ((p) & 0xff)
++
+ #define CMD_PKT_STATUS_TIMEOUT_US 20000
+ 
+ #define TXPHY_445_5_M (295)
+@@ -92,134 +101,97 @@
+ 	return readl(dsi->base + reg);
+ }
+ 
+-static void canaan_dsi_inst_abort(struct canaan_dsi *dsi)
+-{
+-	// TODO
+-}
+-
+-static int canaan_dsi_inst_wait_for_completion(struct canaan_dsi *dsi)
+-{
+-	// TODO
+-	return 0;
+-}
+-
+-static int dw_mipi_dsi_gen_pkt_hdr_write(struct canaan_dsi *dsi, u32 hdr_val)
+-{
++/* Packet framing and LP-command configuration follow dw-mipi-dsi.c in
++ * this kernel tree. Keep video running; do not switch MODE_CFG around a
++ * command or reinitialize the PHY from a backlight update.
++ */
++static void canaan_dsi_message_config(struct canaan_dsi *dsi,
++				      const struct mipi_dsi_msg *msg)
++{
++	u32 val;
++
++	/* Same fixed LP windows as the upstream DW host driver. */
++	dsi_write(dsi, DPI_LP_CMD_TIM,
++		  OUTVACT_LPCMD_TIME(16) | INVACT_LPCMD_TIME(4));
++	val = dsi_read(dsi, CMD_MODE_CFG) & ~(CMD_MODE_ALL_LP | ACK_RQST_EN);
++	if (msg->flags & MIPI_DSI_MSG_USE_LPM)
++		val |= CMD_MODE_ALL_LP;
++	if (msg->flags & MIPI_DSI_MSG_REQ_ACK)
++		val |= ACK_RQST_EN;
++	dsi_write(dsi, CMD_MODE_CFG, val);
++
++	val = dsi_read(dsi, VID_MODE_CFG);
++	if (msg->flags & MIPI_DSI_MSG_USE_LPM)
++		val |= ENABLE_LOW_POWER_CMD;
++	else
++		val &= ~ENABLE_LOW_POWER_CMD;
++	dsi_write(dsi, VID_MODE_CFG, val);
++}
++
++static int canaan_dsi_write_packet(struct canaan_dsi *dsi,
++				   const struct mipi_dsi_packet *packet)
++{
++	const u8 *payload = packet->payload;
++	size_t len = packet->payload_length;
++	u32 val;
++	__le32 word;
+ 	int ret;
+-	u32 val;
++
++	while (len) {
++		size_t count = min_t(size_t, len, sizeof(word));
++
++		/* Check space before writing, including the first payload word. */
++		ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
++					 !(val & GEN_PLD_W_FULL), 1000,
++					 CMD_PKT_STATUS_TIMEOUT_US);
++		if (ret)
++			return ret;
++		word = 0;
++		memcpy(&word, payload, count);
++		dsi_write(dsi, DSI_GEN_PLD_DATA, le32_to_cpu(word));
++		payload += count;
++		len -= count;
++	}
+ 
+ 	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+ 				 !(val & GEN_CMD_FULL), 1000,
+ 				 CMD_PKT_STATUS_TIMEOUT_US);
+-	if (ret) {
+-		dev_err(dsi->dev, "failed to get available command FIFO\n");
+-		return ret;
+-	}
+-
+-	dsi_write(dsi, DSI_GEN_HDR, hdr_val);
+-	return 0;
+-}
+-
+-static int canaan_dsi_dcs_write_short(struct canaan_dsi *dsi,
+-				      const struct mipi_dsi_msg *msg)
+-{
+-	uint32_t hdr_val = 0;
+-	uint32_t vcid = msg->channel;
+-	__le32 word = 0;
+-	const u8 *tx_buf = msg->tx_buf;
+-
+-	hdr_val = (tx_buf[0] << 8) + (vcid << 6) + 0x5;
+-	memcpy(&word, &hdr_val, sizeof(hdr_val));
+-	return dw_mipi_dsi_gen_pkt_hdr_write(dsi, le32_to_cpu(word));
+-}
+-
+-static int canaan_dsi_dcs_write_long(struct canaan_dsi *dsi,
+-				     const struct mipi_dsi_msg *msg)
+-{
+-	int ret = 0;
+-	uint32_t val;
+-	uint32_t hdr_val = 0;
+-	uint32_t len = msg->tx_len;
+-	uint32_t pld_data_bytes = sizeof(u32);
+-	uint32_t vcid = msg->channel;
+-	__le32 word;
+-	const u8 *tx_buf = msg->tx_buf;
+-
+-	while (len) {
+-		if (len < pld_data_bytes) {
+-			word = 0;
+-			memcpy(&word, tx_buf, len);
+-			dsi_write(dsi, DSI_GEN_PLD_DATA, le32_to_cpu(word));
+-			len = 0;
+-		} else {
+-			memcpy(&word, tx_buf, pld_data_bytes);
+-			dsi_write(dsi, DSI_GEN_PLD_DATA, le32_to_cpu(word));
+-			tx_buf += pld_data_bytes;
+-			len -= pld_data_bytes;
+-		}
+-
+-		ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+-					 !(val & GEN_PLD_W_FULL), 1000,
+-					 CMD_PKT_STATUS_TIMEOUT_US);
+-		if (ret) {
+-			dev_err(dsi->dev,
+-				"failed to get available write payload FIFO\n");
+-			return ret;
+-		}
+-	}
+-	word = 0;
+-	// set cmd tpye
+-	hdr_val = (msg->tx_len << 8) + (vcid << 6) + 0x39;
+-	memcpy(&word, &hdr_val, sizeof(hdr_val));
+-	return dw_mipi_dsi_gen_pkt_hdr_write(dsi, le32_to_cpu(word));
+-}
+-
+-static int canaan_dsi_dcs_read(struct canaan_dsi *dsi,
+-			       const struct mipi_dsi_msg *msg)
+-{
+-	const u8 *tx_buf = msg->tx_buf;
+-	u8 *rx_buf = msg->rx_buf;
+-	u32 hdr_val, val;
+-	int ret, i, drain;
+-
+-	if (!tx_buf || !rx_buf || msg->tx_len < 1 || msg->rx_len < 1)
+-		return -EINVAL;
+-
+-	/*
+-	 * Drain anything a previous read left in the payload FIFO, bounded:
+-	 * an unbounded drain here would be the third infinite register-poll
+-	 * loop in this driver, and the other two hung the board.
+-	 */
+-	for (drain = 0; drain < 16; drain++) {
+-		if (readl(dsi->base + DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)
+-			break;
+-		readl(dsi->base + DSI_GEN_PLD_DATA);
+-	}
+-
+-	/* 0x06 is DCS read, one parameter; same header layout as the writes */
+-	hdr_val = (tx_buf[0] << 8) | (msg->channel << 6) | 0x06;
+-	ret = dw_mipi_dsi_gen_pkt_hdr_write(dsi, hdr_val);
+ 	if (ret)
+ 		return ret;
+-
++	memcpy(&word, packet->header, sizeof(word));
++	dsi_write(dsi, DSI_GEN_HDR, le32_to_cpu(word));
++
++	/* Queueing is not completion: wait for both FIFOs to drain. */
++	return readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
++		(val & (GEN_CMD_EMPTY | GEN_PLD_W_EMPTY)) ==
++		(GEN_CMD_EMPTY | GEN_PLD_W_EMPTY), 1000,
++		CMD_PKT_STATUS_TIMEOUT_US);
++}
++
++static int canaan_dsi_read_response(struct canaan_dsi *dsi,
++				    const struct mipi_dsi_msg *msg)
++{
++	u8 *rx_buf = msg->rx_buf;
++	u32 val;
++	int ret;
++	size_t i;
++
++	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
++				 !(val & GEN_RD_CMD_BUSY), 1000,
++				 CMD_PKT_STATUS_TIMEOUT_US);
++	if (ret)
++		return ret;
+ 	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+ 				 !(val & GEN_PLD_R_EMPTY), 1000,
+ 				 CMD_PKT_STATUS_TIMEOUT_US);
+-	if (ret) {
+-		dev_err(dsi->dev,
+-			"DCS read 0x%02x: panel did not answer (status 0x%x)\n",
+-			tx_buf[0], readl(dsi->base + DSI_CMD_PKT_STATUS));
++	if (ret)
+ 		return ret;
+-	}
+-
+-	val = readl(dsi->base + DSI_GEN_PLD_DATA);
+-	for (i = 0; i < msg->rx_len && i < 4; i++)
++
++	/* Keep the existing one-byte DCS response contract. */
++	val = dsi_read(dsi, DSI_GEN_PLD_DATA);
++	for (i = 0; i < msg->rx_len; i++)
+ 		rx_buf[i] = (val >> (8 * i)) & 0xff;
+-
+-	dev_info(dsi->dev, "DCS read 0x%02x -> 0x%08x (%d bytes)\n",
+-		 tx_buf[0], val, i);
+-
+-	return i;
++	return msg->rx_len;
+ }
+ 
+ static void canaan_dsi_set_lan_num(struct canaan_dsi *dsi, int lan_num)
+@@ -456,6 +428,9 @@
+ 		dsi->stage1_handoff_pending = false;
+ 		dsi->stage1_handoff_active = canaan_dsi_stage1_mode_matches(adjusted_mode);
+ 		if (dsi->stage1_handoff_active) {
++			mutex_lock(&dsi->transfer_lock);
++			dsi->transfer_ready = true;
++			mutex_unlock(&dsi->transfer_lock);
+ 			if (dsi->panel)
+ 				drm_panel_prepare(dsi->panel);
+ 			if (dsi->panel)
+@@ -466,6 +441,8 @@
+ 		dev_warn(dsi->dev, "stage 1 splash: DSI mode differs; reinitializing\n");
+ 	}
+ 
++	mutex_lock(&dsi->transfer_lock);
++	dsi->transfer_ready = false;
+ 	if (canaan_dsi_clk_cfg(dsi, adjusted_mode->clock))
+ 		dev_err(dsi->dev, "MIPI clock not support\n");
+ 
+@@ -473,6 +450,8 @@
+ 	canaan_dsi_set_lan_num(dsi, device->lanes);
+ 	// set lpdt
+ 	canaan_dsi_lpdt_init(dsi, adjusted_mode);
++	dsi->transfer_ready = true;
++	mutex_unlock(&dsi->transfer_lock);
+ 
+ 	/*
+ 	 * Enable the DSI block.
+@@ -481,26 +460,15 @@
+ 	if (dsi->panel)
+ 		drm_panel_prepare(dsi->panel);
+ 
+-	/*
+-	 * FIXME: This should be moved after the switch to HS mode.
+-	 *
+-	 * Unfortunately, once in HS mode, it seems like we're not
+-	 * able to send DCS commands anymore, which would prevent any
+-	 * panel to send any DCS command as part as their enable
+-	 * method, which is quite common.
+-	 *
+-	 * I haven't seen any artifact due to that sub-optimal
+-	 * ordering on the panels I've tested it with, so I guess this
+-	 * will do for now, until that IP is better understood.
+-	 */
++	/* Panel callbacks may send messages; never hold transfer_lock here. */
+ 	if (dsi->panel)
+ 		drm_panel_enable(dsi->panel);
+ 
+-	//dsi enable
++	mutex_lock(&dsi->transfer_lock);
+ 	canaan_mipi_dsi_set_dsi_enable(dsi);
+-
+ 	if (dsi_test_en == 1)
+ 		canaan_mipi_dsi_set_test_mode(dsi);
++	mutex_unlock(&dsi->transfer_lock);
+ }
+ 
+ static void canaan_dsi_encoder_disable(struct drm_encoder *encoder)
+@@ -515,10 +483,15 @@
+ 
+ 	DRM_DEBUG_DRIVER("Disabling DSI output\n");
+ 
+-	if (dsi->panel) {
++	/* Allow the backlight's final blanking command before closing the host. */
++	if (dsi->panel)
+ 		drm_panel_disable(dsi->panel);
++	mutex_lock(&dsi->transfer_lock);
++	dsi->transfer_ready = false;
++	mutex_unlock(&dsi->transfer_lock);
++	/* A racing brightness request now gets -EPIPE before touching MMIO. */
++	if (dsi->panel)
+ 		drm_panel_unprepare(dsi->panel);
+-	}
+ }
+ 
+ bool canaan_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
+@@ -600,31 +573,85 @@
+ 				   const struct mipi_dsi_msg *msg)
+ {
+ 	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+-	int ret;
+-
+-	ret = canaan_dsi_inst_wait_for_completion(dsi);
+-	if (ret < 0)
+-		canaan_dsi_inst_abort(dsi);
+-
++	struct mipi_dsi_packet packet;
++	int ret, drain;
++	u32 val;
++
++	if (!msg->tx_buf || !msg->tx_len || msg->tx_len > 0xffff)
++		return -EINVAL;
++	if (msg->type != MIPI_DSI_DCS_READ && msg->rx_len)
++		return -EINVAL;
+ 	switch (msg->type) {
+ 	case MIPI_DSI_DCS_SHORT_WRITE:
+-		ret = canaan_dsi_dcs_write_short(dsi, msg);
++		if (msg->tx_len != 1)
++			return -EINVAL;
+ 		break;
+ 	case MIPI_DSI_GENERIC_SHORT_WRITE_2_PARAM:
++	case MIPI_DSI_DCS_SHORT_WRITE_PARAM:
++		if (msg->tx_len != 2)
++			return -EINVAL;
++		break;
+ 	case MIPI_DSI_DCS_LONG_WRITE:
+-	case MIPI_DSI_DCS_SHORT_WRITE_PARAM:
+-		ret = canaan_dsi_dcs_write_long(dsi, msg);
+ 		break;
+-
+ 	case MIPI_DSI_DCS_READ:
+-		if (msg->rx_len == 1) {
+-			ret = canaan_dsi_dcs_read(dsi, msg);
+-			break;
++		if (msg->tx_len != 1 || !msg->rx_buf ||
++		    msg->rx_len != 1)
++			return -EINVAL;
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
++
++	ret = mipi_dsi_create_packet(&packet, msg);
++	if (ret)
++		return ret;
++
++	mutex_lock(&dsi->transfer_lock);
++	if (!dsi->transfer_ready) {
++		ret = -EPIPE;
++		goto out;
++	}
++
++	/* A previous timeout can leave queued payload behind. Do not append a
++	 * new command or change LP policy until both transmit FIFOs are empty.
++	 */
++	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
++		(val & (GEN_CMD_EMPTY | GEN_PLD_W_EMPTY)) ==
++		(GEN_CMD_EMPTY | GEN_PLD_W_EMPTY), 1000,
++		CMD_PKT_STATUS_TIMEOUT_US);
++	if (ret)
++		goto out;
++
++	/* Do not mistake a stale read FIFO word for this command's reply. */
++	if (msg->rx_len) {
++		for (drain = 0; drain < 16; drain++) {
++			if (dsi_read(dsi, DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)
++				break;
++			dsi_read(dsi, DSI_GEN_PLD_DATA);
+ 		}
+-		fallthrough;
+-	default:
+-		ret = -EINVAL;
+-	}
++		if (!(dsi_read(dsi, DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)) {
++			ret = -EIO;
++			goto out;
++		}
++	}
++
++	canaan_dsi_message_config(dsi, msg);
++	ret = canaan_dsi_write_packet(dsi, &packet);
++	if (!ret) {
++		if (msg->rx_len)
++			ret = canaan_dsi_read_response(dsi, msg);
++		else
++			ret = packet.size;
++	}
++	if (ret < 0)
++		dev_err(dsi->dev, "DSI transfer type 0x%02x failed: %d (status 0x%x)\n",
++			msg->type, ret, dsi_read(dsi, DSI_CMD_PKT_STATUS));
++	/* Like dw-mipi-dsi, retain the message configuration until the next
++	 * serialized transfer. In particular, do not flip a pending timed-out
++	 * LP command into HS mode while restoring registers.
++	 */
++out:
++	mutex_unlock(&dsi->transfer_lock);
+ 	return ret;
+ }
+ 
+@@ -706,6 +733,7 @@
+ 	dsi->dev = dev;
+ 	dsi->host.ops = &canaan_dsi_host_ops;
+ 	dsi->host.dev = dev;
++	mutex_init(&dsi->transfer_lock);
+ 	dsi->stage1_handoff_pending =
+ 		of_property_read_bool(of_chosen, "canaan,stage1-splash");
+ 
+--- a/drivers/gpu/drm/canaan/canaan_dsi.h
++++ b/drivers/gpu/drm/canaan/canaan_dsi.h
+@@ -9,6 +9,7 @@
+ #ifndef _CANAAN_DSI_H_
+ #define _CANAAN_DSI_H_
+ 
++#include <linux/mutex.h>
+ #include <drm/drm_connector.h>
+ #include <drm/drm_encoder.h>
+ #include <drm/drm_mipi_dsi.h>
+@@ -34,6 +35,9 @@
+ 	void __iomem *base;
+ 	u32 phy_freq;
+ 	u32 clk_freq;
++	/* Serializes host transfers with enable/disable hardware sections. */
++	struct mutex transfer_lock;
++	bool transfer_ready;
+ 	bool stage1_handoff_pending;
+ 	bool stage1_handoff_active;
+ };
+--- a/drivers/gpu/drm/panel/panel-canaan-universal.c
++++ b/drivers/gpu/drm/panel/panel-canaan-universal.c
+@@ -475,7 +475,7 @@
+ 
+ 	// Panel Device Tree Read..
+ 
+-	dsi->mode_flags = MIPI_DSI_MODE_VIDEO_SYNC_PULSE;
++	dsi->mode_flags = MIPI_DSI_MODE_VIDEO_SYNC_PULSE | MIPI_DSI_MODE_LPM;
+ 	dsi->format = MIPI_DSI_FMT_RGB888;
+ 	dsi->lanes = ctx->lan_num;
+ 
