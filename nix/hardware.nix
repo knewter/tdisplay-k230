@@ -268,4 +268,18 @@ in
       RestartSec = 1;
     };
   };
+
+  # --- the-panel-brightness-is-adjustable ---------------------------------
+  # The kernel now registers a real /sys/class/backlight device (see
+  # nix/kernel.nix); tools/device_settings.py already reads and writes
+  # /sys/class/backlight/*/brightness generically and already runs as the
+  # unprivileged `shell` user (nix/shell.nix defines that user/group; the
+  # Rust shell client spawns k230-settings directly, no sudo). The only
+  # remaining gap is write permission on that sysfs attribute. A udev rule
+  # is the narrowest of the three options the working agreement names (a
+  # udev rule, a group, or a helper-daemon broker) -- see
+  # openspec/changes/the-panel-brightness-is-adjustable/design.md decision 7.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="backlight", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chgrp shell /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
+  '';
 }

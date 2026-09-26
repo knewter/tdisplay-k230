@@ -1008,6 +1008,61 @@ mod tests {
         );
     }
 
+    #[test]
+    fn brightness_stepper_clamps_at_both_ends() {
+        // display/backlight: the stepper now drives a real backlight
+        // device with a real 0..100 sysfs range (nix/kernel.nix,
+        // nix/dts/display-rm69a10-568x1232.dtsi). Previously there was no
+        // backend at all for these clamps to matter against; now a
+        // request that would step past either end must saturate rather
+        // than wrap or overshoot the backing `brightness` attribute.
+        let control = |state, value| Control {
+            state,
+            value,
+            label: "Brightness".into(),
+            detail: None,
+            action: None,
+        };
+        let mut view = ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: control(ControlState::ReadOnly, None),
+                brightness: control(ControlState::Writable, Some(ControlValue::Percent(5))),
+                keyboard: control(ControlState::Action, None),
+                motion: control(ControlState::ReadOnly, None),
+            }),
+            ..ServiceView::default()
+        };
+        // The "down" (-10%) side of the stepper, near the low end:
+        // saturating_sub must clamp at 0, never wrap around u8.
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (400.0, 365.0),
+                (400.0, 365.0),
+                568,
+                1232,
+                &view
+            ),
+            Some(PanelIntent::Request(ServiceRequest::Brightness(0)))
+        );
+
+        view.settings.as_mut().unwrap().brightness =
+            control(ControlState::Writable, Some(ControlValue::Percent(95)));
+        // The "up" (+10%) side, near the high end: must clamp at 100,
+        // never overshoot past the backlight's real max_brightness.
+        assert_eq!(
+            panel_intent(
+                Route::Settings,
+                (480.0, 365.0),
+                (480.0, 365.0),
+                568,
+                1232,
+                &view
+            ),
+            Some(PanelIntent::Request(ServiceRequest::Brightness(100)))
+        );
+    }
+
     /// Shade and Settings are both top-anchored overlay sheets (Settings
     /// opens from within the shade's own downward pull -- design.md
     /// decision 3), so `docs/design/shell-ux-critique.md` S2's "three
