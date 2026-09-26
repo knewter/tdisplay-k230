@@ -115,6 +115,10 @@ static struct {
 	struct cs_policy policy;
 	bool initialized, active, preparing, injecting;
 	uint64_t gesture_seq;
+	/* Last time handle_result actually ran a synchronous sync_scene()+
+	 * chrome() pass for a plain (non-structural) redraw -- see
+	 * handle_result's own throttle comment. */
+	uint64_t last_motion_sync_ms;
 	enum cs_message chrome_message;
 	bool chrome_active, chrome_valid;
 	int chrome_pressed, chrome_x, chrome_y;
@@ -1794,10 +1798,43 @@ static void handle_result(struct cs_result r) {
 		}
 	}
 	if (shell.active && (r.actions & (CS_REDRAW | CS_RECONCILE | CS_SHRINK))) {
-		if (!sync_scene() || !chrome()) {
-			struct cs_result leave = cs_leave(&shell.policy);
-			leave.message = CS_MESSAGE_FAILED;
-			restore(leave);
+		/* A continuous gesture (an active drag, or the direct-switch entry
+		 * animation while a finger is down or the release settle is still
+		 * running) delivers a plain CS_REDRAW for nearly every raw touch
+		 * sample -- tens of them a second, each synchronously re-running
+		 * the WHOLE scene sync here rather than waiting for the existing
+		 * 16ms tick_impl timer (which already re-syncs unconditionally
+		 * every 16ms via card_shell_prepare). Re-syncing a card whose
+		 * mirror content is cheap to recompose is not noticeable at that
+		 * rate; a playing video's mirror is not cheap under this
+		 * compositor's Pixman software path, and board evidence (see
+		 * docs/evidence/card-shell/video-card-gestures/) showed each of
+		 * these redundant per-sample syncs costing on the order of
+		 * 150-250ms while a video card was live, so a 20-sample injected
+		 * swipe took several real seconds to reach the finger's already-
+		 * completed position -- indistinguishable, to the user, from the
+		 * gesture not registering. A structural change (RECONCILE/SHRINK:
+		 * cards added/removed, entering/leaving the deck) always syncs
+		 * immediately; a plain redraw during an active gesture is
+		 * coalesced to at most once per that same ~16ms tick period, since
+		 * the timer is already guaranteed to re-sync this soon regardless
+		 * (tick_impl schedules a frame for exactly this mode set). This
+		 * changes only how often the SCENE is redrawn from an
+		 * already-updated policy, never the policy result/consumed status
+		 * touch dispatch relies on. */
+		bool structural = r.actions & (CS_RECONCILE | CS_SHRINK);
+		bool continuous = shell.policy.mode == CS_ENTERING ||
+			shell.policy.mode == CS_DRAGGING || shell.policy.mode == CS_EXPANDING;
+		uint64_t now = now_ms();
+		bool throttled = !structural && continuous && shell.last_motion_sync_ms &&
+			now - shell.last_motion_sync_ms < 12;
+		if (!throttled) {
+			shell.last_motion_sync_ms = now;
+			if (!sync_scene() || !chrome()) {
+				struct cs_result leave = cs_leave(&shell.policy);
+				leave.message = CS_MESSAGE_FAILED;
+				restore(leave);
+			}
 		}
 	}
 	if (r.actions)
