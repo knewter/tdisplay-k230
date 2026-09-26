@@ -130,6 +130,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
 	p->entry_full_rect=(struct cs_rect){0};
     p->entry_reverse_from=0;p->entry_settle_from=0;p->entry_started_ms=0;
+    p->entry_interrupt_started_ms=0;
     p->entry_goal_progress=0;p->entry_settle_anchor=0;
     p->entry_release_velocity_x=0;p->entry_release_velocity_progress=0;
     p->entry_sample_x=0;p->entry_sample_y=0;p->entry_sample_ms=0;
@@ -321,6 +322,7 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
 		p->entry_release_velocity_x=0;p->entry_release_velocity_progress=0;
 		p->blocked_until_up=true;p->blocked_contacts=1;
 		p->entry_interrupted_hold=true;
+		p->entry_interrupt_started_ms=time_ms;
 		return result(p,CS_REDRAW,true);
 	}
 	if (p->mode==CS_EXPANDING) {
@@ -629,10 +631,28 @@ struct cs_result cs_stream_cancel(struct cs_policy *p) {
 }
 struct cs_result cs_tick(struct cs_policy *p,uint64_t time_ms) {
 	if (p->mode==CS_ENTERING && (p->entry_reversing || p->entry_settling)) {
-		if (p->entry_interrupted_hold) return result(p,0,false);
+		double duration=p->config.reduced_motion ? 100 : 240;
+		if (p->entry_interrupted_hold) {
+			/* A genuinely held interrupting touch pauses the animation in
+			 * place -- but never for longer than one settle duration. The
+			 * hold used to be gated purely on the interrupting contact's
+			 * own up arriving, with no time bound: a chain of
+			 * closely-spaced touches (a tap, then a flick, then another
+			 * tap, each landing before the previous one's up had been
+			 * processed) could hold the transition frozen for seconds
+			 * instead of completing on its own ~240ms clock, so no touch
+			 * after the first ever reached a card (see docs/evidence/
+			 * card-shell/video-card-gestures/). Past the cap, proceed as
+			 * if the interrupting touch had already been released: entry_
+			 * started_ms is untouched, so the animation below picks up
+			 * exactly where a prompt release would have left it. */
+			uint64_t held=time_ms>=p->entry_interrupt_started_ms ?
+				time_ms-p->entry_interrupt_started_ms : 0;
+			if (held<duration) return result(p,0,false);
+			p->entry_interrupted_hold=false;
+		}
 		uint64_t elapsed=time_ms>=p->entry_started_ms ? time_ms-p->entry_started_ms : 0;
 		if (!elapsed) return result(p,0,false);
-		double duration=p->config.reduced_motion ? 100 : 240;
 		/* A fast upward release near the deck may pass its exact endpoint by
 		 * a few percent, then spring back. Clamping at one would halt the
 		 * derivative while the source is still moving. Increase damping for

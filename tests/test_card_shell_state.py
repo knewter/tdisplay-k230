@@ -13,6 +13,7 @@ CASES = ('enter-expand horizontal overview-geometry '
          'close-recovery slow-drag repeated-timestamp-throw repeated-timestamp-rejection source-loss restore-gesture multi-contact edge '
          'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons stream-cancel stream-cancel-multitouch tracked-entry '
          'entry-geometry-rejects-undersized-source '
+         'entry-settle-completes-despite-stuck-interrupt '
          'two-axis-entry two-axis-conflicts direct-carousel app-switch-swipe tracked-expansion randomized').split()
 
 

@@ -1778,8 +1778,14 @@ static void handle_result(struct cs_result r) {
 		}
 	}
 	if (r.actions)
-		sway_log(SWAY_DEBUG, "K230_CARD_SHELL state mode=%d actions=%u message=%d cards=%zu",
-				 shell.policy.mode, r.actions, r.message, shell.policy.count);
+		sway_log(SWAY_DEBUG,
+				 "K230_CARD_SHELL state mode=%d actions=%u message=%d cards=%zu "
+				 "entry_settling=%d entry_reversing=%d entry_interrupted_hold=%d "
+				 "entry_progress=%.3f blocked_until_up=%d blocked_contacts=%u",
+				 shell.policy.mode, r.actions, r.message, shell.policy.count,
+				 shell.policy.entry_settling, shell.policy.entry_reversing,
+				 shell.policy.entry_interrupted_hold, shell.policy.entry_progress,
+				 shell.policy.blocked_until_up, shell.policy.blocked_contacts);
 }
 static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	unsigned keyboard_end = kg_end_stream(&shell.keyboard,

@@ -144,6 +144,15 @@ struct cs_policy {
 	struct cs_entry_touch_sample entry_history[CS_ENTRY_HISTORY_CAP];
 	size_t entry_history_count;
 	uint64_t entry_started_ms;
+	/* When entry_interrupted_hold began (the interrupting touch-down's own
+	 * time_ms) -- bounds how long cs_tick may freeze the entry animation
+	 * for a held interrupting contact. Without a bound, a chain of
+	 * closely-spaced touches (e.g. a tap, then a flick, then another tap,
+	 * each landing before the previous one's up is processed) can hold the
+	 * transition frozen for seconds instead of the ~240ms it is meant to
+	 * take: see cs_tick's own comment and docs/evidence/card-shell/
+	 * video-card-gestures/. */
+	uint64_t entry_interrupt_started_ms;
 	bool entry_reversing, entry_settling, entry_interrupted_hold;
 	double expand_progress, expand_reverse_from;
 	uint64_t expand_id, expand_started_ms;

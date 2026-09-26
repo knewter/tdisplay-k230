@@ -465,6 +465,40 @@ static void entry_geometry_rejects_undersized_source(void) {
     assert(p.entry_travel>0);
     cs_finish(&p);
 }
+/* Regression for the video-card overview freeze (docs/evidence/card-shell/
+ * video-card-gestures/): adapter.c routes every touch "up" through
+ * cs_entry_up_at while mode==CS_ENTERING (its own routing comment), and
+ * that function only ever resolves the ORIGINAL bottom-edge contact -- any
+ * other contact's up (an interrupting touch landing during the
+ * post-release settle) can never reach cs_up, so entry_interrupted_hold
+ * used to have no way to clear on its own. Model the worst case directly:
+ * an interrupting touch lands mid-settle and never gets an up at all
+ * (indistinguishable, from the policy's own state, from a busy compositor
+ * whose frame loop keeps issuing ticks without ever routing that up
+ * through). The settle must still finish -- and reach a stable mode, here
+ * CS_NORMAL via the reversal cs_leave triggers -- on its own bounded
+ * timeline instead of hanging on that missing up. */
+static void entry_settle_completes_despite_stuck_interrupt(void) {
+    struct cs_policy p=setup();
+    assert(cs_begin_entry(&p,1,200,1220,0,101).consumed);
+    struct cs_rect target=cs_entry_target_rect(&p);
+    assert(cs_entry_set_geometry(&p,0,56,568,1176,target.x,target.y,target.width,target.height));
+    cs_entry_motion(&p,1,200,1100,10);
+    struct cs_result r=cs_entry_up(&p,1);
+    assert(r.consumed && p.mode==CS_ENTERING && p.entry_settling);
+    assert(cs_down(&p,2,200,400,20).consumed);
+    assert(p.entry_reversing && p.entry_interrupted_hold && !p.entry_settling);
+    /* Repeated ticks -- as a busy, continuously-redrawing compositor frame
+     * loop would issue -- keep it frozen only up to one settle duration,
+     * never indefinitely. */
+    cs_tick(&p,100);
+    assert(p.mode==CS_ENTERING && p.entry_interrupted_hold);
+    cs_tick(&p,200);
+    assert(p.mode==CS_ENTERING && p.entry_interrupted_hold);
+    struct cs_result done=cs_tick(&p,20+240+50);
+    assert((done.actions&CS_RESTORE) && p.mode==CS_NORMAL);
+    cs_finish(&p);
+}
 static void finish_entry(struct cs_policy *p,uint64_t time_ms,uint64_t target) {
     assert(cs_entry_up_at(p,p->edge.contact_id,time_ms).consumed);
     assert(p->entry_settling && p->mode==CS_ENTERING);
@@ -1145,6 +1179,7 @@ int main(int argc,char **argv) {
         {"restore-gesture",restore_gesture},{"multi-contact",multi_contact},{"edge",edge},
         {"tracked-entry",tracked_entry},
         {"entry-geometry-rejects-undersized-source",entry_geometry_rejects_undersized_source},
+        {"entry-settle-completes-despite-stuck-interrupt",entry_settle_completes_despite_stuck_interrupt},
         {"two-axis-entry",two_axis_entry},
         {"two-axis-conflicts",two_axis_conflicts},
         {"direct-carousel",direct_carousel},
