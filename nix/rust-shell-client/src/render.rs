@@ -3425,36 +3425,43 @@ mod tests {
                 id: "fixture.desktop".into(),
                 name: "Terminal".into(),
                 icon: Some("terminal-app".into()),
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "monitor.desktop".into(),
                 name: "Monitor".into(),
                 icon: Some("system-monitor-app".into()),
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "video.desktop".into(),
                 name: "Video".into(),
                 icon: None,
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "files.desktop".into(),
                 name: "Files".into(),
                 icon: None,
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "editor.desktop".into(),
                 name: "Editor".into(),
                 icon: None,
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "help.desktop".into(),
                 name: "Help".into(),
                 icon: None,
+                path: PathBuf::new(),
             },
             AppEntry {
                 id: "foot-server.desktop".into(),
                 name: "Foot Server".into(),
                 icon: None,
+                path: PathBuf::new(),
             },
         ];
         let unavailable = Control {
@@ -4412,6 +4419,7 @@ mod tests {
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
+            path: PathBuf::new(),
         }];
 
         let mut open = vec![0; 568 * 1232 * 4];
@@ -4636,6 +4644,7 @@ mod tests {
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
+            path: PathBuf::new(),
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
         draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
@@ -4653,6 +4662,7 @@ mod tests {
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
+            path: PathBuf::new(),
         }];
         let mut cache = RendererCache::default();
         let mut frame = vec![0; 568 * 1232 * 4];
@@ -4706,6 +4716,7 @@ mod tests {
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some(icon.to_string_lossy().into_owned()),
+            path: PathBuf::new(),
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
         draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
@@ -4737,6 +4748,7 @@ mod tests {
             id: "fixture.desktop".into(),
             name: "Fixture".into(),
             icon: Some("fixture".into()),
+            path: PathBuf::new(),
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
         cache
@@ -4766,6 +4778,7 @@ mod tests {
                 id: format!("app{index}.desktop"),
                 name: format!("App {index}"),
                 icon: None,
+                path: PathBuf::new(),
             })
             .collect::<Vec<_>>();
         let params = RenderParams {
@@ -4807,6 +4820,7 @@ mod tests {
                 id: format!("fixture-{index}.desktop"),
                 name: format!("Fixture {index}"),
                 icon: None,
+                path: PathBuf::new(),
             })
             .collect::<Vec<_>>();
         let params = RenderParams {

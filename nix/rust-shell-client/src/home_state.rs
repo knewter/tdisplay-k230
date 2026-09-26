@@ -309,6 +309,7 @@ mod tests {
             id: id.into(),
             name: name.into(),
             icon: None,
+            path: PathBuf::new(),
         }
     }
 

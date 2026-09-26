@@ -3,9 +3,10 @@
 //! Smithay Client Toolkit's MIT-licensed v0.20.0 simple_layer example.
 use gio::prelude::*;
 use k230_shell_rust::{
+    app_watch::CatalogWatcher,
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
-    catalog::{installed_apps, AppEntry},
+    catalog::{applications_dirs, scan_apps, AppEntry},
     configure_size, frame_bytes,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
@@ -753,10 +754,18 @@ fn swaymsg_back(swaymsg: &std::path::Path) -> Result<(), String> {
     }
 }
 
-fn launch_selected(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
+/// `path` is the exact `.desktop` file `catalog::scan_apps` most recently
+/// found for this id -- re-parsed fresh here with
+/// [`gio::DesktopAppInfo::from_filename`], never through GIO's own id-keyed
+/// cache (`DesktopAppInfo::new`), so a launch always reflects the file that
+/// is actually on disk right now, including one a live rescan only just
+/// picked up.
+fn launch_selected(path: &std::path::Path, swaymsg: &std::path::Path) -> Result<(), String> {
     swaymsg_back(swaymsg)?;
-    let app = gio::DesktopAppInfo::new(id).ok_or("installed app disappeared")?;
-    if !app.should_show() {
+    let app = gio::DesktopAppInfo::from_filename(path).ok_or("installed app disappeared")?;
+    // `should_show()` alone does not cover `Hidden` -- see
+    // `catalog::parse_entry`'s own comment on the same gap.
+    if !app.should_show() || app.is_hidden() {
         return Err("installed app is no longer visible".into());
     }
     app.launch(&[], None::<&gio::AppLaunchContext>)
@@ -767,14 +776,20 @@ fn launch_selected(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
 /// identified, otherwise fall back to the exact same launch path the drawer
 /// already uses. The focus lookup is a best-effort heuristic (see
 /// `home_screen::app_id_matches`'s own doc); any miss or IPC failure simply
-/// falls through to `launch_selected` rather than doing nothing.
-fn focus_or_launch(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
-    if let Some(con_id) = running_con_id(id, swaymsg) {
+/// falls through to `launch_selected` rather than doing nothing. `path` is
+/// `None` when `id` is a Home pin whose `.desktop` file the catalog no
+/// longer finds (an uninstalled app) -- focusing an already-running
+/// instance can still work by id/exec-hint alone, but there is nothing left
+/// to launch, so that case reports the same "installed app disappeared"
+/// error a stale drawer tap always has.
+fn focus_or_launch(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Result<(), String> {
+    if let Some(con_id) = running_con_id(id, path, swaymsg) {
         if focus_con(con_id, swaymsg).is_ok() {
             return Ok(());
         }
     }
-    launch_selected(id, swaymsg)
+    let path = path.ok_or("installed app disappeared")?;
+    launch_selected(path, swaymsg)
 }
 
 /// Runs `swaymsg -r -t get_tree` (the same invocation
@@ -782,8 +797,8 @@ fn focus_or_launch(id: &str, swaymsg: &std::path::Path) -> Result<(), String> {
 /// looks for a container matching `id`. `None` on any failure -- a timeout,
 /// a missing binary, an oversized or unparsable reply -- so a lookup
 /// problem always degrades to an ordinary launch, never a stuck tap.
-fn running_con_id(id: &str, swaymsg: &std::path::Path) -> Option<i64> {
-    let exec_hint = gio::DesktopAppInfo::new(id).and_then(|app| {
+fn running_con_id(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Option<i64> {
+    let exec_hint = path.and_then(|path| gio::DesktopAppInfo::from_filename(path)).and_then(|app| {
         app.executable()
             .file_name()
             .map(|name| name.to_string_lossy().into_owned())
@@ -856,6 +871,10 @@ struct ShellClient {
     frame_pending: bool,
     started: Instant,
     apps: Vec<AppEntry>,
+    /// Set (or refreshed) whenever `app_watch::CatalogWatcher` sees a
+    /// relevant change; cleared once the debounced rescan it names has run.
+    /// See `serve`'s main loop for the debounce itself.
+    catalog_pending_rescan: Option<Instant>,
     nav: DrawerNavigation,
     nav_tick: Instant,
     launch_sender: Sender<(u64, Result<(), String>)>,
@@ -2071,7 +2090,7 @@ impl ShellClient {
         let Some(app) = self.apps.get(index) else {
             return;
         };
-        let id = app.id.clone();
+        let path = app.path.clone();
         let swaymsg = self.swaymsg.clone();
         let sender = self.launch_sender.clone();
         self.launch_seq = self.launch_seq.wrapping_add(1);
@@ -2084,7 +2103,7 @@ impl ShellClient {
             let result = swaymsg
                 .as_deref()
                 .ok_or_else(|| "K230_SWAYMSG is unavailable".into())
-                .and_then(|path| launch_selected(&id, path));
+                .and_then(|swaymsg| launch_selected(&path, swaymsg));
             let _ = sender.send((attempt, result));
         });
     }
@@ -2104,12 +2123,17 @@ impl ShellClient {
             self.log("home-launch-failed K230_SWAYMSG is unavailable");
             return;
         };
+        // Looked up against the current catalog *now*, not inside the
+        // spawned thread: a pin can outlive its app (see
+        // `home_state`'s own `missing_entry_keeps_its_slot_on_load` doc),
+        // and `path` being `None` here is exactly that case, not a race.
+        let path = self.apps.iter().find(|app| app.id == id).map(|app| app.path.clone());
         let sender = self.launch_sender.clone();
         self.launch_seq = self.launch_seq.wrapping_add(1);
         let attempt = self.launch_seq;
         self.launch_in_flight = true;
         thread::spawn(move || {
-            let result = focus_or_launch(&id, &swaymsg);
+            let result = focus_or_launch(&id, path.as_deref(), &swaymsg);
             let _ = sender.send((attempt, result));
         });
     }
@@ -2153,6 +2177,32 @@ impl ShellClient {
 
     fn home_mark_dirty(&mut self) {
         self.home_surface.dirty = true;
+    }
+
+    /// If `app_watch::CatalogWatcher` armed a debounced rescan and its
+    /// deadline has now passed, re-scans `candidates` and, only if the
+    /// resulting list actually differs from `self.apps`, adopts it and
+    /// marks both the drawer (`self.dirty`) and Home (`home_mark_dirty`)
+    /// dirty so each repaints against the new catalog. A rescan that comes
+    /// back identical (a `close-write` on a file whose content didn't
+    /// change the catalog's shape, say) never touches `self.apps` or marks
+    /// anything dirty -- this must not repaint on every burst of
+    /// filesystem noise, only on an actual change.
+    fn maybe_rescan_catalog(&mut self, candidates: &[PathBuf]) {
+        let Some(deadline) = self.catalog_pending_rescan else {
+            return;
+        };
+        if Instant::now() < deadline {
+            return;
+        }
+        self.catalog_pending_rescan = None;
+        let fresh = scan_apps(candidates);
+        if fresh != self.apps {
+            self.log("catalog-changed");
+            self.apps = fresh;
+            self.dirty = true;
+            self.home_mark_dirty();
+        }
     }
 
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -3442,8 +3492,19 @@ impl ProvidesRegistryState for ShellClient {
 
 fn serve() -> Result<(), String> {
     // Catalog discovery runs before connecting Wayland. A slow XDG scan never
-    // stalls an owned touch stream or a route acknowledgement.
-    let apps = installed_apps();
+    // stalls an owned touch stream or a route acknowledgement. `candidates`
+    // -- the `applications` dirs in XDG precedence order -- is also exactly
+    // what `CatalogWatcher` watches and every later rescan re-scans, so the
+    // watch set and the live catalog can never drift apart.
+    let candidates = applications_dirs();
+    let apps = scan_apps(&candidates);
+    let mut catalog_watch = match CatalogWatcher::new(&candidates) {
+        Ok(watcher) => Some(watcher),
+        Err(error) => {
+            eprintln!("rust-shell 0ms catalog-watch-unavailable {error}");
+            None
+        }
+    };
     let mut routes = RouteServer::new(socket_path()?)?;
     let mut appearance = AppearanceReceiver::bind(
         appearance_socket_path()?,
@@ -3557,6 +3618,7 @@ fn serve() -> Result<(), String> {
         frame_pending: false,
         started: Instant::now(),
         apps,
+        catalog_pending_rescan: None,
         nav: DrawerNavigation::default(),
         nav_tick: Instant::now(),
         launch_sender,
@@ -3698,6 +3760,7 @@ fn serve() -> Result<(), String> {
             };
             state.theme_reply(reply);
         }
+        state.maybe_rescan_catalog(&candidates);
         if state.renderer.poll_theme_image(state.width, state.height) {
             state.dirty = true;
         }
@@ -4386,6 +4449,11 @@ fn serve() -> Result<(), String> {
                 events: libc::POLLIN,
                 revents: 0,
             },
+            libc::pollfd {
+                fd: catalog_watch.as_ref().map_or(-1, CatalogWatcher::as_raw_fd),
+                events: libc::POLLIN,
+                revents: 0,
+            },
         ];
         let timeout = if state.reveal.settling()
             || state.nav.coasting()
@@ -4395,6 +4463,7 @@ fn serve() -> Result<(), String> {
             || routes.has_line()
             || pending_appearance.is_some()
             || state.home.is_animating()
+            || state.catalog_pending_rescan.is_some()
             || (state.route == Route::Settings
                 && (state.theme_carousel.is_animating()
                     || state.background_carousel.is_animating()
@@ -4424,6 +4493,19 @@ fn serve() -> Result<(), String> {
         if fds[3].revents & libc::POLLIN != 0 {
             if let Err(error) = appearance.accept() {
                 state.log(&format!("appearance-accept-failed {error}"));
+            }
+        }
+        if fds[5].revents & libc::POLLIN != 0 {
+            if let Some(watcher) = catalog_watch.as_mut() {
+                if watcher.drain(&candidates) {
+                    // Debounced, not immediate: a NixOS switch or a busy
+                    // profile rebuild touches many files in a burst, and
+                    // rescanning once per burst (not once per event) is the
+                    // whole point of this deadline -- see the loop's own
+                    // `catalog_pending_rescan` check below for where it
+                    // actually fires.
+                    state.catalog_pending_rescan = Some(Instant::now() + Duration::from_millis(250));
+                }
             }
         }
         if routes.has_line()
@@ -4471,7 +4553,7 @@ fn main() {
             let selected = Route::parse(format!("{route}\n").as_bytes())
                 .ok_or("unsupported fixture route".to_string());
             selected.and_then(|selected| export_png(
-                &PathBuf::from(output), 568, 1232, selected, &installed_apps()))
+                &PathBuf::from(output), 568, 1232, selected, &scan_apps(&applications_dirs())))
         }
         [_, flag, source, generation_root, width, height] if flag == "--write-wallpaper-cache" => {
             // Precompute a prepared theme generation's panel-sized wallpaper

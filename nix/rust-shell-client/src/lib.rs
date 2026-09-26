@@ -1,5 +1,6 @@
 //! Testable state boundaries for the opt-in Rust shell client.
 
+pub mod app_watch;
 pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
