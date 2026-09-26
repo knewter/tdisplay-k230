@@ -1,0 +1,17 @@
+{
+  "source": "4b33dda9",
+  "landed_source": "ef7f7d1e",
+  "base_system": "/nix/store/9h5z3gk24gb3kdal037plsxqrmd7dx1y-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "trial_package": "/nix/store/7pjmarasi2x8nbmzsy67anl0n6slnbgy-k230-card-shell",
+  "trial_sway": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "normal_sway": "/nix/store/vvca8zksyarjb7s7vfrs1p9c9lpp9jnn-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "collected_utc": "2026-09-26T23:41:11.752868+00:00",
+  "provenance": "Board capture",
+  "activation": "Temporary systemd runtime ExecStart override; same existing system/config/environment",
+  "physical_touch_acceptance": false,
+  "matching_system_installed": false,
+  "sha256": {
+    "before.png": "3debac1206e0fc716715a440fa142478acf5f5bdbed195783f0eca7eddbac040",
+    "rounded.png": "5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e"
+  }
+}
