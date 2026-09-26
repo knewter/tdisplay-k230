@@ -156,6 +156,17 @@ pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
+/// A tap (no drag past the tap slop) that starts and ends on the dim
+/// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
+/// outside a sheet does everywhere else.
+pub fn backdrop_tap(route: Route, start: (f64, f64), end: (f64, f64), panel_travel: f64) -> bool {
+    matches!(route, Route::Shade | Route::Settings)
+        && start.1 >= panel_travel
+        && end.1 >= panel_travel
+        && (end.0 - start.0).abs() <= 18.0
+        && (end.1 - start.1).abs() <= 18.0
+}
+
 /// Where a released close drag settles: fully closed (`0.0`) or back open
 /// (`1.0`). A fast upward flick commits to closing outright; otherwise it
 /// is a plain threshold on how much of the panel was already pulled away.
@@ -291,7 +302,9 @@ impl PanelClose {
         let fraction = (now_ms.saturating_sub(settle.started_ms) as f64
             / (settle.duration_ms.max(1) as f64))
             .clamp(0.0, 1.0);
-        self.progress = settle.from + (settle.target - settle.from) * fraction;
+        // Ease out: the sheet leaves the finger at speed and slows into place.
+        let eased = 1.0 - (1.0 - fraction).powi(3);
+        self.progress = settle.from + (settle.target - settle.from) * eased;
         if fraction >= 1.0 {
             self.settle = None;
             self.just_settled_closed = settle.target <= 0.0;
@@ -1194,4 +1207,15 @@ mod tests {
     fn keyboard_gesture_hint_requires_integrated_session_flag() {
         assert!(!ServiceView::default().keyboard_gesture_hint);
     }
+
+    #[test]
+    fn a_tap_on_the_backdrop_closes_but_a_tap_on_the_sheet_does_not() {
+        let travel = 800.0;
+        assert!(backdrop_tap(Route::Shade, (284.0, 1000.0), (286.0, 1004.0), travel));
+        assert!(backdrop_tap(Route::Settings, (100.0, 900.0), (100.0, 900.0), travel));
+        assert!(!backdrop_tap(Route::Shade, (284.0, 500.0), (284.0, 500.0), travel));
+        assert!(!backdrop_tap(Route::Shade, (284.0, 1000.0), (284.0, 900.0), travel));
+        assert!(!backdrop_tap(Route::Drawer, (284.0, 1000.0), (284.0, 1000.0), travel));
+    }
+
 }

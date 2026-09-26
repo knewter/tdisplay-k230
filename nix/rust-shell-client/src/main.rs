@@ -16,7 +16,7 @@ use k230_shell_rust::{
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
         action_message, close_drag_engaged, close_drag_progress, close_drag_release_target,
-        close_drag_zone, notification_max_scroll, notification_swipe_hit,
+        backdrop_tap, close_drag_zone, notification_max_scroll, notification_swipe_hit,
         notification_swipe_offset, notification_swipe_release, notification_swipe_start,
         notification_swipe_valid, panel_intent, Confirmation, NotificationCoast,
         NotificationSwipeSettle, PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
@@ -3050,6 +3050,10 @@ impl TouchHandler for ShellClient {
                                 });
                         } else if self.panel_scrolled {
                             // A down during coasting is a tap-to-stop, never an event action.
+                        } else if backdrop_tap(self.route, start, point, self.panel_travel()) {
+                            // A tap on the dim backdrop below the sheet closes it, the
+                            // same animated way a released close drag does.
+                            self.begin_animated_close();
                         } else if let Some(intent) = panel_intent(
                             self.route,
                             start,
