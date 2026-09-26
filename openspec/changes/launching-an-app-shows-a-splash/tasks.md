@@ -80,7 +80,9 @@
   `/nix/store/71v0ssqfkp89yaw8ssxs2d08ysg97rbv-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
 - [x] 4.4 `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`
   -- verify: builds to
-  `/nix/store/xig229wz0brq1arjj35478gfr3kwcpcq-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  `/nix/store/4mrxgn1n57a2v1dq17b01y9y10swhmg3-nixos-system-nixos-26.11.20260919.20b1ddd`
+  (reran after rebasing onto `integrate/apps-video-catalog`'s later
+  card-shell commits, which changed this path from the pre-rebase run).
 - [x] 4.5 `python3 tools/blob-scan.py` -- verify: exits 0 (`every binary is
   accounted for`; this change adds only source files).
 
