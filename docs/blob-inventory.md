@@ -1356,6 +1356,7 @@ DATA 656e18b2eeb9bc304411d42cc656d366bd2e8947e7692536d3f1a36b2f8c7903  docs/evid
 DATA 839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a  docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png
 DATA f953614e47ffe4c6f174386ef1b3a5b2dc2a0aa2a9c793a1ff133b2c475ea5a2  docs/evidence/card-shell/shade-backdrop-fade/injected-mid-drag.png
 DATA 9cad0390d86d67ce59d06acc430b99ee3aceee7f3592b5e31b814fe9ef664544  docs/evidence/card-shell/shade-backdrop-fade/injected-slow-drag-2fps.png
+DATA c73761499696bd030d92b58e72a4640b749de53c6a187259879397a4b78ae8bb  docs/evidence/card-shell/shade-drag-to-close/injected-close-sequence-2fps.png
 DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
 ```
 
@@ -1982,4 +1983,5 @@ These DATA images tile 16 consecutive full-resolution webcam frames of the physi
 | `docs/evidence/card-shell/bottom-band-flicker/before-max-render-time.png` | 1552620 | DATA | `839c1f58897058e97e289553d97b636d8529743161aed19ef0f95326b1beea7a` |
 | `docs/evidence/card-shell/shade-backdrop-fade/injected-mid-drag.png` | 475810 | DATA | `f953614e47ffe4c6f174386ef1b3a5b2dc2a0aa2a9c793a1ff133b2c475ea5a2` |
 | `docs/evidence/card-shell/shade-backdrop-fade/injected-slow-drag-2fps.png` | 2893980 | DATA | `9cad0390d86d67ce59d06acc430b99ee3aceee7f3592b5e31b814fe9ef664544` |
+| `docs/evidence/card-shell/shade-drag-to-close/injected-close-sequence-2fps.png` | 1541990 | DATA | `c73761499696bd030d92b58e72a4640b749de53c6a187259879397a4b78ae8bb` |
 | `docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png` | 1873557 | DATA | `cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a` |
