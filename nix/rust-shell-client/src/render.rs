@@ -44,6 +44,49 @@ fn color(cr: &Context, rgb: u32, alpha: f64) {
     );
 }
 
+/// Alpha for the full-screen tray backdrop (Shade/Settings), as a pure
+/// function of `progress` -- the panel's revealed fraction `p` in `[0, 1]`,
+/// which is also exactly the visible-height fraction of the panel (its
+/// screen-space top edge sits at `-(1-p) * panel_h`, so the portion above
+/// y=0 is clipped and the visible slice is `p * panel_h` of `panel_h`).
+/// The curve is a smoothstep ease-in-out (`3p^2 - 2p^3`) rather than linear,
+/// so the dim reads as a fade tied to the drag instead of a pop, matching
+/// the panel's own reveal at every instant -- live during the drag and
+/// during the open/close/cancel settle alike, since both drive the same
+/// `progress` value. `target` is the existing fully-open alpha (0.35).
+fn tray_backdrop_alpha(progress: f64, target: f64) -> f64 {
+    let p = progress.clamp(0.0, 1.0);
+    let eased = p * p * (3.0 - 2.0 * p);
+    eased * target
+}
+
+/// Paints the stationary, eased tray backdrop straight into an ARGB32
+/// (premultiplied, byte order B/G/R/A) canvas that has already had the
+/// panel's own opaque pixels composited onto it -- `RendererCache::draw`'s
+/// shifted copy of `static_pixels`, or `render_candidate_overlay`'s own
+/// fresh bake (always effectively at `progress: 1.0`, the only progress it
+/// is ever used at -- see its own doc). Filling only pixels the panel left
+/// transparent, rather than the whole canvas, is what keeps this correct
+/// regardless of which of those two produced `canvas`: it dims exactly the
+/// live deck behind the tray without ever touching the panel's own already-
+/// opaque pixels. Cheap on purpose: no Cairo call and no per-pixel float
+/// math -- black premultiplies to `(0, 0, 0, alpha)` at any alpha, so this
+/// is one straight byte-only pass, no allocation.
+fn apply_tray_backdrop(canvas: &mut [u8], route: Route, progress: f64) {
+    if !matches!(route, Route::Settings | Route::Shade) {
+        return;
+    }
+    let alpha_byte = (tray_backdrop_alpha(progress, 0.35) * 255.0).round() as u8;
+    if alpha_byte == 0 {
+        return;
+    }
+    for pixel in canvas.chunks_exact_mut(4) {
+        if pixel[3] == 0 {
+            pixel[3] = alpha_byte;
+        }
+    }
+}
+
 fn brush_color(value: &str) -> Option<(f64, f64, f64, f64)> {
     let hex = value.strip_prefix('#')?;
     if hex.len() != 8 {
@@ -1360,6 +1403,17 @@ fn scene(
         Route::Settings => settings_panel_h(h - panel_y, chooser, services),
         _ => h - panel_y,
     };
+    // No backdrop dim is painted here. `scene()` shapes the panel's *opaque*
+    // content only; `RendererCache::draw` always calls this at a fixed
+    // `progress: 1.0` and then cheaply row-shifts the resulting bitmap for
+    // whatever the live drag/settle progress actually is (see its own doc
+    // comment) -- so anything painted here, at any alpha, would be dragged
+    // along by that same shift instead of staying put on screen. That was
+    // the reported bug: a dim rect baked in here translated with the panel
+    // and only ever covered a shrinking sliver of the screen instead of a
+    // stationary, live-eased fade. `RendererCache::draw` now paints the
+    // full-screen backdrop itself, in screen space, after the shift, using
+    // the caller's actual per-frame `progress` -- see `tray_backdrop_alpha`.
     let hidden = 1.0 - progress.clamp(0.0, 1.0);
     cr.translate(
         0.0,
@@ -1408,13 +1462,10 @@ fn scene(
         let _ = cr.fill();
     }
     // Whatever content-sizing (Settings) or the fixed Shade cap leaves
-    // beneath the panel is the live deck, not empty air; dim it rather than
+    // beneath the panel is the live deck, not empty air; `RendererCache::
+    // draw` dims it with a stationary, live-eased backdrop rather than
     // either an opaque void or an undimmed, jarring reveal (finding P0-2).
-    if matches!(route, Route::Settings | Route::Shade) && panel_y + panel_h < h {
-        color(cr, 0x000000, 0.35);
-        cr.rectangle(0.0, panel_y + panel_h, w, h - panel_y - panel_h);
-        let _ = cr.fill();
-    }
+    // Nothing is painted here -- see this function's own doc above.
     if matches!(route, Route::Drawer | Route::Shade) {
         rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
         color(cr, style.accent, 0.82);
@@ -2894,6 +2945,11 @@ impl RendererCache {
             Some(&self.thumbnails),
             self.pressed,
         )?;
+        // Matches `draw()`'s own post-shift backdrop pass exactly (same
+        // `progress: 1.0` this bake just used), so a later `adopt_
+        // prerendered_overlay` of these bytes is indistinguishable from a
+        // fresh `draw()` at rest -- see `apply_tray_backdrop`'s own doc.
+        apply_tray_backdrop(&mut pixels, route, 1.0);
         Ok(pixels)
     }
 
@@ -3031,6 +3087,7 @@ impl RendererCache {
             canvas[target..target + row_bytes]
                 .copy_from_slice(&self.static_pixels[source..source + row_bytes]);
         }
+        apply_tray_backdrop(canvas, route, progress);
         // Task: tap-to-apply (2026-09-25) removed the Preview page's own
         // Apply/Cancel footer entirely, along with the live-overlay paint
         // that used to keep it correct on top of a cached/pre-rendered
@@ -3110,6 +3167,45 @@ mod layout_tests {
         // The available height doubles as a hard cap even below the minimum,
         // so a panel is never asked to be taller than the screen itself.
         assert_eq!(content_sized_panel_h(300.0, 400.0, 500.0), 400.0);
+    }
+
+    #[test]
+    fn tray_backdrop_alpha_is_zero_closed_and_target_open() {
+        assert_eq!(tray_backdrop_alpha(0.0, 0.35), 0.0);
+        assert_eq!(tray_backdrop_alpha(1.0, 0.35), 0.35);
+        // Progress is a fraction; anything outside [0, 1] clamps rather than
+        // over/undershooting the backdrop (a settle overshoot must never
+        // pop past the authored target or go negative).
+        assert_eq!(tray_backdrop_alpha(-0.4, 0.35), 0.0);
+        assert_eq!(tray_backdrop_alpha(1.4, 0.35), 0.35);
+    }
+
+    #[test]
+    fn tray_backdrop_alpha_is_monotonic_in_progress() {
+        let samples: Vec<f64> = (0..=20)
+            .map(|step| tray_backdrop_alpha(f64::from(step) / 20.0, 0.35))
+            .collect();
+        for pair in samples.windows(2) {
+            assert!(
+                pair[1] >= pair[0],
+                "alpha must never decrease as the tray reveals further: {samples:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn tray_backdrop_alpha_eases_in_and_out_around_the_midpoint() {
+        // Smoothstep (3p^2 - 2p^3) is symmetric about p=0.5 and flatter than
+        // linear near both ends -- an ease-in-out, not a pop or a straight
+        // ramp. Exactly half of the target at the midpoint...
+        let mid = tray_backdrop_alpha(0.5, 0.35);
+        assert!((mid - 0.175).abs() < 1e-9);
+        // ...and below the linear diagonal near the start (slow ease-in)
+        // and above it near the end (slow ease-out into full alpha).
+        let near_start = tray_backdrop_alpha(0.1, 0.35);
+        assert!(near_start < 0.35 * 0.1);
+        let near_end = tray_backdrop_alpha(0.9, 0.35);
+        assert!(near_end > 0.35 * 0.9);
     }
 }
 
@@ -4102,6 +4198,101 @@ mod tests {
         renderer.draw(&mut failed, params, &[]).unwrap();
         let region = (355 * 568 * 4)..(375 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    #[test]
+    fn shade_backdrop_fades_full_screen_and_stays_put_at_partial_drag() {
+        // Regression coverage for the reported bug: the dim backdrop used to
+        // be drawn in the panel's own (translated) coordinate frame, so it
+        // slid with the drag and only covered whatever sliver of the screen
+        // happened to still land below the panel's *current* on-screen
+        // position -- at a partial reveal that left a hard, undimmed edge
+        // near the bottom of the screen instead of a uniform fade. These
+        // pixels are captured directly from `scene()` via a real Cairo
+        // surface (host build evidence; no board or QEMU involved), at a
+        // handful of drag fractions standing in for live frames during a
+        // pull-down.
+        let mut renderer = RendererCache::default();
+        // Alpha is stored premultiplied by Cairo; on a fully transparent
+        // destination (Route::Shade's own clear-to-transparent paint) the
+        // stored byte is just round(alpha * 255).
+        let expected_byte =
+            |progress: f64| (tray_backdrop_alpha(progress, 0.35) * 255.0).round() as i64;
+        // Shade's panel is capped at 0.65 * height (see `panel_h` above), so
+        // y=1000 of 1232 sits below the panel at every progress in this
+        // sweep -- it is backdrop-only, never the panel's own background.
+        let pixel_alpha = |frame: &[u8]| -> i64 {
+            let index = (1000 * 568 + 280) * 4;
+            i64::from(frame[index + 3])
+        };
+        let mut previous = -1i64;
+        for tenths in 0..=10 {
+            let progress = f64::from(tenths) / 10.0;
+            let mut frame = vec![0; 568 * 1232 * 4];
+            renderer
+                .draw(
+                    &mut frame,
+                    RenderParams {
+                        width: 568,
+                        height: 1232,
+                        route: Route::Shade,
+                        progress,
+                        scroll: 0.0,
+                    },
+                    &[],
+                )
+                .unwrap();
+            let actual = pixel_alpha(&frame);
+            // Eased alpha, tracked live at this exact fraction -- no pop.
+            assert!(
+                (actual - expected_byte(progress)).abs() <= 1,
+                "progress {progress}: expected ~{}, got {actual}",
+                expected_byte(progress)
+            );
+            // Monotonic: the backdrop only ever deepens as the tray reveals
+            // further, whether mid-drag or mid-settle.
+            assert!(actual >= previous, "alpha regressed at progress {progress}");
+            previous = actual;
+        }
+        // At progress=0 there is no pop: the backdrop starts fully clear.
+        let mut closed = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut closed,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Shade,
+                    progress: 0.0,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        assert_eq!(pixel_alpha(&closed), 0);
+        // At a partial drag the old bug left a hard, undimmed edge near the
+        // bottom of the screen because the dim rectangle translated with
+        // the panel and only ever covered a shrinking sliver above it; the
+        // fixed backdrop instead dims uniformly all the way to the bottom.
+        let mut partial = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut partial,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Shade,
+                    progress: 0.3,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        let bottom_edge_index = (1220 * 568 + 280) * 4;
+        assert!(
+            partial[bottom_edge_index + 3] > 0,
+            "backdrop must reach the bottom edge of the screen at a partial drag, not stop short"
+        );
     }
 
     #[test]
