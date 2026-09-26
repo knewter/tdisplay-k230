@@ -104,6 +104,215 @@ pub const SWIPE_VERTICAL_CANCEL: f64 = 45.0;
 const OVERLAY_DISMISS_ZONE_Y: f64 = 180.0;
 const OVERLAY_DISMISS_DY: f64 = -90.0;
 
+/// A touch that never clears this many pixels of upward travel from its
+/// start is still a tap (or an unrelated wobble) candidate, not a close
+/// drag -- the same small-slop convention `TAP_SLOP` already uses elsewhere
+/// in this shell (`home_pager.rs`, `theme_carousel.rs`), reused vertically
+/// here instead of a fourth copy of the same number.
+pub const CLOSE_DRAG_SLOP: f64 = 8.0;
+/// Below this revealed fraction, a release commits to closing rather than
+/// springing back open.
+pub const CLOSE_DISMISS_PROGRESS: f64 = 0.6;
+/// An upward release at or above this speed (px/ms) commits to closing
+/// regardless of how far the panel had actually moved -- a decisive flick
+/// dismisses even from near the top. Not board-derived; a deliberately
+/// generous "clearly a flick, not a drift" pick, in the same units and
+/// clamp range (`panel_scroll_velocity`) this panel's own scroll drag
+/// already sits in.
+pub const CLOSE_FLING_VELOCITY: f64 = 0.8;
+
+/// Live progress for an in-flight close drag: 1.0 where the drag began
+/// (fully open) down to 0.0 once the finger has pulled the panel entirely
+/// away (`-dy >= panel_travel`). `dy` is `current.1 - start.1`, so a
+/// downward move (`dy > 0`) only ever pushes progress back *toward* 1.0
+/// (clamped there, never past it) -- "a downward drag during a close drag
+/// just moves the panel back down" falls out of the clamp, not a special
+/// case.
+pub fn close_drag_progress(dy: f64, panel_travel: f64) -> f64 {
+    (1.0 - (-dy) / panel_travel.max(1.0)).clamp(0.0, 1.0)
+}
+
+/// The small-slop + direction lock that turns a touch already in
+/// `close_drag_zone` into a *live* close drag, mirrored from the same
+/// tap-vs-drag convention `DrawerNavigation`/`notification_swipe_start` use
+/// (a minimum travel before committing, dominant along the axis that
+/// matters) rather than reacting to the very first pixel of motion. A
+/// touch that never clears this must still resolve as an ordinary tap at
+/// release (`panel_intent`), not a partial drag.
+pub fn close_drag_engaged(dx: f64, dy: f64) -> bool {
+    dy <= -CLOSE_DRAG_SLOP && dy.abs() > dx.abs()
+}
+
+/// Where a close drag may originate: the existing top dismiss zone, or at
+/// or after the panel's own bottom edge -- the dim backdrop below it,
+/// which also covers grabbing right at ("the panel's bottom edge/handle").
+/// Both zones sit outside every scrollable/interactive region either route
+/// paints (the notification list starts at `NOTIFICATION_TOP`, well below
+/// the dismiss zone, and `panel_intent`'s own fall-through already shows
+/// nothing is hit-tested at or below `panel_travel` today), so a drag
+/// starting here can never race a list scroll or a Settings control.
+pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
+    matches!(route, Route::Shade | Route::Settings)
+        && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
+}
+
+/// Where a released close drag settles: fully closed (`0.0`) or back open
+/// (`1.0`). A fast upward flick commits to closing outright; otherwise it
+/// is a plain threshold on how much of the panel was already pulled away.
+pub fn close_drag_release_target(progress: f64, upward_velocity: f64) -> f64 {
+    if upward_velocity >= CLOSE_FLING_VELOCITY || progress < CLOSE_DISMISS_PROGRESS {
+        0.0
+    } else {
+        1.0
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct PanelCloseSettle {
+    from: f64,
+    target: f64,
+    started_ms: u64,
+    duration_ms: u64,
+}
+
+/// Client-side live-tracking/settle state for a Shade/Settings close drag.
+/// Unlike `RevealState` (the compositor-driven *open* reveal), this never
+/// touches input-region readiness: the client already owns this touch the
+/// whole time, it is simply choosing to move the panel with it instead of
+/// resolving an ordinary tap. `tracking` (a live finger) and `settling` (an
+/// eased animation to 0.0 or 1.0, started either by a release or by a
+/// non-drag close such as a Settings back tap) are mutually exclusive;
+/// `progress` is meaningful whenever either is true.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct PanelClose {
+    contact: Option<i32>,
+    progress: f64,
+    settle: Option<PanelCloseSettle>,
+    just_settled_closed: bool,
+}
+
+impl PanelClose {
+    /// Starts live tracking for `id`, from the ordinary fully-open state --
+    /// the only state a close drag can begin from (a touch is only ever
+    /// accepted into `close_drag_zone` while the panel is fully open and
+    /// `input_ready`; see `close_drag_zone`'s own doc for why the eligible
+    /// zones can never overlap a scroll/carousel drag already in progress).
+    pub fn begin(&mut self, id: i32) {
+        self.contact = Some(id);
+        self.progress = 1.0;
+        self.settle = None;
+        self.just_settled_closed = false;
+    }
+
+    pub fn tracking(&self) -> bool {
+        self.contact.is_some()
+    }
+
+    pub fn settling(&self) -> bool {
+        self.settle.is_some()
+    }
+
+    pub fn active(&self) -> bool {
+        self.tracking() || self.settling()
+    }
+
+    pub fn progress(&self) -> f64 {
+        self.progress
+    }
+
+    /// Live update while tracking `id`. Returns whether the visible
+    /// progress actually changed (worth a redraw).
+    pub fn update(&mut self, id: i32, progress: f64) -> bool {
+        if self.contact != Some(id) {
+            return false;
+        }
+        let clamped = progress.clamp(0.0, 1.0);
+        let changed = (clamped - self.progress).abs() >= 0.001;
+        self.progress = clamped;
+        changed
+    }
+
+    /// Ends live tracking for `id` and starts an eased settle to `target`
+    /// (`0.0` closed, `1.0` back open) from wherever the finger left it.
+    /// Returns `false` (no-op) if `id` was not the tracked contact.
+    pub fn release(&mut self, id: i32, target: f64, now_ms: u64, reduced_motion: bool) -> bool {
+        if self.contact != Some(id) {
+            return false;
+        }
+        self.settle_to(target, now_ms, reduced_motion);
+        true
+    }
+
+    /// A non-drag close (a Settings back/close tap, or any other
+    /// programmatic close) starts the same settle directly from `from` --
+    /// the caller's own current progress, ordinarily `1.0` (fully open),
+    /// since that is the only state such a tap can fire from -- with no
+    /// live-tracking phase. Takes `from` explicitly rather than reading
+    /// `self.progress` because this may be the very first call on a fresh
+    /// `PanelClose` (whose `Default` progress is `0.0`, meaning "not yet
+    /// engaged", not "closed").
+    pub fn begin_settle(&mut self, from: f64, target: f64, now_ms: u64, reduced_motion: bool) {
+        self.progress = from;
+        self.settle_to(target, now_ms, reduced_motion);
+    }
+
+    /// A touch sequence cancelled by the compositor mid-drag (rare):
+    /// spring back open from wherever it was, the same eased way a
+    /// release below the dismiss threshold already does, rather than
+    /// leaving the panel stuck half-open with no owner. A no-op unless
+    /// this was actually `active` (tracking or already settling).
+    pub fn abandon_to_open(&mut self, now_ms: u64, reduced_motion: bool) {
+        if self.active() {
+            self.settle_to(1.0, now_ms, reduced_motion);
+        }
+    }
+
+    fn settle_to(&mut self, target: f64, now_ms: u64, reduced_motion: bool) {
+        self.contact = None;
+        self.settle = Some(PanelCloseSettle {
+            from: self.progress,
+            target,
+            started_ms: now_ms,
+            // Same duration policy as `RevealState::settle_to`: a close
+            // reads as the same kind of motion opening already does,
+            // rather than a second animation curve to reason about.
+            duration_ms: if reduced_motion { 60 } else { 160 },
+        });
+    }
+
+    /// Advances an in-flight settle. Returns whether one is (or, on the
+    /// frame it finishes, was) in progress -- the caller redraws whenever
+    /// this is true, and checks `take_settled_closed` to know whether
+    /// *this* call was the one that just reached fully closed.
+    pub fn tick(&mut self, now_ms: u64) -> bool {
+        let Some(settle) = self.settle else {
+            return false;
+        };
+        let fraction = (now_ms.saturating_sub(settle.started_ms) as f64
+            / (settle.duration_ms.max(1) as f64))
+            .clamp(0.0, 1.0);
+        self.progress = settle.from + (settle.target - settle.from) * fraction;
+        if fraction >= 1.0 {
+            self.settle = None;
+            self.just_settled_closed = settle.target <= 0.0;
+        }
+        true
+    }
+
+    /// Consumes the "just reached fully closed" flag `tick` may have set,
+    /// so the caller unmaps exactly once.
+    pub fn take_settled_closed(&mut self) -> bool {
+        std::mem::take(&mut self.just_settled_closed)
+    }
+
+    /// Drops all state (a second-contact cancel, a route change, or a full
+    /// hide/unmap), the same way `RevealState::clear` does for the open
+    /// reveal.
+    pub fn cancel(&mut self) {
+        *self = Self::default();
+    }
+}
+
 /// Pixel-per-millisecond coast after the finger releases a history list.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct NotificationCoast {
@@ -407,6 +616,157 @@ pub fn panel_intent(
 mod tests {
     use super::*;
     use crate::service_data::{Control, NotificationEvent, Priority};
+
+    #[test]
+    fn close_drag_progress_is_one_at_start_and_zero_at_full_travel() {
+        let travel = 800.0;
+        assert_eq!(close_drag_progress(0.0, travel), 1.0);
+        assert_eq!(close_drag_progress(-travel, travel), 0.0);
+        assert_eq!(close_drag_progress(-travel / 2.0, travel), 0.5);
+        // Overshooting past full travel clamps at 0, never negative.
+        assert_eq!(close_drag_progress(-travel * 2.0, travel), 0.0);
+        // A downward move from the drag's own start only ever pushes back
+        // toward 1.0, clamped there -- "a downward drag during a close
+        // drag just moves the panel back down" falls out of the clamp.
+        assert_eq!(close_drag_progress(120.0, travel), 1.0);
+    }
+
+    #[test]
+    fn close_drag_progress_is_monotonic_in_upward_travel() {
+        let travel = 800.0;
+        let samples: Vec<f64> = (0..=20)
+            .map(|step| close_drag_progress(-travel * f64::from(step) / 20.0, travel))
+            .collect();
+        for pair in samples.windows(2) {
+            assert!(
+                pair[1] <= pair[0],
+                "progress must only ever fall as upward travel grows: {samples:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn close_drag_engaged_needs_slop_and_vertical_dominance() {
+        // Under slop: still a tap/wobble candidate.
+        assert!(!close_drag_engaged(0.0, -CLOSE_DRAG_SLOP + 1.0));
+        // Exactly at slop, upward, no sideways drift: engaged.
+        assert!(close_drag_engaged(0.0, -CLOSE_DRAG_SLOP));
+        // Downward motion never engages a close drag.
+        assert!(!close_drag_engaged(0.0, CLOSE_DRAG_SLOP + 20.0));
+        // Past slop upward, but more sideways than vertical: not engaged
+        // (this is a horizontal gesture, not a vertical close drag).
+        assert!(!close_drag_engaged(40.0, -20.0));
+        // Past slop, vertical-dominant: engaged even with a little drift.
+        assert!(close_drag_engaged(4.0, -20.0));
+    }
+
+    #[test]
+    fn close_drag_zone_is_the_top_band_and_the_backdrop_only() {
+        let travel = 800.0;
+        for route in [Route::Shade, Route::Settings] {
+            assert!(close_drag_zone(route, 0.0, travel), "{route:?}: top edge");
+            assert!(
+                close_drag_zone(route, OVERLAY_DISMISS_ZONE_Y - 1.0, travel),
+                "{route:?}: just inside the dismiss zone"
+            );
+            assert!(
+                !close_drag_zone(route, OVERLAY_DISMISS_ZONE_Y, travel),
+                "{route:?}: dismiss zone's own lower edge is exclusive"
+            );
+            assert!(
+                !close_drag_zone(route, travel - 1.0, travel),
+                "{route:?}: still inside scrollable/interactive panel content"
+            );
+            assert!(
+                close_drag_zone(route, travel, travel),
+                "{route:?}: the panel's own bottom edge is included"
+            );
+            assert!(
+                close_drag_zone(route, travel + 400.0, travel),
+                "{route:?}: anywhere on the backdrop below the panel"
+            );
+        }
+        assert!(!close_drag_zone(Route::Drawer, 0.0, travel));
+        assert!(!close_drag_zone(Route::Hide, 0.0, travel));
+    }
+
+    #[test]
+    fn close_drag_release_target_is_a_threshold_with_a_fling_override() {
+        // Comfortably past the dismiss threshold, no notable velocity:
+        // commits to closed on progress alone.
+        assert_eq!(close_drag_release_target(0.2, 0.0), 0.0);
+        // Comfortably below the threshold, no notable velocity: springs
+        // back open.
+        assert_eq!(close_drag_release_target(0.9, 0.0), 1.0);
+        // Exactly at the threshold reads as "not yet past it" (open) --
+        // the threshold is a floor on what still closes, not a ceiling.
+        assert_eq!(close_drag_release_target(CLOSE_DISMISS_PROGRESS, 0.0), 1.0);
+        // A fast upward flick commits to closing even from near the top
+        // (high revealed progress) -- reversal: velocity overrides the
+        // plain threshold.
+        assert_eq!(close_drag_release_target(0.95, CLOSE_FLING_VELOCITY), 0.0);
+        // A slow, reversed (downward) release well above the threshold
+        // never closes.
+        assert_eq!(close_drag_release_target(0.95, -1.5), 1.0);
+    }
+
+    #[test]
+    fn panel_close_tracks_settles_and_reports_closed_exactly_once() {
+        let mut close = PanelClose::default();
+        assert!(!close.active());
+        close.begin(7);
+        assert!(close.tracking());
+        assert_eq!(close.progress(), 1.0);
+        assert!(close.update(7, 0.35));
+        assert_eq!(close.progress(), 0.35);
+        // A different contact id cannot move this one's progress.
+        assert!(!close.update(9, 0.1));
+        assert_eq!(close.progress(), 0.35);
+
+        assert!(close.release(7, 0.0, 1_000, false));
+        assert!(!close.tracking());
+        assert!(close.settling());
+        // Mid-settle: partway from 0.35 toward 0.0, not a jump.
+        assert!(close.tick(1_080));
+        assert!(close.progress() > 0.0 && close.progress() < 0.35);
+        assert!(!close.take_settled_closed());
+        // Settle finishes at the recorded duration (160ms, not reduced).
+        assert!(close.tick(1_160));
+        assert_eq!(close.progress(), 0.0);
+        assert!(!close.settling());
+        assert!(
+            close.take_settled_closed(),
+            "must report closed exactly once"
+        );
+        assert!(!close.take_settled_closed(), "and not again on a re-check");
+    }
+
+    #[test]
+    fn panel_close_settle_to_open_never_reports_closed() {
+        let mut close = PanelClose::default();
+        close.begin(1);
+        close.update(1, 0.5);
+        close.release(1, 1.0, 0, false);
+        close.tick(160);
+        assert_eq!(close.progress(), 1.0);
+        assert!(!close.take_settled_closed());
+    }
+
+    #[test]
+    fn panel_close_begin_settle_animates_a_non_drag_close_from_fully_open() {
+        let mut close = PanelClose::default();
+        assert!(!close.active());
+        close.begin_settle(1.0, 0.0, 0, false);
+        assert!(close.settling());
+        assert!(!close.tracking());
+        assert_eq!(
+            close.progress(),
+            1.0,
+            "settle starts from the current (open) progress"
+        );
+        close.tick(160);
+        assert!(close.take_settled_closed());
+    }
 
     #[test]
     fn shade_and_settings_hits_are_bounded_and_cancel_scroll_taps() {

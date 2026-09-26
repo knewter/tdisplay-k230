@@ -1361,6 +1361,31 @@ fn settings_panel_h(
     content_sized_panel_h(settings_content_bottom(services), available_h, MIN_PANEL_H)
 }
 
+/// The one distance a route's top-anchored sheet travels between fully
+/// hidden and fully shown -- what `RendererCache::draw`'s row-shift moves
+/// the baked bitmap by, and (new) what a live close-drag's finger travel is
+/// measured against, so the two can never drift apart into a drag that
+/// tracks the finger at the wrong rate. Shade and Drawer are fixed
+/// fractions of the screen; Settings reuses its own real, content-sized
+/// `settings_panel_h` rather than the full screen height a naive "same as
+/// everything else" default would give it (previously the case here, but
+/// dormant: nothing ever drove a live Settings progress before the close
+/// drag this doc references was added, so the mismatch never painted).
+pub fn panel_travel_height(
+    route: Route,
+    height: u32,
+    chooser: Option<&ThemeView>,
+    services: Option<&ServiceView>,
+) -> f64 {
+    let h = f64::from(height);
+    match route {
+        Route::Shade => h * 0.65,
+        Route::Drawer => h * 0.81,
+        Route::Settings => settings_panel_h(h, chooser, services),
+        Route::Hide => h,
+    }
+}
+
 fn scene(
     cr: &Context,
     params: RenderParams,
@@ -3068,11 +3093,8 @@ impl RendererCache {
             self.rebuilds += 1;
         }
         canvas.fill(0);
-        let panel_height = if route == Route::Shade {
-            f64::from(height) * 0.65
-        } else {
-            f64::from(height) * if route == Route::Drawer { 0.81 } else { 1.0 }
-        };
+        let panel_height =
+            panel_travel_height(route, height, self.chooser.as_ref(), self.services.as_ref());
         let hidden = 1.0 - progress.clamp(0.0, 1.0);
         let shift =
             (hidden * panel_height).round() as i32 * if route == Route::Drawer { 1 } else { -1 };
@@ -4292,6 +4314,82 @@ mod tests {
         assert!(
             partial[bottom_edge_index + 3] > 0,
             "backdrop must reach the bottom edge of the screen at a partial drag, not stop short"
+        );
+    }
+
+    #[test]
+    fn close_drag_progress_shifts_the_panel_and_dims_the_backdrop_together() {
+        // Models a live close drag: the same `RendererCache::draw` a
+        // pull-down open uses, fed a progress descending from 1.0 as the
+        // finger pulls the shade back up -- there is no separate "closing"
+        // code path (the whole point of reusing the row-shift renderer).
+        // At progress = 0.4, y = 750 sits inside the fully-open panel's own
+        // background (opaque there at progress 1.0), but the panel has
+        // shifted up out of that row by then, so it must read as backdrop
+        // (present, and dimmed to exactly this progress's eased value) --
+        // not still-opaque panel and not the old bug's blank gap either.
+        let mut renderer = RendererCache::default();
+        let alpha_at = |frame: &[u8], y: usize| -> u8 { frame[(y * 568 + 280) * 4 + 3] };
+
+        let mut open = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut open,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Shade,
+                    progress: 1.0,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        assert_eq!(
+            alpha_at(&open, 750),
+            255,
+            "fully open: panel covers row 750"
+        );
+
+        let mut closing = vec![0; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut closing,
+                RenderParams {
+                    width: 568,
+                    height: 1232,
+                    route: Route::Shade,
+                    progress: 0.4,
+                    scroll: 0.0,
+                },
+                &[],
+            )
+            .unwrap();
+        // The rebuild-vs-reuse cache only bakes on route/geometry/scroll
+        // change, never on progress alone (`RendererCache::draw`'s own
+        // rebuild guard) -- this is the "no per-frame re-render of the
+        // panel" cost requirement, exercised for real here rather than
+        // just asserted: two draws, one shared bake.
+        assert_eq!(
+            renderer.rebuild_count(),
+            1,
+            "progress alone must not rebuild the bake"
+        );
+        assert_eq!(
+            alpha_at(&closing, 100),
+            255,
+            "40% open: panel content has shifted up into row 100"
+        );
+        let expected_backdrop_byte = (tray_backdrop_alpha(0.4, 0.35) * 255.0).round() as u8;
+        assert_eq!(
+            alpha_at(&closing, 750),
+            expected_backdrop_byte,
+            "40% open: row 750 is now backdrop, dimmed to this exact progress's eased value"
+        );
+        assert_ne!(
+            alpha_at(&closing, 750),
+            255,
+            "row 750 must not still read as opaque panel once the drag has shifted it away"
         );
     }
 

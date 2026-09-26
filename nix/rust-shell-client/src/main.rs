@@ -12,13 +12,14 @@ use k230_shell_rust::{
     navigation::{DrawerAction, DrawerNavigation},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
-    render::{export_png, RenderParams, RendererCache},
+    render::{export_png, panel_travel_height, RenderParams, RendererCache},
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
-        action_message, notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
-        notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelIntent,
-        ServiceView, SWIPE_VERTICAL_CANCEL,
+        action_message, close_drag_engaged, close_drag_progress, close_drag_release_target,
+        close_drag_zone, notification_max_scroll, notification_swipe_hit,
+        notification_swipe_offset, notification_swipe_release, notification_swipe_start,
+        notification_swipe_valid, panel_intent, Confirmation, NotificationCoast,
+        NotificationSwipeSettle, PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
@@ -108,12 +109,15 @@ fn panel_input_rect(
     } else {
         0
     };
-    let bottom = if route == Route::Shade {
-        (f64::from(height) * 0.65) as i32
-    } else {
-        height as i32
-    };
-    Some((0, top, width as i32, bottom - top))
+    // Shade used to map only its own 0.65h panel, leaving the dim backdrop
+    // below it outside the surface's input region entirely -- a touch
+    // starting there never reached this client at all. A close drag may
+    // now start anywhere on that backdrop (`close_drag_zone`), so Shade
+    // maps the full remaining height, the same as Settings already did;
+    // its own dim scrim already visually blocks whatever is behind it, so
+    // this also closes a pre-existing pass-through-touch inconsistency
+    // between the two routes rather than opening a new one.
+    Some((0, top, width as i32, height as i32 - top))
 }
 
 fn socket_path() -> Result<PathBuf, String> {
@@ -806,18 +810,6 @@ fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
     }
 }
 
-fn shade_close_swipe(start: (f64, f64), end: (f64, f64)) -> bool {
-    let dx = end.0 - start.0;
-    let dy = end.1 - start.1;
-    dy <= -80.0 && dx.abs() <= 80.0
-}
-
-fn shade_release_closes(start: (f64, f64), end: (f64, f64), has_rows: bool, height: u32) -> bool {
-    let list_bottom = f64::from(height) * 0.65 - 24.0;
-    let in_list = start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP && start.1 < list_bottom;
-    (!has_rows || !in_list) && shade_close_swipe(start, end)
-}
-
 struct ShellClient {
     compositor: CompositorState,
     layer_shell: LayerShell,
@@ -897,6 +889,21 @@ struct ShellClient {
     notification_settle: Option<NotificationSwipeSettle>,
     notification_wait: Option<Instant>,
     appearance_pending: bool,
+    /// Live-tracking/settle for a Shade/Settings close drag -- entirely
+    /// client-side, unlike `reveal` below (the compositor-driven open),
+    /// since the client already owns this touch throughout. See
+    /// `PanelClose`'s own doc.
+    panel_close: PanelClose,
+    /// Set at touch-down: whether this contact started somewhere
+    /// `close_drag_zone` allows. A touch that starts elsewhere (list
+    /// content, a Settings control, a carousel) must never become a close
+    /// drag later in the same gesture, no matter how it moves.
+    panel_close_candidate: bool,
+    /// Same velocity convention as `panel_scroll_velocity`
+    /// (`-(pos.1 - last_y) / dt`, positive = upward = toward closing),
+    /// sampled only while `panel_close` is tracking.
+    panel_close_velocity: f64,
+    panel_close_sample: Option<(f64, u32)>,
     reveal: RevealState,
     input_ready: bool,
     input_region_key: Option<(Route, u32, u32, bool)>,
@@ -1685,7 +1692,7 @@ impl ShellClient {
 
     fn panel_action(&mut self, qh: &QueueHandle<Self>, intent: PanelIntent) {
         match intent {
-            PanelIntent::Hide => self.hide(),
+            PanelIntent::Hide => self.begin_animated_close(),
             PanelIntent::OpenSettings => {
                 self.show(qh, Route::Settings);
             }
@@ -2176,12 +2183,44 @@ impl ShellClient {
         true
     }
 
+    /// The distance (in device pixels) this route's panel travels between
+    /// fully hidden and fully shown -- what a live close drag's finger
+    /// travel is measured against, and what `RendererCache::draw`'s own
+    /// row-shift already uses for the same route (`panel_travel_height`'s
+    /// own doc). Reads `theme_view`/`service_view` live, exactly like
+    /// `RendererCache`'s internal `chooser`/`services` copies do, since a
+    /// Settings sub-page (Wi-Fi, the theme chooser) changes its own
+    /// content-sized height.
+    fn panel_travel(&self) -> f64 {
+        panel_travel_height(
+            self.route,
+            self.height,
+            Some(&self.theme_view),
+            Some(&self.service_view),
+        )
+    }
+
+    /// A non-drag close (a Settings back/close tap, a notification
+    /// dismiss-all zone Hide, or the top dismiss zone's own tap/short-drag
+    /// fallback in `panel_intent`) animates the same way a released close
+    /// drag settles closed, instead of the instant unmap `hide()` alone
+    /// used to be. `hide()` itself still runs, unchanged, once the settle
+    /// this starts actually reaches 0.0 -- see the event loop's own
+    /// `panel_close.tick`/`take_settled_closed` handling.
+    fn begin_animated_close(&mut self) {
+        let now = self.started.elapsed().as_millis() as u64;
+        self.panel_close
+            .begin_settle(1.0, 0.0, now, self.reduced_motion);
+        self.dirty = true;
+    }
+
     fn show(&mut self, qh: &QueueHandle<Self>, route: Route) -> bool {
         if route == Route::Hide {
             self.hide();
             return true;
         }
         self.reveal.clear();
+        self.panel_close.cancel();
         if route != Route::Settings && self.wifi_view.page != WifiPage::Closed {
             if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
                 self.wifi_worker.cancel(id);
@@ -2228,6 +2267,7 @@ impl ShellClient {
         if self.route != message.surface {
             self.panel_start = None;
             self.panel_swipe_owned = false;
+            self.panel_close.cancel();
             self.notification_coast.stop();
             self.notification_settle = None;
             self.notification_wait = None;
@@ -2296,6 +2336,10 @@ impl ShellClient {
         self.nav = DrawerNavigation::default();
         self.renderer.set_drawer_pressed(None);
         self.reveal.clear();
+        self.panel_close.cancel();
+        self.panel_close_candidate = false;
+        self.panel_close_sample = None;
+        self.panel_close_velocity = 0.0;
         self.layer.take();
         self.configured = false;
         self.frame_pending = false;
@@ -2351,7 +2395,15 @@ impl ShellClient {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
-        let progress = if self.reveal.surface().is_some() {
+        // A close drag (live or settling) is entirely client-side and
+        // takes priority over the compositor-driven open reveal below --
+        // the two can never be active together in practice (a close drag
+        // only ever begins once a route is fully open and `input_ready`,
+        // by which point `self.reveal` has already gone quiet), but this
+        // ordering is what makes that true rather than assumed.
+        let progress = if self.panel_close.active() {
+            self.panel_close.progress()
+        } else if self.reveal.surface().is_some() {
             self.reveal.progress()
         } else {
             1.0
@@ -2618,6 +2670,10 @@ impl SeatHandler for ShellClient {
             self.panel_start = None;
             self.panel_scrolled = false;
             self.panel_swipe_owned = false;
+            self.panel_close.cancel();
+            self.panel_close_candidate = false;
+            self.panel_close_sample = None;
+            self.panel_close_velocity = 0.0;
             self.notification_coast.stop();
             self.notification_settle = None;
             self.notification_wait = None;
@@ -2633,6 +2689,10 @@ impl SeatHandler for ShellClient {
         self.panel_start = None;
         self.panel_scrolled = false;
         self.panel_swipe_owned = false;
+        self.panel_close.cancel();
+        self.panel_close_candidate = false;
+        self.panel_close_sample = None;
+        self.panel_close_velocity = 0.0;
         self.notification_coast.stop();
         self.notification_settle = None;
         self.notification_wait = None;
@@ -2685,6 +2745,16 @@ impl TouchHandler for ShellClient {
                     self.panel_swipe_owned = false;
                     self.panel_swipe_cancelled = false;
                     self.panel_swipe_moved = false;
+                    // Only a fresh touch, starting somewhere `close_drag_
+                    // zone` allows, may ever become a close drag; nothing
+                    // later in this same gesture can promote it (so it can
+                    // never hijack a scroll/swipe/control started
+                    // elsewhere), and none of this races an already-
+                    // animating close from an earlier gesture.
+                    self.panel_close_candidate = !self.panel_close.active()
+                        && close_drag_zone(self.route, pos.1, self.panel_travel());
+                    self.panel_close_sample = Some((pos.1, time_ms));
+                    self.panel_close_velocity = 0.0;
                     if self.route == Route::Shade {
                         if let (Some(_), Some(swipe)) = (
                             self.notification_settle,
@@ -2740,6 +2810,11 @@ impl TouchHandler for ShellClient {
                 self.panel_start = None;
                 self.panel_scrolled = false;
                 self.panel_swipe_owned = false;
+                let now = self.started.elapsed().as_millis() as u64;
+                self.panel_close.abandon_to_open(now, self.reduced_motion);
+                self.panel_close_candidate = false;
+                self.panel_close_sample = None;
+                self.panel_close_velocity = 0.0;
                 self.notification_coast.stop();
                 if self.notification_wait.is_none() {
                     self.notification_settle = None;
@@ -2822,11 +2897,6 @@ impl TouchHandler for ShellClient {
                 if let Some((start_id, start)) = self.panel_start.take() {
                     if start_id == id {
                         let swipe = self.service_view.notification_swipe.clone();
-                        let list_has_rows = self
-                            .service_view
-                            .notifications
-                            .as_ref()
-                            .is_some_and(|snapshot| !snapshot.events.is_empty());
                         if self.panel_swipe_owned {
                             if let Some(swipe) = swipe {
                                 let request = (!self.panel_swipe_cancelled
@@ -2848,10 +2918,22 @@ impl TouchHandler for ShellClient {
                             }
                             self.panel_swipe_owned = false;
                             self.panel_swipe_cancelled = false;
-                        } else if self.route == Route::Shade
-                            && shade_release_closes(start, point, list_has_rows, self.height)
-                        {
-                            self.hide();
+                        } else if self.panel_close.tracking() {
+                            // Live close-drag release: settle to whichever
+                            // endpoint `close_drag_release_target` picks
+                            // (dismiss threshold or a decisive upward
+                            // flick) from wherever the finger left it --
+                            // never a jump, and never the old release-only
+                            // heuristics this replaces.
+                            let velocity = self.panel_close_velocity;
+                            let target =
+                                close_drag_release_target(self.panel_close.progress(), velocity);
+                            let now = self.started.elapsed().as_millis() as u64;
+                            self.panel_close
+                                .release(start_id, target, now, self.reduced_motion);
+                            self.panel_close_sample = None;
+                            self.panel_close_velocity = 0.0;
+                            self.dirty = true;
                         } else if self.route == Route::Settings {
                             if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
@@ -3025,6 +3107,44 @@ impl TouchHandler for ShellClient {
                 )) {
                     self.dirty = true;
                 }
+            } else if matches!(self.route, Route::Shade | Route::Settings)
+                && self.input_ready
+                && self.panel_start.is_some_and(|(start_id, _)| start_id == id)
+                && (self.panel_close.tracking() || self.panel_close_candidate)
+            {
+                // Live close drag: either already engaged (follow the
+                // finger 1:1 every frame) or still a slop/direction-lock
+                // candidate from an eligible start zone (`close_drag_
+                // zone`, checked once at touch-down into `panel_close_
+                // candidate`) waiting to engage. Nothing here ever runs
+                // for a touch that started on scrollable/interactive
+                // content -- that candidate flag is false from the start
+                // for those, so control falls through to the ordinary
+                // per-route branches below exactly as before.
+                let (_, start) = self
+                    .panel_start
+                    .expect("checked by this branch's own guard");
+                let dx = pos.0 - start.0;
+                let dy = pos.1 - start.1;
+                if !self.panel_close.tracking() && close_drag_engaged(dx, dy) {
+                    self.panel_close.begin(id);
+                }
+                if self.panel_close.tracking() {
+                    let travel = self.panel_travel();
+                    if self.panel_close.update(id, close_drag_progress(dy, travel)) {
+                        self.dirty = true;
+                    }
+                    if let Some((last_y, last_time)) = self.panel_close_sample {
+                        let dt = time_ms.wrapping_sub(last_time);
+                        if (1..=120).contains(&dt) {
+                            // Same convention as `panel_scroll_velocity`:
+                            // positive = upward = toward closing.
+                            self.panel_close_velocity =
+                                (-(pos.1 - last_y) / f64::from(dt)).clamp(-2.5, 2.5);
+                        }
+                    }
+                    self.panel_close_sample = Some((pos.1, time_ms));
+                }
             } else if self.route == Route::Shade && self.input_ready {
                 if let Some((start_id, start)) = self.panel_start {
                     let dy = pos.1 - start.1;
@@ -3177,6 +3297,11 @@ impl TouchHandler for ShellClient {
         self.panel_start = None;
         self.panel_scrolled = false;
         self.panel_swipe_owned = false;
+        let now = self.started.elapsed().as_millis() as u64;
+        self.panel_close.abandon_to_open(now, self.reduced_motion);
+        self.panel_close_candidate = false;
+        self.panel_close_sample = None;
+        self.panel_close_velocity = 0.0;
         self.notification_coast.stop();
         self.notification_wait = None;
         self.settle_notification(0.0, None);
@@ -3366,6 +3491,10 @@ fn serve() -> Result<(), String> {
         notification_settle: None,
         notification_wait: None,
         appearance_pending: false,
+        panel_close: PanelClose::default(),
+        panel_close_candidate: false,
+        panel_close_velocity: 0.0,
+        panel_close_sample: None,
         reveal: RevealState::default(),
         input_ready: false,
         input_region_key: None,
@@ -3885,6 +4014,16 @@ fn serve() -> Result<(), String> {
                 state.dirty = true;
             }
         }
+        if state
+            .panel_close
+            .tick(state.started.elapsed().as_millis() as u64)
+        {
+            if state.panel_close.take_settled_closed() {
+                state.hide();
+            } else {
+                state.dirty = true;
+            }
+        }
         // A release can arrive after all bounded slots were busy. Retry from
         // the event loop so the deferred touch frame is eventually submitted.
         if let Some((event, started, previous, reuse_optimistic)) = pending_appearance.take() {
@@ -4298,51 +4437,65 @@ mod route_tests {
     use std::os::unix::fs::DirBuilderExt;
 
     #[test]
-    fn shade_upward_contact_closes_only_after_valid_release() {
+    fn shade_upward_drag_engages_only_from_an_eligible_zone_past_slop() {
+        // The live close-drag replacement for the old release-only
+        // `shade_close_swipe`/`shade_release_closes` pair: a touch is only
+        // ever a close-drag candidate from `close_drag_zone` (the top
+        // dismiss band, or at/after the panel's own bottom edge -- never
+        // from within the scrollable list itself), and only actually
+        // engages once it clears `close_drag_engaged`'s slop.
+        let travel = panel_travel_height(Route::Shade, 1232, None, None);
         let mut touch = TouchTrace::default();
-        assert!(touch.down(3, (282.0, 580.0)));
-        assert!(touch.motion(3, (280.0, 440.0)));
+        assert!(touch.down(3, (282.0, 80.0)));
+        assert!(touch.motion(3, (280.0, 40.0)));
         assert!(touch.up(3));
-        assert!(shade_close_swipe((282.0, 580.0), touch.position));
-        assert!(!shade_close_swipe((282.0, 580.0), (282.0, 540.0)));
-        assert!(!shade_close_swipe((282.0, 580.0), (420.0, 440.0)));
-        assert!(touch.down(4, (280.0, 580.0)));
-        touch.cancel();
-        assert!(!touch.up(4));
-        assert!(shade_release_closes(
-            (280.0, 580.0),
-            (280.0, 300.0),
-            false,
-            1232
+        let start = (282.0, 80.0);
+        assert!(
+            close_drag_zone(Route::Shade, start.1, travel),
+            "top dismiss band is an eligible start"
+        );
+        assert!(
+            close_drag_engaged(touch.position.0 - start.0, touch.position.1 - start.1),
+            "a real upward drag from there engages"
+        );
+        assert!(
+            !close_drag_engaged(2.0, -2.0),
+            "a sub-slop wobble must not engage"
+        );
+        // Starting on the live notification list itself is never an
+        // eligible close-drag zone, regardless of direction -- that
+        // touch stays a scroll/swipe candidate (`panel_intent`'s own
+        // domain), not a close drag.
+        assert!(!close_drag_zone(
+            Route::Shade,
+            k230_shell_rust::service_ui::NOTIFICATION_TOP + 10.0,
+            travel
         ));
-        assert!(shade_release_closes(
-            (280.0, 170.0),
-            (280.0, 80.0),
-            true,
-            1232
-        ));
-        assert!(!shade_release_closes(
-            (280.0, 580.0),
-            (280.0, 300.0),
-            true,
-            1232
-        ));
+        // The backdrop below the panel is eligible too.
+        assert!(close_drag_zone(Route::Shade, travel + 50.0, travel));
+        assert_eq!(close_drag_progress(0.0, travel), 1.0);
     }
 
     #[test]
-    fn shade_to_settings_expands_mapped_input_region() {
+    fn shade_and_settings_map_full_height_drawer_keeps_its_own_offset() {
+        // Shade used to map only its own 0.65h panel (previously named
+        // "expands" for the jump to full height on entering Settings); it
+        // now maps the same full remaining height Settings already did, so
+        // a close drag can start anywhere on the dim backdrop below the
+        // panel (`close_drag_zone`), not only inside the panel itself.
         assert_eq!(
             panel_input_rect(Route::Shade, 568, 1232, true),
-            Some((0, 0, 568, 800))
+            Some((0, 0, 568, 1232))
         );
         assert_eq!(
             panel_input_rect(Route::Settings, 568, 1232, true),
             Some((0, 0, 568, 1232))
         );
         assert_eq!(panel_input_rect(Route::Shade, 568, 1232, false), None);
+        // Drawer alone still offsets its top edge (bottom-anchored sheet).
         assert_eq!(
-            panel_input_rect(Route::Shade, 600, 1200, true),
-            Some((0, 0, 600, 780))
+            panel_input_rect(Route::Drawer, 600, 1200, true),
+            Some((0, 228, 600, 972))
         );
     }
 
