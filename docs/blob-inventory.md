@@ -1359,6 +1359,7 @@ DATA 9cad0390d86d67ce59d06acc430b99ee3aceee7f3592b5e31b814fe9ef664544  docs/evid
 DATA c73761499696bd030d92b58e72a4640b749de53c6a187259879397a4b78ae8bb  docs/evidence/card-shell/shade-drag-to-close/injected-close-sequence-2fps.png
 DATA 94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9  docs/evidence/card-shell/video-card-gestures/contact-sheet.png
 DATA 536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c  docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png
+DATA 76883f6aba9647b6ba1a955827e81ff32958b1098926284f53584f3b6c0b63ed  docs/evidence/card-shell/live-card-cost/contact-sheet.png
 DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
 ```
 
@@ -2000,3 +2001,15 @@ records commands, log lines and limits.
 | --- | ---: | --- | --- |
 | `docs/evidence/card-shell/video-card-gestures/contact-sheet.png` | 1431358 | DATA | `94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9` |
 | `docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png` | 1429489 | DATA | `536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c` |
+
+### No video special-casing; generic live-card cost: webcam contact sheet
+
+This DATA image tiles 4 webcam frames of the physical panel: video playing
+full-screen, the overview open with the video's live thumbnail, a busy
+non-video app (btop) shown live in the overview, and the overview after
+closing it. The adjacent README (`docs/evidence/card-shell/
+live-card-cost/README.md`) records commands, log excerpts and limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-shell/live-card-cost/contact-sheet.png` | 1089443 | DATA | `76883f6aba9647b6ba1a955827e81ff32958b1098926284f53584f3b6c0b63ed` |
