@@ -3,21 +3,23 @@
 - [x] 1.1 Add `RTC_DRV_K230 = yes;` to `nix/kernel.nix`'s
       `structuredExtraConfig`, in its own clearly delimited, separately
       commented block (no shared lines with `feat/speaker`'s audio
-      Kconfig edits). Source landed; proof is
-      `nix build .#kernel --max-jobs 1 --cores 6` (build proof only),
-      confirmed in the branch handoff — one kernel derivation proves this
-      alongside the backlight and Bluetooth Kconfig/driver changes.
+      Kconfig edits). Proven:
+      `nix build .#kernel --max-jobs 1 --cores 6 --no-link --print-out-paths`
+      exited 0, producing
+      `/nix/store/78cdif47ayqwv67m7crjpawfzy2mx3af-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`
+      (build proof only) — one kernel derivation shared with the
+      backlight and Bluetooth Kconfig/driver changes.
 
 ## 2. NixOS: use the RTC
 
 - [x] 2.1 Add `systemd.services.k230-rtc-sync`: a oneshot unit ordered
       after `time-sync.target`, running `hwclock --systohc`, in
       `nix/hardware.nix` (the real-hardware-only base; `nix/k230.nix` is
-      the shared hardware+QEMU base). Source landed;
-      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --dry-run`
-      already confirms it evaluates and schedules
-      `unit-k230-rtc-sync.service`; the full closure build is confirmed
-      in the branch handoff.
+      the shared hardware+QEMU base). Proven:
+      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`
+      exited 0, producing
+      `/nix/store/152qrxpkagai2fahgyhkxq7sp8sk98n4-nixos-system-nixos-26.11.20260919.20b1ddd`,
+      which schedules `unit-k230-rtc-sync.service` (build proof only).
 
 ## 3. Board test plan
 
