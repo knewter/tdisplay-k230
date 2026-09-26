@@ -13,7 +13,7 @@ use k230_shell_rust::{
     navigation::{DrawerAction, DrawerNavigation},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
-    render::{export_png, panel_travel_height, RenderParams, RendererCache},
+    render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
     service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
@@ -23,6 +23,11 @@ use k230_shell_rust::{
         panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelClose,
         PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
+    splash::{
+        fade_alpha, should_auto_dismiss_failed, should_time_out, window_event_matches, Splash,
+        SplashStatus, SplashTarget,
+    },
+    sway_ipc,
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
     theme_ui::{
@@ -68,7 +73,11 @@ use std::{
     },
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc::{self, Receiver, Sender},
+        Arc,
+    },
     thread,
     time::{Duration, Instant},
 };
@@ -754,13 +763,135 @@ fn swaymsg_back(swaymsg: &std::path::Path) -> Result<(), String> {
     }
 }
 
+/// What a launch attempt actually did, distinguishing "focused an existing
+/// window" (no splash is warranted -- see `launch_home_app`'s doc) from
+/// "spawned a new process" (the splash stays up and waits for its window).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum LaunchOutcome {
+    Focused,
+    /// The pid GIO's `AppLaunchContext` reported for the spawned process,
+    /// if any -- see `launch_selected`'s own doc for when this is `None`.
+    Spawned(Option<i32>),
+}
+
+/// What a splash's background watcher thread (`spawn_splash_watcher`)
+/// reports back once it has something to say. Paired with the launch
+/// attempt's `u64` sequence number in the channel itself, matching the
+/// existing `launch_sender`/`launch_results` staleness pattern.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SplashSignal {
+    /// A sway `window` event matched this splash's target -- see
+    /// `splash::window_event_matches`.
+    Matched,
+    /// The spawned process's pid no longer names a running process, and no
+    /// matching window ever appeared first.
+    ProcessExited,
+}
+
+/// Spawns the background thread that watches for `splash`'s window to map
+/// (or its process to exit first) and reports back on `sender`, tagged
+/// with `attempt` so a stale result from a superseded launch is ignored --
+/// exactly like the existing `launch_sender`/`launch_results` pattern this
+/// mirrors. Returns the `stop` flag the caller should set (and store as
+/// `ShellClient::splash_watch_stop`) to end this thread early once its
+/// splash no longer needs it.
+///
+/// Started only once `launch_selected`'s outcome is known (`target`,
+/// `pid`), not at the tap itself: a spawned process needs to load, connect
+/// to Wayland, and commit a first frame before any window could possibly
+/// map, which always takes far longer than the sub-millisecond gap between
+/// showing the splash and this thread subscribing -- so no `window` event
+/// this splash needs to see can be missed by that gap. This keeps the
+/// splash's own state (`SplashTarget`) fixed for its whole lifetime rather
+/// than needing a `Mutex` a watcher thread and the main thread would both
+/// have to touch.
+fn spawn_splash_watcher(
+    target: SplashTarget,
+    pid: Option<i32>,
+    attempt: u64,
+    sender: Sender<(u64, SplashSignal)>,
+) -> Arc<AtomicBool> {
+    let stop = Arc::new(AtomicBool::new(false));
+    let thread_stop = stop.clone();
+    thread::spawn(move || {
+        let Some(socket) = std::env::var_os("SWAYSOCK") else {
+            return;
+        };
+        let socket_path = std::path::PathBuf::from(socket);
+        let mut matched = false;
+        let result = sway_ipc::watch_window_events(
+            &socket_path,
+            |event| {
+                let hit = splash_window_event_matches(target, event);
+                if hit {
+                    matched = true;
+                }
+                hit
+            },
+            || {
+                if thread_stop.load(Ordering::Relaxed) {
+                    return true;
+                }
+                if let Some(pid) = pid {
+                    if !sway_ipc::process_alive(pid) {
+                        return true;
+                    }
+                }
+                false
+            },
+        );
+        if matched {
+            let _ = sender.send((attempt, SplashSignal::Matched));
+        } else if !thread_stop.load(Ordering::Relaxed) {
+            // Either the process exited (checked again here since the
+            // `should_stop` closure above may have returned true for that
+            // reason specifically) or the watch itself ended some other
+            // way (socket closed, IO error) with the process already gone.
+            // Both cases mean this launch is never going to map a window.
+            // No pid at all (a `SplashTarget::LaunchOrder` launch) means
+            // there is nothing concrete to check here; deliberately send
+            // nothing rather than guess, and let the splash's own
+            // `SPLASH_TIMEOUT` be the fallback instead.
+            match pid {
+                Some(pid) if !sway_ipc::process_alive(pid) => {
+                    let _ = sender.send((attempt, SplashSignal::ProcessExited));
+                }
+                _ => {
+                    if let Err(error) = result {
+                        eprintln!("rust-shell splash-watch-failed {error}");
+                    }
+                }
+            }
+        }
+    });
+    stop
+}
+
+/// Whether a live `sway_ipc::WindowEvent` matches `target`, using the real
+/// `/proc` ancestry walk -- the thin, I/O-performing counterpart to the
+/// pure, already-unit-tested `splash::window_event_matches`.
+fn splash_window_event_matches(target: SplashTarget, event: &sway_ipc::WindowEvent) -> bool {
+    window_event_matches(target, &event.change, event.pid, sway_ipc::parent_pid)
+}
+
 /// `path` is the exact `.desktop` file `catalog::scan_apps` most recently
 /// found for this id -- re-parsed fresh here with
 /// [`gio::DesktopAppInfo::from_filename`], never through GIO's own id-keyed
 /// cache (`DesktopAppInfo::new`), so a launch always reflects the file that
 /// is actually on disk right now, including one a live rescan only just
 /// picked up.
-fn launch_selected(path: &std::path::Path, swaymsg: &std::path::Path) -> Result<(), String> {
+///
+/// Captures the spawned pid via `gio::AppLaunchContext`'s `launched` signal:
+/// GIO emits it synchronously (a direct signal emission inside the same
+/// `launch()` call, not scheduled through a `GMainContext`), so this needs
+/// no glib main loop running on this thread to observe it, and works from
+/// the plain `thread::spawn`ed worker `launch_app`/`launch_home_app` already
+/// use. Its `platform_data` carries a `pid` key only since glib 2.72 and
+/// only for a launch GIO itself spawned (never for a DBus-activated entry),
+/// so `LaunchOutcome::Spawned(None)` is an expected, not a error, outcome --
+/// the splash falls back to `SplashTarget::LaunchOrder` in that case (see
+/// its own doc).
+fn launch_selected(path: &std::path::Path, swaymsg: &std::path::Path) -> Result<LaunchOutcome, String> {
     swaymsg_back(swaymsg)?;
     let app = gio::DesktopAppInfo::from_filename(path).ok_or("installed app disappeared")?;
     // `should_show()` alone does not cover `Hidden` -- see
@@ -768,8 +899,26 @@ fn launch_selected(path: &std::path::Path, swaymsg: &std::path::Path) -> Result<
     if !app.should_show() || app.is_hidden() {
         return Err("installed app is no longer visible".into());
     }
-    app.launch(&[], None::<&gio::AppLaunchContext>)
-        .map_err(|error| error.to_string())
+    let pid_cell = std::rc::Rc::new(std::cell::Cell::new(None::<i32>));
+    let context = gio::AppLaunchContext::new();
+    {
+        let pid_cell = pid_cell.clone();
+        context.connect_launched(move |_context, _app, platform_data| {
+            if !platform_data.is_type(glib::VariantTy::VARDICT) {
+                return;
+            }
+            let dict = glib::VariantDict::new(Some(platform_data));
+            if let Some(pid) = dict
+                .lookup_value("pid", Some(glib::VariantTy::INT32))
+                .and_then(|value| value.get::<i32>())
+            {
+                pid_cell.set(Some(pid));
+            }
+        });
+    }
+    app.launch(&[], Some(&context))
+        .map_err(|error| error.to_string())?;
+    Ok(LaunchOutcome::Spawned(pid_cell.get()))
 }
 
 /// Home's tap behavior: focus an already-running instance when one can be
@@ -782,10 +931,10 @@ fn launch_selected(path: &std::path::Path, swaymsg: &std::path::Path) -> Result<
 /// instance can still work by id/exec-hint alone, but there is nothing left
 /// to launch, so that case reports the same "installed app disappeared"
 /// error a stale drawer tap always has.
-fn focus_or_launch(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Result<(), String> {
+fn focus_or_launch(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Result<LaunchOutcome, String> {
     if let Some(con_id) = running_con_id(id, path, swaymsg) {
         if focus_con(con_id, swaymsg).is_ok() {
-            return Ok(());
+            return Ok(LaunchOutcome::Focused);
         }
     }
     let path = path.ok_or("installed app disappeared")?;
@@ -877,12 +1026,28 @@ struct ShellClient {
     catalog_pending_rescan: Option<Instant>,
     nav: DrawerNavigation,
     nav_tick: Instant,
-    launch_sender: Sender<(u64, Result<(), String>)>,
-    launch_results: Receiver<(u64, Result<(), String>)>,
+    launch_sender: Sender<(u64, Result<LaunchOutcome, String>)>,
+    launch_results: Receiver<(u64, Result<LaunchOutcome, String>)>,
     launching: bool,
     launch_in_flight: bool,
     launch_seq: u64,
-    launch_started: Option<Instant>,
+    /// The instant-feedback launch splash -- see `splash.rs`'s own doc.
+    /// `None` means no launch is in flight. Shown from the moment an app is
+    /// tapped (in the drawer, on Home, or in the dock) until its window
+    /// maps, `SPLASH_TIMEOUT` elapses, or its process exits first.
+    splash: Option<Splash>,
+    /// Signals from the current attempt's background `sway_ipc::watch_
+    /// window_events`/process-liveness thread -- see `SplashSignal`'s own
+    /// doc. Paired with `launch_seq`'s `attempt` value exactly like
+    /// `launch_results` above, so a thread from a superseded launch can
+    /// never affect the splash a later tap started.
+    splash_events: Receiver<(u64, SplashSignal)>,
+    splash_sender: Sender<(u64, SplashSignal)>,
+    /// Tells the current attempt's watcher thread to stop polling once its
+    /// splash no longer needs it (matched, dismissed, or superseded by a
+    /// new launch) -- cooperative, not a kill: the thread notices on its
+    /// own next ~200ms poll and exits on its own.
+    splash_watch_stop: Option<Arc<AtomicBool>>,
     swaymsg: Option<PathBuf>,
     renderer: RendererCache,
     services: ServiceWorker,
@@ -2080,7 +2245,7 @@ impl ShellClient {
         true
     }
 
-    fn launch_app(&mut self, index: usize) {
+    fn launch_app(&mut self, qh: &QueueHandle<Self>, index: usize) {
         if self.launch_in_flight || self.route != Route::Drawer {
             if self.launch_in_flight {
                 self.log("app-launch-worker-still-running");
@@ -2091,14 +2256,22 @@ impl ShellClient {
             return;
         };
         let path = app.path.clone();
+        let name = app.name.clone();
+        let icon = app.icon.clone();
         let swaymsg = self.swaymsg.clone();
         let sender = self.launch_sender.clone();
         self.launch_seq = self.launch_seq.wrapping_add(1);
         let attempt = self.launch_seq;
-        self.hide(); // existing live deck remains beneath this overlay
+        // Keeps this same overlay mapped and simply repaints it as the
+        // splash -- see `start_splash`'s own doc for why this, not
+        // `self.hide()`, is what keeps the previously active app from ever
+        // flashing through.
+        if !self.start_splash(qh, name, icon) {
+            self.log("app-launch-splash-unavailable");
+            return;
+        }
         self.launching = true;
         self.launch_in_flight = true;
-        self.launch_started = Some(Instant::now());
         thread::spawn(move || {
             let result = swaymsg
                 .as_deref()
@@ -2109,12 +2282,14 @@ impl ShellClient {
     }
 
     /// Home's tap-to-launch-or-focus, by desktop-entry id rather than a
-    /// drawer index. Home has no overlay to dismiss first (it already sits
-    /// beneath everything by construction -- see `HomeSurface`'s own doc),
-    /// so unlike `launch_app` this does not call `self.hide()` or set
-    /// `self.launching` (that flag exists only to let a failed drawer
-    /// launch reopen the drawer it dismissed).
-    fn launch_home_app(&mut self, id: String) {
+    /// drawer index. Home has no overlay of its own, so unlike `launch_app`
+    /// this may need `start_splash` to map one fresh rather than reuse an
+    /// already-mapped one; either way this does not set `self.launching`
+    /// (that flag exists only to let a failed *drawer* launch reopen the
+    /// drawer it dismissed -- a Home/dock launch that fails or times out
+    /// simply dismisses the splash back to Home, which was already showing
+    /// underneath and needs no explicit reopen).
+    fn launch_home_app(&mut self, qh: &QueueHandle<Self>, id: String) {
         if self.launch_in_flight {
             self.log("app-launch-worker-still-running");
             return;
@@ -2127,15 +2302,59 @@ impl ShellClient {
         // spawned thread: a pin can outlive its app (see
         // `home_state`'s own `missing_entry_keeps_its_slot_on_load` doc),
         // and `path` being `None` here is exactly that case, not a race.
-        let path = self.apps.iter().find(|app| app.id == id).map(|app| app.path.clone());
+        let entry = self.apps.iter().find(|app| app.id == id);
+        let path = entry.map(|app| app.path.clone());
+        let name = entry.map(|app| app.name.clone()).unwrap_or_else(|| id.clone());
+        let icon = entry.and_then(|app| app.icon.clone());
         let sender = self.launch_sender.clone();
         self.launch_seq = self.launch_seq.wrapping_add(1);
         let attempt = self.launch_seq;
+        if !self.start_splash(qh, name, icon) {
+            self.log("home-launch-splash-unavailable");
+            return;
+        }
         self.launch_in_flight = true;
         thread::spawn(move || {
             let result = focus_or_launch(&id, path.as_deref(), &swaymsg);
             let _ = sender.send((attempt, result));
         });
+    }
+
+    /// Shows the launch splash instantly and either reuses the overlay's
+    /// existing mapped layer (a drawer tap: the layer is already mapped and
+    /// already `configured`, so the very next `draw` call below actually
+    /// paints, within the same event-loop turn as the tap) or maps it fresh
+    /// (a Home/dock tap: `ensure_layer` requests a `configure` round trip
+    /// first, so the first splash frame lands one compositor round trip
+    /// later rather than in this same call -- still well under one visible
+    /// frame on a local Wayland connection, but not literally synchronous).
+    /// Either way the previously active app is never uncovered in between:
+    /// the drawer path never unmaps its layer at all, and the Home path's
+    /// freshly mapped layer is `Layer::Overlay`, which already occludes
+    /// everything beneath it the instant it has any content.
+    ///
+    /// Cancels a previous launch's still-running window watcher first (a
+    /// second tap before the first launch resolved supersedes it, and the
+    /// old watcher must not later report a spurious match/failure for this
+    /// new splash).
+    fn start_splash(&mut self, qh: &QueueHandle<Self>, name: String, icon: Option<String>) -> bool {
+        if let Some(stop) = self.splash_watch_stop.take() {
+            stop.store(true, Ordering::Relaxed);
+        }
+        self.reset_overlay_interaction();
+        if !self.ensure_layer(qh) {
+            return false;
+        }
+        self.splash = Some(Splash::new(name, icon, SplashTarget::LaunchOrder, Instant::now()));
+        // Force `input_region()` to recompute on the next `draw`: the
+        // splash's own hit-test (nothing while `Pending`, full-screen while
+        // dismissable) is unrelated to whatever `self.route`'s ordinary
+        // input rect was a moment ago, and the cached key would otherwise
+        // suppress the very first recompute.
+        self.input_region_key = None;
+        self.dirty = true;
+        self.draw(qh);
+        true
     }
 
     /// "Add to Home": a held (not tapped) drawer tile pins that app
@@ -2345,6 +2564,38 @@ impl ShellClient {
     }
 
     fn input_region(&mut self) {
+        if let Some(splash) = self.splash.as_ref() {
+            // The splash's own hit-test, entirely independent of whatever
+            // `self.route`'s ordinary input rect was a moment ago: nothing
+            // is tappable while `Pending` (there is nothing to press), and
+            // the whole screen is one big dismiss target once it becomes
+            // recoverable (`TimedOut`/`Failed`) -- see `dismiss_splash`.
+            // `Route::Hide` is a placeholder in this key; it is never
+            // compared against a real `Route::Hide` input-region computation
+            // because that path always has `self.layer.is_none()` by then
+            // (`hide()` clears `input_region_key` in the same call that
+            // drops the layer).
+            let dismissable = matches!(splash.status, SplashStatus::TimedOut | SplashStatus::Failed);
+            let key = (Route::Hide, self.width, self.height, dismissable);
+            if self.input_region_key == Some(key) {
+                return;
+            }
+            let Some(layer) = self.layer.as_ref() else {
+                return;
+            };
+            let Ok(region) = Region::new(&self.compositor) else {
+                return;
+            };
+            if dismissable {
+                region.add(0, 0, self.width as i32, self.height as i32);
+            }
+            layer
+                .wl_surface()
+                .set_input_region(Some(region.wl_region()));
+            self.input_ready = dismissable;
+            self.input_region_key = Some(key);
+            return;
+        }
         let ready = self.reveal.surface().is_none() || self.reveal.input_ready();
         let key = (self.route, self.width, self.height, ready);
         if self.input_region_key == Some(key) {
@@ -2368,7 +2619,13 @@ impl ShellClient {
         self.input_region_key = Some(key);
     }
 
-    fn hide(&mut self) {
+    /// Everything `hide()` resets besides actually unmapping the layer --
+    /// split out so `start_splash` can clear all of this same interactive
+    /// state (a drawer tap's nav/gesture/panel-close tracking becomes
+    /// meaningless the instant the splash takes over) while keeping an
+    /// already-mapped layer alive, which is what avoids ever uncovering
+    /// the previously active app between the drawer and the splash.
+    fn reset_overlay_interaction(&mut self) {
         self.touch.cancel();
         self.panel_start = None;
         self.service_view.notification_swipe = None;
@@ -2391,6 +2648,54 @@ impl ShellClient {
         self.panel_close_candidate = false;
         self.panel_close_sample = None;
         self.panel_close_velocity = 0.0;
+    }
+
+    /// Tells the current splash's background watcher thread to stop
+    /// polling -- cooperative, not a kill; see `splash_watch_stop`'s own
+    /// doc. Idempotent (a `None` is simply a no-op), and safe to call even
+    /// when no splash is active at all.
+    fn stop_splash_watch(&mut self) {
+        if let Some(stop) = self.splash_watch_stop.take() {
+            stop.store(true, Ordering::Relaxed);
+        }
+    }
+
+    /// The launched app's window actually mapped: end the splash and unmap
+    /// this overlay so the now-focused app shows, uncontested. Unlike
+    /// `dismiss_splash` this never reopens the drawer -- the app itself is
+    /// what should be visible now, not the launcher that started it. Also
+    /// the path for `LaunchOutcome::Focused` (an already-running app):
+    /// there was never a window to wait for in the first place, so this
+    /// runs the instant that outcome is known, which is what keeps an
+    /// already-running app's splash "very brief" rather than waiting for
+    /// its own timeout.
+    fn splash_matched(&mut self) {
+        self.launching = false;
+        self.hide();
+    }
+
+    /// A user's tap dismissing a `TimedOut`/`Failed` splash, or that
+    /// splash's own automatic dismissal (`Failed` only -- see
+    /// `should_auto_dismiss_failed`). Returns to the drawer if this launch
+    /// started there (matching this feature's predecessor behavior of
+    /// reopening a dismissed drawer on failure/timeout), or simply unmaps
+    /// back to whatever was already showing underneath (Home) otherwise.
+    fn dismiss_splash(&mut self, qh: &QueueHandle<Self>) {
+        self.stop_splash_watch();
+        self.splash = None;
+        let was_drawer_launch = self.launching;
+        self.launching = false;
+        if was_drawer_launch {
+            self.show(qh, Route::Drawer);
+        } else {
+            self.hide();
+        }
+    }
+
+    fn hide(&mut self) {
+        self.reset_overlay_interaction();
+        self.stop_splash_watch();
+        self.splash = None;
         self.layer.take();
         self.configured = false;
         self.frame_pending = false;
@@ -2446,36 +2751,59 @@ impl ShellClient {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
-        // A close drag (live or settling) is entirely client-side and
-        // takes priority over the compositor-driven open reveal below --
-        // the two can never be active together in practice (a close drag
-        // only ever begins once a route is fully open and `input_ready`,
-        // by which point `self.reveal` has already gone quiet), but this
-        // ordering is what makes that true rather than assumed.
-        let progress = if self.panel_close.active() {
-            self.panel_close.progress()
-        } else if self.reveal.surface().is_some() {
-            self.reveal.progress()
-        } else {
-            1.0
-        };
-        if let Err(error) = self.renderer.draw(
-            canvas,
-            RenderParams {
-                width: self.width,
-                height: self.height,
-                route: self.route,
-                progress,
-                scroll: if self.route == Route::Drawer {
-                    self.nav.scroll
-                } else {
-                    0.0
+        if let Some(splash) = self.splash.clone() {
+            // No slide/reveal progress at all: the splash is always
+            // full-screen from its very first frame (see `start_splash`'s
+            // own doc on why the backdrop is opaque immediately), so this
+            // skips the panel-close/reveal shift entirely rather than
+            // asking it to represent a state it was never designed for.
+            let alpha = fade_alpha(splash.started, Instant::now());
+            if let Err(error) = self.renderer.draw_splash(
+                canvas,
+                SplashParams {
+                    width: self.width,
+                    height: self.height,
+                    name: &splash.name,
+                    icon: splash.icon.as_deref(),
+                    status: splash.status,
+                    icon_alpha: alpha,
                 },
-            },
-            &self.apps,
-        ) {
-            self.log(&format!("render-failed {error}"));
-            return false;
+            ) {
+                self.log(&format!("splash-render-failed {error}"));
+                return false;
+            }
+        } else {
+            // A close drag (live or settling) is entirely client-side and
+            // takes priority over the compositor-driven open reveal below --
+            // the two can never be active together in practice (a close drag
+            // only ever begins once a route is fully open and `input_ready`,
+            // by which point `self.reveal` has already gone quiet), but this
+            // ordering is what makes that true rather than assumed.
+            let progress = if self.panel_close.active() {
+                self.panel_close.progress()
+            } else if self.reveal.surface().is_some() {
+                self.reveal.progress()
+            } else {
+                1.0
+            };
+            if let Err(error) = self.renderer.draw(
+                canvas,
+                RenderParams {
+                    width: self.width,
+                    height: self.height,
+                    route: self.route,
+                    progress,
+                    scroll: if self.route == Route::Drawer {
+                        self.nav.scroll
+                    } else {
+                        0.0
+                    },
+                },
+                &self.apps,
+            ) {
+                self.log(&format!("render-failed {error}"));
+                return false;
+            }
         }
         self.input_region();
         let layer = self.layer.as_ref().expect("mapped");
@@ -2774,7 +3102,11 @@ impl TouchHandler for ShellClient {
                 if self.wifi_view.page == WifiPage::Closed {
                     self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 }
-                if self.route == Route::Drawer && self.input_ready {
+                if self.splash.is_some() {
+                    // Nothing to track on `down` -- a dismissable splash
+                    // (the only state that ever reaches this branch at all;
+                    // see `input_region`'s own doc) only acts on `up`.
+                } else if self.route == Route::Drawer && self.input_ready {
                     self.nav.down(id, pos, time_ms);
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
@@ -2934,7 +3266,7 @@ impl TouchHandler for ShellClient {
                 self.home_surface.height,
             ) {
                 match action {
-                    HomeAction::Launch(app_id) => self.launch_home_app(app_id),
+                    HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
                     HomeAction::LayoutChanged => self.persist_home_layout(),
                 }
             }
@@ -2947,7 +3279,14 @@ impl TouchHandler for ShellClient {
             if self.wifi_view.page == WifiPage::Closed {
                 self.log(&format!("touch-up {id}"));
             }
-            if self.route == Route::Drawer && self.input_ready {
+            if self.splash.is_some() {
+                // Only reachable at all when `input_region` made the
+                // splash dismissable (`TimedOut`/`Failed` -- see its own
+                // doc); a `Pending` splash's empty input region means the
+                // compositor never delivers a touch here in the first
+                // place.
+                self.dismiss_splash(qh);
+            } else if self.route == Route::Drawer && self.input_ready {
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
                 }
@@ -2975,7 +3314,7 @@ impl TouchHandler for ShellClient {
                         .nav
                         .up(id, point, time_ms, self.width, self.height, self.apps.len())
                     {
-                        Some(DrawerAction::Launch(index)) => self.launch_app(index),
+                        Some(DrawerAction::Launch(index)) => self.launch_app(qh, index),
                         Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
                         // `nav`'s own release-only "dy > 110 && scroll <=
                         // 0.5" check is now just a backstop for whatever
@@ -3531,6 +3870,7 @@ fn serve() -> Result<(), String> {
     // cost an extra mmap resize, never a hard failure.
     let pool = SlotPool::new(568 * 1232 * 4 * 6, &shm).map_err(|e| e.to_string())?;
     let (launch_sender, launch_results) = mpsc::channel();
+    let (splash_sender, splash_events) = mpsc::channel();
     let settings_command = std::env::var_os("K230_SETTINGS")
         .map(PathBuf::from)
         .unwrap_or_default();
@@ -3626,7 +3966,10 @@ fn serve() -> Result<(), String> {
         launching: false,
         launch_in_flight: false,
         launch_seq: 0,
-        launch_started: None,
+        splash: None,
+        splash_events,
+        splash_sender,
+        splash_watch_stop: None,
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
         services,
@@ -4050,38 +4393,101 @@ fn serve() -> Result<(), String> {
             let Ok((attempt, result)) = state.launch_results.try_recv() else {
                 break;
             };
-            if attempt == state.launch_seq {
-                state.launch_in_flight = false;
-                // `launching` is set only for a drawer-initiated launch,
-                // which owns a dismissed overlay to recover on failure; a
-                // Home-initiated launch/focus has no overlay to restore, so
-                // it only logs its own outcome.
-                let was_drawer_launch = state.launching;
-                if was_drawer_launch {
-                    state.launching = false;
-                    state.launch_started = None;
-                }
-                if let Err(error) = result {
-                    state.log(&format!("app-launch-failed {error}"));
-                    if was_drawer_launch {
-                        state.show(&qh, Route::Drawer);
-                    }
-                } else {
-                    state.log("app-launch-requested");
-                }
-            } else {
+            if attempt != state.launch_seq {
                 state.log("stale-app-launch-result");
+                continue;
+            }
+            state.launch_in_flight = false;
+            match result {
+                Ok(LaunchOutcome::Focused) => {
+                    state.log("app-launch-focused");
+                    state.splash_matched();
+                }
+                Ok(LaunchOutcome::Spawned(pid)) => {
+                    state.log("app-launch-requested");
+                    let target = pid.map(SplashTarget::Pid).unwrap_or(SplashTarget::LaunchOrder);
+                    if let Some(splash) = state.splash.as_mut() {
+                        splash.target = target;
+                    } else {
+                        // The splash was dismissed (e.g. a Back tap) while
+                        // this launch was still in flight; nothing left to
+                        // watch for on this client's own side, but the
+                        // process itself was still asked to start.
+                        continue;
+                    }
+                    state.splash_watch_stop = Some(spawn_splash_watcher(
+                        target,
+                        pid,
+                        attempt,
+                        state.splash_sender.clone(),
+                    ));
+                }
+                Err(error) => {
+                    state.log(&format!("app-launch-failed {error}"));
+                    if let Some(splash) = state.splash.as_mut() {
+                        splash.set_status(SplashStatus::Failed, Instant::now());
+                        state.dirty = true;
+                    } else {
+                        // Same stale-splash situation as above, on the
+                        // failure path instead.
+                        state.launching = false;
+                    }
+                }
             }
         }
-        if state.launching
-            && state
-                .launch_started
-                .is_some_and(|started| started.elapsed() >= Duration::from_secs(3))
+        for _ in 0..4 {
+            let Ok((attempt, signal)) = state.splash_events.try_recv() else {
+                break;
+            };
+            if attempt != state.launch_seq {
+                continue;
+            }
+            match signal {
+                SplashSignal::Matched => {
+                    state.log("app-launch-mapped");
+                    state.splash_watch_stop = None; // the watcher already exited on its own
+                    state.splash_matched();
+                }
+                SplashSignal::ProcessExited => {
+                    state.log("app-launch-process-exited");
+                    state.splash_watch_stop = None;
+                    if let Some(splash) = state.splash.as_mut() {
+                        splash.set_status(SplashStatus::Failed, Instant::now());
+                        state.dirty = true;
+                    }
+                }
+            }
+        }
+        // Extracted as plain `Copy` values up front (never a live reference
+        // into `state.splash`) so the `TimedOut`/`Failed` transitions below
+        // are free to call back into `state` (`dismiss_splash` mutably
+        // borrows all of it) without a borrow-checker conflict.
+        if let Some((status, started, status_since)) = state
+            .splash
+            .as_ref()
+            .map(|splash| (splash.status, splash.started, splash.status_since))
         {
-            state.launching = false;
-            state.launch_started = None;
-            state.log("app-launch-timeout");
-            state.show(&qh, Route::Drawer);
+            let now = Instant::now();
+            match status {
+                SplashStatus::Pending => {
+                    if fade_alpha(started, now) < 1.0 {
+                        state.dirty = true;
+                    }
+                    if should_time_out(started, now) {
+                        state.log("app-launch-splash-timeout");
+                        if let Some(splash) = state.splash.as_mut() {
+                            splash.set_status(SplashStatus::TimedOut, now);
+                        }
+                        state.dirty = true;
+                    }
+                }
+                SplashStatus::TimedOut => {}
+                SplashStatus::Failed => {
+                    if should_auto_dismiss_failed(status_since, now) {
+                        state.dismiss_splash(&qh);
+                    }
+                }
+            }
         }
         let now = Instant::now();
         let elapsed = now
@@ -4464,6 +4870,10 @@ fn serve() -> Result<(), String> {
             || pending_appearance.is_some()
             || state.home.is_animating()
             || state.catalog_pending_rescan.is_some()
+            || state
+                .splash
+                .as_ref()
+                .is_some_and(|splash| fade_alpha(splash.started, Instant::now()) < 1.0)
             || (state.route == Route::Settings
                 && (state.theme_carousel.is_animating()
                     || state.background_carousel.is_animating()
@@ -5138,6 +5548,120 @@ mod route_tests {
         fs::write(&script, "#!/bin/sh\nexit 0\n").unwrap();
         assert!(swaymsg_back(&script).is_ok());
         fs::remove_file(script).unwrap();
+    }
+
+    /// The riskiest assumption this feature makes, proven against the real
+    /// `gio`/`glib` runtime rather than reasoned about: `AppLaunchContext`'s
+    /// `launched` signal fires synchronously inside `launch()` itself, with
+    /// no `GMainLoop` iterating on this thread, and its `pid` platform-data
+    /// key names the actual spawned process -- not a value only a running
+    /// main loop would ever deliver, and not a wrapper process's pid.
+    #[test]
+    fn launch_selected_captures_the_real_spawned_pid_with_no_glib_main_loop_running() {
+        let dir = std::env::temp_dir().join(format!(
+            "k230-launch-selected-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        let swaymsg = dir.join("swaymsg");
+        fs::write(&swaymsg, "#!/bin/sh\nexit 0\n").unwrap();
+        fs::set_permissions(&swaymsg, fs::Permissions::from_mode(0o700)).unwrap();
+        let marker = dir.join("marker");
+        let desktop = dir.join("fixture.desktop");
+        fs::write(
+            &desktop,
+            format!(
+                "[Desktop Entry]\nType=Application\nName=Fixture\nExec=/bin/sh -c 'echo $$ >{}; sleep 5'\n",
+                marker.display()
+            ),
+        )
+        .unwrap();
+        let outcome = launch_selected(&desktop, &swaymsg).expect("launch_selected");
+        let LaunchOutcome::Spawned(pid) = outcome else {
+            panic!("expected LaunchOutcome::Spawned, got {outcome:?}");
+        };
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while !marker.exists() && Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(20));
+        }
+        let observed_pid: i32 = fs::read_to_string(&marker)
+            .expect("spawned process should have written its own pid")
+            .trim()
+            .parse()
+            .unwrap();
+        unsafe {
+            libc::kill(observed_pid, libc::SIGKILL);
+        }
+        assert_eq!(
+            pid,
+            Some(observed_pid),
+            "the captured pid must be the real spawned process, with no shell-wrapper indirection"
+        );
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn spawn_splash_watcher_ignores_events_with_no_swaysock_and_never_signals() {
+        // With `SWAYSOCK` unset (or pointing nowhere), the watcher thread
+        // must degrade to silence -- the splash's own `SPLASH_TIMEOUT` is
+        // the fallback -- rather than panicking or spuriously reporting a
+        // match/failure.
+        let previous = std::env::var_os("SWAYSOCK");
+        unsafe {
+            std::env::remove_var("SWAYSOCK");
+        }
+        let (sender, receiver) = mpsc::channel::<(u64, SplashSignal)>();
+        let stop = spawn_splash_watcher(SplashTarget::LaunchOrder, None, 1, sender);
+        let deadline = Instant::now() + Duration::from_millis(500);
+        let mut received = None;
+        while Instant::now() < deadline {
+            if let Ok(message) = receiver.try_recv() {
+                received = Some(message);
+                break;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert_eq!(received, None, "no SWAYSOCK must never fabricate a signal");
+        stop.store(true, Ordering::Relaxed);
+        if let Some(value) = previous {
+            unsafe {
+                std::env::set_var("SWAYSOCK", value);
+            }
+        }
+    }
+
+    #[test]
+    fn splash_window_event_matches_by_pid_through_the_real_thin_wrapper() {
+        // An exact pid match never touches `/proc` at all (see
+        // `pid_or_ancestor`'s own short-circuit), so this is deterministic
+        // regardless of whatever else happens to be running on the host.
+        let event = sway_ipc::WindowEvent {
+            change: "new".into(),
+            pid: Some(4242),
+        };
+        assert!(splash_window_event_matches(SplashTarget::Pid(4242), &event));
+        // `i32::MAX` almost certainly names no real process at all, so the
+        // real `sway_ipc::parent_pid`'s `/proc` read fails deterministically
+        // on any host -- unlike an arbitrary low pid, which could coincide
+        // with a real, shallow process tree (a container's own pid 1 child,
+        // say) and reach the target within the bounded walk by accident.
+        let bogus_event = sway_ipc::WindowEvent {
+            change: "new".into(),
+            pid: Some(i32::MAX),
+        };
+        assert!(!splash_window_event_matches(SplashTarget::Pid(1), &bogus_event));
+        let no_pid_event = sway_ipc::WindowEvent {
+            change: "new".into(),
+            pid: None,
+        };
+        assert!(splash_window_event_matches(
+            SplashTarget::LaunchOrder,
+            &no_pid_event
+        ));
     }
 
     #[test]

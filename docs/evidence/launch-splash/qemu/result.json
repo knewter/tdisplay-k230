@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-native-touch",
+  "splash_replaced_drawer": true,
+  "no_unmap_before_handoff": true,
+  "handoff_focused_app_id": "k230.card.two",
+  "sway": "/nix/store/6xrc0x9kb1gpy6v8g2v3512a0373vwcm-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/71v0ssqfkp89yaw8ssxs2d08ysg97rbv-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "client": "/nix/store/dw3p6aq52mz55mqrm97hlc0056sj9x1g-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client"
+}

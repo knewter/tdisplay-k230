@@ -14,6 +14,8 @@ pub mod protocol;
 pub mod render;
 pub mod service_data;
 pub mod service_ui;
+pub mod splash;
+pub mod sway_ipc;
 pub mod theme_carousel;
 pub mod theme_catalog;
 pub mod theme_thumbnails;

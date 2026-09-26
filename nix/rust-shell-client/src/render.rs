@@ -9,6 +9,7 @@ use crate::{
     navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
     service_data::{Control, ControlValue, Priority},
     service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
+    splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
     theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
@@ -21,7 +22,7 @@ use crate::{
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
-use pango::{EllipsizeMode, FontDescription};
+use pango::{Alignment, EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path};
 
 /// The one system font family used by every label this renderer draws.
@@ -887,6 +888,19 @@ pub struct RenderParams {
     pub route: Route,
     pub progress: f64,
     pub scroll: f64,
+}
+
+/// Bundles `RendererCache::draw_splash`'s arguments (otherwise 8, over
+/// clippy's `too_many_arguments` threshold), matching this file's own
+/// `RenderParams` convention.
+#[derive(Clone, Copy)]
+pub struct SplashParams<'a> {
+    pub width: u32,
+    pub height: u32,
+    pub name: &'a str,
+    pub icon: Option<&'a str>,
+    pub status: SplashStatus,
+    pub icon_alpha: f64,
 }
 
 /// The Entry page's `view.message` is reused for informational text ("Saved
@@ -2566,6 +2580,13 @@ pub struct RendererCache {
     preview_surface: Option<ImageSurface>,
     preview_error: bool,
     thumbnails: ThemeThumbnailCache,
+    /// The launch splash's cached backdrop -- see `ensure_splash_bake`'s own
+    /// doc. Lives here rather than on `ShellClient` because every other
+    /// per-route cached bitmap this renderer owns (`static_pixels`,
+    /// `preview_surface`, `thumbnails`) already lives on this cache, and the
+    /// splash bake is architecturally the same kind of thing: a bitmap this
+    /// renderer keeps so `ShellClient` never has to rebuild one itself.
+    splash_bake: Option<SplashBake>,
     /// Bumped by every change to `services`/`chooser`/`pressed`/
     /// `preview_surface`/`preview_error`/`thumbnails` -- everything
     /// `render_candidate_overlay` reads from `self` besides the theme it
@@ -2608,6 +2629,28 @@ fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
 impl RendererCache {
     pub fn content_generation(&self) -> u64 {
         self.content_generation
+    }
+
+    /// Paints the launch splash into `canvas`: the cached, name/geometry/
+    /// status-keyed backdrop (rebuilt only when one of those actually
+    /// changed -- see `ensure_splash_bake`'s own doc) plus the app's icon,
+    /// composited fresh every call at `params.icon_alpha` so its fade-in
+    /// can advance without rebuilding the backdrop text each frame.
+    pub fn draw_splash(&mut self, canvas: &mut [u8], params: SplashParams) -> Result<(), String> {
+        let SplashParams {
+            width,
+            height,
+            name,
+            icon,
+            status,
+            icon_alpha,
+        } = params;
+        ensure_splash_bake(&mut self.splash_bake, self.theme.as_ref(), name, width, height, status)?;
+        let bake = self
+            .splash_bake
+            .as_ref()
+            .ok_or("splash bake missing after ensure_splash_bake")?;
+        draw_splash(canvas, bake, icon, &mut self.icons, icon_alpha)
     }
 
     pub fn set_theme_view(&mut self, view: ThemeView) {
@@ -3139,6 +3182,244 @@ impl RendererCache {
         home: &HomeScreen,
     ) -> Result<(), String> {
         draw_home_shm(canvas, width, height, apps, &mut self.icons, self.theme.as_ref(), home)
+    }
+}
+
+/// The launch splash's icon size: large and centered, per the launch-splash
+/// design's Android-12 reference. This is above `icon::IconCache`'s old
+/// 128px decode cap (raised alongside this feature -- see that module's own
+/// `decode` doc), since every existing caller before this feature asked for
+/// 108px at most (`home_grid`'s icon plate).
+pub const SPLASH_ICON_SIZE: i32 = 176;
+
+fn splash_status_code(status: SplashStatus) -> u8 {
+    match status {
+        SplashStatus::Pending => 0,
+        SplashStatus::TimedOut => 1,
+        SplashStatus::Failed => 2,
+    }
+}
+
+fn draw_centered(cr: &Context, value: &str, y: f64, width: f64, size: f64, rgb: u32) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(Alignment::Center);
+    layout.set_ellipsize(EllipsizeMode::End);
+    color(cr, rgb, 1.0);
+    cr.move_to(0.0, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// The launch splash's cached, name/geometry/status-keyed backdrop: the
+/// theme's opaque background colour plus every line of text, baked exactly
+/// once per distinct `(name, width, height, status)` -- see
+/// `ensure_splash_bake`'s own doc for why text is what gets cached here
+/// (Pango font shaping, not the icon, is the one part of this scene that
+/// is not already cheap to repeat every frame). The icon itself is
+/// composited fresh each frame by `draw_splash` so its fade-in alpha can
+/// change without rebuilding this bake.
+pub struct SplashBake {
+    key: (String, u32, u32, u8),
+    width: u32,
+    height: u32,
+    pixels: Vec<u8>,
+    icon_x: f64,
+    icon_y: f64,
+}
+
+fn build_splash_bake(
+    theme: Option<&AppearanceSnapshot>,
+    name: &str,
+    width: u32,
+    height: u32,
+    status: SplashStatus,
+) -> Result<SplashBake, String> {
+    let size = usize::try_from(width)
+        .ok()
+        .and_then(|w| w.checked_mul(height as usize))
+        .and_then(|pixels| pixels.checked_mul(4))
+        .ok_or("invalid splash geometry")?;
+    let mut pixels = vec![0u8; size];
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(
+            pixels.as_mut_ptr(),
+            Format::ARgb32,
+            width as i32,
+            height as i32,
+            (width * 4) as i32,
+        )
+    }
+    .map_err(|e| e.to_string())?;
+    let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+    // Opaque on this very first paint -- the previously active app must
+    // never show through, even for one frame, so unlike the icon/name
+    // below this backdrop fill carries no fade of its own.
+    cr.set_operator(Operator::Source);
+    color(&cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+    cr.paint().map_err(|e| e.to_string())?;
+    cr.set_operator(Operator::Over);
+    if let Some(brush) = theme_brush(theme, "splash", "background") {
+        let _ = fill_brush(&cr, brush, 0.0, 0.0, width as f64, height as f64);
+    }
+    let style = visual_style(theme, "splash");
+    let icon_x = (f64::from(width) - f64::from(SPLASH_ICON_SIZE)) / 2.0;
+    let icon_y = f64::from(height) * 0.36 - f64::from(SPLASH_ICON_SIZE) / 2.0;
+    let label_y = icon_y + f64::from(SPLASH_ICON_SIZE) + 28.0;
+    let (primary, primary_color) = match status {
+        SplashStatus::Pending | SplashStatus::TimedOut => (name.to_string(), style.text),
+        SplashStatus::Failed => (format!("Couldn't open {name}"), style.error),
+    };
+    draw_centered(&cr, &primary, label_y, width as f64, 30.0, primary_color);
+    if status == SplashStatus::TimedOut {
+        draw_centered(
+            &cr,
+            "Taking longer than usual…",
+            label_y + 40.0,
+            width as f64,
+            20.0,
+            style.muted,
+        );
+        draw_centered(
+            &cr,
+            "Tap to go Home",
+            label_y + 70.0,
+            width as f64,
+            18.0,
+            style.accent,
+        );
+    }
+    drop(cr);
+    surface.flush();
+    Ok(SplashBake {
+        key: (name.to_string(), width, height, splash_status_code(status)),
+        width,
+        height,
+        pixels,
+        icon_x,
+        icon_y,
+    })
+}
+
+/// Rebuilds `*bake` only when `(name, width, height, status)` actually
+/// changed from whatever it already holds -- an ordinary `Pending` splash
+/// showing the same app never rebuilds a second time, matching this
+/// hardware's "render the splash bitmap once, then only fade" budget.
+fn ensure_splash_bake(
+    bake: &mut Option<SplashBake>,
+    theme: Option<&AppearanceSnapshot>,
+    name: &str,
+    width: u32,
+    height: u32,
+    status: SplashStatus,
+) -> Result<(), String> {
+    let key = (name.to_string(), width, height, splash_status_code(status));
+    if bake.as_ref().is_some_and(|existing| existing.key == key) {
+        return Ok(());
+    }
+    *bake = Some(build_splash_bake(theme, name, width, height, status)?);
+    Ok(())
+}
+
+/// Paints `bake`'s cached backdrop into `canvas`, then composites the
+/// app's icon on top at `icon_alpha` (the only thing that changes from one
+/// frame to the next while a splash is fading in). `icons` is the same
+/// `IconCache` every other surface shares, so this icon is itself already
+/// decoded at most once regardless of how many frames the fade takes.
+fn draw_splash(
+    canvas: &mut [u8],
+    bake: &SplashBake,
+    icon: Option<&str>,
+    icons: &mut IconCache,
+    icon_alpha: f64,
+) -> Result<(), String> {
+    if canvas.len() != bake.pixels.len() {
+        return Err("invalid splash canvas".into());
+    }
+    canvas.copy_from_slice(&bake.pixels);
+    let Some(icon) = icon else {
+        return Ok(());
+    };
+    let alpha = icon_alpha.clamp(0.0, 1.0);
+    if alpha <= 0.0 {
+        return Ok(());
+    }
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(
+            canvas.as_mut_ptr(),
+            Format::ARgb32,
+            bake.width as i32,
+            bake.height as i32,
+            (bake.width * 4) as i32,
+        )
+    }
+    .map_err(|e| e.to_string())?;
+    let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+    cr.push_group();
+    icons.paint(&cr, icon, SPLASH_ICON_SIZE, bake.icon_x, bake.icon_y);
+    if cr.pop_group_to_source().is_ok() {
+        let _ = cr.paint_with_alpha(alpha);
+    }
+    drop(cr);
+    surface.flush();
+    Ok(())
+}
+
+#[cfg(test)]
+mod splash_render_tests {
+    use super::*;
+
+    #[test]
+    fn ensure_splash_bake_only_rebuilds_on_a_key_change() {
+        let mut bake: Option<SplashBake> = None;
+        ensure_splash_bake(&mut bake, None, "Foot", 568, 1232, SplashStatus::Pending).unwrap();
+        let first_pixels = bake.as_ref().unwrap().pixels.clone();
+        // Same key: must not reallocate/rebuild (same bytes, and cheap to
+        // call repeatedly every frame while pending).
+        ensure_splash_bake(&mut bake, None, "Foot", 568, 1232, SplashStatus::Pending).unwrap();
+        assert_eq!(bake.as_ref().unwrap().pixels, first_pixels);
+        // A status change (Pending -> TimedOut) must rebuild: the baked
+        // text differs.
+        ensure_splash_bake(&mut bake, None, "Foot", 568, 1232, SplashStatus::TimedOut).unwrap();
+        assert_ne!(bake.as_ref().unwrap().pixels, first_pixels);
+    }
+
+    #[test]
+    fn draw_splash_backdrop_is_fully_opaque_even_before_the_icon_fades_in() {
+        let mut bake: Option<SplashBake> = None;
+        ensure_splash_bake(&mut bake, None, "Foot", 40, 40, SplashStatus::Pending).unwrap();
+        let bake = bake.unwrap();
+        let mut icons = IconCache::new();
+        let mut canvas = vec![0u8; 40 * 40 * 4];
+        // icon_alpha 0.0: the very first frame, before any fade progress.
+        draw_splash(&mut canvas, &bake, Some("foot"), &mut icons, 0.0).unwrap();
+        assert!(
+            canvas.chunks_exact(4).all(|pixel| pixel[3] == 255),
+            "every backdrop pixel must be fully opaque on the first splash frame"
+        );
+    }
+
+    #[test]
+    fn draw_splash_rejects_a_mismatched_canvas_size() {
+        let mut bake: Option<SplashBake> = None;
+        ensure_splash_bake(&mut bake, None, "Foot", 40, 40, SplashStatus::Pending).unwrap();
+        let bake = bake.unwrap();
+        let mut icons = IconCache::new();
+        let mut wrong = vec![0u8; 10];
+        assert!(draw_splash(&mut wrong, &bake, None, &mut icons, 1.0).is_err());
+    }
+
+    #[test]
+    fn a_failed_launch_bakes_the_couldnt_open_message_distinctly() {
+        let mut pending: Option<SplashBake> = None;
+        ensure_splash_bake(&mut pending, None, "Foot", 200, 200, SplashStatus::Pending).unwrap();
+        let mut failed: Option<SplashBake> = None;
+        ensure_splash_bake(&mut failed, None, "Foot", 200, 200, SplashStatus::Failed).unwrap();
+        assert_ne!(pending.unwrap().pixels, failed.unwrap().pixels);
     }
 }
 

@@ -227,7 +227,7 @@ fn resolve(icon: &str, theme: &str, wanted: i32, roots: &[PathBuf]) -> Option<Pa
 }
 
 fn decode(path: &Path, size: i32) -> Option<ImageSurface> {
-    if !usable(path) || !(16..=128).contains(&size) {
+    if !usable(path) || !(16..=192).contains(&size) {
         return None;
     }
     let output = ImageSurface::create(Format::ARgb32, size, size).ok()?;
@@ -369,6 +369,38 @@ mod tests {
         let default = IconCache::default();
         assert!(!default.theme.is_empty());
         assert!(!default.roots.is_empty());
+    }
+
+    /// The launch splash asks for a 176px icon (`render::SPLASH_ICON_SIZE`)
+    /// -- above the drawer/Home era's 128px cap. Bumping `decode`'s bound
+    /// to admit it (while still rejecting an unreasonably large request)
+    /// is the one behavior change this feature makes to this module.
+    #[test]
+    fn decode_admits_the_larger_splash_icon_size_but_still_bounds_it() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-rust-icon-splash-size-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let apps = root.join("icons/hicolor/scalable/apps");
+        fs::create_dir_all(&apps).unwrap();
+        fs::write(
+            apps.join("foot.svg"),
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>",
+        )
+        .unwrap();
+        let mut cache = IconCache::new();
+        cache.set_theme("hicolor");
+        cache.use_fixture_root(root.clone());
+        let target = ImageSurface::create(Format::ARgb32, 176, 176).unwrap();
+        let cr = Context::new(&target).unwrap();
+        assert!(cache.paint(&cr, "foot", 176, 0.0, 0.0));
+        drop(cr);
+        assert!(decode(&apps.join("foot.svg"), 500).is_none());
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

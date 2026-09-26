@@ -1361,6 +1361,10 @@ DATA 94ad4dec646c0d8c58da8733b829f16576adc8a34912061a7bf71ba7861f4fb9  docs/evid
 DATA 536397015eaaaadb79759c5abefe19f7d7c1ecbda9eeba2eecf1cf1d84f1e57c  docs/evidence/card-shell/video-card-gestures/contact-sheet-overview-freeze.png
 DATA 76883f6aba9647b6ba1a955827e81ff32958b1098926284f53584f3b6c0b63ed  docs/evidence/card-shell/live-card-cost/contact-sheet.png
 DATA cbc8370a74746d24a2467c4fe7dd31bf1fc9a14a28de4cfc169bc3ced7d18b9a  docs/evidence/card-shell/bottom-band-flicker/without-kernel-patch-injected-gestures.png
+DATA 2852867146b0c9dadd66e505c6578d3894ec54d367b69b210cf7e59752495898  docs/evidence/launch-splash/qemu/deck.png
+DATA 15e78201d27f66325e51d0626d6d0dc0b36b27afa7c4a8f0585b727f09935fea  docs/evidence/launch-splash/qemu/drawer-open.png
+DATA 17dcca16238de352f6777129b43cb8f5133f7efd23ac511b3a6094313d0228ae  docs/evidence/launch-splash/qemu/splash.png
+DATA 4c8619c892cc140a89422463a3f38bd17868ab6159cc9bfa1a28d523ecb7c221  docs/evidence/launch-splash/qemu/handoff.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
