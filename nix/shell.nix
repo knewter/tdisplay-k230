@@ -179,6 +179,170 @@ let
     terminal = true;
     categories = [ "AudioVideo" "Video" ];
   };
+  # More apps for the drawer: games, viewers, and utilities. Chosen against
+  # Omarchy's install/omarchy-*.packages list where that fits this board;
+  # see docs/research/omarchy-app-catalog.md for the per-category reasoning
+  # and why several Omarchy picks (imv, mupdf's GUI, RetroArch cores,
+  # Chromium) are not carried over. Every one of these renders through GTK3
+  # Cairo/Pixman or a plain terminal -- none needs EGL/GL, which this board
+  # has no driver for at all (no Mesa, no LLVM).
+  #
+  # zathura's default plugin set links mupdf's own GUI build (freeglut/GLU)
+  # into the same closure just to reach its parser -- dead weight, since
+  # zathura only calls libmupdf, never mupdf-gl. Overriding to the poppler
+  # backend (`zathuraPkgs.override { useMupdf = false; }`) would drop that,
+  # but its `zathura_pdf_poppler` plugin fails to cross-build here on its
+  # own: meson's cross setup cannot resolve `zathura` via pkg-config for the
+  # plugin ("Run-time dependency zathura found: NO", host build evidence,
+  # `nix log` on the `zathura-pdf-poppler-*.drv` from this change) -- a
+  # nixpkgs cross-meson gap unrelated to this board, not a GL or hardware
+  # issue, and not something to patch inside this change's scope. The
+  # default (mupdf-backed) `zathura` is already a valid, present store path
+  # at this nixpkgs pin, so that dead-weight GUI binary is kept rather than
+  # blocking the viewer entirely; see docs/research/omarchy-app-catalog.md.
+  zathuraApp = pkgs.zathura;
+  # cmake's own install() rules already generate a good-looking .desktop
+  # file per puzzle (~40 of them: "Black Box", "Bridges", ...), each
+  # referencing an Icon= name that never resolves -- the per-puzzle icon
+  # PNGs are not shipped pre-rendered at all. The source tarball has only
+  # icons/*.sav fixtures plus icon.pl/cicon.pl/crop.sh: the icons are meant
+  # to be screenshotted from the just-built game binaries at build time,
+  # which cannot run on the x86_64 builder for a riscv64 target. Upstream's
+  # separate postInstall loop tries to install those same missing PNGs a
+  # second time (`install -Dm644 icons/$i-96d24.png ...`) and aborts the
+  # whole build doing it (confirmed on `net`, then `bridges`, in this
+  # change's host build -- `nix log` on the sgt-puzzles derivation); that is
+  # a real cross-compilation gap in nixpkgs' packaging, not something to
+  # patch inside this change's scope. A ~40-entry dump into a small touch
+  # drawer is also more than this launcher needs even where an icon would
+  # resolve. Replace postInstall with a step that removes cmake's own
+  # per-puzzle entries and installs exactly four touch-friendly picks that
+  # need only a single tap (no secondary-button/right-click semantics),
+  # each pointed at the shared bundled `applications-games` icon instead of
+  # a per-puzzle screenshot: rotate (Net), remove same-colour groups (Same
+  # Game), shift a row/column (Sixteen), slide a tile (Fifteen).
+  sgtPuzzlesCurated = pkgs.sgt-puzzles.overrideAttrs (old: {
+    postInstall = ''
+      rm -f $out/share/applications/*.desktop
+      declare -A names=( [net]="Net" [samegame]="Same Game" [sixteen]="Sixteen" [fifteen]="Fifteen" )
+      for i in net samegame sixteen fifteen; do
+        echo "[Desktop Entry]" > $i.desktop
+        desktop-file-install --dir $out/share/applications \
+          --set-key Type --set-value Application \
+          --set-key Exec --set-value $i \
+          --set-key Name --set-value "''${names[$i]}" \
+          --set-key Comment --set-value "${old.meta.description}" \
+          --set-key Categories --set-value "Game;LogicGame;" \
+          --set-key Icon --set-value applications-games \
+          $i.desktop
+      done
+    '';
+  });
+  # Nix's default fixup phase only strips ELF binaries under bin/sbin/lib*/
+  # libexec; nethack installs its game binary and its lock-recovery helper
+  # under games/lib/nethackdir/, which that list misses, so both keep their
+  # unstripped .comment/debug references to the full riscv64 gcc closure
+  # (~388 MiB by itself -- over half of this change's whole closure delta;
+  # `nix-store -q --referrers` on the gcc derivation from this change's
+  # build names exactly these two files). `remove-references-to` is the
+  # same fix nixpkgs' own btop package.nix already applies to itself for
+  # the identical class of leak.
+  nethackFixed = pkgs.nethack.overrideAttrs (old: {
+    postFixup = (old.postFixup or "") + ''
+      ${pkgs.buildPackages.removeReferencesTo}/bin/remove-references-to -t ${pkgs.stdenv.cc.cc} \
+        $out/games/lib/nethackdir/nethack $out/games/lib/nethackdir/recover
+    '';
+  });
+  nethackDesktop = pkgs.makeDesktopItem {
+    name = "k230-nethack";
+    desktopName = "NetHack";
+    genericName = "Roguelike";
+    icon = "applications-games";
+    comment = "Classic roguelike (curses)";
+    exec = "${nethackFixed}/bin/nethack";
+    terminal = true;
+    categories = [ "Game" "AdventureGame" ];
+  };
+  # Upstream's Makefile invokes bare `pkg-config`, which this cross
+  # environment does not provide (only the target-prefixed binary is on
+  # PATH; tty-clock hits the identical bug and was dropped instead of
+  # patched -- see docs/research/omarchy-app-catalog.md -- but this one is
+  # a one-line Makefile fix).
+  game2048 = pkgs._2048-in-terminal.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace Makefile --replace-fail 'pkg-config' "$PKG_CONFIG"
+    '';
+  });
+  game2048Desktop = pkgs.makeDesktopItem {
+    name = "k230-2048";
+    desktopName = "2048";
+    genericName = "Puzzle";
+    icon = "applications-games";
+    comment = "2048 in the terminal";
+    exec = "${game2048}/bin/2048-in-terminal";
+    terminal = true;
+    categories = [ "Game" "LogicGame" ];
+  };
+  # btop ships its own desktop entry upstream; no wrapper needed here.
+  weatherScript = pkgs.writeShellScriptBin "k230-weather" ''
+    export PATH=${pkgs.curl}/bin:${pkgs.coreutils}/bin:$PATH
+    clear
+    printf 'Weather (wttr.in)\n\n'
+    if ! curl -fsS --max-time 8 \
+        'https://wttr.in/?format=%l:+%C+%t+(feels+%f)+humidity+%h+wind+%w\n'; then
+      printf 'No network, or wttr.in is unreachable.\n'
+    fi
+    printf '\nPress any key to close.'
+    read -r -n1 _ || true
+  '';
+  weatherDesktop = pkgs.makeDesktopItem {
+    name = "k230-weather";
+    desktopName = "Weather";
+    icon = "weather-clear-symbolic";
+    comment = "Current conditions from wttr.in (needs network)";
+    exec = "${weatherScript}/bin/k230-weather";
+    terminal = true;
+    categories = [ "Utility" ];
+  };
+  clockScript = pkgs.writeShellScriptBin "k230-clock" ''
+    export PATH=${pkgs.coreutils}/bin:$PATH
+    trap 'clear; exit 0' INT TERM
+    while true; do clear; date '+%A %e %B %Y%n%n%H:%M:%S'; sleep 1; done
+  '';
+  clockDesktop = pkgs.makeDesktopItem {
+    name = "k230-clock";
+    desktopName = "Clock";
+    icon = "clock-alt-symbolic";
+    comment = "Full-screen clock";
+    exec = "${clockScript}/bin/k230-clock";
+    terminal = true;
+    categories = [ "Utility" ];
+  };
+  timerScript = pkgs.writeShellScriptBin "k230-timer" ''
+    export PATH=${pkgs.coreutils}/bin:$PATH
+    seconds="''${1:-300}"
+    trap 'clear; exit 0' INT TERM
+    end=$(( $(date +%s) + seconds ))
+    while [ "$(date +%s)" -lt "$end" ]; do
+      remaining=$(( end - $(date +%s) ))
+      clear
+      printf 'Timer\n\n%02d:%02d:%02d remaining\n' \
+        $(( remaining / 3600 )) $(( (remaining / 60) % 60 )) $(( remaining % 60 ))
+      sleep 1
+    done
+    clear
+    printf 'Time is up!\n\nPress any key to close.'
+    read -r -n1 _ || true
+  '';
+  timerDesktop = pkgs.makeDesktopItem {
+    name = "k230-timer";
+    desktopName = "Timer";
+    icon = "clock-alt-symbolic";
+    comment = "5-minute countdown timer";
+    exec = "${timerScript}/bin/k230-timer 300";
+    terminal = true;
+    categories = [ "Utility" ];
+  };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
   rustShellBase = pkgs.callPackage ./rust-shell-client { };
   themeTools = pkgs.callPackage ./omarchy-theme-tools { };
@@ -1048,6 +1212,24 @@ in
       videoSession
       videoDesktop
       touchLauncher
+      # Games
+      sgtPuzzlesCurated
+      nethackFixed
+      nethackDesktop
+      game2048
+      game2048Desktop
+      # Viewers
+      pkgs.viewnior
+      zathuraApp
+      # Utilities
+      pkgs.galculator
+      pkgs.btop
+      weatherScript
+      weatherDesktop
+      clockScript
+      clockDesktop
+      timerScript
+      timerDesktop
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
       ++ lib.optionals cfg.coherentShell [ rustShell themedFoot themeCommand settingsCommand notificationCommand ]
       ++ lib.optionals cfg.probes [
