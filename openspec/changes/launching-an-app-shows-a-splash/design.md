@@ -182,10 +182,10 @@ only as much of each as the splash needs).
 No data/format migration: this only changes what the Rust client paints
 during a launch and how it decides a launch finished. Existing desktop
 entries, icon themes, and the Home/drawer/dock layouts are unaffected.
-Land the source change, host tests, and (if the QEMU harness proves
-practical for a synthetic mapped window) a QEMU splash-and-handoff capture,
-then hand off to the board for the real-glass acceptance this design
-cannot itself provide: splash timing/readability, touch-dismiss on
+Land the source change, host tests, and the QEMU splash-and-handoff capture
+(`tests/test_launch_splash_qemu.py`, `docs/evidence/launch-splash/qemu/`)
+together, then hand off to the board for the real-glass acceptance this
+design cannot itself provide: splash timing/readability, touch-dismiss on
 `TimedOut`/`Failed`, a real `Terminal=true` launch mapping and handing off
 correctly, and confirmation that the previously active app is never
 perceptibly visible during a real launch.

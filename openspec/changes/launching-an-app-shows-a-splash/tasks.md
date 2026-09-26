@@ -86,18 +86,20 @@
 
 ## 5. QEMU evidence (proves wiring under headless Pixman, not real glass)
 
-- [ ] 5.1 Adapt a `tests/*qemu*.py`-style harness (following
-  `tests/rust_home_screen_qemu.py`'s pattern: the unwrapped sway from
-  `nix-store -qR` of the built `card-shell`/`sway` package, a private
-  fixture desktop-entry catalog, `card_shell test-touch` synthetic
-  input) to launch a fixture app, capture the splash within the first
-  frame after the tap, and capture the hand-off once a fixture Wayland
-  client (matching `tests/card_shell_runtime.py`'s `start_client` pattern)
-  maps its window. Verify: a committed splash screenshot under
-  `docs/evidence/launch-splash/qemu/` with the exact command and blob-
-  inventory row, or this task stays open with the specific blocker
-  recorded here if a real mapped-window fixture proves impractical under
-  this harness in one sitting.
+- [x] 5.1 Added `tests/test_launch_splash_qemu.py` (following
+  `tests/card_shell_runtime.py`/`tests/test_rust_drawer_interaction_runtime.py`'s
+  pattern: the unwrapped sway from `nix-store -qR` of the built
+  `card-shell` package, a private single-fixture desktop-entry catalog,
+  `card_shell test-touch` synthetic input), whose fixture `Exec` `sleep`s
+  then `exec`s the existing `card-composition-probe-client` fixture under
+  a fresh `--app-id` (`exec`, not a fork, preserves the pid GIO reports
+  through to the pid that owns the mapped window, exercising the exact-pid
+  match path end to end). Verify: `python3 tests/test_launch_splash_qemu.py
+  --sway <sway> --swaymsg <swaymsg> --rust <k230-shell-rust> --client
+  <card-composition-probe-client> --output <dir>` -- reproduced PASS twice;
+  committed screenshots and command in
+  `docs/evidence/launch-splash/qemu/README.md`, with blob-inventory rows
+  for all four PNGs (`python3 tools/blob-scan.py` exits 0).
 
 ## 6. Board acceptance (hardware-only; stays open)
 
