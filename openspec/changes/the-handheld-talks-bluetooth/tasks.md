@@ -4,15 +4,21 @@
       `BT_HCIBTUSB_RTL = yes;` to `nix/kernel.nix`'s
       `structuredExtraConfig`, in a clearly delimited, separately commented
       block (no shared lines with `feat/speaker`'s audio Kconfig edits, so
-      the two merge cleanly). Prove with
-      `nix build .#kernel --max-jobs 1 --cores 6` (build proof only).
+      the two merge cleanly). Source landed; proof is
+      `nix build .#kernel --max-jobs 1 --cores 6` (build proof only),
+      confirmed in the branch handoff — this Kconfig addition shares one
+      kernel derivation with `the-panel-brightness-is-adjustable`'s
+      driver change, so the same build run proves both.
 
 ## 2. NixOS: BlueZ
 
-- [x] 2.1 Add `hardware.bluetooth.enable = true;` in `nix/k230.nix`. Prove
-      with
-      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`
-      (build proof only).
+- [x] 2.1 Add `hardware.bluetooth.enable = true;` in `nix/hardware.nix`
+      (the real-hardware-only base; `nix/k230.nix` is the shared
+      hardware+QEMU base). Source landed;
+      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --dry-run`
+      already confirms it evaluates and schedules `unit-bluetooth.service`,
+      `unit-obex.service` and a `dbus-broker` unit; the full closure build
+      is confirmed in the branch handoff.
 
 ## 3. Board test plan
 

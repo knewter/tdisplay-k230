@@ -5,22 +5,27 @@
       dsi_command_backlight` to `struct canaan_panel`; parse
       `canaan,dsi-command-backlight` (bool), `default-brightness` and
       `max-brightness` (u32, defaulting 254/255) in
-      `canaan_panel_parse_dt()`. Prove with
-      `nix build .#kernel --max-jobs 1 --cores 6` (build proof only — DT
-      parsing itself is exercised only once loaded on hardware).
+      `canaan_panel_parse_dt()`. Source landed in `nix/kernel.nix`; proof
+      is `nix build .#kernel --max-jobs 1 --cores 6` (build proof only —
+      DT parsing itself is exercised only once loaded on hardware). The
+      postPatch's own `grep -q` assertions already confirmed every `sed`
+      hunk applied; the build itself was still running (not yet exited)
+      as of this commit and is not ticked complete until it exits 0 —
+      see the branch handoff for the confirmed result.
 - [x] 1.2 Implement `canaan_panel_bl_update_status()`/register the backlight
       with `devm_backlight_device_register()` when
       `dsi_command_backlight` is set, using `MIPI_DCS_WRITE_CONTROL_DISPLAY`
       (0x53, value `0x24`) then `mipi_dsi_dcs_set_display_brightness()`
       (0x51); assign `ctx->panel.backlight` so `drm_panel_enable`/
       `drm_panel_disable` drive it automatically across a modeset or DPMS
-      cycle. Guard every write on `p->prepared`. Prove with
-      `nix build .#kernel --max-jobs 1 --cores 6` (build proof only).
+      cycle. Guard every write on `p->prepared`. Source landed; same build
+      proof and same not-yet-confirmed caveat as 1.1.
 - [x] 1.3 Confirm the existing reset-pulse fix in `canaan_panel_prepare()`
       (already landed in `nix/kernel.nix`'s postPatch history) runs before
       the init sequence on every prepare, so brightness code added in 1.2
       never races an unreset panel. No new patch — a citation check against
-      the current `nix/kernel.nix`, recorded in design.md.
+      the current `nix/kernel.nix`, recorded in design.md. This one is a
+      source-reading check, not a build, so it is genuinely done.
 
 ## 2. Device tree
 
@@ -28,27 +33,34 @@
       <254>;`, `max-brightness = <255>;` to the `lcd: panel@0` node in
       `nix/dts/display-rm69a10-568x1232.dtsi` (not touched by
       `feat/speaker`, so no merge risk with the concurrent audio DT work).
-      Prove with `nix build .#deviceTree --max-jobs 1 --cores 6` (build
-      proof only).
+      Source landed; proof is `nix build .#deviceTree --max-jobs 1 --cores 6`
+      (build proof only), confirmed in the branch handoff once the
+      concurrent kernel build (same host) frees a build slot.
 
 ## 3. NixOS: shell write access
 
-- [x] 3.1 Add a `services.udev.extraRules` entry in `nix/k230.nix`
-      granting the `shell` group write access to
+- [x] 3.1 Add a `services.udev.extraRules` entry in `nix/hardware.nix`
+      (the real-hardware-only base; `nix/k230.nix` is the shared
+      hardware+QEMU base) granting the `shell` group write access to
       `/sys/class/backlight/*/brightness` (chgrp/chmod on device add).
-      Prove with
-      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`
-      (build proof only — no board to exercise the rule yet).
+      `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --dry-run`
+      confirms this evaluates and schedules correctly (build proof,
+      evaluation only); the full closure build is confirmed in the branch
+      handoff.
 
 ## 4. Rust shell: boundary test
 
 - [x] 4.1 Add a unit test in `nix/rust-shell-client/src/service_ui.rs`
       covering the brightness stepper's 0% and 100% clamps (previously
       untested because no real backend existed for the clamp to matter
-      against). Prove with
-      `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`
-      and `cargo clippy --offline --manifest-path nix/rust-shell-client/Cargo.toml -- -D warnings`
-      (host proof only).
+      against). Proven: `cargo test --offline --manifest-path
+      nix/rust-shell-client/Cargo.toml` passes (196 tests, including the
+      new one). `cargo clippy --offline --manifest-path
+      nix/rust-shell-client/Cargo.toml --all-targets` reports no warning
+      attributable to this change's files; a pre-existing, unrelated
+      `field_reassign_with_default` lint in `wifi_ui.rs` (not touched by
+      this change) already fails a repo-wide `-D warnings` run and is not
+      this task's to fix.
 
 ## 5. Physical acceptance
 
