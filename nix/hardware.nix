@@ -289,4 +289,25 @@ in
   # top of them. No device tree change, no new package beyond what this
   # module already pulls in.
   hardware.bluetooth.enable = true;
+
+  # --- the-clock-survives-a-reboot -----------------------------------------
+  # RTC_DRV_K230 (nix/kernel.nix) makes /dev/rtc0 exist; services.timesyncd
+  # is already enabled by default and writes a synced time back to a
+  # present RTC on its own. This unit makes that contract explicit and
+  # independently auditable (systemctl status / the journal are the
+  # evidence) rather than resting solely on timesyncd's internal ~hourly
+  # write-back cadence. Ordered after time-sync.target, not merely after
+  # systemd-timesyncd starts, so it never writes an unsynced time -- see
+  # openspec/changes/the-clock-survives-a-reboot/design.md decision 2.
+  systemd.services.k230-rtc-sync = {
+    description = "Write the synchronized system clock to the K230 RTC";
+    after = [ "time-sync.target" ];
+    wants = [ "time-sync.target" ];
+    wantedBy = [ "multi-user.target" ];
+    unitConfig.ConditionPathExists = "/dev/rtc0";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.util-linux}/bin/hwclock --systohc";
+    };
+  };
 }

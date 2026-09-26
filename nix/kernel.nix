@@ -609,6 +609,16 @@ EOM
     BT = module;
     BT_HCIBTUSB = module;
     BT_HCIBTUSB_RTL = yes;
+
+    # --- the-clock-survives-a-reboot -------------------------------------
+    # One line: rtc@0x91000c00 (compatible "canaan,k230-rtc") is already
+    # status-enabled by default in k230.dtsi; drivers/rtc/rtc-k230.c
+    # already exists in this pinned tree, gated only by this symbol
+    # (`default n`). Built in, not a module -- the RTC is wanted from very
+    # early boot, before any module-loading userspace runs. See
+    # docs/research/board-capability-inventory.md and
+    # openspec/changes/the-clock-survives-a-reboot/design.md.
+    RTC_DRV_K230 = yes;
   };
 
   extraMeta = {
