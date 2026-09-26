@@ -1195,7 +1195,18 @@ static void card_source_size(struct card *c, int *width, int *height) {
 static bool sync_card(struct card *c, size_t index) {
 	struct cs_rect r = cs_card_rect(&shell.policy, index);
 	int source_x, source_y;
-	if (!c->hidden && wlr_scene_node_coords(&c->view->content_tree->node,
+	/* Hidden AND already-valid means the card is fully absorbed into the
+	 * deck and its (now-hidden) original stopped moving on its own -- the
+	 * position stays frozen at whatever it was captured as, which the
+	 * entry/expand animations rely on to animate back to. A card that is
+	 * hidden but has NEVER had a valid position (source_valid still false)
+	 * is the mid-transition-map case sync_card's own entering branch defers
+	 * for (docs/evidence/card-shell/video-card-gestures/): it gets marked
+	 * hidden on the very same frame it is deferred, before ever completing
+	 * a first capture, so it must keep retrying here or source_valid would
+	 * never become true and a later CS_EXPANDING on this same card would
+	 * fail the identical way forever (reason=expand-source-invalid). */
+	if ((!c->hidden || !c->source_valid) && wlr_scene_node_coords(&c->view->content_tree->node,
 			&source_x, &source_y)) {
 		c->source_x = source_x;
 		c->source_y = source_y;
