@@ -282,4 +282,11 @@ in
   services.udev.extraRules = ''
     SUBSYSTEM=="backlight", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chgrp shell /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
   '';
+
+  # --- the-handheld-talks-bluetooth ---------------------------------------
+  # The kernel's Bluetooth stack and USB HCI driver are enabled in
+  # nix/kernel.nix; this is the standard NixOS module that runs BlueZ on
+  # top of them. No device tree change, no new package beyond what this
+  # module already pulls in.
+  hardware.bluetooth.enable = true;
 }

@@ -595,6 +595,20 @@ EOM
 
     TOUCHSCREEN_GOODIX_BERLIN_CORE = yes;
     TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
+
+    # --- the-handheld-talks-bluetooth -----------------------------------
+    # Kconfig only: no device tree, no kernel patch. drivers/bluetooth/
+    # btusb.c is already mainline code present in this pinned tree; it was
+    # simply never turned on. Modules, so a board with no dongle attached
+    # loads none of this. BT_HCIBTUSB_RTL matches the CSR8510-clone dongle
+    # (0a12:0001) this project's accessory kit bundles -- see
+    # docs/research/board-capability-inventory.md and
+    # openspec/changes/the-handheld-talks-bluetooth/design.md. Kept as its
+    # own delimited block: feat/speaker's concurrent audio Kconfig edits
+    # touch none of these symbols.
+    BT = module;
+    BT_HCIBTUSB = module;
+    BT_HCIBTUSB_RTL = yes;
   };
 
   extraMeta = {
