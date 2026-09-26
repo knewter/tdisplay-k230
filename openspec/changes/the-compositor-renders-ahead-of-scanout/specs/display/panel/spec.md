@@ -27,26 +27,18 @@ frame and no tearing. Mechanism is not established; the untested
 hypothesis is that `35 00` SET_TEAR_ON is issued but nothing consumes
 TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 
-*A separate real-finger report -- a flickering band across the bottom
-~50-100 px of the panel, only during bottom-edge app-switch gestures and
-the app switcher, never in a static IPC-driven capture -- was traced with
-a board scene/render/present diagnostic
-(`docs/evidence/card-shell/bottom-band-flicker/board-diagnostic.md`) to
-frames whose render ran long (15% of 7,598 sampled frames exceeded one
-52.19Hz refresh period, concentrated during the same gestures) while the
-compositor's own scene and DRM presentation-timestamp feedback both
-stayed clean. Reading the vendor kernel's DRM driver
-(`docs/evidence/card-shell/bottom-band-flicker/kernel-vblank-latch.md`)
-found `canaan_crtc_atomic_flush()` committing the VO's shadow-register
-"load" bit synchronously, at arbitrary atomic-commit time, never
-synchronized to the panel's actual scan position or to the driver's own
-vblank interrupt -- unlike the DRM completion event, which already is.
-Deferring that one register write into the vblank interrupt handler
-(`nix/patches/canaan-drm-defer-reg-load-to-vblank.patch`) is implemented
-and builds (`nix build .#kernel`); it has not yet been run on the board.
-This is a driver-side timing gap independent of the TE/free-running-scan
-gap above -- fixing it does not by itself establish whether that
-remaining gap is also a live contributor.*
+*A separate real-finger report -- a band about 50 px tall along the panel's
+bottom edge flickering only during bottom-edge app-switch gestures and in
+the card overview -- was traced with a board scene/render/present
+diagnostic (`docs/evidence/card-shell/bottom-band-flicker/board-diagnostic.md`)
+to a defect below composition: scene and DRM present timing stayed clean
+while consecutive camera frames showed the band cycling between correct,
+stale-dark and black. Deferring the VO's register commit to vblank did not
+change it and was withdrawn (`kernel-patch-boot-panic.md`). Setting Sway's
+`max_render_time 8` on DSI-1 removed it on real glass
+(`max-render-time-fix.md`) and on the patch-free kernel under injected
+gestures (`kernel-patch-boot-panic.md`). The mechanism is inferred, not
+measured.*
 
 The system SHALL present the panel as a working framebuffer at 568x1232, and
 what is written to that framebuffer SHALL appear on the screen.
@@ -71,5 +63,4 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
 - **WHEN** a person performs a real bottom-edge app-switch or app-switcher
   gesture with continuous finger motion, as opposed to a single static
   IPC-driven state change
-- **THEN** the bottom ~100 px of the panel does not flicker or tear, even
-  on frames whose software render ran close to or over one refresh period
+- **THEN** the bottom ~100 px of the panel does not flicker or tear
