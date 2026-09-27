@@ -1042,3 +1042,18 @@ Additional fixtures cover stale in-flight replies, preservation of an oldest
 visible resident, and actual byte-budget eviction. These are deterministic
 host cache/channel tests, not timing or physical swipe evidence. No Nix build
 or board use was performed for these tasks; 11.3 remains open.
+
+## 12. Keep an unchanged bundled theme selected after a system upgrade
+
+- [ ] 12.1 Repair active catalog identification after only the Nix store
+  package prefix changes. Require unique built-in role/name plus the saved
+  source digest, retain exact-path priority, and leave active state unchanged.
+  Add host tests covering relocation, changed content, duplicate origin,
+  ambiguity and malformed reports. Proof:
+  `python3 -m unittest discover -s tests -p test_theme_catalog.py`.
+- [ ] 12.2 On the reserved board, open the chooser after installing the
+  rebuilt theme package; verify the preserved active theme is centered and
+  its background row resolves and responds, without activating anything.
+  Commit native evidence and rerun the affected browse measurement before
+  closing this gate. Task 11.3 remains open: the first paired run did not
+  establish improved warm swipes, and the second lacked background content.
