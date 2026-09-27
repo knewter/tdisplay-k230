@@ -1,0 +1,912 @@
+{
+  "schema": 1,
+  "label": "old",
+  "provenance": "injected verified virtual touchscreen; no real-finger or presentation-FPS claim",
+  "rust_exe": "/nix/store/xsi8cl9vdimjnqlqkhadzwahmajml9j9-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "current_system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "booted_system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "generation_sha256": "6b638d68b60ba19a937c98b2903a24d418e7ec0d76a65fda86c58155baf16e55",
+  "generation_unchanged": true,
+  "phases": [
+    {
+      "row": "theme",
+      "direction": "left",
+      "start_monotonic_s": 1662.531014182,
+      "injection_end_monotonic_s": 1662.7401694069999,
+      "release_monotonic_s": 1664.2602904400001,
+      "end_monotonic_s": 1665.4604237030001,
+      "touch_moves": 20,
+      "commits": 10,
+      "last_move_processing_after_injection_ms": 227.36500000000001,
+      "commits_while_finger_held": 4,
+      "commits_after_release": 6
+    },
+    {
+      "row": "theme",
+      "direction": "right",
+      "start_monotonic_s": 1665.461340888,
+      "injection_end_monotonic_s": 1665.6683724110001,
+      "release_monotonic_s": 1667.188257946,
+      "end_monotonic_s": 1668.3883843389999,
+      "touch_moves": 20,
+      "commits": 10,
+      "last_move_processing_after_injection_ms": 219.77199999999999,
+      "commits_while_finger_held": 4,
+      "commits_after_release": 6
+    },
+    {
+      "row": "background",
+      "direction": "left",
+      "start_monotonic_s": 1668.389304969,
+      "injection_end_monotonic_s": 1668.5968151530001,
+      "release_monotonic_s": 1670.1082051799999,
+      "end_monotonic_s": 1671.30831829,
+      "touch_moves": 20,
+      "commits": 10,
+      "last_move_processing_after_injection_ms": 147.35400000000001,
+      "commits_while_finger_held": 4,
+      "commits_after_release": 6
+    },
+    {
+      "row": "background",
+      "direction": "right",
+      "start_monotonic_s": 1671.3092390700001,
+      "injection_end_monotonic_s": 1671.5193073559999,
+      "release_monotonic_s": 1673.0362795200001,
+      "end_monotonic_s": 1674.236397934,
+      "touch_moves": 20,
+      "commits": 10,
+      "last_move_processing_after_injection_ms": 151.84800000000001,
+      "commits_while_finger_held": 4,
+      "commits_after_release": 6
+    }
+  ],
+  "events": [
+    {
+      "monotonic_s": 1662.5361310000001,
+      "kind": "touch-down",
+      "rust_ms": 36638
+    },
+    {
+      "monotonic_s": 1662.6189199999999,
+      "kind": "commit",
+      "rust_ms": 36717
+    },
+    {
+      "monotonic_s": 1662.6189199999999,
+      "kind": "touch-move",
+      "rust_ms": 36721
+    },
+    {
+      "monotonic_s": 1662.791581,
+      "kind": "commit",
+      "rust_ms": 36895
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36896
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36897
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36897
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36897
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36898
+    },
+    {
+      "monotonic_s": 1662.7945930000001,
+      "kind": "touch-move",
+      "rust_ms": 36898
+    },
+    {
+      "monotonic_s": 1662.804142,
+      "kind": "frame-done",
+      "rust_ms": 36905
+    },
+    {
+      "monotonic_s": 1662.959697,
+      "kind": "commit",
+      "rust_ms": 37063
+    },
+    {
+      "monotonic_s": 1662.9607000000001,
+      "kind": "touch-move",
+      "rust_ms": 37065
+    },
+    {
+      "monotonic_s": 1662.9620640000001,
+      "kind": "touch-move",
+      "rust_ms": 37066
+    },
+    {
+      "monotonic_s": 1662.9632360000001,
+      "kind": "touch-move",
+      "rust_ms": 37067
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37068
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37069
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37069
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37069
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37070
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37070
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37070
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37070
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37071
+    },
+    {
+      "monotonic_s": 1662.9675339999999,
+      "kind": "touch-move",
+      "rust_ms": 37071
+    },
+    {
+      "monotonic_s": 1662.980092,
+      "kind": "frame-done",
+      "rust_ms": 37080
+    },
+    {
+      "monotonic_s": 1663.1469959999999,
+      "kind": "commit",
+      "rust_ms": 37251
+    },
+    {
+      "monotonic_s": 1663.1526679999999,
+      "kind": "frame-done",
+      "rust_ms": 37256
+    },
+    {
+      "monotonic_s": 1663.191842,
+      "kind": "frame-done",
+      "rust_ms": 37296
+    },
+    {
+      "monotonic_s": 1664.2442000000001,
+      "kind": "touch-up",
+      "rust_ms": 38345
+    },
+    {
+      "monotonic_s": 1664.3801390000001,
+      "kind": "commit",
+      "rust_ms": 38479
+    },
+    {
+      "monotonic_s": 1664.420087,
+      "kind": "frame-done",
+      "rust_ms": 38523
+    },
+    {
+      "monotonic_s": 1664.552353,
+      "kind": "commit",
+      "rust_ms": 38656
+    },
+    {
+      "monotonic_s": 1664.59762,
+      "kind": "frame-done",
+      "rust_ms": 38701
+    },
+    {
+      "monotonic_s": 1664.7358489999999,
+      "kind": "commit",
+      "rust_ms": 38840
+    },
+    {
+      "monotonic_s": 1664.784114,
+      "kind": "frame-done",
+      "rust_ms": 38888
+    },
+    {
+      "monotonic_s": 1664.9153369999999,
+      "kind": "commit",
+      "rust_ms": 39019
+    },
+    {
+      "monotonic_s": 1664.9640979999999,
+      "kind": "frame-done",
+      "rust_ms": 39064
+    },
+    {
+      "monotonic_s": 1665.063451,
+      "kind": "commit",
+      "rust_ms": 39167
+    },
+    {
+      "monotonic_s": 1665.1717679999999,
+      "kind": "frame-done",
+      "rust_ms": 39276
+    },
+    {
+      "monotonic_s": 1665.243414,
+      "kind": "commit",
+      "rust_ms": 39347
+    },
+    {
+      "monotonic_s": 1665.2864239999999,
+      "kind": "frame-done",
+      "rust_ms": 39390
+    },
+    {
+      "monotonic_s": 1665.4650569999999,
+      "kind": "touch-down",
+      "rust_ms": 39568
+    },
+    {
+      "monotonic_s": 1665.548446,
+      "kind": "commit",
+      "rust_ms": 39646
+    },
+    {
+      "monotonic_s": 1665.548446,
+      "kind": "touch-move",
+      "rust_ms": 39650
+    },
+    {
+      "monotonic_s": 1665.7073399999999,
+      "kind": "commit",
+      "rust_ms": 39811
+    },
+    {
+      "monotonic_s": 1665.7084070000001,
+      "kind": "touch-move",
+      "rust_ms": 39812
+    },
+    {
+      "monotonic_s": 1665.7163250000001,
+      "kind": "touch-move",
+      "rust_ms": 39813
+    },
+    {
+      "monotonic_s": 1665.7163250000001,
+      "kind": "touch-move",
+      "rust_ms": 39814
+    },
+    {
+      "monotonic_s": 1665.7163250000001,
+      "kind": "touch-move",
+      "rust_ms": 39814
+    },
+    {
+      "monotonic_s": 1665.7163250000001,
+      "kind": "touch-move",
+      "rust_ms": 39814
+    },
+    {
+      "monotonic_s": 1665.7163250000001,
+      "kind": "touch-move",
+      "rust_ms": 39815
+    },
+    {
+      "monotonic_s": 1665.7201250000001,
+      "kind": "frame-done",
+      "rust_ms": 39822
+    },
+    {
+      "monotonic_s": 1665.8719679999999,
+      "kind": "commit",
+      "rust_ms": 39976
+    },
+    {
+      "monotonic_s": 1665.8728759999999,
+      "kind": "touch-move",
+      "rust_ms": 39977
+    },
+    {
+      "monotonic_s": 1665.8740250000001,
+      "kind": "touch-move",
+      "rust_ms": 39978
+    },
+    {
+      "monotonic_s": 1665.875769,
+      "kind": "touch-move",
+      "rust_ms": 39980
+    },
+    {
+      "monotonic_s": 1665.8769709999999,
+      "kind": "touch-move",
+      "rust_ms": 39981
+    },
+    {
+      "monotonic_s": 1665.878183,
+      "kind": "touch-move",
+      "rust_ms": 39982
+    },
+    {
+      "monotonic_s": 1665.880126,
+      "kind": "touch-move",
+      "rust_ms": 39983
+    },
+    {
+      "monotonic_s": 1665.880126,
+      "kind": "touch-move",
+      "rust_ms": 39984
+    },
+    {
+      "monotonic_s": 1665.880126,
+      "kind": "touch-move",
+      "rust_ms": 39984
+    },
+    {
+      "monotonic_s": 1665.880126,
+      "kind": "touch-move",
+      "rust_ms": 39984
+    },
+    {
+      "monotonic_s": 1665.888144,
+      "kind": "touch-move",
+      "rust_ms": 39986
+    },
+    {
+      "monotonic_s": 1665.888144,
+      "kind": "touch-move",
+      "rust_ms": 39986
+    },
+    {
+      "monotonic_s": 1665.888144,
+      "kind": "touch-move",
+      "rust_ms": 39987
+    },
+    {
+      "monotonic_s": 1665.888144,
+      "kind": "touch-move",
+      "rust_ms": 39987
+    },
+    {
+      "monotonic_s": 1665.892335,
+      "kind": "frame-done",
+      "rust_ms": 39994
+    },
+    {
+      "monotonic_s": 1666.0597969999999,
+      "kind": "commit",
+      "rust_ms": 40163
+    },
+    {
+      "monotonic_s": 1666.064887,
+      "kind": "frame-done",
+      "rust_ms": 40169
+    },
+    {
+      "monotonic_s": 1666.105104,
+      "kind": "frame-done",
+      "rust_ms": 40209
+    },
+    {
+      "monotonic_s": 1667.172182,
+      "kind": "touch-up",
+      "rust_ms": 41273
+    },
+    {
+      "monotonic_s": 1667.302962,
+      "kind": "commit",
+      "rust_ms": 41407
+    },
+    {
+      "monotonic_s": 1667.3484189999999,
+      "kind": "frame-done",
+      "rust_ms": 41451
+    },
+    {
+      "monotonic_s": 1667.4801259999999,
+      "kind": "commit",
+      "rust_ms": 41583
+    },
+    {
+      "monotonic_s": 1667.5240859999999,
+      "kind": "frame-done",
+      "rust_ms": 41627
+    },
+    {
+      "monotonic_s": 1667.6561409999999,
+      "kind": "commit",
+      "rust_ms": 41760
+    },
+    {
+      "monotonic_s": 1667.704747,
+      "kind": "frame-done",
+      "rust_ms": 41804
+    },
+    {
+      "monotonic_s": 1667.815355,
+      "kind": "commit",
+      "rust_ms": 41919
+    },
+    {
+      "monotonic_s": 1667.8602430000001,
+      "kind": "frame-done",
+      "rust_ms": 41964
+    },
+    {
+      "monotonic_s": 1667.96396,
+      "kind": "commit",
+      "rust_ms": 42068
+    },
+    {
+      "monotonic_s": 1668.0069820000001,
+      "kind": "frame-done",
+      "rust_ms": 42110
+    },
+    {
+      "monotonic_s": 1668.080093,
+      "kind": "commit",
+      "rust_ms": 42177
+    },
+    {
+      "monotonic_s": 1668.115544,
+      "kind": "frame-done",
+      "rust_ms": 42219
+    },
+    {
+      "monotonic_s": 1668.3938720000001,
+      "kind": "touch-down",
+      "rust_ms": 42496
+    },
+    {
+      "monotonic_s": 1668.467369,
+      "kind": "commit",
+      "rust_ms": 42571
+    },
+    {
+      "monotonic_s": 1668.476101,
+      "kind": "touch-move",
+      "rust_ms": 42577
+    },
+    {
+      "monotonic_s": 1668.5953810000001,
+      "kind": "commit",
+      "rust_ms": 42699
+    },
+    {
+      "monotonic_s": 1668.59708,
+      "kind": "touch-move",
+      "rust_ms": 42700
+    },
+    {
+      "monotonic_s": 1668.5982819999999,
+      "kind": "touch-move",
+      "rust_ms": 42702
+    },
+    {
+      "monotonic_s": 1668.5995350000001,
+      "kind": "touch-move",
+      "rust_ms": 42703
+    },
+    {
+      "monotonic_s": 1668.600758,
+      "kind": "touch-move",
+      "rust_ms": 42705
+    },
+    {
+      "monotonic_s": 1668.607794,
+      "kind": "touch-move",
+      "rust_ms": 42706
+    },
+    {
+      "monotonic_s": 1668.607794,
+      "kind": "touch-move",
+      "rust_ms": 42706
+    },
+    {
+      "monotonic_s": 1668.6121330000001,
+      "kind": "frame-done",
+      "rust_ms": 42713
+    },
+    {
+      "monotonic_s": 1668.727414,
+      "kind": "commit",
+      "rust_ms": 42831
+    },
+    {
+      "monotonic_s": 1668.7283669999999,
+      "kind": "touch-move",
+      "rust_ms": 42832
+    },
+    {
+      "monotonic_s": 1668.729797,
+      "kind": "touch-move",
+      "rust_ms": 42834
+    },
+    {
+      "monotonic_s": 1668.7309600000001,
+      "kind": "touch-move",
+      "rust_ms": 42835
+    },
+    {
+      "monotonic_s": 1668.7322200000001,
+      "kind": "touch-move",
+      "rust_ms": 42836
+    },
+    {
+      "monotonic_s": 1668.7346,
+      "kind": "touch-move",
+      "rust_ms": 42837
+    },
+    {
+      "monotonic_s": 1668.7346,
+      "kind": "touch-move",
+      "rust_ms": 42838
+    },
+    {
+      "monotonic_s": 1668.7346,
+      "kind": "touch-move",
+      "rust_ms": 42838
+    },
+    {
+      "monotonic_s": 1668.7346,
+      "kind": "touch-move",
+      "rust_ms": 42838
+    },
+    {
+      "monotonic_s": 1668.7346,
+      "kind": "touch-move",
+      "rust_ms": 42839
+    },
+    {
+      "monotonic_s": 1668.7441690000001,
+      "kind": "touch-move",
+      "rust_ms": 42840
+    },
+    {
+      "monotonic_s": 1668.7441690000001,
+      "kind": "touch-move",
+      "rust_ms": 42841
+    },
+    {
+      "monotonic_s": 1668.7441690000001,
+      "kind": "touch-move",
+      "rust_ms": 42841
+    },
+    {
+      "monotonic_s": 1668.7441690000001,
+      "kind": "touch-move",
+      "rust_ms": 42842
+    },
+    {
+      "monotonic_s": 1668.7441690000001,
+      "kind": "frame-done",
+      "rust_ms": 42842
+    },
+    {
+      "monotonic_s": 1668.8763369999999,
+      "kind": "commit",
+      "rust_ms": 42980
+    },
+    {
+      "monotonic_s": 1668.8846410000001,
+      "kind": "frame-done",
+      "rust_ms": 42985
+    },
+    {
+      "monotonic_s": 1668.921654,
+      "kind": "frame-done",
+      "rust_ms": 43025
+    },
+    {
+      "monotonic_s": 1670.1003929999999,
+      "kind": "touch-up",
+      "rust_ms": 44202
+    },
+    {
+      "monotonic_s": 1670.196426,
+      "kind": "commit",
+      "rust_ms": 44295
+    },
+    {
+      "monotonic_s": 1670.236085,
+      "kind": "frame-done",
+      "rust_ms": 44340
+    },
+    {
+      "monotonic_s": 1670.3284900000001,
+      "kind": "commit",
+      "rust_ms": 44432
+    },
+    {
+      "monotonic_s": 1670.376131,
+      "kind": "frame-done",
+      "rust_ms": 44477
+    },
+    {
+      "monotonic_s": 1670.4567750000001,
+      "kind": "commit",
+      "rust_ms": 44561
+    },
+    {
+      "monotonic_s": 1670.5032189999999,
+      "kind": "frame-done",
+      "rust_ms": 44605
+    },
+    {
+      "monotonic_s": 1670.583331,
+      "kind": "commit",
+      "rust_ms": 44687
+    },
+    {
+      "monotonic_s": 1670.6562750000001,
+      "kind": "frame-done",
+      "rust_ms": 44757
+    },
+    {
+      "monotonic_s": 1670.773555,
+      "kind": "commit",
+      "rust_ms": 44877
+    },
+    {
+      "monotonic_s": 1670.8196170000001,
+      "kind": "frame-done",
+      "rust_ms": 44923
+    },
+    {
+      "monotonic_s": 1670.9041460000001,
+      "kind": "commit",
+      "rust_ms": 45005
+    },
+    {
+      "monotonic_s": 1670.9439950000001,
+      "kind": "frame-done",
+      "rust_ms": 45048
+    },
+    {
+      "monotonic_s": 1671.31638,
+      "kind": "touch-down",
+      "rust_ms": 45416
+    },
+    {
+      "monotonic_s": 1671.3987850000001,
+      "kind": "commit",
+      "rust_ms": 45498
+    },
+    {
+      "monotonic_s": 1671.3987850000001,
+      "kind": "touch-move",
+      "rust_ms": 45501
+    },
+    {
+      "monotonic_s": 1671.527642,
+      "kind": "commit",
+      "rust_ms": 45631
+    },
+    {
+      "monotonic_s": 1671.5285409999999,
+      "kind": "touch-move",
+      "rust_ms": 45632
+    },
+    {
+      "monotonic_s": 1671.5301469999999,
+      "kind": "touch-move",
+      "rust_ms": 45634
+    },
+    {
+      "monotonic_s": 1671.5321220000001,
+      "kind": "touch-move",
+      "rust_ms": 45635
+    },
+    {
+      "monotonic_s": 1671.5321220000001,
+      "kind": "touch-move",
+      "rust_ms": 45636
+    },
+    {
+      "monotonic_s": 1671.5321220000001,
+      "kind": "touch-move",
+      "rust_ms": 45636
+    },
+    {
+      "monotonic_s": 1671.5361459999999,
+      "kind": "touch-move",
+      "rust_ms": 45637
+    },
+    {
+      "monotonic_s": 1671.5441169999999,
+      "kind": "frame-done",
+      "rust_ms": 45645
+    },
+    {
+      "monotonic_s": 1671.6612399999999,
+      "kind": "commit",
+      "rust_ms": 45765
+    },
+    {
+      "monotonic_s": 1671.6621259999999,
+      "kind": "touch-move",
+      "rust_ms": 45766
+    },
+    {
+      "monotonic_s": 1671.6640890000001,
+      "kind": "touch-move",
+      "rust_ms": 45767
+    },
+    {
+      "monotonic_s": 1671.6640890000001,
+      "kind": "touch-move",
+      "rust_ms": 45768
+    },
+    {
+      "monotonic_s": 1671.6656829999999,
+      "kind": "touch-move",
+      "rust_ms": 45769
+    },
+    {
+      "monotonic_s": 1671.6681249999999,
+      "kind": "touch-move",
+      "rust_ms": 45771
+    },
+    {
+      "monotonic_s": 1671.6681249999999,
+      "kind": "touch-move",
+      "rust_ms": 45771
+    },
+    {
+      "monotonic_s": 1671.6681249999999,
+      "kind": "touch-move",
+      "rust_ms": 45771
+    },
+    {
+      "monotonic_s": 1671.6681249999999,
+      "kind": "touch-move",
+      "rust_ms": 45772
+    },
+    {
+      "monotonic_s": 1671.6681249999999,
+      "kind": "touch-move",
+      "rust_ms": 45772
+    },
+    {
+      "monotonic_s": 1671.671155,
+      "kind": "touch-move",
+      "rust_ms": 45774
+    },
+    {
+      "monotonic_s": 1671.671155,
+      "kind": "touch-move",
+      "rust_ms": 45774
+    },
+    {
+      "monotonic_s": 1671.671155,
+      "kind": "touch-move",
+      "rust_ms": 45774
+    },
+    {
+      "monotonic_s": 1671.671155,
+      "kind": "touch-move",
+      "rust_ms": 45775
+    },
+    {
+      "monotonic_s": 1671.6800989999999,
+      "kind": "frame-done",
+      "rust_ms": 45781
+    },
+    {
+      "monotonic_s": 1671.8046440000001,
+      "kind": "commit",
+      "rust_ms": 45908
+    },
+    {
+      "monotonic_s": 1671.8088600000001,
+      "kind": "frame-done",
+      "rust_ms": 45913
+    },
+    {
+      "monotonic_s": 1671.8563509999999,
+      "kind": "frame-done",
+      "rust_ms": 45960
+    },
+    {
+      "monotonic_s": 1673.0241430000001,
+      "kind": "touch-up",
+      "rust_ms": 47124
+    },
+    {
+      "monotonic_s": 1673.114413,
+      "kind": "commit",
+      "rust_ms": 47218
+    },
+    {
+      "monotonic_s": 1673.1600980000001,
+      "kind": "frame-done",
+      "rust_ms": 47262
+    },
+    {
+      "monotonic_s": 1673.2495799999999,
+      "kind": "commit",
+      "rust_ms": 47353
+    },
+    {
+      "monotonic_s": 1673.2962749999999,
+      "kind": "frame-done",
+      "rust_ms": 47398
+    },
+    {
+      "monotonic_s": 1673.375121,
+      "kind": "commit",
+      "rust_ms": 47479
+    },
+    {
+      "monotonic_s": 1673.420085,
+      "kind": "frame-done",
+      "rust_ms": 47523
+    },
+    {
+      "monotonic_s": 1673.5012630000001,
+      "kind": "commit",
+      "rust_ms": 47605
+    },
+    {
+      "monotonic_s": 1673.545396,
+      "kind": "frame-done",
+      "rust_ms": 47649
+    },
+    {
+      "monotonic_s": 1673.6230169999999,
+      "kind": "commit",
+      "rust_ms": 47727
+    },
+    {
+      "monotonic_s": 1673.668101,
+      "kind": "frame-done",
+      "rust_ms": 47770
+    },
+    {
+      "monotonic_s": 1673.733663,
+      "kind": "commit",
+      "rust_ms": 47837
+    },
+    {
+      "monotonic_s": 1673.776202,
+      "kind": "frame-done",
+      "rust_ms": 47880
+    }
+  ],
+  "limits": [
+    "20-pixel displacements keep both old and new rows below a half-index transition from rest.",
+    "Journal receive timestamps approximate userspace event processing, not panel scanout.",
+    "Hold period is 1.5 seconds; release follows without a final movement.",
+    "No screenshot capture during timing."
+  ]
+}

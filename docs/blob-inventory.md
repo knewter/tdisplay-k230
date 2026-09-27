@@ -651,6 +651,10 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b docs/evidence/theme-picker/finger-tracking/new-before.png
+DATA 515448a93291c7f39ac2d96bd252dbded4fe3945d49f620122945c9ea0908d2d docs/evidence/theme-picker/finger-tracking/new-held.png
+DATA cfbdccacc6b3b43f12afd191b3823f8fc05f90f589f426fe3a53a2dc6f1d589f docs/evidence/theme-picker/finger-tracking/old-before.png
+DATA 6b7f5e9626d4c26a47e31103209876acdc73d7d36865c5dae92610464d9ea168 docs/evidence/theme-picker/finger-tracking/old-held.png
 DATA 65c0660b3a9b4347fe64926128dbae7400bae6701df9a55df713ebc157cf773a docs/evidence/theme-picker/working-set/loading-backgrounds.png
 DATA 9edf97b5508b80673db74e264d50b99746f2b7774295b30aa2454c4017668539 docs/evidence/theme-picker/working-set/browsing.mp4
 DATA 6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8 docs/evidence/backlight/live-hs/live-26-128-255.jpg
@@ -2126,3 +2130,16 @@ See `docs/evidence/theme-picker/store-relocation/README.md`.
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/theme-picker/store-relocation/background-browsed.png` | 287514 | DATA | `ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582` |
+
+### Theme picker finger tracking trial
+
+Native captures before and during a held 20-pixel injected drag. These show
+geometry, not panel latency or real-finger acceptance. See
+`docs/evidence/theme-picker/finger-tracking/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/theme-picker/finger-tracking/new-before.png` | 301875 | DATA | `cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b` |
+| `docs/evidence/theme-picker/finger-tracking/new-held.png` | 300498 | DATA | `515448a93291c7f39ac2d96bd252dbded4fe3945d49f620122945c9ea0908d2d` |
+| `docs/evidence/theme-picker/finger-tracking/old-before.png` | 298177 | DATA | `cfbdccacc6b3b43f12afd191b3823f8fc05f90f589f426fe3a53a2dc6f1d589f` |
+| `docs/evidence/theme-picker/finger-tracking/old-held.png` | 276236 | DATA | `6b7f5e9626d4c26a47e31103209876acdc73d7d36865c5dae92610464d9ea168` |

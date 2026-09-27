@@ -1,0 +1,22 @@
+{
+  "target": "/nix/store/7hhr1fp722cq147svn5ni67ar1i66mys-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "0c199c76e347568ae84ba1c5d8dd842d3a5adc89",
+  "sha256": {
+    "Image": "65fdd3073208c234e71b13cb2972ca56f4260688fed0c8d17296972da59c5797",
+    "initrd.uimg": "debede1a774b68c82ec1c0cd29174fdce0b3954fd8985727df48bdc4e1a92ab2",
+    "k230-tdisplay.dtb": "65886ff0732ad150f749c4bc98552fc642772c0fc08f7d5ef5aeab45dceec250",
+    "bootargs.txt": "997490fdc0b79e25170a261267a4709fb2c14e17bcda8ec54a681d30b640247e"
+  },
+  "bytes": {
+    "Image": 60428288,
+    "initrd.uimg": 27313841,
+    "k230-tdisplay.dtb": 71743,
+    "bootargs.txt": 211
+  },
+  "kernel_extent": 61046784,
+  "initrd_payload_matches_system": true,
+  "uimage_crc_valid": true,
+  "closure_delta_paths": 27,
+  "nar_bytes": 113501760
+}

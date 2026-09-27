@@ -1146,7 +1146,7 @@ below is complete merely because that partial evidence or this plan landed.
   from integer/fractional positions, both directions, reversal, held ticks,
   clamping, release continuity and hold-then-release velocity expiry. Proof:
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_carousel`.
-- [ ] 14.2 Coalesce Themes-page touch-motion/frame-callback redraws until
+- [x] 14.2 Coalesce Themes-page touch-motion/frame-callback redraws until
   queued input has been dispatched. Keep latest position, buffer/frame
   readiness, taps, activation and other routes correct. Build the Rust shell
   and verify a burst of queued input does not cause one full render per stale
@@ -1165,5 +1165,9 @@ Task 14.1 host proof: the exact `--lib theme_carousel` command passed 13
 geometry/physics tests, including rendered-center tracking for both rows,
 integer/fractional starts, reversals, held ticks, stale release velocity and
 screen-space fling continuity. `--bin k230-shell-rust` passed 19 route tests.
-The coalescing source is implemented but task 14.2's board burst check,
-14.3's trial/install and 14.4's operator acceptance remain open.
+Task 14.2: the matching full system built, and the guarded physical-board
+trial processed all 20 injected motion samples per phase with 2–4 commits
+during contact/hold. See `docs/evidence/theme-picker/finger-tracking/README.md`
+for commands, identities, geometry captures and timing limits. Task 14.3's
+trial evidence is recorded; persistent installation remains open, as does
+14.4's real-finger acceptance.
