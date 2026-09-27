@@ -1382,6 +1382,15 @@ impl ShellClient {
         }
     }
 
+    // The outer loop draws after dispatching queued input. Drawing inside
+    // each Themes-page motion/callback handler renders obsolete positions
+    // before later touch samples from the same dispatch can be applied.
+    fn coalesce_theme_motion(&self) -> bool {
+        self.route == Route::Settings
+            && self.theme_view.page == ThemePage::List
+            && self.wifi_view.page == WifiPage::Closed
+    }
+
     fn theme_dirty(&mut self) {
         self.renderer.set_theme_view(self.theme_view.clone());
         self.dirty = true;
@@ -2890,7 +2899,7 @@ impl CompositorHandler for ShellClient {
         }
         self.frame_pending = false;
         self.log("frame-done");
-        if self.dirty && !self.appearance_pending {
+        if self.dirty && !self.appearance_pending && !self.coalesce_theme_motion() {
             self.draw(qh);
         }
     }
@@ -3761,7 +3770,7 @@ impl TouchHandler for ShellClient {
                 self.sync_theme_pressed();
                 self.sync_background_pressed();
             }
-            if self.dirty {
+            if self.dirty && !self.coalesce_theme_motion() {
                 self.draw(qh);
             }
         }

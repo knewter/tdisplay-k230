@@ -1141,7 +1141,7 @@ below is complete merely because that partial evidence or this plan landed.
 
 ## 14. Make picker movement track the finger
 
-- [ ] 14.1 Replace collapsed-slot input scaling with the inverse rendered
+- [x] 14.1 Replace collapsed-slot input scaling with the inverse rendered
   card-center trajectory for both geometries. Test actual pixel displacement
   from integer/fractional positions, both directions, reversal, held ticks,
   clamping, release continuity and hold-then-release velocity expiry. Proof:
@@ -1160,3 +1160,10 @@ below is complete merely because that partial evidence or this plan landed.
   finger without exaggerated travel or a backlog after it stops. Retain this
   gate if only host or injected evidence exists. This does not by itself
   complete the matched performance and memory comparison in task 11.3/13.
+
+Task 14.1 host proof: the exact `--lib theme_carousel` command passed 13
+geometry/physics tests, including rendered-center tracking for both rows,
+integer/fractional starts, reversals, held ticks, stale release velocity and
+screen-space fling continuity. `--bin k230-shell-rust` passed 19 route tests.
+The coalescing source is implemented but task 14.2's board burst check,
+14.3's trial/install and 14.4's operator acceptance remain open.

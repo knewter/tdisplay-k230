@@ -126,6 +126,28 @@ impl CarouselGeometry {
     pub const fn item_step(&self) -> f64 {
         self.slice_w + self.spacing
     }
+
+    fn center_pitch(&self) -> f64 {
+        (self.expanded_w + self.slice_w) / 2.0 + self.spacing
+    }
+
+    // Inverse of interpolated_layout's reference-card center. The first
+    // transition includes the card shrinking; collapsed neighbors use pitch.
+    fn position_at_center(&self, center: f64, reference: f64) -> f64 {
+        let shoulder = (self.expanded_w - self.slice_w) / 2.0;
+        reference + if center.abs() <= self.center_pitch() {
+            -center / self.center_pitch()
+        } else if center < 0.0 {
+            (-center - shoulder) / self.item_step()
+        } else {
+            (shoulder - center) / self.item_step()
+        }
+    }
+
+    fn reference_center(&self, position: f64, reference: f64) -> f64 {
+        let (x, width, _, _) = interpolated_layout(self, position, reference as i64, 0.0);
+        x + width / 2.0
+    }
 }
 
 /// The Themes page's hero carousel: a large, portrait-cropped centered
@@ -172,7 +194,8 @@ pub const BACKGROUND_GEOMETRY: CarouselGeometry = CarouselGeometry {
 pub const NEARBY_LIMIT: i64 = 8;
 
 const MAX_FLING_PX_PER_SEC: f64 = 3000.0;
-/// Below this index-units/sec, a release settles immediately instead of
+const RELEASE_VELOCITY_MAX_AGE_MS: u32 = 100;
+/// Below this fraction of one focused-center transition per second, release settles instead of
 /// coasting -- a slow drag release should not "coast" a fraction of a slot.
 const MIN_COAST_VELOCITY: f64 = 0.35;
 /// Per-16ms decay factor, matching `navigation.rs`'s `DrawerNavigation` and
@@ -376,7 +399,8 @@ pub enum CarouselOutcome {
 pub struct Carousel {
     geometry: CarouselGeometry,
     position: f64,
-    velocity: f64, // index-units/sec
+    velocity: f64, // reference-card pixels/sec, matching finger direction
+    coast_reference: f64,
     contact: Option<Contact>,
     settle: Option<Settle>,
 }
@@ -387,6 +411,7 @@ impl Carousel {
             geometry,
             position: 0.0,
             velocity: 0.0,
+            coast_reference: 0.0,
             contact: None,
             settle: None,
         }
@@ -459,9 +484,8 @@ impl Carousel {
         });
     }
 
-    /// Moves the carousel 1:1 with the finger: a drag of `item_step()`
-    /// pixels moves the position by exactly one slice. Returns whether a
-    /// repaint is needed.
+    /// Move the contact's reference card center by the finger displacement.
+    /// Collapsed-slot spacing alone does not measure visible card travel.
     pub fn motion(&mut self, id: i32, point: (f64, f64), time_ms: u32, count: usize) -> bool {
         let Some(contact) = self.contact.as_mut() else {
             return false;
@@ -473,6 +497,8 @@ impl Carousel {
         if elapsed > 0 && elapsed < 1000 {
             contact.finger_velocity = ((point.0 - contact.last_x) * 1000.0 / f64::from(elapsed))
                 .clamp(-MAX_FLING_PX_PER_SEC, MAX_FLING_PX_PER_SEC);
+        } else if elapsed >= 1000 {
+            contact.finger_velocity = 0.0;
         }
         if (point.0 - contact.start_x).abs() > TAP_SLOP {
             contact.dragged = true;
@@ -481,8 +507,11 @@ impl Carousel {
         contact.last_ms = time_ms;
         let old = self.position;
         let max_index = count.saturating_sub(1) as f64;
-        self.position = (contact.start_position - (point.0 - contact.start_x) / self.geometry.item_step())
-            .clamp(0.0, max_index);
+        let reference = contact.start_position.round();
+        let origin = self.geometry.reference_center(contact.start_position, reference);
+        self.position = self.geometry.position_at_center(
+            origin + point.0 - contact.start_x, reference,
+        ).clamp(0.0, max_index);
         (self.position - old).abs() >= 0.001
     }
 
@@ -519,9 +548,13 @@ impl Carousel {
                 CarouselOutcome::Recenter(tapped)
             });
         }
-        let _ = time_ms; // recency is implicit: finger_velocity already decays to 0 if motion() stalls
-        let velocity = -contact.finger_velocity / self.geometry.item_step();
-        if velocity.abs() < MIN_COAST_VELOCITY {
+        let velocity = if time_ms.wrapping_sub(contact.last_ms) <= RELEASE_VELOCITY_MAX_AGE_MS {
+            contact.finger_velocity
+        } else {
+            0.0
+        };
+        self.coast_reference = contact.start_position.round();
+        if velocity.abs() < MIN_COAST_VELOCITY * self.geometry.center_pitch() {
             self.start_settle(self.position.round());
         } else {
             self.velocity = velocity;
@@ -573,7 +606,11 @@ impl Carousel {
         let elapsed = elapsed_ms.min(50);
         let max_index = count.saturating_sub(1) as f64;
         let old = self.position;
-        let next = self.position + self.velocity * f64::from(elapsed) / 1000.0;
+        let center = self.geometry.reference_center(self.position, self.coast_reference);
+        let next = self.geometry.position_at_center(
+            center + self.velocity * f64::from(elapsed) / 1000.0,
+            self.coast_reference,
+        );
         self.velocity *= DECAY_PER_16MS.powf(f64::from(elapsed) / 16.0);
         if next <= 0.0 || next >= max_index {
             self.position = next.clamp(0.0, max_index);
@@ -581,7 +618,7 @@ impl Carousel {
             return true;
         }
         self.position = next;
-        if self.velocity.abs() < MIN_COAST_VELOCITY {
+        if self.velocity.abs() < MIN_COAST_VELOCITY * self.geometry.center_pitch() {
             self.start_settle(self.position.round());
         }
         (self.position - old).abs() >= 0.001 || self.settle.is_some()
@@ -607,18 +644,63 @@ mod tests {
         assert_eq!(carousel.index(10), 9);
     }
 
+    fn rendered_center(geometry: &CarouselGeometry, position: f64, index: usize) -> f64 {
+        let slice = visible_slices(geometry, position, 30, 284.0, 200.0)
+            .into_iter().find(|slice| slice.index == index).unwrap();
+        slice.x + slice.width / 2.0
+    }
+
     #[test]
-    fn drag_moves_one_to_one_with_the_finger() {
-        let mut carousel = Carousel::new(THEME_GEOMETRY);
-        let item_step = THEME_GEOMETRY.item_step();
-        carousel.set_index(5);
-        carousel.down(1, (300.0, 600.0), 0);
-        // Dragging left by one full item_step must advance exactly one slot:
-        // "moves the carousel 1:1 with the finger."
-        carousel.motion(1, (300.0 - item_step, 600.0), 16, 22);
-        assert!((carousel.position() - 6.0).abs() < 1e-6);
-        carousel.motion(1, (300.0 + item_step * 2.0, 600.0), 32, 22);
-        assert!((carousel.position() - 3.0).abs() < 1e-6);
+    fn drag_tracks_rendered_pixels_in_both_rows_across_transitions_and_reversals() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for start in [10.0_f64, 10.2, 10.8] {
+                let mut carousel = Carousel::new(geometry);
+                carousel.position = start;
+                let reference = start.round() as usize;
+                let origin = rendered_center(&geometry, start, reference);
+                carousel.down(1, (284.0, 600.0), 0);
+                for (i, dx) in [-20.0, -120.0, -280.0, -320.0, -140.0, 0.0, 120.0, 280.0].into_iter().enumerate() {
+                    carousel.motion(1, (284.0 + dx, 600.0), (i as u32 + 1) * 16, 30);
+                    let actual = rendered_center(&geometry, carousel.position(), reference) - origin;
+                    assert!((actual - dx).abs() < 1e-6, "start={start} dx={dx} actual={actual}");
+                    let held = carousel.position();
+                    assert!(!carousel.tick(48, 30));
+                    assert_eq!(carousel.position(), held);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn release_after_hold_expires_velocity_even_without_more_motion_events() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for start_time in [0_u32, u32::MAX - 30] {
+                let mut carousel = Carousel::new(geometry);
+                carousel.set_index(10);
+                carousel.down(1, (284.0, 600.0), start_time);
+                carousel.motion(1, (184.0, 600.0), start_time.wrapping_add(16), 30);
+                let held = carousel.position();
+                carousel.up(1, (184.0, 600.0), start_time.wrapping_add(300), 30, 284.0, 200.0);
+                assert_eq!(carousel.position(), held, "release must not jump");
+                assert_eq!(carousel.velocity, 0.0, "stationary hold must not fling");
+                assert_eq!(carousel.settle.unwrap().target, held.round());
+            }
+        }
+    }
+
+    #[test]
+    fn release_preserves_screen_space_velocity_without_a_position_jump() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            let mut carousel = Carousel::new(geometry);
+            carousel.set_index(10);
+            carousel.down(1, (284.0, 600.0), 0);
+            carousel.motion(1, (264.0, 600.0), 20, 30);
+            let before = rendered_center(&geometry, carousel.position(), 10);
+            carousel.up(1, (264.0, 600.0), 21, 30, 284.0, 200.0);
+            assert_eq!(rendered_center(&geometry, carousel.position(), 10), before);
+            carousel.tick(16, 30);
+            assert!((rendered_center(&geometry, carousel.position(), 10) - before + 16.0).abs() < 1e-6);
+        }
     }
 
     #[test]
@@ -638,7 +720,7 @@ mod tests {
     #[test]
     fn slow_release_settles_immediately_to_nearest() {
         let mut carousel = Carousel::new(THEME_GEOMETRY);
-        let item_step = THEME_GEOMETRY.item_step();
+        let item_step = THEME_GEOMETRY.center_pitch();
         carousel.set_index(2);
         carousel.down(1, (300.0, 600.0), 0);
         // A quick initial move establishes real drag distance (past
@@ -652,7 +734,7 @@ mod tests {
         assert_eq!(tap, Some(CarouselOutcome::Consumed), "a drag release never itself confirms");
         assert!(carousel.is_animating(), "settle animation must be running");
         // Settle target is the nearest slot to where the finger let go,
-        // ~2.9, which rounds to 3, reached once the settle duration elapses.
+        // ~2.6, which rounds to 3, reached once the settle duration elapses.
         let mut ticks = 0;
         while carousel.is_animating() && ticks < 50 {
             carousel.tick(16, 22);
