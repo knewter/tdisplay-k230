@@ -335,3 +335,84 @@ a CPU0 PLIC context and ACLINT timer/IPI route for a joint Linux handoff.
 Thus task 3.1 is partly closed (physical CPU0 vector and release source) but
 remains blocked on the physical hart ID and interrupt topology. No reset,
 power, or vector write was performed in this audit.
+
+## 2026-09-26 Linux SMP path audit (physical CPU0 is the target)
+
+The requested outcome is **one Linux kernel scheduling ordinary processes on
+both physical cores**. A separate CPU0 heartbeat or AMP payload cannot
+satisfy it. `the-small-core-runs-a-recoverable-heartbeat` is suspended after
+that scope correction. Pinned stage 1 (`k230_img.c:276-285`) already starts
+physical CPU1 and leaves CPU0 in WFI; Linux is on CPU1. The remaining
+physical core to bring into the same kernel is CPU0.
+
+The pinned OpenSBI 1.4 generic platform is not ready for two physical cores
+that report the same `mhartid`:
+
+- `platform/generic/platform.c:95-132` collects DT CPU `reg` into its
+  hart-index-to-ID table. `lib/utils/fdt/fdt_helper.c:263-284` confirms
+  that `reg` is the ID it reads.
+- `include/sbi/riscv_asm.h:166` defines `current_hartid()` as a read of
+  `CSR_MHARTID`; `lib/sbi/sbi_scratch.c:24-32` resolves a hart ID to the
+  **first** matching index.
+- `firmware/fw_base.S:441-462` reads `CSR_MHARTID` on warm entry and picks
+  the first matching hart index before setting its M-mode scratch and stack.
+  Thus duplicate IDs would reuse the boot hart's stack/scratch, not merely
+  produce an incorrect display name.
+- `lib/sbi/sbi_hsm.c:300-361` indexes target scratch/HSM state by hart ID,
+  then sends a raw IPI to that target index. A duplicate ID cannot identify
+  CPU0 as a separate HSM target. Linux's
+  `arch/riscv/kernel/smpboot.c:149-170` also treats the boot hart's ID as
+  unique and skips a DT CPU with the same `reg`; its
+  `cpu_ops_sbi.c:66-80` sends `SBI_EXT_HSM_HART_START` using the mapped ID.
+
+The [K230 QEMU author](https://www.mail-archive.com/qemu-devel@nongnu.org/msg1188749.html)
+reports that both physical cores read `mhartid=0`. The
+[Linux DTS author](https://lkml.rescloud.iu.edu/2403.3/00159.html) reports
+that physical CPU1 reads 0 and says inter-core cache coherence is unknown.
+These are firsthand reports, **not measurements on this board**. A fake
+`cpu@1` node would be unsafe even if a two-CPU DT compiled. A K230-specific
+virtual ID would need an early physical-core discriminator and consistent
+use in OpenSBI warm entry, scratch, domain, HSM, IPI, timer, and Linux
+handoff. No such implementation exists in the pinned vendor overlay:
+`platform/generic/thead/thead-generic.c` only applies C908 errata and PMU
+setup. A grep for another physical core-ID CSR in the pinned U-Boot and
+OpenSBI overlays found no defined candidate. This is an audited absence
+within those overlays, not proof that the silicon has no such CSR.
+
+The narrowest next physical identity measurement is source-reachable at an
+already executing point. The optional, default-off patch
+`nix/patches/second-core/spl-cpu0-identity.patch` reads `mhartid` and
+`misa` in CPU0 SPL immediately before its existing CPU1 release, prints
+them, and leaves the release/WFI behavior untouched. CPU1's existing
+OpenSBI boot banner reports its logical ID; an equivalent M-mode CPU1
+readout would settle both physical CSR values. This diagnostic is not a
+second program or a Linux feature. It still requires a separately reviewed
+experimental stage-1 build and the board operator's recovery/serial
+session; it does not justify a reset write or SMP boot by itself.
+
+The pinned Linux DT `arch/riscv/boot/dts/canaan/k230.dtsi:210-218,255-259`
+supplies PLIC and CLINT routes only to its single CPU interrupt controller.
+The vendor OpenSBI overlay has no CPU0-specific PLIC/ACLINT mapping for a
+joint handoff. U-Boot's `CSR_SMPEN` write in
+`arch/riscv/cpu/k230/cpu.c:39-49` is not a CPU0/CPU1 cache-coherence
+contract: the pinned source does not define its semantics or show an
+inter-core cache test. The vendor AMP driver cache-flushes shared data, so
+initial Linux shared page tables and locks cannot safely be the first
+coherence experiment. A controlled pre-Linux atomic/cache and timer/IPI
+diagnostic or a Canaan contract must close those gates before any two-CPU
+Linux boot. Once closed, the first Linux SMP image should use a scalar
+common ISA across kernel and userspace; RVV can return only with a proven
+per-hart scheduling and userspace capability design.
+
+Canaan's public [small-core Linux
+DT](https://raw.githubusercontent.com/kendryte/k230_sdk/main/src/little/linux/arch/riscv/boot/dts/kendryte/k230.dtsi)
+at `src/little/linux/arch/riscv/boot/dts/kendryte/k230.dtsi:18-63`
+separately describes physical CPU0 as its sole logical `cpu@0`, with PLIC
+at `0xf00000000` and CLINT at `0xf04000000`, each wired only to that one
+local interrupt controller. This public `main` source was read during the
+2026-09-26 audit but is **not** this project's pinned SDK revision and is
+not a combined two-core DT. The matching base addresses in the pinned
+big-core DT do not establish whether the hardware maps separate PLIC/
+CLINT instances into per-core address spaces or exposes usable second
+contexts to one joint Linux image. It cannot justify inventing a second
+`interrupts-extended` entry.

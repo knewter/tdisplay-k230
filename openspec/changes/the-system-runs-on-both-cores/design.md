@@ -29,6 +29,19 @@ scalar common ISA image with RVV disabled in kernel and userspace; do not
 rely on affinity to protect arbitrary migratable processes. No default
 image bytes change until these gates are satisfied.
 
+**Current recovery gate.** The narrow CPU0 identity diagnostic patches
+U-Boot SPL, which occupies raw SD-card offsets 1 MiB and 1.5 MiB
+(`nix/stage1.nix:176-180`). A bad SPL can prevent U-Boot itself from
+starting, so U-Boot one-shot boot and `ums` are not sufficient recovery
+routes for this experiment. Before flashing an experimental SPL, preserve a
+verified known-good card or a verified raw-stage-1 backup and confirm an
+external card-reader write/restore route. The board operator must control
+the serial/card session. If a later diagnostic only runs from RAM with
+unchanged SPL/card bytes, use the existing U-Boot one-shot recovery path
+for that session; a second physical card is not inherently required by a
+RAM-only readout. The per-session recovery check remains mandatory for
+any hardware-writing experiment.
+
 See proposal.md and `docs/research/second-core-feasibility.md` (the full
 source and boot-record audit this design continues), and the existing
 `openspec/specs/system/second-core-readiness/spec.md` capability, which this
@@ -181,18 +194,17 @@ correctness and coherency are proven, matching the acceptance discipline
 
 ## Risks / Trade-offs
 
-- **A vector-using task migrates onto a non-RVV hart** → illegal-instruction
-  trap, potentially in a helper process rather than somewhere visible;
-  mitigated only by decision 4's affinity/gate, which is why stage (d) is
-  ordered last and is not optional.
+- **A vector-using task migrates onto non-RVV CPU0** → an
+  illegal-instruction trap, potentially in an ordinary helper process;
+  the first SMP image uses a scalar common ISA in kernel and userspace.
+  Per-hart RVV dispatch is later work and needs its own scheduling proof.
 - **A register read is treated as harmless and grows into a write** →
   decision 1 names the exact three addresses, the read-only method
   requirement, and explicitly forbids read-modify-write or clearing the
   W1C reset-done bits; the same discipline the TRM review already applied.
-- **Stage (b)'s first reset/vector write hangs or corrupts the running
-  system** → gated by explicit user authorization (Risk and recovery,
-  below) and a rehearsed recovery path before any such write is attempted,
-  on a card the operator can also pull and rewrite externally.
+- **An experimental SPL fails before U-Boot starts** → preserve the current
+  raw SPL slots and verify an external-reader restore route before writing;
+  the operator can restore from that backup even if U-Boot never starts.
 - **Undocumented coherency contract makes stage (c) pass by luck on one
   boot and fail on another** → stage (c) explicitly repeats the litmus and
   IPI/timer stress rather than accepting a single clean run, matching this
@@ -207,14 +219,14 @@ correctness and coherency are proven, matching the acceptance discipline
 
 ## Migration Plan
 
-This change lands as specification only: an updated
-`system/second-core-readiness` capability recording the staged plan.
-Stage (a)'s script extension is source work for a later, separately
-authorized change (it touches `tools/second-core-readiness.sh`, a Nix-built
-board tool, and needs its own host fixture test before any board run).
-Stages (b)-(d) each become their own later change, opened only once the
-preceding stage's evidence is committed under `docs/evidence/second-core/`.
-No stage in this migration is reversible by "just not landing the next
-change" once a reset/power register has been written on the shared board —
-that is exactly why Risk and recovery in proposal.md/tasks.md requires a
-rehearsed recovery path before stage (b), not after.
+The read-only collector, pinned-source audit, and default-off CPU0 SPL
+identity diagnostic are implemented. Its BootROM-loadable package was
+built on the host; the ordinary stage-1 derivation remains identical.
+`docs/evidence/second-core/cpu0-identity-trial.md` gives a bounded trial
+and restore recipe. Board identity, interrupt and coherency gates remain
+open. The physical trial is deferred until the current card's raw-stage-1
+backup and external-reader route are verified; the trial does not itself
+enable Linux SMP. Subsequent OpenSBI/DT/kernel work follows only after the
+named physical evidence is committed. Authorization for routine host work
+is already supplied by the user; the single-board operator coordinates
+the serial/card session and enforces the recovery gate.

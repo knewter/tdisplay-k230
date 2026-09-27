@@ -1,0 +1,16 @@
+--- a/board/canaan/common/k230_img.c
++++ b/board/canaan/common/k230_img.c
+@@ -275,5 +275,13 @@ static int k230_boot_uboot_uimage(image_header_t *pUh)
+         //do_timeinfo(0,0,0,0);
+         #if defined(CONFIG_LINUX_RUN_CORE_ID) && (CONFIG_LINUX_RUN_CORE_ID == 1)
++        {
++            unsigned long mhartid, misa;
++
++            asm volatile("csrr %0, mhartid" : "=r"(mhartid));
++            asm volatile("csrr %0, misa" : "=r"(misa));
++            printf("CPU0_SPL_IDENTITY mhartid=0x%lx misa=0x%lx\n",
++                   mhartid, misa);
++        }
+         de_reset_big_core(image_get_load(pUh));
+
+         while(1)

@@ -24,26 +24,37 @@
   corroborates or falsifies "Linux already runs on physical CPU1." Verify
   with `openspec validate the-system-runs-on-both-cores --strict` after the
   edit (documentation-consistency proof, not new physical evidence).
+- [x] 1.5 Build and package the default-off CPU0 SPL identity diagnostic
+  without changing the normal stage-1 derivation. Verify with
+  `nix build .#uboot-k230-cpu0-identity-probe --no-link --print-out-paths --max-jobs 1 --cores 4`,
+  `nix build .#stage1-cpu0-identity-probe --no-link --print-out-paths --max-jobs 1 --cores 4`,
+  `nix eval --raw .#uboot-k230.drvPath`,
+  `nix eval --raw .#stage1-packaging.drvPath`, and `cmp` of packaged U-Boot
+  proper against normal. Results and exact paths/hashes are in
+  `docs/evidence/second-core/spl-cpu0-identity-host-build.md` and
+  `docs/evidence/second-core/cpu0-identity-trial.md`. This is host build
+  proof only; it does not close 1.3, 3.1, or any Linux SMP gate.
 
 ## 2. Recovery rehearsal (must pass before any stage-3 task starts)
 
-- [ ] 2.1 **BOARD-GATED.** Immediately before any reset/power register write
-  is attempted (stage 3), rehearse the U-Boot one-shot recovery path used
-  2026-09-25 (`docs/evidence/card-shell/bottom-band-flicker/kernel-patch-boot-panic.md`):
-  one-shot `ext4load mmc 1:2` boot of the files preserved in
-  `/var/lib/k230/boot-prev/`, then verify those files' `SHA256SUMS` against
-  the running system before any register write proceeds. Verify with a
-  board console transcript recording `BOOT_RESTORED_OK` or the equivalent
-  hash match, committed under `docs/evidence/second-core/` (board physical
-  recovery-rehearsal proof). Requires explicit user authorization to hold
-  the board for this session, per AGENTS.md.
-- [ ] 2.2 Confirm the independent SD card-reader / U-Boot `ums` recovery
-  route (`docs/uboot-ums.md`) is still available as a fallback if the
-  one-shot path in 2.1 fails: check that `tools/ums-session.py`'s capacity
-  and identity refusal checks still pass against the currently flashed
-  card's known sector count. Verify with
-  `python3 -m unittest discover -s tests -p test_ums_target.py` (host proof
-  of the recovery tool's refusal guards; not a live reflash).
+- [ ] 2.1 **BOARD-GATED.** Before any experimental SPL flash or CPU0
+  reset/vector write, identify the board's *current* known-good stage-1
+  bytes and preserve a verified backup. For an SPL candidate, confirm an
+  external SD-card reader can restore the raw stage-1 offsets at 1 MiB and
+  1.5 MiB even if U-Boot never starts; a U-Boot one-shot or `ums` route
+  alone cannot recover a broken SPL. For a RAM-only diagnostic that changes
+  no card bytes, rehearse the current one-shot boot bundle instead. Commit
+  the actual card/backup hashes and recovery transcript under
+  `docs/evidence/second-core/`; do not assume the older
+  `/var/lib/k230/boot-prev/` bundle still names the installed system.
+  Coordinate the board session with the operator.
+- [ ] 2.2 Confirm the independent SD-card-reader recovery route for an
+  experimental SPL and retain U-Boot `ums` as an additional route only
+  while U-Boot is reachable (`docs/uboot-ums.md`). Verify the host tool's
+  capacity and identity refusal guards with
+  `python3 -m unittest discover -s tests -p test_ums_target.py`; this host
+  check does not prove the current card is restorable. Record that physical
+  card identity and verified raw backup in 2.1's board evidence.
 
 ## 3. OpenSBI + device-tree hart-release experiment (stage b — first stage that writes a reset/power register)
 

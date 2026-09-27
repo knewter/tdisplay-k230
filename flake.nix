@@ -20,6 +20,16 @@
       # carries. See nix/stage1.nix and openspec/specs/image/boot-chain.
       k230Sdk = pkgs.callPackage ./nix/k230-sdk-src.nix { };
       ubootK230 = pkgsCross.callPackage ./nix/uboot-k230.nix { inherit k230Sdk; };
+      ubootK230Cpu0IdentityProbe = ubootK230.override {
+        cpu0IdentityProbe = true;
+      };
+      # The diagnostic is compiled in both U-Boot variants by the shared
+      # source, but a trial needs only the SPL. Keep U-Boot proper normal.
+      ubootK230Cpu0IdentitySPL = pkgs.runCommand "k230-cpu0-identity-spl-with-normal-uboot" { } ''
+        mkdir -p $out/spl
+        cp ${ubootK230}/u-boot.bin $out/u-boot.bin
+        cp ${ubootK230Cpu0IdentityProbe}/spl/u-boot-spl.bin $out/spl/u-boot-spl.bin
+      '';
       opensbiK230 = pkgsCross.callPackage ./nix/opensbi-k230.nix { inherit k230Sdk; };
       stage1 = pkgs.callPackage ./nix/stage1.nix { inherit k230Sdk ubootK230 opensbiK230; };
 
@@ -255,6 +265,14 @@
         #   nix build .#stage1          the five files the card carries
         k230-sdk-src = k230Sdk;
         uboot-k230 = ubootK230;
+        # Isolated, default-off SPL diagnostic. Do not substitute this for
+        # the normal stage1 package or treat it as an SMP implementation.
+        uboot-k230-cpu0-identity-probe = ubootK230Cpu0IdentityProbe;
+        # Firmware-header packaging for an explicitly selected SPL trial.
+        # This is never referenced by the normal stage1/image package.
+        stage1-cpu0-identity-probe = stage1.packagingOf {
+          ubootDir = ubootK230Cpu0IdentitySPL;
+        };
         opensbi-k230 = opensbiK230;
         fwJump = stage1.fwJump;
         stage1 = stage1.built;
