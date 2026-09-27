@@ -202,3 +202,54 @@ unmatched. Host fixtures must prove relocation, exact-path priority, and
 rejection of changed content, another origin, malformed identity and ambiguity.
 A physical repeat must show the actual background row and unchanged durable
 generation before using its swipe/memory measurements as comparable evidence.
+
+## Measure remaining swipe cost and admit speculative work only at rest
+
+The [paired browsing observation](../../../docs/evidence/theme-picker/working-set/README.md)
+proved that speculative overlay completions during held touch fell from five
+to zero, but did not prove smoother warm browsing: warm commit-gap median
+was 125 ms before and 132 ms after, and maxima were 258/285 ms. Both idle
+windows were quiet. The second run had no resolved background row, so its
+lower final RSS and reopening cost cannot establish an equal-content win.
+Task 12.2's relocation repair must first restore that row. Task 11.3 stays
+open; these observations are neither physical-finger acceptance nor a cold
+cache comparison.
+
+Two remaining costs need separate attribution. `theme_dirty()` invalidates
+`RendererCache`'s full cached scene whenever carousel position changes, so
+live movement rebuilds the panel, including unchanged content. Meanwhile,
+`poll_prepare_ahead()` can drain queued neighbor requests when `centered` is
+`None`: movement suppresses dwell selection but not all speculative request
+admission. Helper cgroup CPU overlapped several new warm swipe windows at
+roughly 33–39%; a preparation included about 2.8 seconds of wallpaper-cache
+work and 1.5 seconds of template rendering. These facts identify work to
+measure, not proof that either cost alone explains each frame gap.
+
+Add bounded, opt-in profiling that distinguishes the Rust main thread from
+thumbnail workers, helper subprocesses from the daemon, and CPU time from
+elapsed waiting. Record live rebuild count/time, thumbnail request/completion
+and hash/read/decode phases, appearance-prepare handling, speculative
+submission/completion, and overlay pre-render separately. Use monotonic phase
+markers and aggregate counters or bounded buffers; avoid per-pixel logging or
+unbounded journals. Default rendering stays uninstrumented. Collect native
+media in a separate pass and compare instrumentation-on/off observer cost.
+
+Make speculation eligibility explicit: while either carousel has a contact,
+coast, or settle, admit no new dwell or neighbor preparation. Pause admission
+without consuming the queued neighbor or expanding its bound, reset the
+center dwell appropriately, and resume with the latest settled center before
+optional neighbors. A request already executing may finish and consume CPU;
+account for its full lifetime rather than treating the admission gate as
+cancellation. Its completion cannot trigger another speculative request
+while movement continues. Preserve foreground preview/activation priority,
+request identity checks and the single prepared-slot transaction rules.
+The existing overlay pre-render motion gate remains a separate protection.
+
+Compare a baseline containing the relocation and thumbnail fixes with only
+this admission change added, using the same visible catalog, selected theme,
+background row, kernel, compositor, geometry and background playback state.
+Record process/cache history explicitly. Per-thread/phase data decides the
+next rendering change; a broad renderer rewrite, new toolkit, CPU affinity or
+compositor replacement is outside this task group. If live repaint remains
+dominant after speculation is bounded, retain that measured remainder here
+instead of marking swipe acceptance complete.
