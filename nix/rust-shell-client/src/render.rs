@@ -12,7 +12,7 @@ use crate::{
     splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
-    theme_thumbnails::{ThemeThumbnailCache, ThumbnailKey, Variant},
+    theme_thumbnails::{bounded_working_set, ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
         BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
@@ -2626,6 +2626,79 @@ fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
         || old.background_pressed != new.background_pressed
 }
 
+/// Layout still includes distant slices for painting/hit-testing. Decoding only
+/// needs slices whose bounds reach the viewport, across BOTH carousel rows.
+/// Rank them together so the two centers reach the bounded worker queue first.
+fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32) -> Vec<ThumbnailKey> {
+    let Some(chooser) = chooser.filter(|view| view.page == ThemePage::List) else {
+        return Vec::new();
+    };
+    if viewport_width == 0 {
+        return Vec::new();
+    }
+    let width = f64::from(viewport_width);
+    let mut requested = Vec::new();
+    fn add<'a>(
+        requested: &mut Vec<(f64, ThumbnailKey)>,
+        geometry: &theme_carousel::CarouselGeometry,
+        position: f64,
+        count: usize,
+        width: f64,
+        row: impl Fn(usize) -> Option<(&'a str, &'a std::path::Path)>,
+    ) {
+        for slice in theme_carousel::visible_slices(geometry, position, count, width / 2.0, 0.0) {
+            if slice.x >= width || slice.x + slice.width <= 0.0 {
+                continue;
+            }
+            let Some((id, path)) = row(slice.index) else {
+                continue;
+            };
+            for variant in [Variant::Expanded, Variant::Slice] {
+                let (width, height) = variant_size(geometry, variant);
+                requested.push((
+                    (slice.index as f64 - position).abs(),
+                    ThumbnailKey {
+                        id: id.to_owned(),
+                        path: path.to_owned(),
+                        variant,
+                        width,
+                        height,
+                    },
+                ));
+            }
+        }
+    }
+    if let Some(list) = chooser.list.as_ref() {
+        add(
+            &mut requested,
+            &theme_carousel::THEME_GEOMETRY,
+            chooser.theme_position,
+            list.themes.len(),
+            width,
+            |index| {
+                let entry = list.themes.get(index)?;
+                Some((&entry.id, entry.preview_path.as_deref()?))
+            },
+        );
+    }
+    if let Some(preview) = chooser.preview.as_ref() {
+        add(
+            &mut requested,
+            &theme_carousel::BACKGROUND_GEOMETRY,
+            chooser.background_position,
+            preview.backgrounds.len(),
+            width,
+            |index| {
+                let entry = preview.backgrounds.get(index)?;
+                (entry.kind == BackgroundKind::Image)
+                    .then_some((entry.id.as_str(), entry.path.as_path()))
+            },
+        );
+    }
+    requested.sort_by(|a, b| a.0.total_cmp(&b.0));
+    bounded_working_set(requested.into_iter().map(|(_, key)| key).collect())
+}
+
 impl RendererCache {
     pub fn content_generation(&self) -> u64 {
         self.content_generation
@@ -2737,182 +2810,26 @@ impl RendererCache {
         }
         changed
     }
-    /// Requests both cached-bitmap variants (see `theme_thumbnails.rs`) for
-    /// every carousel entry within `theme_carousel::NEARBY_LIMIT` of the
-    /// carousel's current position: each nearby catalog entry with preview
-    /// art while the list page is open, or each nearby still background
-    /// while the preview page is open. Unlike the single live wallpaper
-    /// preview above, these bitmaps are cached forever once decoded, so
-    /// re-requesting an already-ready (id, variant) is a no-op
-    /// (`ThemeThumbnailCache::request`); only newly-nearby entries actually
-    /// queue a decode.
-    pub fn poll_theme_thumbnails(&mut self) -> bool {
+    /// Request exactly the admitted visible working set shared by both rows.
+    pub fn poll_theme_thumbnails(&mut self, viewport_width: u32) -> bool {
+        let requested = theme_picker_working_set(self.chooser.as_ref(), viewport_width);
+        self.thumbnails.set_working_set(&requested);
         let changed = self.thumbnails.poll();
         if changed {
             self.content_generation = self.content_generation.wrapping_add(1);
             self.invalidate();
         }
-        let Some(chooser) = self.chooser.as_ref() else {
-            return changed;
-        };
-        match chooser.page {
-            ThemePage::List => {
-                // Theme and background thumbnails are requested
-                // independently below -- neither `chooser.list` nor
-                // `chooser.preview` being absent should skip the other
-                // (board evidence would otherwise show a background
-                // carousel that never gets its own art whenever its own
-                // detail loads before, or without, a fresh theme list).
-                if let Some(list) = chooser.list.as_ref() {
-                // `visible_slices` is sorted ascending by paint z-order --
-                // farthest neighbor first, the centered slice last -- which
-                // is the right order to *paint* (so the centered slice ends
-                // up on top) but the wrong order to *request decodes* in:
-                // the bounded worker queue (`theme_thumbnails::QUEUE`) means
-                // whichever ids get `request()`-ed first each frame claim
-                // its few slots, so painting order left the one slice a
-                // user actually sees at rest -- the centered one -- decoding
-                // *last* of every nearby id. That went unnoticed at the
-                // smaller pre-hero size (every decode was fast enough not to
-                // matter); the Themes hero's much larger `Expanded` bitmap
-                // makes a single decode slow enough under software
-                // (Pixman/Cairo, no GPU) decode that request order is worth
-                // getting right. `.rev()` here requests centered-outward
-                // instead, with no effect on `paint_carousel`'s own separate
-                // (unreversed) call to `visible_slices` for paint order.
-                for slice in theme_carousel::visible_slices(
-                    &theme_carousel::THEME_GEOMETRY,
-                    chooser.theme_position,
-                    list.themes.len(),
-                    0.0,
-                    0.0,
-                )
-                .into_iter()
-                .rev()
-                {
-                    let Some(entry) = list.themes.get(slice.index) else {
-                        continue;
-                    };
-                    if let Some(path) = &entry.preview_path {
-                        for variant in [Variant::Expanded, Variant::Slice] {
-                            let (width, height) =
-                                variant_size(&theme_carousel::THEME_GEOMETRY, variant);
-                            self.thumbnails.request(ThumbnailKey {
-                                id: entry.id.clone(),
-                                path: path.clone(),
-                                variant,
-                                width,
-                                height,
-                            });
-                        }
-                    }
-                }
-                }
-                // Task: tap-to-apply (2026-09-25) put the active theme's own
-                // background carousel on this same List page, below the
-                // theme carousel -- its nearby thumbnails are requested
-                // here too now, rather than only while a now-removed
-                // separate Preview page was open. Independent of the
-                // `list` block above -- see this function's own doc.
-                if let Some(preview) = chooser.preview.as_ref() {
-                    for slice in theme_carousel::visible_slices(
-                        &theme_carousel::BACKGROUND_GEOMETRY,
-                        chooser.background_position,
-                        preview.backgrounds.len(),
-                        0.0,
-                        0.0,
-                    )
-                    .into_iter()
-                    .rev()
-                    {
-                        let Some(background) = preview.backgrounds.get(slice.index) else {
-                            continue;
-                        };
-                        if background.kind == BackgroundKind::Image {
-                            for variant in [Variant::Expanded, Variant::Slice] {
-                                let (width, height) =
-                                    variant_size(&theme_carousel::BACKGROUND_GEOMETRY, variant);
-                                self.thumbnails.request(ThumbnailKey {
-                                    id: background.id.clone(),
-                                    path: background.path.clone(),
-                                    variant,
-                                    width,
-                                    height,
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            ThemePage::Controls => {}
+        for key in requested {
+            self.thumbnails.request(key);
         }
         changed
     }
 
-    /// Whether some carousel slice within `theme_carousel::NEARBY_LIMIT`
-    /// still has an unresolved bitmap (queued, or dropped by a full worker
-    /// queue and waiting on a future `poll_theme_thumbnails` retry).
-    ///
-    /// This says only whether the event loop should keep *polling*
-    /// (`main.rs` shortens its `libc::poll` timeout while this is true, so a
-    /// completed decode is drained promptly) -- it must never by itself
-    /// force a redraw. `poll_theme_thumbnails` is already called
-    /// unconditionally every loop iteration regardless of this value, so
-    /// retries and channel draining happen either way; only its own
-    /// `changed` return value (a decode actually completed, or one of this
-    /// module's caches actually changed) should ever set `dirty`. A caller
-    /// that instead redraws a fully unchanged frame just because this is
-    /// true is the idle-redraw bug this doc used to justify: a continuous
-    /// full re-render at rest while thumbnails were still decoding,
-    /// competing for the same single core the decode itself needed. The
-    /// loading spinner this module's caller paints for a pending slice
-    /// (`render.rs::paint_carousel`) is instead animated by `ThemeView::
-    /// pulse_phase`, advanced on `main.rs`'s own throttled cadence.
-    pub fn theme_thumbnails_pending(&self) -> bool {
-        let Some(chooser) = self.chooser.as_ref() else {
-            return false;
-        };
-        match chooser.page {
-            ThemePage::List => {
-                let themes_pending = chooser.list.as_ref().is_some_and(|list| {
-                    theme_carousel::visible_slices(
-                        &theme_carousel::THEME_GEOMETRY,
-                        chooser.theme_position,
-                        list.themes.len(),
-                        0.0,
-                        0.0,
-                    )
-                    .into_iter()
-                    .filter_map(|slice| list.themes.get(slice.index))
-                    .filter(|entry| entry.preview_path.is_some())
-                    .any(|entry| {
-                        !self.thumbnails.is_resolved(&entry.id, Variant::Expanded)
-                            || !self.thumbnails.is_resolved(&entry.id, Variant::Slice)
-                    })
-                });
-                // Task: tap-to-apply (2026-09-25) -- the active theme's own
-                // background carousel sits on this same page now; its
-                // nearby thumbnails count toward "still decoding" too.
-                let backgrounds_pending = chooser.preview.as_ref().is_some_and(|preview| {
-                    theme_carousel::visible_slices(
-                        &theme_carousel::BACKGROUND_GEOMETRY,
-                        chooser.background_position,
-                        preview.backgrounds.len(),
-                        0.0,
-                        0.0,
-                    )
-                    .into_iter()
-                    .filter_map(|slice| preview.backgrounds.get(slice.index))
-                    .filter(|background| background.kind == BackgroundKind::Image)
-                    .any(|background| {
-                        !self.thumbnails.is_resolved(&background.id, Variant::Expanded)
-                            || !self.thumbnails.is_resolved(&background.id, Variant::Slice)
-                    })
-                });
-                themes_pending || backgrounds_pending
-            }
-            ThemePage::Controls => false,
-        }
+    /// Offscreen/deferred entries must not keep polling and repainting spinners
+    /// forever. Use the identical admitted set as the request path.
+    pub fn theme_thumbnails_pending(&self, viewport_width: u32) -> bool {
+        theme_picker_working_set(self.chooser.as_ref(), viewport_width)
+            .iter().any(|key| !self.thumbnails.is_resolved(&key.id, key.variant))
     }
 
     /// Always `false` now: `poll_theme_image` (above) is a deliberate
@@ -3105,7 +3022,7 @@ impl RendererCache {
             return Err("invalid canvas length".into());
         }
         self.poll_theme_image(width, height);
-        self.poll_theme_thumbnails();
+        self.poll_theme_thumbnails(width);
         if self.route != Some(route)
             || self.width != width
             || self.height != height
@@ -4193,6 +4110,144 @@ mod tests {
         );
     }
 
+    fn theme_picker_two_row_fixture() -> ThemeView {
+        let themes: Vec<_> = (0..40)
+            .map(|i| ThemeEntry {
+                id: format!("theme-{i}"),
+                name: format!("Theme {i}"),
+                label: format!("Theme {i}"),
+                origin: ThemeOrigin::Builtin,
+                preview_path: Some(format!("/unused/theme-{i}.png").into()),
+            })
+            .collect();
+        ThemeView {
+            page: ThemePage::List,
+            theme_position: 20.0,
+            background_position: 20.0,
+            preview: Some(ThemePreview {
+                theme: themes[20].clone(),
+                generation: "fixture-generation".into(),
+                appearance_path: "/unused/appearance.json".into(),
+                palette: BTreeMap::new(),
+                icon_theme: None,
+                backgrounds: (0..40)
+                    .map(|i| BackgroundChoice {
+                        id: format!("background-{i}"),
+                        label: format!("Background {i}"),
+                        path: format!("/unused/background-{i}.png").into(),
+                        kind: BackgroundKind::Image,
+                        selected: i == 20,
+                        decode_status: "unverified".into(),
+                    })
+                    .collect(),
+                compatibility: Compatibility {
+                    applied: vec![],
+                    unavailable: vec![],
+                    unknown: vec![],
+                },
+                activated: false,
+                app_appearance: None,
+            }),
+            list: Some(ThemeList {
+                themes,
+                active: ActiveTheme {
+                    id: None,
+                    generation: None,
+                },
+            }),
+            ..ThemeView::default()
+        }
+    }
+
+    #[test]
+    fn theme_picker_two_carousels_warm_without_continual_requeues() {
+        use crate::theme_thumbnails::{CACHE_CAP, CACHE_MAX_BYTES};
+        let view = theme_picker_two_row_fixture();
+        let old_demand = 2
+            * (theme_carousel::visible_slices(
+                &theme_carousel::THEME_GEOMETRY,
+                20.0,
+                40,
+                284.0,
+                0.0,
+            )
+            .len()
+                + theme_carousel::visible_slices(
+                    &theme_carousel::BACKGROUND_GEOMETRY,
+                    20.0,
+                    40,
+                    284.0,
+                    0.0,
+                )
+                .len());
+        assert_eq!(old_demand, 68);
+        assert!(old_demand > CACHE_CAP);
+        let (thumbnails, incoming, complete) = ThemeThumbnailCache::fixture();
+        let mut renderer = RendererCache {
+            thumbnails,
+            ..RendererCache::default()
+        };
+        renderer.set_theme_view(view.clone());
+        let expected = theme_picker_working_set(Some(&view), 568);
+        assert_eq!(expected.len(), 24); // five hero slices + seven background slices
+        assert_eq!(expected[0].id, "theme-20");
+        assert_eq!(expected[2].id, "background-20"); // both centers claim first queue slots
+        let mut admitted = Vec::new();
+        for _ in 0..100 {
+            renderer.poll_theme_thumbnails(568);
+            for key in incoming.try_iter() {
+                admitted.push((key.id.clone(), key.variant));
+                complete(key);
+            }
+            if !renderer.theme_thumbnails_pending(568) {
+                break;
+            }
+        }
+        assert!(!renderer.theme_thumbnails_pending(568));
+        assert_eq!(renderer.thumbnails.submitted_count(), expected.len());
+        assert_eq!(
+            admitted,
+            expected
+                .iter()
+                .map(|key| (key.id.clone(), key.variant))
+                .collect::<Vec<_>>()
+        );
+        for _ in 0..200 {
+            assert!(!renderer.poll_theme_thumbnails(568));
+            assert!(!renderer.theme_thumbnails_pending(568));
+            assert!(incoming.try_recv().is_err());
+        }
+        assert_eq!(renderer.thumbnails.submitted_count(), expected.len());
+        assert!(renderer.thumbnails.known_len() <= CACHE_CAP);
+        assert!(renderer.thumbnails.resident_bytes() <= CACHE_MAX_BYTES);
+
+        // Move both rows, including half-way positions and a wider viewport.
+        // Each new settled set must converge without increasing either bound.
+        for (theme, background, width) in [(21.4, 18.6, 568), (5.0, 5.0, 568), (25.0, 25.0, 1800)] {
+            let mut moved = view.clone();
+            moved.theme_position = theme;
+            moved.background_position = background;
+            renderer.set_theme_view(moved);
+            for _ in 0..100 {
+                renderer.poll_theme_thumbnails(width);
+                for key in incoming.try_iter() {
+                    complete(key);
+                }
+                if !renderer.theme_thumbnails_pending(width) {
+                    break;
+                }
+            }
+            assert!(!renderer.theme_thumbnails_pending(width));
+            let submissions = renderer.thumbnails.submitted_count();
+            for _ in 0..50 {
+                assert!(!renderer.poll_theme_thumbnails(width));
+            }
+            assert_eq!(renderer.thumbnails.submitted_count(), submissions);
+            assert!(renderer.thumbnails.known_len() <= CACHE_CAP);
+            assert!(renderer.thumbnails.resident_bytes() <= CACHE_MAX_BYTES);
+        }
+    }
+
     #[test]
     fn pending_thumbnails_do_not_by_themselves_report_a_change() {
         // The idle-redraw fix (see `main.rs`'s own doc on
@@ -4237,16 +4292,16 @@ mod tests {
         // `poll_theme_thumbnails`'s own doc): nothing can have arrived on
         // the reply channel yet, so `changed` must be false here even
         // though the entry is (correctly) still pending.
-        assert!(renderer.theme_thumbnails_pending());
+        assert!(renderer.theme_thumbnails_pending(568));
         assert!(
-            !renderer.poll_theme_thumbnails(),
+            !renderer.poll_theme_thumbnails(568),
             "issuing a decode request must not itself report a change"
         );
         // And immediately calling it again, before the worker thread has
         // plausibly finished a real decode, must still report no change --
         // repeated polling alone is never a reason to redraw.
         assert!(
-            !renderer.poll_theme_thumbnails(),
+            !renderer.poll_theme_thumbnails(568),
             "polling again with nothing new must still report no change"
         );
     }
@@ -4320,7 +4375,7 @@ mod tests {
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
         while renderer.thumbnails.get("fixture-bare", Variant::Expanded).is_none() && std::time::Instant::now() < deadline
         {
-            renderer.poll_theme_thumbnails();
+            renderer.poll_theme_thumbnails(568);
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
         assert!(renderer.thumbnails.get("fixture-bare", Variant::Expanded).is_some());
@@ -4363,7 +4418,7 @@ mod tests {
         while renderer.thumbnails.get("fixture-background", Variant::Expanded).is_none()
             && std::time::Instant::now() < deadline
         {
-            renderer.poll_theme_thumbnails();
+            renderer.poll_theme_thumbnails(568);
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
         assert!(renderer.thumbnails.get("fixture-background", Variant::Expanded).is_some());

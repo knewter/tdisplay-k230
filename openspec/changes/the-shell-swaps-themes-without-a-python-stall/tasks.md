@@ -1008,7 +1008,7 @@ installed `926c7a61` Rust shell. Source review identifies an over-capacity
 combined thumbnail request set and speculative main-thread pre-render during
 motion; neither is yet a measured explanation of this board report.
 
-- [ ] 11.1 Bound the combined theme/background thumbnail working set to
+- [x] 11.1 Bound the combined theme/background thumbnail working set to
   viewport-relevant entries, preserve centered-first scheduling, and use the
   same set for pending-work checks. Keep the existing cache bound and avoid
   stale in-flight results evicting current visible entries. Add a host
@@ -1016,7 +1016,7 @@ motion; neither is yet a measured explanation of this board report.
   without continual requeues and remains bounded while browsing. Proof:
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`
   and `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_thumbnails`.
-- [ ] 11.2 Gate speculative overlay pre-render while either carousel is
+- [x] 11.2 Gate speculative overlay pre-render while either carousel is
   dragging/coasting/settling, with a test proving it resumes at rest. Proof:
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust theme_prerender`.
 - [ ] 11.3 On the reserved board after kernel work, record the exact Rust
@@ -1029,3 +1029,16 @@ motion; neither is yet a measured explanation of this board report.
   sequence if necessary; its current activate-only run is not swipe proof.
   Commit the result before checking this task. Physical proof remains pending;
   host tests alone do not satisfy it.
+
+Host proof for 11.1–11.2 (2026-09-26): `--lib theme_picker` passed 1
+regression; `--lib theme_thumbnails` passed 16 tests; the additional narrow
+`--lib thumbnail` filter passed 18 tests including the two existing renderer
+checks; `--bin k230-shell-rust theme_prerender` passed 1 motion-gate test.
+All used the offline Cargo command above. The 40-theme/40-background fixture
+has old demand of 68 variants; the 568-pixel viewport admits 24, submits each
+once, then performs 200 stationary polls without another request. It also
+settles after both rows move and after a wider viewport exercises admission.
+Additional fixtures cover stale in-flight replies, preservation of an oldest
+visible resident, and actual byte-budget eviction. These are deterministic
+host cache/channel tests, not timing or physical swipe evidence. No Nix build
+or board use was performed for these tasks; 11.3 remains open.

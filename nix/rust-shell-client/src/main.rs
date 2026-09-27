@@ -1172,6 +1172,12 @@ struct PrerenderedOverlay {
     pixels: Vec<u8>,
 }
 
+/// Speculative CPU work yields to both carousel gestures, including coast
+/// and settle. Live drawing and durable appearance handling stay independent.
+fn theme_prerender_at_rest(theme: &Carousel, backgrounds: &Carousel) -> bool {
+    !theme.is_animating() && !backgrounds.is_animating()
+}
+
 /// Whether `candidate` may still be used as-is: an exact match on the
 /// generation it was computed for and on every other input its own
 /// content depended on (route, geometry, and everything the theme itself
@@ -4112,7 +4118,7 @@ fn serve() -> Result<(), String> {
         // decode would sit undrained until some unrelated event happened to
         // mark the frame dirty, and later rows would never even get
         // requested past the worker's bounded queue depth.
-        if state.renderer.poll_theme_thumbnails() {
+        if state.renderer.poll_theme_thumbnails(state.width) {
             state.dirty = true;
         }
         if state
@@ -4562,7 +4568,7 @@ fn serve() -> Result<(), String> {
             // without anything having changed is to advance the loading
             // spinner itself, and that only needs a few frames a second --
             // see `THEME_PULSE_INTERVAL`'s own doc.
-            let waiting_on_background_work = state.renderer.theme_thumbnails_pending()
+            let waiting_on_background_work = state.renderer.theme_thumbnails_pending(state.width)
                 || state.renderer.theme_preview_image_pending()
                 || matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }));
             if waiting_on_background_work
@@ -4759,6 +4765,7 @@ fn serve() -> Result<(), String> {
             && state.theme_view.page == ThemePage::List
             && pending_appearance.is_none()
             && state.theme_view.pending.is_none()
+            && theme_prerender_at_rest(&state.theme_carousel, &state.background_carousel)
         {
             let centered_theme_id = state.theme_view.list.as_ref().and_then(|list| {
                 if list.themes.is_empty() {
@@ -4877,7 +4884,7 @@ fn serve() -> Result<(), String> {
             || (state.route == Route::Settings
                 && (state.theme_carousel.is_animating()
                     || state.background_carousel.is_animating()
-                    || state.renderer.theme_thumbnails_pending()
+                    || state.renderer.theme_thumbnails_pending(state.width)
                     || state.renderer.theme_preview_image_pending()
                     || matches!(state.theme_view.pending, Some(ThemeRequest::Activate { .. }))))
         {
@@ -5027,6 +5034,39 @@ fn main() {
 mod route_tests {
     use super::*;
     use std::os::unix::fs::DirBuilderExt;
+
+    #[test]
+    fn theme_prerender_waits_for_both_carousels_to_finish_moving() {
+        for background in [false, true] {
+            let mut themes = Carousel::new(THEME_GEOMETRY);
+            let mut backgrounds = Carousel::new(BACKGROUND_GEOMETRY);
+            assert!(theme_prerender_at_rest(&themes, &backgrounds));
+            let active = if background {
+                &mut backgrounds
+            } else {
+                &mut themes
+            };
+            active.set_index(10);
+            active.down(7, (284.0, 400.0), 0);
+            assert!(!theme_prerender_at_rest(&themes, &backgrounds));
+            let active = if background {
+                &mut backgrounds
+            } else {
+                &mut themes
+            };
+            active.motion(7, (243.0, 400.0), 20, 40);
+            active.up(7, (243.0, 400.0), 21, 40, 284.0, 0.0);
+            assert!(!theme_prerender_at_rest(&themes, &backgrounds)); // released coast/settle
+            for _ in 0..1000 {
+                themes.tick(16, 40);
+                backgrounds.tick(16, 40);
+                if theme_prerender_at_rest(&themes, &backgrounds) {
+                    break;
+                }
+            }
+            assert!(theme_prerender_at_rest(&themes, &backgrounds));
+        }
+    }
 
     #[test]
     fn shade_upward_drag_engages_only_from_an_eligible_zone_past_slop() {

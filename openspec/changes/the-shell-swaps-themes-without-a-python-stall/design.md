@@ -166,8 +166,10 @@ Keep the bounded cache; derive one working set for both carousels from
 viewport-intersecting slices, with centered-first scheduling and controlled
 admission. Use the same set for requests and pending-work decisions, and
 protect its resident entries from obsolete in-flight replies. Retain the
-existing hard entry/memory bound rather than making the cache arbitrarily
-large. Offscreen layout and hit-testing remain unchanged. Also defer the
+existing 36-entry bound and add an explicit 24 MiB resident-pixel bound,
+rather than making the cache arbitrarily large. This bounds ready thumbnail
+surfaces, not total process RSS; the existing bounded worker queues and decode
+cache remain separate. Offscreen layout and hit-testing remain unchanged. Also defer the
 optional, synchronous candidate-overlay pre-render until neither carousel
 is dragging, coasting, or settling. This changes speculative work scheduling,
 not live rendering or the durable appearance protocol.
