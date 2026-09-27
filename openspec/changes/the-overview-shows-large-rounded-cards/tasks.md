@@ -144,7 +144,7 @@ they should just be cards"). See `design.md` decisions 3-5.
   `docs/evidence/card-shell/transparent-corners/`. This is QEMU proof only;
   final package `7pjmarasi…`, source `4b33dda9`, all three positive fixtures
   passed and the master negative control failed at the first corner.
-- [ ] F.3 On the reserved board, install the matching system, capture a
+- [x] F.3 On the reserved board, install the matching system, capture a
   native screenshot with wallpaper and live cards, and verify that the
   wallpaper shows through rounded corners. Keep E.1's real-finger motion
   acceptance separate. Operator: `python3 tools/console.py /dev/ttyACM0
@@ -152,3 +152,9 @@ they should just be cards"). See `design.md` decisions 3-5.
   /run/current-system/sw/bin/grim /run/shell/rounded-cards.png'` after
   coordinated activation (set the session's actual WAYLAND_DISPLAY if needed);
   record exact installed paths and the capture command with the evidence.
+
+  Physical installation proof: `docs/evidence/card-shell/transparent-corners/installed-system/README.md`.
+  The normal boot resolves to `11y992kp…`; all shell services are active and
+  the native screenshot shows wallpaper through selected and neighboring
+  card corners. Exact installed paths and image hash are committed. This
+  closes F.3 only; E.1's real-finger motion acceptance remains open.
