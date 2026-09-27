@@ -41,7 +41,7 @@ No frame-rate or physical-touch claim follows from these checks. Removing the
 remaining unqualified Material import also removed the shortcut dialog's
 binding-loop warnings; the final app explicitly reports the software backend.
 
-The local spec-site build passes (345 pages, 10,903,044 bytes, 34.21 seconds)
+The local spec-site build at `822ca8cb` passed (345 pages, 10,903,044 bytes, 34.21 seconds)
 and the work board discovers all seven captures. This local build is not
 publication evidence; master currently carries the proposal, while the tested
 implementation is checkpointed on `feature/omawrite`.
@@ -56,9 +56,14 @@ implementation is checkpointed on `feature/omawrite`.
 
 ## Remaining device gate
 
-Finish the RISC-V app and coherent-system builds, then reserve the board and
-trial scratch-file editing, Open/Save, the real keyboard surface, Overview and
-Home. The operator must have exclusive use: during the initial read-only check,
-the running system differed from the saved boot target, so device mutation was
-held pending coordination. No board app or persistent-system change has been
-made for Omawrite yet.
+Finish the RISC-V app and coherent-system builds, then trial scratch-file
+editing, Open/Save, the real keyboard surface, Overview and Home. The operator
+has reserved the board and rebooted into its saved baseline; the user authorized
+installation. Omawrite has not yet been installed on the board.
+
+The first cross build exposed two host-tool resolution issues: Omawrite needed
+an explicit native QML tools path, and the pinned nixpkgs Qt Declarative package
+pointed `Qt6ShaderToolsTools_DIR` at `Qt6ShaderTools`. The latter silently omitted
+Qt Quick. The package now supplies the correct ShaderToolsTools and QuickTools
+paths for cross compilation and requires `FEATURE_quick=ON`, so missing Quick
+support fails the dependency build instead of producing an unusable library.
