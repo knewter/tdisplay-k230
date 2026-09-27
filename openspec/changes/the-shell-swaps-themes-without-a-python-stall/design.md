@@ -323,4 +323,6 @@ is required. Retain the current selected marker until acknowledged commit;
 show Applying beside the background row, then Applied to Home or a visible
 failure. The catalogue's current theme/generation follows acknowledged
 activation so later taps do not mistake an old theme for the current one.
-Physical background/Home agreement remains UNVERIFIED until task 16.2.
+Physical background/Home agreement is recorded with injected touch and native
+captures in `docs/evidence/theme-picker/background-selection/README.md`.
+Real-finger acceptance remains UNVERIFIED for this correction.

@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.41s
+
+running 24 tests
+test theme_ui::tests::a_list_reply_queues_both_neighbours_of_a_mid_list_active_theme ... ok
+test theme_ui::tests::a_dwell_driven_request_takes_priority_over_the_neighbour_queue ... ok
+test theme_ui::tests::a_failed_activate_rolls_back_with_a_visible_error_and_clears_pending ... ok
+test theme_ui::tests::a_list_reply_queues_only_the_one_neighbour_at_each_end_of_the_list ... ok
+test theme_ui::tests::a_pending_confirm_pauses_every_warm_up_until_its_own_reply_lands ... ok
+test theme_ui::tests::a_single_theme_list_queues_no_neighbours ... ok
+test theme_ui::tests::activation_cannot_be_cancelled_mid_transaction ... ok
+test theme_ui::tests::applying_theme_index_ignores_a_pending_background_selection ... ok
+test theme_ui::tests::app_reload_status_reaches_the_message_on_a_successful_activate ... ok
+test theme_ui::tests::background_apply_uses_the_selected_background_generation_and_waits_for_commit ... ok
+test theme_ui::tests::leaving_the_list_page_resets_the_debounce_but_keeps_the_in_flight_slot_recognisable ... ok
+test theme_ui::tests::prepare_ahead_skips_the_already_active_theme_and_a_stray_reply_never_reaches_accept ... ok
+test theme_ui::tests::prepare_ahead_reply_records_the_known_generation ... ok
+test theme_ui::tests::prepare_ahead_waits_out_the_debounce_and_never_resends_for_the_same_index ... ok
+test theme_ui::tests::rapid_taps_across_themes_coalesce_onto_the_last_one ... ok
+test theme_ui::tests::record_known_generation_is_read_by_the_map_directly ... ok
+test theme_ui::tests::tap_background_on_the_already_selected_slice_is_a_silent_no_op ... ok
+test theme_ui::tests::tap_background_on_the_video_slice_sets_a_visible_error_and_sends_nothing ... ok
+test theme_ui::tests::tap_theme_on_a_cold_slice_previews_then_activates_and_switches_the_background_carousel ... ok
+test theme_ui::tests::tap_theme_on_the_already_active_slice_never_sends_an_activate ... ok
+test theme_ui::tests::the_neighbour_queue_drains_when_nothing_is_dwell_driven ... ok
+test theme_ui::tests::wallpaper_labels_are_readable_without_changing_opaque_selection ... ok
+test theme_ui::tests::still_preview_reuses_the_generations_background_cache_instead_of_redecoding ... ok
+test theme_ui::tests::still_preview_worker_returns_output_crop_outside_dispatch ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 0.01s
+

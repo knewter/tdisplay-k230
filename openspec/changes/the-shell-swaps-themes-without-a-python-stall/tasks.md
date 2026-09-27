@@ -1216,9 +1216,17 @@ complete stack qualification remain open. This does not close 15.2/15.3.
   Verify with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_ui`
   and `python3 -m unittest tests.test_theme_catalog`. Correct the QEMU fixture
   so different background choices have different generations.
-- [ ] 16.2 Build the coherent shell system, then on the reserved board tap
+- [x] 16.2 Build the coherent shell system, then on the reserved board tap
   a different still background through the picker. Capture picker feedback
   and Home before/after; verify the selected generation and reopened picker
   agree. Record injected input separately from real-finger acceptance.
 - [ ] 16.3 Land and deploy the qualified fix, publish reviewed evidence and
   check CI/site publication. Keep broader profiling and gesture gates open.
+
+Task 16.1/16.2 proof: 24 Rust and 21 Python checks passed; the corrected
+paired Sway/Rust QEMU fixture passed. The physical board applied both still
+backgrounds through injected picker taps; native Home images and the
+reopened picker agree. A shell/helper restart retained the selection.
+`docs/evidence/theme-picker/background-selection/README.md` records reviewed
+captures, generation identities and the successful persistent installation.
+Real-finger acceptance and a normal reboot of this image are not claimed.

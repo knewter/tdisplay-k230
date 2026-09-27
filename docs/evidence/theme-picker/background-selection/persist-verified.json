@@ -1,0 +1,14 @@
+{
+  "system": "/nix/store/1qx2c46qbfyb91cxdxvrxnqwfm82gl06-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "97785ec7278821829421abc204f3ab5251d5b909",
+  "verified": true,
+  "checks": [
+    "unit success and exit 0",
+    "durable SUCCESS record",
+    "four candidate boot hashes",
+    "four unchanged firmware/selectors",
+    "system profile",
+    "sync"
+  ],
+  "requires_normal_reboot": true
+}

@@ -1,0 +1,16 @@
+{
+  "current_system": "/nix/store/1qx2c46qbfyb91cxdxvrxnqwfm82gl06-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "installed_profile": "/nix/store/1qx2c46qbfyb91cxdxvrxnqwfm82gl06-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "booted_system": "/nix/store/7hhr1fp722cq147svn5ni67ar1i66mys-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "rust_executable": "/nix/store/32h8rhx71c9ccah9n5yhz4f8khq3i2px-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "services_active": [
+    "shell",
+    "shell-ui",
+    "theme-helper",
+    "shell-session-bus",
+    "shell-notifications"
+  ],
+  "failed_units": 0,
+  "restart_selection_check": "passed",
+  "reboot_performed": false
+}
