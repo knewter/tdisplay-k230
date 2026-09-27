@@ -10,6 +10,7 @@ pub mod home_screen;
 pub mod home_state;
 pub mod icon;
 pub mod navigation;
+pub mod pipewire_ipc;
 pub mod protocol;
 pub mod render;
 pub mod service_data;
@@ -24,6 +25,7 @@ pub mod theme_ui;
 pub mod video_status;
 pub mod video_visibility;
 pub mod video_wallpaper;
+pub mod volume;
 pub mod wifi_settings;
 pub mod wifi_ui;
 

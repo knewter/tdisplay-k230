@@ -10,12 +10,14 @@ use crate::{
         self, list_top, panel_top, search_field_rect, search_keyboard_top, tile_rect, COLUMNS,
         GRID_BOTTOM_INSET, ROW_HEIGHT, SEARCH_KEYBOARD_HEIGHT,
     },
+    pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
-        SHADE_SLIDER_H, SHADE_SLIDER_TOP,
+        SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
     slider,
+    volume::{self, Hud},
     splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
@@ -301,7 +303,11 @@ fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb
 pub const SETTINGS_ROW_FIRST_Y: f64 = 162.0;
 pub const SETTINGS_ROW_H: f64 = 110.0;
 pub const SETTINGS_ROW_GAP: f64 = 16.0;
-pub const SETTINGS_ROW_COUNT: u32 = 4;
+/// Wi-Fi, Brightness, Volume, Keyboard, Motion -- Volume (row 2, task:
+/// "in Settings") sits directly after Brightness; Keyboard/Motion shifted
+/// down one row each to make room, same rhythm cascade `settings_layout`'s
+/// own doc already describes.
+pub const SETTINGS_ROW_COUNT: u32 = 5;
 pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
 
 pub fn settings_row_y(index: u32) -> f64 {
@@ -547,23 +553,22 @@ fn paint_sun(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64) {
 /// percent value -- callers already gate this on `ControlState::
 /// Writable`, matching the row's own pre-slider behavior of showing
 /// nothing extra when unavailable.
-fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control: &Control) {
-    let Some(ControlValue::Percent(percent)) = &control.value else {
-        return;
-    };
-    let percent = *percent;
+/// The track/thumb every slider in this shell shares -- factored out of
+/// `paint_slider` (task: "reuse one component for both") so the volume
+/// slider (`paint_volume_slider`, a different end-glyph but the identical
+/// track math and touch geometry `slider::track_bounds`/`x_at_value`
+/// already define) can never visually drift from the brightness one.
+fn paint_slider_track(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8) {
     let (left, right) = slider::track_bounds(w);
     let track_h = 14.0;
     let thumb_r = 17.0;
     let thumb_x = slider::x_at_value(percent, left, right);
-    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
-    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
     // Inactive track, full width.
     rounded(cr, left, center_y - track_h / 2.0, right - left, track_h, track_h / 2.0);
     color(cr, style.muted, 0.35);
     let _ = cr.fill();
     // Active (thumb-ward) portion. A minimum width keeps the rounded cap
-    // visible even at `slider::MIN_PERCENT`, instead of a sliver.
+    // visible even at the slider's own floor, instead of a sliver.
     let active_w = (thumb_x - left).max(track_h);
     rounded(cr, left, center_y - track_h / 2.0, active_w, track_h, track_h / 2.0);
     color(cr, style.accent, 1.0);
@@ -576,6 +581,75 @@ fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control
     cr.arc(thumb_x, center_y, thumb_r * 0.4, 0.0, std::f64::consts::TAU);
     color(cr, style.text, 0.9);
     let _ = cr.fill();
+}
+
+fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control: &Control) {
+    let Some(ControlValue::Percent(percent)) = &control.value else {
+        return;
+    };
+    let percent = *percent;
+    let (left, right) = slider::track_bounds(w);
+    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
+    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    paint_slider_track(cr, style, w, center_y, percent);
+}
+
+/// A cheap vector speaker glyph for the volume slider's own left end,
+/// which doubles as the mute toggle (task: "a speaker icon that toggles
+/// mute when tapped", `service_ui::volume_icon_tap_zone` owns the hit
+/// test for this same glyph's position). A filled speaker-cone
+/// polygon plus two short arcs (sound waves) when unmuted; muted swaps
+/// the waves for a single diagonal slash through the cone, the same
+/// "struck-through" convention Android's own muted speaker glyph uses.
+/// No new image asset, same spirit as `paint_sun`.
+fn paint_speaker(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64, muted: bool) {
+    color(cr, rgb, alpha);
+    let body_w = r * 0.6;
+    let body_h = r * 0.85;
+    cr.move_to(cx - r, cy - body_h * 0.35);
+    cr.line_to(cx - r + body_w, cy - body_h * 0.35);
+    cr.line_to(cx - r + body_w + r * 0.55, cy - body_h);
+    cr.line_to(cx - r + body_w + r * 0.55, cy + body_h);
+    cr.line_to(cx - r + body_w, cy + body_h * 0.35);
+    cr.line_to(cx - r, cy + body_h * 0.35);
+    cr.close_path();
+    let _ = cr.fill();
+    cr.set_line_width(2.0);
+    let cone_tip_x = cx - r + body_w + r * 0.55;
+    if muted {
+        cr.move_to(cone_tip_x - r * 0.1, cy - r * 0.7);
+        cr.line_to(cone_tip_x + r * 0.7, cy + r * 0.7);
+        color(cr, rgb, alpha);
+        let _ = cr.stroke();
+    } else {
+        for radius in [r * 0.5, r * 0.85] {
+            cr.new_sub_path();
+            cr.arc(cone_tip_x, cy, radius, -0.6, 0.6);
+            color(cr, rgb, alpha);
+            let _ = cr.stroke();
+        }
+    }
+}
+
+/// The volume slider: `paint_slider_track` shared with brightness, plus a
+/// speaker glyph (the mute toggle) at the track's left end and nothing at
+/// the right end -- Android's own volume slider has no second icon.
+/// `percent` is exactly what should be painted right now, already `0`
+/// while muted (`volume::VolumeState::displayed_percent`'s job, not this
+/// function's -- this never re-derives mute from the percent itself).
+fn paint_volume_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8, muted: bool) {
+    let (left, _right) = slider::track_bounds(w);
+    let icon_rgb = if muted { style.muted } else { style.accent };
+    paint_speaker(cr, left - 30.0, center_y, 15.0, icon_rgb, 1.0, muted);
+    paint_slider_track(cr, style, w, center_y, percent);
+}
+
+/// The graph's current default sink, if the PipeWire monitor has reported
+/// one yet -- the single source both the Shade and Settings volume rows
+/// paint from, and what `main.rs`'s touch dispatch targets a slider write
+/// against.
+fn default_sink(audio: Option<&GraphSnapshot>) -> Option<&crate::pipewire_ipc::Sink> {
+    audio?.sinks.iter().find(|sink| sink.is_default)
 }
 
 /// The decode target size for a cached thumbnail variant under a given
@@ -2079,6 +2153,22 @@ fn scene(
                     );
                 }
             }
+            // The volume slider (task: "volume slider in the shade under
+            // the brightness slider"), directly beneath it -- only drawn
+            // once the PipeWire monitor has reported a default sink,
+            // exactly like brightness's own writable gate above;
+            // `service_ui::volume_slider_band` mirrors this same
+            // availability gate for touch dispatch.
+            if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
+                paint_volume_slider(
+                    cr,
+                    style,
+                    w,
+                    SHADE_VOLUME_TOP + SHADE_VOLUME_H / 2.0,
+                    volume::linear_to_percent(sink.linear_volume),
+                    sink.muted,
+                );
+            }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
             // contentless "No active preview" sitting directly above a full
@@ -2325,16 +2415,18 @@ fn scene(
             );
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
-                for (index, (name, control)) in [
-                    ("Wi-Fi ›", &settings.network),
-                    ("Brightness", &settings.brightness),
-                    ("Keyboard", &settings.keyboard),
-                    ("Motion", &settings.motion),
-                ]
-                .into_iter()
-                .enumerate()
-                {
-                    let y = settings_row_y(index as u32);
+                // Row numbers are explicit, not a plain `enumerate()`,
+                // because row 2 (Volume) is painted separately below --
+                // its data comes from the PipeWire monitor
+                // (`GraphSnapshot`), not `k230-settings`, so there is no
+                // `Control` to hand this generic loop.
+                for (row, name, control) in [
+                    (0u32, "Wi-Fi ›", &settings.network),
+                    (1, "Brightness", &settings.brightness),
+                    (3, "Keyboard", &settings.keyboard),
+                    (4, "Motion", &settings.motion),
+                ] {
+                    let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.accent);
                     text(
@@ -2377,6 +2469,45 @@ fn scene(
                     // `service_ui.rs` mirrors this same row rhythm), well
                     // past the "at least about 56 px tall" ask.
                     paint_slider(cr, style, w, settings_row_y(1) + 86.0, &settings.brightness);
+                }
+                // Volume row (task: "in Settings"): row 2, directly after
+                // Brightness. The device name doubles as the entry point
+                // into the device picker -- one picker UI (the HUD's own
+                // expanded panel), not two (design.md's "one picker, two
+                // entry points").
+                let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
+                service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
+                text(cr, "Volume", 42.0, volume_y + 15.0, w - 84.0, 17.0, style.accent);
+                if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
+                    let percent = volume::linear_to_percent(sink.linear_volume);
+                    let label = if sink.muted {
+                        "Muted".to_string()
+                    } else {
+                        format!("{percent}%")
+                    };
+                    text(cr, &label, 42.0, volume_y + 43.0, w - 90.0, 19.0, style.text);
+                    text(
+                        cr,
+                        &format!("{} · tap to change output", sink.description),
+                        42.0,
+                        volume_y + 76.0,
+                        w - 90.0,
+                        14.0,
+                        style.muted,
+                    );
+                    paint_volume_slider(cr, style, w, volume_y + 86.0, percent, sink.muted);
+                } else {
+                    text(
+                        cr,
+                        services
+                            .and_then(|view| view.audio_error.as_deref())
+                            .unwrap_or("No audio device found"),
+                        42.0,
+                        volume_y + 43.0,
+                        w - 90.0,
+                        19.0,
+                        style.muted,
+                    );
                 }
             } else {
                 text(
@@ -3474,11 +3605,253 @@ impl RendererCache {
         Ok(())
     }
 
+    /// Paints only the volume HUD onto an otherwise fully transparent
+    /// canvas -- used instead of the ordinary route-based `draw` whenever
+    /// nothing else (no open Drawer/Shade/Settings sheet) needs this
+    /// shared overlay surface mapped at all, except to show the HUD (task:
+    /// "render the HUD only while visible"). No scene cache, unlike
+    /// `draw`'s own `static_pixels`: the HUD is small and shown rarely
+    /// enough that a fresh paint on every call is cheap. Paints nothing
+    /// (a fully transparent canvas, so whatever is behind this surface --
+    /// Home, or a focused app -- shows through untouched) whenever the HUD
+    /// isn't visible or no default sink has been reported yet.
+    /// Paints only the HUD onto an otherwise fully transparent canvas of
+    /// its own -- used by anything that wants the HUD isolated on a
+    /// dedicated surface. `draw()`'s own live path instead calls
+    /// `paint_hud_overlay` directly on its existing overlay context (see
+    /// that function's own doc for why: a second full-screen surface's
+    /// buffer pool/frame-callback lifecycle was judged not worth
+    /// duplicating when the existing overlay layer can host the same
+    /// pixels).
+    pub fn draw_hud(
+        &mut self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        hud: &Hud,
+        now_ms: u64,
+    ) -> Result<(), String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid HUD canvas geometry")?;
+        if canvas.len() != size {
+            return Err("invalid HUD canvas length".into());
+        }
+        canvas.fill(0);
+        if !hud.is_visible(now_ms) {
+            return Ok(());
+        }
+        let surface = unsafe {
+            ImageSurface::create_for_data_unsafe(
+                canvas.as_mut_ptr(),
+                Format::ARgb32,
+                width as i32,
+                height as i32,
+                (width * 4) as i32,
+            )
+        }
+        .map_err(|e| e.to_string())?;
+        let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+        let audio = self.services.as_ref().and_then(|view| view.audio.as_ref());
+        Self::paint_hud_overlay(
+            &cr,
+            self.theme.as_ref(),
+            &mut self.icons,
+            audio,
+            hud,
+            now_ms,
+            f64::from(width),
+            f64::from(height),
+        );
+        drop(cr);
+        surface.flush();
+        Ok(())
+    }
+
+    /// The HUD's own pixels (backdrop pill, speaker glyph, fill bar,
+    /// expand affordance, and -- expanded -- one row per stream/sink),
+    /// painted directly onto `cr`. Takes every input explicitly (no
+    /// `&mut self`) for the same reason `paint_hud_row` does: `draw()`'s
+    /// own live call site already holds other borrows of `self`
+    /// (`self.service_view`/`self.hud`) it cannot also lend as `&mut
+    /// self` through a method call. Does nothing (leaves whatever `cr`
+    /// already had untouched) when `hud` is not currently visible or no
+    /// default sink has been reported yet -- the "render the HUD only
+    /// while visible" cost rule, enforced here rather than by the
+    /// caller, so every call site gets it for free.
+    #[allow(clippy::too_many_arguments)]
+    fn paint_hud_overlay(
+        cr: &Context,
+        theme: Option<&AppearanceSnapshot>,
+        icons: &mut IconCache,
+        audio: Option<&GraphSnapshot>,
+        hud: &Hud,
+        now_ms: u64,
+        width: f64,
+        height: f64,
+    ) {
+        if !hud.is_visible(now_ms) {
+            return;
+        }
+        let Some(sink) = default_sink(audio) else {
+            return;
+        };
+        let percent = volume::linear_to_percent(sink.linear_volume);
+        let muted = sink.muted;
+        let expanded_rows = if hud.is_expanded() {
+            audio.map_or(0, GraphSnapshot::expanded_row_count)
+        } else {
+            0
+        };
+        let geometry = volume::hud_geometry(width, height, hud.position_fraction(), expanded_rows);
+        let style = visual_style(theme, "controls");
+        // Backdrop: a rounded pill/card, never fully opaque so it still
+        // reads as an overlay rather than a full sheet.
+        rounded(
+            cr,
+            geometry.left,
+            geometry.top,
+            geometry.width,
+            geometry.height,
+            (geometry.width / 2.0).min(28.0),
+        );
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 0.92);
+        let _ = cr.fill();
+        let center_x = geometry.left + geometry.width / 2.0;
+        let icon_rgb = if muted { style.muted } else { style.accent };
+        paint_speaker(cr, center_x, geometry.top + 30.0, 16.0, icon_rgb, 1.0, muted);
+        // The vertical fill bar: the same inactive/active-track idea
+        // `paint_slider_track` uses, rotated, at a scale that fits the
+        // pill rather than the full panel width.
+        let bar_top = geometry.top + 60.0;
+        let bar_bottom = geometry.top + geometry.collapsed_h - 26.0;
+        let bar_h = (bar_bottom - bar_top).max(1.0);
+        rounded(cr, center_x - 6.0, bar_top, 12.0, bar_h, 6.0);
+        color(cr, style.muted, 0.35);
+        let _ = cr.fill();
+        let fill_h = bar_h * f64::from(percent) / 100.0;
+        rounded(cr, center_x - 6.0, bar_bottom - fill_h, 12.0, fill_h, 6.0);
+        color(cr, style.accent, 1.0);
+        let _ = cr.fill();
+        // The "..." expand affordance, always at the same offset from the
+        // pill's own top whether or not it is currently expanded.
+        text(
+            cr,
+            "\u{2026}",
+            geometry.left,
+            geometry.top + geometry.collapsed_h - 22.0,
+            geometry.width,
+            16.0,
+            style.muted,
+        );
+        if expanded_rows > 0 {
+            if let Some(audio) = audio {
+                for index in 0..expanded_rows {
+                    let Some(row) = audio.expanded_row(index) else {
+                        continue;
+                    };
+                    let row_top = geometry.top + geometry.collapsed_h + index as f64 * volume::HUD_ROW_H;
+                    Self::paint_hud_row(icons, cr, style, &geometry, row_top, row);
+                }
+            }
+        }
+    }
+
+    /// One row of the HUD's expanded panel: a stream gets its own name/
+    /// icon and a mini horizontal volume slider; a sink gets its
+    /// description and a filled/hollow dot marking whether it is the
+    /// current default (the output device picker, task: "in the expanded
+    /// panel"). A free function, not a method, so its `&mut IconCache`
+    /// borrow stays disjoint from the `self.services`-derived `audio`
+    /// borrow its caller (`draw_hud`) is still holding across the loop.
+    fn paint_hud_row(
+        icons: &mut IconCache,
+        cr: &Context,
+        style: VisualStyle,
+        geometry: &volume::HudGeometry,
+        row_top: f64,
+        row: crate::pipewire_ipc::ExpandedRow,
+    ) {
+        let left = geometry.left + 12.0;
+        let width = geometry.width - 24.0;
+        match row {
+            crate::pipewire_ipc::ExpandedRow::Stream(stream) => {
+                let painted = stream
+                    .app_icon
+                    .as_deref()
+                    .is_some_and(|icon| icons.paint(cr, icon, 28, left, row_top + 6.0));
+                if !painted {
+                    rounded(cr, left, row_top + 6.0, 28.0, 28.0, 14.0);
+                    color(cr, style.muted, 0.4);
+                    let _ = cr.fill();
+                    text(
+                        cr,
+                        &stream
+                            .app_name
+                            .chars()
+                            .next()
+                            .unwrap_or('?')
+                            .to_uppercase()
+                            .to_string(),
+                        left + 7.0,
+                        row_top + 10.0,
+                        18.0,
+                        16.0,
+                        style.text,
+                    );
+                }
+                text(cr, &stream.app_name, left + 36.0, row_top + 8.0, width - 36.0, 15.0, style.text);
+                let percent = volume::linear_to_percent(stream.linear_volume);
+                let track_left = left + 36.0;
+                let track_right = geometry.left + geometry.width - 12.0;
+                let track_w = (track_right - track_left).max(1.0);
+                let track_y = row_top + 38.0;
+                rounded(cr, track_left, track_y, track_w, 8.0, 4.0);
+                color(cr, style.muted, 0.35);
+                let _ = cr.fill();
+                let fill_w = track_w * f64::from(percent) / 100.0;
+                rounded(cr, track_left, track_y, fill_w.max(8.0), 8.0, 4.0);
+                color(cr, if stream.muted { style.muted } else { style.accent }, 1.0);
+                let _ = cr.fill();
+            }
+            crate::pipewire_ipc::ExpandedRow::Sink(sink) => {
+                text(cr, &sink.description, left, row_top + 8.0, width - 28.0, 15.0, style.text);
+                let dot_x = geometry.left + geometry.width - 22.0;
+                let dot_y = row_top + 16.0;
+                cr.new_sub_path();
+                cr.arc(dot_x, dot_y, 7.0, 0.0, std::f64::consts::TAU);
+                color(cr, style.accent, if sink.is_default { 1.0 } else { 0.25 });
+                let _ = cr.fill();
+            }
+        }
+    }
+
+    /// Convenience wrapper over [`Self::draw_with_hud`] for every call
+    /// site (most of this module's own pixel-sampled tests) that has no
+    /// opinion about the volume HUD at all: a freshly-constructed `Hud`
+    /// is never visible (`Hud::is_visible` needs a prior `show()`), so
+    /// this paints exactly what `draw_with_hud` would with the HUD
+    /// simply not shown -- zero behavior difference for any caller that
+    /// never had a HUD concept to begin with.
     pub fn draw(
         &mut self,
         canvas: &mut [u8],
         params: RenderParams,
         apps: &[AppEntry],
+    ) -> Result<(), String> {
+        self.draw_with_hud(canvas, params, apps, &Hud::default(), 0)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_with_hud(
+        &mut self,
+        canvas: &mut [u8],
+        params: RenderParams,
+        apps: &[AppEntry],
+        hud: &Hud,
+        hud_now_ms: u64,
     ) -> Result<(), String> {
         let _profile = crate::runtime_trace::Span::new("render_total");
         let RenderParams {
@@ -3561,6 +3934,51 @@ impl RendererCache {
         // `paint_theme_chooser`'s own doc for why an *adopted* pre-render
         // (the one case that skips a fresh rebuild) is still correct at
         // the exact moment it is shown.
+        //
+        // The volume HUD paints last, directly onto this same canvas/
+        // context, on top of whatever route this call just composited --
+        // it is not cached into `static_pixels` (unlike the rest of this
+        // method's own content) because it is small, shown rarely, and
+        // its own visibility/position/expand state changes far more
+        // often than a full scene rebuild should be triggered for.
+        // `paint_hud_overlay` itself is a no-op (zero Cairo calls) the
+        // instant `hud.is_visible` reads false, so an idle HUD costs
+        // nothing here beyond that one check.
+        //
+        // Known gap, not yet closed: this only runs while this overlay
+        // layer surface is already mapped (a Drawer/Shade/Settings sheet
+        // is open) -- `main.rs`'s own touch dispatch already treats the
+        // HUD as route-independent (`hud_touch_down` is checked before
+        // any route-specific branch), but nothing yet forces this layer
+        // surface to exist purely because the HUD wants to show while
+        // the Home screen alone is visible with nothing else open. See
+        // `openspec/changes/the-handheld-controls-volume/tasks.md`.
+        if hud.is_visible(hud_now_ms) {
+            let surface = unsafe {
+                ImageSurface::create_for_data_unsafe(
+                    canvas.as_mut_ptr(),
+                    Format::ARgb32,
+                    width as i32,
+                    height as i32,
+                    row_bytes as i32,
+                )
+            }
+            .map_err(|e| e.to_string())?;
+            let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+            let audio = self.services.as_ref().and_then(|view| view.audio.as_ref());
+            Self::paint_hud_overlay(
+                &cr,
+                self.theme.as_ref(),
+                &mut self.icons,
+                audio,
+                hud,
+                hud_now_ms,
+                f64::from(width),
+                f64::from(height),
+            );
+            drop(cr);
+            surface.flush();
+        }
         Ok(())
     }
 
@@ -3840,19 +4258,23 @@ mod layout_tests {
 
     #[test]
     fn settings_layout_cascades_from_the_row_rhythm() {
+        // +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from the pre-volume-row
+        // values: the Volume row (task: "in Settings") added a fifth
+        // settings row, cascading every value below it down by one row's
+        // rhythm, same as `NOTIFICATION_TOP`'s own shift for the shade.
         let layout = settings_layout();
-        assert_eq!(layout.power_heading_y, 672.0);
-        assert_eq!(layout.reboot_y, 700.0);
-        assert_eq!(layout.poweroff_y, 786.0);
-        assert_eq!(layout.poweroff_bottom, 856.0);
+        assert_eq!(layout.power_heading_y, 798.0);
+        assert_eq!(layout.reboot_y, 826.0);
+        assert_eq!(layout.poweroff_y, 912.0);
+        assert_eq!(layout.poweroff_bottom, 982.0);
     }
 
     #[test]
     fn settings_confirm_layout_follows_whatever_precedes_it() {
-        let confirm = settings_confirm_layout(856.0);
-        assert_eq!(confirm.label_y, 870.0);
-        assert_eq!(confirm.card_y, 898.0);
-        assert_eq!(confirm.bottom, 1008.0);
+        let confirm = settings_confirm_layout(982.0);
+        assert_eq!(confirm.label_y, 996.0);
+        assert_eq!(confirm.card_y, 1024.0);
+        assert_eq!(confirm.bottom, 1134.0);
     }
 
     #[test]
@@ -3916,6 +4338,7 @@ mod tests {
         Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
         Priority, SettingsSnapshot,
     };
+    use crate::pipewire_ipc::{Sink, Stream};
     use crate::service_ui::NotificationSwipe;
     use crate::theme_catalog::{
         ActiveTheme, BackgroundChoice, Compatibility, ThemeEntry, ThemeList, ThemeOrigin,
@@ -4153,7 +4576,8 @@ mod tests {
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
-                motion: unavailable,
+                motion: unavailable.clone(),
+                volume: unavailable,
             }),
             notifications: Some(NotificationSnapshot {
                 count: 1,
@@ -4993,7 +5417,8 @@ mod tests {
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
-                motion: unavailable,
+                motion: unavailable.clone(),
+                volume: unavailable,
             }),
             ..ServiceView::default()
         };
@@ -5041,11 +5466,141 @@ mod tests {
         renderer.set_services(view);
         let mut failed = vec![0; normal.len()];
         renderer.draw(&mut failed, params, &[]).unwrap();
-        // Rows shifted +76 along with `NOTIFICATION_TOP` itself (task:
-        // "brightness should be a slider" -- room for the new header
-        // slider pushed the whole list down).
-        let region = (431 * 568 * 4)..(451 * 568 * 4);
+        // Rows shifted +76 again along with `NOTIFICATION_TOP` itself
+        // (task: "volume slider in the shade under the brightness
+        // slider" -- room for the second header slider pushed the whole
+        // list down once more, from 342 to 418) -- 431+76=507.
+        let region = (507 * 568 * 4)..(527 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    fn audio_view_with_one_sink(percent: u8, muted: bool) -> ServiceView {
+        ServiceView {
+            audio: Some(GraphSnapshot {
+                sinks: vec![Sink {
+                    id: 50,
+                    name: "alsa_output.inno".into(),
+                    description: "K230 Inno codec line-out".into(),
+                    linear_volume: volume::percent_to_linear(percent),
+                    muted,
+                    is_default: true,
+                }],
+                streams: vec![Stream {
+                    id: 78,
+                    app_name: "k230 video".into(),
+                    app_icon: Some("multimedia-player".into()),
+                    linear_volume: 1.0,
+                    muted: false,
+                }],
+            }),
+            ..ServiceView::default()
+        }
+    }
+
+    #[test]
+    fn draw_with_hud_composites_the_pill_on_top_of_the_live_settings_scene() {
+        // `draw_with_hud` (the real live-canvas path `main.rs` calls,
+        // unlike `draw_hud`'s own separate/isolated canvas above) must
+        // still show the pill on top of whatever route is already
+        // painted there -- proving the HUD reaches the one canvas that
+        // is actually ever attached to a Wayland surface, not just its
+        // own standalone test surface.
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut without_hud = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw(&mut without_hud, SETTINGS_PARAMS, &[])
+            .unwrap();
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut with_hud = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_with_hud(&mut with_hud, SETTINGS_PARAMS, &[], &hud, 0)
+            .unwrap();
+        assert_ne!(without_hud, with_hud, "the HUD did not reach the live canvas");
+        // A pixel squarely inside the collapsed pill's own backdrop
+        // (`volume::hud_geometry(568.0, 1232.0, 0.5, 0)`'s own left/top)
+        // must actually have changed, not just some unrelated pixel
+        // elsewhere on the frame.
+        let geometry = volume::hud_geometry(568.0, 1232.0, hud.position_fraction(), 0);
+        let x = (geometry.left + 10.0) as usize;
+        let y = (geometry.top + 10.0) as usize;
+        let index = (y * 568 + x) * 4;
+        assert_ne!(&without_hud[index..index + 4], &with_hud[index..index + 4]);
+    }
+
+    #[test]
+    fn draw_hud_paints_nothing_while_hidden_and_the_pill_once_shown() {
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut hidden = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut hidden, 568, 1232, &volume::Hud::new(), 0)
+            .unwrap();
+        assert!(hidden.iter().all(|&byte| byte == 0));
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut shown = vec![0u8; 568 * 1232 * 4];
+        renderer.draw_hud(&mut shown, 568, 1232, &hud, 0).unwrap();
+        assert!(shown.iter().any(|&byte| byte != 0));
+    }
+
+    #[test]
+    fn draw_hud_expanded_panel_is_taller_and_wider_than_the_collapsed_pill() {
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut collapsed_hud = volume::Hud::new();
+        collapsed_hud.show(0);
+        let mut collapsed = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut collapsed, 568, 1232, &collapsed_hud, 0)
+            .unwrap();
+        let mut expanded_hud = volume::Hud::new();
+        expanded_hud.toggle_expand(0);
+        let mut expanded = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut expanded, 568, 1232, &expanded_hud, 0)
+            .unwrap();
+        // Derived from the same geometry function `draw_hud` itself calls
+        // (one sink, zero streams -- exactly one expanded row), not a
+        // magic screen coordinate: `position_fraction`'s default centers
+        // the pill vertically, so a fixed probe point picked without this
+        // would land outside both panels' bounds instead of inside them.
+        let collapsed_geometry =
+            volume::hud_geometry(568.0, 1232.0, collapsed_hud.position_fraction(), 0);
+        let expanded_geometry =
+            volume::hud_geometry(568.0, 1232.0, expanded_hud.position_fraction(), 1);
+        assert!(expanded_geometry.width > collapsed_geometry.width);
+        assert!(expanded_geometry.height > collapsed_geometry.height);
+        // A column just inside the expanded panel's own left edge, at a
+        // row inside its expanded-only body (below the collapsed pill's
+        // own height): the collapsed pill never reaches this far left, so
+        // this point is untouched when collapsed but painted once
+        // expanded.
+        let probe_x = (expanded_geometry.left + 10.0) as usize;
+        let probe_y = (expanded_geometry.top + expanded_geometry.collapsed_h + 10.0) as usize;
+        let index = (probe_y * 568 + probe_x) * 4;
+        assert_eq!(&collapsed[index..index + 4], &[0, 0, 0, 0]);
+        assert_ne!(&expanded[index..index + 4], &[0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn draw_hud_reflects_mute_state_in_different_pixels_than_unmuted() {
+        let mut muted_renderer = RendererCache::default();
+        muted_renderer.set_services(audio_view_with_one_sink(60, true));
+        let mut unmuted_renderer = RendererCache::default();
+        unmuted_renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut muted_pixels = vec![0u8; 568 * 1232 * 4];
+        muted_renderer
+            .draw_hud(&mut muted_pixels, 568, 1232, &hud, 0)
+            .unwrap();
+        let mut unmuted_pixels = vec![0u8; 568 * 1232 * 4];
+        unmuted_renderer
+            .draw_hud(&mut unmuted_pixels, 568, 1232, &hud, 0)
+            .unwrap();
+        assert_ne!(muted_pixels, unmuted_pixels);
     }
 
     #[test]

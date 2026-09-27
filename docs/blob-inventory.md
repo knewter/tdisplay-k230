@@ -1440,6 +1440,9 @@ DATA 2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c docs/evide
 DATA 76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
 DATA e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157 docs/evidence/brightness-slider/shade-synced-45pct.png
 DATA 862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be docs/evidence/power-key/host/power-sheet-host.png
+DATA 9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d docs/evidence/volume/shade-both-sliders.png
+DATA 6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a docs/evidence/volume/hud-collapsed.png
+DATA 1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401 docs/evidence/volume/hud-expanded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2252,3 +2255,19 @@ evidence. See `docs/evidence/power-key/host/README.md`.
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/power-key/host/power-sheet-host.png` | 32234 | DATA | `862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be` |
+
+### Volume slider and HUD on the headless compositor
+
+Host QEMU capture (same harness family as the brightness slider's own,
+`tests/volume_hud_qemu.py`): a synthetic `pw-dump`/`pw-cli` fixture pair
+standing in for a real PipeWire session (`K230_PW_DUMP`/`K230_PW_CLI`,
+the same environment-variable substitution `K230_SETTINGS` already uses),
+a real cross-built Rust client and patched Sway under
+`qemu-riscv64-static`. No board, no real PipeWire daemon. See
+`docs/evidence/volume/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
+| `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
+| `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |

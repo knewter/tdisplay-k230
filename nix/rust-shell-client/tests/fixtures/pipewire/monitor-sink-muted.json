@@ -1,0 +1,21 @@
+[
+  {
+    "id": 50,
+    "type": "PipeWire:Interface:Node",
+    "version": 3,
+    "info": {
+      "max-input-ports": 2,
+      "max-output-ports": 0,
+      "props": {
+        "media.class": "Audio/Sink",
+        "node.name": "alsa_output.platform-canaan_k230_audio.k230-i2s-inno",
+        "node.description": "K230 Inno codec line-out"
+      },
+      "params": {
+        "Props": [
+          { "volume": 1.0, "mute": true, "channelVolumes": [0.512, 0.512], "channelMap": ["FL", "FR"] }
+        ]
+      }
+    }
+  }
+]

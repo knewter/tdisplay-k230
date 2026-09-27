@@ -4,6 +4,7 @@
 use crate::{
     catalog::AppEntry,
     navigation::{self, list_top, GRID_BOTTOM_INSET},
+    pipewire_ipc::GraphSnapshot,
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
         POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
@@ -12,6 +13,7 @@ use crate::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
         SettingsSnapshot,
     },
+    slider,
     wifi_ui::WifiPublic,
     Route,
 };
@@ -39,6 +41,19 @@ pub struct ServiceView {
     pub wifi: Option<WifiPublic>,
     /// Set only by an image that includes the compositor keyboard gestures.
     pub keyboard_gesture_hint: bool,
+    /// The PipeWire graph's own state (default sink, other sinks, and
+    /// per-app streams), fed by `pipewire_ipc::spawn_monitor`'s background
+    /// reader -- `None` until the first dump/monitor snapshot arrives, or
+    /// if the monitor child never started/died (`audio_error` explains
+    /// which). Unlike `settings`, this is never requested/refreshed by a
+    /// `ServiceRequest` -- the monitor is already event-driven and always
+    /// current, so there is nothing for a request/reply round trip to add.
+    pub audio: Option<GraphSnapshot>,
+    /// Set once the monitor child could not be spawned or exited, so the
+    /// volume row/HUD can show "unavailable" instead of silently drawing
+    /// nothing (mirrors `settings_error`'s own role for the k230-settings
+    /// path).
+    pub audio_error: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -167,13 +182,26 @@ pub enum PanelIntent {
 /// gap, starting clear of the "Dismiss all" tap zone above it) -- see the
 /// Shade paint arm in `render.rs` for the shifted preview-card literals
 /// this cascades to.
-pub const NOTIFICATION_TOP: f64 = 342.0;
+/// A second slider (task: "volume slider in the shade under the
+/// brightness slider") pushed everything below it down by another 76px
+/// (`SHADE_SLIDER_H` + a 20px gap, the exact rhythm brightness's own
+/// slider already established) -- from `342.0` to `418.0`.
+pub const NOTIFICATION_TOP: f64 = 418.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
 /// The Shade's own slider band -- starts below the "Dismiss all" tap
 /// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
 /// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
 pub const SHADE_SLIDER_TOP: f64 = 190.0;
 pub const SHADE_SLIDER_H: f64 = 56.0;
+/// The volume slider's own band, directly under the brightness slider
+/// with the same 20px gap `NOTIFICATION_TOP`'s own shift already
+/// accounts for.
+pub const SHADE_VOLUME_TOP: f64 = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 20.0;
+pub const SHADE_VOLUME_H: f64 = 56.0;
+/// The Settings row index the volume slider paints/hit-tests at --
+/// directly after Brightness (row 1), before Keyboard/Motion, which both
+/// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
+pub const SETTINGS_VOLUME_ROW: u32 = 2;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
@@ -324,11 +352,12 @@ pub fn drawer_close_candidate_after_scroll(candidate: bool, scroll: f64) -> bool
 /// notification list while it can still scroll further up: there the drag
 /// keeps scrolling the list, as it does today.
 pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
-    if slider_band(Route::Shade, y, view) {
-        // Owned entirely by the brightness slider (task: "a horizontal
-        // drag on the slider must not start a close drag") -- regardless
-        // of which way the touch actually moves, matching `Carousel`'s
-        // own "owns whichever gesture starts inside its band" rule.
+    if slider_band(Route::Shade, y, view) || volume_slider_band(Route::Shade, y, view) {
+        // Owned entirely by the brightness or volume slider (task: "a
+        // horizontal drag on the slider must not start a close drag") --
+        // regardless of which way the touch actually moves, matching
+        // `Carousel`'s own "owns whichever gesture starts inside its
+        // band" rule.
         return false;
     }
     if notification_index(y, height, view).is_none() {
@@ -360,6 +389,69 @@ pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
         Route::Shade => (SHADE_SLIDER_TOP..SHADE_SLIDER_TOP + SHADE_SLIDER_H).contains(&y),
         _ => false,
     }
+}
+
+/// Same rule as `slider_band`, for the volume slider: available only once
+/// the PipeWire monitor has reported a default sink (before the first
+/// snapshot, or if the monitor never started, nothing is drawn there --
+/// see `render.rs`'s own gate -- so the band must not steal a gesture
+/// from whatever placeholder text sits there instead).
+pub fn volume_slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
+    let available = view
+        .audio
+        .as_ref()
+        .is_some_and(|audio| audio.sinks.iter().any(|sink| sink.is_default));
+    if !available {
+        return false;
+    }
+    match route {
+        Route::Settings => {
+            let top = settings_row_y(SETTINGS_VOLUME_ROW);
+            (top..top + SETTINGS_ROW_H).contains(&y)
+        }
+        Route::Shade => (SHADE_VOLUME_TOP..SHADE_VOLUME_TOP + SHADE_VOLUME_H).contains(&y),
+        _ => false,
+    }
+}
+
+/// The Settings volume row's own device-picker entry point: the "tap to
+/// change output" detail line specifically (`render.rs`'s own paint --
+/// design.md's "one picker, two entry points": Settings launches the
+/// same expanded HUD panel/list rather than duplicating it as a second
+/// UI). Checked before `volume_slider_band`'s own arm on `Route::Settings`
+/// only, so a tap here never becomes a drag; the Shade's compact volume
+/// row shows no such text and has no equivalent zone (`_ => false` below
+/// covers Shade and every other route).
+pub fn settings_output_picker_hit(y: f64, route: Route, view: &ServiceView) -> bool {
+    if route != Route::Settings {
+        return false;
+    }
+    let has_default_sink = view
+        .audio
+        .as_ref()
+        .is_some_and(|audio| audio.sinks.iter().any(|sink| sink.is_default));
+    if !has_default_sink {
+        return false;
+    }
+    // The detail text itself paints at `volume_y + 76.0`; a band a little
+    // above and below that baseline comfortably covers its line height
+    // without reaching into the label above or the slider track below
+    // (the track's own thumb/highlight paints centered at `volume_y +
+    // 86.0`, so this band stops well clear of it).
+    let top = settings_row_y(SETTINGS_VOLUME_ROW) + 66.0;
+    (top..top + 18.0).contains(&y)
+}
+
+/// The speaker glyph at the volume slider's own left end doubles as the
+/// mute toggle (task: "a speaker icon that toggles mute when tapped").
+/// Mirrors `paint_speaker`'s glyph placement in `render.rs` (`left -
+/// 30.0`): a hit box wide enough to comfortably clear Material's ~9mm
+/// touch-target floor on this 330ppi panel, distinct from the track/thumb
+/// area (`slider::track_bounds`'s own `left..right`) that
+/// `slider::Drag` owns for the rest of the row.
+pub fn volume_icon_tap_zone(x: f64, width: f64) -> bool {
+    let (left, _) = slider::track_bounds(width);
+    (left - 56.0..left).contains(&x)
 }
 
 /// A tap (no drag past the tap slop) that starts and ends on the dim
@@ -864,6 +956,7 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
     use std::path::PathBuf;
 
@@ -1225,7 +1318,7 @@ mod tests {
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
         assert!(shade_panel_close_zone(60.0, 1232, &empty));
-        assert!(shade_panel_close_zone(376.0, 1232, &empty));
+        assert!(shade_panel_close_zone(452.0, 1232, &empty));
         // One notification: the list cannot scroll, so its row closes too.
         let one = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1235,7 +1328,7 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(shade_panel_close_zone(376.0, 1232, &one));
+        assert!(shade_panel_close_zone(452.0, 1232, &one));
         // A long list that can still scroll keeps the drag as a scroll...
         let mut long = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1245,13 +1338,106 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(!shade_panel_close_zone(376.0, 1232, &long));
+        assert!(!shade_panel_close_zone(452.0, 1232, &long));
         // ...until it is scrolled to its end.
         long.notification_scroll = notification_max_scroll(8, 1232);
-        assert!(shade_panel_close_zone(376.0, 1232, &long));
+        assert!(shade_panel_close_zone(452.0, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
         assert!(shade_panel_close_zone(60.0, 1232, &long));
+    }
+
+    fn writable_volume_view() -> ServiceView {
+        ServiceView {
+            audio: Some(GraphSnapshot {
+                sinks: vec![Sink {
+                    id: 50,
+                    name: "alsa_output.inno".into(),
+                    description: "K230 Inno codec line-out".into(),
+                    linear_volume: 0.5,
+                    muted: false,
+                    is_default: true,
+                }],
+                streams: Vec::new(),
+            }),
+            ..writable_brightness_view()
+        }
+    }
+
+    /// Mirrors `slider_band_owns_its_row_and_is_excluded_from_the_close_
+    /// drag_candidacy` above, for the second (volume) slider directly
+    /// beneath the brightness one -- both bands must be excluded from
+    /// close-drag candidacy at once, and ordinary close-drag must resume
+    /// only below both.
+    #[test]
+    fn volume_slider_band_owns_its_row_and_is_excluded_from_the_close_drag_candidacy() {
+        let view = writable_volume_view();
+        let settings_top = settings_row_y(SETTINGS_VOLUME_ROW);
+        assert!(volume_slider_band(Route::Settings, settings_top + 10.0, &view));
+        assert!(!volume_slider_band(
+            Route::Settings,
+            settings_row_y(1) + 10.0,
+            &view
+        ));
+        assert!(volume_slider_band(Route::Shade, SHADE_VOLUME_TOP + 10.0, &view));
+        assert!(!shade_panel_close_zone(SHADE_VOLUME_TOP + 10.0, 1232, &view));
+        // The brightness band just above it is also still excluded, with
+        // both sliders present at once.
+        assert!(!shade_panel_close_zone(SHADE_SLIDER_TOP + 10.0, 1232, &view));
+        let below = SHADE_VOLUME_TOP + SHADE_VOLUME_H + 40.0;
+        assert!(!volume_slider_band(Route::Shade, below, &view));
+        assert!(shade_panel_close_zone(below, 1232, &view));
+        // No default sink reported yet: the band must not steal gestures
+        // from the placeholder text `render.rs` draws there instead.
+        let unavailable = writable_brightness_view();
+        assert!(!volume_slider_band(
+            Route::Shade,
+            SHADE_VOLUME_TOP + 10.0,
+            &unavailable
+        ));
+        assert!(shade_panel_close_zone(
+            SHADE_VOLUME_TOP + 10.0,
+            1232,
+            &unavailable
+        ));
+    }
+
+    #[test]
+    fn settings_output_picker_hit_is_settings_only_and_needs_a_default_sink() {
+        let view = writable_volume_view();
+        let y = settings_row_y(SETTINGS_VOLUME_ROW) + 76.0;
+        assert!(settings_output_picker_hit(y, Route::Settings, &view));
+        // Shade's compact volume row shows no such text and has no
+        // equivalent zone, even at the analogous offset.
+        assert!(!settings_output_picker_hit(
+            SHADE_VOLUME_TOP + 76.0,
+            Route::Shade,
+            &view
+        ));
+        // Above the label or on the slider track itself: not the picker
+        // zone.
+        assert!(!settings_output_picker_hit(
+            settings_row_y(SETTINGS_VOLUME_ROW) + 15.0,
+            Route::Settings,
+            &view
+        ));
+        assert!(!settings_output_picker_hit(
+            settings_row_y(SETTINGS_VOLUME_ROW) + 90.0,
+            Route::Settings,
+            &view
+        ));
+        // No default sink reported yet: never steals the gesture.
+        let unavailable = writable_brightness_view();
+        assert!(!settings_output_picker_hit(y, Route::Settings, &unavailable));
+    }
+
+    #[test]
+    fn volume_icon_tap_zone_is_left_of_the_track_and_distinct_from_it() {
+        let width = 568.0;
+        let (left, _right) = slider::track_bounds(width);
+        assert!(volume_icon_tap_zone(left - 20.0, width));
+        assert!(!volume_icon_tap_zone(left + 5.0, width));
+        assert!(!volume_icon_tap_zone(left - 200.0, width));
     }
 
     fn writable_brightness_view() -> ServiceView {
@@ -1282,6 +1468,13 @@ mod tests {
                     state: ControlState::ReadOnly,
                     value: None,
                     label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                volume: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
+                    label: "Volume".into(),
                     detail: None,
                     action: None,
                 },
@@ -1360,8 +1553,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (400.0, 381.0),
+                (300.0, 452.0),
+                (400.0, 457.0),
                 568,
                 1232,
                 &view
@@ -1369,15 +1562,15 @@ mod tests {
             None // release alone cannot dismiss without a tracked drag
         );
         assert_eq!(
-            notification_swipe_start((300.0, 376.0), (400.0, 381.0), 568, 1232, &view)
+            notification_swipe_start((300.0, 452.0), (400.0, 457.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (300.0, 466.0),
+                (300.0, 452.0),
+                (300.0, 542.0),
                 568,
                 1232,
                 &view
@@ -1387,8 +1580,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (300.0, 376.0),
+                (300.0, 452.0),
+                (300.0, 452.0),
                 568,
                 1232,
                 &view
@@ -1437,6 +1630,13 @@ mod tests {
                 motion: Control {
                     state: ControlState::ReadOnly,
                     value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                volume: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
                     label: "Available".into(),
                     detail: None,
                     action: None,
@@ -1490,9 +1690,9 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        let start = (300.0, 376.0);
+        let start = (300.0, 452.0);
         assert_eq!(
-            notification_swipe_start(start, (320.0, 381.0), 568, 1232, &view)
+            notification_swipe_start(start, (320.0, 457.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
@@ -1526,7 +1726,7 @@ mod tests {
         );
         view.notifications.as_mut().unwrap().events[0].dismissible = false;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
             None
         );
         assert!(!notification_swipe_valid(&view, &swipe));
@@ -1534,7 +1734,7 @@ mod tests {
         view.notifications.as_mut().unwrap().events[0].dismissible = true;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
             None
         );
         assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);
@@ -1627,13 +1827,18 @@ mod tests {
             network: unavailable.clone(),
             brightness: unavailable.clone(),
             keyboard: unavailable.clone(),
-            motion: unavailable,
+            motion: unavailable.clone(),
+            volume: unavailable,
         });
+        // Row y's shifted +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from
+        // 730/985: the added Volume settings row (task: "in Settings")
+        // cascaded the power section down by one row's rhythm, same as
+        // `settings_layout_cascades_from_the_row_rhythm`'s own shift.
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 730.0),
-                (60.0, 730.0),
+                (60.0, 856.0),
+                (60.0, 856.0),
                 568,
                 1232,
                 &view
@@ -1651,8 +1856,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 730.0),
-                (60.0, 730.0),
+                (60.0, 856.0),
+                (60.0, 856.0),
                 568,
                 1232,
                 &view
@@ -1662,8 +1867,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (80.0, 985.0),
-                (80.0, 985.0),
+                (80.0, 1111.0),
+                (80.0, 1111.0),
                 568,
                 1232,
                 &view
@@ -1675,8 +1880,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 985.0),
-                (440.0, 985.0),
+                (440.0, 1111.0),
+                (440.0, 1111.0),
                 568,
                 1232,
                 &view
@@ -1689,8 +1894,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 985.0),
-                (440.0, 985.0),
+                (440.0, 1111.0),
+                (440.0, 1111.0),
                 568,
                 1232,
                 &view

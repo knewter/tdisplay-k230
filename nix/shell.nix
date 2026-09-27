@@ -21,6 +21,56 @@ let
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
   cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
+  # nixpkgs' stock `pipewire` builds every optional backend on by default:
+  # Bluetooth (bluez plus the LC3/LDAC/aptX codec libraries), Vulkan,
+  # X11 (which also drags in libcanberra/libmysofa), RAOP/AirPlay,
+  # ROC streaming, and mDNS/Avahi discovery -- none of which this board's
+  # volume UX (ALSA line-out plus the PulseAudio-compat shim) uses; this
+  # board also has no onboard Bluetooth at all
+  # (`docs/research/bluetooth-onboard.md`). Measured directly
+  # (`docs/evidence/volume/closure-size.md`, via `nix-store -q --size`
+  # summed over `nix-store -qR` -- that file also records why `nix
+  # path-info -rS` reported wildly wrong per-path sizes on this store and
+  # should not be trusted here): the stock package's own runtime closure
+  # is about 0.44 GiB on this cross toolchain. Measured just as directly:
+  # this override, plus the matching `wireplumberLean` below, does *not*
+  # reduce this board's actual whole-system closure at all -- `bluez` and
+  # friends are already reachable via this board's own pre-existing
+  # `hardware.bluetooth.enable = true`, and a separate NixOS-internal ALSA-
+  # plugins aggregate (traced, not this repo's own code) still pulls in
+  # the stock, untrimmed `pipewire` regardless of what any service unit
+  # here actually runs. Kept anyway: every process this change itself
+  # spawns runs the trimmed package, which is still the architecturally
+  # correct choice even though the board-wide number did not move (that
+  # same evidence file records the measured before/after in full, and the
+  # open follow-up needed to actually close the remaining gap). This
+  # override does not touch `ffmpeg`/`gstreamer` support (nixpkgs 1.6.8
+  # hardcodes both `true` in its own `mesonFlags`, not exposed as an
+  # override parameter, so trimming them would mean forking the whole
+  # derivation rather than overriding it -- judged not worth the
+  # maintenance cost). Same "measure, then cut the tail that doesn't apply
+  # to this board"
+  # reasoning `swayBase` above already uses for Xwayland.
+  pipewireLean = pkgs.pipewire.override {
+    bluezSupport = false;
+    vulkanSupport = false;
+    x11Support = false;
+    raopSupport = false;
+    rocSupport = false;
+    zeroconfSupport = false;
+  };
+  # `wireplumber`'s own package.nix takes `pipewire` as a plain override
+  # argument and links against it directly (it is WirePlumber's session/
+  # policy manager for exactly this PipeWire, not a standalone daemon) --
+  # without this, `pkgs.wireplumber` would still pull in the *stock*,
+  # untrimmed `pkgs.pipewire` as its own build input, landing a second
+  # full pipewire package in the closure alongside `pipewireLean` and
+  # defeating the whole override (measured directly: an earlier build
+  # that overrode only `pipewire`'s own systemd-unit references, not
+  # wireplumber's, came out slightly *larger* than the untrimmed
+  # baseline for exactly this reason -- `docs/evidence/volume/
+  # closure-size.md`).
+  wireplumberLean = pkgs.wireplumber.override { pipewire = pipewireLean; };
   # Records intended shown/hidden state before signalling, so a theme-triggered
   # keyboard restart (which always starts a fresh wvkbd process) can decide
   # whether to pass --hidden without any post-restart signal replay race.
@@ -617,6 +667,29 @@ let
     input type:touch map_to_output DSI-1
 
     ${lib.optionalString cfg.coherentShell ''
+      # Hardware/keyboard-base volume keys, wired to wpctl's own default-sink
+      # step commands rather than to the Rust client directly: the client's
+      # already-running PipeWire graph watcher (task: "watch the graph for
+      # changes") picks up the resulting volume/mute Props change the exact
+      # same way it would pick up any other external change (another app, a
+      # second keyboard) and shows the HUD from that one code path -- no
+      # separate signalling channel from Sway to the shell client exists or
+      # is needed.
+      #
+      # Whether any input this board has actually emits these keysyms is
+      # unverified from source alone: `docs/research/board-capability-
+      # inventory.md` documents no dedicated volume buttons on the main
+      # board, and the optional keyboard/nRF9151 base's TCA8418 matrix has
+      # no keymap landed in this repo yet that would produce them. These
+      # bindings are cheap (three `bindsym` lines Sway never fires without a
+      # matching key event) and correct for any USB/Bluetooth keyboard that
+      # does send them; they claim nothing about this board's own keys.
+      bindsym XF86AudioRaiseVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0
+      bindsym XF86AudioLowerVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+      bindsym XF86AudioMute exec ${wireplumberLean}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    ''}
+
+    ${lib.optionalString cfg.coherentShell ''
       # Sway classifies transients as floating before for_window matching.
       # Maximize every ordinary app window -- tiling or floating alike, so
       # a client that reports a fixed (non-resizable) size, which sway's
@@ -886,6 +959,28 @@ in
       else terminalFootConfig;
     environment.etc."neofetch/config.conf".source = ./neofetch.conf;
 
+    # Redirect the plain ALSA path (mpv's own alsaSupport=true build,
+    # nix/video-probe.nix -- pipewireSupport/pulseSupport are both false
+    # there, deliberately: mpv is never rebuilt to link libpipewire) through
+    # PipeWire's ALSA plugin, so mpv's output becomes an ordinary PipeWire
+    # stream node (task: "the volume HUD ... per-stream volumes ... with
+    # the app name") without touching the mpv derivation at all. These are
+    # the same two files `services.pipewire.alsa.enable` would install
+    # (`${pipewireLean}/share/alsa/alsa.conf.d/{50-pipewire,
+    # 99-pipewire-default}.conf`); installed by hand here rather than by
+    # importing that module, which wires into a systemd --user instance this
+    # image never starts (no login manager, no lingering user session --
+    # sway itself already runs as a plain system unit with User=shell, see
+    # `systemd.services.shell` below). Gated on cfg.coherentShell: the
+    # volume UX this exists for is a Rust-shell-only surface, and the older
+    # bar session keeps its current direct-ALSA mpv path unchanged.
+    environment.etc."alsa/conf.d/50-pipewire.conf" = lib.mkIf cfg.coherentShell {
+      source = "${pipewireLean}/share/alsa/alsa.conf.d/50-pipewire.conf";
+    };
+    environment.etc."alsa/conf.d/99-pipewire-default.conf" = lib.mkIf cfg.coherentShell {
+      source = "${pipewireLean}/share/alsa/alsa.conf.d/99-pipewire-default.conf";
+    };
+
     users.groups.shell = { };
     users.users.shell = {
       isNormalUser = true;
@@ -992,6 +1087,93 @@ in
       };
     };
 
+    # PipeWire + WirePlumber, for the volume UX in
+    # openspec/changes/the-handheld-controls-volume: a session-scoped sound
+    # server so the shell can show/adjust the default sink's volume and
+    # per-stream (per-app) volumes as PipeWire objects, not by reaching into
+    # ALSA mixer controls directly. Off entirely outside cfg.coherentShell.
+    #
+    # Not the `services.pipewire`/`services.wireplumber` NixOS modules: both
+    # wire their units into `systemd.user.services`, which needs a systemd
+    # --user instance for `shell` (normally started by pam_systemd on login,
+    # or by lingering) that this image never starts -- there is no login
+    # manager and every getty on tty1 is masked above. Plain system services
+    # with User=shell, matching every other per-session daemon in this file
+    # (shell-notifications, theme-helper, shell-session-bus), sidestep that
+    # entirely; the two ALSA plugin files above are the only other piece
+    # that module would have added.
+    #
+    # No `security.rtkit.enable`: pipewire's module-rt falls back to asking
+    # for RT scheduling directly and logs a warning if that's refused
+    # (uncommon but harmless on a single-user board with no other realtime
+    # contention), rather than adding a fourth daemon purely for a priority
+    # bump. Kept to exactly the three processes the task asks for: pipewire,
+    # wireplumber, pipewire-pulse.
+    systemd.services.pipewire = lib.mkIf cfg.coherentShell {
+      description = "PipeWire media server (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "shell.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        # The stock config: $XDG_RUNTIME_DIR/pipewire-0, the socket every
+        # client (wpctl, pw-cli, the Rust shell's own reader/writer helpers,
+        # and mpv via the ALSA plugin above) looks for with no extra env.
+        ExecStart = "${pipewireLean}/bin/pipewire -c ${pipewireLean}/share/pipewire/pipewire.conf";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    systemd.services.wireplumber = lib.mkIf cfg.coherentShell {
+      description = "WirePlumber session/policy manager (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "pipewire.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "pipewire.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        ExecStart = "${wireplumberLean}/bin/wireplumber";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    systemd.services.pipewire-pulse = lib.mkIf cfg.coherentShell {
+      description = "PipeWire PulseAudio-compatible server (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "pipewire.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "pipewire.service" "wireplumber.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        # Stock config: $XDG_RUNTIME_DIR/pulse/native. Nothing in this
+        # change requires a PulseAudio-protocol client, but a stray
+        # PULSE_SERVER-aware app (some Electron/Chromium builds probe for
+        # it) then degrades to working audio instead of silent failure, for
+        # one small always-idle process.
+        ExecStart = "${pipewireLean}/bin/pipewire-pulse -c ${pipewireLean}/share/pipewire/pipewire-pulse.conf";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
     # Board evidence (docs/evidence/omarchy-themes/background-decode-cache-qemu/README.md)
     # measured about 1.2 s of Python interpreter start-up per `k230-theme`
     # call on the K230's slower core, and a chooser Apply calls it twice
@@ -1030,14 +1212,26 @@ in
       bindsTo = [ "shell.service" ];
       partOf = [ "shell.service" ];
       requires = [ "shell-session-bus.service" ];
-      wants = [ "shell-notifications.service" ];
-      after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" ];
+      # Soft, not hard: a stopped or slow-starting sound server degrades the
+      # volume UX to "no live sink yet" (its own reconnect loop, same as any
+      # other external-process dependency here), never blocks the rest of
+      # the shell from starting.
+      wants = [ "shell-notifications.service" "pipewire.service" "wireplumber.service" ];
+      after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" "pipewire.service" "wireplumber.service" ];
       environment = {
         XDG_RUNTIME_DIR = "/run/shell";
         SWAYSOCK = "/run/shell/sway-ipc.sock";
         DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
       };
-      path = [ pkgs.coreutils ];
+      # wireplumber -> wpctl (the rare, human-paced set-volume/set-mute/
+      # set-default commit calls); pipewire -> pw-dump/pw-cli (the
+      # persistent graph-watcher and command-writer children this
+      # process itself spawns and keeps alive, `pipewire_ipc.rs`). Both
+      # are plain `Command::new("wpctl"|"pw-dump"|"pw-cli")` calls in the
+      # Rust source, resolved via this service's own PATH rather than a
+      # baked-in store path, so a `pipewire`/`wireplumber` package bump
+      # never requires touching this file.
+      path = [ pkgs.coreutils wireplumberLean pipewireLean ];
       serviceConfig = {
         Type = "exec";
         User = "shell";
