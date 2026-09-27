@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
+DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
+DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
 DATA d5a067cf58487b011cb292b25575beb69455e4de7fdcc496b1fab130c4c0aa27 docs/evidence/card-shell/transparent-corners/argb-child.png
 DATA e2e03191c80b95f5d5447ea6c335ce7562611a3e414c6c1e8b5e2ae3b9f96036 docs/evidence/card-shell/transparent-corners/baseline.png
 DATA 5194b788f0935fc0d1a20f4da641cc65aeca78c6a70c14d4635ddaec56d4fc8c docs/evidence/card-shell/transparent-corners/before.png
@@ -2041,3 +2044,14 @@ live-card-cost/README.md`) records commands, log excerpts and limits.
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/card-shell/live-card-cost/contact-sheet.png` | 1089443 | DATA | `76883f6aba9647b6ba1a955827e81ff32958b1098926284f53584f3b6c0b63ed` |
+
+### Panel power recovery camera evidence
+
+Reviewed, cropped camera comparisons; commands and limits in
+`docs/evidence/backlight/runtime-recovery/README.md`.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg` | 19833 | DATA | `fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe` |
+| `docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg` | 23388 | DATA | `d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92` |
+| `docs/evidence/backlight/runtime-recovery/off-on-128.jpg` | 14111 | DATA | `53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61` |

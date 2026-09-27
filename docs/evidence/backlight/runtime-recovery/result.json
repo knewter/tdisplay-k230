@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "source": "926c7a6105f222665b8929f3ca271c3bc19f1458",
+  "system": "/nix/store/l9bla6rxrr13pq2pfzbqk3094d4wx1s5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "proof_class": "physical-camera",
+  "persistent_install": false,
+  "live_brightness": "FAIL",
+  "off_on_recovery": "PASS",
+  "brightness_applies_on_reenable": "PASS",
+  "settings_taps": "NOT_TESTED",
+  "roi": [
+    500,
+    350,
+    800,
+    425
+  ],
+  "captures": [
+    {
+      "phase": "k230-panel-levels",
+      "file": "128-repeat.jpg",
+      "sha256": "6ac7512c17d6ff33e5a5635741fed70d84cada36827a872028ad43748a53ed20",
+      "timestamp_unix": 1790470518.45328,
+      "mean_grayscale": 172.8958
+    },
+    {
+      "phase": "k230-panel-levels",
+      "file": "128.jpg",
+      "sha256": "10b2e9261fb600bc792d9e8a96679ede1163e746b53f91836d25a3e823d8f9f7",
+      "timestamp_unix": 1790470506.356912,
+      "mean_grayscale": 172.5681
+    },
+    {
+      "phase": "k230-panel-levels",
+      "file": "255.jpg",
+      "sha256": "634d3cd7923c0ec93144f0270695cb5da7750b3cf4653c46bdb23ad7d5ec87f7",
+      "timestamp_unix": 1790470512.403496,
+      "mean_grayscale": 172.4335
+    },
+    {
+      "phase": "k230-panel-levels",
+      "file": "26.jpg",
+      "sha256": "6e83dcfad9c0cdc10016fe2b848f3e8113b02f8094df1073c6f96112188d4200",
+      "timestamp_unix": 1790470500.3076894,
+      "mean_grayscale": 172.899
+    },
+    {
+      "phase": "k230-panel-levels",
+      "file": "dpms-off.jpg",
+      "sha256": "a9b9fc93e421b8cb28b77ca903e1e4807a130d0668fed7ebe6e9c9567cc6a673",
+      "timestamp_unix": 1790470553.9898882,
+      "mean_grayscale": 25.4497
+    },
+    {
+      "phase": "k230-panel-levels",
+      "file": "dpms-on.jpg",
+      "sha256": "65efcc31441baf51f1cf55d388b377e2becc5ae0a653540f8f156f380d37d124",
+      "timestamp_unix": 1790470561.0309975,
+      "mean_grayscale": 94.21
+    },
+    {
+      "phase": "k230-panel-levels-after-dpms",
+      "file": "128-repeat.jpg",
+      "sha256": "734adea98b1c2816722ab426f4313b0749e41fee6abbea731470aebf50a4ecda",
+      "timestamp_unix": 1790470600.8221247,
+      "mean_grayscale": 93.116
+    },
+    {
+      "phase": "k230-panel-levels-after-dpms",
+      "file": "128.jpg",
+      "sha256": "9fceab490709ff72d1191fdfdcc5d03bd47a5829fe7ed88dc9fd7e6b800b89e8",
+      "timestamp_unix": 1790470588.7606587,
+      "mean_grayscale": 93.0743
+    },
+    {
+      "phase": "k230-panel-levels-after-dpms",
+      "file": "255.jpg",
+      "sha256": "65d3bf02b3a38ebf2177e05b13e4f6601f299f115e3eb4e8294878b46c056f5e",
+      "timestamp_unix": 1790470594.775864,
+      "mean_grayscale": 93.6168
+    },
+    {
+      "phase": "k230-panel-levels-after-dpms",
+      "file": "26.jpg",
+      "sha256": "ee08e0cd5f7d96c734fcd577421145f8b141fca85cf1b8dbb00c2f6aa6f08289",
+      "timestamp_unix": 1790470582.708608,
+      "mean_grayscale": 93.404
+    },
+    {
+      "phase": "k230-panel-levels-cycled",
+      "file": "128.jpg",
+      "sha256": "c500722be607a35b7f20e8dc52896adba21e4f97b595037407cc48150b92f2a8",
+      "timestamp_unix": 1790470732.5358775,
+      "mean_grayscale": 93.1157
+    },
+    {
+      "phase": "k230-panel-levels-cycled",
+      "file": "254.jpg",
+      "sha256": "070a0ddc11ac87bebfaf995769a8c8566513ae70c435a61842dfe6c695b3920b",
+      "timestamp_unix": 1790470744.6312864,
+      "mean_grayscale": 172.9872
+    },
+    {
+      "phase": "k230-panel-levels-cycled",
+      "file": "255.jpg",
+      "sha256": "f9826a74e3e84f4131b80222ae2cc594fc736835b509e721ca03cf9fd235abc6",
+      "timestamp_unix": 1790470738.5858538,
+      "mean_grayscale": 173.8856
+    },
+    {
+      "phase": "k230-panel-levels-cycled",
+      "file": "26.jpg",
+      "sha256": "ef3133e555e75faf9f69002b750320338392ca02fac51bc3d6ecd0818162d792",
+      "timestamp_unix": 1790470726.4871154,
+      "mean_grayscale": 27.3774
+    }
+  ]
+}

@@ -90,3 +90,9 @@ nix build .#kernel .#nixosConfigurations.k230-coherent-shell.config.system.build
 payload identity, kernel memory extent, DTB and argument bounds were checked.
 This is host preparation evidence; physical brightness and recovery gates
 remain open until the candidate is booted and observed.
+
+## Physical follow-up
+
+[The combined candidate trial](../runtime-recovery/README.md) proves off/on
+recovery and brightness applied on re-enable. Live LP brightness writes
+remain ineffective; successful FIFO drain alone did not close the requirement.

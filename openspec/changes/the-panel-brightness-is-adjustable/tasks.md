@@ -79,16 +79,13 @@
       the device, write and observe) was performed and is fully
       evidenced, not because the result was a pass; the negative result
       is the finding.
-- [ ] 5.2 Cycle a modeset or DPMS off/on (see the combined board test plan
-      for the exact command) and confirm the previously set brightness is
-      still in effect afterward, not the fixed default. Not meaningfully
-      testable yet: a DPMS cycle was tried during board investigation and
-      produced a large luminance change, but it is confounded with a
-      separate, unrelated finding (`backlight_gpio`, GPIO25, appears to
-      only ever be driven high once at `probe()`, never reasserted on a
-      later `prepare()` — see board-findings.md) and does not by itself
-      demonstrate the brightness value applying. Left unticked; depends on
-      resolving 5.1's open root cause first.
+- [x] 5.2 Cycle a modeset or DPMS off/on and confirm the requested
+      nondefault brightness applies afterward. Physical camera trial of
+      source `926c7a61` now proves power recovery and distinct 26/128/255
+      levels after re-enable; see
+      `docs/evidence/backlight/runtime-recovery/README.md`. Live writes
+      still have no visible effect, so the core brightness requirement
+      and tasks 6.3/6.4 remain open.
 
 
 ## 6. Resolve the negative board result
