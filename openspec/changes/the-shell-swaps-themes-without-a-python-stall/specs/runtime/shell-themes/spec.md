@@ -16,7 +16,9 @@
      separate Apply button to the carousel tap itself. Proof:
      nix/rust-shell-client/src/theme_ui.rs (`ThemeView::tap_theme`/
      `tap_background`/`advance`/`accept`, and their own unit tests) and
-     tests/rust_theme_chooser_qemu.py. -->
+     tests/rust_theme_chooser_qemu.py. Background generation correction and
+     injected physical-board Home captures:
+     docs/evidence/theme-picker/background-selection/README.md. -->
 
 The theme chooser SHALL present the theme carousel and the active theme's
 own background carousel on one page, with no separate preview page and no
