@@ -403,3 +403,16 @@ diagnostic or a Canaan contract must close those gates before any two-CPU
 Linux boot. Once closed, the first Linux SMP image should use a scalar
 common ISA across kernel and userspace; RVV can return only with a proven
 per-hart scheduling and userspace capability design.
+
+Canaan's public [small-core Linux
+DT](https://raw.githubusercontent.com/kendryte/k230_sdk/main/src/little/linux/arch/riscv/boot/dts/kendryte/k230.dtsi)
+at `src/little/linux/arch/riscv/boot/dts/kendryte/k230.dtsi:18-63`
+separately describes physical CPU0 as its sole logical `cpu@0`, with PLIC
+at `0xf00000000` and CLINT at `0xf04000000`, each wired only to that one
+local interrupt controller. This public `main` source was read during the
+2026-09-26 audit but is **not** this project's pinned SDK revision and is
+not a combined two-core DT. The matching base addresses in the pinned
+big-core DT do not establish whether the hardware maps separate PLIC/
+CLINT instances into per-core address spaces or exposes usable second
+contexts to one joint Linux image. It cannot justify inventing a second
+`interrupts-extended` entry.

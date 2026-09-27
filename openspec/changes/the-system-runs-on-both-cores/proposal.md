@@ -60,8 +60,10 @@ problem.
 
 ## What Changes
 
-This proposal does not add a `cpu@1` node, write a reset or power register, or
-change OpenSBI, U-Boot, or the kernel. It records a staged, evidence-gated
+The normal boot image does not add a `cpu@1` node, write a reset or power
+register, or change OpenSBI, U-Boot, or the kernel. A separately selected,
+default-off SPL diagnostic has been built on the host and packaged for a
+possible board trial; it is not installed. This change records a staged, evidence-gated
 plan and the decision-quality bar each stage must clear before the next one
 is attempted, matching `.skills/k230-spec-change/SKILL.md`'s grounding order
 and `docs/research/second-core-feasibility.md`'s "minimal recoverable
@@ -113,8 +115,13 @@ None.
 
 ## Impact
 
-No Nix derivation, kernel, device tree, OpenSBI, or U-Boot source changes.
-`tools/second-core-readiness.sh` gains new read-only fields in a later,
-separately authorized change; this proposal only specifies what they must be
-and why. Every stage past (a) needs the physical board and an explicit user
-authorization before any reset/power register write, per AGENTS.md.
+The existing read-only collector has host fixtures and a partial board
+capture; two PWR reads returned EPERM and remain unproven. This change also
+adds a default-off `uboot-k230-cpu0-identity-probe` and a BootROM-loadable
+`stage1-cpu0-identity-probe` package. Its source and host build evidence
+are in `docs/evidence/second-core/`; the ordinary U-Boot and stage-1
+derivations are unchanged. No experimental SPL has been installed, no CPU0
+CSR has been measured on the board, and no second Linux CPU is enabled.
+The physical trial awaits the current card's verified raw-stage-1 backup
+and external reader recovery route, then a board-operator session. Later
+OpenSBI, DT and kernel work awaits identity, interrupt and coherency proof.

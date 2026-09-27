@@ -24,6 +24,16 @@
   corroborates or falsifies "Linux already runs on physical CPU1." Verify
   with `openspec validate the-system-runs-on-both-cores --strict` after the
   edit (documentation-consistency proof, not new physical evidence).
+- [x] 1.5 Build and package the default-off CPU0 SPL identity diagnostic
+  without changing the normal stage-1 derivation. Verify with
+  `nix build .#uboot-k230-cpu0-identity-probe --no-link --print-out-paths --max-jobs 1 --cores 4`,
+  `nix build .#stage1-cpu0-identity-probe --no-link --print-out-paths --max-jobs 1 --cores 4`,
+  `nix eval --raw .#uboot-k230.drvPath`,
+  `nix eval --raw .#stage1-packaging.drvPath`, and `cmp` of packaged U-Boot
+  proper against normal. Results and exact paths/hashes are in
+  `docs/evidence/second-core/spl-cpu0-identity-host-build.md` and
+  `docs/evidence/second-core/cpu0-identity-trial.md`. This is host build
+  proof only; it does not close 1.3, 3.1, or any Linux SMP gate.
 
 ## 2. Recovery rehearsal (must pass before any stage-3 task starts)
 
