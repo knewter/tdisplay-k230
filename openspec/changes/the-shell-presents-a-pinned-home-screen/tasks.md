@@ -88,7 +88,7 @@
   inject touch to swipe Home's pages, tap the dock, long-press to pin from
   the drawer and to rearrange on Home, and screenshot each step; verify
   with `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg
-  <swaymsg> --rust <rust> --theme-source nix/handheld-theme-default
+  <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client>
   --output <dir>`. Done: PASS, all twelve checks true; see
   `docs/evidence/home-screen/qemu/`. (User-mode `qemu-riscv64-static`
   headless Pixman, not `qemu-system-riscv64`'s `k230` machine -- this
@@ -149,12 +149,12 @@ place.
   swipe opens the drawer. Keep card throws, app entry and horizontal
   switching intact. Verify route ownership with
   `python3 -m unittest tests.test_card_shell_route` and the existing policy
-  command `python3 -m unittest tests.test_card_shell_policy`.
+  command `python3 -m unittest tests.test_card_shell_state`.
 - [ ] 10.2 Extend the paired real-compositor/Rust QEMU fixture to exercise
   app → Overview → Home → Drawer with running windows; confirm window IDs
   survive Home, selecting an existing app restores it, and short/reversed
   gestures do not navigate or close apps. Run
-  `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-source nix/handheld-theme-default --output <dir>`.
+  `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client> --output <dir>`.
 - [ ] 10.3 Build the coherent-shell system with
   `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --no-link`.
   On the reserved board, repeat the navigation sequence through verified

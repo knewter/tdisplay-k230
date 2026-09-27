@@ -132,6 +132,12 @@ static struct {
 	struct wlr_box ordinary_usable;
 	bool ordinary_usable_valid;
 	struct sway_seat *seat;
+	/* Home hides app scene groups, never app windows or workspaces. */
+	bool home_selected, home_layers_saved[4];
+	struct card_shell_drawer_gesture home_gesture;
+	bool home_settling, home_settle_open;
+	double home_offset, home_drag_origin, home_settle_from;
+	uint64_t home_settle_ms;
 	struct wl_listener output_destroy, seat_destroy;
 	struct wlr_scene_tree *ui, *deck, *chrome, *button;
 	struct wlr_scene_rect *canvas;
@@ -412,6 +418,8 @@ static bool chrome(void);
 static void keyboard_refresh(void);
 static void ordinary_backdrop_sync(struct sway_output *output);
 static void home_layer_sync(struct sway_output *output);
+static void home_visibility(bool selected);
+static void home_transition_tick(void);
 static struct sway_layer_surface *keyboard_layer(struct sway_output *output);
 /* Task 3.1b: drop any gradient built ahead of commit for a candidate that
  * was superseded (a newer prepare, a rollback, or a live geometry change)
@@ -1617,7 +1625,7 @@ static bool rebuild_chrome(void) {
 		 * muted rather than full-strength text color, and size 14 to match
 		 * `render.rs`'s own converged hint size. */
 		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
-			"Swipe up for apps", cfg->width - 48, 24, 14, appearance_text_muted(false));
+			"Swipe up for Home", cfg->width - 48, 24, 14, appearance_text_muted(false));
 		if (!cue) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=cue-failed");
 			return false;
@@ -1787,6 +1795,10 @@ static uint64_t focus_id(struct sway_seat *seat) {
 	return c && c->view ? c->node.id : 0;
 }
 static void restore(struct cs_result result) {
+	shell.home_settling = false;
+	shell.home_offset = 0;
+	memset(&shell.home_gesture, 0, sizeof(shell.home_gesture));
+	if (shell.ui) wlr_scene_node_set_position(&shell.ui->node, 0, 0);
 	shell.active = false;
 	shell.overlay_escaping = false;
 	struct card *c;
@@ -1809,6 +1821,10 @@ static void restore(struct cs_result result) {
 			/* Focus alone does not put a floating view above its siblings.
 			 * Keep the visible window in sync with the selected card. */
 			container_raise_floating(c->view->container);
+		} else if (shell.home_selected) {
+			/* NULL also releases focus from global-fullscreen apps; focusing
+			 * the workspace is refused by Sway while one is present. */
+			seat_set_focus(shell.seat, NULL);
 		} else if (shell.output && shell.output->current.active_workspace)
 			seat_set_focus_workspace(shell.seat, shell.output->current.active_workspace);
 		transaction_commit_dirty();
@@ -1821,6 +1837,47 @@ static void restore(struct cs_result result) {
 			 result.message);
 	if (shell.ui)
 		chrome();
+}
+static void home_position(double offset) {
+	shell.home_offset = fmax(0, fmin(shell.policy.config.height, offset));
+	if (shell.ui) wlr_scene_node_set_position(&shell.ui->node, 0, -(int)lround(shell.home_offset));
+	if (shell.output) {
+		home_layer_sync(shell.output);
+		wlr_output_schedule_frame(shell.output->wlr_output);
+	}
+}
+static void home_begin(int32_t id, double x, double y) {
+	shell.home_settling = false;
+	shell.home_drag_origin = shell.home_offset;
+	card_shell_drawer_down(&shell.home_gesture, id, x, y);
+	home_position(shell.home_offset);
+}
+static void home_settle(bool open) {
+	shell.home_settle_open = open;
+	shell.home_settle_from = shell.home_offset;
+	shell.home_settle_ms = now_ms();
+	shell.home_settling = true;
+	home_position(shell.home_offset);
+}
+static void home_transition_tick(void) {
+	if (!shell.home_settling) return;
+	double t = fmin(1, (now_ms() - shell.home_settle_ms) / 220.0);
+	if (shell.policy.config.reduced_motion) t = 1;
+	double ease = 1 - pow(1 - t, 3);
+	double target = shell.home_settle_open ? shell.policy.config.height : 0;
+	home_position(shell.home_settle_from + (target - shell.home_settle_from) * ease);
+	if (t < 1) return;
+	shell.home_settling = false;
+	if (shell.home_settle_open) {
+		/* Hide normal app groups before restoring their individual scene nodes.
+		 * Focus the workspace so a future app focus can leave Home normally. */
+		home_visibility(true);
+		struct cs_result r = cs_leave(&shell.policy);
+		r.focus_id = 0;
+		restore(r);
+		sway_log(SWAY_INFO, "K230_CARD_SHELL home selected cards=%zu", shell.policy.count);
+	}
+	home_position(0);
 }
 static void handle_result(struct cs_result r) {
 	if (shell.policy.mode == CS_EXPANDING && shell.policy.expand_progress == 0) {
@@ -1931,6 +1988,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	home_visibility(false);
 	kg_end_stream(&shell.keyboard, false);
 	card_appearance_stop();
 	card_shell_reveal_abort(&shell.reveal);
@@ -1993,6 +2051,7 @@ static int tick_impl(void *data) {
 		card_shell_drawer_cancel(&shell.shade_gesture);
 		sway_log(SWAY_INFO, "K230_CARD_SHELL reveal stream closed; scene retained");
 	}
+	home_transition_tick();
 	card_shell_prepare(shell.output);
 	card_bench_resource(shell.active);
 	if (shell.output && shell.timer) {
@@ -2272,7 +2331,7 @@ static void ordinary_backdrop_sync(struct sway_output *output) {
 	 * this opaque rect sitting below it but still above the wallpaper.
 	 * That is exactly the flat, wallpaper-less card overview reported
 	 * on the board with a real maximized Terminal card. */
-	if (!shell.active) {
+	if (!shell.active && !shell.home_selected) {
 		struct card *card;
 		wl_list_for_each(card, &shell.cards, link) {
 			struct sway_view *view = card->view;
@@ -2320,10 +2379,37 @@ static void ordinary_backdrop_sync(struct sway_output *output) {
  * asking the Rust client to unmap or repaint transparently, costs nothing
  * more than a scene-graph flag flip with no client round trip, no buffer
  * churn, and no risk of a black frame from a freshly reattached surface. */
+static void home_app_layers_sync(void) {
+	if (!shell.home_selected) return;
+	struct wlr_scene_tree *layers[] = {root->layers.tiling, root->layers.floating,
+		root->layers.fullscreen, root->layers.fullscreen_global};
+	for (size_t i = 0; i < 4; ++i)
+		wlr_scene_node_set_enabled(&layers[i]->node, false);
+}
+static void home_visibility(bool selected) {
+	if (shell.home_selected == selected) return;
+	struct wlr_scene_tree *layers[] = {root->layers.tiling, root->layers.floating,
+		root->layers.fullscreen, root->layers.fullscreen_global};
+	for (size_t i = 0; i < 4; ++i) {
+		if (selected) shell.home_layers_saved[i] = layers[i]->node.enabled;
+		wlr_scene_node_set_enabled(&layers[i]->node,
+			selected ? false : shell.home_layers_saved[i]);
+	}
+	shell.home_selected = selected;
+	if (shell.output) wlr_output_schedule_frame(shell.output->wlr_output);
+}
+/* Called after Sway applies ordinary focus, including IPC focus and new maps.
+ * A focused layer (Drawer/Settings) must not reveal the app underneath Home. */
+void card_shell_focus_changed(struct sway_seat *seat) {
+	if (!shell.home_selected || server.session_lock.lock) return;
+	struct sway_container *con = seat_get_focused_container(seat);
+	if (con && con->view) home_visibility(false);
+}
 static void home_layer_sync(struct sway_output *output) {
-	if (!output || !output->layers.shell_bottom)
-		return;
-	wlr_scene_node_set_enabled(&output->layers.shell_bottom->node, !shell.active);
+	if (!output || !output->layers.shell_bottom) return;
+	home_app_layers_sync();
+	wlr_scene_node_set_enabled(&output->layers.shell_bottom->node,
+		!shell.active || shell.home_gesture.contacts || shell.home_settling);
 }
 static void ordinary_sync_usable(struct sway_output *output, bool commit) {
 	ordinary_backdrop_sync(output);
@@ -2371,6 +2457,10 @@ static void prepare_impl(struct sway_output *output) {
 	bool blocked =
 		server.session_lock.lock || !output->enabled || launcher_mapped() || popup_mapped();
 	if (blocked) {
+		bool moving_home = shell.home_settling || shell.home_gesture.contacts || shell.home_offset != 0;
+		shell.home_settling = false;
+		memset(&shell.home_gesture, 0, sizeof(shell.home_gesture));
+		if (moving_home) home_position(0);
 		card_shell_reveal_cancel(&shell.reveal);
 		if (shell.drawer_gesture.contacts)
 			card_shell_drawer_cancel(&shell.drawer_gesture);
@@ -2559,6 +2649,7 @@ static bool enter(struct sway_seat *seat) {
 		popup_mapped() || wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
 		seat->cursor->simulating_pointer_from_touch)
 		return false;
+	home_visibility(false);
 	if (!snapshot() || !select_seat(seat))
 		return false;
 	handle_result(cs_enter(&shell.policy, focus_id(seat)));
@@ -2589,6 +2680,14 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	if (shell.home_gesture.contacts) {
+		card_shell_drawer_down(&shell.home_gesture, id, x, y);
+		return true;
+	}
+	if (shell.home_settling) {
+		home_begin(id, x, y);
+		return true;
+	}
 	if (keyboard_gestures_enabled()) {
 		unsigned action = kg_down(&shell.keyboard, id, x, y, event_ms,
 			shell.output->height, keyboard_layer(shell.output) != NULL,
@@ -2632,21 +2731,11 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 			!shell.button_down && !shell.policy.contact && !shell.policy.edge.tracking &&
 			wlr_seat_touch_num_points(seat->wlr_seat) == 0 &&
 			!seat->cursor->simulating_pointer_from_touch;
-		if (bottom_edge && touch_first() && shell.active) {
-			/* Same as the deck's own "continue pulling up reveals the
-			 * drawer" gesture a few lines below: card shell is already
-			 * engaged (an app or the deck itself is under the overlay), so
-			 * the bottom edge continues into the drawer, not a fresh app
-			 * entry. */
-			if (shell.policy.mode == CS_EXPANDING)
-				handle_result(cs_cancel(&shell.policy));
-			card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		if (bottom_edge && touch_first() && shell.active && shell.policy.mode == CS_DECK) {
+			home_begin(id, x, y);
 			shell.overlay_escaping = true;
 			if (!card_shell_launch_surface("hide"))
 				sway_log(SWAY_INFO, "K230_CARD_SHELL overlay hide helper unavailable");
-			if (card_shell_reveal_enabled() &&
-				!card_shell_reveal_begin(&shell.reveal, "drawer"))
-				sway_log(SWAY_INFO, "K230_CARD_SHELL drawer reveal unavailable; deck retained");
 			return true;
 		}
 		if (bottom_edge && !shell.active) {
@@ -2679,6 +2768,14 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		handle_result(r);
 		return r.consumed;
 	}
+	if (touch_first() && !shell.active && !drawer_mapped() && !popup_mapped() &&
+		(shell.home_selected || focus_id(seat) == 0) && shell.policy.config.bottom_reserved <= 0 &&
+		y >= shell.policy.config.height - shell.policy.config.edge_band &&
+		wlr_seat_touch_num_points(seat->wlr_seat) == 0) {
+		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
+		if (card_shell_reveal_enabled()) card_shell_reveal_begin(&shell.reveal, "drawer");
+		return true;
+	}
 	/* New ownership cannot steal a launcher/keyboard/application sequence. */
 	if (!shell.ui || !shell.ui->node.enabled || launcher_mapped() || popup_mapped() ||
 		wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
@@ -2706,15 +2803,10 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 	}
 	if (y >= shell.policy.config.height - shell.policy.config.bottom_reserved)
 		return false;
-	if (touch_first() && shell.active &&
+	if (touch_first() && shell.active && shell.policy.mode == CS_DECK &&
 		y >= shell.policy.config.height - shell.policy.config.bottom_reserved -
 			shell.policy.config.footer_height) {
-		if (shell.policy.mode == CS_EXPANDING)
-			handle_result(cs_cancel(&shell.policy));
-		card_shell_drawer_down(&shell.drawer_gesture, id, x, y);
-		if (card_shell_reveal_enabled() &&
-			!card_shell_reveal_begin(&shell.reveal, "drawer"))
-			sway_log(SWAY_INFO, "K230_CARD_SHELL drawer reveal unavailable; deck retained");
+		home_begin(id, x, y);
 		return true;
 	}
 	int button = hit_button(x, y);
@@ -2754,6 +2846,12 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return false;
 	x -= shell.output->lx;
 	y -= shell.output->ly;
+	if (shell.home_gesture.contacts) {
+		card_shell_drawer_motion(&shell.home_gesture, id, x, y, shell.policy.config.entry_distance);
+		if (id == shell.home_gesture.owner && !shell.home_gesture.cancelled)
+			home_position(shell.home_drag_origin + shell.home_gesture.y - y);
+		return true;
+	}
 	if (keyboard_gestures_enabled() &&
 		keyboard_apply_action(kg_motion(&shell.keyboard, id, x, y, event_ms)))
 		return true;
@@ -2798,6 +2896,11 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
+	if (shell.home_gesture.contacts) {
+		bool open = card_shell_drawer_up(&shell.home_gesture, id);
+		if (!shell.home_gesture.contacts) home_settle(open);
+		return true;
+	}
 	if (keyboard_gestures_enabled() &&
 		keyboard_apply_action(kg_up(&shell.keyboard, id, event_ms)))
 		return true;
@@ -2853,6 +2956,11 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 bool card_shell_cancel(struct sway_seat *seat) {
 	if (!shell.initialized)
 		return false;
+	if (shell.home_gesture.contacts || shell.home_settling) {
+		memset(&shell.home_gesture, 0, sizeof(shell.home_gesture));
+		home_settle(false);
+		return true;
+	}
 	card_shell_reveal_cancel(&shell.reveal);
 	bool keyboard_owned = shell.keyboard.owned_count || shell.keyboard.overflow_contacts;
 	unsigned keyboard_cancel = kg_end_stream(&shell.keyboard,
@@ -2979,14 +3087,15 @@ static char *debug_scene_text(void) {
 		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
 		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
 		"appearance_canvas_authored=%d home_enabled=%d mode=%d entry_progress=%.4f "
-		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s",
+		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s home_selected=%d home_offset=%.1f home_settling=%d",
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
 		shell.appearance_enabled ? shell.appearance.wallpaper : -1,
 		shell.appearance_enabled ? shell.appearance.canvas_authored : -1,
 		home_enabled, (int)shell.policy.mode, shell.policy.entry_progress,
-		chrome_enabled, drawer_mapped_now, keyboard_mapped_now, selected_app_id);
+		chrome_enabled, drawer_mapped_now, keyboard_mapped_now, selected_app_id,
+		shell.home_selected, shell.home_offset, shell.home_settling);
 	if (written < 0) {
 		free(text);
 		return NULL;

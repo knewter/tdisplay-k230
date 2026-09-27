@@ -254,3 +254,7 @@
 +#include "sway/card_shell_test_input.h"
 @@ -716,0 +718 @@
 +	card_shell_test_input_finish();
+--- a/sway/input/seat.c
++++ b/sway/input/seat.c
+@@ -1272,0 +1273 @@
++	card_shell_focus_changed(seat);

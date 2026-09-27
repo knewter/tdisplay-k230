@@ -8,6 +8,7 @@ struct sway_view;
 struct sway_output;
 struct sway_seat;
 struct wlr_touch;
+void card_shell_focus_changed(struct sway_seat *seat);
 void card_shell_observe(struct sway_view *view);
 void card_shell_commit(struct sway_view *view);
 void card_shell_unmap(struct sway_view *view);

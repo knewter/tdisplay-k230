@@ -371,7 +371,7 @@ pub fn find_running_con_id(
         let Some(object) = node.as_object() else {
             continue;
         };
-        if object.get("type").and_then(|value| value.as_str()) == Some("con") {
+        if matches!(object.get("type").and_then(|value| value.as_str()), Some("con" | "floating_con")) {
             if let Some(app_id) = object.get("app_id").and_then(|value| value.as_str()) {
                 if app_id_matches(app_id, entry_id, exec_hint) {
                     return object.get("id").and_then(|value| value.as_i64());
@@ -657,7 +657,7 @@ mod tests {
                 ]},
             ],
             "floating_nodes": [
-                {"type": "con", "app_id": "foot", "id": 22},
+                {"type": "floating_con", "app_id": "foot", "id": 22},
             ],
         });
         assert_eq!(find_running_con_id(&tree, "foot.desktop", None), Some(22));

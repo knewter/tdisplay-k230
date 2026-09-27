@@ -949,7 +949,9 @@ fn focus_or_launch(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path
 /// a missing binary, an oversized or unparsable reply -- so a lookup
 /// problem always degrades to an ordinary launch, never a stuck tap.
 fn running_con_id(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Option<i64> {
-    let exec_hint = path.and_then(|path| gio::DesktopAppInfo::from_filename(path)).and_then(|app| {
+    let info = path.and_then(|path| gio::DesktopAppInfo::from_filename(path));
+    let startup_class = info.as_ref().and_then(|app| app.startup_wm_class());
+    let exec_hint = info.as_ref().and_then(|app| {
         app.executable()
             .file_name()
             .map(|name| name.to_string_lossy().into_owned())
@@ -962,7 +964,10 @@ fn running_con_id(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path:
         return None;
     }
     let tree: serde_json::Value = serde_json::from_slice(&output.stdout).ok()?;
-    k230_shell_rust::home_screen::find_running_con_id(&tree, id, exec_hint.as_deref())
+    // Our themed terminal wrappers advertise their Wayland app_id through
+    // StartupWMClass; neither their desktop ID nor executable basename matches.
+    k230_shell_rust::home_screen::find_running_con_id(&tree, id, startup_class.as_deref())
+        .or_else(|| k230_shell_rust::home_screen::find_running_con_id(&tree, id, exec_hint.as_deref()))
 }
 
 fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
@@ -5680,6 +5685,22 @@ mod route_tests {
         fs::write(&script, "#!/bin/sh\nexit 0\n").unwrap();
         assert!(swaymsg_back(&script).is_ok());
         fs::remove_file(script).unwrap();
+    }
+
+    #[test]
+    fn running_con_id_honors_startup_class_for_floating_apps() {
+        let dir = std::env::temp_dir().join(format!("k230-home-focus-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let desktop = dir.join("foot.desktop");
+        fs::write(&desktop, "[Desktop Entry]\nType=Application\nName=Terminal\nExec=/bin/true\nStartupWMClass=k230-terminal\n").unwrap();
+        let swaymsg = dir.join("swaymsg");
+        fs::write(&swaymsg, r##"#!/bin/sh
+printf '%s\n' '{"type":"root","floating_nodes":[{"type":"floating_con","app_id":"k230-terminal","id":42}]}'
+"##).unwrap();
+        fs::set_permissions(&swaymsg, fs::Permissions::from_mode(0o700)).unwrap();
+        assert_eq!(running_con_id("foot.desktop", Some(&desktop), &swaymsg), Some(42));
+        assert_eq!(running_con_id("other.desktop", None, &swaymsg), None);
+        fs::remove_dir_all(dir).unwrap();
     }
 
     /// The riskiest assumption this feature makes, proven against the real

@@ -197,6 +197,7 @@ def main():
                         help="built nix/handheld-theme-default store path")
     parser.add_argument("--icons", required=True, type=Path,
                         help="built nix/handheld-theme-icons store path")
+    parser.add_argument("--client", type=Path, help="native Wayland probe; enables running-app navigation checks")
     parser.add_argument("--qemu", default="/usr/bin/qemu-riscv64-static")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
@@ -212,7 +213,8 @@ def main():
     qemu = str(args.qemu)
 
     config = root / "sway.conf"
-    config.write_text(f"output HEADLESS-1 mode {WIDTH}x{HEIGHT}\nseat seat0 fallback true\n")
+    config.write_text(f"output HEADLESS-1 mode {WIDTH}x{HEIGHT}\nseat seat0 fallback true\n"
+                      'for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0\n')
     swaymsg_wrapper = root / "swaymsg"
     swaymsg_wrapper.write_text(f"#!/bin/sh\nexec {qemu} {args.swaymsg} \"$@\"\n")
     swaymsg_wrapper.chmod(0o700)
@@ -239,7 +241,7 @@ def main():
     launch_script.chmod(0o700)
     (apps_dir / "k230-fixture-terminal.desktop").write_text(
         "[Desktop Entry]\nType=Application\nName=Terminal\n"
-        f"Exec={launch_script} terminal\nIcon=foot\n"
+        f"Exec={launch_script} terminal\nIcon=foot\nStartupWMClass=k230.card.one\n"
     )
     # Pre-pinned at page 0 slot 0 from boot, so this test can exercise the
     # per-icon remove *badge* tap on an icon that was never dragged, kept
@@ -307,6 +309,12 @@ def main():
         K230_SWAYMSG=str(swaymsg_wrapper),
     )
 
+    helper = root / "surface-helper"
+    helper.write_text(f'#!/bin/sh\nexec {qemu} {args.rust} "$@"\n')
+    helper.chmod(0o700)
+    env["SWAY_K230_CARD_SURFACE_HELPER"] = str(helper)
+    env["SWAY_K230_CARD_REVEAL_STREAM"] = "1"
+
     logs = {}
     processes = []
 
@@ -330,12 +338,12 @@ def main():
             time.sleep(0.05)
         raise AssertionError("timed out waiting for home-screen QEMU state")
 
-    def ipc(command):
+    def ipc(command, kind=0):
         with socket.socket(socket.AF_UNIX) as stream:
             stream.settimeout(10)
             stream.connect(str(next(root.glob("sway-ipc.*.sock"))))
             payload = command.encode()
-            stream.sendall(b"i3-ipc" + struct.pack("=II", len(payload), 0) + payload)
+            stream.sendall(b"i3-ipc" + struct.pack("=II", len(payload), kind) + payload)
 
             def read(count):
                 data = b""
@@ -347,7 +355,9 @@ def main():
 
             length, _ = struct.unpack("=II", read(14)[6:])
             answer = json.loads(read(length))
-            assert all(row["success"] for row in answer), (command, answer)
+            if kind == 0:
+                assert all(row["success"] for row in answer), (command, answer)
+            return answer
 
     contact = 1
 
@@ -405,6 +415,8 @@ def main():
             subprocess.run(["grim", str(path)], env=env, check=True)
             with Image.open(path) as image:
                 current = image.convert("RGB")
+            if stable_frames == 0:
+                return current
             if previous is not None and ImageChops.difference(current, previous).getbbox() is None:
                 stable += 1
                 if stable >= stable_frames:
@@ -444,6 +456,10 @@ def main():
         wait_for_ready("dark-rust")
 
         page1 = capture("home-dark-page1.png")
+        if args.client:
+            from home_navigation_scenario import exercise_navigation
+            checks.update(exercise_navigation(args.client, spawn, ipc, wait_for,
+                          drag_steps_2d, settle_and_release, tap, capture, route, dock_center))
 
         # A leftward drag from near the right edge, well past the 50%
         # settle threshold but never past the left edge, captured partway
