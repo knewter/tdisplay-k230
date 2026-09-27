@@ -91,9 +91,12 @@ without it.
 
 ### Requirement: The Settings brightness stepper drives the real device
 
-<!-- Settings backend physical proof: live-hs/README.md. The actual UI
-stepper interaction is still UNVERIFIED; backend calls alone do not close
-that interaction gate. -->
+*Physical proof: `docs/evidence/backlight/combined-candidate/README.md`
+records actual Settings stepper taps through a verified virtual touchscreen
+on the board, changing raw brightness 255 → 230 → 255, plus camera-proven
+Settings backend levels. This is injected board input, not real-finger
+acceptance. The matching combined candidate is installed and normal-boot
+identities are verified there.*
 
 The existing Settings brightness stepper (`ServiceRequest::Brightness`,
 already implemented in the Rust shell as a stepper rather than a slider,

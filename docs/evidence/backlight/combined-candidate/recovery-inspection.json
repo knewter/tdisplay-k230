@@ -1,0 +1,19 @@
+{
+  "observed_at_unix": 1790478543.6410835,
+  "evidence_class": "physical-board-serial",
+  "recovered_current_system": "/nix/store/9h5z3gk24gb3kdal037plsxqrmd7dx1y-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "all_eight_normal_boot_files_match_previous": true,
+  "boot_filesystem": {
+    "bytes": 104291328,
+    "used_bytes": 101942272,
+    "available_bytes": 0
+  },
+  "owned_partial": {
+    "path": "/boot/.k230-panel-next-Image",
+    "bytes": 13873152,
+    "prefix_matches_staged_candidate": true,
+    "removed": true
+  },
+  "prior_system_profile": "/nix/store/gnr36q39hmy4pq7ipwac1r1rpfbyqxd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "finding": "Failed attempt reached shadow Image staging and exhausted /boot; normal files were intact. Volatile original error log was lost."
+}

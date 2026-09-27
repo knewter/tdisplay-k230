@@ -1,0 +1,57 @@
+PHASE preflight_tools
+PHASE preflight_identity
+PHASE preflight_boot_mount
+PHASE preflight_bundles
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+fw_jump_add_uboot_head.bin: OK
+force_dtb: OK
+lcd_dtb: OK
+hdmi_dtb: OK
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+fw_jump_add_uboot_head.bin: OK
+force_dtb: OK
+lcd_dtb: OK
+hdmi_dtb: OK
+PHASE preserve_roots
+PHASE report_boot_staging_remnants
+PHASE preflight_rootfs_stage_capacity
+ROOTFS_CAPACITY available=111602323456 required=92016640
+PHASE stage_and_verify_on_rootfs
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+PHASE preflight_boot_growth_capacity
+BOOT_CAPACITY available=12701696 final_growth=-3072 peak_growth_with_rollback=0 margin=2097152 required=2097152
+PHASE overwrite_boot_files_nonatomic
+PHASE overwrite_Image
+BOOT_FILE_VERIFIED Image
+PHASE overwrite_initrd.uimg
+BOOT_FILE_VERIFIED initrd.uimg
+PHASE overwrite_k230-tdisplay.dtb
+BOOT_FILE_VERIFIED k230-tdisplay.dtb
+PHASE overwrite_bootargs.txt
+BOOT_FILE_VERIFIED bootargs.txt
+PHASE verify_candidate_boot
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+PHASE set_system_profile
+PHASE final_verification
+Image: OK
+initrd.uimg: OK
+k230-tdisplay.dtb: OK
+bootargs.txt: OK
+EXIT phase=complete status=0 line=0
+K230_PERSIST_FINAL status=SUCCESS exit=0

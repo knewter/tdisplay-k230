@@ -1,4 +1,4 @@
-# Combined candidate passes brightness; normal install remains unverified
+# Brightness and power recovery pass on the installed system
 
 Physical board, 2026-09-27 UTC. Source `433a4226`, candidate system
 `/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd`.
@@ -58,15 +58,13 @@ See the allowlisted [boot excerpt](normal-boot-excerpt.txt). The collector
 incorrectly accepted a stale preboot prompt after seeing the new kernel
 header and stopped early. That log alone does not demonstrate a kernel
 hang. Independent follow-up serial probes returned no bytes, and SSH was
-unavailable. A physical reset was requested so the coordinator can load
-the already-tested staged candidate again.
+unavailable. A physical reset was requested to reload the tested staged candidate.
 
-Normal installation, task 6.4 and archive remain **UNVERIFIED / open**.
+At that point, normal installation, task 6.4 and archive remained **UNVERIFIED / open**.
 The retry must record a durable phase/result log from the first preflight,
 run outside the login session, verify candidate boot hashes and system
 profile before reboot, and then wait for a fresh root prompt after the new
-kernel header. The host reboot checker has been corrected; it has not yet
-completed that corrected normal-boot check on this board.
+kernel header. The retry below used the corrected host reboot checker.
 
 ## Source-based installer diagnosis
 
@@ -85,3 +83,56 @@ inside the guarded replacement phase. This is not an atomic multi-file
 update: interruption during replacement needs recovery through the preserved
 root-filesystem bundle. Inspect and remove only the coordinator's own partial
 hidden staging files after recovery; never clean unrelated boot files.
+
+## Recovery and corrected installation
+
+After the operator reconnected power, the old `9h5z3gk…` system booted
+normally. All eight normal boot files matched the preserved backup. `/boot`
+was full, with a 13,873,152-byte `.k230-panel-next-Image` partial copy whose
+entire contents matched the corresponding prefix of the candidate Image.
+The coordinator removed only that owned partial file. This confirms the
+attempt reached shadow-copy staging and exhausted the boot filesystem;
+the original volatile error log remains unavailable. The inspection is
+recorded in [recovery-inspection.json](recovery-inspection.json).
+
+The candidate was loaded again through U-Boot from the preserved rootfs
+bundle. Its exact current/booted identities and all three active shell
+services were checked before the corrected installer ran. A second manual
+power interruption happened during an earlier one-shot boot, before any
+persistent boot mutation; the old normal system recovered again.
+
+The [corrected transaction](persist-durable.sh) ran as a detached systemd
+oneshot, with durable logs and rollback armed before the first boot-file
+write. It staged on the root filesystem, verified the candidate and backup,
+and retained the actual previous system profile. `/boot` had 12,701,696
+bytes available after cleanup; the replacement's worst-case growth was zero,
+with 2 MiB required as metadata headroom. Direct replacement is **not atomic**;
+the verified rootfs bundles remain the recovery path for power loss.
+
+[Transaction result](persist-result.json), [allowlisted log](persist-log.txt)
+and [independent verification](persist-verification.json) record SUCCESS,
+all four candidate hashes, unchanged firmware/selectors, the target system
+profile and sync. No normal reboot was requested until those checks passed.
+The unit launch exceeded the first console collection window; its durable
+result and independent checks, rather than a launch marker, establish success.
+
+## Verified normal boot
+
+The corrected normal reboot completed without intervention. The collector
+waited for a fresh root prompt after the new kernel header, then a separate
+serial command verified current system, booted system, kernel, Sway, Rust
+shell and keyboard executable paths. All three shell services were active;
+no units were failed. See [normal runtime identities](normal-runtime.json)
+and the [allowlisted normal boot excerpt](installed-boot-excerpt.txt).
+
+This completes task 6.4. The installed system is the same `11y992kp…`
+candidate whose camera measurements and DPMS retention are recorded above.
+No full-card flash or readback was performed. The actual UI stepper evidence
+uses injected input on the physical board; no real-finger test is claimed.
+
+The narrow final verification was the detached transaction's SUCCESS record,
+`sha256sum -c` of the four candidate boot files, `cmp` of the four unchanged
+firmware/selector files, `readlink -e /nix/var/nix/profiles/system`, and a
+normal reboot followed by `readlink -f /run/{current,booted}-system`,
+`readlink -f /run/booted-system/kernel`, shell service `is-active` and
+`/proc/<MainPID>/exe` checks, plus `systemctl --failed`.

@@ -1,0 +1,1 @@
+{"verified": true, "system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd", "run_directory": "/var/lib/k230/panel-durable-install-20260927-01", "checks": ["unit success", "durable success record", "four candidate hashes", "four unchanged firmware/selectors", "system profile", "sync"]}

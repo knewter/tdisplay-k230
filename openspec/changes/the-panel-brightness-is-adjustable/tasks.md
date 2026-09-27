@@ -104,16 +104,17 @@
       Physical proof: `docs/evidence/backlight/live-hs/README.md`, source
       `d76e126f`, live raw 26/128/255 and DPMS recovery at 128 with fixed
       exposure; shell-user Settings commands also visibly apply.
-- [ ] 6.4 Verify shell-user brightness controls and retention of a chosen
+- [x] 6.4 Verify shell-user brightness controls and retention of a chosen
       nondefault brightness across DPMS. Install persistently only after
       the candidate checks, then repeat boot/service identity checks.
 
       Candidate controls, camera levels and retention pass on source
       `433a4226`; see `docs/evidence/backlight/combined-candidate/README.md`.
-      Persistent completion was not established; normal reboot selected the
-      earlier system and subsequent console access failed. The coordinator
-      owns recovery after the requested physical reset. Durable transaction
-      diagnostics and verified normal boot remain required; do not archive.
+      Corrected durable installation and a normal reboot now pass. Exact
+      boot hashes, profile, kernel and all three shell service identities
+      are committed alongside the camera proof. The failed shadow-copy
+      attempt and recovery remain documented; no full-card readback or
+      real-finger acceptance is claimed.
 
 Tasks 6.1/6.2 host proof: `docs/evidence/backlight/transport/build.json`
 (source `926c7a61`, combined cross-build exit 0) and 25 transport fixtures

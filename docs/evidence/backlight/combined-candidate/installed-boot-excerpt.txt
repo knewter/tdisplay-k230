@@ -1,0 +1,9 @@
+17 bytes read in 1 ms (16.6 KiB/s)
+211 bytes read in 1 ms (206.1 KiB/s)
+270808 bytes read in 10 ms (25.8 MiB/s)
+60428288 bytes read in 2550 ms (22.6 MiB/s)
+71743 bytes read in 5 ms (13.7 MiB/s)
+27313841 bytes read in 1160 ms (22.5 MiB/s)
+[    0.000000] Linux version 6.6.36 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP Tue Jan  1 00:00:00 UTC 1980
+Selected init: /nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd/init
+Serial autologin reached

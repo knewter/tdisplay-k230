@@ -1,0 +1,12 @@
+{
+  "source": "433a42265c766be1fe50280832252ae67a85b7ef",
+  "system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "booted_system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/9w07l7qyhd3xykq9wfhjlg3qqc3ijqhs-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "sway_exe": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust_exe": "/nix/store/xsi8cl9vdimjnqlqkhadzwahmajml9j9-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "keyboard_exe": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+  "brightness": 255,
+  "services_active": true,
+  "failed_units": []
+}
