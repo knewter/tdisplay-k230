@@ -659,6 +659,7 @@ DATA 2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208 docs/evide
 DATA 1756635c6a3f7aea4e80caf0a8bf909d1211a0164c6c13e7499e5c594a985bab docs/evidence/backlight/combined-candidate/live-and-settings.jpg
 DATA 19e84e2647c7f0b7344e561002e5de9e600ba015f0ae2e4f36b622efb4f2a801 docs/evidence/backlight/combined-candidate/off-on.jpg
 DATA 0f55de68c97eff8199d8e2a8a789b87c391589085e90605531cfc556ba5d1a4c docs/evidence/backlight/combined-candidate/settings-ui.png
+DATA cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b docs/evidence/theme-picker/store-relocation/current-theme.png
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
@@ -2095,3 +2096,12 @@ and limitations: `docs/evidence/backlight/combined-candidate/README.md`.
 | `docs/evidence/backlight/combined-candidate/live-and-settings.jpg` | 39326 | DATA | `1756635c6a3f7aea4e80caf0a8bf909d1211a0164c6c13e7499e5c594a985bab` |
 | `docs/evidence/backlight/combined-candidate/off-on.jpg` | 15732 | DATA | `19e84e2647c7f0b7344e561002e5de9e600ba015f0ae2e4f36b622efb4f2a801` |
 | `docs/evidence/backlight/combined-candidate/settings-ui.png` | 36724 | DATA | `0f55de68c97eff8199d8e2a8a789b87c391589085e90605531cfc556ba5d1a4c` |
+
+### Saved bundled theme after store relocation
+
+Reviewed native screenshot, injected Settings tap, candidate one-time boot.
+See `docs/evidence/theme-picker/store-relocation/README.md` for limits.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/theme-picker/store-relocation/current-theme.png` | 301875 | DATA | `cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b` |

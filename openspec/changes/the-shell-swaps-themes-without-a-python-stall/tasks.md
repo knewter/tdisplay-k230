@@ -1058,6 +1058,12 @@ or board use was performed for these tasks; 11.3 remains open.
   closing this gate. Task 11.3 remains open: the first paired run did not
   establish improved warm swipes, and the second lacked background content.
 
+Partial board proof for 12.2: `docs/evidence/theme-picker/store-relocation/README.md`
+shows the saved theme centered and current background populated on candidate
+`433a4226`, with the original generation unchanged. The repeated browse
+measurement and verified normal installation remain pending after the normal
+boot recovery interruption; this task is deliberately still unchecked.
+
 Host proof for 12.1 (2026-09-27): the exact unittest discovery command above
 passes 21 tests. Six added regressions cover an identical source relocated to
 a new store package after the old object is removed, unchanged active pointer
