@@ -89,6 +89,17 @@ struct Contact {
     down_ms: u32,
     finger_velocity: f64,
     cancelled: bool,
+    /// Set once this gesture's own `motion` has actually carried `scroll`
+    /// away from the grid's own top (past 0.5px), and never cleared again.
+    /// Gates `up`'s own release-only dismiss check below: without this, a
+    /// gesture that scrolled down through the list and then reversed --
+    /// ending back near the top with a large enough net downward travel
+    /// from its *original* touch-down point -- could still read as
+    /// "dy > 110 && scroll <= 0.5" and close the Drawer, even though the
+    /// grid was never at rest at its top when this same continuous touch
+    /// began scrolling away from it. Real scrolling away from the top must
+    /// permanently disqualify the rest of that gesture from closing.
+    scrolled_away: bool,
 }
 
 #[derive(Default)]
@@ -115,6 +126,7 @@ impl DrawerNavigation {
             down_ms: time_ms,
             finger_velocity: 0.0,
             cancelled: false,
+            scrolled_away: false,
         });
         true
     }
@@ -143,6 +155,9 @@ impl DrawerNavigation {
         let old = self.scroll;
         self.scroll = (contact.start_scroll - (point.1 - contact.start.1))
             .clamp(0.0, max_scroll(height, rows));
+        if self.scroll > 0.5 {
+            contact.scrolled_away = true;
+        }
         (self.scroll - old).abs() >= 0.5
     }
 
@@ -162,7 +177,7 @@ impl DrawerNavigation {
         }
         let dx = point.0 - contact.start.0;
         let dy = point.1 - contact.start.1;
-        if dy > 110.0 && self.scroll <= 0.5 {
+        if dy > 110.0 && self.scroll <= 0.5 && !contact.scrolled_away {
             self.velocity = 0.0;
             return Some(DrawerAction::Close);
         }
@@ -247,9 +262,22 @@ mod tests {
             );
         }
         let top = list_top(1232);
-        assert_eq!(tap(&mut nav, (190.0, top + 30.0), 7), None, "column gap");
+        // Computed from the real tile geometry rather than hand-picked
+        // literals, so this stays correct across a column-count/margin
+        // change instead of silently testing stale positions.
+        let (tile0_x, _, tile0_w, _) = tile_rect(568, 1232, 0, 0.0);
+        let (tile1_x, _, _, _) = tile_rect(568, 1232, 1, 0.0);
+        let gap_x = (tile0_x + tile0_w + tile1_x) / 2.0;
         assert_eq!(
-            tap(&mut nav, (280.0, top + ROW_HEIGHT * 2.0 + 30.0), 7),
+            tap(&mut nav, (gap_x, top + 30.0), 7),
+            None,
+            "column gap"
+        );
+        // Index 7 is beyond the 7-app catalog -- an unpainted slot in an
+        // otherwise-populated row.
+        let (empty_x, empty_y, empty_w, empty_h) = tile_rect(568, 1232, 7, 0.0);
+        assert_eq!(
+            tap(&mut nav, (empty_x + empty_w / 2.0, empty_y + empty_h / 2.0), 7),
             None,
             "empty eighth tile"
         );
@@ -258,9 +286,9 @@ mod tests {
             None,
             "header is not a tile"
         );
-        nav.down(2, (195.0, top + 40.0), 50);
+        nav.down(2, (gap_x, top + 40.0), 50);
         assert_eq!(
-            nav.up(2, (204.0, top + 40.0), 70, 568, 1232, 7),
+            nav.up(2, (gap_x + 9.0, top + 40.0), 70, 568, 1232, 7),
             None,
             "gap-to-tile is not a tap"
         );
@@ -370,6 +398,65 @@ mod tests {
         nav.motion(1, (100.0, top + 110.0), 80, 1232, 7);
         assert_eq!(
             nav.up(1, (100.0, top + 110.0), 85, 568, 1232, 7),
+            Some(DrawerAction::Close)
+        );
+    }
+
+    /// Reported bug: "when i swipe down in the app drawer to scroll back
+    /// up, it closes the drawer". One held touch, starting inside the grid
+    /// while it is at its own top: first the finger drags *up* to scroll
+    /// down through the list (ordinary scrolling, ends with `scroll`
+    /// meaningfully away from 0), then -- without lifting -- reverses and
+    /// drags back *down*, all the way past the original touch-down point
+    /// (net downward travel from `start` well past the 110px dismiss
+    /// threshold, matching a real "scroll back up" swipe). The list must
+    /// keep scrolling for the gesture's entire duration; it must never
+    /// convert into a close, even though the release point reads as a big
+    /// net downward drag and the grid is back at (or near) its own top by
+    /// the time the finger lifts.
+    #[test]
+    fn scrolling_away_from_the_top_then_reversing_never_closes_within_one_gesture() {
+        let mut nav = DrawerNavigation::default();
+        let apps = 40; // enough rows that 200px of scroll is not already clamped away
+        let top = list_top(1232);
+        let start = (100.0, top + 10.0);
+        assert!(nav.down(1, start, 0));
+
+        // Scroll down through the list: drag up 200px.
+        assert!(nav.motion(1, (100.0, top + 10.0 - 200.0), 40, 1232, apps));
+        assert!(nav.scroll > 100.0, "actually scrolled away from the top");
+
+        // Now reverse, without lifting, and drag back down past the
+        // original start point -- the exact "swipe down to scroll back
+        // up" gesture from the bug report.
+        assert!(nav.motion(1, (100.0, top + 10.0 + 150.0), 90, 1232, apps));
+        // The grid has scrolled back to (or past, and clamped at) its own
+        // top by now...
+        assert!(nav.scroll <= 0.5, "back at the top after reversing");
+        // ...but this must not read as a dismiss on release: the net
+        // downward travel from the *original* start point is 150px, past
+        // the old unconditional 110px threshold, which is exactly what
+        // made the un-fixed release-only check misfire.
+        assert_eq!(
+            nav.up(1, (100.0, top + 10.0 + 150.0), 95, 568, 1232, apps),
+            None,
+            "a gesture that scrolled away from the top must never convert into a close"
+        );
+    }
+
+    /// The same reversal, but starting truly at rest at the top (no prior
+    /// scroll in this gesture) and dragging straight down past the
+    /// threshold: this is the legitimate dismiss the fix above must not
+    /// have broken.
+    #[test]
+    fn a_straight_downward_drag_from_the_top_still_dismisses() {
+        let mut nav = DrawerNavigation::default();
+        let top = list_top(1232);
+        let start = (100.0, top + 10.0);
+        assert!(nav.down(1, start, 0));
+        nav.motion(1, (100.0, top + 10.0 + 150.0), 40, 1232, 7);
+        assert_eq!(
+            nav.up(1, (100.0, top + 10.0 + 150.0), 45, 568, 1232, 7),
             Some(DrawerAction::Close)
         );
     }

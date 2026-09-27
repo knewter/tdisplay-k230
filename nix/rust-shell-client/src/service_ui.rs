@@ -189,21 +189,60 @@ pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
-/// Where a Drawer close drag may originate: its own top edge/handle band
-/// (`navigation::list_top`'s own header, above the tile grid -- always
-/// eligible, the same way Shade's dismiss zone is regardless of scroll),
-/// or the tile grid itself once already scrolled to its own top (mirrors
-/// `DrawerNavigation::up`'s pre-existing "dy > 110 && scroll <= 0.5" release
-/// check, now live instead of release-only, so an ordinary scroll away
-/// from the top is never hijacked). The dock band (`GRID_BOTTOM_INSET`) is
-/// excluded -- its pinned tiles must stay tappable. The Drawer has no
-/// backdrop above it today (unlike Shade/Settings; `apply_tray_backdrop`
-/// only covers those two), so there is no third "backdrop" zone here.
+/// The Drawer's own top handle band, measured down from its panel edge
+/// (`height * 0.19`). Deliberately a slim strip, not the whole header --
+/// `docs/design/app-drawer-review.md` found the previous "entire header is
+/// always a close zone" design meant the eyebrow/title text (which a
+/// scrolling thumb can easily brush across, e.g. reaching up for a long
+/// swipe) could hijack a drag having nothing to do with the handle. Android
+/// keeps a drawer's drag handle this narrow for the same reason: dragging
+/// the sheet closed is a deliberate reach for its top edge, not an ordinary
+/// consequence of scrolling near it.
+pub const DRAWER_HANDLE_HEIGHT: f64 = 56.0;
+
+/// Where a Drawer close drag may originate: its own top handle band
+/// (`DRAWER_HANDLE_HEIGHT`, always eligible regardless of scroll, the same
+/// way Shade's dismiss zone is), or the tile grid itself once already
+/// scrolled to its own top (mirrors `DrawerNavigation::up`'s pre-existing
+/// "dy > 110 && scroll <= 0.5" release check, now live instead of
+/// release-only, so an ordinary scroll away from the top is never
+/// hijacked). The dock band (`GRID_BOTTOM_INSET`) is excluded -- its
+/// pinned tiles must stay tappable. The Drawer has no backdrop above it
+/// today (unlike Shade/Settings; `apply_tray_backdrop` only covers those
+/// two), so there is no third "backdrop" zone here.
+///
+/// This is only the *start*-zone test. Whether a touch that started here
+/// stays eligible for the rest of its gesture is a separate question
+/// (`drawer_close_candidate_after_scroll`) -- the grid sub-zone here only
+/// ever reflects the scroll at the moment the finger went down, not
+/// wherever the same continuous drag later carries it.
 pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
     let panel_y = f64::from(height) * 0.19;
+    let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT;
     let header_bottom = list_top(height);
     let dock_top = f64::from(height) - GRID_BOTTOM_INSET;
-    (y >= panel_y && y < header_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
+    (y >= panel_y && y < handle_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
+}
+
+/// Whether a Drawer close-drag candidate established at touch-down
+/// (`drawer_close_drag_zone`, gated by the caller on "not already active"
+/// and "no fling in flight") survives an ordinary motion sample that just
+/// ran `DrawerNavigation::motion` instead of engaging a close.
+///
+/// Bug this exists to prevent: a touch that starts eligible because the
+/// grid is at its own top (`scroll <= 0.5`) stays flagged eligible for its
+/// *entire* gesture under the old logic, decided once at touch-down and
+/// never revisited. So scrolling away from the top and then reversing
+/// direction within that same held touch -- exactly "scroll down, then
+/// swipe down again to scroll back up" -- could cross the close-drag slop
+/// relative to the *original* touch-down point and engage a close, even
+/// though the grid was no longer anywhere near its top. Real scrolling
+/// away from the top must permanently disqualify the rest of that
+/// gesture from closing; reversing back toward the top later must keep
+/// scrolling, never convert into a close (Android's own behaviour, and
+/// the literal bug report this fixes).
+pub fn drawer_close_candidate_after_scroll(candidate: bool, scroll: f64) -> bool {
+    candidate && scroll <= 0.5
 }
 
 /// Whether an upward drag that starts at `y` on the Shade panel itself
@@ -837,24 +876,30 @@ mod tests {
     }
 
     #[test]
-    fn drawer_close_drag_zone_is_the_header_always_and_the_grid_only_at_top() {
+    fn drawer_close_drag_zone_is_the_slim_handle_and_the_grid_only_at_top() {
         let height = 1232;
         let panel_y = f64::from(height) * 0.19; // 234.08
+        let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT; // 290.08
         let header_bottom = list_top(height); // 415.08
         let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1160.0
 
-        // The header/handle band is eligible regardless of scroll --
-        // scrolled deep into the list or not, the handle is still there.
+        // The slim top handle is eligible regardless of scroll -- scrolled
+        // deep into the list or not, the handle is still there.
         for scroll in [0.0, 5_000.0] {
             assert!(
                 drawer_close_drag_zone(panel_y, height, scroll),
                 "top edge, scroll={scroll}"
             );
             assert!(
-                drawer_close_drag_zone(header_bottom - 1.0, height, scroll),
-                "just above the grid, scroll={scroll}"
+                drawer_close_drag_zone(handle_bottom - 1.0, height, scroll),
+                "still inside the handle band, scroll={scroll}"
             );
         }
+        // Below the handle but still above the grid (the title/eyebrow
+        // text) is not a close zone at all -- a thumb resting there while
+        // scrolling the list must never be mistaken for grabbing a handle.
+        assert!(!drawer_close_drag_zone(handle_bottom, height, 0.0));
+        assert!(!drawer_close_drag_zone(header_bottom - 1.0, height, 5_000.0));
         // The grid itself: eligible only once scrolled to (approximately)
         // its own top -- the same "at the top" idea
         // `DrawerNavigation::up`'s own release check already used.
@@ -879,6 +924,24 @@ mod tests {
         ));
         // Above the panel entirely (Home showing through) is not a zone.
         assert!(!drawer_close_drag_zone(panel_y - 1.0, height, 0.0));
+    }
+
+    #[test]
+    fn drawer_close_candidate_is_disqualified_once_scroll_leaves_the_top() {
+        // A candidate stays a candidate while the grid is still at (or
+        // very near) its own top...
+        assert!(drawer_close_candidate_after_scroll(true, 0.0));
+        assert!(drawer_close_candidate_after_scroll(true, 0.5));
+        // ...but is permanently revoked the instant real scrolling has
+        // carried it away, even by a little -- reversing back toward 0.0
+        // later must never re-arm it (the caller never re-passes `true`
+        // once this has returned `false`, only the *previous* candidate
+        // value survives into the caller's own state).
+        assert!(!drawer_close_candidate_after_scroll(true, 0.51));
+        assert!(!drawer_close_candidate_after_scroll(true, 400.0));
+        // A candidate that was never eligible in the first place (e.g. the
+        // touch started mid-list) stays disqualified regardless of scroll.
+        assert!(!drawer_close_candidate_after_scroll(false, 0.0));
     }
 
     #[test]
