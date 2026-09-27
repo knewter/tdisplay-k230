@@ -46,18 +46,18 @@ index f6b4239..8d35461 100644
          cursorShape: Qt.PointingHandCursor
          onClicked: control.clicked()
 diff --git a/src/Main.qml b/src/Main.qml
-index cdcbc3e..a2340b4 100644
+index cdcbc3e..5cf799c 100644
 --- a/src/Main.qml
 +++ b/src/Main.qml
-@@ -1,7 +1,6 @@
+@@ -1,7 +1,5 @@
  import QtQuick
  import QtQuick.Controls
- import QtQuick.Controls.Material
+-import QtQuick.Controls.Material
 -import QtQuick.Dialogs as Dialogs
  import QtQuick.Layouts
  import QtQuick.Window
  import "EditorMutations.js" as EditorMutations
-@@ -10,8 +9,8 @@ ApplicationWindow {
+@@ -10,8 +8,8 @@ ApplicationWindow {
      id: win
      width: 1280
      height: 820
@@ -68,9 +68,12 @@ index cdcbc3e..a2340b4 100644
      visible: true
      title: (backend.modified ? "* " : "") + backend.fileName + " - Omawrite"
  
-@@ -42,6 +41,15 @@ ApplicationWindow {
-     Material.theme: darkMode ? Material.Dark : Material.Light
-     Material.accent: backend.themeAccent
+@@ -39,9 +37,16 @@ ApplicationWindow {
+     property bool replaceOpen: false
+     property bool awaitingPendingSave: false
+ 
+-    Material.theme: darkMode ? Material.Dark : Material.Light
+-    Material.accent: backend.themeAccent
      color: pageColor
 +    palette.window: pageColor
 +    palette.base: pageColor
@@ -84,7 +87,7 @@ index cdcbc3e..a2340b4 100644
  
      onClosing: function(close) {
          if (closeConfirmed || !backend.modified)
-@@ -267,19 +275,20 @@ ApplicationWindow {
+@@ -267,19 +272,20 @@ ApplicationWindow {
          }
      }
  
@@ -111,7 +114,21 @@ index cdcbc3e..a2340b4 100644
          onAccepted: backend.saveAs(selectedFile)
          onRejected: {
              backend.fileDialogCanceled();
-@@ -344,6 +353,7 @@ ApplicationWindow {
+@@ -328,11 +334,13 @@ ApplicationWindow {
+         id: shortcutsDialog
+         modal: true
+         title: "Keyboard shortcuts"
++        width: Math.min(480, win.width - 32)
+         standardButtons: Dialog.Close
+         anchors.centerIn: parent
+         contentItem: Label {
+             text: "Ctrl+S  Save\nCtrl+Shift+S  Save As\nCtrl+O  Open\nCtrl+N  New Window\nCtrl+F  Find\nCtrl+H  Find and Replace\nCtrl+B  Bold\nCtrl+I  Italic\nCtrl+K  Link\nCtrl+P  Print\nF11 / Super+F  Fullscreen\nCtrl+?  Shortcuts"
+             lineHeight: 1.5
++            wrapMode: Text.Wrap
+         }
+     }
+ 
+@@ -344,6 +352,7 @@ ApplicationWindow {
              anchors.fill: parent
              anchors.leftMargin: 24
              anchors.rightMargin: 24
@@ -119,7 +136,7 @@ index cdcbc3e..a2340b4 100644
              clip: true
              contentWidth: width
              contentHeight: Math.max(height, editor.y + editor.implicitHeight + 220)
-@@ -801,9 +811,9 @@ ApplicationWindow {
+@@ -801,9 +810,9 @@ ApplicationWindow {
              anchors.left: parent.left
              anchors.bottom: parent.bottom
              anchors.leftMargin: 12
@@ -131,7 +148,7 @@ index cdcbc3e..a2340b4 100644
  
              FooterIconButton {
                  objectName: "saveButton"
-@@ -829,7 +839,7 @@ ApplicationWindow {
+@@ -829,7 +838,7 @@ ApplicationWindow {
                  visible: text !== ""
                  elide: Text.ElideRight
                  width: Math.min(360, win.width / 3)
@@ -140,7 +157,7 @@ index cdcbc3e..a2340b4 100644
                  verticalAlignment: Text.AlignVCenter
              }
          }
-@@ -838,7 +848,7 @@ ApplicationWindow {
+@@ -838,7 +847,7 @@ ApplicationWindow {
              anchors.right: parent.right
              anchors.bottom: parent.bottom
              anchors.rightMargin: 12
@@ -149,6 +166,14 @@ index cdcbc3e..a2340b4 100644
              text: backend.wordCount + (backend.wordCount === 1 ? " Word" : " Words")
              color: win.mutedColor
              opacity: 0.75
+@@ -861,7 +870,6 @@ ApplicationWindow {
+             rightPadding: 8
+             topPadding: 0
+             bottomPadding: 0
+-            Material.elevation: 8
+ 
+             background: Rectangle {
+                 radius: 9
 diff --git a/src/backend.cpp b/src/backend.cpp
 index 90e279e..64a6644 100644
 --- a/src/backend.cpp

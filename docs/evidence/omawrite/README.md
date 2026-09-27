@@ -26,8 +26,8 @@ nix build --impure --expr 'let f = builtins.getFlake (toString ./.); in f.inputs
   --cores 2 --no-link --print-out-paths
 python3 tests/omawrite_runtime.py \
   --sway /nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
-  --omawrite /nix/store/0i70ycyrx2ivga98gdh76ckwmf5wa09z-omawrite-0-unstable-2026-08-07/bin/omawrite \
-  --output /tmp/k230-omawrite-runtime-6
+  --omawrite /nix/store/0yigmki3vav8aawb4yfc50pzf8j8zkvm-omawrite-0-unstable-2026-08-07/bin/omawrite \
+  --output /tmp/k230-omawrite-runtime-7
 ```
 
 [Machine result](host/result.json) records nine checks: portrait launch,
@@ -37,7 +37,14 @@ keyboard-sized window, reopening the saved document and the software backend.
 The keyboard-sized check resizes to 568x812; it does **not** exercise the
 board's on-screen keyboard. Initial stock-dialog and Material-style failures
 were caught by screenshot review; the final controls use the Basic style.
-No frame-rate or physical-touch claim follows from these checks.
+No frame-rate or physical-touch claim follows from these checks. Removing the
+remaining unqualified Material import also removed the shortcut dialog's
+binding-loop warnings; the final app explicitly reports the software backend.
+
+The local spec-site build passes (345 pages, 10,903,044 bytes, 34.21 seconds)
+and the work board discovers all seven captures. This local build is not
+publication evidence; master currently carries the proposal, while the tested
+implementation is checkpointed on `feature/omawrite`.
 
 ![Writing in Omawrite, headless runtime](host/writing.png)
 ![Portrait Open chooser, headless runtime](host/open-dialog.png)

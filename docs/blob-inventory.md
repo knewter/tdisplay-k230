@@ -653,10 +653,10 @@ so that building stage 1 from source does not silently drop them from view.
 ```
 SRC  sha256-yS3GOL/kc03qx4naWzUdSZwAYxMuCjvrgmhexpwjsfA=  src:omacom/omawrite@8f98892b26768236b2c20f4e637cf4b102d898bf
 DATA efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256 docs/evidence/omawrite/host/keyboard-size.png
-DATA b8496d1b5809c56e9c1f8a5b678d40a357b94bacd228643b00538bd4426d8ba8 docs/evidence/omawrite/host/open-dialog.png
-DATA 8aa59fdf5be29fe62860c715d84b2bac795272c3888e5528deb26040ab364f7a docs/evidence/omawrite/host/overwrite-confirmation.png
+DATA b7297165d5ce15ea9784d3c388c5b0e28722368284331ef04306a04b92e89abe docs/evidence/omawrite/host/open-dialog.png
+DATA 344254291d593c9444fd76ac6f28a07b30b6fd3779a340bf2089cf98ae989e49 docs/evidence/omawrite/host/overwrite-confirmation.png
 DATA 15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef docs/evidence/omawrite/host/reopened.png
-DATA 77e997fedd981019be9438abeb9e6c1be5a500c21337f9327ee5452b4dbe6352 docs/evidence/omawrite/host/save-dialog.png
+DATA df5d8dd0e3f1d28a24be0df40b362f48be66fa0804dfa9928a43a67fd1e76a96 docs/evidence/omawrite/host/save-dialog.png
 DATA 0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74 docs/evidence/omawrite/host/theme-changed.png
 DATA f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232 docs/evidence/omawrite/host/writing.png
 DATA b822b4b32c6ce0ba6f90b203e1a61ed9736948a5fa614eefc6c5b7cf00c674fb docs/evidence/theme-picker/background-selection/home-after.png
@@ -2201,9 +2201,9 @@ physical-device or real-finger acceptance.
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/omawrite/host/keyboard-size.png` | 13067 | DATA | `efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256` |
-| `docs/evidence/omawrite/host/open-dialog.png` | 27324 | DATA | `b8496d1b5809c56e9c1f8a5b678d40a357b94bacd228643b00538bd4426d8ba8` |
-| `docs/evidence/omawrite/host/overwrite-confirmation.png` | 35674 | DATA | `8aa59fdf5be29fe62860c715d84b2bac795272c3888e5528deb26040ab364f7a` |
+| `docs/evidence/omawrite/host/open-dialog.png` | 27245 | DATA | `b7297165d5ce15ea9784d3c388c5b0e28722368284331ef04306a04b92e89abe` |
+| `docs/evidence/omawrite/host/overwrite-confirmation.png` | 35582 | DATA | `344254291d593c9444fd76ac6f28a07b30b6fd3779a340bf2089cf98ae989e49` |
 | `docs/evidence/omawrite/host/reopened.png` | 23209 | DATA | `15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef` |
-| `docs/evidence/omawrite/host/save-dialog.png` | 27924 | DATA | `77e997fedd981019be9438abeb9e6c1be5a500c21337f9327ee5452b4dbe6352` |
+| `docs/evidence/omawrite/host/save-dialog.png` | 27844 | DATA | `df5d8dd0e3f1d28a24be0df40b362f48be66fa0804dfa9928a43a67fd1e76a96` |
 | `docs/evidence/omawrite/host/theme-changed.png` | 14053 | DATA | `0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74` |
 | `docs/evidence/omawrite/host/writing.png` | 18205 | DATA | `f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232` |
