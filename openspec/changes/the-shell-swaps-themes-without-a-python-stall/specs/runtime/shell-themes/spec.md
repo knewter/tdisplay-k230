@@ -293,3 +293,29 @@ settles its display correctly regardless of whether this arrives.
 - **THEN** Apply falls back to rendering fresh rather than showing that
   stale render, with no incorrect or outdated content ever reaching the
   screen
+
+
+### Requirement: Picker drags follow the finger before release
+
+<!-- UNVERIFIED: operator reports exaggerated, laggy travel on the installed
+11y992kp system. Source uses collapsed-slot pitch and synchronous motion draws;
+task group 14 requires rendered-geometry, queued-input and board proof. -->
+
+While a person holds and drags either picker row, the reference preview card's
+horizontal center SHALL track their horizontal displacement in surface pixels,
+subject only to catalog end bounds. Momentum SHALL start only after release;
+a stationary hold SHALL expire earlier fling velocity. Queued input SHALL be
+coalesced to its latest position before the next eligible motion repaint.
+
+#### Scenario: Drag, reverse and hold
+
+- **WHEN** a person drags a row horizontally, reverses, then holds still
+- **THEN** its reference card follows the displacement without amplified
+  travel or autonomous settling while held, and old motion samples do not
+  produce a visible animation backlog
+
+#### Scenario: Release after a stationary hold
+
+- **WHEN** a person releases after holding the row still
+- **THEN** earlier drag velocity does not launch a delayed fling; only the
+  remaining nearest-item settling motion may run

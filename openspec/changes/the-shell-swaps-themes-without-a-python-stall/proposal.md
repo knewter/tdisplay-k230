@@ -154,3 +154,12 @@ number (this change's actual contribution to the 2.8-3.5 s budget) needs
 the reserved board; QEMU-under-`qemu-riscv64-static` and host timings in
 this change's evidence are directional, not the K230's real number, because
 neither reproduces the K230's in-order core.
+
+## Follow-up: direct manipulation of the theme picker
+
+The operator reports exaggerated and delayed movement while dragging either
+row. The current 49/43-pixel collapsed-slice pitch is not the visible focused
+card's travel, and per-motion synchronous redraws can service stale positions.
+Correct the touch-to-rendered-geometry mapping, release velocity after a hold,
+and touch-event redraw scheduling. Keep tap-to-apply and bounded caches intact;
+this supplements, rather than closes, the broader profiling work in group 13.

@@ -1137,3 +1137,26 @@ below is complete merely because that partial evidence or this plan landed.
   exact invocation and observer-cost limits. If warm swipes or memory regress,
   or repaint still dominates, document the next measured correction and keep
   11.3 open; a host regression or scheduling fix alone does not close it.
+
+
+## 14. Make picker movement track the finger
+
+- [ ] 14.1 Replace collapsed-slot input scaling with the inverse rendered
+  card-center trajectory for both geometries. Test actual pixel displacement
+  from integer/fractional positions, both directions, reversal, held ticks,
+  clamping, release continuity and hold-then-release velocity expiry. Proof:
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_carousel`.
+- [ ] 14.2 Coalesce Themes-page touch-motion/frame-callback redraws until
+  queued input has been dispatched. Keep latest position, buffer/frame
+  readiness, taps, activation and other routes correct. Build the Rust shell
+  and verify a burst of queued input does not cause one full render per stale
+  motion sample; record the exact build and injected-board commands.
+- [ ] 14.3 Trial the matching Rust build on the reserved board with automatic
+  restoration, recording baseline/candidate identities, held-drag movement,
+  reversal, stop/hold/release and both rows. Record input-to-commit timing
+  separately from geometry and preserve saved generation. Capture native
+  evidence separately from timing, then install the qualified build.
+- [ ] 14.4 Obtain operator real-finger acceptance that both rows follow the
+  finger without exaggerated travel or a backlog after it stops. Retain this
+  gate if only host or injected evidence exists. This does not by itself
+  complete the matched performance and memory comparison in task 11.3/13.

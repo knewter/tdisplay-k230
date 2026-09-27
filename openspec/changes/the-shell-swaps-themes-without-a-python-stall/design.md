@@ -253,3 +253,26 @@ next rendering change; a broad renderer rewrite, new toolkit, CPU affinity or
 compositor replacement is outside this task group. If live repaint remains
 dominant after speculation is bounded, retain that measured remainder here
 instead of marking swipe acceptance complete.
+
+## Direct manipulation follow-up (operator report, 2026-09-26)
+
+`theme_carousel.rs::motion` divides finger displacement by collapsed-slice
+pitch (49 pixels for themes, 43 for backgrounds). The focused card's center
+travels 255 or 223.5 pixels in the corresponding first index transition.
+The existing unit test asserts index displacement and therefore misses visible
+amplification. Derive input mapping from the rendered layout and test actual
+card-center displacement, including fractional positions and reversals; do
+not relabel a slot-count assertion as screen-space tracking. Keep a stable
+reference card during a contact and invert its piecewise center trajectory so
+it follows displacement across transitions. Apply the matching local scale
+to release velocity, and age that velocity explicitly when release follows
+a hold. End-of-list clamping remains bounded.
+
+For the Themes page only, defer touch-motion and frame-callback redraws to
+the event loop after queued Wayland events have updated the latest position.
+Respect buffer/frame readiness and preserve immediate tap feedback, foreground
+activation, and other shell routes. A coalesced intermediate frame is useful;
+rendering every obsolete sample is not. The board comparison must distinguish
+mapping, input backlog and render cost. Real-finger acceptance remains open
+until the operator actually tests the candidate; injected motion can prove
+geometry and accounting but cannot substitute for that observation.
