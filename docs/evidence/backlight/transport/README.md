@@ -74,3 +74,19 @@ visible brightness, or prove the LP timing constants suit this board's
 video porch. Kernel cross-build, boot, locked-exposure brightness comparison,
 repeated DPMS recovery, and Settings interaction remain coordinator-owned
 physical gates. See the active `the-panel-brightness-is-adjustable` change.
+
+
+## Combined cross-build
+
+The coordinator built source `926c7a61` successfully (exit 0), including
+power restoration, this transport repair and the rounded-card compositor:
+
+```sh
+nix build .#kernel .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel .#deviceTree --max-jobs 1 --cores 4 --no-link --print-out-paths
+```
+
+[Exact paths, boot-file hashes and size checks](build.json) record kernel
+`fmhnsgvp…` and system `l9bla6rx…`. The prepared initrd's uImage CRCs and
+payload identity, kernel memory extent, DTB and argument bounds were checked.
+This is host preparation evidence; physical brightness and recovery gates
+remain open until the candidate is booted and observed.

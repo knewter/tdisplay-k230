@@ -1,0 +1,27 @@
+{
+  "target": "/nix/store/l9bla6rxrr13pq2pfzbqk3094d4wx1s5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous": "/nix/store/9h5z3gk24gb3kdal037plsxqrmd7dx1y-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "926c7a6105f222665b8929f3ca271c3bc19f1458",
+  "sha256": {
+    "Image": "f8228ab71036221b886fffe4189e0e5e14fb1ad57916e196a78b0a76e2cd6218",
+    "initrd.uimg": "ae0e700e33c799c3a12619d7ec7964a9a9633d9e642570f10a0b71dfaa4091ec",
+    "k230-tdisplay.dtb": "44b03e049bc2f6543cc2dd3fd43f25feef00fa5324229490264fe3032e8a7524",
+    "bootargs.txt": "858acf9c70e5dd6f6b507974bcb3b1ff15f98091205accdf34283a8eb3dec849"
+  },
+  "bytes": {
+    "Image": 60428288,
+    "initrd.uimg": 27312749,
+    "k230-tdisplay.dtb": 71743,
+    "bootargs.txt": 211
+  },
+  "kernel_extent": 61046784,
+  "initrd_payload_matches_system": true,
+  "uimage_crc_valid": true,
+  "closure_delta_paths": 27,
+  "nar_bytes": 122161040,
+  "kernel": "/nix/store/fmhnsgvp375vfwz354l4aawxd83h72xy-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+  "deviceTree": "/nix/store/ndvqi88kk271kqc953mh492f0pqcqzab-k230-tdisplay.dtb",
+  "command": "nix build .#kernel .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel .#deviceTree --max-jobs 1 --cores 4 --no-link --print-out-paths",
+  "exit_code": 0,
+  "hardware_acceptance": false
+}

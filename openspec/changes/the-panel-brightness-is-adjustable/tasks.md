@@ -93,10 +93,10 @@
 
 ## 6. Resolve the negative board result
 
-- [ ] 6.1 Restore GPIO25 in panel prepare and normalize the backlight
+- [x] 6.1 Restore GPIO25 in panel prepare and normalize the backlight
       callback's success result. Proof: `nix build .#kernel --max-jobs 1
       --cores 4 --no-link --print-out-paths` (cross-build only).
-- [ ] 6.2 Correct DSI packet framing/completion and review runtime command
+- [x] 6.2 Correct DSI packet framing/completion and review runtime command
       delivery against the pinned driver and mainline DesignWare path.
       Run the focused transport fixtures and the same kernel build;
       preserve the stage-1 handoff and bounded failure paths.
@@ -107,3 +107,7 @@
 - [ ] 6.4 Verify shell-user brightness controls and retention of a chosen
       nondefault brightness across DPMS. Install persistently only after
       the candidate checks, then repeat boot/service identity checks.
+
+Tasks 6.1/6.2 host proof: `docs/evidence/backlight/transport/build.json`
+(source `926c7a61`, combined cross-build exit 0) and 25 transport fixtures
+under ASan/UBSan. These checks do not complete 6.3/6.4.
