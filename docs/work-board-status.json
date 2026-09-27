@@ -175,18 +175,20 @@
       "rationale": "Research and opt-in Qt probe source are on master. The build was deliberately interrupted to prioritize shell integration; dependency outputs are cached, but Qt and the probe have not built. No Qt/Quickshell board result or toolkit adoption is claimed.",
       "reviewRevision": "c92160d8"
     },
-    "the-overview-shows-large-rounded-cards": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Install the combined system, repeat native wallpaper capture, and check gesture smoothness with a real finger.",
+    "2026-09-27-the-overview-shows-large-rounded-cards": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Archived after matching-system installation and operator acceptance of the rounded cards.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/card-shell/transparent-corners/README.md",
-        "docs/evidence/card-shell/transparent-corners/board-trial/README.md"
+        "docs/evidence/card-shell/transparent-corners/board-trial/README.md",
+        "docs/evidence/card-shell/transparent-corners/installed-system/README.md",
+        "docs/evidence/operator-reports/2026-09-27-shell-acceptance.md"
       ],
-      "rationale": "Real wlroots/Pixman clipping is cross-built and passes wallpaper, alpha and clipped-neighbor fixtures. A guarded physical-board compositor trial shows rounded native app cards over wallpaper; the previous system was restored. Matching-system installation and physical motion acceptance remain open.",
-      "reviewRevision": "3f039ea492d22cee67f32cfdf13253856c1b299d",
+      "rationale": "The installed combined system and native captures are recorded; the operator accepted the rounded overview cards in real-finger use on 2026-09-27.",
+      "reviewRevision": "c02f87bd82cac35fd680cb31ec2f878208d6563b",
       "cover": {
         "path": "docs/evidence/card-shell/transparent-corners/board-trial/rounded.png",
         "caption": "Native board capture during a temporary compositor trial; wallpaper shows through rounded corners",
