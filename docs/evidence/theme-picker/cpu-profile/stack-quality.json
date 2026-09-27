@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "samples": 697,
+  "uniform_period_ns": 10101010,
+  "source_folded_sha256": "7099393ec85abec07e2292af504e0ee9b9f64e32d3154c33c76b8b1801ba53c1",
+  "unknown_caller_samples": 648,
+  "unknown_leaf_samples": 0,
+  "at_or_beyond_128_entries": 1,
+  "redacted_frames": 0,
+  "samples_by_thread": {
+    "k230-shell-rust-2006/2006": 274,
+    "k230-shell-rust-2256/2256": 111,
+    "sway-1912/1912": 86,
+    "python3-2162/2162": 84,
+    "k230-shell-rust-2006/2016": 27,
+    "Thread-4_(serve-2004/2167": 15,
+    "Thread-2_(serve-2004/2165": 14,
+    "Thread-3_(serve-2004/2166": 9,
+    "sed-2254/2254": 9,
+    "Thread-1_(serve-2004/2164": 7,
+    "bash-2168/2168": 6,
+    "pgrep-2163/2163": 6,
+    "sed-2252/2252": 6,
+    "bash-2175/2175": 5,
+    "bash-2173/2173": 3,
+    "omarchy-theme-c-2175/2175": 3,
+    "awk-2238/2238": 2,
+    "grep-2242/2242": 2,
+    "omarchy-theme-c-2168/2168": 2,
+    "omarchy-theme-s-2173/2173": 2,
+    "bash-2185/2185": 1,
+    "bash-2187/2187": 1,
+    "bash-2190/2190": 1,
+    "bash-2205/2205": 1,
+    "bash-2213/2213": 1,
+    "bash-2215/2215": 1,
+    "bash-2223/2223": 1,
+    "bash-2225/2225": 1,
+    "bash-2227/2227": 1,
+    "bash-2229/2229": 1,
+    "bash-2231/2231": 1,
+    "bash-2235/2235": 1,
+    "bash-2240/2240": 1,
+    "bash-2246/2246": 1,
+    "bash-2247/2247": 1,
+    "grep-2235/2235": 1,
+    "grep-2237/2237": 1,
+    "grep-2240/2240": 1,
+    "k230-settings-2162/2162": 1,
+    "mktemp-2174/2174": 1,
+    "python3-2004/2004": 1,
+    "python3-2163/2163": 1,
+    "sort-2172/2172": 1,
+    "sort-2179/2179": 1
+  },
+  "top_leaf_symbols": [
+    {
+      "symbol": "memset",
+      "samples": 72
+    },
+    {
+      "symbol": "image::imageops::sample::resize::<image::images::buffer::ImageBuffer<image::color::Rgba<u8>, alloc::vec::Vec<u8>>>",
+      "samples": 38
+    },
+    {
+      "symbol": "rvv_composite_over_8888_0565",
+      "samples": 22
+    },
+    {
+      "symbol": "fast_fetch_r5g6b5",
+      "samples": 21
+    },
+    {
+      "symbol": "sha2::sha256::compress256",
+      "samples": 17
+    },
+    {
+      "symbol": "image_webp::yuv::fill_row_fancy_with_2_uv_rows::<3>",
+      "samples": 17
+    },
+    {
+      "symbol": "general_composite_rect",
+      "samples": 12
+    },
+    {
+      "symbol": "fast_write_back_r5g6b5",
+      "samples": 11
+    },
+    {
+      "symbol": "_PyEval_EvalFrameDefault",
+      "samples": 10
+    },
+    {
+      "symbol": "_raw_spin_unlock_irqrestore",
+      "samples": 10
+    },
+    {
+      "symbol": "strcmp",
+      "samples": 10
+    },
+    {
+      "symbol": "pixman_transform_point_31_16",
+      "samples": 10
+    },
+    {
+      "symbol": "fast_fetch_bilinear_cover",
+      "samples": 9
+    },
+    {
+      "symbol": "_pixman_implementation_iter_init",
+      "samples": 9
+    },
+    {
+      "symbol": "rvv_combine_over_u",
+      "samples": 9
+    },
+    {
+      "symbol": "rvv_composite_over_8888_8888",
+      "samples": 9
+    },
+    {
+      "symbol": "cell_list_render_edge",
+      "samples": 9
+    },
+    {
+      "symbol": "__tls_get_addr",
+      "samples": 8
+    },
+    {
+      "symbol": "rvv_composite_over_n_8_8888",
+      "samples": 8
+    },
+    {
+      "symbol": "<k230_shell_rust::render::RendererCache>::draw",
+      "samples": 8
+    }
+  ],
+  "limits": [
+    "Caller chains include unresolved frames and reach the depth cap.",
+    "Leaf PCs resolved; complete caller attribution still needs qualification.",
+    "Uniform periods allow conversion of collapsed nanosecond weights into sample counts.",
+    "This trial includes route opening, helper descendants, and four injected swipes.",
+    "Separate workload from the earlier trace, without matched observer-overhead control."
+  ]
+}

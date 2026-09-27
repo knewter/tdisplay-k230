@@ -1200,3 +1200,10 @@ Both normal/coherent system closures cross-built. The first physical capture
 joined four helper requests and 36 presented frames without trace loss; see
 `docs/evidence/theme-picker/runtime-trace/README.md`. This leaves 15.2/15.3
 and the broader task 13 profiling/overhead gates open.
+
+Task 15.2 partial physical proof: `nix build .#runtime-perf --cores 8`
+passed, and the physical board recorded 697 CPU-clock samples with matching
+PID/TID and unchanged generation. Reviewed CPU stack and flat hotspot SVGs
+are in `docs/evidence/theme-picker/cpu-profile/README.md`. Unknown callers
+appear in 648 samples; compositor stage spans, scheduler correlation and
+complete stack qualification remain open. This does not close 15.2/15.3.

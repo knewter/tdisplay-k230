@@ -91,6 +91,6 @@ Compositor internal stages, scheduling, sampled CPU stacks, subprocess CPU
 attribution, matched instrumentation-on/off overhead, and an additional
 interaction remain open (OpenSpec tasks 13 and 15). The board kernel has
 `PERF_EVENTS`, `FRAME_POINTER`, `RISCV_PMU` and `FTRACE` enabled, but the normal
-image does not contain `perf`. A separate pinned Nix cross-build of
-`nixosConfigurations.k230.pkgs.perf` was started; no CPU flamegraph is claimed by
-this evidence. This is a span timeline with thread CPU totals.
+image does not contain `perf`. A subsequent [CPU profile](../cpu-profile/README.md) uses the separate
+`runtime-perf` package and documents its stack-quality limits. This earlier
+capture is a span timeline with thread CPU totals.

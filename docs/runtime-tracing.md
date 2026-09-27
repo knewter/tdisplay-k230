@@ -56,14 +56,15 @@ helper work is a lead for investigation, not proof it caused a stall.
 
 ## CPU flamegraphs
 
-The span timeline is not a sampled CPU flamegraph. The running board must first
-have a compatible `perf` tool and verified unwinding/symbols. With that tool,
-these are the intended bounded operator commands (not yet physical proof):
+The span timeline is not a sampled CPU flamegraph. Build the opt-in target sampler with `nix build .#runtime-perf`; it stays
+outside the normal image. Verify unwinding/symbols for the workload. With that tool,
+these are the bounded operator commands (the first physical trial is linked below):
 
 ```sh
 perf record -e cpu-clock -F 99 -g --call-graph fp \
   -p COMMA_SEPARATED_VERIFIED_PIDS -o /run/profile-private.data -- sleep 20
-perf script -i /run/profile-private.data > /run/stacks-private.txt
+perf script -F comm,pid,tid,time,period,event,ip,sym,dso \
+  -i /run/profile-private.data > /run/stacks-private.txt
 ```
 
 Use the actual verified shell/compositor/helper PIDs; do not paste that literal
@@ -77,3 +78,7 @@ cost measurement against the same workload with instrumentation disabled.
 
 The remaining work and physical evidence gates are tasks 13 and 15 of
 `the-shell-swaps-themes-without-a-python-stall`.
+
+First physical trace: [picker timeline](evidence/theme-picker/runtime-trace/README.md).
+First physical CPU sample and stack-quality limits:
+[picker CPU profile](evidence/theme-picker/cpu-profile/README.md).

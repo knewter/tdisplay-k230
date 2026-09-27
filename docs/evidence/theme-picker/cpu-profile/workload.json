@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "provenance": "injected verified virtual touch, CPU sampling only",
+  "perf": "/nix/store/qhf9h2sig8x8ay4gfn33as5gccl4vn6d-perf-k230-runtime-riscv64-unknown-linux-gnu-7.2.6/bin/perf",
+  "perf_version": "perf version 7.2.6",
+  "command": [
+    "/nix/store/qhf9h2sig8x8ay4gfn33as5gccl4vn6d-perf-k230-runtime-riscv64-unknown-linux-gnu-7.2.6/bin/perf",
+    "record",
+    "-e",
+    "cpu-clock",
+    "-F",
+    "99",
+    "-g",
+    "--call-graph",
+    "fp",
+    "-p",
+    "1912,2006,2004",
+    "-o",
+    "/run/k230-perf-private/perf.data",
+    "--",
+    "sleep",
+    "20"
+  ],
+  "current_system": "/nix/store/7hhr1fp722cq147svn5ni67ar1i66mys-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "identities": {
+    "shell.service": {
+      "pid": 1912,
+      "start_ticks": 91699,
+      "exe": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway"
+    },
+    "shell-ui.service": {
+      "pid": 2006,
+      "start_ticks": 92270,
+      "exe": "/nix/store/pzqqphc421axbq0z4xcwz445bg2726a2-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+    },
+    "theme-helper.service": {
+      "pid": 2004,
+      "start_ticks": 92263,
+      "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14"
+    }
+  },
+  "phases": [
+    {
+      "row": "theme",
+      "direction": "left",
+      "start_us": 1583004460,
+      "release_us": 1583432746,
+      "end_us": 1584432912
+    },
+    {
+      "row": "theme",
+      "direction": "right",
+      "start_us": 1584432948,
+      "release_us": 1584860426,
+      "end_us": 1585860565
+    },
+    {
+      "row": "background",
+      "direction": "left",
+      "start_us": 1585860610,
+      "release_us": 1586284267,
+      "end_us": 1587284406
+    },
+    {
+      "row": "background",
+      "direction": "right",
+      "start_us": 1587284440,
+      "release_us": 1587704199,
+      "end_us": 1588704319
+    }
+  ],
+  "generation_sha256": "84c4692963d7987e6c3bce2a025935c2368b95e9663d23640593e6f945ff3581",
+  "generation_unchanged": true,
+  "record_log": "[ perf record: Woken up 1 times to write data ]\n[ perf record: Captured and wrote 0.270 MB /run/k230-perf-private/perf.data (697 samples) ]\n",
+  "script_log": "",
+  "limits": [
+    "One CPU sampling trial, not an observer-overhead comparison.",
+    "Production binaries may lack complete symbols/frame pointers; inspect stack quality."
+  ],
+  "source_sampler_revision": "fea39e05e0f4bc2f925f0934693efeac61c4e505",
+  "raw_data_sha256": "b0a1af006b3f1b2765988b75a30181cec7ecd48b7d66b60634133dc0f14926d9",
+  "thread_script_sha256": "36b6ec322e32f79189332297a6f9b2a7364345f0bd1a2c60b643d99f50dac5cf",
+  "flamegraph_package": "/nix/store/lfks2w9hja6xdiggi2snp29qj5vvdimz-FlameGraph-2023-11-06"
+}
