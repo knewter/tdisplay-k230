@@ -218,9 +218,16 @@ class NormalServiceTrialTests(unittest.TestCase):
         def checker(phase,pid,old=None):
             phases.append((phase,pid,old))
             self.trial.record(**{'isolation_'+phase+'_sha256':'a'*64})
+        real_exists=Path.exists
+        def fixture_exists(path,*args,**kwargs):
+            # MainPID 777 is simulated, so its mocked stop must not depend
+            # on an unrelated real process occupying /proc/777 on the runner.
+            if path==Path('/proc/777'):return False
+            return real_exists(path,*args,**kwargs)
         with patch.object(self.trial,'observe_main',side_effect=[(777,'1',0),(778,'1',0)]), \
              patch.object(self.trial,'check_isolation',side_effect=checker), \
              patch.object(self.manager,'call',side_effect=logs), \
+             patch.object(Path,'exists',new=fixture_exists), \
              patch.object(T.time,'sleep'):
             self.trial.run()
         state=json.loads((self.trial.output/'state.json').read_text())
