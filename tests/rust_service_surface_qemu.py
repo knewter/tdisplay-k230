@@ -275,8 +275,14 @@ def main():
             assert ImageChops.difference(failure.crop((24, 828, 544, 898)),
                                          settings_frame.crop((24, 828, 544, 898))).getbbox(), \
                 "Settings power controls are not visible below the former shade input region"
+            # task: brightness-is-a-slider replaced the old stepper (a tap
+            # at x=480 used to mean "+10%" from the fixture's initial 45%,
+            # i.e. 55) with a full-width slider: the same x now means
+            # "jump to this fraction of the track" --
+            # `slider::value_at_x(480, *slider::track_bounds(568.0))` is
+            # 95, independent of the control's prior value.
             tap(480, 365)
-            wait_for(lambda: ["brightness", "55"] in [json.loads(line) for line in settings_log.read_text().splitlines()])
+            wait_for(lambda: ["brightness", "95"] in [json.loads(line) for line in settings_log.read_text().splitlines()])
             tap(284, 500)
             wait_for(lambda: ["keyboard-toggle"] in [json.loads(line) for line in settings_log.read_text().splitlines()])
             tap(284, 780)

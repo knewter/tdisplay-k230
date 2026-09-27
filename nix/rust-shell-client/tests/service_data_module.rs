@@ -3,8 +3,8 @@ mod service_data;
 
 use serde_json::json;
 use service_data::{
-    parse_history, parse_settings, ControlState, ControlValue, Priority, ServiceRequest,
-    ServiceResponse, ServiceWorker,
+    parse_history, parse_settings, write_backlight_live, ControlState, ControlValue, Priority,
+    ServiceRequest, ServiceResponse, ServiceWorker,
 };
 use std::{
     fs,
@@ -228,6 +228,92 @@ fn worker_rejects_invalid_action_without_contacting_service() {
     assert!(next(&worker, Duration::from_secs(1)).result.is_err());
     worker
         .try_submit(ServiceRequest::NotificationDismiss(0))
+        .unwrap();
+    assert!(next(&worker, Duration::from_secs(1)).result.is_err());
+}
+
+/// A fixture sysfs tree: `<root>/class/backlight/<device>/{max_brightness,
+/// brightness}`, mirroring the real `/sys/class/backlight/canaan-dsi-
+/// backlight` layout `tools/device_settings.py`'s own `backlight()`
+/// already assumes.
+struct BacklightFixture {
+    root: PathBuf,
+    device: PathBuf,
+}
+
+impl BacklightFixture {
+    fn new(max_brightness: u32) -> Self {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root =
+            std::env::temp_dir().join(format!("k230-backlight-{}-{nonce}", std::process::id()));
+        let device = root.join("class/backlight/canaan-dsi-backlight");
+        fs::create_dir_all(&device).unwrap();
+        fs::write(device.join("max_brightness"), max_brightness.to_string()).unwrap();
+        fs::write(device.join("brightness"), "0").unwrap();
+        Self { root, device }
+    }
+
+    fn brightness(&self) -> u32 {
+        fs::read_to_string(self.device.join("brightness"))
+            .unwrap()
+            .trim()
+            .parse()
+            .unwrap()
+    }
+}
+
+impl Drop for BacklightFixture {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.root);
+    }
+}
+
+#[test]
+fn live_backlight_write_scales_percent_by_the_real_max_brightness() {
+    let fixture = BacklightFixture::new(255);
+    write_backlight_live(&fixture.root, 50).unwrap();
+    // round(50 * 255 / 100) == 128, matching the Python backend's own
+    // rounding closely enough that a live drag and the authoritative
+    // release request never visibly disagree.
+    assert_eq!(fixture.brightness(), 128);
+    write_backlight_live(&fixture.root, 100).unwrap();
+    assert_eq!(fixture.brightness(), 255);
+    write_backlight_live(&fixture.root, 0).unwrap();
+    assert_eq!(fixture.brightness(), 0);
+}
+
+#[test]
+fn live_backlight_write_rejects_out_of_range_percent_and_missing_device() {
+    let fixture = BacklightFixture::new(255);
+    assert!(write_backlight_live(&fixture.root, 101).is_err());
+    // Unchanged: a rejected request never touches the sysfs file.
+    assert_eq!(fixture.brightness(), 0);
+    let missing = std::env::temp_dir().join(format!(
+        "k230-backlight-missing-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    assert!(write_backlight_live(&missing, 50).is_err());
+}
+
+#[test]
+fn worker_rejects_an_out_of_range_live_brightness_write_without_shelling_out() {
+    // `BrightnessLive` never spawns `k230-settings` at all (that is the
+    // whole point -- see `write_backlight_live`'s own doc); a script that
+    // always fails loudly here proves an out-of-range request is
+    // rejected by the same in-process validation `Brightness` uses,
+    // never by falling through to the (unreachable for this request)
+    // subprocess path.
+    let fixture = WorkerFixture::new("#!/bin/sh\nexit 7\n");
+    let worker = ServiceWorker::spawn(fixture.settings.clone(), fixture.socket.clone());
+    worker
+        .try_submit(ServiceRequest::BrightnessLive(150))
         .unwrap();
     assert!(next(&worker, Duration::from_secs(1)).result.is_err());
 }
