@@ -10,7 +10,7 @@ stdenv.mkDerivation {
     hash = "sha256-yS3GOL/kc03qx4naWzUdSZwAYxMuCjvrgmhexpwjsfA=";
   };
   patches = [ ./handheld.patch ];
-  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook ];
+  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook qt6Packages.qtdeclarative ];
   postPatch = ''
     cp ${./CMakeLists.txt} CMakeLists.txt
     cp ${./HandheldFileDialog.qml} src/HandheldFileDialog.qml
