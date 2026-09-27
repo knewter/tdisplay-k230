@@ -17,7 +17,8 @@ use k230_shell_rust::{
     service_data::{ControlState, ControlValue, ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
-        close_drag_release_target, close_drag_zone, drawer_close_drag_zone, shade_panel_close_zone,
+        close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
+        drawer_close_drag_zone, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
         panel_intent, slider_band, Confirmation, NotificationCoast, NotificationSwipeSettle,
@@ -3246,6 +3247,19 @@ impl TouchHandler for ShellClient {
                     // (the only state that ever reaches this branch at all;
                     // see `input_region`'s own doc) only acts on `up`.
                 } else if self.route == Route::Drawer && self.input_ready {
+                    // Captured *before* `nav.down` below, which
+                    // unconditionally zeroes any in-flight fling velocity
+                    // the instant a new touch lands (`DrawerNavigation::
+                    // down`'s own "touching a coasting list stops it
+                    // immediately") -- reading `coasting()` after that call
+                    // would always see `false` and could never gate
+                    // anything. Required behaviour: a downward drag may
+                    // only close the Drawer if the grid was already at
+                    // rest at its own top when the finger went down, and a
+                    // fling still decelerating toward the top does not
+                    // count as "at rest" even if `scroll` already reads
+                    // near zero.
+                    let was_coasting = self.nav.coasting();
                     self.nav.down(id, pos, time_ms);
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
@@ -3265,6 +3279,7 @@ impl TouchHandler for ShellClient {
                     // doc on this branch).
                     self.panel_start = Some((id, pos));
                     self.panel_close_candidate = !self.panel_close.active()
+                        && !was_coasting
                         && drawer_close_drag_zone(pos.1, self.height, self.nav.scroll);
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
@@ -3788,6 +3803,25 @@ impl TouchHandler for ShellClient {
                     {
                         self.dirty = true;
                     }
+                    // Once this sample's ordinary scroll has actually
+                    // carried the grid away from its own top, permanently
+                    // disqualify the rest of *this* gesture from closing --
+                    // never re-armed even if the finger later reverses and
+                    // the scroll returns to 0.0. Without this, a candidate
+                    // decided once at touch-down (true, because the grid
+                    // started at rest at the top) stayed true for the
+                    // gesture's entire duration; scrolling down through the
+                    // list and then swiping back up within the same held
+                    // touch could cross `close_drag_engaged`'s slop
+                    // relative to the *original* touch-down point and
+                    // engage a close, even though the grid was no longer
+                    // anywhere near its top. This is the exact reported
+                    // bug ("swipe down to scroll back up closes the
+                    // drawer").
+                    self.panel_close_candidate = drawer_close_candidate_after_scroll(
+                        self.panel_close_candidate,
+                        self.nav.scroll,
+                    );
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
                         self.height,
@@ -5403,6 +5437,59 @@ mod route_tests {
         );
         assert_eq!(close_drag_progress(Route::Drawer, 0.0, travel), 1.0);
         assert_eq!(close_drag_progress(Route::Drawer, travel, travel), 0.0);
+    }
+
+    /// Reproduces the reported bug end-to-end at the same level `main.rs`'s
+    /// own `down`/`motion` handlers operate at: `DrawerNavigation` plus the
+    /// exact same live-close-drag decision (`drawer_close_drag_zone` at
+    /// touch-down, `close_drag_engaged`/`drawer_close_candidate_after_
+    /// scroll` on every sample) those handlers call into. A touch starts
+    /// inside the grid while it is at its own top (an eligible close-drag
+    /// candidate), scrolls away by dragging up, then reverses and drags
+    /// back down past the original point -- the drawer must never engage
+    /// a close, in either the live-drag path here or `DrawerNavigation::
+    /// up`'s own release-only backstop (covered separately in
+    /// `navigation.rs`'s tests).
+    #[test]
+    fn drawer_live_close_drag_never_engages_after_a_mid_gesture_scroll_reversal() {
+        let height = 1232u32;
+        let apps = 40;
+        let grid_y = k230_shell_rust::navigation::list_top(height) + 10.0;
+        let start = (100.0, grid_y);
+
+        let mut nav = DrawerNavigation::default();
+        let close = PanelClose::default();
+        assert!(nav.down(1, start, 0));
+        let mut candidate =
+            !close.active() && !nav.coasting() && drawer_close_drag_zone(start.1, height, nav.scroll);
+        assert!(candidate, "grid at rest at its own top is an eligible start");
+
+        // Sample 1: drag up 200px (ordinary scroll-down-the-list motion).
+        // Below Drawer's engage slop in the *closing* (downward) direction,
+        // so this never attempts to engage regardless of `candidate`.
+        let pos1 = (100.0, grid_y - 200.0);
+        let (dx1, dy1) = (pos1.0 - start.0, pos1.1 - start.1);
+        assert!(!close.tracking() && !close_drag_engaged(Route::Drawer, dx1, dy1));
+        assert!(nav.motion(1, pos1, 40, height, apps));
+        candidate = drawer_close_candidate_after_scroll(candidate, nav.scroll);
+        assert!(!candidate, "real scrolling away from the top disqualifies this gesture");
+
+        // Sample 2: reverse and drag back down past the *original* start
+        // point -- past the engage slop in the closing direction, which is
+        // exactly what the un-fixed logic let through because `candidate`
+        // was still (stale) true from touch-down.
+        let pos2 = (100.0, grid_y + 150.0);
+        let (dx2, dy2) = (pos2.0 - start.0, pos2.1 - start.1);
+        assert!(
+            close_drag_engaged(Route::Drawer, dx2, dy2),
+            "past slop in the closing direction, same as the un-fixed bug would have hit"
+        );
+        // But `candidate` is already disqualified, so `main.rs`'s own
+        // engage guard (`!close.tracking() && close_drag_engaged(..) &&
+        // candidate`) never lets this call `close.begin`.
+        assert!(!candidate);
+        assert!(nav.motion(1, pos2, 90, height, apps));
+        assert!(!close.tracking(), "the close drag must never have engaged");
     }
 
     #[test]
