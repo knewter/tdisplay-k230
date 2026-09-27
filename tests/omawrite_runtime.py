@@ -62,7 +62,7 @@ def main():
     home.mkdir()
     current = home/'.local/state/omarchy/current'
     current.mkdir(parents=True)
-    for name, color in [('one', '#112233'), ('two', '#334455')]:
+    for name, color in [('one', '#112233'), ('two', '#eff1f5')]:
         generation = current/name
         (generation/'theme').mkdir(parents=True)
         (generation/'theme/colors.toml').write_text(f'background = "{color}"\nforeground = "#eeeeee"\n')
@@ -195,10 +195,16 @@ def main():
         (current/'next').replace(current/'active')
         time.sleep(2)
         capture('theme-changed')
+        keyboard.key('o', 4)
+        time.sleep(.5)
+        keyboard.text('writing.md')
+        capture('theme-dialog')
+        keyboard.key('Escape')
+        time.sleep(.3)
         from PIL import Image
         before = Image.open(out/'writing.png').convert('RGB').getpixel((8, 120))
         after = Image.open(out/'theme-changed.png').convert('RGB').getpixel((8, 120))
-        assert before == (17, 34, 51) and after == (51, 68, 85), (before, after)
+        assert before == (17, 34, 51) and after == (239, 241, 245), (before, after)
         ipc('[app_id="omawrite"] floating enable, resize set 568 812, move position 0 0')
         time.sleep(1)
         capture('keyboard-size')

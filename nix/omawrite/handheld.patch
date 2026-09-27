@@ -46,7 +46,7 @@ index f6b4239..8d35461 100644
          cursorShape: Qt.PointingHandCursor
          onClicked: control.clicked()
 diff --git a/src/Main.qml b/src/Main.qml
-index cdcbc3e..5cf799c 100644
+index cdcbc3e..a7d97dc 100644
 --- a/src/Main.qml
 +++ b/src/Main.qml
 @@ -1,7 +1,5 @@
@@ -136,7 +136,7 @@ index cdcbc3e..5cf799c 100644
              clip: true
              contentWidth: width
              contentHeight: Math.max(height, editor.y + editor.implicitHeight + 220)
-@@ -801,9 +810,9 @@ ApplicationWindow {
+@@ -801,14 +810,14 @@ ApplicationWindow {
              anchors.left: parent.left
              anchors.bottom: parent.bottom
              anchors.leftMargin: 12
@@ -148,6 +148,21 @@ index cdcbc3e..5cf799c 100644
  
              FooterIconButton {
                  objectName: "saveButton"
+                 iconName: "save"
+-                iconColor: win.mutedColor
++                iconColor: win.textColor
+                 tooltip: "Save"
+                 onClicked: backend.save()
+             }
+@@ -816,7 +825,7 @@ ApplicationWindow {
+             FooterIconButton {
+                 objectName: "openButton"
+                 iconName: "open"
+-                iconColor: win.mutedColor
++                iconColor: win.textColor
+                 tooltip: "Open"
+                 onClicked: backend.openDialog()
+             }
 @@ -829,7 +838,7 @@ ApplicationWindow {
                  visible: text !== ""
                  elide: Text.ElideRight
@@ -175,7 +190,7 @@ index cdcbc3e..5cf799c 100644
              background: Rectangle {
                  radius: 9
 diff --git a/src/backend.cpp b/src/backend.cpp
-index 90e279e..64a6644 100644
+index 90e279e..9eb3f0a 100644
 --- a/src/backend.cpp
 +++ b/src/backend.cpp
 @@ -580,7 +580,7 @@ void Backend::loadOmarchyTheme() {

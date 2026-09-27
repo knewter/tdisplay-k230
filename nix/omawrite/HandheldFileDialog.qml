@@ -103,6 +103,10 @@ Dialog {
                 height: 52
                 text: (fileIsDir ? "▸  " : "") + fileName
                 highlighted: !fileIsDir && filename.text === fileName
+                background: Rectangle {
+                    radius: 6
+                    color: parent.highlighted ? backend.themeAccent : "transparent"
+                }
                 onClicked: {
                     root.confirmReplace = false;
                     if (fileIsDir) root.currentFolder = fileUrl;
