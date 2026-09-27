@@ -111,7 +111,7 @@ they should just be cards"). See `design.md` decisions 3-5.
 
 ## E. Board/real-finger acceptance — open
 
-- [ ] E.1 On the physical board, flick through a multi-card deck at the new
+- [x] E.1 On the physical board, flick through a multi-card deck at the new
   80%/80% size and confirm the fan-switch gesture (flick past one or more
   cards, flick-up to close, tap to open) still feels responsive and
   intentional, not heavier or laggier, at the new card size. Confirm the
@@ -124,6 +124,9 @@ they should just be cards"). See `design.md` decisions 3-5.
   tools/card-shell-board-session.py` (or the equivalent board capture tool
   already used for `docs/evidence/card-shell/webos-fan-switcher/`'s own
   board-facing companions) against `/dev/ttyACM0`.
+  Operator real-finger report, 2026-09-27: "the rounded cards seem fine"
+  (`docs/evidence/operator-reports/2026-09-27-shell-acceptance.md`).
+  Evidence class: operator report, no camera recording.
 
 **Narrow command for this whole change, once E.1 lands:**
 `openspec validate the-overview-shows-large-rounded-cards --strict`.

@@ -123,6 +123,9 @@
   state, and a real finger dismissing `TimedOut` by tap -- verify with a
   native capture and console log of the resulting `SplashStatus`
   transitions.
+  Operator real-finger report, 2026-09-27: "launch splash seems fine"
+  (`docs/evidence/operator-reports/2026-09-27-shell-acceptance.md`). This
+  task stays open because it requires a native capture.
 
 ## 7. Proposal validation
 
