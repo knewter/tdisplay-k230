@@ -64,8 +64,8 @@ def main():
     current.mkdir(parents=True)
     for name, color in [('one', '#112233'), ('two', '#334455')]:
         generation = current/name
-        generation.mkdir()
-        (generation/'colors.toml').write_text(f'background = "{color}"\nforeground = "#eeeeee"\n')
+        (generation/'theme').mkdir(parents=True)
+        (generation/'theme/colors.toml').write_text(f'background = "{color}"\nforeground = "#eeeeee"\n')
     (current/'active').symlink_to('one')
     scratch = home/'writing.md'
     scratch.write_text('Seed document\n')

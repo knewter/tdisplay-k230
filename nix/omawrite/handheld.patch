@@ -183,7 +183,7 @@ index 90e279e..64a6644 100644
  
      const QString colorsPath = QDir::homePath()
 -        + QStringLiteral("/.local/state/omarchy/current/theme/colors.toml");
-+        + QStringLiteral("/.local/state/omarchy/current/active/colors.toml");
++        + QStringLiteral("/.local/state/omarchy/current/active/theme/colors.toml");
      QString themeMode;
      QFile file(colorsPath);
      if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -192,7 +192,7 @@ index 90e279e..64a6644 100644
      const QString currentDir = QDir::homePath()
          + QStringLiteral("/.local/state/omarchy/current");
 -    const QString themeDir = currentDir + QStringLiteral("/theme");
-+    const QString themeDir = currentDir + QStringLiteral("/active");
++    const QString themeDir = currentDir + QStringLiteral("/active/theme");
      const QString colorsPath = themeDir + QStringLiteral("/colors.toml");
  
      if (QDir(currentDir).exists())
