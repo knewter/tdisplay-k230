@@ -173,7 +173,10 @@ impl ThemeWorker {
         let process_started = Instant::now();
         thread::spawn(move || {
             while let Ok((id, request)) = incoming.recv() {
+                let _profile = crate::runtime_trace::Span::new("theme_request");
+                crate::runtime_trace::event("theme_request_begin", [id, 0, 0, 0, 0, 0]);
                 let result = execute(&command, &helper_socket, &request, process_started);
+                crate::runtime_trace::event("theme_request_end", [id, result.is_ok() as u64, 0, 0, 0, 0]);
                 if outgoing
                     .send(ThemeReply {
                         id,
@@ -291,7 +294,10 @@ fn helper_socket_request(
     socket_path: &Path,
     request: &ThemeRequest,
 ) -> Result<Result<Value, String>, String> {
-    let mut line = serde_json::to_vec(&helper_request(request))
+    let _profile = crate::runtime_trace::Span::new("theme_helper_rpc");
+    let mut message = helper_request(request);
+    if let Some(context) = crate::runtime_trace::context() { message["_trace"] = context; }
+    let mut line = serde_json::to_vec(&message)
         .map_err(|_| "theme request encode failed".to_string())?;
     line.push(b'\n');
     let deadline = Instant::now() + HELPER_SOCKET_TIMEOUT;

@@ -4,6 +4,7 @@ The receiver is not installed yet. This module never treats socket existence as
 proof of a live shell: every phase needs an explicit matching acknowledgement.
 """
 
+import runtime_trace
 import fcntl
 import json
 import os
@@ -54,6 +55,7 @@ def _remember(endpoint: Path, phase: str, generation: Path | None) -> None:
         _prepared_state.pop(endpoint, None)
 
 
+@runtime_trace.traced("theme_transaction_exchange")
 def exchange(endpoint: Path, phase: str, generation: Path | None, *,
              timeout: float = EXCHANGE_TIMEOUT_S) -> None:
     identity = generation.name if generation is not None else None
@@ -150,6 +152,7 @@ def _public_links(root: Path) -> list[Path]:
     return missing
 
 
+@runtime_trace.traced("theme_transaction_prepare_only")
 def prepare_only(generation: Path, *, state_root: Path, endpoint: Path,
                  transport=exchange, endpoints: tuple[Path, Path] | None = None) -> None:
     """Warm both appearance receivers' Prepare-phase state for `generation`
@@ -196,6 +199,7 @@ def prepare_only(generation: Path, *, state_root: Path, endpoint: Path,
         transport(target, "prepare", generation)
 
 
+@runtime_trace.traced("theme_transaction_activate_generation")
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                         transport=exchange, lock_timeout: float = 2.0,
                         preference=None, app_sync=None,

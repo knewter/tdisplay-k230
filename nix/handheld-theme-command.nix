@@ -21,6 +21,7 @@ stdenvNoCC.mkDerivation {
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/libexec/handheld-theme" "$out/bin"
+    install -m 0644 ${../tools/runtime_trace.py} "$out/libexec/handheld-theme/runtime_trace.py"
     install -m 0644 ${../tools/theme_timing.py} "$out/libexec/handheld-theme/theme_timing.py"
     install -m 0644 ${../tools/theme_activate.py} "$out/libexec/handheld-theme/theme_activate.py"
     install -m 0644 ${../tools/theme_sources.py} "$out/libexec/handheld-theme/theme_sources.py"

@@ -7,6 +7,7 @@ preview refer to staged files, not a mutable checkout. Image decode and the
 touch UI are separate consumers and are not proved by this interface.
 """
 
+import runtime_trace
 import argparse
 from dataclasses import dataclass
 import hashlib
@@ -257,6 +258,7 @@ def choose(entries: list[Entry], theme_id: str) -> Entry:
     return entry
 
 
+@runtime_trace.traced("theme_catalog_prepare_entry")
 def prepare_entry(entry: Entry, *, state_root: Path, tools: Path,
                   background_id: str | None = None,
                   wallpaper_cache_tool: Path | None = None) -> tuple[Path, dict]:
@@ -352,6 +354,7 @@ def _deferred_keyboard_sync(state_root: Path, generation_name: str, runtime_dir:
         print(f"k230-theme: deferred keyboard sync failed: {error}", file=sys.stderr)
 
 
+@runtime_trace.traced("theme_catalog_handle")
 def handle(args) -> tuple[dict, int]:
     """Run one already-parsed request and return `(result, exit_code)`.
 

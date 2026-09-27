@@ -7,7 +7,7 @@ use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
-    configure_size, frame_bytes,
+    configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     navigation::{DrawerAction, DrawerNavigation},
@@ -43,7 +43,9 @@ use k230_shell_rust::{
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState, Region},
     delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat,
-    delegate_shm, delegate_touch,
+    delegate_shm, delegate_touch, delegate_presentation_time,
+    presentation_time::{PresentationTimeState, PresentationTimeHandler, PresentTime},
+    reexports::protocols::wp::presentation_time::client::wp_presentation_feedback,
     output::{OutputHandler, OutputState},
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
@@ -84,7 +86,7 @@ use std::{
 use wayland_client::{
     globals::registry_queue_init,
     protocol::{wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
-    Connection, QueueHandle,
+    Connection, QueueHandle, WEnum,
 };
 
 const SOCKET_NAME: &str = "k230-shell-rust.sock";
@@ -977,6 +979,10 @@ fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
 
 struct ShellClient {
     compositor: CompositorState,
+    presentation: Option<PresentationTimeState>,
+    trace_feedback: Vec<(wp_presentation_feedback::WpPresentationFeedback, u64)>,
+    trace_frame: u64,
+    trace_input: u64,
     layer_shell: LayerShell,
     registry_state: RegistryState,
     seat_state: SeatState,
@@ -2721,6 +2727,13 @@ impl ShellClient {
         self.log("unmap");
     }
 
+    fn trace_picker_input(&mut self, kind: &'static str, time_ms: u32, id: i32) {
+        if runtime_trace::active() && self.coalesce_theme_motion() {
+            self.trace_input += 1;
+            runtime_trace::event(kind, [self.trace_input, u64::from(time_ms), id as u64, 0, 0, 0]);
+        }
+    }
+
     fn draw(&mut self, qh: &QueueHandle<Self>) -> bool {
         if !redraw_entry_ready(self.appearance_pending, self.configured, self.layer.is_some()) {
             return false;
@@ -2729,6 +2742,14 @@ impl ShellClient {
             self.log("invalid-geometry");
             return false;
         };
+        let tracing = runtime_trace::active();
+        if tracing {
+            self.trace_frame += 1;
+            runtime_trace::event("draw_begin", [self.trace_frame, self.trace_input,
+                self.width as u64, self.height as u64, self.renderer.rebuild_count(),
+                u64::from(self.theme_carousel.is_animating()) | (u64::from(self.background_carousel.is_animating()) << 1)]);
+        }
+        let _draw_profile = runtime_trace::Span::new("overlay_draw");
         let stride = (self.width * 4) as i32;
         self.buffers
             .retain(|b| b.stride() == stride && b.height() == self.height as i32);
@@ -2820,6 +2841,10 @@ impl ShellClient {
                 return false;
             }
         }
+        if tracing {
+            runtime_trace::event("draw_end", [self.trace_frame, self.trace_input,
+                self.renderer.rebuild_count(), 0, 0, 0]);
+        }
         self.input_region();
         let layer = self.layer.as_ref().expect("mapped");
         layer
@@ -2830,7 +2855,18 @@ impl ShellClient {
             self.log("shm-attach-failed");
             return false;
         }
+        if tracing && self.trace_feedback.len() < 128 {
+            if let Some(presentation) = &self.presentation {
+                match presentation.feedback(layer.wl_surface(), qh) {
+                    Ok(feedback) => self.trace_feedback.push((feedback, self.trace_frame)),
+                    Err(_) => runtime_trace::event("feedback_unavailable", [self.trace_frame, 0, 0, 0, 0, 0]),
+                }
+            }
+        } else if tracing {
+            runtime_trace::event("feedback_overflow", [self.trace_frame, 0, 0, 0, 0, 0]);
+        }
         layer.commit();
+        if tracing { runtime_trace::event("commit", [self.trace_frame, self.trace_input, 0, 0, 0, 0]); }
         self.frame_pending = true;
         self.dirty = false;
         self.log("commit");
@@ -2899,6 +2935,7 @@ impl CompositorHandler for ShellClient {
         }
         self.frame_pending = false;
         self.log("frame-done");
+        runtime_trace::event("frame_callback", [0; 6]);
         if self.dirty && !self.appearance_pending && !self.coalesce_theme_motion() {
             self.draw(qh);
         }
@@ -2920,6 +2957,33 @@ impl CompositorHandler for ShellClient {
     ) {
     }
 }
+
+
+impl PresentationTimeHandler for ShellClient {
+    fn presentation_time_state(&mut self) -> &mut PresentationTimeState {
+        self.presentation.as_mut().expect("presentation was bound for trace")
+    }
+    fn presented(&mut self, _: &Connection, _: &QueueHandle<Self>,
+        feedback: &wp_presentation_feedback::WpPresentationFeedback,
+        _: &wl_surface::WlSurface, _: Vec<wl_output::WlOutput>, time: PresentTime,
+        refresh: u32, seq: u64, flags: WEnum<wp_presentation_feedback::Kind>) {
+        if let Some(index) = self.trace_feedback.iter().position(|(f, _)| f == feedback) {
+            let (_, frame) = self.trace_feedback.remove(index);
+            let flags = match flags { WEnum::Value(v) => v.bits(), WEnum::Unknown(v) => v };
+            runtime_trace::event("presented", [frame,
+                time.tv_sec.saturating_mul(1_000_000_000).saturating_add(time.tv_nsec as u64),
+                refresh as u64, seq, flags as u64, time.clk_id as u64]);
+        }
+    }
+    fn discarded(&mut self, _: &Connection, _: &QueueHandle<Self>,
+        feedback: &wp_presentation_feedback::WpPresentationFeedback, _: &wl_surface::WlSurface) {
+        if let Some(index) = self.trace_feedback.iter().position(|(f, _)| f == feedback) {
+            let (_, frame) = self.trace_feedback.remove(index);
+            runtime_trace::event("discarded", [frame, 0, 0, 0, 0, 0]);
+        }
+    }
+}
+delegate_presentation_time!(ShellClient);
 
 impl OutputHandler for ShellClient {
     fn output_state(&mut self) -> &mut OutputState {
@@ -3108,6 +3172,7 @@ impl TouchHandler for ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        self.trace_picker_input("input_down", time_ms, id);
         if self
             .layer
             .as_ref()
@@ -3271,6 +3336,7 @@ impl TouchHandler for ShellClient {
         time_ms: u32,
         id: i32,
     ) {
+        self.trace_picker_input("input_up", time_ms, id);
         if self.home_touch_id == Some(id) {
             self.home_touch_id = None;
             if let Some(action) = self.home.up(
@@ -3532,6 +3598,7 @@ impl TouchHandler for ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        self.trace_picker_input("input_motion", time_ms, id);
         if self.home_touch_id == Some(id) {
             self.home_last_point = pos;
             if self.home.motion(id, pos, time_ms, self.home_surface.width, self.home_surface.height) {
@@ -3845,6 +3912,9 @@ impl ProvidesRegistryState for ShellClient {
 }
 
 fn serve() -> Result<(), String> {
+    if let Err(error) = runtime_trace::init() {
+        eprintln!("rust-shell trace unavailable: {error}");
+    }
     // Catalog discovery runs before connecting Wayland. A slow XDG scan never
     // stalls an owned touch stream or a route acknowledgement. `candidates`
     // -- the `applications` dirs in XDG precedence order -- is also exactly
@@ -3921,6 +3991,8 @@ fn serve() -> Result<(), String> {
     );
     let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
+        presentation: runtime_trace::active().then(|| PresentationTimeState::bind(&globals, &qh)),
+        trace_feedback: Vec::new(), trace_frame: 0, trace_input: 0,
         compositor,
         layer_shell,
         registry_state: RegistryState::new(&globals),
@@ -4048,9 +4120,12 @@ fn serve() -> Result<(), String> {
     }
     state.log("ready-idle");
     loop {
-        queue
-            .dispatch_pending(&mut state)
-            .map_err(|e| e.to_string())?;
+        if let Err(error) = runtime_trace::finish_if_due() { state.log(&format!("trace-write-failed {error}")); }
+        let _loop_profile = runtime_trace::Span::new("event_loop_work");
+        {
+            let _dispatch_profile = runtime_trace::Span::new("wayland_dispatch");
+            queue.dispatch_pending(&mut state).map_err(|e| e.to_string())?;
+        }
         // Optimistic Apply: `dispatch_pending` above is where a Settings
         // touch-up would have just called `theme_action(ThemeIntent::
         // Apply)` -> `submit_theme`, setting `theme_view.pending`/
@@ -4287,6 +4362,7 @@ fn serve() -> Result<(), String> {
             Ok(Some(event)) => {
                 match event.phase {
                     AppearancePhase::Prepare => {
+                        let _profile = runtime_trace::Span::new("appearance_prepare");
                         let geometry = state
                             .wallpaper
                             .configured
@@ -4557,6 +4633,9 @@ fn serve() -> Result<(), String> {
                     .then(|| state.theme_carousel.index(theme_count));
                 if let Some((index, request)) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
                     if let Ok(id) = state.themes.try_submit(request) {
+                        runtime_trace::event("speculative_admission", [id, index as u64,
+                            u64::from(state.theme_carousel.is_animating()),
+                            u64::from(state.background_carousel.is_animating()), 0, 0]);
                         state.theme_view.prepare_ahead_submitted(index, id);
                     } // queue full/unavailable: the next settled tick tries again
                 }
@@ -4747,7 +4826,10 @@ fn serve() -> Result<(), String> {
                 state.log(&format!("wallpaper-status-unavailable {error}"));
             }
         }
-        queue.flush().map_err(|e| e.to_string())?;
+        {
+            let _profile = runtime_trace::Span::new("wayland_flush");
+            queue.flush().map_err(|e| e.to_string())?;
+        }
         // Optimistic Apply's own pre-render (task: pre-render at prepare
         // time so Apply itself is just an attach+commit). Deliberately
         // placed *after* this tick's own flush above, never before it:
@@ -4840,6 +4922,7 @@ fn serve() -> Result<(), String> {
                 }
             }
         }
+        drop(_loop_profile);
         let Some(read_guard) = queue.prepare_read() else {
             continue;
         };
