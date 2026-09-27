@@ -1,5 +1,14 @@
 { lib, stdenv, fetchFromGitHub, cmake, qt6Packages, pkgsBuildBuild }:
-
+let
+  # The pinned nixpkgs points this host tool at Qt6ShaderTools rather than
+  # Qt6ShaderToolsTools, silently disabling all Qt Quick modules in cross builds.
+  declarative = qt6Packages.qtdeclarative.overrideAttrs (old: {
+    cmakeFlags = (old.cmakeFlags or []) ++ [
+      "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderToolsTools"
+      "-DFEATURE_quick=ON"
+    ];
+  });
+in
 stdenv.mkDerivation {
   pname = "omawrite";
   version = "0-unstable-2026-08-07";
@@ -19,7 +28,7 @@ stdenv.mkDerivation {
     cp ${./CMakeLists.txt} CMakeLists.txt
     cp ${./HandheldFileDialog.qml} src/HandheldFileDialog.qml
   '';
-  buildInputs = with qt6Packages; [ qtbase qtdeclarative qtwayland qtsvg ];
+  buildInputs = with qt6Packages; [ qtbase declarative qtwayland qtsvg ];
   enableParallelBuilding = true;
   preFixup = ''
     qtWrapperArgs+=(
