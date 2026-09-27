@@ -14,6 +14,8 @@
       buildSystem = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${buildSystem};
       pkgsCross = pkgs.pkgsCross.riscv64;
+      # The narrow build and installed editor share one application closure.
+      omawrite = pkgsCross.callPackage ./nix/omawrite { };
 
       # Stage 1 is built from source. Two cross derivations, one fetched
       # overlay, and the packaging that turns them into what the card
@@ -102,7 +104,7 @@
         # probes/debugLog are the bring-up settings for this change's
         # evidence; they should leave with it.
         k230 = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage; };
+          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage omawrite; };
           modules = [
             ./nix/k230.nix
             ./nix/hardware.nix
@@ -134,7 +136,7 @@
         # system/nixos-config requires, kept evaluable so the shell's cost
         # can be measured as a delta against it.
         k230-console = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage; };
+          specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage omawrite; };
           modules = [
             ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix
             { k230.panelConsole = true; }
@@ -173,7 +175,7 @@
         shell-compositor-initial-splash = self.nixosConfigurations.k230.config.k230.shell.initialSplashCompositor;
         neofetch = self.nixosConfigurations.k230.pkgs.callPackage ./nix/neofetch.nix { };
         touch-launcher = self.nixosConfigurations.k230.config.k230.shell.launcher;
-        omawrite = pkgsCross.callPackage ./nix/omawrite { };
+        inherit omawrite;
         # Opt-in Qt Quick software/Wayland evaluation client, never in the image.
         qtquick-software-probe = pkgsCross.callPackage ./nix/qtquick-software-probe/default.nix { };
         # Standalone pinned helper package; no theme service enters the normal

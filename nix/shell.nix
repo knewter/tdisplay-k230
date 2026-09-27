@@ -10,7 +10,7 @@
 # Layer: Nix and userspace only. Nothing here touches the kernel or the
 # device tree; if the shell turns out to need either, that belongs to
 # display/panel or display/touch and gets fixed there.
-{ config, lib, pkgs, bootSplashImage, ... }:
+{ config, lib, pkgs, bootSplashImage, omawrite, ... }:
 
 let
   cfg = config.k230.shell;
@@ -145,7 +145,6 @@ let
     locked-title=yes
     app-id=k230-monitor
   '';
-  omawrite = pkgs.callPackage ./omawrite { };
   # Keep the existing desktop ID so already-pinned Editor icons keep working.
   # Nano remains installed for console recovery.
   editorDesktop = pkgs.makeDesktopItem {
