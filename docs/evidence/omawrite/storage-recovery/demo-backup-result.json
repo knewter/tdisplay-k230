@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "source_bytes": 64088965120,
+  "backup_bytes": 64088965120,
+  "sha256": "b0ec097f20e23072d73ba7814862492fe2cf926cf5c188d1c2e8c13ab944a40c",
+  "image": "demo-card.img",
+  "source_read_errors": 0,
+  "method": "single full source read with SHA-256, fsync, then independent SHA-256 reread of saved backup",
+  "completed_at_utc": "2026-09-27T20:53:50.113839+00:00",
+  "elapsed_seconds": 857.5
+}

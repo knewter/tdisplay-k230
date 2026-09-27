@@ -24,5 +24,25 @@ No filesystem repair, remount-write, image flash or full-card readback was
 performed. The reason the SD stopped responding remains undetermined; these
 observations do not distinguish a card, power, connection or driver problem.
 
-Recovery and actual launcher/icon behavior still require checking after power
-returns. No new application or shell source change is justified by this evidence.
+## Replacement card and preserved demo image
+
+Power cycling and reseating did not restore boot output. The original card then
+reported zero capacity through the USB reader, which could not read its medium.
+A different card reported 64,088,965,120 bytes through the same reader. Its first
+two FAT partitions contained readable vendor/demo files; its third FAT partition
+reported an invalid cluster and was made read-only by Linux. These are separate
+cards and separate failure observations.
+
+The user authorized preserving the replacement demo card before replacing it
+with our current NixOS image. All three partitions were unmounted first. The
+[exact backup command](backup-demo-card.py) read every source byte without errors,
+fsynced the saved image, then independently reread and hashed the saved file.
+The [result](demo-backup-result.json) records matching SHA-256 and byte counts.
+The full private image, checksum, source identity and restoration notes are at
+`~/tmp/k230-demo-card-20260927T203725Z/`. Only reviewed metadata is committed here.
+The backup preserves existing filesystem corruption; it is not a repaired image.
+
+A capacity probe and the current `sdImage-coherent` build are in progress.
+No replacement image has been flashed yet. Actual boot, launcher and icon
+behavior still require checking on the replacement card. No new application or
+shell source change is justified by the available evidence.
