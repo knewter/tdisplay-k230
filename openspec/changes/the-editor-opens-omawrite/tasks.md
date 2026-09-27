@@ -4,10 +4,11 @@
   rendering and bounded portrait/file-dialog adaptations; verify
   `nix build .#omawrite --cores 6 --no-link --print-out-paths` and record the
   exact output, architecture and closure size.
-- [ ] 1.2 Exercise editing/save/reopen, portrait controls/dialog cancellation
+- [x] 1.2 Exercise editing/save/reopen, portrait controls/dialog cancellation
   and palette changes with the actual app; run
   `python3 tests/omawrite_runtime.py --sway <sway> --omawrite <app> --output <dir>`.
   This is host/headless proof, not device or finger acceptance.
+  PASS: [host evidence](../../../docs/evidence/omawrite/README.md).
 
 ## 2. Image defaults
 

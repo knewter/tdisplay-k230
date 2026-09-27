@@ -26,7 +26,7 @@ valid. Plain-text and Markdown graphical file associations SHALL use that entry.
 
 ### Requirement: Local writing is usable on the portrait screen
 
-<!-- UNVERIFIED: software rendering and device editing proof pending. -->
+<!-- UNVERIFIED: physical-device editing remains pending. Host runtime passes: docs/evidence/omawrite/README.md. -->
 
 Omawrite SHALL display its writing area and reachable Open/Save controls at the
 handheld's portrait size, render without a GPU, accept keyboard input, and save

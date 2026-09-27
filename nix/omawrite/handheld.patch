@@ -1,0 +1,239 @@
+diff --git a/src/FooterIconButton.qml b/src/FooterIconButton.qml
+index f6b4239..8d35461 100644
+--- a/src/FooterIconButton.qml
++++ b/src/FooterIconButton.qml
+@@ -11,8 +11,8 @@ Item {
+ 
+     signal clicked()
+ 
+-    width: 16
+-    height: 16
++    width: 48
++    height: 48
+ 
+     ToolTip.visible: hitArea.containsMouse && tooltip.length > 0
+     ToolTip.text: tooltip
+@@ -24,15 +24,17 @@ Item {
+         // upscaled blurry on hidpi screens. Draw at the physical size and
+         // scale the item back down so surface pixels match screen pixels.
+         readonly property real dpr: Screen.devicePixelRatio
+-        width: control.width * dpr
+-        height: control.height * dpr
++        x: 12
++        y: 12
++        width: 24 * dpr
++        height: 24 * dpr
+         transformOrigin: Item.TopLeft
+         scale: 1 / dpr
+         onDprChanged: requestPaint()
+ 
+         onPaint: {
+             var context = getContext("2d");
+-            context.setTransform(dpr, 0, 0, dpr, 0, 0);
++            context.setTransform(1.5 * dpr, 0, 0, 1.5 * dpr, 0, 0);
+             context.clearRect(0, 0, width, height);
+             context.strokeStyle = control.iconColor;
+             context.lineWidth = 1.4;
+@@ -75,9 +77,7 @@ Item {
+ 
+     MouseArea {
+         id: hitArea
+-        anchors.centerIn: parent
+-        width: 28
+-        height: 28
++        anchors.fill: parent
+         hoverEnabled: true
+         cursorShape: Qt.PointingHandCursor
+         onClicked: control.clicked()
+diff --git a/src/Main.qml b/src/Main.qml
+index cdcbc3e..a2340b4 100644
+--- a/src/Main.qml
++++ b/src/Main.qml
+@@ -1,7 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+-import QtQuick.Dialogs as Dialogs
+ import QtQuick.Layouts
+ import QtQuick.Window
+ import "EditorMutations.js" as EditorMutations
+@@ -10,8 +9,8 @@ ApplicationWindow {
+     id: win
+     width: 1280
+     height: 820
+-    minimumWidth: 720
+-    minimumHeight: 520
++    minimumWidth: 320
++    minimumHeight: 280
+     visible: true
+     title: (backend.modified ? "* " : "") + backend.fileName + " - Omawrite"
+ 
+@@ -42,6 +41,15 @@ ApplicationWindow {
+     Material.theme: darkMode ? Material.Dark : Material.Light
+     Material.accent: backend.themeAccent
+     color: pageColor
++    palette.window: pageColor
++    palette.base: pageColor
++    palette.button: pageColor
++    palette.windowText: textColor
++    palette.text: textColor
++    palette.buttonText: textColor
++    palette.placeholderText: mutedColor
++    palette.highlight: backend.themeAccent
++    palette.highlightedText: pageColor
+ 
+     onClosing: function(close) {
+         if (closeConfirmed || !backend.modified)
+@@ -267,19 +275,20 @@ ApplicationWindow {
+         }
+     }
+ 
+-    Dialogs.FileDialog {
++    HandheldFileDialog {
+         id: openFileDialog
+         title: "Open File"
+-        fileMode: Dialogs.FileDialog.OpenFile
+-        nameFilters: ["Markdown files (*.md *.markdown)", "All files (*)"]
++        containerWidth: win.width
++        containerHeight: win.height
+         onAccepted: win.requestOpen(selectedFile)
+     }
+ 
+-    Dialogs.FileDialog {
++    HandheldFileDialog {
+         id: saveFileDialog
+         title: "Save File"
+-        fileMode: Dialogs.FileDialog.SaveFile
+-        nameFilters: ["Markdown files (*.md *.markdown)", "All files (*)"]
++        saving: true
++        containerWidth: win.width
++        containerHeight: win.height
+         onAccepted: backend.saveAs(selectedFile)
+         onRejected: {
+             backend.fileDialogCanceled();
+@@ -344,6 +353,7 @@ ApplicationWindow {
+             anchors.fill: parent
+             anchors.leftMargin: 24
+             anchors.rightMargin: 24
++            anchors.bottomMargin: 112
+             clip: true
+             contentWidth: width
+             contentHeight: Math.max(height, editor.y + editor.implicitHeight + 220)
+@@ -801,9 +811,9 @@ ApplicationWindow {
+             anchors.left: parent.left
+             anchors.bottom: parent.bottom
+             anchors.leftMargin: 12
+-            anchors.bottomMargin: 10
++            anchors.bottomMargin: 56
+             spacing: 12
+-            opacity: 0.55
++            opacity: 1
+ 
+             FooterIconButton {
+                 objectName: "saveButton"
+@@ -829,7 +839,7 @@ ApplicationWindow {
+                 visible: text !== ""
+                 elide: Text.ElideRight
+                 width: Math.min(360, win.width / 3)
+-                height: win.scaledSize(16)
++                height: 48
+                 verticalAlignment: Text.AlignVCenter
+             }
+         }
+@@ -838,7 +848,7 @@ ApplicationWindow {
+             anchors.right: parent.right
+             anchors.bottom: parent.bottom
+             anchors.rightMargin: 12
+-            anchors.bottomMargin: 10
++            anchors.bottomMargin: 56
+             text: backend.wordCount + (backend.wordCount === 1 ? " Word" : " Words")
+             color: win.mutedColor
+             opacity: 0.75
+diff --git a/src/backend.cpp b/src/backend.cpp
+index 90e279e..64a6644 100644
+--- a/src/backend.cpp
++++ b/src/backend.cpp
+@@ -580,7 +580,7 @@ void Backend::loadOmarchyTheme() {
+     m_themeSelection = m_darkMode ? QStringLiteral("#186a9a") : QStringLiteral("#2077b2");
+ 
+     const QString colorsPath = QDir::homePath()
+-        + QStringLiteral("/.local/state/omarchy/current/theme/colors.toml");
++        + QStringLiteral("/.local/state/omarchy/current/active/colors.toml");
+     QString themeMode;
+     QFile file(colorsPath);
+     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+@@ -651,7 +651,7 @@ void Backend::watchOmarchyTheme() {
+ 
+     const QString currentDir = QDir::homePath()
+         + QStringLiteral("/.local/state/omarchy/current");
+-    const QString themeDir = currentDir + QStringLiteral("/theme");
++    const QString themeDir = currentDir + QStringLiteral("/active");
+     const QString colorsPath = themeDir + QStringLiteral("/colors.toml");
+ 
+     if (QDir(currentDir).exists())
+@@ -764,3 +764,7 @@ void Backend::reapplyTypographyToChange() {
+     cursor.endEditBlock();
+     m_formattingTypography = false;
+ }
++
++bool Backend::localFileExists(const QUrl &url) const {
++    return url.isLocalFile() && QFile::exists(url.toLocalFile());
++}
+diff --git a/src/backend.h b/src/backend.h
+index 2429590..229f10e 100644
+--- a/src/backend.h
++++ b/src/backend.h
+@@ -54,6 +54,7 @@ public:
+     static QString suggestedFileName(const QString &text);
+ 
+     Q_INVOKABLE void attachDocument(QObject *textDocument);
++    Q_INVOKABLE bool localFileExists(const QUrl &url) const;
+     Q_INVOKABLE void openDialog();
+     Q_INVOKABLE void open(const QUrl &url);
+     Q_INVOKABLE void save();
+diff --git a/src/main.cpp b/src/main.cpp
+index 8b22213..23bc5e4 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -8,6 +8,8 @@
+ #include <QQuickStyle>
+ #include <QUrl>
+ #include <QWindow>
++#include <QQuickWindow>
++#include <QSGRendererInterface>
+ #include <QFile>
+ 
+ #include "backend.h"
+@@ -26,7 +28,7 @@ int main(int argc, char *argv[]) {
+     app.setOrganizationName(QStringLiteral("Omacom"));
+     app.setOrganizationDomain(QStringLiteral("omacom.io"));
+ 
+-    QQuickStyle::setStyle(QStringLiteral("Material"));
++    QQuickStyle::setStyle(QStringLiteral("Basic"));
+ 
+     Backend backend(&app);
+     SystemTheme systemTheme(&app);
+@@ -70,6 +72,12 @@ int main(int argc, char *argv[]) {
+     }
+ 
+     backend.setParentWindow(qobject_cast<QWindow *>(engine.rootObjects().constFirst()));
++    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().constFirst());
++    QObject::connect(window, &QQuickWindow::sceneGraphInitialized, window, [window] {
++        qInfo("omawrite renderer=%s platform=%s",
++            window->rendererInterface()->graphicsApi() == QSGRendererInterface::Software ? "software" : "other",
++            qPrintable(QGuiApplication::platformName()));
++    }, Qt::DirectConnection);
+ 
+     const QStringList args = app.arguments();
+     if (args.size() > 1 && !backend.modified())
+diff --git a/src/resources.qrc b/src/resources.qrc
+index 91d9a86..36fc33e 100644
+--- a/src/resources.qrc
++++ b/src/resources.qrc
+@@ -1,5 +1,6 @@
+ <RCC>
+     <qresource prefix="/">
++        <file alias="HandheldFileDialog.qml">HandheldFileDialog.qml</file>
+         <file alias="Main.qml">Main.qml</file>
+         <file alias="SearchIconButton.qml">SearchIconButton.qml</file>
+         <file alias="FooterIconButton.qml">FooterIconButton.qml</file>

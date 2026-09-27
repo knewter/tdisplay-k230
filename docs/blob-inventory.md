@@ -651,6 +651,14 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+SRC  sha256-yS3GOL/kc03qx4naWzUdSZwAYxMuCjvrgmhexpwjsfA=  src:omacom/omawrite@8f98892b26768236b2c20f4e637cf4b102d898bf
+DATA efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256 docs/evidence/omawrite/host/keyboard-size.png
+DATA b8496d1b5809c56e9c1f8a5b678d40a357b94bacd228643b00538bd4426d8ba8 docs/evidence/omawrite/host/open-dialog.png
+DATA 8aa59fdf5be29fe62860c715d84b2bac795272c3888e5528deb26040ab364f7a docs/evidence/omawrite/host/overwrite-confirmation.png
+DATA 15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef docs/evidence/omawrite/host/reopened.png
+DATA 77e997fedd981019be9438abeb9e6c1be5a500c21337f9327ee5452b4dbe6352 docs/evidence/omawrite/host/save-dialog.png
+DATA 0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74 docs/evidence/omawrite/host/theme-changed.png
+DATA f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232 docs/evidence/omawrite/host/writing.png
 DATA b822b4b32c6ce0ba6f90b203e1a61ed9736948a5fa614eefc6c5b7cf00c674fb docs/evidence/theme-picker/background-selection/home-after.png
 DATA b06525298d1317b37f8cec145127b13af5907a0f3837812dab0b848afc6f974f docs/evidence/theme-picker/background-selection/home-before.png
 DATA a1606e29a77f892d0500fcdbf35495136a1c1d8b625e0c0c0031ba1956664788 docs/evidence/theme-picker/background-selection/picker-after-restart.png
@@ -2181,3 +2189,21 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/navigation/home.png` | 26108 | DATA | `5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20` |
 | `docs/evidence/home-screen/navigation/overview.png` | 16283 | DATA | `a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4` |
 | `docs/evidence/home-screen/navigation/restored-terminal.png` | 8833 | DATA | `d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c` |
+
+### Omawrite portrait host runtime — 2026-09-27
+
+Omawrite is compiled from pinned MIT source; its embedded iA Writer Mono S
+fonts carry SIL OFL 1.1. Both notices are installed with the package. The source
+archive hash above includes these font data; no prebuilt Omawrite executable is
+imported. Captures below show a private scratch HOME under headless Sway, not
+physical-device or real-finger acceptance.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omawrite/host/keyboard-size.png` | 13067 | DATA | `efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256` |
+| `docs/evidence/omawrite/host/open-dialog.png` | 27324 | DATA | `b8496d1b5809c56e9c1f8a5b678d40a357b94bacd228643b00538bd4426d8ba8` |
+| `docs/evidence/omawrite/host/overwrite-confirmation.png` | 35674 | DATA | `8aa59fdf5be29fe62860c715d84b2bac795272c3888e5528deb26040ab364f7a` |
+| `docs/evidence/omawrite/host/reopened.png` | 23209 | DATA | `15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef` |
+| `docs/evidence/omawrite/host/save-dialog.png` | 27924 | DATA | `77e997fedd981019be9438abeb9e6c1be5a500c21337f9327ee5452b4dbe6352` |
+| `docs/evidence/omawrite/host/theme-changed.png` | 14053 | DATA | `0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74` |
+| `docs/evidence/omawrite/host/writing.png` | 18205 | DATA | `f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232` |

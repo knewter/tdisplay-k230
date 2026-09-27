@@ -21,9 +21,14 @@ approval of Qt as the shell toolkit or completion of the general Qt proposal.
 - Select Wayland and Qt Quick software rendering in the app wrapper, not
   globally. Do not assume a working GPU or install a replacement shell.
 - Carry a narrow portrait adaptation: allow a 568px window, constrain dialogs
-  to the available view and use Qt's in-process Open/Save dialog rather than
+  to the available view and use an in-process Qt Quick Open/Save dialog rather than
   introduce an unqualified portal service. Keep touch targets reachable above
   the bottom system gesture band and while the keyboard reserves space.
+  Runtime inspection showed Qt's standard 600px chooser clipped at the right
+  edge; the adaptation uses public FolderListModel and Basic controls with
+  explicit portrait bounds and overwrite confirmation. Basic also avoids the
+  Material dialog's incomplete software-rendered background. CMake expresses
+  upstream's same source list and Qt dependencies for cross-compilation.
 - Read the existing active Omarchy palette through the app's existing theme
   reader with a path adaptation if required; preserve live palette reload.
 - Set image-level graphical MIME defaults for plain text/Markdown. A Home

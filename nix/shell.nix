@@ -145,16 +145,19 @@ let
     locked-title=yes
     app-id=k230-monitor
   '';
-  # Nano is already in the baseline closure; expose it through the same
-  # desktop-entry bridge as other terminal apps. nnn supplies its own entry.
+  omawrite = pkgs.callPackage ./omawrite { };
+  # Keep the existing desktop ID so already-pinned Editor icons keep working.
+  # Nano remains installed for console recovery.
   editorDesktop = pkgs.makeDesktopItem {
     name = "k230-editor";
-    desktopName = "Editor";
-    icon = "accessories-text-editor";
-    comment = "Edit a text file with nano";
-    exec = "${pkgs.nano}/bin/nano";
-    terminal = true;
-    categories = [ "Utility" "TextEditor" ];
+    desktopName = "Omawrite";
+    icon = "omawrite";
+    comment = "Write and edit Markdown and text";
+    exec = "${omawrite}/bin/omawrite %f";
+    terminal = false;
+    startupWMClass = "omawrite";
+    mimeTypes = [ "text/plain" "text/markdown" "text/x-markdown" ];
+    categories = [ "Office" "TextEditor" ];
   };
   # The desktop item starts the bounded session wrapper. Software 270p is the
   # default; `k230-video-session run-mvx` opts into the measured MVX profile.
@@ -825,6 +828,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    xdg.mime.defaultApplications = {
+      "text/plain" = [ "k230-editor.desktop" ];
+      "text/markdown" = [ "k230-editor.desktop" ];
+      "text/x-markdown" = [ "k230-editor.desktop" ];
+    };
     assertions = [
       {
         assertion = !cfg.coherentShell || !(cfg.initialSplash || cfg.frameTiming || cfg.vgliteAccessTrial);
@@ -1201,6 +1209,7 @@ in
       pkgs.nano
       pkgs.nnn
       editorDesktop
+      omawrite
       videoSession
       videoDesktop
       touchLauncher

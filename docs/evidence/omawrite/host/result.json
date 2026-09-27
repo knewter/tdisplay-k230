@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "evidence_class": "headless-real-app-synthetic-input",
+  "sway": "/nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "omawrite": "/nix/store/0i70ycyrx2ivga98gdh76ckwmf5wa09z-omawrite-0-unstable-2026-08-07/bin/omawrite",
+  "checks": [
+    "568x1232 launch",
+    "edit/save",
+    "file chooser save-as/open",
+    "cancel overwrite preserves existing file",
+    "dialog cancellation preserves text",
+    "live palette generation switch",
+    "568x812 keyboard-sized window",
+    "saved document reopened",
+    "software backend"
+  ],
+  "file_text": "# Omawrite on the handheld\n\n\n\nWriting and saving a scratch document.\n\nDialog cancellation kept the document.\n\n",
+  "physical_board": false,
+  "real_finger": false
+}
