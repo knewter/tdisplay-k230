@@ -8,12 +8,14 @@ is a whitelisted excerpt from the previously captured reboot of this image;
 OpenSBI output is not part of Linux's dmesg. No extra reboot or register access
 was needed for this investigation.
 
-The evidence establishes a one-hart handoff, rather than an attempted secondary
-CPU that failed to boot. It does not identify logical hart 0 as physical CPU0.
+The initial evidence established a one-hart handoff, rather than an attempted
+secondary CPU that failed to boot. The later
+[physical CPU0 diagnostic](cpu0-identity-physical-trial.md) measured CPU0's
+`mhartid=0`; physical CPU1's `mhartid` remains unmeasured on this board.
 
 | Gate | Observed/source evidence | Decision |
 | --- | --- | --- |
-| Hart identity/domain | OpenSBI count 1, Domain0 `0*`; live DT contains only `cpu@0`, hart ID 0 | No assigned second hart or verified physical-to-logical map |
+| Hart identity/domain | OpenSBI count 1, Domain0 `0*`; live DT contains only `cpu@0`, hart ID 0; 2026-09-27 physical CPU0 SPL read `mhartid=0` | CPU0's CSR is measured, but CPU1's CSR and a usable distinct two-hart map remain unverified |
 | Firmware start | OpenSBI reports HSM device `---`; Linux detects the generic HSM extension | Extension availability does not prove a secondary reset/vector implementation |
 | Interrupt/timer | Live PLIC routes CPU phandle 3 to interrupts 11/9; CLINT routes the same CPU to 3/7 | Current handoff describes one CPU's external, software and timer routes |
 | Linux state | `possible`, `present`, `online` all `0`; one CPU brought up | SMP is compiled, but there is no second described CPU to start |
@@ -86,3 +88,16 @@ and require two enumerated OpenSBI harts, two Linux CPUs, timer/IPI stress and
 shared-memory atomic tests before running video comparisons. If coherency cannot
 be established, scope an AMP offload protocol instead of claiming a second Linux
 CPU. The readiness investigation is complete; second-core enablement is not.
+
+### 2026-09-27 bounded physical identity trial
+
+The default-off diagnostic package was installed in the two raw SPL slots
+after original 512 KiB slot backups were verified both on and off board.
+It printed `CPU0_SPL_IDENTITY mhartid=0x0 misa=0x800000000094112f`,
+then the existing one-CPU Linux boot completed. Both original SPL slots
+were restored, direct-read hashes matched the originals, and a subsequent
+normal reboot reached the root prompt with all four shell services active.
+The [trial record](cpu0-identity-physical-trial.md) gives commands, hashes,
+captures, and limits. This corroborates the pinned source's assignment of
+the SPL entry to physical CPU0. It does not turn OpenSBI's logical HART 0
+into proof of physical CPU1's CSR or establish Linux SMP.

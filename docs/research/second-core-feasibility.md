@@ -1,8 +1,9 @@
 # K230 second-core feasibility
 
-This is a source and boot-record audit. It does not claim that the second core
-can be enabled safely, and it does not change the kernel, device tree, OpenSBI,
-or firmware.
+This source and boot-record audit includes a bounded physical CPU0 identity
+measurement recorded below. It does not claim that the second core can be
+enabled safely. The diagnostic firmware was restored; the normal kernel,
+device tree, OpenSBI, and stage 1 are unchanged.
 
 ## Silicon and vendor architecture
 
@@ -416,3 +417,18 @@ big-core DT do not establish whether the hardware maps separate PLIC/
 CLINT instances into per-core address spaces or exposes usable second
 contexts to one joint Linux image. It cannot justify inventing a second
 `interrupts-extended` entry.
+
+## 2026-09-27 physical CPU0 identity measurement
+
+The default-off CPU0 SPL diagnostic was run on the board and its two raw
+SPL slots were restored byte-for-byte afterward. The
+[physical trial](../evidence/second-core/cpu0-identity-physical-trial.md)
+recorded `CPU0_SPL_IDENTITY mhartid=0x0 misa=0x800000000094112f`
+before the existing CPU1 release, followed by
+one-hart OpenSBI and one-CPU Linux. The restored image then booted normally.
+This turns the pinned source's physical CPU0 identity **sampling point**
+into a first-hand `mhartid=0` observation. It does not measure physical
+CPU1's CSR: OpenSBI's `Boot HART ID : 0` is its logical handoff value, and
+must not be used alone to infer a distinct or duplicate physical CSR.
+The distinct hart mapping, CPU0 interrupt/timer routing and shared cached
+memory/atomic contract remain open before any Linux SMP attempt.

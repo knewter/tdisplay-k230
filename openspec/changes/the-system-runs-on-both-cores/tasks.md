@@ -34,6 +34,14 @@
   `docs/evidence/second-core/spl-cpu0-identity-host-build.md` and
   `docs/evidence/second-core/cpu0-identity-trial.md`. This is host build
   proof only; it does not close 1.3, 3.1, or any Linux SMP gate.
+- [x] 1.6 Run the bounded default-off physical CPU0 SPL identity diagnostic,
+  preserve verified copies of both original SPL slots on and off board,
+  capture the diagnostic boot, restore both original slots, and prove a
+  subsequent normal boot. Verify by the direct-read hashes and serial
+  excerpts in `docs/evidence/second-core/cpu0-identity-physical-trial.md`
+  (physical board proof of CPU0's sampled CSRs only). Physical CPU1's CSR,
+  the external-reader restoration rehearsal, and all Linux SMP gates remain
+  open.
 
 ## 2. Recovery rehearsal (must pass before any stage-3 task starts)
 

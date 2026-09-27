@@ -1,10 +1,14 @@
-# CPU0 SPL identity trial — prepared, not run
+# CPU0 SPL identity trial — preparation and reference procedure
 
 This is a bounded diagnostic for the Linux SMP plan, **not** a second-core
 application. It reads physical CPU0's `mhartid` and `misa` in the existing
 SPL handoff before CPU1 is released; afterward stage 1 boots physical CPU1
-as usual and CPU0 parks. The trial has not been installed or run on the
-board. The coordinator owns the board and `/dev/ttyACM0` throughout.
+as usual and CPU0 parks. The bounded trial was performed on 2026-09-27,
+then the original SPL slots were restored and normal boot verified; see the
+[physical trial evidence](cpu0-identity-physical-trial.md). The procedure
+below records the prepared external-reader route; the actual operator used
+the running Linux raw slots with an off-board backup and an external reader
+available as fallback.
 
 Candidate built on 2026-09-26 from pinned U-Boot SDK revision
 `1104236db4d1e47873bd68924f912747b820228c`:
@@ -31,7 +35,7 @@ only in `fn_u-boot-spl.bin`; do **not** write `fn_ug_u-boot.bin`, env, DT,
 OpenSBI, kernel or rootfs. `nix/stage1.nix:176-180` gives the two SPL offsets
 as 1048576 and 1572864 bytes (1 MiB and 1.5 MiB).
 
-## Operator sequence after board/card handoff
+## Prepared external-reader procedure
 
 Use an external SD-card reader; U-Boot `ums` cannot recover an SPL that
 prevents U-Boot from starting. Record the current card's full by-id path,
