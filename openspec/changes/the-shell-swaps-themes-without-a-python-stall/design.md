@@ -181,3 +181,24 @@ retains center priority. A motion-gate test must cover both carousels and
 show pre-render becomes eligible again at rest. Physical responsiveness is
 still UNVERIFIED: after the panel trial, compare cold/warm swipes, idle
 loading activity, frame gaps and process CPU on the exact installed build.
+
+## Preserve active bundled-theme lookup across store relocation (2026-09-27)
+
+The second picker trial preserved the active generation but native capture
+showed a permanent `Loading backgrounds` row; all four injected background
+drags reached Rust yet produced no commits. Existing `selected()` compares
+only the active report's source pathname with current catalog paths. A Rust
+thumbnail-tool rebuild also rebuilds the bundled-theme derivation, changing
+its store path even when theme files are identical. A missing active catalog
+ID makes the chooser select index zero without requesting active backgrounds.
+This precedes the thumbnail working-set change; that rebuild exposes it.
+
+Keep exact-path matching first. For an unmatched source, recognize only a
+unique built-in entry with the same bundled `/share/omarchy/themes/NAME`
+location beneath a Nix store object and the exact source-content digest in
+the active report. Do not match user themes by display name, guess between
+multiple entries, or write the active pointer. Missing/changed content remains
+unmatched. Host fixtures must prove relocation, exact-path priority, and
+rejection of changed content, another origin, malformed identity and ambiguity.
+A physical repeat must show the actual background row and unchanged durable
+generation before using its swipe/memory measurements as comparable evidence.

@@ -213,6 +213,72 @@ class CatalogTests(unittest.TestCase):
         status, listing = self.run_cli("list", "--json")
         self.assertEqual(listing["active"], {"id": entry.id, "generation": candidate["generation"]})
 
+    def relocation_fixture(self):
+        store = self.base / "store"
+        old = theme(store / ("a" * 32 + "-old") / "share/omarchy/themes/night")
+        new = store / ("b" * 32 + "-new") / "share/omarchy/themes/night"
+        shutil.copytree(old, new)
+        generation = self.state / "generations" / ("c" * 64)
+        generation.mkdir(parents=True)
+        report = {"source": str(old), "name": "night", "source_sha256": source_digest(old)}
+        (generation / "report.json").write_text(json.dumps(report))
+        (self.state / "active").symlink_to(generation)
+        self.addCleanup(mock.patch.stopall)
+        mock.patch.object(catalog, "NIX_STORE", store).start()
+        entry = catalog.Entry("d" * 24, "night", "night", "builtin", new, None)
+        return old, new, generation, report, entry
+
+    def test_active_builtin_relocation_matches_content_without_rewriting_state(self):
+        old, new, generation, report, entry = self.relocation_fixture()
+        before = (generation / "report.json").read_bytes()
+        shutil.rmtree(old)  # recovery cannot depend on an old GC'd package
+        with mock.patch.object(catalog.activation, "prepare", side_effect=AssertionError("must not prepare")):
+            result = catalog.selected(self.state, [entry])
+        self.assertEqual(result, {"id": entry.id, "generation": generation.name})
+        self.assertEqual((self.state / "active").resolve(), generation)
+        self.assertEqual((generation / "report.json").read_bytes(), before)
+
+    def test_active_builtin_relocation_list_drives_background_preview_without_activation(self):
+        _, new, generation, _, _ = self.relocation_fixture()
+        self.builtins = new.parent
+        status, listing = self.run_cli("list", "--json")
+        self.assertEqual(status, 0)
+        active_id = listing["active"]["id"]
+        self.assertEqual(active_id, listing["themes"][0]["id"])
+        status, preview = self.run_cli("preview", active_id, "--json")
+        self.assertEqual(status, 0, preview)
+        self.assertEqual(len(preview["backgrounds"]), 3)
+        self.assertFalse(preview["activated"])
+        self.assertEqual((self.state / "active").resolve(), generation)
+
+    def test_active_builtin_relocation_rejects_changed_content(self):
+        _, new, generation, report, entry = self.relocation_fixture()
+        (new / "colors.toml").write_text(COLORS.replace("#101820", "#202830"))
+        self.assertIsNone(catalog.selected(self.state, [entry])["id"])
+
+    def test_active_builtin_relocation_never_matches_user_theme_by_name(self):
+        _, _, _, report, entry = self.relocation_fixture()
+        user = catalog.Entry("e" * 24, entry.name, entry.label, "user", entry.source, None)
+        self.assertIsNone(catalog.selected(self.state, [user])["id"])
+        self.assertEqual(catalog.selected(self.state, [user, entry])["id"], entry.id)
+
+    def test_active_builtin_relocation_rejects_ambiguity_and_malformed_reports(self):
+        _, _, generation, report, entry = self.relocation_fixture()
+        duplicate = catalog.Entry("e" * 24, entry.name, entry.label, entry.origin, entry.source, None)
+        self.assertIsNone(catalog.selected(self.state, [entry, duplicate])["id"])
+        for field, value in [("source_sha256", None), ("source_sha256", "invalid"),
+                             ("name", "another"), ("source", None),
+                             ("source", str(self.base / "user/night"))]:
+            with self.subTest(field=field, value=value):
+                (generation / "report.json").write_text(json.dumps({**report, field: value}))
+                self.assertIsNone(catalog.selected(self.state, [entry])["id"])
+
+    def test_active_exact_source_keeps_priority_and_needs_no_relocation_digest(self):
+        old, _, _, _, entry = self.relocation_fixture()
+        exact = catalog.Entry("e" * 24, entry.name, entry.label, "user", old, None)
+        with mock.patch.object(catalog.activation, "theme_digest", side_effect=AssertionError("unneeded digest")):
+            self.assertEqual(catalog.selected(self.state, [entry, exact])["id"], exact.id)
+
     def test_activate_reports_keyboard_sync_as_deferred_but_it_still_completes(self):
         # Task 4: the keyboard restart must not block this response (the
         # JSON shows "deferred" immediately), but a bare CLI invocation

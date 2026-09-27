@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 65c0660b3a9b4347fe64926128dbae7400bae6701df9a55df713ebc157cf773a docs/evidence/theme-picker/working-set/loading-backgrounds.png
+DATA 9edf97b5508b80673db74e264d50b99746f2b7774295b30aa2454c4017668539 docs/evidence/theme-picker/working-set/browsing.mp4
 DATA 6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8 docs/evidence/backlight/live-hs/live-26-128-255.jpg
 DATA d05da3773efa0683dbebc6b3f176a8043af7b29cd08288fe823b4ce8f4fca196 docs/evidence/backlight/live-hs/off-on-128.jpg
 DATA 2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208 docs/evidence/backlight/live-hs/settings-10-50-100.jpg
@@ -2069,3 +2071,13 @@ source and measurement limits: `docs/evidence/backlight/live-hs/README.md`.
 | `docs/evidence/backlight/live-hs/live-26-128-255.jpg` | 21807 | DATA | `6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8` |
 | `docs/evidence/backlight/live-hs/off-on-128.jpg` | 15677 | DATA | `d05da3773efa0683dbebc6b3f176a8043af7b29cd08288fe823b4ce8f4fca196` |
 | `docs/evidence/backlight/live-hs/settings-10-50-100.jpg` | 21907 | DATA | `2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208` |
+
+### Theme picker working-set board observation
+
+Native screenshot and sampled native video. These show the preserved-theme
+lookup defect, not accepted smoothness; see `docs/evidence/theme-picker/working-set/README.md`.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/theme-picker/working-set/browsing.mp4` | 376512 | DATA | `9edf97b5508b80673db74e264d50b99746f2b7774295b30aa2454c4017668539` |
+| `docs/evidence/theme-picker/working-set/loading-backgrounds.png` | 117501 | DATA | `65c0660b3a9b4347fe64926128dbae7400bae6701df9a55df713ebc157cf773a` |
