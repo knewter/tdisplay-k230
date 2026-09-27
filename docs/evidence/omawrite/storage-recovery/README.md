@@ -42,7 +42,13 @@ The full private image, checksum, source identity and restoration notes are at
 `~/tmp/k230-demo-card-20260927T203725Z/`. Only reviewed metadata is committed here.
 The backup preserves existing filesystem corruption; it is not a repaired image.
 
-A capacity probe and the current `sdImage-coherent` build are in progress.
+The [F3 capacity probe](capacity-probe.txt) passed: usable and announced sizes
+both equal 125,173,760 sectors. It restored its sampled blocks; independent
+samples at the beginning, middle and end then matched the verified backup.
+The [probe result](capacity-probe-result.json) preserves the exact command and
+completion time. This checks capacity, not every possible future failure.
+
+The current `sdImage-coherent` image build is in progress.
 No replacement image has been flashed yet. Actual boot, launcher and icon
 behavior still require checking on the replacement card. No new application or
 shell source change is justified by the available evidence.

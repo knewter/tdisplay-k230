@@ -1,0 +1,22 @@
+F3 probe 10.0
+Copyright (C) 2010 Digirati Internet LTDA.
+This is free software; see the source for copying conditions.
+
+WARNING: Probing normally takes from a few seconds to 15 minutes, but
+         it can take longer. Please be patient.
+
+Probe finished, recovering blocks... Done
+
+Good news: The device `/dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1' is the real thing
+
+Device geometry:
+	         *Usable* size: 59.69 GB (125173760 blocks)
+	        Announced size: 59.69 GB (125173760 blocks)
+	                Module: 64.00 GB (2^36 Bytes)
+	Approximate cache size: 0.00 Bytes (0 blocks)
+	   Physical block size: 512.00 Bytes (2^9 Bytes)
+
+Probe time: 2'52"
+ Operation: total time / blocks = avg time
+      Read: 39.36s / 4199688 = 9.3us
+     Write: 2'13" / 4196535 = 31.7us

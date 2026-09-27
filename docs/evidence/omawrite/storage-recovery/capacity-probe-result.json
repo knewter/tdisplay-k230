@@ -1,0 +1,13 @@
+{
+  "exit_code": 0,
+  "completed_at_utc": "2026-09-27T20:59:43.661292+00:00",
+  "destructive_flag": false,
+  "command": [
+    "/nix/store/bj1v0yv1lg3pgm8bwrqxvnk3dpl4b2fa-f3-10.0/bin/f3probe",
+    "--time-ops",
+    "/dev/disk/by-id/usb-Generic-_USB3.0_CRW_-SD_201506301013-0:1"
+  ],
+  "sampled_restore_matches_backup": true,
+  "usable_blocks": 125173760,
+  "announced_blocks": 125173760
+}
