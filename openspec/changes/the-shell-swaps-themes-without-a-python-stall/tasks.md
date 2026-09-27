@@ -1151,7 +1151,7 @@ below is complete merely because that partial evidence or this plan landed.
   readiness, taps, activation and other routes correct. Build the Rust shell
   and verify a burst of queued input does not cause one full render per stale
   motion sample; record the exact build and injected-board commands.
-- [ ] 14.3 Trial the matching Rust build on the reserved board with automatic
+- [x] 14.3 Trial the matching Rust build on the reserved board with automatic
   restoration, recording baseline/candidate identities, held-drag movement,
   reversal, stop/hold/release and both rows. Record input-to-commit timing
   separately from geometry and preserve saved generation. Capture native
@@ -1169,5 +1169,7 @@ Task 14.2: the matching full system built, and the guarded physical-board
 trial processed all 20 injected motion samples per phase with 2–4 commits
 during contact/hold. See `docs/evidence/theme-picker/finger-tracking/README.md`
 for commands, identities, geometry captures and timing limits. Task 14.3's
-trial evidence is recorded; persistent installation remains open, as does
-14.4's real-finger acceptance.
+qualified candidate was installed with verified backup/profile/boot hashes,
+then normally rebooted: all four shell services active, no failed units, and
+current/booted/profile identities all match `7hhr1fp…`. Task 14.4's
+real-finger acceptance remains open.

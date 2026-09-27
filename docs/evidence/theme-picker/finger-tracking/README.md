@@ -3,8 +3,8 @@
 Recorded 2026-09-27 UTC on the reserved physical board. Source `0c199c76`
 changes both carousel geometries to invert the rendered card-center path and
 coalesces pending picker motion before drawing. This is injected input and
-native capture evidence; real-finger acceptance and persistent installation
-remain open.
+native capture evidence; real-finger acceptance remains open. Persistent installation results follow
+below.
 
 The old formula divided motion by the collapsed thumbnail pitch (49 pixels
 for themes, 43 for backgrounds), although the expanded center moved much
@@ -83,3 +83,50 @@ physical response, and the stationary hold does not prove fast-fling quality.
 Host checks at the source revision passed 13 carousel tests and 19 route
 tests. Task 14.4 still requires the operator's real-finger verdict; tasks
 11.3/13 still require the broader performance and memory comparison.
+
+
+## Persistent userspace installation
+
+`persist-userspace.sh` is the exact board helper (SHA-256
+`35b979fefcc50eb429485b71028322f99fc0efcb8462e2935597a448b903a7e7`). It
+reuses the earlier verified rollback/capacity transaction and additionally
+requires identical booted/candidate kernel and initrd store objects, a current
+runtime matching the candidate, and a backup/profile matching the booted
+system. The candidate Image also must compare equal to the installed Image.
+Five host cases passed for these identity guards: accept matching kernel and
+initrd; reject differing kernel, differing initrd, invalid booted identity,
+and wrong current system. `bash -n` passed; the board helper's hash matched.
+
+A fresh eight-file normal-boot backup and four-file candidate bundle were
+staged and verified under `/var/lib/k230/picker-finger-persist-20260927`.
+The first staging service failed before making that directory because its
+service PATH omitted coreutils. It was rerun with an explicit system PATH
+and succeeded. No boot file had been touched by that failed staging attempt.
+
+After the guarded runtime trial, the restoration timer was stopped and the
+board ran:
+
+```sh
+bash /var/lib/k230/picker-finger-persist-20260927/persist.sh \
+  /nix/store/7hhr1fp722cq147svn5ni67ar1i66mys-nixos-system-nixos-26.11.20260919.20b1ddd \
+  /var/lib/k230/picker-finger-persist-20260927/new \
+  /var/lib/k230/picker-finger-persist-20260927/previous \
+  /var/lib/k230/picker-finger-persist-20260927/transaction
+```
+
+`persist-result.json` records SUCCESS, exit 0, and the previous profile.
+`persist-verified.json` records independent checks of the completed service,
+all four candidate boot-file hashes, four unchanged firmware/selectors,
+the candidate system profile, and sync. The boot update remains non-atomic;
+its verified rootfs backup and recovery recipe were retained. No full-card
+readback was performed. This installation does not enable a second CPU.
+
+
+The subsequent **normal reboot passed**. `normal-runtime.json` records the
+candidate `7hhr1fp…` as current, booted and installed-profile system, with
+Rust executable `pzqqphc…`, Sway `7zvingic…`, all four shell services active
+and no failed units. The serial listener required a fresh Linux kernel banner
+before accepting a root prompt, and runtime identity was checked separately.
+Linux still reports CPU online mask `0`. The retained kernel and initrd were
+unchanged; this verifies persistent userspace deployment, not real-finger
+acceptance or CPU bring-up.
