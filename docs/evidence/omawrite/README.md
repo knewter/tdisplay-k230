@@ -145,3 +145,14 @@ keyboard surface is covered by the board trial.
 ![Live theme generation change](host/theme-changed.png)
 ![Light-theme selection contrast](host/theme-dialog.png)
 ![Host reopened document](host/reopened.png)
+
+## Publication
+
+[Delivery record](delivery.json) identifies the implementation commit, successful
+CI/Pages run and published URL. The local site build passed at `a7e97de5` with
+346 pages, 11,009,538 bytes and 29.41 seconds. The work board discovers all 15
+captures and selects physical-board writing as the first image. An existing
+VG-Lite test fixture's fake PID collided with a CI process; the isolated test fix
+`6e430206` passed a collision reproduction and all 22 tests in its CI group.
+CI build and deployment then succeeded, and the published editor evidence was
+checked for the matching system path and all 15 images. No device gate remains.

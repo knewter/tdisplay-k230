@@ -8,7 +8,7 @@
   and palette changes with the actual app; run
   `python3 tests/omawrite_runtime.py --sway <sway> --omawrite <app> --output <dir>`.
   This is host/headless proof, not device or finger acceptance.
-  PASS: [host evidence](../../../docs/evidence/omawrite/README.md).
+  PASS: [host evidence](../../../../docs/evidence/omawrite/README.md).
 
 ## 2. Image defaults
 
@@ -27,7 +27,7 @@
 - [x] 3.2 Persist the qualified system using the existing guarded userspace
   install helper; record system/profile/boot bundle identity and healthy services.
   Keep the previous image available; do not read back the entire card.
-- [ ] 3.3 Land source/evidence on master, inventory media, validate with
+- [x] 3.3 Land source/evidence on master, inventory media, validate with
   `openspec validate the-editor-opens-omawrite --strict`, and verify the matching
   CI/Pages deployment and published evidence. Archive only if every named
   requirement has its proof; preserve any unperformed evidence gate explicitly.

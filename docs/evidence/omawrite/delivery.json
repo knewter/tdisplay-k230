@@ -1,0 +1,32 @@
+{
+  "revision": "6e43020620b478b03db1cb4ce4de6d7e0d3a7ee5",
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/36309518215",
+  "ci_conclusion": "success",
+  "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-omawrite-readme-md/",
+  "installed_system_present": true,
+  "normal_reboot_proof_present": true,
+  "image_count": 15,
+  "branch": "feature/omawrite",
+  "worktree": "../k230-omawrite",
+  "base_revision": "7e6d62e5b0fc0b6df4b27f3414834df9a71c5166",
+  "implementation_landed": "a7e97de59a0370dec591e98dcec780e33f440bd6",
+  "ci_fixture_fix": "6e43020620b478b03db1cb4ce4de6d7e0d3a7ee5",
+  "owned_paths": [
+    "nix/omawrite/",
+    "nix/shell.nix",
+    "flake.nix",
+    "tests/omawrite_runtime.py",
+    "docs/evidence/omawrite/",
+    "docs/blob-inventory.md",
+    "openspec/changes/the-editor-opens-omawrite/",
+    "openspec/specs/runtime/editor/spec.md"
+  ],
+  "board_reservation": "released after normal reboot and editor launch verification",
+  "build_slot": "released",
+  "remaining_device_gates": [],
+  "archive": "openspec/changes/archive/2026-09-27-the-editor-opens-omawrite",
+  "capabilities": [
+    "runtime/editor"
+  ],
+  "remaining_open_proposals": 29
+}
