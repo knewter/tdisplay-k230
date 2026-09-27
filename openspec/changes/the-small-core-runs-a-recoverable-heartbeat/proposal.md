@@ -1,5 +1,12 @@
 ## Why
 
+**Suspended 2026-09-26 after user scope correction.** The requested feature
+is Linux SMP with both physical cores addressable by one kernel and ordinary
+processes schedulable on either. A CPU0 heartbeat or AMP payload does not
+meet that request. This proposal and its unchecked tasks remain for history;
+do not implement or treat them as a substitute for
+`the-system-runs-on-both-cores`.
+
 The handheld currently runs all Linux work on the large physical core, so no
 background work can use the small core. Before promising shared Linux
 scheduling, an operator needs a recoverable proof that the small core can

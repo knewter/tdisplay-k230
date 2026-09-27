@@ -1,5 +1,27 @@
 ## Why
 
+**2026-09-26 source correction.** Pinned stage 1 boots Linux on physical
+CPU1 (the large, RVV-capable core):
+`board/canaan/common/k230_img.c:276-285` releases CPU1 from CPU0, then
+parks CPU0. The extra Linux CPU sought here is physical CPU0. The current
+device-tree `cpu@0` and OpenSBI hart 0 name Linux's *logical* hart, not the
+physical CPU0. This proposal remains the Linux SMP objective: both physical
+cores must appear as Linux CPUs and ordinary scalar processes must be
+schedulable on either. The separate CPU0 heartbeat/AMP proposal is suspended;
+it does not satisfy this objective.
+
+The [K230 QEMU board author](https://www.mail-archive.com/qemu-devel@nongnu.org/msg1188749.html)
+reports that both physical cores read `mhartid=0`; the [Linux DTS author](https://lkml.rescloud.iu.edu/2403.3/00159.html)
+reports that physical CPU1 reads 0 and that inter-core coherence is unknown.
+Those are firsthand reports, not measurements on this board. In pinned
+OpenSBI 1.4, `platform/generic/platform.c:95-132` reads DT `reg` for each
+hart, while `lib/sbi/sbi_scratch.c:24-32` returns the first table entry for
+a given hart ID and `include/sbi/riscv_asm.h:166` reads `CSR_MHARTID` for
+the current hart. If the duplicate ID is confirmed, adding `cpu@1` cannot
+work: a K230-specific identity scheme must first be proven end-to-end in
+OpenSBI, its HSM/IPI/timer paths, and Linux's CPU entry path. The normal
+boot image remains unchanged while this is investigated.
+
 Right now every background job — Wi-Fi association, a video decode helper, a
 Python theme helper, a udev-triggered script — competes with the Sway
 compositor for the same single hart. A person notices this as the shell
@@ -11,12 +33,9 @@ thing being looked at.
 Be honest about what that second hart actually is. `docs/evidence/cpu-readiness.txt`
 records the current Linux hart reporting RVV and a 256 KiB L2; the K230 TRM
 section 1.3.2 assigns exactly that RVV/256 KiB profile to the 1.6 GHz CPU1.
-That makes CPU1 execution a strong inference for the hart Linux already runs
-on (`openspec/specs/system/second-core-readiness/spec.md`,
-"A second-core decision distinguishes handoff evidence from silicon
-capability"). It is still an inference, not a register-proven fact: no source
-or captured handoff in this repository maps a physical core to a Linux hart
-ID. If the inference holds, **the second hart is the 800 MHz little core**,
+Pinned stage-1 release source and the live ISA/cache observation establish
+that Linux runs on physical CPU1, although this board's `mhartid` value has
+not been measured in M-mode. **The second core is the 800 MHz little core**,
 not a matching twin of the one running the shell today. Plain-terms benefit:
 a background core for decode assistance, network/SDIO servicing, Python
 helpers and the theme helper, run at half the clock of the compositor's core
@@ -57,28 +76,26 @@ experiment" and "passive handoff audit" sections:
   Linux CPU up/down transition. Cross-check `/proc/cpuinfo`'s `misa`/`uarch`
   and the live L2 size against the TRM's CPU0/CPU1 table to sharpen, not
   replace, the existing inference.
-- **(b) An OpenSBI + device-tree experiment.** Only after (a) yields a
-  documented physical hart ID, reset-vector value, and PLIC/ACLINT context
-  for the second core (from Canaan or a read-only register observation that
-  settles it) does this project prepare a `cpu@1` node with verified
-  interrupt routing and an OpenSBI domain/HSM start path. Two release
-  mechanisms are open and neither is chosen yet: OpenSBI platform code
-  performing the `CPU1_RST_CTL`/reset-vector writes itself, or U-Boot
-  releasing CPU1 into a spin-table before handing off to OpenSBI. This stage
-  is the first one that writes a reset/power register, and it does not run
-  without the explicit authorization and recovery rehearsal in Risk and
-  recovery below.
-- **(c) Coherency validation.** Only after a second hart demonstrably starts
-  does this project run atomic/litmus-style stress and a timer/IPI stress
-  across both harts, because no CPU0/CPU1 cache-coherency or atomic-sharing
-  contract is documented anywhere this project has read (TRM or vendor SDK).
-- **(d) ISA-aware SMP scheduling.** Only after (c) passes does Linux SMP
-  scheduling get enabled, and only with an explicit heterogeneous-ISA
-  constraint: either hard CPU affinity that keeps vector-capable code off the
-  little core, or a kernel-level per-hart-safe gate before any task carrying
-  a vector-using library path can run there. Until one of those exists,
-  enabling scheduling across both harts is not safe with the current
-  RVV-by-default kernel.
+- **(b) An OpenSBI + device-tree experiment.** First establish physical
+  CPU0's `mhartid`, its known CPU0 reset vector/release controls, and
+  per-core PLIC/ACLINT or other usable IPI/timer routing. If the two
+  physical cores share `mhartid=0`, prove an alternate unique logical
+  identity from early M-mode through OpenSBI HSM, IPI, timer and Linux CPU
+  entry; DT `reg = <1>` alone is insufficient. Only then prepare a guarded
+  CPU0 release and two-CPU Linux DT. This stage is the first one that may
+  write a reset register and requires the recovery rehearsal below.
+- **(c) Coherency validation.** Establish a CPU0/CPU1 shared-memory and
+  atomic contract before the Linux kernel shares page tables, locks and
+  runqueues across both cores. A bounded pre-Linux diagnostic may test it;
+  Linux SMP itself must not be the first coherency test. The vendor AMP
+  driver's explicit cache maintenance is adverse evidence, not proof that
+  ordinary cached Linux SMP is safe.
+- **(d) Common-ISA SMP scheduling.** The initial two-CPU image must use a
+  scalar common ISA baseline across kernel and userspace, with RVV execution
+  disabled while ordinary processes can migrate between cores. Per-hart RVV
+  use is later optimization work requiring a proven scheduler/userspace
+  contract. CPU affinity alone cannot protect every ordinary process in an
+  RVV-by-default image.
 
 ## Capabilities
 

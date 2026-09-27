@@ -4,7 +4,7 @@
 
 *Grounding: `docs/research/second-core-feasibility.md`'s "minimal recoverable experiment" and "passive handoff audit" sections define the ordering this requirement records; `docs/evidence/second-core/README.md` records that today's readiness investigation is complete while second-core enablement is not.*
 
-The project SHALL stage second-core bring-up as four ordered phases — read-only board probes, an OpenSBI-plus-device-tree hart-release experiment, coherency validation, and ISA-aware SMP scheduling — and SHALL NOT begin a later phase before the preceding phase's board evidence is committed under `docs/evidence/second-core/`. Read-only probes SHALL NOT write MMIO, invoke a reset/power/mailbox/HSM operation, or change CPU online state. Only the hart-release experiment phase SHALL write a reset or power register, and only after the interrupt-routing and reset-vector prerequisite in the existing "Bring-up is gated by firmware, interrupt, and coherency evidence" requirement is met.
+The project SHALL stage Linux SMP bring-up as read-only board/source probes, a pre-Linux CPU0/CPU1 coherency and identity diagnostic, a guarded OpenSBI-plus-device-tree hart-release experiment, and common-ISA Linux scheduling. Linux currently runs on physical CPU1; the target is physical CPU0. It SHALL NOT boot a shared Linux kernel on both cores before identity, interrupt/timer routing, and shared-memory coherence are grounded. Read-only probes SHALL NOT write MMIO, invoke a reset/power/mailbox/HSM operation, or change CPU online state. Only the guarded diagnostics and release phase SHALL write a reset or power register, after the recovery prerequisite below is met. A separate CPU0 payload does not meet this requirement.
 
 #### Scenario: A phase is proposed out of order
 
@@ -20,17 +20,17 @@ The project SHALL stage second-core bring-up as four ordered phases — read-onl
 
 *Grounding: the K230 TRM section 1.3.2 assigns RVV 1.0 to CPU1 only; `the-system-enables-proven-c908-extensions` (modifying `system/kernel`) makes the ordinary kernel and Pixman RVV-by-default with a runtime capability gate. `docs/evidence/cpu-readiness.txt` records the current single Linux hart reporting RVV; if the second hart is the non-RVV core, as the current inference suggests, a kernel built with V compiles instructions that trap on a hart lacking that extension.*
 
-Before Linux SMP scheduling is enabled across a released second hart, the project SHALL have in place at least one of: hard CPU affinity keeping vector-using code paths off a non-RVV hart, a kernel-level per-hart capability gate so vector-dependent code observes the executing hart's own extension support rather than a system-wide value, or an explicit exclusion of the second hart from the general scheduler. The project SHALL NOT enable unconstrained scheduling across two harts of differing ISA while the default kernel and userspace assume every hart has RVV.
+For initial Linux SMP scheduling, the project SHALL use a scalar common-ISA kernel and userspace image with RVV execution disabled so ordinary unpinned processes can run on either physical core. It SHALL NOT enable unconstrained scheduling across two harts while the kernel or userspace may execute RVV on the non-RVV CPU0. A later RVV-capable image requires a proven per-hart scheduling and userspace capability contract; affinity for selected processes alone is insufficient for the ordinary migratable workload.
 
 #### Scenario: A second hart is released without an ISA-aware scheduling constraint
 
-- **WHEN** a released second hart lacks RVV and no affinity, per-hart capability gate, or scheduling exclusion has been verified on the board
+- **WHEN** a released second hart lacks RVV and the image can execute RVV in ordinary migratable code
 - **THEN** that hart is not made eligible for the general Linux scheduler, and the missing constraint is recorded as the blocker
 
 #### Scenario: A vector-using task is dispatched under an ISA-aware constraint
 
-- **WHEN** the verified affinity or per-hart gate is active and a synthetic vector-using task runs repeatedly under scheduling pressure
-- **THEN** it does not execute on a hart lacking RVV, and zero illegal-instruction traps are observed across the recorded repeats
+- **WHEN** the scalar common-ISA image runs ordinary unpinned tasks repeatedly under scheduling pressure
+- **THEN** both Linux CPUs execute those tasks and zero illegal-instruction traps are observed across the recorded repeats
 
 ### Requirement: A hart-release write requires explicit authorization and a rehearsed recovery path
 
