@@ -54,7 +54,7 @@ ambient-light auto-brightness; ramping/animation on brightness changes.
 
 1. **A DSI-command backlight, not a GPIO/PWM one.** GPIO25
    (`backlight_gpio`) stays exactly what it is today — an enable gate driven
-   once at probe/unprepare. Brightness itself is a DCS write to the RM69A10
+   high at probe and prepare, low at unprepare. Brightness itself is a DCS write to the RM69A10
    controller, which is what the fixed `0xFE` in `panel-init-sequence`
    already proves works. Rejected: adding a `pwm-backlight` node — nothing
    on this board's schematic wires the backlight gate to a PWM channel
@@ -183,3 +183,15 @@ unprivileged brightness path and restoration of a nondefault value after
 DPMS. Keep failure logs and distinguish native screenshots (geometry) from
 camera evidence (panel luminance). Only install the candidate persistently
 after its boot and recovery checks pass.
+
+## Physical resolution of the transport failure
+
+The earlier malformed-packet and active-video LP findings remain recorded
+in `docs/evidence/backlight/board-findings.md` and `runtime-recovery/README.md`.
+GPIO25 restoration and packet/FIFO fixes alone did not make live LP writes
+visibly apply. The final narrow policy copies a validated message under the
+host transfer mutex and clears USE_LPM only for a two-byte DCS `0x51` short
+write while video is active. It retains initialization LP policy, ACK flags,
+caller immutability and unrelated packet behavior, without cycling video,
+PHY or panel power. Thirty-one host fixtures and the physical camera result
+in `docs/evidence/backlight/live-hs/README.md` support this resolution.

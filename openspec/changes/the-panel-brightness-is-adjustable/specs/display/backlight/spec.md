@@ -1,3 +1,8 @@
+## Purpose
+
+Let a person adjust the physical panel brightness from Settings or the console,
+and retain the selected level across display power cycles.
+
 ## ADDED Requirements
 
 ### Requirement: The panel exposes a real backlight device
@@ -20,16 +25,10 @@ board: `ls /sys/class/backlight` shows exactly one device
 read back as set with no dmesg errors — see
 `docs/evidence/backlight/board-findings.md`.*
 
-<!-- UNVERIFIED / NEGATIVE RESULT, board-confirmed: writing brightness does
-NOT visibly or measurably change the panel. A clean board test (fresh
-boot, no DPMS interference) of 0/128/255 shows near-identical mean
-luminance (200.99/201.14/201.33) with the locked-exposure camera. A real
-transport bug (a malformed 2-byte DCS write) was found and fixed, but the
-fix alone did not close this gap; see board-findings.md for the current
-best hypothesis (this DSI host's command path may not deliver generic
-commands while continuous video streaming is active) and the two
-"Scenario"s below, which restate what the fixed command achieves and does
-not achieve rather than asserting success. -->
+*Physical follow-up: `docs/evidence/backlight/live-hs/README.md` records
+source `d76e126f` sending brightness in HS during active video. Fixed-exposure
+camera means for raw 26/128/255 are 26.69/91.56/172.36 without DPMS between
+writes. The earlier negative findings are preserved as historical evidence.*
 
 #### Scenario: A person lists the backlight class
 
@@ -37,24 +36,18 @@ not achieve rather than asserting success. -->
 - **THEN** exactly one device appears, with `max_brightness` and
   `brightness` files
 
-#### Scenario: A person writes a new brightness (not yet met)
+#### Scenario: A person writes a new brightness
 
 - **WHEN** a person writes 10%, 50%, then 100% of `max_brightness` to that
   device's `brightness` file
-- **THEN** the write is accepted with no error and reads back as set, but
-  **the panel's visible brightness does not yet change** — this scenario
-  is board-confirmed to fail today; see board-findings.md
+- **THEN** the write is accepted, reads back as set, and the panel visibly
+  changes brightness without requiring a display power cycle
 
 ### Requirement: Brightness survives a modeset or DPMS cycle
 
-<!-- UNVERIFIED, and now confounded by a separate board finding: a DPMS
-off/on cycle was tried and produced a large luminance change, but
-canaan_panel_unprepare() drives backlight_gpio (GPIO25) low while
-canaan_panel_dsi_probe() only ever drives it high once, at probe() -- so
-that change may be the enable gate getting stuck low, not brightness
-being reapplied. This requirement cannot be considered met until the
-underlying "a person can see the panel change brightness" requirement
-above is met at all; see board-findings.md. -->
+*Physical proof: `docs/evidence/backlight/live-hs/README.md` demonstrates
+power off/on recovery at requested raw 128: mean grayscale 92.12 before,
+24.15 off, 91.50 on. GPIO25 is restored in prepare, before panel init.*
 
 A brightness value a person has set SHALL still apply after the panel is
 re-enabled by a later modeset or a DPMS-style off/on cycle. The system
@@ -98,11 +91,9 @@ without it.
 
 ### Requirement: The Settings brightness stepper drives the real device
 
-<!-- UNVERIFIED: the stepper does reach /sys/class/backlight's brightness
-attribute (confirmed: the udev rule grants write access, and
-tools/device_settings.py's sysfs path is exercised), but per the
-requirement above, the write reaching the attribute does not yet mean the
-panel visibly changes. -->
+<!-- Settings backend physical proof: live-hs/README.md. The actual UI
+stepper interaction is still UNVERIFIED; backend calls alone do not close
+that interaction gate. -->
 
 The existing Settings brightness stepper (`ServiceRequest::Brightness`,
 already implemented in the Rust shell as a stepper rather than a slider,

@@ -1042,3 +1042,92 @@ Additional fixtures cover stale in-flight replies, preservation of an oldest
 visible resident, and actual byte-budget eviction. These are deterministic
 host cache/channel tests, not timing or physical swipe evidence. No Nix build
 or board use was performed for these tasks; 11.3 remains open.
+
+## 12. Keep an unchanged bundled theme selected after a system upgrade
+
+- [x] 12.1 Repair active catalog identification after only the Nix store
+  package prefix changes. Require unique built-in role/name plus the saved
+  source digest, retain exact-path priority, and leave active state unchanged.
+  Add host tests covering relocation, changed content, duplicate origin,
+  ambiguity and malformed reports. Proof:
+  `python3 -m unittest discover -s tests -p test_theme_catalog.py`.
+- [ ] 12.2 On the reserved board, open the chooser after installing the
+  rebuilt theme package; verify the preserved active theme is centered and
+  its background row resolves and responds, without activating anything.
+  Commit native evidence and rerun the affected browse measurement before
+  closing this gate. Task 11.3 remains open: the first paired run did not
+  establish improved warm swipes, and the second lacked background content.
+
+Host proof for 12.1 (2026-09-27): the exact unittest discovery command above
+passes 21 tests. Six added regressions cover an identical source relocated to
+a new store package after the old object is removed, unchanged active pointer
+and report, real list-to-preview background discovery without activation,
+changed source rejection, same-name user origin, ambiguous/malformed identity,
+and exact-path priority without hashing. The board confirmed a null active
+catalog ID with a preserved generation before this fix; native frames showed
+`Loading backgrounds`. Installing this source and physically verifying the
+resolved row are still task 12.2, not established by host tests.
+
+## 13. Attribute remaining swipe cost and keep speculation out of movement
+
+The partial paired evidence is committed in
+`docs/evidence/theme-picker/working-set/README.md`. Task 11.3 remains open:
+held-touch pre-rendering stopped, but warm swipe improvement was not proved,
+and the second capture lacked the active background row. None of the tasks
+below is complete merely because that partial evidence or this plan landed.
+
+- [ ] 13.1 Establish a matched-content profiling harness after task 12.2.
+  Move the bounded browse workload into `tools/theme-picker-profile.py`
+  with host fixtures in `tests/test_theme_picker_profile.py`; preserve the
+  historical capture unchanged. Require resolved/visually reviewed theme and
+  background rows, catalog counts, exact source/runtime identities, matching
+  active generation, geometry and background playback state before treating
+  runs as comparable. Record whether each opening is first-observed,
+  verified process-cold, or warm; do not infer disk-cold or delete user cache.
+  Capture both carousel swipes and 15-second idle windows without activation,
+  using the verified virtual device and existing single-process injector.
+  Planned host proof: `python3 -m unittest discover -s tests -p test_theme_picker_profile.py`.
+  Fixtures must reject missing-row comparisons, PID reuse and generation
+  changes, and must not count idle intervals or callback/commit mixtures as
+  swipe frame gaps. Keep only allowlisted public fields and hashed private
+  generation identities.
+- [ ] 13.2 Add bounded, opt-in cost attribution to that harness and the
+  Rust/helper paths. Sample per-thread CPU/start identity and process RSS,
+  plus helper cgroup CPU so subprocess work is not hidden by daemon-only
+  measurements. Count/time live scene rebuilds, thumbnail request/completion
+  and hash/read/decode work, appearance-prepare handling, speculative request
+  admission/completion and overlay pre-render separately. Correlate counters
+  with monotonic gesture phases, distinguish CPU from wall time, and bound
+  telemetry memory/output; instrumentation must be off by default. Extend
+  the 13.1 host fixtures with synthetic overlapping phases and counter/PID
+  discontinuities. Narrow Rust proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`.
+  Compare instrumentation-on/off overhead on the board before interpreting
+  detailed timings; no native screencopy runs inside the timing pass.
+- [ ] 13.3 Gate all new speculative dwell/neighbor request admission while
+  either carousel is held, coasting or settling. Preserve the bounded queue
+  while paused, honor the latest settled center before neighbors, and resume
+  only when both rows are at rest. Do not cancel or mislabel in-flight work:
+  retain its request identity/completion accounting, and prove completion
+  during motion cannot admit a successor. Foreground preview/activation and
+  its prepared-slot protection must still work. Add regressions for each
+  motion state on either row, neighbor fallback with no centered candidate,
+  direction changes, in-flight completion while paused, bounded queue,
+  resumption after settling, and foreground-request priority. Planned proof:
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib prepare_ahead`
+  and `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust speculative_theme_motion`.
+- [ ] 13.4 On the reserved board, compare the repaired baseline and the
+  admission-gated candidate with the 13.1 workload in at least three matched
+  pairs, alternating order. Record exact packages and process/cache history;
+  restore matching rows and selected state before every pair. Show no new
+  speculative admissions during either row's motion, separately report work
+  already in flight, and compare per-thread CPU, live rebuild/prepare/
+  thumbnail costs, warm commit-gap distributions, RSS growth and idle work.
+  Capture native media separately, verify both rows visibly respond and the
+  durable generation stays unchanged, and retain injected versus physical
+  finger provenance. The planned operator interface introduced by 13.1 is
+  `python3 /run/theme-picker-profile.py capture --plan /run/picker-plan.json --output /run/picker-profile.json`;
+  the private plan supplies the verified device, runtime identities and row
+  preconditions, and each run uses a unique output. Commit sanitized results,
+  exact invocation and observer-cost limits. If warm swipes or memory regress,
+  or repaint still dominates, document the next measured correction and keep
+  11.3 open; a host regression or scheduling fix alone does not close it.
