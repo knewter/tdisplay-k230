@@ -1,0 +1,199 @@
+{
+  "created_at": "2026-09-27T01:56:39Z",
+  "description": "Injected theme browsing; sampled native capture on source e537353a",
+  "artifact": {
+    "path": "/tmp/k230-picker-results/browsing.mp4",
+    "kind": "mp4-h264-yuv420p",
+    "portrait_source": true
+  },
+  "capture_source": {
+    "kind": "sampled-wayland-screencopy-png",
+    "sample_directory": "/tmp/k230-picker-results/media/picker-media/20260927T015539Z-picker-working-set",
+    "frame_count": 22,
+    "timestamps": "board /proc/uptime boot-relative monotonic seconds",
+    "rendered_duration_seconds": 15.19,
+    "final_frame_codec_duration_note": "The concat input repeats the final PNG so FFmpeg honors its measured duration. At its 100 fps input timebase, the MP4 may extend by 0.01 seconds beyond the measured display duration."
+  },
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-000001.png",
+      "capture_start_monotonic_seconds": 257.94,
+      "capture_end_monotonic_seconds": 258.55,
+      "display_duration_seconds": 0.69
+    },
+    {
+      "index": 2,
+      "file": "frame-000002.png",
+      "capture_start_monotonic_seconds": 258.63,
+      "capture_end_monotonic_seconds": 258.95,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 3,
+      "file": "frame-000003.png",
+      "capture_start_monotonic_seconds": 259.2,
+      "capture_end_monotonic_seconds": 259.58,
+      "display_duration_seconds": 0.62
+    },
+    {
+      "index": 4,
+      "file": "frame-000004.png",
+      "capture_start_monotonic_seconds": 259.82,
+      "capture_end_monotonic_seconds": 260.51,
+      "display_duration_seconds": 0.84
+    },
+    {
+      "index": 5,
+      "file": "frame-000005.png",
+      "capture_start_monotonic_seconds": 260.66,
+      "capture_end_monotonic_seconds": 261.21,
+      "display_duration_seconds": 0.72
+    },
+    {
+      "index": 6,
+      "file": "frame-000006.png",
+      "capture_start_monotonic_seconds": 261.38,
+      "capture_end_monotonic_seconds": 262.05,
+      "display_duration_seconds": 0.84
+    },
+    {
+      "index": 7,
+      "file": "frame-000007.png",
+      "capture_start_monotonic_seconds": 262.22,
+      "capture_end_monotonic_seconds": 262.75,
+      "display_duration_seconds": 0.68
+    },
+    {
+      "index": 8,
+      "file": "frame-000008.png",
+      "capture_start_monotonic_seconds": 262.9,
+      "capture_end_monotonic_seconds": 263.62,
+      "display_duration_seconds": 0.87
+    },
+    {
+      "index": 9,
+      "file": "frame-000009.png",
+      "capture_start_monotonic_seconds": 263.77,
+      "capture_end_monotonic_seconds": 264.26,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 10,
+      "file": "frame-000010.png",
+      "capture_start_monotonic_seconds": 264.34,
+      "capture_end_monotonic_seconds": 264.67,
+      "display_duration_seconds": 0.64
+    },
+    {
+      "index": 11,
+      "file": "frame-000011.png",
+      "capture_start_monotonic_seconds": 264.98,
+      "capture_end_monotonic_seconds": 265.62,
+      "display_duration_seconds": 0.8
+    },
+    {
+      "index": 12,
+      "file": "frame-000012.png",
+      "capture_start_monotonic_seconds": 265.78,
+      "capture_end_monotonic_seconds": 266.5,
+      "display_duration_seconds": 0.88
+    },
+    {
+      "index": 13,
+      "file": "frame-000013.png",
+      "capture_start_monotonic_seconds": 266.66,
+      "capture_end_monotonic_seconds": 267.42,
+      "display_duration_seconds": 0.92
+    },
+    {
+      "index": 14,
+      "file": "frame-000014.png",
+      "capture_start_monotonic_seconds": 267.58,
+      "capture_end_monotonic_seconds": 268.39,
+      "display_duration_seconds": 0.97
+    },
+    {
+      "index": 15,
+      "file": "frame-000015.png",
+      "capture_start_monotonic_seconds": 268.55,
+      "capture_end_monotonic_seconds": 269.26,
+      "display_duration_seconds": 0.86
+    },
+    {
+      "index": 16,
+      "file": "frame-000016.png",
+      "capture_start_monotonic_seconds": 269.41,
+      "capture_end_monotonic_seconds": 269.79,
+      "display_duration_seconds": 0.59
+    },
+    {
+      "index": 17,
+      "file": "frame-000017.png",
+      "capture_start_monotonic_seconds": 270.0,
+      "capture_end_monotonic_seconds": 270.32,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 18,
+      "file": "frame-000018.png",
+      "capture_start_monotonic_seconds": 270.56,
+      "capture_end_monotonic_seconds": 270.88,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 19,
+      "file": "frame-000019.png",
+      "capture_start_monotonic_seconds": 271.12,
+      "capture_end_monotonic_seconds": 271.45,
+      "display_duration_seconds": 0.57
+    },
+    {
+      "index": 20,
+      "file": "frame-000020.png",
+      "capture_start_monotonic_seconds": 271.69,
+      "capture_end_monotonic_seconds": 272.01,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 21,
+      "file": "frame-000021.png",
+      "capture_start_monotonic_seconds": 272.25,
+      "capture_end_monotonic_seconds": 272.57,
+      "display_duration_seconds": 0.56
+    },
+    {
+      "index": 22,
+      "file": "frame-000022.png",
+      "capture_start_monotonic_seconds": 272.81,
+      "capture_end_monotonic_seconds": 273.13,
+      "display_duration_seconds": 0.32
+    }
+  ],
+  "interaction_provenance": "injected",
+  "evidence_note": "This is sampled Wayland screencopy. It does not demonstrate smoothness, frame rate, compositor performance, or prove real touch.",
+  "ffmpeg_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    "/tmp/k230-picker-results/browsing.concat.txt",
+    "-fps_mode",
+    "vfr",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/tmp/k230-picker-results/browsing.mp4"
+  ],
+  "dry_run": false
+}
