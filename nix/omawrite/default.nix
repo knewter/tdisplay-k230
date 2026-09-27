@@ -2,7 +2,9 @@
 let
   # The pinned nixpkgs points this host tool at Qt6ShaderTools rather than
   # Qt6ShaderToolsTools, silently disabling all Qt Quick modules in cross builds.
-  declarative = qt6Packages.qtdeclarative.overrideAttrs (old: {
+  declarative = if stdenv.buildPlatform == stdenv.hostPlatform then
+    qt6Packages.qtdeclarative
+  else qt6Packages.qtdeclarative.overrideAttrs (old: {
     cmakeFlags = (old.cmakeFlags or []) ++ [
       "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderToolsTools"
       "-DFEATURE_quick=ON"
