@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
-# Read-only K230 CPU/firmware handoff snapshot.  It never writes sysfs/MMIO,
-# invokes SBI, or changes CPU state.  SECOND_CORE_ROOT and SECOND_CORE_DMESG_FILE
-# exist solely to run the host fixture test.
+# Read-only K230 CPU/firmware handoff snapshot. It never writes sysfs/MMIO,
+# invokes SBI, or changes CPU state. MMIO is opt-in and opens only the exact
+# documented registers with O_RDONLY and PROT_READ. SECOND_CORE_ROOT,
+# SECOND_CORE_DMESG_FILE and SECOND_CORE_MMIO_FILE support the host fixture.
 set -eu
 
 root=${SECOND_CORE_ROOT:-/}
@@ -18,14 +19,47 @@ read_hex() {
   if [ -r "$file" ]; then od -An -v -tx1 "$file" | tr -s ' ' | sed 's/^ //; s/ /:/g'; else printf '<unreadable>'; fi
   printf '\n'
 }
+read_mmio() {
+  label=$1 address=$2
+  if [ "${SECOND_CORE_READ_MMIO:-0}" != 1 ]; then
+    printf '%s=<not-requested>\n' "$label"
+    return
+  fi
+  python3 - "${SECOND_CORE_MMIO_FILE:-/dev/mem}" "$address" "$label" <<'PY'
+import mmap
+import errno
+import os
+import struct
+import sys
 
-printf 'second-core-readiness v1\n'
+path, address_text, label = sys.argv[1:]
+address = int(address_text, 16)
+page_size = mmap.PAGESIZE
+try:
+    fd = os.open(path, os.O_RDONLY | getattr(os, "O_SYNC", 0))
+    try:
+        with mmap.mmap(fd, page_size, flags=mmap.MAP_SHARED,
+                       prot=mmap.PROT_READ, offset=address & -page_size) as area:
+            value, = struct.unpack_from("<I", area, address % page_size)
+    finally:
+        os.close(fd)
+except OSError as error:
+    print(f"{label}=<unavailable:{errno.errorcode.get(error.errno, 'UNKNOWN')}>")
+else:
+    print(f"{label}=0x{value:08x}")
+PY
+}
+
+printf 'second-core-readiness v2\n'
 printf 'captured-utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 printf 'source-root=%s\n' "$root"
 read_text cpu_possible "$(path /sys/devices/system/cpu/possible)"
 read_text cpu_present "$(path /sys/devices/system/cpu/present)"
 read_text cpu_online "$(path /sys/devices/system/cpu/online)"
 read_text cpu_offline "$(path /sys/devices/system/cpu/offline)"
+read_mmio cpu1_rst_ctl 0x9110100c
+read_mmio cpu1_pwr_ctl 0x91103018
+read_mmio cpu1_pwr_status 0x9110301c
 
 cpus="$(path /proc/device-tree/cpus)"
 if [ -d "$cpus" ]; then
@@ -50,6 +84,14 @@ if [ -r "$cpuinfo" ]; then
 else
   printf '<unreadable>\n'
 fi
+
+for cache in "$(path /sys/devices/system/cpu/cpu0/cache)"/index*; do
+  [ -d "$cache" ] || continue
+  printf 'cache-node=%s\n' "${cache##*/}"
+  read_text "${cache##*/}.level" "$cache/level"
+  read_text "${cache##*/}.type" "$cache/type"
+  read_text "${cache##*/}.size" "$cache/size"
+done
 
 printf '%s\n' 'sbi-and-smp-log:'
 if [ -n "$dmesg_file" ]; then
