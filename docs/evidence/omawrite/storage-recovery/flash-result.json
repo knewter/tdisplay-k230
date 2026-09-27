@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "exit_code": 0,
+  "started_at_utc": "2026-09-27T22:56:46.130175+00:00",
+  "completed_at_utc": "2026-09-27T22:59:46.712296+00:00",
+  "image": "/nix/store/ijdsbmb6mzhlsbr32yyqpzzpq0pz7rxa-k230-sd-image.img",
+  "image_sha256": "86bf43dd943a6208a0b253318b7fa8344defef33ac3e0236275777be2471fdd1",
+  "image_bytes": 4765401088,
+  "target_bytes": 64088965120,
+  "source_revision": "c985854979325057727a825294d8a0d34b26a4f1",
+  "system": "/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "backup_sha256": "b0ec097f20e23072d73ba7814862492fe2cf926cf5c188d1c2e8c13ab944a40c",
+  "saved_replacement_image": "nixos-replacement.img",
+  "full_flash_readback": false,
+  "board_boot_verified": false,
+  "writer": "tools/flash.sh (dd oflag=sync conv=fsync)",
+  "authorization": "User requested preserving demo card in ~/tmp then installing current NixOS system."
+}

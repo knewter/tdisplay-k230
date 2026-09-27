@@ -20,9 +20,10 @@ outside the repository. The filter omits identifiers and unrelated messages.
 A normal `systemctl reboot` failed with an input/output error. The running
 kernel did not provide `/proc/sysrq-trigger`, so sync/remount/reboot requests
 through that interface had no effect. A physical power cycle was requested.
-No filesystem repair, remount-write, image flash or full-card readback was
-performed. The reason the SD stopped responding remains undetermined; these
-observations do not distinguish a card, power, connection or driver problem.
+During that diagnosis, no filesystem repair, remount-write, image flash or
+full-card readback was performed. The reason the SD stopped responding remains
+undetermined; these observations do not distinguish a card, power, connection
+or driver problem.
 
 ## Replacement card and preserved demo image
 
@@ -48,7 +49,44 @@ samples at the beginning, middle and end then matched the verified backup.
 The [probe result](capacity-probe-result.json) preserves the exact command and
 completion time. This checks capacity, not every possible future failure.
 
-The current `sdImage-coherent` image build is in progress.
-No replacement image has been flashed yet. Actual boot, launcher and icon
-behavior still require checking on the replacement card. No new application or
-shell source change is justified by the available evidence.
+## Replacement NixOS image written
+
+The `sdImage-coherent` build completed successfully from source revision
+`c985854979325057727a825294d8a0d34b26a4f1`. Changes after runtime revision
+`4db47bc0117378efa120c17679a1cea8d506949e` were evidence/documentation only.
+The build command was:
+
+```sh
+nix build .#sdImage-coherent --out-link result-sd-image-coherent \
+  --max-jobs 4 --cores 6 \
+  --option substituters https://cache.nixos.org/ --print-out-paths
+```
+
+The output is `/nix/store/ijdsbmb6mzhlsbr32yyqpzzpq0pz7rxa-k230-sd-image.img`,
+4,765,401,088 bytes, SHA-256
+`86bf43dd943a6208a0b253318b7fa8344defef33ac3e0236275777be2471fdd1`.
+It contains system
+`/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd`.
+A host inspection confirmed that system's `init`, Omawrite desktop entry and
+profile icon exist; the entry references the expected absolute Omawrite path.
+This is packaging evidence, not a successful launch on the replacement card.
+
+The [preflight](replacement-preflight.py) checked the approved removable USB
+slot, capacity, unmounted state, image partition layout and samples matching
+the preserved demo backup. The [writer](flash-replacement.py) saved a separate
+`nixos-replacement.img` beside `demo-card.img`, fsynced it and verified its hash
+before invoking the repository's `tools/flash.sh` with the approved by-id path.
+Both image hashes are in the private directory's `SHA256SUMS`.
+
+The [flash result](flash-result.json) and [write completion](flash-write.txt)
+record exit zero, the complete byte count and completion at
+2026-09-27T22:59:46Z. `dd oflag=sync conv=fsync` and the writer's final `sync`
+completed. The reader was then powered off successfully with `udisksctl`.
+No routine full-image readback was performed, per the user's standing request.
+
+**UNVERIFIED on this replacement card:** boot, writable root filesystem,
+launcher icons and actual Omawrite launch. The operator must move the card into
+the powered-off board, reconnect power, then use the reserved serial console
+(`python3 tools/console.py /dev/ttyACM0 --wait=8 "readlink /run/current-system"`)
+to check the system identity before the remaining runtime checks. No new
+application or shell source change was made during this recovery.

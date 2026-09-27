@@ -1,0 +1,4 @@
+1136+1 records in
+1136+1 records out
+4765401088 bytes (4.8 GB, 4.4 GiB) copied, 177.164 s, 26.9 MB/s
+done. 2026-09-27T17:59:46-05:00  wrote 4765401088 bytes in 180.475855876 s
