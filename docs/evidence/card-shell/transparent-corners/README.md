@@ -116,9 +116,17 @@ uses Sway
 `/nix/store/vvca8zksyarjb7s7vfrs1p9c9lpp9jnn-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway`
 and is expected to exit 1 at the wallpaper assertion.
 
+## Subsequent board trial
+
+[Native board screenshot and guarded trial](board-trial/README.md) now show
+wallpaper through the real terminal cards. This is a temporary compositor
+trial on the existing system; matching-system installation and finger
+acceptance remain open.
+
 ## Remaining physical gate
 
-No board, serial port, system activation or flash was used for this slice.
+The QEMU slice above used no board; the subsequent board trial is recorded
+separately and does not replace the integrated installation gate.
 After coordinator review/integration, build the combined system and perform
 a guarded activation. Capture the installed compositor over an actual theme
 wallpaper with live apps; record the system/Sway store paths and native

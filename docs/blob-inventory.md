@@ -1387,6 +1387,8 @@ DATA 4c8619c892cc140a89422463a3f38bd17868ab6159cc9bfa1a28d523ecb7c221  docs/evid
 DATA 87b87775c91bf6a05a55dfc61851de34dacfd937cf085713d90a84fd110323bc docs/evidence/backlight/brightness-0.jpg
 DATA b7d742a5b4043c995e39546e348bb8e57d00f7a7b6f6ab96deff25a42a800e22 docs/evidence/backlight/brightness-128.jpg
 DATA 10e963c4961fd33c126f0b49b167aa732c9f050ae04ebadb3ec8d2b37f0629ac docs/evidence/backlight/brightness-255.jpg
+DATA 3debac1206e0fc716715a440fa142478acf5f5bdbed195783f0eca7eddbac040 docs/evidence/card-shell/transparent-corners/board-trial/before.png
+DATA 5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e docs/evidence/card-shell/transparent-corners/board-trial/rounded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
