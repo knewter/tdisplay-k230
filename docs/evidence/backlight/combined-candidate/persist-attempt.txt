@@ -1,0 +1,55 @@
+set -e
+umask 077
+target=/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd
+new=/var/lib/k230/panel-reconciled-trial-20260926/new
+previous=/var/lib/k230/panel-trial-20260926/previous
+test "$(readlink -f /run/booted-system)" = "$target"
+test "$(readlink -f /run/current-system)" = "$target"
+profile_before=$(readlink -f /nix/var/nix/profiles/system)
+test -x "$profile_before/init"
+ln -sfn "$profile_before" /nix/var/nix/gcroots/k230-panel-hs-profile-before
+cd "$new"
+sha256sum -c SHA256SUMS
+cd /boot
+sha256sum -c "$previous/SHA256SUMS"
+for name in Image initrd.uimg k230-tdisplay.dtb bootargs.txt; do
+ cp "$new/$name" "/boot/.k230-panel-next-$name"
+done
+sync
+started=0
+rollback() {
+ status=$?
+ trap - EXIT
+ if [ "$status" -ne 0 ] && [ "$started" -eq 1 ]; then
+  set +e
+  restore_failed=0
+  for name in Image initrd.uimg k230-tdisplay.dtb bootargs.txt; do
+   cp "$previous/$name" "/boot/$name" || restore_failed=1
+  done
+  nix-env --profile /nix/var/nix/profiles/system --set "$profile_before" || restore_failed=1
+  cd /boot || restore_failed=1
+  sha256sum -c "$previous/SHA256SUMS" || restore_failed=1
+  test "$(readlink -f /nix/var/nix/profiles/system)" = "$profile_before" || restore_failed=1
+  sync || restore_failed=1
+  if [ "$restore_failed" -eq 0 ]; then
+   echo K230_PERSIST_ROLLBACK_VERIFIED
+  else
+   echo K230_PERSIST_ROLLBACK_INCOMPLETE
+  fi
+ fi
+ exit "$status"
+}
+trap rollback EXIT
+started=1
+for name in Image initrd.uimg k230-tdisplay.dtb bootargs.txt; do
+ mv "/boot/.k230-panel-next-$name" "/boot/$name"
+done
+sha256sum -c "$new/SHA256SUMS"
+for name in fw_jump_add_uboot_head.bin force_dtb lcd_dtb hdmi_dtb; do
+ cmp "$previous/$name" "/boot/$name"
+done
+nix-env --profile /nix/var/nix/profiles/system --set "$target"
+test "$(readlink -f /nix/var/nix/profiles/system)" = "$target"
+sync
+trap - EXIT
+echo K230_PERSIST_OK

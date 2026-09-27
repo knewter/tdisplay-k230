@@ -67,3 +67,21 @@ run outside the login session, verify candidate boot hashes and system
 profile before reboot, and then wait for a fresh root prompt after the new
 kernel header. The host reboot checker has been corrected; it has not yet
 completed that corrected normal-boot check on this board.
+
+## Source-based installer diagnosis
+
+The [exact attempted transaction](persist-attempt.txt) copies another full
+bundle into hidden `/boot/.k230-panel-next-*` files before its EXIT trap is
+installed. `nix/sd-image.nix` defines a 112 MiB boot partition. The candidate
+bundle is 87,814,083 bytes (about 84 MiB), while the existing bundle occupies
+about the same amount. The shadow copies cannot fit. This is a definite
+capacity defect in the helper, although the lost transaction log means we
+cannot tell whether an earlier precondition failed first on this attempt.
+
+The corrective transaction must keep staging and backups on the larger
+root filesystem, check final/per-file replacement capacity, install its
+failure handler before preflight, and copy the verified boot files only
+inside the guarded replacement phase. This is not an atomic multi-file
+update: interruption during replacement needs recovery through the preserved
+root-filesystem bundle. Inspect and remove only the coordinator's own partial
+hidden staging files after recovery; never clean unrelated boot files.
