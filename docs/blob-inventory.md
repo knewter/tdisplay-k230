@@ -651,6 +651,11 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA b822b4b32c6ce0ba6f90b203e1a61ed9736948a5fa614eefc6c5b7cf00c674fb docs/evidence/theme-picker/background-selection/home-after.png
+DATA b06525298d1317b37f8cec145127b13af5907a0f3837812dab0b848afc6f974f docs/evidence/theme-picker/background-selection/home-before.png
+DATA a1606e29a77f892d0500fcdbf35495136a1c1d8b625e0c0c0031ba1956664788 docs/evidence/theme-picker/background-selection/picker-after-restart.png
+DATA 4536c21f2c96e81b0b143238d2f067f4b60077765a8926a402b98f678480a20e docs/evidence/theme-picker/background-selection/picker-alternate-applied.png
+DATA 9f6a4608fca4fcc74c14049acaf2adab50eca8878692835d07703f7553aba6e5 docs/evidence/theme-picker/background-selection/picker-applied.png
 DATA cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b docs/evidence/theme-picker/finger-tracking/new-before.png
 DATA 515448a93291c7f39ac2d96bd252dbded4fe3945d49f620122945c9ea0908d2d docs/evidence/theme-picker/finger-tracking/new-held.png
 DATA cfbdccacc6b3b43f12afd191b3823f8fc05f90f589f426fe3a53a2dc6f1d589f docs/evidence/theme-picker/finger-tracking/old-before.png
@@ -2143,3 +2148,18 @@ geometry, not panel latency or real-finger acceptance. See
 | `docs/evidence/theme-picker/finger-tracking/new-held.png` | 300498 | DATA | `515448a93291c7f39ac2d96bd252dbded4fe3945d49f620122945c9ea0908d2d` |
 | `docs/evidence/theme-picker/finger-tracking/old-before.png` | 298177 | DATA | `cfbdccacc6b3b43f12afd191b3823f8fc05f90f589f426fe3a53a2dc6f1d589f` |
 | `docs/evidence/theme-picker/finger-tracking/old-held.png` | 276236 | DATA | `6b7f5e9626d4c26a47e31103209876acdc73d7d36865c5dae92610464d9ea168` |
+
+## Background selection native captures, 2026-09-27
+
+Reviewed physical-board `grim` captures with injected touch: Home before/after,
+picker confirmation for both backgrounds, and selection after service restart.
+See `docs/evidence/theme-picker/background-selection/README.md`. These are
+image data, not executable firmware or real-finger acceptance.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/theme-picker/background-selection/home-after.png` | 785970 | DATA | `b822b4b32c6ce0ba6f90b203e1a61ed9736948a5fa614eefc6c5b7cf00c674fb` |
+| `docs/evidence/theme-picker/background-selection/home-before.png` | 44478 | DATA | `b06525298d1317b37f8cec145127b13af5907a0f3837812dab0b848afc6f974f` |
+| `docs/evidence/theme-picker/background-selection/picker-after-restart.png` | 313536 | DATA | `a1606e29a77f892d0500fcdbf35495136a1c1d8b625e0c0c0031ba1956664788` |
+| `docs/evidence/theme-picker/background-selection/picker-alternate-applied.png` | 186967 | DATA | `4536c21f2c96e81b0b143238d2f067f4b60077765a8926a402b98f678480a20e` |
+| `docs/evidence/theme-picker/background-selection/picker-applied.png` | 317404 | DATA | `9f6a4608fca4fcc74c14049acaf2adab50eca8878692835d07703f7553aba6e5` |
