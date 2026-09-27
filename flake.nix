@@ -255,6 +255,11 @@
         #   nix build .#stage1          the five files the card carries
         k230-sdk-src = k230Sdk;
         uboot-k230 = ubootK230;
+        # Isolated, default-off SPL diagnostic. Do not substitute this for
+        # the normal stage1 package or treat it as an SMP implementation.
+        uboot-k230-cpu0-identity-probe = ubootK230.override {
+          cpu0IdentityProbe = true;
+        };
         opensbi-k230 = opensbiK230;
         fwJump = stage1.fwJump;
         stage1 = stage1.built;

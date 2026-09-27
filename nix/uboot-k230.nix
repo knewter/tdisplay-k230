@@ -35,6 +35,7 @@
   # pin GCC 13 here rather than patching Canaan's overlay: a compiler pin is
   # one legible, reversible line.
 , useGcc13 ? false
+, cpu0IdentityProbe ? false
 }:
 
 let
@@ -104,6 +105,11 @@ in
       echo "applying $p"
       patch -p1 < "$p"
     done
+  '' + lib.optionalString cpu0IdentityProbe ''
+    # Experimental read-only CPU0 SPL diagnostic. Never included in the
+    # ordinary stage-1 derivation; it only reports CSRs before the existing
+    # CPU1 release and parks CPU0 as before.
+    patch -p1 < ${./patches/second-core/spl-cpu0-identity.patch}
   '';
 
   # The SPL must fit the slot the BootROM loads it from. U-Boot's own build
