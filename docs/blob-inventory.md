@@ -1401,6 +1401,7 @@ DATA b7d742a5b4043c995e39546e348bb8e57d00f7a7b6f6ab96deff25a42a800e22 docs/evide
 DATA 10e963c4961fd33c126f0b49b167aa732c9f050ae04ebadb3ec8d2b37f0629ac docs/evidence/backlight/brightness-255.jpg
 DATA 3debac1206e0fc716715a440fa142478acf5f5bdbed195783f0eca7eddbac040 docs/evidence/card-shell/transparent-corners/board-trial/before.png
 DATA 5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e docs/evidence/card-shell/transparent-corners/board-trial/rounded.png
+DATA 5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e docs/evidence/card-shell/transparent-corners/installed-system/rounded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2105,3 +2106,13 @@ See `docs/evidence/theme-picker/store-relocation/README.md` for limits.
 | File | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/theme-picker/store-relocation/current-theme.png` | 301875 | DATA | `cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b` |
+
+### Installed rounded-card evidence
+
+Native screenshot on the normally installed physical system; static geometry
+proof, not physical-finger motion acceptance. See
+`docs/evidence/card-shell/transparent-corners/installed-system/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/card-shell/transparent-corners/installed-system/rounded.png` | 250980 | DATA | `5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e` |
