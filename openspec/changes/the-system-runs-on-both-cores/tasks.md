@@ -47,44 +47,43 @@
 
 ## 3. OpenSBI + device-tree hart-release experiment (stage b — first stage that writes a reset/power register)
 
-- [ ] 3.1 Obtain a Canaan statement or shipped stage-1 source establishing
-  CPU1's physical hart ID, reset-vector address, and PLIC/ACLINT interrupt
-  context. Record the citation or mark it unobtained. **Every task below is
-  blocked until this is closed** (`docs/research/second-core-feasibility.md`:
-  "An undocumented release sequence is a stop condition."). Verify with a
-  cited source path or vendor statement committed to
-  `docs/research/second-core-feasibility.md` (source/documentation
-  grounding, not board proof).
-- [ ] 3.2 **BLOCKED on 3.1. BOARD-GATED.** On a disposable rollback card
-  only — never the board's only working card — choose one release
-  mechanism from design.md decision 2 (OpenSBI platform writes
-  `CPU1_RST_CTL`/reset-vector, or U-Boot spin-table release), build it, and
-  boot it after 2.1/2.2 are current. Verify with a captured board console
-  transcript requiring `Platform HART Count : 2` and Linux's
-  `smp: Brought up 1 node, 2 CPUs`; any hang, missing hart, or
-  interrupt/timer failure stops the task unticked (board physical
-  hart-release proof). Requires explicit user authorization before the
-  first register write, per AGENTS.md and proposal.md's Risk and recovery.
+- [ ] 3.1 Establish physical CPU0's `CSR.MHARTID` and a usable distinct
+  logical hart identity. Pinned stage-1 source already gives CPU0's reset
+  vector/control addresses (`arch/riscv/cpu/k230/cpu.c:125-160`); now audit
+  an early M-mode identity source, OpenSBI's scratch/HSM/IPI/timer paths,
+  Linux's CPU entry, and physical CPU0's PLIC/ACLINT or other interrupt
+  routing. A controlled startup diagnostic may read CPU0 registers but is
+  not a second-program feature. If both cores read `mhartid=0`, a DT-only
+  `cpu@1` is rejected. Record pinned source and any physical measurement
+  under `docs/research/second-core-feasibility.md` and
+  `docs/evidence/second-core/`; leave this task open until all paths are
+  grounded.
+- [ ] 3.2 **BLOCKED on 3.1 and the pre-Linux coherency gate in 4.1.
+  BOARD-GATED.** Build a rollback-capable *experimental* stage-1/OpenSBI/DT
+  path that starts physical CPU0 alongside Linux on physical CPU1, preserving
+  unique logical IDs and verified per-core interrupts/timers. The normal
+  image remains unchanged. After the recovery rehearsal, verify a board
+  transcript with `Platform HART Count : 2`, Linux
+  `smp: Brought up 1 node, 2 CPUs`, and timer/IPI tests. A failed route
+  leaves this unticked. Requires the board operator's coordinated session
+  and the recovery requirement in the delta spec.
 
 ## 4. Coherency validation (stage c)
 
-- [ ] 4.1 **BLOCKED on 3.2. BOARD-GATED.** Run an atomic/litmus-style
-  cross-hart stress (concurrent AMO/load-reserve/store-conditional against
-  shared cache lines from both harts) and a timer/IPI stress (repeated
-  cross-hart IPI and ACLINT timer delivery under load), repeated at least
-  three times. Verify with a board console transcript recording pass/fail
-  counts for all repeats, committed under `docs/evidence/second-core/`
-  (board physical coherency-stress proof; a single clean run does not pass
-  this task).
+- [ ] 4.1 **BOARD-GATED; required before 3.2 Linux SMP boot.** Establish
+  the CPU0/CPU1 cache and atomic-sharing contract from Canaan source or run
+  a bounded pre-Linux cross-core diagnostic of shared cached lines,
+  uncached lines, AMO and LR/SC behavior, at least three repeats. Linux
+  shared locks/page tables must not be the first coherence experiment.
+  Capture the command, boot identity and pass/fail counts under
+  `docs/evidence/second-core/`; no host or QEMU result satisfies this.
 
 ## 5. ISA-aware SMP scheduling (stage d)
 
-- [ ] 5.1 **BLOCKED on 4.1. BOARD-GATED.** Implement and verify one of
-  design.md decision 4's constraints (hard CPU affinity keeping
-  vector-using code off the non-RVV hart, a per-hart `hwprobe` gate, or a
-  `nosmt`-style exclusion of the second hart from the general scheduler)
-  before enabling scheduling across both harts. Verify with a board console
-  transcript showing a synthetic RVV-using task correctly pinned or gated
-  away from the non-RVV hart across repeated iterations, with zero
-  illegal-instruction traps (board physical scheduling-safety proof). Do
-  not enable general scheduling across both harts if this task is unticked.
+- [ ] 5.1 **BLOCKED on 3.2/4.1. BOARD-GATED.** Build the initial Linux SMP
+  image to a scalar common ISA baseline (RVV off in kernel and userspace),
+  then show ordinary unpinned processes can execute and migrate on both
+  logical CPUs under load with no illegal-instruction traps. Record
+  `sched_getcpu`/affinity, `/sys/devices/system/cpu/{possible,present,online}`,
+  per-CPU timers, and repeated runs in a board transcript. Restoring RVV
+  requires a separately proved per-hart scheduling/userspace contract.

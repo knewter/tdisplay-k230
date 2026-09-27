@@ -1,5 +1,34 @@
 ## Context
 
+**Current direction (2026-09-26): Linux SMP on physical CPU1 + CPU0.**
+Pinned U-Boot source releases physical CPU1 to the U-Boot/OpenSBI/Linux
+chain and parks CPU0. The older CPU1-release options below describe the
+opposite boot arrangement and are retained as historical design exploration,
+not choices for this board's current boot chain. The current target is to
+re-enter physical CPU0 into OpenSBI as a distinct Linux CPU. No separate
+heartbeat or AMP payload is an acceptance path for this change.
+
+The immediate firmware obstacle is a possible duplicate `CSR.MHARTID=0`
+on both physical cores (firsthand QEMU K230 author report, not yet measured
+here). OpenSBI 1.4 generic reads DT CPU `reg` into a hart table, but its
+hart-ID lookup returns the first matching entry; its current-hart helper
+reads the CSR directly. A second DT node therefore cannot create a second
+working SBI hart if IDs collide. Before implementation, establish whether
+the K230 has another per-core identity, or whether an early M-mode
+CPU0-specific entry can carry a virtual ID consistently through every
+OpenSBI HSM, IPI, timer and Linux handoff. The CPU0 reset vector and
+control writes are already present in pinned U-Boot
+`arch/riscv/cpu/k230/cpu.c:125-160`; their existence does not close the
+identity or interrupt route.
+
+CPU0/CPU1 cache coherence is likewise unproven, and the vendor AMP path
+flushes shared buffers explicitly. A Linux SMP boot shares locks and page
+tables immediately, so a pre-Linux atomic/cache diagnostic or a Canaan
+coherency contract must precede that boot. For first SMP proof, use a
+scalar common ISA image with RVV disabled in kernel and userspace; do not
+rely on affinity to protect arbitrary migratable processes. No default
+image bytes change until these gates are satisfied.
+
 See proposal.md and `docs/research/second-core-feasibility.md` (the full
 source and boot-record audit this design continues), and the existing
 `openspec/specs/system/second-core-readiness/spec.md` capability, which this
@@ -58,7 +87,7 @@ release contract, not SMP support"); promising a performance number before
 correctness and coherency are proven, matching the acceptance discipline
 `the-system-enables-proven-c908-extensions` already established for RVV.
 
-## Decisions
+## Historical decisions (superseded for the current CPU1-boot chain)
 
 1. **Layer: `tools/` read-only collection, no kernel/DT/firmware change
    (stage a).** `tools/second-core-readiness.sh` already collects CPU
