@@ -179,6 +179,13 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(status, 0, chosen)
         self.assertEqual([asset["id"] for asset in chosen["backgrounds"] if asset["selected"]], [image["id"]])
         self.assertNotEqual(initial["generation"], chosen["generation"])
+        # Regression: the chooser used to send the old background's generation.
+        with mock.patch.object(catalog, "activate_generation") as activate:
+            status, result = self.run_cli("activate", entry.id, "--background", image["id"],
+                                          "--expected-generation", initial["generation"])
+        self.assertEqual(status, 1)
+        self.assertIn("changed since preview", result["error"])
+        activate.assert_not_called()
         status, _ = self.run_cli("preview", entry.id, "--background", "../../outside.png")
         self.assertEqual(status, 1)
         (source / "colors.toml").write_text(COLORS.replace("#101820", "#202830"))

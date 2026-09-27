@@ -775,6 +775,19 @@ fn paint_theme_chooser(
         22.0,
         style.text,
     );
+    // Put acknowledgement next to the row being changed, above the images.
+    // This remains visible even when the bottom status line is near the edge.
+    let background_feedback = if view.error.is_some() {
+        Some(("Could not apply", style.error))
+    } else if view.applying_background_index().is_some() {
+        Some(("Applying…", style.accent))
+    } else if view.message.as_deref().is_some_and(|s| s.starts_with("Background applied")) {
+        Some(("Applied to Home", style.accent))
+    } else { None };
+    if let Some((message, color)) = background_feedback {
+        text(cr, message, w / 2.0, BACKGROUND_CAROUSEL_TOP - 30.0,
+            w / 2.0 - 28.0, 20.0, color);
+    }
     match view.preview.as_ref() {
         Some(preview) if !preview.backgrounds.is_empty() => {
             let center_x = w / 2.0;
@@ -810,12 +823,14 @@ fn paint_theme_chooser(
                 24.0,
                 style.text,
             );
-            let status = if background.kind == BackgroundKind::Video {
+            let status = if view.applying_background_index() == Some(centered) {
+                "Applying to Home…"
+            } else if background.kind == BackgroundKind::Video {
                 "Video unavailable"
             } else if background.selected {
-                "Current background"
+                "Current background on Home"
             } else {
-                "Tap to apply"
+                "Tap to use on Home"
             };
             text(
                 cr,
@@ -870,13 +885,11 @@ fn paint_theme_chooser(
     let message_y = (BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
         + 64.0)
         .min(h - 30.0);
-    if view.pending.is_some() {
-        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
-    }
     if let Some(error) = &view.error {
         text(cr, error, 28.0, message_y, w - 56.0, 17.0, style.error);
-    }
-    if let Some(message) = &view.message {
+    } else if view.pending.is_some() {
+        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
+    } else if let Some(message) = &view.message {
         text(cr, message, 28.0, message_y, w - 56.0, 17.0, style.muted);
     }
 }
