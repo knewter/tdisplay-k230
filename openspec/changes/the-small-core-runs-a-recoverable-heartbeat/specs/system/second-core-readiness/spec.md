@@ -32,6 +32,35 @@ evidence. A host build or QEMU run SHALL NOT be counted as physical proof.
 - **THEN** the experiment is recorded as failed, the rehearsed recovery route
   is used, and no Linux-coexistence claim is made
 
+### Requirement: Physical CPU0 keeps a heartbeat while physical CPU1 runs Linux
+
+*Grounding: the pinned stage-1 source at
+`board/canaan/common/k230_img.c:276-285` releases physical CPU1 into U-Boot
+and parks physical CPU0 in an endless `wfi`. The continued heartbeat and
+Linux readback are `<!-- UNVERIFIED -->` until the board transcript exists.*
+
+Only after the stage-1 prompt heartbeat is physically proved, an experimental
+stage-1 build SHALL let physical CPU0 update a reserved heartbeat location
+while physical CPU1 continues into the normal Linux boot. The system SHALL
+exclude that location from Linux allocation and expose a read-only
+observation method with an explicit cache-maintenance or uncached-memory
+contract. The operator SHALL record repeated changing values alongside a
+responsive Linux console and shell, then restore the known-good stage 1.
+
+#### Scenario: Linux and the small-core heartbeat coexist
+
+- **WHEN** the disposable experimental image boots Linux and the operator
+  reads the reserved heartbeat repeatedly
+- **THEN** the value changes across at least three reads, Linux remains
+  responsive, and the transcript records the exact image, addresses, and
+  restored normal boot
+
+#### Scenario: Linux does not coexist with the small-core heartbeat
+
+- **WHEN** boot hangs, the heartbeat is static, or Linux/UI function fails
+- **THEN** the experiment is reported as failed and the rehearsed rollback
+  is used without claiming useful offload or Linux SMP
+
 ### Requirement: An AMP heartbeat does not imply shared Linux scheduling
 
 *Grounding: the pinned U-Boot release path starts a separate physical core;

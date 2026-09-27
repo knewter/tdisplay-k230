@@ -10,13 +10,13 @@ and retains its gates.
 
 ## Goals / Non-Goals
 
-**Goals:** produce a tiny independent CPU0 execution proof, preserving the
-large-core U-Boot prompt and a recoverable normal boot. Make the exact payload
-bytes, load/output locations, command, timestamps, and observations reviewable.
+**Goals:** first prove a tiny independent CPU0 payload while the large-core
+U-Boot prompt remains responsive; then prove a separately gated CPU0
+heartbeat continues while CPU1 runs Linux. Make payload bytes, load/output
+locations, boot images, timestamps, and observations reviewable.
 
-**Non-Goals:** Linux SMP, booting RT-Smart, Linux coexistence during this first
-probe, inter-core interrupts, shared coherent memory, useful task offload, or
-video improvement.
+**Non-Goals:** Linux SMP, booting RT-Smart, inter-core interrupts, coherent
+shared memory, useful task offload, or video improvement.
 
 ## Decisions
 
@@ -43,6 +43,18 @@ video improvement.
    with the board operator's exclusive console and a disposable rollback
    card. Stop at the first hang or unexpected value; capture the recovery
    transcript separately.
+5. **Coexistence uses CPU0's existing SPL parking path.** After the first
+   physical proof, patch the source-backed `k230_img.c:276-285` WFI loop in
+   an experimental SPL to update a reserved heartbeat at low duty cycle
+   after releasing physical CPU1. This avoids a second CPU0 reset from a
+   running Linux system and preserves CPU1's normal boot path. The
+   experimental device tree excludes the exact output region from Linux
+   allocation, and a read-only Linux probe uses a documented uncached or
+   cache-maintained view. A normal image is not replaced until a disposable
+   card boots and rolls back successfully. An alternative Linux `/dev/mem`
+   writer to release CPU0 is rejected because the big-core PWR registers
+   already return `EPERM`, because it would reset the parked core without
+   restoring SPL context, and because it bypasses stage-1 ownership.
 
 ## Risks / Trade-offs
 
@@ -53,11 +65,14 @@ video improvement.
 - A CPU0 reset affects shared peripheral state → payload touches only its
   nominated output location; recovery rehearsal precedes release.
 - A passing stage-1 heartbeat is mistaken for useful Linux compute → keep
-  Linux coexistence and IPC in a later change with separate proof.
+  Linux coexistence as a distinct physical gate and keep IPC/offload for a
+  later change with separate proof.
 
 ## Migration Plan
 
 Land this proposal first. Prepare and inspect the payload on the host. After
-the source and recovery gates pass, perform the physical test on a disposable
-card and commit the evidence. Return to the normal card/boot and record its
-Linux CPU mask. Keep this change open if physical proof is unavailable.
+the source and recovery gates pass, perform the U-Boot physical test on a
+disposable card and commit the evidence. Only then build the experimental SPL
+and DT reservation and test Linux coexistence on a rollback card. Return to
+the normal card/boot and record its Linux CPU mask. Keep this change open if
+either physical proof is unavailable.

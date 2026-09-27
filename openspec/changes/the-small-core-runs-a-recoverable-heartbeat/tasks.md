@@ -35,3 +35,21 @@
   Verify with the exact U-Boot command and timestamped board transcript
   committed under `docs/evidence/second-core/` (physical CPU0 execution
   proof; any hang or static output fails this task).
+
+## 4. Coexistence with the Linux handheld
+
+- [ ] 4.1 **BLOCKED on 3.2.** Ground a region that remains reserved from
+  Linux in the experimental device tree and specify the CPU0 write/Linux
+  read cache protocol; include the physical address, size, and exclusion
+  from normal allocator use. Verify with `nix build .#deviceTree` and a
+  decompiled `reserved-memory` node check (DT build proof, not board).
+- [ ] 4.2 **BLOCKED on 4.1.** Patch only the experimental SPL CPU0 parking
+  path to update that heartbeat after releasing CPU1, and add a read-only
+  Linux observer. Verify with `nix build .#stage1` and the narrow host
+  observer fixture (cross-build/host proof, not board).
+- [ ] 4.3 **BLOCKED on 4.2. BOARD-GATED.** Rehearse recovery in this board
+  session, boot the experimental stage 1/DT on a disposable card, record at
+  least three changing heartbeat values under a responsive Linux console
+  and shell, and restore known-good stage 1. Verify with a timestamped
+  `/dev/ttyACM0` console transcript and normal-boot hash/CPU-mask checks
+  committed under `docs/evidence/second-core/` (physical coexistence proof).

@@ -19,9 +19,13 @@ to assume.
   release with the large core at the U-Boot prompt, then observe a changing
   heartbeat from the small core. Capture the console transcript and restore
   the normal boot path.
-- Treat Linux coexistence, mailbox IPC, cache maintenance, peripheral
-  ownership, and useful background offload as later evidence gates. This
-  heartbeat is an AMP execution proof, not Linux SMP or video acceleration.
+- Only after that first physical proof, change the CPU0 SPL parking loop in a
+  disposable stage-1 build so CPU0 updates a reserved heartbeat while CPU1
+  boots Linux; observe it from the running system and prove normal UI/console
+  function and rollback. This is a separate, gated coexistence requirement.
+- Treat mailbox IPC, useful background offload, and general peripheral
+  ownership as later work. Neither heartbeat is Linux SMP or video
+  acceleration.
 
 ## Capabilities
 
@@ -36,8 +40,9 @@ None.
 
 ## Impact
 
-The proposal covers a standalone test payload, host inspection tool, narrow
-operator runbook and committed board evidence. It does not change the normal
-NixOS image, device tree, OpenSBI, or U-Boot source. The actual release needs
-the physical board, the exclusive console, a disposable rollback card, and a
-rehearsed recovery path. Host preparation does not need the board.
+The first stage covers a standalone test payload, host inspection tool, narrow
+operator runbook and committed board evidence. The second stage changes SPL
+and reserves an observation region in the experimental device tree; it does
+not alter the normal installed image until physically proved. Both stages
+need the physical board, the exclusive console, a disposable rollback card,
+and a rehearsed recovery path. Host preparation does not need the board.
