@@ -1,10 +1,4 @@
-# runtime/editor Specification
-
-## Purpose
-Provides the handheld's default graphical editor for local text and Markdown,
-accessible through existing Home pins and the installed-application drawer.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: The graphical editor opens Omawrite
 
