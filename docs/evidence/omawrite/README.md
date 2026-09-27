@@ -1,69 +1,147 @@
 # Omawrite as the graphical editor
 
-**Host runtime passes; the RISC-V package/system build and physical-board
-trial are pending. This is not a shipped-device claim.**
+**Installed, tested and verified after a normal reboot on the physical board.**
 
-The existing `k230-editor.desktop` identity is retained, with the name
-Omawrite, its upstream icon and Wayland app ID. The source change makes it
-the graphical plain-text/Markdown handler; Nano stays available on the console.
+Omawrite replaces the graphical Editor while retaining `k230-editor.desktop`,
+so existing Home pins keep working. The image includes its upstream icon,
+plain-text/Markdown defaults and XDG file-opening utilities. Nano remains
+available for console work. This is image configuration, not a user-profile
+installation.
 
-Upstream: [omacom/omawrite](https://github.com/omacom/omawrite), revision
-`8f98892b26768236b2c20f4e637cf4b102d898bf`. The package pins the source hash
-and installs its MIT and font OFL notices. The image uses Wayland and Qt Quick
-software rendering, a portrait-sized chooser and 48px Open/Save targets above
-the bottom gesture strip. The upstream palette watcher follows the shell's
-`current/active` generation.
+![Omawrite on the physical board with its active theme](board/writing.png)
 
-## Host runtime — 2026-09-27
+## Exact artifacts
 
-The actual native Omawrite application ran under the existing RISC-V Sway
-through host binfmt/QEMU, with a private HOME, a 568x1232 headless output,
-synthetic Wayland keyboard input, and native Wayland captures. The app reported
-`omawrite renderer=software platform=wayland`.
+- Application: `/nix/store/nvnmlbqxh4m5kgw1qa4aj20r6vw1w4xm-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07`.
+- Installed system: `/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd`.
+- Application/system source: `4db47bc0117378efa120c17679a1cea8d506949e`.
+- [RISC-V architecture and closure result](package-result.json).
+- [Image integration result](image-result.json).
+- [Physical-board result](board/result.json).
+- [Boot bundle manifest](board/install-manifest.json) and
+  [persistent transaction](board/persist-result.json),
+  [saved-file verification](board/persist-verified.json), and
+  [normal reboot result](board/boot-result.json).
+
+Upstream [omacom/omawrite](https://github.com/omacom/omawrite) is pinned to
+`8f98892b26768236b2c20f4e637cf4b102d898bf`, with its source hash in the Nix
+package. MIT and embedded-font SIL OFL notices ship in the package. The native
+and cross builds compile source; no prebuilt editor binary is imported.
 
 ```sh
-nix build --impure --expr 'let f = builtins.getFlake (toString ./.); in f.inputs.nixpkgs.legacyPackages.x86_64-linux.callPackage ./nix/omawrite { }' \
-  --cores 2 --no-link --print-out-paths
-python3 tests/omawrite_runtime.py \
-  --sway /nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
-  --omawrite /nix/store/0yigmki3vav8aawb4yfc50pzf8j8zkvm-omawrite-0-unstable-2026-08-07/bin/omawrite \
-  --output /tmp/k230-omawrite-runtime-7
+nix build .#omawrite --cores 6 --no-link --print-out-paths
+nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel \
+  --cores 6 --no-link --print-out-paths
 ```
 
-[Machine result](host/result.json) records nine checks: portrait launch,
-edit/save, chooser save-as/open of a different file, overwrite cancellation,
-dialog cancellation preserving edits, live theme generation change,
-keyboard-sized window, reopening the saved document and the software backend.
-The keyboard-sized check resizes to 568x812; it does **not** exercise the
-board's on-screen keyboard. Initial stock-dialog and Material-style failures
-were caught by screenshot review; the final controls use the Basic style.
-No frame-rate or physical-touch claim follows from these checks. Removing the
-remaining unqualified Material import also removed the shortcut dialog's
-binding-loop warnings; the final app explicitly reports the software backend.
+The narrow package output and image use exactly the same application closure.
+The pinned Qt package needed corrected host QML/Quick/shader-tool paths for
+cross compilation. `FEATURE_quick=ON` makes missing Quick support fail explicitly.
+The image checks cover the preserved desktop ID, installed icon, MIME defaults,
+retained Nano and absence of a duplicate visible Omawrite entry.
 
-The local spec-site build at `822ca8cb` passed (345 pages, 10,903,044 bytes, 34.21 seconds)
-and the work board discovers all seven captures. This local build is not
-publication evidence; master currently carries the proposal, while the tested
-implementation is checkpointed on `feature/omawrite`.
+## Physical-board trial — 2026-09-27
 
-![Writing in Omawrite, headless runtime](host/writing.png)
-![Portrait Open chooser, headless runtime](host/open-dialog.png)
-![Portrait Save chooser, headless runtime](host/save-dialog.png)
-![Overwrite requires confirmation, headless runtime](host/overwrite-confirmation.png)
-![Editor resized to leave keyboard space, headless runtime](host/keyboard-size.png)
-![Live palette generation changed, headless runtime](host/theme-changed.png)
-![Saved document reopened, headless runtime](host/reopened.png)
+The actual RISC-V application ran on the reserved K230, with native 568x1232
+RGB565 output. [The trial](board-trial.py) uses a private scratch HOME and an
+explicit current-system desktop environment. It imports `WriterKeyboard` from
+`tests/omawrite_runtime.py`, `tests/card_virtual_keyboard.py`, and the existing
+injected-touch helper at
+`docs/evidence/theme-picker/finger-tracking/k230-picker-baseline.py` (staged as
+`writer.py`, `card_virtual_keyboard.py`, and `touch.py` alongside the trial).
 
-## Remaining device gate
+The board operator held `/tmp/k230-board.lock` and `/dev/ttyACM0` at 115200.
+The expanded trial command was run through `tools/console.py`; only the private
+upload endpoint remains a protected runtime value:
 
-Finish the RISC-V app and coherent-system builds, then trial scratch-file
-editing, Open/Save, the real keyboard surface, Overview and Home. The operator
-has reserved the board and rebooted into its saved baseline; the user authorized
-installation. Omawrite has not yet been installed on the board.
+```sh
+systemd-run --unit=k230-omawrite-install-inspect-v3 \
+  --property=Type=exec --property=RuntimeMaxSec=180s \
+  --setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin \
+  /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 \
+  /run/k230-omawrite-install-control/trial.py \
+  /nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd "$PRIVATE_UPLOAD_BASE"
+```
 
-The first cross build exposed two host-tool resolution issues: Omawrite needed
-an explicit native QML tools path, and the pinned nixpkgs Qt Declarative package
-pointed `Qt6ShaderToolsTools_DIR` at `Qt6ShaderTools`. The latter silently omitted
-Qt Quick. The package now supplies the correct ShaderToolsTools and QuickTools
-paths for cross compilation and requires `FEATURE_quick=ON`, so missing Quick
-support fails the dependency build instead of producing an unusable library.
+Twelve checks pass: default Markdown handler; software Wayland backend;
+scratch edit/save; a real wvkbd key activated through injected touch; keyboard
+show/hide resize; native Open control; Save As; reopening saved text;
+Overview/Home return; the existing Editor pin focusing its original window;
+the same pin launching a fresh app; and active-theme color in the native capture.
+The app reports `omawrite renderer=software platform=wayland`.
+
+The selected theme background is `#eff1f5`. Its RGB565 capture expands to
+`(239, 243, 247)`, exactly matching the observed pixel; it is not expected to
+retain all eight source bits per channel. The app reads and watches
+`~/.local/state/omarchy/current/active/theme/colors.toml`. Review caught and fixed
+an initial fallback-palette path and poor light-theme control/selection contrast.
+All seven final native captures were visually reviewed.
+
+This is **physical-board execution with injected touch and keyboard input**,
+not new real-finger acceptance or a frame-rate benchmark. The result preserves
+the board-reported timestamp and host collection timestamp. Only scratch text,
+public theme colors and reviewed captures are published.
+
+![Real on-screen keyboard on the physical board](board/keyboard.png)
+![Portrait Open chooser on the physical board](board/open-dialog.png)
+![Readable selected file in the Save chooser](board/save-dialog.png)
+![Saved text reopened on the physical board](board/reopened.png)
+![Omawrite in Overview](board/overview.png)
+![Existing Editor Home pin with Omawrite icon](board/home.png)
+
+## Persistence
+
+The existing guarded helper
+[`persist-userspace.sh`](../theme-picker/finger-tracking/persist-userspace.sh)
+installed this same qualified system. It verified the current/booted/profile
+baseline, retained the previous system and boot-file backup, checked the kernel
+and initrd relationship, and recorded a durable SUCCESS transaction. The boot
+update is not atomic; its rollback protection is described by that helper.
+
+The staged root was `/var/lib/k230/omawrite-persist-20260927-final`. The operator
+invocation, after staging and SHA-256 verification, was:
+
+```sh
+bash /var/lib/k230/omawrite-persist-20260927-final/persist.sh \
+  /nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd \
+  /var/lib/k230/omawrite-persist-20260927-final/new \
+  /var/lib/k230/omawrite-persist-20260927-final/previous \
+  /var/lib/k230/omawrite-persist-20260927-final/omawrite-transaction
+```
+
+The four installed boot hashes, four unchanged firmware/selector files, saved
+system profile, and healthy shell/UI/keyboard/theme services were verified.
+No full-card readback was performed. [Normal reboot verification](board/boot-result.json)
+passed: current, booted and saved profile identities match, the four services
+are active, and the installed editor executable maps a fresh window. The exact
+[boot-check script](board-boot-check.sh) was sent through
+`python3 tools/console.py /dev/ttyACM0 --wait=35` as a quoted `bash -c` command.
+The verification left a blank Omawrite window open for the user.
+
+## Host runtime
+
+The actual native app ran under RISC-V Sway through host binfmt/QEMU, using a
+private HOME, a headless 568x1232 output and synthetic Wayland input. These
+results are distinct from the board trial above.
+
+```sh
+python3 tests/omawrite_runtime.py \
+  --sway /nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway \
+  --omawrite /nix/store/j8d4yxkip06wlsd0gh3z5s0zf9yh3sb1-omawrite-0-unstable-2026-08-07/bin/omawrite \
+  --output /tmp/k230-omawrite-runtime-10
+```
+
+[Host result](host/result.json) covers editing, chooser Save As/Open of a
+different document, overwrite cancellation, cancellation preserving edits,
+live dark-to-light theme generation changes, a keyboard-sized window, reopening
+and actual software-backend identity. Host resizing is not OSK proof; the real
+keyboard surface is covered by the board trial.
+
+![Host writing](host/writing.png)
+![Host Open chooser](host/open-dialog.png)
+![Host Save chooser](host/save-dialog.png)
+![Overwrite cancellation](host/overwrite-confirmation.png)
+![Host keyboard-sized window](host/keyboard-size.png)
+![Live theme generation change](host/theme-changed.png)
+![Light-theme selection contrast](host/theme-dialog.png)
+![Host reopened document](host/reopened.png)

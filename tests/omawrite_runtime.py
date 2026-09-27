@@ -62,10 +62,10 @@ def main():
     home.mkdir()
     current = home/'.local/state/omarchy/current'
     current.mkdir(parents=True)
-    for name, color in [('one', '#112233'), ('two', '#eff1f5')]:
+    for name, color, foreground in [('one', '#112233', '#eeeeee'), ('two', '#eff1f5', '#4c4f69')]:
         generation = current/name
         (generation/'theme').mkdir(parents=True)
-        (generation/'theme/colors.toml').write_text(f'background = "{color}"\nforeground = "#eeeeee"\n')
+        (generation/'theme/colors.toml').write_text(f'background = "{color}"\nforeground = "{foreground}"\naccent = "#1e66f5"\n')
     (current/'active').symlink_to('one')
     scratch = home/'writing.md'
     scratch.write_text('Seed document\n')
@@ -198,6 +198,7 @@ def main():
         keyboard.key('o', 4)
         time.sleep(.5)
         keyboard.text('writing.md')
+        time.sleep(.5)
         capture('theme-dialog')
         keyboard.key('Escape')
         time.sleep(.3)

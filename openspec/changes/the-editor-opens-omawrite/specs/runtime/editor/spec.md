@@ -7,7 +7,7 @@ accessible through existing Home pins and the installed-application drawer.
 
 ### Requirement: The graphical editor opens Omawrite
 
-<!-- UNVERIFIED: package, integration and device trial pending. -->
+<!-- Verified: docs/evidence/omawrite/README.md; source build, physical-board injected input/native captures, and normal reboot. Not new real-finger acceptance. -->
 
 The system SHALL include source-built Omawrite and make the existing Editor
 entry open it with its application icon. Existing Editor Home pins SHALL remain
@@ -26,7 +26,7 @@ valid. Plain-text and Markdown graphical file associations SHALL use that entry.
 
 ### Requirement: Local writing is usable on the portrait screen
 
-<!-- UNVERIFIED: physical-device editing remains pending. Host runtime passes: docs/evidence/omawrite/README.md. -->
+<!-- Verified: docs/evidence/omawrite/README.md; source build, physical-board injected input/native captures, and normal reboot. Not new real-finger acceptance. -->
 
 Omawrite SHALL display its writing area and reachable Open/Save controls at the
 handheld's portrait size, render without a GPU, accept keyboard input, and save

@@ -651,14 +651,22 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 0fbb9697614b2e271a7982f02c3296fa4febf4333363d8b656e601f2f6f3ca18 docs/evidence/omawrite/board/home.png
+DATA afe1289aee3bde0c258340918783f0d77f1b437f6dd0be135bc722ec5daaf03b docs/evidence/omawrite/board/keyboard.png
+DATA c96077d2ab5b3a018023c40470092f0a7b776477a44b10df80bc72e0efd0ec67 docs/evidence/omawrite/board/open-dialog.png
+DATA c50fc4d406ed540a96bbab5419505d128f47d40c85c2ccf595fd054ed809d52f docs/evidence/omawrite/board/overview.png
+DATA 315f096b76467534d380c55ce3138cb7b608f56d7a8cccfa461a8e0d0d820ee4 docs/evidence/omawrite/board/reopened.png
+DATA b4b928946c4e72e92df8342fcaf91a65f8ea7f65bfb3297ebfffae7c0aa20c23 docs/evidence/omawrite/board/save-dialog.png
+DATA 9059fe3be800fedfa5ca0c7abfcd79dabc0f94fdfbdf62ea21f3556455390423 docs/evidence/omawrite/board/writing.png
+DATA 8d1fc969c90546f9bb92e15906d0b37ccc79b301e3151c6021645f51fdf018fa docs/evidence/omawrite/host/keyboard-size.png
+DATA 4add3162608c3aee30e5e8b4913afdc57c5a3d733463ebd75d5529a6c8e0efca docs/evidence/omawrite/host/open-dialog.png
+DATA 3ba194865ba72f16bbbb014d5c83b3b08ad80ca673215452649bbe0396a68fb4 docs/evidence/omawrite/host/overwrite-confirmation.png
+DATA 187ea627a844f0032897fb3d936021d08d6ab781088b535f9d95146f8ef49ad0 docs/evidence/omawrite/host/reopened.png
+DATA d51a147161151986efe98d11536e0a7b773525bcda9dfec2726931bf55fdc214 docs/evidence/omawrite/host/save-dialog.png
+DATA a0bde0d87901a0a6a0fa8abe1843d4535b8cdf65450cb8da18abeafe442dc86e docs/evidence/omawrite/host/theme-changed.png
+DATA 7b5409158b489163e5d453f0c80364e103792da3c126d0e04fe604622b9ddc70 docs/evidence/omawrite/host/theme-dialog.png
+DATA fc9db149225963e8d76393b3de5bfdde0dfa89e2b8afd3ac98b6a92d70ded8af docs/evidence/omawrite/host/writing.png
 SRC  sha256-yS3GOL/kc03qx4naWzUdSZwAYxMuCjvrgmhexpwjsfA=  src:omacom/omawrite@8f98892b26768236b2c20f4e637cf4b102d898bf
-DATA efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256 docs/evidence/omawrite/host/keyboard-size.png
-DATA b7297165d5ce15ea9784d3c388c5b0e28722368284331ef04306a04b92e89abe docs/evidence/omawrite/host/open-dialog.png
-DATA 344254291d593c9444fd76ac6f28a07b30b6fd3779a340bf2089cf98ae989e49 docs/evidence/omawrite/host/overwrite-confirmation.png
-DATA 15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef docs/evidence/omawrite/host/reopened.png
-DATA df5d8dd0e3f1d28a24be0df40b362f48be66fa0804dfa9928a43a67fd1e76a96 docs/evidence/omawrite/host/save-dialog.png
-DATA 0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74 docs/evidence/omawrite/host/theme-changed.png
-DATA f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232 docs/evidence/omawrite/host/writing.png
 DATA b822b4b32c6ce0ba6f90b203e1a61ed9736948a5fa614eefc6c5b7cf00c674fb docs/evidence/theme-picker/background-selection/home-after.png
 DATA b06525298d1317b37f8cec145127b13af5907a0f3837812dab0b848afc6f974f docs/evidence/theme-picker/background-selection/home-before.png
 DATA a1606e29a77f892d0500fcdbf35495136a1c1d8b625e0c0c0031ba1956664788 docs/evidence/theme-picker/background-selection/picker-after-restart.png
@@ -2193,24 +2201,31 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/navigation/overview.png` | 16283 | DATA | `a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4` |
 | `docs/evidence/home-screen/navigation/restored-terminal.png` | 8833 | DATA | `d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c` |
 
-### Omawrite portrait host runtime — 2026-09-27
+### Omawrite host and physical-board runtime — 2026-09-27
 
-Omawrite is compiled from pinned MIT source; its embedded iA Writer Mono S
-fonts carry SIL OFL 1.1. Both notices are installed with the package. The source
-archive hash above includes these font data; no prebuilt Omawrite executable is
-imported. Captures below show a private scratch HOME under headless Sway, not
-physical-device or real-finger acceptance.
+Omawrite is compiled from pinned MIT source; embedded fonts carry SIL OFL 1.1.
+Both notices ship with the package. Host captures use headless Sway and a private
+scratch HOME. Board captures use the physical panel output with injected input;
+they are not real-finger acceptance. See `docs/evidence/omawrite/README.md`.
 
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
-| `docs/evidence/omawrite/host/keyboard-size.png` | 13067 | DATA | `efea1d330a8748946a08a20f8529b3b73fe8c6b8d7a1f59ba63809dbc5955256` |
-| `docs/evidence/omawrite/host/open-dialog.png` | 27245 | DATA | `b7297165d5ce15ea9784d3c388c5b0e28722368284331ef04306a04b92e89abe` |
-| `docs/evidence/omawrite/host/overwrite-confirmation.png` | 35582 | DATA | `344254291d593c9444fd76ac6f28a07b30b6fd3779a340bf2089cf98ae989e49` |
-| `docs/evidence/omawrite/host/reopened.png` | 23209 | DATA | `15b635acedc912b37cb9d38fc8fea902d147907a722fb34331636bb4d705f8ef` |
-| `docs/evidence/omawrite/host/save-dialog.png` | 27844 | DATA | `df5d8dd0e3f1d28a24be0df40b362f48be66fa0804dfa9928a43a67fd1e76a96` |
-| `docs/evidence/omawrite/host/theme-changed.png` | 14053 | DATA | `0385da24ac194a6235e71bbd4b803e9718176e76033253f41d02ee9fcee4da74` |
-| `docs/evidence/omawrite/host/writing.png` | 18205 | DATA | `f10d47a251d299b0efaa2a3502e2b3efe4cec77249129487e0e4808768c70232` |
-||||||| c91de438
+| `docs/evidence/omawrite/board/home.png` | 25463 | DATA | `0fbb9697614b2e271a7982f02c3296fa4febf4333363d8b656e601f2f6f3ca18` |
+| `docs/evidence/omawrite/board/keyboard.png` | 29886 | DATA | `afe1289aee3bde0c258340918783f0d77f1b437f6dd0be135bc722ec5daaf03b` |
+| `docs/evidence/omawrite/board/open-dialog.png` | 22913 | DATA | `c96077d2ab5b3a018023c40470092f0a7b776477a44b10df80bc72e0efd0ec67` |
+| `docs/evidence/omawrite/board/overview.png` | 22699 | DATA | `c50fc4d406ed540a96bbab5419505d128f47d40c85c2ccf595fd054ed809d52f` |
+| `docs/evidence/omawrite/board/reopened.png` | 16873 | DATA | `315f096b76467534d380c55ce3138cb7b608f56d7a8cccfa461a8e0d0d820ee4` |
+| `docs/evidence/omawrite/board/save-dialog.png` | 23574 | DATA | `b4b928946c4e72e92df8342fcaf91a65f8ea7f65bfb3297ebfffae7c0aa20c23` |
+| `docs/evidence/omawrite/board/writing.png` | 16506 | DATA | `9059fe3be800fedfa5ca0c7abfcd79dabc0f94fdfbdf62ea21f3556455390423` |
+| `docs/evidence/omawrite/host/keyboard-size.png` | 13089 | DATA | `8d1fc969c90546f9bb92e15906d0b37ccc79b301e3151c6021645f51fdf018fa` |
+| `docs/evidence/omawrite/host/open-dialog.png` | 27261 | DATA | `4add3162608c3aee30e5e8b4913afdc57c5a3d733463ebd75d5529a6c8e0efca` |
+| `docs/evidence/omawrite/host/overwrite-confirmation.png` | 35732 | DATA | `3ba194865ba72f16bbbb014d5c83b3b08ad80ca673215452649bbe0396a68fb4` |
+| `docs/evidence/omawrite/host/reopened.png` | 20937 | DATA | `187ea627a844f0032897fb3d936021d08d6ab781088b535f9d95146f8ef49ad0` |
+| `docs/evidence/omawrite/host/save-dialog.png` | 27883 | DATA | `d51a147161151986efe98d11536e0a7b773525bcda9dfec2726931bf55fdc214` |
+| `docs/evidence/omawrite/host/theme-changed.png` | 14075 | DATA | `a0bde0d87901a0a6a0fa8abe1843d4535b8cdf65450cb8da18abeafe442dc86e` |
+| `docs/evidence/omawrite/host/theme-dialog.png` | 30242 | DATA | `7b5409158b489163e5d453f0c80364e103792da3c126d0e04fe604622b9ddc70` |
+| `docs/evidence/omawrite/host/writing.png` | 18244 | DATA | `fc9db149225963e8d76393b3de5bfdde0dfa89e2b8afd3ac98b6a92d70ded8af` |
+
 ### Brightness slider on the headless compositor
 
 Host QEMU capture: injected touch drags across the Settings and Shade

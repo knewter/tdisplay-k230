@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "collected_at_host_utc": "2026-09-27T09:22:24.152121+00:00",
+  "system": "/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "4db47bc0117378efa120c17679a1cea8d506949e",
+  "checks": [
+    "normal reboot",
+    "current, booted and profile identities match",
+    "shell, shell-ui, keyboard and theme services active",
+    "Markdown default remains k230-editor.desktop",
+    "installed desktop executable maps an Omawrite window"
+  ],
+  "markers": [
+    "K230_TRACE_BOOT_IDENTITIES_MATCH",
+    "K230_TRACE_BOOT_SERVICES_HEALTHY",
+    "K230_TRACE_BOOT_EDITOR_RUNNING"
+  ]
+}

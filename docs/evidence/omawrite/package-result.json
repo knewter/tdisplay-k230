@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "package": "/nix/store/nvnmlbqxh4m5kgw1qa4aj20r6vw1w4xm-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07",
+  "architecture": "riscv64",
+  "closure": {
+    "/nix/store/nvnmlbqxh4m5kgw1qa4aj20r6vw1w4xm-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07": {
+      "ca": null,
+      "closureSize": 1682569256,
+      "deriver": "/nix/store/rs34d9x34nq4cbkv63fizbxd0kn5h3y3-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07.drv",
+      "narHash": "sha256-8LHIDy7C5MMFenaY+YP1q3DdGz8LoH9QFn1mIG2HP6o=",
+      "narSize": 631864,
+      "references": [
+        "/nix/store/1c2p3bxn6axizsgmmys7qvvi1iql9p3w-qtbase-riscv64-unknown-linux-gnu-6.11.2",
+        "/nix/store/5f46hayfiq86axh0s6j4k01l61ydlxi6-qtsvg-riscv64-unknown-linux-gnu-6.11.2",
+        "/nix/store/hk2n8r84s04i8bd6hfnkr9ag4jjac11y-qtdeclarative-riscv64-unknown-linux-gnu-6.11.2",
+        "/nix/store/hs6523y8cd6nr32l1di544plrxgiqj6k-libglvnd-riscv64-unknown-linux-gnu-1.7.0",
+        "/nix/store/i96c7c9k9lhn48i7gbywsf2ii01450ad-qtbase-riscv64-unknown-linux-gnu-6.11.2-only-plugins-qml",
+        "/nix/store/l96jdws6sl7mbxnv731syaabdhr7v088-qtdeclarative-riscv64-unknown-linux-gnu-6.11.2",
+        "/nix/store/m4gspccnxairx88l73bb1h38a8z1rgx8-qtwayland-riscv64-unknown-linux-gnu-6.11.2",
+        "/nix/store/nvnmlbqxh4m5kgw1qa4aj20r6vw1w4xm-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07",
+        "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84",
+        "/nix/store/wssz267qail8ngf0w7lx4alq0lkgl66s-riscv64-unknown-linux-gnu-gcc-15.3.0-lib"
+      ],
+      "registrationTime": 1790500104,
+      "signatures": [],
+      "storeDir": "/nix/store",
+      "ultimate": true,
+      "version": 1
+    }
+  },
+  "source": "4db47bc0117378efa120c17679a1cea8d506949e"
+}

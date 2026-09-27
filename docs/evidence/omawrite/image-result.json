@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "system": "/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source": "4db47bc0117378efa120c17679a1cea8d506949e",
+  "checks": [
+    "coherent image builds",
+    "existing desktop ID preserved",
+    "Omawrite icon installed",
+    "graphical MIME defaults",
+    "Nano retained",
+    "no duplicate visible Omawrite entry"
+  ]
+}

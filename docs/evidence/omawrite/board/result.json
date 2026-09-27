@@ -1,0 +1,37 @@
+{
+  "result": "PASS",
+  "timestamp": "2026-09-27T09:11:49.290329+00:00",
+  "evidence_class": "physical-board-injected-touch-keyboard-native-capture",
+  "system": "/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "executable": "/nix/store/nvnmlbqxh4m5kgw1qa4aj20r6vw1w4xm-omawrite-riscv64-unknown-linux-gnu-0-unstable-2026-08-07/bin/.omawrite-wrapped",
+  "first_map_seconds": 4.828146350999305,
+  "osk_added_text": "g",
+  "scratch_text": "# Omawrite on the K230\n\n\n\nWritten and saved on the physical board.\n\ng",
+  "checks": [
+    "default Markdown handler opens Omawrite",
+    "software Wayland launch",
+    "scratch edit/save",
+    "real wvkbd surface types through injected touch",
+    "keyboard show/hide resize",
+    "native Open control",
+    "Save As chooser",
+    "saved document reopened",
+    "Overview/Home return",
+    "Editor Home pin focuses same window",
+    "Editor Home pin launches new app",
+    "native RGB565 capture matches active theme background"
+  ],
+  "real_finger_acceptance": false,
+  "expected_theme_background": "#eff1f5",
+  "observed_theme_background_rgb": [
+    239,
+    243,
+    247
+  ],
+  "expected_rgb565_expansion": [
+    239,
+    243,
+    247
+  ],
+  "collected_at_host_utc": "2026-09-27T09:11:59.353999+00:00"
+}
