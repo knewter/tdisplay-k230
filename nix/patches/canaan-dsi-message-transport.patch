@@ -313,7 +313,7 @@
  }
  
  bool canaan_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
-@@ -600,31 +573,85 @@
+@@ -600,31 +573,99 @@
  				   const struct mipi_dsi_msg *msg)
  {
  	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
@@ -324,6 +324,7 @@
 -		canaan_dsi_inst_abort(dsi);
 -
 +	struct mipi_dsi_packet packet;
++	struct mipi_dsi_msg video_msg;
 +	int ret, drain;
 +	u32 val;
 +
@@ -396,6 +397,19 @@
 +		}
 +	}
 +
++	/* Trial: other Raydium/JDI panels send live brightness in HS. Keep
++	 * command-mode init and every other message's policy unchanged.
++	 * RM69A10 acceptance still requires the physical brightness trial.
++	 */
++	if (msg->type == MIPI_DSI_DCS_SHORT_WRITE_PARAM &&
++	    msg->tx_len == 2 &&
++	    ((const u8 *)msg->tx_buf)[0] == MIPI_DCS_SET_DISPLAY_BRIGHTNESS &&
++	    dsi_read(dsi, MODE_CFG) == 0) {
++		video_msg = *msg;
++		video_msg.flags &= ~MIPI_DSI_MSG_USE_LPM;
++		msg = &video_msg;
++	}
++
 +	canaan_dsi_message_config(dsi, msg);
 +	ret = canaan_dsi_write_packet(dsi, &packet);
 +	if (!ret) {
@@ -416,7 +430,7 @@
  	return ret;
  }
  
-@@ -706,6 +733,7 @@
+@@ -706,6 +747,7 @@
  	dsi->dev = dev;
  	dsi->host.ops = &canaan_dsi_host_ops;
  	dsi->host.dev = dev;

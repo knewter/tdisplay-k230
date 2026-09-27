@@ -129,6 +129,7 @@ static void reset(void) {
     dsi.transfer_ready = true;
     regs[VID_MODE_CFG / 4] = 0x3f02;
     regs[CMD_MODE_CFG / 4] = 1;
+    regs[MODE_CFG / 4] = 1; /* Normal baseline: panel initialization in LP. */
     msg = (struct mipi_dsi_msg) {
         .type = MIPI_DSI_DCS_SHORT_WRITE_PARAM, .flags = MIPI_DSI_MSG_USE_LPM,
         .tx_buf = brightness, .tx_len = sizeof(brightness),
@@ -157,6 +158,30 @@ int main(void) {
     assert(regs[CMD_MODE_CFG / 4] == (CMD_MODE_ALL_LP | 1));
     assert(regs[VID_MODE_CFG / 4] == 0xbf02);
     assert(regs[DPI_LP_CMD_TIM / 4] == 0x100004);
+
+    reset(); regs[MODE_CFG / 4] = 0;
+    struct mipi_dsi_msg original = msg;
+    assert(transfer() == 4 && headers[0] == 0x00fe5115 && !payload_count);
+    assert(!(regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP));
+    assert(!(regs[VID_MODE_CFG / 4] & ENABLE_LOW_POWER_CMD));
+    assert(!memcmp(&msg, &original, sizeof(msg))); /* caller stays immutable */
+    assert(regs[MODE_CFG / 4] == 0 && regs[LPCLK_CTRL / 4] == 0 && regs[1] == 0);
+
+    reset(); regs[MODE_CFG / 4] = 0; msg.flags |= MIPI_DSI_MSG_REQ_ACK;
+    assert(transfer() == 4 && (regs[CMD_MODE_CFG / 4] & ACK_RQST_EN));
+    assert(!(regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP));
+    assert(msg.flags == (MIPI_DSI_MSG_USE_LPM | MIPI_DSI_MSG_REQ_ACK));
+
+    reset(); u8 other_command[] = { 0x53, 0x24 };
+    regs[MODE_CFG / 4] = 0; msg.tx_buf = other_command;
+    assert(transfer() == 4 && (regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP) == CMD_MODE_ALL_LP);
+    assert(regs[VID_MODE_CFG / 4] & ENABLE_LOW_POWER_CMD);
+    reset(); regs[MODE_CFG / 4] = 0; msg.type = MIPI_DSI_DCS_LONG_WRITE;
+    assert(transfer() == 6 && (regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP) == CMD_MODE_ALL_LP);
+    reset(); regs[MODE_CFG / 4] = 0; msg.type = MIPI_DSI_GENERIC_SHORT_WRITE_2_PARAM;
+    assert(transfer() == 4 && (regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP) == CMD_MODE_ALL_LP);
+    reset(); regs[MODE_CFG / 4] = 0; msg.type = MIPI_DSI_DCS_SHORT_WRITE; msg.tx_len = 1;
+    assert(transfer() == 4 && (regs[CMD_MODE_CFG / 4] & CMD_MODE_ALL_LP) == CMD_MODE_ALL_LP);
 
     reset(); msg.channel = 3;
     assert(transfer() == 4 && headers[0] == 0x00fe51d5);
