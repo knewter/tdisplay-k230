@@ -11,6 +11,20 @@
       stepper text. Proven: `cargo test --lib` (render's own pixel-sampled
       shade/preview tests updated and passing after the layout shift this
       needed).
+- [x] 1.3 Coordinator review of the first QEMU capture found a
+      "Brightness changed" status toast lingering in the Shade after a
+      drag -- a live slider's own visible movement is already the
+      feedback, so a toast on every commit is noise. Added
+      `main.rs::suppresses_action_message` (suppresses only the success/
+      pending path of the authoritative `Brightness` commit specifically;
+      a genuine failure, e.g. a denied write, still surfaces normally;
+      every other request's own message is unaffected) and a unit test
+      (`route_tests::brightness_commit_suppresses_its_own_success_toast_
+      but_not_a_failure`). Proven: `cargo test --lib --bin k230-shell-
+      rust` (257 passed, run in the foreground) and `cargo clippy --lib
+      --bin k230-shell-rust ...` report no new warning; the QEMU capture
+      in `docs/evidence/brightness-slider/` was refreshed and no longer
+      shows the toast.
 
 ## 2. Touch dispatch and gesture disambiguation
 
@@ -71,14 +85,14 @@
       combined `cargo test`/`cargo clippy --all-targets` invocation and is
       not this change's to fix — a separate, concurrent session owns the
       theme picker files.
-- [x] 4.2 `nix build .#handheld-shell-rust --max-jobs 1 --cores 6`.
-      Proven: exit 0, `/nix/store/...` (see the report for the exact
-      path).
+- [x] 4.2 `nix build .#handheld-shell-rust --max-jobs 1 --cores 6`. Run in
+      the foreground after the 1.3 toast-suppression fix. Proven: exit 0,
+      `/nix/store/fqmys3pjlj2kv3hivxa1s8hg4da8mi78-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
 - [x] 4.3 `nix build
       .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel
-      --max-jobs 1 --cores 6 --no-link --print-out-paths`. Proven: exit
-      0, `/nix/store/...-nixos-system-...` (see the report for the exact
-      path).
+      --max-jobs 1 --cores 6 --no-link --print-out-paths`. Run in the
+      foreground after the 1.3 fix. Proven: exit 0,
+      `/nix/store/pzp59g0fkkvbzhkpr5rr35il3jhc0hqg-nixos-system-nixos-26.11.20260919.20b1ddd`.
 
 ## 5. QEMU host evidence
 

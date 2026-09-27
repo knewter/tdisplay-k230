@@ -1418,8 +1418,8 @@ DATA a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4  docs/evid
 DATA d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c  docs/evidence/home-screen/navigation/restored-terminal.png
 DATA 2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec docs/evidence/brightness-slider/settings-after-drag-90pct.png
 DATA 2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c docs/evidence/brightness-slider/settings-mid-drag-54pct.png
-DATA 78aee6eb2761eacfc37a432b3eab110fadc5f72df13869fed7b7f3427c4650d5 docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
-DATA 9aeaf95d27fa4c4a14a83b873b278560d11692c009d204b08f9f58b5d4464564 docs/evidence/brightness-slider/shade-synced-45pct.png
+DATA 76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
+DATA e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157 docs/evidence/brightness-slider/shade-synced-45pct.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2196,5 +2196,5 @@ board. See `docs/evidence/brightness-slider/README.md`.
 | --- | ---: | --- | --- |
 | `docs/evidence/brightness-slider/settings-mid-drag-54pct.png` | 64405 | DATA | `2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c` |
 | `docs/evidence/brightness-slider/settings-after-drag-90pct.png` | 64617 | DATA | `2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec` |
-| `docs/evidence/brightness-slider/shade-synced-45pct.png` | 61223 | DATA | `9aeaf95d27fa4c4a14a83b873b278560d11692c009d204b08f9f58b5d4464564` |
-| `docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png` | 61062 | DATA | `78aee6eb2761eacfc37a432b3eab110fadc5f72df13869fed7b7f3427c4650d5` |
+| `docs/evidence/brightness-slider/shade-synced-45pct.png` | 59251 | DATA | `e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157` |
+| `docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png` | 59095 | DATA | `76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c` |

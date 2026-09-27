@@ -1248,6 +1248,19 @@ fn prerendered_overlay_mismatch_reason(
     }
 }
 
+/// A live slider's own visible brightness change is already the feedback
+/// -- a status toast on every drag release is noise, not information, in
+/// both Settings and the Shade. Suppresses only the success/pending path
+/// of the authoritative `Brightness` commit request itself (the
+/// fire-and-forget `BrightnessLive` scrub writes never reach
+/// `service_reply`'s outcome-handling arm at all -- see its own early
+/// return); a genuine failure (`outcome_error` is `Some`, e.g. permission
+/// denied or an unreachable backend) still surfaces normally, and every
+/// other request keeps showing its own message exactly as before.
+fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&str>) -> bool {
+    matches!(request, ServiceRequest::Brightness(_)) && outcome_error.is_none()
+}
+
 #[derive(Default)]
 struct WallpaperState {
     layer: Option<LayerSurface>,
@@ -1865,7 +1878,9 @@ impl ShellClient {
                 self.service_view.notification_error = None;
             }
             Ok(ServiceResponse::Action(outcome)) => {
-                self.service_view.message = Some(action_message(&outcome));
+                if !suppresses_action_message(&reply.request, outcome.error.as_deref()) {
+                    self.service_view.message = Some(action_message(&outcome));
+                }
                 self.service_view.confirmation = if outcome.state == "confirmation" {
                     match (
                         outcome.token,
@@ -5234,6 +5249,33 @@ fn main() {
 mod route_tests {
     use super::*;
     use std::os::unix::fs::DirBuilderExt;
+
+    #[test]
+    fn brightness_commit_suppresses_its_own_success_toast_but_not_a_failure() {
+        // The live slider drag itself is the feedback (review follow-up
+        // on the brightness-slider task): a "Brightness changed" toast on
+        // every release is noise, not information.
+        assert!(suppresses_action_message(
+            &ServiceRequest::Brightness(50),
+            None
+        ));
+        // A genuine failure (permission denied, an unreachable backend)
+        // must still surface.
+        assert!(!suppresses_action_message(
+            &ServiceRequest::Brightness(50),
+            Some("brightness-denied")
+        ));
+        // Every other request keeps its own message exactly as before,
+        // success or failure.
+        assert!(!suppresses_action_message(
+            &ServiceRequest::KeyboardToggle,
+            None
+        ));
+        assert!(!suppresses_action_message(
+            &ServiceRequest::BrightnessLive(50),
+            None
+        ));
+    }
 
     #[test]
     fn theme_prerender_waits_for_both_carousels_to_finish_moving() {

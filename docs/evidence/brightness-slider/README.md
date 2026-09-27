@@ -11,7 +11,7 @@ down/motion/up"`), exactly as `tests/rust_service_surface_qemu.py` already
 does.
 
 - Rust package: `nix build .#handheld-shell-rust --max-jobs 1 --cores 6`,
-  `/nix/store/7hmjpjwbywq554fqr9dmj3lc3yjgc561-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
+  `/nix/store/fqmys3pjlj2kv3hivxa1s8hg4da8mi78-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
 - Sway: the same `sway-k230-card-shell`-patched `sway-unwrapped` this repo's
   own `nix/card-shell.nix` builds for the `card-shell` package
   (`nix build .#card-shell`), `/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12`.
@@ -35,6 +35,14 @@ horizontal drag never engaged the close-drag gesture
 Shade fresh (`shade-synced-45pct.png`) shows its slider already at the
 fixture's real 45%, not a stale/default value -- the shade now also issues
 `RefreshSettings` on open (task: "sync the value").
+
+Neither the Shade screenshots nor the Settings ones show a "Brightness
+changed" status toast: the slider's own visible movement is the feedback,
+so `main.rs::suppresses_action_message` drops the success/pending message
+for the authoritative `Brightness` commit specifically (a genuine failure,
+e.g. a denied write, still surfaces normally). An earlier capture caught
+this toast lingering in the Shade from the prior Settings commit before
+that fix landed; these screenshots are the corrected re-capture.
 
 ## Commands
 
