@@ -276,3 +276,19 @@ rendering every obsolete sample is not. The board comparison must distinguish
 mapping, input backlog and render cost. Real-finger acceptance remains open
 until the operator actually tests the candidate; injected motion can prove
 geometry and accounting but cannot substitute for that observation.
+
+### Picker frame-stall attribution
+
+Task 13.2's opt-in trace will give overlay commits monotonic frame IDs and
+request Wayland presentation feedback for those exact commits. Keep callback,
+commit, feedback-receive and compositor-provided presentation timestamps
+separate, including clock ID, refresh period, sequence, flags and discarded
+submissions. Only compare presentation timestamps with input/process clocks
+when their clock domains match; absent feedback is unavailable evidence.
+Record main-thread render/rebuild/copy and background work spans with both
+wall time and thread CPU time, plus the latest picker input sequence. Buffer
+only a bounded, numeric/allowlisted trace in memory and write it after the
+capture interval. Trace mode is off by default; measure observer overhead.
+A report ranks individual stalls within named swipe phases, excludes idle
+intervals, and shows which spans overlap each stall without treating overlap
+as proof of causation. Screenshots/camera captures run separately from timing.
