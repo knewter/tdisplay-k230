@@ -123,6 +123,7 @@ fn output_len(width: u32, height: u32) -> Option<u64> {
 /// unreadable, a symlink) is a cache miss, never an error -- same
 /// contract as `background_decode.rs::load_cached`.
 fn read_disk_cache(path: &Path, width: u32, height: u32) -> Option<Vec<u8>> {
+    let _profile = crate::runtime_trace::Span::new("thumbnail_read_cache");
     let expected_pixels = output_len(width, height)?;
     let file = OpenOptions::new()
         .read(true)
@@ -267,6 +268,7 @@ fn disk_cache_dir_from(xdg_cache_home: Option<&str>, home: Option<&str>) -> Opti
 /// file is missing, not a regular file, or larger than
 /// `DISK_CACHE_MAX_SOURCE_BYTES` (see its own doc).
 fn content_hash(path: &Path) -> Option<String> {
+    let _profile = crate::runtime_trace::Span::new("thumbnail_hash");
     let metadata = std::fs::metadata(path).ok()?;
     if !metadata.is_file() || metadata.len() > DISK_CACHE_MAX_SOURCE_BYTES {
         return None;
@@ -351,6 +353,7 @@ fn resolve_with_dirs(
     seed_dir: Option<PathBuf>,
     runtime_dir: Option<PathBuf>,
 ) -> Result<Vec<u8>, String> {
+    let _profile = crate::runtime_trace::Span::new("thumbnail_resolve");
     let hash = if seed_dir.is_some() || runtime_dir.is_some() {
         content_hash(&key.path)
     } else {
@@ -368,9 +371,10 @@ fn resolve_with_dirs(
             return Ok(pixels);
         }
     }
-    let pixels = cache
-        .render(&key.path, None, key.width, key.height, FitMode::Crop)?
-        .to_vec();
+    let pixels = {
+        let _profile = crate::runtime_trace::Span::new("thumbnail_decode");
+        cache.render(&key.path, None, key.width, key.height, FitMode::Crop)?.to_vec()
+    };
     if let (Some(dir), Some(hash)) = (runtime_dir.as_ref(), hash.as_ref()) {
         let file = hashed_cache_file(dir, hash, key.variant, key.width, key.height);
         if write_disk_cache(&file, key.width, key.height, &pixels).is_ok() {

@@ -40,6 +40,7 @@ import threading
 from pathlib import Path
 
 import theme_catalog
+import runtime_trace
 import theme_timing
 
 MAX_REQUEST = 8192
@@ -119,6 +120,11 @@ class Helperd:
         except (json.JSONDecodeError, ValueError) as error:
             theme_timing.log("helperd", "malformed", stopwatch, error=str(error)[:80])
             return {"schema": 1, "error": f"malformed request: {error}", "activated": False}, 1
+        with runtime_trace.remote_parent(request.get("_trace")):
+            with runtime_trace.span("helper_request"):
+                return self.handle_argv(argv, stopwatch)
+
+    def handle_argv(self, argv, stopwatch):
         action = argv[len(self.fixed_argv)] if len(argv) > len(self.fixed_argv) else "-"
         try:
             args = self.parser.parse_args(argv)
@@ -216,6 +222,7 @@ class Helperd:
             signal.signal(signal.SIGINT, handle_signal)
         try:
             while not stop.is_set():
+                runtime_trace.finish_if_due()
                 for _key, _events in selector.select(timeout=0.2):
                     try:
                         connection, _address = listener.accept()
@@ -260,6 +267,10 @@ def main(argv=None) -> int:
         "--keyboard-runtime-dir": args.keyboard_runtime_dir,
         "--pkill": args.pkill,
     }
+    try:
+        runtime_trace.init()
+    except (OSError, ValueError):
+        print("theme helper: diagnostic trace unavailable", file=sys.stderr)
     Helperd(fixed, args.listen).serve_forever()
     return 0
 

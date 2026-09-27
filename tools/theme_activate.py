@@ -5,6 +5,7 @@ This host-side coordinator deliberately fails closed without a shell receiver.
 The normal service integration is a later OpenSpec task.
 """
 
+import runtime_trace
 import argparse
 import fcntl
 import hashlib
@@ -85,6 +86,7 @@ def template_root(tools: Path) -> Path:
     raise ThemeError("trusted helper templates unavailable")
 
 
+@runtime_trace.traced("theme_activate_invoke")
 def invoke(tools: Path, name: str, *args: str, env=None) -> str:
     child_env = os.environ.copy() if env is None else env.copy()
     child_env["PATH"] = str(tools / "bin") + os.pathsep + child_env.get("PATH", "")
@@ -95,6 +97,7 @@ def invoke(tools: Path, name: str, *args: str, env=None) -> str:
     return result.stdout
 
 
+@runtime_trace.traced("theme_activate_checked_copy")
 def checked_copy(source: Path, destination: Path, *, limit: int) -> int:
     if source.is_symlink() or not source.is_file():
         raise ThemeError(f"unsafe source entry: {source.name}")
@@ -119,6 +122,7 @@ def choose_source(name: str, source: Path | None, user_themes: Path, builtins: P
     raise ThemeError(f"theme not found: {name}")
 
 
+@runtime_trace.traced("theme_activate_build_wallpaper_cache")
 def build_wallpaper_cache(wallpaper_cache_tool: Path, background_path: Path, work: Path) -> None:
     """Precompute `work`'s panel-sized wallpaper decode via the installed
     Rust shell binary's hidden `--write-wallpaper-cache` verb, so a later
@@ -208,6 +212,7 @@ def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
 _helper_hash_cache: dict[str, str] = {}
 
 
+@runtime_trace.traced("theme_activate_helper_digest")
 def helper_digest(tools: Path) -> str:
     key = str(tools.resolve(strict=True))
     cached = _helper_hash_cache.get(key)
@@ -235,6 +240,7 @@ def helper_digest(tools: Path) -> str:
 _theme_hash_cache: dict[str, tuple[tuple, str]] = {}
 
 
+@runtime_trace.traced("theme_activate_theme_digest")
 def theme_digest(theme: Path) -> str:
     key = str(theme.resolve(strict=True))
     fingerprint = source_fingerprint(theme)
@@ -246,6 +252,7 @@ def theme_digest(theme: Path) -> str:
     return digest
 
 
+@runtime_trace.traced("theme_activate_prepare")
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
             background_choice: str | None = None,

@@ -2812,6 +2812,7 @@ impl RendererCache {
     }
     /// Request exactly the admitted visible working set shared by both rows.
     pub fn poll_theme_thumbnails(&mut self, viewport_width: u32) -> bool {
+        let _profile = crate::runtime_trace::Span::new("thumbnail_poll");
         let requested = theme_picker_working_set(self.chooser.as_ref(), viewport_width);
         self.thumbnails.set_working_set(&requested);
         let changed = self.thumbnails.poll();
@@ -2896,6 +2897,7 @@ impl RendererCache {
         height: u32,
         apps: &[AppEntry],
     ) -> Result<Vec<u8>, String> {
+        let _profile = crate::runtime_trace::Span::new("overlay_prerender");
         let size = usize::try_from(width)
             .ok()
             .and_then(|w| w.checked_mul(height as usize))
@@ -3006,6 +3008,7 @@ impl RendererCache {
         params: RenderParams,
         apps: &[AppEntry],
     ) -> Result<(), String> {
+        let _profile = crate::runtime_trace::Span::new("render_total");
         let RenderParams {
             width,
             height,
@@ -3028,6 +3031,7 @@ impl RendererCache {
             || self.height != height
             || (self.scroll - scroll).abs() >= 0.25
         {
+            let _profile = crate::runtime_trace::Span::new("scene_rebuild");
             let mut painted = vec![0; size];
             draw_shm_with_icons(
                 &mut painted,
@@ -3052,6 +3056,7 @@ impl RendererCache {
             self.scroll = scroll;
             self.rebuilds += 1;
         }
+        let _profile_copy = crate::runtime_trace::Span::new("canvas_copy");
         canvas.fill(0);
         let panel_height =
             panel_travel_height(route, height, self.chooser.as_ref(), self.services.as_ref());
