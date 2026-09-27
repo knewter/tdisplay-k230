@@ -1,12 +1,12 @@
 ## 1. Read-only board probes (stage a — no reset, power, or CPU-state write)
 
-- [ ] 1.1 Add the three read-only RMU/PWR register fields (`0x9110100c`
+- [x] 1.1 Add the three read-only RMU/PWR register fields (`0x9110100c`
   `CPU1_RST_CTL`, `0x91103018`/`0x9110301c` PWR CPU1 control/status) to
   `tools/second-core-readiness.sh`, reading only, never clearing the W1C
   reset-done bits, plus a matching host fixture case. Verify with
   `sh tools/test-second-core-readiness.sh` (host script-fixture proof, no
   board).
-- [ ] 1.2 Search the pinned kernel source for any read-only Linux-side path
+- [x] 1.2 Search the pinned kernel source for any read-only Linux-side path
   that reports OpenSBI HSM hart status without a CPU up/down transition
   (for example an SBI debugfs passthrough), and record the result — present,
   absent, or `<!-- UNVERIFIED -->` — against the exact pinned revision.

@@ -274,3 +274,64 @@ controller interfaces and are conditional on configuration for AXI. They are
 not a documented CPU0/CPU1 cache-coherency or atomic-sharing contract. This
 remains a blocker for Linux SMP, while the AMP source shows cache maintenance
 must be part of any separately designed shared-buffer protocol.
+
+## 2026-09-26 pinned stage-1 audit: Linux runs on physical CPU1
+
+The exact stage-1 source pinned by `nix/k230-sdk-src.nix` is Canaan's
+`k230_linux_sdk` revision `1104236db4d1e47873bd68924f912747b820228c`.
+`nix/uboot-k230.nix` copies its U-Boot overlay into the built source and uses
+`k230_canmv_v3_defconfig`. In that overlay,
+`board/canaan/common/sdk_autoconf.h:16` defines
+`CONFIG_LINUX_RUN_CORE_ID 1`; `board/canaan/common/k230_img.c:53` includes
+the header. Its `k230_boot_uboot_uimage()` branch at lines 276-284 calls
+`de_reset_big_core(image_get_load(pUh))` and parks the current core in `wfi`.
+The release function at lines 149-170 writes CPU1's reset-vector register
+`0x91102104`, then performs the documented `CPU1_RST_CTL` sequence at
+`0x9110100c`. `board/canaan/common/k230_spl.c:164-166` selects the U-Boot
+on-big-core path for the same configuration. This is shipped stage-1 source
+for a physical CPU1 release, and the live hart's RVV/256 KiB-L2 observation
+corroborates it. The extra core we want is physical CPU0, the 800 MHz
+non-RVV core.
+
+This does **not** prove the physical CPU0 hart ID. The same U-Boot overlay's
+`arch/riscv/dts/k230.dtsi:46-57` calls the single described, vector-capable
+hart `cpu@0`, gives it `reg = <0>`, and lists 800 MHz. That contradicts the
+physical CPU1 profile and shows the device-tree label/clock cannot be used as
+a physical-core map. The physical `mhartid` values of both CPUs require a
+direct, controlled firmware observation or a Canaan statement. U-Boot's
+`arch/riscv/cpu/k230/cpu.c:125-160` also has a `boot_baremetal` path whose
+CPU0 branch writes `0x91102100` and `0x91101004`; it demonstrates a physical
+CPU0 reset vector/release address but does not set up OpenSBI, interrupts,
+timers, cache sharing, or Linux SMP.
+
+There is stronger, adverse evidence about the hart map: in the [Linux K230
+DTS review](https://lkml.rescloud.iu.edu/2403.3/00159.html), the patch
+author reports that the physical big core's `CSR.MHARTID` is 0, despite its
+physical CPU1 name. A [QEMU K230 board author reporting the physical
+topology](https://www.mail-archive.com/qemu-devel@nongnu.org/msg1188749.html)
+states that **both** physical cores have `mhartid` 0. These are first-hand
+developer reports, not a measurement on this board, but they directly
+undermine the assumed unique-hart-ID prerequisite of conventional SBI HSM
+and Linux SMP. They must be tested on a disposable board experiment before
+any design assigns the extra core `reg = <1>`. If the collision is confirmed,
+the existing SMP release option cannot proceed as written; AMP with a
+separate CPU0 payload and explicit shared-memory protocol is the plausible
+way to execute a workload on the extra physical core.
+
+The pinned Linux tree at revision
+`7d4e1f444f461dbe3833bd99a4640e7b6c2cd529` has an internal SBI HSM
+hart-status call in `arch/riscv/kernel/cpu_ops_sbi.c:52-63`, but its only
+caller is the CPU hotplug `cpu_is_stopped` path at lines 107-119. The
+read-only source search
+`rg -n 'sbi_hsm|hart_status|debugfs' <pinned-src>/arch/riscv` found no
+Linux userspace/debugfs passthrough that queries an unenumerated hart's
+HSM status without CPU up/down. That says the proposed Linux-side query is
+unavailable in this pinned tree; it says nothing about whether firmware can
+answer the ecall.
+
+The pinned K230 Linux DTS still names only one PLIC/ACLINT target. Neither
+the pinned stage-1 overlay nor its OpenSBI generic-platform overlay defines
+a CPU0 PLIC context and ACLINT timer/IPI route for a joint Linux handoff.
+Thus task 3.1 is partly closed (physical CPU0 vector and release source) but
+remains blocked on the physical hart ID and interrupt topology. No reset,
+power, or vector write was performed in this audit.

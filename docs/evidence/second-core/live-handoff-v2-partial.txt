@@ -1,0 +1,11 @@
+second-core-readiness v2
+captured-utc=2026-09-27T03:29:52Z
+source-root=/
+cpu_possible=0
+cpu_present=0
+cpu_online=0
+cpu_offline=
+cpu1_rst_ctl=0x00013000
+Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+PermissionError: [Errno 1] Operation not permitted

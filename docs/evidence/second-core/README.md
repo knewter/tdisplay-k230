@@ -19,6 +19,60 @@ CPU that failed to boot. It does not identify logical hart 0 as physical CPU0.
 | Linux state | `possible`, `present`, `online` all `0`; one CPU brought up | SMP is compiled, but there is no second described CPU to start |
 | ISA/cache/coherency | Current C908 has RVV/Sv39; vendor AMP source explicitly manages cache and reserved memory | CPU1 ISA/cache topology and a CPU-to-CPU coherent atomic-sharing contract remain unproved |
 
+### 2026-09-26 read-only continuation
+
+The coordinator, holding the exclusive console, ran the fixture-tested v2
+collector on the normal board. The [complete output](live-handoff-v2.txt)
+is timestamped `2026-09-27T03:32:04Z`; the [first attempt](live-handoff-v2-partial.txt)
+stopped when Python's read-only map of PWR returned `EPERM`. The collector was
+then changed to emit that error per register and continue. It opens `/dev/mem`
+with `O_RDONLY` and maps only the three named registers with `PROT_READ` when
+`SECOND_CORE_READ_MMIO=1`. Neither run wrote MMIO, changed CPU state, or
+rebooted. The PWR permission boundary was preserved, so those two register
+values are unknown.
+
+The operator's host runner was `/tmp/k230-core-probe-run.py`; it transferred
+the inspected `tools/second-core-readiness.sh` to
+`/run/second-core-readiness.sh` through `tools/console.py /dev/ttyACM0
+--wait=10` and checked its SHA-256 before running this exact board command:
+
+```sh
+env SECOND_CORE_READ_MMIO=1 PATH=/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin:/run/current-system/sw/bin:/run/wrappers/bin sh /run/second-core-readiness.sh
+```
+
+The source script staged by the operator was
+`/tmp/k230-second-core-readiness-v2.sh`. The installed/booted system was
+`/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd`
+(source `433a4226`, kernel
+`/nix/store/9w07l7qyhd3xykq9wfhjlg3qqc3ijqhs-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`).
+
+| New field | Physical observation | Interpretation |
+| --- | --- | --- |
+| CPU1 reset control `0x9110100c` | `0x00013000`, bit 0 clear | Consistent with physical CPU1 released; the pinned stage-1 source describes its release into U-Boot. It is not a standalone physical-to-hart map. |
+| PWR CPU1 control/status `0x91103018`/`0x9110301c` | Both `<unavailable:EPERM>` | No power-state conclusion from these reads. |
+| Linux CPU ISA/cache | `rv64imafdcv...`, L2 `256K`; CPU masks still all `0` | Corroborates the physical big-core handoff, with one Linux CPU. |
+
+The pinned stage-1 overlay at `k230_linux_sdk` revision
+`1104236db4d1e47873bd68924f912747b820228c` resolves the U-Boot prompt's
+physical owner: `sdk_autoconf.h` sets `CONFIG_LINUX_RUN_CORE_ID 1`,
+`k230_img.c:276-285` releases physical CPU1 into U-Boot and parks physical
+CPU0 in `wfi`. This source finding, together with the live RVV/256K profile,
+supports Linux running on physical CPU1. It does not make the one Linux
+logical hart ID (`0`) a unique identifier across both physical cores. A
+first-hand [K230 Linux DTS review](https://lkml.rescloud.iu.edu/2403.3/00159.html)
+reports the big core's `mhartid` as 0, and a later [K230 board modeling
+discussion](https://www.mail-archive.com/qemu-devel@nongnu.org/msg1188749.html)
+reports both cores as 0. Those reports have not been tested on this board.
+They strengthen the stop condition against adding a guessed `cpu@1` node.
+
+Host checks on 2026-09-26: `sh tools/test-second-core-readiness.sh` passed
+both populated and denied-mapping fixtures; `python3 -m unittest discover -s
+tests -p test_ums_target.py` passed 16 tests, including refusal of a wrong
+sector count. The known UMS card in `docs/uboot-ums.md` has `249872384`
+sectors, but that number was not remeasured in this session, so a live UMS
+fallback check remains open. These host results do not complete the PWR
+read, recovery rehearsal, or second-core release gates.
+
 **Decision:** retain the working single-hart image. Do not add a guessed DT CPU
 node or release/reset a core. The [source investigation](../../research/second-core-feasibility.md)
 identifies the vendor AMP reset-vector sequence but does not establish Linux SMP

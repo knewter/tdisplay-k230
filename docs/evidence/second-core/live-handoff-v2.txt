@@ -1,0 +1,44 @@
+second-core-readiness v2
+captured-utc=2026-09-27T03:32:04Z
+source-root=/
+cpu_possible=0
+cpu_present=0
+cpu_online=0
+cpu_offline=
+cpu1_rst_ctl=0x00013000
+cpu1_pwr_ctl=<unavailable:EPERM>
+cpu1_pwr_status=<unavailable:EPERM>
+cpu-node=cpu@0
+cpu@0.reg=00:00:00:00
+
+cpu@0.status=<unreadable>
+cpu@0.isa=rv64imafdcv_zba_zbb_zbc_zbs_zicbom_zicbop_zicboz_svpbmt
+plic_interrupts_extended=00:00:00:03:00:00:00:0b:00:00:00:03:00:00:00:09
+
+timer_interrupts_extended=00:00:00:03:00:00:00:03:00:00:00:03:00:00:00:07
+
+cpuinfo:
+processor	: 0
+hart		: 0
+isa		: rv64imafdcv_zicbom_zicboz_zicntr_zicsr_zifencei_zihpm_zba_zbb_zbs_svpbmt
+mmu		: sv39
+uarch		: thead,c908
+mvendorid	: 0x5b7
+marchid		: 0x8000000009140d00
+mimpid		: 0x50000
+cache-node=index0
+index0.level=1
+index0.type=Instruction
+index0.size=32K
+cache-node=index1
+index1.level=1
+index1.type=Data
+index1.size=32K
+cache-node=index2
+index2.level=2
+index2.type=Unified
+index2.size=256K
+sbi-and-smp-log:
+[    0.000000] SBI HSM extension detected
+[    0.015647] smp: Bringing up secondary CPUs ...
+[    0.015690] smp: Brought up 1 node, 1 CPU
