@@ -1,6 +1,8 @@
 # Active-video brightness: narrow HS transport trial
 
-2026-09-26. **UNVERIFIED on the RM69A10. Host tests only for this candidate.**
+2026-09-26. Initial host-tested hypothesis; the subsequent
+[physical trial](../live-hs/README.md) now demonstrates live brightness,
+Settings backend controls and nondefault brightness retention across DPMS.
 
 The coordinator reports distinct brightness levels only after DPMS cycles
 with source `926c7a61`; live-video writes still do not visibly change them.
@@ -48,4 +50,6 @@ against the previous realized source
 `/nix/store/kmf20m05cfqraigziwid8b0hsm0fyvjz-linux-xuantie-k230-src` fails the
 new video-brightness HS assertion, as expected.
 
-Kernel cross-build, deployment and physical acceptance remain outstanding.
+The combined system cross-build passed and the candidate booted on the board.
+The linked physical record identifies the exact system/kernel and camera
+results. Persistent installation is a separate gate.

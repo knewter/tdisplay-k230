@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "evidence_class": "physical-board-camera-and-serial",
+  "source": "d76e126f76de1164f07cef09feabb456ecace149",
+  "system": "/nix/store/g27v3arkgwrqsk3ja6589fyjq5wnk72i-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/9w07l7qyhd3xykq9wfhjlg3qqc3ijqhs-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+  "boot_manifest": {
+    "target": "/nix/store/g27v3arkgwrqsk3ja6589fyjq5wnk72i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "previous": "/nix/store/l9bla6rxrr13pq2pfzbqk3094d4wx1s5-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "source": "d76e126f76de1164f07cef09feabb456ecace149",
+    "sha256": {
+      "Image": "65fdd3073208c234e71b13cb2972ca56f4260688fed0c8d17296972da59c5797",
+      "initrd.uimg": "b087212b7882be991e2b4f0b1e9e5c51ad3633cf61596f033cf23645766da4b6",
+      "k230-tdisplay.dtb": "df59bfd086bffd111bf97120b5b932260e5d9c8f27c8e944b959711c8f90b45b",
+      "bootargs.txt": "bd69369e503df983e6bc135b21b9a65cf3fcf096b3e4d68a9b046e77baf9aba3"
+    },
+    "bytes": {
+      "Image": 60428288,
+      "initrd.uimg": 27313841,
+      "k230-tdisplay.dtb": 71743,
+      "bootargs.txt": 211
+    },
+    "kernel_extent": 61046784,
+    "initrd_payload_matches_system": true,
+    "uimage_crc_valid": true,
+    "closure_delta_paths": 8,
+    "nar_bytes": 113069728
+  },
+  "camera": {
+    "size": [
+      1280,
+      720
+    ],
+    "format": "mjpeg",
+    "fps": 30,
+    "discard_first_frames": 45,
+    "exposure_auto": 1,
+    "exposure_absolute": 97,
+    "gain": 170,
+    "white_balance_automatic": 0,
+    "white_balance_temperature": 3588,
+    "focus_automatic_continuous": 0,
+    "focus_absolute": 30,
+    "roi": [
+      500,
+      350,
+      800,
+      425
+    ]
+  },
+  "live_writes": [
+    {
+      "level": 26,
+      "shell_user_write": true,
+      "camera": "26.jpg",
+      "timestamp": 1790473034.135651
+    },
+    {
+      "level": 128,
+      "shell_user_write": true,
+      "camera": "128.jpg",
+      "timestamp": 1790473040.1514046
+    },
+    {
+      "level": 255,
+      "shell_user_write": true,
+      "camera": "255.jpg",
+      "timestamp": 1790473046.1674955
+    },
+    {
+      "level": 128,
+      "shell_user_write": true,
+      "camera": "128-repeat.jpg",
+      "timestamp": 1790473052.184007
+    }
+  ],
+  "settings_backend": [
+    {
+      "percent": 10,
+      "reply": {
+        "state": "applied",
+        "requested": 10,
+        "control": {
+          "state": "writable",
+          "value": 10,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790473137.0810392
+    },
+    {
+      "percent": 50,
+      "reply": {
+        "state": "applied",
+        "requested": 50,
+        "control": {
+          "state": "writable",
+          "value": 50,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790473143.0970533
+    },
+    {
+      "percent": 100,
+      "reply": {
+        "state": "applied",
+        "requested": 100,
+        "control": {
+          "state": "writable",
+          "value": 100,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790473149.1136508
+    }
+  ],
+  "frames": [
+    {
+      "name": "26",
+      "raw_sha256": "7b122130f4820a188a7e0f2a56682f3970ad3579e53b3dfd390ba87914b8fc9b",
+      "mean_grayscale": 26.69
+    },
+    {
+      "name": "128",
+      "raw_sha256": "9bd353d07087783f4df2b106dc2440cc1efd39b739c1228c379d6d240667f6f8",
+      "mean_grayscale": 91.56
+    },
+    {
+      "name": "255",
+      "raw_sha256": "a02825892f7641cb5b2c9fc18b8a90e1e0029608dfe731de869f328cb8b02f18",
+      "mean_grayscale": 172.36
+    },
+    {
+      "name": "128-repeat",
+      "raw_sha256": "3426874bb95c0f9bb12edc3ab05cc1b2a7154c32cf9b5f3003812680ecdd6ee8",
+      "mean_grayscale": 92.12
+    },
+    {
+      "name": "dpms-off",
+      "raw_sha256": "333cf2074faf66dd0e7ac026e6d305abaff7982574622dededfe4050c7a1e6d1",
+      "mean_grayscale": 24.15
+    },
+    {
+      "name": "dpms-on",
+      "raw_sha256": "0b8b19786fa0c262bb27c45f89fc96a278827b4abc39306545a6de49a4422c98",
+      "mean_grayscale": 91.5
+    },
+    {
+      "name": "settings-10",
+      "raw_sha256": "ea05f56cc9547193341aa3dd8196c5ebeb5220fee23e779f7602762995e87a79",
+      "mean_grayscale": 27.04
+    },
+    {
+      "name": "settings-50",
+      "raw_sha256": "a567444e621bdbb5e849b5f5504b0742da3b0205735a63eab844a16356e614e3",
+      "mean_grayscale": 91.92
+    },
+    {
+      "name": "settings-100",
+      "raw_sha256": "adc8ff9a842b98cc8c8f57d36231f3553a2882ec872dd8f523b4aeaf5457a009",
+      "mean_grayscale": 172.61
+    }
+  ],
+  "result": {
+    "live_levels_distinct": true,
+    "power_recovery": true,
+    "shell_settings_backend": true,
+    "settings_touch_ui": "UNVERIFIED",
+    "persistent_install": false
+  }
+}

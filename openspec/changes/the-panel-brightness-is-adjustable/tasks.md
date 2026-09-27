@@ -97,10 +97,13 @@
       delivery against the pinned driver and mainline DesignWare path.
       Run the focused transport fixtures and the same kernel build;
       preserve the stage-1 handoff and bounded failure paths.
-- [ ] 6.3 Boot the candidate once, verify display off/on recovery by camera,
+- [x] 6.3 Boot the candidate once, verify display off/on recovery by camera,
       and demonstrate three distinct brightness levels with fixed camera
       exposure. Record exact kernel/system identities and commands under
       `docs/evidence/backlight/`. Sysfs readback alone does not pass.
+      Physical proof: `docs/evidence/backlight/live-hs/README.md`, source
+      `d76e126f`, live raw 26/128/255 and DPMS recovery at 128 with fixed
+      exposure; shell-user Settings commands also visibly apply.
 - [ ] 6.4 Verify shell-user brightness controls and retention of a chosen
       nondefault brightness across DPMS. Install persistently only after
       the candidate checks, then repeat boot/service identity checks.

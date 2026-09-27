@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8 docs/evidence/backlight/live-hs/live-26-128-255.jpg
+DATA d05da3773efa0683dbebc6b3f176a8043af7b29cd08288fe823b4ce8f4fca196 docs/evidence/backlight/live-hs/off-on-128.jpg
+DATA 2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208 docs/evidence/backlight/live-hs/settings-10-50-100.jpg
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
@@ -2055,3 +2058,14 @@ Reviewed, cropped camera comparisons; commands and limits in
 | `docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg` | 19833 | DATA | `fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe` |
 | `docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg` | 23388 | DATA | `d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92` |
 | `docs/evidence/backlight/runtime-recovery/off-on-128.jpg` | 14111 | DATA | `53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61` |
+
+### Live HS brightness camera proof
+
+Reviewed camera crops of the physical panel, with locked exposure; commands,
+source and measurement limits: `docs/evidence/backlight/live-hs/README.md`.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/backlight/live-hs/live-26-128-255.jpg` | 21807 | DATA | `6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8` |
+| `docs/evidence/backlight/live-hs/off-on-128.jpg` | 15677 | DATA | `d05da3773efa0683dbebc6b3f176a8043af7b29cd08288fe823b4ce8f4fca196` |
+| `docs/evidence/backlight/live-hs/settings-10-50-100.jpg` | 21907 | DATA | `2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208` |
