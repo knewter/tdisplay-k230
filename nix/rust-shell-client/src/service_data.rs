@@ -308,6 +308,15 @@ pub enum ServiceRequest {
     RefreshSettings,
     RefreshNotifications,
     Brightness(u8),
+    /// A throttled, fire-and-forget scrub write from a live slider drag
+    /// (task: "brightness should be a slider"). Unlike `Brightness`,
+    /// which shells out to `k230-settings` for an authoritative read-back
+    /// and UI feedback, this writes the backlight sysfs attribute
+    /// directly from this process -- cheap enough to send ~20-30 times a
+    /// second while dragging without spawning a process per write. The
+    /// caller always follows a drag's release with an ordinary
+    /// `Brightness` request for the real, verified outcome.
+    BrightnessLive(u8),
     KeyboardToggle,
     PowerRequest(PowerAction),
     PowerConfirm(String),
@@ -452,6 +461,28 @@ fn execute(
             )?)
             .map(ServiceResponse::Action)
         }
+        ServiceRequest::BrightnessLive(percent) => {
+            if *percent > 100 {
+                return Err("invalid brightness request".into());
+            }
+            // Real sysfs root in production; never overridden for tests,
+            // which call `write_backlight_live` directly against a
+            // fixture root instead of routing through `execute`.
+            write_backlight_live(Path::new("/sys"), *percent).map(|()| {
+                ServiceResponse::Action(ActionOutcome {
+                    state: "applied".into(),
+                    error: None,
+                    token: None,
+                    label: None,
+                    power_action: None,
+                    expires_in_seconds: None,
+                    requested_percent: Some(*percent),
+                    brightness: None,
+                    retry: false,
+                    remaining: None,
+                })
+            })
+        }
         ServiceRequest::KeyboardToggle => {
             parse_action(&settings_command(settings, &["keyboard-toggle"])?)
                 .map(ServiceResponse::Action)
@@ -578,6 +609,41 @@ fn parse_action(bytes: &[u8]) -> Result<ActionOutcome, String> {
         retry: data.get("retry").and_then(Value::as_bool).unwrap_or(false),
         remaining,
     })
+}
+
+/// Mirrors `tools/device_settings.py`'s own `backlight()` lookup (exactly
+/// one backlight device, a valid `max_brightness`) but writes the raw
+/// `brightness` attribute directly from this process instead of spawning
+/// `k230-settings` -- the fast path a live slider drag needs so ~20-30
+/// writes/sec never pile up a subprocess per write. `root` is the sysfs
+/// mount point ("/sys" in production; a fixture directory in tests).
+/// Rounds to the nearest raw value, matching the Python backend's own
+/// `round(percent * maximum / 100)` closely enough that a live drag and
+/// the authoritative release request never visibly disagree.
+pub fn write_backlight_live(root: &Path, percent: u8) -> Result<(), String> {
+    if percent > 100 {
+        return Err("invalid brightness request".into());
+    }
+    let backlight_class = root.join("class/backlight");
+    let mut entries: Vec<PathBuf> = fs::read_dir(&backlight_class)
+        .map_err(|_| "backlight class unavailable")?
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .collect();
+    if entries.len() != 1 {
+        return Err("no unique panel backlight".into());
+    }
+    let device = entries.remove(0);
+    let maximum: u64 = fs::read_to_string(device.join("max_brightness"))
+        .map_err(|_| "max_brightness unavailable")?
+        .trim()
+        .parse()
+        .map_err(|_| "invalid max_brightness")?;
+    if maximum == 0 {
+        return Err("invalid brightness range".into());
+    }
+    let raw = (u64::from(percent) * maximum + 50) / 100;
+    fs::write(device.join("brightness"), raw.to_string())
+        .map_err(|_| "brightness write failed".into())
 }
 
 fn settings_command(command: &Path, args: &[&str]) -> Result<Vec<u8>, String> {

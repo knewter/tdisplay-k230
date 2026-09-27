@@ -3,10 +3,13 @@
 
 use crate::{
     navigation::{list_top, GRID_BOTTOM_INSET},
-    render::{settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H},
+    render::{
+        settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H,
+        SETTINGS_ROW_H,
+    },
     service_data::{
-        ActionOutcome, ControlState, ControlValue, NotificationSnapshot, PowerAction, Priority,
-        ServiceRequest, SettingsSnapshot,
+        ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
+        SettingsSnapshot,
     },
     wifi_ui::WifiPublic,
     Route,
@@ -84,8 +87,20 @@ pub enum PanelIntent {
     ScrollNotifications(f64),
 }
 
-pub const NOTIFICATION_TOP: f64 = 266.0;
+/// Room for the shared brightness slider (task: "brightness should be a
+/// slider" -- Android-style, at the top of the shade, same as the
+/// Settings row's own) pushed everything below it down by 76px from the
+/// old `186.0`/`266.0` (`SHADE_SLIDER_TOP` + `SHADE_SLIDER_H` + a 16px
+/// gap, starting clear of the "Dismiss all" tap zone above it) -- see the
+/// Shade paint arm in `render.rs` for the shifted preview-card literals
+/// this cascades to.
+pub const NOTIFICATION_TOP: f64 = 342.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
+/// The Shade's own slider band -- starts below the "Dismiss all" tap
+/// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
+/// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
+pub const SHADE_SLIDER_TOP: f64 = 190.0;
+pub const SHADE_SLIDER_H: f64 = 56.0;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
@@ -196,11 +211,42 @@ pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
 /// notification list while it can still scroll further up: there the drag
 /// keeps scrolling the list, as it does today.
 pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
+    if slider_band(Route::Shade, y, view) {
+        // Owned entirely by the brightness slider (task: "a horizontal
+        // drag on the slider must not start a close drag") -- regardless
+        // of which way the touch actually moves, matching `Carousel`'s
+        // own "owns whichever gesture starts inside its band" rule.
+        return false;
+    }
     if notification_index(y, height, view).is_none() {
         return true;
     }
     let count = view.notifications.as_ref().map_or(0, |items| items.events.len());
     view.notification_scroll >= notification_max_scroll(count, height) - 0.5
+}
+
+/// Which routes' touches at `y` land on the shared brightness slider (the
+/// Settings row, or the Shade's own header band): a touch starting here
+/// belongs entirely to the slider for the rest of the gesture -- a
+/// horizontal drag sets the value, tap-to-jump included -- and must never
+/// be promoted into a close drag or (on Shade) a notification scroll/
+/// swipe, no matter which way it later moves. Gated on the control
+/// actually being writable: when brightness is unavailable, no slider is
+/// drawn there at all (`render.rs`), so the band must not silently steal
+/// gestures from whatever plain text sits in its place instead.
+pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
+    let writable = view
+        .settings
+        .as_ref()
+        .is_some_and(|settings| settings.brightness.state == ControlState::Writable);
+    if !writable {
+        return false;
+    }
+    match route {
+        Route::Settings => (settings_row_y(1)..settings_row_y(1) + SETTINGS_ROW_H).contains(&y),
+        Route::Shade => (SHADE_SLIDER_TOP..SHADE_SLIDER_TOP + SHADE_SLIDER_H).contains(&y),
+        _ => false,
+    }
 }
 
 /// A tap (no drag past the tap slop) that starts and ends on the dim
@@ -638,20 +684,13 @@ pub fn panel_intent(
             if (settings_row_y(0)..settings_row_y(0) + 110.0).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
-            if (settings_row_y(1)..settings_row_y(1) + 94.0).contains(&end.1)
-                && end.0 > w - 210.0
-                && settings.brightness.state == ControlState::Writable
-            {
-                let ControlValue::Percent(value) = settings.brightness.value.as_ref()? else {
-                    return None;
-                };
-                let next = if end.0 < w - 105.0 {
-                    value.saturating_sub(10)
-                } else {
-                    value.saturating_add(10).min(100)
-                };
-                return Some(PanelIntent::Request(ServiceRequest::Brightness(next)));
-            }
+            // Brightness (row 1) is no longer a tap-classified stepper --
+            // the slider band (`slider_band`) owns that row's touches
+            // entirely, armed/finalized directly in `main.rs`'s
+            // down/motion/up handlers rather than through this release-
+            // only classification. A tap landing there without ever
+            // arming a drag (brightness unavailable, say) simply falls
+            // through to `None` below, same as any other dead zone.
             if (settings_row_y(2)..settings_row_y(2) + 110.0).contains(&end.1)
                 && settings.keyboard.state == ControlState::Action
             {
@@ -680,7 +719,7 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service_data::{Control, NotificationEvent, Priority};
+    use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
 
     #[test]
     fn close_drag_progress_is_one_at_start_and_zero_at_full_travel() {
@@ -937,7 +976,7 @@ mod tests {
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
         assert!(shade_panel_close_zone(60.0, 1232, &empty));
-        assert!(shade_panel_close_zone(300.0, 1232, &empty));
+        assert!(shade_panel_close_zone(376.0, 1232, &empty));
         // One notification: the list cannot scroll, so its row closes too.
         let one = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -947,7 +986,7 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(shade_panel_close_zone(300.0, 1232, &one));
+        assert!(shade_panel_close_zone(376.0, 1232, &one));
         // A long list that can still scroll keeps the drag as a scroll...
         let mut long = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -957,18 +996,100 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(!shade_panel_close_zone(300.0, 1232, &long));
+        assert!(!shade_panel_close_zone(376.0, 1232, &long));
         // ...until it is scrolled to its end.
         long.notification_scroll = notification_max_scroll(8, 1232);
-        assert!(shade_panel_close_zone(300.0, 1232, &long));
+        assert!(shade_panel_close_zone(376.0, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
         assert!(shade_panel_close_zone(60.0, 1232, &long));
     }
 
+    fn writable_brightness_view() -> ServiceView {
+        ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: Control {
+                    state: ControlState::ReadOnly,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                brightness: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
+                    label: "Brightness".into(),
+                    detail: None,
+                    action: None,
+                },
+                keyboard: Control {
+                    state: ControlState::Action,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                motion: Control {
+                    state: ControlState::ReadOnly,
+                    value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+            }),
+            ..ServiceView::default()
+        }
+    }
+
+    /// Gesture disambiguation (task: "a horizontal drag on the slider
+    /// must not start a close drag, and a vertical drag elsewhere still
+    /// closes"). `main.rs` arms the slider drag itself at touch-down
+    /// using `slider_band`, entirely independent of which way the touch
+    /// later moves -- so the real guarantee to test here is that
+    /// `shade_panel_close_zone` (the close-drag *candidacy* gate sampled
+    /// at that same touch-down) excludes the slider's own band but
+    /// leaves every other band's existing behavior untouched.
+    #[test]
+    fn slider_band_owns_its_row_and_is_excluded_from_the_close_drag_candidacy() {
+        let view = writable_brightness_view();
+        // Settings' own brightness row.
+        assert!(slider_band(
+            Route::Settings,
+            settings_row_y(1) + 10.0,
+            &view
+        ));
+        assert!(!slider_band(
+            Route::Settings,
+            settings_row_y(2) + 10.0,
+            &view
+        ));
+        // The Shade's header band -- excluded from `shade_panel_close_
+        // zone` (a drag starting here, horizontal or not, never becomes
+        // a close drag)...
+        assert!(slider_band(Route::Shade, SHADE_SLIDER_TOP + 10.0, &view));
+        assert!(!shade_panel_close_zone(SHADE_SLIDER_TOP + 10.0, 1232, &view));
+        // ...while a drag starting just below it, on the ordinary
+        // backdrop/list, is untouched and still closes exactly as
+        // before.
+        let below = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 40.0;
+        assert!(!slider_band(Route::Shade, below, &view));
+        assert!(shade_panel_close_zone(below, 1232, &view));
+        assert!(close_drag_engaged(Route::Shade, 4.0, -CLOSE_DRAG_SLOP));
+        // When brightness is not writable, no slider is drawn there
+        // (`render.rs`), so the band must not silently steal gestures
+        // from whatever plain text sits in its place instead.
+        let unavailable = ServiceView::default();
+        assert!(!slider_band(Route::Shade, SHADE_SLIDER_TOP + 10.0, &unavailable));
+        assert!(shade_panel_close_zone(
+            SHADE_SLIDER_TOP + 10.0,
+            1232,
+            &unavailable
+        ));
+    }
+
     #[test]
     fn shade_and_settings_hits_are_bounded_and_cancel_scroll_taps() {
-        let mut view = ServiceView {
+        let view = ServiceView {
             notifications: Some(NotificationSnapshot {
                 count: 1,
                 events: vec![NotificationEvent {
@@ -990,8 +1111,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 300.0),
-                (400.0, 305.0),
+                (300.0, 376.0),
+                (400.0, 381.0),
                 568,
                 1232,
                 &view
@@ -999,15 +1120,15 @@ mod tests {
             None // release alone cannot dismiss without a tracked drag
         );
         assert_eq!(
-            notification_swipe_start((300.0, 300.0), (400.0, 305.0), 568, 1232, &view)
+            notification_swipe_start((300.0, 376.0), (400.0, 381.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 300.0),
-                (300.0, 390.0),
+                (300.0, 376.0),
+                (300.0, 466.0),
                 568,
                 1232,
                 &view
@@ -1017,8 +1138,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 300.0),
-                (300.0, 300.0),
+                (300.0, 376.0),
+                (300.0, 376.0),
                 568,
                 1232,
                 &view
@@ -1028,96 +1149,6 @@ mod tests {
         assert_eq!(
             panel_intent(Route::Shade, (510.0, 60.0), (510.0, 60.0), 568, 1232, &view),
             Some(PanelIntent::OpenSettings)
-        );
-        let control = |state, value| Control {
-            state,
-            value,
-            label: "Available".into(),
-            detail: None,
-            action: None,
-        };
-        view.settings = Some(SettingsSnapshot {
-            network: control(ControlState::ReadOnly, None),
-            brightness: control(ControlState::Writable, Some(ControlValue::Percent(55))),
-            keyboard: control(ControlState::Action, None),
-            motion: control(ControlState::ReadOnly, None),
-        });
-        assert_eq!(
-            panel_intent(
-                Route::Settings,
-                (480.0, 365.0),
-                (480.0, 365.0),
-                568,
-                1232,
-                &view
-            ),
-            Some(PanelIntent::Request(ServiceRequest::Brightness(65)))
-        );
-        assert_eq!(
-            panel_intent(
-                Route::Settings,
-                (480.0, 365.0),
-                (480.0, 410.0),
-                568,
-                1232,
-                &view
-            ),
-            None
-        );
-    }
-
-    #[test]
-    fn brightness_stepper_clamps_at_both_ends() {
-        // display/backlight: the stepper now drives a real backlight
-        // device with a real 0..100 sysfs range (nix/kernel.nix,
-        // nix/dts/display-rm69a10-568x1232.dtsi). Previously there was no
-        // backend at all for these clamps to matter against; now a
-        // request that would step past either end must saturate rather
-        // than wrap or overshoot the backing `brightness` attribute.
-        let control = |state, value| Control {
-            state,
-            value,
-            label: "Brightness".into(),
-            detail: None,
-            action: None,
-        };
-        let mut view = ServiceView {
-            settings: Some(SettingsSnapshot {
-                network: control(ControlState::ReadOnly, None),
-                brightness: control(ControlState::Writable, Some(ControlValue::Percent(5))),
-                keyboard: control(ControlState::Action, None),
-                motion: control(ControlState::ReadOnly, None),
-            }),
-            ..ServiceView::default()
-        };
-        // The "down" (-10%) side of the stepper, near the low end:
-        // saturating_sub must clamp at 0, never wrap around u8.
-        assert_eq!(
-            panel_intent(
-                Route::Settings,
-                (400.0, 365.0),
-                (400.0, 365.0),
-                568,
-                1232,
-                &view
-            ),
-            Some(PanelIntent::Request(ServiceRequest::Brightness(0)))
-        );
-
-        view.settings.as_mut().unwrap().brightness =
-            control(ControlState::Writable, Some(ControlValue::Percent(95)));
-        // The "up" (+10%) side, near the high end: must clamp at 100,
-        // never overshoot past the backlight's real max_brightness.
-        assert_eq!(
-            panel_intent(
-                Route::Settings,
-                (480.0, 365.0),
-                (480.0, 365.0),
-                568,
-                1232,
-                &view
-            ),
-            Some(PanelIntent::Request(ServiceRequest::Brightness(100)))
         );
     }
 
@@ -1210,9 +1241,9 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        let start = (300.0, 300.0);
+        let start = (300.0, 376.0);
         assert_eq!(
-            notification_swipe_start(start, (320.0, 305.0), 568, 1232, &view)
+            notification_swipe_start(start, (320.0, 381.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
@@ -1241,12 +1272,12 @@ mod tests {
         );
         assert_eq!(notification_swipe_release(&view, &swipe, 220.0), None);
         assert_eq!(
-            notification_swipe_start(start, (320.0, 350.0), 568, 1232, &view),
+            notification_swipe_start(start, (320.0, 426.0), 568, 1232, &view),
             None
         );
         view.notifications.as_mut().unwrap().events[0].dismissible = false;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 300.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
             None
         );
         assert!(!notification_swipe_valid(&view, &swipe));
@@ -1254,7 +1285,7 @@ mod tests {
         view.notifications.as_mut().unwrap().events[0].dismissible = true;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 300.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
             None
         );
         assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);

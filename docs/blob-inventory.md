@@ -1416,7 +1416,10 @@ DATA 72c95b4f6bb012234a29c2443e4d566e19189271230f5185caa8e17bc606f89a  docs/evid
 DATA 5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20  docs/evidence/home-screen/navigation/home.png
 DATA a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4  docs/evidence/home-screen/navigation/overview.png
 DATA d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c  docs/evidence/home-screen/navigation/restored-terminal.png
-
+DATA 2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec docs/evidence/brightness-slider/settings-after-drag-90pct.png
+DATA 2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c docs/evidence/brightness-slider/settings-mid-drag-54pct.png
+DATA 78aee6eb2761eacfc37a432b3eab110fadc5f72df13869fed7b7f3427c4650d5 docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
+DATA 9aeaf95d27fa4c4a14a83b873b278560d11692c009d204b08f9f58b5d4464564 docs/evidence/brightness-slider/shade-synced-45pct.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2181,3 +2184,17 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/navigation/home.png` | 26108 | DATA | `5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20` |
 | `docs/evidence/home-screen/navigation/overview.png` | 16283 | DATA | `a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4` |
 | `docs/evidence/home-screen/navigation/restored-terminal.png` | 8833 | DATA | `d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c` |
+
+### Brightness slider on the headless compositor
+
+Host QEMU capture: injected touch drags across the Settings and Shade
+brightness sliders, both routed through a real cross-built Rust client and
+patched Sway under `qemu-riscv64-static`. Synthetic settings fixture, no
+board. See `docs/evidence/brightness-slider/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/brightness-slider/settings-mid-drag-54pct.png` | 64405 | DATA | `2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c` |
+| `docs/evidence/brightness-slider/settings-after-drag-90pct.png` | 64617 | DATA | `2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec` |
+| `docs/evidence/brightness-slider/shade-synced-45pct.png` | 61223 | DATA | `9aeaf95d27fa4c4a14a83b873b278560d11692c009d204b08f9f58b5d4464564` |
+| `docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png` | 61062 | DATA | `78aee6eb2761eacfc37a432b3eab110fadc5f72df13869fed7b7f3427c4650d5` |

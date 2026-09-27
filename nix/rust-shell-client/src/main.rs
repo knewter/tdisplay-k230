@@ -14,15 +14,16 @@ use k230_shell_rust::{
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
     render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
-    service_data::{ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
+    service_data::{ControlState, ControlValue, ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
         close_drag_release_target, close_drag_zone, drawer_close_drag_zone, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, Confirmation, NotificationCoast, NotificationSwipeSettle, PanelClose,
-        PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
+        panel_intent, slider_band, Confirmation, NotificationCoast, NotificationSwipeSettle,
+        PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
+    slider,
     splash::{
         fade_alpha, should_auto_dismiss_failed, should_time_out, window_event_matches, Splash,
         SplashStatus, SplashTarget,
@@ -1100,6 +1101,12 @@ struct ShellClient {
     /// sampled only while `panel_close` is tracking.
     panel_close_velocity: f64,
     panel_close_sample: Option<(f64, u32)>,
+    /// Armed at touch-down when the touch lands on the shared brightness
+    /// slider (`service_ui::slider_band`, Settings row or Shade header
+    /// alike) -- owns the rest of that gesture entirely, preempting the
+    /// close drag, notification swipe/scroll and (on Settings) the
+    /// wifi/theme handling that would otherwise see this touch.
+    brightness_drag: Option<slider::Drag>,
     reveal: RevealState,
     input_ready: bool,
     input_region_key: Option<(Route, u32, u32, bool)>,
@@ -1777,16 +1784,38 @@ impl ShellClient {
     }
 
     fn refresh_route(&mut self, route: Route) {
-        let request = match route {
-            Route::Shade => ServiceRequest::RefreshNotifications,
-            Route::Settings => ServiceRequest::RefreshSettings,
-            _ => return,
-        };
-        if let Err(error) = self.services.try_submit(request) {
-            self.service_view.message = Some(error.into());
-            self.renderer.set_services(self.service_view.clone());
-            self.dirty = true;
+        match route {
+            // The Shade now carries the same brightness slider the
+            // Settings row does (task: "brightness should be a slider"),
+            // so opening it needs the real backlight value too -- not
+            // only the notification history this route used to refresh
+            // alone -- so an external change (or the other sheet's own
+            // drag) shows here as well (task: "sync the value").
+            Route::Shade => {
+                self.submit_service(ServiceRequest::RefreshNotifications);
+                self.submit_service(ServiceRequest::RefreshSettings);
+            }
+            Route::Settings => {
+                self.submit_service(ServiceRequest::RefreshSettings);
+            }
+            _ => {}
         }
+    }
+
+    /// Updates the locally-displayed brightness percent immediately, with
+    /// no round trip -- mirrors how every other live drag in this shell
+    /// (carousel position, notification swipe offset) paints from its own
+    /// local state rather than waiting on a service reply mid-gesture.
+    /// The real, verified value always arrives separately once the drag
+    /// releases (`ServiceRequest::Brightness`'s own reply).
+    fn apply_brightness_preview(&mut self, percent: u8) {
+        if let Some(settings) = &mut self.service_view.settings {
+            if settings.brightness.state == ControlState::Writable {
+                settings.brightness.value = Some(ControlValue::Percent(percent));
+            }
+        }
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
     }
 
     fn submit_service(&mut self, request: ServiceRequest) -> bool {
@@ -1800,6 +1829,16 @@ impl ShellClient {
     }
 
     fn service_reply(&mut self, reply: ServiceReply) {
+        if let ServiceRequest::BrightnessLive(_) = reply.request {
+            // Fire-and-forget scrub write: the drag's own optimistic
+            // slider position (`apply_brightness_preview`) is already the
+            // visible truth, and the release that follows always sends
+            // an authoritative `Brightness` request with real feedback.
+            // Swallow this reply so ~20-30/s scrub writes never spam the
+            // toast message or force an extra redraw beyond the one the
+            // drag itself already triggered.
+            return;
+        }
         let dismiss_id = if let ServiceRequest::NotificationDismiss(id) = &reply.request {
             Some(*id)
         } else {
@@ -3239,6 +3278,34 @@ impl TouchHandler for ShellClient {
                                 && shade_panel_close_zone(pos.1, self.height, &self.service_view)));
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
+                    // Brightness slider (task: "brightness should be a
+                    // slider"): a touch landing on the shared slider band
+                    // is armed here and owns the rest of the gesture --
+                    // `panel_close_candidate` above already excludes this
+                    // band (`slider_band`, folded into `shade_panel_
+                    // close_zone`), so this never races the close drag.
+                    // On Settings, `slider_band`'s row-1 range can
+                    // coincide with a Wi-Fi or Theme sub-page's own rows
+                    // (both still Route::Settings) -- only arm on the
+                    // plain capabilities page itself, exactly the same
+                    // gate `panel_intent`'s own Settings arm already
+                    // needs (`theme_view.page == ThemePage::Controls`).
+                    let on_settings_capabilities_page = self.route != Route::Settings
+                        || (self.wifi_view.page == WifiPage::Closed
+                            && self.theme_view.page == ThemePage::Controls);
+                    self.brightness_drag = if on_settings_capabilities_page
+                        && slider_band(self.route, pos.1, &self.service_view)
+                    {
+                        let mut drag = slider::Drag::start(id, f64::from(self.width));
+                        let value = drag.value_at(pos.0);
+                        self.apply_brightness_preview(value);
+                        if drag.should_write(time_ms) {
+                            self.submit_service(ServiceRequest::BrightnessLive(value));
+                        }
+                        Some(drag)
+                    } else {
+                        None
+                    };
                     if self.route == Route::Shade {
                         if let (Some(_), Some(swipe)) = (
                             self.notification_settle,
@@ -3287,6 +3354,7 @@ impl TouchHandler for ShellClient {
                 }
             } else {
                 self.log("touch-second-cancel");
+                self.brightness_drag = None;
                 self.nav.cancel();
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
@@ -3452,6 +3520,19 @@ impl TouchHandler for ShellClient {
                             self.panel_close_sample = None;
                             self.panel_close_velocity = 0.0;
                             self.dirty = true;
+                        } else if matches!(&self.brightness_drag, Some(drag) if drag.matches(start_id))
+                        {
+                            // Release: always sends the authoritative,
+                            // verified `Brightness` request regardless of
+                            // the live-write throttle (task: "always
+                            // write the final value on release").
+                            let drag = self
+                                .brightness_drag
+                                .take()
+                                .expect("checked by this branch's own guard");
+                            let value = drag.value_at(point.0);
+                            self.apply_brightness_preview(value);
+                            self.submit_service(ServiceRequest::Brightness(value));
                         } else if self.route == Route::Settings {
                             if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
@@ -3616,7 +3697,27 @@ impl TouchHandler for ShellClient {
             if self.wifi_view.page == WifiPage::Closed {
                 self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
             }
-            if self.route == Route::Drawer && self.input_ready {
+            if self
+                .brightness_drag
+                .as_ref()
+                .is_some_and(|drag| drag.matches(id))
+            {
+                // Owns this gesture entirely once armed at touch-down
+                // (`slider_band`) -- the visible thumb tracks every touch
+                // sample; only the backlight write itself is throttled
+                // (task: "throttle writes to about 20-30 per second").
+                // Taken and put back (rather than `as_mut()`) so the
+                // update methods below, which need `&mut self` in full,
+                // are never called while still borrowing through it.
+                if let Some(mut drag) = self.brightness_drag.take() {
+                    let value = drag.value_at(pos.0);
+                    self.apply_brightness_preview(value);
+                    if drag.should_write(time_ms) {
+                        self.submit_service(ServiceRequest::BrightnessLive(value));
+                    }
+                    self.brightness_drag = Some(drag);
+                }
+            } else if self.route == Route::Drawer && self.input_ready {
                 // A close drag only ever *takes over* this touch once it
                 // actually engages (`close_drag_engaged`, downward for the
                 // Drawer); until then, every motion sample still reaches
@@ -3878,6 +3979,7 @@ impl TouchHandler for ShellClient {
         self.panel_close_candidate = false;
         self.panel_close_sample = None;
         self.panel_close_velocity = 0.0;
+        self.brightness_drag = None;
         self.notification_coast.stop();
         self.notification_wait = None;
         self.settle_notification(0.0, None);
@@ -4092,6 +4194,7 @@ fn serve() -> Result<(), String> {
         panel_close_candidate: false,
         panel_close_velocity: 0.0,
         panel_close_sample: None,
+        brightness_drag: None,
         reveal: RevealState::default(),
         input_ready: false,
         input_region_key: None,
