@@ -1173,3 +1173,23 @@ qualified candidate was installed with verified backup/profile/boot hashes,
 then normally rebooted: all four shell services active, no failed units, and
 current/booted/profile identities all match `7hhr1fp…`. Task 14.4's
 real-finger acceptance remains open.
+
+## 15. Reuse the profiler across the runtime
+
+- [ ] 15.1 Add bounded, default-off shell/helper spans with shared trace and
+  parent IDs; propagate context through the existing helper socket without
+  changing ordinary requests. Export fixed-name, secret-free events into a
+  Perfetto-compatible timeline. Test nesting, cross-process correlation,
+  malformed records, overflow and clock mismatch with
+  `python3 -m unittest discover -s tests -p 'test_runtime_trace*.py'` and
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`.
+- [ ] 15.2 Extend verified coverage through compositor render/commit/present
+  and scheduling; probe perf/kernel support and capture a bounded CPU stack
+  profile with matching symbols. Produce a CPU flamegraph separately from
+  the span timeline, or document the precise unsupported sampling/unwinding
+  gate. Do not label elapsed spans CPU samples.
+- [ ] 15.3 On the reserved board, capture matching picker runs with tracing
+  disabled/enabled and sampling separately. Publish reviewed timeline,
+  frame-stall report and supported flamegraphs with runtime identities,
+  commands, coverage gaps and observer cost. Use the same tools for at least
+  one other interaction; host tests alone leave this physical gate open.

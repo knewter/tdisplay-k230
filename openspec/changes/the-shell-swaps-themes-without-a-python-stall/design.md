@@ -292,3 +292,23 @@ capture interval. Trace mode is off by default; measure observer overhead.
 A report ranks individual stalls within named swipe phases, excludes idle
 intervals, and shows which spans overlap each stall without treating overlap
 as proof of causation. Screenshots/camera captures run separately from timing.
+
+### Correlated runtime tracing and CPU profiles
+
+The same opt-in recorder will cover shell rendering and theme-helper work,
+using a shared trace ID, process/thread identity, nested span IDs and remote
+parent IDs on the existing helper socket. Fixed event names and numeric data
+exclude theme names, paths, request bodies and credentials. Export uses
+Perfetto-compatible trace events; this is a local diagnostic format, not an
+OTLP collector or a claim of complete system coverage. Missing components,
+dropped events, truncated spans and clock mismatches must remain visible.
+
+CPU flamegraphs require sampled stacks, separately from nested span timelines.
+Probe the running kernel and perf support before selecting a bounded sampling
+command; keep raw stacks private until reviewed, retain build/symbol identities,
+and report unsupported unwinding explicitly. Extend coverage to compositor
+render/commit/presentation and kernel scheduling only with verified hooks and
+clock alignment. Compare tracing disabled/enabled and sampling separately so
+observer cost cannot masquerade as a regression. The picker is the first
+workload; these formats and tooling should also support cards, launch, drawers
+and theme activation without a new profiler for every feature.
