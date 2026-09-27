@@ -1209,7 +1209,7 @@ complete stack qualification remain open. This does not close 15.2/15.3.
 
 ## 16. Apply the selected background and show its result
 
-- [ ] 16.1 Prepare the selected background before activation: the generation
+- [x] 16.1 Prepare the selected background before activation: the generation
   includes the background choice. Preserve the previous selection until
   commit succeeds; report progress, success and failure by the background
   row. Update the current theme identity only after acknowledged activation.

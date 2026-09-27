@@ -434,11 +434,18 @@ impl ThemeView {
                     // already was) genuinely active. Only now does the
                     // background carousel switch to it.
                     self.message = if preview.activated {
+                        if let Some(list) = self.list.as_mut() {
+                            list.active.id = Some(preview.theme.id.clone());
+                            list.active.generation = Some(preview.generation.clone());
+                        }
+                        let applied = if matches!(&reply.request, ThemeRequest::Activate {
+                            background_id: Some(_), ..
+                        }) { "Background applied to Home" } else { "Theme applied" };
                         Some(match preview.app_appearance.as_ref() {
                             Some(app) if app.state != "applied" => {
-                                format!("Theme applied; app reload {}", app.state)
+                                format!("{applied}; app reload {}", app.state)
                             }
-                            _ => "Theme applied".into(),
+                            _ => applied.into(),
                         })
                     } else {
                         None
@@ -519,10 +526,9 @@ impl ThemeView {
     /// Tapping the background carousel's own already-centred slice: same
     /// shape as `tap_theme`, for one of the *active* theme's own
     /// backgrounds (the only kind shown -- see `preview`'s own doc).
-    /// Unlike a theme tap, the target's own generation is already known
-    /// (`preview.generation`, loaded alongside this same list of
-    /// backgrounds) -- so this goes straight to `Activate`, with no
-    /// `Preview` round trip first.
+    /// A generation includes its background choice. Prepare this exact
+    /// selection first; the current preview's generation belongs to the
+    /// previous background and cannot authorize a different one.
     pub fn tap_background(&mut self, index: usize) -> Option<ThemeRequest> {
         let preview = self.preview.as_ref()?;
         let background = preview.backgrounds.get(index)?;
@@ -536,7 +542,7 @@ impl ThemeView {
         self.desired = Some(Desired {
             theme_id: preview.theme.id.clone(),
             background_id: Some(background.id.clone()),
-            generation: Some(preview.generation.clone()),
+            generation: None,
             already_active: false, // a background change always needs a real Activate
         });
         self.error = None;
@@ -895,6 +901,11 @@ mod tests {
         );
         assert_eq!(view.message.as_deref(), Some("Theme applied"));
         assert_eq!(view.advance(), None);
+        assert_eq!(view.list.as_ref().unwrap().active.id.as_deref(), Some(target_id.as_str()));
+        assert_eq!(view.list.as_ref().unwrap().active.generation.as_deref(), Some(id('e').as_str()));
+        // The original theme must now activate again rather than being treated as current.
+        view.tap_theme(0).unwrap();
+        assert!(!view.desired.as_ref().unwrap().already_active);
     }
 
     #[test]
@@ -943,24 +954,38 @@ mod tests {
     }
 
     #[test]
-    fn tap_background_activates_directly_since_the_generation_is_already_known() {
-        // Unlike a theme tap, a background tap always already knows the
-        // active theme's own generation (from `preview.generation`, just
-        // loaded), so it goes straight to `Activate` -- no `Preview` step.
+    fn background_apply_uses_the_selected_background_generation_and_waits_for_commit() {
         let mut view = ThemeView {
             page: ThemePage::List,
             preview: Some(preview_with_an_unselected_still()),
             ..ThemeView::default()
         };
-        let request = view.tap_background(2).expect("index 2 (Dawn) is not yet selected");
-        assert_eq!(
-            request,
-            ThemeRequest::Activate {
-                theme_id: id('a'),
-                expected_generation: id('b'),
-                background_id: Some(id('e')),
-            }
-        );
+        let request = view.tap_background(2).unwrap();
+        assert_eq!(request, ThemeRequest::Preview {
+            theme_id: id('a'), background_id: Some(id('e')),
+        });
+        view.submitted(request.clone(), 1);
+        assert_eq!(view.applying_background_index(), Some(2));
+        let mut candidate = preview_with_an_unselected_still();
+        candidate.generation = id('f'); // Background choice changes the generation.
+        candidate.backgrounds[0].selected = false;
+        candidate.backgrounds[2].selected = true;
+        view.accept(ThemeReply { id: 1, request,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate.clone()))) });
+        assert!(view.preview.as_ref().unwrap().backgrounds[0].selected);
+        assert!(view.message.is_none());
+        let activate = view.advance().unwrap();
+        assert_eq!(activate, ThemeRequest::Activate {
+            theme_id: id('a'), expected_generation: id('f'), background_id: Some(id('e')),
+        });
+        view.submitted(activate.clone(), 2);
+        candidate.activated = true;
+        view.accept(ThemeReply { id: 2, request: activate,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate))) });
+        assert!(view.preview.as_ref().unwrap().backgrounds[2].selected);
+        assert_eq!(view.message.as_deref(), Some("Background applied to Home"));
+        assert_eq!(view.applying_background_index(), None);
+        assert!(view.advance().is_none());
     }
 
     #[test]
@@ -1087,7 +1112,16 @@ mod tests {
             result: Ok(ThemeResponse::Preview(Box::new(preview_with_an_unselected_still()))),
         }));
 
-        let request = view.tap_background(2).expect("Dawn is not selected");
+        let prepare = view.tap_background(2).expect("Dawn is not selected");
+        view.submitted(prepare.clone(), 2);
+        let mut candidate = preview_with_an_unselected_still();
+        candidate.generation = id('f');
+        candidate.backgrounds[0].selected = false;
+        candidate.backgrounds[2].selected = true;
+        view.accept(ThemeReply { id: 2, request: prepare,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate))) });
+        let request = view.advance().unwrap();
+        assert!(matches!(request, ThemeRequest::Activate { .. }));
         view.submitted(request.clone(), 3);
         assert!(view.accept(ThemeReply {
             id: 3,
@@ -1142,7 +1176,7 @@ mod tests {
         }));
         assert_eq!(
             view.message.as_deref(),
-            Some("Theme applied; app reload failed")
+            Some("Background applied to Home; app reload failed")
         );
     }
 

@@ -56,10 +56,11 @@ if args == ["list"]:
               "active": {"id": themes[0]["id"], "generation": generation}}
 else:
     assert args[0] in ("preview", "activate") and args[1] in {row["id"] for row in themes}
-    if args[0] == "activate":
-        assert args[args.index("--expected-generation") + 1] == generation
     selected = args[args.index("--background") + 1] if "--background" in args else "c" * 24
     assert selected in ("c" * 24, "d" * 24)
+    generation = ("e" if selected == "d" * 24 else "b") * 24
+    if args[0] == "activate":
+        assert args[args.index("--expected-generation") + 1] == generation
     directory = Path(os.environ["K230_TEST_THEME_GENERATION"]) / generation
     answer = {"schema": 1, "theme": next(row for row in themes if row["id"] == args[1]),
               "generation": generation, "appearance_path": str(directory / "appearance.json"),
@@ -184,6 +185,9 @@ def main():
         generation_dir.mkdir(parents=True)
         Image.new("RGB", (64, 128), (32, 96, 214)).save(generation_dir / "one.png")
         Image.new("RGB", (64, 128), (214, 176, 32)).save(generation_dir / "two.png")
+        import shutil
+        shutil.copytree(root / "generations" / ("b" * 24),
+                        root / "generations" / ("e" * 24))
         # Rapid-tap coalescing (task: tap-to-apply, 2026-09-25): theme 8's
         # own "preview" call is made to sleep before replying (see
         # THEME_COMMAND above), giving a reliable window to tap a
@@ -414,12 +418,10 @@ def main():
             assert len(background_activation) == 1
             call = background_activation[0]
             assert call[call.index("--background") + 1] == "d" * 24
-            # A background tap already knows its own theme's generation (it
-            # was loaded right alongside the backgrounds themselves), so it
-            # applies straight through `Activate` -- no `Preview` round trip
-            # first, unlike a theme tap targeting a never-loaded generation.
-            assert not any(row[0] == "preview" and "--background" in row for row in calls()), \
-                "a background tap-apply must never need its own Preview step"
+            assert call[call.index("--expected-generation") + 1] == "e" * 24
+            assert any(row[0] == "preview" and "--background" in row
+                       and row[row.index("--background") + 1] == "d" * 24 for row in calls()), \
+                "background selection must prepare its own generation before activation"
 
             # --- Rapid taps across themes coalesce onto the last one: no
             # queue of stale activations, and an in-flight apply (theme 8,
