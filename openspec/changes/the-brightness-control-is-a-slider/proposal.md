@@ -71,7 +71,8 @@ service worker's single request queue.
 
 ### Modified Capabilities
 
-- `display/backlight`: replaces the "Settings brightness stepper drives
-  the real device" requirement with a slider-driven one, and adds a new
-  requirement for the shade's own slider, the live-write throttle, and
-  sync-on-open.
+- `display/backlight`: retires the "Settings brightness stepper drives
+  the real device" requirement (see its own Reason/Migration) and adds
+  four requirements in its place — the slider control itself, the
+  shade's own slider without disturbing its close gesture, the throttled
+  direct-sysfs live-write path, and reflecting the real value on open.

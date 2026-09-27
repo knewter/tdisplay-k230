@@ -1,9 +1,21 @@
-## RENAMED Requirements
+## REMOVED Requirements
 
-- FROM: `### Requirement: The Settings brightness stepper drives the real device`
-- TO: `### Requirement: The brightness control is a slider, not a stepper`
+### Requirement: The Settings brightness stepper drives the real device
 
-## MODIFIED Requirements
+**Reason**: Replaced by a full-width Material-3-style slider, shared by
+Settings and the shade, per `docs/design/shell-polish-review-2026-09.md`
+finding #8 ("Brightness is a stepper everywhere, not a slider") and
+finding #1 (existing touch targets too small at 56px). The stepper's
+discrete `−`/`+` release-only tap classification is removed from
+`panel_intent` entirely; a touch on that row is now armed and tracked
+continuously as a drag instead.
+
+**Migration**: See "The brightness control is a slider, not a stepper"
+below, which the Settings screen now satisfies in its place. No sysfs or
+device-side change: the same `/sys/class/backlight/*/brightness` path and
+`tools/device_settings.py` backend still apply the committed value.
+
+## ADDED Requirements
 
 ### Requirement: The brightness control is a slider, not a stepper
 
@@ -54,8 +66,6 @@ and the Shade's own header band on the same
 
 - **WHEN** a person drags the slider to its very left (lowest) end
 - **THEN** the requested brightness is clamped to 3%, never 0%
-
-## ADDED Requirements
 
 ### Requirement: The shade carries the same slider, without disturbing its close gesture
 

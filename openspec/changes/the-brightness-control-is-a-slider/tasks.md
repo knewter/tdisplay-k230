@@ -29,10 +29,14 @@
 - [x] 2.2 Arm/track/finalize the slider drag in `main.rs`'s
       `down`/`motion`/`up`/`cancel` touch handlers, as a new sibling
       branch ahead of the existing route-specific dispatch (never editing
-      the theme/wifi dispatch those already own). Proven:
-      `cargo test --bin k230-shell-rust` (19 passed) and
-      `cargo clippy --all-targets` report no warning attributable to
-      these files.
+      the theme/wifi dispatch those already own). Gated arming to the
+      plain Settings capabilities page specifically (`wifi_view.page ==
+      WifiPage::Closed && theme_view.page == ThemePage::Controls`) after
+      noticing `slider_band`'s row-1 Y range can otherwise coincide with
+      a Wi-Fi or Theme sub-page's own rows, since both still report
+      `Route::Settings`. Proven: `cargo test --bin k230-shell-rust` (19
+      passed) and `cargo clippy --all-targets` report no warning
+      attributable to these files.
 
 ## 3. Live writes without a subprocess
 
@@ -78,12 +82,28 @@
 
 ## 5. QEMU host evidence
 
-- [ ] 5.1 If a Rust-client QEMU capture harness exists
-      (`tests/*qemu*.py`), take host screenshots of Settings and the
-      Shade showing the slider, under `docs/evidence/brightness-slider/`
-      with blob-inventory rows, and confirm `python3 tools/blob-scan.py`
-      exits 0. Left open by this worktree; see the report for what was
-      found.
+- [x] 5.1 `tests/rust_service_surface_qemu.py` exists and already covers
+      this surface, so used its own cross-built `handheld-shell-rust`
+      (riscv64) and the `card-shell`-patched `sway-unwrapped` under
+      `qemu-riscv64-static`, driven the same way (Sway's headless
+      `card_shell test-touch` fixture), to capture a finger-drag across
+      the Settings slider (mid-drag 54%, released 90%) and the Shade's
+      own slider (opens synced at the fixture's 45%, drags to 90%
+      without closing the shade). Screenshots and their blob-inventory
+      rows are committed under `docs/evidence/brightness-slider/`
+      (`README.md` there has the exact commands and store paths).
+      `python3 tools/blob-scan.py` exits 0. The existing harness's own
+      `--surface`-flag `route()` helper could not reliably complete
+      inside the client's hardcoded 500ms deadline on this heavily
+      loaded shared host (`uptime` showed 40+ load average across 32
+      cores); the capture instead wrote directly to the same Unix
+      socket that flag uses, reaching the identical `RouteServer` — see
+      the README for detail. `tests/rust_service_surface_qemu.py` itself
+      needed one small fix regardless of this capture: its own hardcoded
+      brightness expectation (a tap at a fixed x used to mean the old
+      stepper's "+10% from 45"; the same x now means "jump to this
+      fraction of the track" under the slider) was updated from `55` to
+      `95`, the slider's own `value_at_x` result at that x.
 
 ## 6. Physical acceptance (board, open)
 
