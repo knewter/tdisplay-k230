@@ -312,3 +312,15 @@ clock alignment. Compare tracing disabled/enabled and sampling separately so
 observer cost cannot masquerade as a regression. The picker is the first
 workload; these formats and tooling should also support cards, launch, drawers
 and theme activation without a new profiler for every feature.
+
+### Background selection generation and feedback correction
+
+A generation hashes the selected background as well as theme contents.
+The current preview's generation therefore cannot authorize a different
+background. A single background tap must chain a Preview for that exact
+background into Activate with the returned generation. No second user tap
+is required. Retain the current selected marker until acknowledged commit;
+show Applying beside the background row, then Applied to Home or a visible
+failure. The catalogue's current theme/generation follows acknowledged
+activation so later taps do not mistake an old theme for the current one.
+Physical background/Home agreement remains UNVERIFIED until task 16.2.

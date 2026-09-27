@@ -824,11 +824,10 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   `rapid_taps_across_themes_coalesce_onto_the_last_one`). New `ThemeView::
   tap_theme`/`tap_background` replace `preview_request`/`background_request`/
   `apply_request`; `ThemeIntent::Apply` and `ThemeView::selection_error`/
-  `selection_failed` are removed. A background tap already knows its own
-  theme's generation (loaded alongside the backgrounds themselves), so it
-  goes straight to `Activate`, no `Preview` step; a theme tap does not
-  (the target theme's own generation is not necessarily known), so it
-  always previews first. New `known_generations: HashMap<String, String>`
+  `selection_failed` are removed. The original implementation incorrectly
+  sent a background selection directly to `Activate` with the previous
+  background's generation. Task 16 corrects this: both theme and background
+  taps prepare the target selection first, then activate its generation. New `known_generations: HashMap<String, String>`
   remembers a warm-up reply's own `(theme_id, generation)` (via
   `record_known_generation`, wired from `main.rs`'s `theme_reply` on a
   `prepare_ahead_reply` hit) so the pre-render trigger (10.3) can target a
@@ -1207,3 +1206,19 @@ PID/TID and unchanged generation. Reviewed CPU stack and flat hotspot SVGs
 are in `docs/evidence/theme-picker/cpu-profile/README.md`. Unknown callers
 appear in 648 samples; compositor stage spans, scheduler correlation and
 complete stack qualification remain open. This does not close 15.2/15.3.
+
+## 16. Apply the selected background and show its result
+
+- [ ] 16.1 Prepare the selected background before activation: the generation
+  includes the background choice. Preserve the previous selection until
+  commit succeeds; report progress, success and failure by the background
+  row. Update the current theme identity only after acknowledged activation.
+  Verify with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_ui`
+  and `python3 -m unittest tests.test_theme_catalog`. Correct the QEMU fixture
+  so different background choices have different generations.
+- [ ] 16.2 Build the coherent shell system, then on the reserved board tap
+  a different still background through the picker. Capture picker feedback
+  and Home before/after; verify the selected generation and reopened picker
+  agree. Record injected input separately from real-finger acceptance.
+- [ ] 16.3 Land and deploy the qualified fix, publish reviewed evidence and
+  check CI/site publication. Keep broader profiling and gesture gates open.
