@@ -188,11 +188,11 @@ def main():
         import shutil
         shutil.copytree(root / "generations" / ("b" * 24),
                         root / "generations" / ("e" * 24))
-        # Rapid-tap coalescing (task: tap-to-apply, 2026-09-25): theme 8's
+        # Rapid-tap coalescing (task: tap-to-apply, 2026-09-25): theme 3's
         # own "preview" call is made to sleep before replying (see
         # THEME_COMMAND above), giving a reliable window to tap a
         # *different* theme while it is still in flight.
-        slow_theme_id = f"{8:024x}"
+        slow_theme_id = f"{3:024x}"
         env = dict(os.environ, XDG_RUNTIME_DIR=str(root), WLR_BACKENDS="headless",
                    WLR_HEADLESS_OUTPUTS="1", WLR_RENDERER="pixman",
                    SWAY_K230_CARD_SHELL="1", SWAY_K230_CARD_TEST_INPUT="1",
@@ -293,8 +293,13 @@ def main():
                 ipc(f"card_shell test-touch up {this_contact}")
 
             ipc("card_shell test-touch init")
-            subprocess.run([args.qemu, str(args.rust), "--surface", "settings"],
-                           env=env, check=True, stdout=subprocess.DEVNULL)
+            # ready-idle precedes initial Home rendering; under emulation that
+            # work can exceed the route client's 500 ms acknowledgement deadline.
+            # Repeating this idempotent route is safe; bound startup separately.
+            wait_for(lambda: subprocess.run(
+                [args.qemu, str(args.rust), "--surface", "settings"], env=env,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=5).returncode == 0, 30)
             wait_for(lambda: commits() >= 1)
             controls = capture("settings.png")
 
@@ -319,10 +324,9 @@ def main():
 
             # --- Browse by drag: 1:1, no side effect, no confirm. ---
             center_x = 284.0
-            theme_step = item_step(THEME_GEOMETRY)
             theme_center = slice_center(THEME_GEOMETRY, 0, 0, center_x, THEME_TOP)
-            drag(theme_center[0] + 2 * theme_step, theme_center[0] - 4 * theme_step,
-                 theme_center[1])  # -6 slots
+            theme_center_pitch = (THEME_GEOMETRY["expanded_w"] + THEME_GEOMETRY["slice_w"]) / 2 + THEME_GEOMETRY["spacing"]
+            drag(420, 420 - theme_center_pitch, theme_center[1])  # one rendered center
             dragged = capture("theme-list-dragged.png")
             # Every fixture theme shares one solid-color preview image, so
             # two different *centered* indices can render pixel-identical
@@ -337,17 +341,10 @@ def main():
                 "browsing must never select a background or activate"
 
             # --- Browse by tap: a side slice recenters, still no confirm. ---
-            # The exact slot the preceding drag settled on is a timing
-            # detail of this synthetic IPC-injected touch harness (each
-            # motion/up is its own round trip, unlike a real continuous
-            # touch stream), not something this test should hardcode; "one
-            # slice to the right of roughly where the drag left off" is
-            # enough to land on a different slice than the drag alone did,
-            # and (unlike the previous, much wider-margined geometry) is as
-            # far from center as this hero carousel's tight side margin
-            # keeps on-panel at all -- see theme_carousel.rs's own doc for
-            # why this carousel's neighbors barely peek in from the edge.
-            side = slice_center(THEME_GEOMETRY, 6, 7, center_x, THEME_TOP)
+            # One full rendered-center displacement selects index 1; the
+            # immediate right-hand slice then recenters index 2. The narrow
+            # collapsed pitch is no longer the finger-tracking distance.
+            side = slice_center(THEME_GEOMETRY, 1, 2, center_x, THEME_TOP)
             # A tap sent immediately after the preceding drag's own release
             # occasionally (observed empirically, not explained by
             # theme_carousel.rs's own logic -- its hit_test/visible_slices
@@ -381,23 +378,23 @@ def main():
             # immediately -- no separate Preview page, no Apply/Cancel
             # footer (task: tap-to-apply, 2026-09-25, user decision: "tap
             # theme in the theme picker, apply immediately"). ---
-            theme7_id = f"{7:024x}"
+            selected_theme_id = f"{2:024x}"
             tap(*theme_center)  # slice_center's (0,0) case is centre-independent of `selected`
-            wait_for(lambda: any(row[0] == "activate" and row[1] == theme7_id for row in calls()), 20)
+            wait_for(lambda: any(row[0] == "activate" and row[1] == selected_theme_id for row in calls()), 20)
             tapped = capture("theme-tap-apply.png")
             assert ImageChops.difference(recentered, tapped).getbbox(), \
                 "tapping the centred slice must apply it (and repaint) immediately"
             activation = [row for row in calls() if row[0] == "activate"]
-            assert len(activation) == 1 and activation[0][1] == theme7_id
+            assert len(activation) == 1 and activation[0][1] == selected_theme_id
             assert "--expected-generation" in activation[0]
             assert activation[0][activation[0].index("--expected-generation") + 1] == "b" * 24
-            assert theme7_id != active_theme_id, \
+            assert selected_theme_id != active_theme_id, \
                 "confirming after browsing away from the active theme must apply a different one"
 
             # --- Background carousel: below the theme carousel on this
             # same page (not a separate page reached by confirming a
             # theme); browse by drag, then tap-to-apply directly. ---
-            bg_step = item_step(BACKGROUND_GEOMETRY)
+            bg_step = (BACKGROUND_GEOMETRY["expanded_w"] + BACKGROUND_GEOMETRY["slice_w"]) / 2 + BACKGROUND_GEOMETRY["spacing"]
             bg_center = slice_center(BACKGROUND_GEOMETRY, 0, 0, center_x, BACKGROUND_TOP)
             drag(bg_center[0], bg_center[0] - bg_step, bg_center[1])  # one slot: still 0 -> still 1
             bg_dragged = capture("theme-background-dragged.png")
@@ -405,16 +402,16 @@ def main():
                        int(BACKGROUND_TOP + BACKGROUND_GEOMETRY["expanded_h"]))
             assert ImageChops.difference(tapped.crop(bg_band), bg_dragged.crop(bg_band)).getbbox(), \
                 "drag did not move the background carousel"
-            assert all(row[0] != "activate" or row[1] != theme7_id or "--background" not in row
+            assert all(row[0] != "activate" or row[1] != selected_theme_id or "--background" not in row
                        for row in calls())
             tap(*bg_center)
-            wait_for(lambda: any(row[0] == "activate" and row[1] == theme7_id and "--background" in row
+            wait_for(lambda: any(row[0] == "activate" and row[1] == selected_theme_id and "--background" in row
                                  for row in calls()), 20)
             bg_selected = capture("theme-background-selected.png")
             assert ImageChops.difference(bg_dragged, bg_selected).getbbox(), \
                 "applying a different background did not repaint"
             background_activation = [row for row in calls()
-                                     if row[0] == "activate" and row[1] == theme7_id and "--background" in row]
+                                     if row[0] == "activate" and row[1] == selected_theme_id and "--background" in row]
             assert len(background_activation) == 1
             call = background_activation[0]
             assert call[call.index("--background") + 1] == "d" * 24
@@ -424,25 +421,25 @@ def main():
                 "background selection must prepare its own generation before activation"
 
             # --- Rapid taps across themes coalesce onto the last one: no
-            # queue of stale activations, and an in-flight apply (theme 8,
+            # queue of stale activations, and an in-flight apply (theme 3,
             # whose own "preview" reply is made to sleep -- see
-            # THEME_COMMAND above) is superseded safely by theme 9. ---
-            theme9_id = f"{9:024x}"
-            drag(center_x, center_x - theme_step, theme_center[1])  # one slot: 7 -> 8
-            tap(*theme_center)  # confirm theme 8; its own reply is in flight (slow)
+            # THEME_COMMAND above) is superseded safely by theme 4. ---
+            last_theme_id = f"{4:024x}"
+            drag(center_x, center_x - theme_center_pitch, theme_center[1])  # one slot: 2 -> 3
+            tap(*theme_center)  # confirm theme 3; its own reply is in flight (slow)
             wait_for(lambda: any(row[:2] == ["preview", slow_theme_id] for row in calls()))
-            drag(center_x, center_x - theme_step, theme_center[1])  # one slot: 8 -> 9, while theme 8 is pending
-            tap(*theme_center)  # confirm theme 9 before theme 8's own reply lands
-            wait_for(lambda: any(row[0] == "activate" and row[1] == theme9_id for row in calls()), 20)
+            drag(center_x, center_x - theme_center_pitch, theme_center[1])  # one slot: 3 -> 4, while theme 3 is pending
+            tap(*theme_center)  # confirm theme 4 before theme 3's own reply lands
+            wait_for(lambda: any(row[0] == "activate" and row[1] == last_theme_id for row in calls()), 20)
             coalesced = capture("theme-rapid-tap-coalesced.png")
             assert ImageChops.difference(bg_selected, coalesced).getbbox(), \
-                "the superseding tap (theme 9) must still repaint once it settles"
+                "the superseding tap (theme 4) must still repaint once it settles"
             assert not any(row[0] == "activate" and row[1] == slow_theme_id for row in calls()), \
-                "a superseded in-flight apply (theme 8) must never itself activate"
+                "a superseded in-flight apply (theme 3) must never itself activate"
             assert any(row[:2] == ["preview", slow_theme_id] for row in calls()), \
                 "the superseded tap's own request must still have been sent, not silently skipped"
             activations = [row for row in calls() if row[0] == "activate"]
-            assert [row[1] for row in activations] == [theme7_id, theme7_id, theme9_id], \
+            assert [row[1] for row in activations] == [selected_theme_id, selected_theme_id, last_theme_id], \
                 "exactly one activation per genuinely-settled apply, no stale queue"
 
             print("PASS paired Sway/Rust theme carousel QEMU touch, synthetic backend; no physical touch")
