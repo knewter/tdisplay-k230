@@ -109,6 +109,18 @@ class ExportTests(unittest.TestCase):
         _, summary = exporter.export([report(events)])
         self.assertTrue(any('unsupported presentation clock' in w for w in summary['warnings']))
 
+    def test_stationary_hold_and_release_are_not_a_long_janky_frame(self):
+        events = [event('input_down', 10, [1, 10, 0, 0, 0, 0]),
+                  event('input_motion', 20, [2, 20, 0, 0, 0, 0]),
+                  event('input_up', 50000, [3, 50000, 0, 0, 0, 0])]
+        for frame, start, input_id, mask in [(1, 100, 2, 1), (2, 50100, 3, 1), (3, 60100, 3, 0)]:
+            events += [event('draw_begin', start, [frame, input_id, 568, 1232, 0, mask]),
+                       event('commit', start+5, [frame, input_id, 0, 0, 0, 0]),
+                       event('presented', start+200, [frame, (start+100)*1000, 16666667, frame, 3, 1])]
+        _, summary = exporter.export([report(events)])
+        self.assertEqual(summary['active_gap_count'], 1)
+        self.assertEqual(summary['active_gap_us']['p99'], 10000)
+
     def test_malformed_clock_identity_and_unreviewed_names_rejected(self):
         for field, value in [('clock','CLOCK_REALTIME'), ('trace_id','invalid'), ('pid',True)]:
             broken = report([]); broken[field] = value

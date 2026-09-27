@@ -114,6 +114,7 @@ def export(reports):
 def frame_report(records):
     draws, commits, inputs, presented, discarded = {}, {}, {}, [], set()
     unavailable = 0
+    gestures = {}
     for e in sorted(records, key=lambda e: e['start_us']):
         key = (e['pid'], e['data'][0])
         if e['kind'] == 'draw_begin':
@@ -121,7 +122,9 @@ def frame_report(records):
         elif e['kind'] == 'commit':
             commits[key] = e
         elif e['kind'] in ('input_down', 'input_motion', 'input_up'):
-            inputs[key] = e
+            if e['kind'] == 'input_down':
+                gestures[e['pid']] = e['data'][0]
+            inputs[key] = dict(e, gesture=gestures.get(e['pid']))
         elif e['kind'] == 'presented':
             presented.append(e)
         elif e['kind'] == 'discarded':
@@ -140,12 +143,14 @@ def frame_report(records):
         if draw is None or commit is None:
             warnings.append(f'frame {frame}: missing draw or commit')
             continue
-        if not draw['start_us'] <= timestamp <= e['start_us'] + 1:
+        if not draw['start_us'] <= commit['start_us'] <= timestamp <= e['start_us'] + 1:
             warnings.append(f'frame {frame}: inconsistent presentation timestamp')
             continue
         input_event = inputs.get((e['pid'], draw['data'][1]))
         active = bool(draw['data'][5]) or bool(input_event and input_event['kind'] in ('input_down', 'input_motion'))
+        phase = ('contact' if input_event['kind'] in ('input_down', 'input_motion') else 'released') if input_event else 'animation'
         frames.append(dict(pid=e['pid'], frame=frame, presentation_us=timestamp,
+                           input_sequence=draw['data'][1], gesture=input_event['gesture'] if input_event else None, phase=phase,
                            active=active, motion_mask=draw['data'][5],
                            draw_to_present_us=timestamp-draw['start_us'],
                            commit_to_present_us=timestamp-commit['start_us'],
@@ -155,7 +160,13 @@ def frame_report(records):
     frames.sort(key=lambda f: (f['pid'], f['presentation_us']))
     gaps = []
     for previous, current in zip(frames, frames[1:]):
-        if previous['pid'] == current['pid'] and previous['active'] and current['active']:
+        same_phase = (previous['pid'] == current['pid'] and previous['gesture'] == current['gesture']
+                      and previous['phase'] == current['phase'])
+        moving = ((current['input_sequence'] != previous['input_sequence']) if current['phase'] == 'contact'
+                  else bool(previous['motion_mask']))
+        # Holding a finger still needs no new frames. Never count the pause
+        # between the last contact frame and a release/next gesture as jank.
+        if same_phase and moving:
             gap = current['presentation_us']-previous['presentation_us']
             current['active_gap_us'] = gap
             gaps.append(gap)

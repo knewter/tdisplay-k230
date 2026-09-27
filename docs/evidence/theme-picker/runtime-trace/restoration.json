@@ -1,0 +1,17 @@
+{
+  "observed_host_utc": "2026-09-27T04:56:57.271814+00:00",
+  "current_system": "/nix/store/7hhr1fp722cq147svn5ni67ar1i66mys-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "shell_ui_exe": "/nix/store/pzqqphc421axbq0z4xcwz445bg2726a2-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "restore_result": "success",
+  "restore_exit_status": 0,
+  "trace_dropins_removed": true,
+  "services_observed_active": [
+    "shell",
+    "shell-ui",
+    "shell-session-bus",
+    "shell-notifications",
+    "theme-helper"
+  ],
+  "failed_units": [],
+  "raw_transcript_sha256": "cb6988038183c9e5ff2dc04e844038ade3cfaae40c2f806686d0d92bb55cbc52"
+}

@@ -1176,7 +1176,7 @@ real-finger acceptance remains open.
 
 ## 15. Reuse the profiler across the runtime
 
-- [ ] 15.1 Add bounded, default-off shell/helper spans with shared trace and
+- [x] 15.1 Add bounded, default-off shell/helper spans with shared trace and
   parent IDs; propagate context through the existing helper socket without
   changing ordinary requests. Export fixed-name, secret-free events into a
   Perfetto-compatible timeline. Test nesting, cross-process correlation,
@@ -1193,3 +1193,10 @@ real-finger acceptance remains open.
   frame-stall report and supported flamegraphs with runtime identities,
   commands, coverage gaps and observer cost. Use the same tools for at least
   one other interaction; host tests alone leave this physical gate open.
+
+Task 15.1 proof: the two named host commands pass (9 Python and 3 Rust
+tests), plus 19 binary route tests and 54 helper/catalog/transaction tests.
+Both normal/coherent system closures cross-built. The first physical capture
+joined four helper requests and 36 presented frames without trace loss; see
+`docs/evidence/theme-picker/runtime-trace/README.md`. This leaves 15.2/15.3
+and the broader task 13 profiling/overhead gates open.
