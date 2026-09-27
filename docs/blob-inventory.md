@@ -660,6 +660,7 @@ DATA 1756635c6a3f7aea4e80caf0a8bf909d1211a0164c6c13e7499e5c594a985bab docs/evide
 DATA 19e84e2647c7f0b7344e561002e5de9e600ba015f0ae2e4f36b622efb4f2a801 docs/evidence/backlight/combined-candidate/off-on.jpg
 DATA 0f55de68c97eff8199d8e2a8a789b87c391589085e90605531cfc556ba5d1a4c docs/evidence/backlight/combined-candidate/settings-ui.png
 DATA cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b docs/evidence/theme-picker/store-relocation/current-theme.png
+DATA ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582 docs/evidence/theme-picker/store-relocation/background-browsed.png
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
@@ -2116,3 +2117,12 @@ proof, not physical-finger motion acceptance. See
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/card-shell/transparent-corners/installed-system/rounded.png` | 250980 | DATA | `5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e` |
+
+### Installed theme background browsing
+
+Native injected-input board screenshot; saved selection stays unchanged.
+See `docs/evidence/theme-picker/store-relocation/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/theme-picker/store-relocation/background-browsed.png` | 287514 | DATA | `ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582` |

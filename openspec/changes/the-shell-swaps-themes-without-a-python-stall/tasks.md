@@ -1051,18 +1051,19 @@ or board use was performed for these tasks; 11.3 remains open.
   Add host tests covering relocation, changed content, duplicate origin,
   ambiguity and malformed reports. Proof:
   `python3 -m unittest discover -s tests -p test_theme_catalog.py`.
-- [ ] 12.2 On the reserved board, open the chooser after installing the
+- [x] 12.2 On the reserved board, open the chooser after installing the
   rebuilt theme package; verify the preserved active theme is centered and
   its background row resolves and responds, without activating anything.
   Commit native evidence and rerun the affected browse measurement before
   closing this gate. Task 11.3 remains open: the first paired run did not
   establish improved warm swipes, and the second lacked background content.
 
-Partial board proof for 12.2: `docs/evidence/theme-picker/store-relocation/README.md`
-shows the saved theme centered and current background populated on candidate
-`433a4226`, with the original generation unchanged. The repeated browse
-measurement and verified normal installation remain pending after the normal
-boot recovery interruption; this task is deliberately still unchecked.
+Board proof for 12.2: `docs/evidence/theme-picker/store-relocation/README.md`
+now records verified normal installation, the saved theme centered, a populated
+background row responding to a drag, and the repeated 70.93-second browse
+measurement with unchanged generation. The initial image matches the earlier
+one-shot capture exactly. Both idle windows have zero redraws; warm swipe
+commit gaps remain slow (median 141 ms), so task 11.3 stays open.
 
 Host proof for 12.1 (2026-09-27): the exact unittest discovery command above
 passes 21 tests. Six added regressions cover an identical source relocated to
@@ -1071,8 +1072,7 @@ and report, real list-to-preview background discovery without activation,
 changed source rejection, same-name user origin, ambiguous/malformed identity,
 and exact-path priority without hashing. The board confirmed a null active
 catalog ID with a preserved generation before this fix; native frames showed
-`Loading backgrounds`. Installing this source and physically verifying the
-resolved row are still task 12.2, not established by host tests.
+`Loading backgrounds`. The installed board proof above, rather than these host tests, closes 12.2.
 
 ## 13. Attribute remaining swipe cost and keep speculation out of movement
 

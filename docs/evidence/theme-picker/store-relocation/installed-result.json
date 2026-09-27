@@ -1,0 +1,29 @@
+{
+  "active_id_present": true,
+  "generation_present": true,
+  "theme_count": 23,
+  "generation_sha256": "6b638d68b60ba19a937c98b2903a24d418e7ec0d76a65fda86c58155baf16e55",
+  "saved_background_count": 5,
+  "normal_runtime": {
+    "source": "433a42265c766be1fe50280832252ae67a85b7ef",
+    "system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "booted_system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/9w07l7qyhd3xykq9wfhjlg3qqc3ijqhs-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "sway_exe": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "rust_exe": "/nix/store/xsi8cl9vdimjnqlqkhadzwahmajml9j9-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "keyboard_exe": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+    "brightness": 255,
+    "services_active": true,
+    "failed_units": []
+  },
+  "before_native_sha256": "cca5e3950a6d3a739925272dc0e039f048f5364cc640c19b6ed6039d03224e6b",
+  "before_native_identical_to": "current-theme.png",
+  "background_drag_native_sha256": "ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582",
+  "background_drag": [
+    430,
+    990,
+    190,
+    990
+  ],
+  "real_finger_acceptance": false
+}
