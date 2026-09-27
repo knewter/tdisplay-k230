@@ -108,6 +108,13 @@
       nondefault brightness across DPMS. Install persistently only after
       the candidate checks, then repeat boot/service identity checks.
 
+      Candidate controls, camera levels and retention pass on source
+      `433a4226`; see `docs/evidence/backlight/combined-candidate/README.md`.
+      Persistent completion was not established; normal reboot selected the
+      earlier system and subsequent console access failed. The coordinator
+      owns recovery after the requested physical reset. Durable transaction
+      diagnostics and verified normal boot remain required; do not archive.
+
 Tasks 6.1/6.2 host proof: `docs/evidence/backlight/transport/build.json`
 (source `926c7a61`, combined cross-build exit 0) and 25 transport fixtures
 under ASan/UBSan. These checks do not complete 6.3/6.4.

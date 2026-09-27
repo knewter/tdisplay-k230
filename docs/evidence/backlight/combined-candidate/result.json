@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "evidence_class": "physical-board-camera-and-serial",
+  "boot_manifest": {
+    "target": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "previous": "/nix/store/4zq3l00lx9c9a11c6m6rib2r1w7ryfvk-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "source": "433a42265c766be1fe50280832252ae67a85b7ef",
+    "sha256": {
+      "Image": "65fdd3073208c234e71b13cb2972ca56f4260688fed0c8d17296972da59c5797",
+      "initrd.uimg": "2ad4b485c8a9f6913d01d9370885b4f56b64da58c938ab12a8e0c3ef5edb00e2",
+      "k230-tdisplay.dtb": "a5c52a9bc94d933c6750eff166ddfc38e6884fc45dfd51bf39bfb86654213d5b",
+      "bootargs.txt": "d8a13ddba03579e87af5aa1546393c6560cae6d0ad570254447236863cb6e2bf"
+    },
+    "bytes": {
+      "Image": 60428288,
+      "initrd.uimg": 27313841,
+      "k230-tdisplay.dtb": 71743,
+      "bootargs.txt": 211
+    },
+    "kernel_extent": 61046784,
+    "initrd_payload_matches_system": true,
+    "uimage_crc_valid": true,
+    "closure_delta_paths": 21,
+    "nar_bytes": 1308992
+  },
+  "trial_runtime": {
+    "source": "433a42265c766be1fe50280832252ae67a85b7ef",
+    "system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "booted_system": "/nix/store/11y992kp7bikr5hg21i2azfvmca43i7i-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/9w07l7qyhd3xykq9wfhjlg3qqc3ijqhs-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "sway_exe": "/nix/store/7zvingic0whhz3z80w2gcpc343vipf7q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "rust_exe": "/nix/store/xsi8cl9vdimjnqlqkhadzwahmajml9j9-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "keyboard_exe": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+    "brightness": 255,
+    "services_active": true,
+    "failed_units": []
+  },
+  "live_writes": [
+    {
+      "level": 26,
+      "shell_user_write": true,
+      "camera": "26.jpg",
+      "timestamp": 1790474872.6276617
+    },
+    {
+      "level": 128,
+      "shell_user_write": true,
+      "camera": "128.jpg",
+      "timestamp": 1790474878.6427627
+    },
+    {
+      "level": 255,
+      "shell_user_write": true,
+      "camera": "255.jpg",
+      "timestamp": 1790474884.6903472
+    },
+    {
+      "level": 128,
+      "shell_user_write": true,
+      "camera": "128-repeat.jpg",
+      "timestamp": 1790474890.7072814
+    }
+  ],
+  "settings_backend": [
+    {
+      "percent": 10,
+      "reply": {
+        "state": "applied",
+        "requested": 10,
+        "control": {
+          "state": "writable",
+          "value": 10,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790474921.1711082
+    },
+    {
+      "percent": 50,
+      "reply": {
+        "state": "applied",
+        "requested": 50,
+        "control": {
+          "state": "writable",
+          "value": 50,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790474927.1880176
+    },
+    {
+      "percent": 100,
+      "reply": {
+        "state": "applied",
+        "requested": 100,
+        "control": {
+          "state": "writable",
+          "value": 100,
+          "label": "Brightness",
+          "unit": "percent"
+        }
+      },
+      "timestamp": 1790474933.204856
+    }
+  ],
+  "camera": {
+    "format": "mjpeg",
+    "size": [
+      1280,
+      720
+    ],
+    "fps": 30,
+    "discard_first_frames": 45,
+    "exposure_absolute": 97,
+    "gain": 170,
+    "white_balance_temperature": 3588,
+    "focus_absolute": 30,
+    "automatic_exposure_focus_white_balance": false,
+    "roi": [
+      500,
+      350,
+      800,
+      425
+    ]
+  },
+  "frames": [
+    {
+      "name": "26",
+      "raw_sha256": "44df624be6983322d88f76c84ee2d4f8c5642c80b1ba982dc06b59625b7f818e",
+      "mean_grayscale": 26.22
+    },
+    {
+      "name": "128",
+      "raw_sha256": "db6b56b9105ce84112fff89bbcb5dbb5a01527d70bf1334dadb6ac14167411fb",
+      "mean_grayscale": 91.62
+    },
+    {
+      "name": "255",
+      "raw_sha256": "988bd3903453de9282be41cfc7dea5afeb2c7f254acecf97242b50c5b2d425d2",
+      "mean_grayscale": 172.22
+    },
+    {
+      "name": "128-repeat",
+      "raw_sha256": "8416d7b4a247df889445a0f4b95458f73b2e198cabbc31bbc9fd546bc3132c18",
+      "mean_grayscale": 92.12
+    },
+    {
+      "name": "dpms-off",
+      "raw_sha256": "6b3728bc273f691db794c195e0daaa135bf0d5e89a1f2596fd1e18ba3493d16b",
+      "mean_grayscale": 24.23
+    },
+    {
+      "name": "dpms-on",
+      "raw_sha256": "2da2ed59f351a2e81e733801d95ef2d6c4344ff530c6999b939dabb5ad115e01",
+      "mean_grayscale": 92.02
+    },
+    {
+      "name": "settings-10",
+      "raw_sha256": "2561df7a399e56e4240bf3201fe89e68e0bd3bf789ac4b1353d9ecfa48cb1a4c",
+      "mean_grayscale": 26.44
+    },
+    {
+      "name": "settings-50",
+      "raw_sha256": "27577775ea74db636f52aeb0e90d45966f8db410013aa287e3d3f411a5f22882",
+      "mean_grayscale": 91.64
+    },
+    {
+      "name": "settings-100",
+      "raw_sha256": "f02dc616854526a942ea38a449629a294567b3ddde215b90dbad5d20b603b694",
+      "mean_grayscale": 172.61
+    }
+  ],
+  "settings_ui": {
+    "provenance": "verified virtual touchscreen, not real finger",
+    "tested_system": "/nix/store/4zq3l00lx9c9a11c6m6rib2r1w7ryfvk-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "rust_exe": "/nix/store/xsi8cl9vdimjnqlqkhadzwahmajml9j9-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "minus_tap": [
+      416,
+      345
+    ],
+    "plus_tap": [
+      494,
+      345
+    ],
+    "raw_results": {
+      "minus": 230,
+      "plus": 255
+    }
+  },
+  "persistent_install_verified": false,
+  "normal_boot_observation": {
+    "selected_system": "/nix/store/9h5z3gk24gb3kdal037plsxqrmd7dx1y-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "initrd_loaded_bytes": 27314664,
+    "candidate_initrd_bytes": 27313841,
+    "transaction_completion_marker_observed": false,
+    "failure_phase": "unknown; volatile transaction log not collected before reboot",
+    "collector_limit": "stale preboot prompt caused early exit after new kernel header",
+    "subsequent_serial_response": false,
+    "subsequent_ssh_available": false,
+    "recovery": "physical reset requested; root owns serial listener"
+  }
+}

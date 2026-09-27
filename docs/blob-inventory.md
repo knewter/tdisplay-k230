@@ -656,6 +656,9 @@ DATA 9edf97b5508b80673db74e264d50b99746f2b7774295b30aa2454c4017668539 docs/evide
 DATA 6b0475c77dce11a3802cbdb7a2c52ce91f803059f2160a02aaca08c6891889d8 docs/evidence/backlight/live-hs/live-26-128-255.jpg
 DATA d05da3773efa0683dbebc6b3f176a8043af7b29cd08288fe823b4ce8f4fca196 docs/evidence/backlight/live-hs/off-on-128.jpg
 DATA 2a6b3795cafc5e7ed9e70a957498807891e6b0a9585ea2637d80c38d388d4208 docs/evidence/backlight/live-hs/settings-10-50-100.jpg
+DATA 1756635c6a3f7aea4e80caf0a8bf909d1211a0164c6c13e7499e5c594a985bab docs/evidence/backlight/combined-candidate/live-and-settings.jpg
+DATA 19e84e2647c7f0b7344e561002e5de9e600ba015f0ae2e4f36b622efb4f2a801 docs/evidence/backlight/combined-candidate/off-on.jpg
+DATA 0f55de68c97eff8199d8e2a8a789b87c391589085e90605531cfc556ba5d1a4c docs/evidence/backlight/combined-candidate/settings-ui.png
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
@@ -2081,3 +2084,14 @@ lookup defect, not accepted smoothness; see `docs/evidence/theme-picker/working-
 | --- | ---: | --- | --- |
 | `docs/evidence/theme-picker/working-set/browsing.mp4` | 376512 | DATA | `9edf97b5508b80673db74e264d50b99746f2b7774295b30aa2454c4017668539` |
 | `docs/evidence/theme-picker/working-set/loading-backgrounds.png` | 117501 | DATA | `65c0660b3a9b4347fe64926128dbae7400bae6701df9a55df713ebc157cf773a` |
+
+### Combined candidate brightness proof
+
+Physical camera crops and an injected Settings screenshot; source, commands
+and limitations: `docs/evidence/backlight/combined-candidate/README.md`.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/backlight/combined-candidate/live-and-settings.jpg` | 39326 | DATA | `1756635c6a3f7aea4e80caf0a8bf909d1211a0164c6c13e7499e5c594a985bab` |
+| `docs/evidence/backlight/combined-candidate/off-on.jpg` | 15732 | DATA | `19e84e2647c7f0b7344e561002e5de9e600ba015f0ae2e4f36b622efb4f2a801` |
+| `docs/evidence/backlight/combined-candidate/settings-ui.png` | 36724 | DATA | `0f55de68c97eff8199d8e2a8a789b87c391589085e90605531cfc556ba5d1a4c` |
