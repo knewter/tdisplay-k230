@@ -1045,7 +1045,7 @@ or board use was performed for these tasks; 11.3 remains open.
 
 ## 12. Keep an unchanged bundled theme selected after a system upgrade
 
-- [ ] 12.1 Repair active catalog identification after only the Nix store
+- [x] 12.1 Repair active catalog identification after only the Nix store
   package prefix changes. Require unique built-in role/name plus the saved
   source digest, retain exact-path priority, and leave active state unchanged.
   Add host tests covering relocation, changed content, duplicate origin,
@@ -1057,3 +1057,13 @@ or board use was performed for these tasks; 11.3 remains open.
   Commit native evidence and rerun the affected browse measurement before
   closing this gate. Task 11.3 remains open: the first paired run did not
   establish improved warm swipes, and the second lacked background content.
+
+Host proof for 12.1 (2026-09-27): the exact unittest discovery command above
+passes 21 tests. Six added regressions cover an identical source relocated to
+a new store package after the old object is removed, unchanged active pointer
+and report, real list-to-preview background discovery without activation,
+changed source rejection, same-name user origin, ambiguous/malformed identity,
+and exact-path priority without hashing. The board confirmed a null active
+catalog ID with a preserved generation before this fix; native frames showed
+`Loading backgrounds`. Installing this source and physically verifying the
+resolved row are still task 12.2, not established by host tests.

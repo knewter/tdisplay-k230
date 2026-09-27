@@ -193,6 +193,45 @@ def _discover_uncached(user_themes: Path, builtins: Path | None) -> list[Entry]:
     return sorted(entries, key=lambda entry: (entry.label.casefold(), entry.origin, entry.id))
 
 
+# Only the store package prefix may change during this narrow recovery.
+# A user theme with a matching label is not an alias for a built-in theme.
+NIX_STORE = Path("/nix/store")
+
+
+def bundled_theme_name(source: object) -> str | None:
+    if not isinstance(source, (str, Path)):
+        return None
+    try:
+        parts = Path(source).relative_to(NIX_STORE).parts
+    except ValueError:
+        return None
+    if (len(parts) != 5 or parts[1:4] != ("share", "omarchy", "themes")
+            or not re.fullmatch(r"[a-z0-9]{32}-[^/]+", parts[0])
+            or not activation.SAFE_NAME.fullmatch(parts[4])):
+        return None
+    return parts[4]
+
+
+def relocated_builtin(report: dict, entries: list[Entry]) -> Entry | None:
+    name = bundled_theme_name(report.get("source"))
+    digest = report.get("source_sha256")
+    if (name is None or report.get("name") != name or not isinstance(digest, str)
+            or not re.fullmatch(r"[a-f0-9]{64}", digest)):
+        return None
+    candidates = [entry for entry in entries if entry.origin == "builtin"
+                  and entry.name == name and bundled_theme_name(entry.source) == name]
+    if len(candidates) != 1:
+        return None
+    candidate = candidates[0]
+    try:
+        # The existing digest cache avoids re-reading an unchanged source
+        # on later list calls. The old store object need not still exist.
+        matches = activation.theme_digest(candidate.source) == digest
+    except (OSError, ValueError):
+        return None
+    return candidate if matches else None
+
+
 def selected(state_root: Path, entries: list[Entry]) -> dict:
     generation = _pointer(state_root)
     if generation is None:
@@ -204,6 +243,8 @@ def selected(state_root: Path, entries: list[Entry]) -> dict:
     if not isinstance(report, dict):
         raise activation.ThemeError("invalid active theme report")
     entry = next((item for item in entries if str(item.source) == report.get("source")), None)
+    if entry is None:
+        entry = relocated_builtin(report, entries)
     return {"id": entry.id if entry else None, "generation": generation.name}
 
 
