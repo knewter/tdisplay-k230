@@ -400,25 +400,10 @@ impl Variant {
     }
 }
 
-/// Bounds cache memory. The largest possible entry is now the Themes page
-/// hero carousel's `Expanded` bitmap (`theme_carousel::THEME_GEOMETRY`:
-/// `480*640*4` = 1,228,800 bytes, ~1.17 MiB) rather than the old shared
-/// `300*186*4` (~218 KiB) -- a direct consequence of that carousel's
-/// centered slice becoming the page's hero (see `theme_carousel.rs`'s
-/// module doc). `NEARBY_LIMIT` (8, unchanged) means one fully-populated
-/// carousel needs at most `(8*2+1)*2` = 34 entries (17 nearby ids, each an
-/// `Expanded`+`Slice` pair); `CACHE_CAP` shrank from 48 to 36 -- just above
-/// that steady-state need, not the old flat headroom -- so the *count* of
-/// cached bitmaps offsets most of each bitmap's bigger footprint. Worst
-/// realistic case (the hero carousel fully populated: 17 `Expanded` + 17
-/// `Slice`) is `17*1,228,800 + 17*158,304` (`68*582*4`, the hero's own
-/// `Slice` size) = 23,580,768 bytes, ~22.5 MiB -- up from the previous
-/// ~10 MiB, still a small, fixed, and now explicitly stated bound. The
-/// Preview page's background carousel is far smaller
-/// (`theme_carousel::BACKGROUND_GEOMETRY`: `420*260*4` = 436,800 bytes per
-/// `Expanded` entry), so browsing only ever there stays well under half
-/// that figure.
-const CACHE_CAP: usize = 36;
+/// Shared by both carousels. Admission and eviction use the same limits,
+/// so a stationary admitted working set can fit without evicting itself.
+pub(crate) const CACHE_CAP: usize = 36;
+pub(crate) const CACHE_MAX_BYTES: usize = 24 * 1024 * 1024;
 /// Concurrent in-flight decodes; bounds the worker's request channel.
 const QUEUE: usize = 4;
 
@@ -479,9 +464,81 @@ pub struct ThemeThumbnailCache {
     ready: HashMap<String, Option<ImageSurface>>,
     order: VecDeque<String>,
     in_flight: HashSet<String>,
+    working_set: Option<HashSet<String>>,
+    #[cfg(test)]
+    submitted: usize,
+}
+
+/// Keep priority order while admitting only what the bounded cache can retain.
+/// Invalid or oversized geometry remains a placeholder, never an endless retry.
+pub(crate) fn bounded_working_set(keys: Vec<ThumbnailKey>) -> Vec<ThumbnailKey> {
+    let mut bytes = 0usize;
+    let mut seen = HashSet::new();
+    let mut admitted = Vec::new();
+    for key in keys {
+        let Some(size) = (key.width as usize)
+            .checked_mul(key.height as usize)
+            .and_then(|pixels| pixels.checked_mul(4))
+        else {
+            continue;
+        };
+        if size == 0
+            || size > CACHE_MAX_BYTES.saturating_sub(bytes)
+            || admitted.len() == CACHE_CAP
+            || !seen.insert(key.cache_key())
+        {
+            continue;
+        }
+        bytes += size;
+        admitted.push(key);
+    }
+    admitted
 }
 
 impl ThemeThumbnailCache {
+    pub(crate) fn set_working_set(&mut self, keys: &[ThumbnailKey]) {
+        self.working_set = Some(keys.iter().map(ThumbnailKey::cache_key).collect());
+    }
+
+    pub(crate) fn resident_bytes(&self) -> usize {
+        self.ready
+            .values()
+            .flatten()
+            .map(|surface| surface.stride() as usize * surface.height() as usize)
+            .sum()
+    }
+
+    #[cfg(test)]
+    pub(crate) fn submitted_count(&self) -> usize {
+        self.submitted
+    }
+
+    /// Deterministic worker boundary: exercise the production queues/cache
+    /// with generated pixels, without timing-dependent image I/O in regressions.
+    #[cfg(test)]
+    pub(crate) fn fixture() -> (Self, Receiver<ThumbnailKey>, impl Fn(ThumbnailKey)) {
+        let (requests, incoming) = mpsc::sync_channel(QUEUE);
+        let (outgoing, replies) = mpsc::sync_channel(QUEUE);
+        let cache = Self {
+            worker: ThumbnailWorker { requests, replies },
+            ready: HashMap::new(),
+            order: VecDeque::new(),
+            in_flight: HashSet::new(),
+            working_set: None,
+            submitted: 0,
+        };
+        let complete = move |key: ThumbnailKey| {
+            let pixels = vec![0; key.width as usize * key.height as usize * 4];
+            outgoing
+                .try_send(ThumbnailReply {
+                    key,
+                    pixels: Ok(pixels),
+                })
+                .unwrap();
+        };
+        (cache, incoming, complete)
+    }
+
     /// The decoded bitmap for a catalog id's given variant, if one is ready
     /// and decoded without error.
     pub fn get(&self, id: &str, variant: Variant) -> Option<&ImageSurface> {
@@ -508,11 +565,21 @@ impl ThemeThumbnailCache {
     /// so a deferred entry is retried on the next frame.
     pub fn request(&mut self, key: ThumbnailKey) {
         let cache_key = key.cache_key();
-        if self.ready.contains_key(&cache_key) || self.in_flight.contains(&cache_key) {
+        if self
+            .working_set
+            .as_ref()
+            .is_some_and(|wanted| !wanted.contains(&cache_key))
+            || self.ready.contains_key(&cache_key)
+            || self.in_flight.contains(&cache_key)
+        {
             return;
         }
         if self.worker.requests.try_send(key).is_ok() {
             self.in_flight.insert(cache_key);
+            #[cfg(test)]
+            {
+                self.submitted += 1;
+            }
         }
     }
 
@@ -523,6 +590,13 @@ impl ThemeThumbnailCache {
         while let Ok(reply) = self.worker.replies.try_recv() {
             let cache_key = reply.key.cache_key();
             self.in_flight.remove(&cache_key);
+            if self
+                .working_set
+                .as_ref()
+                .is_some_and(|wanted| !wanted.contains(&cache_key))
+            {
+                continue; // obsolete work must not evict current visible entries
+            }
             let (width, height) = (reply.key.width, reply.key.height);
             let surface = reply.pixels.ok().and_then(|pixels| {
                 ImageSurface::create_for_data(
@@ -538,8 +612,19 @@ impl ThemeThumbnailCache {
                 self.order.push_back(cache_key.clone());
             }
             self.ready.insert(cache_key, surface);
-            while self.order.len() > CACHE_CAP {
-                if let Some(oldest) = self.order.pop_front() {
+            while self.order.len() > CACHE_CAP || self.resident_bytes() > CACHE_MAX_BYTES {
+                // Evict old, offscreen residents before any member of the
+                // admitted working set. Admission guarantees that set fits.
+                let victim = self
+                    .order
+                    .iter()
+                    .position(|key| {
+                        self.working_set
+                            .as_ref()
+                            .is_none_or(|wanted| !wanted.contains(key))
+                    })
+                    .unwrap_or(0);
+                if let Some(oldest) = self.order.remove(victim) {
                     self.ready.remove(&oldest);
                 }
             }
@@ -557,6 +642,105 @@ impl ThemeThumbnailCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn fixture_key(id: usize, width: u32, height: u32) -> ThumbnailKey {
+        ThumbnailKey {
+            id: format!("fixture-{id}"),
+            path: PathBuf::from("/unused-worker-fixture"),
+            variant: Variant::Expanded,
+            width,
+            height,
+        }
+    }
+
+    #[test]
+    fn working_set_admission_preserves_priority_and_bounds_count_and_bytes() {
+        let keys: Vec<_> = (0..100).map(|id| fixture_key(id, 1, 1)).collect();
+        let mut duplicates = keys.clone();
+        duplicates.splice(1..1, [keys[0].clone()]);
+        let admitted = bounded_working_set(duplicates);
+        assert_eq!(admitted.len(), CACHE_CAP);
+        assert_eq!(admitted, keys[..CACHE_CAP]);
+
+        // Six 4 MiB entries fill the byte bound before the entry bound.
+        let admitted =
+            bounded_working_set((0..100).map(|id| fixture_key(id, 1024, 1024)).collect());
+        assert_eq!(admitted.len(), 6);
+        assert_eq!(admitted[0].id, "fixture-0");
+        assert_eq!(admitted[5].id, "fixture-5");
+        let admitted = bounded_working_set(vec![
+            fixture_key(0, 0, 1),
+            fixture_key(1, u32::MAX, u32::MAX),
+            fixture_key(2, 1, 1),
+        ]);
+        assert_eq!(admitted, vec![fixture_key(2, 1, 1)]);
+    }
+
+    #[test]
+    fn moving_working_set_discards_stale_replies_and_protects_visible_residents() {
+        let (mut cache, incoming, complete) = ThemeThumbnailCache::fixture();
+        let keys: Vec<_> = (0..CACHE_CAP + 2).map(|id| fixture_key(id, 1, 1)).collect();
+        cache.set_working_set(&keys[..CACHE_CAP]);
+        for key in &keys[..CACHE_CAP] {
+            cache.request(key.clone());
+            complete(incoming.try_recv().unwrap());
+            assert!(cache.poll());
+        }
+        // Keep the oldest resident visible; a new arrival must evict an
+        // offscreen resident instead of the original FIFO head.
+        let current = vec![keys[0].clone(), keys[CACHE_CAP].clone()];
+        cache.set_working_set(&current);
+        cache.request(keys[CACHE_CAP].clone());
+        complete(incoming.try_recv().unwrap());
+        assert!(cache.poll());
+        assert!(cache.is_resolved(&keys[0].id, Variant::Expanded));
+        assert!(!cache.is_resolved(&keys[1].id, Variant::Expanded));
+        assert_eq!(cache.known_len(), CACHE_CAP);
+
+        // Simulate an outstanding decode when the user changes direction.
+        cache.set_working_set(&keys[CACHE_CAP + 1..]);
+        cache.request(keys[CACHE_CAP + 1].clone());
+        let stale = incoming.try_recv().unwrap();
+        cache.set_working_set(&current);
+        complete(stale);
+        assert!(
+            !cache.poll(),
+            "obsolete replies must not invalidate the scene"
+        );
+        assert!(!cache.is_resolved(&keys[CACHE_CAP + 1].id, Variant::Expanded));
+        assert!(cache.in_flight.is_empty());
+        let count = cache.submitted_count();
+        for _ in 0..100 {
+            for key in &current {
+                cache.request(key.clone());
+            }
+            assert!(!cache.poll());
+        }
+        assert_eq!(cache.submitted_count(), count);
+        assert!(cache.resident_bytes() <= CACHE_MAX_BYTES);
+    }
+
+    #[test]
+    fn resident_pixel_budget_evicts_offscreen_surfaces_before_visible_ones() {
+        let (mut cache, incoming, complete) = ThemeThumbnailCache::fixture();
+        let keys: Vec<_> = (0..4).map(|id| fixture_key(id, 2048, 1024)).collect();
+        cache.set_working_set(&keys[..3]); // 24 MiB, three entries
+        for key in &keys[..3] {
+            cache.request(key.clone());
+            complete(incoming.try_recv().unwrap());
+            cache.poll();
+        }
+        assert_eq!(cache.resident_bytes(), CACHE_MAX_BYTES);
+        cache.set_working_set(&[keys[0].clone(), keys[3].clone()]);
+        cache.request(keys[3].clone());
+        complete(incoming.try_recv().unwrap());
+        cache.poll();
+        assert_eq!(cache.resident_bytes(), CACHE_MAX_BYTES);
+        assert_eq!(cache.known_len(), 3);
+        assert!(cache.is_resolved(&keys[0].id, Variant::Expanded));
+        assert!(!cache.is_resolved(&keys[1].id, Variant::Expanded));
+        assert!(cache.is_resolved(&keys[3].id, Variant::Expanded));
+    }
 
     #[test]
     fn decode_completes_and_is_cached_without_re_requesting() {
