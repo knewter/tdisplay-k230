@@ -1,9 +1,9 @@
 ## 1. Ground the physical test layout
 
-- [ ] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the
+- [x] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the
   pinned overlay into the built stage 1; record source paths and build
   configuration. Verify with `rg -n 'CONFIG_LINUX_RUN_CORE_ID|boot_baremetal|cpu0_hart_rstvec' /nix/store/g58y0fnasf1gapxjnjmbdnmg6zs58yhs-source/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/{board/canaan/common,arch/riscv/cpu/k230}` (pinned-source proof).
-- [ ] 1.2 Establish nonoverlapping payload and output addresses from pinned
+- [x] 1.2 Establish nonoverlapping payload and output addresses from pinned
   stage-1 source and a known card's memory layout; document U-Boot cache
   invalidation/readback behavior and refuse to choose an address if this
   cannot be grounded. Verify with a cited map and `openspec validate
@@ -12,11 +12,11 @@
 
 ## 2. Build a standalone scalar heartbeat
 
-- [ ] 2.1 Add a tiny RV64I physical CPU0 payload and linker layout using
+- [x] 2.1 Add a tiny scalar RV64 physical CPU0 payload and linker layout using
   the addresses established in 1.2, plus a host check for entry, footprint,
   and absence of V instructions. Verify with
-  `sh tools/test-small-core-heartbeat.sh` (host binary proof, not board).
-- [ ] 2.2 Record the exact load, release, repeated readback and stop/normal
+  `bash tools/test-small-core-heartbeat.sh` (host binary proof, not board).
+- [x] 2.2 Record the exact load, release, repeated readback and stop/normal
   boot commands in a disposable-card runbook; verify with
   `openspec validate the-small-core-runs-a-recoverable-heartbeat --strict`
   (document proof, not board).
