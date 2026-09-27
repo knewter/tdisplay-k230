@@ -11,11 +11,13 @@ was needed for this investigation.
 The initial evidence established a one-hart handoff, rather than an attempted
 secondary CPU that failed to boot. The later
 [physical CPU0 diagnostic](cpu0-identity-physical-trial.md) measured CPU0's
-`mhartid=0`; physical CPU1's `mhartid` remains unmeasured on this board.
+`mhartid=0`. The pinned OpenSBI source shows that its `Boot HART ID : 0`
+is a direct CSR read on the CPU1-side boot path, establishing the same
+value for CPU1 through the source-backed physical handoff attribution.
 
 | Gate | Observed/source evidence | Decision |
 | --- | --- | --- |
-| Hart identity/domain | OpenSBI count 1, Domain0 `0*`; live DT contains only `cpu@0`, hart ID 0; 2026-09-27 physical CPU0 SPL read `mhartid=0` | CPU0's CSR is measured, but CPU1's CSR and a usable distinct two-hart map remain unverified |
+| Hart identity/domain | OpenSBI count 1, Domain0 `0*`; live DT contains only `cpu@0`, hart ID 0; physical CPU0 SPL and CPU1-side OpenSBI's direct CSR read both returned `mhartid=0` | Duplicate hardware IDs require an independently grounded virtual-ID or other supported two-hart mapping; current generic OpenSBI cannot distinguish the cores |
 | Firmware start | OpenSBI reports HSM device `---`; Linux detects the generic HSM extension | Extension availability does not prove a secondary reset/vector implementation |
 | Interrupt/timer | Live PLIC routes CPU phandle 3 to interrupts 11/9; CLINT routes the same CPU to 3/7 | Current handoff describes one CPU's external, software and timer routes |
 | Linux state | `possible`, `present`, `online` all `0`; one CPU brought up | SMP is compiled, but there is no second described CPU to start |
@@ -98,6 +100,7 @@ then the existing one-CPU Linux boot completed. Both original SPL slots
 were restored, direct-read hashes matched the originals, and a subsequent
 normal reboot reached the root prompt with all four shell services active.
 The [trial record](cpu0-identity-physical-trial.md) gives commands, hashes,
-captures, and limits. This corroborates the pinned source's assignment of
-the SPL entry to physical CPU0. It does not turn OpenSBI's logical HART 0
-into proof of physical CPU1's CSR or establish Linux SMP.
+captures, and the pinned OpenSBI source chain showing that the CPU1-side
+`Boot HART ID : 0` is a direct `CSR.MHARTID` read. Both physical cores
+therefore report zero through distinct boot paths. This does not establish
+a usable two-hart mapping or Linux SMP.

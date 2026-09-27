@@ -90,11 +90,27 @@ The protected verification output is
 `/tmp/k230-second-core-restored-verification.private`.
 
 The physical CPU0 SPL sampled `CSR.MHARTID=0` and
-`CSR.MISA=0x800000000094112f`. The current CPU1-side OpenSBI reports one
-logical HART numbered 0, but this experiment did **not** read physical
-CPU1's `mhartid` CSR. It does not establish a unique two-hart mapping,
-physical CPU0 interrupts/timers, shared cached-memory/atomic coherence,
-or Linux SMP operation. Those gates remain open.
+`CSR.MISA=0x800000000094112f`. The CPU1-side OpenSBI banner also derives
+its `Boot HART ID : 0` directly from `CSR.MHARTID`: in the pinned
+OpenSBI 1.4 source, `include/sbi/riscv_asm.h:166` defines
+`current_hartid()` as `csr_read(CSR_MHARTID)`;
+`lib/sbi/sbi_init.c:534` reads that value, `:394` passes it to
+`sbi_boot_print_hart()`, and `:169` prints the observed banner field.
+These line numbers use Canaan's pinned `opensbi-1.4-overlay` for
+`sbi_init.c`; its overlay changes only an unrelated PMP banner line in
+this area. The physical CPU1 attribution follows the pinned stage-1
+`k230_img.c:276-285` release of CPU1 and park of CPU0, corroborated by
+the live 256 KiB L2/RVV CPU profile. Thus both executing physical cores
+report `mhartid=0` on this board through separate first-hand boot outputs
+and the pinned source chain. CPU1 was not instrumented with a separate
+new marker, so its *physical attribution* is source-backed rather than a
+second independent physical-core label in the banner.
+
+Duplicate CSR IDs rule out a DT-only second `cpu@1` node with generic
+OpenSBI's current hart-index/scratch/HSM handling. A safe virtual-ID
+scheme or other supported mapping, physical CPU0 interrupts/timers,
+shared cached-memory/atomic coherence, and Linux SMP operation remain
+unproved.
 
 As a separate read-only observation on the restored image, `perf` was
 absent from `PATH` and `/run/current-system/sw/bin/perf`, while

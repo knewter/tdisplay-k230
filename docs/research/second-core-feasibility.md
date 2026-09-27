@@ -427,8 +427,20 @@ recorded `CPU0_SPL_IDENTITY mhartid=0x0 misa=0x800000000094112f`
 before the existing CPU1 release, followed by
 one-hart OpenSBI and one-CPU Linux. The restored image then booted normally.
 This turns the pinned source's physical CPU0 identity **sampling point**
-into a first-hand `mhartid=0` observation. It does not measure physical
-CPU1's CSR: OpenSBI's `Boot HART ID : 0` is its logical handoff value, and
-must not be used alone to infer a distinct or duplicate physical CSR.
-The distinct hart mapping, CPU0 interrupt/timer routing and shared cached
-memory/atomic contract remain open before any Linux SMP attempt.
+into a first-hand `mhartid=0` observation. Source tracing also resolves
+what the CPU1-side `Boot HART ID : 0` means. The pinned OpenSBI 1.4
+`include/sbi/riscv_asm.h:166` defines `current_hartid()` as
+`csr_read(CSR_MHARTID)`. Canaan's pinned overlay
+`lib/sbi/sbi_init.c:534` assigns that value to `hartid`, `:394` passes it
+to `sbi_boot_print_hart()`, and `:169` prints `Boot HART ID` from it.
+The pinned stage-1 `k230_img.c:276-285` releases CPU1 into this boot
+path while CPU0 parks; the observed 256 KiB L2/RVV profile corroborates
+that physical assignment. Therefore the board's CPU1-side banner is
+also a first-hand CSR read of zero, with its physical attribution grounded
+in the stage-1 source. No new CPU1-specific marker was added.
+
+Both physical cores reporting hardware `mhartid=0` rules out a DT-only
+second CPU node under this generic OpenSBI's current scratch/HSM indexing.
+A safe virtual-ID scheme or other supported two-hart mapping, CPU0
+interrupt/timer routing, and the shared cached-memory/atomic contract
+remain open before any Linux SMP attempt.

@@ -39,9 +39,10 @@
   capture the diagnostic boot, restore both original slots, and prove a
   subsequent normal boot. Verify by the direct-read hashes and serial
   excerpts in `docs/evidence/second-core/cpu0-identity-physical-trial.md`
-  (physical board proof of CPU0's sampled CSRs only). Physical CPU1's CSR,
-  the external-reader restoration rehearsal, and all Linux SMP gates remain
-  open.
+  (physical board proof of CPU0's sampled CSRs). The pinned OpenSBI
+  `sbi_init.c` and `riscv_asm.h` source chain also establishes that the
+  CPU1-side `Boot HART ID : 0` comes from `CSR.MHARTID`. The external-reader
+  restoration rehearsal and all Linux SMP gates remain open.
 
 ## 2. Recovery rehearsal (must pass before any stage-3 task starts)
 
