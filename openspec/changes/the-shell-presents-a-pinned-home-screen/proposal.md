@@ -45,28 +45,23 @@ and the coordinator note about updating the sibling proposal's wording.
   shell user's XDG state directory so it survives a restart and a reboot.
 - Make tapping a Home icon launch the app, or focus its existing window when
   one is already running, instead of always starting a second instance.
-- Reconcile Home's gesture topology with the existing card overview and
-  drawer rather than adding a third, disconnected destination: Home is what a
-  person sees whenever no application is focused and the overview is not
-  active; a bottom-edge swipe from a running application still opens the
-  existing live card overview unchanged; dismissing the overview reveals Home
-  underneath it; swiping up from Home still opens the existing drawer
-  unchanged. See `design.md` for the full scenario-by-scenario map and why
-  each existing gesture keeps its current wiring.
-- Minimal compositor hook: relabel the card overview's on-screen title from
-  "Home" to "Overview" in `nix/card-shell/adapter.c`, and accept a `"home"`
-  surface name in `nix/card-shell/route.c`'s `card_shell_launch_surface`
-  allow-list, since Home is no longer that surface's own name. No card
-  manipulation, gesture-recognition, or close-lifecycle logic changes.
+- Wire the user's explicit navigation sequence: the bottom-edge swipe from
+  an app opens Overview; an upward swipe from Overview's bottom navigation
+  area reveals Home without closing apps; the next upward swipe from Home
+  opens All apps. Swiping a card itself upward still closes only that card.
+- Add compositor-owned Home visibility and focus handling. Apps stay mapped,
+  keep their container IDs and remain selectable; selecting an existing app
+  or launching a new app returns it to the foreground. Partial/reversed Home
+  gestures return to Overview, with movement tracking the contact.
 
 **Non-goals:** search, folders or categories beyond the existing drawer list,
 home-screen widgets, a wallpaper picker (Home reads the existing theme
 wallpaper, it does not add a way to choose one), multi-user profiles,
 haptics (no haptic hardware exists on this board), the second CPU core, and
 any change to the sibling change's card drag/expand/throw-close physics or
-composition boundary. Renaming the overview's title is the only change this
-proposal makes to `nix/card-shell/`; its gesture recognition, policy state
-machine, and rendering are untouched.
+composition boundary. The navigation addition changes Overview-to-Home routing and scene visibility;
+card manipulation and close-lifecycle behavior remain owned by their existing
+implementation.
 
 **Board dependency:** the pager physics, grid layout, pin persistence, and
 drag-reorder are host-testable Rust unit tests and run under `cargo test
@@ -74,13 +69,9 @@ drag-reorder are host-testable Rust unit tests and run under `cargo test
 `tests/rust_theme_chooser_qemu.py`) exercises the compositor/client pairing,
 the new layer-shell surface, page swipe, dock taps, and the pin flow with a
 synthetic desktop-entry/icon fixture — this is QEMU proof of wiring and
-layout, not of touch feel, contrast, or real-glass usability. Real-finger
-board acceptance (readability in daylight, actual icon legibility, the
-long-press timing feeling right under a real finger, dark/light theme
-captures on the physical AMOLED) is out of scope for this implementation pass
-per the coordinator's explicit instruction that this change does not touch
-the board or `/dev/ttyACM0`; that hardware evidence gate is named explicitly
-in `tasks.md` and left open for the coordinator or a follow-up change.
+layout, not of touch feel, contrast, or real-glass usability. The navigation addition includes a reserved physical-board injected-input
+trial and matching-system installation. The broader real-finger, daylight
+readability and rearrangement acceptance remains explicitly open in task 8.1.
 
 ## Capabilities
 
@@ -107,7 +98,7 @@ that change's next revision or archive.)
 Userspace only: `nix/rust-shell-client/` gains new modules (pager physics,
 grid/dock layout, pin persistence) and a new always-mapped layer-shell surface
 plus its touch/frame/configure wiring in `main.rs`; `nix/card-shell/adapter.c`
-and `route.c` get a one-line title change and a one-string allow-list change.
+and its routing/focus hooks make Home reachable without unmapping apps.
 No kernel, device tree, boot, radio, or second-core change. No new Nix
 package; the existing `.#handheld-shell-rust` and `.#card-shell` outputs and
 the `k230-coherent-shell` NixOS configuration absorb the change. Host build,

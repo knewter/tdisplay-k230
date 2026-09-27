@@ -102,37 +102,40 @@ existing wallpaper consumer untouched and lets Home be alpha-composited over
 whichever of those three the wallpaper surface is currently showing, exactly
 as icons overlay a wallpaper on every reference launcher.
 
-### 2. Reconciled topology: three named layers, each keeping its existing wiring
+### 2. Reachable Home, Overview and Drawer
 
-```
-Home (new, Layer::Bottom, always mapped)
-  -- swipe up (existing card_shell_drawer_up gesture; unchanged) --> Drawer ("All apps")
-  -- tap icon --> launch app, or focus it if already running
-  -- long-press icon --> rearrange mode (drag within/between pages, into/out of dock, or remove)
-  -- occluded by: a focused application window; the card overview; Drawer/Shade/Settings
+User decision, 2026-09-27: "swipe up from windows list" shows Home and
+"swipe up from home" shows the app drawer. This supersedes the earlier
+"keep every gesture unchanged" decision: that left Home hidden behind apps.
 
-Overview (existing card-shell deck, retitled "Overview"; gesture/physics unchanged)
-  -- entered by: existing bottom-edge card-entry gesture from a running app,
-     or the existing persistent recovery route
-  -- dismissed by: existing back/dismiss gesture --> reveals whatever is
-     beneath: Home if nothing is focused, or the originating app otherwise
-  -- empty state ("no running apps"): still exists as the persistent-route
-     fallback (e.g. someone opens Overview with nothing running); dismissing
-     it reveals Home the same way
+- App → bottom-edge swipe → Overview, preserving existing card entry.
+- Overview → upward swipe from its bottom navigation area → Home.
+- Home → bottom-edge upward swipe → All apps, through the existing tracked
+  drawer reveal stream.
+- An upward swipe beginning on a card still closes that card; a horizontal
+  card swipe still browses running apps.
+- Tapping a running app's Home icon focuses its existing window; launching
+  an app from Home/Drawer makes the new window visible.
 
-Drawer ("All apps", existing Rust overlay; layout/scroll physics unchanged)
-  -- long-press a tile --> "Add to Home" (new)
-  -- tap a tile --> launch/focus (existing)
-```
+Userspace: the compositor owns a Home visibility state and suppresses normal
+app scene layers while Home is selected, without moving/unmapping/closing
+windows or changing their identities. Ordinary app focus exits that state.
+Session-lock surfaces remain outside this app-layer suppression. Output
+teardown restores normal scene state. Home's Rust Layer::Bottom surface
+continues rendering icons and accepting its existing page/pin interactions.
 
-No existing gesture recognizer, threshold, or state machine in
-`nix/card-shell-policy/` or `navigation.rs` changes. The only compositor
-source changes are the "Home" -> "Overview" title string in `adapter.c` and
-adding `"home"` to the surface-name allow-list in `route.c` (used later if a
-compositor-driven refresh of Home's content is ever needed; the initial
-implementation does not require the compositor to invoke it, since Home is
-always mapped and redraws itself, but the allow-list entry keeps the naming
-consistent and unblocks that path without a further C change).
+The Overview-to-Home transition moves the whole Overview with the finger,
+revealing Home underneath. Release settles smoothly to Home when qualified,
+or back to Overview when cancelled/too short. The next swipe is a distinct
+contact; the Home gesture must never accidentally open the drawer too.
+Multi-touch cancels navigation without leaking part of the contact sequence
+into an app or into Home. Existing card close/open and overlay escape paths
+retain their ownership rules.
+
+Rejected: closing apps, parking them in the scratchpad, or putting them on a
+special workspace merely to expose Home. Those were diagnostic shortcuts,
+not the user's navigation model, and would complicate launch/focus behavior.
+Physical gesture proof remains UNVERIFIED until task 10's board trial.
 
 ### 3. Pages: full-bleed grid pages, not a shrinking coverflow
 
@@ -309,3 +312,10 @@ acceptance (readability, long-press feel, dark/light capture on the physical
 AMOLED) is out of scope for this pass per the coordinator's explicit "don't
 touch the board" instruction and remains a named open evidence gate in
 `tasks.md`.
+
+## Navigation implementation follow-up, 2026-09-27
+
+Tasks 1–9 document the first Home implementation. Task 10 now authorizes
+compositor navigation changes and a reserved board trial. The older
+no-board/no-gesture-change migration notes describe that original pass,
+not the newly authorized navigation work. Broad task 8.1 stays open.

@@ -179,43 +179,43 @@ semantics the drawer already applies.
 
 ### Requirement: Home's gesture topology is reconciled with the card overview and drawer
 
-<!-- Grounding: `nix/card-shell/adapter.c`'s `rebuild_chrome` (the
-`touch_first()` branch's `"Home"` title, drawn only while `shell.active`) and
-`nix/card-shell/route.c`'s `card_shell_drawer_up`/`card_shell_launch_surface`
-(the swipe-up-to-drawer gesture, gated on `!shell.active`) are read and cited
-by path; this requirement's own new Home surface and its `Layer::Bottom`
-stacking are implemented and QEMU-tested in this change, not yet observed on
-the physical board. -->
+<!-- UNVERIFIED: explicit user navigation decision, 2026-09-27. The new
+Overview-to-Home transition requires paired-compositor and physical proof. -->
 
-With no application focused and the card overview dismissed, the shell SHALL
-show Home. A bottom-edge swipe from a focused running application SHALL
-continue to open the existing card overview unchanged. Dismissing the card
-overview (its existing back/dismiss gesture) SHALL reveal Home when no
-application was the entry source, or the originating application otherwise.
-Swiping up from Home SHALL continue to open the existing drawer unchanged.
-The card overview's on-screen title SHALL read "Overview", not "Home", since
-Home is now a distinct screen.
+A bottom-edge swipe from a running application SHALL open Overview. An
+upward swipe beginning in Overview's bottom navigation area SHALL reveal
+Home without closing, unmapping or moving running apps. Swiping up from
+Home's bottom edge SHALL open All apps. Swiping a card itself upward SHALL
+retain the existing close-card action. Home selection SHALL end when an
+existing app is focused or a new app is launched. Navigation SHALL track
+contact displacement and settle smoothly after release or cancellation.
 
-#### Scenario: Nothing is running
+#### Scenario: Overview reveals Home while apps keep running
 
-- **WHEN** every application is closed and the card overview is dismissed
-- **THEN** Home is what the person sees, with its pinned icons and dock
-  visible over the theme wallpaper
+- **WHEN** a person swipes upward from Overview's bottom navigation area
+- **THEN** Home appears with its wallpaper, icons and dock
+- **AND** all previously running apps retain their window identities
+- **AND** the same contact does not also open All apps
 
-#### Scenario: An open application still reaches the overview the same way
+#### Scenario: Home opens All apps
 
-- **WHEN** a person performs the existing bottom-edge card-entry gesture
-  from a running application
-- **THEN** the card overview opens exactly as it does today, titled
-  "Overview"
+- **WHEN** a person begins a new upward swipe from Home's bottom edge
+- **THEN** the existing All apps drawer follows the contact and opens
 
-#### Scenario: Dismissing the overview with nothing running reveals Home
+#### Scenario: Returning to a running app
 
-- **WHEN** a person dismisses the card overview and no application was its
-  entry source
-- **THEN** Home is revealed underneath it
+- **WHEN** a person selects an identifiable running app from Home
+- **THEN** its existing window becomes visible and focused without a new instance
 
-#### Scenario: The drawer gesture from Home is unchanged
+#### Scenario: A short or cancelled Overview-to-Home swipe
 
-- **WHEN** a person swipes up from Home
-- **THEN** the existing drawer ("All apps") opens exactly as it does today
+- **WHEN** an upward navigation swipe reverses, is too short, or is cancelled
+  by an additional contact
+- **THEN** Overview settles back with its apps intact and no app receives a
+  partial touch sequence
+
+#### Scenario: Card gestures remain distinct
+
+- **WHEN** an upward gesture begins on an app card rather than the bottom
+  navigation area
+- **THEN** the existing close-card gesture applies to that card only

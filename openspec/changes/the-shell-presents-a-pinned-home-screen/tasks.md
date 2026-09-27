@@ -141,3 +141,25 @@ under active, concurrent revision by other work); the coordinator should add
 a superseding note to its decision 1 at that change's next revision or
 archive, the same way its own decision 12 already superseded decision 11 in
 place.
+
+## 10. Reach Home through the user's navigation sequence
+
+- [ ] 10.1 Implement tracked Overview-to-Home navigation, cancellation and
+  compositor Home visibility/focus restoration; Home's next bottom-edge
+  swipe opens the drawer. Keep card throws, app entry and horizontal
+  switching intact. Verify route ownership with
+  `python3 -m unittest tests.test_card_shell_route` and the existing policy
+  command `python3 -m unittest tests.test_card_shell_policy`.
+- [ ] 10.2 Extend the paired real-compositor/Rust QEMU fixture to exercise
+  app → Overview → Home → Drawer with running windows; confirm window IDs
+  survive Home, selecting an existing app restores it, and short/reversed
+  gestures do not navigate or close apps. Run
+  `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-source nix/handheld-theme-default --output <dir>`.
+- [ ] 10.3 Build the coherent-shell system with
+  `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --no-link`.
+  On the reserved board, repeat the navigation sequence through verified
+  injected touch, capture Overview/Home/Drawer, and check app identity and
+  focus after returning. Keep real-finger acceptance distinct and open.
+- [ ] 10.4 Land and deploy the qualified system, commit reviewed evidence
+  and screenshot inventory, and verify the public work card and CI/Pages.
+  Preserve task 8.1 and any unperformed physical checks; do not archive yet.
