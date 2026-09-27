@@ -93,3 +93,15 @@ focused route/Home tests, this Home OpenSpec change, this evidence directory,
 and the screenshot inventory. The single board/serial reservation covers this
 trial and installation only. The remaining acceptance gate is task 8.1's
 physical-finger/readability review; this change is not archived.
+
+## Publication and handoff
+
+Source and evidence landed on `master` at `04eefdbf`. [Pages run 36300532436](https://github.com/knewter/tdisplay-k230/actions/runs/36300532436)
+passed build and deployment. The [published evidence page](https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-home-screen-navigation-readme-md/)
+and [work dashboard](https://knewter.github.io/tdisplay-k230/work/) were fetched
+successfully and both contain the new native captures. The local site build
+and binary inventory passed. The injected input service and protected transfer
+server are stopped; the board reservation is released. Final observation:
+four shell services active, zero failed units, candidate running and selected.
+Only the wider task 8.1 acceptance and a normal reboot into this newly selected
+image remain unperformed; no source review, merge or persistent install is pending.

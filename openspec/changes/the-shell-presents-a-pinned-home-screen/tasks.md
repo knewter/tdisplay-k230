@@ -168,6 +168,12 @@ place.
   focus after returning. Keep real-finger acceptance distinct and open.
   Passed: `docs/evidence/home-screen/navigation/README.md` and `result.json`;
   three window IDs retained, measured held motion, Home icon restores Terminal.
-- [ ] 10.4 Land and deploy the qualified system, commit reviewed evidence
+- [x] 10.4 Land and deploy the qualified system, commit reviewed evidence
   and screenshot inventory, and verify the public work card and CI/Pages.
   Preserve task 8.1 and any unperformed physical checks; do not archive yet.
+
+Task 10 delivery verified at `04eefdbf`: source and physical-board evidence
+landed on `master`, the qualified system is running and persistently selected,
+and Pages run `36300532436` passed build and deployment. The published evidence
+page and `/work/` card both serve the new native captures. Task 8.1 remains
+open; no archive is claimed.
