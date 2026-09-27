@@ -29,6 +29,19 @@ scalar common ISA image with RVV disabled in kernel and userspace; do not
 rely on affinity to protect arbitrary migratable processes. No default
 image bytes change until these gates are satisfied.
 
+**Current recovery gate.** The narrow CPU0 identity diagnostic patches
+U-Boot SPL, which occupies raw SD-card offsets 1 MiB and 1.5 MiB
+(`nix/stage1.nix:176-180`). A bad SPL can prevent U-Boot itself from
+starting, so U-Boot one-shot boot and `ums` are not sufficient recovery
+routes for this experiment. Before flashing an experimental SPL, preserve a
+verified known-good card or a verified raw-stage-1 backup and confirm an
+external card-reader write/restore route. The board operator must control
+the serial/card session. If a later diagnostic only runs from RAM with
+unchanged SPL/card bytes, use the existing U-Boot one-shot recovery path
+for that session; a second physical card is not inherently required by a
+RAM-only readout. The per-session recovery check remains mandatory for
+any hardware-writing experiment.
+
 See proposal.md and `docs/research/second-core-feasibility.md` (the full
 source and boot-record audit this design continues), and the existing
 `openspec/specs/system/second-core-readiness/spec.md` capability, which this
