@@ -7,8 +7,9 @@ use crate::{
     home_screen::HomeScreen,
     icon::IconCache,
     navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
-    service_data::{Control, ControlValue, Priority},
-    service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP},
+    service_data::{Control, ControlState, ControlValue, Priority},
+    service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP, SHADE_SLIDER_H, SHADE_SLIDER_TOP},
+    slider,
     splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
@@ -494,6 +495,70 @@ fn control_text(control: &Control) -> String {
         }
         None => control.label.clone(),
     }
+}
+
+/// A cheap vector sun glyph -- a filled disc plus a few short rays -- for
+/// each end of the brightness slider (task: "a sun icon at each end if
+/// cheap"). No new image asset: this is a handful of `arc`/`line_to`
+/// calls, in the same spirit as `rounded`'s own plain-cairo shapes
+/// elsewhere in this file.
+fn paint_sun(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64) {
+    color(cr, rgb, alpha);
+    cr.new_sub_path();
+    cr.arc(cx, cy, r * 0.5, 0.0, std::f64::consts::TAU);
+    let _ = cr.fill();
+    cr.set_line_width(2.0);
+    for i in 0..8 {
+        let angle = f64::from(i) * std::f64::consts::FRAC_PI_4;
+        let (dx, dy) = (angle.cos(), angle.sin());
+        cr.move_to(cx + dx * r * 0.7, cy + dy * r * 0.7);
+        cr.line_to(cx + dx * r, cy + dy * r);
+    }
+    color(cr, rgb, alpha);
+    let _ = cr.stroke();
+}
+
+/// The shared Material-3-style brightness slider: a full-width track (a
+/// thick "active" portion up to the thumb, a dimmer "inactive" rest) plus
+/// a round thumb, and a sun glyph at each end -- one component
+/// (task: "reuse one component for both") the Settings row and the
+/// Shade's own header both call, so the two can never visually drift
+/// apart. `center_y` is where the track and thumb sit vertically; the
+/// track's own left/right x comes from `slider::track_bounds`, the same
+/// numbers touch dispatch (`main.rs`) computes a drag's bounds from.
+/// Draws nothing (not even a disabled ghost) when the control carries no
+/// percent value -- callers already gate this on `ControlState::
+/// Writable`, matching the row's own pre-slider behavior of showing
+/// nothing extra when unavailable.
+fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control: &Control) {
+    let Some(ControlValue::Percent(percent)) = &control.value else {
+        return;
+    };
+    let percent = *percent;
+    let (left, right) = slider::track_bounds(w);
+    let track_h = 14.0;
+    let thumb_r = 17.0;
+    let thumb_x = slider::x_at_value(percent, left, right);
+    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
+    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    // Inactive track, full width.
+    rounded(cr, left, center_y - track_h / 2.0, right - left, track_h, track_h / 2.0);
+    color(cr, style.muted, 0.35);
+    let _ = cr.fill();
+    // Active (thumb-ward) portion. A minimum width keeps the rounded cap
+    // visible even at `slider::MIN_PERCENT`, instead of a sliver.
+    let active_w = (thumb_x - left).max(track_h);
+    rounded(cr, left, center_y - track_h / 2.0, active_w, track_h, track_h / 2.0);
+    color(cr, style.accent, 1.0);
+    let _ = cr.fill();
+    cr.new_sub_path();
+    cr.arc(thumb_x, center_y, thumb_r, 0.0, std::f64::consts::TAU);
+    color(cr, style.accent, 1.0);
+    let _ = cr.fill();
+    cr.new_sub_path();
+    cr.arc(thumb_x, center_y, thumb_r * 0.4, 0.0, std::f64::consts::TAU);
+    color(cr, style.text, 0.9);
+    let _ = cr.fill();
 }
 
 /// The decode target size for a cached thumbnail variant under a given
@@ -1689,6 +1754,23 @@ fn scene(
                     style.accent,
                 );
             }
+            // The shared brightness slider (task: "brightness should be a
+            // slider" -- Android puts one at the top of its own quick
+            // settings shade; `docs/design/shell-polish-review-2026-09.md`
+            // asked for the same here). Only drawn when writable, exactly
+            // like the Settings row below -- `service_ui::slider_band`
+            // mirrors this same writable gate for touch dispatch.
+            if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
+                if settings.brightness.state == ControlState::Writable {
+                    paint_slider(
+                        cr,
+                        style,
+                        w,
+                        SHADE_SLIDER_TOP + SHADE_SLIDER_H / 2.0,
+                        &settings.brightness,
+                    );
+                }
+            }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
             // contentless "No active preview" sitting directly above a full
@@ -1703,7 +1785,7 @@ fn scene(
                     theme,
                     "notifications",
                     24.0,
-                    186.0,
+                    262.0,
                     w - 48.0,
                     72.0,
                     false,
@@ -1712,7 +1794,7 @@ fn scene(
                     let painted = preview
                         .icon
                         .as_deref()
-                        .is_some_and(|icon| icons.paint(cr, icon, 38, 42.0, 203.0));
+                        .is_some_and(|icon| icons.paint(cr, icon, 38, 42.0, 279.0));
                     if !painted {
                         text(
                             cr,
@@ -1724,7 +1806,7 @@ fn scene(
                                 .to_uppercase()
                                 .to_string(),
                             51.0,
-                            209.0,
+                            285.0,
                             30.0,
                             21.0,
                             style.text,
@@ -1734,7 +1816,7 @@ fn scene(
                         cr,
                         &preview.source,
                         94.0,
-                        197.0,
+                        273.0,
                         w - 132.0,
                         17.0,
                         style.accent,
@@ -1743,7 +1825,7 @@ fn scene(
                         cr,
                         &preview.summary,
                         94.0,
-                        220.0,
+                        296.0,
                         w - 132.0,
                         21.0,
                         style.text,
@@ -1754,7 +1836,7 @@ fn scene(
                     } else {
                         "No new notifications"
                     };
-                    text(cr, empty, 42.0, 211.0, w - 84.0, 20.0, style.muted);
+                    text(cr, empty, 42.0, 287.0, w - 84.0, 20.0, style.muted);
                 }
             }
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
@@ -1980,16 +2062,13 @@ fn scene(
                         text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, style.muted);
                     }
                 }
-                if settings.brightness.state == crate::service_data::ControlState::Writable {
-                    text(
-                        cr,
-                        "−       +",
-                        w - 162.0,
-                        settings_row_y(1) + 40.0,
-                        130.0,
-                        25.0,
-                        style.accent,
-                    );
+                if settings.brightness.state == ControlState::Writable {
+                    // Material-3-style slider (task: "brightness should
+                    // be a slider"), replacing the old stepper -- the
+                    // touch target is the whole row (`slider_band` in
+                    // `service_ui.rs` mirrors this same row rhythm), well
+                    // past the "at least about 56 px tall" ask.
+                    paint_slider(cr, style, w, settings_row_y(1) + 86.0, &settings.brightness);
                 }
             } else {
                 text(
@@ -4579,7 +4658,10 @@ mod tests {
         renderer.set_services(view);
         let mut failed = vec![0; normal.len()];
         renderer.draw(&mut failed, params, &[]).unwrap();
-        let region = (355 * 568 * 4)..(375 * 568 * 4);
+        // Rows shifted +76 along with `NOTIFICATION_TOP` itself (task:
+        // "brightness should be a slider" -- room for the new header
+        // slider pushed the whole list down).
+        let region = (431 * 568 * 4)..(451 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
     }
 
@@ -4931,7 +5013,10 @@ mod tests {
             )
             .unwrap();
         assert_eq!(renderer.icons.decode_count(), 1);
-        let pixel = (220 * 568 + 59) * 4;
+        // Row shifted +76 along with the preview card itself -- room for
+        // the brightness slider now sits above it (task: "brightness
+        // should be a slider").
+        let pixel = (296 * 568 + 59) * 4;
         assert!(
             frame[pixel + 2] > 160,
             "preview app icon red channel absent"
