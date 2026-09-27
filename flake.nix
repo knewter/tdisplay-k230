@@ -186,6 +186,8 @@
         handheld-shell-rust-probe = pkgsCross.callPackage ./nix/rust-shell-probe { };
         # Opt-in Rust software shell; the probe remains a separate artifact.
         handheld-shell-rust = pkgsCross.callPackage ./nix/rust-shell-client { };
+        # Bounded diagnostic sampler, outside the normal image closure.
+        runtime-perf = pkgsCross.callPackage ./nix/runtime-perf.nix { };
         # Opt-in command only; no normal service/default selection until the
         # shared theme consumers and physical rollback trial pass.
         handheld-theme-command = pkgsCross.callPackage ./nix/handheld-theme-command.nix {
