@@ -86,3 +86,9 @@ Normal reboot into this new userspace image has not been performed. The
 candidate is running and selected for the next normal boot; the current boot
 still began with the previous system. Real-finger acceptance and the wider
 picker performance/profiling tasks remain open.
+
+The public evidence page and work-card screenshot discovery were verified at
+`d937b8cd` after [Pages build and deployment 36298384207](https://github.com/knewter/tdisplay-k230/actions/runs/36298384207)
+succeeded. The initial site failures were resolved by reconciling a concurrent
+proposal archive's dashboard override and adding all five PNG hashes to the
+binary inventory. The full local site build passed (343 pages, 10.84 MB).

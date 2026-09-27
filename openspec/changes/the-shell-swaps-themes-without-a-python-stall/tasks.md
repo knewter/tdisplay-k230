@@ -1220,7 +1220,7 @@ complete stack qualification remain open. This does not close 15.2/15.3.
   a different still background through the picker. Capture picker feedback
   and Home before/after; verify the selected generation and reopened picker
   agree. Record injected input separately from real-finger acceptance.
-- [ ] 16.3 Land and deploy the qualified fix, publish reviewed evidence and
+- [x] 16.3 Land and deploy the qualified fix, publish reviewed evidence and
   check CI/site publication. Keep broader profiling and gesture gates open.
 
 Task 16.1/16.2 proof: 24 Rust and 21 Python checks passed; the corrected
@@ -1230,3 +1230,11 @@ reopened picker agree. A shell/helper restart retained the selection.
 `docs/evidence/theme-picker/background-selection/README.md` records reviewed
 captures, generation identities and the successful persistent installation.
 Real-finger acceptance and a normal reboot of this image are not claimed.
+
+Task 16.3: source, physical evidence and image installation are on master.
+Pages run `36298384207` passed build and deployment at `d937b8cd`; the
+published evidence page and work card were checked over HTTP, including all
+five newly discovered screenshots. URL:
+https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-theme-picker-background-selection-readme-md/
+The archive override and missing screenshot inventory entries that blocked
+the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
