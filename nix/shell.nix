@@ -1210,6 +1210,7 @@ in
       pkgs.nnn
       editorDesktop
       omawrite
+      pkgs.xdg-utils
       videoSession
       videoDesktop
       touchLauncher
