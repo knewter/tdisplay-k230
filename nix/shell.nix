@@ -828,6 +828,7 @@ in
 
   config = lib.mkIf cfg.enable {
     xdg.mime.enable = true;
+    environment.pathsToLink = [ "/share/icons" ];
     xdg.mime.defaultApplications = {
       "text/plain" = [ "k230-editor.desktop" ];
       "text/markdown" = [ "k230-editor.desktop" ];
