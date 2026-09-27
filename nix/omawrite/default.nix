@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchFromGitHub, cmake, qt6Packages }:
+{ lib, stdenv, fetchFromGitHub, cmake, qt6Packages, pkgsBuildBuild }:
 
 stdenv.mkDerivation {
   pname = "omawrite";
@@ -10,7 +10,11 @@ stdenv.mkDerivation {
     hash = "sha256-yS3GOL/kc03qx4naWzUdSZwAYxMuCjvrgmhexpwjsfA=";
   };
   patches = [ ./handheld.patch ];
-  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook qt6Packages.qtdeclarative ];
+  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook ];
+  cmakeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    "-DQt6QmlTools_DIR=${pkgsBuildBuild.qt6.qtdeclarative}/lib/cmake/Qt6QmlTools"
+    "-DQt6QuickTools_DIR=${pkgsBuildBuild.qt6.qtdeclarative}/lib/cmake/Qt6QuickTools"
+  ];
   postPatch = ''
     cp ${./CMakeLists.txt} CMakeLists.txt
     cp ${./HandheldFileDialog.qml} src/HandheldFileDialog.qml
