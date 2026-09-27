@@ -150,3 +150,32 @@ real riscv64 package; running its `k230-theme-helperd`/`k230-theme` under
 1.148 s/call with no daemon versus 0.785 s/call with one running (about a
 32% reduction) -- directional only, since qemu-user translation overhead,
 not the K230's in-order core, dominates this host's absolute numbers.
+
+## Both carousel working sets and movement (2026-09-26)
+
+The user reports slow theme-picker swipes and apparently repeated loading on
+source `926c7a61`. This report is not a measured diagnosis. Source review
+finds that the merged one-page picker requests both thumbnail variants for
+up to 17 themes and 17 backgrounds, while the shared FIFO cache holds only
+36 entries. That bound was justified for one carousel, before both moved to
+the same page. With 17 themes and just two backgrounds, stationary demand
+already exceeds capacity. Eviction followed by unconditional requests can
+repeat disk loading/hashing or decoding without any content change.
+
+Keep the bounded cache; derive one working set for both carousels from
+viewport-intersecting slices, with centered-first scheduling and controlled
+admission. Use the same set for requests and pending-work decisions, and
+protect its resident entries from obsolete in-flight replies. Retain the
+existing hard entry/memory bound rather than making the cache arbitrarily
+large. Offscreen layout and hit-testing remain unchanged. Also defer the
+optional, synchronous candidate-overlay pre-render until neither carousel
+is dragging, coasting, or settling. This changes speculative work scheduling,
+not live rendering or the durable appearance protocol.
+
+A host regression must begin with a two-carousel catalog whose old request
+set exceeded 36 entries, then prove the new admitted set warms and reaches
+quiescence (no continual requeues/evictions), stays bounded while moving, and
+retains center priority. A motion-gate test must cover both carousels and
+show pre-render becomes eligible again at rest. Physical responsiveness is
+still UNVERIFIED: after the panel trial, compare cold/warm swipes, idle
+loading activity, frame gaps and process CPU on the exact installed build.

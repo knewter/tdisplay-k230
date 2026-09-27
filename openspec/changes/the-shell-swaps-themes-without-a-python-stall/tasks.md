@@ -1000,3 +1000,32 @@ per `AGENTS.md`) until 2.3, 3.4, 6.6, 9.5, 10.6b, and 10.7 have results;
 3.3b is named here so it is not silently dropped or claimed done without
 a board result. Task 5.4's board result is recorded above
 (board-chooser-2026-09-25.md).
+
+## 11. Stop repeated picker thumbnail work and prioritize swipes
+
+The user reports slow swiping and apparently repeated theme loading on the
+installed `926c7a61` Rust shell. Source review identifies an over-capacity
+combined thumbnail request set and speculative main-thread pre-render during
+motion; neither is yet a measured explanation of this board report.
+
+- [ ] 11.1 Bound the combined theme/background thumbnail working set to
+  viewport-relevant entries, preserve centered-first scheduling, and use the
+  same set for pending-work checks. Keep the existing cache bound and avoid
+  stale in-flight results evicting current visible entries. Add a host
+  regression with old stationary demand greater than 36 entries which warms
+  without continual requeues and remains bounded while browsing. Proof:
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`
+  and `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_thumbnails`.
+- [ ] 11.2 Gate speculative overlay pre-render while either carousel is
+  dragging/coasting/settling, with a test proving it resumes at rest. Proof:
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust theme_prerender`.
+- [ ] 11.3 On the reserved board after kernel work, record the exact Rust
+  store path and catalog/background counts; compare cold/warm chooser opening,
+  swiping across several themes and back without applying, and 15 seconds
+  idle. Capture native video plus touch/frame journal timing and Rust/helper
+  CPU deltas. Confirm the active generation stays unchanged during browsing,
+  repeated loading settles, and warm swipes improve without a memory increase.
+  Extend the existing `tools/theme-swap-jank.py` capture for this gesture
+  sequence if necessary; its current activate-only run is not swipe proof.
+  Commit the result before checking this task. Physical proof remains pending;
+  host tests alone do not satisfy it.
