@@ -89,7 +89,9 @@
   the drawer and to rearrange on Home, and screenshot each step; verify
   with `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg
   <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client>
-  --output <dir>`. Done: PASS, all twelve checks true; see
+  --output <dir>`.
+  Passed all 24 checks with the exact candidate compositor/Rust executables;
+  see `docs/evidence/home-screen/navigation/qemu-result.json`. Done: PASS, all twelve checks true; see
   `docs/evidence/home-screen/qemu/`. (User-mode `qemu-riscv64-static`
   headless Pixman, not `qemu-system-riscv64`'s `k230` machine -- this
   repo's existing Rust-client QEMU tests all use the same user-mode
@@ -144,22 +146,28 @@ place.
 
 ## 10. Reach Home through the user's navigation sequence
 
-- [ ] 10.1 Implement tracked Overview-to-Home navigation, cancellation and
+- [x] 10.1 Implement tracked Overview-to-Home navigation, cancellation and
   compositor Home visibility/focus restoration; Home's next bottom-edge
   swipe opens the drawer. Keep card throws, app entry and horizontal
   switching intact. Verify route ownership with
   `python3 -m unittest tests.test_card_shell_route` and the existing policy
   command `python3 -m unittest tests.test_card_shell_state`.
-- [ ] 10.2 Extend the paired real-compositor/Rust QEMU fixture to exercise
+  Source `f39cb7eb`; 37 route/policy checks pass. The Home-layer runtime
+  regression passes, as do 20 Rust Home tests and the desktop-ID regression.
+- [x] 10.2 Extend the paired real-compositor/Rust QEMU fixture to exercise
   app → Overview → Home → Drawer with running windows; confirm window IDs
   survive Home, selecting an existing app restores it, and short/reversed
   gestures do not navigate or close apps. Run
   `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client> --output <dir>`.
-- [ ] 10.3 Build the coherent-shell system with
+  Passed all 24 checks with the exact candidate compositor/Rust executables;
+  see `docs/evidence/home-screen/navigation/qemu-result.json`.
+- [x] 10.3 Build the coherent-shell system with
   `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --no-link`.
   On the reserved board, repeat the navigation sequence through verified
   injected touch, capture Overview/Home/Drawer, and check app identity and
   focus after returning. Keep real-finger acceptance distinct and open.
+  Passed: `docs/evidence/home-screen/navigation/README.md` and `result.json`;
+  three window IDs retained, measured held motion, Home icon restores Terminal.
 - [ ] 10.4 Land and deploy the qualified system, commit reviewed evidence
   and screenshot inventory, and verify the public work card and CI/Pages.
   Preserve task 8.1 and any unperformed physical checks; do not archive yet.

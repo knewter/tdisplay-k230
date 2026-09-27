@@ -1412,6 +1412,11 @@ DATA 10e963c4961fd33c126f0b49b167aa732c9f050ae04ebadb3ec8d2b37f0629ac docs/evide
 DATA 3debac1206e0fc716715a440fa142478acf5f5bdbed195783f0eca7eddbac040 docs/evidence/card-shell/transparent-corners/board-trial/before.png
 DATA 5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e docs/evidence/card-shell/transparent-corners/board-trial/rounded.png
 DATA 5bb123a3d8c76bbdda5b2e0a88c9848c9d20cd4814fb8090e9fd2e389ea2572e docs/evidence/card-shell/transparent-corners/installed-system/rounded.png
+DATA 72c95b4f6bb012234a29c2443e4d566e19189271230f5185caa8e17bc606f89a  docs/evidence/home-screen/navigation/drawer.png
+DATA 5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20  docs/evidence/home-screen/navigation/home.png
+DATA a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4  docs/evidence/home-screen/navigation/overview.png
+DATA d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c  docs/evidence/home-screen/navigation/restored-terminal.png
+
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2163,3 +2168,16 @@ image data, not executable firmware or real-finger acceptance.
 | `docs/evidence/theme-picker/background-selection/picker-after-restart.png` | 313536 | DATA | `a1606e29a77f892d0500fcdbf35495136a1c1d8b625e0c0c0031ba1956664788` |
 | `docs/evidence/theme-picker/background-selection/picker-alternate-applied.png` | 186967 | DATA | `4536c21f2c96e81b0b143238d2f067f4b60077765a8926a402b98f678480a20e` |
 | `docs/evidence/theme-picker/background-selection/picker-applied.png` | 317404 | DATA | `9f6a4608fca4fcc74c14049acaf2adab50eca8878692835d07703f7553aba6e5` |
+
+## Home navigation captures, 2026-09-27
+
+Reviewed native board captures made with verified injected touch. See
+`docs/evidence/home-screen/navigation/README.md`. These are image data;
+real-finger acceptance remains open.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-screen/navigation/drawer.png` | 75729 | DATA | `72c95b4f6bb012234a29c2443e4d566e19189271230f5185caa8e17bc606f89a` |
+| `docs/evidence/home-screen/navigation/home.png` | 26108 | DATA | `5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20` |
+| `docs/evidence/home-screen/navigation/overview.png` | 16283 | DATA | `a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4` |
+| `docs/evidence/home-screen/navigation/restored-terminal.png` | 8833 | DATA | `d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c` |

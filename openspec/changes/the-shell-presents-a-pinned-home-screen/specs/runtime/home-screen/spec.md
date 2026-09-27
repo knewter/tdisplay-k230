@@ -179,8 +179,9 @@ semantics the drawer already applies.
 
 ### Requirement: Home's gesture topology is reconciled with the card overview and drawer
 
-<!-- UNVERIFIED: explicit user navigation decision, 2026-09-27. The new
-Overview-to-Home transition requires paired-compositor and physical proof. -->
+<!-- UNVERIFIED: real-finger acceptance remains open. The paired QEMU and
+physical-board injected-touch trials pass; see
+docs/evidence/home-screen/navigation/README.md. -->
 
 A bottom-edge swipe from a running application SHALL open Overview. An
 upward swipe beginning in Overview's bottom navigation area SHALL reveal

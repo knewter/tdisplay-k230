@@ -1,0 +1,18 @@
+[
+  "python3",
+  "tests/rust_home_screen_qemu.py",
+  "--sway",
+  "/nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "--swaymsg",
+  "/nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/swaymsg",
+  "--rust",
+  "/nix/store/d39pwqr8yq4bv71rnxdzrk7xgpqk4ck4-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "--theme-bundle",
+  "/nix/store/xiq23rarwd8jsvy6sfw85gq2ywf9ybkq-handheld-theme-default-28ceaae7",
+  "--icons",
+  "/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3",
+  "--client",
+  "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "--output",
+  "/tmp/k230-home-navigation-qemu-final"
+]

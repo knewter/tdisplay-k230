@@ -1,0 +1,18 @@
+{
+  "shell.service": {
+    "exe": "/nix/store/0a2f857nc1rz65gnjdfn46h32zsyxm18-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "active": "active"
+  },
+  "shell-ui.service": {
+    "exe": "/nix/store/d39pwqr8yq4bv71rnxdzrk7xgpqk4ck4-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "active": "active"
+  },
+  "theme-helper.service": {
+    "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14",
+    "active": "active"
+  },
+  "shell-keyboard.service": {
+    "exe": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+    "active": "active"
+  }
+}

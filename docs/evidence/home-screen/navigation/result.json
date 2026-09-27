@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "evidence_class": "physical-board-injected-touch-native-capture",
+  "timestamp": "2026-09-27T06:31:06.005132+00:00",
+  "system": "/nix/store/514nic5my8069ddwmn4b5mrnm73kqqz8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "windows_before": {
+    "5": "k230-terminal",
+    "6": "k230-terminal",
+    "7": "k230-home-navigation-check"
+  },
+  "windows_after": {
+    "5": "k230-terminal",
+    "7": "k230-home-navigation-check",
+    "6": "k230-terminal"
+  },
+  "held_offset": "160.2",
+  "checks": [
+    "app to Overview",
+    "Overview to Home",
+    "held displacement 1:1",
+    "Home to Drawer",
+    "window IDs preserved",
+    "Home Terminal icon focuses existing window",
+    "returned to Home"
+  ],
+  "real_finger_acceptance": false
+}
