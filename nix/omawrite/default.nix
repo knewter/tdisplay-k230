@@ -7,6 +7,7 @@ let
   else qt6Packages.qtdeclarative.overrideAttrs (old: {
     cmakeFlags = (old.cmakeFlags or []) ++ [
       "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderToolsTools"
+      "-DQt6QuickTools_DIR=${pkgsBuildBuild.qt6.qtdeclarative}/lib/cmake/Qt6QuickTools"
       "-DFEATURE_quick=ON"
     ];
   });
