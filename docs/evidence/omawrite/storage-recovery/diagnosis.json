@@ -1,0 +1,18 @@
+{
+  "collected_at_host_utc": "2026-09-27T19:20:13.724954+00:00",
+  "source_revision": "34845e69286d2345231fd923d1523b11ac80ca30",
+  "evidence_class": "physical-board-serial-console",
+  "user_report": [
+    "Omawrite does not launch",
+    "application icons missing"
+  ],
+  "observed": [
+    "SD read recovery failures on mmcblk1",
+    "root filesystem and Nix store mounted read-only",
+    "Bash and systemctl executables return Input/output error"
+  ],
+  "cause_of_storage_failure": "undetermined",
+  "recovery_status": "awaiting physical power cycle",
+  "operator": "root coordinator; board lock held",
+  "full_card_readback": false
+}

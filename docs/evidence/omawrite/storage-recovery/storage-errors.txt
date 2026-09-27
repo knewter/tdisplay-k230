@@ -1,0 +1,14 @@
+/dev/mmcblk1p2 / ext4 ro,relatime 0 0
+/dev/mmcblk1p2 /nix/store ext4 ro,nosuid,nodev,relatime 0 0
+/dev/mmcblk1p1 /boot ext4 rw,relatime 0 0
+[35981.179027] mmcblk1: recovery failed!
+[35981.182777] I/O error, dev mmcblk1, sector 42313472 op 0x0:(READ) flags 0x3000 phys_seg 1 prio class 2
+-bash: tail: command not found
+[35981.214334] mmcblk1: recovery failed!
+[35981.218035] I/O error, dev mmcblk1, sector 42308464 op 0x0:(READ) flags 0x3000 phys_seg 1 prio class 2
+-bash: dmesg: command not found
+[35981.247723] mmcblk1: recovery failed!
+[35981.251544] I/O error, dev mmcblk1, sector 42310576 op 0x0:(READ) flags 0x3000 phys_seg 1 prio class 2
+-bash: ls: command not found
+-bash: /run/current-system/sw/bin/bash: Input/output error
+-bash: /run/current-system/sw/bin/systemctl: Input/output error

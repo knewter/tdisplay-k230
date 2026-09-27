@@ -1,6 +1,12 @@
 # Omawrite as the graphical editor
 
-**Installed, tested and verified after a normal reboot on the physical board.**
+**Installation trial passed; a later storage failure is under investigation.**
+
+The user subsequently reported failed editor launches and missing application
+icons. The console confirmed SD read failures, a read-only root filesystem,
+and executables failing with input/output errors. See the
+[storage recovery record](storage-recovery/README.md) for current status.
+The installation and reboot results below are historical trial evidence.
 
 Omawrite replaces the graphical Editor while retaining `k230-editor.desktop`,
 so existing Home pins keep working. The image includes its upstream icon,
