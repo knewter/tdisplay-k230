@@ -126,13 +126,20 @@ struct cs_policy {
 	size_t entry_count, entry_origin;
 	uint64_t entry_left_id, entry_right_id, entry_target_id;
 	double entry_dx, entry_raw_dx, entry_anchor_shift, entry_anchor_factor;
-	/* Vertical analog of entry_anchor_shift: corrects cs_entry_visual_rect's
-	 * y interpolation for the gap between entry_card_height (what
-	 * entry_travel/the anchor fraction were established against) and the
-	 * overview's own, independently-sized card_height -- see
-	 * cs_entry_set_geometry and cs_entry_visual_rect. Zero whenever the two
-	 * heights coincide. */
-	double entry_anchor_shift_y;
+	/* No entry_anchor_shift_y: unlike X (entry_anchor_shift, a fixed linear
+	 * correction applied on top of an unconditional blend toward
+	 * card_rect), cs_entry_visual_rect's Y/height blend directly between
+	 * cs_entry_target_rect and cs_card_rect, weighted by entry_anchor_factor
+	 * itself -- exact at both ends (entry_anchor_factor==1: a pure
+	 * source->target blend, matching what entry_travel/the anchor fraction
+	 * were established against with no separate correction term needed;
+	 * entry_anchor_factor==0: a pure source->card_rect blend, converging on
+	 * the settled overview slot) and never a single linear term
+	 * extrapolated past either rect, which is what let X's fixed-shift
+	 * approach send the entering card's computed top edge off the top of
+	 * the output once card_height and entry_card_height came to differ by
+	 * hundreds of px (the-overview-shows-large-rounded-cards) instead of
+	 * the single px they used to. */
 	double entry_release_dx, entry_settle_dx, entry_reverse_dx, entry_reverse_anchor;
 	double entry_reverse_from;
 	double entry_settle_from;

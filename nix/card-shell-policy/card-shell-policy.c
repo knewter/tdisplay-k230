@@ -138,7 +138,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
     free(p->entry_order);p->entry_order=NULL;p->entry_count=0;p->entry_origin=0;
     p->entry_left_id=0;p->entry_right_id=0;p->entry_target_id=0;
-    p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;p->entry_anchor_shift_y=0;
+    p->entry_dx=0;p->entry_raw_dx=0;p->entry_anchor_shift=0;
     p->entry_anchor_factor=0;p->entry_release_dx=0;p->entry_settle_dx=0;
     p->entry_reverse_dx=0;p->entry_reverse_anchor=0;
     p->entry_progress=0;p->entry_id=0;p->entry_travel=0;p->entry_drag=0;
@@ -281,10 +281,49 @@ struct cs_rect cs_entry_visual_rect(const struct cs_policy *p,size_t index,
     double full_x=source.x+offset*p->config.width;
     r.x=full_x*(1-progress)+(r.x-p->entry_dx)*progress+p->entry_dx+
         p->entry_anchor_shift*progress*p->entry_anchor_factor;
-    r.y=source.y*(1-progress)+r.y*progress+
-        p->entry_anchor_shift_y*progress*p->entry_anchor_factor;
+    /* Y/height do NOT reuse the X-axis's "blend toward card_rect, then
+     * patch the anchor with a fixed shift" trick: that shift is a linear
+     * correction sized to cancel out card_rect's OWN divergence from
+     * cs_entry_target_rect (the anchor/travel physics' actual reference,
+     * cs_entry_set_geometry), and a linear correction's magnitude grows
+     * with that divergence -- fine while the two rects are close (the
+     * pre-Android-cards card_height and entry_card_height were within a
+     * pixel of each other), but for a touch anchored near an edge (this
+     * bottom-edge gesture's anchor is typically >0.9) it overshoots badly
+     * once card_height and entry_card_height diverge by hundreds of px
+     * (the-overview-shows-large-rounded-cards' 80%-height card against
+     * the untouched, independently-sized entry target -- design.md
+     * decision 6): the correction alone can exceed the card's own on-
+     * screen position, pushing the entering card's computed top edge
+     * negative (off the top of the output) for most of the drag, which
+     * read as "the live view doesn't shrink vertically" even though the
+     * lone anchor point it was solving for was, in fact, exact.
+     *
+     * Blend toward cs_entry_target_rect (position AND height, so the
+     * anchor invariant holds with zero correction term -- see below)
+     * while the gesture is actively held (entry_anchor_factor==1: the
+     * touch is still down, nothing has settled yet), and toward
+     * cs_card_rect -- the true, settled overview slot -- as
+     * entry_anchor_factor decays to 0 during release/settle. At either
+     * extreme this is exact: anchor_factor==1 makes r.y/r.height a pure
+     * source->target blend, satisfying source.y+anchor*source.height ==
+     * target.y+anchor*target.height's own progress-scaled form with no
+     * separate shift needed (target.y/target.height ARE what travel/
+     * anchor were computed against); anchor_factor==0 (settle complete)
+     * makes it a pure source->card_rect blend, converging to exactly
+     * cs_card_rect at progress==1 so CS_DECK's un-blended render (once
+     * mode leaves CS_ENTERING) picks up with no pop. Every point between
+     * is a plain weighted average of those two exact endpoints, so it
+     * stays continuous and on-screen for any anchor/divergence combination
+     * instead of extrapolating a single linear term past either rect. */
+    struct cs_rect target=cs_entry_target_rect(p);
+    double card_y=r.y,card_height=r.height;
+    double factor=p->entry_anchor_factor;
+    r.y=source.y*(1-progress)+
+        (factor*target.y+(1-factor)*card_y)*progress;
     r.width=source.width*(1-progress)+r.width*progress;
-    r.height=source.height*(1-progress)+r.height*progress;
+    r.height=source.height*(1-progress)+
+        (factor*target.height+(1-factor)*card_height)*progress;
     return r;
 }
 static bool contains(struct cs_rect r,double x,double y) {
@@ -861,26 +900,16 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
 	double target_anchor_x=target_x+anchor_x*target_width;
 	double shift=source_anchor_x-target_anchor_x;
 	if (!isfinite(shift)) return false;
-	/* cs_entry_visual_rect blends toward the OVERVIEW's own card rect
-	 * (cs_card_rect: card_top_offset/card_height), which may differ from
-	 * this call's target_y/target_height (cs_entry_target_rect: inset/
-	 * entry_card_height) in BOTH its y-anchor and its height now that the
-	 * two are sized/positioned independently. shift_y corrects for both,
-	 * so the anchor point stays exactly under the finger: the y-anchor
-	 * term is entry_target.y-visual_target.y, i.e. (top_reserved+
-	 * title_height+inset)-(top_reserved+title_height+card_top_offset) =
-	 * inset-card_top_offset (top_reserved/title_height cancel, since both
-	 * rects share them); the height term is the same anchor-weighted
-	 * height difference as before. Without this, the visual interpolation
-	 * implicitly assumes the blend target's y/height equal target_y/
-	 * target_height, no longer guaranteed once the overview and the
-	 * direct-switch entry slot are sized and positioned independently. */
-	double shift_y=(p->config.inset-p->config.card_top_offset)+
-		anchor*(target_height-p->config.card_height);
-	if (!isfinite(shift_y)) return false;
+	/* Y has no analogous shift term: cs_entry_visual_rect blends r.y/
+	 * r.height directly between this target rect and cs_card_rect,
+	 * weighted by entry_anchor_factor, rather than blending unconditionally
+	 * toward card_rect and patching the anchor with a fixed linear
+	 * correction -- see that function's own comment for why a fixed
+	 * correction stopped being safe once the overview card and this entry
+	 * target were sized far enough apart (the-overview-shows-large-rounded-
+	 * cards' 80%-height card). */
 	p->entry_travel=travel;
 	p->entry_anchor_shift=shift;
-	p->entry_anchor_shift_y=shift_y;
 	p->entry_full_rect=(struct cs_rect){source_x,source_y,source_width,source_height};
 	return true;
 }

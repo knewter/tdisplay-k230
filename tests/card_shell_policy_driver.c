@@ -435,17 +435,23 @@ static void edge(void) {
     cs_finish(&p);
 }
 static double entry_finger_y(const struct cs_policy *p) {
-    struct cs_rect target=cs_card_rect(p,p->selected);
+    struct cs_rect card=cs_card_rect(p,p->selected);
+    struct cs_rect target=cs_entry_target_rect(p);
     double anchor=(1220.0-56.0)/1176.0;
     double progress=p->entry_progress;
-    /* Mirrors entry_finger_x: includes the same entry_anchor_shift_y
-     * correction cs_entry_visual_rect applies, which keeps the anchor
-     * point under the finger exact even though the overview's card_height
-     * (used to blend target.height here) is independent of the
-     * entry_card_height that established entry_travel/the anchor fraction. */
-    return 56.0*(1-progress)+target.y*progress+
-        p->entry_anchor_shift_y*progress*p->entry_anchor_factor+
-        anchor*(1176.0*(1-progress)+target.height*progress);
+    double factor=p->entry_anchor_factor;
+    /* Mirrors cs_entry_visual_rect's own Y/height blend: a weighted
+     * average between the entry target rect (factor==1, still held --
+     * exact against entry_travel/anchor with no separate correction term)
+     * and the settled overview card rect (factor==0), not an unconditional
+     * blend toward card_rect patched by a fixed shift -- see
+     * card-shell-policy.h's entry_anchor_shift_y comment for why that fixed
+     * shift stopped being safe once card_height and entry_card_height
+     * diverged by hundreds of px. */
+    double y=56.0*(1-progress)+(factor*target.y+(1-factor)*card.y)*progress;
+    double height=1176.0*(1-progress)+
+        (factor*target.height+(1-factor)*card.height)*progress;
+    return y+anchor*height;
 }
 static double entry_finger_x(const struct cs_policy *p, double source_x) {
     size_t index=SIZE_MAX;

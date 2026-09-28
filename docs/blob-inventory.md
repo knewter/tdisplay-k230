@@ -817,6 +817,9 @@ DATA dc82447aaf14a1acdd66a1ea9bf46a788cc062fbba810b22232b7a9f5787aed7  docs/evid
 DATA 569eafcf56af3a813dffb08247134adba4679872d47b747b05c4f9ea4756e5df  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-held.png
 DATA 9e525b27f3d16d6caa0a82f6b34f3e194320f89dfa9464ba16ae046768fbdd19  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-releasing.png
 DATA 1b9a322aa851a165bfd79821852019f7c7f30ca2eedf0a7abb5050332ac56da5  docs/evidence/coherent-shell/direct-carousel-qemu/two-axis-quick-reversed.png
+DATA 4eb5fe1db653b5681ffa848471dedfe8b53e543ec317ab1a6eb27d57f6eb187b  docs/evidence/coherent-shell/two-axis-qemu/regression-after-fix-up.png
+DATA 42310d94fd4f97d91f585c923824b9271e7a64bdab086d0e90361e9c987b5bce  docs/evidence/coherent-shell/two-axis-qemu/regression-before-fix-up.png
+DATA 8d4260d119614cceb872d1f6636340cdaf770fa0a640eceb57aa226684e70cd3  docs/evidence/coherent-shell/two-axis-qemu/regression-origin.png
 DATA 68a92ee6cb08da4c13ea717d1046d8cf1f94aaf86fb92c0ff46534ba8f6ad73f  docs/evidence/coherent-shell/two-axis-qemu/two-axis-held.png
 DATA 8521494c8dd2e1abdbc64da3a8d52935d51307f9910604645d5d519d88a8499b  docs/evidence/coherent-shell/two-axis-qemu/two-axis-left.png
 DATA 1ccaab283a509331ed392725eac48ee08ef6e8c8d94711e2a0fd0d25315ac9d0  docs/evidence/coherent-shell/two-axis-qemu/two-axis-private-neighbor.png
@@ -1880,12 +1883,21 @@ The ten original host-rendered DATA PNGs in `docs/evidence/coherent-shell/rust-v
 
 ### Two-axis card entry QEMU captures
 
-These six PNGs are unedited headless QEMU DATA captures of public synthetic
+These nine PNGs are unedited headless QEMU DATA captures of public synthetic
 blue/purple Wayland clients. The adjacent README records exact binaries,
-measured pixel displacement, and the open physical-touch gate.
+measured pixel displacement, and the open physical-touch gate. The three
+`regression-*` files are the fix/two-axis-entry-regression before/after pair
+for task 4.8's reopened vertical-shrink bug (`regression-before-fix-up.png`:
+buggy `05ff1810`..`88ccca15`-line compositor, top edge clipped to the output's
+top; `regression-after-fix-up.png`: same gesture step against the fixed
+compositor, top edge visibly below the origin; `regression-origin.png`: the
+shared pre-touch frame both are compared against).
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/two-axis-qemu/regression-after-fix-up.png` | 5478 | DATA | `4eb5fe1db653b5681ffa848471dedfe8b53e543ec317ab1a6eb27d57f6eb187b` |
+| `docs/evidence/coherent-shell/two-axis-qemu/regression-before-fix-up.png` | 5492 | DATA | `42310d94fd4f97d91f585c923824b9271e7a64bdab086d0e90361e9c987b5bce` |
+| `docs/evidence/coherent-shell/two-axis-qemu/regression-origin.png` | 4877 | DATA | `8d4260d119614cceb872d1f6636340cdaf770fa0a640eceb57aa226684e70cd3` |
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-held.png` | 9431 | DATA | `68a92ee6cb08da4c13ea717d1046d8cf1f94aaf86fb92c0ff46534ba8f6ad73f` |
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-left.png` | 9389 | DATA | `8521494c8dd2e1abdbc64da3a8d52935d51307f9910604645d5d519d88a8499b` |
 | `docs/evidence/coherent-shell/two-axis-qemu/two-axis-private-neighbor.png` | 8152 | DATA | `1ccaab283a509331ed392725eac48ee08ef6e8c8d94711e2a0fd0d25315ac9d0` |
