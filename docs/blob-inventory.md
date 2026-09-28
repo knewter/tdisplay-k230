@@ -1436,6 +1436,7 @@ DATA 2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec docs/evide
 DATA 2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c docs/evidence/brightness-slider/settings-mid-drag-54pct.png
 DATA 76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
 DATA e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157 docs/evidence/brightness-slider/shade-synced-45pct.png
+DATA 862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be docs/evidence/power-key/host/power-sheet-host.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2239,3 +2240,12 @@ board. See `docs/evidence/brightness-slider/README.md`.
 | `docs/evidence/brightness-slider/settings-after-drag-90pct.png` | 64617 | DATA | `2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec` |
 | `docs/evidence/brightness-slider/shade-synced-45pct.png` | 59251 | DATA | `e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157` |
 | `docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png` | 59095 | DATA | `76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c` |
+
+### Power-key host fixture
+
+The power menu screenshot is a host-rendered fixture, not physical-board
+evidence. See `docs/evidence/power-key/host/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/power-key/host/power-sheet-host.png` | 32234 | DATA | `862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be` |
