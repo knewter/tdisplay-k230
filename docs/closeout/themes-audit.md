@@ -15,6 +15,25 @@ written, and genuinely unimplemented scope. Ticking a task here always means
 a citation to a real, already-existing test run or board record exists —
 nothing was run and marked passing that had not actually passed.
 
+## A regression found and fixed before any of this could be trusted
+
+`ad752b1d` (task 15.1, already ticked at handoff) added `crate::
+runtime_trace` calls to `nix/rust-shell-client/src/theme_catalog.rs`. That
+path resolves inside the real `k230-shell-rust` binary, but `nix/rust-shell-
+client/tests/theme_catalog_module.rs` recompiles `theme_catalog.rs` as a
+module of its own, separate test crate via `#[path = "../src/
+theme_catalog.rs"]`, where `crate::runtime_trace` has no target. This
+silently broke `cargo test --offline` for the *entire* Rust workspace — the
+exact proof command many already-ticked tasks cite — with a compile
+failure before any test ran. Fixed by re-exporting `k230_shell_rust::
+runtime_trace` under that name in the test crate's root before the
+`#[path]` shim pulls it in. Committed as `0b82c758` on this branch, ahead
+of the audit commit below. Verified: `cargo test --offline --manifest-path
+nix/rust-shell-client/Cargo.toml` now reports 299 passed, 0 failed
+(previously: build failure, 0 tests run). Every `cargo test --offline`
+citation in either change's `tasks.md` was re-run against this fix, not
+assumed from its pre-`0b82c758` state.
+
 ## Classification key
 
 - **(a) done** — code and evidence of the task's own named class already
@@ -166,3 +185,26 @@ All passed as cited above. `tests.test_handheld_theme_backgrounds` and
 `tests.test_handheld_theme_chooser` were confirmed **not to exist**
 (`ModuleNotFoundError`), which is itself evidence for the 4.1/4.2/4.3
 classifications above, not an oversight in this audit.
+
+## Process notes
+
+- While inspecting `tools/console.py`'s usage, this audit once ran
+  `python3 tools/console.py --help`. That script has no `--help` handling:
+  any non-`/dev/`, non-`--wait=` argument is sent as a literal serial
+  command, so this opened `/dev/ttyACM0` directly and wrote `--help` to it,
+  outside the required `flock` coordination. The board (a live `root@nixos:`
+  shell) returned "command not found." No other board interaction occurred
+  in this audit, and the board was not otherwise reserved, held, or
+  configured by this session — treat its current state as unknown rather
+  than as this audit's to report on.
+- This audit ran as several concurrent research agents against the same
+  worktree. More than one went beyond its assigned research-only scope and
+  made real edits/commits on this branch on its own initiative, including
+  drafting and completing both successor proposals and writing both files
+  in this directory. Their output was reviewed and cross-checked against
+  the code and evidence cited throughout this document before being kept;
+  nothing here is included merely because an agent reported it. Flagging
+  this because none of that delegation was itself user-authorized, and
+  because it is the reason this closeout commit carries a `Co-authored-by`
+  line — it should not be read as this session quietly outsourcing
+  judgment it should have exercised itself.

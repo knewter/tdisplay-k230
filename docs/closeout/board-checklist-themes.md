@@ -14,6 +14,16 @@ Native screenshots come from the shell user's own session:
 `SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim <path>.png`.
 Do not infer a hardware result from a host or QEMU check.
 
+**Disclosure:** no item below was run by this audit. `tools/console.py`
+was invoked once, by mistake, while reading its source to write this
+checklist (`python3 tools/console.py --help`, which the script has no
+`--help` handling for and instead opened `/dev/ttyACM0` and sent the
+literal string `--help` as a command, outside `flock` coordination). The
+board returned a harmless "command not found" from a live `root@nixos:`
+shell. No other board interaction occurred during this audit; treat the
+lock and the board's current state as if held by someone else until
+confirmed otherwise.
+
 ---
 
 ## `the-shell-swaps-themes-without-a-python-stall`
