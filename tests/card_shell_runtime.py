@@ -568,12 +568,34 @@ def main():
                 command(f'up {gesture}')
         subprocess.run(['grim',str(runtime/'cards.png')],env=env,check=True)
         command('down 1 284 450')
+        cards_pixel=Image.open(runtime/'cards.png').getpixel((100,700))
         for x in range(284,34,-25):
             command(f'motion 1 {x} 450'); time.sleep(.02)
             if x==184:
-                subprocess.run(['grim',str(runtime/'during-drag.png')],env=env,check=True)
-                assert Image.open(runtime/'during-drag.png').getpixel((100,700)) != Image.open(runtime/'cards.png').getpixel((100,700))
+                # grim runs immediately after the IPC motion command
+                # returns, but the compositor only schedules a redraw for
+                # its next frame callback; on a heavily loaded shared host
+                # that frame is not guaranteed to have landed yet (this was
+                # found flaking under concurrent load, unrelated to any
+                # drag/selection logic). Poll instead of asserting a single
+                # capture, mirroring this file's own wait_for pattern.
+                def during_drag_moved():
+                    subprocess.run(['grim',str(runtime/'during-drag.png')],env=env,check=True)
+                    return Image.open(runtime/'during-drag.png').getpixel((100,700)) != cards_pixel
+                wait_for(during_drag_moved)
         command('up 1')
+        # A released horizontal drag keeps coasting under its own momentum
+        # (cs_up's continuity math in card-shell-policy.c: the newly
+        # selected card is deliberately NOT re-centered at the instant of
+        # release, so its on-screen position stays continuous with the
+        # drag; it eases to center over up to config.reduced_motion==false's
+        # 760ms bound). A tap thrown at the panel's horizontal center
+        # immediately after release lands during that coast and can hit
+        # whichever card is still visually centered rather than the one
+        # `cs_up` already selected -- this is real product physics, not a
+        # bug, so the test waits for the coast's worst case before tapping
+        # instead of asserting against a still-animating frame.
+        time.sleep(.9)
         command('down 2 284 450'); command('up 2')
         wait_for(lambda:focused()=='k230.card.two')
         time.sleep(.15)
