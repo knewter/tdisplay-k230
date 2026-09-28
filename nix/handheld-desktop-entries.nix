@@ -1,4 +1,4 @@
-{ runCommand, themedFoot, foot, htop, nnn, portfolioLauncher, nautilusLauncher }:
+{ lib, runCommand, themedFoot, foot, htop, nnn, portfolioLauncher, nautilusLauncher ? null }:
 
 # Desktop-entry overrides have the same IDs as upstream packages. Putting this
 # share tree first in XDG_DATA_DIRS lets GIO apply the normal freedesktop
@@ -55,6 +55,7 @@ MimeType=inode/directory;
 Categories=System;FileTools;FileManager;
 StartupWMClass=dev.tchx84.Portfolio
 EOF
+  ${lib.optionalString (nautilusLauncher != null) ''
   cat > "$out/share/applications/org.gnome.Nautilus.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -68,6 +69,7 @@ MimeType=inode/directory;
 Categories=System;FileTools;FileManager;
 StartupWMClass=org.gnome.Nautilus
 EOF
+  ''}
   cat > "$out/share/applications/footclient.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application

@@ -123,6 +123,14 @@
         k230-coherent-shell = self.nixosConfigurations.k230.extendModules {
           modules = [ { k230.shell.coherentShell = true; k230.shell.powerKeyTrial = true; } ];
         };
+        # Same as k230-coherent-shell, plus Nautilus's own drawer entry next
+        # to Portfolio's. A separate configuration rather than the default so
+        # an ordinary k230-coherent-shell build never forces Nautilus's own
+        # (larger, tracker/localsearch-adjacent) riscv64 cross-build; see
+        # openspec/changes/the-handheld-has-a-themed-files-app.
+        k230-coherent-shell-both-files-apps = self.nixosConfigurations.k230-coherent-shell.extendModules {
+          modules = [ { k230.shell.filesAppNautilus = true; } ];
+        };
         # Retain the diagnostic configuration and context probe. The normal
         # board kernel is now the same tested vector-capable kernel, so the
         # trial alias must not apply the source patch a second time.

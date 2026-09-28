@@ -526,7 +526,13 @@ let
     binary = "nautilus";
   };
   handheldDesktopEntries = pkgs.callPackage ./handheld-desktop-entries.nix {
-    inherit themedFoot portfolioLauncher nautilusLauncher;
+    inherit themedFoot portfolioLauncher;
+    # Passing the real derivation only when the flag is on -- not just
+    # gating its *use* inside handheld-desktop-entries.nix -- is what keeps
+    # an ordinary coherentShell build from forcing Nautilus's cross-build at
+    # all: a `null` here is never interpolated into a shell script, so
+    # `pkgs.nautilus` and its dependents are simply never evaluated.
+    nautilusLauncher = if cfg.filesAppNautilus then nautilusLauncher else null;
     foot = pkgs.foot;
     htop = pkgs.htop;
     nnn = pkgs.nnn;
@@ -567,7 +573,7 @@ let
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
     # Desktop overrides precede package entries; icon roots remain reachable
     # even when Nix has not merged them into the profile's share/icons tree.
-    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:${pkgs.portfolio-filemanager}/share:${pkgs.nautilus}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:${pkgs.portfolio-filemanager}/share:"}${lib.optionalString (cfg.coherentShell && cfg.filesAppNautilus) "${pkgs.nautilus}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
@@ -867,6 +873,20 @@ in
         Select the opt-in Rust drawer/shade and live-card session with Settings
         and notification services. The ordinary bar session remains a separate
         rollback configuration until touch acceptance is recorded.
+      '';
+    };
+
+    filesAppNautilus = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Also cross-build and ship Nautilus's own drawer entry
+        ("Files (Nautilus)") alongside Portfolio's, which coherentShell
+        always includes. Default off so an ordinary coherentShell build
+        never forces Nautilus's own (larger, tracker/localsearch-adjacent)
+        cross-build closure; see openspec/changes/the-handheld-has-a-themed-
+        files-app and the k230-coherent-shell-both-files-apps
+        nixosConfiguration in flake.nix.
       '';
     };
 
@@ -1608,7 +1628,10 @@ in
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
       ++ lib.optionals cfg.coherentShell [
         rustShell themedFoot themeCommand settingsCommand notificationCommand
-        portfolioLauncher nautilusLauncher pkgs.portfolio-filemanager pkgs.nautilus
+        portfolioLauncher pkgs.portfolio-filemanager
+      ]
+      ++ lib.optionals (cfg.coherentShell && cfg.filesAppNautilus) [
+        nautilusLauncher pkgs.nautilus
       ]
       ++ lib.optionals cfg.probes [
       cage
