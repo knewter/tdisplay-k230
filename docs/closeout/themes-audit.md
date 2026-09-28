@@ -54,8 +54,8 @@ assumed from its pre-`0b82c758` state.
 
 ## `the-shell-swaps-themes-without-a-python-stall`
 
-Before this audit: 57 done / 17 open. After: **60 done / 14 open** (7.8,
-8.6, 9.5 ticked with citations below; nothing else changed state).
+Before this audit: 57 done / 17 open. After: **61 done / 13 open** (7.8,
+8.6, 9.5 ticked with citations below; 10.6b run to a QEMU PASS this session).
 
 | Task | Class | Citation / next step |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ Before this audit: 57 done / 17 open. After: **60 done / 14 open** (7.8,
 | 3.3b (defer Foot recolour like 3.3a) | (c) host-doable, not attempted | `tools/app_appearance.py`'s OSC recolour is folded into `theme_transaction.py`'s synchronous return contract; the task's own text explains why touching that contract was judged too risky for its own budget. Still open, still safe to leave open — its cost is small and already scoped (opt-in, Foot-session-only). |
 | 3.4 (re-run tap-to-visible metric) | (d) board | Depends on 3.3b or can be run to show the partial win from 3.3a alone. See checklist. |
 | 6.6 (board re-check: Apply <150ms, `warm=2`) | (d) board | No grounding comment anywhere cites this specific recheck; genuinely not run. See checklist. |
-| 10.6b (run the rewritten QEMU harness to a PASS) | (c) host-doable (QEMU, not board), attempted and blocked this session | `.#card-shell` and `.#touch-launcher` build from cache instantly; `nixosConfigurations.k230-coherent-shell.pkgs.sway-unwrapped`/`.#handheld-shell-rust` did not resolve from cache and a bounded (120s) attempt was killed rather than run an uncached, multi-hour riscv64 cross-build unattended in an audit session, per this repo's own single-build-slot convention. Not a code regression; same class of contention `10.6b`'s own note already describes. Re-attempt with a reserved build slot and no timeout. |
+| 10.6b (run the rewritten QEMU harness to a PASS) | (c) done this session (QEMU proof) | After `.#handheld-shell-rust` finished cross-building, `tests/rust_theme_chooser_qemu.py` passed against the unwrapped Sway that `.#card-shell`'s `swaymsg` symlink resolves to. Passing the wrapped `card-shell/bin/sway` gives `Exec format error` under `qemu-riscv64-static`. The command, store paths, synthetic command log and capture hashes are in `docs/evidence/theme-picker/tap-to-apply-qemu/README.md`. Ticked. |
 | 10.7 (board re-check of tap-to-apply flow, panel fit) | (d) board | Needs dark/light panel observation plus `optimistic-apply stage adopt_ms=...` timing. See checklist. |
 | 11.3 (board swipe-cost/memory comparison) | (d) board | `--lib theme_picker`/`--lib theme_thumbnails`/`theme_prerender` all pass host-side; the board comparison itself was never run. See checklist. |
 | 13.1 (matched-content profiling harness, `tools/theme-picker-profile.py`) | (c)/(e) substantial, unimplemented | Neither `tools/theme-picker-profile.py` nor `tests/test_theme_picker_profile.py` exist. This is a real new tool (fixtures, identity/PID/generation guards, capture format), not a small fix; not attempted this session given its size relative to this audit's budget. Left open, correctly classified as host-doable in the existing change (no successor proposal needed — it is already scoped here). |

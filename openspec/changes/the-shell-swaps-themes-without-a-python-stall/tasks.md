@@ -987,7 +987,7 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   theme's own request was genuinely sent but never activates, and the
   second tap's theme does. Written and syntax-checked; not yet run to a
   real result (10.6b).
-- [ ] 10.6b Run 10.6a's script to a real PASS. Attempted twice this
+- [x] 10.6b Run 10.6a's script to a real PASS. Attempted twice this
   session (patched, IPC-capable `sway-unwrapped`, built after finding
   `.#nixosConfigurations.k230.pkgs.sway-unwrapped` is plain upstream
   sway without the `card_shell` commands this harness needs -- the
@@ -1002,7 +1002,12 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   static` session at the same time, so contention rather than a code
   regression is the leading explanation. Not chased further by loosening
   a timeout this task does not own. See this task's own evidence doc for
-  the full account.
+  the full account. Closeout audit (2026-09-28): PASS under QEMU with a
+  synthetic backend -- `python3 tests/rust_theme_chooser_qemu.py --sway
+  <sway-unwrapped from .#card-shell's swaymsg target> --rust <.#handheld-shell-rust>
+  --output /tmp/q106`, recorded with exact store paths, the synthetic command
+  log and capture hashes in `docs/evidence/theme-picker/tap-to-apply-qemu/README.md`.
+  QEMU proof only; panel fit and on-glass behaviour remain 10.7/14.4.
 - [ ] 10.7 Board re-check: confirm the one-page tap-to-apply flow reads
   and behaves correctly in dark and light themes on the actual panel;
   confirm `optimistic-apply stage adopt_ms=... wallpaper_ms=...
@@ -1032,10 +1037,7 @@ Closeout audit (2026-09-28): the note above pre-dates task groups 11-16.
 The full current gate list after this audit is: 2.3 (board), 3.3b
 (host-doable, deliberately not attempted here -- touches a load-bearing
 two-phase-transaction return contract; see 3.3b's own text), 3.4 (board,
-depends on 3.3b), 6.6 (board), 10.6b (host-doable retry of the QEMU
-harness -- both prior attempts failed on infra contention outside this
-change's own diff, not a code regression; a fresh attempt is recorded
-below if this session's own retry completed in time), 10.7 (board/panel),
+depends on 3.3b), 6.6 (board), 10.7 (board/panel),
 11.3 (board, depends on task 13's harness), 13.1-13.3 (host-doable but a
 substantial new profiling/gating harness, not attempted in this audit --
 see `docs/closeout/themes-audit.md`), 13.4 (board, depends on 13.1-13.3),
