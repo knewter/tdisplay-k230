@@ -54,7 +54,7 @@
       bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
       mkBoardImage = cfg: kernel:
         let
-          rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
+          rootfsImage = (pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
             storePaths = [ cfg.system.build.toplevel ];
             volumeLabel = "NIXOS_SD";
             populateImageCommands = ''
@@ -76,7 +76,15 @@
               mkdir -p ./files/sbin
               ln -sf /nix/var/nix/profiles/system/init ./files/sbin/init
             '';
-          };
+          }).overrideAttrs (old: {
+            # Fedora's SELinux overlay can list security.selinux on the
+            # staging directory but return ENODATA when mke2fs reads it.
+            # The Nix store closure does not rely on copied host xattrs.
+            buildCommand = builtins.replaceStrings
+              [ "fakeroot mkfs.ext4 -L" ]
+              [ "fakeroot mkfs.ext4 -E no_copy_xattrs -L" ]
+              old.buildCommand;
+          });
         in
         pkgs.callPackage ./nix/sd-image.nix {
           inherit stage1 rootfsImage;
