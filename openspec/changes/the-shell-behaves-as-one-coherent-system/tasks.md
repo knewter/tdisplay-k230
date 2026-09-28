@@ -251,4 +251,11 @@ own tracking for whether to unify them later.
 - [ ] D.3 Do not archive this change until each slice's board task (A.4,
   B.4, C.4, E.4) is committed, or the coordinator explicitly authorizes
   archiving a subset with the remaining slices split into a named successor
-  per `AGENTS.md`'s "close deliberately" guidance.
+  per `AGENTS.md`'s "close deliberately" guidance. A successor carrying
+  every slice B/C requirement and task (plus a new task B.5 for the shade
+  tap-target requirement, which had no task) is staged as
+  `the-shell-offers-quick-toggles-and-vision-options`, **awaiting
+  authorization**. On authorization, remove slices B/C and their
+  `notification-center`/`device-settings` requirements from this change in
+  the same commit. A.4 and E.4 must still pass before this change can be
+  archived.
