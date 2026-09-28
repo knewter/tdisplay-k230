@@ -19,7 +19,7 @@ use crate::{
         BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
     },
     wifi_settings::Security,
-    wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
+    wifi_ui::{all_networks, entry_buttons_rect, Page as WifiPage, WifiPublic},
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
@@ -1152,7 +1152,7 @@ fn paint_wifi(
                         if view.use_saved {
                             "Stored securely; no re-entry needed"
                         } else if mask.is_empty() {
-                            "Tap keys to enter password"
+                            "Type the password"
                         } else {
                             &mask
                         },
@@ -1224,77 +1224,19 @@ fn paint_wifi(
                     }
                 }
             }
-            if !view.use_saved
-                && view
-                    .selected
-                    .as_ref()
-                    .is_some_and(|s| s.security == Security::Wpa2Psk)
-            {
-                let rows = [
-                    if view.symbols {
-                        "!@#$%^&*()"
-                    } else {
-                        "1234567890"
-                    },
-                    if view.symbols {
-                        "-_=+[]{};:"
-                    } else {
-                        "qwertyuiop"
-                    },
-                    if view.symbols {
-                        "'\"\\|/?.<>"
-                    } else {
-                        "asdfghjkl"
-                    },
-                    if view.symbols { "~`,zxcv" } else { "zxcvbnm" },
-                ];
-                for (row, keys) in rows.iter().enumerate() {
-                    let y = 530.0 + row as f64 * 90.0;
-                    let (left, right) = if row == 2 {
-                        (28.0, 540.0)
-                    } else if row == 3 {
-                        (74.0, 494.0)
-                    } else {
-                        (18.0, 550.0)
-                    };
-                    let cell = (right - left) / keys.chars().count() as f64;
-                    for (index, ch) in keys.chars().enumerate() {
-                        let x = left + index as f64 * cell;
-                        service_card(cr, theme, "controls", x + 2.0, y, cell - 4.0, 76.0, false);
-                        text(
-                            cr,
-                            &ch.to_string(),
-                            x + cell * 0.35,
-                            y + 23.0,
-                            cell * 0.6,
-                            26.0,
-                            style.text,
-                        );
-                    }
-                }
-                service_card(cr, theme, "controls", 18.0, 800.0, 52.0, 76.0, false);
-                text(cr, "⇧", 28.0, 820.0, 40.0, 28.0, style.accent);
-                service_card(cr, theme, "controls", 498.0, 800.0, 52.0, 76.0, false);
-                text(cr, "Del", 504.0, 824.0, 44.0, 18.0, style.accent);
-                service_card(cr, theme, "controls", 18.0, 890.0, 112.0, 76.0, false);
-                text(
-                    cr,
-                    if view.symbols { "ABC" } else { "?123" },
-                    38.0,
-                    913.0,
-                    90.0,
-                    22.0,
-                    style.accent,
-                );
-                service_card(cr, theme, "controls", 136.0, 890.0, 278.0, 76.0, false);
-                text(cr, "space", 222.0, 914.0, 110.0, 20.0, style.muted);
-                service_card(cr, theme, "controls", 420.0, 890.0, 130.0, 76.0, false);
-                text(cr, "Delete", 445.0, 917.0, 85.0, 18.0, style.accent);
-            }
-            service_card(cr, theme, "controls", 24.0, 1120.0, 250.0, 88.0, false);
-            service_card(cr, theme, "controls", 294.0, 1120.0, 250.0, 88.0, true);
-            text(cr, "Cancel", 90.0, 1147.0, 145.0, 25.0, style.muted);
-            text(cr, "Connect", 351.0, 1147.0, 145.0, 25.0, style.accent);
+            // The password field takes real keyboard focus and types through
+            // the system keyboard (wvkbd) like every other text field in the
+            // shell, instead of drawing its own keys here -- see
+            // openspec/changes/the-handheld-configures-wifi-from-settings.
+            // `entry_buttons_rect` keeps Cancel/Connect above whatever
+            // height of the screen the raised keyboard currently reserves
+            // (`view.keyboard_inset`), matching `wifi_ui::target`'s own hit
+            // region exactly.
+            let (button_top, _) = entry_buttons_rect(view.keyboard_inset);
+            service_card(cr, theme, "controls", 24.0, button_top, 250.0, 88.0, false);
+            service_card(cr, theme, "controls", 294.0, button_top, 250.0, 88.0, true);
+            text(cr, "Cancel", 90.0, button_top + 27.0, 145.0, 25.0, style.muted);
+            text(cr, "Connect", 351.0, button_top + 27.0, 145.0, 25.0, style.accent);
         }
         WifiPage::Connecting => {
             service_card(cr, theme, "controls", 24.0, 220.0, 520.0, 210.0, true);
@@ -1353,7 +1295,10 @@ fn paint_wifi(
         if let Some(message) = &view.message {
             let y = match view.page {
                 WifiPage::List => 1163.0,
-                WifiPage::Entry => 1020.0,
+                // Anchored to the (possibly keyboard-raised) button row
+                // rather than a fixed offset, so this never ends up
+                // beneath the system keyboard -- see `entry_buttons_rect`.
+                WifiPage::Entry => entry_buttons_rect(view.keyboard_inset).0 - 100.0,
                 WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
                 WifiPage::Closed => 0.0,
             };

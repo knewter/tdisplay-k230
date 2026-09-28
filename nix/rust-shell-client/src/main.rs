@@ -39,19 +39,23 @@ use k230_shell_rust::{
     video_visibility,
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
-    wifi_ui::{self, Intent as WifiIntent, Page as WifiPage, WifiView},
+    wifi_ui::{self, key_event_intent, Intent as WifiIntent, Page as WifiPage, WifiView},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState, Region},
-    delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat,
-    delegate_shm, delegate_touch, delegate_presentation_time,
+    delegate_compositor, delegate_keyboard, delegate_layer, delegate_output, delegate_registry,
+    delegate_seat, delegate_shm, delegate_touch, delegate_presentation_time,
     presentation_time::{PresentationTimeState, PresentationTimeHandler, PresentTime},
     reexports::protocols::wp::presentation_time::client::wp_presentation_feedback,
     output::{OutputHandler, OutputState},
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
-    seat::{touch::TouchHandler, Capability, SeatHandler, SeatState},
+    seat::{
+        keyboard::{KeyEvent, KeyboardHandler, Modifiers, RawModifiers},
+        touch::TouchHandler,
+        Capability, SeatHandler, SeatState,
+    },
     shell::{
         wlr_layer::{
             Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface,
@@ -87,7 +91,7 @@ use std::{
 };
 use wayland_client::{
     globals::registry_queue_init,
-    protocol::{wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
+    protocol::{wl_keyboard, wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
     Connection, QueueHandle, WEnum,
 };
 
@@ -1024,6 +1028,26 @@ struct ShellClient {
     video_cover_last: Instant,
     video_covered: bool,
     touch_device: Option<wl_touch::WlTouch>,
+    keyboard_device: Option<wl_keyboard::WlKeyboard>,
+    /// Mirrors `WifiView::wants_keyboard()` as of the last `sync_wifi_
+    /// keyboard` call -- lets that function tell "already showing" from
+    /// "needs to change" without re-deriving it from `self.layer`'s own
+    /// (write-only, from here) Wayland state.
+    wifi_keyboard_active: bool,
+    /// `k230-keyboard-gesture-signal`'s path (`K230_KEYBOARD_SIGNAL`), the
+    /// same helper the compositor's own two-finger keyboard gesture uses
+    /// (`nix/shell.nix`'s `keyboardGestureSignal`, run from `adapter.c`) --
+    /// reused here rather than inventing a second way to raise wvkbd.
+    /// `None` when the shell runs somewhere that never wired it up (a QEMU
+    /// probe build, say), in which case `sync_wifi_keyboard` still grants
+    /// keyboard focus but cannot also show the keyboard.
+    keyboard_signal_path: Option<PathBuf>,
+    /// The on-screen keyboard's reserved height (`K230_KEYBOARD_HEIGHT`,
+    /// matching `cfg.keyboardHeight`), in the 568x1232 artwork's own
+    /// coordinate space -- what `sync_wifi_keyboard` feeds to `WifiView::
+    /// set_keyboard_inset` so the Entry page's Cancel/Connect row reflows
+    /// above it instead of underneath it.
+    keyboard_height_px: f64,
     route: Route,
     touch: TouchTrace,
     width: u32,
@@ -1309,9 +1333,89 @@ impl ShellClient {
         Ok(VideoPlayback::new(key, ffmpeg, ffprobe))
     }
     fn wifi_dirty(&mut self) {
+        self.sync_wifi_keyboard();
         self.service_view.wifi = Some(self.wifi_view.public());
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+    }
+
+    /// Keeps the overlay layer's keyboard focus, the system keyboard
+    /// (wvkbd)'s visibility, and the Entry page's reflow in step with
+    /// `WifiView::wants_keyboard`. Called from every place that can change
+    /// whether the password field is the one that needs typing -- see
+    /// `wifi_dirty` (most transitions) and this file's `wifi_view.close()`
+    /// call sites (leaving Settings/Wi-Fi entirely).
+    ///
+    /// The overlay surface otherwise never asks for keyboard focus at all
+    /// (`ensure_layer` maps it `KeyboardInteractivity::None`, like every
+    /// other layer this shell owns) -- that is what forced Wi-Fi Settings to
+    /// draw its own keypad in the first place, per
+    /// `openspec/changes/the-handheld-configures-wifi-from-settings/design.md`:
+    /// wvkbd's keys are ordinary `wl_keyboard` input, delivered to whichever
+    /// surface holds keyboard focus, and a layer surface that never
+    /// requests it can never be that surface. `Exclusive` is requested only
+    /// for the narrow lifetime of this one field, then released back to
+    /// `None`, so it never contests focus with an app the rest of the time.
+    fn sync_wifi_keyboard(&mut self) {
+        let want = self.wifi_view.wants_keyboard();
+        if want == self.wifi_keyboard_active {
+            return;
+        }
+        self.wifi_keyboard_active = want;
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(if want {
+                KeyboardInteractivity::Exclusive
+            } else {
+                KeyboardInteractivity::None
+            });
+            layer.commit();
+        }
+        self.wifi_view
+            .set_keyboard_inset(if want { self.keyboard_height_px } else { 0.0 });
+        if let Some(path) = &self.keyboard_signal_path {
+            // Fire-and-forget, exactly like the compositor's own two-finger
+            // gesture handler (`adapter.c`'s `keyboard_signal`) -- a helper
+            // that fails to spawn must not block or crash the shell, it
+            // just leaves the keyboard in whatever state it was already in.
+            if let Err(error) = std::process::Command::new(path)
+                .arg(if want { "show" } else { "hide" })
+                .spawn()
+            {
+                self.log(&format!("wifi-keyboard-signal-failed {error}"));
+            }
+        }
+        self.dirty = true;
+    }
+
+    /// Unconditionally drops keyboard focus/reflow bookkeeping, for when the
+    /// keyboard capability itself just disappeared (`remove_capability`/
+    /// `remove_seat`) -- there is no keyboard left to show or hide, so this
+    /// only clears local state and the layer's own interactivity request,
+    /// unlike `sync_wifi_keyboard`'s normal compare-and-toggle.
+    fn forget_wifi_keyboard(&mut self) {
+        self.wifi_keyboard_active = false;
+        self.wifi_view.set_keyboard_inset(0.0);
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.commit();
+        }
+        self.dirty = true;
+    }
+
+    /// The `KeyboardHandler::press_key`/`repeat_key` bridge: only acts while
+    /// `sync_wifi_keyboard` has actually granted this surface focus for the
+    /// password field (never on stray input from some other reason the
+    /// overlay might one day hold focus), and reuses `wifi_action` --
+    /// exactly the same dispatcher a touch-hit intent goes through -- so
+    /// Enter/Escape get the same Connect/Cancel handling a tap on those
+    /// buttons would (`can_connect`'s own guards included).
+    fn handle_wifi_key(&mut self, event: KeyEvent) {
+        if !self.wifi_keyboard_active {
+            return;
+        }
+        if let Some(intent) = key_event_intent(u32::from(event.keysym), event.utf8.as_deref()) {
+            self.wifi_action(intent);
+        }
     }
 
     fn submit_wifi(&mut self, request: WifiRequest) {
@@ -1330,6 +1434,7 @@ impl ShellClient {
                     return;
                 }
                 if !self.wifi_view.back() {
+                    self.sync_wifi_keyboard();
                     self.service_view.wifi = None;
                     self.renderer.set_services(self.service_view.clone());
                     self.dirty = true;
@@ -1346,11 +1451,7 @@ impl ShellClient {
                 self.wifi_view.select(index);
                 self.wifi_dirty();
             }
-            WifiIntent::Key(_)
-            | WifiIntent::Backspace
-            | WifiIntent::Symbols
-            | WifiIntent::Shift
-            | WifiIntent::Space => {
+            WifiIntent::Key(_) | WifiIntent::Backspace => {
                 self.wifi_view.key(intent);
                 self.wifi_dirty();
             }
@@ -2577,6 +2678,7 @@ impl ShellClient {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
+            self.sync_wifi_keyboard();
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
         }
@@ -2612,6 +2714,7 @@ impl ShellClient {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
+            self.sync_wifi_keyboard();
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
         }
@@ -2718,6 +2821,7 @@ impl ShellClient {
             self.wifi_worker.cancel(id);
         }
         self.wifi_view.close();
+        self.sync_wifi_keyboard();
         self.service_view.wifi = None;
         self.renderer.set_services(self.service_view.clone());
         self.theme_view = ThemeView::default();
@@ -3174,6 +3278,10 @@ impl SeatHandler for ShellClient {
             self.touch_device = self.seat_state.get_touch(qh, &seat).ok();
             self.log("touch-capability");
         }
+        if cap == Capability::Keyboard && self.keyboard_device.is_none() {
+            self.keyboard_device = self.seat_state.get_keyboard(qh, &seat, None).ok();
+            self.log("keyboard-capability");
+        }
     }
     fn remove_capability(
         &mut self,
@@ -3200,6 +3308,13 @@ impl SeatHandler for ShellClient {
             self.dirty = true;
             self.log("touch-capability-lost");
         }
+        if cap == Capability::Keyboard {
+            if let Some(keyboard) = self.keyboard_device.take() {
+                keyboard.release();
+            }
+            self.forget_wifi_keyboard();
+            self.log("keyboard-capability-lost");
+        }
     }
     fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {
         self.touch_device.take();
@@ -3217,6 +3332,10 @@ impl SeatHandler for ShellClient {
         self.service_view.notification_swipe = None;
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+        if let Some(keyboard) = self.keyboard_device.take() {
+            keyboard.release();
+        }
+        self.forget_wifi_keyboard();
     }
 }
 
@@ -4048,6 +4167,88 @@ impl TouchHandler for ShellClient {
     }
 }
 
+impl KeyboardHandler for ShellClient {
+    fn enter(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        surface: &wl_surface::WlSurface,
+        _: u32,
+        _: &[u32],
+        _: &[smithay_client_toolkit::seat::keyboard::Keysym],
+    ) {
+        // Logged (rather than silently assumed) because the compositor
+        // grants a layer surface's requested `Exclusive` keyboard focus
+        // asynchronously, on its own next event-loop turn -- this is the
+        // one authoritative confirmation that the Wi-Fi password field can
+        // now actually receive typed keys, and what QEMU proof waits on
+        // before sending any (see `tests/rust_wifi_settings_qemu.py`).
+        if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
+            self.log("wifi-keyboard-focus-granted");
+        }
+    }
+    fn leave(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: &wl_surface::WlSurface,
+        _: u32,
+    ) {
+    }
+    /// Routes one physical or virtual (wvkbd) key press through to the Wi-Fi
+    /// password field. Guarded by `wifi_keyboard_active` (only ever true
+    /// while `sync_wifi_keyboard` has actually granted this surface
+    /// `Exclusive` keyboard focus for exactly that field) rather than
+    /// trusting that focus alone, since a key can arrive the same tick
+    /// focus is being torn down.
+    fn press_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        event: KeyEvent,
+    ) {
+        self.handle_wifi_key(event);
+    }
+    fn repeat_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        event: KeyEvent,
+    ) {
+        self.handle_wifi_key(event);
+    }
+    fn release_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        _: KeyEvent,
+    ) {
+    }
+    fn update_modifiers(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        _: Modifiers,
+        _: RawModifiers,
+        _: u32,
+    ) {
+        // Nothing to track here: xkbcommon has already folded Shift/Caps
+        // into `KeyEvent::utf8` by the time `press_key` sees it, which is
+        // exactly why this path needs no `symbols`/`shifted` state of its
+        // own the way the old in-app keypad did.
+    }
+}
+
 impl ShmHandler for ShellClient {
     fn shm_state(&mut self) -> &mut Shm {
         &mut self.shm
@@ -4058,6 +4259,7 @@ delegate_output!(ShellClient);
 delegate_shm!(ShellClient);
 delegate_seat!(ShellClient);
 delegate_touch!(ShellClient);
+delegate_keyboard!(ShellClient);
 delegate_layer!(ShellClient);
 delegate_registry!(ShellClient);
 impl ProvidesRegistryState for ShellClient {
@@ -4192,6 +4394,14 @@ fn serve() -> Result<(), String> {
         video_cover_last: Instant::now() - Duration::from_secs(2),
         video_covered: false,
         touch_device: None,
+        keyboard_device: None,
+        wifi_keyboard_active: false,
+        keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
+        keyboard_height_px: std::env::var("K230_KEYBOARD_HEIGHT")
+            .ok()
+            .and_then(|value| value.parse::<f64>().ok())
+            .filter(|value| *value > 0.0)
+            .unwrap_or(400.0),
         route: Route::Drawer,
         touch: TouchTrace::default(),
         width: 568,

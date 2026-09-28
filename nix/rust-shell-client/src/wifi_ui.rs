@@ -20,11 +20,19 @@ pub struct WifiPublic {
     pub selected: Option<Network>,
     pub password_len: usize,
     pub use_saved: bool,
-    pub symbols: bool,
-    pub shifted: bool,
     pub pending: bool,
     pub message: Option<String>,
     pub scroll: f64,
+    /// Reserved height, in the 568x1232 artwork's own coordinate space, of
+    /// the system on-screen keyboard currently raised for this page -- 0.0
+    /// when it is not raised (an open network, a saved credential, or any
+    /// page besides the password editor). Set by the shell alongside the
+    /// overlay layer's own `keyboard_interactivity` toggle, never by
+    /// `WifiView` itself: this is Wayland-side layout, not Wi-Fi state
+    /// (see this module's own header doc). `paint_wifi` and `target` both
+    /// read it to keep Cancel/Connect above the keyboard instead of hidden
+    /// beneath it, like Android's `adjustResize`.
+    pub keyboard_inset: f64,
 }
 
 #[derive(Debug, PartialEq)]
@@ -34,9 +42,6 @@ pub enum Intent {
     Select(usize),
     Key(char),
     Backspace,
-    Symbols,
-    Shift,
-    Space,
     Connect,
     EditPassword,
     Forget,
@@ -54,9 +59,8 @@ pub struct WifiView {
     pub scroll: f64,
     password: Secret,
     pub use_saved: bool,
-    pub symbols: bool,
-    pub shifted: bool,
     pub pending: Option<(u64, Kind)>,
+    keyboard_inset: f64,
 }
 impl Default for WifiView {
     fn default() -> Self {
@@ -68,9 +72,8 @@ impl Default for WifiView {
             scroll: 0.0,
             password: Secret::new(String::new()),
             use_saved: false,
-            symbols: false,
-            shifted: false,
             pending: None,
+            keyboard_inset: 0.0,
         }
     }
 }
@@ -82,12 +85,33 @@ impl WifiView {
             selected: self.selected.clone(),
             password_len: self.password.len(),
             use_saved: self.use_saved,
-            symbols: self.symbols,
-            shifted: self.shifted,
             pending: self.pending.is_some(),
             message: self.message.clone(),
             scroll: self.scroll,
+            keyboard_inset: self.keyboard_inset,
         }
+    }
+    /// Whether the password editor is on a field that needs typed text right
+    /// now -- an unsaved WPA2-Personal entry. Open networks skip the field
+    /// entirely and a saved credential needs no re-entry, so neither should
+    /// ever raise the system keyboard or reserve space for it. The shell
+    /// calls this after every state change that can affect it (see
+    /// `ShellClient::sync_wifi_keyboard`) rather than this module reaching
+    /// into Wayland itself -- see this file's own header doc.
+    pub fn wants_keyboard(&self) -> bool {
+        self.page == Page::Entry
+            && !self.use_saved
+            && self
+                .selected
+                .as_ref()
+                .is_some_and(|network| network.security == Security::Wpa2Psk)
+    }
+    /// Records how much of the bottom of the screen the system keyboard
+    /// currently reserves, in the 568x1232 artwork's own coordinate space
+    /// (0.0 when it is not raised). Purely a rendering/hit-testing input;
+    /// see `WifiPublic::keyboard_inset`'s own doc.
+    pub fn set_keyboard_inset(&mut self, inset: f64) {
+        self.keyboard_inset = inset;
     }
     pub fn open(&mut self) -> WifiRequest {
         *self = Self::default();
@@ -243,15 +267,8 @@ impl WifiView {
             return;
         }
         match intent {
-            Intent::Key(c) => self.password.push(if self.shifted {
-                c.to_ascii_uppercase()
-            } else {
-                c
-            }),
-            Intent::Space => self.password.push(' '),
+            Intent::Key(c) => self.password.push(c),
             Intent::Backspace => self.password.pop(),
-            Intent::Symbols => self.symbols = !self.symbols,
-            Intent::Shift => self.shifted = !self.shifted,
             _ => {}
         }
     }
@@ -277,6 +294,17 @@ impl WifiView {
         let max = (count as f64 * 88.0 - visible).max(0.0);
         self.scroll = (self.scroll + delta).clamp(0.0, max);
     }
+}
+
+/// The Entry page's Cancel/Connect row: `(top, bottom)` in the 568x1232
+/// artwork's own coordinate space. Normally anchored to the bottom of the
+/// screen; once the system keyboard is raised (`keyboard_inset` > 0) the row
+/// moves to sit directly above it instead of being hidden underneath, like
+/// Android's `adjustResize`. Shared by `target`'s hit-testing and
+/// `render::paint_wifi`'s drawing so the two can never drift apart.
+pub fn entry_buttons_rect(keyboard_inset: f64) -> (f64, f64) {
+    let bottom = 1208.0 - keyboard_inset;
+    (bottom - 88.0, bottom)
 }
 
 pub fn all_networks(snapshot: &Snapshot) -> Vec<Network> {
@@ -320,6 +348,40 @@ pub fn useful_error(code: &str) -> &'static str {
         }
         _ => "Wi-Fi request failed. Retry or return to Settings.",
     }
+}
+
+// X11/xkbcommon keysym values for the three non-text keys the password
+// editor cares about. Kept as plain numbers rather than depending on the
+// `xkeysym`/`xkbcommon` crates here: this module is deliberately independent
+// of Wayland (see its own header doc), and these three values are stable
+// standard keysyms, not something a keymap changes.
+const KEYSYM_BACKSPACE: u32 = 0xff08;
+const KEYSYM_RETURN: u32 = 0xff0d;
+const KEYSYM_KP_ENTER: u32 = 0xff8d;
+const KEYSYM_ESCAPE: u32 = 0xff1b;
+
+/// Maps one `wl_keyboard` key-press (from the system keyboard, physical or
+/// virtual -- both arrive identically once the overlay surface holds
+/// keyboard focus) to a Wi-Fi intent. `keysym` identifies non-text keys;
+/// `utf8` is the already-shifted/composed text xkbcommon produced for an
+/// ordinary character, so this need not track Shift itself. Only a single
+/// printable ASCII character is accepted per event -- multi-character
+/// composition (dead keys, IME) and control characters are rejected, same
+/// as `Secret::push`'s own guard, and this function never sees or returns
+/// the password itself, only which key it maps to.
+pub fn key_event_intent(keysym: u32, utf8: Option<&str>) -> Option<Intent> {
+    match keysym {
+        KEYSYM_BACKSPACE => return Some(Intent::Backspace),
+        KEYSYM_RETURN | KEYSYM_KP_ENTER => return Some(Intent::Connect),
+        KEYSYM_ESCAPE => return Some(Intent::Back),
+        _ => {}
+    }
+    let mut chars = utf8?.chars();
+    let c = chars.next()?;
+    if chars.next().is_some() || c.is_control() || !c.is_ascii() {
+        return None;
+    }
+    Some(Intent::Key(c))
 }
 
 pub fn hit(
@@ -390,7 +452,8 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
     if view.page != Page::Entry {
         return None;
     }
-    if (1120.0..1208.0).contains(&y) {
+    let (button_top, button_bottom) = entry_buttons_rect(view.keyboard_inset);
+    if (button_top..button_bottom).contains(&y) {
         if (24.0..274.0).contains(&x) {
             return Some(Intent::Back);
         }
@@ -420,84 +483,7 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
             return Some(Intent::Forget);
         }
     }
-    if view.use_saved {
-        return None;
-    }
-    let row = if (530.0..610.0).contains(&y) {
-        0
-    } else if (620.0..700.0).contains(&y) {
-        1
-    } else if (710.0..790.0).contains(&y) {
-        2
-    } else if (800.0..880.0).contains(&y) {
-        3
-    } else if (890.0..970.0).contains(&y) {
-        4
-    } else {
-        return None;
-    };
-    let w = 568.0;
-    if row == 4 {
-        if (18.0..130.0).contains(&x) {
-            return Some(Intent::Symbols);
-        }
-        if (136.0..414.0).contains(&x) {
-            return Some(Intent::Space);
-        }
-        return (420.0..550.0).contains(&x).then_some(Intent::Backspace);
-    }
-    let (keys, left, right): (&str, f64, f64) = match row {
-        0 => (
-            if view.symbols {
-                "!@#$%^&*()"
-            } else {
-                "1234567890"
-            },
-            18.0,
-            w - 18.0,
-        ),
-        1 => (
-            if view.symbols {
-                "-_=+[]{};:"
-            } else {
-                "qwertyuiop"
-            },
-            18.0,
-            w - 18.0,
-        ),
-        2 => (
-            if view.symbols {
-                "'\"\\|/?.<>"
-            } else {
-                "asdfghjkl"
-            },
-            28.0,
-            w - 28.0,
-        ),
-        3 => {
-            if (18.0..70.0).contains(&x) {
-                return Some(Intent::Shift);
-            }
-            if (498.0..550.0).contains(&x) {
-                return Some(Intent::Backspace);
-            }
-            (
-                if view.symbols { "~`,zxcv" } else { "zxcvbnm" },
-                74.0,
-                w - 74.0,
-            )
-        }
-        _ => unreachable!(),
-    };
-    if x < left || x >= right {
-        return None;
-    }
-    let cell = (right - left) / keys.chars().count() as f64;
-    let index = ((x - left) / cell).floor() as usize;
-    if x < left + index as f64 * cell + 2.0 || x >= left + (index + 1) as f64 * cell - 2.0 {
-        return None;
-    }
-    keys.chars().nth(index).map(Intent::Key)
+    None
 }
 
 #[cfg(test)]
@@ -595,17 +581,21 @@ mod tests {
     fn release_must_stay_on_same_key_or_confirm_control() {
         let mut view = WifiView::default();
         view.page = Page::Entry;
+        // A drag that leaves the Connect button between down and up must
+        // not fire it -- same rule the old in-app keypad relied on, now
+        // covering the Cancel/Connect pair that is the whole Entry-page
+        // touch surface once the system keyboard owns the rest.
         assert_eq!(
-            hit(&view.public(), (68.0, 550.0), (75.0, 550.0), 568, 1232),
+            hit(&view.public(), (400.0, 1150.0), (100.0, 1150.0), 568, 1232),
             None
         );
         assert_eq!(
-            hit(&view.public(), (25.0, 550.0), (25.0, 550.0), 568, 1232),
-            Some(Intent::Key('1'))
+            hit(&view.public(), (400.0, 1150.0), (400.0, 1150.0), 568, 1232),
+            Some(Intent::Connect)
         );
         assert_eq!(
-            hit(&view.public(), (520.0, 925.0), (520.0, 925.0), 568, 1232),
-            Some(Intent::Backspace)
+            hit(&view.public(), (100.0, 1150.0), (100.0, 1150.0), 568, 1232),
+            Some(Intent::Back)
         );
         view.page = Page::ForgetConfirm;
         assert_eq!(
@@ -616,6 +606,78 @@ mod tests {
             hit(&view.public(), (300.0, 900.0), (300.0, 900.0), 568, 1232),
             Some(Intent::ForgetConfirm)
         );
+    }
+    #[test]
+    fn raised_keyboard_moves_cancel_connect_above_it() {
+        let mut view = WifiView::default();
+        view.page = Page::Entry;
+        view.set_keyboard_inset(400.0);
+        // The old, unraised position (1150) now hits nothing -- the
+        // keyboard covers it -- while the reflowed position just above the
+        // keyboard's top edge (1232 - 400 = 832) hits Connect.
+        assert_eq!(
+            hit(&view.public(), (400.0, 1150.0), (400.0, 1150.0), 568, 1232),
+            None
+        );
+        assert_eq!(
+            hit(&view.public(), (400.0, 760.0), (400.0, 760.0), 568, 1232),
+            Some(Intent::Connect)
+        );
+        assert_eq!(
+            hit(&view.public(), (100.0, 760.0), (100.0, 760.0), 568, 1232),
+            Some(Intent::Back)
+        );
+    }
+    #[test]
+    fn wants_keyboard_only_for_an_unsaved_wpa2_field() {
+        let mut view = WifiView::default();
+        view.page = Page::List;
+        view.snapshot = Some(snapshot());
+        view.select(0);
+        assert!(view.wants_keyboard());
+        view.edit_password();
+        assert!(view.wants_keyboard());
+        let mut saved = snapshot();
+        saved.saved = saved.networks.clone();
+        view.snapshot = Some(saved);
+        view.page = Page::List;
+        view.select(0);
+        assert!(!view.wants_keyboard(), "a saved credential needs no typing");
+        view.page = Page::List;
+        view.snapshot = Some(Snapshot {
+            networks: vec![Network {
+                ssid: "Example Guest".into(),
+                security: Security::Open,
+            }],
+            current: None,
+            saved: Vec::new(),
+            error: None,
+        });
+        view.select(0);
+        assert!(!view.wants_keyboard(), "an open network has no password field");
+    }
+    #[test]
+    fn key_event_intent_maps_control_keys_and_rejects_composed_text() {
+        assert_eq!(key_event_intent(KEYSYM_BACKSPACE, None), Some(Intent::Backspace));
+        assert_eq!(key_event_intent(KEYSYM_RETURN, Some("\r")), Some(Intent::Connect));
+        assert_eq!(key_event_intent(KEYSYM_KP_ENTER, None), Some(Intent::Connect));
+        assert_eq!(key_event_intent(KEYSYM_ESCAPE, None), Some(Intent::Back));
+        assert_eq!(key_event_intent(0x0061, Some("a")), Some(Intent::Key('a')));
+        assert_eq!(key_event_intent(0x0041, Some("A")), Some(Intent::Key('A')));
+        // No text at all (a bare modifier key) maps to nothing.
+        assert_eq!(key_event_intent(0xffe1, None), None);
+        // Multi-character composition (dead keys, IME) is rejected rather
+        // than silently taking the first character of something the user
+        // did not type as a single keystroke.
+        assert_eq!(key_event_intent(0x0000, Some("ab")), None);
+        // A control character slipping through as "utf8" (some compositors
+        // report one for Tab) never becomes a password character.
+        assert_eq!(key_event_intent(0x0000, Some("\t")), None);
+        // Non-ASCII text is rejected -- `Secret::push` only accepts ASCII,
+        // matching the 8-63 byte WPA2 passphrase length this app already
+        // enforces on `char` count, not UTF-8 byte count.
+        assert_eq!(key_event_intent(0x0000, Some("é")), None);
+        assert_eq!(key_event_intent(0x0000, None), None);
     }
     #[test]
     fn closed_or_reopened_view_ignores_old_network_reply() {

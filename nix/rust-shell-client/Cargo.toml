@@ -7,7 +7,14 @@ description = "Opt-in K230 handheld Rust shell client"
 
 [dependencies]
 libc = "=0.2.175"
-smithay-client-toolkit = { version = "=0.20.0", default-features = false }
+
+# "xkbcommon" (not "calloop": the event loop here is a manual poll, not a
+# calloop source) pulls in the seat::keyboard module -- SCTK gates it behind
+# this feature because turning wl_keyboard keycodes into text needs a real
+# libxkbcommon keymap. Needed so the Wi-Fi password field can take normal
+# wl_keyboard input from the system keyboard instead of drawing its own
+# keypad (openspec/changes/the-handheld-configures-wifi-from-settings).
+smithay-client-toolkit = { version = "=0.20.0", default-features = false, features = ["xkbcommon"] }
 wayland-client = "=0.31.11"
 cairo-rs = { version = "=0.21.5", features = ["png"] }
 pango = "=0.21.5"

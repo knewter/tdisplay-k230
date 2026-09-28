@@ -18,11 +18,15 @@ The system's shell userspace SHALL let a person open Network from Settings, refr
 
 ### Requirement: Secure network entry is touch-operable and secret-safe
 <!-- UNVERIFIED: masked password entry and protected broker on physical glass remain to be observed. -->
-The shell userspace SHALL offer an on-screen password keyboard for a selected supported secured network, mask entered characters by default, permit correction and cancellation, and show a bounded Connect pending state with a useful failure and retry route. The system SHALL pass a credential only through a private runtime channel to a privileged Wi-Fi service; neither side SHALL put the secret or a network identifier in command arguments, environment, Nix closure, tracked files, ordinary logs, or committed evidence. The shell SHALL NOT receive saved passwords back from the service.
+The shell userspace SHALL offer masked password entry for a selected supported secured network using the same system keyboard every other text field in the shell uses (not a separate in-app keypad), mask entered characters by default, permit correction and cancellation, and show a bounded Connect pending state with a useful failure and retry route. The password field SHALL take real keyboard focus only for its own lifetime and release it immediately on Connect, Cancel, or leaving the page, so the system keyboard never contests focus with an application the rest of the time. Cancel/Connect SHALL remain reachable above the raised keyboard rather than hidden beneath it. The system SHALL pass a credential only through a private runtime channel to a privileged Wi-Fi service; neither side SHALL put the secret or a network identifier in command arguments, environment, Nix closure, tracked files, ordinary logs, or committed evidence. The shell SHALL NOT receive saved passwords back from the service.
 
 #### Scenario: Secured network selected
 - **WHEN** a person taps a WPA2-Personal network
-- **THEN** a masked entry and on-screen keyboard appear, and Connect remains disabled until the entered value meets the supported format
+- **THEN** a masked entry appears, the system keyboard raises from the bottom of the screen, Cancel/Connect move to sit above it, and Connect remains disabled until the entered value meets the supported format
+
+#### Scenario: Password field is not focused
+- **WHEN** an open network is selected, a saved credential needs no re-entry, or the Wi-Fi page is closed
+- **THEN** the system keyboard is not raised and the overlay does not hold keyboard focus
 
 #### Scenario: Authentication fails
 - **WHEN** a connection attempt is rejected or times out

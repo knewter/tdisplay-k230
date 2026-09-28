@@ -499,6 +499,19 @@ let
     export K230_THEME_HELPER_SOCKET=/run/shell/theme-helper.sock
     export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
     export K230_KEYBOARD_TOUCH_GESTURES=${if cfg.coherentShell then "1" else "0"}
+    # Lets the Wi-Fi Settings password field raise/lower the system keyboard
+    # itself (openspec/changes/the-handheld-configures-wifi-from-settings)
+    # via the exact same helper the compositor's own two-finger keyboard
+    # gesture uses (`keyboardGestureSignal` above, run from `adapter.c`) --
+    # one show/hide path, not two. `k230-keyboard-gesture-signal` finds
+    # `wvkbd-mobintl` by process name regardless of which sway.conf started
+    # it, so this is safe to export unconditionally, not just under
+    # `cfg.coherentShell`. `K230_KEYBOARD_HEIGHT` matches the same
+    # `cfg.keyboardHeight` value wvkbd itself is launched with (`-H` above
+    # and in `swayConfig`), so the Entry page reflows Cancel/Connect by
+    # exactly the height the keyboard actually reserves.
+    export K230_KEYBOARD_SIGNAL=${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal
+    export K230_KEYBOARD_HEIGHT=${toString cfg.keyboardHeight}
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
