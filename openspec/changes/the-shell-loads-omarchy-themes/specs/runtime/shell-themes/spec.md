@@ -28,7 +28,12 @@ The system SHALL preserve authored palette keys and reproduce the pinned Quattro
 
 #### Scenario: A theme supplies more than ANSI colors
 - **WHEN** a theme supplies distinct semantic, ANSI, selection, custom, and gradient values plus section overrides
-- **THEN** the corresponding shell, drawer, card, Settings, notification, keyboard and app appearance adapters retain their intended distinctions instead of reducing them to a small shared palette
+- **THEN** the corresponding shell, drawer, card, keyboard and app appearance adapters retain their intended distinctions instead of reducing them to a small shared palette
+
+<!-- Settings/notifications adapters moved 2026-09-28 (user-authorized scope
+split, "yes a-d and f"): that portion of this scenario is now
+`the-settings-and-notifications-surfaces-are-themed`'s own "Settings and
+notifications honor the active theme" requirement, not this change's. -->
 
 #### Scenario: A section override replaces defaults
 - **WHEN** a theme supplies a complete shell file and a partial section file
@@ -37,15 +42,19 @@ The system SHALL preserve authored palette keys and reproduce the pinned Quattro
 ### Requirement: Theme icons and background choices remain available
 
 <!-- UNVERIFIED -->
-The system SHALL resolve `icons.theme` through installed freedesktop themes with explicit missing-theme fallback. It SHALL list all background candidates from the source and user overlay, support upstream still-image formats and bounded supported video playback, and distinguish unavailable codecs from missing assets. Selection SHALL remember each theme's wallpaper across switches and boots. Portrait crop preview, fit options, empty-directory fallback and removed-file recovery SHALL remain usable by touch.
+<!-- Narrowed 2026-09-28 (user-authorized scope split, "yes a-d and f"):
+user-supplied overlays, non-crop fit modes (fill/solid), and bounded video
+playback moved to `the-background-chooser-supports-fill-solid-and-video`'s
+own "Every promised background fit mode exists" and "A video-suffixed
+background plays, muted and bounded" requirements. This requirement keeps
+only what this change itself still owns: icon fallback and the still-image,
+crop-only background carousel with selection memory (implemented; see task
+4.2.r/4.2.r2). -->
+The system SHALL resolve `icons.theme` through installed freedesktop themes with explicit missing-theme fallback. It SHALL list all background candidates from the theme's own source, and support upstream still-image formats. Selection SHALL remember each theme's wallpaper across switches and boots. Portrait crop preview, empty-directory fallback and removed-file recovery SHALL remain usable by touch.
 
 #### Scenario: Choose another background
 - **WHEN** a person browses the background carousel (by drag or a side-slice tap) and confirms a different image (by tapping the centred slice or Apply)
 - **THEN** the actual portrait preview and shell change to that image, other choices remain available, and the chosen image returns after switching away and back or rebooting
-
-#### Scenario: A video wallpaper is covered by an app
-- **WHEN** a supported video background becomes fully covered or reduced motion is enabled
-- **THEN** decoding pauses or a still frame is used, and returning to visible playback respects the measured shell interaction budgets
 
 #### Scenario: An icon theme is missing
 - **WHEN** a clone names an icon theme that the image does not contain

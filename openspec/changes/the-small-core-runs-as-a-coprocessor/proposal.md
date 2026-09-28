@@ -74,18 +74,34 @@ for SMP.
   board-proved `tools/small-core-heartbeat.{S,ld}`) as the first firmware
   step, over Zephyr, FreeRTOS, or the vendor's RT-Smart, on build-complexity
   and evidence grounds (`design.md`).
-- Stage the work as: (0) source/register grounding, (1) the external-reader
-  recovery rehearsal both parent changes already required and left open,
-  (2) a step-zero echo/ping service over a polling shared-memory ring (no
-  mailbox hardware dependency, since the K230 mailbox register layout is not
-  yet read into this project), (3) a reserved-memory carveout and a
-  read-only remoteproc driver skeleton, (4) the Linux-driven runtime
-  start/stop of CPU0 (replacing the idea of patching SPL to auto-start it),
-  and (5) a first useful workload: CPU0 as a liveness watchdog for Linux,
-  detecting and recording a hang without itself resetting anything.
+- Stage the work as: (0) source/register grounding, (1) confirming a current
+  fallback recovery route, (2) a step-zero echo/ping service over a polling
+  shared-memory ring (no mailbox hardware dependency, since the K230 mailbox
+  register layout is not yet read into this project), (3) a reserved-memory
+  carveout and a read-only remoteproc driver skeleton, (4) the Linux-driven
+  runtime start/stop of CPU0 (replacing the idea of patching SPL to
+  auto-start it), and (5) a first useful workload: CPU0 as a liveness
+  watchdog for Linux, detecting and recording a hang without itself
+  resetting anything.
 - Every task that writes a CPU0 reset, vector, or reset-controller register
-  is marked `BOARD-GATED` and `AUTHORIZATION-REQUIRED` and depends on the
-  recovery rehearsal, per AGENTS.md.
+  is marked `BOARD-GATED` and `AUTHORIZATION-REQUIRED` and depends on a
+  current fallback recovery route being available, per AGENTS.md.
+
+**2026-09-28 addendum, operator decision on recovery:** the external
+SD-card-reader recovery rehearsal named below (stage 1) is **waived**. The
+user: "we can easily fix the sd card damn. don't worry about recovery we've
+literally done that fine already before. i don't want to do a heartbeat
+test on a spare card." No task in this change or its two parents may
+require a separate spare/disposable card; every board step here runs on the
+normal card. Recovery, if a step fails or hangs, is by the already-proven
+U-Boot one-shot boot from `boot-prev` or `ums`/flash reimaging
+(`docs/uboot-ums.md`, `docs/evidence/card-shell/bottom-band-flicker/
+kernel-patch-boot-panic.md`) — not by a rehearsed external-reader restore.
+Explicit user authorization at the time of the write is still required for
+every task that writes a CPU0 reset, vector, or reset-controller register;
+that marker is unchanged. See `docs/closeout/second-core-plan.md`'s own
+2026-09-28 addendum for the same decision recorded against its "next 3
+concrete steps."
 
 **Non-goals**, named explicitly per `.skills/k230-spec-change/SKILL.md`'s
 proposal rule: this change does not add `cpu@1` to any device tree, does not
@@ -124,9 +140,9 @@ withdrawn, or otherwise closed.
   independent physical execution that change already proved on the host and
   partially rehearsed. Its ready payload and host evidence
   (`tools/small-core-heartbeat.{S,ld}`, `docs/evidence/second-core/heartbeat-host.md`)
-  and its board-gated tasks 3.1 (recovery rehearsal) then 3.2 (release and
-  observe) are resequenced as this change's own stage-1 and stage-2 tasks, in
-  that same order. Its coexistence stage (task family 4: patch the CPU0 SPL
+  and its board-gated tasks 3.1 (recovery rehearsal, now waived per the
+  2026-09-28 addendum above) then 3.2 (release and observe) are resequenced
+  as this change's own stage-1 and stage-2 tasks, in that same order. Its coexistence stage (task family 4: patch the CPU0 SPL
   parking loop to run a heartbeat unconditionally after every boot) is
   **not** reused as designed: `design.md` explains that a proper
   remoteproc-shaped driver lets Linux start and stop CPU0 on demand once
@@ -156,6 +172,8 @@ None.
 No boot image bytes change in this proposal. The existing heartbeat payload
 and its host tooling are extended, not replaced. This proposal's own tasks
 are source/documentation/design work plus, further out, board-gated
-hardware-writing steps that require the still-unperformed external-reader
-recovery rehearsal and the user's explicit authorization before any register
-is written, exactly as AGENTS.md and the two parent changes already require.
+hardware-writing steps that require the user's explicit authorization before
+any register is written, exactly as AGENTS.md requires. The external-reader
+recovery rehearsal the two parent changes originally required is waived per
+the 2026-09-28 addendum above; the proven fallback recovery routes (U-Boot
+one-shot from `boot-prev`, `ums`/flash reimaging) stand in its place.

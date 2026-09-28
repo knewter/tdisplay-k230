@@ -92,11 +92,11 @@ ticks below are backed by test runs performed today on this host
 | 2.3 (pinned default / fresh-home / persistent selection under `handheld-theme-service`) | (c) mostly done, naming gap | The pinned default (`handheld-theme-default`), the daemon (`theme-helper.service`) and persistent selection (`theme_preferences.py`) all exist and are exercised by the suites above, but no `handheld-theme-service` flake output exists to build, and fresh-home startup has no dedicated test. Left open: rename the proof command to the real outputs, add a fresh-home host test. |
 | 3.1 (token consumer / coverage inventory) | (c) partial | Gradient stops/alpha/per-side-widths/references are covered (`tests/test_handheld_theme_rendering.py`, 4/4 pass). Missing: a stated field-coverage inventory, control-state (hover/pressed/disabled) adaptation, font/spacing adaptation, and any reviewed host captures. Host-doable; not attempted this session. |
 | 3.2 (drawer/card chrome + icon theme) | (c) partial | `nix/card-shell/appearance.c` already reads/forwards `icon_theme`. No `--surface drawer-card` test flag exists, no dark/light reviewed captures exist. Host-doable; not attempted. |
-| 3.3 (Settings/notifications/chooser/keyboard) | (b)+(e) split | Keyboard is done (3.3.k, ticked). Chooser is thoroughly themed already (task group 4/10 of the sibling change). Settings/notifications are real packages, not mockups, but have no verified theme wiring and no `--surface system` test. **Split into the successor proposal `the-settings-and-notifications-surfaces-are-themed`** (drafted this session, validates clean — see below). Parent task 3.3 left open and cross-references the successor; not ticked, since closing 3.3 against the successor needs your authorization. |
+| 3.3 (Settings/notifications/chooser/keyboard) | (b)+(e) split | Keyboard is done (3.3.k, ticked). Chooser is thoroughly themed already (task group 4/10 of the sibling change). Settings/notifications are real packages, not mockups, but have no verified theme wiring and no `--surface system` test. **Split into the successor proposal `the-settings-and-notifications-surfaces-are-themed`**, authorized by the user 2026-09-28 ("yes a-d and f"). Parent task 3.3 is now ticked `[x] ... MOVED, NOT PERFORMED HERE` for this portion and cross-references the successor's own tasks by number. |
 | 3.4 (Foot/app appearance adapters) | (a) done | `tools/app_appearance.py`. `python3 -m unittest tests.test_handheld_app_themes`: 9/9 pass, covering safe OSC ordering, session-scoped reload, per-app limitation (a late sync can't undo a newer selection). |
-| 4.1 (background previews: memory, discovery, overlays, fit modes) | (c)+(e) split | Per-theme selection memory and lazy bounded thumbnails are done (`theme_preferences.py`, 4.2.r/4.2.r2). **Not done, and real scope**: `background_decode.rs` already implements `FitMode::Crop`/`Fit`/`Center`, but every call site (`theme_thumbnails.rs`, `main.rs`, `theme_ui.rs`) hardcodes `FitMode::Crop` — nothing lets a person choose, and `Fill`/`Solid` modes and user-supplied background overlays don't exist at all. `tests/test_handheld_theme_backgrounds.py` does not exist. Split into the successor proposal `the-background-chooser-supports-fill-solid-and-video` (drafted this session; see below). |
+| 4.1 (background previews: memory, discovery, overlays, fit modes) | (c)+(e) split | Per-theme selection memory and lazy bounded thumbnails are done (`theme_preferences.py`, 4.2.r/4.2.r2). **Not done, and real scope**: `background_decode.rs` already implements `FitMode::Crop`/`Fit`/`Center`, but every call site (`theme_thumbnails.rs`, `main.rs`, `theme_ui.rs`) hardcodes `FitMode::Crop` — nothing lets a person choose, and `Fill`/`Solid` modes and user-supplied background overlays don't exist at all. `tests/test_handheld_theme_backgrounds.py` does not exist. Split into the successor proposal `the-background-chooser-supports-fill-solid-and-video`, authorized by the user 2026-09-28 ("yes a-d and f"). Parent task 4.1 is now ticked `[x] ... MOVED, NOT PERFORMED HERE` for the fit/overlay portion (the memory/thumbnail portion stays here, done) and cross-references the successor's own tasks by number. |
 | 4.2 (scroll/swipe/tap with cancel/apply) | (b) superseded in part | The sibling change's task group 10 removed the separate Preview/Apply/Cancel step entirely, per your own verbatim decision ("tap theme in the theme picker, apply immediately"). There is no cancel step left to test. Live scroll/swipe/tap/reduced-motion/recovery behavior is covered by `theme_ui`'s 24-case suite and the responsiveness slices (4.2.r/4.2.r2). Recommend rewording this task rather than closing it silently; left unticked. |
-| 4.3 (muted video backgrounds) | (e) unimplemented | `background_decode.rs` states outright it does not decode video. No `.#handheld-wallpaper` output, no test file. Genuine unimplemented scope; split into the same successor proposal as 4.1 above (`the-background-chooser-supports-fill-solid-and-video`, drafted this session). |
+| 4.3 (muted video backgrounds) | (e) unimplemented | `background_decode.rs` states outright it does not decode video. No `.#handheld-wallpaper` output, no test file. Genuine unimplemented scope; split into the same successor proposal as 4.1 above, authorized by the user 2026-09-28 ("yes a-d and f"). Parent task 4.3 is now ticked `[x] ... MOVED, NOT PERFORMED HERE`. |
 | 5.1 (build touch-launcher/card-shell/toplevel) | (a) done, with a scope note | `touch-launcher` and `card-shell` both built (cache hits) today. The plain (non-`coherentShell`) `k230` toplevel — which carries none of this change's surface — was not freshly built; the `coherent-shell` toplevel this feature actually lives under has been built and installed repeatedly per the evidence cited in `tasks.md`. |
 | 5.2 (reserved-board trial tool, host-verified first) | (a) done | `tools/handheld-theme-trial.py`. `python3 -m unittest tests.test_handheld_theme_trial`: 8/8 pass. |
 | 5.3a (board activation: dark/light/community) | (a) done | `docs/evidence/omarchy-themes/board-switching/README.md` (dark+light Catppuccin, native `grim`, 2026-09-24) and `.../community-board-fixed/README.md` (unchanged Fuchsblau community theme, restoration confirmed, same date). Both injected-input, not real-finger. |
@@ -106,19 +106,22 @@ ticks below are backed by test runs performed today on this host
 | 6.1 (publish evidence / site) | (d) blocked | Correctly open; depends on everything above. |
 | 6.2 (validate/archive/push) | (d) blocked | Correctly open; this audit does not close it. `openspec validate --all --strict` passes today (49/49) with both changes and the new successor proposal all open and unarchived. |
 
-### Successor proposal drafted this session
+### Successor proposal drafted this session, split authorized 2026-09-28
 
 `openspec/changes/the-settings-and-notifications-surfaces-are-themed/` —
 proposal.md, design.md, tasks.md and an `ADDED` spec delta for
 `runtime/shell-themes`. Validates clean
 (`openspec validate the-settings-and-notifications-surfaces-are-themed
---strict`) and as part of `openspec validate --all --strict` (49/49).
-**Not archived, not linked as closing the parent's task 3.3** — that
-requires your authorization per `AGENTS.md`. It is committed on this
-branch so the scope is visible immediately rather than sitting only in a
-private worktree.
+--strict`) and as part of `openspec validate --all --strict`.
+**The user authorized this split on 2026-09-28 ("yes a-d and f").** The
+parent's task 3.3 is now ticked `[x] ... MOVED, NOT PERFORMED HERE` for its
+Settings/notifications portion (the chooser/keyboard portion stays there,
+done) and cross-references this successor's own tasks 1.1-4.2 by number.
+Neither this successor's own tasks nor its board gate are done; only the
+bookkeeping move happened. Not archived, not pushed past this branch by
+this commit.
 
-### Second successor proposal drafted this session
+### Second successor proposal drafted this session, split authorized 2026-09-28
 
 `openspec/changes/the-background-chooser-supports-fill-solid-and-video/` —
 proposal.md, design.md, tasks.md and an `ADDED` spec delta for
@@ -128,10 +131,17 @@ overlays — per-theme memory and lazy thumbnails are already done and are
 NOT reopened here) and task 4.3 in full (muted video backgrounds, format
 diagnostics, visibility pause, reduced-motion, the board performance gate).
 Validates clean (`openspec validate the-background-chooser-supports-fill-
-solid-and-video --strict`) and as part of `openspec validate --all --strict`
-(50/50, both successors plus the two parents all open and unarchived).
-**Not archived, not linked as closing the parent's tasks 4.1/4.3** — same
-authorization requirement as the Settings/notifications successor above.
+solid-and-video --strict`) and as part of `openspec validate --all --strict`.
+**The user authorized this split on 2026-09-28 ("yes a-d and f").** The
+parent's tasks 4.1 (fit/overlay portion only) and 4.3 (in full) are now
+ticked `[x] ... MOVED, NOT PERFORMED HERE` and cross-reference this
+successor's own tasks 1.1-3.3 by number. Neither this successor's own tasks
+nor its board gate are done; only the bookkeeping move happened. The
+parent's ADDED requirement `Theme icons and background choices remain
+available` was narrowed to drop the fit-mode/overlay/video clauses this
+successor now owns (its own icon-fallback and crop-only background-carousel
+scope, already implemented, is unchanged). Not archived, not pushed past
+this branch by this commit.
 
 ## Evidence already on `master`: background selection generation and feedback
 

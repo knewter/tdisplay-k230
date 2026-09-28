@@ -222,3 +222,36 @@ already in hand. It is not what "Linux SMP" originally promised, and this
 document does not pretend otherwise; `the-small-core-runs-a-recoverable-heartbeat`
 already says the same thing in its own suspension note and its "AMP heartbeat
 does not imply shared Linux scheduling" requirement.
+
+## 2026-09-28 addendum: recovery rehearsal waived
+
+The user made two decisions the same day this plan was written, both
+recorded here and in `the-small-core-runs-as-a-coprocessor`'s own
+proposal.md/design.md/tasks.md:
+
+1. **Scope split (a-d and f authorized):** see that change's own proposal
+   for the AMP redirect itself; this addendum covers only the recovery
+   procedure below.
+2. **The external-card-reader recovery rehearsal in "Next 3 concrete
+   steps" step 1 is waived.** The user: "we can easily fix the sd card
+   damn. don't worry about recovery we've literally done that fine already
+   before. i don't want to do a heartbeat test on a spare card." This
+   plan's step 1 (rehearse the external-reader recovery route on a
+   disposable card before any further register write) and step 3's
+   "disposable card" requirement are both superseded by this decision. No
+   task in `the-system-runs-on-both-cores`, `the-small-core-runs-a-
+   recoverable-heartbeat`, or `the-small-core-runs-as-a-coprocessor` may
+   require a separate spare/disposable card going forward; every board
+   step in this project's second-core work runs on the normal card. The
+   fallback recovery route for a failed or hung release is the
+   already-proven U-Boot one-shot boot from `boot-prev`
+   (`docs/evidence/card-shell/bottom-band-flicker/kernel-patch-boot-panic.md`)
+   or `ums`/flash reimaging (`docs/uboot-ums.md`), not a rehearsed
+   external-reader restore.
+
+This does **not** waive per-write authorization: every board step that
+writes a CPU0 reset, power, vector, or reset-controller register still
+needs the user's explicit authorization at the time it runs, exactly as
+before. The three changes' own `tasks.md`/`specs/` files have been updated
+to reflect this waiver directly; this addendum is the cross-referenced
+record of the decision itself.

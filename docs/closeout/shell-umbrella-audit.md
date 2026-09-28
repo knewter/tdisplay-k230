@@ -15,18 +15,19 @@ future work).
 None of the five changes below is archived. Every one still has at least one
 open board task, and three (`the-handheld-presents-a-coherent-shell`,
 `the-shell-behaves-as-one-coherent-system`, `the-shell-manages-apps-as-cards`)
-also have open non-hardware scope staged into scope-split successors awaiting
-authorization, per `AGENTS.md`'s "close deliberately" rule:
+also have non-hardware scope staged into scope-split successors, per
+`AGENTS.md`'s "close deliberately" rule:
 
-- `the-shell-gets-side-edge-back-and-motion-trace` (from `the-handheld-presents-a-coherent-shell` tasks 2.2/4.4/4.5)
-- `the-shell-offers-quick-toggles-and-vision-options` (from `the-shell-behaves-as-one-coherent-system` slices B/C)
-- `the-card-deck-still-misses-its-frame-budget` (from `the-shell-manages-apps-as-cards` task 4.2, plus its dependent task 5.1)
+- `the-shell-gets-side-edge-back-and-motion-trace` (from `the-handheld-presents-a-coherent-shell` tasks 2.2/4.4/4.5) -- **authorized by the user 2026-09-28 ("yes a-d and f")**
+- `the-shell-offers-quick-toggles-and-vision-options` (from `the-shell-behaves-as-one-coherent-system` slices B/C) -- **authorized by the user 2026-09-28 ("yes a-d and f")**
+- `the-card-deck-still-misses-its-frame-budget` (from `the-shell-manages-apps-as-cards` task 4.2, plus its dependent task 5.1) -- **not authorized; the user chose to investigate panel refresh timing first.** This one stays staged exactly as it was; its parent keeps ownership of task 4.2/5.1 until a future authorization.
 
 Each successor is fully staged (proposal, design, tasks, spec deltas, all
-validating) but **not authorized** -- the parent changes keep ownership of
-this scope until the user/coordinator explicitly authorizes each split, at
-which point the corresponding tasks and requirement text should be removed
-from the parent in the same commit that activates the successor.
+validating). For the two authorized splits, the corresponding parent tasks
+are now ticked `[x] ... MOVED, NOT PERFORMED HERE` and the parent's spec
+delta narrowed to drop the requirement text the successor now owns, in the
+same commit that activates each successor. Authorization moves task
+ownership, not completion: none of the moved work is done, only relocated.
 
 ## the-handheld-presents-a-coherent-shell (30 open / 5 done -> 17 open / 18 done)
 
@@ -64,7 +65,7 @@ checkpoint files under `docs/evidence/coherent-shell/`.
 | 1.5 | (e), partial | Gesture cues (`render.rs:1704`), Help (`render.rs:3751`), and the rollback bar (`coherentShell` defaults `false`) all confirmed present. The opt-in large-labeled-button accessibility aid does not exist anywhere in `nix/rust-shell-client` or `nix/card-shell` (grepped for "accessib", zero hits). Left open for that one remaining piece; distinct from the text-scale/contrast option in `the-shell-offers-quick-toggles-and-vision-options`. |
 | 1.6 | (a) | `flake.nix:191` (`handheld-shell-rust` package); `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked` rerun 2026-09-28 after rebasing onto `a1daf003`: 299/299 passing. The earlier test-crate compile bug (`tests/theme_catalog_module.rs`, unresolved `crate::runtime_trace`) is fixed on master by `close/themes` (`d622576a`); `docs/evidence/coherent-shell/{prototype-launcher-build.md,image-wiring-host.md}`. |
 | 2.1 | (a) | `docs/evidence/coherent-shell/{settings-backend.md,notification-backend.md}`; `Route::Shade`/`Route::Settings`. |
-| 2.2 | (e) -> successor | `openspec/changes/the-shell-behaves-as-one-coherent-system/proposal.md` names this task explicitly as still open; only the narrower, different bottom-edge overlay-escape fix landed. Staged in `the-shell-gets-side-edge-back-and-motion-trace`, **awaiting authorization**. |
+| 2.2 | (e) -> successor, authorized | `openspec/changes/the-shell-behaves-as-one-coherent-system/proposal.md` names this task explicitly as still open; only the narrower, different bottom-edge overlay-escape fix landed. Moved to `the-shell-gets-side-edge-back-and-motion-trace` task 1.1; parent task now `[x] MOVED, NOT PERFORMED HERE`. |
 | 2.3 | (a) | `tools/device_settings.py` implements the exact capability-state contract (network/brightness/keyboard/motion, no battery key); `tests/test_device_settings.py` 9/9 passing. |
 | 2.4 | (a) | Same test file (`test_restart_cancel`, `test_denial_consumes_confirmation`, `test_expired_and_replaced_confirmation`); `docs/evidence/coherent-shell/settings-backend.md`. |
 | 2.5 | (a) | Ran `nix build .#handheld-settings --no-link --print-out-paths` 2026-09-28: succeeded, `/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings`. |
@@ -75,47 +76,53 @@ checkpoint files under `docs/evidence/coherent-shell/`.
 | 4.1 | (e), reopened | `tests/test_shell_motion.py` (this task's own named fixture) does not exist. `nix/card-shell/adapter.c` privacy/eligibility handling and `docs/evidence/card-shell/injected/README.md` are real but do not substitute for the named test. |
 | 4.2 | (e), reopened | Same reason as 4.1. QEMU evidence exists (`docs/evidence/coherent-shell/{reveal-integrated-qemu,direct-reveal-drag-qemu,rust-shade-dismiss-qemu,two-axis-qemu}/README.md`) but is not this task's named fixture. |
 | 4.3 | (e), reopened | Same reason as 4.1. `card-shell-policy.c`'s reverse/retarget state (`entry_reverse_from`, `expand_reversing`) is real and exercised in `two-axis-qemu/README.md`'s reverse case, but again not the named fixture. |
-| 4.4 | (e) -> successor | Same citation as 2.2; staged in the same successor. |
-| 4.5 | (e) -> successor | `tools/shell-motion-trace.py` and `tests/test_shell_motion.py` confirmed absent from disk. Staged in the same successor. |
+| 4.4 | (e) -> successor, authorized | Same citation as 2.2; moved to the same successor's task 1.2; parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| 4.5 | (e) -> successor, authorized | `tools/shell-motion-trace.py` and `tests/test_shell_motion.py` confirmed absent from disk. Moved to the same successor's tasks 2.1/2.2; parent task now `[x] MOVED, NOT PERFORMED HERE`. |
 | 4.6 | (a) | Task names the wrong attr (`k230` instead of `k230-coherent-shell`); task 4.9 (done) already built `sdImage-coherent`, which builds the `k230-coherent-shell` toplevel as a dependency. `docs/evidence/coherent-shell/boot-artifacts/README.md`. |
 | 4.7, 4.9 | done (pre-existing) | Unchanged. |
 | 4.8 | (e), reopened | `tests/test_card_shell_two_axis_runtime.py` exists (task text's "to be implemented" is stale) but **fails** when rerun against a fresh `nix build .#card-shell`: `AssertionError: ((0, 0, 566, 1230), (16, 0, 552, 1128))` at `tests/card_shell_runtime.py:252`. The cited `docs/evidence/coherent-shell/two-axis-qemu/README.md` is from source `532115c2`, an earlier revision, not this branch's current build. |
 | 5.1-5.8 | (d) | All eight require a reserved board and/or real finger; none has committed evidence (`docs/evidence/coherent-{shell,cards,gestures,notifications,two-axis}/` do not exist yet). See `docs/closeout/board-checklist-umbrella.md`. |
 
-**Scope split staged, awaiting authorization:** `the-shell-gets-side-edge-back-and-motion-trace`
+**Scope split authorized 2026-09-28** ("yes a-d and f"): `the-shell-gets-side-edge-back-and-motion-trace`
 carries tasks 2.2, 4.4, and 4.5 (side-edge contextual Back, general touch
 ownership arbitration, and motion-trace tooling) with matching
-`runtime/handheld-shell-design` requirement text. The parent is **not**
-archived and keeps this scope until the split is authorized.
+`runtime/handheld-shell-design` requirement text. The parent's own
+`runtime/handheld-shell-design` spec delta has been narrowed to drop that
+text. The parent is **not** archived -- it keeps its own board tasks (0.3,
+5.1-5.8) and reopened tasks (4.1-4.3, 4.8) regardless of this split.
 
-## the-shell-behaves-as-one-coherent-system (12 open / 8 done, unchanged)
+## the-shell-behaves-as-one-coherent-system (4 open / 16 done, after the B/C scope split)
 
 Slices A (webOS-fan overview) and E (bottom-edge overlay escape) are
 implemented with host/QEMU evidence; only their board tasks (A.4, E.4) are
 open. Slices B (shade quick toggles) and C (vision accessibility) have no
-code yet.
+code yet -- their 8 tasks are ticked `[x] MOVED, NOT PERFORMED HERE` per the
+2026-09-28 authorized split, not because the work is done; only D.1 (moved
+already ticked before this audit), D.2, and D.3 remain from group D.
 
 | Task | Classification | Citation / next step |
 |---|---|---|
 | A.4 | (d) | `docs/evidence/card-shell/webos-fan-switcher/README.md` is headless-QEMU only and says so explicitly ("not a substitute"). Operator command in tasks.md. |
-| B.1-B.3 | (b)/(c) mixed, superseded partially -> successor | Brightness half of B.1 is superseded by `the-brightness-control-is-a-slider` (`render.rs:1717` `Route::Shade` slider). Keyboard-toggle half is small/mechanical (same pattern as the existing `shade_and_settings_hits_are_bounded_and_cancel_scroll_taps` test) but not implemented. Staged, unimplemented, in `the-shell-offers-quick-toggles-and-vision-options`. |
-| B.4 | (d) | Operator command in tasks.md / successor. |
-| B.5 (untracked shade tap-target requirement) | (e) -> successor | Added as a new task in the successor (parent had the requirement with no task). |
-| C.1 | (c) -> successor | Small: a Rust-side enum/field + persistence, same pattern as existing theme-choice persistence. |
-| C.2 | (e) -> successor | Not small: requires extending `struct card_appearance` (`nix/card-shell/appearance.h`), the `report.json` schema, and both C and Rust renderers -- a real cross-process protocol change, not a Rust-only edit. `webos-polish-review.md` P1-1 independently confirms this channel does not exist yet. |
-| C.3 | (c)/(e), blocked on C.2 | Not implemented; depends on C.2 landing first. |
-| C.4 | (d) | Operator command in successor. |
-| D.2 | (c), blocked | Cross-build not yet runnable since B/C source isn't landed. |
-| D.3 | gate | Blocked on A.4/B.4/C.4/E.4; the successor for B/C is staged but not authorized. |
+| B.1-B.3 | (b)/(c) mixed, moved -> successor, authorized | Brightness half of B.1 is superseded by `the-brightness-control-is-a-slider` (`render.rs:1717` `Route::Shade` slider). Keyboard-toggle half is small/mechanical (same pattern as the existing `shade_and_settings_hits_are_bounded_and_cancel_scroll_taps` test) but not implemented. Parent tasks now `[x] MOVED, NOT PERFORMED HERE`; moved to `the-shell-offers-quick-toggles-and-vision-options` tasks B.1-B.3. |
+| B.4 | (d) -> successor, authorized | Operator command in successor's tasks.md. Parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| B.5 (untracked shade tap-target requirement) | (e) -> successor, authorized | Added as a new task in the successor (parent had the requirement with no task). |
+| C.1 | (c) -> successor, authorized | Small: a Rust-side enum/field + persistence, same pattern as existing theme-choice persistence. Parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| C.2 | (e) -> successor, authorized | Not small: requires extending `struct card_appearance` (`nix/card-shell/appearance.h`), the `report.json` schema, and both C and Rust renderers -- a real cross-process protocol change, not a Rust-only edit. `webos-polish-review.md` P1-1 independently confirms this channel does not exist yet. Parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| C.3 | (c)/(e), blocked on C.2, moved | Not implemented; depends on C.2 landing first, now in the successor. Parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| C.4 | (d) -> successor, authorized | Operator command in successor. Parent task now `[x] MOVED, NOT PERFORMED HERE`. |
+| D.2 | (c), blocked | A/E's own toplevel evaluation is done/cited; B/C's own toplevel evaluation moved to the successor's own D.2. |
+| D.3 | gate | Blocked on A.4/E.4 only now that B.4/C.4 moved with the rest of slices B/C. |
 | E.4 | (d) | Host/QEMU evidence exists (`overlay-bottom-escape-qemu/README.md`); needs real board proof. |
 
-**Scope split staged, awaiting authorization:** `the-shell-offers-quick-toggles-and-vision-options`
+**Scope split authorized 2026-09-28** ("yes a-d and f"): `the-shell-offers-quick-toggles-and-vision-options`
 carries slices B and C (plus new task B.5 for the untracked shade tap-target
 requirement) unchanged. **Not implemented yet** -- this is bookkeeping only;
 the actual keyboard-toggle/accessibility-scale code remains to be written,
-in the successor once authorized (or in the parent, if the coordinator
-prefers not to split). The parent keeps A.4 and E.4 as its own remaining
-board gates regardless of this split.
+in the successor. The parent's own `runtime/device-settings` and
+`runtime/notification-center` spec deltas, which existed solely for slices
+B/C, have been removed (they now live only in the successor). The parent
+keeps A.4 and E.4 as its own remaining board gates regardless of this
+split.
 
 ## the-shell-manages-apps-as-cards (4 open / 10 done -> 3 open / 11 done)
 

@@ -1,7 +1,10 @@
 This change was split from `the-shell-behaves-as-one-coherent-system`
-(tasks B.1-B.4, C.1-C.4 and the B/C half of D.2). It is staged pending the
-user's authorization of that split. Task IDs keep the parent's numbering.
-B.5 is new: it tracks a parent requirement that had no task.
+(tasks B.1-B.4, C.1-C.4 and the B/C half of D.2). The user authorized this
+split on 2026-09-28 ("yes a-d and f"); the parent's own B.1-B.4/C.1-C.4 are
+now ticked `[x] ... MOVED, NOT PERFORMED HERE` and cross-reference this
+file. Task IDs keep the parent's numbering. B.5 is new: it tracks a parent
+requirement that had no task. None of the tasks below are done yet;
+authorization only removes the blocker on starting them.
 
 ## B. Shade quick toggles (host, Rust client)
 

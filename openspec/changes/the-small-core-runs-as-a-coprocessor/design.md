@@ -229,15 +229,20 @@ converges on:
 ### 4. Recovery and safety
 
 Every task that writes CPU0's reset, vector, or reset-controller register
-needs the board operator's explicit authorization, per AGENTS.md, and the
-same rehearsed recovery path both parent changes already required and left
-incomplete: `the-system-runs-on-both-cores` task 2.1/2.2's external
-SD-card-reader restore rehearsal, described in
-`docs/closeout/second-core-plan.md`'s step 1. This design does not restate
-that procedure; it inherits it as a hard prerequisite (Task 2 below) and
-adds nothing new to the registers already in scope for it — an AMP release
-writes the exact same `CPU0_RST_CTL`/vector registers a Linux SMP release
-would have.
+needs the board operator's explicit authorization, per AGENTS.md, at the
+time it runs. **2026-09-28 update:** the external SD-card-reader restore
+rehearsal both parent changes originally required
+(`the-system-runs-on-both-cores` task 2.1/2.2,
+`docs/closeout/second-core-plan.md`'s step 1) is waived by the operator's
+decision the same day: "we can easily fix the sd card damn. don't worry
+about recovery we've literally done that fine already before. i don't want
+to do a heartbeat test on a spare card." No task in this change or its two
+parents may require a separate spare/disposable card; every board step runs
+on the normal card. Recovery, if a release write fails or hangs, is by the
+already-proven U-Boot one-shot boot from `boot-prev` or `ums`/flash
+reimaging (Task 2 below) — an AMP release writes the exact same
+`CPU0_RST_CTL`/vector registers a Linux SMP release would have, and those
+fallback routes already cover a hung or misbehaving board.
 
 **Resetting a crashed coprocessor without rebooting Linux.** Because CPU0's
 reset-controller line (`K230_RESET_CPU0_REG_OFFSET`, offset `0x4`) is
@@ -321,10 +326,10 @@ acceptance-before-performance rule).
 
 | Step | Host build | QEMU | Board trace |
 | --- | --- | --- | --- |
-| 1. Recovery rehearsal | — | — | Required: external-reader restore proof (inherited, still open) |
-| 2. Step-zero echo/ping firmware | Required: disassembly/footprint/no-V check, extending `tools/test-small-core-heartbeat.sh`'s method | Possibly available: QEMU's `k230` machine models exactly one core described as "the little core (c908)" — the same role as CPU0 — which may make a standalone, Linux-free boot of this firmware a real QEMU proof; **unverified**, a task must confirm whether this project's QEMU invocation can target that machine without Linux before this is relied on | Required: `boot_baremetal 0` release and readback, after the recovery rehearsal |
+| 1. Recovery route | — | — | Waived 2026-09-28 (operator decision, see Section 4): fallback is the proven U-Boot one-shot/`ums`/reimaging routes, on the normal card, not a rehearsed external-reader restore |
+| 2. Step-zero echo/ping firmware | Required: disassembly/footprint/no-V check, extending `tools/test-small-core-heartbeat.sh`'s method | Possibly available: QEMU's `k230` machine models exactly one core described as "the little core (c908)" — the same role as CPU0 — which may make a standalone, Linux-free boot of this firmware a real QEMU proof; **unverified**, a task must confirm whether this project's QEMU invocation can target that machine without Linux before this is relied on | Required: `boot_baremetal 0` release and readback, with explicit authorization at the time and a fallback recovery route confirmed |
 | 3. Reserved memory + read-only driver skeleton | Required: `nix build .#deviceTree`; kernel module builds | Not applicable (no execution claim) | Not applicable |
-| 4. Linux-driven CPU0 start/stop | Required: driver builds against the pinned kernel | Not applicable (QEMU's k230 machine does not model RMU/reset-control registers or per-core release) | Required: release, echo round-trip, and stop-without-reboot, after the recovery rehearsal |
+| 4. Linux-driven CPU0 start/stop | Required: driver builds against the pinned kernel | Not applicable (QEMU's k230 machine does not model RMU/reset-control registers or per-core release) | Required: release, echo round-trip, and stop-without-reboot, with explicit authorization at the time and a fallback recovery route confirmed |
 | 5. Watchdog detection | Required: host fixture for the fault-record format | Not applicable | Required: a deliberately frozen liveness counter is detected and recorded, then read back after a manual recovery |
 
 A QEMU result never substitutes for a board trace on any step that claims

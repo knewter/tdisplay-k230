@@ -9,18 +9,27 @@ physical CPU0's reset vector at `0x91102100`; `docs/research/second-core-feasibi
 records its limits. The output memory and coexistence behavior remain
 `<!-- UNVERIFIED -->` until board evidence exists.*
 
+<!-- Narrowed 2026-09-28: the disposable-rollback-card requirement below is
+waived by the operator's decision the same day ("we can easily fix the sd
+card damn. don't worry about recovery we've literally done that fine
+already before. i don't want to do a heartbeat test on a spare card."); see
+`docs/closeout/second-core-plan.md`'s addendum. The normal card plus a
+proven fallback recovery route (U-Boot one-shot/`ums`/reimaging) replaces
+it below. -->
+
 The project SHALL provide a scalar test payload and a readback procedure that
 allow an operator to tell from the console whether physical CPU0 executed
 while physical CPU1 remained at the stage-1 prompt. Before the release, the
 payload address and output location SHALL be checked against stage-1 memory
-use, the normal card SHALL be preserved, and a disposable rollback card plus
-a rehearsed recovery route SHALL be available. The experiment SHALL record
+use, and a proven fallback recovery route (the U-Boot one-shot boot or
+`ums`/flash reimaging) SHALL be available on the normal card; no separate
+disposable or spare card SHALL be required. The experiment SHALL record
 the release command, repeated observations, and recovery outcome as physical
 evidence. A host build or QEMU run SHALL NOT be counted as physical proof.
 
 #### Scenario: Small core heartbeat is observed
 
-- **WHEN** the operator runs the bounded release on a disposable card and
+- **WHEN** the operator runs the bounded release on the normal card and
   reads the agreed output location repeatedly while stage 1 remains responsive
 - **THEN** the console shows a changing value produced by the small core,
   identifies the payload and card used, and records a return to normal boot
@@ -29,8 +38,9 @@ evidence. A host build or QEMU run SHALL NOT be counted as physical proof.
 
 - **WHEN** the release hangs the board, the output location does not change,
   or the large-core prompt stops responding
-- **THEN** the experiment is recorded as failed, the rehearsed recovery route
-  is used, and no Linux-coexistence claim is made
+- **THEN** the experiment is recorded as failed, the fallback recovery route
+  (U-Boot one-shot or `ums`/flash reimaging) is used, and no Linux-coexistence
+  claim is made
 
 ### Requirement: Physical CPU0 keeps a heartbeat while physical CPU1 runs Linux
 
@@ -49,8 +59,8 @@ responsive Linux console and shell, then restore the known-good stage 1.
 
 #### Scenario: Linux and the small-core heartbeat coexist
 
-- **WHEN** the disposable experimental image boots Linux and the operator
-  reads the reserved heartbeat repeatedly
+- **WHEN** the experimental image boots Linux on the normal card and the
+  operator reads the reserved heartbeat repeatedly
 - **THEN** the value changes across at least three reads, Linux remains
   responsive, and the transcript records the exact image, addresses, and
   restored normal boot
@@ -58,8 +68,9 @@ responsive Linux console and shell, then restore the known-good stage 1.
 #### Scenario: Linux does not coexist with the small-core heartbeat
 
 - **WHEN** boot hangs, the heartbeat is static, or Linux/UI function fails
-- **THEN** the experiment is reported as failed and the rehearsed rollback
-  is used without claiming useful offload or Linux SMP
+- **THEN** the experiment is reported as failed and the fallback recovery
+  route (U-Boot one-shot or `ums`/flash reimaging) is used without claiming
+  useful offload or Linux SMP
 
 ### Requirement: An AMP heartbeat does not imply shared Linux scheduling
 

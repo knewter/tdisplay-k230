@@ -44,18 +44,27 @@ user confirms otherwise.
 
 ## 3. Physical recovery and execution
 
-- [ ] 3.1 **BOARD-GATED.** With the sole board/console reservation and a
-  disposable rollback card, rehearse the current one-shot or independent
+- [x] 3.1 WAIVED, NOT PERFORMED: with the sole board/console reservation and
+  a disposable rollback card, rehearse the current one-shot or independent
   UMS/card-reader recovery and capture its result under
-  `docs/evidence/second-core/`. Verify with the board console transcript
-  showing restored normal boot and matching image hashes (physical proof).
-- [ ] 3.2 **BLOCKED on 3.1. BOARD-GATED.** Load the inspected payload on the
-  disposable card, run the source-grounded `boot_baremetal 0` sequence, and
+  `docs/evidence/second-core/`. **Waived by the operator's 2026-09-28
+  decision** (recorded in `the-small-core-runs-as-a-coprocessor`'s own
+  addenda and `docs/closeout/second-core-plan.md`'s addendum): "we can
+  easily fix the sd card damn. don't worry about recovery we've literally
+  done that fine already before. i don't want to do a heartbeat test on a
+  spare card." No disposable/spare card is required; recovery, if needed,
+  is by the already-proven U-Boot one-shot boot from `boot-prev` or
+  `ums`/flash reimaging, on the normal card. This whole change remains
+  suspended in favor of the AMP successor (see the note at the top of this
+  file); this task is not being run here.
+- [ ] 3.2 **BOARD-GATED.** Load the inspected payload on the
+  normal card, run the source-grounded `boot_baremetal 0` sequence, and
   observe at least three increasing output values while the CPU1 U-Boot
   prompt responds; then restore normal boot and record Linux CPU masks.
-  Verify with the exact U-Boot command and timestamped board transcript
-  committed under `docs/evidence/second-core/` (physical CPU0 execution
-  proof; any hang or static output fails this task).
+  Recovery, if needed, is by the fallback routes named in task 3.1 (no
+  disposable card). Verify with the exact U-Boot command and timestamped
+  board transcript committed under `docs/evidence/second-core/` (physical
+  CPU0 execution proof; any hang or static output fails this task).
 
 ## 4. Coexistence with the Linux handheld
 
@@ -68,9 +77,10 @@ user confirms otherwise.
   path to update that heartbeat after releasing CPU1, and add a read-only
   Linux observer. Verify with `nix build .#stage1` and the narrow host
   observer fixture (cross-build/host proof, not board).
-- [ ] 4.3 **BLOCKED on 4.2. BOARD-GATED.** Rehearse recovery in this board
-  session, boot the experimental stage 1/DT on a disposable card, record at
-  least three changing heartbeat values under a responsive Linux console
-  and shell, and restore known-good stage 1. Verify with a timestamped
-  `/dev/ttyACM0` console transcript and normal-boot hash/CPU-mask checks
-  committed under `docs/evidence/second-core/` (physical coexistence proof).
+- [ ] 4.3 **BLOCKED on 4.2. BOARD-GATED.** Confirm the fallback recovery
+  route named in task 3.1 is available, boot the experimental stage 1/DT on
+  the normal card (no disposable card required), record at least three
+  changing heartbeat values under a responsive Linux console and shell, and
+  restore known-good stage 1. Verify with a timestamped `/dev/ttyACM0`
+  console transcript and normal-boot hash/CPU-mask checks committed under
+  `docs/evidence/second-core/` (physical coexistence proof).

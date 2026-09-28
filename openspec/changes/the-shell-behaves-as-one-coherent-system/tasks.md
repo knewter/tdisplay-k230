@@ -4,9 +4,19 @@ disjoint file set and can be implemented, tested, and landed in parallel by
 separate worktrees without coordination beyond the usual
 `python3 tools/work-status.py` check, per `AGENTS.md`. Slice A's host/QEMU
 tasks (A.1-A.3) and slice E's host/QEMU tasks are ticked with their
-evidence; slices B and C remain `[ ]` open for a future implementer. Every
-slice's board task (A.4, E.4) is left open per `AGENTS.md`'s "do not tick
-physical tasks" and the k230-spec-change skill's QEMU-vs-board distinction.
+evidence. Every slice's board task (A.4, E.4) is left open per `AGENTS.md`'s
+"do not tick physical tasks" and the k230-spec-change skill's QEMU-vs-board
+distinction.
+
+**Slices B and C moved 2026-09-28** (user-authorized scope split, "yes a-d
+and f"): every B/C task (B.1-B.4, C.1-C.4) is now ticked
+`[x] ... MOVED, NOT PERFORMED HERE` and carried forward verbatim into the
+successor `the-shell-offers-quick-toggles-and-vision-options`. No B/C code
+exists in this change; the tick means the task's ownership moved, not that
+the work was performed here. This parent's `runtime/device-settings` and
+`runtime/notification-center` spec deltas, which existed solely for slices
+B/C, have been removed from this change (they now live only in the
+successor).
 
 ## A. Deck legibility: webOS-fan overview (host, C compositor policy + render)
 
@@ -128,56 +138,52 @@ own tracking for whether to unify them later.
 
 ## B. Shade quick toggles (host, Rust client)
 
-- [ ] B.1 Add a quick-toggle row to `Route::Shade`'s layout
+- [x] B.1 MOVED, NOT PERFORMED HERE: add a quick-toggle row to `Route::Shade`'s layout
   (`render.rs`, the `Route::Shade` branch) for brightness step and keyboard
   show/hide, reusing `ControlState`/`ControlValue` exactly as Settings'
-  existing rows do (`service_data.rs`). Verify with
-  `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked`.
-- [ ] B.2 Extend `panel_intent`'s `Route::Shade` arm (`service_ui.rs:279-320`)
+  existing rows do (`service_data.rs`). **Scope split authorized by the user
+  on 2026-09-28 ("yes a-d and f")**: carried forward into the successor
+  `the-shell-offers-quick-toggles-and-vision-options`'s own task B.1, which
+  also records that the brightness half is superseded by the shade slider
+  `the-brightness-control-is-a-slider` already added -- only the
+  keyboard-toggle half remains to build there. Nothing here is implemented;
+  that work is not done, only relocated.
+- [x] B.2 MOVED, NOT PERFORMED HERE: extend `panel_intent`'s `Route::Shade` arm (`service_ui.rs:279-320`)
   with hit-testing for the new toggles, sending the same
   `ServiceRequest::Brightness`/`KeyboardToggle` values Settings already
   sends, gated on the same `ControlState` the Settings row already checks.
-  Add unit-test cases mirroring `service_ui.rs`'s existing
-  `shade_and_settings_hits_are_bounded_and_cancel_scroll_taps` test. Verify
-  with `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked`.
-- [ ] B.3 Confirm the shade's existing notification scroll, per-item action,
+  Carried forward into the successor's own task B.2 (keyboard-toggle only,
+  brightness already superseded per B.1's note).
+- [x] B.3 MOVED, NOT PERFORMED HERE: confirm the shade's existing notification scroll, per-item action,
   dismiss-all, and Settings-entry hit regions are unaffected (no region
-  overlap with the new toggle row). Verify with the same `cargo test`
-  invocation as B.2, plus a host render screenshot of the shade with the new
-  row committed to `docs/evidence/coherent-shell/shade-quick-toggles/`.
-- [ ] B.4 On a reserved board, confirm the toggles are reachable and
+  overlap with the new toggle row). Carried forward into the successor's own
+  task B.3.
+- [x] B.4 MOVED, NOT PERFORMED HERE: on a reserved board, confirm the toggles are reachable and
   correctly reflect live capability state (including an unavailable
-  capability). Operator command: `python3 tools/capture-feature.py
-  shade-quick-toggles --provenance real-touch --duration 30 --description
-  'Shade quick-toggle reachability and live state' --output-dir
-  docs/evidence/coherent-shell/shade-quick-toggles`. Keep open until
-  committed.
+  capability). Carried forward into the successor's own task B.4.
 
 ## C. Vision accessibility option (host, Rust client + shared theme tokens)
 
-- [ ] C.1 Add a text-scale/high-contrast preference to Settings' state
+- [x] C.1 MOVED, NOT PERFORMED HERE: add a text-scale/high-contrast preference to Settings' state
   (`service_data.rs`) and persistence (following the existing theme-choice
-  persistence mechanism). Verify with
-  `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked`.
-- [ ] C.2 Thread the chosen scale/contrast through the shared theme-token
+  persistence mechanism). **Scope split authorized by the user on 2026-09-28
+  ("yes a-d and f")**: carried forward verbatim into the successor
+  `the-shell-offers-quick-toggles-and-vision-options`'s own task C.1.
+- [x] C.2 MOVED, NOT PERFORMED HERE: thread the chosen scale/contrast through the shared theme-token
   pipeline so both `render.rs` (Home/drawer/shade/Settings) and
   `nix/card-shell/render.c` (card headers) apply it consistently; this is
   the same cross-renderer boundary `webos-polish-review.md` P1-1 already
   names for fonts, so reuse rather than duplicate whatever token-passing
   mechanism that finding's eventual fix establishes if it lands first.
-  Verify with `cargo test --manifest-path nix/rust-shell-client/Cargo.toml
-  --locked` and `nix build .#card-shell --max-jobs 1 --cores 4 --no-link
-  --print-out-paths`.
-- [ ] C.3 Add a Settings UI control to choose the scale/contrast, with a
+  Carried forward into the successor's own task C.2.
+- [x] C.3 MOVED, NOT PERFORMED HERE: add a Settings UI control to choose the scale/contrast, with a
   host render comparison (default vs. larger text vs. high contrast)
-  committed to `docs/evidence/coherent-shell/accessibility-scale/`. Verify
-  with the C.1/C.2 commands plus the new screenshots.
-- [ ] C.4 On a reserved board, confirm the choice persists across a reboot
-  and is legibly larger/higher-contrast on the real panel. Operator command:
-  `python3 tools/capture-feature.py accessibility-scale --provenance
-  real-touch --duration 30 --description 'Text-scale and high-contrast
-  option on glass' --output-dir docs/evidence/coherent-shell/accessibility-scale`.
-  Keep open until committed.
+  committed to `docs/evidence/coherent-shell/accessibility-scale/`. Carried
+  forward into the successor's own task C.3.
+- [x] C.4 MOVED, NOT PERFORMED HERE: on a reserved board, confirm the choice persists across a reboot
+  and is legibly larger/higher-contrast on the real panel. Carried forward
+  into the successor's own task C.4. No part of slices B or C has been
+  implemented by this change; that work is not done, only relocated.
 
 ## E. Bottom-edge overlay escape and dismiss-direction consistency (host + QEMU, implemented)
 
@@ -242,20 +248,19 @@ own tracking for whether to unify them later.
 
 - [x] D.1 Validate this change: `openspec validate
   the-shell-behaves-as-one-coherent-system --strict`.
-- [ ] D.2 After A/B/C's host tasks land, evaluate the integrated closure:
+- [ ] D.2 After A's host tasks land (done) and B/C land in their successor,
+  evaluate the integrated closure:
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
   (cross-build proof only, not board proof). Slice E's own toplevel
   evaluation was run separately at implementation time (see
-  `docs/evidence/coherent-shell/overlay-bottom-escape-qemu/README.md`); this
-  task still covers A/B/C together once those land.
-- [ ] D.3 Do not archive this change until each slice's board task (A.4,
-  B.4, C.4, E.4) is committed, or the coordinator explicitly authorizes
-  archiving a subset with the remaining slices split into a named successor
-  per `AGENTS.md`'s "close deliberately" guidance. A successor carrying
-  every slice B/C requirement and task (plus a new task B.5 for the shade
-  tap-target requirement, which had no task) is staged as
-  `the-shell-offers-quick-toggles-and-vision-options`, **awaiting
-  authorization**. On authorization, remove slices B/C and their
-  `notification-center`/`device-settings` requirements from this change in
-  the same commit. A.4 and E.4 must still pass before this change can be
-  archived.
+  `docs/evidence/coherent-shell/overlay-bottom-escape-qemu/README.md`).
+  B/C's own toplevel evaluation now belongs to the successor's own task D.2;
+  this task is scoped to A/E, both already evidenced.
+- [ ] D.3 Do not archive this change until each remaining slice's board task
+  (A.4, E.4) is committed. **Scope split authorized by the user on
+  2026-09-28 ("yes a-d and f")**: every slice B/C requirement and task (plus
+  the new task B.5 for the shade tap-target requirement, which had no task)
+  is carried forward into `the-shell-offers-quick-toggles-and-vision-options`,
+  and slices B/C and their `notification-center`/`device-settings`
+  requirements are removed from this change in the same commit. A.4 and E.4
+  are this change's only remaining gates.

@@ -28,23 +28,25 @@
   `docs/evidence/second-core/` (host/QEMU proof only; this task makes no
   board claim).
 
-## 2. Recovery rehearsal (inherited; must pass before any register write)
+## 2. Recovery route (rehearsal waived; fallback confirmed)
 
-- [ ] 2.1 **BOARD-GATED. AUTHORIZATION-REQUIRED.** Perform the external
-  SD-card-reader recovery rehearsal already specified in
-  `docs/closeout/second-core-plan.md`'s step 1 and left open by
-  `the-system-runs-on-both-cores` tasks 2.1/2.2: with the board powered off
-  and the card removed, read the current card's whole-disk identity, move
-  it to an external reader, `dd` and hash the two raw SPL slots (1 MiB and
-  1.5 MiB offsets, 512 KiB each, `nix/stage1.nix:176-180`), deliberately
-  corrupt a **disposable** copy's SPL slot, and confirm the reader-based
-  restore actually recovers a card whose SPL cannot start U-Boot. This is
-  the same rehearsal both parent changes require; performing it once here
-  satisfies it for this change and should be cross-referenced back into
-  those changes' own open tasks rather than repeated. Verify with the
-  card/backup hashes and recovery transcript committed under
-  `docs/evidence/second-core/` (physical recovery proof). Needs the
-  operator's board, card, and external-reader session.
+- [x] 2.1 WAIVED, NOT PERFORMED: the external SD-card-reader recovery
+  rehearsal originally specified here and in
+  `docs/closeout/second-core-plan.md`'s step 1, and left open by
+  `the-system-runs-on-both-cores` tasks 2.1/2.2, is waived by the operator's
+  2026-09-28 decision: "we can easily fix the sd card damn. don't worry
+  about recovery we've literally done that fine already before. i don't
+  want to do a heartbeat test on a spare card." No disposable/spare card is
+  required for any heartbeat or coprocessor board step in this change or
+  either parent; every board step runs on the normal card. The fallback
+  recovery route for a failed or hung release is the already-proven U-Boot
+  one-shot boot from `boot-prev`
+  (`docs/evidence/card-shell/bottom-band-flicker/kernel-patch-boot-panic.md`)
+  or `ums`/flash reimaging (`docs/uboot-ums.md`) — not a rehearsed
+  external-reader restore. This does not waive per-write authorization:
+  each board step that writes a CPU0 reset, vector, or reset-controller
+  register still needs the user's explicit authorization at the time it
+  runs (see tasks 3.3, 5.1, 6.2 below).
 
 ## 3. Step zero: echo/ping over a polling shared-memory ring
 
@@ -63,14 +65,15 @@
   reason if 1.3 found no usable path; do not treat a skip as a task
   failure. Verify with a committed transcript (QEMU proof only; not a
   substitute for task 3.3).
-- [ ] 3.3 **BLOCKED on 2.1. BOARD-GATED. AUTHORIZATION-REQUIRED.** Load the
+- [ ] 3.3 **BOARD-GATED. AUTHORIZATION-REQUIRED.** Load the
   inspected payload via the pinned `boot_baremetal 0` sequence exactly as
   the heartbeat runbook already does, write at least three distinct request
   values from the U-Boot prompt, and read back three correct, freshly
   produced responses (not a stale cached value), then restore normal boot.
-  Verify with a timestamped board transcript committed under
-  `docs/evidence/second-core/` (physical CPU0 execution proof; any hang,
-  static response, or wrong echo fails this task).
+  Runs on the normal card; recovery, if needed, is by the fallback routes
+  named in task 2.1 (no disposable card). Verify with a timestamped board
+  transcript committed under `docs/evidence/second-core/` (physical CPU0
+  execution proof; any hang, static response, or wrong echo fails this task).
 
 ## 4. Reserved memory and a read-only remoteproc driver skeleton
 
@@ -98,16 +101,17 @@
 
 ## 5. Linux-driven runtime start/stop of CPU0
 
-- [ ] 5.1 **BLOCKED on 2.1, 3.3, 4.2. BOARD-GATED. AUTHORIZATION-REQUIRED.**
+- [ ] 5.1 **BLOCKED on 3.3, 4.2. BOARD-GATED. AUTHORIZATION-REQUIRED.**
   Extend the driver from 4.2 to perform the actual release sequence
   (reset-vector write at `sysctl_boot+0x100`, then
   `reset_control_deassert()` on the CPU0 line) with the echo firmware from
   task 3 loaded into the reserved region from task 4.1, triggered from
   Linux userspace (e.g. the standard `remoteproc` `state` sysfs attribute),
   and prove a request/response round trip with Linux fully booted and the
-  shell responsive. Verify with a board console transcript and Linux
-  dmesg/sysfs capture committed under `docs/evidence/second-core/`
-  (physical Linux-coexistence proof).
+  shell responsive. Runs on the normal card; recovery, if needed, is by the
+  fallback routes named in task 2.1 (no disposable card). Verify with a
+  board console transcript and Linux dmesg/sysfs capture committed under
+  `docs/evidence/second-core/` (physical Linux-coexistence proof).
 - [ ] 5.2 **BLOCKED on 5.1.** Extend the same driver's stop path
   (`reset_control_assert()` on the CPU0 line only) and prove CPU0 parks
   again without a board reset, with Linux still running and the shell still

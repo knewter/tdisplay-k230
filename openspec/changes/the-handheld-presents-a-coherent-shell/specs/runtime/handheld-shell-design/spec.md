@@ -55,20 +55,19 @@ Both routes SHALL use the deck's stable left/right app order, unchanged by focus
 - **THEN** the quick-switch recognizer does not steal the stream, and changing direction later does not reinterpret it as an app switch
 
 ### Requirement: Shade and contextual Back preserve the task
-<!-- UNVERIFIED: final shade and edge arbitration await implementation and physical proof. -->
-A downward gesture from the top edge SHALL reveal a notification shade over the current scene; the shade SHALL expose notification history and a truthful Settings entry. An inward edge Back gesture SHALL dismiss the topmost shell context in order: context sheet, shade/Settings/drawer, then keyboard when that input owns focus, returning to the prior deck or app. Back SHALL NOT synthesize a universal keypress into arbitrary Wayland application content. The bottom Home gesture SHALL remain the shell escape while a context is open.
+<!-- UNVERIFIED: physical proof of the shade itself awaits board time.
+Narrowed 2026-09-28 (user-authorized scope split, "yes a-d and f"): the
+inward-edge contextual Back mechanism and the keyboard/Home edge-ownership
+arbitration this requirement used to state are now
+`the-shell-gets-side-edge-back-and-motion-trace`'s own "A qualified side
+edge dismisses shell surfaces without touching app content" and "One
+arbiter owns every touch at down" requirements. This requirement keeps only
+the shade-reveal scope this change actually implemented (task group 2). -->
+A downward gesture from the top edge SHALL reveal a notification shade over the current scene; the shade SHALL expose notification history and a truthful Settings entry. The bottom Home gesture SHALL remain the shell escape while a context is open.
 
 #### Scenario: Read a notice while typing
 - **WHEN** a person drags the shade down during an app task
 - **THEN** the underlying app remains in place, its prior focus is recoverable, and Settings is reachable within the shade
-
-#### Scenario: Dismiss a shell surface
-- **WHEN** a person makes the contextual Back gesture in Settings or the drawer
-- **THEN** only that shell surface retreats and the prior deck or app is restored without sending an unrequested Back action to the app
-
-#### Scenario: Keyboard owns an edge
-- **WHEN** the on-screen keyboard occupies the lower panel and a touch begins in its reserved region
-- **THEN** keyboard input wins over a Home/drawer gesture; a tested shell escape remains available above or outside that region
 
 ### Requirement: Touch manipulation drives normal navigation
 <!-- UNVERIFIED: proposed finger tracking, kinetic behavior, and long press require host traces and real-finger board proof. -->
@@ -95,12 +94,13 @@ The shell userspace SHALL present appâ†’card entry, adjacent deck travel, cardâ†
 - **THEN** the shell cancels or retargets movement to a valid scene, names the close result, and retains a reachable deck and drawer
 
 ### Requirement: Gesture ownership and feedback are explicit
-<!-- UNVERIFIED: bottom/top/side edge conflicts and physical feel require board checks. -->
-The compositor and shell userspace SHALL arbitrate each touch at down between bottom Home/drawer, top shade, contextual Back, keyboard, app content, deck, and overlay. After a gesture is accepted, another surface SHALL NOT reinterpret that sequence as a tap or swipe. Ordinary app scrolling and text selection SHALL remain with the app outside qualified edge regions. Accepted press, long press, snap, close request, refusal, and failure SHALL have immediate visible feedback.
-
-#### Scenario: App scroll and Home conflict
-- **WHEN** a person begins an app scroll or text selection outside the qualified bottom region
-- **THEN** the app keeps that touch stream and no shell card transition starts
+<!-- UNVERIFIED: physical feel requires board checks.
+Narrowed 2026-09-28 (user-authorized scope split, "yes a-d and f"): the
+general at-down touch arbitration across bottom/top/side/keyboard/deck/app
+content is now `the-shell-gets-side-edge-back-and-motion-trace`'s own "One
+arbiter owns every touch at down" requirement (task 4.4). This requirement
+keeps only the general feedback scope this change actually implements. -->
+After a gesture is accepted, another surface SHALL NOT reinterpret that sequence as a tap or swipe. Accepted press, long press, snap, close request, refusal, and failure SHALL have immediate visible feedback.
 
 #### Scenario: Card snap feedback
 - **WHEN** a card settles after a swipe

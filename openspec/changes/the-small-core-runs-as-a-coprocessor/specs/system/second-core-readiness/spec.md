@@ -70,15 +70,18 @@ A separate **AMP (coprocessor) path** SHALL instead:
 *Grounding: `docs/closeout/second-core-plan.md`'s recommendation and "Next 3
 concrete steps"; `the-small-core-runs-as-a-coprocessor/design.md`'s staged
 decisions and evidence-class table; `tools/small-core-heartbeat.{S,ld}` and
-`docs/evidence/second-core/heartbeat-*.md` as the already-proved foundation.*
+`docs/evidence/second-core/heartbeat-*.md` as the already-proved foundation.
+The external-reader recovery rehearsal this stage list originally named is
+waived by the operator's 2026-09-28 decision (see the requirement below).*
 
 The project SHALL stage CPU0 coprocessor bring-up as: source/register
-grounding, the external-reader recovery rehearsal, a step-zero
+grounding, confirming a current fallback recovery route, a step-zero
 polling-ring firmware proof, a reserved-memory carveout with a read-only
 driver skeleton, Linux-driven runtime start/stop, and only then a first
 workload. It SHALL NOT skip a stage's committed evidence to reach a later
 one, and it SHALL NOT write a CPU0 reset, vector, or reset-controller
-register before the recovery rehearsal below is satisfied.
+register without the operator's explicit authorization at the time, per the
+requirement below.
 
 #### Scenario: A stage is proposed out of order
 
@@ -109,35 +112,44 @@ freshness from a second read of a location it may already hold cached.
 - **THEN** the change is not authorized to proceed until both are specified
   and cited against pinned source
 
-### Requirement: A CPU0 register write requires explicit authorization and a rehearsed recovery path
+### Requirement: A CPU0 register write requires explicit authorization and a proven fallback recovery route
+
+<!-- Narrowed 2026-09-28: the operator waived the external-reader recovery
+rehearsal this requirement originally depended on. The user: "we can easily
+fix the sd card damn. don't worry about recovery we've literally done that
+fine already before. i don't want to do a heartbeat test on a spare card."
+See `docs/closeout/second-core-plan.md`'s 2026-09-28 addendum. -->
 
 *Grounding: pinned U-Boot `arch/riscv/cpu/k230/cpu.c:125-160` defines
 CPU0's reset/vector writes; `nix/stage1.nix:176-180` puts SPL at raw
-SD-card offsets. `docs/closeout/second-core-plan.md`'s step 1 defines the
-external-reader recovery rehearsal this requirement depends on.*
+SD-card offsets. `docs/evidence/card-shell/bottom-band-flicker/
+kernel-patch-boot-panic.md` records a proven U-Boot one-shot recovery from
+a bad boot, and `docs/uboot-ums.md` documents the `ums`/flash reimaging
+route; both remain reachable without an external card reader or a
+spare/disposable card.*
 
 Before any change writes a CPU0 reset, power, reset-vector, or
 reset-controller register, the board operator SHALL hold explicit user
-authorization for that session and a current, verified recovery path. An
-experimental SPL or boot sequence stored at raw card offsets SHALL have a
-verified known-good raw-stage-1 backup and a confirmed external
-SD-card-reader restore route before any such write. The operator SHALL
-coordinate and capture the actual card/recovery hashes and console result
-before the write, and record the outcome of a failed or hung release
-separately from a successful one.
+authorization for that specific session. No task SHALL require a separate
+spare or disposable card; every board step in this bring-up SHALL run on
+the normal card. If a release, stop, or restart write fails or hangs the
+board, the operator SHALL recover using the already-proven U-Boot one-shot
+boot from `boot-prev` or `ums`/flash reimaging, and SHALL record the
+outcome of a failed or hung release separately from a successful one.
 
-#### Scenario: A register write is attempted without rehearsed recovery
+#### Scenario: A register write is attempted without authorization
 
-- **WHEN** no recovery path has been rehearsed and confirmed working in the
-  current board session
+- **WHEN** the operator has not obtained the user's explicit authorization
+  for the current board session
 - **THEN** the reset/power/vector register write does not proceed
 
 #### Scenario: A CPU0 release or stop fails or hangs the board
 
 - **WHEN** a release, stop, or restart write does not produce the expected
   result
-- **THEN** the operator restores the board using the rehearsed recovery
-  path and records the outcome separately from the attempt's own result
+- **THEN** the operator restores the board using the U-Boot one-shot or
+  `ums`/flash reimaging route, on the normal card, and records the outcome
+  separately from the attempt's own result
 
 ### Requirement: AMP execution does not imply Linux SMP or unreviewed peripheral ownership
 

@@ -1,12 +1,17 @@
 **Note, 2026-09-28 (redirected, not archived):** the user has formally
 redirected the second-core project to AMP; see
-`openspec/changes/the-small-core-runs-as-a-coprocessor/`. Section 1
-(complete) and section 2 (open) below are carried into that change's own
-task list as the same work, not duplicated. Sections 3, 4, and 5 are
-recorded as superseded — they exist to make Linux treat CPU0 as a peer SBI
-hart for SMP, which is no longer pursued — and are left exactly as unticked
-as they were; this change stays open per AGENTS.md until the user confirms
-its archival.
+`openspec/changes/the-small-core-runs-as-a-coprocessor/`, citing
+`docs/closeout/second-core-plan.md`. Section 1 (complete) is unaffected.
+Section 2 (recovery rehearsal) is carried into that change's own task list
+as the same work item, and is itself now **waived** by a further 2026-09-28
+operator decision (see task 2.1's own note below) — no external-reader
+rehearsal or spare/disposable card is required anywhere in this project's
+second-core work; the fallback is the proven U-Boot one-shot/`ums`/
+reimaging recovery routes. **Sections 3, 4, and 5 are formally WITHDRAWN**
+per that same redirect decision — they exist solely to make Linux treat
+CPU0 as a peer SBI hart for SMP, which is no longer pursued — and are left
+exactly as unticked as they were, not archived away silently; this change
+stays open per AGENTS.md until the user confirms its archival.
 
 ## 1. Read-only board probes (stage a — no reset, power, or CPU-state write)
 
@@ -69,40 +74,44 @@ its archival.
 
 ## 2. Recovery rehearsal (must pass before any stage-3 task starts)
 
-- [ ] 2.1 **BOARD-GATED.** Before any experimental SPL flash or CPU0
+- [x] 2.1 WAIVED, NOT PERFORMED: before any experimental SPL flash or CPU0
   reset/vector write, identify the board's *current* known-good stage-1
-  bytes and preserve a verified backup. For an SPL candidate, confirm an
-  external SD-card reader can restore the raw stage-1 offsets at 1 MiB and
-  1.5 MiB even if U-Boot never starts; a U-Boot one-shot or `ums` route
-  alone cannot recover a broken SPL. For a RAM-only diagnostic that changes
-  no card bytes, rehearse the current one-shot boot bundle instead. Commit
-  the actual card/backup hashes and recovery transcript under
-  `docs/evidence/second-core/`; do not assume the older
-  `/var/lib/k230/boot-prev/` bundle still names the installed system.
-  Coordinate the board session with the operator.
-  Audited 2026-09-28: still open. `cpu0-identity-physical-trial.md` proves a
-  same-session on-board `dd` restore from a verified backup (works only if
-  U-Boot still runs well enough for Linux to read the card), and
+  bytes and preserve a verified backup, confirming an external SD-card
+  reader can restore the raw stage-1 offsets at 1 MiB and 1.5 MiB even if
+  U-Boot never starts. Audited 2026-09-28: `cpu0-identity-physical-trial.md`
+  proves a same-session on-board `dd` restore from a verified backup (works
+  only if U-Boot still runs well enough for Linux to read the card), and
   `cpu0-identity-trial.md`'s "Prepared external-reader procedure" is
-  written but explicitly not yet run ("no reader-based restoration was
-  performed or claimed"). BOARD-GATED and NEEDS-USER-AUTHORIZATION: this is
-  the recovery rehearsal that must exist, with an external reader and the
-  board disconnected, before any further register/reset write is
-  authorized. See the closeout plan for the exact procedure.
-- [ ] 2.2 Confirm the independent SD-card-reader recovery route for an
-  experimental SPL and retain U-Boot `ums` as an additional route only
-  while U-Boot is reachable (`docs/uboot-ums.md`). Verify the host tool's
-  capacity and identity refusal guards with
-  `python3 -m unittest discover -s tests -p test_ums_target.py`; this host
-  check does not prove the current card is restorable. Record that physical
-  card identity and verified raw backup in 2.1's board evidence.
+  written but was never run. **Waived by a further 2026-09-28 operator
+  decision** (recorded in `the-small-core-runs-as-a-coprocessor`'s own
+  proposal.md/design.md/tasks.md addenda and `docs/closeout/second-core-
+  plan.md`'s addendum): the user said "we can easily fix the sd card damn.
+  don't worry about recovery we've literally done that fine already
+  before. i don't want to do a heartbeat test on a spare card." No task in
+  this project's second-core work may require a separate spare/disposable
+  card; the fallback recovery for any future register-writing board step is
+  the already-proven U-Boot one-shot boot from `boot-prev` or `ums`/flash
+  reimaging, on the normal card. This does not waive per-write
+  authorization: any later register-writing task still needs the user's
+  explicit authorization at the time it runs.
+- [x] 2.2 WAIVED, NOT PERFORMED: confirm the independent SD-card-reader
+  recovery route for an experimental SPL and retain U-Boot `ums` as an
+  additional route only while U-Boot is reachable (`docs/uboot-ums.md`).
   Audited 2026-09-28: host portion re-run clean (`python3 -m unittest
-  discover -s tests -p test_ums_target.py` → 16 tests OK). Left unticked:
-  the task's own text requires the physical card identity/backup to be
-  recorded in 2.1's board evidence, and 2.1 remains open pending the
-  external-reader rehearsal.
+  discover -s tests -p test_ums_target.py` → 16 tests OK) but the task's own
+  physical-card-identity/backup requirement was never recorded, since 2.1's
+  external-reader rehearsal was never run. **Waived by the same 2026-09-28
+  operator decision as 2.1**: the external-reader route is no longer
+  required; `ums` and U-Boot one-shot/reimaging remain the fallback,
+  reachable on the normal card without a separate rehearsal.
 
 ## 3. OpenSBI + device-tree hart-release experiment (stage b — first stage that writes a reset/power register)
+
+**WITHDRAWN 2026-09-28** per the user's formal redirect of the second-core
+project from SMP to AMP (`the-small-core-runs-as-a-coprocessor`, citing
+`docs/closeout/second-core-plan.md`'s recommendation): this stage exists
+solely to make Linux treat CPU0 as a peer SBI hart, which is no longer
+pursued. Left unticked, not archived away, per AGENTS.md.
 
 - [ ] 3.1 Establish physical CPU0's `CSR.MHARTID` and a usable distinct
   logical hart identity. Pinned stage-1 source already gives CPU0's reset
@@ -140,6 +149,8 @@ its archival.
 
 ## 4. Coherency validation (stage c)
 
+**WITHDRAWN 2026-09-28**, same reason and citation as section 3.
+
 - [ ] 4.1 **BOARD-GATED; required before 3.2 Linux SMP boot.** Establish
   the CPU0/CPU1 cache and atomic-sharing contract from Canaan source or run
   a bounded pre-Linux cross-core diagnostic of shared cached lines,
@@ -153,6 +164,8 @@ its archival.
   hardware-writing, board-exclusive diagnostic gating 3.2.
 
 ## 5. ISA-aware SMP scheduling (stage d)
+
+**WITHDRAWN 2026-09-28**, same reason and citation as section 3.
 
 - [ ] 5.1 **BLOCKED on 3.2/4.1. BOARD-GATED.** Build the initial Linux SMP
   image to a scalar common ISA baseline (RVV off in kernel and userspace),

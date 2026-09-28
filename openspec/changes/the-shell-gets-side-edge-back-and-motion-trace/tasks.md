@@ -1,9 +1,12 @@
 This change was split from `the-handheld-presents-a-coherent-shell` (tasks
-2.2, 4.4, and 4.5). It is staged pending the user's/coordinator's
-authorization of that split. Task IDs here are renumbered for this change's
-own groups; each task names its parent task ID for traceability. Two new
-board tasks (1.3, 2.2) are added since the parent's existing group-5 physical
-tasks predate this mechanism and do not cover it.
+2.2, 4.4, and 4.5). The user authorized this split on 2026-09-28 ("yes a-d
+and f"); the parent's own tasks 2.2/4.4/4.5 are now ticked `[x] ... MOVED,
+NOT PERFORMED HERE` and cross-reference this file. Task IDs here are
+renumbered for this change's own groups; each task names its parent task ID
+for traceability. Two new board tasks (1.3, 2.2) are added since the
+parent's existing group-5 physical tasks predate this mechanism and do not
+cover it. None of the tasks below are done yet; authorization only removes
+the blocker on starting them.
 
 ## 1. Side-edge contextual Back and touch ownership (host)
 

@@ -30,11 +30,13 @@ rule: it carries these three tasks and their requirement scope unchanged, so
 the parent can close its other 27 tasks (22 done, 5 physical-board) without
 waiting on this open-ended design/implementation work.
 
-**Status: staged, not authorized.** The parent keeps ownership of tasks 2.2,
-4.4, and 4.5 until the coordinator/user explicitly authorizes this split. On
-authorization, remove those three tasks and the corresponding requirement
-scope from the parent's `tasks.md`/spec delta in the same commit that makes
-this change active.
+**Status: authorized 2026-09-28.** The user authorized this split on
+2026-09-28 ("yes a-d and f"). Tasks 2.2, 4.4, and 4.5 are now ticked
+`[x] ... MOVED, NOT PERFORMED HERE` in the parent's `tasks.md`, and the
+parent's `runtime/handheld-shell-design` spec delta has been narrowed to
+drop the corresponding requirement scope, in the same commit that makes
+this change active. This change's own tasks below are unchanged by that
+authorization -- none of them are done yet, only unblocked to proceed.
 
 ## What Changes
 
