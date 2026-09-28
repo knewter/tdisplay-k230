@@ -4,6 +4,17 @@
 //! socket-first/subprocess-fallback *decision* itself, not the daemon's own
 //! behaviour (already proven host-side by `tests.test_theme_helper_daemon`
 //! and `tests.test_omarchy_theme_activation`).
+//!
+//! `theme_catalog.rs` refers to tracing spans as `crate::runtime_trace`,
+//! which is correct inside the real `k230_shell_rust` lib crate. This test
+//! binary is its own separate crate (the `#[path]` shim below recompiles
+//! `theme_catalog.rs` as one of its modules), so `crate::runtime_trace`
+//! would otherwise resolve against this crate's own root, which has no such
+//! module. Re-exporting the lib crate's module under that name here makes
+//! `crate::runtime_trace` resolve correctly for the shimmed module without
+//! touching `theme_catalog.rs` itself.
+use k230_shell_rust::runtime_trace;
+
 #[path = "../src/theme_catalog.rs"]
 mod theme_catalog;
 
