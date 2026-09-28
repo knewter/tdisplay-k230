@@ -7,7 +7,7 @@ resume, and safely close eligible running applications.
 
 ### Requirement: Card entry and recovery do not depend on the launcher
 
-<!-- UNVERIFIED: global entry and persistent control handoff have not been implemented or observed on the board. -->
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (injected native card entry and every persistent control route observed on DSI-1). UNVERIFIED: real-finger entry and recovery (task 5.3). -->
 The card shell SHALL be enterable from an arbitrary eligible running
 application through a dedicated edge gesture. It SHALL also provide a
 persistent button route for entry or recovery, without requiring the Apps
@@ -30,7 +30,7 @@ shell routes.
 
 ### Requirement: A person can manipulate a live application card deck
 
-<!-- UNVERIFIED: no live-card composition path has yet been observed on this board. -->
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (two live cards visible during a held drag, then expansion). UNVERIFIED: real-finger manipulation (task 5.3). -->
 The card shell SHALL present eligible running applications as live visual cards,
 not title-only substitutes. Entering the card shell SHALL shrink the active
 application into a card, keep a horizontal deck of eligible cards, move the
@@ -46,7 +46,7 @@ active application.
 
 ### Requirement: The card shell handles unavailable and private content safely
 
-<!-- UNVERIFIED: eligibility, protected-surface behavior, and privacy policy have not been implemented or tested on the board. -->
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (private/unavailable card state and recovery). UNVERIFIED: real-finger use (task 5.3). -->
 The card shell SHALL identify an application whose live surface is unavailable,
 protected, or excluded by the session privacy policy without exposing its
 content. It SHALL provide a clear non-live card state and a route back to the
@@ -60,7 +60,7 @@ existing Apps or Windows/Home controls.
 
 ### Requirement: An upward throw requests a recoverable close
 
-<!-- UNVERIFIED: gesture thresholds, close protocol, refusal handling, and recovery have not been measured on the board. -->
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md and docs/evidence/card-shell/throw-sampling/README.md (close refusal and timeout recovery). A later repeat missed one upward throw (docs/evidence/card-shell/repaint-stages/README.md). UNVERIFIED: real-finger throw reliability (task 5.3). -->
 The card shell SHALL treat an intentional upward throw of an eligible card as a
 request for that application to close gracefully. If the application refuses,
 times out, or fails to close, the shell SHALL retain or restore a usable card
@@ -75,7 +75,7 @@ application state.
 
 ### Requirement: Card interaction has an explicit measured budget decision
 
-<!-- UNVERIFIED: card composition frame, input, and memory costs are unknown on the K230 panel. -->
+<!-- Board measurements are recorded and FAIL the declared CPU and tracking budgets: docs/evidence/card-shell/board-cost/long-trace/README.md through docs/evidence/card-shell/scaled-cache-board/README.md. UNVERIFIED: an accepted budget decision (task 4.2). -->
 The card shell SHALL record input-to-visible-update latency, frame/update cost,
 and incremental memory use at the panel's native portrait mode on the default
 Pixman path. If a declared interaction budget is missed, the implementation

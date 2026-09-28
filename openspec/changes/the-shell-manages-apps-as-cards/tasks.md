@@ -28,7 +28,7 @@
 
 ## 6. Proposal validation
 
-- [ ] 6.1 Validate this change and preserve all unresolved hardware requirements as unverified until their named evidence exists; verify with `openspec validate the-shell-manages-apps-as-cards --strict`.
+- [x] 6.1 Validate this change and preserve all unresolved hardware requirements as unverified until their named evidence exists; verify with `openspec validate the-shell-manages-apps-as-cards --strict`. Passed 2026-09-28 on `close/shell-umbrella`. Each requirement's marker now names its injected-touch or failing board-cost evidence and keeps real-finger use and the budget decision UNVERIFIED (tasks 4.2 and 5.3). Validation must be rerun before archive.
 
 Host implementation evidence for tasks 2.2 and 3.1–3.3: `docs/evidence/card-shell/headless/README.md`. Actual compositor runtime and narrow build pass; diagnostic headless frame-interval budget fails and isolated session memory is incomplete. Product board cost, every physical control route, image integration, and real-finger acceptance remain open in groups 4–5.
 
