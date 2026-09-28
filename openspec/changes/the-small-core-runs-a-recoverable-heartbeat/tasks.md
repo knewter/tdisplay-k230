@@ -1,3 +1,13 @@
+**Audited 2026-09-28.** This change is suspended per `proposal.md`'s
+2026-09-26 note: the requested outcome is Linux SMP
+(`the-system-runs-on-both-cores`), and a CPU0 heartbeat/AMP payload is not a
+substitute for it. Tasks 1.1/1.2/2.1/2.2 are ticked below because their host
+evidence exists and was independently reproduced during this audit
+(`impl/small-core-heartbeat-20260926` at `4e6be10d`, cherry-picked onto
+`close/second-core`). Tasks 3.1 onward are board-gated *and* suspended: do
+not run them without a new decision that un-suspends this proposal, even
+though the runbook and payload for 3.1/3.2 are otherwise ready.
+
 ## 1. Ground the physical test layout
 
 - [x] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the
