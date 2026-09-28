@@ -160,6 +160,7 @@ static struct {
 	struct wlr_scene_buffer *status;
 	unsigned commits, samples, frames, presents, ticks;
 	uint64_t cache_hits, cache_misses, cache_fallbacks;
+	uint64_t filter_nearest, filter_bilinear;
 	int button_contact, pressed_button;
 	bool button_down;
 	double button_x, button_y;
@@ -401,6 +402,16 @@ static void scaled_cache_log(void) {
 			" fallbacks=%" PRIu64 " bytes=%zu",
 			shell.cache_hits, shell.cache_misses, shell.cache_fallbacks,
 			card_scaled_buffer_bytes());
+}
+/* Motion-time quality (approach 3): a live mirror's filter_mode counts here
+ * every sync_node call, regardless of scaled-cache eligibility, so a test
+ * can confirm both values actually occur in one drag -- nearest while
+ * scene_in_motion() and bilinear once settled -- rather than trusting the
+ * conditional was reached. */
+static void filter_mode_log(void) {
+	sway_log(SWAY_INFO,
+		"K230_CARD_SHELL filter-mode nearest=%" PRIu64 " bilinear=%" PRIu64,
+		shell.filter_nearest, shell.filter_bilinear);
 }
 static bool live(struct sway_view *v) {
 	return v && v->surface && v->surface->mapped && v->container && !v->container->node.destroying;
@@ -1113,7 +1124,19 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 	m->seen = true;
 	struct wlr_scene_buffer *copy = m->copy;
 	wlr_scene_buffer_set_opacity(copy, source->opacity);
-	wlr_scene_buffer_set_filter_mode(copy, WLR_SCALE_FILTER_BILINEAR);
+	/* Bilinear resamples four source texels per destination pixel; nearest
+	 * reads one. card_scaled_buffer_create's own `fast` parameter already
+	 * makes exactly this trade for the pre-scaled RGB565 cache path while
+	 * scene_in_motion() (see its own comment): extend the same trade to
+	 * every live mirror's direct composite, since card_clip_buffer's own
+	 * scale (the deck's card size vs the app's native buffer size) goes
+	 * through this same filter_mode regardless of whether the fast cache
+	 * path was eligible this frame. Restored to bilinear the instant motion
+	 * stops, so a settled card is never shown at reduced quality. */
+	bool in_motion = scene_in_motion();
+	wlr_scene_buffer_set_filter_mode(copy,
+		in_motion ? WLR_SCALE_FILTER_NEAREST : WLR_SCALE_FILTER_BILINEAR);
+	if (in_motion) shell.filter_nearest++; else shell.filter_bilinear++;
 	wlr_scene_buffer_set_transfer_function(copy, source->transfer_function);
 	wlr_scene_buffer_set_primaries(copy, source->primaries);
 	wlr_scene_buffer_set_color_encoding(copy, source->color_encoding);
@@ -1804,6 +1827,7 @@ static void restore(struct cs_result result) {
 	struct card *c;
 	wl_list_for_each(c, &shell.cards, link) clear_card(c);
 	scaled_cache_log();
+	filter_mode_log();
 	if (shell.deck)
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 	/* Re-admit the ordinary-maximized backdrop now that the deck (whose
@@ -2063,8 +2087,10 @@ static int tick_impl(void *data) {
 					 "output-presented=%u",
 					 shell.policy.count, shell.commits, shell.samples, shell.frames,
 					 shell.presents);
-		if (shell.active && shell.ticks % 60 == 0)
+		if (shell.active && shell.ticks % 60 == 0) {
 			scaled_cache_log();
+			filter_mode_log();
+		}
 		/* Board evidence (docs/evidence/card-shell/bottom-band-flicker/):
 		 * this compositor was rendering continuously at ~42fps even during
 		 * idle stretches, one contributor being this call firing every
