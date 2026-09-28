@@ -157,7 +157,8 @@ stdenvNoCC.mkDerivation {
 
     # Deliberately no extlinux: the vendored U-Boot never calls sysboot.
     faketime_unused=1
-    fakeroot mkfs.ext4 -d boot -r 1 -N 0 -m 1 -L "K230_BOOT" -O ^64bit \
+    # Container SELinux can list security.selinux but return ENODATA on read.
+    fakeroot mkfs.ext4 -E no_copy_xattrs -d boot -r 1 -N 0 -m 1 -L "K230_BOOT" -O ^64bit \
       boot.ext4 ${toString (bootPartSize / 1024)}k
     dd if=boot.ext4 of=$img bs=512 seek=$(( ${toString bootPartOffset} / 512 )) conv=notrunc status=none
 
