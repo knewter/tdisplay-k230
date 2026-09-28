@@ -8,6 +8,17 @@ evidence exists and was independently reproduced during this audit
 not run them without a new decision that un-suspends this proposal, even
 though the runbook and payload for 3.1/3.2 are otherwise ready.
 
+**Note, 2026-09-28 (resequenced, not archived or implemented):** the user
+has formally chosen AMP for the second-core project; see
+`openspec/changes/the-small-core-runs-as-a-coprocessor/`. Tasks 1.1/1.2/2.1/2.2
+(complete) and 3.1/3.2 (board-gated, ready) are carried into that change's
+own stage-1/stage-2/stage-3 tasks in the same order — recovery rehearsal,
+then the board release. Task family 4 (patch the CPU0 SPL parking loop for
+unconditional coexistence) is recorded as superseded by that change's
+Linux-driven runtime start/stop design instead. Nothing here is ticked,
+archived, or run by this note; the change stays open per AGENTS.md until the
+user confirms otherwise.
+
 ## 1. Ground the physical test layout
 
 - [x] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the

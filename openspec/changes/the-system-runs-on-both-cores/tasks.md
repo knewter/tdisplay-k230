@@ -1,3 +1,13 @@
+**Note, 2026-09-28 (redirected, not archived):** the user has formally
+redirected the second-core project to AMP; see
+`openspec/changes/the-small-core-runs-as-a-coprocessor/`. Section 1
+(complete) and section 2 (open) below are carried into that change's own
+task list as the same work, not duplicated. Sections 3, 4, and 5 are
+recorded as superseded — they exist to make Linux treat CPU0 as a peer SBI
+hart for SMP, which is no longer pursued — and are left exactly as unticked
+as they were; this change stays open per AGENTS.md until the user confirms
+its archival.
+
 ## 1. Read-only board probes (stage a — no reset, power, or CPU-state write)
 
 - [x] 1.1 Add the three read-only RMU/PWR register fields (`0x9110100c`
