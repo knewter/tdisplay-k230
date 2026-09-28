@@ -150,6 +150,69 @@ QEMU/board proof of real touch input, real compositor compositing, or
 daylight/panel color reproduction, and is not claimed as such anywhere in
 this change's evidence or tasks.
 
+### 8. A board look-and-fix round-trip, before physical-board acceptance
+
+The coordinator deployed the first pass's build to the board for the
+user's judgment and, from the host evidence screenshots alone (not a board
+photograph), flagged five concrete visual issues: the weather card's
+condition tint leaking past its rounded corners; a 1px border on every
+widget reading as "boxed-in"; an oversized battery ring with its percentage
+captioned beneath instead of inside it; the "Big stacked" clock cramped
+against the card's left edge with both lines at equal visual weight; and a
+forecast strip too small to read at arm's length. Each is a rendering-only
+fix, addressed in this same change rather than a follow-up:
+
+- **Corner leak:** `paint_condition_tint` painted an unclipped rectangle.
+  The call site now wraps it in the card's own rounded clip path (the exact
+  clip `paint_widget_surface`, below, already establishes for the card's
+  fill, just re-applied since Cairo's clip does not persist across a
+  `save`/`restore` pair once popped).
+- **Borders:** `service_card`'s border stroke (drawn from the theme's own
+  `border`/`selected-border` brush when the theme defines one) was never
+  wrong on the panels that still use it -- the dock, the folder overlay,
+  the picker sheet all keep it, and still look consistent doing so, since
+  they sit inside other chrome (a card row, a scrim) that already frames
+  them. A widget has nothing else framing it; the same border read as a
+  literal box around content sitting directly on the wallpaper. Decision 9
+  covers the replacement in more detail.
+- **Battery ring:** scaled to 70% of its first-pass radius, and the
+  percentage moved from a caption below the ring (`caption_line`) to a new
+  `ring_percent_label`, sized and positioned to sit centered inside the
+  ring itself. The charging bolt moved out of the ring's dead center (where
+  it would now collide with the centered percentage) to a small accent
+  badge circle at the ring's own upper-right, the glyph drawn in the
+  card's own background color for contrast against the accent fill --
+  reading as a distinct status badge rather than competing with the
+  number for the ring's center.
+- **Clock breathing room:** the left inset grew from `pad` to `pad * 1.7`,
+  and the minute line dropped from Bold to Normal weight (the hour stays
+  Bold and accent-colored) so the pair reads as a clear hour-first
+  hierarchy rather than two equally-weighted numbers pressed against the
+  edge. The date caption grew from 14px to 17px.
+- **Forecast legibility:** each column's glyph grew from 22px to 32px and
+  its temperature label from 13px to 17px, with the whole block given
+  roughly twice its first-pass vertical room (90px reserved instead of
+  46px) so the larger glyphs and text have room to breathe rather than
+  being compressed into the same cramped footprint.
+
+### 9. `paint_widget_surface`: a dedicated, borderless widget background
+
+Rather than pass a flag into `service_card` to suppress its border only for
+widgets (which would leave `service_card` itself doing two visually
+different things depending on a boolean, for every one of its many other
+call sites to reason about), widgets got their own small, single-purpose
+painter. `paint_widget_surface` clips to the card's own rounded rect,
+paints a handful of offset, low-alpha filled passes underneath as a cheap
+soft shadow (no true blur -- Cairo's toy API has none, and a real one would
+mean an intermediate render target on every dirty repaint), then fills the
+theme's own "launcher"/"background" brush through the existing
+`overlay_brush` helper at a fixed ~80% alpha via `paint_with_alpha`,
+regardless of whatever alpha that brush's own authored stops carry. It
+never queries a "border" token at all. This keeps `service_card` completely
+unchanged for every other panel in this shell, and gives widgets one
+narrow, easily-audited place that owns "what a widget card's own background
+looks like" independent of whatever any other panel decides to look like.
+
 ### Rejected: making the "no room" drop-target highlight always fully visible
 
 The drop-target highlight rect is sized to the *single* raw grid cell under

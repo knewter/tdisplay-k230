@@ -3020,9 +3020,12 @@ fn draw_bolt(cr: &Context, cx: f64, cy: f64, size: f64, rgb: u32) {
 
 /// The Battery widget's ring: a muted full-circle track plus an accent arc
 /// for the live percentage, matching every reference launcher's battery
-/// widget convention -- clockwise from the top (task: "a clean ring or bar,
-/// percentage, and a charging bolt").
-fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, charging: bool, style: &VisualStyle) {
+/// widget convention -- clockwise from the top (task: "a clean ring or
+/// bar, percentage, and a charging bolt"). The percentage label and the
+/// charging badge are painted by the caller ([`ring_percent_label`], and a
+/// small badge circle respectively), not this function, so this stays a
+/// pure "draw the ring itself" primitive.
+fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, style: &VisualStyle) {
     let tau = std::f64::consts::TAU;
     let start = -std::f64::consts::FRAC_PI_2;
     let sweep = tau * (f64::from(percent.min(100)) / 100.0);
@@ -3040,9 +3043,20 @@ fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, c
         cr.set_line_width(line_width);
         let _ = cr.stroke();
     }
-    if charging {
-        draw_bolt(cr, cx, cy, radius * 0.68, style.accent);
-    }
+}
+
+/// The battery ring's own percentage label, large and vertically centered
+/// inside the ring (coordinator review: "put the percentage INSIDE the
+/// ring (large, centred)"). `centered_label`'s `y` is a top-left text
+/// origin, not a true vertical center, so this offsets by an empirical
+/// fraction of the chosen font size -- the same approximation every other
+/// hand-positioned label in this renderer already uses (see `shadowed_
+/// label`'s own call sites), rather than pulling in exact Pango ink-extent
+/// measurement for one label.
+fn ring_percent_label(cr: &Context, value: &str, cx: f64, cy: f64, radius: f64, rgb: u32) {
+    let size = (radius * 0.68).max(13.0);
+    let width = radius * 1.9;
+    centered_label(cr, value, cx - width / 2.0, cy - size * 0.42, width, size, rgb);
 }
 
 /// A muted outline battery glyph (rounded body plus a small terminal nub),
@@ -3109,6 +3123,42 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
     let _ = cr.restore();
 }
 
+/// A widget card's own corner radius -- matches `service_card`'s "sheet"
+/// radius (`docs/design/shell-polish-review-2026-09.md`'s token table), so
+/// a widget still reads as the same family of floating panel as the dock,
+/// the folder overlay, and the picker sheet.
+const WIDGET_CARD_RADIUS: f64 = 16.0;
+
+/// A widget card's own background: a subtle filled surface plus a soft
+/// shadow, deliberately never a border stroke (coordinator review: "Drop
+/// the 1px light-grey card borders... The widgets look boxed-in"). Distinct
+/// from `service_card` (which every *other* floating panel in this shell
+/// still uses, border and all) because a widget sits directly over the
+/// wallpaper with nothing else framing it, so a hard outline reads as a
+/// literal box in a way it does not on a panel that already has other
+/// chrome around it. The shadow is a handful of offset, low-alpha filled
+/// passes -- not a true Gaussian blur (Cairo's toy API has none, and a real
+/// blur would mean rendering to an intermediate surface every dirty frame
+/// this widget repaints) -- cheap and soft enough at this small an offset
+/// to read as a shadow rather than a second outline.
+fn paint_widget_surface(cr: &Context, theme: Option<&AppearanceSnapshot>, x: f64, y: f64, w: f64, h: f64) {
+    let _ = cr.save();
+    for (dy, alpha) in [(4.0, 0.05), (2.0, 0.08)] {
+        cr.new_path();
+        rounded(cr, x, y + dy, w, h, WIDGET_CARD_RADIUS);
+        color(cr, 0x000000, alpha);
+        let _ = cr.fill();
+    }
+    let _ = cr.restore();
+
+    let _ = cr.save();
+    cr.new_path();
+    rounded(cr, x, y, w, h, WIDGET_CARD_RADIUS);
+    cr.clip();
+    overlay_brush(cr, theme_brush(theme, "launcher", "background"), x, y, w, h, 0.80, 0x263946);
+    let _ = cr.restore();
+}
+
 /// Paints a widget's whole card (`home-widget-design`): a themed plate
 /// spanning the widget's full cell footprint, with its own genuinely
 /// designed content -- a hero clock in one of three selectable styles, a
@@ -3122,7 +3172,7 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
 fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
     let (x, y, w, h) = rect;
     cr.new_path();
-    service_card(cr, theme, "launcher", x, y, w, h, false);
+    paint_widget_surface(cr, theme, x, y, w, h);
     let pad = 22.0;
     match kind {
         WidgetKind::Clock | WidgetKind::ClockMinimal => {
@@ -3136,16 +3186,21 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
                 None => ("--".to_string(), "--".to_string(), "--:--".to_string(), String::new()),
             };
             if kind == WidgetKind::Clock {
-                // "Big stacked": hour and minute each their own huge line.
-                let line_size = h * 0.32;
-                hero_line(cr, &hour_text, x + pad, y + h * 0.03, line_size, style.accent, pango::Weight::Bold);
-                hero_line(cr, &minute_text, x + pad, y + h * 0.38, line_size, style.text, pango::Weight::Bold);
+                // "Big stacked": hour (accent, bold) over minute (lighter
+                // Normal weight, so the pair reads as a hierarchy, not two
+                // equally-weighted numbers) -- left-aligned with generous
+                // breathing room from the card's own edges (coordinator
+                // review: "more breathing room").
+                let line_size = h * 0.29;
+                let left = x + pad * 1.7;
+                hero_line(cr, &hour_text, left, y + h * 0.10, line_size, style.accent, pango::Weight::Bold);
+                hero_line(cr, &minute_text, left, y + h * 0.44, line_size, style.text, pango::Weight::Normal);
             } else {
                 // "Minimal line": one thinner, airier line.
                 let line_size = h * 0.30;
                 hero_line(cr, &line_text, x + pad, y + h * 0.28, line_size, style.text, pango::Weight::Normal);
             }
-            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 14.0, style.muted, false);
+            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 17.0, style.muted, false);
         }
         WidgetKind::ClockAnalog => {
             let (hour, minute, date_text) = match crate::home_widgets::clock::now_local() {
@@ -3156,18 +3211,32 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
             let cy = y + h * 0.42;
             let radius = (w / 2.0 - pad).min(h * 0.34);
             draw_analog_clock(cr, cx, cy, radius, hour, minute, style);
-            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 13.0, style.muted, true);
+            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 15.0, style.muted, true);
         }
         WidgetKind::Battery => {
             caption_line(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.muted, false);
             match &home.battery {
                 crate::home_widgets::battery::BatteryState::Present { percent, .. } => {
                     let cx = x + w / 2.0;
-                    let cy = y + h * 0.46;
-                    let radius = (w / 2.0 - pad * 1.3).min(h * 0.28);
-                    draw_battery_ring(cr, cx, cy, radius, *percent, home.battery.is_charging(), style);
-                    let label = crate::home_widgets::battery::format(&home.battery);
-                    caption_line(cr, &label, x + pad, y + h * 0.84, w - pad * 2.0, 15.0, style.text, true);
+                    let cy = y + h * 0.55;
+                    // Coordinator review: "oversized for a 2x2" -- scaled
+                    // down about 30% from the first pass's radius.
+                    let radius = (w / 2.0 - pad * 1.3).min(h * 0.28) * 0.7;
+                    draw_battery_ring(cr, cx, cy, radius, *percent, style);
+                    // The percentage lives inside the ring itself now,
+                    // large and centered, rather than as a caption beneath
+                    // it (coordinator review).
+                    ring_percent_label(cr, &format!("{percent}%"), cx, cy, radius, style.text);
+                    if home.battery.is_charging() {
+                        let badge_r = radius * 0.40;
+                        let bx = cx + radius * 0.68;
+                        let by = cy - radius * 0.68;
+                        cr.new_path();
+                        cr.arc(bx, by, badge_r, 0.0, std::f64::consts::TAU);
+                        color(cr, style.accent, 0.95);
+                        let _ = cr.fill();
+                        draw_bolt(cr, bx, by, badge_r * 1.25, brush_rgb(theme, "launcher", "background", 0x263946));
+                    }
                 }
                 crate::home_widgets::battery::BatteryState::Absent => {
                     let glyph_w = w * 0.30;
@@ -3191,7 +3260,15 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
                     WeatherDisplay::Unavailable => ("sun".to_string(), None, String::new(), None, None, Vec::new()),
                 };
             let (tint_rgb, tint_alpha) = weather_tint(&glyph, style);
+            // Clipped to the card's own rounded rect -- painted unclipped,
+            // the wash's straight-edged rectangle leaked past the rounded
+            // corners (coordinator review: "corner leak").
+            let _ = cr.save();
+            cr.new_path();
+            rounded(cr, x, y, w, h, WIDGET_CARD_RADIUS);
+            cr.clip();
             paint_condition_tint(cr, x, y, w, h, tint_rgb, tint_alpha);
+            let _ = cr.restore();
             if !location.is_empty() {
                 caption_line(cr, &location, x + pad, y + pad * 0.6, w - pad * 2.0, 12.0, style.muted, false);
             }
@@ -3208,17 +3285,20 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
             }
             // A short forecast strip (task: "a small 3-5 hour... forecast
             // strip"); this card's own 2x2 width comfortably fits 3
-            // columns at a legible size.
+            // columns. Sized to stay legible at arm's length (coordinator
+            // review: the first pass's icons/temperatures were "tiny") --
+            // larger glyphs, a larger temperature, and more vertical room
+            // between the three rows of this block.
             let shown: Vec<_> = forecast.iter().take(3).collect();
             if !shown.is_empty() {
-                let strip_y = y + h - pad - 46.0;
+                let strip_y = y + h - pad - 90.0;
                 let col_w = (w - pad * 2.0) / shown.len().max(1) as f64;
                 for (index, entry) in shown.iter().enumerate() {
                     let col_x = x + pad + col_w * index as f64;
-                    caption_line(cr, &entry.label, col_x, strip_y, col_w, 11.0, style.muted, true);
+                    caption_line(cr, &entry.label, col_x, strip_y, col_w, 13.0, style.muted, true);
                     let entry_glyph = crate::home_widgets::weather::condition_glyph(&entry.condition);
-                    draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + 28.0, 22.0, style);
-                    centered_label(cr, &format!("{}°", entry.temp_c), col_x, strip_y + 40.0, col_w, 13.0, style.text);
+                    draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + 38.0, 32.0, style);
+                    centered_label(cr, &format!("{}°", entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
                 }
             }
         }

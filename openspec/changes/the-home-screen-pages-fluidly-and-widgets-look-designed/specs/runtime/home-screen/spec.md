@@ -88,10 +88,14 @@ a muted outline battery glyph. The Weather widget SHALL show the current
 temperature as a large numeral, a drawn condition icon distinct per
 condition family (at minimum sun/cloud/rain/snow/fog/storm), the location
 name when available, today's high and low, and a short multi-entry forecast
-strip when forecast data is available. Every widget SHALL use the shell's
-existing themed card chrome (the same rounded sheet, background, and border
-brushes every other floating panel in this shell uses) rather than
-introducing separate, inconsistent chrome per widget.
+strip when forecast data is available. Every widget SHALL share one
+consistent card treatment with every other widget: the same corner radius,
+a subtly filled surface derived from the active theme, and no outline
+border -- distinct, by design, from the bordered chrome this shell's other
+floating panels (the dock, the folder overlay, the picker sheet) use, since
+a widget sits directly over the wallpaper with nothing else framing it. Any
+condition-derived tint or wash a widget paints SHALL stay clipped within
+that same rounded card shape, never visible past its corners.
 
 #### Scenario: A person can choose a clock style from the picker
 
@@ -113,8 +117,14 @@ introducing separate, inconsistent chrome per widget.
 - **THEN** the widget shows a short strip of upcoming entries, each with its
   own time label, temperature, and condition glyph
 
-#### Scenario: Every widget shares the same card chrome
+#### Scenario: Every widget shares the same card chrome, with no outline
 
 - **WHEN** any two widgets (of any kind) are shown on the same Home page
-- **THEN** both use the same corner radius and the same themed background/
-  border treatment as each other and as the shell's other floating panels
+- **THEN** both use the same corner radius and the same filled-surface
+  treatment as each other, and neither draws a border/outline stroke
+
+#### Scenario: A condition tint never leaks past the card's rounded corners
+
+- **WHEN** the Weather widget paints its condition-derived tint wash
+- **THEN** the wash is visible only inside the card's own rounded shape, not
+  past its corners

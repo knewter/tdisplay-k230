@@ -11,6 +11,17 @@ one -- rather than a live Omarchy IPC session, which this host has no
 compositor to run. This is what `home-widget-design`'s task 3 asks for when
 "the QEMU one is flaky under load": a small host render harness.
 
+**Revised after a board look.** The coordinator deployed the first pass's
+build to the board for the user's judgment and, from these same screenshots,
+flagged the weather tint leaking past its rounded corners, a 1px border
+reading as "boxed-in" on every widget, an oversized battery ring with its
+percentage captioned below rather than inside it, a cramped left-aligned
+clock, and a forecast strip too small to read at arm's length. The images
+below are the re-rendered result of fixing all five (see the change's
+`design.md` decisions 8-9); the store path this produced was re-verified
+with a foreground `cargo test`/`cargo clippy`/`nix build` pass, not just
+re-rendered.
+
 I looked at every image myself before writing this and iterated on the
 widget layouts (padding, hero-numeral size, forecast-strip column count)
 until they read cleanly at both the evidence PNG's zoomed-out scale and a

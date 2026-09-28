@@ -48,17 +48,32 @@
   `cargo test --offline -p k230-shell-rust home_widgets::weather`.
 - [x] 2.3 `render.rs::paint_widget_card` redesigned per kind: two hero clock
   styles (`hero_line`/`caption_line`) plus a drawn analog face
-  (`draw_analog_clock`); a battery ring with a charging bolt
-  (`draw_battery_ring`/`draw_bolt`) and a muted outline glyph for the absent
-  state (`draw_battery_outline`); a weather card with a Cairo-drawn
-  condition glyph per family (`draw_weather_glyph`/`cloud_shape`), a
-  condition-tinted wash derived from theme colors
+  (`draw_analog_clock`); a battery ring with a charging badge
+  (`draw_battery_ring`/`draw_bolt`/`ring_percent_label`) and a muted outline
+  glyph for the absent state (`draw_battery_outline`); a weather card with a
+  Cairo-drawn condition glyph per family (`draw_weather_glyph`/
+  `cloud_shape`), a condition-tinted wash derived from theme colors
   (`paint_condition_tint`/`weather_tint`), and a 3-entry forecast strip.
-  Every widget kept the existing `service_card` chrome (16px sheet radius,
-  matching `docs/design/shell-polish-review-2026-09.md`'s token table) --
-  no new radius/border convention introduced; verify with
+  Every widget shares one dedicated, borderless surface treatment
+  (`paint_widget_surface`, 16px radius matching `docs/design/
+  shell-polish-review-2026-09.md`'s "sheet" token, a theme-derived filled
+  surface, a cheap layered soft shadow, no border stroke) instead of the
+  bordered `service_card` every other panel still uses; verify with
   `cargo build --offline -p k230-shell-rust` and the host evidence harness
   (task 3).
+  **Board-review follow-up (same pass):** the coordinator deployed the
+  first pass to the board and flagged, from the host evidence alone: the
+  weather tint leaking past its rounded corners (now clipped -- see
+  `design.md` decision 8), a 1px border reading as "boxed-in" (replaced by
+  `paint_widget_surface` -- decision 9), an oversized battery ring with an
+  external percentage caption (scaled down ~30%, percentage now centered
+  inside the ring via `ring_percent_label`, charging moved to a small
+  accent badge), the "Big stacked" clock cramped with equal-weight lines
+  (more left inset, Normal-weight minute beneath a Bold accent hour, a
+  larger date caption), and a forecast strip too small at arm's length
+  (larger glyphs/temperature, more vertical room). All five re-verified via
+  `cargo test --offline`/`cargo clippy --offline --all-targets` and the
+  re-rendered host evidence (task 3).
 - [x] 2.4 Widget-picker previews render each widget kind's actual live
   content inline in its own row (`paint_widget_picker`'s preview
   thumbnail), not a static icon; verify with the host evidence harness
@@ -110,8 +125,12 @@
   Done: `/nix/store/79l3ny61f523skmf06va1alpgxzcissq-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
 - [x] 4.3 Confirm the coherent-shell system closure still builds; verify
   with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
-  Done: `/nix/store/65w36kvr1h8i0ym6i94x0nphgcryaar4-nixos-system-nixos-26.11.20260919.20b1ddd`
-  (a host cross-build proof only -- not deployed to the board or booted).
+  Done (first pass): `/nix/store/65w36kvr1h8i0ym6i94x0nphgcryaar4-nixos-system-nixos-26.11.20260919.20b1ddd`,
+  which the coordinator deployed to the board for the user's judgment.
+  Re-verified after the board-review visual-polish follow-up (task 2.3):
+  `/nix/store/7k1w73rjpb4b3s91d3h2sbdb5bg35cn0-nixos-system-nixos-26.11.20260919.20b1ddd`
+  (both host cross-build proofs only; the second has not itself been
+  deployed or booted).
 - [x] 4.4 Validate this change; verify with
   `openspec validate the-home-screen-pages-fluidly-and-widgets-look-designed --strict`.
 

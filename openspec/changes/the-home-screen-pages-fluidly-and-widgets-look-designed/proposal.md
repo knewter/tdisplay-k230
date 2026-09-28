@@ -44,13 +44,18 @@ Two concrete problems this closes:
   instead of the ordinary accepting one.
 - **Three selectable clock styles.** `WidgetKind` gains `ClockMinimal` and
   `ClockAnalog` alongside the existing `Clock` ("Big stacked"): a full-width
-  hero pair of huge bold hour/minute lines, a single thinner `HH:MM` line,
-  and a Cairo-drawn analog face (ticks, a neutral hour hand, an accent
-  minute hand) -- all three additive to the schema-2 `WidgetKind` tag
+  hero pair of hour/minute lines, a single thinner `HH:MM` line, and a
+  Cairo-drawn analog face (ticks, a neutral hour hand, an accent minute
+  hand) -- all three additive to the schema-2 `WidgetKind` tag
   (`clock`/`clock_minimal`/`clock_analog`), so an existing save file needs
   no migration. All three are selectable from the widget picker, which now
   also renders a live preview of each widget kind inline in its own row.
-  Every clock style shows a small tracked-caps date caption.
+  "Big stacked" is left-aligned with deliberate breathing room from the
+  card's own edges, the hour in accent Bold and the minute beneath it in a
+  lighter Normal weight (a board look at the first pass found it cramped
+  against the left edge with both lines reading at the same visual weight).
+  Every clock style shows a tracked-caps date caption, sized up a touch
+  from the first pass for legibility.
   - **Font choice:** kept `DejaVu Sans` (the image's one shipped family,
     `render.rs`'s own `FONT_FAMILY` doc already turned down adding a second
     face for a prior rendering-only fix). No variable/light-weight family
@@ -66,20 +71,30 @@ Two concrete problems this closes:
   fog/storm, replacing the old plain condition word), location name,
   today's high/low, and a 3-entry forecast strip (this card's own 2x2 width
   fits three columns legibly; wttr.in's `j1` response has enough hourly data
-  for up to 5, but three is what actually reads at this size). The 30-minute
-  throttle, disk cache, and offline-keeps-last-reading behavior are
-  unchanged, now carrying the richer snapshot shape.
-- **Battery widget redesigned.** A themed ring (track plus an accent arc for
-  the live percentage) with a charging-bolt glyph in the center when
-  charging, replacing the old plain percentage text. The absent state keeps
-  its "No battery info" wording but now pairs it with a muted outline
-  battery glyph instead of bare text.
-- **Consistent card chrome.** Every widget keeps the existing themed
-  `service_card` sheet (16px radius, the theme's own background/border
-  brushes) rather than introducing a second, competing radius token --
-  `docs/design/shell-polish-review-2026-09.md` already names 16px as the
-  Rust-side "sheet" radius distinct from the C card deck's larger "card"
-  radius, and a widget card is exactly that kind of sheet.
+  for up to 5, but three is what actually reads at this size). Each
+  forecast column's own glyph and temperature are sized for legibility at
+  arm's length (a board look at the first pass found them too small to
+  read). The 30-minute throttle, disk cache, and offline-keeps-last-reading
+  behavior are unchanged, now carrying the richer snapshot shape.
+- **Battery widget redesigned.** A themed ring, sized to actually suit a 2x2
+  card (about 30% smaller than the first pass, which read as oversized on
+  the board), with the live percentage large and centered *inside* the ring
+  rather than as a caption beneath it, plus a small accent charging-badge
+  circle (with the bolt glyph inside it) when charging, replacing the old
+  plain percentage text. The absent state keeps its "No battery info"
+  wording paired with a muted outline battery glyph.
+- **Consistent, borderless card chrome.** Every widget shares one dedicated
+  surface treatment (`render.rs::paint_widget_surface`): the same 16px
+  radius `docs/design/shell-polish-review-2026-09.md` already names as the
+  Rust-side "sheet" radius, a subtly filled surface derived from the theme
+  at ~80% alpha, and a cheap layered soft shadow -- deliberately no border
+  stroke, unlike `service_card` (which every *other* floating panel here
+  still uses). A first pass reused `service_card` outright; a board look at
+  the rendered result found its 1px border made every widget "look
+  boxed-in" over the wallpaper, where nothing else frames it the way a
+  bordered panel's own surroundings do. The Weather widget's condition tint
+  is now clipped to this same rounded shape (it previously leaked past the
+  corners as a plain unclipped rectangle).
 - **Performance is unchanged in shape.** Widgets already only repaint when
   Home repaints and the underlying value (`home.battery`/`home.weather`)
   changed, or once a minute for the clock (`clock::ms_until_next_minute`);

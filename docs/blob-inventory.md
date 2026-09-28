@@ -1478,24 +1478,24 @@ DATA 4697a2cfe9b753a6ff75ca019f3bb103b07eb85e10cefd7463b8d735b54380b9 docs/evide
 DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evidence/home-widgets-folders/home-dark-rearrange-done.png
 DATA fa078c53898c978cd6e1bb69b6ed4e625cf380c6450f2155c508f512d21b6255 docs/evidence/home-widgets-folders/home-dark-rearrange.png
 DATA 507e156719fa35cfee8b57042169200c8536506afd0f54e1bb929392a07a085c docs/evidence/home-widgets-folders/home-dark-removed.png
-DATA d5f8a35e9a94a5109ae5b0e250bd150b4a9d3ae100ea31ec54e8efeb7a3c5974 docs/evidence/home-widget-design/dark-battery-absent.png
-DATA 757da0bb8b7d81d6bcc65178a6825618f01d185373a35b73a828404108b7ddea docs/evidence/home-widget-design/dark-battery-present.png
-DATA 0790a538e0bd71751448fb7f2fb9384ece73d3cbd2f605a03e10b28d814ff73a docs/evidence/home-widget-design/dark-clock-analog.png
-DATA 0d32b60a8d16621f2b19ce132bfa57d2e5e0275946c427e7cde80b0ea35e1e4b docs/evidence/home-widget-design/dark-clock-big.png
-DATA 7d6219326310eda0f4b38c4de666473dbe9446f41f6415689f5aab63a721a0cf docs/evidence/home-widget-design/dark-clock-minimal.png
+DATA 5834c6c397c33f4f5192bcf369d8e5b639a62852bd55edb33c2830df61fb0a70 docs/evidence/home-widget-design/dark-battery-absent.png
+DATA fba924b6344fa2802a50166bc00a4d25a388aeab539803fc595ab2d3f855ac46 docs/evidence/home-widget-design/dark-battery-present.png
+DATA 6c4d991ed24ae24415c1df315747260fe8113d8561e14879f2105689668f5054 docs/evidence/home-widget-design/dark-clock-analog.png
+DATA f50b98a2598c396f18d1bab708abdf42406a4bbfa6c4eb489c38c408d3a88005 docs/evidence/home-widget-design/dark-clock-big.png
+DATA 3fd59b1e0399a507d9fcef6144be143b539981ae155e61492fff8230a44e218c docs/evidence/home-widget-design/dark-clock-minimal.png
 DATA d785282818f645ae834fd6b5ae54ba11d9d61a6c41647ad051440d986247d1c3 docs/evidence/home-widget-design/dark-drag-edge-indicator.png
-DATA 4212bb02dcd1cc0669fee6b92452c3876229117079bd10b00035b72c9f514794 docs/evidence/home-widget-design/dark-drag-no-room.png
-DATA 575a610d219a43f1a8100190e107dc7b5b9a2f86d8b765e0f4c6105fd4669fc0 docs/evidence/home-widget-design/dark-overview.png
-DATA 67dbfa192e941c0815f8fecad0dc4ea7b83cf0373854cf5a1bcb59d764c9cd19 docs/evidence/home-widget-design/dark-weather.png
-DATA 251ec72c62820daaedb8aa9e6b5b25096d077f5d2f61b45fc458ebc610bae201 docs/evidence/home-widget-design/dark-widget-picker.png
-DATA 172683e978002e6cba1b4f190a6cf3aa2d101b49f6f0312590ef039d4149c549 docs/evidence/home-widget-design/light-battery-absent.png
-DATA 3d3caa53d7d9215579df35570ef8010e78c50d58f4873a6924b2907af9d089ad docs/evidence/home-widget-design/light-battery-present.png
-DATA 757dacbea907a329193d4655884ee9092f3fd7593812b8a321350667324576c1 docs/evidence/home-widget-design/light-clock-analog.png
-DATA 2dae17c804a6e95ffd1ec9371bf321792c737fca4f5edd5d70615f7eacd2de1b docs/evidence/home-widget-design/light-clock-big.png
-DATA 958ae45804a017698466b5397e12576baca1ecd52cdc9f0423308d62510d706c docs/evidence/home-widget-design/light-clock-minimal.png
-DATA 0af6f2ce1728528c6d9add1aec002db31ebe9b0d0f0f7fc44843006452221bd6 docs/evidence/home-widget-design/light-overview.png
-DATA 81aee5d8f6f2daaa919968f6878064aeb1c018d2f70eb152d04e7ffdd55934a1 docs/evidence/home-widget-design/light-weather.png
-DATA 0cd1c5e7905036963530531579bc14b4ecc4c38e8dba8dc82e6db66f9bd8c767 docs/evidence/home-widget-design/light-widget-picker.png
+DATA 831669f58673b33dc8e3faa180030261a6fdd2f9f090e08ef272c70190b00d66 docs/evidence/home-widget-design/dark-drag-no-room.png
+DATA ca0e417ca150828f53ec93ac59f8c5f8ddf806a018da59747bf60748d8e42a4f docs/evidence/home-widget-design/dark-overview.png
+DATA 8504c2cd129ea15a30fc434d94cf67ef199c179c328929ffcbf1aca93f576eeb docs/evidence/home-widget-design/dark-weather.png
+DATA 70d989b772f0a3bda57c9e087c1e2574fb58b869e84a2ae95b5ffa31db8b3c96 docs/evidence/home-widget-design/dark-widget-picker.png
+DATA a685f7598de5b3c772e0462b8b982f543be08172b31348665d05582aab04f62d docs/evidence/home-widget-design/light-battery-absent.png
+DATA 3189f83316abcb4baff8acd3a4b0238308b56da7869c0789e706546d6e6774f2 docs/evidence/home-widget-design/light-battery-present.png
+DATA e152dc230034bbd0619fa084041cfce6cf2b1c840929a6f58a1618f7169ab26b docs/evidence/home-widget-design/light-clock-analog.png
+DATA ac721cf8b4d8d45b4d3b9942dbbf681b0a94cf0f36b2e3ff904f1fc4b79c5216 docs/evidence/home-widget-design/light-clock-big.png
+DATA f1ef6abec3dc7858f0b5f11f221b7c8cadf89ea6d72ebe739715b11e85a65864 docs/evidence/home-widget-design/light-clock-minimal.png
+DATA 501f1ce16a6580256d4320b2fd9edb781b6cb440289ad92bc81fc1416c5622b6 docs/evidence/home-widget-design/light-overview.png
+DATA 5e012206c8ebef411464b4b24c224bbf7f3e39998008816de3d878173cc11f81 docs/evidence/home-widget-design/light-weather.png
+DATA 5508441c137c42ebc6323e867f22cd81d513c9bdf423900e39ad95448495e2b8 docs/evidence/home-widget-design/light-widget-picker.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2368,21 +2368,21 @@ not faked state -- see `docs/evidence/home-widget-design/README.md`.
 
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
-| `docs/evidence/home-widget-design/dark-clock-big.png` | 22513 | DATA | `0d32b60a8d16621f2b19ce132bfa57d2e5e0275946c427e7cde80b0ea35e1e4b` |
-| `docs/evidence/home-widget-design/dark-clock-minimal.png` | 19804 | DATA | `7d6219326310eda0f4b38c4de666473dbe9446f41f6415689f5aab63a721a0cf` |
-| `docs/evidence/home-widget-design/dark-clock-analog.png` | 26537 | DATA | `0790a538e0bd71751448fb7f2fb9384ece73d3cbd2f605a03e10b28d814ff73a` |
-| `docs/evidence/home-widget-design/dark-battery-present.png` | 27239 | DATA | `757da0bb8b7d81d6bcc65178a6825618f01d185373a35b73a828404108b7ddea` |
-| `docs/evidence/home-widget-design/dark-battery-absent.png` | 16146 | DATA | `d5f8a35e9a94a5109ae5b0e250bd150b4a9d3ae100ea31ec54e8efeb7a3c5974` |
-| `docs/evidence/home-widget-design/dark-weather.png` | 25043 | DATA | `67dbfa192e941c0815f8fecad0dc4ea7b83cf0373854cf5a1bcb59d764c9cd19` |
-| `docs/evidence/home-widget-design/dark-overview.png` | 50556 | DATA | `575a610d219a43f1a8100190e107dc7b5b9a2f86d8b765e0f4c6105fd4669fc0` |
-| `docs/evidence/home-widget-design/dark-widget-picker.png` | 71732 | DATA | `251ec72c62820daaedb8aa9e6b5b25096d077f5d2f61b45fc458ebc610bae201` |
+| `docs/evidence/home-widget-design/dark-clock-big.png` | 23843 | DATA | `f50b98a2598c396f18d1bab708abdf42406a4bbfa6c4eb489c38c408d3a88005` |
+| `docs/evidence/home-widget-design/dark-clock-minimal.png` | 24186 | DATA | `3fd59b1e0399a507d9fcef6144be143b539981ae155e61492fff8230a44e218c` |
+| `docs/evidence/home-widget-design/dark-clock-analog.png` | 27696 | DATA | `6c4d991ed24ae24415c1df315747260fe8113d8561e14879f2105689668f5054` |
+| `docs/evidence/home-widget-design/dark-battery-present.png` | 25604 | DATA | `fba924b6344fa2802a50166bc00a4d25a388aeab539803fc595ab2d3f855ac46` |
+| `docs/evidence/home-widget-design/dark-battery-absent.png` | 16173 | DATA | `5834c6c397c33f4f5192bcf369d8e5b639a62852bd55edb33c2830df61fb0a70` |
+| `docs/evidence/home-widget-design/dark-weather.png` | 26966 | DATA | `8504c2cd129ea15a30fc434d94cf67ef199c179c328929ffcbf1aca93f576eeb` |
+| `docs/evidence/home-widget-design/dark-overview.png` | 53961 | DATA | `ca0e417ca150828f53ec93ac59f8c5f8ddf806a018da59747bf60748d8e42a4f` |
+| `docs/evidence/home-widget-design/dark-widget-picker.png` | 68364 | DATA | `70d989b772f0a3bda57c9e087c1e2574fb58b869e84a2ae95b5ffa31db8b3c96` |
 | `docs/evidence/home-widget-design/dark-drag-edge-indicator.png` | 14274 | DATA | `d785282818f645ae834fd6b5ae54ba11d9d61a6c41647ad051440d986247d1c3` |
-| `docs/evidence/home-widget-design/dark-drag-no-room.png` | 24285 | DATA | `4212bb02dcd1cc0669fee6b92452c3876229117079bd10b00035b72c9f514794` |
-| `docs/evidence/home-widget-design/light-clock-big.png` | 22385 | DATA | `2dae17c804a6e95ffd1ec9371bf321792c737fca4f5edd5d70615f7eacd2de1b` |
-| `docs/evidence/home-widget-design/light-clock-minimal.png` | 19582 | DATA | `958ae45804a017698466b5397e12576baca1ecd52cdc9f0423308d62510d706c` |
-| `docs/evidence/home-widget-design/light-clock-analog.png` | 26246 | DATA | `757dacbea907a329193d4655884ee9092f3fd7593812b8a321350667324576c1` |
-| `docs/evidence/home-widget-design/light-battery-present.png` | 26716 | DATA | `3d3caa53d7d9215579df35570ef8010e78c50d58f4873a6924b2907af9d089ad` |
-| `docs/evidence/home-widget-design/light-battery-absent.png` | 16063 | DATA | `172683e978002e6cba1b4f190a6cf3aa2d101b49f6f0312590ef039d4149c549` |
-| `docs/evidence/home-widget-design/light-weather.png` | 24716 | DATA | `81aee5d8f6f2daaa919968f6878064aeb1c018d2f70eb152d04e7ffdd55934a1` |
-| `docs/evidence/home-widget-design/light-overview.png` | 49872 | DATA | `0af6f2ce1728528c6d9add1aec002db31ebe9b0d0f0f7fc44843006452221bd6` |
-| `docs/evidence/home-widget-design/light-widget-picker.png` | 69888 | DATA | `0cd1c5e7905036963530531579bc14b4ecc4c38e8dba8dc82e6db66f9bd8c767` |
+| `docs/evidence/home-widget-design/dark-drag-no-room.png` | 28105 | DATA | `831669f58673b33dc8e3faa180030261a6fdd2f9f090e08ef272c70190b00d66` |
+| `docs/evidence/home-widget-design/light-clock-big.png` | 23492 | DATA | `ac721cf8b4d8d45b4d3b9942dbbf681b0a94cf0f36b2e3ff904f1fc4b79c5216` |
+| `docs/evidence/home-widget-design/light-clock-minimal.png` | 23745 | DATA | `f1ef6abec3dc7858f0b5f11f221b7c8cadf89ea6d72ebe739715b11e85a65864` |
+| `docs/evidence/home-widget-design/light-clock-analog.png` | 26615 | DATA | `e152dc230034bbd0619fa084041cfce6cf2b1c840929a6f58a1618f7169ab26b` |
+| `docs/evidence/home-widget-design/light-battery-present.png` | 24923 | DATA | `3189f83316abcb4baff8acd3a4b0238308b56da7869c0789e706546d6e6774f2` |
+| `docs/evidence/home-widget-design/light-battery-absent.png` | 15959 | DATA | `a685f7598de5b3c772e0462b8b982f543be08172b31348665d05582aab04f62d` |
+| `docs/evidence/home-widget-design/light-weather.png` | 26175 | DATA | `5e012206c8ebef411464b4b24c224bbf7f3e39998008816de3d878173cc11f81` |
+| `docs/evidence/home-widget-design/light-overview.png` | 52516 | DATA | `501f1ce16a6580256d4320b2fd9edb781b6cb440289ad92bc81fc1416c5622b6` |
+| `docs/evidence/home-widget-design/light-widget-picker.png` | 66775 | DATA | `5508441c137c42ebc6323e867f22cd81d513c9bdf423900e39ad95448495e2b8` |
