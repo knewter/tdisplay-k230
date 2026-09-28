@@ -1,3 +1,10 @@
+**Sequenced by user decision (2026-09-28):** start groups 1-2 after the
+current shell work lands, and fold `docs/design/webos-polish-review.md`,
+`docs/design/shell-polish-review-2026-09.md`, and
+`docs/design/handheld-shell/visual-gap-audit.md` into `references-and-gap.md`
+and `findings.md` as raw input rather than repeating that critique — see
+`Status (2026-09-28)` in `proposal.md`.
+
 ## 1. Baseline and reusable rubric (host analysis)
 
 - [ ] 1.1 Create `docs/research/handheld-ux/review-round-2/baseline.md` and `rubric.md`, pinning source/image/experimental packages and linking the existing evidence for each surface and journey in design.md. Verify by reviewing the inventory against the flow matrix; explicitly retain unavailable states and evidence gaps.
@@ -14,6 +21,11 @@ Proof: `openspec validate the-handheld-gets-a-design-and-ux-review --strict` plu
 Proof: `openspec validate the-handheld-gets-a-design-and-ux-review --strict` and `python3 scripts/build_site.py`, plus recorded visual inspection and independent critique. Site generation proves publication integrity, not usability; do not mark these tasks complete from validation alone.
 
 ## 3. Integrated candidate recheck (serialized board observation)
+
+**Sequenced by user decision (2026-09-28):** best timed after the
+theme-picker, power-key, and other current shell work lands, so the recheck
+runs against a more final integrated candidate — see `Status (2026-09-28)`
+in `proposal.md`.
 
 - [ ] 3.1 Reserve the board and record the integrated candidate identity with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system; systemctl is-active shell.service; systemctl show shell.service -p MainPID -p ExecStart; readlink -f /proc/$(systemctl show shell.service -p MainPID --value)/exe'`. Record any separately launched experimental compositor's unit/PID, resolved executable, and package explicitly; the default system closure alone does not identify it. Commit a sanitized transcript and native screenshots with their exact capture commands. Verify the candidate is identified separately from baseline and opt-in packages; no reflash is required merely to conduct this review.
 - [ ] 3.2 Recheck each P0/P1 finding against that candidate and commit `candidate-recheck.md` with before/after evidence and remaining owners. Reuse unchanged accepted physical observations. If a changed behavior requires new optical/finger evidence, use `python3 tools/capture-feature.py ux-review-round-2 --provenance real-touch --duration 30 --description 'Focused design review of changed handheld flows' --output-dir docs/evidence/ux-review-round-2` during a coordinated operator session, inspect the footage, and record its actual limits. If unavailable, mark those claims UNVERIFIED and preserve the acceptance work with its runtime owner; do not silently waive it.

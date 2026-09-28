@@ -1,3 +1,13 @@
+## Status (2026-09-28)
+
+**KEEP.** Per the user's "stale as suggested" decision on
+`docs/closeout/stale-triage.md`, pick this up after the current shell work
+lands, consolidating the existing informal reviews
+(`docs/design/webos-polish-review.md`, `docs/design/shell-polish-review-2026-09.md`,
+`docs/design/handheld-shell/visual-gap-audit.md`) into this change's own
+`review-round-2/` deliverables rather than re-critiquing from scratch. See
+the "Decisions" section of the triage doc.
+
 ## Why
 
 A working launcher, keyboard, and card mechanism do not yet tell us whether the handheld feels coherent, discoverable, and refined in everyday use. The first UX plan is archived, but new card work needs a broader design critique against actual screens and journeys, with an explicit answer to what still separates this shell from the intended webOS-inspired experience.

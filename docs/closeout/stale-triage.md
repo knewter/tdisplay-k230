@@ -179,6 +179,26 @@ Small-to-Medium hardware session for group 3, best timed after the
 in-flight theme-picker/power-key/shell work this triage does not touch has
 landed, so the recheck is against a more final candidate.
 
+## Decisions (2026-09-28)
+
+The user decided "stale as suggested" — every recommendation above stands,
+none of the four changes is superseded or abandoned. Recorded here per the
+"if the user's decision goes that way" mechanism note below (which does not
+apply, since none of the four went to SUPERSEDE/ABANDON) and per
+`AGENTS.md`'s instruction to record decisions with the change:
+
+| Change | Decision | Note |
+| --- | --- | --- |
+| `characterise-bootrom-usb-recovery` | **KEEP** | One short board session authorized later for task group 2 (the two power-cycle observations over J3). The optional destructive card-corruption test (task group 3) is skipped for now — deferred, not withdrawn; recorded as a `Status (2026-09-28)` note in the change's own `proposal.md` and an annotation on task group 3 in `tasks.md`. |
+| `the-boot-shows-a-computational-game-of-life` | **KEEP, QUEUED** | Stays queued behind the current shell, theme, and power-key work; no task picked up now. Recorded as a `Status (2026-09-28)` note in `proposal.md` and an annotation at the top of `tasks.md`. |
+| `the-handheld-evaluates-qtquick-and-quickshell` | **PARKED** | Stays open; stop investing further build slots or work in it. The interrupted `nix build .#qtquick-software-probe` state (28/40 derivations, cleanly interrupted) stays exactly as documented in `docs/evidence/qtquick/minimal-probe-prebuild.md` — not re-derived, not built further. Recorded as a `Status (2026-09-28)` note in `proposal.md` and an annotation on task 1.1 in `tasks.md`. |
+| `the-handheld-gets-a-design-and-ux-review` | **KEEP** | Picked up after the current shell work lands, consolidating the existing informal reviews (`docs/design/webos-polish-review.md`, `docs/design/shell-polish-review-2026-09.md`, `docs/design/handheld-shell/visual-gap-audit.md`) into this change's own `review-round-2/` deliverables rather than re-critiquing from scratch. Recorded as a `Status (2026-09-28)` note in `proposal.md` and annotations on task groups 1 and 3 in `tasks.md`. |
+
+No task box in any of the four changes was ticked as part of recording these
+decisions; none of the four required work was actually performed today, and
+none is archived, merged, pushed, or run on the board by this decision
+record alone.
+
 ## On recording an abandonment, if the user chooses SUPERSEDE/ABANDON later
 
 None of the four is recommended for SUPERSEDE/ABANDON here, but if the user's

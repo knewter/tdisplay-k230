@@ -1,3 +1,8 @@
+**Queued by user decision (2026-09-28):** this whole change stays open but
+unstarted behind the current shell, theme, and power-key work — see
+`Status (2026-09-28)` in `proposal.md`. No task below is deferred
+individually; the entire change is sequenced after that work lands.
+
 ## 1. Prerequisite and engine
 
 - [ ] 1.1 Consume the separate static splash-to-Linux repair result as a prerequisite and record its before/after physical evidence; verify the prior wrapped/color-swapped first-modeset case is absent before enabling animation, without modifying that repair in this change.

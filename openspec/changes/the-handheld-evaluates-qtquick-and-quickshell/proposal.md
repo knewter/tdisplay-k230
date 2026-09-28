@@ -1,3 +1,14 @@
+## Status (2026-09-28)
+
+**PARKED**, per the user's "stale as suggested" decision on
+`docs/closeout/stale-triage.md`. Keep this change open — it is not
+abandoned and no decision for or against Qt Quick apps has been reached —
+but stop investing further build slots or work in it for now. The
+interrupted `nix build .#qtquick-software-probe` state (28/40 required
+derivations cached, cleanly interrupted rather than failed) stays documented
+exactly as recorded in `docs/evidence/qtquick/minimal-probe-prebuild.md`;
+that record is not to be re-derived or built further under this decision.
+
 ## Why
 
 We cannot yet tell whether Qt Quick apps or a Quickshell UI would feel responsive on this handheld. Source research identifies a CPU-rendered route, but a working desktop example does not establish the device's memory, touch, frame cost or recovery behavior.

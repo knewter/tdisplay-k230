@@ -5,6 +5,13 @@ source/store identities and explicit host, injected-input and physical labels.
 
 ## 1. Build the minimal Qt Quick and baseline clients
 
+**Parked by user decision (2026-09-28):** stop investing further build slots
+or work in this change for now — see `Status (2026-09-28)` in
+`proposal.md`. Task 1.1 below stays unticked and its interrupted build state
+(28/40 derivations, cleanly interrupted) remains documented exactly as-is in
+`docs/evidence/qtquick/minimal-probe-prebuild.md`; do not resume the build
+under this decision.
+
 - [ ] 1.1 Package the opt-in primitive Qt Quick software probe, including editable text and unsupported-effect negative control; reserve the build slot and verify `nix build .#qtquick-software-probe --max-jobs 1 --cores 4 --no-link --print-out-paths`. Retain configure/QV4/cache mode, build time, Qt/Wayland identities and `nix path-info -rsS PROBE_OUT`; a failed build is retained, not a physical result.
 - [ ] 1.2 Add the equivalent small SHM baseline client with identical viewport, content and scripted motion; verify `nix build .#qtquick-shm-baseline --max-jobs 1 --cores 4 --no-link --print-out-paths` and host scene/output fixtures with `python3 tests/test_qtquick_probe_scene.py`.
 

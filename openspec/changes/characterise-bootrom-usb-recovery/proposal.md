@@ -1,3 +1,13 @@
+## Status (2026-09-28)
+
+**KEEP**, per the user's "stale as suggested" decision on
+`docs/closeout/stale-triage.md`. Schedule one short board session for task
+group 2 (the two power-cycle observations over J3: card removed, and
+SW3/BOOT0 held). The optional destructive card-corruption test in task group
+3 is **skipped for now** — see the note on that task group below; it is not
+withdrawn, only deferred, and remains conditional on task group 2's result if
+it is picked up later.
+
 ## Why
 
 The completed U-Boot UMS change proves that a running stage 1 can expose the

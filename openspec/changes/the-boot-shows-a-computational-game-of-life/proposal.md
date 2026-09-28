@@ -1,3 +1,10 @@
+## Status (2026-09-28)
+
+**KEEP, QUEUED** behind the current shell, theme, and power-key work, per the
+user's "stale as suggested" decision on `docs/closeout/stale-triage.md`. No
+task here is being actively picked up while that work is in flight; see the
+"Decisions" section of the triage doc.
+
 ## Why
 
 The current splash handoff preserves a static image into Linux, but the first

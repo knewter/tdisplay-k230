@@ -11,6 +11,12 @@
 
 ## 3. Characterise the recovery tool conditionally
 
+**Deferred by user decision (2026-09-28):** the optional destructive
+card-corruption test below is skipped for now — see `Status (2026-09-28)` in
+`proposal.md` and the "Decisions" section of `docs/closeout/stale-triage.md`.
+Task group 2 (the board session) remains authorized; this group stays open
+and conditional, not ticked, and is not scheduled alongside it.
+
 - [ ] 3.1 If a BootROM device appears, pin and document the `k230_flash` source/tool version and inspect its help and target-selection behavior.
 - [ ] 3.2 On a disposable card, use the reader to prepare and verify a nonbootable stage-1 region while retaining the known-good card untouched. Enter BootROM recovery with that disposable card, confirm its target identity, then use the pinned tool to write the unmodified known-good image; record the recovered image hash, command, duration, and tool output. If safety prerequisites are absent, leave this task incomplete and record why.
 - [ ] 3.3 Reboot and verify serial boot plus image/hash evidence from the recovered card; a successful tool exit without a boot is insufficient. If the write was unsafe or unattempted, leave recovery verification incomplete.
