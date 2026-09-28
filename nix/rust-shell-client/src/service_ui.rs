@@ -4,8 +4,8 @@
 use crate::{
     navigation::{list_top, GRID_BOTTOM_INSET},
     render::{
-        settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H,
-        SETTINGS_ROW_H,
+        settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
+        POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
@@ -185,7 +185,7 @@ pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
 /// nothing is hit-tested at or below `panel_travel` today), so a drag
 /// starting here can never race a list scroll or a Settings control.
 pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings)
+    matches!(route, Route::Shade | Route::Settings | Route::Power)
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
@@ -292,7 +292,7 @@ pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
 /// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
 /// outside a sheet does everywhere else.
 pub fn backdrop_tap(route: Route, start: (f64, f64), end: (f64, f64), panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings)
+    matches!(route, Route::Shade | Route::Settings | Route::Power)
         && start.1 >= panel_travel
         && end.1 >= panel_travel
         && (end.0 - start.0).abs() <= 18.0
@@ -691,6 +691,38 @@ pub fn panel_intent(
             }
             None
         }
+        Route::Power => {
+            if dx.abs() > 18.0 || dy.abs() > 18.0 {
+                return None;
+            }
+            if let Some(confirm) = &view.confirmation {
+                if Instant::now() >= confirm.expires_at {
+                    return None;
+                }
+                if (POWER_CONFIRM_Y..POWER_CONFIRM_Y + POWER_BUTTON_H).contains(&end.1) {
+                    return Some(PanelIntent::Request(if end.0 < w / 2.0 {
+                        ServiceRequest::PowerCancel(confirm.token.clone())
+                    } else {
+                        ServiceRequest::PowerConfirm(confirm.token.clone())
+                    }));
+                }
+                return None;
+            }
+            if (POWER_REBOOT_Y..POWER_REBOOT_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
+                    PowerAction::Reboot,
+                )));
+            }
+            if (POWER_OFF_Y..POWER_OFF_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
+                    PowerAction::Poweroff,
+                )));
+            }
+            if (POWER_CANCEL_Y..POWER_CANCEL_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Hide);
+            }
+            None
+        }
         Route::Settings => {
             if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY {
                 return Some(PanelIntent::Hide);
@@ -759,6 +791,44 @@ pub fn panel_intent(
 mod tests {
     use super::*;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
+
+    #[test]
+    fn power_sheet_requires_a_second_explicit_confirmation_tap() {
+        let mut view = ServiceView::default();
+        let reboot = (284.0, POWER_REBOOT_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, reboot, reboot, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot)))
+        );
+        let dismiss = (284.0, POWER_CANCEL_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, dismiss, dismiss, 568, 1232, &view),
+            Some(PanelIntent::Hide)
+        );
+        assert!(backdrop_tap(
+            Route::Power,
+            (284.0, 850.0),
+            (284.0, 850.0),
+            402.0,
+        ));
+        view.confirmation = Some(Confirmation {
+            token: "test-token".into(),
+            action: PowerAction::Reboot,
+            label: "Restart?".into(),
+            expires_at: Instant::now() + std::time::Duration::from_secs(30),
+        });
+        assert_eq!(panel_intent(Route::Power, reboot, reboot, 568, 1232, &view), None);
+        let cancel = (120.0, POWER_CONFIRM_Y + 32.0);
+        let confirm = (430.0, POWER_CONFIRM_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, cancel, cancel, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerCancel("test-token".into())))
+        );
+        assert_eq!(
+            panel_intent(Route::Power, confirm, confirm, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerConfirm("test-token".into())))
+        );
+    }
 
     #[test]
     fn close_drag_progress_is_one_at_start_and_zero_at_full_travel() {

@@ -75,7 +75,7 @@ fn tray_backdrop_alpha(progress: f64, target: f64) -> f64 {
 /// math -- black premultiplies to `(0, 0, 0, alpha)` at any alpha, so this
 /// is one straight byte-only pass, no allocation.
 fn apply_tray_backdrop(canvas: &mut [u8], route: Route, progress: f64) {
-    if !matches!(route, Route::Settings | Route::Shade) {
+    if !matches!(route, Route::Settings | Route::Shade | Route::Power) {
         return;
     }
     let alpha_byte = (tray_backdrop_alpha(progress, 0.35) * 255.0).round() as u8;
@@ -1474,8 +1474,24 @@ pub fn panel_travel_height(
         Route::Shade => h * 0.65,
         Route::Drawer => h * 0.81,
         Route::Settings => settings_panel_h(h, chooser, services),
+        Route::Power => power_panel_h(h, services),
         Route::Hide => h,
     }
+}
+
+pub const POWER_REBOOT_Y: f64 = 132.0;
+pub const POWER_OFF_Y: f64 = 218.0;
+pub const POWER_CANCEL_Y: f64 = 304.0;
+pub const POWER_CONFIRM_Y: f64 = 432.0;
+pub const POWER_BUTTON_H: f64 = 68.0;
+
+fn power_panel_h(available_h: f64, services: Option<&ServiceView>) -> f64 {
+    let natural: f64 = if services.is_some_and(|view| view.confirmation.is_some()) {
+        530.0
+    } else {
+        402.0
+    };
+    natural.min(available_h)
 }
 
 fn scene(
@@ -1518,6 +1534,7 @@ fn scene(
     let panel_h = match route {
         Route::Shade => h * 0.65,
         Route::Settings => settings_panel_h(h - panel_y, chooser, services),
+        Route::Power => power_panel_h(h - panel_y, services),
         _ => h - panel_y,
     };
     // No backdrop dim is painted here. `scene()` shapes the panel's *opaque*
@@ -1544,15 +1561,16 @@ fn scene(
         Route::Drawer => "launcher",
         Route::Shade => "notifications",
         Route::Settings => "controls",
+        Route::Power => "controls",
         Route::Hide => "launcher",
     };
     let style = visual_style(theme, section);
     let panel_brush = theme_brush(theme, section, "background").or_else(|| {
-        (route == Route::Settings)
+        matches!(route, Route::Settings | Route::Power)
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
-    if matches!(route, Route::Drawer | Route::Shade | Route::Settings) {
+    if matches!(route, Route::Drawer | Route::Shade | Route::Settings | Route::Power) {
         // Preserve the authored translucent brush over an opaque theme
         // plate, rather than letting live card text ghost through apps.
         // Originally Drawer-only; any theme can author sub-1.0 alpha on
@@ -1592,6 +1610,7 @@ fn scene(
         Route::Drawer => "All apps",
         Route::Shade => "Notifications",
         Route::Settings => "Settings",
+        Route::Power => "Power",
         Route::Hide => return,
     };
     if route == Route::Drawer {
@@ -2176,6 +2195,44 @@ fn scene(
                         settings_confirm_layout(layout.poweroff_bottom).bottom
                     });
                 text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
+            }
+        }
+        Route::Power => {
+            text(
+                cr, "Choose what happens next", 28.0, 91.0, w - 56.0, 20.0, style.muted,
+            );
+            for (label, y) in [
+                ("Restart…", POWER_REBOOT_Y),
+                ("Power off…", POWER_OFF_Y),
+                ("Cancel", POWER_CANCEL_Y),
+            ] {
+                service_card(
+                    cr, theme, "controls", 24.0, y, w - 48.0, POWER_BUTTON_H, false,
+                );
+                text(cr, label, 44.0, y + 19.0, w - 88.0, 24.0, style.text);
+            }
+            if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
+                text(cr, &confirm.label, 28.0, 401.0, w - 56.0, 19.0, style.text);
+                service_card(
+                    cr, theme, "controls", 24.0, POWER_CONFIRM_Y,
+                    w - 48.0, POWER_BUTTON_H, true,
+                );
+                text(
+                    cr, "Cancel", 44.0, POWER_CONFIRM_Y + 19.0,
+                    w / 2.0 - 44.0, 22.0, style.muted,
+                );
+                text(
+                    cr, "Confirm", w / 2.0 + 20.0, POWER_CONFIRM_Y + 19.0,
+                    w / 2.0 - 44.0, 22.0, style.error,
+                );
+            }
+            if let Some(message) = services.and_then(|view| view.message.as_deref()) {
+                let y = if services.is_some_and(|view| view.confirmation.is_some()) {
+                    507.0
+                } else {
+                    385.0
+                };
+                text(cr, message, 28.0, y, w - 56.0, 17.0, style.muted);
             }
         }
         Route::Hide => {}
@@ -3906,6 +3963,7 @@ mod tests {
             ("drawer", Route::Drawer, None),
             ("shade", Route::Shade, None),
             ("settings", Route::Settings, None),
+            ("power", Route::Power, None),
             // Task: tap-to-apply (2026-09-25) merged the old "themes"
             // (theme carousel only) and "preview" (background carousel
             // only, its own separate page) fixtures into this one --

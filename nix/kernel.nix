@@ -101,6 +101,28 @@ buildLinux (args // {
       # depends on them any more, which is the entire point -- do not add
       # them back.
 
+      # Vendor PMU input path, adapted from Xinyuan-LILYGO/T-Display-K230
+      # patch 0064 at 9991ebe362bdd0b21f880545ad0c325ff21eedce.
+      # Only input edges are ported: the vendor 5-second automatic shutdown
+      # and system-off callback would bypass the shell confirmation sheet.
+      cp ${../nix/patches/k230-pmu-pwrkey.c} drivers/input/misc/k230-pmu-pwrkey.c
+      test "$(tail -n 1 drivers/input/misc/Kconfig)" = endif
+      sed -i '$d' drivers/input/misc/Kconfig
+      cat >> drivers/input/misc/Kconfig <<'EOK'
+
+config INPUT_K230_PMU_PWRKEY
+	tristate "Kendryte K230 PMU power key"
+	depends on OF
+	depends on ARCH_CANAAN || COMPILE_TEST
+	help
+	  Report PMU INT0 power key edges through the Linux input subsystem.
+
+endif
+EOK
+      cat >> drivers/input/misc/Makefile <<'EOM'
+obj-$(CONFIG_INPUT_K230_PMU_PWRKEY) += k230-pmu-pwrkey.o
+EOM
+
       # goodix_berlin, backported from v6.12. The pinned 6.6 tree has only
       # the older GT9xx goodix.c. See docs/evidence/gt9895-touch.md -- note
       # this driver does NOT match the GT9895 upstream, so whether it can
@@ -677,6 +699,7 @@ EOM
     # yielded no /dev/uinput in the first shell image.  Build it in so no
     # boot.kernelModules entry or module-store lookup is needed.
     INPUT_MISC = yes;
+    INPUT_K230_PMU_PWRKEY = yes;
     # /dev/uinput lets the shell change inject touches at known panel
     # coordinates with evemu and exercise compositor -> keyboard -> terminal
     # unattended. A software proxy only: the touch requirement still closes

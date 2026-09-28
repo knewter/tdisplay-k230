@@ -1809,7 +1809,7 @@ impl ShellClient {
                 self.submit_service(ServiceRequest::RefreshNotifications);
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
-            Route::Settings => {
+            Route::Settings | Route::Power => {
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             _ => {}
@@ -2572,6 +2572,13 @@ impl ShellClient {
         }
         self.reveal.clear();
         self.panel_close.cancel();
+        if route == Route::Power {
+            // A key hold starts a fresh decision; a token left by Settings
+            // must never appear as a ready-to-confirm hardware action.
+            self.service_view.confirmation = None;
+            self.service_view.message = None;
+            self.renderer.set_services(self.service_view.clone());
+        }
         if route != Route::Settings && self.wifi_view.page != WifiPage::Closed {
             if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
                 self.wifi_worker.cancel(id);
@@ -3283,7 +3290,9 @@ impl TouchHandler for ShellClient {
                         && drawer_close_drag_zone(pos.1, self.height, self.nav.scroll);
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
-                } else if matches!(self.route, Route::Shade | Route::Settings) && self.input_ready {
+                } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
+                    && self.input_ready
+                {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
                     let stopped_coast = self.notification_coast.stop();
@@ -3830,7 +3839,7 @@ impl TouchHandler for ShellClient {
                         self.dirty = true;
                     }
                 }
-            } else if matches!(self.route, Route::Shade | Route::Settings)
+            } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
                 && self.input_ready
                 && self.panel_start.is_some_and(|(start_id, _)| start_id == id)
                 && (self.panel_close.tracking() || self.panel_close_candidate)

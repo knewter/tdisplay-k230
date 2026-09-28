@@ -14,6 +14,7 @@
 
 let
   cfg = config.k230.shell;
+  powerKeyd = pkgs.callPackage ./power-keyd.nix { };
 
   # Xwayland off: 55 fewer riscv64 derivations and no GTK 3 / CUPS / Avahi
   # tail, at the cost that no X11 application can ever run on this board.
@@ -719,6 +720,15 @@ in
       '';
     };
 
+    powerKeyTrial = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Enable the PMU power-key gesture service after the input-only kernel
+        has passed real press/release proof on the physical board.
+      '';
+    };
+
     reducedMotion = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -1034,6 +1044,32 @@ in
         Group = "shell";
         WorkingDirectory = config.users.users.shell.home;
         ExecStart = "${rustShell}/bin/k230-shell-rust --serve";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    # Ignore logind's default action even for the input-only physical trial;
+    # otherwise the first observed KEY_POWER event could shut down Linux.
+    services.logind.settings.Login = lib.mkIf cfg.coherentShell {
+      HandlePowerKey = "ignore";
+      HandlePowerKeyLongPress = "ignore";
+    };
+
+    systemd.services.shell-power-key = lib.mkIf (cfg.coherentShell && cfg.powerKeyTrial) {
+      description = "PMU key display and power-sheet gestures";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-ui.service" ];
+      after = [ "shell.service" "shell-ui.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        ExecStart = "${powerKeyd}/bin/k230-power-keyd --swaymsg ${sway}/bin/swaymsg";
         Restart = "on-failure";
         RestartSec = 1;
         UMask = "0077";
