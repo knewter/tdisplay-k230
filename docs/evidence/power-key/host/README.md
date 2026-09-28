@@ -34,6 +34,12 @@ library and 22 binary tests, including the power-sheet confirmation hit test.
 `/nix/store/lai8gf1awj7732402jxlj5lgmrwaasjz-k230-power-keyd` and
 `nix build .#handheld-shell-rust` produced
 `/nix/store/dwik36s7lfrj1g5m9yq04j9jzqdkxprf-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
+`nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`
+produced
+`/nix/store/pj7yp47yms118cwhi4h7nl7d8acivha1-nixos-system-nixos-26.11.20260919.20b1ddd`.
+This is a host-built candidate closure, not an installed system or board
+observation. The `powerKeyTrial` service flag remains off by default pending
+physical PMU input proof.
 `python3 tests/test_device_settings.py` passed nine backend tests covering
 request-before-confirm, cancel, denial, expiry and the action allowlist.
 The unrestricted Cargo integration-test command currently fails in an
