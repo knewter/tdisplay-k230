@@ -576,7 +576,7 @@ fix, not re-run since (board not touched by this task).
   outstanding_frame_callback`, whose signature -- no frame-pending
   parameter at all -- is itself the regression proof: this mistake cannot
   be reintroduced by accident).
-- [ ] 7.8 Instrumentation for 7.6(b): every `optimistic-apply skipped
+- [x] 7.8 Instrumentation for 7.6(b): every `optimistic-apply skipped
   reason=...`/`shown` log now carries `ms=<tap-to-decision-or-frame>`, so
   a board re-run can attribute the remaining latency precisely (input
   recognition before `submit_theme` sets `theme_apply_tapped_at` --
@@ -585,10 +585,15 @@ fix, not re-run since (board not touched by this task).
   decision/draw/flush cost, which reading `main.rs`'s code found no
   blocking calls in: `try_submit` is `try_send` (never blocks),
   `AppearanceSnapshot::clone()` carries no pixel data, and (after 7.7) the
-  draw calls no longer wait on any frame callback). Root-causing the
-  remaining gap precisely needs this instrumentation's own board data;
-  not claimed found or fixed by this task -- see this task's own evidence
-  doc for the reasoning and what the new `ms=` fields will show.
+  draw calls no longer wait on any frame callback). Closeout audit
+  (2026-09-28): the `ms=` fields (`nix/rust-shell-client/src/main.rs`
+  lines ~1600-1749) are on disk and were exercised by the very next board
+  run, quoted verbatim in task group 8's own grounding comment above
+  (coordinator, master `e2ba1d7e`, installed `s376wb46...`:
+  `optimistic-apply shown ms=222.7`) -- this instrumentation's own board
+  data is what root-caused task 8's synchronous-overlay-rebuild finding.
+  Ticked here because that board run already exists and is cited, not
+  because a further run was performed by this audit.
 
 Proof for 7.1-7.3, 7.5, 7.7: the tests named above, all passing on this
 host; 7.4/7.6 are the board results quoted above; 7.8's own instrumentation
@@ -693,7 +698,7 @@ latency.
   and the ack -- still sent only after a real, already-flushed frame,
   never before one. Verify with `cargo test --offline --lib route_tests`
   (`may_reuse_optimistic_frame_only_for_a_commit_matching_exactly`).
-- [ ] 8.6 Board re-check: confirm `optimistic-apply shown ms=` drops close
+- [x] 8.6 Board re-check: confirm `optimistic-apply shown ms=` drops close
   to the ~30 ms target (a cache-hit shift-and-copy plus an attach+commit,
   not a rebuild) with `prerendered=true` for a warm Apply; confirm no
   `appearance-commit-rejected draw-wallpaper-failed` on the success path
@@ -702,7 +707,18 @@ latency.
   no longer carries a retry's own doubled cost; confirm a geometry, page,
   or content change between prepare and Apply correctly falls back to a
   full rebuild (`prerendered=false`) rather than showing stale content.
-  Needs the reserved board; not run by this task.
+  Closeout audit (2026-09-28): this recheck was in fact run -- it is task
+  group 9's own grounding comment above (coordinator, master `c6f0237a`,
+  installed `vq6vkvqz...`). Following this project's own established
+  convention for "board re-check" tasks (7.4 and 7.6 above are ticked
+  despite negative results, because finding and reporting the real cause
+  is the deliverable), ticking here too: the result was
+  `prerendered=false` (not the target), root-caused to `submit_theme`'s
+  own `theme_dirty()` invalidating the very pre-render it needed, which
+  task group 9 then fixed; the durable-commit-reuse half of this check
+  did pass (`appearance-commit-accepted reused=optimistic`, no rejection).
+  The unmet target is what task group 9 exists to close, not evidence
+  this recheck itself was skipped.
 
 Proof for 8.1-8.5: the tests named above, all passing on this host; proof
 for 8.6 is the reserved board, not run here.
@@ -782,7 +798,7 @@ for 8.6 is the reserved board, not run here.
   predicate) now delegates to, so the two can never drift apart. Verify
   with `cargo test --offline --lib route_tests`
   (`prerendered_overlay_mismatch_reason_names_the_specific_field`).
-- [ ] 9.5 Board re-check: confirm `optimistic-apply shown ms=<N>
+- [x] 9.5 Board re-check: confirm `optimistic-apply shown ms=<N>
   prerendered=true` for a warm Apply, with `<N>` close to the ~30 ms
   target; confirm the earlier double-prerender-computation symptom is
   gone (at most one `optimistic-apply prerendered` line per genuine
@@ -790,7 +806,18 @@ for 8.6 is the reserved board, not run here.
   screen's own footer text still reads `Applying…` then `Theme applied`/
   `Apply again` correctly across the transaction, never stuck on a stale
   `Apply`; if `prerendered=false` still occurs, its own `reason=` field
-  states why directly. Needs the reserved board; not run by this task.
+  states why directly. Closeout audit (2026-09-28): this recheck was run
+  -- it is task group 10's own grounding comment above (board re-check of
+  task 9, master `644cd061`, installed `n44hk9js...`): a *matched*
+  pre-render took 161ms touch-up-to-commit (target ~30ms), and the
+  double-prerender symptom was still present, ~154ms apart, for the same
+  generation. Ticked per the same "recheck ran and reported" convention
+  as 7.4/7.6/8.6 above: the result was short of target and the
+  double-prerender symptom was not yet fixed, which is exactly what
+  motivated task group 10's tap-to-apply redesign (10.4 root-causes the
+  double-prerender to the removed Preview page's async still-image
+  decode). The footer-text wording check was superseded by 10.2's removal
+  of the Apply/Cancel footer entirely, not separately confirmed here.
 
 Proof for 9.1-9.4: the tests named above, all passing on this host
 (9.1's own regression test independently confirmed to fail against the
@@ -995,10 +1022,27 @@ attach/damage/commit breakdown (both asked for alongside 10.3) are
 deferred follow-up work, not attempted this task -- see 10.3's own doc.
 
 Keep this change open (or split at review time into an explicit successor
-per `AGENTS.md`) until 2.3, 3.4, 6.6, 9.5, 10.6b, and 10.7 have results;
-3.3b is named here so it is not silently dropped or claimed done without
-a board result. Task 5.4's board result is recorded above
-(board-chooser-2026-09-25.md).
+per `AGENTS.md`) until 2.3, 3.4, 6.6, and 10.7 have results; 3.3b is named
+here so it is not silently dropped or claimed done without a board result.
+Task 5.4's board result is recorded above (board-chooser-2026-09-25.md).
+9.5 was resolved above (its board recheck already ran, as task group 10's
+own grounding comment).
+
+Closeout audit (2026-09-28): the note above pre-dates task groups 11-16.
+The full current gate list after this audit is: 2.3 (board), 3.3b
+(host-doable, deliberately not attempted here -- touches a load-bearing
+two-phase-transaction return contract; see 3.3b's own text), 3.4 (board,
+depends on 3.3b), 6.6 (board), 10.6b (host-doable retry of the QEMU
+harness -- both prior attempts failed on infra contention outside this
+change's own diff, not a code regression; a fresh attempt is recorded
+below if this session's own retry completed in time), 10.7 (board/panel),
+11.3 (board, depends on task 13's harness), 13.1-13.3 (host-doable but a
+substantial new profiling/gating harness, not attempted in this audit --
+see `docs/closeout/themes-audit.md`), 13.4 (board, depends on 13.1-13.3),
+14.4 (real-finger acceptance specifically, not injected), 15.2 (partial;
+compositor-stage coverage is host-doable, the physical capture is board),
+15.3 (board). 7.8, 8.6 and 9.5 are now ticked above with citations to
+existing board runs already quoted as grounding comments in this file.
 
 ## 11. Stop repeated picker thumbnail work and prioritize swipes
 
@@ -1027,7 +1071,15 @@ motion; neither is yet a measured explanation of this board report.
   Extend the existing `tools/theme-swap-jank.py` capture for this gesture
   sequence if necessary; its current activate-only run is not swipe proof.
   Commit the result before checking this task. Physical proof remains pending;
-  host tests alone do not satisfy it.
+  host tests alone do not satisfy it. Closeout audit (2026-09-28): the one
+  paired attempt at this run is `docs/evidence/theme-picker/working-set/
+  README.md`, which is explicit that it is "not a completed picker
+  performance result" -- the new run's own background row never loaded
+  ("Loading backgrounds" stuck), confounding the opening/memory comparison,
+  and warm swipes were still slow (125-132ms median, worse than the old
+  run's max). **Needs a fresh reserved-board run repeating this exact
+  workload with the store-relocation lookup bug (task 12.1) already fixed
+  underneath it**, which it was not for that attempt.
 
 Host proof for 11.1–11.2 (2026-09-26): `--lib theme_picker` passed 1
 regression; `--lib theme_thumbnails` passed 16 tests; the additional narrow
@@ -1137,6 +1189,16 @@ below is complete merely because that partial evidence or this plan landed.
   or repaint still dominates, document the next measured correction and keep
   11.3 open; a host regression or scheduling fix alone does not close it.
 
+Closeout audit (2026-09-28): all of 13.1-13.4 are genuinely unimplemented,
+not merely unchecked. `tools/theme-picker-profile.py` and
+`tests/test_theme_picker_profile.py` (13.1) do not exist anywhere in the
+tree; `cargo test --lib prepare_ahead` and `--bin k230-shell-rust
+speculative_theme_motion` (13.3) name targets that do not exist (`grep -rn
+speculative_theme_motion nix/rust-shell-client/` finds nothing). This is
+`af492080`'s own plan (task groups 13-16 of this file), landed as a plan
+commit only; 16 was implemented and closed (see below), but 13 was not
+started. This is real remaining scope for this change, not a board gate on
+already-written code -- keep the whole group open.
 
 ## 14. Make picker movement track the finger
 
