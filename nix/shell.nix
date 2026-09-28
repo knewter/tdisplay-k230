@@ -334,6 +334,16 @@ let
         $out/games/lib/nethackdir/nethack $out/games/lib/nethackdir/recover
     '';
   });
+  # gettext's autopoint runs on the build host and invokes xz from PATH.
+  # With galculator's non-strict cross dependencies, the riscv64 xz can come
+  # first, making autoreconf fail with Exec format error. Put the native xz
+  # first for this build phase; leave galculator's target closure unchanged.
+  galculatorFixed = pkgs.galculator.overrideAttrs (old: {
+    preAutoreconf = (old.preAutoreconf or "") + ''
+      export PATH="${lib.getBin pkgs.buildPackages.xz}/bin:$PATH"
+      test "$(command -v xz)" = "${lib.getExe' pkgs.buildPackages.xz "xz"}"
+    '';
+  });
   nethackDesktop = pkgs.makeDesktopItem {
     name = "k230-nethack";
     desktopName = "NetHack";
@@ -1690,7 +1700,7 @@ in
       pkgs.viewnior
       zathuraApp
       # Utilities
-      pkgs.galculator
+      galculatorFixed
       pkgs.btop
       weatherScript
       weatherDesktop
