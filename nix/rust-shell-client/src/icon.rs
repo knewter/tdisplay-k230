@@ -1,8 +1,10 @@
 //! Bounded freedesktop icon lookup and native SVG/PNG decode. The renderer
 //! keeps decoded surfaces across frames; theme changes replace this cache.
+use crate::render::{color, FONT_FAMILY};
 use cairo::{Context, Format, ImageSurface};
 use gio::prelude::*;
 use glib::{KeyFile, KeyFileFlags};
+use pango::{EllipsizeMode, FontDescription};
 use std::{
     ffi::CString,
     fs::{self, File},
@@ -285,11 +287,21 @@ fn decode(path: &Path, size: i32) -> Option<ImageSurface> {
     ok.then_some(output)
 }
 
+/// Bound on `IconCache::labels` -- generous enough that one full drawer
+/// grid page (4 columns, `docs/design/app-drawer-review.md`) plus a bit of
+/// scroll overhang stays resident without every label evicting its
+/// neighbor on each frame, the same reasoning `CACHE_LIMIT` above already
+/// gives for icons.
+const LABEL_CACHE_LIMIT: usize = 48;
+
 pub struct IconCache {
     theme: String,
     roots: Vec<PathBuf>,
     entries: Vec<(String, Option<ImageSurface>)>,
     decode_count: u64,
+    /// Pre-rendered text labels, keyed by their exact (width, size, color,
+    /// text) -- see `paint_label`'s own doc for why this exists.
+    labels: Vec<(String, ImageSurface)>,
 }
 
 impl IconCache {
@@ -302,6 +314,7 @@ impl IconCache {
             roots: data_roots(),
             entries: Vec::new(),
             decode_count: 0,
+            labels: Vec::new(),
         }
     }
 
@@ -317,6 +330,9 @@ impl IconCache {
     }
     pub fn cache_count(&self) -> usize {
         self.entries.len()
+    }
+    pub fn label_cache_count(&self) -> usize {
+        self.labels.len()
     }
 
     #[cfg(test)]
@@ -346,6 +362,78 @@ impl IconCache {
         };
         cr.set_source_surface(surface, x, y).is_ok() && cr.paint().is_ok()
     }
+
+    /// A single-line, centered/ellipsized text label, shaped and rasterized
+    /// once per distinct `(width, size, rgb, value)` and blitted from then
+    /// on -- the same cache shape `paint` above already gives decoded
+    /// icons, extended to text. The Drawer's own grid bitmap
+    /// (`render::DrawerGridCache`) is itself only rebuilt when its catalog,
+    /// theme, width or search query changes, but every rebuild still
+    /// re-paints every visible label from scratch -- typing a search
+    /// character forces exactly this kind of rebuild, and most of the
+    /// remaining apps' labels did not change text between one keystroke
+    /// and the next, so this still saves real work there.
+    ///
+    /// `size` is quantized to whole pixels and `width` to whole pixels in
+    /// the cache key (not the paint position) so ordinary sub-pixel
+    /// layout offsets don't fragment the cache into one entry per position;
+    /// callers already pass a `width` fixed by tile geometry.
+    pub fn paint_label(
+        &mut self,
+        cr: &Context,
+        value: &str,
+        pos: (f64, f64),
+        width: f64,
+        size: f64,
+        rgb: u32,
+    ) -> bool {
+        let key = format!("{:.0}x{:.0}:{rgb:06x}:{value}", width.max(1.0), size);
+        if let Some(index) = self.labels.iter().position(|(entry, _)| entry == &key) {
+            let item = self.labels.remove(index);
+            self.labels.push(item);
+        } else {
+            if self.labels.len() == LABEL_CACHE_LIMIT {
+                self.labels.remove(0);
+            }
+            self.labels.push((key, render_label(value, width, size, rgb)));
+        }
+        let Some((_, surface)) = self.labels.last() else {
+            return false;
+        };
+        cr.set_source_surface(surface, pos.0, pos.1).is_ok() && cr.paint().is_ok()
+    }
+}
+
+/// Renders `value` (bold, centered, single-line-ellipsized) into its own
+/// small ARGB32 surface at `(0, 0)`, so `IconCache::paint_label` can cache
+/// and blit it thereafter. A blank (fully transparent) surface on any
+/// failure -- matching `decode`'s own "absent surface reads as absent,
+/// never as a panic" convention -- is simply an invisible label, not a
+/// crash.
+fn render_label(value: &str, width: f64, size: f64, rgb: u32) -> ImageSurface {
+    let w = (width.max(1.0)).ceil() as i32;
+    // A single bold line at `size` never exceeds this height even counting
+    // ascenders/descenders; generous rather than exact since any overflow
+    // would simply clip rather than corrupt neighboring pixels.
+    let h = (size * 1.6).max(1.0).ceil() as i32;
+    let fallback = || ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface");
+    let surface = ImageSurface::create(Format::ARgb32, w, h).unwrap_or_else(|_| fallback());
+    if let Ok(cr) = Context::new(&surface) {
+        let layout = pangocairo::functions::create_layout(&cr);
+        let mut font = FontDescription::new();
+        font.set_family(FONT_FAMILY);
+        font.set_absolute_size(size * f64::from(pango::SCALE));
+        font.set_weight(pango::Weight::Bold);
+        layout.set_font_description(Some(&font));
+        layout.set_text(value);
+        layout.set_width((width * f64::from(pango::SCALE)) as i32);
+        layout.set_alignment(pango::Alignment::Center);
+        layout.set_ellipsize(EllipsizeMode::End);
+        color(&cr, rgb, 1.0);
+        cr.move_to(0.0, 0.0);
+        pangocairo::functions::show_layout(&cr, &layout);
+    }
+    surface
 }
 
 impl Default for IconCache {
@@ -357,6 +445,28 @@ impl Default for IconCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn labels_are_cached_by_their_exact_key_and_bounded() {
+        let target = ImageSurface::create(Format::ARgb32, 200, 200).unwrap();
+        let cr = Context::new(&target).unwrap();
+        let mut cache = IconCache::new();
+
+        assert!(cache.paint_label(&cr, "Camera", (0.0, 0.0), 120.0, 20.0, 0xffffff));
+        assert_eq!(cache.label_cache_count(), 1);
+        assert!(cache.paint_label(&cr, "Camera", (0.0, 0.0), 120.0, 20.0, 0xffffff));
+        assert_eq!(cache.label_cache_count(), 1, "same key is a cache hit, not a new entry");
+
+        assert!(cache.paint_label(&cr, "Camera", (0.0, 0.0), 100.0, 20.0, 0xffffff));
+        assert_eq!(cache.label_cache_count(), 2);
+        assert!(cache.paint_label(&cr, "Gallery", (0.0, 0.0), 120.0, 20.0, 0xffffff));
+        assert_eq!(cache.label_cache_count(), 3);
+
+        for index in 0..(LABEL_CACHE_LIMIT + 10) {
+            cache.paint_label(&cr, &format!("App {index}"), (0.0, 0.0), 120.0, 20.0, 0xffffff);
+        }
+        assert_eq!(cache.label_cache_count(), LABEL_CACHE_LIMIT);
+    }
 
     #[test]
     fn names_and_bounds() {

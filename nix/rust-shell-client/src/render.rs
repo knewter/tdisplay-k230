@@ -2,13 +2,19 @@
 //! This first view uses real desktop names and explicit fallback artwork.
 use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
-    catalog::AppEntry,
+    catalog::{terminal_like, AppEntry},
     home_grid::{self, HomeSlot},
     home_screen::HomeScreen,
     icon::IconCache,
-    navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
+    navigation::{
+        self, list_top, panel_top, search_field_rect, search_keyboard_top, tile_rect, COLUMNS,
+        GRID_BOTTOM_INSET, ROW_HEIGHT, SEARCH_KEYBOARD_HEIGHT,
+    },
     service_data::{Control, ControlState, ControlValue, Priority},
-    service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP, SHADE_SLIDER_H, SHADE_SLIDER_TOP},
+    service_ui::{
+        filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
+        SHADE_SLIDER_H, SHADE_SLIDER_TOP,
+    },
     slider,
     splash::SplashStatus,
     theme_carousel,
@@ -37,7 +43,18 @@ use std::{fs::File, path::Path};
 /// blob-inventory / image-size change out of scope for a rendering-only fix.
 pub const FONT_FAMILY: &str = "DejaVu Sans";
 
-fn color(cr: &Context, rgb: u32, alpha: f64) {
+/// The drawer grid's own icon geometry (`docs/design/app-drawer-review.md`):
+/// a 64px icon (no plate/box around it -- see `paint_drawer`), single-line
+/// 14px label below.
+pub const DRAWER_ICON_SIZE: i32 = 64;
+/// The icon's own width in the grid math (a plain `f64` copy of
+/// `DRAWER_ICON_SIZE`, since `IconCache::paint`/`paint_label` want
+/// different numeric types for size).
+pub const DRAWER_ICON_CARD: f64 = DRAWER_ICON_SIZE as f64;
+/// Single-line app-name label font size -- 13-14px per the redesign.
+pub const DRAWER_LABEL_SIZE: f64 = 14.0;
+
+pub(crate) fn color(cr: &Context, rgb: u32, alpha: f64) {
     cr.set_source_rgba(
         f64::from((rgb >> 16) & 255) / 255.0,
         f64::from((rgb >> 8) & 255) / 255.0,
@@ -1472,7 +1489,11 @@ pub fn panel_travel_height(
     let h = f64::from(height);
     match route {
         Route::Shade => h * 0.65,
-        Route::Drawer => h * 0.81,
+        // Fills nearly the whole screen from its own small top inset
+        // (`navigation::panel_top`), not the old ~19%-of-height band --
+        // `docs/design/app-drawer-review.md` §2: "filling the screen from
+        // the top inset, with no black band above it."
+        Route::Drawer => h - navigation::panel_top(height),
         Route::Settings => settings_panel_h(h, chooser, services),
         Route::Power => power_panel_h(h, services),
         Route::Hide => h,
@@ -1494,6 +1515,382 @@ fn power_panel_h(available_h: f64, services: Option<&ServiceView>) -> f64 {
     natural.min(available_h)
 }
 
+/// Rounds only the top two corners, leaving the bottom edge square -- the
+/// Drawer's own sheet shape: bottom-anchored, its bottom edge sits at or
+/// past the physical screen edge, where a rounded corner would never be
+/// visible anyway.
+fn rounded_top(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
+    cr.new_sub_path();
+    cr.arc(
+        x + r,
+        y + r,
+        r,
+        std::f64::consts::PI,
+        3.0 * std::f64::consts::FRAC_PI_2,
+    );
+    cr.arc(x + w - r, y + r, r, -std::f64::consts::FRAC_PI_2, 0.0);
+    cr.line_to(x + w, y + h);
+    cr.line_to(x, y + h);
+    cr.close_path();
+}
+
+/// One frame's worth of Drawer catalog + search state, exactly as needed
+/// to know what the grid should show and whether the keyboard is up --
+/// `render::paint_drawer`'s own input, separate from the persistent
+/// `DrawerGridCache` it also takes (that one remembers the *painted*
+/// result across frames; this one is recomputed fresh every call, which is
+/// cheap -- see `service_ui::filter_app_indices`'s own doc).
+struct DrawerContent<'a> {
+    /// The catalog, filtered and in display order -- already computed by
+    /// the caller via `service_ui::filter_app_indices` so both the touch
+    /// layer (`main.rs`) and the paint layer agree on what "index 3" means
+    /// without either recomputing the filter independently.
+    apps: Vec<&'a AppEntry>,
+    search: &'a DrawerSearch,
+}
+
+/// A pre-rendered bitmap of the drawer grid's *entire* filtered content
+/// (every row, not just the visible ones), rebuilt only when what it would
+/// paint actually changes -- the filtered catalog, the active theme, the
+/// panel width, or the search query. Scrolling changes none of those, so
+/// an ordinary scroll/fling frame reuses this bitmap unchanged and
+/// `paint_drawer` only blits the visible slice, instead of repainting
+/// every tile every frame -- `docs/design/app-drawer-review.md`'s
+/// performance section, "pre-render the whole grid ... into a cached
+/// buffer whenever the catalog, theme or search changes."
+#[derive(Default)]
+pub struct DrawerGridCache {
+    key: Option<DrawerGridKey>,
+    surface: Option<ImageSurface>,
+    content_height: f64,
+    /// Bumped on every real rebuild -- test-only observability, the same
+    /// role `IconCache::decode_count`/`RendererCache::rebuild_count`
+    /// already play for their own caches.
+    rebuilds: u64,
+}
+
+#[derive(Clone, PartialEq)]
+struct DrawerGridKey {
+    /// Cloned display list, not indices into the live catalog: a rescan
+    /// that changes an app's icon/name at the same catalog index must
+    /// still invalidate this cache, which a plain index/length comparison
+    /// would miss.
+    apps: Vec<AppEntry>,
+    theme_generation: Option<String>,
+    width: u32,
+    query: String,
+}
+
+impl DrawerGridCache {
+    #[cfg(test)]
+    pub(crate) fn rebuilds(&self) -> u64 {
+        self.rebuilds
+    }
+
+    /// Ensures the cached bitmap matches `content`/`theme`/`width`,
+    /// rebuilding it first if not, then returns it alongside its content
+    /// height (rows painted * `ROW_HEIGHT`). The bitmap is in *content*
+    /// space: row 0 starts at bitmap `y = 0`, regardless of live scroll --
+    /// `paint_drawer` positions the blit using the caller's own `scroll`.
+    fn ensure(
+        &mut self,
+        content: &DrawerContent,
+        theme: Option<&AppearanceSnapshot>,
+        width: u32,
+        height: u32,
+        icons: &mut IconCache,
+    ) -> (&ImageSurface, f64) {
+        let theme_generation = theme.map(|snapshot| snapshot.generation.clone());
+        let fresh = self.key.as_ref().is_some_and(|key| {
+            key.width == width
+                && key.theme_generation == theme_generation
+                && key.query == content.search.query
+                && key.apps.len() == content.apps.len()
+                && key.apps.iter().zip(content.apps.iter()).all(|(a, b)| a == *b)
+        });
+        if !fresh {
+            let rows = content.apps.len().div_ceil(COLUMNS).max(1);
+            let content_height = (rows as f64 * ROW_HEIGHT).max(1.0);
+            let surface = ImageSurface::create(
+                Format::ARgb32,
+                (width.max(1)) as i32,
+                content_height.ceil() as i32,
+            )
+            .unwrap_or_else(|_| {
+                ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface")
+            });
+            if let Ok(cr) = Context::new(&surface) {
+                // Passing `list_top(height)` as `tile_rect`'s own `scroll`
+                // cancels the header offset out of its `y` formula,
+                // leaving pure content-space row coordinates (row 0 at
+                // bitmap y=0) with no separate formula to keep in sync.
+                let offset = list_top(height);
+                for (index, app) in content.apps.iter().enumerate() {
+                    let (x, y, tile_w, _) = tile_rect(width, height, index, offset);
+                    paint_drawer_tile(&cr, theme, icons, x, y, tile_w, app);
+                }
+            }
+            self.surface = Some(surface);
+            self.content_height = content_height;
+            self.key = Some(DrawerGridKey {
+                apps: content.apps.iter().map(|app| (*app).clone()).collect(),
+                theme_generation,
+                width,
+                query: content.search.query.clone(),
+            });
+            self.rebuilds = self.rebuilds.wrapping_add(1);
+        }
+        (
+            self.surface.as_ref().expect("just ensured"),
+            self.content_height,
+        )
+    }
+}
+
+/// One tile's worth of content: an icon (no plate/box around it -- the
+/// redesign's own "just the icon, with its label below, on the sheet
+/// surface") and a single-line ellipsized label. Icon fallback (no
+/// resolvable icon) is a round, theme-tinted circle with the app's
+/// initial -- rare in practice (`docs/evidence/app-drawer/`'s real-icon
+/// screenshots), but still legible and on-theme when it happens.
+fn paint_drawer_tile(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    x: f64,
+    y: f64,
+    cell_w: f64,
+    app: &AppEntry,
+) {
+    let style = visual_style(theme, "launcher");
+    let icon_x = x + (cell_w - DRAWER_ICON_CARD) / 2.0;
+    let icon_y = y + 8.0;
+    let mut painted = app
+        .icon
+        .as_deref()
+        .is_some_and(|icon| icons.paint(cr, icon, DRAWER_ICON_SIZE, icon_x, icon_y));
+    // Board finding (2026-09-27): `Icon=mpv` (Video) and `Icon=foot`
+    // (Terminal) name real applications the bundled Yaru-based theme does
+    // not cover at all -- not a harness gap, a genuine resolution miss.
+    // Before falling all the way back to a plain letter circle, a
+    // terminal emulator or an app that runs inside one
+    // (`catalog::terminal_like`) gets one more try against a generic
+    // icon name real desktop themes do cover.
+    if !painted && terminal_like(&app.path) {
+        painted = icons.paint(cr, "utilities-terminal", DRAWER_ICON_SIZE, icon_x, icon_y);
+    }
+    if !painted {
+        // A tonal-container circle, not a faint tint: a low-alpha accent
+        // over this sheet's own dark background read as "dark and flat"
+        // (coordinator finding) rather than an intentional coloured
+        // badge, so this uses a much stronger fill of the theme's own
+        // accent colour, with the initial in a bright, guaranteed-
+        // contrasting colour on top (`style.text`, not the accent again --
+        // accent-on-accent would fight the very contrast a tonal
+        // container needs).
+        let radius = DRAWER_ICON_CARD / 2.0;
+        let cx = icon_x + radius;
+        let cy = icon_y + radius;
+        cr.new_sub_path();
+        cr.arc(cx, cy, radius, 0.0, 2.0 * std::f64::consts::PI);
+        color(cr, style.accent, 0.55);
+        let _ = cr.fill();
+        let initial = app
+            .name
+            .chars()
+            .next()
+            .unwrap_or('?')
+            .to_uppercase()
+            .to_string();
+        icons.paint_label(
+            cr,
+            &initial,
+            (icon_x, icon_y + (DRAWER_ICON_CARD - 24.0) / 2.0),
+            DRAWER_ICON_CARD,
+            24.0,
+            style.text,
+        );
+    }
+    let label_y = icon_y + DRAWER_ICON_CARD + 6.0;
+    icons.paint_label(
+        cr,
+        &app.name,
+        (x + 4.0, label_y),
+        (cell_w - 8.0).max(1.0),
+        DRAWER_LABEL_SIZE,
+        brush_rgb(theme, "menu", "text", style.text),
+    );
+}
+
+/// Renders the drawer's slim top handle, its pill-shaped search field, and
+/// -- while focused -- the compact search keyboard beneath it. Drawn
+/// directly every frame (cheap: a handful of small fixed-position shapes,
+/// unrelated to the app grid's own size), never through `DrawerGridCache`.
+fn paint_drawer_chrome(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    width: u32,
+    height: u32,
+    search: &DrawerSearch,
+) {
+    let style = visual_style(theme, "launcher");
+    let (hx, hy, hw, hh) = navigation::handle_rect(width, height);
+    rounded(cr, hx, hy, hw, hh, hh / 2.0);
+    color(cr, style.accent, 0.7);
+    let _ = cr.fill();
+
+    let (sx, sy, sw, sh) = search_field_rect(width, height);
+    rounded(cr, sx, sy, sw, sh, sh / 2.0);
+    // A flat colour, not a gradient brush: a rounded-pill path is already
+    // current here (`rounded` above), and `fill_brush` would clobber it
+    // with its own plain rectangle before filling, same reasoning as the
+    // sheet background below.
+    color(
+        cr,
+        brush_rgb(theme, "launcher", "search", palette_rgb_or(theme, "surface2", 0x2a2f3a)),
+        1.0,
+    );
+    let _ = cr.fill();
+    let label = if search.query.is_empty() {
+        "Search apps"
+    } else {
+        search.query.as_str()
+    };
+    let label_color = if search.query.is_empty() {
+        style.muted
+    } else {
+        style.text
+    };
+    text(cr, label, sx + 22.0, sy + sh / 2.0 - 9.0, sw - 44.0, 18.0, label_color);
+
+    if search.focused {
+        let ky = search_keyboard_top(height);
+        color(cr, palette_rgb_or(theme, "surface1", 0x1a1e26), 1.0);
+        cr.rectangle(0.0, ky, f64::from(width), SEARCH_KEYBOARD_HEIGHT);
+        let _ = cr.fill();
+        paint_search_keyboard(cr, theme, width, height, &style);
+    }
+}
+
+fn paint_search_keyboard(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    width: u32,
+    height: u32,
+    style: &VisualStyle,
+) {
+    for row in 0..3 {
+        for (ch, x, y, w, h) in navigation::keyboard_row_keys(row, width, height) {
+            service_card(cr, theme, "controls", x + 2.0, y, (w - 4.0).max(1.0), h, false);
+            centered_label(cr, &ch.to_string(), x, y + h / 2.0 - 12.0, w, 22.0, style.text);
+        }
+    }
+    let (left, right, side_w, y, h) = navigation::keyboard_control_row(width, height);
+    service_card(cr, theme, "controls", left, y, side_w, h, false);
+    centered_label(cr, "⌫", left, y + h / 2.0 - 12.0, side_w, 22.0, style.text);
+    let space_w = (right - side_w) - (left + side_w);
+    service_card(cr, theme, "controls", left + side_w, y, space_w, h, false);
+    centered_label(cr, "space", left + side_w, y + h / 2.0 - 9.0, space_w, 18.0, style.muted);
+    service_card(cr, theme, "controls", right - side_w, y, side_w, h, false);
+    centered_label(cr, "Done", right - side_w, y + h / 2.0 - 9.0, side_w, 18.0, style.accent);
+}
+
+/// The Drawer's whole paint: opaque themed sheet with rounded top corners,
+/// the handle/search chrome, and the (cached) grid, scrolled into view by
+/// blitting one slice of `DrawerGridCache` rather than repainting every
+/// tile -- see that struct's own doc.
+#[allow(clippy::too_many_arguments)]
+fn paint_drawer(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    progress: f64,
+    scroll: f64,
+    apps: &[AppEntry],
+    icons: &mut IconCache,
+    theme: Option<&AppearanceSnapshot>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
+    pressed: Option<usize>,
+) {
+    let w = f64::from(width);
+    let h = f64::from(height);
+    let panel_y = panel_top(height);
+    let radius = 28.0;
+    // `RendererCache::draw` always calls this at a fixed `progress: 1.0`
+    // and does its own cheap post-bake row-shift for the live drag/settle
+    // progress instead (see `scene`'s own doc); this translate only
+    // matters for a direct caller (`draw_shm`/`export_png`, or a test)
+    // that passes some other `progress` straight through.
+    let hidden = 1.0 - progress.clamp(0.0, 1.0);
+    cr.translate(0.0, hidden * (h - panel_y));
+
+    let style = visual_style(theme, "launcher");
+    // A flat opaque colour (`docs/design/app-drawer-review.md` §2: "an
+    // opaque theme surface colour"), not a gradient brush: `fill_brush`
+    // issues its own plain-rectangle path internally, which would
+    // overwrite the rounded-top path just set below before filling it.
+    rounded_top(cr, 0.0, panel_y, w, h - panel_y, radius);
+    color(
+        cr,
+        brush_rgb(theme, "launcher", "background", palette_rgb_or(theme, "background", 0x1e1e2e)),
+        1.0,
+    );
+    let _ = cr.fill();
+
+    paint_drawer_chrome(cr, theme, width, height, search);
+
+    let matched: Vec<usize> = filter_app_indices(apps, &search.query);
+    let content = DrawerContent {
+        apps: matched.iter().filter_map(|&i| apps.get(i)).collect(),
+        search,
+    };
+    let row_start = list_top(height);
+    let bottom = if search.focused {
+        search_keyboard_top(height)
+    } else {
+        h - GRID_BOTTOM_INSET
+    };
+    let (grid_surface, content_height) = grid_cache.ensure(&content, theme, width, height, icons);
+    let _ = cr.save();
+    cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
+    cr.clip();
+    let max_scroll = (content_height - (bottom - row_start)).max(0.0);
+    let clamped_scroll = scroll.clamp(0.0, max_scroll);
+    if cr
+        .set_source_surface(grid_surface, 0.0, row_start - clamped_scroll)
+        .is_ok()
+    {
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
+
+    if let Some(display_index) = pressed {
+        // `pressed` is already a *display* (filtered) index -- the same
+        // one `tile_rect`/`tile_at` use everywhere else -- so its position
+        // is just this call, no re-mapping through `matched` needed.
+        let (x, y, tile_w, _) = tile_rect(width, height, display_index, clamped_scroll);
+        if y + ROW_HEIGHT > row_start && y < bottom {
+            let cx = x + tile_w / 2.0;
+            let cy = y + 8.0 + DRAWER_ICON_CARD / 2.0;
+            cr.new_sub_path();
+            cr.arc(cx, cy, DRAWER_ICON_CARD / 2.0 + 8.0, 0.0, 2.0 * std::f64::consts::PI);
+            color(cr, style.accent, 0.22);
+            let _ = cr.fill();
+        }
+    }
+
+    if content.apps.is_empty() {
+        let message = if search.query.is_empty() {
+            "No installed apps are available"
+        } else {
+            "No apps match your search"
+        };
+        text(cr, message, 28.0, row_start + 18.0, w - 56.0, 21.0, style.muted);
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn scene(
     cr: &Context,
     params: RenderParams,
@@ -1506,6 +1903,8 @@ fn scene(
     preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
 ) {
     let RenderParams {
         width,
@@ -1521,16 +1920,20 @@ fn scene(
     let _ = cr.paint();
     cr.set_operator(Operator::Over);
 
-    let panel_y = if route == Route::Drawer {
-        h * 0.19
-    } else {
-        0.0
-    };
+    if route == Route::Drawer {
+        paint_drawer(
+            cr, width, height, progress, scroll, apps, icons, theme, search, grid_cache, pressed,
+        );
+        return;
+    }
+
+    // The Drawer (a bottom-anchored, full-bleed sheet with its own
+    // top-inset formula) already returned via `paint_drawer` above; every
+    // other route is top-anchored at `panel_y = 0.0`.
+    let panel_y = 0.0;
     // Secondary panels are sized to their own content and capped, rather
     // than always filling the remaining screen height regardless of how
-    // little is on them (finding P0-2). Drawer keeps its existing full-bleed
-    // grid -- its captures show it filling the space in ordinary use, and
-    // it is not among the offending screens this finding cites.
+    // little is on them (finding P0-2).
     let panel_h = match route {
         Route::Shade => h * 0.65,
         Route::Settings => settings_panel_h(h - panel_y, chooser, services),
@@ -1549,14 +1952,7 @@ fn scene(
     // full-screen backdrop itself, in screen space, after the shift, using
     // the caller's actual per-frame `progress` -- see `tray_backdrop_alpha`.
     let hidden = 1.0 - progress.clamp(0.0, 1.0);
-    cr.translate(
-        0.0,
-        if route == Route::Drawer {
-            hidden * panel_h
-        } else {
-            -hidden * panel_h
-        },
-    );
+    cr.translate(0.0, -hidden * panel_h);
     let section = match route {
         Route::Drawer => "launcher",
         Route::Shade => "notifications",
@@ -1570,13 +1966,12 @@ fn scene(
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
-    if matches!(route, Route::Drawer | Route::Shade | Route::Settings | Route::Power) {
+    if matches!(route, Route::Shade | Route::Settings | Route::Power) {
         // Preserve the authored translucent brush over an opaque theme
         // plate, rather than letting live card text ghost through apps.
-        // Originally Drawer-only; any theme can author sub-1.0 alpha on
-        // `notifications`/`controls` backgrounds just as easily as on
-        // `launcher`, so the same guard now covers Shade and Settings
-        // (finding P1-5).
+        // Any theme can author sub-1.0 alpha on `notifications`/`controls`
+        // backgrounds (finding P1-5). The Drawer's own equivalent guard
+        // lives in `paint_drawer` now.
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
         cr.rectangle(0.0, panel_y, w, panel_h);
         let _ = cr.fill();
@@ -1601,30 +1996,23 @@ fn scene(
     // draw` dims it with a stationary, live-eased backdrop rather than
     // either an opaque void or an undimmed, jarring reveal (finding P0-2).
     // Nothing is painted here -- see this function's own doc above.
-    if matches!(route, Route::Drawer | Route::Shade) {
+    if route == Route::Shade {
         rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
         color(cr, style.accent, 0.82);
         let _ = cr.fill();
     }
     let title = match route {
+        // Unreachable: `Route::Drawer` already returned above via
+        // `paint_drawer`. Kept as a plain, harmless value (not a panic)
+        // rather than trying to prove that to the compiler, which does
+        // not know this function's own early return makes it impossible.
         Route::Drawer => "All apps",
         Route::Shade => "Notifications",
         Route::Settings => "Settings",
         Route::Power => "Power",
         Route::Hide => return,
     };
-    if route == Route::Drawer {
-        medium(
-            cr,
-            "YOUR DEVICE",
-            28.0,
-            panel_y + 44.0,
-            w - 56.0,
-            15.0,
-            style.muted,
-        );
-        heading(cr, title, 28.0, panel_y + 76.0, w - 56.0, 40.0, style.text);
-    } else if !(route == Route::Settings
+    if !(route == Route::Settings
         && (chooser.is_some_and(|view| view.page != ThemePage::Controls)
             || services
                 .and_then(|s| s.wifi.as_ref())
@@ -1633,106 +2021,7 @@ fn scene(
         heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
     }
     match route {
-        Route::Drawer => {
-            text(
-                cr,
-                "Everything installed, one upward pull away.",
-                28.0,
-                panel_y + 130.0,
-                w - 56.0,
-                18.0,
-                style.muted,
-            );
-            let row_start = list_top(height);
-            let _ = cr.save();
-            cr.rectangle(
-                0.0,
-                row_start,
-                w,
-                (h - GRID_BOTTOM_INSET - row_start).max(0.0),
-            );
-            cr.clip();
-            let first = (scroll / ROW_HEIGHT).floor().max(0.0) as usize * COLUMNS;
-            for (index, app) in apps.iter().enumerate().skip(first).take(21) {
-                let (x, y, tile_w, tile_h) = tile_rect(width, height, index, scroll);
-                if y >= h - GRID_BOTTOM_INSET || tile_w <= 0.0 {
-                    break;
-                }
-                service_card(
-                    cr,
-                    theme,
-                    "menu",
-                    x,
-                    y,
-                    tile_w,
-                    tile_h,
-                    pressed == Some(index),
-                );
-                if pressed == Some(index) {
-                    rounded(cr, x + 2.0, y + 2.0, tile_w - 4.0, tile_h - 4.0, 14.0);
-                    cr.set_line_width(3.0);
-                    color(cr, style.accent, 1.0);
-                    let _ = cr.stroke();
-                }
-                let icon_x = x + (tile_w - 58.0) / 2.0;
-                service_card(cr, theme, "launcher", icon_x, y + 17.0, 58.0, 58.0, true);
-                let painted = app
-                    .icon
-                    .as_deref()
-                    .is_some_and(|icon| icons.paint(cr, icon, 50, icon_x + 4.0, y + 21.0));
-                if !painted {
-                    let initial = app
-                        .name
-                        .chars()
-                        .next()
-                        .unwrap_or('?')
-                        .to_uppercase()
-                        .to_string();
-                    centered_label(
-                        cr,
-                        &initial,
-                        icon_x + 4.0,
-                        y + 30.0,
-                        50.0,
-                        27.0,
-                        style.accent,
-                    );
-                }
-                centered_label(
-                    cr,
-                    &app.name,
-                    x + 8.0,
-                    y + 94.0,
-                    tile_w - 16.0,
-                    20.0,
-                    brush_rgb(theme, "menu", "text", style.text),
-                );
-            }
-            let _ = cr.restore();
-            if apps.is_empty() {
-                text(
-                    cr,
-                    "No installed apps are available",
-                    28.0,
-                    row_start + 18.0,
-                    w - 56.0,
-                    21.0,
-                    style.muted,
-                );
-            }
-            // One gesture-hint typography across Drawer/Shade/deck: sentence
-            // case, muted, size 14 (finding P1-2); `nix/card-shell/adapter.c`'s
-            // "Swipe up for apps" matches this same treatment.
-            text(
-                cr,
-                "Swipe down to return to cards",
-                88.0,
-                h - 43.0,
-                w - 176.0,
-                14.0,
-                style.muted,
-            );
-        }
+        Route::Drawer => {}
         Route::Shade => {
             text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, style.accent);
             text(
@@ -2586,9 +2875,12 @@ pub fn draw_shm(
         false,
         None,
         None,
+        &DrawerSearch::default(),
+        &mut DrawerGridCache::default(),
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn draw_shm_with_icons(
     canvas: &mut [u8],
     params: RenderParams,
@@ -2601,6 +2893,8 @@ fn draw_shm_with_icons(
     preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -2632,6 +2926,8 @@ fn draw_shm_with_icons(
         preview_error,
         thumbnails,
         pressed,
+        search,
+        grid_cache,
     );
     drop(cr);
     surface.flush();
@@ -2699,6 +2995,8 @@ pub fn export_png(
         false,
         None,
         None,
+        &DrawerSearch::default(),
+        &mut DrawerGridCache::default(),
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -2747,6 +3045,13 @@ pub struct RendererCache {
     /// something this render actually depends on changed underneath it,
     /// and the pre-render must be treated as stale.
     content_generation: u64,
+    /// The Drawer's own live search field state -- set by `ShellClient`
+    /// through `set_drawer_search`, read by `paint_drawer` every frame.
+    drawer_search: DrawerSearch,
+    /// The Drawer grid's pre-rendered bitmap -- see `DrawerGridCache`'s
+    /// own doc. Persists across frames on purpose (that is the whole
+    /// point); rebuilds only when its own key actually changes.
+    drawer_grid: DrawerGridCache,
 }
 
 /// Whether two `ThemeView`s would make the *pre-render freshness check*
@@ -3005,6 +3310,19 @@ impl RendererCache {
         }
         false
     }
+    /// Sets the Drawer's live search field state -- a changed query or
+    /// focus state changes what `paint_drawer` shows (a different filtered
+    /// set, or the keyboard), so this forces the same kind of rebuild
+    /// `set_drawer_pressed` does. Returns whether it actually changed.
+    pub fn set_drawer_search(&mut self, search: DrawerSearch) -> bool {
+        if self.drawer_search != search {
+            self.drawer_search = search;
+            self.content_generation = self.content_generation.wrapping_add(1);
+            self.invalidate();
+            return true;
+        }
+        false
+    }
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
         let name = icon_theme_name_for(theme.as_ref());
         self.icons.set_theme(&name);
@@ -3080,6 +3398,11 @@ impl RendererCache {
             self.preview_error,
             Some(&self.thumbnails),
             self.pressed,
+            &self.drawer_search,
+            // A fresh, local cache: this method takes `&self`, and (per
+            // its own doc) never actually renders `Route::Drawer` in
+            // practice -- Optimistic Apply only pre-renders Settings.
+            &mut DrawerGridCache::default(),
         )?;
         // Matches `draw()`'s own post-shift backdrop pass exactly (same
         // `progress: 1.0` this bake just used), so a later `adopt_
@@ -3197,6 +3520,8 @@ impl RendererCache {
                 self.preview_error,
                 Some(&self.thumbnails),
                 self.pressed,
+                &self.drawer_search,
+                &mut self.drawer_grid,
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -5269,8 +5594,10 @@ mod tests {
     }
 
     #[test]
-    fn scrolling_repaints_clipped_rows_but_keeps_header() {
-        let apps = (0..30)
+    fn scrolling_repaints_clipped_rows_but_keeps_chrome() {
+        // 60 apps (15 rows at the redesign's 110px row pitch) actually
+        // overflows this panel's viewport -- 30 no longer does.
+        let apps = (0..60)
             .map(|index| AppEntry {
                 id: format!("app{index}.desktop"),
                 name: format!("App {index}"),
@@ -5299,19 +5626,23 @@ mod tests {
                 &apps,
             )
             .unwrap();
+        // Row 60 sits inside the fixed top chrome (handle + search field,
+        // `navigation::panel_top`..`navigation::list_top`) -- unaffected
+        // by the grid's own scroll.
         assert_eq!(
-            &frame[300 * 568 * 4..301 * 568 * 4],
-            &before[300 * 568 * 4..301 * 568 * 4]
+            &frame[60 * 568 * 4..61 * 568 * 4],
+            &before[60 * 568 * 4..61 * 568 * 4]
         );
+        // Row 300 sits inside the scrollable grid and must repaint.
         assert_ne!(
-            &frame[400 * 568 * 4..460 * 568 * 4],
-            &before[400 * 568 * 4..460 * 568 * 4]
+            &frame[300 * 568 * 4..360 * 568 * 4],
+            &before[300 * 568 * 4..360 * 568 * 4]
         );
         assert_eq!(cache.rebuild_count(), 2);
     }
 
     #[test]
-    fn pressed_grid_tile_has_visible_non_color_border_without_affecting_neighbor() {
+    fn pressed_grid_tile_has_a_visible_highlight_without_affecting_its_neighbor() {
         let apps = (0..3)
             .map(|index| AppEntry {
                 id: format!("fixture-{index}.desktop"),
@@ -5340,6 +5671,58 @@ mod tests {
         let other = ((other_y as usize + 3) * 568 + (other_x + other_width / 2.0) as usize) * 4;
         assert_eq!(&before[other..other + 4], &after[other..other + 4]);
         assert!(renderer.set_drawer_pressed(None));
+    }
+
+    /// The whole point of `DrawerGridCache` (`docs/design/
+    /// app-drawer-review.md`'s performance section): a scroll-only redraw
+    /// must reuse the already-painted grid bitmap rather than repainting
+    /// every tile, while a catalog, theme, width or search-query change
+    /// must still rebuild it.
+    #[test]
+    fn drawer_grid_cache_rebuilds_only_when_its_own_key_changes() {
+        let apps = vec![
+            AppEntry {
+                id: "a.desktop".into(),
+                name: "Alpha".into(),
+                icon: None,
+                path: PathBuf::new(),
+            },
+            AppEntry {
+                id: "b.desktop".into(),
+                name: "Beta".into(),
+                icon: None,
+                path: PathBuf::new(),
+            },
+        ];
+        let search = DrawerSearch::default();
+        let content = DrawerContent {
+            apps: apps.iter().collect(),
+            search: &search,
+        };
+        let mut cache = DrawerGridCache::default();
+        let mut icons = IconCache::new();
+        cache.ensure(&content, None, 568, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 1);
+
+        // Same everything: a cache hit, not a rebuild.
+        cache.ensure(&content, None, 568, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 1);
+
+        // A different width changes the key.
+        cache.ensure(&content, None, 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 2);
+
+        // A different query changes the key, even over the same apps.
+        let filtered_search = DrawerSearch {
+            query: "alpha".into(),
+            focused: false,
+        };
+        let filtered_content = DrawerContent {
+            apps: vec![&apps[0]],
+            search: &filtered_search,
+        };
+        cache.ensure(&filtered_content, None, 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 3);
     }
 
     fn fixture_theme(generation: &str, background: (u8, u8, u8)) -> AppearanceSnapshot {
@@ -5618,6 +6001,81 @@ mod tests {
             idle, activating,
             "a ThemeView change after adopting a pre-render must still \
              force a fresh rebuild reflecting the new pending state"
+        );
+    }
+
+    /// Host-only, opt-in timing (`cargo test --lib --release -- --ignored
+    /// --nocapture drawer_grid_cache_host_timing`): the honest, host-side
+    /// half of `docs/design/app-drawer-review.md`'s performance section.
+    /// Never run by default -- wall-clock numbers are noisy on a shared or
+    /// loaded machine and must not make an unrelated CI run flaky -- but
+    /// committed so the exact comparison this review's numbers came from
+    /// can be re-run rather than taken on faith.
+    ///
+    /// Drives the real `RendererCache::draw` path (not a lower-level
+    /// helper) over a simulated scroll/fling of a 64-app catalog (half
+    /// with real icon paths, half without, so both `IconCache::paint` and
+    /// the round-circle fallback are exercised). Compares a fresh
+    /// `RendererCache` per simulated frame -- forcing a full grid-bitmap
+    /// rebuild every time, i.e. this change's "before": every visible
+    /// tile repainted from scratch every frame -- against one persistent
+    /// cache reused across frames while only `scroll` changes -- this
+    /// change's "after", and what scrolling the real Drawer actually does
+    /// once the grid bitmap is already built.
+    #[test]
+    #[ignore]
+    fn drawer_grid_cache_host_timing() {
+        let apps: Vec<AppEntry> = (0..64)
+            .map(|index| AppEntry {
+                id: format!("fixture-{index}.desktop"),
+                name: format!("Fixture App {index}"),
+                icon: (index % 2 == 0).then(|| "utilities-terminal".into()),
+                path: PathBuf::new(),
+            })
+            .collect();
+        let frames: u32 = 200;
+        let params = |scroll: f64| RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Drawer,
+            progress: 1.0,
+            scroll,
+        };
+        // A real scroll/fling changes `scroll` every frame; the catalog
+        // does not. `% 1500.0` keeps this inside the grid's real scroll
+        // range (64 apps / 4 columns = 16 rows, well past one viewport)
+        // instead of pinning at one clamped value.
+        let scroll_for = |frame: u32| (f64::from(frame) * 7.0) % 1500.0;
+        let mut frame_buf = vec![0u8; 568 * 1232 * 4];
+
+        // Cold: a brand-new `RendererCache` every frame, so the grid
+        // bitmap always misses and rebuilds -- this change's "before" (no
+        // caching at all).
+        let cold_started = std::time::Instant::now();
+        for frame in 0..frames {
+            let mut renderer = RendererCache::default();
+            renderer
+                .draw(&mut frame_buf, params(scroll_for(frame)), &apps)
+                .unwrap();
+        }
+        let cold = cold_started.elapsed() / frames;
+
+        // Warm: one persistent cache reused across frames while only
+        // `scroll` changes -- this change's "after".
+        let mut warm_renderer = RendererCache::default();
+        warm_renderer.draw(&mut frame_buf, params(0.0), &apps).unwrap(); // prime: first frame still builds the grid bitmap
+        let warm_started = std::time::Instant::now();
+        for frame in 0..frames {
+            warm_renderer
+                .draw(&mut frame_buf, params(scroll_for(frame)), &apps)
+                .unwrap();
+        }
+        let warm = warm_started.elapsed() / frames;
+
+        eprintln!(
+            "drawer_grid_cache_host_timing: cold(fresh cache/frame) mean-per-frame={cold:?} \
+             warm(persistent cache) mean-per-frame={warm:?} over {frames} frames, {} apps, host x86_64",
+            apps.len()
         );
     }
 }

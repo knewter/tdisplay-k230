@@ -10,7 +10,7 @@ use k230_shell_rust::{
     configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
-    navigation::{DrawerAction, DrawerNavigation},
+    navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
     render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
@@ -18,11 +18,11 @@ use k230_shell_rust::{
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
         close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
-        drawer_close_drag_zone, shade_panel_close_zone,
+        drawer_close_drag_zone, filter_app_indices, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, slider_band, Confirmation, NotificationCoast, NotificationSwipeSettle,
-        PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
+        panel_intent, slider_band, Confirmation, DrawerSearch, NotificationCoast,
+        NotificationSwipeSettle, PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     slider,
     splash::{
@@ -109,6 +109,12 @@ const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
 /// pending thumbnail or preview was waiting on -- see
 /// `RendererCache::theme_thumbnails_pending`'s doc for the full story.
 const THEME_PULSE_INTERVAL: Duration = Duration::from_millis(160);
+
+/// Rate limit for `K230_DRAWER_FRAME` (`draw`'s own doc): a scroll/fling
+/// redraws far faster than any human reads a log line, so this samples at
+/// roughly 2Hz instead of once per frame -- enough to see a sustained
+/// board number without flooding the journal during a long scroll.
+const DRAWER_FRAME_LOG_INTERVAL: Duration = Duration::from_millis(500);
 
 fn panel_input_rect(
     route: Route,
@@ -1038,6 +1044,9 @@ struct ShellClient {
     /// See `serve`'s main loop for the debounce itself.
     catalog_pending_rescan: Option<Instant>,
     nav: DrawerNavigation,
+    /// The drawer's own live search field state -- see
+    /// `sync_drawer_search`'s own doc for how it reaches the renderer.
+    drawer_search: DrawerSearch,
     nav_tick: Instant,
     launch_sender: Sender<(u64, Result<LaunchOutcome, String>)>,
     launch_results: Receiver<(u64, Result<LaunchOutcome, String>)>,
@@ -1108,6 +1117,10 @@ struct ShellClient {
     /// close drag, notification swipe/scroll and (on Settings) the
     /// wifi/theme handling that would otherwise see this touch.
     brightness_drag: Option<slider::Drag>,
+    /// Rate-limits `K230_DRAWER_FRAME` (see `draw`'s own doc): the last
+    /// time one was actually emitted, so a continuous scroll/fling logs a
+    /// sample every `DRAWER_FRAME_LOG_INTERVAL` instead of once per frame.
+    drawer_frame_log_at: Option<Instant>,
     reveal: RevealState,
     input_ready: bool,
     input_region_key: Option<(Route, u32, u32, bool)>,
@@ -2326,6 +2339,57 @@ impl ShellClient {
         true
     }
 
+    /// Every catalog index currently shown in the drawer grid, in display
+    /// order -- see `service_ui::filter_app_indices`'s own doc for why
+    /// this is cheap enough to recompute on demand rather than cache.
+    /// `DrawerAction::Launch`/`LongPress` give a *display* index (their
+    /// only source, `navigation::tile_at`, only ever sees what
+    /// `renderer.draw`'s own filtered grid painted); this is how that
+    /// maps back to a real `self.apps` index.
+    fn drawer_filtered_apps(&self) -> Vec<usize> {
+        filter_app_indices(&self.apps, &self.drawer_search.query)
+    }
+
+    /// Pushes `self.drawer_search` to the renderer (forcing a grid
+    /// rebuild if it actually changed) and marks the frame dirty so the
+    /// result is visible on the next `draw`.
+    fn sync_drawer_search(&mut self) {
+        if self
+            .renderer
+            .set_drawer_search(self.drawer_search.clone())
+        {
+            self.dirty = true;
+        }
+    }
+
+    /// Applies one key from the compact search keyboard
+    /// (`navigation::search_keyboard_key_at`) to the live query and
+    /// re-syncs the renderer. `Done` only closes the keyboard -- the
+    /// query itself is untouched, matching `SearchKey::Done`'s own doc.
+    fn apply_search_key(&mut self, key: SearchKey) {
+        match key {
+            SearchKey::Char(ch) => self.drawer_search.key(Some(ch), false),
+            SearchKey::Backspace => self.drawer_search.key(None, true),
+            SearchKey::Space => self.drawer_search.key(Some(' '), false),
+            SearchKey::Done => self.drawer_search.unfocus(),
+        }
+        self.sync_drawer_search();
+    }
+
+    /// `DrawerAction::Launch(display_index)` -> the real catalog app.
+    fn launch_drawer_app(&mut self, qh: &QueueHandle<Self>, display_index: usize) {
+        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
+            self.launch_app(qh, real_index);
+        }
+    }
+
+    /// `DrawerAction::LongPress(display_index)` -> the real catalog app.
+    fn pin_drawer_app(&mut self, display_index: usize) {
+        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
+            self.pin_app_from_drawer(real_index);
+        }
+    }
+
     fn launch_app(&mut self, qh: &QueueHandle<Self>, index: usize) {
         if self.launch_in_flight || self.route != Route::Drawer {
             if self.launch_in_flight {
@@ -2597,6 +2661,10 @@ impl ShellClient {
             self.notification_wait = None;
             self.service_view.notification_swipe = None;
             self.renderer.set_services(self.service_view.clone());
+            // A reopened drawer starts with a fresh search, matching
+            // Android's own launchers -- not the previous open's query.
+            self.drawer_search = DrawerSearch::default();
+            self.sync_drawer_search();
         }
         self.route = route;
         self.refresh_route(route);
@@ -2889,7 +2957,17 @@ impl ShellClient {
             } else {
                 1.0
             };
-            if let Err(error) = self.renderer.draw(
+            // `K230_DRAWER_FRAME`: a cheap, always-on timing log for the
+            // Drawer's own frame-render cost (`docs/design/
+            // app-drawer-review.md`'s performance section) -- the coordinator
+            // can grep the board's journal for this without a
+            // `K230_TRACE_PATH` capture session. Scoped to the Drawer route
+            // only and rate-limited (`DRAWER_FRAME_LOG_INTERVAL`), never
+            // more than a plain `Instant` sample plus an occasional
+            // `eprintln!` -- no allocation on the frames it does not log.
+            let drawer_timing = self.route == Route::Drawer;
+            let render_started = drawer_timing.then(Instant::now);
+            let render_result = self.renderer.draw(
                 canvas,
                 RenderParams {
                     width: self.width,
@@ -2903,7 +2981,23 @@ impl ShellClient {
                     },
                 },
                 &self.apps,
-            ) {
+            );
+            if let Some(started) = render_started {
+                let now = Instant::now();
+                if self
+                    .drawer_frame_log_at
+                    .is_none_or(|last| now.duration_since(last) >= DRAWER_FRAME_LOG_INTERVAL)
+                {
+                    self.drawer_frame_log_at = Some(now);
+                    let elapsed_ms = now.duration_since(started).as_secs_f64() * 1000.0;
+                    self.log(&format!(
+                        "K230_DRAWER_FRAME ms={elapsed_ms:.2} apps={} scroll={:.0}",
+                        self.apps.len(),
+                        self.nav.scroll
+                    ));
+                }
+            }
+            if let Err(error) = render_result {
                 self.log(&format!("render-failed {error}"));
                 return false;
             }
@@ -3253,6 +3347,21 @@ impl TouchHandler for ShellClient {
                     // Nothing to track on `down` -- a dismissable splash
                     // (the only state that ever reaches this branch at all;
                     // see `input_region`'s own doc) only acts on `up`.
+                } else if self.route == Route::Drawer
+                    && self.input_ready
+                    && self.drawer_search.focused
+                    && navigation::search_keyboard_hit(pos, self.height)
+                {
+                    // A touch on the compact search keyboard: tracked only
+                    // through `panel_start` (reused, not a new field --
+                    // only one route is ever open at a time), resolved
+                    // entirely at `up` via `search_keyboard_key_at`. Never
+                    // reaches `nav`/close-drag: those only know about the
+                    // grid and top chrome, not this overlay, and a stray
+                    // tile hit-test underneath a covered row would launch
+                    // an app the finger never actually reached.
+                    self.panel_start = Some((id, pos));
+                    self.panel_close_candidate = false;
                 } else if self.route == Route::Drawer && self.input_ready {
                     // Captured *before* `nav.down` below, which
                     // unconditionally zeroes any in-flight fling velocity
@@ -3271,7 +3380,7 @@ impl TouchHandler for ShellClient {
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
                         self.height,
-                        self.apps.len(),
+                        self.drawer_filtered_apps().len(),
                     )) {
                         self.dirty = true;
                     }
@@ -3483,9 +3592,11 @@ impl TouchHandler for ShellClient {
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
                 }
-                let engaged_close = self.panel_start.is_some_and(|(start_id, _)| start_id == id)
-                    && self.panel_close.tracking();
-                self.panel_start = None;
+                let start = self
+                    .panel_start
+                    .take()
+                    .filter(|(start_id, _)| *start_id == id);
+                let engaged_close = start.is_some() && self.panel_close.tracking();
                 self.panel_close_candidate = false;
                 if engaged_close {
                     // Live close-drag release: settle to whichever endpoint
@@ -3502,13 +3613,42 @@ impl TouchHandler for ShellClient {
                     self.panel_close_sample = None;
                     self.panel_close_velocity = 0.0;
                     self.dirty = true;
+                } else if start.is_some_and(|(_, start_pos)| {
+                    self.drawer_search.focused
+                        && navigation::search_keyboard_hit(start_pos, self.height)
+                }) {
+                    // Resolves a search-keyboard touch entirely from its
+                    // *release* point -- a real on-screen keyboard reads
+                    // whichever key is under the finger when it lifts, not
+                    // where it first touched down, so a small correcting
+                    // slide before release still hits the intended key.
+                    if let Some(key) = navigation::search_keyboard_key_at(point, self.width, self.height) {
+                        self.apply_search_key(key);
+                    }
+                } else if start.is_some_and(|(_, start_pos)| {
+                    !self.drawer_search.focused
+                        && navigation::search_field_hit(start_pos, self.width, self.height)
+                        && (point.0 - start_pos.0).abs() <= 12.0
+                        && (point.1 - start_pos.1).abs() <= 12.0
+                }) {
+                    // A plain tap (small total movement) that started and
+                    // ended on the search field opens it -- the field
+                    // itself is never `nav`'s (it hit-tests only the grid),
+                    // so a released drag/close-drag candidate that landed
+                    // here otherwise resolves as nothing at all.
+                    self.drawer_search.focus();
+                    self.sync_drawer_search();
                 } else {
-                    match self
-                        .nav
-                        .up(id, point, time_ms, self.width, self.height, self.apps.len())
-                    {
-                        Some(DrawerAction::Launch(index)) => self.launch_app(qh, index),
-                        Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
+                    match self.nav.up(
+                        id,
+                        point,
+                        time_ms,
+                        self.width,
+                        self.height,
+                        self.drawer_filtered_apps().len(),
+                    ) {
+                        Some(DrawerAction::Launch(index)) => self.launch_drawer_app(qh, index),
+                        Some(DrawerAction::LongPress(index)) => self.pin_drawer_app(index),
                         // `nav`'s own release-only "dy > 110 && scroll <=
                         // 0.5" check is now just a backstop for whatever
                         // reason the live drag above never engaged (see
@@ -3806,10 +3946,8 @@ impl TouchHandler for ShellClient {
                     }
                 }
                 if !engaged_this_sample {
-                    if self
-                        .nav
-                        .motion(id, pos, time_ms, self.height, self.apps.len())
-                    {
+                    let filtered_count = self.drawer_filtered_apps().len();
+                    if self.nav.motion(id, pos, time_ms, self.height, filtered_count) {
                         self.dirty = true;
                     }
                     // Once this sample's ordinary scroll has actually
@@ -3831,11 +3969,10 @@ impl TouchHandler for ShellClient {
                         self.panel_close_candidate,
                         self.nav.scroll,
                     );
-                    if self.renderer.set_drawer_pressed(self.nav.pressed(
-                        self.width,
-                        self.height,
-                        self.apps.len(),
-                    )) {
+                    if self
+                        .renderer
+                        .set_drawer_pressed(self.nav.pressed(self.width, self.height, filtered_count))
+                    {
                         self.dirty = true;
                     }
                 }
@@ -4212,6 +4349,7 @@ fn serve() -> Result<(), String> {
         apps,
         catalog_pending_rescan: None,
         nav: DrawerNavigation::default(),
+        drawer_search: DrawerSearch::default(),
         nav_tick: Instant::now(),
         launch_sender,
         launch_results,
@@ -4253,6 +4391,7 @@ fn serve() -> Result<(), String> {
         panel_close_velocity: 0.0,
         panel_close_sample: None,
         brightness_drag: None,
+        drawer_frame_log_at: None,
         reveal: RevealState::default(),
         input_ready: false,
         input_region_key: None,
@@ -5406,7 +5545,7 @@ mod route_tests {
         // `drawer_close_drag_zone`, not `close_drag_zone`, since it needs
         // scroll state Shade/Settings never do.
         let travel = panel_travel_height(Route::Drawer, 1232, None, None);
-        let header_top = f64::from(1232u32) * 0.19;
+        let header_top = k230_shell_rust::navigation::panel_top(1232);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (280.0, header_top + 20.0)));
         assert!(touch.motion(3, (282.0, header_top + 60.0)));
@@ -5462,7 +5601,7 @@ mod route_tests {
     #[test]
     fn drawer_live_close_drag_never_engages_after_a_mid_gesture_scroll_reversal() {
         let height = 1232u32;
-        let apps = 40;
+        let apps = 200;
         let grid_y = k230_shell_rust::navigation::list_top(height) + 10.0;
         let start = (100.0, grid_y);
 

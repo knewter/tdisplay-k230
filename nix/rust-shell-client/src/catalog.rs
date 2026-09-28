@@ -11,6 +11,7 @@
 //! (which never touches that cache), makes every call here see the current
 //! filesystem state.
 use gio::prelude::*;
+use glib::KeyFile;
 use std::{
     collections::HashSet,
     ffi::OsStr,
@@ -26,7 +27,10 @@ pub struct AppEntry {
     /// can re-parse the exact same file with
     /// [`gio::DesktopAppInfo::from_filename`] rather than trusting GIO's
     /// id-keyed lookup (`DesktopAppInfo::new`) to still resolve the same id
-    /// to the same file after a later rescan.
+    /// to the same file after a later rescan. Also lets a caller that needs
+    /// a raw desktop-file field `gio`'s own bindings don't expose (see
+    /// `terminal_like`) read it directly, without this struct itself
+    /// growing a field for every such rarely-needed key.
     pub path: PathBuf,
 }
 
@@ -224,6 +228,49 @@ fn parse_entry(id: String, path: PathBuf) -> Option<AppEntry> {
     })
 }
 
+/// `Terminal=true` or a `TerminalEmulator` category, read directly from
+/// `path`'s own raw desktop file (`gio`'s `DesktopAppInfo` bindings expose
+/// neither as a plain getter). Absent/unparseable reads as `false` -- the
+/// same fail-open-to-"nothing special" convention the rest of this parser
+/// already uses (a missing field is never treated as an error).
+///
+/// Used only as a drawer icon *fallback* signal
+/// (`render.rs::paint_drawer_tile`): when an entry's own named icon does
+/// not resolve against the active icon theme, an app that is a terminal
+/// emulator or that runs inside one falls back to a generic terminal icon
+/// rather than a plain letter circle. Board finding (2026-09-27): `Video`'s
+/// own `Icon=mpv` and `Terminal`'s own `Icon=foot` do not exist in the
+/// bundled Yaru-based theme at all (neither is a Yaru-covered
+/// application); the former is `Terminal=true`, the latter has
+/// `Categories=…;TerminalEmulator;`. Deliberately a free function taking
+/// `&Path`, not an `AppEntry` field: `path` is already carried on every
+/// entry, and adding a field here would ripple into every one of this
+/// struct's many literal construction sites across the crate for a value
+/// only this one caller ever needs.
+pub fn terminal_like(path: &Path) -> bool {
+    let index = KeyFile::new();
+    if index
+        .load_from_file(path, glib::KeyFileFlags::NONE)
+        .is_err()
+    {
+        return false;
+    }
+    if index
+        .boolean("Desktop Entry", "Terminal")
+        .unwrap_or(false)
+    {
+        return true;
+    }
+    index
+        .string("Desktop Entry", "Categories")
+        .map(|categories| {
+            categories
+                .split(';')
+                .any(|category| category.eq_ignore_ascii_case("TerminalEmulator"))
+        })
+        .unwrap_or(false)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -242,6 +289,52 @@ mod tests {
         assert!(apps.windows(2).all(|pair| {
             (pair[0].name.to_lowercase(), &pair[0].id) <= (pair[1].name.to_lowercase(), &pair[1].id)
         }));
+    }
+
+    #[test]
+    fn terminal_like_reads_the_terminal_flag_and_the_category() {
+        let root = std::env::temp_dir().join(format!(
+            "k230-rust-terminal-like-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+
+        let terminal_true = root.join("terminal-true.desktop");
+        std::fs::write(
+            &terminal_true,
+            "[Desktop Entry]\nType=Application\nName=Video\nExec=mpv\nIcon=mpv\nTerminal=true\n",
+        )
+        .unwrap();
+        assert!(terminal_like(&terminal_true), "Terminal=true");
+
+        let terminal_category = root.join("terminal-category.desktop");
+        std::fs::write(
+            &terminal_category,
+            "[Desktop Entry]\nType=Application\nName=Terminal\nExec=foot\nIcon=foot\n\
+             Terminal=false\nCategories=System;TerminalEmulator;\n",
+        )
+        .unwrap();
+        assert!(
+            terminal_like(&terminal_category),
+            "a TerminalEmulator category counts even with Terminal=false"
+        );
+
+        let plain = root.join("plain.desktop");
+        std::fs::write(
+            &plain,
+            "[Desktop Entry]\nType=Application\nName=Calculator\nExec=calc\n\
+             Icon=accessories-calculator\nCategories=Utility;\n",
+        )
+        .unwrap();
+        assert!(!terminal_like(&plain), "an ordinary app is not terminal-like");
+
+        assert!(
+            !terminal_like(&root.join("missing.desktop")),
+            "a missing/unparseable file fails open to false, not a panic"
+        );
+
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

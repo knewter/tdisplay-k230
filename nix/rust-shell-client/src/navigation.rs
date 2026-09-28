@@ -1,15 +1,186 @@
 //! Touch-only drawer navigation. The compositor reveals the panel; these
 //! gestures begin only after the drawer owns a settled input region.
 
-pub const COLUMNS: usize = 3;
-pub const TILE_HEIGHT: f64 = 148.0;
-pub const ROW_HEIGHT: f64 = 160.0;
-pub const GRID_BOTTOM_INSET: f64 = 72.0;
-const TILE_GAP: f64 = 12.0;
+/// `docs/design/app-drawer-review.md`'s redesign: a 4-column grid, closer
+/// to the Pixel launcher's own drawer on this panel's width (568px) than
+/// the previous 3 columns. `SIDE_MARGIN` and `TILE_GAP` are deliberately
+/// equal (both 24px) so the whole row reads as one evenly-spaced strip --
+/// margin, gap, gap, gap, margin -- rather than a tighter inter-column gap
+/// inside a wider outer border. At this width that divides out exactly:
+/// `2*24 + 3*24 + 4*112 = 568`, so the grid is centered with no remainder
+/// and no separate centering offset to compute.
+pub const COLUMNS: usize = 4;
+/// The cell's full vertical pitch: an icon, a small gap, a single-line
+/// label, and the row's own share of vertical breathing room -- see
+/// `render.rs`'s Drawer paint block for the exact split. Also `tile_at`'s
+/// per-row tap-target height (the whole cell is tappable, not just the
+/// icon).
+pub const ROW_HEIGHT: f64 = 110.0;
+pub const TILE_HEIGHT: f64 = ROW_HEIGHT;
+/// A small safe-bottom margin now that the old "Swipe down to return to
+/// cards" footer caption (which this space used to reserve room for) is
+/// gone -- see `docs/design/app-drawer-review.md` §2. Kept as its own
+/// named constant (not folded into a literal) because `tile_at`,
+/// `max_scroll` and `service_ui::drawer_close_drag_zone` all need to agree
+/// on exactly where the grid's own bottom edge is.
+pub const GRID_BOTTOM_INSET: f64 = 24.0;
+const TILE_GAP: f64 = 24.0;
 const SIDE_MARGIN: f64 = 24.0;
 
+/// The sheet's own top inset from the very edge of the screen -- a small
+/// gap, not the old ~19%-of-height band, so the sheet fills nearly the
+/// whole panel once open (`docs/design/app-drawer-review.md` §2: "filling
+/// the screen from the top inset, with no black band above it"). Fixed in
+/// pixels, not proportional to `height`, like this module's other
+/// geometry constants -- this panel's physical size never changes.
+pub fn panel_top(_height: u32) -> f64 {
+    32.0
+}
+
+/// Height of the fixed top chrome below `panel_top`: the drag handle and
+/// the pill-shaped search field, before the scrollable grid begins. See
+/// `search_field_rect`/`handle_rect` for the exact split.
+const TOP_CHROME_HEIGHT: f64 = 86.0;
+
 pub fn list_top(height: u32) -> f64 {
-    f64::from(height) * 0.19 + 181.0
+    panel_top(height) + TOP_CHROME_HEIGHT
+}
+
+/// The small drag-handle indicator's rect, in absolute screen coordinates.
+/// Purely decorative (`render.rs` paints it); the handle's own *hit* zone
+/// for drag-to-close is the whole top-chrome band above the grid
+/// (`service_ui::drawer_close_drag_zone`), matching Android's own "drag
+/// anywhere on the sheet's top chrome to dismiss" convention now that this
+/// chrome is compact and entirely interactive (handle + search), unlike
+/// the old prose header that convention was narrowed away from.
+pub fn handle_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    let w = 40.0;
+    (f64::from(width) / 2.0 - w / 2.0, panel_top(height) + 10.0, w, 4.0)
+}
+
+/// The pill-shaped "Search apps" field's rect, in absolute screen
+/// coordinates -- both `render.rs` (painting it) and `service_ui`/`main.rs`
+/// (hit-testing a tap to focus it) share this one geometry function.
+pub fn search_field_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    let x = SIDE_MARGIN;
+    let y = panel_top(height) + 22.0;
+    let w = f64::from(width) - 2.0 * SIDE_MARGIN;
+    let h = 48.0;
+    (x, y, w, h)
+}
+
+/// Whether `point` lands on the search field (a tap there focuses search
+/// and opens the on-screen keyboard; see `main.rs`'s Drawer touch-down
+/// handling).
+pub fn search_field_hit(point: (f64, f64), width: u32, height: u32) -> bool {
+    let (x, y, w, h) = search_field_rect(width, height);
+    point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h
+}
+
+/// The compact search keyboard's total height, anchored to the sheet's own
+/// bottom edge while search is focused -- deliberately lowercase-only (no
+/// shift/symbols row): app names are matched case-insensitively
+/// (`service_ui::filter_app_indices`), so there is nothing an uppercase or
+/// symbol key would let a person type that changes which apps match.
+pub const SEARCH_KEYBOARD_HEIGHT: f64 = 300.0;
+
+/// A key the compact search keyboard produced. `service_ui::DrawerSearch`
+/// applies it to the live query; the keyboard itself has no state of its
+/// own beyond geometry.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SearchKey {
+    Char(char),
+    Backspace,
+    Space,
+    /// Closes the keyboard (and, since there is nothing else on this
+    /// keyboard to lose, also unfocuses search) without clearing the
+    /// query -- the filtered grid stays exactly as typed.
+    Done,
+}
+
+const SEARCH_KEYBOARD_ROWS: [&str; 3] = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+const SEARCH_KEYBOARD_ROW_H: f64 = 64.0;
+const SEARCH_KEYBOARD_ROW_GAP: f64 = 8.0;
+
+/// The keyboard's own top edge, in absolute screen coordinates.
+pub fn search_keyboard_top(height: u32) -> f64 {
+    f64::from(height) - SEARCH_KEYBOARD_HEIGHT
+}
+
+/// Every letter key's rect for one keyboard row, left to right, evenly
+/// dividing the sheet's own side margins -- a compact, unstaggered layout
+/// (not a pixel-precise QWERTY stagger); adequate for the prefix/substring
+/// app-name filter this exists for, not a general-purpose text editor.
+pub fn keyboard_row_keys(row: usize, width: u32, height: u32) -> Vec<(char, f64, f64, f64, f64)> {
+    let Some(letters) = SEARCH_KEYBOARD_ROWS.get(row) else {
+        return Vec::new();
+    };
+    let left = SIDE_MARGIN;
+    let right = f64::from(width) - SIDE_MARGIN;
+    let count = letters.chars().count().max(1) as f64;
+    let cell = (right - left) / count;
+    let y = search_keyboard_top(height) + SEARCH_KEYBOARD_ROW_GAP
+        + row as f64 * (SEARCH_KEYBOARD_ROW_H + SEARCH_KEYBOARD_ROW_GAP);
+    letters
+        .chars()
+        .enumerate()
+        .map(|(index, ch)| {
+            (
+                ch,
+                left + index as f64 * cell,
+                y,
+                cell,
+                SEARCH_KEYBOARD_ROW_H,
+            )
+        })
+        .collect()
+}
+
+/// The control row (Backspace / Space / Done), below the three letter rows.
+pub fn keyboard_control_row(width: u32, height: u32) -> (f64, f64, f64, f64, f64) {
+    let y = search_keyboard_top(height)
+        + SEARCH_KEYBOARD_ROW_GAP
+        + 3.0 * (SEARCH_KEYBOARD_ROW_H + SEARCH_KEYBOARD_ROW_GAP);
+    let left = SIDE_MARGIN;
+    let right = f64::from(width) - SIDE_MARGIN;
+    let side_w = 108.0;
+    (left, right, side_w, y, SEARCH_KEYBOARD_ROW_H)
+}
+
+/// Whether `point` lands on the search keyboard at all -- used so a touch
+/// anywhere on the keyboard (including its own background, between keys)
+/// is claimed by the keyboard rather than falling through to the grid
+/// underneath it.
+pub fn search_keyboard_hit(point: (f64, f64), height: u32) -> bool {
+    point.1 >= search_keyboard_top(height)
+}
+
+/// Which key, if any, `point` lands on.
+pub fn search_keyboard_key_at(point: (f64, f64), width: u32, height: u32) -> Option<SearchKey> {
+    if !search_keyboard_hit(point, height) {
+        return None;
+    }
+    for row in 0..SEARCH_KEYBOARD_ROWS.len() {
+        for (ch, x, y, w, h) in keyboard_row_keys(row, width, height) {
+            if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
+                return Some(SearchKey::Char(ch));
+            }
+        }
+    }
+    let (left, right, side_w, y, h) = keyboard_control_row(width, height);
+    if point.1 < y || point.1 >= y + h {
+        return None;
+    }
+    if point.0 >= left && point.0 < left + side_w {
+        return Some(SearchKey::Backspace);
+    }
+    if point.0 >= right - side_w && point.0 < right {
+        return Some(SearchKey::Done);
+    }
+    if point.0 >= left + side_w && point.0 < right - side_w {
+        return Some(SearchKey::Space);
+    }
+    None
 }
 
 pub fn tile_rect(width: u32, height: u32, index: usize, scroll: f64) -> (f64, f64, f64, f64) {
@@ -251,7 +422,7 @@ mod tests {
     }
 
     #[test]
-    fn three_columns_hit_only_painted_tiles() {
+    fn four_columns_hit_only_painted_tiles() {
         let mut nav = DrawerNavigation::default();
         for index in 0..7 {
             let (x, y, w, h) = tile_rect(568, 1232, index, 0.0);
@@ -314,17 +485,23 @@ mod tests {
             ..DrawerNavigation::default()
         };
         let top = list_top(1232);
+        // x=200 lands in column 1 of the 4-column grid (col0 [24,136),
+        // col1 [160,272), col2 [296,408), col3 [432,544)); row 1 (content_y
+        // 190 / ROW_HEIGHT 110 = 1) starts at index 4, so column 1 is
+        // index 5.
         assert_eq!(
-            tap(&mut nav, (278.0, top + 30.0), 30),
-            Some(DrawerAction::Launch(4))
+            tap(&mut nav, (200.0, top + 30.0), 60),
+            Some(DrawerAction::Launch(5))
         );
         assert_eq!(
-            tap(&mut nav, (278.0, 1210.0), 30),
+            tap(&mut nav, (200.0, 1210.0), 60),
             None,
             "footer is outside the grid"
         );
         assert_eq!(max_scroll(1232, 7), 0.0);
-        assert!(max_scroll(1232, 30) > 0.0);
+        // 60 apps (15 rows) actually overflows this panel's viewport at the
+        // new, shorter 110px row pitch -- 30 no longer does.
+        assert!(max_scroll(1232, 60) > 0.0);
     }
 
     #[test]
@@ -346,20 +523,24 @@ mod tests {
     #[test]
     fn drag_follows_reverses_and_flick_stops_on_new_contact() {
         let mut nav = DrawerNavigation::default();
+        // 60 apps (15 rows) actually overflows the viewport at the new,
+        // shorter 110px row pitch -- 30 no longer does, so this drag would
+        // otherwise clamp at 0 the whole time.
+        let apps = 60;
         let top = list_top(1232);
         nav.down(1, (120.0, top + 180.0), 0);
-        assert!(nav.motion(1, (120.0, top + 80.0), 25, 1232, 30));
+        assert!(nav.motion(1, (120.0, top + 80.0), 25, 1232, apps));
         assert_eq!(nav.scroll, 100.0);
-        assert!(nav.motion(1, (120.0, top + 100.0), 40, 1232, 30));
+        assert!(nav.motion(1, (120.0, top + 100.0), 40, 1232, apps));
         assert_eq!(nav.scroll, 80.0);
-        assert_eq!(nav.up(1, (120.0, top + 100.0), 41, 568, 1232, 30), None);
+        assert_eq!(nav.up(1, (120.0, top + 100.0), 41, 568, 1232, apps), None);
         assert!(nav.coasting());
         nav.down(2, (120.0, top + 100.0), 50);
         assert!(!nav.coasting());
         nav.cancel();
         nav.down(3, (120.0, top + 180.0), 100);
-        nav.motion(3, (120.0, top + 80.0), 125, 1232, 30);
-        nav.up(3, (120.0, top + 80.0), 400, 568, 1232, 30);
+        nav.motion(3, (120.0, top + 80.0), 125, 1232, apps);
+        nav.up(3, (120.0, top + 80.0), 400, 568, 1232, apps);
         assert!(
             !nav.coasting(),
             "held finger cannot reuse old flick velocity"
@@ -417,7 +598,7 @@ mod tests {
     #[test]
     fn scrolling_away_from_the_top_then_reversing_never_closes_within_one_gesture() {
         let mut nav = DrawerNavigation::default();
-        let apps = 40; // enough rows that 200px of scroll is not already clamped away
+        let apps = 200; // enough rows that 200px of scroll is not already clamped away
         let top = list_top(1232);
         let start = (100.0, top + 10.0);
         assert!(nav.down(1, start, 0));
@@ -459,5 +640,75 @@ mod tests {
             nav.up(1, (100.0, top + 10.0 + 150.0), 45, 568, 1232, 7),
             Some(DrawerAction::Close)
         );
+    }
+
+    #[test]
+    fn search_field_hit_is_bounded_to_its_own_pill_and_above_the_grid() {
+        let (x, y, w, h) = search_field_rect(568, 1232);
+        assert!(y + h < list_top(1232), "the field sits above the grid");
+        assert!(search_field_hit((x + 4.0, y + 4.0), 568, 1232), "inside");
+        assert!(
+            search_field_hit((x + w - 1.0, y + h - 1.0), 568, 1232),
+            "inside, near the far edge"
+        );
+        assert!(!search_field_hit((x - 1.0, y), 568, 1232), "left of it");
+        assert!(!search_field_hit((x, y + h), 568, 1232), "below it");
+        assert!(
+            !search_field_hit((x, list_top(1232) + 5.0), 568, 1232),
+            "inside the grid, not the field"
+        );
+    }
+
+    #[test]
+    fn handle_rect_is_centered_above_the_search_field() {
+        let (hx, hy, hw, _) = handle_rect(568, 1232);
+        let (_, sy, _, _) = search_field_rect(568, 1232);
+        assert!(hy < sy, "the handle sits above the search field");
+        assert!(
+            (hx + hw / 2.0 - f64::from(568) / 2.0).abs() < 0.01,
+            "the handle is horizontally centered"
+        );
+    }
+
+    #[test]
+    fn search_keyboard_key_at_resolves_letters_and_the_control_row() {
+        let width = 568;
+        let height = 1232;
+        // The top-left letter key of the first row ("q").
+        let (ch, x, y, w, h) = keyboard_row_keys(0, width, height)[0];
+        assert_eq!(ch, 'q');
+        assert_eq!(
+            search_keyboard_key_at((x + w / 2.0, y + h / 2.0), width, height),
+            Some(SearchKey::Char('q'))
+        );
+        // The bottom row: backspace (left), space (middle), done (right).
+        let (left, right, side_w, y, h) = keyboard_control_row(width, height);
+        assert_eq!(
+            search_keyboard_key_at((left + side_w / 2.0, y + h / 2.0), width, height),
+            Some(SearchKey::Backspace)
+        );
+        assert_eq!(
+            search_keyboard_key_at(((left + right) / 2.0, y + h / 2.0), width, height),
+            Some(SearchKey::Space)
+        );
+        assert_eq!(
+            search_keyboard_key_at((right - side_w / 2.0, y + h / 2.0), width, height),
+            Some(SearchKey::Done)
+        );
+        // Above the keyboard entirely (the grid/search field/handle) is
+        // never a keyboard key.
+        assert_eq!(
+            search_keyboard_key_at((x, search_keyboard_top(height) - 1.0), width, height),
+            None
+        );
+    }
+
+    #[test]
+    fn search_keyboard_hit_matches_its_own_top_edge() {
+        let height = 1232;
+        let top = search_keyboard_top(height);
+        assert!(!search_keyboard_hit((100.0, top - 1.0), height));
+        assert!(search_keyboard_hit((100.0, top), height));
+        assert!(search_keyboard_hit((100.0, f64::from(height) - 1.0), height));
     }
 }

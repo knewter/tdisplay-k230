@@ -2,7 +2,8 @@
 //! Service I/O remains in `service_data::ServiceWorker` off the Wayland loop.
 
 use crate::{
-    navigation::{list_top, GRID_BOTTOM_INSET},
+    catalog::AppEntry,
+    navigation::{self, list_top, GRID_BOTTOM_INSET},
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
         POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
@@ -76,6 +77,78 @@ pub fn action_message(outcome: &ActionOutcome) -> String {
     } else {
         explanation.into()
     }
+}
+
+/// The drawer's own search field state: a plain query string and whether
+/// the on-screen keyboard is currently up. Deliberately holds nothing
+/// about *which* apps match -- `filter_app_indices` recomputes that
+/// fresh from the live catalog every time it is asked, which is cheap
+/// enough (a linear scan of a bounded, at most 128-entry catalog,
+/// `catalog::scan_apps`'s own cap) that caching the match set separately
+/// would only be complexity, not a real saving; the *expensive* part this
+/// exists to keep off the hot path -- painting -- is cached elsewhere
+/// (`render::DrawerGridCache`, keyed in part on this same query string).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DrawerSearch {
+    pub query: String,
+    pub focused: bool,
+}
+
+impl DrawerSearch {
+    /// Applies one key from the compact search keyboard
+    /// (`navigation::SearchKey`) to the live query. Takes the key by value
+    /// rather than importing `navigation::SearchKey` into this module's own
+    /// public surface, so callers keep matching on the one enum
+    /// `navigation.rs` already defines it in.
+    pub fn key(&mut self, ch: Option<char>, backspace: bool) {
+        if let Some(ch) = ch {
+            self.query.push(ch);
+        } else if backspace {
+            self.query.pop();
+        }
+    }
+
+    /// Opens the field: focuses it and shows the keyboard. A no-op if
+    /// already focused (never clears an in-progress query).
+    pub fn focus(&mut self) {
+        self.focused = true;
+    }
+
+    /// Closes the keyboard without clearing the query -- the filtered grid
+    /// stays exactly as typed (matches `navigation::SearchKey::Done`'s own
+    /// doc).
+    pub fn unfocus(&mut self) {
+        self.focused = false;
+    }
+
+    /// Clears the query entirely (the field's own trailing "clear" tap) but
+    /// leaves focus/keyboard state alone.
+    pub fn clear(&mut self) {
+        self.query.clear();
+    }
+}
+
+/// Every catalog index (not a filtered clone -- the caller already owns
+/// `apps`, and `DrawerAction::Launch`/`LongPress` need the *filtered
+/// display position* to map back to one of these, so returning indices
+/// rather than entries keeps that mapping trivial: `matches[display_index]`)
+/// whose name contains `query`, case-insensitively, as a substring
+/// (covers a prefix match too, since a prefix is a substring). An empty
+/// query matches everything, in catalog order, unfiltered. This is the
+/// entire cost of "searching": a single linear pass over a bounded
+/// (`catalog::scan_apps` caps at 128) list of short strings -- cheap
+/// enough to redo on every keystroke without its own cache, unlike the
+/// *painting* of the results (`render::DrawerGridCache`).
+pub fn filter_app_indices(apps: &[AppEntry], query: &str) -> Vec<usize> {
+    if query.is_empty() {
+        return (0..apps.len()).collect();
+    }
+    let needle = query.to_lowercase();
+    apps.iter()
+        .enumerate()
+        .filter(|(_, app)| app.name.to_lowercase().contains(&needle))
+        .map(|(index, _)| index)
+        .collect()
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -189,19 +262,22 @@ pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
-/// The Drawer's own top handle band, measured down from its panel edge
-/// (`height * 0.19`). Deliberately a slim strip, not the whole header --
-/// `docs/design/app-drawer-review.md` found the previous "entire header is
-/// always a close zone" design meant the eyebrow/title text (which a
-/// scrolling thumb can easily brush across, e.g. reaching up for a long
-/// swipe) could hijack a drag having nothing to do with the handle. Android
-/// keeps a drawer's drag handle this narrow for the same reason: dragging
-/// the sheet closed is a deliberate reach for its top edge, not an ordinary
-/// consequence of scrolling near it.
-pub const DRAWER_HANDLE_HEIGHT: f64 = 56.0;
+/// The Drawer's own top chrome (handle + search field), from its panel
+/// edge (`navigation::panel_top`) down to where the grid begins
+/// (`navigation::list_top`) -- always an eligible drag-to-close start,
+/// the same way Shade's dismiss zone is regardless of scroll. This used
+/// to be a slim strip carved out of a much taller prose header (`docs/
+/// design/app-drawer-review.md`'s bug-fix pass); the redesign's whole top
+/// chrome is now this short and entirely interactive (a drag handle and a
+/// tappable search field, nothing a scrolling thumb would brush past
+/// accidentally), so the whole thing can be the handle zone again without
+/// reintroducing the original problem.
+pub fn drawer_handle_zone(y: f64, height: u32) -> bool {
+    y >= navigation::panel_top(height) && y < list_top(height)
+}
 
-/// Where a Drawer close drag may originate: its own top handle band
-/// (`DRAWER_HANDLE_HEIGHT`, always eligible regardless of scroll, the same
+/// Where a Drawer close drag may originate: its own top chrome
+/// (`drawer_handle_zone`, always eligible regardless of scroll, the same
 /// way Shade's dismiss zone is), or the tile grid itself once already
 /// scrolled to its own top (mirrors `DrawerNavigation::up`'s pre-existing
 /// "dy > 110 && scroll <= 0.5" release check, now live instead of
@@ -217,11 +293,9 @@ pub const DRAWER_HANDLE_HEIGHT: f64 = 56.0;
 /// ever reflects the scroll at the moment the finger went down, not
 /// wherever the same continuous drag later carries it.
 pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
-    let panel_y = f64::from(height) * 0.19;
-    let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT;
     let header_bottom = list_top(height);
     let dock_top = f64::from(height) - GRID_BOTTOM_INSET;
-    (y >= panel_y && y < handle_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
+    drawer_handle_zone(y, height) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
 }
 
 /// Whether a Drawer close-drag candidate established at touch-down
@@ -791,6 +865,53 @@ pub fn panel_intent(
 mod tests {
     use super::*;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
+    use std::path::PathBuf;
+
+    fn app(name: &str) -> AppEntry {
+        AppEntry {
+            id: format!("{name}.desktop"),
+            name: name.into(),
+            icon: None,
+            path: PathBuf::new(),
+        }
+    }
+
+    #[test]
+    fn filter_app_indices_matches_case_insensitive_substrings() {
+        let apps = vec![app("Camera"), app("Calculator"), app("Files"), app("Gallery")];
+        assert_eq!(filter_app_indices(&apps, ""), vec![0, 1, 2, 3], "empty query matches all, in order");
+        assert_eq!(filter_app_indices(&apps, "ca"), vec![0, 1], "prefix match, case-insensitive");
+        assert_eq!(filter_app_indices(&apps, "CAM"), vec![0], "uppercase query still matches");
+        assert_eq!(filter_app_indices(&apps, "ery"), vec![3], "substring, not just prefix");
+        assert!(
+            filter_app_indices(&apps, "zzz").is_empty(),
+            "no match is an empty list, not a panic"
+        );
+    }
+
+    #[test]
+    fn drawer_search_key_focus_and_clear() {
+        let mut search = DrawerSearch::default();
+        assert!(!search.focused);
+        assert!(search.query.is_empty());
+
+        search.focus();
+        assert!(search.focused);
+
+        search.key(Some('c'), false);
+        search.key(Some('a'), false);
+        assert_eq!(search.query, "ca");
+
+        search.key(None, true);
+        assert_eq!(search.query, "c", "backspace pops the last character");
+
+        search.unfocus();
+        assert!(!search.focused);
+        assert_eq!(search.query, "c", "unfocus keeps the query, per its own doc");
+
+        search.clear();
+        assert!(search.query.is_empty());
+    }
 
     #[test]
     fn power_sheet_requires_a_second_explicit_confirmation_tap() {
@@ -946,30 +1067,25 @@ mod tests {
     }
 
     #[test]
-    fn drawer_close_drag_zone_is_the_slim_handle_and_the_grid_only_at_top() {
+    fn drawer_close_drag_zone_is_the_top_chrome_and_the_grid_only_at_top() {
         let height = 1232;
-        let panel_y = f64::from(height) * 0.19; // 234.08
-        let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT; // 290.08
-        let header_bottom = list_top(height); // 415.08
-        let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1160.0
+        let panel_y = navigation::panel_top(height);
+        let header_bottom = list_top(height);
+        let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1208.0
 
-        // The slim top handle is eligible regardless of scroll -- scrolled
-        // deep into the list or not, the handle is still there.
+        // The whole top chrome (handle + search field) is eligible
+        // regardless of scroll -- scrolled deep into the list or not, it
+        // is still there.
         for scroll in [0.0, 5_000.0] {
             assert!(
                 drawer_close_drag_zone(panel_y, height, scroll),
                 "top edge, scroll={scroll}"
             );
             assert!(
-                drawer_close_drag_zone(handle_bottom - 1.0, height, scroll),
-                "still inside the handle band, scroll={scroll}"
+                drawer_close_drag_zone(header_bottom - 1.0, height, scroll),
+                "still inside the top chrome, scroll={scroll}"
             );
         }
-        // Below the handle but still above the grid (the title/eyebrow
-        // text) is not a close zone at all -- a thumb resting there while
-        // scrolling the list must never be mistaken for grabbing a handle.
-        assert!(!drawer_close_drag_zone(handle_bottom, height, 0.0));
-        assert!(!drawer_close_drag_zone(header_bottom - 1.0, height, 5_000.0));
         // The grid itself: eligible only once scrolled to (approximately)
         // its own top -- the same "at the top" idea
         // `DrawerNavigation::up`'s own release check already used.
