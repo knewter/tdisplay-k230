@@ -48,13 +48,22 @@
   video-stop call to check for. Verify with `python3
   tests/test_card_shell_video_card.py -v` (7/7 passes observed against
   real cross-built Sway under `qemu-riscv64-static`).
-- [ ] 4.2 <!-- UNVERIFIED: tests/card_shell_runtime.py's own
-  `focused()=='k230.card.two'` assertion (line ~578, after a full
-  horizontal drag then an immediate tap) was found already failing on
-  the pre-change baseline (commit 59e0eb78) during this work, unrelated
-  to anything in this change -- confirmed by running the identical test
-  against a worktree checked out at that commit. Not fixed here; flagged
-  as a pre-existing issue for a separate task. -->
+- [x] 4.2 Fixed the pre-existing host-only flake this task originally only
+  flagged: `tests/card_shell_runtime.py`'s `focused()=='k230.card.two'`
+  assertion (after a full horizontal drag then an immediate tap) raced
+  `cs_up`'s deliberate release-continuity coast (up to a 760ms settle,
+  `nix/card-shell-policy/card-shell-policy.c`) -- a tap fired immediately
+  after release could land before the newly selected card reached center.
+  The test now waits past the documented worst-case coast before tapping,
+  and a second, independently found capture race in the same drag loop
+  (`during-drag.png`, grim run immediately after an IPC `motion` with no
+  wait for the next composited frame) now polls instead of asserting a
+  single screenshot. No compositor source changed. Verify with `python3 -m
+  unittest test_card_shell_scaled_cache_runtime -v` (run from `tests/`;
+  both `SWAY_K230_CARD_SCALED_CACHE=0` and `=1` passed, reproduced clean on
+  three additional direct invocations). Root cause, fix and verification
+  recorded in `docs/evidence/card-shell/runtime-tap-after-drag-race/
+  README.md`.
 
 ## 5. Board verification
 
@@ -73,3 +82,20 @@
 
 - [x] 6.1 Validate this change; verify with `openspec validate
   the-card-shell-has-no-video-special-case --strict`.
+
+Coordinator note (2026-09-28): `video-windows-become-ordinary-cards` archived
+today (0 open tasks; `openspec/changes/archive/2026-09-28-video-windows-
+become-ordinary-cards`), creating `openspec/specs/runtime/card-shell/
+spec.md` with a Requirement named "A video playback window is an ordinary,
+closable card" that describes the app_id-keyed stop hook and video-only
+thumbnail freeze this change already removes from source. This change's own
+delta spec (`specs/runtime/card-shell/spec.md` here) is currently authored
+as `## ADDED Requirements` under a *different* requirement name ("Card
+eligibility, close, and deck-preview cost do not vary by app identity"),
+which its own grounding text already says "generalizes and replaces" the
+now-archived one. Whoever archives this change once task 5.1's board
+evidence lands should rewrite this delta as `MODIFIED`/`REMOVED` against
+the now-existing "A video playback window is an ordinary, closable card"
+requirement (per `openspec/config.yaml`'s archive guidance: "Check the
+delta's operation against what openspec/specs/ actually holds"), not leave
+both requirements sitting side by side describing contradictory behavior.
