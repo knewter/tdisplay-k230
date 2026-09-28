@@ -37,8 +37,19 @@ host/QEMU evidence already produced by this worktree lives at
 - [ ] 1.4 Board proof: confirm `systemctl status pipewire wireplumber
       pipewire-pulse` all report `active` after a board boot with this
       change installed, and record `wpctl status` showing at least the
-      Inno codec sink. **Not done in this worktree** -- board access is
-      out of scope here (AGENTS.md).
+      Inno codec sink. **Partially done via the coordinator's own board
+      test** (system `z3zbk6gx8j5gd2pzamrzg5vapa0bjwnd`, this branch
+      before the fixes below): all three services were confirmed `active`,
+      but `wpctl status` showed only a "Dummy Output" sink and `wpctl`
+      itself was unreachable from the running client -- both real bugs,
+      fixed here (`docs/evidence/volume/board/pipewire-services-active.md`
+      has the full diagnosis): the `shell` user's missing `audio` group
+      membership (blocking WirePlumber's ALSA monitor from opening
+      `/dev/snd/*`), and `wpctl`/`pw-dump`/`pw-cli` not reliably reachable
+      via `PATH` alone (now also passed as absolute store paths via
+      `K230_WPCTL`/`K230_PW_DUMP`/`K230_PW_CLI`). **Neither fix has been
+      re-verified on the board yet** -- this worktree cannot touch the
+      board (AGENTS.md); still open until that round trip happens.
 
 ## 2. Volume model and shared slider component (Rust, pure/unit-tested)
 

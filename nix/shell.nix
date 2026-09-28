@@ -986,7 +986,19 @@ in
       isNormalUser = true;
       uid = 1000;
       group = "shell";
-      extraGroups = [ "seat" "video" "input" ];
+      # "audio": /dev/snd/* ships `root:audio 0660` (nixpkgs' own udev
+      # rules, not this file's own doing); without it WirePlumber's ALSA
+      # monitor cannot open card 0 (`K230_I2S_INNO`) at all and falls
+      # back to its own dummy "Built-in Audio" node -- board evidence
+      # (system z3zbk6gx): confirmed directly by a temporary `chmod o+rw
+      # /dev/snd/*` plus restarting `pipewire`/`wireplumber`/
+      # `pipewire-pulse`, which did produce the real card as the default
+      # sink/source, and by `id shell` showing no `audio` group before
+      # this fix. `extraGroups`, not a per-unit `SupplementaryGroups`, so
+      # every future PipeWire-adjacent helper this user runs (not just
+      # the three systemd units below) has the same access without
+      # needing its own copy of this line.
+      extraGroups = [ "seat" "video" "input" "audio" ];
       description = "owns the panel";
     };
 
@@ -1109,13 +1121,39 @@ in
     # contention), rather than adding a fourth daemon purely for a priority
     # bump. Kept to exactly the three processes the task asks for: pipewire,
     # wireplumber, pipewire-pulse.
+    #
+    # Board evidence (system z3zbk6gx) found `module-rt` logging that it
+    # cannot reach a session bus at all, and RTKit unknown, in addition to
+    # the expected "no rtkit installed" outcome. The first half is a real,
+    # separate gap this file's own units left open: none of the three set
+    # `DBUS_SESSION_BUS_ADDRESS`, so there was no session bus for any
+    # D-Bus-using module to reach in the first place -- not just no RTKit
+    # registered on one. All three now connect to the same `shell-session-
+    # bus` every other per-session daemon in this file uses
+    # (`shell-ui`/`shell-notifications`), the same `DBUS_SESSION_BUS_
+    # ADDRESS`/`requires`/`after` convention `shell-ui` already has. This
+    # does not add RTKit itself (still no `security.rtkit.enable`, for the
+    # reason above) -- `module-rt` now has a real bus to ask on, and gets a
+    # clean "no such service" from it instead of "no bus at all", which is
+    # the harmless outcome the task accepted. Checked directly that no
+    # *other* WirePlumber module this image actually needs depends on
+    # D-Bus for basic ALSA sink/source management: the default Lua
+    # session config's `alsa-monitor`/default-policy/default-routing
+    # scripts talk to PipeWire's own registry, never D-Bus: only the
+    # optional MPRIS/Bluetooth-focused modules would, and Bluetooth
+    # support is already off (`pipewireLean`'s own `bluezSupport = false`)
+    # and nothing here enables an MPRIS module.
     systemd.services.pipewire = lib.mkIf cfg.coherentShell {
       description = "PipeWire media server (shell session)";
       wantedBy = [ "shell.service" ];
       bindsTo = [ "shell.service" ];
       partOf = [ "shell.service" ];
-      after = [ "shell.service" ];
-      environment.XDG_RUNTIME_DIR = "/run/shell";
+      requires = [ "shell-session-bus.service" ];
+      after = [ "shell.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
       serviceConfig = {
         Type = "exec";
         User = "shell";
@@ -1136,8 +1174,12 @@ in
       wantedBy = [ "shell.service" ];
       bindsTo = [ "pipewire.service" ];
       partOf = [ "shell.service" ];
-      after = [ "pipewire.service" ];
-      environment.XDG_RUNTIME_DIR = "/run/shell";
+      requires = [ "shell-session-bus.service" ];
+      after = [ "pipewire.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
       serviceConfig = {
         Type = "exec";
         User = "shell";
@@ -1155,8 +1197,12 @@ in
       wantedBy = [ "shell.service" ];
       bindsTo = [ "pipewire.service" ];
       partOf = [ "shell.service" ];
-      after = [ "pipewire.service" "wireplumber.service" ];
-      environment.XDG_RUNTIME_DIR = "/run/shell";
+      requires = [ "shell-session-bus.service" ];
+      after = [ "pipewire.service" "wireplumber.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
       serviceConfig = {
         Type = "exec";
         User = "shell";
@@ -1218,19 +1264,38 @@ in
       # the shell from starting.
       wants = [ "shell-notifications.service" "pipewire.service" "wireplumber.service" ];
       after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" "pipewire.service" "wireplumber.service" ];
+      # `wpctl`/`pw-dump`/`pw-cli`: board evidence (system z3zbk6gx) found
+      # these unreachable from the running client despite `path` below
+      # already listing `wireplumberLean`/`pipewireLean` -- the generated
+      # unit's own `Environment=PATH=...` line does include both
+      # packages' `bin/` directories (checked directly against the built
+      # unit file), but the coordinator's board test still could not
+      # reach `wpctl` from the live process. Rather than keep relying on
+      # `PATH` search working end to end, these three are now also passed
+      # as absolute store paths through their own `K230_WPCTL`/
+      # `K230_PW_DUMP`/`K230_PW_CLI` environment variables -- the exact
+      # same "substitute the real path at build time" convention
+      # `K230_SETTINGS`/`K230_NOTIFICATION_SOCKET`/`K230_SWAYMSG` already
+      # use elsewhere in this file, and what `main.rs`'s own `std::env::
+      # var_os("K230_WPCTL")`-etc. read as their first choice, falling
+      # back to a bare `PATH` lookup only if unset. `path` is left in
+      # place too (harmless, and still covers any other ad-hoc PATH-based
+      # lookup), but these three env vars are now the authoritative,
+      # PATH-independent way this shell finds them.
       environment = {
         XDG_RUNTIME_DIR = "/run/shell";
         SWAYSOCK = "/run/shell/sway-ipc.sock";
         DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+        K230_WPCTL = "${wireplumberLean}/bin/wpctl";
+        K230_PW_DUMP = "${pipewireLean}/bin/pw-dump";
+        K230_PW_CLI = "${pipewireLean}/bin/pw-cli";
       };
       # wireplumber -> wpctl (the rare, human-paced set-volume/set-mute/
       # set-default commit calls); pipewire -> pw-dump/pw-cli (the
       # persistent graph-watcher and command-writer children this
-      # process itself spawns and keeps alive, `pipewire_ipc.rs`). Both
-      # are plain `Command::new("wpctl"|"pw-dump"|"pw-cli")` calls in the
-      # Rust source, resolved via this service's own PATH rather than a
-      # baked-in store path, so a `pipewire`/`wireplumber` package bump
-      # never requires touching this file.
+      # process itself spawns and keeps alive, `pipewire_ipc.rs`). The
+      # three `K230_*` env vars above are the primary, PATH-independent
+      # way this shell finds them now; `path` stays as a fallback PATH.
       path = [ pkgs.coreutils wireplumberLean pipewireLean ];
       serviceConfig = {
         Type = "exec";

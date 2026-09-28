@@ -4749,8 +4749,22 @@ fn serve() -> Result<(), String> {
     // image, or the binary missing from `PATH`) degrades to `None`
     // rather than a hard error: the shell still starts, the volume
     // row/HUD just show "unavailable" (`service_view.audio_error`).
-    let pipewire_events = pipewire_ipc::spawn_monitor(pw_dump_command, &["--monitor"]).ok();
-    let pipewire_writer = pipewire_ipc::WriterHandle::spawn(pw_cli_command).ok();
+    // Board evidence (system z3zbk6gx) found this shell's own journal
+    // had nothing to say when `pw-dump`/`pw-cli` failed to spawn -- an
+    // earlier version of this code discarded the `Result`'s own error
+    // straight into `.ok()` with no log line at all, exactly the kind of
+    // silent failure that makes "is the persistent helper actually
+    // starting?" unanswerable from a journal alone. `eprintln!` (this
+    // process's own stderr, captured by systemd into the unit's journal
+    // like every other early-startup failure in this function, e.g. the
+    // `catalog-watch-unavailable` line above) now names which of the two
+    // children failed and why, before the same `.ok()` degrade.
+    let pipewire_events = pipewire_ipc::spawn_monitor(pw_dump_command, &["--monitor"])
+        .inspect_err(|error| eprintln!("rust-shell pipewire-monitor-spawn-failed {error}"))
+        .ok();
+    let pipewire_writer = pipewire_ipc::WriterHandle::spawn(pw_cli_command)
+        .inspect_err(|error| eprintln!("rust-shell pipewire-writer-spawn-failed {error}"))
+        .ok();
     let wifi_socket = std::env::var_os("K230_WIFI_SOCKET")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("/run/k230-wifi-settings/broker.sock"));

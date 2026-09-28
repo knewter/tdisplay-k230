@@ -246,3 +246,23 @@ derivation's own `mesonFlags`/`buildInputs` construction, not a supported
 override, and was judged not worth that fragility (a nixpkgs version bump
 could silently re-widen or break a hand-patched flags list with no build
 failure to notice it).
+
+## Decision 10: The `shell` user's own group membership, and absolute-path env vars, not PATH alone
+
+Board evidence (`docs/evidence/volume/board/pipewire-services-active.md`)
+found two gaps a host build/QEMU capture could never have caught: `/dev/
+snd/*` ships `root:audio 0660`, so WirePlumber's ALSA monitor could not
+open the real card without `shell` being in the `audio` group (fixed via
+`users.users.shell.extraGroups`, not a per-unit `SupplementaryGroups`,
+since every PipeWire-adjacent process here already runs as that user); and
+`wpctl` was unreachable from the running client despite the unit's own
+generated `PATH` already including it (`path = [...]` alone was not
+sufficient in practice, for a reason this change could not fully pin down
+remotely). `K230_WPCTL`/`K230_PW_DUMP`/`K230_PW_CLI` environment variables
+passing absolute store paths -- the same convention `K230_SETTINGS`/
+`K230_SWAYMSG` already use -- are now the authoritative, PATH-independent
+way `main.rs` finds these three binaries; `path` stays only as a fallback.
+Also added: `DBUS_SESSION_BUS_ADDRESS` on all three PipeWire units,
+connected to the existing `shell-session-bus`, so `module-rt`'s own
+"cannot reach a session bus" warning becomes a real (still harmless,
+still-no-RTKit) bus round trip instead of no bus at all.
