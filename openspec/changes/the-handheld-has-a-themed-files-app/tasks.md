@@ -49,14 +49,16 @@
   (not portfolio-specific) is the bulk of it.
 - [x] 2.3 Build `pkgsCross.riscv64.nautilus`. Verify with the same command
   form against the `nautilus` attribute. Launched after 2.2 reached its own
-  gtk4/libadwaita derivations, so those are shared/reused rather than
-  rebuilt. <!-- Fill in PASS/FAIL and store path once this run (started
-  15:22, see docs/evidence/files-app/ or nautilus-build.log) finishes. -->
-  In progress as of this writing: past its own gst-plugins-bad/glycin/
-  gnome-desktop chain, into libportal-gtk4/libglycin-gtk4 -- the shared
-  gtk4-riscv64/libadwaita-riscv64 built for 2.2 are being reused, not
-  rebuilt (confirmed no `building 'gtk4-riscv64...` or
-  `'libadwaita-riscv64...` line reappears in nautilus-build.log).
+  gtk4/libadwaita derivations, so those were shared/reused rather than
+  rebuilt (confirmed: no `building 'gtk4-riscv64...` or
+  `'libadwaita-riscv64...` line reappears in nautilus-build.log). **PASS**:
+  `/nix/store/2mrz6i0r38z0pjxxn451vc68sqr8lv7m-nautilus-riscv64-unknown-linux-gnu-50.2.2`,
+  closure 1015.3 MiB (`nix path-info -Sh`) -- smaller than Portfolio's own
+  1.2 GiB standalone number despite Nautilus's larger dependency *list*
+  (tracker/localsearch/gnome-user-share/modemmanager), because Portfolio's
+  own closure count already carries the full gtk4-pulled GStreamer/media
+  stack that both share; Nautilus's marginal cost on top of that shared
+  base is smaller than it looks from derivation counts alone.
 
 ## 3. Theme integration
 
