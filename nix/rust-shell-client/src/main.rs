@@ -123,6 +123,20 @@ const THEME_PULSE_INTERVAL: Duration = Duration::from_millis(160);
 /// roughly 2Hz instead of once per frame -- enough to see a sustained
 /// board number without flooding the journal during a long scroll.
 const DRAWER_FRAME_LOG_INTERVAL: Duration = Duration::from_millis(500);
+/// Duration of the drawer long-press-drag's reveal animation (coordinator
+/// follow-up: "slide down or fade out over about 180-220 ms with
+/// ease-out"), the midpoint of that range.
+const DRAWER_DRAG_REVEAL_MS: u64 = 200;
+
+/// A plain pixel copy of the drawer's own last-rendered frame, taken once
+/// at the instant a long-press-drag arms (`begin_drawer_home_drag`), and
+/// animated (slide + fade, `RendererCache::draw_drawer_reveal`) for
+/// `DRAWER_DRAG_REVEAL_MS` before this client switches to the steady-state
+/// Cancel-band-only rendering (`RendererCache::draw_drawer_drag`).
+struct DrawerDragReveal {
+    started: Instant,
+    snapshot: Vec<u8>,
+}
 /// How long after this shell's own volume/mute write a matching PipeWire
 /// graph confirmation is still treated as an echo of that write, not a
 /// fresh external change (`apply_pipewire_event`'s `volume_echo_until_ms`
@@ -1052,6 +1066,13 @@ struct ShellClient {
     /// "needs to change" without re-deriving it from `self.layer`'s own
     /// (write-only, from here) Wayland state.
     wifi_keyboard_active: bool,
+    /// Mirrors whether Home's open-folder rename field currently holds
+    /// keyboard focus (task 2, `HomeScreen::OpenFolder::editing_name`) --
+    /// the exact same role `wifi_keyboard_active` plays for the Wi-Fi
+    /// password field, just against `home_surface.layer` instead of
+    /// `self.layer` (Home is its own always-mapped surface, not the
+    /// on-demand overlay).
+    home_keyboard_active: bool,
     /// `k230-keyboard-gesture-signal`'s path (`K230_KEYBOARD_SIGNAL`), the
     /// same helper the compositor's own two-finger keyboard gesture uses
     /// (`nix/shell.nix`'s `keyboardGestureSignal`, run from `adapter.c`) --
@@ -1276,6 +1297,11 @@ struct ShellClient {
     /// methods' own Drawer branches. The dragged item itself lives in
     /// `self.home.drag` (a `DragSource::FromDrawer`), not duplicated here.
     drawer_home_drag: Option<i32>,
+    /// Live only for the first `DRAWER_DRAG_REVEAL_MS` of a drawer
+    /// long-press-drag -- the animated slide/fade transition; `None`
+    /// before one starts, once it finishes, and whenever the drag itself
+    /// is not live at all.
+    drawer_drag_reveal: Option<DrawerDragReveal>,
     /// Last time a battery-widget poll ran (`home_widgets::battery::
     /// POLL_INTERVAL`) -- cheap synchronous `/sys` reads, safe to run
     /// directly on this thread, unlike weather's own network fetch.
@@ -1549,6 +1575,87 @@ impl ShellClient {
         if let Some(intent) = key_event_intent(u32::from(event.keysym), event.utf8.as_deref()) {
             self.wifi_action(intent);
         }
+    }
+
+    /// The Home surface's own `Exclusive` keyboard focus, granted only
+    /// while the open-folder overlay's name field is being edited (task 2)
+    /// -- otherwise an exact mirror of `sync_wifi_keyboard`, just against
+    /// `home_surface.layer` (Home is its own always-mapped surface, not
+    /// `self.layer`).
+    fn sync_home_keyboard(&mut self) {
+        let want = self.home.open_folder.as_ref().is_some_and(|open| open.editing_name);
+        if want == self.home_keyboard_active {
+            return;
+        }
+        self.home_keyboard_active = want;
+        if let Some(layer) = self.home_surface.layer.as_ref() {
+            layer.set_keyboard_interactivity(if want {
+                KeyboardInteractivity::Exclusive
+            } else {
+                KeyboardInteractivity::None
+            });
+            layer.commit();
+        }
+        self.home.set_keyboard_inset(if want { self.keyboard_height_px } else { 0.0 });
+        if let Some(path) = &self.keyboard_signal_path {
+            if let Err(error) = std::process::Command::new(path)
+                .arg(if want { "show" } else { "hide" })
+                .spawn()
+            {
+                self.log(&format!("home-keyboard-signal-failed {error}"));
+            }
+        }
+        self.home_mark_dirty();
+    }
+
+    /// Mirrors `forget_wifi_keyboard` for Home's own surface -- unconditionally
+    /// drops keyboard focus/reflow when the keyboard capability itself just
+    /// disappeared.
+    fn forget_home_keyboard(&mut self) {
+        self.home_keyboard_active = false;
+        self.home.set_keyboard_inset(0.0);
+        if let Some(layer) = self.home_surface.layer.as_ref() {
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.commit();
+        }
+        self.home_mark_dirty();
+    }
+
+    /// The `KeyboardHandler::press_key`/`repeat_key` bridge for Home's
+    /// open-folder rename field, exactly mirroring `handle_wifi_key`:
+    /// reuses `wifi_ui::key_event_intent`'s keysym/utf8 parsing (it is a
+    /// plain backspace/enter/escape/char classifier, not Wi-Fi-specific in
+    /// what it accepts) so this needs no second copy of that mapping.
+    /// Enter commits (task 2: "Enter commits"), Escape cancels ("Escape
+    /// cancels"), matching every other text field in this shell.
+    fn handle_home_key(&mut self, qh: &QueueHandle<Self>, event: KeyEvent) {
+        if !self.home_keyboard_active {
+            return;
+        }
+        let Some(intent) = key_event_intent(u32::from(event.keysym), event.utf8.as_deref()) else {
+            return;
+        };
+        match intent {
+            WifiIntent::Backspace => self.home.backspace_folder_name(),
+            WifiIntent::Connect => {
+                if let Some(action) = self.home.apply_folder_rename() {
+                    self.apply_home_action(qh, action);
+                }
+                self.sync_home_keyboard();
+            }
+            WifiIntent::Back => {
+                self.home.cancel_folder_rename();
+                self.sync_home_keyboard();
+            }
+            WifiIntent::Key(ch) => self.home.push_folder_name_char(ch),
+            // `key_event_intent` (a plain keysym/utf8 classifier, not
+            // Wi-Fi-specific in what it can produce) never actually
+            // returns any of `Intent`'s other, touch-only variants
+            // (`Refresh`/`Select`/etc.) -- this arm exists only so the
+            // match stays exhaustive as that enum grows.
+            _ => {}
+        }
+        self.home_mark_dirty();
     }
 
     fn submit_wifi(&mut self, request: WifiRequest) {
@@ -3001,17 +3108,55 @@ impl ShellClient {
         let Some(&real_index) = self.drawer_filtered_apps().get(display_index) else {
             return;
         };
-        let Some(app) = self.apps.get(real_index) else {
+        let Some(id) = self.apps.get(real_index).map(|app| app.id.clone()) else {
             return;
         };
+        let snapshot = self.capture_drawer_snapshot();
         self.drawer_home_drag = Some(touch_id);
-        self.home.begin_external_drag(app.id.clone(), point);
+        self.drawer_drag_reveal = snapshot.map(|snapshot| DrawerDragReveal { started: Instant::now(), snapshot });
+        self.home.begin_external_drag(id, point);
         // The drawer surface now paints transparently (Home shows through)
         // plus the lifted icon and the Cancel band -- see `draw`'s own
         // Drawer branch -- and Home paints its own drop-target highlight.
         self.dirty = true;
         self.home_mark_dirty();
         self.log("home-drag-begin");
+    }
+
+    /// A plain pixel copy of the drawer's own last-rendered frame (task 1's
+    /// reveal animation): renders the current Route/scroll/search state
+    /// exactly as `draw` itself would, into a scratch buffer instead of the
+    /// live SHM canvas, so `DrawerDragReveal` can animate it afterward
+    /// without re-rendering the scene on every subsequent frame. `None`
+    /// only on a genuinely invalid panel geometry (`frame_bytes`) or a
+    /// render failure -- the caller then just skips the animation and goes
+    /// straight to the steady-state Cancel-band rendering.
+    fn capture_drawer_snapshot(&mut self) -> Option<Vec<u8>> {
+        let size = frame_bytes(self.width, self.height)?;
+        let mut canvas = vec![0u8; size];
+        let progress = if self.panel_close.active() {
+            self.panel_close.progress()
+        } else if self.reveal.surface().is_some() {
+            self.reveal.progress()
+        } else {
+            1.0
+        };
+        self.renderer
+            .draw_with_hud(
+                &mut canvas,
+                RenderParams {
+                    width: self.width,
+                    height: self.height,
+                    route: self.route,
+                    progress,
+                    scroll: if self.route == Route::Drawer { self.nav.scroll } else { 0.0 },
+                },
+                &self.apps,
+                &self.hud,
+                self.started.elapsed().as_millis() as u64,
+            )
+            .ok()?;
+        Some(canvas)
     }
 
     /// Resolves the drawer long-press-drag's release: Cancel (released over
@@ -3024,6 +3169,7 @@ impl ShellClient {
     /// same one a swipe-to-close release already uses.
     fn end_drawer_home_drag(&mut self, qh: &QueueHandle<Self>, point: (f64, f64)) {
         self.drawer_home_drag = None;
+        self.drawer_drag_reveal = None;
         if navigation::drag_cancel_zone_hit(point, self.height) {
             self.home.cancel_external_drag();
             self.home_mark_dirty();
@@ -3033,15 +3179,39 @@ impl ShellClient {
             return;
         }
         if let Some(action) = self.home.release_drag(point, self.home_surface.width, self.home_surface.height) {
-            match action {
-                HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
-                HomeAction::LayoutChanged => self.persist_home_layout(),
-            }
+            // `home-drag-placed`: a plain, always-emitted completion marker
+            // for this hand-off (unlike `persist_home_layout`, which only
+            // ever logs on a *failed* save) -- the QEMU harness's own
+            // drag-to-place scenario waits on this rather than polling the
+            // layout file mid-gesture.
+            self.log("home-drag-placed");
+            self.apply_home_action(qh, action);
         }
         self.home_mark_dirty();
         self.begin_animated_close();
         self.dirty = true;
         self.draw(qh);
+    }
+
+    /// Applies a `HomeAction` returned by any `HomeScreen` gesture entry
+    /// point -- shared by the Home surface's own touch dispatch and the
+    /// drawer-drag hand-off's release, so both stay in sync as
+    /// `HomeAction` grows new variants (e.g. the widget-picker's
+    /// `OpenWallpaperAndStyle`, coordinator follow-up).
+    fn apply_home_action(&mut self, qh: &QueueHandle<Self>, action: HomeAction) {
+        match action {
+            HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
+            HomeAction::LayoutChanged => self.persist_home_layout(),
+            HomeAction::OpenWallpaperAndStyle => {
+                // Reuses the existing, unmodified Settings/theme-picker
+                // route exactly as its own "Theme" row tap would
+                // (`theme_action`/`theme_ui.rs` untouched) -- see
+                // `design.md`'s note on why this is a navigation, not a
+                // reimplementation.
+                self.show(qh, Route::Settings);
+                self.theme_action(ThemeIntent::Open);
+            }
+        }
     }
 
     /// Called after any Home layout mutation (pin/unpin/reorder/page move);
@@ -3155,6 +3325,14 @@ impl ShellClient {
             self.apps = fresh;
             self.dirty = true;
             self.home_mark_dirty();
+            // Task 5: re-warm the drawer grid for the changed catalog now,
+            // not on whatever tap next opens the drawer.
+            let (reference_width, reference_height) = if self.width > 0 && self.height > 0 {
+                (self.width, self.height)
+            } else {
+                (568, 1232)
+            };
+            self.renderer.prebuild_drawer_grid(&self.apps, reference_width, reference_height);
         }
     }
 
@@ -3546,14 +3724,30 @@ impl ShellClient {
             (self.buffers.len() - 1, canvas)
         };
         if self.drawer_home_drag.is_some() {
-            // Task 1's live drag: paint nothing but the Cancel band, so
-            // Home's own `Layer::Bottom` surface (already painting the
-            // lifted icon and drop-target highlight) shows through
-            // everywhere else -- see `RendererCache::draw_drawer_drag`'s
-            // own doc.
-            if let Err(error) = self.renderer.draw_drawer_drag(canvas, self.width, self.height) {
-                self.log(&format!("home-drag-render-failed {error}"));
-                return false;
+            // Task 1's live drag: for the first ~200ms, animate the
+            // drawer's own last-rendered frame sliding down and fading out
+            // (`RendererCache::draw_drawer_reveal`); once that finishes,
+            // paint nothing but the Cancel band, so Home's own
+            // `Layer::Bottom` surface (already painting the lifted icon and
+            // drop-target highlight) shows through everywhere else -- see
+            // `RendererCache::draw_drawer_drag`'s own doc.
+            let mut reveal_expired = true;
+            if let Some(reveal) = self.drawer_drag_reveal.as_ref() {
+                let progress = (reveal.started.elapsed().as_millis() as f64 / DRAWER_DRAG_REVEAL_MS as f64).clamp(0.0, 1.0);
+                if progress < 1.0 {
+                    reveal_expired = false;
+                    if let Err(error) = self.renderer.draw_drawer_reveal(canvas, self.width, self.height, &reveal.snapshot, progress) {
+                        self.log(&format!("home-drag-reveal-render-failed {error}"));
+                        return false;
+                    }
+                }
+            }
+            if reveal_expired {
+                self.drawer_drag_reveal = None;
+                if let Err(error) = self.renderer.draw_drawer_drag(canvas, self.width, self.height) {
+                    self.log(&format!("home-drag-render-failed {error}"));
+                    return false;
+                }
             }
         } else if let Some(splash) = self.splash.clone() {
             // No slide/reveal progress at all: the splash is always
@@ -3951,6 +4145,7 @@ impl SeatHandler for ShellClient {
                 keyboard.release();
             }
             self.forget_wifi_keyboard();
+            self.forget_home_keyboard();
             self.log("keyboard-capability-lost");
         }
     }
@@ -3974,6 +4169,7 @@ impl SeatHandler for ShellClient {
             keyboard.release();
         }
         self.forget_wifi_keyboard();
+        self.forget_home_keyboard();
     }
 }
 
@@ -4214,6 +4410,7 @@ impl TouchHandler for ShellClient {
                 self.volume_icon_touch = None;
                 self.output_picker_touch = None;
                 if self.drawer_home_drag.take().is_some() {
+                    self.drawer_drag_reveal = None;
                     self.home.cancel_external_drag();
                     self.home_mark_dirty();
                 }
@@ -4282,11 +4479,9 @@ impl TouchHandler for ShellClient {
                 self.home_surface.width,
                 self.home_surface.height,
             ) {
-                match action {
-                    HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
-                    HomeAction::LayoutChanged => self.persist_home_layout(),
-                }
+                self.apply_home_action(qh, action);
             }
+            self.sync_home_keyboard();
             self.home_mark_dirty();
             self.draw_home(qh);
             return;
@@ -5012,6 +5207,12 @@ impl KeyboardHandler for ShellClient {
         if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
             self.log("wifi-keyboard-focus-granted");
         }
+        if self.home_surface.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
+            // Same role as `wifi-keyboard-focus-granted`, for Home's own
+            // open-folder rename field (task 2) -- what a QEMU proof of
+            // that flow waits on before sending any keys.
+            self.log("home-keyboard-focus-granted");
+        }
     }
     fn leave(
         &mut self,
@@ -5031,22 +5232,24 @@ impl KeyboardHandler for ShellClient {
     fn press_key(
         &mut self,
         _: &Connection,
-        _: &QueueHandle<Self>,
+        qh: &QueueHandle<Self>,
         _: &wl_keyboard::WlKeyboard,
         _: u32,
         event: KeyEvent,
     ) {
-        self.handle_wifi_key(event);
+        self.handle_wifi_key(event.clone());
+        self.handle_home_key(qh, event);
     }
     fn repeat_key(
         &mut self,
         _: &Connection,
-        _: &QueueHandle<Self>,
+        qh: &QueueHandle<Self>,
         _: &wl_keyboard::WlKeyboard,
         _: u32,
         event: KeyEvent,
     ) {
-        self.handle_wifi_key(event);
+        self.handle_wifi_key(event.clone());
+        self.handle_home_key(qh, event);
     }
     fn release_key(
         &mut self,
@@ -5252,6 +5455,7 @@ fn serve() -> Result<(), String> {
         touch_device: None,
         keyboard_device: None,
         wifi_keyboard_active: false,
+        home_keyboard_active: false,
         keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
         keyboard_height_px: std::env::var("K230_KEYBOARD_HEIGHT")
             .ok()
@@ -5338,6 +5542,7 @@ fn serve() -> Result<(), String> {
         home_touch_id: None,
         home_last_point: (0.0, 0.0),
         drawer_home_drag: None,
+        drawer_drag_reveal: None,
         battery_polled_at: None,
         weather_pending: None,
         weather_checked_at: None,
@@ -5354,6 +5559,15 @@ fn serve() -> Result<(), String> {
     state.renderer.set_appearance(appearance.active().cloned());
     state.renderer.set_services(state.service_view.clone());
     state.renderer.set_theme_view(state.theme_view.clone());
+    // Task 5 (coordinator follow-up): warm the drawer's own pre-rendered
+    // grid bitmap now, before this client has even mapped a surface, so
+    // its first real open (`K230_DRAWER_FRAME`'s own board measurement:
+    // ms=549.89 cold, ms=1.04 once warm) reuses this instead of paying
+    // that cost the instant a person taps Apps. Uses the panel's reference
+    // size (568x1232) since no `configure` has arrived yet to say
+    // otherwise -- the same fallback `pin_app_from_drawer`'s own history
+    // already established for this exact "before first configure" gap.
+    state.renderer.prebuild_drawer_grid(&state.apps, 568, 1232);
     if !state.ensure_wallpaper(&qh) {
         return Err("wallpaper layer unavailable".into());
     }
@@ -5738,6 +5952,19 @@ fn serve() -> Result<(), String> {
                                     event.snapshot.as_ref().map(|snapshot| snapshot.path.clone());
                                 state.video_display = video_key;
                                 state.renderer.set_appearance(event.snapshot.clone());
+                                // Task 5: re-warm the drawer grid for the
+                                // new theme now, at this settled Commit/
+                                // Rollback point, rather than waiting for
+                                // whatever taps Apps next -- a no-op
+                                // (`DrawerGridCache::ensure`'s own freshness
+                                // check) if the generation did not actually
+                                // change.
+                                let (reference_width, reference_height) = if state.width > 0 && state.height > 0 {
+                                    (state.width, state.height)
+                                } else {
+                                    (568, 1232)
+                                };
+                                state.renderer.prebuild_drawer_grid(&state.apps, reference_width, reference_height);
                                 state.appearance_pending = true;
                                 state.dirty = true;
                                 state.wallpaper.dirty = true;
@@ -5867,6 +6094,13 @@ fn serve() -> Result<(), String> {
             }
         }
         if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
+            state.dirty = true;
+        }
+        // Keeps the drawer-drag reveal animation (task 1) advancing every
+        // tick even while the finger holds still right after arming it --
+        // otherwise, with no further motion event, nothing would ever mark
+        // this surface dirty again until the touch moves or lifts.
+        if state.drawer_drag_reveal.is_some() {
             state.dirty = true;
         }
         state.tick_home_widgets(now);
@@ -6249,6 +6483,7 @@ fn serve() -> Result<(), String> {
             || routes.has_line()
             || pending_appearance.is_some()
             || state.home.is_animating()
+            || state.drawer_drag_reveal.is_some()
             || state.catalog_pending_rescan.is_some()
             || state
                 .splash

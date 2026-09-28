@@ -345,28 +345,44 @@ pub fn folder_mini_icon_rects(plate_x: f64, plate_y: f64, plate_size: f64) -> [(
 /// leaving the same top inset every other overlay (Shade/Settings) respects
 /// and generous side margins so Home's wallpaper still reads behind it.
 pub fn folder_overlay_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    folder_overlay_rect_inset(width, height, 0.0)
+}
+
+/// The same card, shifted up by `keyboard_inset` (the on-screen keyboard's
+/// reserved height, task 2: "the layout stays unsquashed") so its bottom
+/// edge clears the keyboard rather than being covered by it, while renaming
+/// a folder -- never shifted past the compositor's own top-edge gesture
+/// band. `keyboard_inset` of `0.0` is exactly [`folder_overlay_rect`].
+pub fn folder_overlay_rect_inset(width: u32, height: u32, keyboard_inset: f64) -> (f64, f64, f64, f64) {
     let x = SIDE_MARGIN * 1.5;
     let y = GRID_TOP;
     let w = f64::from(width) - 2.0 * x;
     let h = f64::from(height) - y - DOCK_HEIGHT - DOTS_HEIGHT;
-    (x, y, w, h)
+    let shifted_y = (y - keyboard_inset.max(0.0)).max(PILL_TOP);
+    (x, shifted_y, w, h)
 }
 
 /// Height reserved at the top of the open-folder card for its editable
 /// name label (task: "an editable name (tap the name to rename)").
 pub const FOLDER_NAME_HEIGHT: f64 = 56.0;
 
-/// The folder name label's own tap rect, within the overlay card.
-pub fn folder_name_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
-    let (x, y, w, _) = folder_overlay_rect(width, height);
+fn folder_name_rect_of(card: (f64, f64, f64, f64)) -> (f64, f64, f64, f64) {
+    let (x, y, w, _) = card;
     (x, y, w, FOLDER_NAME_HEIGHT)
 }
 
-/// One app tile's rect inside an open folder's own grid, below the name
-/// label -- same `COLUMNS` density as the Home grid, but scoped to the
-/// card's own width/height rather than the full panel.
-pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
-    let (card_x, card_y, card_w, _) = folder_overlay_rect(width, height);
+/// The folder name label's own tap rect, within the overlay card.
+pub fn folder_name_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    folder_name_rect_of(folder_overlay_rect(width, height))
+}
+
+/// [`folder_name_rect`], within the keyboard-shifted card.
+pub fn folder_name_rect_inset(width: u32, height: u32, keyboard_inset: f64) -> (f64, f64, f64, f64) {
+    folder_name_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset))
+}
+
+fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize) -> (f64, f64, f64, f64) {
+    let (card_x, card_y, card_w, _) = card;
     let grid_top = card_y + FOLDER_NAME_HEIGHT + 12.0;
     let column = index % COLUMNS;
     let row = index / COLUMNS;
@@ -379,21 +395,70 @@ pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64,
     )
 }
 
+/// One app tile's rect inside an open folder's own grid, below the name
+/// label -- same `COLUMNS` density as the Home grid, but scoped to the
+/// card's own width/height rather than the full panel.
+pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
+    folder_app_rect_of(folder_overlay_rect(width, height), index)
+}
+
+/// [`folder_app_rect`], within the keyboard-shifted card.
+pub fn folder_app_rect_inset(width: u32, height: u32, index: usize, keyboard_inset: f64) -> (f64, f64, f64, f64) {
+    folder_app_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset), index)
+}
+
 /// Which app tile, if any, inside an open folder's grid `point` lands on,
 /// bounded to `count` actual members (an open folder with more members
 /// than fit in the card is not supported yet -- see this function's own
 /// call sites' doc for the deferred-scrolling note).
-pub fn folder_app_at(point: (f64, f64), width: u32, height: u32, count: usize) -> Option<usize> {
+pub fn folder_app_at(point: (f64, f64), width: u32, height: u32, count: usize, keyboard_inset: f64) -> Option<usize> {
     if !point.0.is_finite() || !point.1.is_finite() {
         return None;
     }
     for index in 0..count {
-        let (x, y, w, h) = folder_app_rect(width, height, index);
+        let (x, y, w, h) = folder_app_rect_inset(width, height, index, keyboard_inset);
         if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
             return Some(index);
         }
     }
     None
+}
+
+/// The widget-picker sheet's own card rect (task: long-press empty Home
+/// space opens "Widgets / Wallpaper & style / Home settings") -- the same
+/// centered card region an open folder uses; the two are never shown at
+/// once (mutually exclusive `HomeScreen` state), so sharing the region
+/// costs nothing and keeps every overlay's card in one visually consistent
+/// place.
+pub fn picker_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    folder_overlay_rect(width, height)
+}
+
+/// One row's height in the picker sheet, for both its menu and its widget-
+/// preview list -- both are just "up to 4 rows in a card", so one row
+/// geometry serves either page.
+const PICKER_ROW_HEIGHT: f64 = 92.0;
+const PICKER_ROW_GAP: f64 = 14.0;
+const PICKER_TOP_PAD: f64 = 20.0;
+
+/// The `index`-th row's rect within the picker card.
+pub fn picker_row_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
+    let (x, y, w, _) = picker_rect(width, height);
+    (
+        x + 16.0,
+        y + PICKER_TOP_PAD + index as f64 * (PICKER_ROW_HEIGHT + PICKER_ROW_GAP),
+        w - 32.0,
+        PICKER_ROW_HEIGHT,
+    )
+}
+
+/// Which row, if any, of the picker's current page (bounded to `count` rows
+/// actually shown) `point` lands on.
+pub fn picker_row_at(point: (f64, f64), width: u32, height: u32, count: usize) -> Option<usize> {
+    if !point.0.is_finite() || !point.1.is_finite() {
+        return None;
+    }
+    (0..count).find(|&index| hits(point, picker_row_rect(width, height, index)))
 }
 
 pub fn hits(point: (f64, f64), rect: (f64, f64, f64, f64)) -> bool {
@@ -536,11 +601,40 @@ mod tests {
 
     #[test]
     fn folder_app_at_hits_only_the_requested_count_of_tiles() {
-        assert_eq!(folder_app_at((0.0, 0.0), 568, 1232, 4), None, "above the card's own grid");
+        assert_eq!(folder_app_at((0.0, 0.0), 568, 1232, 4, 0.0), None, "above the card's own grid");
         let (x, y, w, h) = folder_app_rect(568, 1232, 0);
         let point = (x + w / 2.0, y + h / 2.0);
-        assert_eq!(folder_app_at(point, 568, 1232, 4), Some(0));
-        assert_eq!(folder_app_at(point, 568, 1232, 0), None, "no members at all yet");
+        assert_eq!(folder_app_at(point, 568, 1232, 4, 0.0), Some(0));
+        assert_eq!(folder_app_at(point, 568, 1232, 0, 0.0), None, "no members at all yet");
+    }
+
+    #[test]
+    fn folder_overlay_rect_inset_shifts_the_card_up_but_not_past_the_top_band() {
+        let plain = folder_overlay_rect(568, 1232);
+        let shifted = folder_overlay_rect_inset(568, 1232, 40.0);
+        assert_eq!(shifted.1, plain.1 - 40.0);
+        assert_eq!(shifted.0, plain.0);
+        assert_eq!((shifted.2, shifted.3), (plain.2, plain.3));
+        assert_eq!(folder_overlay_rect_inset(568, 1232, 0.0), plain);
+        // An enormous inset still stays below the compositor's own top-edge
+        // gesture band rather than going negative/off-panel.
+        let extreme = folder_overlay_rect_inset(568, 1232, 5000.0);
+        assert!(extreme.1 >= PILL_TOP);
+    }
+
+    #[test]
+    fn picker_rows_are_distinct_finger_sized_and_bounded_by_count() {
+        for index in 0..4 {
+            let (_, _, w, h) = picker_row_rect(568, 1232, index);
+            assert!(w >= 56.0 && h >= 56.0);
+        }
+        let (x, y, w, h) = picker_row_rect(568, 1232, 1);
+        let point = (x + w / 2.0, y + h / 2.0);
+        assert_eq!(picker_row_at(point, 568, 1232, 3), Some(1));
+        assert_eq!(picker_row_at(point, 568, 1232, 1), None, "row 1 not shown when only 1 row is bound");
+        let (x0, y0, w0, h0) = picker_row_rect(568, 1232, 0);
+        assert!((y + h / 2.0) > y0 + h0, "rows do not overlap");
+        let _ = (x0, w0);
     }
 
     #[test]

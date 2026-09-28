@@ -4,7 +4,7 @@ use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
     catalog::{terminal_like, AppEntry},
     home_grid::{self, HomeSlot},
-    home_screen::{DragSource, HomeScreen},
+    home_screen::{DragSource, HomeScreen, WidgetPickerPage},
     home_state::{HomeItem, WidgetKind},
     home_widgets::weather::WeatherDisplay,
     icon::IconCache,
@@ -2846,19 +2846,73 @@ fn paint_open_folder(
     let style = visual_style(theme, "launcher");
     cr.set_source_rgba(0.0, 0.0, 0.0, 0.5);
     let _ = cr.paint();
-    let (cx, cy, cw, ch) = home_grid::folder_overlay_rect(width, height);
+    let (cx, cy, cw, ch) = home_grid::folder_overlay_rect_inset(width, height, home.keyboard_inset);
     service_card(cr, theme, "launcher", cx, cy, cw, ch, false);
-    let name_rect = home_grid::folder_name_rect(width, height);
+    let name_rect = home_grid::folder_name_rect_inset(width, height, home.keyboard_inset);
     let display_name = if open.editing_name { open.name_buffer.as_str() } else { folder.name.as_str() };
     let shown_name = if display_name.is_empty() { " " } else { display_name };
     centered_label(cr, shown_name, name_rect.0, name_rect.1 + name_rect.3 / 2.0 - 14.0, name_rect.2, 26.0, style.accent);
+    // A member currently being dragged back out of this folder (task 3)
+    // paints only as the floating lifted icon, not also here in its grid.
+    let dragged_from_this_folder = home.drag.as_ref().and_then(|(source, _)| match source {
+        DragSource::FromFolder { folder: slot, app_id } if *slot == open.slot => Some(app_id.as_str()),
+        _ => None,
+    });
     for (index, id) in folder.apps.iter().enumerate() {
-        let (x, y, w, _h) = home_grid::folder_app_rect(width, height, index);
+        if Some(id.as_str()) == dragged_from_this_folder {
+            continue;
+        }
+        let (x, y, w, _h) = home_grid::folder_app_rect_inset(width, height, index, home.keyboard_inset);
         let plate_size = w.min(home_grid::ICON_PLATE_SIZE);
         let plate_x = x + (w - plate_size) / 2.0;
         if let Some(app) = app_by_id(apps, id) {
             paint_icon_plate(cr, theme, icons, app, plate_x, y, plate_size, plate_size * 0.72, false);
             shadowed_label(cr, &app.name, x, y + plate_size + 6.0, w, 14.0, brush_rgb(theme, "launcher", "text", style.text));
+        }
+    }
+}
+
+/// Paints the widget-picker sheet (coordinator follow-up: long-press empty
+/// Home space). A dim scrim plus a card of rows, sharing `home_grid`'s
+/// `picker_row_rect` geometry with `home_screen`'s own hit-testing so a
+/// tap always lands exactly where a row is drawn.
+fn paint_widget_picker(cr: &Context, width: u32, height: u32, theme: Option<&AppearanceSnapshot>, home: &HomeScreen) {
+    let Some(picker) = home.widget_picker else { return };
+    let style = visual_style(theme, "launcher");
+    cr.set_source_rgba(0.0, 0.0, 0.0, 0.5);
+    let _ = cr.paint();
+    let (cx, cy, cw, ch) = home_grid::picker_rect(width, height);
+    service_card(cr, theme, "launcher", cx, cy, cw, ch, false);
+    let rows: Vec<(String, String)> = match picker.page {
+        WidgetPickerPage::Menu => vec![
+            ("Widgets".to_string(), "Clock, battery, weather".to_string()),
+            ("Wallpaper & style".to_string(), "Theme and background".to_string()),
+            ("Home settings".to_string(), "Grid size".to_string()),
+        ],
+        WidgetPickerPage::Widgets => vec![
+            ("< Back".to_string(), String::new()),
+            ("Clock".to_string(), "4x2 - hold to drag onto Home".to_string()),
+            ("Battery".to_string(), "2x2 - hold to drag onto Home".to_string()),
+            ("Weather".to_string(), "2x2 - hold to drag onto Home".to_string()),
+        ],
+        WidgetPickerPage::HomeSettings => {
+            let rows_per_page = home_grid::rows_per_page(height);
+            vec![
+                ("< Back".to_string(), String::new()),
+                (
+                    "Grid".to_string(),
+                    format!("{} columns x {rows_per_page} rows per page (read-only)", home_grid::COLUMNS),
+                ),
+            ]
+        }
+    };
+    for (index, (title, subtitle)) in rows.into_iter().enumerate() {
+        let (x, y, w, h) = home_grid::picker_row_rect(width, height, index);
+        service_card(cr, theme, "controls", x, y, w, h, false);
+        let label_color = if title.starts_with('<') { style.muted } else { style.accent };
+        centered_label(cr, &title, x, y + 12.0, w, 22.0, label_color);
+        if !subtitle.is_empty() {
+            shadowed_label(cr, &subtitle, x, y + h - 30.0, w, 14.0, brush_rgb(theme, "launcher", "text", style.text));
         }
     }
 }
@@ -2894,7 +2948,7 @@ pub fn paint_home(
     let pressed = home.pressed(width, height);
     let dragged_slot = home.drag.as_ref().and_then(|(source, _)| match source {
         DragSource::Existing(slot) => Some(*slot),
-        DragSource::FromDrawer(_) => None,
+        DragSource::FromDrawer(_) | DragSource::Widget(_) | DragSource::FromFolder { .. } => None,
     });
     let drop_target = home.drop_target(width, height);
     let show_drop_target = home.drag.is_some() && drop_target.is_some() && drop_target != dragged_slot;
@@ -3049,6 +3103,9 @@ pub fn paint_home(
         centered_label(cr, "Remove", remove.0, remove.1 + remove.3 / 2.0 - 12.0, remove.2, 24.0, style.error);
     }
 
+    paint_open_folder(cr, width, height, theme, icons, apps, home);
+    paint_widget_picker(cr, width, height, theme, home);
+
     if let Some(&(_, point)) = home.drag.as_ref() {
         if let Some(item) = home.dragged_item() {
             // A dragged icon lifts slightly larger than its resting plate
@@ -3090,8 +3147,6 @@ pub fn paint_home(
             }
         }
     }
-
-    paint_open_folder(cr, width, height, theme, icons, apps, home);
 }
 
 pub fn draw_shm(
@@ -3577,6 +3632,31 @@ impl RendererCache {
     pub fn invalidate(&mut self) {
         self.route = None;
         self.static_pixels.clear();
+    }
+
+    /// Warms the Drawer's own pre-rendered grid bitmap (`DrawerGridCache`)
+    /// for the unfiltered (no search query) catalog, at the current theme
+    /// and panel width -- the coordinator's own board measurement,
+    /// `K230_DRAWER_FRAME ms=549.89` on the drawer's first-ever open versus
+    /// `1.04` on every one after, is entirely this bitmap's one-time build
+    /// cost. Calling this proactively (`main.rs`, once at startup after the
+    /// initial catalog scan, and again after a catalog rescan or a
+    /// committed theme change) means that cost is paid before a person taps
+    /// Apps at all, not the instant they do. A no-op if the cache is
+    /// already fresh for this exact `(apps, theme, width)` -- rebuilding is
+    /// `DrawerGridCache::ensure`'s own job, this only ever calls it with
+    /// the drawer's steady, no-search-query state.
+    pub fn prebuild_drawer_grid(&mut self, apps: &[AppEntry], width: u32, height: u32) {
+        let content = DrawerContent {
+            apps: apps.iter().collect(),
+            search: &self.drawer_search,
+        };
+        let _ = self.drawer_grid.ensure(&content, self.theme.as_ref(), width, height, &mut self.icons);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn drawer_grid_rebuilds(&self) -> u64 {
+        self.drawer_grid.rebuilds()
     }
 
     pub fn rebuild_count(&self) -> u64 {
@@ -4113,18 +4193,39 @@ impl RendererCache {
     }
 
     /// Renders the Drawer's own overlay surface while task 1's long-press-
-    /// drag is live (`main.rs`'s `drawer_home_drag`): transparent
-    /// everywhere except a translucent Cancel band across the drawer's own
-    /// former top-chrome zone (`navigation::drag_cancel_zone_hit`'s exact
-    /// zone). Home's `Layer::Bottom` surface underneath already paints the
-    /// lifted icon and drop-target highlight itself (`paint_home`), so this
+    /// drag is live and no reveal animation is (or is no longer) playing
+    /// (`main.rs`'s `drawer_home_drag`): transparent everywhere except a
+    /// translucent Cancel band across the drawer's own former top-chrome
+    /// zone (`navigation::drag_cancel_zone_hit`'s exact zone). Home's
+    /// `Layer::Bottom` surface underneath already paints the lifted icon
+    /// and drop-target highlight itself (`paint_home`), so this
     /// deliberately draws nothing else, letting that show through
-    /// untouched -- this is the "the drawer immediately slides or fades
-    /// away to reveal Home" reveal, implemented as "stop painting the
-    /// drawer's own content" rather than an actual slide/fade animation
-    /// (see `design.md`'s Deferred section).
+    /// untouched. See [`Self::draw_drawer_reveal`] for the brief animated
+    /// transition into this steady state.
     pub fn draw_drawer_drag(&mut self, canvas: &mut [u8], width: u32, height: u32) -> Result<(), String> {
         draw_drawer_drag_shm(canvas, width, height, self.theme.as_ref())
+    }
+
+    /// Renders the drawer's long-press-drag reveal *animation* (coordinator
+    /// follow-up: "the drawer should visibly slide down or fade out over
+    /// about 180-220 ms with ease-out, not vanish"): `snapshot` is a plain
+    /// pixel copy of the drawer's own last rendered frame, taken once at
+    /// the instant the drag armed (`main.rs::begin_drawer_home_drag`), and
+    /// this composites it translated down and faded by `progress` (0.0 at
+    /// the start of the animation, 1.0 once it's fully played out) -- cheap
+    /// because it is exactly one more `cairo_paint_with_alpha` of an
+    /// already-rendered image, not a second scene re-render every frame.
+    /// The Cancel band paints on top throughout, so it is reachable from
+    /// the very first frame of the drag, before the animation even starts.
+    pub fn draw_drawer_reveal(
+        &self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        snapshot: &[u8],
+        progress: f64,
+    ) -> Result<(), String> {
+        draw_drawer_reveal_shm(canvas, width, height, snapshot, progress, self.theme.as_ref())
     }
 }
 
@@ -4142,10 +4243,72 @@ fn draw_drawer_drag_shm(canvas: &mut [u8], width: u32, height: u32, theme: Optio
     cr.set_source_rgba(0.0, 0.0, 0.0, 0.0);
     let _ = cr.paint();
     cr.set_operator(Operator::Over);
+    draw_drawer_cancel_band(&cr, width, theme);
+    drop(cr);
+    surface.flush();
+    Ok(())
+}
+
+/// The Cancel band alone (task 1's Cancel target), shared by
+/// [`draw_drawer_drag_shm`]'s steady state and [`draw_drawer_reveal_shm`]'s
+/// animated one so the two never drift apart pixel-for-pixel.
+fn draw_drawer_cancel_band(cr: &Context, width: u32, theme: Option<&AppearanceSnapshot>) {
     let style = visual_style(theme, "launcher");
-    let band_h = (navigation::list_top(height) - 24.0).max(56.0);
-    service_card(&cr, theme, "controls", 12.0, 12.0, f64::from(width) - 24.0, band_h, false);
-    centered_label(&cr, "Cancel", 12.0, 12.0 + band_h / 2.0 - 14.0, f64::from(width) - 24.0, 26.0, style.error);
+    let band_h = 56.0_f64.max(navigation::list_top(1232) - 24.0);
+    service_card(cr, theme, "controls", 12.0, 12.0, f64::from(width) - 24.0, band_h, false);
+    centered_label(cr, "Cancel", 12.0, 12.0 + band_h / 2.0 - 14.0, f64::from(width) - 24.0, 26.0, style.error);
+}
+
+/// Ease-out-cubic progress, matching every other settle animation in this
+/// shell (`home_pager::HomePager`'s own tick, `theme_carousel::Carousel`'s
+/// settle) rather than inventing a fourth easing curve.
+fn ease_out_cubic(t: f64) -> f64 {
+    let t = t.clamp(0.0, 1.0);
+    1.0 - (1.0 - t).powi(3)
+}
+
+fn draw_drawer_reveal_shm(
+    canvas: &mut [u8],
+    width: u32,
+    height: u32,
+    snapshot: &[u8],
+    progress: f64,
+    theme: Option<&AppearanceSnapshot>,
+) -> Result<(), String> {
+    let stride = width.checked_mul(4).ok_or("invalid stride")?;
+    let expected = usize::try_from(stride).unwrap_or(usize::MAX) * height as usize;
+    if canvas.len() != expected {
+        return Err("invalid canvas length".into());
+    }
+    if snapshot.len() != expected {
+        return Err("snapshot size mismatch".into());
+    }
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(canvas.as_mut_ptr(), Format::ARgb32, width as i32, height as i32, stride as i32)
+    }
+    .map_err(|error| error.to_string())?;
+    let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    cr.set_operator(Operator::Source);
+    cr.set_source_rgba(0.0, 0.0, 0.0, 0.0);
+    let _ = cr.paint();
+    cr.set_operator(Operator::Over);
+    let eased = ease_out_cubic(progress);
+    // A plain pixel copy handed to Cairo's owned-data constructor -- one
+    // `memcpy` of an already-rendered frame, not a re-render of the scene.
+    let owned_snapshot = snapshot.to_vec();
+    if let Ok(snap_surface) = ImageSurface::create_for_data(owned_snapshot, Format::ARgb32, width as i32, height as i32, stride as i32) {
+        let alpha = (1.0 - eased).clamp(0.0, 1.0);
+        if alpha > 0.001 {
+            let travel = eased * 48.0; // a modest downward slide alongside the fade
+            let _ = cr.save();
+            cr.translate(0.0, travel);
+            if cr.set_source_surface(&snap_surface, 0.0, 0.0).is_ok() {
+                let _ = cr.paint_with_alpha(alpha);
+            }
+            let _ = cr.restore();
+        }
+    }
+    draw_drawer_cancel_band(&cr, width, theme);
     drop(cr);
     surface.flush();
     Ok(())
@@ -6430,6 +6593,60 @@ mod tests {
         };
         cache.ensure(&filtered_content, None, 600, 1232, &mut icons);
         assert_eq!(cache.rebuilds(), 3);
+    }
+
+    #[test]
+    fn prebuild_drawer_grid_warms_the_cache_and_is_a_no_op_once_fresh() {
+        let apps = vec![AppEntry { id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() }];
+        let mut renderer = RendererCache::default();
+        assert_eq!(renderer.drawer_grid_rebuilds(), 0);
+        renderer.prebuild_drawer_grid(&apps, 568, 1232);
+        assert_eq!(renderer.drawer_grid_rebuilds(), 1, "the first prebuild actually builds the bitmap");
+        renderer.prebuild_drawer_grid(&apps, 568, 1232);
+        assert_eq!(renderer.drawer_grid_rebuilds(), 1, "an unchanged catalog/theme/width prebuild is a no-op");
+        // A real catalog/theme change still invalidates it, exactly like an
+        // ordinary `ensure` call would.
+        let more_apps = vec![
+            AppEntry { id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() },
+            AppEntry { id: "b.desktop".into(), name: "Beta".into(), icon: None, path: PathBuf::new() },
+        ];
+        renderer.prebuild_drawer_grid(&more_apps, 568, 1232);
+        assert_eq!(renderer.drawer_grid_rebuilds(), 2);
+    }
+
+    #[test]
+    fn ease_out_cubic_starts_at_zero_ends_at_one_and_is_monotonic() {
+        assert_eq!(ease_out_cubic(0.0), 0.0);
+        assert!((ease_out_cubic(1.0) - 1.0).abs() < 1e-9);
+        let mid = ease_out_cubic(0.5);
+        assert!(mid > 0.5, "ease-out front-loads progress");
+        assert!(ease_out_cubic(0.25) < mid);
+        assert!(ease_out_cubic(-1.0) >= 0.0 && ease_out_cubic(2.0) <= 1.0, "clamped");
+    }
+
+    #[test]
+    fn draw_drawer_reveal_shm_composites_a_faded_snapshot_and_the_cancel_band() {
+        let width = 568u32;
+        let height = 1232u32;
+        let size = (width as usize) * (height as usize) * 4;
+        // A fully opaque red snapshot stands in for "the drawer's last
+        // rendered frame".
+        let mut snapshot = vec![0u8; size];
+        for pixel in snapshot.chunks_exact_mut(4) {
+            pixel.copy_from_slice(&[0, 0, 255, 255]); // BGRA on this platform: opaque red
+        }
+        let mut canvas = vec![0u8; size];
+        draw_drawer_reveal_shm(&mut canvas, width, height, &snapshot, 0.0, None).unwrap();
+        // At progress 0.0 the snapshot is still fully opaque somewhere well
+        // below the Cancel band, so that pixel must be the snapshot's own
+        // opaque red, not transparent.
+        let probe = ((600 * width as usize) + 50) * 4;
+        assert_eq!(&canvas[probe..probe + 4], &[0, 0, 255, 255]);
+        let mut canvas_done = vec![0u8; size];
+        draw_drawer_reveal_shm(&mut canvas_done, width, height, &snapshot, 1.0, None).unwrap();
+        // At progress 1.0 the snapshot has fully faded out; that same pixel
+        // is back to transparent (nothing painted there).
+        assert_eq!(&canvas_done[probe..probe + 4], &[0, 0, 0, 0]);
     }
 
     fn fixture_theme(generation: &str, background: (u8, u8, u8)) -> AppearanceSnapshot {

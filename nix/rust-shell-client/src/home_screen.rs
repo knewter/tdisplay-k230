@@ -15,7 +15,7 @@
 
 use crate::home_grid::{self, HomeSlot};
 use crate::home_pager::{HomePager, LONG_PRESS_MS, TAP_SLOP};
-use crate::home_state::{FolderData, HomeItem, HomeLayout};
+use crate::home_state::{FolderData, HomeItem, HomeLayout, WidgetKind};
 use crate::home_widgets::{battery::BatteryState, weather::WeatherDisplay};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -25,26 +25,84 @@ pub enum HomeAction {
     /// The layout changed (pin/unpin/reorder/page move/remove/folder
     /// edit/rename); the caller should persist it (`home_state::save`).
     LayoutChanged,
+    /// The picker's "Wallpaper & style" row was tapped: the caller
+    /// navigates to the existing theme/background chooser route exactly as
+    /// a real tap on its own Settings entry point would (`main.rs`'s
+    /// `theme_action(ThemeIntent::Open)`), without this module touching
+    /// any theme-picker file itself.
+    OpenWallpaperAndStyle,
 }
 
-/// Where a live drag's item is coming from -- an existing Home/dock cell
-/// being rearranged, or a brand-new app arriving mid-gesture from the
-/// drawer's own long-press-drag (task 1: "Long-press an app in the drawer
-/// ... the icon lifts and follows the finger"). Both drive the exact same
+/// Where a live drag's item is coming from. Every source drives the same
 /// drop resolution ([`HomeScreen::drop_dragged_item`]); only what happens
-/// to the *source* differs (an existing item's old cell is cleared on a
-/// successful drop; a drawer-origin app has no old cell to clear).
+/// to the *origin* differs:
+/// - `Existing`: an already-pinned item being rearranged; its old cell is
+///   cleared on a successful drop.
+/// - `FromDrawer`: a brand-new app arriving mid-gesture from the drawer's
+///   own long-press-drag (task 1); there is no old cell to clear.
+/// - `Widget`: a brand-new widget arriving from the widget-picker sheet's
+///   long-press-drag (task: "long-press one to drag it onto Home").
+/// - `FromFolder`: a member app being dragged back out of an *open* folder
+///   (task 3); releasing back over the still-open folder card cancels
+///   (the member stays put), releasing anywhere else removes it from the
+///   folder (dissolving it if that leaves one member) and places it.
 #[derive(Clone, Debug, PartialEq)]
 pub enum DragSource {
     Existing(HomeSlot),
     FromDrawer(String),
+    Widget(WidgetKind),
+    FromFolder { folder: HomeSlot, app_id: String },
+}
+
+/// Which page the widget-picker sheet (task: long-press empty Home space)
+/// is showing. `Widgets`/`HomeSettings` both reserve row 0 for a "Back to
+/// Menu" affordance, sharing `home_grid::picker_row_rect`'s row geometry
+/// with `Menu`'s own three rows rather than adding separate chrome.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum WidgetPickerPage {
+    Menu,
+    Widgets,
+    HomeSettings,
+}
+
+/// State for Home's widget-picker sheet. Placing a widget is not tracked
+/// here at all: long-pressing a preview row arms `HomeScreen::drag`
+/// directly (`DragSource::Widget`) and closes the sheet, exactly like the
+/// drawer's own long-press-drag reveals Home -- both end up driving the
+/// same [`HomeScreen::drop_dragged_item`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct WidgetPicker {
+    pub page: WidgetPickerPage,
+}
+
+fn picker_row_count(page: WidgetPickerPage) -> usize {
+    match page {
+        WidgetPickerPage::Menu => 3,          // Widgets / Wallpaper & style / Home settings
+        WidgetPickerPage::Widgets => 4,       // Back, Clock, Battery, Weather
+        WidgetPickerPage::HomeSettings => 2,  // Back, the read-only grid-size stub row
+    }
+}
+
+/// Which widget, if any, `row` names on the Widgets page (row 0 is always
+/// "Back", never a widget).
+fn widget_for_row(page: WidgetPickerPage, row: usize) -> Option<WidgetKind> {
+    if page != WidgetPickerPage::Widgets {
+        return None;
+    }
+    match row {
+        1 => Some(WidgetKind::Clock),
+        2 => Some(WidgetKind::Battery),
+        3 => Some(WidgetKind::Weather),
+        _ => None,
+    }
 }
 
 /// State for Home's open-folder overlay (task 5). Rename is armed at the
-/// data level (`editing_name`/`name_buffer`) but this pass does not yet
-/// wire a live system-keyboard grab into it -- see `design.md`'s "Deferred"
-/// section; the buffer/apply/cancel API here is what that wiring will call
-/// once it lands.
+/// data level (`editing_name`/`name_buffer`); `main.rs` wires a real
+/// system-keyboard grab into it (mirroring the Wi-Fi password field's own
+/// `sync_wifi_keyboard`), calling `push_folder_name_char`/
+/// `backspace_folder_name` as keys arrive and `apply_folder_rename`/
+/// `cancel_folder_rename` on Enter/Escape.
 #[derive(Clone, Debug, PartialEq)]
 pub struct OpenFolder {
     pub slot: HomeSlot,
@@ -52,7 +110,7 @@ pub struct OpenFolder {
     pub name_buffer: String,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 struct Contact {
     id: i32,
     start: (f64, f64),
@@ -64,6 +122,19 @@ struct Contact {
     /// `down`): `up` removes that icon outright, matching iOS/webOS's
     /// jiggle-mode badge, which is a tap gesture, not a drag-to-target one.
     badge_at_down: Option<HomeSlot>,
+    /// Set at `down` when this touch landed on an addressable but *empty*
+    /// grid/dock cell, outside rearrange mode and any overlay -- the
+    /// long-press target for the widget-picker sheet (task: "long-press
+    /// empty Home space").
+    empty_slot_at_down: bool,
+    /// Set at `down`, while the open-folder overlay is showing, to the
+    /// member app id under the touch, if any -- the long-press target for
+    /// dragging that app back out of the folder (task 3).
+    folder_app_at_down: Option<String>,
+    /// Set at `down`, while the widget-picker sheet is on its Widgets page
+    /// and the touch landed on a preview row, to that row's widget -- the
+    /// long-press target for dragging it onto Home.
+    picker_widget_at_down: Option<WidgetKind>,
 }
 
 /// How long an icon must be dragged against the pager's edge, while in
@@ -89,6 +160,16 @@ pub struct HomeScreen {
     /// Set while Home's open-folder overlay (task 5) is showing; `None`
     /// otherwise. While open, this overlay owns every touch (see `down`).
     pub open_folder: Option<OpenFolder>,
+    /// Set while the widget-picker sheet (task: long-press empty Home
+    /// space) is showing; `None` otherwise.
+    pub widget_picker: Option<WidgetPicker>,
+    /// The on-screen keyboard's reserved height in this panel's own
+    /// coordinate space, mirrored from `main.rs`'s `sync_home_keyboard`
+    /// (task 2) -- `0.0` except while the open folder's name is being
+    /// edited and the keyboard is actually showing. Shifts the folder
+    /// overlay's card up so its content stays clear of the keyboard
+    /// (`home_grid::folder_overlay_rect_inset`).
+    pub keyboard_inset: f64,
     /// Live battery-widget content (`home_widgets::battery`), updated by
     /// the caller on its own poll timer; defaults to `Absent`, this board's
     /// actual current state, so a fresh `HomeScreen` never shows a stale
@@ -147,6 +228,8 @@ impl HomeScreen {
             rearranging: false,
             drag: None,
             open_folder: None,
+            widget_picker: None,
+            keyboard_inset: 0.0,
             battery: BatteryState::Absent,
             weather: WeatherDisplay::Unavailable,
             contact: None,
@@ -201,22 +284,62 @@ impl HomeScreen {
             })
     }
 
+    /// Sets the on-screen keyboard's reserved height, in this panel's own
+    /// coordinate space -- `main.rs::sync_home_keyboard` calls this exactly
+    /// like `WifiView::set_keyboard_inset` (task 2).
+    pub fn set_keyboard_inset(&mut self, inset: f64) {
+        self.keyboard_inset = inset.max(0.0);
+    }
+
+    /// The open folder's own member-app id under `point`, if the folder
+    /// overlay is showing and `point` lands on one of its member tiles.
+    fn folder_app_id_at(&self, point: (f64, f64), width: u32, height: u32) -> Option<String> {
+        let open = self.open_folder.as_ref()?;
+        let folder = self.layout.get(open.slot)?.as_folder()?;
+        let index = home_grid::folder_app_at(point, width, height, folder.apps.len(), self.keyboard_inset)?;
+        folder.apps.get(index).cloned()
+    }
+
     pub fn down(&mut self, id: i32, point: (f64, f64), time_ms: u32, width: u32, height: u32) {
         if self.contact.is_some() {
             self.cancel();
             return;
         }
         if self.open_folder.is_some() {
-            // The overlay owns this touch entirely; resolved at `up`
-            // (`resolve_folder_tap`). No pager/rearrange/long-press
-            // machinery runs while it is open.
+            // The overlay owns this touch: a plain release resolves at
+            // `up` (`resolve_folder_tap`), and a hold on a member tile is
+            // armed here for `tick` to promote into a drag-out (task 3).
+            let folder_app_at_down = self.folder_app_id_at(point, width, height);
             self.contact = Some(Contact {
                 id,
                 start: point,
                 held_ms: 0,
-                long_fired: true,
+                long_fired: folder_app_at_down.is_none(),
                 slot_at_down: None,
                 badge_at_down: None,
+                empty_slot_at_down: false,
+                folder_app_at_down,
+                picker_widget_at_down: None,
+            });
+            return;
+        }
+        if let Some(picker) = self.widget_picker {
+            // Likewise: a plain release resolves at `up`
+            // (`resolve_picker_tap`); a hold on a Widgets-page preview row
+            // is armed here for `tick` to promote into a placement drag.
+            let count = picker_row_count(picker.page);
+            let picker_widget_at_down = home_grid::picker_row_at(point, width, height, count)
+                .and_then(|row| widget_for_row(picker.page, row));
+            self.contact = Some(Contact {
+                id,
+                start: point,
+                held_ms: 0,
+                long_fired: picker_widget_at_down.is_none(),
+                slot_at_down: None,
+                badge_at_down: None,
+                empty_slot_at_down: false,
+                folder_app_at_down: None,
+                picker_widget_at_down,
             });
             return;
         }
@@ -226,6 +349,15 @@ impl HomeScreen {
             None
         };
         let slot_at_down = self.filled_slot_at(point, width, height);
+        // An addressable cell (grid within the page, or dock) that is not
+        // already occupied -- the widget-picker's own long-press target
+        // (task: "long-press empty Home space"), only outside rearrange
+        // mode (where every touch on empty space already means something
+        // else -- exit rearranging, see `up`).
+        let empty_slot_at_down = !self.rearranging
+            && badge_at_down.is_none()
+            && slot_at_down.is_none()
+            && self.slot_at(point, width, height).is_some();
         self.contact = Some(Contact {
             id,
             start: point,
@@ -236,6 +368,9 @@ impl HomeScreen {
             long_fired: self.rearranging,
             slot_at_down,
             badge_at_down,
+            empty_slot_at_down,
+            folder_app_at_down: None,
+            picker_widget_at_down: None,
         });
         if self.rearranging {
             // A fresh touch on any filled icon grabs it immediately,
@@ -262,9 +397,6 @@ impl HomeScreen {
         width: u32,
         _height: u32,
     ) -> bool {
-        if self.open_folder.is_some() {
-            return false;
-        }
         let Some(contact) = self.contact.as_mut() else {
             return false;
         };
@@ -285,6 +417,12 @@ impl HomeScreen {
             }
             return true;
         }
+        if self.open_folder.is_some() || self.widget_picker.is_some() {
+            // Not yet dragging out of the folder / off the picker sheet --
+            // nothing else moves while either overlay is showing (no
+            // scrolling in either card today).
+            return false;
+        }
         if (point.0 - contact.start.0).abs() > TAP_SLOP
             || (point.1 - contact.start.1).abs() > TAP_SLOP
         {
@@ -297,11 +435,43 @@ impl HomeScreen {
     }
 
     /// Advances the pager's momentum/settle animation and, while a finger
-    /// rests without moving on a filled icon, the long-press timer. Returns
+    /// rests without moving on a filled icon (or an open folder's member
+    /// tile, or a picker preview row), the long-press timer. Returns
     /// whether a repaint is needed.
     pub fn tick(&mut self, elapsed_ms: u32) -> bool {
         if self.open_folder.is_some() {
+            let Some(contact) = self.contact.as_mut() else { return false };
+            if contact.long_fired || self.drag.is_some() {
+                return false;
+            }
+            let Some(app_id) = contact.folder_app_at_down.clone() else { return false };
+            contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+            if contact.held_ms < LONG_PRESS_MS {
+                return false;
+            }
+            contact.long_fired = true;
+            let start = contact.start;
+            if let Some(open) = self.open_folder.as_ref() {
+                self.drag = Some((DragSource::FromFolder { folder: open.slot, app_id }, start));
+                return true;
+            }
             return false;
+        }
+        if self.widget_picker.is_some() {
+            let Some(contact) = self.contact.as_mut() else { return false };
+            if contact.long_fired || self.drag.is_some() {
+                return false;
+            }
+            let Some(kind) = contact.picker_widget_at_down else { return false };
+            contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+            if contact.held_ms < LONG_PRESS_MS {
+                return false;
+            }
+            contact.long_fired = true;
+            let start = contact.start;
+            self.drag = Some((DragSource::Widget(kind), start));
+            self.widget_picker = None; // the sheet gets out of the way once a drag starts
+            return true;
         }
         let mut redraw = false;
         if !self.rearranging {
@@ -333,6 +503,9 @@ impl HomeScreen {
                         self.rearranging = true;
                         self.drag = Some((DragSource::Existing(slot), contact.start));
                         redraw = true;
+                    } else if contact.empty_slot_at_down {
+                        self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+                        redraw = true;
                     }
                 }
             }
@@ -352,17 +525,25 @@ impl HomeScreen {
         if contact.id != id {
             return None;
         }
+        // A live drag always takes priority, even while an overlay is also
+        // showing -- a drag-out-of-folder (task 3) or a picker-widget drag
+        // both keep `open_folder`/`widget_picker` set (respectively) for as
+        // long as the drag is live, so this must be checked before either
+        // overlay's own tap resolution.
+        if let Some((source, _)) = self.drag.take() {
+            return self.drop_dragged_item(source, point, width, height);
+        }
         if self.open_folder.is_some() {
             return self.resolve_folder_tap(point, width, height);
+        }
+        if self.widget_picker.is_some() {
+            return self.resolve_picker_tap(point, width, height);
         }
         if let Some(slot) = contact.badge_at_down {
             // The badge is a tap gesture, not a drag-to-target one (see
             // `down`): releasing anywhere removes the icon it belonged to.
             self.layout.remove_slot(slot);
             return Some(HomeAction::LayoutChanged);
-        }
-        if let Some((source, _)) = self.drag.take() {
-            return self.drop_dragged_item(source, point, width, height);
         }
         if self.pager.dragging() {
             self.pager.up(self.page_count());
@@ -395,7 +576,7 @@ impl HomeScreen {
     /// effect.
     fn resolve_folder_tap(&mut self, point: (f64, f64), width: u32, height: u32) -> Option<HomeAction> {
         let open = self.open_folder.clone()?;
-        let card = home_grid::folder_overlay_rect(width, height);
+        let card = home_grid::folder_overlay_rect_inset(width, height, self.keyboard_inset);
         if !home_grid::hits(point, card) {
             self.open_folder = None;
             return None;
@@ -404,19 +585,60 @@ impl HomeScreen {
             self.open_folder = None;
             return None;
         };
-        if home_grid::hits(point, home_grid::folder_name_rect(width, height)) {
+        if home_grid::hits(point, home_grid::folder_name_rect_inset(width, height, self.keyboard_inset)) {
             if let Some(open) = self.open_folder.as_mut() {
                 open.editing_name = true;
                 open.name_buffer = folder.name.clone();
             }
             return None;
         }
-        if let Some(index) = home_grid::folder_app_at(point, width, height, folder.apps.len()) {
+        if let Some(index) = home_grid::folder_app_at(point, width, height, folder.apps.len(), self.keyboard_inset) {
             let app_id = folder.apps[index].clone();
             self.open_folder = None;
             return Some(HomeAction::Launch(app_id));
         }
         None
+    }
+
+    /// Resolves a release while the widget-picker sheet is showing: on the
+    /// Menu page, taps navigate to Widgets/Wallpaper & style/Home settings;
+    /// on either sub-page, row 0 ("Back") returns to Menu; a tap anywhere
+    /// outside the card closes the sheet entirely. A plain tap on a widget
+    /// preview does nothing -- only the long-press-drag (`tick`) places it,
+    /// matching the task's own "long-press one to drag it onto Home".
+    fn resolve_picker_tap(&mut self, point: (f64, f64), width: u32, height: u32) -> Option<HomeAction> {
+        let picker = self.widget_picker?;
+        let card = home_grid::picker_rect(width, height);
+        if !home_grid::hits(point, card) {
+            self.widget_picker = None;
+            return None;
+        }
+        let count = picker_row_count(picker.page);
+        let row = home_grid::picker_row_at(point, width, height, count)?;
+        match picker.page {
+            WidgetPickerPage::Menu => match row {
+                0 => self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Widgets }),
+                1 => {
+                    self.widget_picker = None;
+                    return Some(HomeAction::OpenWallpaperAndStyle);
+                }
+                2 => self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::HomeSettings }),
+                _ => {}
+            },
+            WidgetPickerPage::Widgets | WidgetPickerPage::HomeSettings => {
+                if row == 0 {
+                    self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+                }
+            }
+        }
+        None
+    }
+
+    /// Closes the widget-picker sheet without acting on it -- used by
+    /// `main.rs` for an explicit dismiss (e.g. a hardware Back), mirroring
+    /// [`Self::close_folder`].
+    pub fn close_widget_picker(&mut self) {
+        self.widget_picker = None;
     }
 
     /// Applies whatever is in the open folder's rename buffer, if it is
@@ -558,6 +780,47 @@ impl HomeScreen {
                     Some(HomeAction::LayoutChanged)
                 }
             }
+            DragSource::Widget(kind) => {
+                // Exactly the same fallback shape as `FromDrawer`, just
+                // placing a widget instead of an app -- `place_first_fit`
+                // is already generic over `HomeItem` (home_state.rs), so
+                // this reuses it unchanged.
+                let item = HomeItem::Widget { widget: kind };
+                let placed = match target {
+                    Some(target) => self.place_new(item.clone(), target, apps_per_page),
+                    None => None,
+                };
+                if placed.is_some() {
+                    placed
+                } else {
+                    self.layout.place_first_fit(item, apps_per_page);
+                    Some(HomeAction::LayoutChanged)
+                }
+            }
+            DragSource::FromFolder { folder, app_id } => {
+                // Cancel target is the folder's *own* grid/dock slot, not
+                // its whole (much larger) open card -- the card visually
+                // covers most of the page it sits on, so treating the
+                // entire card as "still the folder" would make almost any
+                // drop onto that same page read as a cancel. Dropping back
+                // precisely onto the folder's own icon is the same
+                // "return it" gesture reference launchers use once a
+                // dragged item leaves an open folder.
+                if target == Some(folder) {
+                    return None;
+                }
+                self.layout.remove_app(&app_id); // dissolves the folder if this leaves one member
+                let item = HomeItem::app(app_id);
+                let placed = match target {
+                    Some(target) => self.place_new(item.clone(), target, apps_per_page),
+                    None => None,
+                };
+                if placed.is_none() {
+                    self.layout.place_first_fit(item, apps_per_page);
+                }
+                self.open_folder = None; // the drag left the folder; close the overlay
+                Some(HomeAction::LayoutChanged)
+            }
         }
     }
 
@@ -666,6 +929,8 @@ impl HomeScreen {
         match self.drag.as_ref()?.0.clone() {
             DragSource::Existing(slot) => self.layout.get(slot).cloned(),
             DragSource::FromDrawer(id) => Some(HomeItem::app(id)),
+            DragSource::Widget(kind) => Some(HomeItem::Widget { widget: kind }),
+            DragSource::FromFolder { app_id, .. } => Some(HomeItem::app(app_id)),
         }
     }
 }
@@ -741,6 +1006,11 @@ mod tests {
 
     fn tile_center_for_test(slot: usize) -> (f64, f64) {
         let (x, y, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, slot);
+        (x + w / 2.0, y + h / 2.0)
+    }
+
+    fn folder_member_point(index: usize) -> (f64, f64) {
+        let (x, y, w, h) = home_grid::folder_app_rect(WIDTH, HEIGHT, index);
         (x + w / 2.0, y + h / 2.0)
     }
 
@@ -1217,5 +1487,230 @@ mod tests {
             Some(5)
         );
         assert_eq!(find_running_con_id(&tree, "gnome-text-editor.desktop", None), None);
+    }
+
+    // -- Widget picker (coordinator follow-up: "long-press on empty Home space") --
+
+    fn long_press(screen: &mut HomeScreen, point: (f64, f64)) {
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.contact.is_some() && screen.widget_picker.is_none() && screen.drag.is_none() && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+    }
+
+    #[test]
+    fn long_pressing_empty_home_space_opens_the_widget_picker_menu() {
+        let mut screen = screen_with(&[None; 4]);
+        let point = tile_center_for_test(2); // unfilled
+        long_press(&mut screen, point);
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }));
+    }
+
+    #[test]
+    fn long_pressing_a_filled_icon_never_opens_the_picker() {
+        let mut screen = screen_with(&[None; 4]);
+        let point = tile_center_for_test(0); // "a.desktop"
+        long_press(&mut screen, point);
+        assert!(screen.widget_picker.is_none());
+        assert!(screen.rearranging);
+    }
+
+    #[test]
+    fn tapping_widgets_then_long_pressing_clock_drags_and_places_it() {
+        let mut screen = screen_with(&[None; 4]);
+        let empty = tile_center_for_test(2);
+        long_press(&mut screen, empty);
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }));
+        // Release the long-press touch itself somewhere inside the card
+        // but below every menu row (a dead zone), before starting a fresh
+        // tap on a menu row -- a harmless no-op release, exactly like a
+        // real finger lift after the hold that opened the sheet.
+        let (card_x, _, card_w, _) = home_grid::picker_rect(WIDTH, HEIGHT);
+        let dead_zone = (card_x + card_w / 2.0, 900.0);
+        assert_eq!(screen.up(1, dead_zone, 520, WIDTH, HEIGHT), None);
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }), "still on Menu, unmoved by the dead-zone release");
+        let row0 = home_grid::picker_row_rect(WIDTH, HEIGHT, 0);
+        let row0_point = (row0.0 + row0.2 / 2.0, row0.1 + row0.3 / 2.0);
+        screen.down(1, row0_point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, row0_point, 20, WIDTH, HEIGHT), None);
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Widgets }));
+        // Row 1 on the Widgets page is Clock.
+        let clock_row = home_grid::picker_row_rect(WIDTH, HEIGHT, 1);
+        let clock_point = (clock_row.0 + clock_row.2 / 2.0, clock_row.1 + clock_row.3 / 2.0);
+        screen.down(1, clock_point, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.drag.is_none() && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.drag.as_ref().map(|(source, _)| source.clone()), Some(DragSource::Widget(WidgetKind::Clock)));
+        assert!(screen.widget_picker.is_none(), "the sheet gets out of the way once the drag starts");
+        // Slot 2 (column 2) cannot itself anchor a 4-wide Clock -- it would
+        // spill past the row's right edge -- so this drop falls back to
+        // `place_first_fit`'s own first fitting cell (see `home_state`'s
+        // own span/occupancy tests for that rule); this only asserts the
+        // widget lands *somewhere*, not at the literal drop point.
+        let drop_point = tile_center_for_test(2);
+        assert_eq!(screen.up(1, drop_point, 500, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
+        assert!(
+            screen
+                .layout
+                .pages
+                .iter()
+                .flatten()
+                .any(|cell| matches!(cell, Some(HomeItem::Widget { widget: WidgetKind::Clock }))),
+            "the clock widget was placed somewhere on Home"
+        );
+    }
+
+    #[test]
+    fn a_plain_tap_on_a_widget_preview_does_nothing() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Widgets });
+        let clock_row = home_grid::picker_row_rect(WIDTH, HEIGHT, 1);
+        let point = (clock_row.0 + clock_row.2 / 2.0, clock_row.1 + clock_row.3 / 2.0);
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+        assert!(!screen.layout.pages[0].iter().any(|cell| matches!(cell, Some(HomeItem::Widget { .. }))));
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Widgets }), "still on the same page");
+    }
+
+    #[test]
+    fn wallpaper_and_style_row_returns_the_action_and_closes_the_sheet() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+        let row1 = home_grid::picker_row_rect(WIDTH, HEIGHT, 1);
+        let point = (row1.0 + row1.2 / 2.0, row1.1 + row1.3 / 2.0);
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), Some(HomeAction::OpenWallpaperAndStyle));
+        assert!(screen.widget_picker.is_none());
+    }
+
+    #[test]
+    fn home_settings_back_row_returns_to_the_menu() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::HomeSettings });
+        let back = home_grid::picker_row_rect(WIDTH, HEIGHT, 0);
+        let point = (back.0 + back.2 / 2.0, back.1 + back.3 / 2.0);
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }));
+    }
+
+    #[test]
+    fn tapping_outside_the_picker_card_closes_it() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+        let outside = (5.0, 5.0);
+        screen.down(1, outside, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, outside, 20, WIDTH, HEIGHT), None);
+        assert!(screen.widget_picker.is_none());
+    }
+
+    // -- Drag an app out of an open folder (coordinator follow-up, task 3) --
+
+    #[test]
+    fn dragging_a_member_out_of_an_open_folder_onto_home_removes_and_places_it() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0][0] = Some(HomeItem::Folder(FolderData {
+            name: "Fun".into(),
+            apps: vec!["a.desktop".into(), "b.desktop".into(), "c.desktop".into()],
+        }));
+        screen.open_folder = Some(OpenFolder { slot: HomeSlot::Grid { page: 0, slot: 0 }, editing_name: false, name_buffer: String::new() });
+        let member = folder_member_point(1); // "b.desktop"
+        screen.down(1, member, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.drag.is_none() && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(
+            screen.drag.as_ref().map(|(source, _)| source.clone()),
+            Some(DragSource::FromFolder { folder: HomeSlot::Grid { page: 0, slot: 0 }, app_id: "b.desktop".into() })
+        );
+        let drop_point = tile_center_for_test(1); // empty grid cell
+        assert_eq!(screen.up(1, drop_point, 500, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some(&HomeItem::app("b.desktop")));
+        let folder = screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }).and_then(HomeItem::as_folder).unwrap();
+        assert_eq!(folder.apps, vec!["a.desktop", "c.desktop"]);
+        assert!(screen.open_folder.is_none(), "the overlay closes once the drag leaves it");
+    }
+
+    #[test]
+    fn dragging_the_last_two_members_leaves_a_dissolved_folder_behind() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0][0] = Some(HomeItem::Folder(FolderData {
+            name: "Fun".into(),
+            apps: vec!["a.desktop".into(), "b.desktop".into()],
+        }));
+        screen.open_folder = Some(OpenFolder { slot: HomeSlot::Grid { page: 0, slot: 0 }, editing_name: false, name_buffer: String::new() });
+        let member = folder_member_point(0); // "a.desktop"
+        screen.down(1, member, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.drag.is_none() && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        let drop_point = tile_center_for_test(3);
+        screen.up(1, drop_point, 500, WIDTH, HEIGHT);
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 3 }), Some(&HomeItem::app("a.desktop")));
+        assert_eq!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }), Some(&HomeItem::app("b.desktop")), "dissolved into the last remaining app");
+    }
+
+    #[test]
+    fn releasing_a_folder_drag_back_onto_the_folders_own_icon_cancels() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0][0] = Some(HomeItem::Folder(FolderData {
+            name: "Fun".into(),
+            apps: vec!["a.desktop".into(), "b.desktop".into(), "c.desktop".into()],
+        }));
+        screen.open_folder = Some(OpenFolder { slot: HomeSlot::Grid { page: 0, slot: 0 }, editing_name: false, name_buffer: String::new() });
+        let member = folder_member_point(1);
+        screen.down(1, member, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.drag.is_none() && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert!(screen.drag.is_some());
+        // Release back onto the folder's own grid slot (its icon), not
+        // merely somewhere within the open card's much larger bounds.
+        let folder_icon = tile_center_for_test(0);
+        assert_eq!(screen.up(1, folder_icon, 500, WIDTH, HEIGHT), None);
+        let folder = screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }).and_then(HomeItem::as_folder).unwrap();
+        assert_eq!(folder.apps, vec!["a.desktop", "b.desktop", "c.desktop"], "nothing changed");
+        assert!(screen.open_folder.is_some(), "cancelling keeps the overlay open");
+    }
+
+    #[test]
+    fn a_plain_tap_on_a_folder_member_still_launches_it_without_holding() {
+        // Holding-vs-tapping the same member tile must both keep working:
+        // a quick release launches (pre-existing behavior), only a genuine
+        // hold arms the drag-out.
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0][0] = Some(HomeItem::Folder(FolderData {
+            name: "Fun".into(),
+            apps: vec!["a.desktop".into(), "b.desktop".into()],
+        }));
+        screen.open_folder = Some(OpenFolder { slot: HomeSlot::Grid { page: 0, slot: 0 }, editing_name: false, name_buffer: String::new() });
+        let member = folder_member_point(0);
+        screen.down(1, member, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, member, 20, WIDTH, HEIGHT), Some(HomeAction::Launch("a.desktop".into())));
+    }
+
+    #[test]
+    fn a_keyboard_inset_shifts_the_folder_cards_own_hit_testing() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0][0] =
+            Some(HomeItem::Folder(FolderData { name: "Fun".into(), apps: vec!["a.desktop".into()] }));
+        screen.open_folder = Some(OpenFolder { slot: HomeSlot::Grid { page: 0, slot: 0 }, editing_name: false, name_buffer: String::new() });
+        screen.set_keyboard_inset(40.0);
+        let name_rect = home_grid::folder_name_rect_inset(WIDTH, HEIGHT, 40.0);
+        let point = (name_rect.0 + 4.0, name_rect.1 + 4.0);
+        screen.down(1, point, 0, WIDTH, HEIGHT);
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+        assert!(screen.open_folder.as_ref().unwrap().editing_name, "hit the shifted name rect, not the un-inset one");
     }
 }
