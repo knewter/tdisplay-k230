@@ -56,6 +56,19 @@
 		};
 	};
 
+	// PMU INT0 power key. The kernel input driver reports edges; userspace
+	// decides short press vs. hold. Physical-key proof is still pending.
+	soc {
+		pmu_pwrkey: pmu-pwrkey@91000000 {
+			compatible = "canaan,k230-pmu-pwrkey";
+			reg = <0x0 0x91000000 0x0 0xc00>,
+			      <0x0 0x91103000 0x0 0x1000>;
+			reg-names = "pmu", "pwr";
+			interrupts = <175 IRQ_TYPE_LEVEL_HIGH>;
+			wakeup-source;
+		};
+	};
+
 	sound {
 		status                      = "okay";
 		compatible                  = "canaan,k230-audio-inno";

@@ -1,0 +1,30 @@
+[
+  {
+    "id": 38,
+    "type": "PipeWire:Interface:Metadata",
+    "version": 3,
+    "info": { "props": { "metadata.name": "default" } },
+    "metadata": [
+      { "subject": 0, "key": "default.audio.sink", "type": "Spa:String:JSON", "value": { "name": "alsa_output.platform-canaan_k230_audio.k230-i2s-external" } }
+    ]
+  },
+  {
+    "id": 120,
+    "type": "PipeWire:Interface:Node",
+    "version": 3,
+    "info": {
+      "max-input-ports": 2,
+      "max-output-ports": 0,
+      "props": {
+        "media.class": "Audio/Sink",
+        "node.name": "alsa_output.platform-canaan_k230_audio.k230-i2s-external",
+        "node.description": "K230 external I2S route (MAX98357A, UNVERIFIED on hardware)"
+      },
+      "params": {
+        "Props": [
+          { "volume": 1.0, "mute": false, "channelVolumes": [0.343, 0.343], "channelMap": ["FL", "FR"] }
+        ]
+      }
+    }
+  }
+]

@@ -47,24 +47,44 @@ pub fn track_bounds(width: f64) -> (f64, f64) {
     (left, right)
 }
 
-/// Clamp a candidate percent into the slider's own valid range. Applied
-/// to every value this module ever *emits* from a touch position -- never
-/// to a value merely being displayed (a real sysfs read is trusted and
-/// shown as-is, even if some other process left it below `MIN_PERCENT`).
-pub fn clamp_percent(percent: i64) -> u8 {
-    percent.clamp(i64::from(MIN_PERCENT), 100) as u8
+/// Clamp a candidate percent into a slider's valid range, given its own
+/// floor. Brightness's floor is `MIN_PERCENT` (never fully black); a
+/// volume slider's floor is `0` (silence is a real, reachable value --
+/// muting is a separate flag from the level, so 0% must not get pinned
+/// up like the backlight is). Applied to every value a slider ever
+/// *emits* from a touch position -- never to a value merely being
+/// displayed (a real read is trusted and shown as-is, even if some other
+/// process left it below `floor`).
+pub fn clamp_percent_with_floor(percent: i64, floor: u8) -> u8 {
+    percent.clamp(i64::from(floor), 100) as u8
 }
 
-/// Map a touch x position to a percent value. The thumb travels the
-/// whole track; there is no extra dead zone beyond the clamp itself, so
-/// the very first ~`MIN_PERCENT`% of the track all reads as `MIN_PERCENT`
-/// (never lower) and the last pixel always reads 100.
-pub fn value_at_x(x: f64, left: f64, right: f64) -> u8 {
+/// Clamp a candidate percent into the brightness slider's own valid
+/// range (floor `MIN_PERCENT`). Thin wrapper over
+/// `clamp_percent_with_floor` kept for brightness call sites and this
+/// module's own pre-existing tests.
+pub fn clamp_percent(percent: i64) -> u8 {
+    clamp_percent_with_floor(percent, MIN_PERCENT)
+}
+
+/// Map a touch x position to a percent value against an arbitrary floor.
+/// The thumb travels the whole track; there is no extra dead zone beyond
+/// the clamp itself, so the very first `floor`% of the track all reads
+/// as `floor` (never lower) and the last pixel always reads 100.
+pub fn value_at_x_with_floor(x: f64, left: f64, right: f64, floor: u8) -> u8 {
     if right <= left {
-        return MIN_PERCENT;
+        return floor;
     }
     let t = ((x - left) / (right - left)).clamp(0.0, 1.0);
-    clamp_percent((t * 100.0).round() as i64)
+    clamp_percent_with_floor((t * 100.0).round() as i64, floor)
+}
+
+/// Map a touch x position to a percent value for the brightness slider's
+/// own floor (`MIN_PERCENT`). Thin wrapper kept for brightness call sites
+/// and this module's own pre-existing tests; see `value_at_x_with_floor`
+/// for the general form the volume slider uses (floor `0`).
+pub fn value_at_x(x: f64, left: f64, right: f64) -> u8 {
+    value_at_x_with_floor(x, left, right, MIN_PERCENT)
 }
 
 /// Inverse of `value_at_x`, for drawing the thumb at its current value.
@@ -97,16 +117,25 @@ pub struct Drag {
     id: i32,
     left: f64,
     right: f64,
+    floor: u8,
     last_sent_ms: Option<u32>,
 }
 
 impl Drag {
     pub fn start(id: i32, width: f64) -> Self {
+        Self::start_with_floor(id, width, MIN_PERCENT)
+    }
+
+    /// Same as `start`, but for a slider whose floor is not the
+    /// brightness floor -- the volume slider's is `0` (silence is a real
+    /// value; muting is tracked separately in `volume.rs`).
+    pub fn start_with_floor(id: i32, width: f64, floor: u8) -> Self {
         let (left, right) = track_bounds(width);
         Self {
             id,
             left,
             right,
+            floor,
             last_sent_ms: None,
         }
     }
@@ -119,7 +148,7 @@ impl Drag {
     }
 
     pub fn value_at(&self, x: f64) -> u8 {
-        value_at_x(x, self.left, self.right)
+        value_at_x_with_floor(x, self.left, self.right, self.floor)
     }
 
     /// Marks a live write as sent right now if (and only if) the
@@ -209,5 +238,39 @@ mod tests {
     fn track_bounds_stays_ordered_even_for_an_unreasonably_narrow_width() {
         let (left, right) = track_bounds(10.0);
         assert!(right > left);
+    }
+
+    #[test]
+    fn floor_zero_reaches_true_silence_unlike_the_brightness_floor() {
+        // The volume slider's floor is 0, not `MIN_PERCENT` -- the very
+        // first pixel of its track must read 0, not the brightness
+        // floor's 3.
+        assert_eq!(value_at_x_with_floor(0.0, 0.0, 200.0, 0), 0);
+        assert_eq!(clamp_percent_with_floor(0, 0), 0);
+        assert_eq!(clamp_percent_with_floor(-40, 0), 0);
+        assert_eq!(value_at_x_with_floor(200.0, 0.0, 200.0, 0), 100);
+        // A zero-width track still returns the floor, never divides by
+        // zero, same guarantee as the brightness form.
+        assert_eq!(value_at_x_with_floor(50.0, 100.0, 100.0, 0), 0);
+    }
+
+    #[test]
+    fn value_at_x_with_floor_matches_the_brightness_wrapper_at_the_brightness_floor() {
+        for x in [0.0, 33.0, 100.0, 200.0] {
+            assert_eq!(
+                value_at_x(x, 0.0, 200.0),
+                value_at_x_with_floor(x, 0.0, 200.0, MIN_PERCENT)
+            );
+        }
+    }
+
+    #[test]
+    fn drag_start_with_floor_lets_a_volume_style_drag_reach_zero() {
+        let mut drag = Drag::start_with_floor(3, 568.0, 0);
+        assert!(drag.matches(3));
+        assert!(drag.should_write(0));
+        assert_eq!(drag.value_at(0.0), 0);
+        let (_, right) = track_bounds(568.0);
+        assert_eq!(drag.value_at(right), 100);
     }
 }

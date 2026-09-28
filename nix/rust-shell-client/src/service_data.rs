@@ -63,6 +63,38 @@ pub struct SettingsSnapshot {
     pub brightness: Control,
     pub keyboard: Control,
     pub motion: Control,
+    /// The Settings row's own label/state text, painted the same generic
+    /// way `network`/`brightness`/`keyboard`/`motion` are (a `service_
+    /// card` plus this `Control`'s label/detail), with the row's own
+    /// `paint_slider`/`paint_volume_slider` call layered on top when
+    /// writable, exactly like `brightness`. Unlike every other field
+    /// here, never populated by `parse_settings`/`k230-settings` --
+    /// PipeWire's own `pw-dump --monitor` graph (`ServiceView::audio`,
+    /// `pipewire_ipc.rs`) is this shell's live, event-driven source of
+    /// truth for the default sink's volume/mute, and `main.rs` writes
+    /// here directly (the same way `apply_brightness_preview` writes
+    /// `brightness` mid-drag without a worker round trip) whenever that
+    /// graph updates or a local drag/tap changes it. `parse_settings`
+    /// still has to produce *something* here so the struct compiles from
+    /// JSON that has no `volume` key at all; see
+    /// `unknown_volume_placeholder`.
+    pub volume: Control,
+}
+
+/// The value `parse_settings` gives `SettingsSnapshot::volume` before
+/// `main.rs` ever overwrites it with a real PipeWire read -- reachable
+/// only in the brief window between this shell's own start and its first
+/// `pw-dump --monitor` snapshot (or, if PipeWire itself never comes up,
+/// permanently). Never `Writable`, so nothing paints a slider or accepts
+/// a drag against a value nobody has actually read yet.
+pub fn unknown_volume_placeholder() -> Control {
+    Control {
+        state: ControlState::Unavailable,
+        value: None,
+        label: "Volume".into(),
+        detail: None,
+        action: None,
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -198,6 +230,7 @@ pub fn parse_settings(bytes: &[u8]) -> Result<SettingsSnapshot, String> {
             "keyboard",
         )?,
         motion: control(controls.get("motion").ok_or("missing motion")?, "motion")?,
+        volume: unknown_volume_placeholder(),
     })
 }
 
@@ -342,7 +375,13 @@ pub struct ActionOutcome {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ServiceResponse {
-    Settings(SettingsSnapshot),
+    // Boxed: `SettingsSnapshot` grew a fifth `Control` field (`volume`) for
+    // the PipeWire volume UX, which pushed this variant well past the
+    // second-largest (`Notifications`) and tripped clippy's
+    // `large_enum_variant` -- every `ServiceResponse` this worker ever
+    // sends back paid that larger size even when it was really a small
+    // `Action` outcome. Indirection here, not a smaller `SettingsSnapshot`.
+    Settings(Box<SettingsSnapshot>),
     Notifications(NotificationSnapshot),
     Action(ActionOutcome),
 }
@@ -444,7 +483,8 @@ fn execute(
 ) -> Result<ServiceResponse, String> {
     match request {
         ServiceRequest::RefreshSettings => {
-            parse_settings(&settings_command(settings, &["status"])?).map(ServiceResponse::Settings)
+            parse_settings(&settings_command(settings, &["status"])?)
+                .map(|snapshot| ServiceResponse::Settings(Box::new(snapshot)))
         }
         ServiceRequest::RefreshNotifications => parse_history(&notification_request(
             socket,

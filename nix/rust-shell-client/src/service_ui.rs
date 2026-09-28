@@ -2,15 +2,18 @@
 //! Service I/O remains in `service_data::ServiceWorker` off the Wayland loop.
 
 use crate::{
-    navigation::{list_top, GRID_BOTTOM_INSET},
+    catalog::AppEntry,
+    navigation::{self, list_top, GRID_BOTTOM_INSET},
+    pipewire_ipc::GraphSnapshot,
     render::{
-        settings_confirm_layout, settings_layout, settings_row_y, SETTINGS_POWER_CARD_H,
-        SETTINGS_ROW_H,
+        settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
+        POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
         SettingsSnapshot,
     },
+    slider,
     wifi_ui::WifiPublic,
     Route,
 };
@@ -38,6 +41,19 @@ pub struct ServiceView {
     pub wifi: Option<WifiPublic>,
     /// Set only by an image that includes the compositor keyboard gestures.
     pub keyboard_gesture_hint: bool,
+    /// The PipeWire graph's own state (default sink, other sinks, and
+    /// per-app streams), fed by `pipewire_ipc::spawn_monitor`'s background
+    /// reader -- `None` until the first dump/monitor snapshot arrives, or
+    /// if the monitor child never started/died (`audio_error` explains
+    /// which). Unlike `settings`, this is never requested/refreshed by a
+    /// `ServiceRequest` -- the monitor is already event-driven and always
+    /// current, so there is nothing for a request/reply round trip to add.
+    pub audio: Option<GraphSnapshot>,
+    /// Set once the monitor child could not be spawned or exited, so the
+    /// volume row/HUD can show "unavailable" instead of silently drawing
+    /// nothing (mirrors `settings_error`'s own role for the k230-settings
+    /// path).
+    pub audio_error: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -78,6 +94,78 @@ pub fn action_message(outcome: &ActionOutcome) -> String {
     }
 }
 
+/// The drawer's own search field state: a plain query string and whether
+/// the on-screen keyboard is currently up. Deliberately holds nothing
+/// about *which* apps match -- `filter_app_indices` recomputes that
+/// fresh from the live catalog every time it is asked, which is cheap
+/// enough (a linear scan of a bounded, at most 128-entry catalog,
+/// `catalog::scan_apps`'s own cap) that caching the match set separately
+/// would only be complexity, not a real saving; the *expensive* part this
+/// exists to keep off the hot path -- painting -- is cached elsewhere
+/// (`render::DrawerGridCache`, keyed in part on this same query string).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DrawerSearch {
+    pub query: String,
+    pub focused: bool,
+}
+
+impl DrawerSearch {
+    /// Applies one key from the compact search keyboard
+    /// (`navigation::SearchKey`) to the live query. Takes the key by value
+    /// rather than importing `navigation::SearchKey` into this module's own
+    /// public surface, so callers keep matching on the one enum
+    /// `navigation.rs` already defines it in.
+    pub fn key(&mut self, ch: Option<char>, backspace: bool) {
+        if let Some(ch) = ch {
+            self.query.push(ch);
+        } else if backspace {
+            self.query.pop();
+        }
+    }
+
+    /// Opens the field: focuses it and shows the keyboard. A no-op if
+    /// already focused (never clears an in-progress query).
+    pub fn focus(&mut self) {
+        self.focused = true;
+    }
+
+    /// Closes the keyboard without clearing the query -- the filtered grid
+    /// stays exactly as typed (matches `navigation::SearchKey::Done`'s own
+    /// doc).
+    pub fn unfocus(&mut self) {
+        self.focused = false;
+    }
+
+    /// Clears the query entirely (the field's own trailing "clear" tap) but
+    /// leaves focus/keyboard state alone.
+    pub fn clear(&mut self) {
+        self.query.clear();
+    }
+}
+
+/// Every catalog index (not a filtered clone -- the caller already owns
+/// `apps`, and `DrawerAction::Launch`/`LongPress` need the *filtered
+/// display position* to map back to one of these, so returning indices
+/// rather than entries keeps that mapping trivial: `matches[display_index]`)
+/// whose name contains `query`, case-insensitively, as a substring
+/// (covers a prefix match too, since a prefix is a substring). An empty
+/// query matches everything, in catalog order, unfiltered. This is the
+/// entire cost of "searching": a single linear pass over a bounded
+/// (`catalog::scan_apps` caps at 128) list of short strings -- cheap
+/// enough to redo on every keystroke without its own cache, unlike the
+/// *painting* of the results (`render::DrawerGridCache`).
+pub fn filter_app_indices(apps: &[AppEntry], query: &str) -> Vec<usize> {
+    if query.is_empty() {
+        return (0..apps.len()).collect();
+    }
+    let needle = query.to_lowercase();
+    apps.iter()
+        .enumerate()
+        .filter(|(_, app)| app.name.to_lowercase().contains(&needle))
+        .map(|(index, _)| index)
+        .collect()
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum PanelIntent {
     Hide,
@@ -94,13 +182,26 @@ pub enum PanelIntent {
 /// gap, starting clear of the "Dismiss all" tap zone above it) -- see the
 /// Shade paint arm in `render.rs` for the shifted preview-card literals
 /// this cascades to.
-pub const NOTIFICATION_TOP: f64 = 342.0;
+/// A second slider (task: "volume slider in the shade under the
+/// brightness slider") pushed everything below it down by another 76px
+/// (`SHADE_SLIDER_H` + a 20px gap, the exact rhythm brightness's own
+/// slider already established) -- from `342.0` to `418.0`.
+pub const NOTIFICATION_TOP: f64 = 418.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
 /// The Shade's own slider band -- starts below the "Dismiss all" tap
 /// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
 /// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
 pub const SHADE_SLIDER_TOP: f64 = 190.0;
 pub const SHADE_SLIDER_H: f64 = 56.0;
+/// The volume slider's own band, directly under the brightness slider
+/// with the same 20px gap `NOTIFICATION_TOP`'s own shift already
+/// accounts for.
+pub const SHADE_VOLUME_TOP: f64 = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 20.0;
+pub const SHADE_VOLUME_H: f64 = 56.0;
+/// The Settings row index the volume slider paints/hit-tests at --
+/// directly after Brightness (row 1), before Keyboard/Motion, which both
+/// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
+pub const SETTINGS_VOLUME_ROW: u32 = 2;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
@@ -185,23 +286,26 @@ pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
 /// nothing is hit-tested at or below `panel_travel` today), so a drag
 /// starting here can never race a list scroll or a Settings control.
 pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings)
+    matches!(route, Route::Shade | Route::Settings | Route::Power)
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
-/// The Drawer's own top handle band, measured down from its panel edge
-/// (`height * 0.19`). Deliberately a slim strip, not the whole header --
-/// `docs/design/app-drawer-review.md` found the previous "entire header is
-/// always a close zone" design meant the eyebrow/title text (which a
-/// scrolling thumb can easily brush across, e.g. reaching up for a long
-/// swipe) could hijack a drag having nothing to do with the handle. Android
-/// keeps a drawer's drag handle this narrow for the same reason: dragging
-/// the sheet closed is a deliberate reach for its top edge, not an ordinary
-/// consequence of scrolling near it.
-pub const DRAWER_HANDLE_HEIGHT: f64 = 56.0;
+/// The Drawer's own top chrome (handle + search field), from its panel
+/// edge (`navigation::panel_top`) down to where the grid begins
+/// (`navigation::list_top`) -- always an eligible drag-to-close start,
+/// the same way Shade's dismiss zone is regardless of scroll. This used
+/// to be a slim strip carved out of a much taller prose header (`docs/
+/// design/app-drawer-review.md`'s bug-fix pass); the redesign's whole top
+/// chrome is now this short and entirely interactive (a drag handle and a
+/// tappable search field, nothing a scrolling thumb would brush past
+/// accidentally), so the whole thing can be the handle zone again without
+/// reintroducing the original problem.
+pub fn drawer_handle_zone(y: f64, height: u32) -> bool {
+    y >= navigation::panel_top(height) && y < list_top(height)
+}
 
-/// Where a Drawer close drag may originate: its own top handle band
-/// (`DRAWER_HANDLE_HEIGHT`, always eligible regardless of scroll, the same
+/// Where a Drawer close drag may originate: its own top chrome
+/// (`drawer_handle_zone`, always eligible regardless of scroll, the same
 /// way Shade's dismiss zone is), or the tile grid itself once already
 /// scrolled to its own top (mirrors `DrawerNavigation::up`'s pre-existing
 /// "dy > 110 && scroll <= 0.5" release check, now live instead of
@@ -217,11 +321,9 @@ pub const DRAWER_HANDLE_HEIGHT: f64 = 56.0;
 /// ever reflects the scroll at the moment the finger went down, not
 /// wherever the same continuous drag later carries it.
 pub fn drawer_close_drag_zone(y: f64, height: u32, scroll: f64) -> bool {
-    let panel_y = f64::from(height) * 0.19;
-    let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT;
     let header_bottom = list_top(height);
     let dock_top = f64::from(height) - GRID_BOTTOM_INSET;
-    (y >= panel_y && y < handle_bottom) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
+    drawer_handle_zone(y, height) || (y >= header_bottom && y < dock_top && scroll <= 0.5)
 }
 
 /// Whether a Drawer close-drag candidate established at touch-down
@@ -250,11 +352,12 @@ pub fn drawer_close_candidate_after_scroll(candidate: bool, scroll: f64) -> bool
 /// notification list while it can still scroll further up: there the drag
 /// keeps scrolling the list, as it does today.
 pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
-    if slider_band(Route::Shade, y, view) {
-        // Owned entirely by the brightness slider (task: "a horizontal
-        // drag on the slider must not start a close drag") -- regardless
-        // of which way the touch actually moves, matching `Carousel`'s
-        // own "owns whichever gesture starts inside its band" rule.
+    if slider_band(Route::Shade, y, view) || volume_slider_band(Route::Shade, y, view) {
+        // Owned entirely by the brightness or volume slider (task: "a
+        // horizontal drag on the slider must not start a close drag") --
+        // regardless of which way the touch actually moves, matching
+        // `Carousel`'s own "owns whichever gesture starts inside its
+        // band" rule.
         return false;
     }
     if notification_index(y, height, view).is_none() {
@@ -288,11 +391,74 @@ pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
     }
 }
 
+/// Same rule as `slider_band`, for the volume slider: available only once
+/// the PipeWire monitor has reported a default sink (before the first
+/// snapshot, or if the monitor never started, nothing is drawn there --
+/// see `render.rs`'s own gate -- so the band must not steal a gesture
+/// from whatever placeholder text sits there instead).
+pub fn volume_slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
+    let available = view
+        .audio
+        .as_ref()
+        .is_some_and(|audio| audio.sinks.iter().any(|sink| sink.is_default));
+    if !available {
+        return false;
+    }
+    match route {
+        Route::Settings => {
+            let top = settings_row_y(SETTINGS_VOLUME_ROW);
+            (top..top + SETTINGS_ROW_H).contains(&y)
+        }
+        Route::Shade => (SHADE_VOLUME_TOP..SHADE_VOLUME_TOP + SHADE_VOLUME_H).contains(&y),
+        _ => false,
+    }
+}
+
+/// The Settings volume row's own device-picker entry point: the "tap to
+/// change output" detail line specifically (`render.rs`'s own paint --
+/// design.md's "one picker, two entry points": Settings launches the
+/// same expanded HUD panel/list rather than duplicating it as a second
+/// UI). Checked before `volume_slider_band`'s own arm on `Route::Settings`
+/// only, so a tap here never becomes a drag; the Shade's compact volume
+/// row shows no such text and has no equivalent zone (`_ => false` below
+/// covers Shade and every other route).
+pub fn settings_output_picker_hit(y: f64, route: Route, view: &ServiceView) -> bool {
+    if route != Route::Settings {
+        return false;
+    }
+    let has_default_sink = view
+        .audio
+        .as_ref()
+        .is_some_and(|audio| audio.sinks.iter().any(|sink| sink.is_default));
+    if !has_default_sink {
+        return false;
+    }
+    // The detail text itself paints at `volume_y + 76.0`; a band a little
+    // above and below that baseline comfortably covers its line height
+    // without reaching into the label above or the slider track below
+    // (the track's own thumb/highlight paints centered at `volume_y +
+    // 86.0`, so this band stops well clear of it).
+    let top = settings_row_y(SETTINGS_VOLUME_ROW) + 66.0;
+    (top..top + 18.0).contains(&y)
+}
+
+/// The speaker glyph at the volume slider's own left end doubles as the
+/// mute toggle (task: "a speaker icon that toggles mute when tapped").
+/// Mirrors `paint_speaker`'s glyph placement in `render.rs` (`left -
+/// 30.0`): a hit box wide enough to comfortably clear Material's ~9mm
+/// touch-target floor on this 330ppi panel, distinct from the track/thumb
+/// area (`slider::track_bounds`'s own `left..right`) that
+/// `slider::Drag` owns for the rest of the row.
+pub fn volume_icon_tap_zone(x: f64, width: f64) -> bool {
+    let (left, _) = slider::track_bounds(width);
+    (left - 56.0..left).contains(&x)
+}
+
 /// A tap (no drag past the tap slop) that starts and ends on the dim
 /// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
 /// outside a sheet does everywhere else.
 pub fn backdrop_tap(route: Route, start: (f64, f64), end: (f64, f64), panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings)
+    matches!(route, Route::Shade | Route::Settings | Route::Power)
         && start.1 >= panel_travel
         && end.1 >= panel_travel
         && (end.0 - start.0).abs() <= 18.0
@@ -691,6 +857,38 @@ pub fn panel_intent(
             }
             None
         }
+        Route::Power => {
+            if dx.abs() > 18.0 || dy.abs() > 18.0 {
+                return None;
+            }
+            if let Some(confirm) = &view.confirmation {
+                if Instant::now() >= confirm.expires_at {
+                    return None;
+                }
+                if (POWER_CONFIRM_Y..POWER_CONFIRM_Y + POWER_BUTTON_H).contains(&end.1) {
+                    return Some(PanelIntent::Request(if end.0 < w / 2.0 {
+                        ServiceRequest::PowerCancel(confirm.token.clone())
+                    } else {
+                        ServiceRequest::PowerConfirm(confirm.token.clone())
+                    }));
+                }
+                return None;
+            }
+            if (POWER_REBOOT_Y..POWER_REBOOT_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
+                    PowerAction::Reboot,
+                )));
+            }
+            if (POWER_OFF_Y..POWER_OFF_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
+                    PowerAction::Poweroff,
+                )));
+            }
+            if (POWER_CANCEL_Y..POWER_CANCEL_Y + POWER_BUTTON_H).contains(&end.1) {
+                return Some(PanelIntent::Hide);
+            }
+            None
+        }
         Route::Settings => {
             if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY {
                 return Some(PanelIntent::Hide);
@@ -758,7 +956,93 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
+    use std::path::PathBuf;
+
+    fn app(name: &str) -> AppEntry {
+        AppEntry {
+            id: format!("{name}.desktop"),
+            name: name.into(),
+            icon: None,
+            path: PathBuf::new(),
+        }
+    }
+
+    #[test]
+    fn filter_app_indices_matches_case_insensitive_substrings() {
+        let apps = vec![app("Camera"), app("Calculator"), app("Files"), app("Gallery")];
+        assert_eq!(filter_app_indices(&apps, ""), vec![0, 1, 2, 3], "empty query matches all, in order");
+        assert_eq!(filter_app_indices(&apps, "ca"), vec![0, 1], "prefix match, case-insensitive");
+        assert_eq!(filter_app_indices(&apps, "CAM"), vec![0], "uppercase query still matches");
+        assert_eq!(filter_app_indices(&apps, "ery"), vec![3], "substring, not just prefix");
+        assert!(
+            filter_app_indices(&apps, "zzz").is_empty(),
+            "no match is an empty list, not a panic"
+        );
+    }
+
+    #[test]
+    fn drawer_search_key_focus_and_clear() {
+        let mut search = DrawerSearch::default();
+        assert!(!search.focused);
+        assert!(search.query.is_empty());
+
+        search.focus();
+        assert!(search.focused);
+
+        search.key(Some('c'), false);
+        search.key(Some('a'), false);
+        assert_eq!(search.query, "ca");
+
+        search.key(None, true);
+        assert_eq!(search.query, "c", "backspace pops the last character");
+
+        search.unfocus();
+        assert!(!search.focused);
+        assert_eq!(search.query, "c", "unfocus keeps the query, per its own doc");
+
+        search.clear();
+        assert!(search.query.is_empty());
+    }
+
+    #[test]
+    fn power_sheet_requires_a_second_explicit_confirmation_tap() {
+        let mut view = ServiceView::default();
+        let reboot = (284.0, POWER_REBOOT_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, reboot, reboot, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot)))
+        );
+        let dismiss = (284.0, POWER_CANCEL_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, dismiss, dismiss, 568, 1232, &view),
+            Some(PanelIntent::Hide)
+        );
+        assert!(backdrop_tap(
+            Route::Power,
+            (284.0, 850.0),
+            (284.0, 850.0),
+            402.0,
+        ));
+        view.confirmation = Some(Confirmation {
+            token: "test-token".into(),
+            action: PowerAction::Reboot,
+            label: "Restart?".into(),
+            expires_at: Instant::now() + std::time::Duration::from_secs(30),
+        });
+        assert_eq!(panel_intent(Route::Power, reboot, reboot, 568, 1232, &view), None);
+        let cancel = (120.0, POWER_CONFIRM_Y + 32.0);
+        let confirm = (430.0, POWER_CONFIRM_Y + 32.0);
+        assert_eq!(
+            panel_intent(Route::Power, cancel, cancel, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerCancel("test-token".into())))
+        );
+        assert_eq!(
+            panel_intent(Route::Power, confirm, confirm, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerConfirm("test-token".into())))
+        );
+    }
 
     #[test]
     fn close_drag_progress_is_one_at_start_and_zero_at_full_travel() {
@@ -876,30 +1160,25 @@ mod tests {
     }
 
     #[test]
-    fn drawer_close_drag_zone_is_the_slim_handle_and_the_grid_only_at_top() {
+    fn drawer_close_drag_zone_is_the_top_chrome_and_the_grid_only_at_top() {
         let height = 1232;
-        let panel_y = f64::from(height) * 0.19; // 234.08
-        let handle_bottom = panel_y + DRAWER_HANDLE_HEIGHT; // 290.08
-        let header_bottom = list_top(height); // 415.08
-        let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1160.0
+        let panel_y = navigation::panel_top(height);
+        let header_bottom = list_top(height);
+        let dock_top = f64::from(height) - GRID_BOTTOM_INSET; // 1208.0
 
-        // The slim top handle is eligible regardless of scroll -- scrolled
-        // deep into the list or not, the handle is still there.
+        // The whole top chrome (handle + search field) is eligible
+        // regardless of scroll -- scrolled deep into the list or not, it
+        // is still there.
         for scroll in [0.0, 5_000.0] {
             assert!(
                 drawer_close_drag_zone(panel_y, height, scroll),
                 "top edge, scroll={scroll}"
             );
             assert!(
-                drawer_close_drag_zone(handle_bottom - 1.0, height, scroll),
-                "still inside the handle band, scroll={scroll}"
+                drawer_close_drag_zone(header_bottom - 1.0, height, scroll),
+                "still inside the top chrome, scroll={scroll}"
             );
         }
-        // Below the handle but still above the grid (the title/eyebrow
-        // text) is not a close zone at all -- a thumb resting there while
-        // scrolling the list must never be mistaken for grabbing a handle.
-        assert!(!drawer_close_drag_zone(handle_bottom, height, 0.0));
-        assert!(!drawer_close_drag_zone(header_bottom - 1.0, height, 5_000.0));
         // The grid itself: eligible only once scrolled to (approximately)
         // its own top -- the same "at the top" idea
         // `DrawerNavigation::up`'s own release check already used.
@@ -1039,7 +1318,7 @@ mod tests {
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
         assert!(shade_panel_close_zone(60.0, 1232, &empty));
-        assert!(shade_panel_close_zone(376.0, 1232, &empty));
+        assert!(shade_panel_close_zone(452.0, 1232, &empty));
         // One notification: the list cannot scroll, so its row closes too.
         let one = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1049,7 +1328,7 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(shade_panel_close_zone(376.0, 1232, &one));
+        assert!(shade_panel_close_zone(452.0, 1232, &one));
         // A long list that can still scroll keeps the drag as a scroll...
         let mut long = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1059,13 +1338,106 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(!shade_panel_close_zone(376.0, 1232, &long));
+        assert!(!shade_panel_close_zone(452.0, 1232, &long));
         // ...until it is scrolled to its end.
         long.notification_scroll = notification_max_scroll(8, 1232);
-        assert!(shade_panel_close_zone(376.0, 1232, &long));
+        assert!(shade_panel_close_zone(452.0, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
         assert!(shade_panel_close_zone(60.0, 1232, &long));
+    }
+
+    fn writable_volume_view() -> ServiceView {
+        ServiceView {
+            audio: Some(GraphSnapshot {
+                sinks: vec![Sink {
+                    id: 50,
+                    name: "alsa_output.inno".into(),
+                    description: "K230 Inno codec line-out".into(),
+                    linear_volume: 0.5,
+                    muted: false,
+                    is_default: true,
+                }],
+                streams: Vec::new(),
+            }),
+            ..writable_brightness_view()
+        }
+    }
+
+    /// Mirrors `slider_band_owns_its_row_and_is_excluded_from_the_close_
+    /// drag_candidacy` above, for the second (volume) slider directly
+    /// beneath the brightness one -- both bands must be excluded from
+    /// close-drag candidacy at once, and ordinary close-drag must resume
+    /// only below both.
+    #[test]
+    fn volume_slider_band_owns_its_row_and_is_excluded_from_the_close_drag_candidacy() {
+        let view = writable_volume_view();
+        let settings_top = settings_row_y(SETTINGS_VOLUME_ROW);
+        assert!(volume_slider_band(Route::Settings, settings_top + 10.0, &view));
+        assert!(!volume_slider_band(
+            Route::Settings,
+            settings_row_y(1) + 10.0,
+            &view
+        ));
+        assert!(volume_slider_band(Route::Shade, SHADE_VOLUME_TOP + 10.0, &view));
+        assert!(!shade_panel_close_zone(SHADE_VOLUME_TOP + 10.0, 1232, &view));
+        // The brightness band just above it is also still excluded, with
+        // both sliders present at once.
+        assert!(!shade_panel_close_zone(SHADE_SLIDER_TOP + 10.0, 1232, &view));
+        let below = SHADE_VOLUME_TOP + SHADE_VOLUME_H + 40.0;
+        assert!(!volume_slider_band(Route::Shade, below, &view));
+        assert!(shade_panel_close_zone(below, 1232, &view));
+        // No default sink reported yet: the band must not steal gestures
+        // from the placeholder text `render.rs` draws there instead.
+        let unavailable = writable_brightness_view();
+        assert!(!volume_slider_band(
+            Route::Shade,
+            SHADE_VOLUME_TOP + 10.0,
+            &unavailable
+        ));
+        assert!(shade_panel_close_zone(
+            SHADE_VOLUME_TOP + 10.0,
+            1232,
+            &unavailable
+        ));
+    }
+
+    #[test]
+    fn settings_output_picker_hit_is_settings_only_and_needs_a_default_sink() {
+        let view = writable_volume_view();
+        let y = settings_row_y(SETTINGS_VOLUME_ROW) + 76.0;
+        assert!(settings_output_picker_hit(y, Route::Settings, &view));
+        // Shade's compact volume row shows no such text and has no
+        // equivalent zone, even at the analogous offset.
+        assert!(!settings_output_picker_hit(
+            SHADE_VOLUME_TOP + 76.0,
+            Route::Shade,
+            &view
+        ));
+        // Above the label or on the slider track itself: not the picker
+        // zone.
+        assert!(!settings_output_picker_hit(
+            settings_row_y(SETTINGS_VOLUME_ROW) + 15.0,
+            Route::Settings,
+            &view
+        ));
+        assert!(!settings_output_picker_hit(
+            settings_row_y(SETTINGS_VOLUME_ROW) + 90.0,
+            Route::Settings,
+            &view
+        ));
+        // No default sink reported yet: never steals the gesture.
+        let unavailable = writable_brightness_view();
+        assert!(!settings_output_picker_hit(y, Route::Settings, &unavailable));
+    }
+
+    #[test]
+    fn volume_icon_tap_zone_is_left_of_the_track_and_distinct_from_it() {
+        let width = 568.0;
+        let (left, _right) = slider::track_bounds(width);
+        assert!(volume_icon_tap_zone(left - 20.0, width));
+        assert!(!volume_icon_tap_zone(left + 5.0, width));
+        assert!(!volume_icon_tap_zone(left - 200.0, width));
     }
 
     fn writable_brightness_view() -> ServiceView {
@@ -1096,6 +1468,13 @@ mod tests {
                     state: ControlState::ReadOnly,
                     value: None,
                     label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                volume: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
+                    label: "Volume".into(),
                     detail: None,
                     action: None,
                 },
@@ -1174,8 +1553,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (400.0, 381.0),
+                (300.0, 452.0),
+                (400.0, 457.0),
                 568,
                 1232,
                 &view
@@ -1183,15 +1562,15 @@ mod tests {
             None // release alone cannot dismiss without a tracked drag
         );
         assert_eq!(
-            notification_swipe_start((300.0, 376.0), (400.0, 381.0), 568, 1232, &view)
+            notification_swipe_start((300.0, 452.0), (400.0, 457.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (300.0, 466.0),
+                (300.0, 452.0),
+                (300.0, 542.0),
                 568,
                 1232,
                 &view
@@ -1201,8 +1580,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 376.0),
-                (300.0, 376.0),
+                (300.0, 452.0),
+                (300.0, 452.0),
                 568,
                 1232,
                 &view
@@ -1251,6 +1630,13 @@ mod tests {
                 motion: Control {
                     state: ControlState::ReadOnly,
                     value: None,
+                    label: "Available".into(),
+                    detail: None,
+                    action: None,
+                },
+                volume: Control {
+                    state: ControlState::Writable,
+                    value: Some(ControlValue::Percent(50)),
                     label: "Available".into(),
                     detail: None,
                     action: None,
@@ -1304,9 +1690,9 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        let start = (300.0, 376.0);
+        let start = (300.0, 452.0);
         assert_eq!(
-            notification_swipe_start(start, (320.0, 381.0), 568, 1232, &view)
+            notification_swipe_start(start, (320.0, 457.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
@@ -1340,7 +1726,7 @@ mod tests {
         );
         view.notifications.as_mut().unwrap().events[0].dismissible = false;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
             None
         );
         assert!(!notification_swipe_valid(&view, &swipe));
@@ -1348,7 +1734,7 @@ mod tests {
         view.notifications.as_mut().unwrap().events[0].dismissible = true;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 376.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
             None
         );
         assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);
@@ -1441,13 +1827,18 @@ mod tests {
             network: unavailable.clone(),
             brightness: unavailable.clone(),
             keyboard: unavailable.clone(),
-            motion: unavailable,
+            motion: unavailable.clone(),
+            volume: unavailable,
         });
+        // Row y's shifted +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from
+        // 730/985: the added Volume settings row (task: "in Settings")
+        // cascaded the power section down by one row's rhythm, same as
+        // `settings_layout_cascades_from_the_row_rhythm`'s own shift.
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 730.0),
-                (60.0, 730.0),
+                (60.0, 856.0),
+                (60.0, 856.0),
                 568,
                 1232,
                 &view
@@ -1465,8 +1856,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 730.0),
-                (60.0, 730.0),
+                (60.0, 856.0),
+                (60.0, 856.0),
                 568,
                 1232,
                 &view
@@ -1476,8 +1867,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (80.0, 985.0),
-                (80.0, 985.0),
+                (80.0, 1111.0),
+                (80.0, 1111.0),
                 568,
                 1232,
                 &view
@@ -1489,8 +1880,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 985.0),
-                (440.0, 985.0),
+                (440.0, 1111.0),
+                (440.0, 1111.0),
                 568,
                 1232,
                 &view
@@ -1503,8 +1894,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 985.0),
-                (440.0, 985.0),
+                (440.0, 1111.0),
+                (440.0, 1111.0),
                 568,
                 1232,
                 &view

@@ -1,0 +1,63 @@
+[
+  {
+    "id": 0,
+    "type": "PipeWire:Interface:Core",
+    "version": 3,
+    "info": { "cookie": 12345, "props": {} }
+  },
+  {
+    "id": 38,
+    "type": "PipeWire:Interface:Metadata",
+    "version": 3,
+    "info": { "props": { "metadata.name": "default" } },
+    "metadata": [
+      { "subject": 0, "key": "default.configured.audio.sink", "type": "Spa:String:JSON", "value": { "name": "alsa_output.platform-canaan_k230_audio.k230-i2s-inno" } },
+      { "subject": 0, "key": "default.audio.sink", "type": "Spa:String:JSON", "value": { "name": "alsa_output.platform-canaan_k230_audio.k230-i2s-inno" } }
+    ]
+  },
+  {
+    "id": 50,
+    "type": "PipeWire:Interface:Node",
+    "version": 3,
+    "info": {
+      "max-input-ports": 2,
+      "max-output-ports": 0,
+      "props": {
+        "media.class": "Audio/Sink",
+        "node.name": "alsa_output.platform-canaan_k230_audio.k230-i2s-inno",
+        "node.description": "K230 Inno codec line-out"
+      },
+      "params": {
+        "Props": [
+          { "volume": 1.0, "mute": false, "channelVolumes": [0.512, 0.512], "channelMap": ["FL", "FR"] }
+        ]
+      }
+    }
+  },
+  {
+    "id": 83,
+    "type": "PipeWire:Interface:Node",
+    "version": 3,
+    "info": {
+      "max-input-ports": 2,
+      "max-output-ports": 0,
+      "props": {
+        "media.class": "Stream/Output/Audio",
+        "node.name": "k230-video-software",
+        "application.name": "k230 video",
+        "application.icon-name": "multimedia-player"
+      },
+      "params": {
+        "Props": [
+          { "volume": 1.0, "mute": false, "channelVolumes": [0.729], "channelMap": ["FC"] }
+        ]
+      }
+    }
+  },
+  {
+    "id": 91,
+    "type": "PipeWire:Interface:Client",
+    "version": 3,
+    "info": { "props": { "application.name": "wireplumber" } }
+  }
+]

@@ -786,6 +786,9 @@ DATA 30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73  docs/evid
 DATA 13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png
 DATA 6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png
 DATA bd3b2e1340887b3431f6536186aab5deb63d0d3d681ec130077cf486a4b1fd54  docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-scrolled.png
+DATA 58d6dad5b8afcd85e08231f3e0421518a62603a9f014d5a9cac7a15fa226debe  docs/evidence/app-drawer/original-before-redesign.png
+DATA feb3292a04d2163e8c5fba8bd5f23cdba91888ef72701bf1c400df1541440a36  docs/evidence/app-drawer/redesign-fixture.png
+DATA 68f0da66330c9d922e8af785197b1cedfadd6b9e7379114359f062b2be33a515  docs/evidence/app-drawer/redesign-real-icons.png
 DATA 553d64fc7e19f8f3b783a3b862245d9f3155c8bc425762f9e013f1fc8afd6feb  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/app-restored.png
 DATA 2efb9c643352a88a89a8387372cdedf2cf29cebac62a736976e571fdfe00fea3  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/app-shade.png
 DATA c23edc5813c65d9e399719aac6ea29cb53c62e9bff02ce2acbe530005a941dc6  docs/evidence/coherent-shell/rust-shade-dismiss-qemu/deck-restored.png
@@ -1320,6 +1323,18 @@ DATA 05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d  docs/evid
 DATA de1da296526f5f6feb4d44972fc3ccd88ce495be38265a788e0463031faae405  docs/evidence/wifi-settings/webos-polish-qemu/wifi-list-dark.png
 DATA e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8  docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png
 DATA 95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a  docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png
+DATA ffe9f46b8af0617145cc5d61e1df064f82275791fe1ebf7a4765473ad5b434eb  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-auth-error-dark.png
+DATA 05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-forget-confirm-dark.png
+DATA 0fc088b091ad33e55ebeee9a9eedb735eb02a16614fd782befafa765833e4ded  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-forgotten-dark.png
+DATA 178d4f30df386e01d30e6c4ac29f59462999b28a2b4baa32bfbf8061070767b7  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-keyboard-dark.png
+DATA 7216d43e5b904f28f587193a69aca9710c5ed0df45b96db6a6a286e4b1798add  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-keyboard-gesture-disabled-dark.png
+DATA 0e169a208a7c78e4cd5fb5926fa1edc8150ba711a7b15dfc7dad300820665395  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-list-dark.png
+DATA e8955993f0bac62bfdab2337ccedf16d5cf3575da8d3ef134e896d82316bfda2  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-list-light.png
+DATA 9bce2b1fe7e1dc3d8508b8ef17be44345d1fff70c819642055d22bf370683866  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-loading-dark.png
+DATA 2e474fb8b208685dfd1aee5a7ab2e50d02fb5e633ad8ae2f8297c2e962b3dfba  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-masked-dark.png
+DATA dd3782ac477ddfce563d062bdecdef87a5939ce815e2849a30d75c7e8a41b675  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-saved-entry.png
+DATA 9ec5bd480721d3fcba238e5229e9f8c06d92612249612b570215651f9f651ec5  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-settings-dark.png
+DATA c33fb0e35b6668a9ed563f128666aa2571554beffcede4a40801697ce5cb8be7  docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-settings-light.png
 DATA e2c0ba874a9bb5dcf1032bdcf15a1cd1c4817f21232ff8e5acbfb47445f85a9b  docs/evidence/omarchy-themes/quattro-picker-parity/dark-catppuccin-background-selected.png
 DATA 80749cf5e3d95f1637f8ed3fa428ee035a342ec4767c3667f4f353e9d322a574  docs/evidence/omarchy-themes/quattro-picker-parity/dark-catppuccin-preview.png
 DATA dfee60f07b4940903ddd9f4ac2e6ed6efb29474db1b937e24d8f4a324b5e93ee  docs/evidence/omarchy-themes/quattro-picker-parity/light-catppuccin-latte-background-selected.png
@@ -1436,6 +1451,10 @@ DATA 2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec docs/evide
 DATA 2e2c4a9fcc2110d03fabac3f926171a656259026fa9d03dae8ab88e298e9af3c docs/evidence/brightness-slider/settings-mid-drag-54pct.png
 DATA 76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png
 DATA e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157 docs/evidence/brightness-slider/shade-synced-45pct.png
+DATA 862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be docs/evidence/power-key/host/power-sheet-host.png
+DATA 9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d docs/evidence/volume/shade-both-sliders.png
+DATA 6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a docs/evidence/volume/hud-collapsed.png
+DATA 1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401 docs/evidence/volume/hud-expanded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -1996,6 +2015,25 @@ These DATA screenshots are host-rendered and paired headless-QEMU captures of in
 | `docs/evidence/wifi-settings/webos-polish-qemu/wifi-masked-dark.png` | 52048 | DATA | `e683d14906b728e6a457af6ad47cb8821ab0d8af2f803234305bcd557a030de8` |
 | `docs/evidence/wifi-settings/webos-polish-qemu/wifi-settings-dark.png` | 40215 | DATA | `95e428aaa17f01fc274d0b31ca17d057ae318904d54c58b0f4553bb4377db18a` |
 
+### Wi-Fi Settings password field takes the system keyboard: paired headless QEMU captures
+
+These twelve DATA frames use invented network names and synthetic dark/light palettes and prove the password field now takes real `wl_keyboard` input (typed through a `zwp_virtual_keyboard_v1` connection standing in for `wvkbd`) instead of the removed in-app keypad. The adjacent evidence README records the exact Sway/Rust inputs and QEMU-only limits.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-auth-error-dark.png` | 31461 | DATA | `ffe9f46b8af0617145cc5d61e1df064f82275791fe1ebf7a4765473ad5b434eb` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-forget-confirm-dark.png` | 23775 | DATA | `05ddd61c03d755945223c96e618001122c788bab01fe94c58e06ffcf5941059d` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-forgotten-dark.png` | 55018 | DATA | `0fc088b091ad33e55ebeee9a9eedb735eb02a16614fd782befafa765833e4ded` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-keyboard-dark.png` | 30206 | DATA | `178d4f30df386e01d30e6c4ac29f59462999b28a2b4baa32bfbf8061070767b7` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-keyboard-gesture-disabled-dark.png` | 56505 | DATA | `7216d43e5b904f28f587193a69aca9710c5ed0df45b96db6a6a286e4b1798add` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-list-dark.png` | 55015 | DATA | `0e169a208a7c78e4cd5fb5926fa1edc8150ba711a7b15dfc7dad300820665395` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-list-light.png` | 54053 | DATA | `e8955993f0bac62bfdab2337ccedf16d5cf3575da8d3ef134e896d82316bfda2` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-loading-dark.png` | 46904 | DATA | `9bce2b1fe7e1dc3d8508b8ef17be44345d1fff70c819642055d22bf370683866` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-masked-dark.png` | 26616 | DATA | `2e474fb8b208685dfd1aee5a7ab2e50d02fb5e633ad8ae2f8297c2e962b3dfba` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-saved-entry.png` | 36381 | DATA | `dd3782ac477ddfce563d062bdecdef87a5939ce815e2849a30d75c7e8a41b675` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-settings-dark.png` | 60071 | DATA | `9ec5bd480721d3fcba238e5229e9f8c06d92612249612b570215651f9f651ec5` |
+| `docs/evidence/wifi-settings/keyboard-focus-qemu/wifi-settings-light.png` | 58571 | DATA | `c33fb0e35b6668a9ed563f128666aa2571554beffcede4a40801697ce5cb8be7` |
+
 ### Theme activation after the commit fix: native board captures
 
 These DATA screenshots are native `grim` captures of the installed board compositor showing the app drawer under two themes. Fixture-free, no personal data. The adjacent README records system, commands and limits.
@@ -2239,3 +2277,28 @@ board. See `docs/evidence/brightness-slider/README.md`.
 | `docs/evidence/brightness-slider/settings-after-drag-90pct.png` | 64617 | DATA | `2349e999dcaf4284a54910bcff8809b7e6aefe51dfad6bae95d0f1fe4f0896ec` |
 | `docs/evidence/brightness-slider/shade-synced-45pct.png` | 59251 | DATA | `e9fe967ebc8e42204ee39fd5f7fa1feec9048f78ae632de014097a066cb62157` |
 | `docs/evidence/brightness-slider/shade-after-drag-90pct-still-open.png` | 59095 | DATA | `76383912cbc1241d553b2c6a122f71e1228fd54e0ba3b448f2dd49bc4cfa7d1c` |
+
+### Power-key host fixture
+
+The power menu screenshot is a host-rendered fixture, not physical-board
+evidence. See `docs/evidence/power-key/host/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/power-key/host/power-sheet-host.png` | 32234 | DATA | `862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be` |
+
+### Volume slider and HUD on the headless compositor
+
+Host QEMU capture (same harness family as the brightness slider's own,
+`tests/volume_hud_qemu.py`): a synthetic `pw-dump`/`pw-cli` fixture pair
+standing in for a real PipeWire session (`K230_PW_DUMP`/`K230_PW_CLI`,
+the same environment-variable substitution `K230_SETTINGS` already uses),
+a real cross-built Rust client and patched Sway under
+`qemu-riscv64-static`. No board, no real PipeWire daemon. See
+`docs/evidence/volume/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
+| `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
+| `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |

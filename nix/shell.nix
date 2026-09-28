@@ -14,12 +14,63 @@
 
 let
   cfg = config.k230.shell;
+  powerKeyd = pkgs.callPackage ./power-keyd.nix { };
 
   # Xwayland off: 55 fewer riscv64 derivations and no GTK 3 / CUPS / Avahi
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
   cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
+  # nixpkgs' stock `pipewire` builds every optional backend on by default:
+  # Bluetooth (bluez plus the LC3/LDAC/aptX codec libraries), Vulkan,
+  # X11 (which also drags in libcanberra/libmysofa), RAOP/AirPlay,
+  # ROC streaming, and mDNS/Avahi discovery -- none of which this board's
+  # volume UX (ALSA line-out plus the PulseAudio-compat shim) uses; this
+  # board also has no onboard Bluetooth at all
+  # (`docs/research/bluetooth-onboard.md`). Measured directly
+  # (`docs/evidence/volume/closure-size.md`, via `nix-store -q --size`
+  # summed over `nix-store -qR` -- that file also records why `nix
+  # path-info -rS` reported wildly wrong per-path sizes on this store and
+  # should not be trusted here): the stock package's own runtime closure
+  # is about 0.44 GiB on this cross toolchain. Measured just as directly:
+  # this override, plus the matching `wireplumberLean` below, does *not*
+  # reduce this board's actual whole-system closure at all -- `bluez` and
+  # friends are already reachable via this board's own pre-existing
+  # `hardware.bluetooth.enable = true`, and a separate NixOS-internal ALSA-
+  # plugins aggregate (traced, not this repo's own code) still pulls in
+  # the stock, untrimmed `pipewire` regardless of what any service unit
+  # here actually runs. Kept anyway: every process this change itself
+  # spawns runs the trimmed package, which is still the architecturally
+  # correct choice even though the board-wide number did not move (that
+  # same evidence file records the measured before/after in full, and the
+  # open follow-up needed to actually close the remaining gap). This
+  # override does not touch `ffmpeg`/`gstreamer` support (nixpkgs 1.6.8
+  # hardcodes both `true` in its own `mesonFlags`, not exposed as an
+  # override parameter, so trimming them would mean forking the whole
+  # derivation rather than overriding it -- judged not worth the
+  # maintenance cost). Same "measure, then cut the tail that doesn't apply
+  # to this board"
+  # reasoning `swayBase` above already uses for Xwayland.
+  pipewireLean = pkgs.pipewire.override {
+    bluezSupport = false;
+    vulkanSupport = false;
+    x11Support = false;
+    raopSupport = false;
+    rocSupport = false;
+    zeroconfSupport = false;
+  };
+  # `wireplumber`'s own package.nix takes `pipewire` as a plain override
+  # argument and links against it directly (it is WirePlumber's session/
+  # policy manager for exactly this PipeWire, not a standalone daemon) --
+  # without this, `pkgs.wireplumber` would still pull in the *stock*,
+  # untrimmed `pkgs.pipewire` as its own build input, landing a second
+  # full pipewire package in the closure alongside `pipewireLean` and
+  # defeating the whole override (measured directly: an earlier build
+  # that overrode only `pipewire`'s own systemd-unit references, not
+  # wireplumber's, came out slightly *larger* than the untrimmed
+  # baseline for exactly this reason -- `docs/evidence/volume/
+  # closure-size.md`).
+  wireplumberLean = pkgs.wireplumber.override { pipewire = pipewireLean; };
   # Records intended shown/hidden state before signalling, so a theme-triggered
   # keyboard restart (which always starts a fresh wvkbd process) can decide
   # whether to pass --hidden without any post-restart signal replay race.
@@ -499,6 +550,19 @@ let
     export K230_THEME_HELPER_SOCKET=/run/shell/theme-helper.sock
     export K230_SETTINGS_REDUCED_MOTION=${if cfg.reducedMotion then "1" else "0"}
     export K230_KEYBOARD_TOUCH_GESTURES=${if cfg.coherentShell then "1" else "0"}
+    # Lets the Wi-Fi Settings password field raise/lower the system keyboard
+    # itself (openspec/changes/the-handheld-configures-wifi-from-settings)
+    # via the exact same helper the compositor's own two-finger keyboard
+    # gesture uses (`keyboardGestureSignal` above, run from `adapter.c`) --
+    # one show/hide path, not two. `k230-keyboard-gesture-signal` finds
+    # `wvkbd-mobintl` by process name regardless of which sway.conf started
+    # it, so this is safe to export unconditionally, not just under
+    # `cfg.coherentShell`. `K230_KEYBOARD_HEIGHT` matches the same
+    # `cfg.keyboardHeight` value wvkbd itself is launched with (`-H` above
+    # and in `swayConfig`), so the Entry page reflows Cancel/Connect by
+    # exactly the height the keyboard actually reserves.
+    export K230_KEYBOARD_SIGNAL=${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal
+    export K230_KEYBOARD_HEIGHT=${toString cfg.keyboardHeight}
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
@@ -616,6 +680,29 @@ let
     input type:touch map_to_output DSI-1
 
     ${lib.optionalString cfg.coherentShell ''
+      # Hardware/keyboard-base volume keys, wired to wpctl's own default-sink
+      # step commands rather than to the Rust client directly: the client's
+      # already-running PipeWire graph watcher (task: "watch the graph for
+      # changes") picks up the resulting volume/mute Props change the exact
+      # same way it would pick up any other external change (another app, a
+      # second keyboard) and shows the HUD from that one code path -- no
+      # separate signalling channel from Sway to the shell client exists or
+      # is needed.
+      #
+      # Whether any input this board has actually emits these keysyms is
+      # unverified from source alone: `docs/research/board-capability-
+      # inventory.md` documents no dedicated volume buttons on the main
+      # board, and the optional keyboard/nRF9151 base's TCA8418 matrix has
+      # no keymap landed in this repo yet that would produce them. These
+      # bindings are cheap (three `bindsym` lines Sway never fires without a
+      # matching key event) and correct for any USB/Bluetooth keyboard that
+      # does send them; they claim nothing about this board's own keys.
+      bindsym XF86AudioRaiseVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0
+      bindsym XF86AudioLowerVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+      bindsym XF86AudioMute exec ${wireplumberLean}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    ''}
+
+    ${lib.optionalString cfg.coherentShell ''
       # Sway classifies transients as floating before for_window matching.
       # Maximize every ordinary app window -- tiling or floating alike, so
       # a client that reports a fixed (non-resizable) size, which sway's
@@ -716,6 +803,15 @@ in
         Select the opt-in Rust drawer/shade and live-card session with Settings
         and notification services. The ordinary bar session remains a separate
         rollback configuration until touch acceptance is recorded.
+      '';
+    };
+
+    powerKeyTrial = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Enable the PMU power-key gesture service after the input-only kernel
+        has passed real press/release proof on the physical board.
       '';
     };
 
@@ -876,12 +972,46 @@ in
       else terminalFootConfig;
     environment.etc."neofetch/config.conf".source = ./neofetch.conf;
 
+    # Redirect the plain ALSA path (mpv's own alsaSupport=true build,
+    # nix/video-probe.nix -- pipewireSupport/pulseSupport are both false
+    # there, deliberately: mpv is never rebuilt to link libpipewire) through
+    # PipeWire's ALSA plugin, so mpv's output becomes an ordinary PipeWire
+    # stream node (task: "the volume HUD ... per-stream volumes ... with
+    # the app name") without touching the mpv derivation at all. These are
+    # the same two files `services.pipewire.alsa.enable` would install
+    # (`${pipewireLean}/share/alsa/alsa.conf.d/{50-pipewire,
+    # 99-pipewire-default}.conf`); installed by hand here rather than by
+    # importing that module, which wires into a systemd --user instance this
+    # image never starts (no login manager, no lingering user session --
+    # sway itself already runs as a plain system unit with User=shell, see
+    # `systemd.services.shell` below). Gated on cfg.coherentShell: the
+    # volume UX this exists for is a Rust-shell-only surface, and the older
+    # bar session keeps its current direct-ALSA mpv path unchanged.
+    environment.etc."alsa/conf.d/50-pipewire.conf" = lib.mkIf cfg.coherentShell {
+      source = "${pipewireLean}/share/alsa/alsa.conf.d/50-pipewire.conf";
+    };
+    environment.etc."alsa/conf.d/99-pipewire-default.conf" = lib.mkIf cfg.coherentShell {
+      source = "${pipewireLean}/share/alsa/alsa.conf.d/99-pipewire-default.conf";
+    };
+
     users.groups.shell = { };
     users.users.shell = {
       isNormalUser = true;
       uid = 1000;
       group = "shell";
-      extraGroups = [ "seat" "video" "input" ];
+      # "audio": /dev/snd/* ships `root:audio 0660` (nixpkgs' own udev
+      # rules, not this file's own doing); without it WirePlumber's ALSA
+      # monitor cannot open card 0 (`K230_I2S_INNO`) at all and falls
+      # back to its own dummy "Built-in Audio" node -- board evidence
+      # (system z3zbk6gx): confirmed directly by a temporary `chmod o+rw
+      # /dev/snd/*` plus restarting `pipewire`/`wireplumber`/
+      # `pipewire-pulse`, which did produce the real card as the default
+      # sink/source, and by `id shell` showing no `audio` group before
+      # this fix. `extraGroups`, not a per-unit `SupplementaryGroups`, so
+      # every future PipeWire-adjacent helper this user runs (not just
+      # the three systemd units below) has the same access without
+      # needing its own copy of this line.
+      extraGroups = [ "seat" "video" "input" "audio" ];
       description = "owns the panel";
     };
 
@@ -982,6 +1112,127 @@ in
       };
     };
 
+    # PipeWire + WirePlumber, for the volume UX in
+    # openspec/changes/the-handheld-controls-volume: a session-scoped sound
+    # server so the shell can show/adjust the default sink's volume and
+    # per-stream (per-app) volumes as PipeWire objects, not by reaching into
+    # ALSA mixer controls directly. Off entirely outside cfg.coherentShell.
+    #
+    # Not the `services.pipewire`/`services.wireplumber` NixOS modules: both
+    # wire their units into `systemd.user.services`, which needs a systemd
+    # --user instance for `shell` (normally started by pam_systemd on login,
+    # or by lingering) that this image never starts -- there is no login
+    # manager and every getty on tty1 is masked above. Plain system services
+    # with User=shell, matching every other per-session daemon in this file
+    # (shell-notifications, theme-helper, shell-session-bus), sidestep that
+    # entirely; the two ALSA plugin files above are the only other piece
+    # that module would have added.
+    #
+    # No `security.rtkit.enable`: pipewire's module-rt falls back to asking
+    # for RT scheduling directly and logs a warning if that's refused
+    # (uncommon but harmless on a single-user board with no other realtime
+    # contention), rather than adding a fourth daemon purely for a priority
+    # bump. Kept to exactly the three processes the task asks for: pipewire,
+    # wireplumber, pipewire-pulse.
+    #
+    # Board evidence (system z3zbk6gx) found `module-rt` logging that it
+    # cannot reach a session bus at all, and RTKit unknown, in addition to
+    # the expected "no rtkit installed" outcome. The first half is a real,
+    # separate gap this file's own units left open: none of the three set
+    # `DBUS_SESSION_BUS_ADDRESS`, so there was no session bus for any
+    # D-Bus-using module to reach in the first place -- not just no RTKit
+    # registered on one. All three now connect to the same `shell-session-
+    # bus` every other per-session daemon in this file uses
+    # (`shell-ui`/`shell-notifications`), the same `DBUS_SESSION_BUS_
+    # ADDRESS`/`requires`/`after` convention `shell-ui` already has. This
+    # does not add RTKit itself (still no `security.rtkit.enable`, for the
+    # reason above) -- `module-rt` now has a real bus to ask on, and gets a
+    # clean "no such service" from it instead of "no bus at all", which is
+    # the harmless outcome the task accepted. Checked directly that no
+    # *other* WirePlumber module this image actually needs depends on
+    # D-Bus for basic ALSA sink/source management: the default Lua
+    # session config's `alsa-monitor`/default-policy/default-routing
+    # scripts talk to PipeWire's own registry, never D-Bus: only the
+    # optional MPRIS/Bluetooth-focused modules would, and Bluetooth
+    # support is already off (`pipewireLean`'s own `bluezSupport = false`)
+    # and nothing here enables an MPRIS module.
+    systemd.services.pipewire = lib.mkIf cfg.coherentShell {
+      description = "PipeWire media server (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-session-bus.service" ];
+      after = [ "shell.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        # The stock config: $XDG_RUNTIME_DIR/pipewire-0, the socket every
+        # client (wpctl, pw-cli, the Rust shell's own reader/writer helpers,
+        # and mpv via the ALSA plugin above) looks for with no extra env.
+        ExecStart = "${pipewireLean}/bin/pipewire -c ${pipewireLean}/share/pipewire/pipewire.conf";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    systemd.services.wireplumber = lib.mkIf cfg.coherentShell {
+      description = "WirePlumber session/policy manager (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "pipewire.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-session-bus.service" ];
+      after = [ "pipewire.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        ExecStart = "${wireplumberLean}/bin/wireplumber";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    systemd.services.pipewire-pulse = lib.mkIf cfg.coherentShell {
+      description = "PipeWire PulseAudio-compatible server (shell session)";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "pipewire.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-session-bus.service" ];
+      after = [ "pipewire.service" "wireplumber.service" "shell-session-bus.service" ];
+      environment = {
+        XDG_RUNTIME_DIR = "/run/shell";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+      };
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        WorkingDirectory = config.users.users.shell.home;
+        # Stock config: $XDG_RUNTIME_DIR/pulse/native. Nothing in this
+        # change requires a PulseAudio-protocol client, but a stray
+        # PULSE_SERVER-aware app (some Electron/Chromium builds probe for
+        # it) then degrades to working audio instead of silent failure, for
+        # one small always-idle process.
+        ExecStart = "${pipewireLean}/bin/pipewire-pulse -c ${pipewireLean}/share/pipewire/pipewire-pulse.conf";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
     # Board evidence (docs/evidence/omarchy-themes/background-decode-cache-qemu/README.md)
     # measured about 1.2 s of Python interpreter start-up per `k230-theme`
     # call on the K230's slower core, and a chooser Apply calls it twice
@@ -1020,20 +1271,77 @@ in
       bindsTo = [ "shell.service" ];
       partOf = [ "shell.service" ];
       requires = [ "shell-session-bus.service" ];
-      wants = [ "shell-notifications.service" ];
-      after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" ];
+      # Soft, not hard: a stopped or slow-starting sound server degrades the
+      # volume UX to "no live sink yet" (its own reconnect loop, same as any
+      # other external-process dependency here), never blocks the rest of
+      # the shell from starting.
+      wants = [ "shell-notifications.service" "pipewire.service" "wireplumber.service" ];
+      after = [ "shell.service" "shell-notifications.service" "shell-session-bus.service" "pipewire.service" "wireplumber.service" ];
+      # `wpctl`/`pw-dump`/`pw-cli`: board evidence (system z3zbk6gx) found
+      # these unreachable from the running client despite `path` below
+      # already listing `wireplumberLean`/`pipewireLean` -- the generated
+      # unit's own `Environment=PATH=...` line does include both
+      # packages' `bin/` directories (checked directly against the built
+      # unit file), but the coordinator's board test still could not
+      # reach `wpctl` from the live process. Rather than keep relying on
+      # `PATH` search working end to end, these three are now also passed
+      # as absolute store paths through their own `K230_WPCTL`/
+      # `K230_PW_DUMP`/`K230_PW_CLI` environment variables -- the exact
+      # same "substitute the real path at build time" convention
+      # `K230_SETTINGS`/`K230_NOTIFICATION_SOCKET`/`K230_SWAYMSG` already
+      # use elsewhere in this file, and what `main.rs`'s own `std::env::
+      # var_os("K230_WPCTL")`-etc. read as their first choice, falling
+      # back to a bare `PATH` lookup only if unset. `path` is left in
+      # place too (harmless, and still covers any other ad-hoc PATH-based
+      # lookup), but these three env vars are now the authoritative,
+      # PATH-independent way this shell finds them.
       environment = {
         XDG_RUNTIME_DIR = "/run/shell";
         SWAYSOCK = "/run/shell/sway-ipc.sock";
         DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+        K230_WPCTL = "${wireplumberLean}/bin/wpctl";
+        K230_PW_DUMP = "${pipewireLean}/bin/pw-dump";
+        K230_PW_CLI = "${pipewireLean}/bin/pw-cli";
       };
-      path = [ pkgs.coreutils ];
+      # wireplumber -> wpctl (the rare, human-paced set-volume/set-mute/
+      # set-default commit calls); pipewire -> pw-dump/pw-cli (the
+      # persistent graph-watcher and command-writer children this
+      # process itself spawns and keeps alive, `pipewire_ipc.rs`). The
+      # three `K230_*` env vars above are the primary, PATH-independent
+      # way this shell finds them now; `path` stays as a fallback PATH.
+      path = [ pkgs.coreutils wireplumberLean pipewireLean ];
       serviceConfig = {
         Type = "exec";
         User = "shell";
         Group = "shell";
         WorkingDirectory = config.users.users.shell.home;
         ExecStart = "${rustShell}/bin/k230-shell-rust --serve";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    # Ignore logind's default action even for the input-only physical trial;
+    # otherwise the first observed KEY_POWER event could shut down Linux.
+    services.logind.settings.Login = lib.mkIf cfg.coherentShell {
+      HandlePowerKey = "ignore";
+      HandlePowerKeyLongPress = "ignore";
+    };
+
+    systemd.services.shell-power-key = lib.mkIf (cfg.coherentShell && cfg.powerKeyTrial) {
+      description = "PMU key display and power-sheet gestures";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-ui.service" ];
+      after = [ "shell.service" "shell-ui.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        ExecStart = "${powerKeyd}/bin/k230-power-keyd --swaymsg ${sway}/bin/swaymsg";
         Restart = "on-failure";
         RestartSec = 1;
         UMask = "0077";

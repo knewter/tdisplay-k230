@@ -10,7 +10,8 @@ use k230_shell_rust::{
     configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
-    navigation::{DrawerAction, DrawerNavigation},
+    navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
+    pipewire_ipc,
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
     render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
@@ -18,13 +19,15 @@ use k230_shell_rust::{
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
         close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
-        drawer_close_drag_zone, shade_panel_close_zone,
+        drawer_close_drag_zone, filter_app_indices, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, slider_band, Confirmation, NotificationCoast, NotificationSwipeSettle,
+        panel_intent, settings_output_picker_hit, slider_band, volume_icon_tap_zone,
+        volume_slider_band, Confirmation, DrawerSearch, NotificationCoast, NotificationSwipeSettle,
         PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     slider,
+    volume,
     splash::{
         fade_alpha, should_auto_dismiss_failed, should_time_out, window_event_matches, Splash,
         SplashStatus, SplashTarget,
@@ -39,19 +42,23 @@ use k230_shell_rust::{
     video_visibility,
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
-    wifi_ui::{self, Intent as WifiIntent, Page as WifiPage, WifiView},
+    wifi_ui::{self, key_event_intent, Intent as WifiIntent, Page as WifiPage, WifiView},
     Route, TouchTrace,
 };
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState, Region},
-    delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat,
-    delegate_shm, delegate_touch, delegate_presentation_time,
+    delegate_compositor, delegate_keyboard, delegate_layer, delegate_output, delegate_registry,
+    delegate_seat, delegate_shm, delegate_touch, delegate_presentation_time,
     presentation_time::{PresentationTimeState, PresentationTimeHandler, PresentTime},
     reexports::protocols::wp::presentation_time::client::wp_presentation_feedback,
     output::{OutputHandler, OutputState},
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
-    seat::{touch::TouchHandler, Capability, SeatHandler, SeatState},
+    seat::{
+        keyboard::{KeyEvent, KeyboardHandler, Modifiers, RawModifiers},
+        touch::TouchHandler,
+        Capability, SeatHandler, SeatState,
+    },
     shell::{
         wlr_layer::{
             Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface,
@@ -87,7 +94,7 @@ use std::{
 };
 use wayland_client::{
     globals::registry_queue_init,
-    protocol::{wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
+    protocol::{wl_keyboard, wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
     Connection, QueueHandle, WEnum,
 };
 
@@ -109,6 +116,20 @@ const PEER_IDLE_TIMEOUT: Duration = Duration::from_secs(5);
 /// pending thumbnail or preview was waiting on -- see
 /// `RendererCache::theme_thumbnails_pending`'s doc for the full story.
 const THEME_PULSE_INTERVAL: Duration = Duration::from_millis(160);
+
+/// Rate limit for `K230_DRAWER_FRAME` (`draw`'s own doc): a scroll/fling
+/// redraws far faster than any human reads a log line, so this samples at
+/// roughly 2Hz instead of once per frame -- enough to see a sustained
+/// board number without flooding the journal during a long scroll.
+const DRAWER_FRAME_LOG_INTERVAL: Duration = Duration::from_millis(500);
+/// How long after this shell's own volume/mute write a matching PipeWire
+/// graph confirmation is still treated as an echo of that write, not a
+/// fresh external change (`apply_pipewire_event`'s `volume_echo_until_ms`
+/// check). Generous relative to a single `wpctl` round trip (process
+/// spawn plus one PipeWire client connect/set/disconnect) so a slow tick
+/// under load still lands inside it; short enough that a genuinely new
+/// external change arriving shortly after still raises the HUD promptly.
+const VOLUME_ECHO_GRACE_MS: u64 = 1_500;
 
 fn panel_input_rect(
     route: Route,
@@ -1024,6 +1045,26 @@ struct ShellClient {
     video_cover_last: Instant,
     video_covered: bool,
     touch_device: Option<wl_touch::WlTouch>,
+    keyboard_device: Option<wl_keyboard::WlKeyboard>,
+    /// Mirrors `WifiView::wants_keyboard()` as of the last `sync_wifi_
+    /// keyboard` call -- lets that function tell "already showing" from
+    /// "needs to change" without re-deriving it from `self.layer`'s own
+    /// (write-only, from here) Wayland state.
+    wifi_keyboard_active: bool,
+    /// `k230-keyboard-gesture-signal`'s path (`K230_KEYBOARD_SIGNAL`), the
+    /// same helper the compositor's own two-finger keyboard gesture uses
+    /// (`nix/shell.nix`'s `keyboardGestureSignal`, run from `adapter.c`) --
+    /// reused here rather than inventing a second way to raise wvkbd.
+    /// `None` when the shell runs somewhere that never wired it up (a QEMU
+    /// probe build, say), in which case `sync_wifi_keyboard` still grants
+    /// keyboard focus but cannot also show the keyboard.
+    keyboard_signal_path: Option<PathBuf>,
+    /// The on-screen keyboard's reserved height (`K230_KEYBOARD_HEIGHT`,
+    /// matching `cfg.keyboardHeight`), in the 568x1232 artwork's own
+    /// coordinate space -- what `sync_wifi_keyboard` feeds to `WifiView::
+    /// set_keyboard_inset` so the Entry page's Cancel/Connect row reflows
+    /// above it instead of underneath it.
+    keyboard_height_px: f64,
     route: Route,
     touch: TouchTrace,
     width: u32,
@@ -1038,6 +1079,9 @@ struct ShellClient {
     /// See `serve`'s main loop for the debounce itself.
     catalog_pending_rescan: Option<Instant>,
     nav: DrawerNavigation,
+    /// The drawer's own live search field state -- see
+    /// `sync_drawer_search`'s own doc for how it reaches the renderer.
+    drawer_search: DrawerSearch,
     nav_tick: Instant,
     launch_sender: Sender<(u64, Result<LaunchOutcome, String>)>,
     launch_results: Receiver<(u64, Result<LaunchOutcome, String>)>,
@@ -1108,6 +1152,88 @@ struct ShellClient {
     /// close drag, notification swipe/scroll and (on Settings) the
     /// wifi/theme handling that would otherwise see this touch.
     brightness_drag: Option<slider::Drag>,
+    /// Rate-limits `K230_DRAWER_FRAME` (see `draw`'s own doc): the last
+    /// time one was actually emitted, so a continuous scroll/fling logs a
+    /// sample every `DRAWER_FRAME_LOG_INTERVAL` instead of once per frame.
+    drawer_frame_log_at: Option<Instant>,
+    /// Armed the same way `brightness_drag` is, but against `service_ui::
+    /// volume_slider_band` and a floor of `0` (`slider::Drag::start_with_
+    /// floor`, not `start`) -- true silence is a reachable drag position,
+    /// unlike the backlight.
+    volume_drag: Option<slider::Drag>,
+    /// The touch id, if any, that went down inside `volume_icon_tap_zone`
+    /// (the speaker glyph's own hit box, left of the track `volume_drag`
+    /// owns) -- distinct from `volume_drag` because a touch here must
+    /// never become a drag at all (a tap on the icon at the track's own
+    /// floor position would otherwise read as "drag to 0", not "toggle
+    /// mute"). Resolved as a mute toggle on `up` if the same id releases,
+    /// regardless of exactly where the finger ends up (a glyph this small
+    /// gets the same "any release counts as its tap" leniency every other
+    /// icon-sized hit zone in this shell already has).
+    volume_icon_touch: Option<i32>,
+    /// The touch id, if any, that went down on the Settings volume row's
+    /// own "tap to change output" detail line
+    /// (`service_ui::settings_output_picker_hit`) -- resolved on `up` by
+    /// raising the HUD already expanded, reusing that one picker UI
+    /// rather than building a second list inline in Settings
+    /// (design.md's "one picker, two entry points"). Checked before, and
+    /// mutually exclusive with, `volume_icon_touch`/`volume_drag` for the
+    /// same touch.
+    output_picker_touch: Option<i32>,
+    /// This shell's own mirror of the default sink's level/mute, kept in
+    /// sync from `service_view.audio`'s own PipeWire reads
+    /// (`sync_volume_from_graph`) and from local drags/taps
+    /// (`apply_volume_preview`) -- never itself sent anywhere; `volume_
+    /// commit`/`volume_writer` below own the actual PipeWire-facing
+    /// writes this state change should cause.
+    volume_state: volume::VolumeState,
+    hud: volume::Hud,
+    /// Whether `hud.is_visible` read `true` on the previous loop wake --
+    /// exists purely so the one frame where it flips back to `false` (the
+    /// auto-hide firing, with no other event to mark it dirty) still gets
+    /// painted; every other frame's dirtiness already follows `hud.is_
+    /// visible` on its own.
+    hud_last_visible: bool,
+    /// The default sink's PipeWire node id, as last reported by `service_
+    /// view.audio` -- `None` until the first snapshot names one. Every
+    /// `wpctl`/`pw-cli` write this shell sends targets this id, not
+    /// `@DEFAULT_AUDIO_SINK@`, so a write and the graph confirmation that
+    /// follows it are unambiguously about the same node even if the
+    /// default changes mid-gesture.
+    default_sink_id: Option<u32>,
+    /// Set (to `now + VOLUME_ECHO_GRACE_MS`) every time this shell itself
+    /// sends a volume/mute write -- a throttled live drag sample
+    /// (`submit_volume_live`) or an authoritative `wpctl` commit
+    /// (`commit_volume`, reached from a drag's release, a mute tap, or a
+    /// device-picker choice). `apply_pipewire_event` checks this the same
+    /// way it checks `volume_drag.is_none()`: a graph confirmation
+    /// arriving inside this window is this shell's own write echoing
+    /// back, not a fact the user has not already seen on screen, and must
+    /// never pop the HUD. A drag in progress is covered by `volume_drag`
+    /// already; this field is what covers the gap a drag's own
+    /// suppression does not -- the discrete mute-tap/picker commits,
+    /// whose `wpctl` round trip completes on its own thread, after
+    /// `volume_drag` has already gone back to `None`.
+    volume_echo_until_ms: Option<u64>,
+    /// The persistent `pw-dump --monitor` reader's own channel
+    /// (`pipewire_ipc::spawn_monitor`) -- drained via `try_recv` on every
+    /// loop wake, never polled on its own timer (task: "no polling").
+    /// `None` if the child could never be spawned at all (PipeWire not
+    /// installed/running); `service_view.audio_error` is what actually
+    /// surfaces that to the UI.
+    pipewire_events: Option<Receiver<pipewire_ipc::Event>>,
+    /// The persistent `pw-cli` writer (`pipewire_ipc::WriterHandle`) this
+    /// shell's throttled slider-drag writes go to -- see `pipewire_ipc.rs`'s
+    /// own module doc for why a persistent child beats a `wpctl` spawn per
+    /// sample. `None` under the same conditions as `pipewire_events`.
+    pipewire_writer: Option<pipewire_ipc::WriterHandle>,
+    /// `wpctl`'s own resolved path (an absolute override from `K230_WPCTL`,
+    /// or the bare name for a `PATH` lookup -- `nix/shell.nix`'s own
+    /// `shell-ui` service now carries `pkgs.wireplumber` on its `PATH` for
+    /// exactly this). Used only for the rare, human-paced commits a drag's
+    /// release, a mute tap, a hardware key already handles itself via Sway,
+    /// or an output-sink pick -- never per live-drag sample.
+    wpctl_command: PathBuf,
     reveal: RevealState,
     input_ready: bool,
     input_region_key: Option<(Route, u32, u32, bool)>,
@@ -1309,9 +1435,89 @@ impl ShellClient {
         Ok(VideoPlayback::new(key, ffmpeg, ffprobe))
     }
     fn wifi_dirty(&mut self) {
+        self.sync_wifi_keyboard();
         self.service_view.wifi = Some(self.wifi_view.public());
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+    }
+
+    /// Keeps the overlay layer's keyboard focus, the system keyboard
+    /// (wvkbd)'s visibility, and the Entry page's reflow in step with
+    /// `WifiView::wants_keyboard`. Called from every place that can change
+    /// whether the password field is the one that needs typing -- see
+    /// `wifi_dirty` (most transitions) and this file's `wifi_view.close()`
+    /// call sites (leaving Settings/Wi-Fi entirely).
+    ///
+    /// The overlay surface otherwise never asks for keyboard focus at all
+    /// (`ensure_layer` maps it `KeyboardInteractivity::None`, like every
+    /// other layer this shell owns) -- that is what forced Wi-Fi Settings to
+    /// draw its own keypad in the first place, per
+    /// `openspec/changes/the-handheld-configures-wifi-from-settings/design.md`:
+    /// wvkbd's keys are ordinary `wl_keyboard` input, delivered to whichever
+    /// surface holds keyboard focus, and a layer surface that never
+    /// requests it can never be that surface. `Exclusive` is requested only
+    /// for the narrow lifetime of this one field, then released back to
+    /// `None`, so it never contests focus with an app the rest of the time.
+    fn sync_wifi_keyboard(&mut self) {
+        let want = self.wifi_view.wants_keyboard();
+        if want == self.wifi_keyboard_active {
+            return;
+        }
+        self.wifi_keyboard_active = want;
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(if want {
+                KeyboardInteractivity::Exclusive
+            } else {
+                KeyboardInteractivity::None
+            });
+            layer.commit();
+        }
+        self.wifi_view
+            .set_keyboard_inset(if want { self.keyboard_height_px } else { 0.0 });
+        if let Some(path) = &self.keyboard_signal_path {
+            // Fire-and-forget, exactly like the compositor's own two-finger
+            // gesture handler (`adapter.c`'s `keyboard_signal`) -- a helper
+            // that fails to spawn must not block or crash the shell, it
+            // just leaves the keyboard in whatever state it was already in.
+            if let Err(error) = std::process::Command::new(path)
+                .arg(if want { "show" } else { "hide" })
+                .spawn()
+            {
+                self.log(&format!("wifi-keyboard-signal-failed {error}"));
+            }
+        }
+        self.dirty = true;
+    }
+
+    /// Unconditionally drops keyboard focus/reflow bookkeeping, for when the
+    /// keyboard capability itself just disappeared (`remove_capability`/
+    /// `remove_seat`) -- there is no keyboard left to show or hide, so this
+    /// only clears local state and the layer's own interactivity request,
+    /// unlike `sync_wifi_keyboard`'s normal compare-and-toggle.
+    fn forget_wifi_keyboard(&mut self) {
+        self.wifi_keyboard_active = false;
+        self.wifi_view.set_keyboard_inset(0.0);
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.commit();
+        }
+        self.dirty = true;
+    }
+
+    /// The `KeyboardHandler::press_key`/`repeat_key` bridge: only acts while
+    /// `sync_wifi_keyboard` has actually granted this surface focus for the
+    /// password field (never on stray input from some other reason the
+    /// overlay might one day hold focus), and reuses `wifi_action` --
+    /// exactly the same dispatcher a touch-hit intent goes through -- so
+    /// Enter/Escape get the same Connect/Cancel handling a tap on those
+    /// buttons would (`can_connect`'s own guards included).
+    fn handle_wifi_key(&mut self, event: KeyEvent) {
+        if !self.wifi_keyboard_active {
+            return;
+        }
+        if let Some(intent) = key_event_intent(u32::from(event.keysym), event.utf8.as_deref()) {
+            self.wifi_action(intent);
+        }
     }
 
     fn submit_wifi(&mut self, request: WifiRequest) {
@@ -1330,6 +1536,7 @@ impl ShellClient {
                     return;
                 }
                 if !self.wifi_view.back() {
+                    self.sync_wifi_keyboard();
                     self.service_view.wifi = None;
                     self.renderer.set_services(self.service_view.clone());
                     self.dirty = true;
@@ -1346,11 +1553,7 @@ impl ShellClient {
                 self.wifi_view.select(index);
                 self.wifi_dirty();
             }
-            WifiIntent::Key(_)
-            | WifiIntent::Backspace
-            | WifiIntent::Symbols
-            | WifiIntent::Shift
-            | WifiIntent::Space => {
+            WifiIntent::Key(_) | WifiIntent::Backspace => {
                 self.wifi_view.key(intent);
                 self.wifi_dirty();
             }
@@ -1809,7 +2012,7 @@ impl ShellClient {
                 self.submit_service(ServiceRequest::RefreshNotifications);
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
-            Route::Settings => {
+            Route::Settings | Route::Power => {
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             _ => {}
@@ -1830,6 +2033,261 @@ impl ShellClient {
         }
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+    }
+
+    /// A local drag/tap moving `volume_state` (never an external graph
+    /// read -- `sync_volume_from_graph` owns that side): updates the
+    /// remembered level/mute, mirrors it into `service_view.settings.
+    /// volume` (the Settings/Shade row's own paint source, exactly like
+    /// `apply_brightness_preview`) so the slider repaints on every touch
+    /// sample, and never itself raises the HUD -- the drag/tap is already
+    /// its own on-screen feedback (`volume::ChangeOrigin::OwnSlider`).
+    fn apply_volume_preview(&mut self, percent: u8) {
+        self.volume_state.set_from_drag(percent);
+        self.sync_volume_control();
+    }
+
+    /// Writes `volume_state`'s current displayed value/mute into
+    /// `service_view.settings.volume` when a Settings/Shade snapshot
+    /// already exists, and repaints. Never itself decides whether the
+    /// value came from a local gesture or an external graph read --
+    /// callers (`apply_volume_preview`, `sync_volume_from_graph`,
+    /// `toggle_volume_mute`) own that distinction.
+    fn sync_volume_control(&mut self) {
+        if let Some(settings) = &mut self.service_view.settings {
+            settings.volume.state = ControlState::Writable;
+            settings.volume.value = Some(ControlValue::Percent(self.volume_state.displayed_percent()));
+            settings.volume.label = "Volume".into();
+        }
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
+    /// The throttled, fire-and-forget live-drag write (task: "throttle
+    /// live writes like brightness does") -- the persistent `pw-cli`
+    /// writer, never a `wpctl` spawn per sample (`pipewire_ipc.rs`'s own
+    /// cost argument). A missing writer or default sink id (PipeWire not
+    /// up yet, or no sink reported) silently drops the write; the slider
+    /// still visibly tracks the finger from `apply_volume_preview` alone,
+    /// and the drag's own release (`commit_volume`) will try again with
+    /// whatever id is known by then.
+    fn submit_volume_live(&mut self, percent: u8) {
+        let (Some(id), Some(writer)) = (self.default_sink_id, self.pipewire_writer.as_ref()) else {
+            return;
+        };
+        let linear = volume::percent_to_linear(percent);
+        writer.try_send(pipewire_ipc::set_volume_command(
+            id,
+            linear,
+            self.volume_state.is_muted(),
+        ));
+        self.mark_own_volume_write();
+    }
+
+    /// Records that this shell itself just caused a volume/mute write, so
+    /// the graph confirmation that follows is recognized as an echo, not
+    /// a fresh external change (`VOLUME_ECHO_GRACE_MS`). Called from every
+    /// write path (`submit_volume_live`'s throttled scrub and `commit_
+    /// volume`'s authoritative `wpctl` call alike) -- `volume_drag.is_
+    /// none()` alone only covers the drag itself, not a discrete mute-tap
+    /// or device-picker commit that has no drag to check.
+    fn mark_own_volume_write(&mut self) {
+        let now = self.started.elapsed().as_millis() as u64;
+        self.volume_echo_until_ms = Some(now + VOLUME_ECHO_GRACE_MS);
+    }
+
+    /// The authoritative, human-paced commit (a drag's release, a mute
+    /// tap, an output-sink pick): a short-lived `wpctl` call, run off the
+    /// Wayland thread so a slow/hung `wpctl` can never stall input or
+    /// drawing. Rare enough (never per drag sample) that a spawned
+    /// thread per call is the right cost trade-off, matching the
+    /// brightness slider's own release-only authoritative write.
+    fn commit_volume(&mut self, percent: u8, muted: bool) {
+        let Some(id) = self.default_sink_id else {
+            return;
+        };
+        let wpctl = self.wpctl_command.clone();
+        let id_arg = id.to_string();
+        let volume_arg = format!("{percent}%");
+        let mute_arg = if muted { "1" } else { "0" }.to_string();
+        thread::spawn(move || {
+            let _ = Command::new(&wpctl)
+                .args(["set-volume", &id_arg, &volume_arg])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status();
+            let _ = Command::new(&wpctl)
+                .args(["set-mute", &id_arg, &mute_arg])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status();
+        });
+        self.mark_own_volume_write();
+    }
+
+    /// The speaker-glyph tap (task: "toggles mute when tapped"): flips
+    /// `volume_state`'s mute flag, previews it immediately (same as a
+    /// drag), and commits it via `wpctl` -- a discrete action, not a
+    /// throttled scrub, so it always goes straight to the authoritative
+    /// path.
+    fn toggle_volume_mute(&mut self) {
+        self.volume_state.toggle_mute();
+        self.sync_volume_control();
+        self.commit_volume(
+            self.volume_state.displayed_percent(),
+            self.volume_state.is_muted(),
+        );
+    }
+
+    /// Applies one freshly-drained `pipewire_ipc::Event` to this shell's
+    /// own state: the default sink id/level/mute mirror
+    /// (`volume_state`/`default_sink_id`), the full graph for the
+    /// Settings/Shade row, the expanded HUD panel and the device picker
+    /// (`service_view.audio`), and the HUD's own visibility -- raised
+    /// only when nothing local is already showing the change
+    /// (`volume_drag.is_none()`; a drag already in flight is this
+    /// client's own write echoing back, not an external change, and the
+    /// on-screen slider is already the feedback for it -- the same
+    /// `ChangeOrigin::OwnSlider` suppression `volume.rs` documents,
+    /// expressed here as "no local gesture in flight" rather than a
+    /// separate origin tag, since the two conditions are equivalent for
+    /// every write this shell itself ever makes).
+    fn apply_pipewire_event(&mut self, event: pipewire_ipc::Event) {
+        match event {
+            pipewire_ipc::Event::Snapshot(graph) => {
+                let previous = (
+                    self.volume_state.displayed_percent(),
+                    self.volume_state.is_muted(),
+                );
+                if let Some(sink) = graph.sinks.iter().find(|sink| sink.is_default) {
+                    self.default_sink_id = Some(sink.id);
+                    let percent = volume::linear_to_percent(sink.linear_volume);
+                    self.volume_state.apply_external(percent, sink.muted);
+                    let now = self.started.elapsed().as_millis() as u64;
+                    let changed = previous
+                        != (
+                            self.volume_state.displayed_percent(),
+                            self.volume_state.is_muted(),
+                        );
+                    let is_echo = self.volume_echo_until_ms.is_some_and(|until| now < until);
+                    if changed && self.volume_drag.is_none() && !is_echo {
+                        self.hud.show(now);
+                    }
+                } else {
+                    self.default_sink_id = None;
+                }
+                self.service_view.audio = Some(graph);
+                self.service_view.audio_error = None;
+                self.sync_volume_control();
+            }
+            pipewire_ipc::Event::MonitorExited => {
+                self.service_view.audio = None;
+                self.service_view.audio_error =
+                    Some("PipeWire monitor unavailable".into());
+                self.pipewire_events = None;
+                self.renderer.set_services(self.service_view.clone());
+                self.dirty = true;
+            }
+        }
+    }
+
+    /// This HUD's own current on-screen rectangle: recomputed fresh from
+    /// live state on every touch (never frozen for a gesture's duration
+    /// the way `slider::Drag`'s track is) because the HUD's own bounds
+    /// change with it -- expanding mid-drag is not a case this shell
+    /// needs to defend against (the "..." affordance and a reposition
+    /// drag can never be the same touch).
+    fn hud_geometry(&self) -> volume::HudGeometry {
+        let rows = if self.hud.is_expanded() {
+            self.service_view
+                .audio
+                .as_ref()
+                .map_or(0, |graph| graph.streams.len() + graph.sinks.len())
+        } else {
+            0
+        };
+        volume::hud_geometry(
+            f64::from(self.width),
+            f64::from(self.height),
+            self.hud.position_fraction(),
+            rows,
+        )
+    }
+
+    /// A touch landing on the visible HUD is handled entirely here and
+    /// never reaches any route-specific dispatch below it -- the HUD
+    /// floats above whatever route is showing (task: "a vertical pill on
+    /// the right edge", shown regardless of Home/Drawer/Shade/Settings).
+    /// Returns whether the touch was consumed.
+    fn hud_touch_down(&mut self, id: i32, pos: (f64, f64)) -> bool {
+        let now = self.started.elapsed().as_millis() as u64;
+        if !self.hud.is_visible(now) {
+            return false;
+        }
+        let geometry = self.hud_geometry();
+        if !geometry.contains(pos.0, pos.1) {
+            return false;
+        }
+        if geometry.mute_icon_hit(pos.0, pos.1) {
+            self.toggle_volume_mute();
+        } else if geometry.expand_affordance_hit(pos.0, pos.1) {
+            self.hud.toggle_expand(now);
+            self.dirty = true;
+        } else if let Some(row) = geometry.expanded_row_at(pos.0, pos.1) {
+            self.tap_hud_row(row);
+        } else {
+            // The pill's own body, neither the icon, the affordance, nor
+            // an expanded row: reposition drag (task: "can be dragged").
+            self.hud.start_drag(id, now);
+            self.dirty = true;
+        }
+        true
+    }
+
+    /// One expanded-panel row tap: `HudGeometry::expanded_row_at`'s own
+    /// doc fixes the order (streams first, then sinks) both this and
+    /// `render.rs`'s paint agree on. A stream row toggles that one
+    /// stream's own mute (a per-app control, not the default sink's);
+    /// a sink row picks it as the new default output -- the device
+    /// picker task explicitly asks for both the expanded panel and
+    /// Settings to offer this same pick.
+    fn tap_hud_row(&mut self, row: usize) {
+        let Some(audio) = self.service_view.audio.clone() else {
+            return;
+        };
+        if let Some(stream) = audio.streams.get(row) {
+            if let Some(writer) = self.pipewire_writer.as_ref() {
+                writer.try_send(pipewire_ipc::set_volume_command(
+                    stream.id,
+                    stream.linear_volume,
+                    !stream.muted,
+                ));
+                self.mark_own_volume_write();
+            }
+            return;
+        }
+        if let Some(sink) = audio.sinks.get(row - audio.streams.len()) {
+            self.pick_output_sink(sink.id);
+        }
+    }
+
+    /// The output device picker's own commit (expanded HUD panel and
+    /// Settings alike): `wpctl set-default`, a rare, human-paced action,
+    /// off the Wayland thread the same way `commit_volume` already is.
+    fn pick_output_sink(&mut self, sink_id: u32) {
+        let wpctl = self.wpctl_command.clone();
+        let id_arg = sink_id.to_string();
+        thread::spawn(move || {
+            let _ = Command::new(&wpctl)
+                .args(["set-default", &id_arg])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status();
+        });
+        self.mark_own_volume_write();
     }
 
     fn submit_service(&mut self, request: ServiceRequest) -> bool {
@@ -1863,7 +2321,7 @@ impl ShellClient {
         let refreshed_history = matches!(reply.request, ServiceRequest::RefreshNotifications);
         match reply.result {
             Ok(ServiceResponse::Settings(settings)) => {
-                self.service_view.settings = Some(settings);
+                self.service_view.settings = Some(*settings);
                 self.service_view.settings_error = None;
             }
             Ok(ServiceResponse::Notifications(notifications)) => {
@@ -2326,6 +2784,57 @@ impl ShellClient {
         true
     }
 
+    /// Every catalog index currently shown in the drawer grid, in display
+    /// order -- see `service_ui::filter_app_indices`'s own doc for why
+    /// this is cheap enough to recompute on demand rather than cache.
+    /// `DrawerAction::Launch`/`LongPress` give a *display* index (their
+    /// only source, `navigation::tile_at`, only ever sees what
+    /// `renderer.draw`'s own filtered grid painted); this is how that
+    /// maps back to a real `self.apps` index.
+    fn drawer_filtered_apps(&self) -> Vec<usize> {
+        filter_app_indices(&self.apps, &self.drawer_search.query)
+    }
+
+    /// Pushes `self.drawer_search` to the renderer (forcing a grid
+    /// rebuild if it actually changed) and marks the frame dirty so the
+    /// result is visible on the next `draw`.
+    fn sync_drawer_search(&mut self) {
+        if self
+            .renderer
+            .set_drawer_search(self.drawer_search.clone())
+        {
+            self.dirty = true;
+        }
+    }
+
+    /// Applies one key from the compact search keyboard
+    /// (`navigation::search_keyboard_key_at`) to the live query and
+    /// re-syncs the renderer. `Done` only closes the keyboard -- the
+    /// query itself is untouched, matching `SearchKey::Done`'s own doc.
+    fn apply_search_key(&mut self, key: SearchKey) {
+        match key {
+            SearchKey::Char(ch) => self.drawer_search.key(Some(ch), false),
+            SearchKey::Backspace => self.drawer_search.key(None, true),
+            SearchKey::Space => self.drawer_search.key(Some(' '), false),
+            SearchKey::Done => self.drawer_search.unfocus(),
+        }
+        self.sync_drawer_search();
+    }
+
+    /// `DrawerAction::Launch(display_index)` -> the real catalog app.
+    fn launch_drawer_app(&mut self, qh: &QueueHandle<Self>, display_index: usize) {
+        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
+            self.launch_app(qh, real_index);
+        }
+    }
+
+    /// `DrawerAction::LongPress(display_index)` -> the real catalog app.
+    fn pin_drawer_app(&mut self, display_index: usize) {
+        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
+            self.pin_app_from_drawer(real_index);
+        }
+    }
+
     fn launch_app(&mut self, qh: &QueueHandle<Self>, index: usize) {
         if self.launch_in_flight || self.route != Route::Drawer {
             if self.launch_in_flight {
@@ -2572,11 +3081,19 @@ impl ShellClient {
         }
         self.reveal.clear();
         self.panel_close.cancel();
+        if route == Route::Power {
+            // A key hold starts a fresh decision; a token left by Settings
+            // must never appear as a ready-to-confirm hardware action.
+            self.service_view.confirmation = None;
+            self.service_view.message = None;
+            self.renderer.set_services(self.service_view.clone());
+        }
         if route != Route::Settings && self.wifi_view.page != WifiPage::Closed {
             if let Some((id, WifiKind::Connect | WifiKind::ConnectSaved)) = self.wifi_view.pending {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
+            self.sync_wifi_keyboard();
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
         }
@@ -2590,6 +3107,10 @@ impl ShellClient {
             self.notification_wait = None;
             self.service_view.notification_swipe = None;
             self.renderer.set_services(self.service_view.clone());
+            // A reopened drawer starts with a fresh search, matching
+            // Android's own launchers -- not the previous open's query.
+            self.drawer_search = DrawerSearch::default();
+            self.sync_drawer_search();
         }
         self.route = route;
         self.refresh_route(route);
@@ -2612,6 +3133,7 @@ impl ShellClient {
                 self.wifi_worker.cancel(id);
             }
             self.wifi_view.close();
+            self.sync_wifi_keyboard();
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
         }
@@ -2718,6 +3240,7 @@ impl ShellClient {
             self.wifi_worker.cancel(id);
         }
         self.wifi_view.close();
+        self.sync_wifi_keyboard();
         self.service_view.wifi = None;
         self.renderer.set_services(self.service_view.clone());
         self.theme_view = ThemeView::default();
@@ -2882,7 +3405,17 @@ impl ShellClient {
             } else {
                 1.0
             };
-            if let Err(error) = self.renderer.draw(
+            // `K230_DRAWER_FRAME`: a cheap, always-on timing log for the
+            // Drawer's own frame-render cost (`docs/design/
+            // app-drawer-review.md`'s performance section) -- the coordinator
+            // can grep the board's journal for this without a
+            // `K230_TRACE_PATH` capture session. Scoped to the Drawer route
+            // only and rate-limited (`DRAWER_FRAME_LOG_INTERVAL`), never
+            // more than a plain `Instant` sample plus an occasional
+            // `eprintln!` -- no allocation on the frames it does not log.
+            let drawer_timing = self.route == Route::Drawer;
+            let render_started = drawer_timing.then(Instant::now);
+            let render_result = self.renderer.draw_with_hud(
                 canvas,
                 RenderParams {
                     width: self.width,
@@ -2896,7 +3429,25 @@ impl ShellClient {
                     },
                 },
                 &self.apps,
-            ) {
+                &self.hud,
+                self.started.elapsed().as_millis() as u64,
+            );
+            if let Some(started) = render_started {
+                let now = Instant::now();
+                if self
+                    .drawer_frame_log_at
+                    .is_none_or(|last| now.duration_since(last) >= DRAWER_FRAME_LOG_INTERVAL)
+                {
+                    self.drawer_frame_log_at = Some(now);
+                    let elapsed_ms = now.duration_since(started).as_secs_f64() * 1000.0;
+                    self.log(&format!(
+                        "K230_DRAWER_FRAME ms={elapsed_ms:.2} apps={} scroll={:.0}",
+                        self.apps.len(),
+                        self.nav.scroll
+                    ));
+                }
+            }
+            if let Err(error) = render_result {
                 self.log(&format!("render-failed {error}"));
                 return false;
             }
@@ -3174,6 +3725,10 @@ impl SeatHandler for ShellClient {
             self.touch_device = self.seat_state.get_touch(qh, &seat).ok();
             self.log("touch-capability");
         }
+        if cap == Capability::Keyboard && self.keyboard_device.is_none() {
+            self.keyboard_device = self.seat_state.get_keyboard(qh, &seat, None).ok();
+            self.log("keyboard-capability");
+        }
     }
     fn remove_capability(
         &mut self,
@@ -3200,6 +3755,13 @@ impl SeatHandler for ShellClient {
             self.dirty = true;
             self.log("touch-capability-lost");
         }
+        if cap == Capability::Keyboard {
+            if let Some(keyboard) = self.keyboard_device.take() {
+                keyboard.release();
+            }
+            self.forget_wifi_keyboard();
+            self.log("keyboard-capability-lost");
+        }
     }
     fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {
         self.touch_device.take();
@@ -3217,6 +3779,10 @@ impl SeatHandler for ShellClient {
         self.service_view.notification_swipe = None;
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+        if let Some(keyboard) = self.keyboard_device.take() {
+            keyboard.release();
+        }
+        self.forget_wifi_keyboard();
     }
 }
 
@@ -3242,10 +3808,30 @@ impl TouchHandler for ShellClient {
                 if self.wifi_view.page == WifiPage::Closed {
                     self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 }
-                if self.splash.is_some() {
+                if self.hud_touch_down(id, pos) {
+                    // Handled entirely -- the HUD floats above whatever
+                    // route is showing (task: "a vertical pill on the
+                    // right edge") and never falls through to the
+                    // route-specific dispatch below.
+                } else if self.splash.is_some() {
                     // Nothing to track on `down` -- a dismissable splash
                     // (the only state that ever reaches this branch at all;
                     // see `input_region`'s own doc) only acts on `up`.
+                } else if self.route == Route::Drawer
+                    && self.input_ready
+                    && self.drawer_search.focused
+                    && navigation::search_keyboard_hit(pos, self.height)
+                {
+                    // A touch on the compact search keyboard: tracked only
+                    // through `panel_start` (reused, not a new field --
+                    // only one route is ever open at a time), resolved
+                    // entirely at `up` via `search_keyboard_key_at`. Never
+                    // reaches `nav`/close-drag: those only know about the
+                    // grid and top chrome, not this overlay, and a stray
+                    // tile hit-test underneath a covered row would launch
+                    // an app the finger never actually reached.
+                    self.panel_start = Some((id, pos));
+                    self.panel_close_candidate = false;
                 } else if self.route == Route::Drawer && self.input_ready {
                     // Captured *before* `nav.down` below, which
                     // unconditionally zeroes any in-flight fling velocity
@@ -3264,7 +3850,7 @@ impl TouchHandler for ShellClient {
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
                         self.height,
-                        self.apps.len(),
+                        self.drawer_filtered_apps().len(),
                     )) {
                         self.dirty = true;
                     }
@@ -3283,7 +3869,9 @@ impl TouchHandler for ShellClient {
                         && drawer_close_drag_zone(pos.1, self.height, self.nav.scroll);
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
-                } else if matches!(self.route, Route::Shade | Route::Settings) && self.input_ready {
+                } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
+                    && self.input_ready
+                {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
                     let stopped_coast = self.notification_coast.stop();
@@ -3331,6 +3919,52 @@ impl TouchHandler for ShellClient {
                         self.apply_brightness_preview(value);
                         if drag.should_write(time_ms) {
                             self.submit_service(ServiceRequest::BrightnessLive(value));
+                        }
+                        Some(drag)
+                    } else {
+                        None
+                    };
+                    // Volume slider: same arming shape as brightness's own,
+                    // just below it (`volume_slider_band`), floor `0`
+                    // (`start_with_floor`) so a drag can reach true
+                    // silence, and its live writes go to the persistent
+                    // `pw-cli` writer, not `submit_service` -- there is no
+                    // PipeWire-backed request in `ServiceRequest` at all,
+                    // by design (`service_view.audio`/`pipewire_ipc.rs`
+                    // already own this data, off the k230-settings path).
+                    // Settings' own device-picker entry point (design.md's
+                    // "one picker, two entry points"): the "tap to change
+                    // output" detail line, checked first so it can never
+                    // be shadowed by the drag/icon zones sharing the same
+                    // row's Y band.
+                    self.output_picker_touch = if on_settings_capabilities_page
+                        && settings_output_picker_hit(pos.1, self.route, &self.service_view)
+                    {
+                        Some(id)
+                    } else {
+                        None
+                    };
+                    let volume_row_touched = self.output_picker_touch.is_none()
+                        && on_settings_capabilities_page
+                        && volume_slider_band(self.route, pos.1, &self.service_view);
+                    // The speaker glyph shares the volume row's own Y band
+                    // but must never arm a drag (`volume_icon_tap_zone` is
+                    // left of `slider::track_bounds`'s own `left`, i.e.
+                    // outside the track a drag would otherwise map to its
+                    // floor) -- checked first so the drag arm below only
+                    // ever sees a touch that actually landed on the track.
+                    self.volume_icon_touch =
+                        if volume_row_touched && volume_icon_tap_zone(pos.0, f64::from(self.width)) {
+                            Some(id)
+                        } else {
+                            None
+                        };
+                    self.volume_drag = if volume_row_touched && self.volume_icon_touch.is_none() {
+                        let mut drag = slider::Drag::start_with_floor(id, f64::from(self.width), 0);
+                        let value = drag.value_at(pos.0);
+                        self.apply_volume_preview(value);
+                        if drag.should_write(time_ms) {
+                            self.submit_volume_live(value);
                         }
                         Some(drag)
                     } else {
@@ -3385,6 +4019,9 @@ impl TouchHandler for ShellClient {
             } else {
                 self.log("touch-second-cancel");
                 self.brightness_drag = None;
+                self.volume_drag = None;
+                self.volume_icon_touch = None;
+                self.output_picker_touch = None;
                 self.nav.cancel();
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
@@ -3440,6 +4077,7 @@ impl TouchHandler for ShellClient {
         id: i32,
     ) {
         self.trace_picker_input("input_up", time_ms, id);
+        self.hud.end_drag(id);
         if self.home_touch_id == Some(id) {
             self.home_touch_id = None;
             if let Some(action) = self.home.up(
@@ -3474,9 +4112,11 @@ impl TouchHandler for ShellClient {
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
                 }
-                let engaged_close = self.panel_start.is_some_and(|(start_id, _)| start_id == id)
-                    && self.panel_close.tracking();
-                self.panel_start = None;
+                let start = self
+                    .panel_start
+                    .take()
+                    .filter(|(start_id, _)| *start_id == id);
+                let engaged_close = start.is_some() && self.panel_close.tracking();
                 self.panel_close_candidate = false;
                 if engaged_close {
                     // Live close-drag release: settle to whichever endpoint
@@ -3493,13 +4133,42 @@ impl TouchHandler for ShellClient {
                     self.panel_close_sample = None;
                     self.panel_close_velocity = 0.0;
                     self.dirty = true;
+                } else if start.is_some_and(|(_, start_pos)| {
+                    self.drawer_search.focused
+                        && navigation::search_keyboard_hit(start_pos, self.height)
+                }) {
+                    // Resolves a search-keyboard touch entirely from its
+                    // *release* point -- a real on-screen keyboard reads
+                    // whichever key is under the finger when it lifts, not
+                    // where it first touched down, so a small correcting
+                    // slide before release still hits the intended key.
+                    if let Some(key) = navigation::search_keyboard_key_at(point, self.width, self.height) {
+                        self.apply_search_key(key);
+                    }
+                } else if start.is_some_and(|(_, start_pos)| {
+                    !self.drawer_search.focused
+                        && navigation::search_field_hit(start_pos, self.width, self.height)
+                        && (point.0 - start_pos.0).abs() <= 12.0
+                        && (point.1 - start_pos.1).abs() <= 12.0
+                }) {
+                    // A plain tap (small total movement) that started and
+                    // ended on the search field opens it -- the field
+                    // itself is never `nav`'s (it hit-tests only the grid),
+                    // so a released drag/close-drag candidate that landed
+                    // here otherwise resolves as nothing at all.
+                    self.drawer_search.focus();
+                    self.sync_drawer_search();
                 } else {
-                    match self
-                        .nav
-                        .up(id, point, time_ms, self.width, self.height, self.apps.len())
-                    {
-                        Some(DrawerAction::Launch(index)) => self.launch_app(qh, index),
-                        Some(DrawerAction::LongPress(index)) => self.pin_app_from_drawer(index),
+                    match self.nav.up(
+                        id,
+                        point,
+                        time_ms,
+                        self.width,
+                        self.height,
+                        self.drawer_filtered_apps().len(),
+                    ) {
+                        Some(DrawerAction::Launch(index)) => self.launch_drawer_app(qh, index),
+                        Some(DrawerAction::LongPress(index)) => self.pin_drawer_app(index),
                         // `nav`'s own release-only "dy > 110 && scroll <=
                         // 0.5" check is now just a backstop for whatever
                         // reason the live drag above never engaged (see
@@ -3563,6 +4232,46 @@ impl TouchHandler for ShellClient {
                             let value = drag.value_at(point.0);
                             self.apply_brightness_preview(value);
                             self.submit_service(ServiceRequest::Brightness(value));
+                        } else if matches!(&self.volume_drag, Some(drag) if drag.matches(start_id))
+                        {
+                            // Release: always commits the authoritative
+                            // `wpctl` write regardless of the live-write
+                            // throttle, mirroring brightness's own "always
+                            // write the final value on release" -- but via
+                            // `wpctl`, not `submit_service`, since there is
+                            // no PipeWire-backed `ServiceRequest` (`design.md`:
+                            // rare, human-paced commits use `wpctl`; only
+                            // the live-drag path uses the persistent
+                            // `pw-cli` writer).
+                            let drag = self
+                                .volume_drag
+                                .take()
+                                .expect("checked by this branch's own guard");
+                            let value = drag.value_at(point.0);
+                            self.apply_volume_preview(value);
+                            self.commit_volume(value, self.volume_state.is_muted());
+                        } else if self.volume_icon_touch == Some(start_id) {
+                            // The speaker glyph never armed a drag (see the
+                            // `down` arm's own doc); any release of this
+                            // same touch, wherever the finger ends up, is
+                            // its tap -- the same "any release counts"
+                            // leniency every other icon-sized hit zone in
+                            // this shell already has.
+                            self.volume_icon_touch = None;
+                            self.toggle_volume_mute();
+                        } else if self.output_picker_touch == Some(start_id) {
+                            // Settings' "tap to change output" line: opens
+                            // the same expanded HUD panel/picker the "..."
+                            // affordance does, already expanded rather
+                            // than making a second tap discover that.
+                            self.output_picker_touch = None;
+                            let now = self.started.elapsed().as_millis() as u64;
+                            if !self.hud.is_expanded() {
+                                self.hud.toggle_expand(now);
+                            } else {
+                                self.hud.show(now);
+                            }
+                            self.dirty = true;
                         } else if self.route == Route::Settings {
                             if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
@@ -3723,6 +4432,17 @@ impl TouchHandler for ShellClient {
             }
             return;
         }
+        if self.hud.drag_owner() == Some(id) {
+            // Reposition drag (task: "can be dragged"): the pill's own
+            // vertical center follows the finger as a fraction of the
+            // panel height, the same normalized-position convention
+            // `Hud::drag_to` already stores it in.
+            let now = self.started.elapsed().as_millis() as u64;
+            let fraction = (pos.1 / f64::from(self.height)).clamp(0.0, 1.0);
+            self.hud.drag_to(id, fraction, now);
+            self.dirty = true;
+            return;
+        }
         if self.touch.motion(id, pos) {
             if self.wifi_view.page == WifiPage::Closed {
                 self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
@@ -3746,6 +4466,19 @@ impl TouchHandler for ShellClient {
                         self.submit_service(ServiceRequest::BrightnessLive(value));
                     }
                     self.brightness_drag = Some(drag);
+                }
+            } else if self
+                .volume_drag
+                .as_ref()
+                .is_some_and(|drag| drag.matches(id))
+            {
+                if let Some(mut drag) = self.volume_drag.take() {
+                    let value = drag.value_at(pos.0);
+                    self.apply_volume_preview(value);
+                    if drag.should_write(time_ms) {
+                        self.submit_volume_live(value);
+                    }
+                    self.volume_drag = Some(drag);
                 }
             } else if self.route == Route::Drawer && self.input_ready {
                 // A close drag only ever *takes over* this touch once it
@@ -3797,10 +4530,8 @@ impl TouchHandler for ShellClient {
                     }
                 }
                 if !engaged_this_sample {
-                    if self
-                        .nav
-                        .motion(id, pos, time_ms, self.height, self.apps.len())
-                    {
+                    let filtered_count = self.drawer_filtered_apps().len();
+                    if self.nav.motion(id, pos, time_ms, self.height, filtered_count) {
                         self.dirty = true;
                     }
                     // Once this sample's ordinary scroll has actually
@@ -3822,15 +4553,14 @@ impl TouchHandler for ShellClient {
                         self.panel_close_candidate,
                         self.nav.scroll,
                     );
-                    if self.renderer.set_drawer_pressed(self.nav.pressed(
-                        self.width,
-                        self.height,
-                        self.apps.len(),
-                    )) {
+                    if self
+                        .renderer
+                        .set_drawer_pressed(self.nav.pressed(self.width, self.height, filtered_count))
+                    {
                         self.dirty = true;
                     }
                 }
-            } else if matches!(self.route, Route::Shade | Route::Settings)
+            } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
                 && self.input_ready
                 && self.panel_start.is_some_and(|(start_id, _)| start_id == id)
                 && (self.panel_close.tracking() || self.panel_close_candidate)
@@ -4029,6 +4759,10 @@ impl TouchHandler for ShellClient {
         self.panel_close_sample = None;
         self.panel_close_velocity = 0.0;
         self.brightness_drag = None;
+        self.volume_drag = None;
+        if let Some(owner) = self.hud.drag_owner() {
+            self.hud.end_drag(owner);
+        }
         self.notification_coast.stop();
         self.notification_wait = None;
         self.settle_notification(0.0, None);
@@ -4048,6 +4782,88 @@ impl TouchHandler for ShellClient {
     }
 }
 
+impl KeyboardHandler for ShellClient {
+    fn enter(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        surface: &wl_surface::WlSurface,
+        _: u32,
+        _: &[u32],
+        _: &[smithay_client_toolkit::seat::keyboard::Keysym],
+    ) {
+        // Logged (rather than silently assumed) because the compositor
+        // grants a layer surface's requested `Exclusive` keyboard focus
+        // asynchronously, on its own next event-loop turn -- this is the
+        // one authoritative confirmation that the Wi-Fi password field can
+        // now actually receive typed keys, and what QEMU proof waits on
+        // before sending any (see `tests/rust_wifi_settings_qemu.py`).
+        if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
+            self.log("wifi-keyboard-focus-granted");
+        }
+    }
+    fn leave(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: &wl_surface::WlSurface,
+        _: u32,
+    ) {
+    }
+    /// Routes one physical or virtual (wvkbd) key press through to the Wi-Fi
+    /// password field. Guarded by `wifi_keyboard_active` (only ever true
+    /// while `sync_wifi_keyboard` has actually granted this surface
+    /// `Exclusive` keyboard focus for exactly that field) rather than
+    /// trusting that focus alone, since a key can arrive the same tick
+    /// focus is being torn down.
+    fn press_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        event: KeyEvent,
+    ) {
+        self.handle_wifi_key(event);
+    }
+    fn repeat_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        event: KeyEvent,
+    ) {
+        self.handle_wifi_key(event);
+    }
+    fn release_key(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        _: KeyEvent,
+    ) {
+    }
+    fn update_modifiers(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_keyboard::WlKeyboard,
+        _: u32,
+        _: Modifiers,
+        _: RawModifiers,
+        _: u32,
+    ) {
+        // Nothing to track here: xkbcommon has already folded Shift/Caps
+        // into `KeyEvent::utf8` by the time `press_key` sees it, which is
+        // exactly why this path needs no `symbols`/`shifted` state of its
+        // own the way the old in-app keypad did.
+    }
+}
+
 impl ShmHandler for ShellClient {
     fn shm_state(&mut self) -> &mut Shm {
         &mut self.shm
@@ -4058,6 +4874,7 @@ delegate_output!(ShellClient);
 delegate_shm!(ShellClient);
 delegate_seat!(ShellClient);
 delegate_touch!(ShellClient);
+delegate_keyboard!(ShellClient);
 delegate_layer!(ShellClient);
 delegate_registry!(ShellClient);
 impl ProvidesRegistryState for ShellClient {
@@ -4119,6 +4936,37 @@ fn serve() -> Result<(), String> {
         .map(PathBuf::from)
         .unwrap_or_default();
     let services = ServiceWorker::spawn(settings_command, notification_socket);
+    let wpctl_command = std::env::var_os("K230_WPCTL")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("wpctl"));
+    let pw_dump_command = std::env::var_os("K230_PW_DUMP")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("pw-dump"));
+    let pw_cli_command = std::env::var_os("K230_PW_CLI")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("pw-cli"));
+    // Both children are spawned once, here, for this process's whole
+    // life -- never per volume change (`pipewire_ipc.rs`'s own module
+    // doc has the cost argument). A spawn failure (no PipeWire on this
+    // image, or the binary missing from `PATH`) degrades to `None`
+    // rather than a hard error: the shell still starts, the volume
+    // row/HUD just show "unavailable" (`service_view.audio_error`).
+    // Board evidence (system z3zbk6gx) found this shell's own journal
+    // had nothing to say when `pw-dump`/`pw-cli` failed to spawn -- an
+    // earlier version of this code discarded the `Result`'s own error
+    // straight into `.ok()` with no log line at all, exactly the kind of
+    // silent failure that makes "is the persistent helper actually
+    // starting?" unanswerable from a journal alone. `eprintln!` (this
+    // process's own stderr, captured by systemd into the unit's journal
+    // like every other early-startup failure in this function, e.g. the
+    // `catalog-watch-unavailable` line above) now names which of the two
+    // children failed and why, before the same `.ok()` degrade.
+    let pipewire_events = pipewire_ipc::spawn_monitor(pw_dump_command, &["--monitor"])
+        .inspect_err(|error| eprintln!("rust-shell pipewire-monitor-spawn-failed {error}"))
+        .ok();
+    let pipewire_writer = pipewire_ipc::WriterHandle::spawn(pw_cli_command)
+        .inspect_err(|error| eprintln!("rust-shell pipewire-writer-spawn-failed {error}"))
+        .ok();
     let wifi_socket = std::env::var_os("K230_WIFI_SOCKET")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("/run/k230-wifi-settings/broker.sock"));
@@ -4192,6 +5040,14 @@ fn serve() -> Result<(), String> {
         video_cover_last: Instant::now() - Duration::from_secs(2),
         video_covered: false,
         touch_device: None,
+        keyboard_device: None,
+        wifi_keyboard_active: false,
+        keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
+        keyboard_height_px: std::env::var("K230_KEYBOARD_HEIGHT")
+            .ok()
+            .and_then(|value| value.parse::<f64>().ok())
+            .filter(|value| *value > 0.0)
+            .unwrap_or(400.0),
         route: Route::Drawer,
         touch: TouchTrace::default(),
         width: 568,
@@ -4203,6 +5059,7 @@ fn serve() -> Result<(), String> {
         apps,
         catalog_pending_rescan: None,
         nav: DrawerNavigation::default(),
+        drawer_search: DrawerSearch::default(),
         nav_tick: Instant::now(),
         launch_sender,
         launch_results,
@@ -4244,6 +5101,18 @@ fn serve() -> Result<(), String> {
         panel_close_velocity: 0.0,
         panel_close_sample: None,
         brightness_drag: None,
+        drawer_frame_log_at: None,
+        volume_drag: None,
+        volume_icon_touch: None,
+        output_picker_touch: None,
+        volume_state: volume::VolumeState::default(),
+        hud: volume::Hud::new(),
+        hud_last_visible: false,
+        default_sink_id: None,
+        volume_echo_until_ms: None,
+        pipewire_events,
+        pipewire_writer,
+        wpctl_command,
         reveal: RevealState::default(),
         input_ready: false,
         input_region_key: None,
@@ -4350,6 +5219,34 @@ fn serve() -> Result<(), String> {
             };
             state.theme_reply(reply);
         }
+        // The persistent `pw-dump --monitor` reader (task: "watch the
+        // graph for changes" -- event-driven, never a poll of its own).
+        // This loop iteration's own wake -- a Wayland event, an input
+        // sample, or the existing idle timeout below -- is what drains
+        // this channel; there is no separate timer for it.
+        if let Some(receiver) = state.pipewire_events.as_ref() {
+            let mut events = Vec::new();
+            for _ in 0..8 {
+                match receiver.try_recv() {
+                    Ok(event) => events.push(event),
+                    Err(_) => break,
+                }
+            }
+            for event in events {
+                state.apply_pipewire_event(event);
+            }
+        }
+        // The volume HUD's own auto-hide (task: "auto-hides after about
+        // 2-3s"): checked on every wake rather than a dedicated timer,
+        // same reasoning as every other timed UI state in this loop
+        // (`catalog_pending_rescan`, splash fade). `hud.is_visible`
+        // itself is what actually decides whether the next `state.draw`
+        // paints anything for it at all.
+        let hud_now_visible = state.hud.is_visible(state.started.elapsed().as_millis() as u64);
+        if hud_now_visible || state.hud_last_visible {
+            state.dirty = true;
+        }
+        state.hud_last_visible = hud_now_visible;
         state.maybe_rescan_catalog(&candidates);
         if state.renderer.poll_theme_image(state.width, state.height) {
             state.dirty = true;
@@ -5397,7 +6294,7 @@ mod route_tests {
         // `drawer_close_drag_zone`, not `close_drag_zone`, since it needs
         // scroll state Shade/Settings never do.
         let travel = panel_travel_height(Route::Drawer, 1232, None, None);
-        let header_top = f64::from(1232u32) * 0.19;
+        let header_top = k230_shell_rust::navigation::panel_top(1232);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (280.0, header_top + 20.0)));
         assert!(touch.motion(3, (282.0, header_top + 60.0)));
@@ -5453,7 +6350,7 @@ mod route_tests {
     #[test]
     fn drawer_live_close_drag_never_engages_after_a_mid_gesture_scroll_reversal() {
         let height = 1232u32;
-        let apps = 40;
+        let apps = 200;
         let grid_y = k230_shell_rust::navigation::list_top(height) + 10.0;
         let start = (100.0, grid_y);
 

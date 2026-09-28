@@ -2,14 +2,22 @@
 //! This first view uses real desktop names and explicit fallback artwork.
 use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
-    catalog::AppEntry,
+    catalog::{terminal_like, AppEntry},
     home_grid::{self, HomeSlot},
     home_screen::HomeScreen,
     icon::IconCache,
-    navigation::{list_top, tile_rect, COLUMNS, GRID_BOTTOM_INSET, ROW_HEIGHT},
+    navigation::{
+        self, list_top, panel_top, search_field_rect, search_keyboard_top, tile_rect, COLUMNS,
+        GRID_BOTTOM_INSET, ROW_HEIGHT, SEARCH_KEYBOARD_HEIGHT,
+    },
+    pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
-    service_ui::{ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP, SHADE_SLIDER_H, SHADE_SLIDER_TOP},
+    service_ui::{
+        filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
+        SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
+    },
     slider,
+    volume::{self, Hud},
     splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
@@ -19,7 +27,7 @@ use crate::{
         BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
     },
     wifi_settings::Security,
-    wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
+    wifi_ui::{all_networks, entry_buttons_rect, Page as WifiPage, WifiPublic},
     Route,
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
@@ -37,7 +45,18 @@ use std::{fs::File, path::Path};
 /// blob-inventory / image-size change out of scope for a rendering-only fix.
 pub const FONT_FAMILY: &str = "DejaVu Sans";
 
-fn color(cr: &Context, rgb: u32, alpha: f64) {
+/// The drawer grid's own icon geometry (`docs/design/app-drawer-review.md`):
+/// a 64px icon (no plate/box around it -- see `paint_drawer`), single-line
+/// 14px label below.
+pub const DRAWER_ICON_SIZE: i32 = 64;
+/// The icon's own width in the grid math (a plain `f64` copy of
+/// `DRAWER_ICON_SIZE`, since `IconCache::paint`/`paint_label` want
+/// different numeric types for size).
+pub const DRAWER_ICON_CARD: f64 = DRAWER_ICON_SIZE as f64;
+/// Single-line app-name label font size -- 13-14px per the redesign.
+pub const DRAWER_LABEL_SIZE: f64 = 14.0;
+
+pub(crate) fn color(cr: &Context, rgb: u32, alpha: f64) {
     cr.set_source_rgba(
         f64::from((rgb >> 16) & 255) / 255.0,
         f64::from((rgb >> 8) & 255) / 255.0,
@@ -75,7 +94,7 @@ fn tray_backdrop_alpha(progress: f64, target: f64) -> f64 {
 /// math -- black premultiplies to `(0, 0, 0, alpha)` at any alpha, so this
 /// is one straight byte-only pass, no allocation.
 fn apply_tray_backdrop(canvas: &mut [u8], route: Route, progress: f64) {
-    if !matches!(route, Route::Settings | Route::Shade) {
+    if !matches!(route, Route::Settings | Route::Shade | Route::Power) {
         return;
     }
     let alpha_byte = (tray_backdrop_alpha(progress, 0.35) * 255.0).round() as u8;
@@ -284,7 +303,11 @@ fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb
 pub const SETTINGS_ROW_FIRST_Y: f64 = 162.0;
 pub const SETTINGS_ROW_H: f64 = 110.0;
 pub const SETTINGS_ROW_GAP: f64 = 16.0;
-pub const SETTINGS_ROW_COUNT: u32 = 4;
+/// Wi-Fi, Brightness, Volume, Keyboard, Motion -- Volume (row 2, task:
+/// "in Settings") sits directly after Brightness; Keyboard/Motion shifted
+/// down one row each to make room, same rhythm cascade `settings_layout`'s
+/// own doc already describes.
+pub const SETTINGS_ROW_COUNT: u32 = 5;
 pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
 
 pub fn settings_row_y(index: u32) -> f64 {
@@ -530,23 +553,22 @@ fn paint_sun(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64) {
 /// percent value -- callers already gate this on `ControlState::
 /// Writable`, matching the row's own pre-slider behavior of showing
 /// nothing extra when unavailable.
-fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control: &Control) {
-    let Some(ControlValue::Percent(percent)) = &control.value else {
-        return;
-    };
-    let percent = *percent;
+/// The track/thumb every slider in this shell shares -- factored out of
+/// `paint_slider` (task: "reuse one component for both") so the volume
+/// slider (`paint_volume_slider`, a different end-glyph but the identical
+/// track math and touch geometry `slider::track_bounds`/`x_at_value`
+/// already define) can never visually drift from the brightness one.
+fn paint_slider_track(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8) {
     let (left, right) = slider::track_bounds(w);
     let track_h = 14.0;
     let thumb_r = 17.0;
     let thumb_x = slider::x_at_value(percent, left, right);
-    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
-    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
     // Inactive track, full width.
     rounded(cr, left, center_y - track_h / 2.0, right - left, track_h, track_h / 2.0);
     color(cr, style.muted, 0.35);
     let _ = cr.fill();
     // Active (thumb-ward) portion. A minimum width keeps the rounded cap
-    // visible even at `slider::MIN_PERCENT`, instead of a sliver.
+    // visible even at the slider's own floor, instead of a sliver.
     let active_w = (thumb_x - left).max(track_h);
     rounded(cr, left, center_y - track_h / 2.0, active_w, track_h, track_h / 2.0);
     color(cr, style.accent, 1.0);
@@ -559,6 +581,75 @@ fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control
     cr.arc(thumb_x, center_y, thumb_r * 0.4, 0.0, std::f64::consts::TAU);
     color(cr, style.text, 0.9);
     let _ = cr.fill();
+}
+
+fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control: &Control) {
+    let Some(ControlValue::Percent(percent)) = &control.value else {
+        return;
+    };
+    let percent = *percent;
+    let (left, right) = slider::track_bounds(w);
+    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
+    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    paint_slider_track(cr, style, w, center_y, percent);
+}
+
+/// A cheap vector speaker glyph for the volume slider's own left end,
+/// which doubles as the mute toggle (task: "a speaker icon that toggles
+/// mute when tapped", `service_ui::volume_icon_tap_zone` owns the hit
+/// test for this same glyph's position). A filled speaker-cone
+/// polygon plus two short arcs (sound waves) when unmuted; muted swaps
+/// the waves for a single diagonal slash through the cone, the same
+/// "struck-through" convention Android's own muted speaker glyph uses.
+/// No new image asset, same spirit as `paint_sun`.
+fn paint_speaker(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64, muted: bool) {
+    color(cr, rgb, alpha);
+    let body_w = r * 0.6;
+    let body_h = r * 0.85;
+    cr.move_to(cx - r, cy - body_h * 0.35);
+    cr.line_to(cx - r + body_w, cy - body_h * 0.35);
+    cr.line_to(cx - r + body_w + r * 0.55, cy - body_h);
+    cr.line_to(cx - r + body_w + r * 0.55, cy + body_h);
+    cr.line_to(cx - r + body_w, cy + body_h * 0.35);
+    cr.line_to(cx - r, cy + body_h * 0.35);
+    cr.close_path();
+    let _ = cr.fill();
+    cr.set_line_width(2.0);
+    let cone_tip_x = cx - r + body_w + r * 0.55;
+    if muted {
+        cr.move_to(cone_tip_x - r * 0.1, cy - r * 0.7);
+        cr.line_to(cone_tip_x + r * 0.7, cy + r * 0.7);
+        color(cr, rgb, alpha);
+        let _ = cr.stroke();
+    } else {
+        for radius in [r * 0.5, r * 0.85] {
+            cr.new_sub_path();
+            cr.arc(cone_tip_x, cy, radius, -0.6, 0.6);
+            color(cr, rgb, alpha);
+            let _ = cr.stroke();
+        }
+    }
+}
+
+/// The volume slider: `paint_slider_track` shared with brightness, plus a
+/// speaker glyph (the mute toggle) at the track's left end and nothing at
+/// the right end -- Android's own volume slider has no second icon.
+/// `percent` is exactly what should be painted right now, already `0`
+/// while muted (`volume::VolumeState::displayed_percent`'s job, not this
+/// function's -- this never re-derives mute from the percent itself).
+fn paint_volume_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8, muted: bool) {
+    let (left, _right) = slider::track_bounds(w);
+    let icon_rgb = if muted { style.muted } else { style.accent };
+    paint_speaker(cr, left - 30.0, center_y, 15.0, icon_rgb, 1.0, muted);
+    paint_slider_track(cr, style, w, center_y, percent);
+}
+
+/// The graph's current default sink, if the PipeWire monitor has reported
+/// one yet -- the single source both the Shade and Settings volume rows
+/// paint from, and what `main.rs`'s touch dispatch targets a slider write
+/// against.
+fn default_sink(audio: Option<&GraphSnapshot>) -> Option<&crate::pipewire_ipc::Sink> {
+    audio?.sinks.iter().find(|sink| sink.is_default)
 }
 
 /// The decode target size for a cached thumbnail variant under a given
@@ -1152,7 +1243,7 @@ fn paint_wifi(
                         if view.use_saved {
                             "Stored securely; no re-entry needed"
                         } else if mask.is_empty() {
-                            "Tap keys to enter password"
+                            "Type the password"
                         } else {
                             &mask
                         },
@@ -1224,77 +1315,19 @@ fn paint_wifi(
                     }
                 }
             }
-            if !view.use_saved
-                && view
-                    .selected
-                    .as_ref()
-                    .is_some_and(|s| s.security == Security::Wpa2Psk)
-            {
-                let rows = [
-                    if view.symbols {
-                        "!@#$%^&*()"
-                    } else {
-                        "1234567890"
-                    },
-                    if view.symbols {
-                        "-_=+[]{};:"
-                    } else {
-                        "qwertyuiop"
-                    },
-                    if view.symbols {
-                        "'\"\\|/?.<>"
-                    } else {
-                        "asdfghjkl"
-                    },
-                    if view.symbols { "~`,zxcv" } else { "zxcvbnm" },
-                ];
-                for (row, keys) in rows.iter().enumerate() {
-                    let y = 530.0 + row as f64 * 90.0;
-                    let (left, right) = if row == 2 {
-                        (28.0, 540.0)
-                    } else if row == 3 {
-                        (74.0, 494.0)
-                    } else {
-                        (18.0, 550.0)
-                    };
-                    let cell = (right - left) / keys.chars().count() as f64;
-                    for (index, ch) in keys.chars().enumerate() {
-                        let x = left + index as f64 * cell;
-                        service_card(cr, theme, "controls", x + 2.0, y, cell - 4.0, 76.0, false);
-                        text(
-                            cr,
-                            &ch.to_string(),
-                            x + cell * 0.35,
-                            y + 23.0,
-                            cell * 0.6,
-                            26.0,
-                            style.text,
-                        );
-                    }
-                }
-                service_card(cr, theme, "controls", 18.0, 800.0, 52.0, 76.0, false);
-                text(cr, "⇧", 28.0, 820.0, 40.0, 28.0, style.accent);
-                service_card(cr, theme, "controls", 498.0, 800.0, 52.0, 76.0, false);
-                text(cr, "Del", 504.0, 824.0, 44.0, 18.0, style.accent);
-                service_card(cr, theme, "controls", 18.0, 890.0, 112.0, 76.0, false);
-                text(
-                    cr,
-                    if view.symbols { "ABC" } else { "?123" },
-                    38.0,
-                    913.0,
-                    90.0,
-                    22.0,
-                    style.accent,
-                );
-                service_card(cr, theme, "controls", 136.0, 890.0, 278.0, 76.0, false);
-                text(cr, "space", 222.0, 914.0, 110.0, 20.0, style.muted);
-                service_card(cr, theme, "controls", 420.0, 890.0, 130.0, 76.0, false);
-                text(cr, "Delete", 445.0, 917.0, 85.0, 18.0, style.accent);
-            }
-            service_card(cr, theme, "controls", 24.0, 1120.0, 250.0, 88.0, false);
-            service_card(cr, theme, "controls", 294.0, 1120.0, 250.0, 88.0, true);
-            text(cr, "Cancel", 90.0, 1147.0, 145.0, 25.0, style.muted);
-            text(cr, "Connect", 351.0, 1147.0, 145.0, 25.0, style.accent);
+            // The password field takes real keyboard focus and types through
+            // the system keyboard (wvkbd) like every other text field in the
+            // shell, instead of drawing its own keys here -- see
+            // openspec/changes/the-handheld-configures-wifi-from-settings.
+            // `entry_buttons_rect` keeps Cancel/Connect above whatever
+            // height of the screen the raised keyboard currently reserves
+            // (`view.keyboard_inset`), matching `wifi_ui::target`'s own hit
+            // region exactly.
+            let (button_top, _) = entry_buttons_rect(view.keyboard_inset);
+            service_card(cr, theme, "controls", 24.0, button_top, 250.0, 88.0, false);
+            service_card(cr, theme, "controls", 294.0, button_top, 250.0, 88.0, true);
+            text(cr, "Cancel", 90.0, button_top + 27.0, 145.0, 25.0, style.muted);
+            text(cr, "Connect", 351.0, button_top + 27.0, 145.0, 25.0, style.accent);
         }
         WifiPage::Connecting => {
             service_card(cr, theme, "controls", 24.0, 220.0, 520.0, 210.0, true);
@@ -1353,7 +1386,10 @@ fn paint_wifi(
         if let Some(message) = &view.message {
             let y = match view.page {
                 WifiPage::List => 1163.0,
-                WifiPage::Entry => 1020.0,
+                // Anchored to the (possibly keyboard-raised) button row
+                // rather than a fixed offset, so this never ends up
+                // beneath the system keyboard -- see `entry_buttons_rect`.
+                WifiPage::Entry => entry_buttons_rect(view.keyboard_inset).0 - 100.0,
                 WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
                 WifiPage::Closed => 0.0,
             };
@@ -1472,12 +1508,408 @@ pub fn panel_travel_height(
     let h = f64::from(height);
     match route {
         Route::Shade => h * 0.65,
-        Route::Drawer => h * 0.81,
+        // Fills nearly the whole screen from its own small top inset
+        // (`navigation::panel_top`), not the old ~19%-of-height band --
+        // `docs/design/app-drawer-review.md` §2: "filling the screen from
+        // the top inset, with no black band above it."
+        Route::Drawer => h - navigation::panel_top(height),
         Route::Settings => settings_panel_h(h, chooser, services),
+        Route::Power => power_panel_h(h, services),
         Route::Hide => h,
     }
 }
 
+pub const POWER_REBOOT_Y: f64 = 132.0;
+pub const POWER_OFF_Y: f64 = 218.0;
+pub const POWER_CANCEL_Y: f64 = 304.0;
+pub const POWER_CONFIRM_Y: f64 = 432.0;
+pub const POWER_BUTTON_H: f64 = 68.0;
+
+fn power_panel_h(available_h: f64, services: Option<&ServiceView>) -> f64 {
+    let natural: f64 = if services.is_some_and(|view| view.confirmation.is_some()) {
+        530.0
+    } else {
+        402.0
+    };
+    natural.min(available_h)
+}
+
+/// Rounds only the top two corners, leaving the bottom edge square -- the
+/// Drawer's own sheet shape: bottom-anchored, its bottom edge sits at or
+/// past the physical screen edge, where a rounded corner would never be
+/// visible anyway.
+fn rounded_top(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
+    cr.new_sub_path();
+    cr.arc(
+        x + r,
+        y + r,
+        r,
+        std::f64::consts::PI,
+        3.0 * std::f64::consts::FRAC_PI_2,
+    );
+    cr.arc(x + w - r, y + r, r, -std::f64::consts::FRAC_PI_2, 0.0);
+    cr.line_to(x + w, y + h);
+    cr.line_to(x, y + h);
+    cr.close_path();
+}
+
+/// One frame's worth of Drawer catalog + search state, exactly as needed
+/// to know what the grid should show and whether the keyboard is up --
+/// `render::paint_drawer`'s own input, separate from the persistent
+/// `DrawerGridCache` it also takes (that one remembers the *painted*
+/// result across frames; this one is recomputed fresh every call, which is
+/// cheap -- see `service_ui::filter_app_indices`'s own doc).
+struct DrawerContent<'a> {
+    /// The catalog, filtered and in display order -- already computed by
+    /// the caller via `service_ui::filter_app_indices` so both the touch
+    /// layer (`main.rs`) and the paint layer agree on what "index 3" means
+    /// without either recomputing the filter independently.
+    apps: Vec<&'a AppEntry>,
+    search: &'a DrawerSearch,
+}
+
+/// A pre-rendered bitmap of the drawer grid's *entire* filtered content
+/// (every row, not just the visible ones), rebuilt only when what it would
+/// paint actually changes -- the filtered catalog, the active theme, the
+/// panel width, or the search query. Scrolling changes none of those, so
+/// an ordinary scroll/fling frame reuses this bitmap unchanged and
+/// `paint_drawer` only blits the visible slice, instead of repainting
+/// every tile every frame -- `docs/design/app-drawer-review.md`'s
+/// performance section, "pre-render the whole grid ... into a cached
+/// buffer whenever the catalog, theme or search changes."
+#[derive(Default)]
+pub struct DrawerGridCache {
+    key: Option<DrawerGridKey>,
+    surface: Option<ImageSurface>,
+    content_height: f64,
+    /// Bumped on every real rebuild -- test-only observability, the same
+    /// role `IconCache::decode_count`/`RendererCache::rebuild_count`
+    /// already play for their own caches.
+    rebuilds: u64,
+}
+
+#[derive(Clone, PartialEq)]
+struct DrawerGridKey {
+    /// Cloned display list, not indices into the live catalog: a rescan
+    /// that changes an app's icon/name at the same catalog index must
+    /// still invalidate this cache, which a plain index/length comparison
+    /// would miss.
+    apps: Vec<AppEntry>,
+    theme_generation: Option<String>,
+    width: u32,
+    query: String,
+}
+
+impl DrawerGridCache {
+    #[cfg(test)]
+    pub(crate) fn rebuilds(&self) -> u64 {
+        self.rebuilds
+    }
+
+    /// Ensures the cached bitmap matches `content`/`theme`/`width`,
+    /// rebuilding it first if not, then returns it alongside its content
+    /// height (rows painted * `ROW_HEIGHT`). The bitmap is in *content*
+    /// space: row 0 starts at bitmap `y = 0`, regardless of live scroll --
+    /// `paint_drawer` positions the blit using the caller's own `scroll`.
+    fn ensure(
+        &mut self,
+        content: &DrawerContent,
+        theme: Option<&AppearanceSnapshot>,
+        width: u32,
+        height: u32,
+        icons: &mut IconCache,
+    ) -> (&ImageSurface, f64) {
+        let theme_generation = theme.map(|snapshot| snapshot.generation.clone());
+        let fresh = self.key.as_ref().is_some_and(|key| {
+            key.width == width
+                && key.theme_generation == theme_generation
+                && key.query == content.search.query
+                && key.apps.len() == content.apps.len()
+                && key.apps.iter().zip(content.apps.iter()).all(|(a, b)| a == *b)
+        });
+        if !fresh {
+            let rows = content.apps.len().div_ceil(COLUMNS).max(1);
+            let content_height = (rows as f64 * ROW_HEIGHT).max(1.0);
+            let surface = ImageSurface::create(
+                Format::ARgb32,
+                (width.max(1)) as i32,
+                content_height.ceil() as i32,
+            )
+            .unwrap_or_else(|_| {
+                ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface")
+            });
+            if let Ok(cr) = Context::new(&surface) {
+                // Passing `list_top(height)` as `tile_rect`'s own `scroll`
+                // cancels the header offset out of its `y` formula,
+                // leaving pure content-space row coordinates (row 0 at
+                // bitmap y=0) with no separate formula to keep in sync.
+                let offset = list_top(height);
+                for (index, app) in content.apps.iter().enumerate() {
+                    let (x, y, tile_w, _) = tile_rect(width, height, index, offset);
+                    paint_drawer_tile(&cr, theme, icons, x, y, tile_w, app);
+                }
+            }
+            self.surface = Some(surface);
+            self.content_height = content_height;
+            self.key = Some(DrawerGridKey {
+                apps: content.apps.iter().map(|app| (*app).clone()).collect(),
+                theme_generation,
+                width,
+                query: content.search.query.clone(),
+            });
+            self.rebuilds = self.rebuilds.wrapping_add(1);
+        }
+        (
+            self.surface.as_ref().expect("just ensured"),
+            self.content_height,
+        )
+    }
+}
+
+/// One tile's worth of content: an icon (no plate/box around it -- the
+/// redesign's own "just the icon, with its label below, on the sheet
+/// surface") and a single-line ellipsized label. Icon fallback (no
+/// resolvable icon) is a round, theme-tinted circle with the app's
+/// initial -- rare in practice (`docs/evidence/app-drawer/`'s real-icon
+/// screenshots), but still legible and on-theme when it happens.
+fn paint_drawer_tile(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    x: f64,
+    y: f64,
+    cell_w: f64,
+    app: &AppEntry,
+) {
+    let style = visual_style(theme, "launcher");
+    let icon_x = x + (cell_w - DRAWER_ICON_CARD) / 2.0;
+    let icon_y = y + 8.0;
+    let mut painted = app
+        .icon
+        .as_deref()
+        .is_some_and(|icon| icons.paint(cr, icon, DRAWER_ICON_SIZE, icon_x, icon_y));
+    // Board finding (2026-09-27): `Icon=mpv` (Video) and `Icon=foot`
+    // (Terminal) name real applications the bundled Yaru-based theme does
+    // not cover at all -- not a harness gap, a genuine resolution miss.
+    // Before falling all the way back to a plain letter circle, a
+    // terminal emulator or an app that runs inside one
+    // (`catalog::terminal_like`) gets one more try against a generic
+    // icon name real desktop themes do cover.
+    if !painted && terminal_like(&app.path) {
+        painted = icons.paint(cr, "utilities-terminal", DRAWER_ICON_SIZE, icon_x, icon_y);
+    }
+    if !painted {
+        // A tonal-container circle, not a faint tint: a low-alpha accent
+        // over this sheet's own dark background read as "dark and flat"
+        // (coordinator finding) rather than an intentional coloured
+        // badge, so this uses a much stronger fill of the theme's own
+        // accent colour, with the initial in a bright, guaranteed-
+        // contrasting colour on top (`style.text`, not the accent again --
+        // accent-on-accent would fight the very contrast a tonal
+        // container needs).
+        let radius = DRAWER_ICON_CARD / 2.0;
+        let cx = icon_x + radius;
+        let cy = icon_y + radius;
+        cr.new_sub_path();
+        cr.arc(cx, cy, radius, 0.0, 2.0 * std::f64::consts::PI);
+        color(cr, style.accent, 0.55);
+        let _ = cr.fill();
+        let initial = app
+            .name
+            .chars()
+            .next()
+            .unwrap_or('?')
+            .to_uppercase()
+            .to_string();
+        icons.paint_label(
+            cr,
+            &initial,
+            (icon_x, icon_y + (DRAWER_ICON_CARD - 24.0) / 2.0),
+            DRAWER_ICON_CARD,
+            24.0,
+            style.text,
+        );
+    }
+    let label_y = icon_y + DRAWER_ICON_CARD + 6.0;
+    icons.paint_label(
+        cr,
+        &app.name,
+        (x + 4.0, label_y),
+        (cell_w - 8.0).max(1.0),
+        DRAWER_LABEL_SIZE,
+        brush_rgb(theme, "menu", "text", style.text),
+    );
+}
+
+/// Renders the drawer's slim top handle, its pill-shaped search field, and
+/// -- while focused -- the compact search keyboard beneath it. Drawn
+/// directly every frame (cheap: a handful of small fixed-position shapes,
+/// unrelated to the app grid's own size), never through `DrawerGridCache`.
+fn paint_drawer_chrome(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    width: u32,
+    height: u32,
+    search: &DrawerSearch,
+) {
+    let style = visual_style(theme, "launcher");
+    let (hx, hy, hw, hh) = navigation::handle_rect(width, height);
+    rounded(cr, hx, hy, hw, hh, hh / 2.0);
+    color(cr, style.accent, 0.7);
+    let _ = cr.fill();
+
+    let (sx, sy, sw, sh) = search_field_rect(width, height);
+    rounded(cr, sx, sy, sw, sh, sh / 2.0);
+    // A flat colour, not a gradient brush: a rounded-pill path is already
+    // current here (`rounded` above), and `fill_brush` would clobber it
+    // with its own plain rectangle before filling, same reasoning as the
+    // sheet background below.
+    color(
+        cr,
+        brush_rgb(theme, "launcher", "search", palette_rgb_or(theme, "surface2", 0x2a2f3a)),
+        1.0,
+    );
+    let _ = cr.fill();
+    let label = if search.query.is_empty() {
+        "Search apps"
+    } else {
+        search.query.as_str()
+    };
+    let label_color = if search.query.is_empty() {
+        style.muted
+    } else {
+        style.text
+    };
+    text(cr, label, sx + 22.0, sy + sh / 2.0 - 9.0, sw - 44.0, 18.0, label_color);
+
+    if search.focused {
+        let ky = search_keyboard_top(height);
+        color(cr, palette_rgb_or(theme, "surface1", 0x1a1e26), 1.0);
+        cr.rectangle(0.0, ky, f64::from(width), SEARCH_KEYBOARD_HEIGHT);
+        let _ = cr.fill();
+        paint_search_keyboard(cr, theme, width, height, &style);
+    }
+}
+
+fn paint_search_keyboard(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    width: u32,
+    height: u32,
+    style: &VisualStyle,
+) {
+    for row in 0..3 {
+        for (ch, x, y, w, h) in navigation::keyboard_row_keys(row, width, height) {
+            service_card(cr, theme, "controls", x + 2.0, y, (w - 4.0).max(1.0), h, false);
+            centered_label(cr, &ch.to_string(), x, y + h / 2.0 - 12.0, w, 22.0, style.text);
+        }
+    }
+    let (left, right, side_w, y, h) = navigation::keyboard_control_row(width, height);
+    service_card(cr, theme, "controls", left, y, side_w, h, false);
+    centered_label(cr, "⌫", left, y + h / 2.0 - 12.0, side_w, 22.0, style.text);
+    let space_w = (right - side_w) - (left + side_w);
+    service_card(cr, theme, "controls", left + side_w, y, space_w, h, false);
+    centered_label(cr, "space", left + side_w, y + h / 2.0 - 9.0, space_w, 18.0, style.muted);
+    service_card(cr, theme, "controls", right - side_w, y, side_w, h, false);
+    centered_label(cr, "Done", right - side_w, y + h / 2.0 - 9.0, side_w, 18.0, style.accent);
+}
+
+/// The Drawer's whole paint: opaque themed sheet with rounded top corners,
+/// the handle/search chrome, and the (cached) grid, scrolled into view by
+/// blitting one slice of `DrawerGridCache` rather than repainting every
+/// tile -- see that struct's own doc.
+#[allow(clippy::too_many_arguments)]
+fn paint_drawer(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    progress: f64,
+    scroll: f64,
+    apps: &[AppEntry],
+    icons: &mut IconCache,
+    theme: Option<&AppearanceSnapshot>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
+    pressed: Option<usize>,
+) {
+    let w = f64::from(width);
+    let h = f64::from(height);
+    let panel_y = panel_top(height);
+    let radius = 28.0;
+    // `RendererCache::draw` always calls this at a fixed `progress: 1.0`
+    // and does its own cheap post-bake row-shift for the live drag/settle
+    // progress instead (see `scene`'s own doc); this translate only
+    // matters for a direct caller (`draw_shm`/`export_png`, or a test)
+    // that passes some other `progress` straight through.
+    let hidden = 1.0 - progress.clamp(0.0, 1.0);
+    cr.translate(0.0, hidden * (h - panel_y));
+
+    let style = visual_style(theme, "launcher");
+    // A flat opaque colour (`docs/design/app-drawer-review.md` §2: "an
+    // opaque theme surface colour"), not a gradient brush: `fill_brush`
+    // issues its own plain-rectangle path internally, which would
+    // overwrite the rounded-top path just set below before filling it.
+    rounded_top(cr, 0.0, panel_y, w, h - panel_y, radius);
+    color(
+        cr,
+        brush_rgb(theme, "launcher", "background", palette_rgb_or(theme, "background", 0x1e1e2e)),
+        1.0,
+    );
+    let _ = cr.fill();
+
+    paint_drawer_chrome(cr, theme, width, height, search);
+
+    let matched: Vec<usize> = filter_app_indices(apps, &search.query);
+    let content = DrawerContent {
+        apps: matched.iter().filter_map(|&i| apps.get(i)).collect(),
+        search,
+    };
+    let row_start = list_top(height);
+    let bottom = if search.focused {
+        search_keyboard_top(height)
+    } else {
+        h - GRID_BOTTOM_INSET
+    };
+    let (grid_surface, content_height) = grid_cache.ensure(&content, theme, width, height, icons);
+    let _ = cr.save();
+    cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
+    cr.clip();
+    let max_scroll = (content_height - (bottom - row_start)).max(0.0);
+    let clamped_scroll = scroll.clamp(0.0, max_scroll);
+    if cr
+        .set_source_surface(grid_surface, 0.0, row_start - clamped_scroll)
+        .is_ok()
+    {
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
+
+    if let Some(display_index) = pressed {
+        // `pressed` is already a *display* (filtered) index -- the same
+        // one `tile_rect`/`tile_at` use everywhere else -- so its position
+        // is just this call, no re-mapping through `matched` needed.
+        let (x, y, tile_w, _) = tile_rect(width, height, display_index, clamped_scroll);
+        if y + ROW_HEIGHT > row_start && y < bottom {
+            let cx = x + tile_w / 2.0;
+            let cy = y + 8.0 + DRAWER_ICON_CARD / 2.0;
+            cr.new_sub_path();
+            cr.arc(cx, cy, DRAWER_ICON_CARD / 2.0 + 8.0, 0.0, 2.0 * std::f64::consts::PI);
+            color(cr, style.accent, 0.22);
+            let _ = cr.fill();
+        }
+    }
+
+    if content.apps.is_empty() {
+        let message = if search.query.is_empty() {
+            "No installed apps are available"
+        } else {
+            "No apps match your search"
+        };
+        text(cr, message, 28.0, row_start + 18.0, w - 56.0, 21.0, style.muted);
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn scene(
     cr: &Context,
     params: RenderParams,
@@ -1490,6 +1922,8 @@ fn scene(
     preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
 ) {
     let RenderParams {
         width,
@@ -1505,19 +1939,24 @@ fn scene(
     let _ = cr.paint();
     cr.set_operator(Operator::Over);
 
-    let panel_y = if route == Route::Drawer {
-        h * 0.19
-    } else {
-        0.0
-    };
+    if route == Route::Drawer {
+        paint_drawer(
+            cr, width, height, progress, scroll, apps, icons, theme, search, grid_cache, pressed,
+        );
+        return;
+    }
+
+    // The Drawer (a bottom-anchored, full-bleed sheet with its own
+    // top-inset formula) already returned via `paint_drawer` above; every
+    // other route is top-anchored at `panel_y = 0.0`.
+    let panel_y = 0.0;
     // Secondary panels are sized to their own content and capped, rather
     // than always filling the remaining screen height regardless of how
-    // little is on them (finding P0-2). Drawer keeps its existing full-bleed
-    // grid -- its captures show it filling the space in ordinary use, and
-    // it is not among the offending screens this finding cites.
+    // little is on them (finding P0-2).
     let panel_h = match route {
         Route::Shade => h * 0.65,
         Route::Settings => settings_panel_h(h - panel_y, chooser, services),
+        Route::Power => power_panel_h(h - panel_y, services),
         _ => h - panel_y,
     };
     // No backdrop dim is painted here. `scene()` shapes the panel's *opaque*
@@ -1532,33 +1971,26 @@ fn scene(
     // full-screen backdrop itself, in screen space, after the shift, using
     // the caller's actual per-frame `progress` -- see `tray_backdrop_alpha`.
     let hidden = 1.0 - progress.clamp(0.0, 1.0);
-    cr.translate(
-        0.0,
-        if route == Route::Drawer {
-            hidden * panel_h
-        } else {
-            -hidden * panel_h
-        },
-    );
+    cr.translate(0.0, -hidden * panel_h);
     let section = match route {
         Route::Drawer => "launcher",
         Route::Shade => "notifications",
         Route::Settings => "controls",
+        Route::Power => "controls",
         Route::Hide => "launcher",
     };
     let style = visual_style(theme, section);
     let panel_brush = theme_brush(theme, section, "background").or_else(|| {
-        (route == Route::Settings)
+        matches!(route, Route::Settings | Route::Power)
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
-    if matches!(route, Route::Drawer | Route::Shade | Route::Settings) {
+    if matches!(route, Route::Shade | Route::Settings | Route::Power) {
         // Preserve the authored translucent brush over an opaque theme
         // plate, rather than letting live card text ghost through apps.
-        // Originally Drawer-only; any theme can author sub-1.0 alpha on
-        // `notifications`/`controls` backgrounds just as easily as on
-        // `launcher`, so the same guard now covers Shade and Settings
-        // (finding P1-5).
+        // Any theme can author sub-1.0 alpha on `notifications`/`controls`
+        // backgrounds (finding P1-5). The Drawer's own equivalent guard
+        // lives in `paint_drawer` now.
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
         cr.rectangle(0.0, panel_y, w, panel_h);
         let _ = cr.fill();
@@ -1583,29 +2015,23 @@ fn scene(
     // draw` dims it with a stationary, live-eased backdrop rather than
     // either an opaque void or an undimmed, jarring reveal (finding P0-2).
     // Nothing is painted here -- see this function's own doc above.
-    if matches!(route, Route::Drawer | Route::Shade) {
+    if route == Route::Shade {
         rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
         color(cr, style.accent, 0.82);
         let _ = cr.fill();
     }
     let title = match route {
+        // Unreachable: `Route::Drawer` already returned above via
+        // `paint_drawer`. Kept as a plain, harmless value (not a panic)
+        // rather than trying to prove that to the compiler, which does
+        // not know this function's own early return makes it impossible.
         Route::Drawer => "All apps",
         Route::Shade => "Notifications",
         Route::Settings => "Settings",
+        Route::Power => "Power",
         Route::Hide => return,
     };
-    if route == Route::Drawer {
-        medium(
-            cr,
-            "YOUR DEVICE",
-            28.0,
-            panel_y + 44.0,
-            w - 56.0,
-            15.0,
-            style.muted,
-        );
-        heading(cr, title, 28.0, panel_y + 76.0, w - 56.0, 40.0, style.text);
-    } else if !(route == Route::Settings
+    if !(route == Route::Settings
         && (chooser.is_some_and(|view| view.page != ThemePage::Controls)
             || services
                 .and_then(|s| s.wifi.as_ref())
@@ -1614,106 +2040,7 @@ fn scene(
         heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
     }
     match route {
-        Route::Drawer => {
-            text(
-                cr,
-                "Everything installed, one upward pull away.",
-                28.0,
-                panel_y + 130.0,
-                w - 56.0,
-                18.0,
-                style.muted,
-            );
-            let row_start = list_top(height);
-            let _ = cr.save();
-            cr.rectangle(
-                0.0,
-                row_start,
-                w,
-                (h - GRID_BOTTOM_INSET - row_start).max(0.0),
-            );
-            cr.clip();
-            let first = (scroll / ROW_HEIGHT).floor().max(0.0) as usize * COLUMNS;
-            for (index, app) in apps.iter().enumerate().skip(first).take(21) {
-                let (x, y, tile_w, tile_h) = tile_rect(width, height, index, scroll);
-                if y >= h - GRID_BOTTOM_INSET || tile_w <= 0.0 {
-                    break;
-                }
-                service_card(
-                    cr,
-                    theme,
-                    "menu",
-                    x,
-                    y,
-                    tile_w,
-                    tile_h,
-                    pressed == Some(index),
-                );
-                if pressed == Some(index) {
-                    rounded(cr, x + 2.0, y + 2.0, tile_w - 4.0, tile_h - 4.0, 14.0);
-                    cr.set_line_width(3.0);
-                    color(cr, style.accent, 1.0);
-                    let _ = cr.stroke();
-                }
-                let icon_x = x + (tile_w - 58.0) / 2.0;
-                service_card(cr, theme, "launcher", icon_x, y + 17.0, 58.0, 58.0, true);
-                let painted = app
-                    .icon
-                    .as_deref()
-                    .is_some_and(|icon| icons.paint(cr, icon, 50, icon_x + 4.0, y + 21.0));
-                if !painted {
-                    let initial = app
-                        .name
-                        .chars()
-                        .next()
-                        .unwrap_or('?')
-                        .to_uppercase()
-                        .to_string();
-                    centered_label(
-                        cr,
-                        &initial,
-                        icon_x + 4.0,
-                        y + 30.0,
-                        50.0,
-                        27.0,
-                        style.accent,
-                    );
-                }
-                centered_label(
-                    cr,
-                    &app.name,
-                    x + 8.0,
-                    y + 94.0,
-                    tile_w - 16.0,
-                    20.0,
-                    brush_rgb(theme, "menu", "text", style.text),
-                );
-            }
-            let _ = cr.restore();
-            if apps.is_empty() {
-                text(
-                    cr,
-                    "No installed apps are available",
-                    28.0,
-                    row_start + 18.0,
-                    w - 56.0,
-                    21.0,
-                    style.muted,
-                );
-            }
-            // One gesture-hint typography across Drawer/Shade/deck: sentence
-            // case, muted, size 14 (finding P1-2); `nix/card-shell/adapter.c`'s
-            // "Swipe up for apps" matches this same treatment.
-            text(
-                cr,
-                "Swipe down to return to cards",
-                88.0,
-                h - 43.0,
-                w - 176.0,
-                14.0,
-                style.muted,
-            );
-        }
+        Route::Drawer => {}
         Route::Shade => {
             text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, style.accent);
             text(
@@ -1770,6 +2097,22 @@ fn scene(
                         &settings.brightness,
                     );
                 }
+            }
+            // The volume slider (task: "volume slider in the shade under
+            // the brightness slider"), directly beneath it -- only drawn
+            // once the PipeWire monitor has reported a default sink,
+            // exactly like brightness's own writable gate above;
+            // `service_ui::volume_slider_band` mirrors this same
+            // availability gate for touch dispatch.
+            if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
+                paint_volume_slider(
+                    cr,
+                    style,
+                    w,
+                    SHADE_VOLUME_TOP + SHADE_VOLUME_H / 2.0,
+                    volume::linear_to_percent(sink.linear_volume),
+                    sink.muted,
+                );
             }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
@@ -2017,16 +2360,18 @@ fn scene(
             );
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
-                for (index, (name, control)) in [
-                    ("Wi-Fi ›", &settings.network),
-                    ("Brightness", &settings.brightness),
-                    ("Keyboard", &settings.keyboard),
-                    ("Motion", &settings.motion),
-                ]
-                .into_iter()
-                .enumerate()
-                {
-                    let y = settings_row_y(index as u32);
+                // Row numbers are explicit, not a plain `enumerate()`,
+                // because row 2 (Volume) is painted separately below --
+                // its data comes from the PipeWire monitor
+                // (`GraphSnapshot`), not `k230-settings`, so there is no
+                // `Control` to hand this generic loop.
+                for (row, name, control) in [
+                    (0u32, "Wi-Fi ›", &settings.network),
+                    (1, "Brightness", &settings.brightness),
+                    (3, "Keyboard", &settings.keyboard),
+                    (4, "Motion", &settings.motion),
+                ] {
+                    let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.accent);
                     text(
@@ -2069,6 +2414,45 @@ fn scene(
                     // `service_ui.rs` mirrors this same row rhythm), well
                     // past the "at least about 56 px tall" ask.
                     paint_slider(cr, style, w, settings_row_y(1) + 86.0, &settings.brightness);
+                }
+                // Volume row (task: "in Settings"): row 2, directly after
+                // Brightness. The device name doubles as the entry point
+                // into the device picker -- one picker UI (the HUD's own
+                // expanded panel), not two (design.md's "one picker, two
+                // entry points").
+                let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
+                service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
+                text(cr, "Volume", 42.0, volume_y + 15.0, w - 84.0, 17.0, style.accent);
+                if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
+                    let percent = volume::linear_to_percent(sink.linear_volume);
+                    let label = if sink.muted {
+                        "Muted".to_string()
+                    } else {
+                        format!("{percent}%")
+                    };
+                    text(cr, &label, 42.0, volume_y + 43.0, w - 90.0, 19.0, style.text);
+                    text(
+                        cr,
+                        &format!("{} · tap to change output", sink.description),
+                        42.0,
+                        volume_y + 76.0,
+                        w - 90.0,
+                        14.0,
+                        style.muted,
+                    );
+                    paint_volume_slider(cr, style, w, volume_y + 86.0, percent, sink.muted);
+                } else {
+                    text(
+                        cr,
+                        services
+                            .and_then(|view| view.audio_error.as_deref())
+                            .unwrap_or("No audio device found"),
+                        42.0,
+                        volume_y + 43.0,
+                        w - 90.0,
+                        19.0,
+                        style.muted,
+                    );
                 }
             } else {
                 text(
@@ -2176,6 +2560,44 @@ fn scene(
                         settings_confirm_layout(layout.poweroff_bottom).bottom
                     });
                 text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
+            }
+        }
+        Route::Power => {
+            text(
+                cr, "Choose what happens next", 28.0, 91.0, w - 56.0, 20.0, style.muted,
+            );
+            for (label, y) in [
+                ("Restart…", POWER_REBOOT_Y),
+                ("Power off…", POWER_OFF_Y),
+                ("Cancel", POWER_CANCEL_Y),
+            ] {
+                service_card(
+                    cr, theme, "controls", 24.0, y, w - 48.0, POWER_BUTTON_H, false,
+                );
+                text(cr, label, 44.0, y + 19.0, w - 88.0, 24.0, style.text);
+            }
+            if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
+                text(cr, &confirm.label, 28.0, 401.0, w - 56.0, 19.0, style.text);
+                service_card(
+                    cr, theme, "controls", 24.0, POWER_CONFIRM_Y,
+                    w - 48.0, POWER_BUTTON_H, true,
+                );
+                text(
+                    cr, "Cancel", 44.0, POWER_CONFIRM_Y + 19.0,
+                    w / 2.0 - 44.0, 22.0, style.muted,
+                );
+                text(
+                    cr, "Confirm", w / 2.0 + 20.0, POWER_CONFIRM_Y + 19.0,
+                    w / 2.0 - 44.0, 22.0, style.error,
+                );
+            }
+            if let Some(message) = services.and_then(|view| view.message.as_deref()) {
+                let y = if services.is_some_and(|view| view.confirmation.is_some()) {
+                    507.0
+                } else {
+                    385.0
+                };
+                text(cr, message, 28.0, y, w - 56.0, 17.0, style.muted);
             }
         }
         Route::Hide => {}
@@ -2529,9 +2951,12 @@ pub fn draw_shm(
         false,
         None,
         None,
+        &DrawerSearch::default(),
+        &mut DrawerGridCache::default(),
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn draw_shm_with_icons(
     canvas: &mut [u8],
     params: RenderParams,
@@ -2544,6 +2969,8 @@ fn draw_shm_with_icons(
     preview_error: bool,
     thumbnails: Option<&ThemeThumbnailCache>,
     pressed: Option<usize>,
+    search: &DrawerSearch,
+    grid_cache: &mut DrawerGridCache,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -2575,6 +3002,8 @@ fn draw_shm_with_icons(
         preview_error,
         thumbnails,
         pressed,
+        search,
+        grid_cache,
     );
     drop(cr);
     surface.flush();
@@ -2642,6 +3071,8 @@ pub fn export_png(
         false,
         None,
         None,
+        &DrawerSearch::default(),
+        &mut DrawerGridCache::default(),
     );
     drop(cr);
     let mut file = File::create(path).map_err(|error| error.to_string())?;
@@ -2690,6 +3121,13 @@ pub struct RendererCache {
     /// something this render actually depends on changed underneath it,
     /// and the pre-render must be treated as stale.
     content_generation: u64,
+    /// The Drawer's own live search field state -- set by `ShellClient`
+    /// through `set_drawer_search`, read by `paint_drawer` every frame.
+    drawer_search: DrawerSearch,
+    /// The Drawer grid's pre-rendered bitmap -- see `DrawerGridCache`'s
+    /// own doc. Persists across frames on purpose (that is the whole
+    /// point); rebuilds only when its own key actually changes.
+    drawer_grid: DrawerGridCache,
 }
 
 /// Whether two `ThemeView`s would make the *pre-render freshness check*
@@ -2948,6 +3386,19 @@ impl RendererCache {
         }
         false
     }
+    /// Sets the Drawer's live search field state -- a changed query or
+    /// focus state changes what `paint_drawer` shows (a different filtered
+    /// set, or the keyboard), so this forces the same kind of rebuild
+    /// `set_drawer_pressed` does. Returns whether it actually changed.
+    pub fn set_drawer_search(&mut self, search: DrawerSearch) -> bool {
+        if self.drawer_search != search {
+            self.drawer_search = search;
+            self.content_generation = self.content_generation.wrapping_add(1);
+            self.invalidate();
+            return true;
+        }
+        false
+    }
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
         let name = icon_theme_name_for(theme.as_ref());
         self.icons.set_theme(&name);
@@ -3023,6 +3474,11 @@ impl RendererCache {
             self.preview_error,
             Some(&self.thumbnails),
             self.pressed,
+            &self.drawer_search,
+            // A fresh, local cache: this method takes `&self`, and (per
+            // its own doc) never actually renders `Route::Drawer` in
+            // practice -- Optimistic Apply only pre-renders Settings.
+            &mut DrawerGridCache::default(),
         )?;
         // Matches `draw()`'s own post-shift backdrop pass exactly (same
         // `progress: 1.0` this bake just used), so a later `adopt_
@@ -3094,11 +3550,253 @@ impl RendererCache {
         Ok(())
     }
 
+    /// Paints only the volume HUD onto an otherwise fully transparent
+    /// canvas -- used instead of the ordinary route-based `draw` whenever
+    /// nothing else (no open Drawer/Shade/Settings sheet) needs this
+    /// shared overlay surface mapped at all, except to show the HUD (task:
+    /// "render the HUD only while visible"). No scene cache, unlike
+    /// `draw`'s own `static_pixels`: the HUD is small and shown rarely
+    /// enough that a fresh paint on every call is cheap. Paints nothing
+    /// (a fully transparent canvas, so whatever is behind this surface --
+    /// Home, or a focused app -- shows through untouched) whenever the HUD
+    /// isn't visible or no default sink has been reported yet.
+    /// Paints only the HUD onto an otherwise fully transparent canvas of
+    /// its own -- used by anything that wants the HUD isolated on a
+    /// dedicated surface. `draw()`'s own live path instead calls
+    /// `paint_hud_overlay` directly on its existing overlay context (see
+    /// that function's own doc for why: a second full-screen surface's
+    /// buffer pool/frame-callback lifecycle was judged not worth
+    /// duplicating when the existing overlay layer can host the same
+    /// pixels).
+    pub fn draw_hud(
+        &mut self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        hud: &Hud,
+        now_ms: u64,
+    ) -> Result<(), String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid HUD canvas geometry")?;
+        if canvas.len() != size {
+            return Err("invalid HUD canvas length".into());
+        }
+        canvas.fill(0);
+        if !hud.is_visible(now_ms) {
+            return Ok(());
+        }
+        let surface = unsafe {
+            ImageSurface::create_for_data_unsafe(
+                canvas.as_mut_ptr(),
+                Format::ARgb32,
+                width as i32,
+                height as i32,
+                (width * 4) as i32,
+            )
+        }
+        .map_err(|e| e.to_string())?;
+        let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+        let audio = self.services.as_ref().and_then(|view| view.audio.as_ref());
+        Self::paint_hud_overlay(
+            &cr,
+            self.theme.as_ref(),
+            &mut self.icons,
+            audio,
+            hud,
+            now_ms,
+            f64::from(width),
+            f64::from(height),
+        );
+        drop(cr);
+        surface.flush();
+        Ok(())
+    }
+
+    /// The HUD's own pixels (backdrop pill, speaker glyph, fill bar,
+    /// expand affordance, and -- expanded -- one row per stream/sink),
+    /// painted directly onto `cr`. Takes every input explicitly (no
+    /// `&mut self`) for the same reason `paint_hud_row` does: `draw()`'s
+    /// own live call site already holds other borrows of `self`
+    /// (`self.service_view`/`self.hud`) it cannot also lend as `&mut
+    /// self` through a method call. Does nothing (leaves whatever `cr`
+    /// already had untouched) when `hud` is not currently visible or no
+    /// default sink has been reported yet -- the "render the HUD only
+    /// while visible" cost rule, enforced here rather than by the
+    /// caller, so every call site gets it for free.
+    #[allow(clippy::too_many_arguments)]
+    fn paint_hud_overlay(
+        cr: &Context,
+        theme: Option<&AppearanceSnapshot>,
+        icons: &mut IconCache,
+        audio: Option<&GraphSnapshot>,
+        hud: &Hud,
+        now_ms: u64,
+        width: f64,
+        height: f64,
+    ) {
+        if !hud.is_visible(now_ms) {
+            return;
+        }
+        let Some(sink) = default_sink(audio) else {
+            return;
+        };
+        let percent = volume::linear_to_percent(sink.linear_volume);
+        let muted = sink.muted;
+        let expanded_rows = if hud.is_expanded() {
+            audio.map_or(0, GraphSnapshot::expanded_row_count)
+        } else {
+            0
+        };
+        let geometry = volume::hud_geometry(width, height, hud.position_fraction(), expanded_rows);
+        let style = visual_style(theme, "controls");
+        // Backdrop: a rounded pill/card, never fully opaque so it still
+        // reads as an overlay rather than a full sheet.
+        rounded(
+            cr,
+            geometry.left,
+            geometry.top,
+            geometry.width,
+            geometry.height,
+            (geometry.width / 2.0).min(28.0),
+        );
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 0.92);
+        let _ = cr.fill();
+        let center_x = geometry.left + geometry.width / 2.0;
+        let icon_rgb = if muted { style.muted } else { style.accent };
+        paint_speaker(cr, center_x, geometry.top + 30.0, 16.0, icon_rgb, 1.0, muted);
+        // The vertical fill bar: the same inactive/active-track idea
+        // `paint_slider_track` uses, rotated, at a scale that fits the
+        // pill rather than the full panel width.
+        let bar_top = geometry.top + 60.0;
+        let bar_bottom = geometry.top + geometry.collapsed_h - 26.0;
+        let bar_h = (bar_bottom - bar_top).max(1.0);
+        rounded(cr, center_x - 6.0, bar_top, 12.0, bar_h, 6.0);
+        color(cr, style.muted, 0.35);
+        let _ = cr.fill();
+        let fill_h = bar_h * f64::from(percent) / 100.0;
+        rounded(cr, center_x - 6.0, bar_bottom - fill_h, 12.0, fill_h, 6.0);
+        color(cr, style.accent, 1.0);
+        let _ = cr.fill();
+        // The "..." expand affordance, always at the same offset from the
+        // pill's own top whether or not it is currently expanded.
+        text(
+            cr,
+            "\u{2026}",
+            geometry.left,
+            geometry.top + geometry.collapsed_h - 22.0,
+            geometry.width,
+            16.0,
+            style.muted,
+        );
+        if expanded_rows > 0 {
+            if let Some(audio) = audio {
+                for index in 0..expanded_rows {
+                    let Some(row) = audio.expanded_row(index) else {
+                        continue;
+                    };
+                    let row_top = geometry.top + geometry.collapsed_h + index as f64 * volume::HUD_ROW_H;
+                    Self::paint_hud_row(icons, cr, style, &geometry, row_top, row);
+                }
+            }
+        }
+    }
+
+    /// One row of the HUD's expanded panel: a stream gets its own name/
+    /// icon and a mini horizontal volume slider; a sink gets its
+    /// description and a filled/hollow dot marking whether it is the
+    /// current default (the output device picker, task: "in the expanded
+    /// panel"). A free function, not a method, so its `&mut IconCache`
+    /// borrow stays disjoint from the `self.services`-derived `audio`
+    /// borrow its caller (`draw_hud`) is still holding across the loop.
+    fn paint_hud_row(
+        icons: &mut IconCache,
+        cr: &Context,
+        style: VisualStyle,
+        geometry: &volume::HudGeometry,
+        row_top: f64,
+        row: crate::pipewire_ipc::ExpandedRow,
+    ) {
+        let left = geometry.left + 12.0;
+        let width = geometry.width - 24.0;
+        match row {
+            crate::pipewire_ipc::ExpandedRow::Stream(stream) => {
+                let painted = stream
+                    .app_icon
+                    .as_deref()
+                    .is_some_and(|icon| icons.paint(cr, icon, 28, left, row_top + 6.0));
+                if !painted {
+                    rounded(cr, left, row_top + 6.0, 28.0, 28.0, 14.0);
+                    color(cr, style.muted, 0.4);
+                    let _ = cr.fill();
+                    text(
+                        cr,
+                        &stream
+                            .app_name
+                            .chars()
+                            .next()
+                            .unwrap_or('?')
+                            .to_uppercase()
+                            .to_string(),
+                        left + 7.0,
+                        row_top + 10.0,
+                        18.0,
+                        16.0,
+                        style.text,
+                    );
+                }
+                text(cr, &stream.app_name, left + 36.0, row_top + 8.0, width - 36.0, 15.0, style.text);
+                let percent = volume::linear_to_percent(stream.linear_volume);
+                let track_left = left + 36.0;
+                let track_right = geometry.left + geometry.width - 12.0;
+                let track_w = (track_right - track_left).max(1.0);
+                let track_y = row_top + 38.0;
+                rounded(cr, track_left, track_y, track_w, 8.0, 4.0);
+                color(cr, style.muted, 0.35);
+                let _ = cr.fill();
+                let fill_w = track_w * f64::from(percent) / 100.0;
+                rounded(cr, track_left, track_y, fill_w.max(8.0), 8.0, 4.0);
+                color(cr, if stream.muted { style.muted } else { style.accent }, 1.0);
+                let _ = cr.fill();
+            }
+            crate::pipewire_ipc::ExpandedRow::Sink(sink) => {
+                text(cr, &sink.description, left, row_top + 8.0, width - 28.0, 15.0, style.text);
+                let dot_x = geometry.left + geometry.width - 22.0;
+                let dot_y = row_top + 16.0;
+                cr.new_sub_path();
+                cr.arc(dot_x, dot_y, 7.0, 0.0, std::f64::consts::TAU);
+                color(cr, style.accent, if sink.is_default { 1.0 } else { 0.25 });
+                let _ = cr.fill();
+            }
+        }
+    }
+
+    /// Convenience wrapper over [`Self::draw_with_hud`] for every call
+    /// site (most of this module's own pixel-sampled tests) that has no
+    /// opinion about the volume HUD at all: a freshly-constructed `Hud`
+    /// is never visible (`Hud::is_visible` needs a prior `show()`), so
+    /// this paints exactly what `draw_with_hud` would with the HUD
+    /// simply not shown -- zero behavior difference for any caller that
+    /// never had a HUD concept to begin with.
     pub fn draw(
         &mut self,
         canvas: &mut [u8],
         params: RenderParams,
         apps: &[AppEntry],
+    ) -> Result<(), String> {
+        self.draw_with_hud(canvas, params, apps, &Hud::default(), 0)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_with_hud(
+        &mut self,
+        canvas: &mut [u8],
+        params: RenderParams,
+        apps: &[AppEntry],
+        hud: &Hud,
+        hud_now_ms: u64,
     ) -> Result<(), String> {
         let _profile = crate::runtime_trace::Span::new("render_total");
         let RenderParams {
@@ -3140,6 +3838,8 @@ impl RendererCache {
                 self.preview_error,
                 Some(&self.thumbnails),
                 self.pressed,
+                &self.drawer_search,
+                &mut self.drawer_grid,
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -3179,6 +3879,51 @@ impl RendererCache {
         // `paint_theme_chooser`'s own doc for why an *adopted* pre-render
         // (the one case that skips a fresh rebuild) is still correct at
         // the exact moment it is shown.
+        //
+        // The volume HUD paints last, directly onto this same canvas/
+        // context, on top of whatever route this call just composited --
+        // it is not cached into `static_pixels` (unlike the rest of this
+        // method's own content) because it is small, shown rarely, and
+        // its own visibility/position/expand state changes far more
+        // often than a full scene rebuild should be triggered for.
+        // `paint_hud_overlay` itself is a no-op (zero Cairo calls) the
+        // instant `hud.is_visible` reads false, so an idle HUD costs
+        // nothing here beyond that one check.
+        //
+        // Known gap, not yet closed: this only runs while this overlay
+        // layer surface is already mapped (a Drawer/Shade/Settings sheet
+        // is open) -- `main.rs`'s own touch dispatch already treats the
+        // HUD as route-independent (`hud_touch_down` is checked before
+        // any route-specific branch), but nothing yet forces this layer
+        // surface to exist purely because the HUD wants to show while
+        // the Home screen alone is visible with nothing else open. See
+        // `openspec/changes/the-handheld-controls-volume/tasks.md`.
+        if hud.is_visible(hud_now_ms) {
+            let surface = unsafe {
+                ImageSurface::create_for_data_unsafe(
+                    canvas.as_mut_ptr(),
+                    Format::ARgb32,
+                    width as i32,
+                    height as i32,
+                    row_bytes as i32,
+                )
+            }
+            .map_err(|e| e.to_string())?;
+            let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+            let audio = self.services.as_ref().and_then(|view| view.audio.as_ref());
+            Self::paint_hud_overlay(
+                &cr,
+                self.theme.as_ref(),
+                &mut self.icons,
+                audio,
+                hud,
+                hud_now_ms,
+                f64::from(width),
+                f64::from(height),
+            );
+            drop(cr);
+            surface.flush();
+        }
         Ok(())
     }
 
@@ -3458,19 +4203,23 @@ mod layout_tests {
 
     #[test]
     fn settings_layout_cascades_from_the_row_rhythm() {
+        // +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from the pre-volume-row
+        // values: the Volume row (task: "in Settings") added a fifth
+        // settings row, cascading every value below it down by one row's
+        // rhythm, same as `NOTIFICATION_TOP`'s own shift for the shade.
         let layout = settings_layout();
-        assert_eq!(layout.power_heading_y, 672.0);
-        assert_eq!(layout.reboot_y, 700.0);
-        assert_eq!(layout.poweroff_y, 786.0);
-        assert_eq!(layout.poweroff_bottom, 856.0);
+        assert_eq!(layout.power_heading_y, 798.0);
+        assert_eq!(layout.reboot_y, 826.0);
+        assert_eq!(layout.poweroff_y, 912.0);
+        assert_eq!(layout.poweroff_bottom, 982.0);
     }
 
     #[test]
     fn settings_confirm_layout_follows_whatever_precedes_it() {
-        let confirm = settings_confirm_layout(856.0);
-        assert_eq!(confirm.label_y, 870.0);
-        assert_eq!(confirm.card_y, 898.0);
-        assert_eq!(confirm.bottom, 1008.0);
+        let confirm = settings_confirm_layout(982.0);
+        assert_eq!(confirm.label_y, 996.0);
+        assert_eq!(confirm.card_y, 1024.0);
+        assert_eq!(confirm.bottom, 1134.0);
     }
 
     #[test]
@@ -3534,6 +4283,7 @@ mod tests {
         Control, ControlState, NotificationEvent, NotificationPreview, NotificationSnapshot,
         Priority, SettingsSnapshot,
     };
+    use crate::pipewire_ipc::{Sink, Stream};
     use crate::service_ui::NotificationSwipe;
     use crate::theme_catalog::{
         ActiveTheme, BackgroundChoice, Compatibility, ThemeEntry, ThemeList, ThemeOrigin,
@@ -3771,7 +4521,8 @@ mod tests {
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
-                motion: unavailable,
+                motion: unavailable.clone(),
+                volume: unavailable,
             }),
             notifications: Some(NotificationSnapshot {
                 count: 1,
@@ -3906,6 +4657,7 @@ mod tests {
             ("drawer", Route::Drawer, None),
             ("shade", Route::Shade, None),
             ("settings", Route::Settings, None),
+            ("power", Route::Power, None),
             // Task: tap-to-apply (2026-09-25) merged the old "themes"
             // (theme carousel only) and "preview" (background carousel
             // only, its own separate page) fixtures into this one --
@@ -4610,7 +5362,8 @@ mod tests {
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
-                motion: unavailable,
+                motion: unavailable.clone(),
+                volume: unavailable,
             }),
             ..ServiceView::default()
         };
@@ -4658,11 +5411,141 @@ mod tests {
         renderer.set_services(view);
         let mut failed = vec![0; normal.len()];
         renderer.draw(&mut failed, params, &[]).unwrap();
-        // Rows shifted +76 along with `NOTIFICATION_TOP` itself (task:
-        // "brightness should be a slider" -- room for the new header
-        // slider pushed the whole list down).
-        let region = (431 * 568 * 4)..(451 * 568 * 4);
+        // Rows shifted +76 again along with `NOTIFICATION_TOP` itself
+        // (task: "volume slider in the shade under the brightness
+        // slider" -- room for the second header slider pushed the whole
+        // list down once more, from 342 to 418) -- 431+76=507.
+        let region = (507 * 568 * 4)..(527 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    fn audio_view_with_one_sink(percent: u8, muted: bool) -> ServiceView {
+        ServiceView {
+            audio: Some(GraphSnapshot {
+                sinks: vec![Sink {
+                    id: 50,
+                    name: "alsa_output.inno".into(),
+                    description: "K230 Inno codec line-out".into(),
+                    linear_volume: volume::percent_to_linear(percent),
+                    muted,
+                    is_default: true,
+                }],
+                streams: vec![Stream {
+                    id: 78,
+                    app_name: "k230 video".into(),
+                    app_icon: Some("multimedia-player".into()),
+                    linear_volume: 1.0,
+                    muted: false,
+                }],
+            }),
+            ..ServiceView::default()
+        }
+    }
+
+    #[test]
+    fn draw_with_hud_composites_the_pill_on_top_of_the_live_settings_scene() {
+        // `draw_with_hud` (the real live-canvas path `main.rs` calls,
+        // unlike `draw_hud`'s own separate/isolated canvas above) must
+        // still show the pill on top of whatever route is already
+        // painted there -- proving the HUD reaches the one canvas that
+        // is actually ever attached to a Wayland surface, not just its
+        // own standalone test surface.
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut without_hud = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw(&mut without_hud, SETTINGS_PARAMS, &[])
+            .unwrap();
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut with_hud = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_with_hud(&mut with_hud, SETTINGS_PARAMS, &[], &hud, 0)
+            .unwrap();
+        assert_ne!(without_hud, with_hud, "the HUD did not reach the live canvas");
+        // A pixel squarely inside the collapsed pill's own backdrop
+        // (`volume::hud_geometry(568.0, 1232.0, 0.5, 0)`'s own left/top)
+        // must actually have changed, not just some unrelated pixel
+        // elsewhere on the frame.
+        let geometry = volume::hud_geometry(568.0, 1232.0, hud.position_fraction(), 0);
+        let x = (geometry.left + 10.0) as usize;
+        let y = (geometry.top + 10.0) as usize;
+        let index = (y * 568 + x) * 4;
+        assert_ne!(&without_hud[index..index + 4], &with_hud[index..index + 4]);
+    }
+
+    #[test]
+    fn draw_hud_paints_nothing_while_hidden_and_the_pill_once_shown() {
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut hidden = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut hidden, 568, 1232, &volume::Hud::new(), 0)
+            .unwrap();
+        assert!(hidden.iter().all(|&byte| byte == 0));
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut shown = vec![0u8; 568 * 1232 * 4];
+        renderer.draw_hud(&mut shown, 568, 1232, &hud, 0).unwrap();
+        assert!(shown.iter().any(|&byte| byte != 0));
+    }
+
+    #[test]
+    fn draw_hud_expanded_panel_is_taller_and_wider_than_the_collapsed_pill() {
+        let mut renderer = RendererCache::default();
+        renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut collapsed_hud = volume::Hud::new();
+        collapsed_hud.show(0);
+        let mut collapsed = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut collapsed, 568, 1232, &collapsed_hud, 0)
+            .unwrap();
+        let mut expanded_hud = volume::Hud::new();
+        expanded_hud.toggle_expand(0);
+        let mut expanded = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw_hud(&mut expanded, 568, 1232, &expanded_hud, 0)
+            .unwrap();
+        // Derived from the same geometry function `draw_hud` itself calls
+        // (one sink, zero streams -- exactly one expanded row), not a
+        // magic screen coordinate: `position_fraction`'s default centers
+        // the pill vertically, so a fixed probe point picked without this
+        // would land outside both panels' bounds instead of inside them.
+        let collapsed_geometry =
+            volume::hud_geometry(568.0, 1232.0, collapsed_hud.position_fraction(), 0);
+        let expanded_geometry =
+            volume::hud_geometry(568.0, 1232.0, expanded_hud.position_fraction(), 1);
+        assert!(expanded_geometry.width > collapsed_geometry.width);
+        assert!(expanded_geometry.height > collapsed_geometry.height);
+        // A column just inside the expanded panel's own left edge, at a
+        // row inside its expanded-only body (below the collapsed pill's
+        // own height): the collapsed pill never reaches this far left, so
+        // this point is untouched when collapsed but painted once
+        // expanded.
+        let probe_x = (expanded_geometry.left + 10.0) as usize;
+        let probe_y = (expanded_geometry.top + expanded_geometry.collapsed_h + 10.0) as usize;
+        let index = (probe_y * 568 + probe_x) * 4;
+        assert_eq!(&collapsed[index..index + 4], &[0, 0, 0, 0]);
+        assert_ne!(&expanded[index..index + 4], &[0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn draw_hud_reflects_mute_state_in_different_pixels_than_unmuted() {
+        let mut muted_renderer = RendererCache::default();
+        muted_renderer.set_services(audio_view_with_one_sink(60, true));
+        let mut unmuted_renderer = RendererCache::default();
+        unmuted_renderer.set_services(audio_view_with_one_sink(60, false));
+        let mut hud = volume::Hud::new();
+        hud.show(0);
+        let mut muted_pixels = vec![0u8; 568 * 1232 * 4];
+        muted_renderer
+            .draw_hud(&mut muted_pixels, 568, 1232, &hud, 0)
+            .unwrap();
+        let mut unmuted_pixels = vec![0u8; 568 * 1232 * 4];
+        unmuted_renderer
+            .draw_hud(&mut unmuted_pixels, 568, 1232, &hud, 0)
+            .unwrap();
+        assert_ne!(muted_pixels, unmuted_pixels);
     }
 
     #[test]
@@ -5211,8 +6094,10 @@ mod tests {
     }
 
     #[test]
-    fn scrolling_repaints_clipped_rows_but_keeps_header() {
-        let apps = (0..30)
+    fn scrolling_repaints_clipped_rows_but_keeps_chrome() {
+        // 60 apps (15 rows at the redesign's 110px row pitch) actually
+        // overflows this panel's viewport -- 30 no longer does.
+        let apps = (0..60)
             .map(|index| AppEntry {
                 id: format!("app{index}.desktop"),
                 name: format!("App {index}"),
@@ -5241,19 +6126,23 @@ mod tests {
                 &apps,
             )
             .unwrap();
+        // Row 60 sits inside the fixed top chrome (handle + search field,
+        // `navigation::panel_top`..`navigation::list_top`) -- unaffected
+        // by the grid's own scroll.
         assert_eq!(
-            &frame[300 * 568 * 4..301 * 568 * 4],
-            &before[300 * 568 * 4..301 * 568 * 4]
+            &frame[60 * 568 * 4..61 * 568 * 4],
+            &before[60 * 568 * 4..61 * 568 * 4]
         );
+        // Row 300 sits inside the scrollable grid and must repaint.
         assert_ne!(
-            &frame[400 * 568 * 4..460 * 568 * 4],
-            &before[400 * 568 * 4..460 * 568 * 4]
+            &frame[300 * 568 * 4..360 * 568 * 4],
+            &before[300 * 568 * 4..360 * 568 * 4]
         );
         assert_eq!(cache.rebuild_count(), 2);
     }
 
     #[test]
-    fn pressed_grid_tile_has_visible_non_color_border_without_affecting_neighbor() {
+    fn pressed_grid_tile_has_a_visible_highlight_without_affecting_its_neighbor() {
         let apps = (0..3)
             .map(|index| AppEntry {
                 id: format!("fixture-{index}.desktop"),
@@ -5282,6 +6171,58 @@ mod tests {
         let other = ((other_y as usize + 3) * 568 + (other_x + other_width / 2.0) as usize) * 4;
         assert_eq!(&before[other..other + 4], &after[other..other + 4]);
         assert!(renderer.set_drawer_pressed(None));
+    }
+
+    /// The whole point of `DrawerGridCache` (`docs/design/
+    /// app-drawer-review.md`'s performance section): a scroll-only redraw
+    /// must reuse the already-painted grid bitmap rather than repainting
+    /// every tile, while a catalog, theme, width or search-query change
+    /// must still rebuild it.
+    #[test]
+    fn drawer_grid_cache_rebuilds_only_when_its_own_key_changes() {
+        let apps = vec![
+            AppEntry {
+                id: "a.desktop".into(),
+                name: "Alpha".into(),
+                icon: None,
+                path: PathBuf::new(),
+            },
+            AppEntry {
+                id: "b.desktop".into(),
+                name: "Beta".into(),
+                icon: None,
+                path: PathBuf::new(),
+            },
+        ];
+        let search = DrawerSearch::default();
+        let content = DrawerContent {
+            apps: apps.iter().collect(),
+            search: &search,
+        };
+        let mut cache = DrawerGridCache::default();
+        let mut icons = IconCache::new();
+        cache.ensure(&content, None, 568, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 1);
+
+        // Same everything: a cache hit, not a rebuild.
+        cache.ensure(&content, None, 568, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 1);
+
+        // A different width changes the key.
+        cache.ensure(&content, None, 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 2);
+
+        // A different query changes the key, even over the same apps.
+        let filtered_search = DrawerSearch {
+            query: "alpha".into(),
+            focused: false,
+        };
+        let filtered_content = DrawerContent {
+            apps: vec![&apps[0]],
+            search: &filtered_search,
+        };
+        cache.ensure(&filtered_content, None, 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 3);
     }
 
     fn fixture_theme(generation: &str, background: (u8, u8, u8)) -> AppearanceSnapshot {
@@ -5560,6 +6501,81 @@ mod tests {
             idle, activating,
             "a ThemeView change after adopting a pre-render must still \
              force a fresh rebuild reflecting the new pending state"
+        );
+    }
+
+    /// Host-only, opt-in timing (`cargo test --lib --release -- --ignored
+    /// --nocapture drawer_grid_cache_host_timing`): the honest, host-side
+    /// half of `docs/design/app-drawer-review.md`'s performance section.
+    /// Never run by default -- wall-clock numbers are noisy on a shared or
+    /// loaded machine and must not make an unrelated CI run flaky -- but
+    /// committed so the exact comparison this review's numbers came from
+    /// can be re-run rather than taken on faith.
+    ///
+    /// Drives the real `RendererCache::draw` path (not a lower-level
+    /// helper) over a simulated scroll/fling of a 64-app catalog (half
+    /// with real icon paths, half without, so both `IconCache::paint` and
+    /// the round-circle fallback are exercised). Compares a fresh
+    /// `RendererCache` per simulated frame -- forcing a full grid-bitmap
+    /// rebuild every time, i.e. this change's "before": every visible
+    /// tile repainted from scratch every frame -- against one persistent
+    /// cache reused across frames while only `scroll` changes -- this
+    /// change's "after", and what scrolling the real Drawer actually does
+    /// once the grid bitmap is already built.
+    #[test]
+    #[ignore]
+    fn drawer_grid_cache_host_timing() {
+        let apps: Vec<AppEntry> = (0..64)
+            .map(|index| AppEntry {
+                id: format!("fixture-{index}.desktop"),
+                name: format!("Fixture App {index}"),
+                icon: (index % 2 == 0).then(|| "utilities-terminal".into()),
+                path: PathBuf::new(),
+            })
+            .collect();
+        let frames: u32 = 200;
+        let params = |scroll: f64| RenderParams {
+            width: 568,
+            height: 1232,
+            route: Route::Drawer,
+            progress: 1.0,
+            scroll,
+        };
+        // A real scroll/fling changes `scroll` every frame; the catalog
+        // does not. `% 1500.0` keeps this inside the grid's real scroll
+        // range (64 apps / 4 columns = 16 rows, well past one viewport)
+        // instead of pinning at one clamped value.
+        let scroll_for = |frame: u32| (f64::from(frame) * 7.0) % 1500.0;
+        let mut frame_buf = vec![0u8; 568 * 1232 * 4];
+
+        // Cold: a brand-new `RendererCache` every frame, so the grid
+        // bitmap always misses and rebuilds -- this change's "before" (no
+        // caching at all).
+        let cold_started = std::time::Instant::now();
+        for frame in 0..frames {
+            let mut renderer = RendererCache::default();
+            renderer
+                .draw(&mut frame_buf, params(scroll_for(frame)), &apps)
+                .unwrap();
+        }
+        let cold = cold_started.elapsed() / frames;
+
+        // Warm: one persistent cache reused across frames while only
+        // `scroll` changes -- this change's "after".
+        let mut warm_renderer = RendererCache::default();
+        warm_renderer.draw(&mut frame_buf, params(0.0), &apps).unwrap(); // prime: first frame still builds the grid bitmap
+        let warm_started = std::time::Instant::now();
+        for frame in 0..frames {
+            warm_renderer
+                .draw(&mut frame_buf, params(scroll_for(frame)), &apps)
+                .unwrap();
+        }
+        let warm = warm_started.elapsed() / frames;
+
+        eprintln!(
+            "drawer_grid_cache_host_timing: cold(fresh cache/frame) mean-per-frame={cold:?} \
+             warm(persistent cache) mean-per-frame={warm:?} over {frames} frames, {} apps, host x86_64",
+            apps.len()
         );
     }
 }

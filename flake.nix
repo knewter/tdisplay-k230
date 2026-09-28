@@ -121,7 +121,7 @@
         # Integrated userspace candidate. The original k230 configuration is
         # the reproducible bar-session rollback while on-glass acceptance is pending.
         k230-coherent-shell = self.nixosConfigurations.k230.extendModules {
-          modules = [ { k230.shell.coherentShell = true; } ];
+          modules = [ { k230.shell.coherentShell = true; k230.shell.powerKeyTrial = true; } ];
         };
         # Retain the diagnostic configuration and context probe. The normal
         # board kernel is now the same tested vector-capable kernel, so the
@@ -189,6 +189,7 @@
         handheld-shell-rust-probe = pkgsCross.callPackage ./nix/rust-shell-probe { };
         # Opt-in Rust software shell; the probe remains a separate artifact.
         handheld-shell-rust = pkgsCross.callPackage ./nix/rust-shell-client { };
+        power-keyd = pkgsCross.callPackage ./nix/power-keyd.nix { };
         # Bounded diagnostic sampler, outside the normal image closure.
         runtime-perf = pkgsCross.callPackage ./nix/runtime-perf.nix { };
         # Opt-in command only; no normal service/default selection until the
