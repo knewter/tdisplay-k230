@@ -147,7 +147,11 @@ struct DrawerDragReveal {
 const VOLUME_ECHO_GRACE_MS: u64 = 1_500;
 
 fn panel_input_rect(
-    route: Route,
+    // Every route now maps the same full-height input region (see below);
+    // kept as a parameter, not dropped, so a future route that genuinely
+    // needs its own offset again does not have to change every call site
+    // to add it back.
+    _route: Route,
     width: u32,
     height: u32,
     ready: bool,
@@ -155,11 +159,22 @@ fn panel_input_rect(
     if !ready {
         return None;
     }
-    let top = if route == Route::Drawer {
-        (f64::from(height) * 0.19) as i32
-    } else {
-        0
-    };
+    // Drawer used to reserve a `height*0.19` band (about 234px at this
+    // panel's reference size) above its own input region, matching a much
+    // older design where the drawer sheet was bottom-anchored with a real
+    // empty band above it. `docs/design/app-drawer-review.md`'s redesign
+    // made the drawer "fill nearly the whole screen from the top inset,
+    // with no black band above it" -- `navigation.rs`'s own `list_top`
+    // (search field + first grid row) now starts at just 118px -- but this
+    // function's own exclusion was never updated to match, silently
+    // routing every touch between y=118 and y=234 (the search field and
+    // the drawer's entire first row of tiles) to whatever surface sits
+    // *below* the drawer instead of the drawer itself. Confirmed live: a
+    // QEMU long-press-drag on a first-row drawer tile
+    // (`K230_DEBUG_TOUCH`-instrumented) landed on Home's own surface, not
+    // the drawer's, while developing task 1's drag contract. Drawer now
+    // gets the same full-height input region Shade/Settings already have.
+    let top = 0;
     // Shade used to map only its own 0.65h panel, leaving the dim backdrop
     // below it outside the surface's input region entirely -- a touch
     // starting there never reached this client at all. A close drag may
@@ -3201,7 +3216,18 @@ impl ShellClient {
     fn apply_home_action(&mut self, qh: &QueueHandle<Self>, action: HomeAction) {
         match action {
             HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
-            HomeAction::LayoutChanged => self.persist_home_layout(),
+            HomeAction::LayoutChanged => {
+                // A plain, always-emitted completion marker for *any*
+                // layout-changing gesture (rearrange, folder create/join/
+                // rename, a widget or drag-out-of-folder placement, ...),
+                // regardless of which touch surface drove it -- what a
+                // QEMU proof's own synchronization waits on instead of a
+                // fixed sleep. `home-drag-placed` (`end_drawer_home_drag`)
+                // is the drawer-hand-off's own more specific version of
+                // this same idea.
+                self.log("home-layout-changed");
+                self.persist_home_layout();
+            }
             HomeAction::OpenWallpaperAndStyle => {
                 // Reuses the existing, unmodified Settings/theme-picker
                 // route exactly as its own "Theme" row tap would
@@ -6867,10 +6893,15 @@ mod route_tests {
             Some((0, 0, 568, 1232))
         );
         assert_eq!(panel_input_rect(Route::Shade, 568, 1232, false), None);
-        // Drawer alone still offsets its top edge (bottom-anchored sheet).
+        // Drawer no longer offsets its top edge either: the pre-redesign
+        // `height*0.19` exclusion (a stand-in for a since-removed empty
+        // band above a once bottom-anchored sheet) silently made the
+        // search field and the drawer's entire first row of tiles
+        // untouchable -- every such touch fell through to whatever surface
+        // sits below the drawer instead. See `panel_input_rect`'s own doc.
         assert_eq!(
             panel_input_rect(Route::Drawer, 600, 1200, true),
-            Some((0, 228, 600, 972))
+            Some((0, 0, 600, 1200))
         );
     }
 
