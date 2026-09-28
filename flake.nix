@@ -211,6 +211,10 @@
         # Standalone execution diagnostic for declared bit-manipulation
         # extensions. It is never in the normal image closure.
         c908-bitmanip-probe = pkgsCross.callPackage ./nix/c908-bitmanip-probe.nix { };
+        # Read-only DRM WAIT_VBLANK sampler for
+        # the-card-deck-still-misses-its-frame-budget. Never in the normal
+        # image closure; pushed to a running board with tools/push-file.py.
+        panel-refresh-probe = pkgsCross.callPackage ./nix/panel-refresh-probe.nix { };
         # The card trial must use the same overlaid Pixman graph as the normal
         # board compositor; build it from that package set, not pkgsCross.
         card-shell = self.nixosConfigurations.k230.pkgs.callPackage ./nix/card-shell.nix {
