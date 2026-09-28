@@ -3,27 +3,202 @@
 //! Follows the exact fallback shape `theme_thumbnails.rs::disk_cache_dir_from`
 //! already established for this client's other on-disk state, one directory
 //! family over: state (must not be silently dropped), not cache.
+//!
+//! Schema 2 (this change, `the-home-screen-has-widgets-and-folders`) widens
+//! each grid/dock cell from a bare desktop-entry id string to a [`HomeItem`]:
+//! an app, a folder of apps, or a themed widget. Schema 1 files (bare
+//! `Option<String>` cells, one app per slot) are migrated on load, not
+//! rewritten in place until the next save -- see [`load`].
 use crate::catalog::AppEntry;
-use crate::home_grid::HomeSlot;
+use crate::home_grid::{self, HomeSlot};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashSet,
     io::Write,
     path::{Path, PathBuf},
 };
 
 /// Current on-disk schema version. Bump and add a migration if the shape of
 /// [`HomeLayout`] ever changes incompatibly.
-pub const SCHEMA: u32 = 1;
+pub const SCHEMA: u32 = 2;
 
+/// A themed, shell-drawn widget kind. Each has a fixed cell span (see
+/// [`Self::span`]) -- resizing is deliberately not supported (task: "skip it
+/// if it's costly").
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum WidgetKind {
+    Clock,
+    Battery,
+    Weather,
+}
+
+impl WidgetKind {
+    /// `(columns, rows)` this widget occupies, top-left anchored. Clock is a
+    /// full-width band (4x2); Battery and Weather are half-width squares
+    /// (2x2) -- the "obvious firsts" the task names, each at one of its
+    /// listed acceptable spans.
+    pub fn span(self) -> (usize, usize) {
+        match self {
+            WidgetKind::Clock => (4, 2),
+            WidgetKind::Battery => (2, 2),
+            WidgetKind::Weather => (2, 2),
+        }
+    }
+
+    pub const ALL: [WidgetKind; 3] = [WidgetKind::Clock, WidgetKind::Battery, WidgetKind::Weather];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            WidgetKind::Clock => "Clock",
+            WidgetKind::Battery => "Battery",
+            WidgetKind::Weather => "Weather",
+        }
+    }
+}
+
+/// One folder's contents: an editable display name and its member apps in
+/// display order. A folder always holds at least one app once created --
+/// [`HomeLayout::remove_app`] dissolves it back into a plain [`HomeItem::App`]
+/// the moment removal would leave it with exactly one, and never leaves a
+/// zero-app folder on the grid at all (removal of the last app removes the
+/// folder's own cell instead).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub struct FolderData {
+    pub name: String,
+    pub apps: Vec<String>,
+}
+
+/// What occupies one grid or dock cell: an installed app (by desktop-entry
+/// id, matching schema 1's own identity choice), a folder of apps, or a
+/// shell-drawn widget. Only [`Self::App`] and [`Self::Folder`] are valid in
+/// the dock -- a widget's span is wider than one dock cell and the dock
+/// never scrolls, so [`HomeLayout::place_in_dock`] rejects a widget there.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum HomeItem {
+    App { id: String },
+    Folder(FolderData),
+    Widget { widget: WidgetKind },
+}
+
+impl HomeItem {
+    pub fn app(id: impl Into<String>) -> Self {
+        HomeItem::App { id: id.into() }
+    }
+
+    /// `(columns, rows)` this item's cell covers -- 1x1 for an app or a
+    /// folder tile, [`WidgetKind::span`] for a widget.
+    pub fn span(&self) -> (usize, usize) {
+        match self {
+            HomeItem::App { .. } | HomeItem::Folder(_) => (1, 1),
+            HomeItem::Widget { widget } => widget.span(),
+        }
+    }
+
+    pub fn as_app_id(&self) -> Option<&str> {
+        match self {
+            HomeItem::App { id } => Some(id),
+            _ => None,
+        }
+    }
+
+    pub fn as_folder(&self) -> Option<&FolderData> {
+        match self {
+            HomeItem::Folder(folder) => Some(folder),
+            _ => None,
+        }
+    }
+
+    /// Every desktop-entry id this item is responsible for, so
+    /// [`HomeLayout::contains_app`]/uninstall-hiding logic can look inside a
+    /// folder without a separate code path: one id for a plain app, every
+    /// member id for a folder, none for a widget.
+    fn app_ids(&self) -> Vec<&str> {
+        match self {
+            HomeItem::App { id } => vec![id.as_str()],
+            HomeItem::Folder(folder) => folder.apps.iter().map(String::as_str).collect(),
+            HomeItem::Widget { .. } => Vec::new(),
+        }
+    }
+}
+
+/// Row-major slot indices `span` covers when its top-left corner is
+/// `top_left`, at `columns` per row. A widget's covered cells beyond its own
+/// top-left store `None` (see [`HomeLayout`]'s field docs) but are not free:
+/// this is what [`occupied`] walks to know that.
+fn covered_slots(top_left: usize, span: (usize, usize), columns: usize) -> Vec<usize> {
+    let (cols, rows) = span;
+    let start_col = top_left % columns;
+    let start_row = top_left / columns;
+    let mut out = Vec::with_capacity(cols.max(1) * rows.max(1));
+    for r in 0..rows.max(1) {
+        for c in 0..cols.max(1) {
+            if start_col + c >= columns {
+                continue; // spills past the row's right edge; `fits` rejects this placement
+            }
+            out.push((start_row + r) * columns + start_col + c);
+        }
+    }
+    out
+}
+
+/// Every cell `row` already covers, whether or not that cell itself holds
+/// `Some(..)` -- a multi-cell item's non-anchor cells are blocked too.
+fn occupied(row: &[Option<HomeItem>], columns: usize) -> HashSet<usize> {
+    let mut out = HashSet::new();
+    for (index, cell) in row.iter().enumerate() {
+        if let Some(item) = cell {
+            out.extend(covered_slots(index, item.span(), columns));
+        }
+    }
+    out
+}
+
+/// Whether `span` fits at `top_left` on `row`: in bounds, does not spill
+/// past the row's right edge or its own last row, and does not overlap
+/// anything already there. `ignore_anchor`, if given, excludes that anchor
+/// cell's own footprint from the occupied set first -- used when
+/// re-placing an item that already occupies part of the target (a rearrange
+/// drop back onto slots it already partly covers must not see itself as a
+/// collision).
+fn fits(
+    row: &[Option<HomeItem>],
+    columns: usize,
+    top_left: usize,
+    span: (usize, usize),
+    ignore_anchor: Option<usize>,
+) -> bool {
+    let (cols, _rows) = span;
+    let start_col = top_left % columns;
+    if start_col + cols.max(1) > columns {
+        return false;
+    }
+    let mut blocked = occupied(row, columns);
+    if let Some(anchor) = ignore_anchor {
+        if let Some(item) = row.get(anchor).and_then(Option::as_ref) {
+            for slot in covered_slots(anchor, item.span(), columns) {
+                blocked.remove(&slot);
+            }
+        }
+    }
+    let slots = covered_slots(top_left, span, columns);
+    !slots.is_empty() && slots.iter().all(|slot| *slot < row.len() && !blocked.contains(slot))
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct HomeLayout {
     pub schema: u32,
-    /// Pages of grid slots, row-major within each page. `None` is an empty
-    /// slot -- kept, not compacted, so removing or uninstalling one app
-    /// never shifts every later icon (and a reinstall restores its place).
-    pub pages: Vec<Vec<Option<String>>>,
-    /// Fixed dock slots, independent of the current page.
-    pub dock: Vec<Option<String>>,
+    /// Pages of grid cells, row-major within each page. `None` is either a
+    /// genuinely empty cell, or a cell covered by an earlier multi-span
+    /// widget's own footprint (see [`occupied`]) -- callers that need to
+    /// tell those apart use [`HomeLayout::anchor_at`], never a raw index
+    /// into this Vec directly.
+    pub pages: Vec<Vec<Option<HomeItem>>>,
+    /// Fixed dock slots, independent of the current page. Every entry here
+    /// is 1x1 (`HomeItem::App` or `HomeItem::Folder`); see this module's
+    /// `HomeItem` doc for why widgets are dock-ineligible.
+    pub dock: Vec<Option<HomeItem>>,
 }
 
 impl HomeLayout {
@@ -51,87 +226,227 @@ impl HomeLayout {
         }
     }
 
-    /// The desktop-entry id occupying `slot`, if any. Out-of-range pages
-    /// read as empty rather than panicking, since the saved layout's page
-    /// count can be smaller than the panel's current `apps_per_page`.
-    pub fn get(&self, slot: HomeSlot) -> Option<&str> {
-        match slot {
-            HomeSlot::Grid { page, slot } => self
-                .pages
-                .get(page)
-                .and_then(|row| row.get(slot))
-                .and_then(|entry| entry.as_deref()),
-            HomeSlot::Dock { slot } => self.dock.get(slot).and_then(|entry| entry.as_deref()),
+    /// Drops every trailing page that holds nothing at all (task: "Empty
+    /// pages disappear automatically"), but never the first page -- Home
+    /// always has at least one page to show, even an empty one. A page
+    /// isn't just dropped anywhere it's empty: only from the end, so a
+    /// later page's own index (and anything that already refers to it,
+    /// e.g. an open folder or a live drag) never silently shifts.
+    fn prune_trailing_empty_pages(&mut self) {
+        while self.pages.len() > 1 && self.pages.last().is_some_and(|row| row.iter().all(Option::is_none)) {
+            self.pages.pop();
         }
     }
 
-    /// Writes `id` into `slot`, growing pages/rows as needed. A `Dock`
-    /// index past the fixed dock length is ignored (the dock never grows).
-    pub fn set(&mut self, slot: HomeSlot, id: Option<String>, apps_per_page: usize) {
+    /// The item occupying `slot`'s own cell, if `slot` is itself an item's
+    /// anchor (top-left) cell. `None` both for a genuinely empty cell and
+    /// for a cell merely covered by a neighboring multi-span widget --
+    /// distinguishing those two isn't needed by any caller today, but see
+    /// [`Self::anchor_at`] for the one that is.
+    pub fn get(&self, slot: HomeSlot) -> Option<&HomeItem> {
+        match slot {
+            HomeSlot::Grid { page, slot } => self.pages.get(page).and_then(|row| row.get(slot)).and_then(Option::as_ref),
+            HomeSlot::Dock { slot } => self.dock.get(slot).and_then(Option::as_ref),
+        }
+    }
+
+    /// The slot and item actually responsible for `slot` -- `slot` itself if
+    /// it is an item's own anchor, or the anchor of whichever multi-span
+    /// widget's footprint covers it otherwise. Used by hit-testing so a tap
+    /// or drag anywhere within a Clock/Battery/Weather tile's whole span
+    /// resolves to that widget, not nothing.
+    pub fn anchor_at(&self, slot: HomeSlot) -> Option<(HomeSlot, &HomeItem)> {
+        if let Some(item) = self.get(slot) {
+            return Some((slot, item));
+        }
+        if let HomeSlot::Grid { page, slot: index } = slot {
+            let row = self.pages.get(page)?;
+            let columns = home_grid::COLUMNS;
+            for (anchor, cell) in row.iter().enumerate() {
+                if let Some(item) = cell {
+                    if covered_slots(anchor, item.span(), columns).contains(&index) {
+                        return Some((HomeSlot::Grid { page, slot: anchor }, item));
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    /// Writes `item` into `slot`, growing pages/rows as needed, first
+    /// clearing whatever cell(s) `slot` itself used to anchor (so replacing
+    /// a wide widget with a plain app doesn't leave its old covered cells
+    /// permanently blocked). Does not check fit -- callers that must not
+    /// overlap another item use [`Self::place`] instead; this is the raw
+    /// primitive persistence's own migration and tests use.
+    pub fn set(&mut self, slot: HomeSlot, item: Option<HomeItem>, apps_per_page: usize) {
         match slot {
             HomeSlot::Grid { page, slot } => {
                 self.ensure_page(page, apps_per_page);
                 if let Some(cell) = self.pages[page].get_mut(slot) {
-                    *cell = id;
+                    *cell = item;
                 }
             }
             HomeSlot::Dock { slot } => {
                 if let Some(cell) = self.dock.get_mut(slot) {
-                    *cell = id;
+                    *cell = item;
                 }
             }
         }
+        self.prune_trailing_empty_pages();
     }
 
-    /// Removes every occurrence of `id` from the grid and dock (an icon
-    /// should occupy at most one slot at a time; this keeps that true even
-    /// if a caller's bookkeeping ever drifted).
-    pub fn remove_id(&mut self, id: &str) {
-        for row in &mut self.pages {
-            for cell in row.iter_mut() {
-                if cell.as_deref() == Some(id) {
-                    *cell = None;
-                }
+    /// Whether `item` fits at `slot` without overlapping another item's
+    /// footprint (a plain out-of-range dock index, or a grid page/row that
+    /// does not exist yet, also counts as not fitting -- callers grow the
+    /// page with [`Self::ensure_page`]-backed [`Self::place`] instead of
+    /// calling this directly against an ungrown page).
+    fn fits_at(&self, slot: HomeSlot, span: (usize, usize), ignore_anchor: bool) -> bool {
+        match slot {
+            HomeSlot::Grid { page, slot: index } => {
+                let Some(row) = self.pages.get(page) else { return false };
+                let ignore = ignore_anchor.then_some(index);
+                fits(row, home_grid::COLUMNS, index, span, ignore)
             }
-        }
-        for cell in self.dock.iter_mut() {
-            if cell.as_deref() == Some(id) {
-                *cell = None;
-            }
+            HomeSlot::Dock { slot: index } => span == (1, 1) && index < self.dock.len(),
         }
     }
 
-    /// Whether `id` already occupies some grid or dock slot.
-    pub fn contains(&self, id: &str) -> bool {
-        self.pages
-            .iter()
-            .flatten()
-            .chain(self.dock.iter())
-            .any(|entry| entry.as_deref() == Some(id))
+    /// Places `item` at `slot`'s anchor if it fits there, growing the page
+    /// first. Returns `false` (and leaves the layout unchanged) if it does
+    /// not fit -- a widget spilling off the row's edge, or a widget aimed at
+    /// the dock. `ignore_anchor` excludes `slot`'s own existing footprint
+    /// from the collision check first (re-placing an item back onto cells
+    /// it already partly occupies).
+    pub fn place(&mut self, slot: HomeSlot, item: HomeItem, apps_per_page: usize, ignore_anchor: bool) -> bool {
+        if let HomeSlot::Grid { page, .. } = slot {
+            self.ensure_page(page, apps_per_page);
+        }
+        if !self.fits_at(slot, item.span(), ignore_anchor) {
+            return false;
+        }
+        self.set(slot, Some(item), apps_per_page);
+        true
+    }
+
+    /// The first free anchor cell on `page` that fits `item`'s span, if any
+    /// -- used by [`Self::pin`]/[`Self::place_first_fit`] to fill a page
+    /// left-to-right, top-to-bottom.
+    fn first_fit(&self, page: usize, item: &HomeItem, apps_per_page: usize) -> Option<usize> {
+        let row = self.pages.get(page)?;
+        let len = row.len().max(apps_per_page);
+        (0..len).find(|&index| fits(row, home_grid::COLUMNS, index, item.span(), None))
+    }
+
+    /// Places `item` in the first free-fitting cell across existing pages,
+    /// adding a new page when every existing one is full -- the drawer's
+    /// long-press-drag falls back to this for the rare release that lands
+    /// nowhere resolvable (e.g. a drop point past the last page during an
+    /// aborted edge-switch); ordinary placement instead goes through
+    /// [`Self::place`] at the exact dropped slot.
+    pub fn place_first_fit(&mut self, item: HomeItem, apps_per_page: usize) -> HomeSlot {
+        let mut page = 0;
+        loop {
+            self.ensure_page(page, apps_per_page);
+            if let Some(index) = self.first_fit(page, &item, apps_per_page) {
+                self.pages[page][index] = Some(item);
+                return HomeSlot::Grid { page, slot: index };
+            }
+            page += 1;
+            if page > self.pages.len() {
+                // Defensive bound: `first_fit` against a freshly-grown empty
+                // page can never fail, so this only guards a pathological
+                // `apps_per_page` of 0.
+                self.pages.push(vec![None; 1.max(apps_per_page)]);
+            }
+        }
     }
 
     /// Pins `id` into the first free grid slot, adding a new page when
     /// every existing page is full. A no-op if `id` is already pinned
-    /// anywhere (grid or dock) -- long-pressing an app in the drawer that
-    /// is already on Home does not relocate it. Used by the drawer's
-    /// "Add to Home" action.
+    /// anywhere -- grid, dock, or inside a folder.
     pub fn pin(&mut self, id: String, apps_per_page: usize) {
-        if self.contains(&id) {
+        if self.contains_app(&id) {
             return;
         }
-        let apps_per_page = apps_per_page.max(1);
+        self.place_first_fit(HomeItem::app(id), apps_per_page);
+    }
+
+    /// Whether `id` already occupies some grid or dock slot, directly or as
+    /// a folder member.
+    pub fn contains_app(&self, id: &str) -> bool {
+        self.pages
+            .iter()
+            .flatten()
+            .chain(self.dock.iter())
+            .flatten()
+            .any(|item| item.app_ids().contains(&id))
+    }
+
+    /// Removes `id` from wherever it lives on Home: its own cell if pinned
+    /// directly, or out of a folder if it is a folder member -- dissolving
+    /// that folder back into a plain [`HomeItem::App`] the moment only one
+    /// member would remain (task: "A folder with one app left dissolves
+    /// into that app"), and clearing the cell entirely if removal would
+    /// leave zero. A no-op if `id` is not pinned anywhere.
+    pub fn remove_app(&mut self, id: &str) {
         for row in self.pages.iter_mut() {
-            if row.len() < apps_per_page {
-                row.resize(apps_per_page, None);
-            }
-            if let Some(cell) = row.iter_mut().find(|cell| cell.is_none()) {
-                *cell = Some(id);
-                return;
+            for cell in row.iter_mut() {
+                Self::remove_from_cell(cell, id);
             }
         }
-        let mut page = vec![None; apps_per_page];
-        page[0] = Some(id);
-        self.pages.push(page);
+        for cell in self.dock.iter_mut() {
+            Self::remove_from_cell(cell, id);
+        }
+        self.prune_trailing_empty_pages();
+    }
+
+    fn remove_from_cell(cell: &mut Option<HomeItem>, id: &str) {
+        match cell {
+            Some(HomeItem::App { id: cell_id }) if cell_id == id => *cell = None,
+            Some(HomeItem::Folder(folder)) if folder.apps.iter().any(|app| app == id) => {
+                folder.apps.retain(|app| app != id);
+                match folder.apps.len() {
+                    0 => *cell = None,
+                    1 => *cell = Some(HomeItem::app(folder.apps[0].clone())),
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// Removes whatever item anchors `slot` entirely (an app, a whole
+    /// folder including its members, or a widget) -- distinct from
+    /// [`Self::remove_app`], which only ever removes one app id and may
+    /// leave its folder behind with fewer members.
+    pub fn remove_slot(&mut self, slot: HomeSlot) {
+        self.set(slot, None, 1);
+    }
+
+    /// Builds a fresh Home layout when no saved one exists: the curated
+    /// defaults fill the dock first (up to `dock_slots`), then the
+    /// remaining curated defaults (if any) fill the first grid page's own
+    /// first cells, and a Clock widget seeds the top of that same page --
+    /// task: "clock... in theme colours" is the one widget worth a fresh
+    /// install actually showing rather than an empty grid.
+    pub fn seed(apps: &[AppEntry], dock_slots: usize, apps_per_page: usize) -> Self {
+        let defaults = curated_defaults(apps);
+        let mut layout = HomeLayout::empty(dock_slots);
+        let mut iter = defaults.into_iter();
+        for slot in layout.dock.iter_mut() {
+            let Some(id) = iter.next() else { break };
+            *slot = Some(HomeItem::app(id));
+        }
+        layout.ensure_page(0, apps_per_page);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, apps_per_page, false);
+        for id in iter {
+            let item = HomeItem::app(id);
+            if let Some(index) = layout.first_fit(0, &item, apps_per_page) {
+                layout.pages[0][index] = Some(item);
+            }
+        }
+        layout
     }
 }
 
@@ -164,9 +479,36 @@ fn state_path_from(xdg_state_home: Option<&str>, home: Option<&str>) -> Option<P
 
 const MAX_FILE_BYTES: u64 = 256 * 1024;
 
-/// Loads a previously saved layout. Returns `None` on a missing file,
-/// oversized file, or any parse failure -- callers fall back to
-/// [`seed_default`] in every one of those cases, so a corrupt file never
+/// Schema 1's on-disk shape (bare app-id strings, one per cell): kept only
+/// as a migration source for [`load`], never written again.
+#[derive(Deserialize)]
+struct HomeLayoutV1 {
+    #[allow(dead_code)]
+    schema: u32,
+    pages: Vec<Vec<Option<String>>>,
+    dock: Vec<Option<String>>,
+}
+
+impl From<HomeLayoutV1> for HomeLayout {
+    fn from(old: HomeLayoutV1) -> Self {
+        HomeLayout {
+            schema: SCHEMA,
+            pages: old
+                .pages
+                .into_iter()
+                .map(|row| row.into_iter().map(|cell| cell.map(HomeItem::app)).collect())
+                .collect(),
+            dock: old.dock.into_iter().map(|cell| cell.map(HomeItem::app)).collect(),
+        }
+    }
+}
+
+/// Loads a previously saved layout, migrating a schema 1 file (bare id
+/// strings) to schema 2 (`HomeItem`) in memory -- the file itself is not
+/// rewritten until the next [`save`], matching every other best-effort
+/// on-disk state in this client. Returns `None` on a missing file, oversized
+/// file, or any parse failure in *both* shapes -- callers fall back to
+/// [`HomeLayout::seed`] in every one of those cases, so a corrupt file never
 /// crashes the shell, it just re-seeds.
 pub fn load(path: &Path) -> Option<HomeLayout> {
     let metadata = std::fs::metadata(path).ok()?;
@@ -174,7 +516,10 @@ pub fn load(path: &Path) -> Option<HomeLayout> {
         return None;
     }
     let bytes = std::fs::read(path).ok()?;
-    serde_json::from_slice(&bytes).ok()
+    if let Ok(layout) = serde_json::from_slice::<HomeLayout>(&bytes) {
+        return Some(layout);
+    }
+    serde_json::from_slice::<HomeLayoutV1>(&bytes).ok().map(HomeLayout::from)
 }
 
 /// Writes `layout` atomically: a sibling temp file, then a rename, so a
@@ -249,31 +594,10 @@ pub fn curated_defaults(apps: &[AppEntry]) -> Vec<String> {
     chosen
 }
 
-/// Builds a fresh Home layout when no saved one exists: the curated
-/// defaults fill the dock first (up to `dock_slots`, webOS Quick Launch /
-/// Android hotseat style -- the handful of apps a person reaches for most),
-/// then the remaining curated defaults (if any) fill the first grid page.
-/// Per `openspec/config.yaml`'s standing rule, this always runs against the
-/// real installed catalog -- there is no hardcoded icon set, only a
-/// hardcoded *preference order* that is skipped entirely when nothing
-/// installed matches it.
+/// Builds a fresh Home layout when no saved one exists. Thin wrapper kept
+/// for the existing call convention; see [`HomeLayout::seed`].
 pub fn seed_default(apps: &[AppEntry], dock_slots: usize, apps_per_page: usize) -> HomeLayout {
-    let defaults = curated_defaults(apps);
-    let mut layout = HomeLayout::empty(dock_slots);
-    let mut iter = defaults.into_iter();
-    for slot in layout.dock.iter_mut() {
-        let Some(id) = iter.next() else { break };
-        *slot = Some(id);
-    }
-    let remaining: Vec<String> = iter.collect();
-    if !remaining.is_empty() {
-        let mut page = vec![None; apps_per_page.max(1)];
-        for (index, id) in remaining.into_iter().enumerate().take(page.len()) {
-            page[index] = Some(id);
-        }
-        layout.pages = vec![page];
-    }
-    layout
+    HomeLayout::seed(apps, dock_slots, apps_per_page)
 }
 
 /// Loads the saved layout, or seeds and immediately persists a fresh
@@ -343,7 +667,7 @@ mod tests {
     }
 
     #[test]
-    fn seed_default_fills_dock_before_grid() {
+    fn seed_default_fills_dock_before_grid_and_seeds_a_clock() {
         let apps = vec![
             app("foot.desktop", "Foot"),
             app("files.desktop", "Files"),
@@ -356,23 +680,32 @@ mod tests {
         assert_eq!(
             layout.dock,
             vec![
-                Some("foot.desktop".into()),
-                Some("files.desktop".into()),
-                Some("editor.desktop".into()),
-                Some("htop.desktop".into()),
+                Some(HomeItem::app("foot.desktop")),
+                Some(HomeItem::app("files.desktop")),
+                Some(HomeItem::app("editor.desktop")),
+                Some(HomeItem::app("htop.desktop")),
             ]
         );
         assert_eq!(layout.pages.len(), 1);
-        assert_eq!(layout.pages[0][0], Some("video.desktop".into()));
-        assert_eq!(layout.pages[0][1], Some("settings.desktop".into()));
-        assert!(layout.pages[0][2..].iter().all(Option::is_none));
+        assert_eq!(
+            layout.pages[0][0],
+            Some(HomeItem::Widget { widget: WidgetKind::Clock })
+        );
+        // The clock is 4x2 on an 8-cell (4-wide, 2-row) page, so it alone
+        // fills the whole page; the remaining curated apps overflow to a
+        // new page.
+        assert!(layout.pages[0][1..].iter().all(Option::is_none));
     }
 
     #[test]
-    fn seed_default_with_nothing_installed_is_an_empty_home() {
+    fn seed_default_with_nothing_installed_is_still_a_clock_only_home() {
         let layout = seed_default(&[], 4, 8);
         assert_eq!(layout.dock, vec![None, None, None, None]);
-        assert_eq!(layout.pages, vec![vec![]]);
+        assert_eq!(layout.pages.len(), 1);
+        assert_eq!(
+            layout.pages[0][0],
+            Some(HomeItem::Widget { widget: WidgetKind::Clock })
+        );
     }
 
     #[test]
@@ -380,19 +713,40 @@ mod tests {
         let dir = std::env::temp_dir().join(format!(
             "k230-home-state-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
         ));
         let path = dir.join("home.json");
         let layout = HomeLayout {
             schema: SCHEMA,
-            pages: vec![vec![Some("a.desktop".into()), None, Some("b.desktop".into())]],
-            dock: vec![Some("c.desktop".into()), None],
+            pages: vec![vec![Some(HomeItem::app("a.desktop")), None, Some(HomeItem::app("b.desktop"))]],
+            dock: vec![Some(HomeItem::app("c.desktop")), None],
         };
         save(&path, &layout).unwrap();
         assert_eq!(load(&path), Some(layout));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_schema_1_file_migrates_to_plain_apps_on_load() {
+        let dir = std::env::temp_dir().join(format!(
+            "k230-home-state-v1-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("home.json");
+        let v1_json = serde_json::json!({
+            "schema": 1,
+            "pages": [[ "a.desktop", null, "b.desktop" ]],
+            "dock": [ "c.desktop", null ],
+        });
+        std::fs::write(&path, serde_json::to_vec(&v1_json).unwrap()).unwrap();
+        let migrated = load(&path).expect("v1 file migrates");
+        assert_eq!(migrated.schema, SCHEMA);
+        assert_eq!(migrated.pages[0][0], Some(HomeItem::app("a.desktop")));
+        assert_eq!(migrated.pages[0][1], None);
+        assert_eq!(migrated.pages[0][2], Some(HomeItem::app("b.desktop")));
+        assert_eq!(migrated.dock[0], Some(HomeItem::app("c.desktop")));
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
@@ -401,17 +755,12 @@ mod tests {
         let dir = std::env::temp_dir().join(format!(
             "k230-home-state-seed-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
         ));
         let path = dir.join("home.json");
         let apps = vec![app("foot.desktop", "Foot")];
         let first = load_or_seed(Some(&path), &apps, 4, 8);
-        assert_eq!(first.dock[0], Some("foot.desktop".into()));
-        // Second boot: even if the catalog has since changed, the saved
-        // layout -- not a fresh reseed -- is what comes back.
+        assert_eq!(first.dock[0], Some(HomeItem::app("foot.desktop")));
         let changed_apps = vec![app("other.desktop", "Other")];
         let second = load_or_seed(Some(&path), &changed_apps, 4, 8);
         assert_eq!(second, first);
@@ -420,28 +769,20 @@ mod tests {
 
     #[test]
     fn missing_entry_keeps_its_slot_on_load() {
-        // An app pinned, then uninstalled: `load` itself does not filter
-        // anything (the missing-entry-preserves-slot behavior is a
-        // property of never compacting `Option` slots, not of load doing
-        // any lookup), so the id simply comes back and the caller renders
-        // an empty tile for any id `installed_apps()` no longer lists.
         let dir = std::env::temp_dir().join(format!(
             "k230-home-state-missing-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
         ));
         let path = dir.join("home.json");
         let layout = HomeLayout {
             schema: SCHEMA,
-            pages: vec![vec![Some("gone.desktop".into()), None]],
+            pages: vec![vec![Some(HomeItem::app("gone.desktop")), None]],
             dock: vec![None; 4],
         };
         save(&path, &layout).unwrap();
         let loaded = load(&path).unwrap();
-        assert_eq!(loaded.pages[0][0], Some("gone.desktop".into()));
+        assert_eq!(loaded.pages[0][0], Some(HomeItem::app("gone.desktop")));
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
@@ -450,10 +791,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!(
             "k230-home-state-corrupt-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
         ));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("home.json");
@@ -461,43 +799,152 @@ mod tests {
         assert_eq!(load(&path), None);
         let apps = vec![app("foot.desktop", "Foot")];
         let layout = load_or_seed(Some(&path), &apps, 4, 8);
-        assert_eq!(layout.dock[0], Some("foot.desktop".into()));
+        assert_eq!(layout.dock[0], Some(HomeItem::app("foot.desktop")));
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]
     fn pin_fills_first_free_slot_then_adds_a_page_when_full() {
         let mut layout = HomeLayout::empty(4);
-        layout.set(HomeSlot::Grid { page: 0, slot: 0 }, Some("a.desktop".into()), 2);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("a.desktop"), 2, false);
         layout.pin("b.desktop".into(), 2);
-        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some("b.desktop"));
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some(&HomeItem::app("b.desktop")));
         layout.pin("c.desktop".into(), 2);
         assert_eq!(layout.page_count(), 2);
-        assert_eq!(layout.get(HomeSlot::Grid { page: 1, slot: 0 }), Some("c.desktop"));
+        assert_eq!(layout.get(HomeSlot::Grid { page: 1, slot: 0 }), Some(&HomeItem::app("c.desktop")));
     }
 
     #[test]
     fn pin_is_a_no_op_for_an_already_pinned_app() {
         let mut layout = HomeLayout::empty(4);
-        layout.set(HomeSlot::Grid { page: 0, slot: 2 }, Some("a.desktop".into()), 4);
+        layout.place(HomeSlot::Grid { page: 0, slot: 2 }, HomeItem::app("a.desktop"), 4, false);
         layout.pin("a.desktop".into(), 4);
-        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 2 }), Some("a.desktop"));
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 2 }), Some(&HomeItem::app("a.desktop")));
         assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 0 }), None, "did not duplicate elsewhere");
-        // Also true when the existing pin is in the dock, not the grid.
         let mut layout = HomeLayout::empty(4);
-        layout.set(HomeSlot::Dock { slot: 1 }, Some("b.desktop".into()), 4);
+        layout.place(HomeSlot::Dock { slot: 1 }, HomeItem::app("b.desktop"), 4, false);
         layout.pin("b.desktop".into(), 4);
-        assert_eq!(layout.get(HomeSlot::Dock { slot: 1 }), Some("b.desktop"));
-        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 0 }), None);
+        assert_eq!(layout.get(HomeSlot::Dock { slot: 1 }), Some(&HomeItem::app("b.desktop")));
     }
 
     #[test]
-    fn remove_id_clears_grid_and_dock_without_shifting_neighbors() {
+    fn pin_is_a_no_op_for_an_app_already_inside_a_folder() {
         let mut layout = HomeLayout::empty(4);
-        layout.set(HomeSlot::Grid { page: 0, slot: 0 }, Some("a.desktop".into()), 4);
-        layout.set(HomeSlot::Grid { page: 0, slot: 1 }, Some("b.desktop".into()), 4);
-        layout.remove_id("a.desktop");
+        layout.place(
+            HomeSlot::Grid { page: 0, slot: 0 },
+            HomeItem::Folder(FolderData { name: "Fun".into(), apps: vec!["a.desktop".into(), "b.desktop".into()] }),
+            4,
+            false,
+        );
+        layout.pin("a.desktop".into(), 4);
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 1 }), None, "not duplicated outside the folder");
+    }
+
+    #[test]
+    fn remove_app_clears_a_plain_cell_without_shifting_neighbors() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("a.desktop"), 4, false);
+        layout.place(HomeSlot::Grid { page: 0, slot: 1 }, HomeItem::app("b.desktop"), 4, false);
+        layout.remove_app("a.desktop");
         assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 0 }), None);
-        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some("b.desktop"));
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 1 }), Some(&HomeItem::app("b.desktop")));
+    }
+
+    #[test]
+    fn remove_app_dissolves_a_two_app_folder_into_the_remaining_app() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(
+            HomeSlot::Grid { page: 0, slot: 0 },
+            HomeItem::Folder(FolderData { name: "Fun".into(), apps: vec!["a.desktop".into(), "b.desktop".into()] }),
+            4,
+            false,
+        );
+        layout.remove_app("a.desktop");
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 0 }), Some(&HomeItem::app("b.desktop")));
+    }
+
+    #[test]
+    fn remove_app_from_a_three_app_folder_keeps_it_a_folder() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(
+            HomeSlot::Grid { page: 0, slot: 0 },
+            HomeItem::Folder(FolderData {
+                name: "Fun".into(),
+                apps: vec!["a.desktop".into(), "b.desktop".into(), "c.desktop".into()],
+            }),
+            4,
+            false,
+        );
+        layout.remove_app("a.desktop");
+        let folder = layout.get(HomeSlot::Grid { page: 0, slot: 0 }).unwrap().as_folder().unwrap();
+        assert_eq!(folder.apps, vec!["b.desktop", "c.desktop"]);
+    }
+
+    #[test]
+    fn remove_slot_deletes_a_whole_folder_including_its_members() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(
+            HomeSlot::Grid { page: 0, slot: 0 },
+            HomeItem::Folder(FolderData { name: "Fun".into(), apps: vec!["a.desktop".into(), "b.desktop".into()] }),
+            4,
+            false,
+        );
+        layout.remove_slot(HomeSlot::Grid { page: 0, slot: 0 });
+        assert_eq!(layout.get(HomeSlot::Grid { page: 0, slot: 0 }), None);
+        assert!(!layout.contains_app("a.desktop"));
+    }
+
+    #[test]
+    fn a_widget_blocks_every_cell_of_its_span_from_a_second_placement() {
+        let mut layout = HomeLayout::empty(4);
+        assert!(layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, 8, false));
+        // Clock is 4x2 on a 4-column grid: slots 0..8 are all covered.
+        for slot in 0..8 {
+            assert!(
+                !layout.fits_at(HomeSlot::Grid { page: 0, slot }, (1, 1), false),
+                "slot {slot} should be blocked by the clock's own span"
+            );
+        }
+        assert!(layout.place(HomeSlot::Grid { page: 0, slot: 8 }, HomeItem::app("a.desktop"), 12, false));
+    }
+
+    #[test]
+    fn a_widget_spilling_past_the_row_edge_does_not_fit() {
+        let mut layout = HomeLayout::empty(4);
+        // Battery is 2x2; anchoring it at column 3 (the last of 4 columns)
+        // would spill one column past the row's right edge.
+        assert!(!layout.place(HomeSlot::Grid { page: 0, slot: 3 }, HomeItem::Widget { widget: WidgetKind::Battery }, 8, false));
+    }
+
+    #[test]
+    fn anchor_at_resolves_any_covered_cell_to_the_widgets_own_anchor() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, 8, false);
+        for slot in 0..8 {
+            let (anchor, item) = layout.anchor_at(HomeSlot::Grid { page: 0, slot }).expect("covered by the clock");
+            assert_eq!(anchor, HomeSlot::Grid { page: 0, slot: 0 });
+            assert_eq!(item, &HomeItem::Widget { widget: WidgetKind::Clock });
+        }
+        assert!(layout.anchor_at(HomeSlot::Grid { page: 0, slot: 8 }).is_none());
+    }
+
+    #[test]
+    fn widgets_are_not_dock_eligible() {
+        let mut layout = HomeLayout::empty(4);
+        assert!(!layout.place(HomeSlot::Dock { slot: 0 }, HomeItem::Widget { widget: WidgetKind::Battery }, 4, false));
+        assert_eq!(layout.get(HomeSlot::Dock { slot: 0 }), None);
+    }
+
+    #[test]
+    fn empty_trailing_pages_are_pruned_but_the_first_page_survives() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("a.desktop"), 4, false);
+        layout.ensure_page(1, 4);
+        layout.remove_slot(HomeSlot::Grid { page: 0, slot: 0 });
+        assert_eq!(layout.page_count(), 1, "both pages were empty; only the first survives");
+        layout.place(HomeSlot::Grid { page: 1, slot: 0 }, HomeItem::app("b.desktop"), 4, false);
+        assert_eq!(layout.page_count(), 2, "page 1 now holds something");
+        layout.remove_slot(HomeSlot::Grid { page: 1, slot: 0 });
+        assert_eq!(layout.page_count(), 1, "trailing empty page 1 is pruned again");
     }
 }

@@ -4,7 +4,9 @@ use crate::{
     appearance::{AppearanceSnapshot, AppearanceToken, Brush},
     catalog::{terminal_like, AppEntry},
     home_grid::{self, HomeSlot},
-    home_screen::HomeScreen,
+    home_screen::{DragSource, HomeScreen},
+    home_state::{HomeItem, WidgetKind},
+    home_widgets::weather::WeatherDisplay,
     icon::IconCache,
     navigation::{
         self, list_top, panel_top, search_field_rect, search_keyboard_top, tile_rect, COLUMNS,
@@ -2737,6 +2739,140 @@ fn paint_drop_target(cr: &Context, theme: Option<&AppearanceSnapshot>, rect: (f6
 /// and relies on that layer showing through everywhere Home itself has no
 /// content -- which is exactly why every label here gets its own shadow
 /// pass ([`shadowed_label`]) instead of relying on an opaque backing.
+/// Paints one grid or dock plate's *content* for whatever kind of
+/// [`HomeItem`] occupies it: an app's icon (unchanged from before this
+/// change), a folder's 2x2 mini-icon preview, or -- grid-only, since a
+/// widget's span never fits a dock cell -- a widget is painted separately
+/// by [`paint_widget_card`], not through this function at all.
+#[allow(clippy::too_many_arguments)]
+fn paint_item_plate(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    apps: &[AppEntry],
+    item: &HomeItem,
+    plate_x: f64,
+    plate_y: f64,
+    plate_size: f64,
+    icon_size: f64,
+    pressed: bool,
+) {
+    match item {
+        HomeItem::App { id } => {
+            if let Some(app) = app_by_id(apps, id) {
+                paint_icon_plate(cr, theme, icons, app, plate_x, plate_y, plate_size, icon_size, pressed);
+            }
+        }
+        HomeItem::Folder(folder) => {
+            cr.new_path();
+            service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, pressed);
+            for (index, rect) in home_grid::folder_mini_icon_rects(plate_x, plate_y, plate_size).into_iter().enumerate() {
+                let (x, y, w, h) = rect;
+                if let Some(id) = folder.apps.get(index) {
+                    if let Some(app) = app_by_id(apps, id) {
+                        let mini = w.min(h);
+                        let mini_x = x + (w - mini) / 2.0;
+                        let mini_y = y + (h - mini) / 2.0;
+                        if !app.icon.as_deref().is_some_and(|icon| icons.paint(cr, icon, mini as i32, mini_x, mini_y)) {
+                            rounded(cr, x, y, w, h, 4.0);
+                            color(cr, brush_rgb(theme, "launcher", "text", 0xf4f7f8), 0.35);
+                            let _ = cr.fill();
+                        }
+                    }
+                }
+            }
+        }
+        HomeItem::Widget { .. } => {} // never reached in the dock; grid widgets go through paint_widget_card
+    }
+}
+
+/// Paints a widget's whole card (task 4): a themed plate spanning the
+/// widget's full cell footprint, with its own live content. Cheap: no
+/// per-frame rasterization beyond ordinary Pango text layout, and the
+/// content itself (`home.battery`/`home.weather`) is only ever refreshed by
+/// the caller's own poll/cache timers, never recomputed here.
+fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
+    let (x, y, w, h) = rect;
+    cr.new_path();
+    service_card(cr, theme, "launcher", x, y, w, h, false);
+    match kind {
+        WidgetKind::Clock => {
+            let (time_text, date_text) = match crate::home_widgets::clock::now_local() {
+                Some(now) => (
+                    crate::home_widgets::clock::format_time(now),
+                    crate::home_widgets::clock::format_date(now),
+                ),
+                None => ("--:--".to_string(), String::new()),
+            };
+            shadowed_label(cr, &time_text, x, y + h * 0.22, w, 46.0, style.accent);
+            shadowed_label(cr, &date_text, x, y + h * 0.68, w, 18.0, style.text);
+        }
+        WidgetKind::Battery => {
+            let text = crate::home_widgets::battery::format(&home.battery);
+            shadowed_label(cr, "Battery", x, y + h * 0.16, w, 14.0, style.text);
+            shadowed_label(cr, &text, x, y + h * 0.5, w, 20.0, style.accent);
+        }
+        WidgetKind::Weather => {
+            let (glyph, temperature) = match &home.weather {
+                WeatherDisplay::Fresh(snapshot) | WeatherDisplay::Stale(snapshot) => (
+                    crate::home_widgets::weather::condition_glyph(&snapshot.condition).to_string(),
+                    snapshot.temperature.clone(),
+                ),
+                WeatherDisplay::Unavailable => ("--".to_string(), "No data".to_string()),
+            };
+            shadowed_label(cr, &glyph, x, y + h * 0.16, w, 14.0, style.text);
+            shadowed_label(cr, &temperature, x, y + h * 0.5, w, 22.0, style.accent);
+        }
+    }
+}
+
+/// Paints Home's open-folder overlay (task 5): a dim scrim so the card
+/// reads clearly over Home's own wallpaper/icons, the folder's editable
+/// name, and its member apps in a small grid. Renaming's actual
+/// system-keyboard wiring is not connected yet (see `home_screen::
+/// OpenFolder`'s own doc) -- this just shows whichever of `folder.name`/
+/// `open.name_buffer` is currently live.
+fn paint_open_folder(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    apps: &[AppEntry],
+    home: &HomeScreen,
+) {
+    let Some(open) = home.open_folder.as_ref() else { return };
+    let Some(HomeItem::Folder(folder)) = home.layout.get(open.slot) else { return };
+    let style = visual_style(theme, "launcher");
+    cr.set_source_rgba(0.0, 0.0, 0.0, 0.5);
+    let _ = cr.paint();
+    let (cx, cy, cw, ch) = home_grid::folder_overlay_rect(width, height);
+    service_card(cr, theme, "launcher", cx, cy, cw, ch, false);
+    let name_rect = home_grid::folder_name_rect(width, height);
+    let display_name = if open.editing_name { open.name_buffer.as_str() } else { folder.name.as_str() };
+    let shown_name = if display_name.is_empty() { " " } else { display_name };
+    centered_label(cr, shown_name, name_rect.0, name_rect.1 + name_rect.3 / 2.0 - 14.0, name_rect.2, 26.0, style.accent);
+    for (index, id) in folder.apps.iter().enumerate() {
+        let (x, y, w, _h) = home_grid::folder_app_rect(width, height, index);
+        let plate_size = w.min(home_grid::ICON_PLATE_SIZE);
+        let plate_x = x + (w - plate_size) / 2.0;
+        if let Some(app) = app_by_id(apps, id) {
+            paint_icon_plate(cr, theme, icons, app, plate_x, y, plate_size, plate_size * 0.72, false);
+            shadowed_label(cr, &app.name, x, y + plate_size + 6.0, w, 14.0, brush_rgb(theme, "launcher", "text", style.text));
+        }
+    }
+}
+
+/// Paints the Home screen: the pinned-icon grid for the pager's current
+/// (possibly mid-drag) page, the non-tappable page-count dots, the
+/// translucent quick-launch dock, and -- only while `home.rearranging` --
+/// the Done/Remove affordances, each filled icon's remove badge, the live
+/// drop-target highlight, and any icon currently being dragged.
+/// Deliberately paints nothing opaque outside those elements: this surface
+/// sits on `Layer::Bottom`, directly above the existing wallpaper layer,
+/// and relies on that layer showing through everywhere Home itself has no
+/// content -- which is exactly why every label here gets its own shadow
+/// pass ([`shadowed_label`]) instead of relying on an opaque backing.
 pub fn paint_home(
     cr: &Context,
     width: u32,
@@ -2756,9 +2892,12 @@ pub fn paint_home(
     let position = home.pager.position();
     let page_width = f64::from(width);
     let pressed = home.pressed(width, height);
-    let dragged_slot = home.drag.map(|(slot, _)| slot);
+    let dragged_slot = home.drag.as_ref().and_then(|(source, _)| match source {
+        DragSource::Existing(slot) => Some(*slot),
+        DragSource::FromDrawer(_) => None,
+    });
     let drop_target = home.drop_target(width, height);
-    let show_drop_target = home.rearranging && drop_target.is_some() && drop_target != dragged_slot;
+    let show_drop_target = home.drag.is_some() && drop_target.is_some() && drop_target != dragged_slot;
     for offset in [-1i64, 0, 1] {
         let page = position.round() as i64 + offset;
         if page < 0 || page as usize >= page_count {
@@ -2783,33 +2922,45 @@ pub fn paint_home(
         }
         if let Some(row) = home.layout.pages.get(page) {
             for (slot, entry) in row.iter().enumerate() {
-                let Some(id) = entry else { continue };
+                let Some(item) = entry else { continue };
                 let this_slot = HomeSlot::Grid { page, slot };
-                if home.drag.is_some_and(|(dragged, _)| dragged == this_slot) {
+                if dragged_slot == Some(this_slot) {
                     continue; // painted last, floating at the finger instead
                 }
-                let Some(app) = app_by_id(apps, id) else { continue };
+                if let HomeItem::Widget { widget } = item {
+                    let rect = home_grid::spanned_tile_rect(width, height, slot, widget.span());
+                    paint_widget_card(cr, theme, &style, *widget, rect, home);
+                    continue;
+                }
                 let content = home_grid::tile_content(width, height, slot);
-                paint_icon_plate(
+                let label = match item {
+                    HomeItem::App { id } => app_by_id(apps, id).map(|app| app.name.clone()),
+                    HomeItem::Folder(folder) => Some(folder.name.clone()),
+                    HomeItem::Widget { .. } => None,
+                };
+                paint_item_plate(
                     cr,
                     theme,
                     icons,
-                    app,
+                    apps,
+                    item,
                     content.plate_x,
                     content.plate_y,
                     content.plate_size,
                     home_grid::ICON_SIZE,
                     pressed == Some(this_slot),
                 );
-                shadowed_label(
-                    cr,
-                    &app.name,
-                    content.plate_x,
-                    content.label_y,
-                    content.plate_size,
-                    15.0,
-                    brush_rgb(theme, "launcher", "text", style.text),
-                );
+                if let Some(label) = label {
+                    shadowed_label(
+                        cr,
+                        &label,
+                        content.plate_x,
+                        content.label_y,
+                        content.plate_size,
+                        15.0,
+                        brush_rgb(theme, "launcher", "text", style.text),
+                    );
+                }
                 if home.rearranging {
                     paint_remove_badge(cr, theme, (content.plate_x, content.plate_y));
                 }
@@ -2854,23 +3005,23 @@ pub fn paint_home(
     );
     service_card(cr, theme, "launcher", dock_band.0, dock_band.1, dock_band.2, dock_band.3, false);
     for slot in 0..home_grid::DOCK_SLOTS {
-        let Some(id) = home.layout.dock.get(slot).and_then(Option::as_deref) else {
+        let Some(item) = home.layout.dock.get(slot).and_then(Option::as_ref) else {
             continue;
         };
         let this_slot = HomeSlot::Dock { slot };
-        if home.drag.is_some_and(|(dragged, _)| dragged == this_slot) {
+        if dragged_slot == Some(this_slot) {
             continue;
         }
-        let Some(app) = app_by_id(apps, id) else { continue };
         let content = home_grid::dock_content(width, height, slot);
         if show_drop_target && drop_target == Some(this_slot) {
             paint_drop_target(cr, theme, home_grid::dock_rect(width, height, slot));
         }
-        paint_icon_plate(
+        paint_item_plate(
             cr,
             theme,
             icons,
-            app,
+            apps,
+            item,
             content.plate_x,
             content.plate_y,
             content.plate_size,
@@ -2892,28 +3043,44 @@ pub fn paint_home(
         // pending delete is obvious before the finger lifts.
         let over_remove = home
             .drag
-            .is_some_and(|(_, point)| home_grid::hits(point, remove));
+            .as_ref()
+            .is_some_and(|(_, point)| home_grid::hits(*point, remove));
         service_card(cr, theme, "controls", remove.0, remove.1, remove.2, remove.3, over_remove);
         centered_label(cr, "Remove", remove.0, remove.1 + remove.3 / 2.0 - 12.0, remove.2, 24.0, style.error);
     }
 
-    if let Some((slot, point)) = home.drag {
-        let id = home.layout.get(slot).map(str::to_string);
-        if let Some(id) = id {
-            if let Some(app) = app_by_id(apps, &id) {
-                // A dragged icon lifts slightly larger than its resting
-                // plate (matching iOS/webOS's jiggle-mode "pick up" scale)
-                // and always shows its label, regardless of whether it
-                // started in the grid or the dock, so what is being moved
-                // stays legible under the finger.
-                let plate_size = home_grid::ICON_PLATE_SIZE * 1.08;
-                let icon_size = home_grid::ICON_SIZE * 1.08;
-                let plate_x = point.0 - plate_size / 2.0;
-                let plate_y = point.1 - plate_size / 2.0;
-                paint_icon_plate(cr, theme, icons, app, plate_x, plate_y, plate_size, icon_size, true);
+    if let Some(&(_, point)) = home.drag.as_ref() {
+        if let Some(item) = home.dragged_item() {
+            // A dragged icon lifts slightly larger than its resting plate
+            // (matching iOS/webOS's jiggle-mode "pick up" scale) and always
+            // shows its label, regardless of whether it started in the
+            // grid, the dock, or the drawer, so what is being moved stays
+            // legible under the finger. Widgets lift at their own (larger,
+            // spanned) size instead of the single-cell icon plate size.
+            let (plate_size, icon_size, label) = match &item {
+                HomeItem::Widget { widget } => {
+                    let (cols, rows) = widget.span();
+                    let (_, _, w, h) = home_grid::spanned_tile_rect(width, height, 0, (cols, rows));
+                    (w.max(h), 0.0, None)
+                }
+                HomeItem::Folder(folder) => (home_grid::ICON_PLATE_SIZE * 1.08, home_grid::ICON_SIZE * 1.08, Some(folder.name.clone())),
+                HomeItem::App { id } => (
+                    home_grid::ICON_PLATE_SIZE * 1.08,
+                    home_grid::ICON_SIZE * 1.08,
+                    app_by_id(apps, id).map(|app| app.name.clone()),
+                ),
+            };
+            let plate_x = point.0 - plate_size / 2.0;
+            let plate_y = point.1 - plate_size / 2.0;
+            if let HomeItem::Widget { widget } = &item {
+                paint_widget_card(cr, theme, &style, *widget, (plate_x, plate_y, plate_size, plate_size), home);
+            } else {
+                paint_item_plate(cr, theme, icons, apps, &item, plate_x, plate_y, plate_size, icon_size, true);
+            }
+            if let Some(label) = label {
                 shadowed_label(
                     cr,
-                    &app.name,
+                    &label,
                     plate_x,
                     plate_y + plate_size + 8.0,
                     plate_size,
@@ -2923,6 +3090,8 @@ pub fn paint_home(
             }
         }
     }
+
+    paint_open_folder(cr, width, height, theme, icons, apps, home);
 }
 
 pub fn draw_shm(
@@ -3942,6 +4111,44 @@ impl RendererCache {
     ) -> Result<(), String> {
         draw_home_shm(canvas, width, height, apps, &mut self.icons, self.theme.as_ref(), home)
     }
+
+    /// Renders the Drawer's own overlay surface while task 1's long-press-
+    /// drag is live (`main.rs`'s `drawer_home_drag`): transparent
+    /// everywhere except a translucent Cancel band across the drawer's own
+    /// former top-chrome zone (`navigation::drag_cancel_zone_hit`'s exact
+    /// zone). Home's `Layer::Bottom` surface underneath already paints the
+    /// lifted icon and drop-target highlight itself (`paint_home`), so this
+    /// deliberately draws nothing else, letting that show through
+    /// untouched -- this is the "the drawer immediately slides or fades
+    /// away to reveal Home" reveal, implemented as "stop painting the
+    /// drawer's own content" rather than an actual slide/fade animation
+    /// (see `design.md`'s Deferred section).
+    pub fn draw_drawer_drag(&mut self, canvas: &mut [u8], width: u32, height: u32) -> Result<(), String> {
+        draw_drawer_drag_shm(canvas, width, height, self.theme.as_ref())
+    }
+}
+
+fn draw_drawer_drag_shm(canvas: &mut [u8], width: u32, height: u32, theme: Option<&AppearanceSnapshot>) -> Result<(), String> {
+    let stride = width.checked_mul(4).ok_or("invalid stride")?;
+    if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
+        return Err("invalid canvas length".into());
+    }
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(canvas.as_mut_ptr(), Format::ARgb32, width as i32, height as i32, stride as i32)
+    }
+    .map_err(|error| error.to_string())?;
+    let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    cr.set_operator(Operator::Source);
+    cr.set_source_rgba(0.0, 0.0, 0.0, 0.0);
+    let _ = cr.paint();
+    cr.set_operator(Operator::Over);
+    let style = visual_style(theme, "launcher");
+    let band_h = (navigation::list_top(height) - 24.0).max(56.0);
+    service_card(&cr, theme, "controls", 12.0, 12.0, f64::from(width) - 24.0, band_h, false);
+    centered_label(&cr, "Cancel", 12.0, 12.0 + band_h / 2.0 - 14.0, f64::from(width) - 24.0, 26.0, style.error);
+    drop(cr);
+    surface.flush();
+    Ok(())
 }
 
 /// The launch splash's icon size: large and centered, per the launch-splash

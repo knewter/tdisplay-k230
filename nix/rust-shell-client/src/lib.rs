@@ -8,6 +8,7 @@ pub mod home_grid;
 pub mod home_pager;
 pub mod home_screen;
 pub mod home_state;
+pub mod home_widgets;
 pub mod icon;
 pub mod navigation;
 pub mod pipewire_ipc;

@@ -46,6 +46,17 @@ pub fn list_top(height: u32) -> f64 {
     panel_top(height) + TOP_CHROME_HEIGHT
 }
 
+/// The drawer-drag's Cancel target (task 1: "A Cancel target at the top,
+/// or releasing over the drawer area, cancels"): the drawer's own top
+/// chrome band (handle + search field). While a long-press-drag is live,
+/// the drawer's grid is hidden and Home shows through in its place (see
+/// `main.rs`'s drag hand-off doc), so this top band is the one part of the
+/// drawer's own surface that still reads as "the drawer" to release back
+/// onto.
+pub fn drag_cancel_zone_hit(point: (f64, f64), height: u32) -> bool {
+    point.1.is_finite() && point.1 < list_top(height)
+}
+
 /// The small drag-handle indicator's rect, in absolute screen coordinates.
 /// Purely decorative (`render.rs` paints it); the handle's own *hit* zone
 /// for drag-to-close is the whole top-chrome band above the grid
@@ -235,20 +246,22 @@ fn max_scroll(height: u32, apps: usize) -> f64 {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DrawerAction {
     Launch(usize),
-    /// A tile was held past [`LONG_PRESS_MS`] without moving past the tap
-    /// slop, then released -- "Add to Home" rather than an ordinary launch.
-    /// Detected on release (not while still held) so this needs no new
-    /// polling/tick path in a navigation model whose `tick` already skips
-    /// entirely while a contact is down.
-    LongPress(usize),
     Close,
 }
 
 /// A tile held at least this long, without exceeding the existing tap
-/// slop/duration-independent gesture, is a long-press rather than a tap.
-/// Matches `home_pager::LONG_PRESS_MS` so a hold feels the same length
-/// whether it is pinning from the drawer or rearranging on Home.
+/// slop/duration-independent gesture, is a long-press rather than a tap --
+/// no longer "Add to Home" (removed; see [`DrawerNavigation::
+/// take_long_press_drag`]'s own doc for what replaced it), but the same
+/// threshold still gates when that drag arms. Matches
+/// `home_pager::LONG_PRESS_MS` so a hold feels the same length whether it
+/// is dragging from the drawer or rearranging on Home.
 pub const LONG_PRESS_MS: u32 = 500;
+/// A touch that has not moved past this many pixels from its down point is
+/// still a long-press-drag candidate, not a scroll -- matches `up`'s own
+/// pre-existing tap-slop literal (12.0), named here since
+/// `take_long_press_drag` is new.
+const LONG_PRESS_SLOP: f64 = 12.0;
 
 #[derive(Clone, Copy, Debug)]
 struct Contact {
@@ -271,6 +284,15 @@ struct Contact {
     /// began scrolling away from it. Real scrolling away from the top must
     /// permanently disqualify the rest of that gesture from closing.
     scrolled_away: bool,
+    /// Accumulated hold time for [`DrawerNavigation::take_long_press_drag`]
+    /// -- independent of `down_ms`/`last_ms`, which are wall-clock touch
+    /// timestamps a caller not driving `take_long_press_drag` every tick
+    /// can still use for `up`'s own release-time long-press fallback.
+    held_ms: u32,
+    /// Set once this contact has been resolved by *either*
+    /// `take_long_press_drag` (fired) or ordinary motion past tap slop --
+    /// prevents re-arming a second drag off the same contact.
+    long_fired: bool,
 }
 
 #[derive(Default)]
@@ -298,6 +320,8 @@ impl DrawerNavigation {
             finger_velocity: 0.0,
             cancelled: false,
             scrolled_away: false,
+            held_ms: 0,
+            long_fired: false,
         });
         true
     }
@@ -354,18 +378,22 @@ impl DrawerNavigation {
         }
         if dx.abs() <= 12.0 && dy.abs() <= 12.0 {
             let held_ms = time_ms.wrapping_sub(contact.down_ms);
-            if let Some(index) = tile_at(point, width, height, apps, self.scroll) {
-                if tile_at(contact.start, width, height, apps, contact.start_scroll) == Some(index)
-                {
-                    // `LONG_PRESS_MS` (500ms) is below the pre-existing 800ms
-                    // tap ceiling, so every stationary release is exactly
-                    // one or the other -- a quick tap launches, a held tap
-                    // is "Add to Home" instead.
-                    return Some(if held_ms >= LONG_PRESS_MS {
-                        DrawerAction::LongPress(index)
-                    } else {
-                        DrawerAction::Launch(index)
-                    });
+            // A release this stationary but past `LONG_PRESS_MS` normally
+            // never reaches here at all: `take_long_press_drag`, driven by
+            // the caller's own tick loop, already fired and took
+            // `self.contact` well before the finger lifted (see that
+            // method's own doc), so `up` sees no contact and returns `None`
+            // above. This `held_ms` guard only matters if a caller never
+            // ticks this navigation model between `down` and `up` (e.g. a
+            // host test driving `up` directly with no `tick` in between) --
+            // in that case a long, stationary hold now resolves to nothing
+            // rather than an old "Add to Home" pin, matching the drag-based
+            // replacement's own resolution (nothing is placed until a drop).
+            if held_ms < LONG_PRESS_MS {
+                if let Some(index) = tile_at(point, width, height, apps, self.scroll) {
+                    if tile_at(contact.start, width, height, apps, contact.start_scroll) == Some(index) {
+                        return Some(DrawerAction::Launch(index));
+                    }
                 }
             }
         }
@@ -392,6 +420,57 @@ impl DrawerNavigation {
 
     pub fn coasting(&self) -> bool {
         self.velocity.abs() >= 20.0
+    }
+
+    /// Fires once, at `LONG_PRESS_MS`, with the *display* index of the tile
+    /// a stationary touch is resting on -- task 1's "Long-press an app in
+    /// the drawer, and the drawer immediately slides or fades away to
+    /// reveal Home. The icon lifts and follows the finger", replacing the
+    /// old release-only "Add to Home" pin. Driven by the caller's own tick
+    /// loop (mirroring `home_screen::HomeScreen::tick`'s identical
+    /// long-press timer) rather than detected at release, so the caller can
+    /// begin a live drag (reveal Home, start following the finger) well
+    /// before the finger lifts.
+    ///
+    /// Consumes this contact entirely once it fires (`self.contact` is set
+    /// to `None`): the rest of this gesture is now owned by whatever the
+    /// caller does with the returned index (typically
+    /// `home_screen::HomeScreen::begin_external_drag`), not by this
+    /// navigation model, so `motion`/`up` calls for the same touch id that
+    /// follow are simply no-ops here (both already start with `let
+    /// Some(contact) = ... else { return ... }`).
+    ///
+    /// A real drag/scroll preempts this exactly like the old release-time
+    /// check did (past `LONG_PRESS_SLOP`), and firing requires the touch to
+    /// have started on an actual tile, not empty space below the grid.
+    ///
+    /// Returns the tile's display index *and* the touch's own current
+    /// point (its live position may already have moved up to
+    /// `LONG_PRESS_SLOP` pixels from `down`) -- the caller passes that
+    /// point straight into `home_screen::HomeScreen::begin_external_drag`
+    /// so the lifted icon starts exactly where the finger already is,
+    /// rather than snapping from the original touch-down point.
+    pub fn take_long_press_drag(&mut self, elapsed_ms: u32, width: u32, height: u32, apps: usize) -> Option<(usize, (f64, f64))> {
+        let contact = self.contact.as_mut()?;
+        if contact.cancelled || contact.long_fired {
+            return None;
+        }
+        if (contact.last.0 - contact.start.0).abs() > LONG_PRESS_SLOP
+            || (contact.last.1 - contact.start.1).abs() > LONG_PRESS_SLOP
+        {
+            contact.long_fired = true; // a real scroll/close-drag preempts this
+            return None;
+        }
+        contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+        if contact.held_ms < LONG_PRESS_MS {
+            return None;
+        }
+        contact.long_fired = true;
+        let index = tile_at(contact.start, width, height, apps, contact.start_scroll)?;
+        let point = contact.last;
+        self.contact = None;
+        self.velocity = 0.0;
+        Some((index, point))
     }
 
     pub fn pressed(&self, width: u32, height: u32, apps: usize) -> Option<usize> {
@@ -548,15 +627,63 @@ mod tests {
     }
 
     #[test]
-    fn a_held_tile_releases_as_a_long_press_not_a_launch() {
+    fn a_held_tile_release_with_no_ticking_now_resolves_to_nothing() {
+        // Long-press-to-pin is gone; without a caller driving
+        // `take_long_press_drag` (see the test below for that path), a
+        // long stationary hold simply does nothing on release.
         let mut nav = DrawerNavigation::default();
         let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
         let point = (x + w / 2.0, y + h / 2.0);
         assert!(nav.down(1, point, 0));
+        assert_eq!(nav.up(1, point, LONG_PRESS_MS, 568, 1232, 7), None);
+    }
+
+    #[test]
+    fn take_long_press_drag_fires_once_at_the_threshold_and_consumes_the_contact() {
+        let mut nav = DrawerNavigation::default();
+        let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        nav.down(1, point, 0);
+        assert_eq!(nav.take_long_press_drag(LONG_PRESS_MS - 16, 568, 1232, 7), None, "not yet at the threshold");
+        assert_eq!(nav.take_long_press_drag(16, 568, 1232, 7), Some((2, point)), "fires once the threshold is crossed");
+        // The contact is now consumed: a second call, and an ordinary
+        // `up`/`motion` for the same touch, all see nothing.
+        assert_eq!(nav.take_long_press_drag(16, 568, 1232, 7), None);
+        assert_eq!(nav.up(1, point, 1000, 568, 1232, 7), None);
+    }
+
+    #[test]
+    fn moving_past_slop_before_the_threshold_cancels_the_long_press_drag() {
+        let mut nav = DrawerNavigation::default();
+        let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        nav.down(1, point, 0);
+        nav.motion(1, (point.0 + 20.0, point.1), 16, 1232, 7);
         assert_eq!(
-            nav.up(1, point, LONG_PRESS_MS, 568, 1232, 7),
-            Some(DrawerAction::LongPress(2))
+            nav.take_long_press_drag(LONG_PRESS_MS, 568, 1232, 7),
+            None,
+            "a real scroll preempts the long-press drag"
         );
+    }
+
+    #[test]
+    fn a_quick_tap_still_launches_even_though_it_could_still_be_ticked() {
+        let mut nav = DrawerNavigation::default();
+        let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        nav.down(1, point, 0);
+        assert_eq!(nav.take_long_press_drag(LONG_PRESS_MS - 100, 568, 1232, 7), None);
+        assert_eq!(
+            nav.up(1, point, LONG_PRESS_MS - 1, 568, 1232, 7),
+            Some(DrawerAction::Launch(2))
+        );
+    }
+
+    #[test]
+    fn drag_cancel_zone_is_the_drawers_own_top_chrome_band() {
+        let height = 1232;
+        assert!(drag_cancel_zone_hit((100.0, 10.0), height));
+        assert!(!drag_cancel_zone_hit((100.0, list_top(height) + 5.0), height));
     }
 
     #[test]

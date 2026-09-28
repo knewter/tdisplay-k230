@@ -10,6 +10,7 @@ use k230_shell_rust::{
     configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
+    home_widgets,
     navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
     pipewire_ipc,
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
@@ -1266,6 +1267,36 @@ struct ShellClient {
     /// same reason `self.touch: TouchTrace` keeps its own `.position` for
     /// the overlay surface.
     home_last_point: (f64, f64),
+    /// Live while the drawer's long-press-drag hand-off (task 1, "Long-press
+    /// an app in the drawer ... the icon lifts and follows the finger") is
+    /// in progress: the touch id it is bound to. `Some` makes the Drawer's
+    /// own `motion`/`up` dispatch skip its ordinary scroll/close-drag/search
+    /// handling entirely for that touch and instead forward it into
+    /// `self.home`'s external-drag API -- see those two `TouchHandler`
+    /// methods' own Drawer branches. The dragged item itself lives in
+    /// `self.home.drag` (a `DragSource::FromDrawer`), not duplicated here.
+    drawer_home_drag: Option<i32>,
+    /// Last time a battery-widget poll ran (`home_widgets::battery::
+    /// POLL_INTERVAL`) -- cheap synchronous `/sys` reads, safe to run
+    /// directly on this thread, unlike weather's own network fetch.
+    battery_polled_at: Option<Instant>,
+    /// A weather fetch this client kicked off on a background thread
+    /// (`home_widgets::weather::refresh` shells out to `curl`, which must
+    /// never block this process's single manual poll loop); polled
+    /// non-blockingly each tick, taken and applied to `self.home.weather`
+    /// once the thread finishes.
+    weather_pending: Option<Receiver<home_widgets::weather::WeatherDisplay>>,
+    /// Last time this client checked whether a weather fetch is due
+    /// (`home_widgets::weather::should_fetch`) -- throttles even that cheap
+    /// check to about once a minute rather than every frame.
+    weather_checked_at: Option<Instant>,
+    /// Scheduled wall-clock instant for the Clock widget's next once-a-
+    /// minute, minute-aligned redraw (task 7: "the clock redraws only its
+    /// own area once a minute"); `None` until the first tick computes it.
+    clock_next_tick: Option<Instant>,
+    /// Rate-limits `K230_HOME_FRAME`, mirroring `drawer_frame_log_at`/
+    /// `DRAWER_FRAME_LOG_INTERVAL` exactly, one surface over.
+    home_frame_log_at: Option<Instant>,
     /// Set the instant an Apply tap submits a `ThemeRequest::Activate`
     /// (see `theme_action`'s `ThemeIntent::Apply` arm), read once by the
     /// optimistic-apply check in `serve`'s own loop to log how long the
@@ -2626,10 +2657,23 @@ impl ShellClient {
             self.home_surface.buffers.push(buffer);
             (self.home_surface.buffers.len() - 1, canvas)
         };
+        // `K230_HOME_FRAME`: the same cheap, rate-limited timing log
+        // `K230_DRAWER_FRAME` already gives the Drawer, one surface over
+        // (task 7).
+        let render_started = Instant::now();
         if let Err(error) = self.renderer.draw_home(canvas, width, height, &self.apps, &self.home) {
             self.home_surface.dirty = false;
             self.log(&format!("home-render-failed {error}"));
             return false;
+        }
+        let now = Instant::now();
+        if self
+            .home_frame_log_at
+            .is_none_or(|last| now.duration_since(last) >= DRAWER_FRAME_LOG_INTERVAL)
+        {
+            self.home_frame_log_at = Some(now);
+            let elapsed_ms = now.duration_since(render_started).as_secs_f64() * 1000.0;
+            self.log(&format!("K230_HOME_FRAME ms={elapsed_ms:.2} pages={}", self.home.page_count()));
         }
         let Some(layer) = self.home_surface.layer.as_ref() else {
             return false;
@@ -2832,13 +2876,6 @@ impl ShellClient {
         }
     }
 
-    /// `DrawerAction::LongPress(display_index)` -> the real catalog app.
-    fn pin_drawer_app(&mut self, display_index: usize) {
-        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
-            self.pin_app_from_drawer(real_index);
-        }
-    }
-
     fn launch_app(&mut self, qh: &QueueHandle<Self>, index: usize) {
         if self.launch_in_flight || self.route != Route::Drawer {
             if self.launch_in_flight {
@@ -2951,29 +2988,60 @@ impl ShellClient {
         true
     }
 
-    /// "Add to Home": a held (not tapped) drawer tile pins that app
-    /// directly, a no-op if it is already pinned somewhere (see
-    /// `home_state::HomeLayout::pin`'s own doc). No confirmation sheet --
-    /// see `design.md` decision 5 for why a direct pin, matching a
-    /// long-press-to-place gesture, was chosen over a two-step dialog.
-    fn pin_app_from_drawer(&mut self, index: usize) {
-        let Some(app) = self.apps.get(index) else {
+    /// Task 1's drawer long-press-drag hand-off: fired from the tick loop
+    /// once `navigation::DrawerNavigation::take_long_press_drag` arms it.
+    /// Starts a live `HomeScreen` external drag for the held app, bound to
+    /// `touch_id` so this client's `TouchHandler::motion`/`up` (see their
+    /// own Drawer branches) keep forwarding the same touch into it instead
+    /// of the drawer's ordinary scroll/close-drag handling. `display_index`
+    /// is the search-filtered index `take_long_press_drag` resolved
+    /// against (`navigation::tile_at`'s own domain), mapped back to the
+    /// real catalog app exactly like `launch_drawer_app` does.
+    fn begin_drawer_home_drag(&mut self, touch_id: i32, display_index: usize, point: (f64, f64)) {
+        let Some(&real_index) = self.drawer_filtered_apps().get(display_index) else {
             return;
         };
-        // Falls back to the panel's reference height (matching the initial
-        // seed in `serve()`) if Home has not yet received its first
-        // `configure`, so a pin before that point still lands in a
-        // correctly-shaped page rather than a degenerate one-row page.
-        let reference_height = if self.home_surface.height == 0 {
-            1232
-        } else {
-            self.home_surface.height
+        let Some(app) = self.apps.get(real_index) else {
+            return;
         };
-        let apps_per_page = home_grid::apps_per_page(reference_height);
-        self.home.layout.pin(app.id.clone(), apps_per_page);
-        self.persist_home_layout();
+        self.drawer_home_drag = Some(touch_id);
+        self.home.begin_external_drag(app.id.clone(), point);
+        // The drawer surface now paints transparently (Home shows through)
+        // plus the lifted icon and the Cancel band -- see `draw`'s own
+        // Drawer branch -- and Home paints its own drop-target highlight.
+        self.dirty = true;
         self.home_mark_dirty();
-        self.log("home-pinned");
+        self.log("home-drag-begin");
+    }
+
+    /// Resolves the drawer long-press-drag's release: Cancel (released over
+    /// the drawer's own top chrome band -- `navigation::drag_cancel_zone_hit`
+    /// -- task 1: "releasing over the drawer area ... cancels") leaves the
+    /// layout untouched and reopens the drawer normally; anything else
+    /// drops through to `HomeScreen::release_drag` (cell/folder/dock, or a
+    /// `place_first_fit` fallback -- see that method's own doc) and then
+    /// closes the drawer for real via the existing animated-close path, the
+    /// same one a swipe-to-close release already uses.
+    fn end_drawer_home_drag(&mut self, qh: &QueueHandle<Self>, point: (f64, f64)) {
+        self.drawer_home_drag = None;
+        if navigation::drag_cancel_zone_hit(point, self.height) {
+            self.home.cancel_external_drag();
+            self.home_mark_dirty();
+            self.log("home-drag-cancelled");
+            self.dirty = true;
+            self.draw(qh);
+            return;
+        }
+        if let Some(action) = self.home.release_drag(point, self.home_surface.width, self.home_surface.height) {
+            match action {
+                HomeAction::Launch(app_id) => self.launch_home_app(qh, app_id),
+                HomeAction::LayoutChanged => self.persist_home_layout(),
+            }
+        }
+        self.home_mark_dirty();
+        self.begin_animated_close();
+        self.dirty = true;
+        self.draw(qh);
     }
 
     /// Called after any Home layout mutation (pin/unpin/reorder/page move);
@@ -2990,6 +3058,78 @@ impl ShellClient {
 
     fn home_mark_dirty(&mut self) {
         self.home_surface.dirty = true;
+    }
+
+    /// Refreshes the Clock/Battery/Weather widget content Home paints
+    /// (task 4/7): battery is a cheap synchronous `/sys` poll every
+    /// `home_widgets::battery::POLL_INTERVAL` (about 30s, matching the
+    /// task's "or a slow poll of about 30s" fallback -- this board has no
+    /// inotify-worthy battery driver to watch, since no supply exists at
+    /// all today); weather is checked for staleness at most once a minute
+    /// and, only when actually due, fetched on a background thread (never
+    /// this one -- `home_widgets::weather::refresh` shells out to `curl`,
+    /// which must not block this client's single manual poll loop); the
+    /// clock schedules its own next once-a-minute, minute-aligned wake
+    /// rather than redrawing every frame.
+    fn tick_home_widgets(&mut self, now: Instant) {
+        let battery_due = self
+            .battery_polled_at
+            .is_none_or(|last| now.duration_since(last) >= home_widgets::battery::POLL_INTERVAL);
+        if battery_due {
+            self.battery_polled_at = Some(now);
+            let state = home_widgets::battery::read_state(Path::new("/sys/class/power_supply"));
+            if state != self.home.battery {
+                self.home.battery = state;
+                self.home_mark_dirty();
+            }
+        }
+
+        if let Some(receiver) = self.weather_pending.as_ref() {
+            if let Ok(display) = receiver.try_recv() {
+                self.weather_pending = None;
+                if display != self.home.weather {
+                    self.home.weather = display;
+                    self.home_mark_dirty();
+                }
+            }
+        } else {
+            let check_due = self
+                .weather_checked_at
+                .is_none_or(|last| now.duration_since(last) >= Duration::from_secs(60));
+            if check_due {
+                self.weather_checked_at = Some(now);
+                if let Some(cache_path) = home_widgets::weather::cache_path() {
+                    let cached = home_widgets::weather::load_cache(&cache_path);
+                    let system_now = std::time::SystemTime::now();
+                    // Fold in whatever cache exists immediately, so a fresh
+                    // boot shows the last-known reading rather than
+                    // "Unavailable" until the first fetch completes.
+                    let display_now = home_widgets::weather::display_for(cached.clone(), system_now);
+                    if display_now != self.home.weather {
+                        self.home.weather = display_now;
+                        self.home_mark_dirty();
+                    }
+                    if home_widgets::weather::should_fetch(cached.as_ref(), system_now) {
+                        let (sender, receiver) = mpsc::channel();
+                        self.weather_pending = Some(receiver);
+                        thread::spawn(move || {
+                            let display = home_widgets::weather::refresh(&cache_path, "curl", std::time::SystemTime::now());
+                            let _ = sender.send(display);
+                        });
+                    }
+                }
+            }
+        }
+
+        let clock_due = self.clock_next_tick.is_none_or(|next| now >= next);
+        if clock_due {
+            let ms = home_widgets::clock::now_local()
+                .map(|local| home_widgets::clock::ms_until_next_minute(local.second))
+                .unwrap_or(60_000)
+                .max(1_000);
+            self.clock_next_tick = Some(now + Duration::from_millis(u64::from(ms)));
+            self.home_mark_dirty();
+        }
     }
 
     /// If `app_watch::CatalogWatcher` armed a debounced rescan and its
@@ -3405,7 +3545,17 @@ impl ShellClient {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
-        if let Some(splash) = self.splash.clone() {
+        if self.drawer_home_drag.is_some() {
+            // Task 1's live drag: paint nothing but the Cancel band, so
+            // Home's own `Layer::Bottom` surface (already painting the
+            // lifted icon and drop-target highlight) shows through
+            // everywhere else -- see `RendererCache::draw_drawer_drag`'s
+            // own doc.
+            if let Err(error) = self.renderer.draw_drawer_drag(canvas, self.width, self.height) {
+                self.log(&format!("home-drag-render-failed {error}"));
+                return false;
+            }
+        } else if let Some(splash) = self.splash.clone() {
             // No slide/reveal progress at all: the splash is always
             // full-screen from its very first frame (see `start_splash`'s
             // own doc on why the backdrop is opaque immediately), so this
@@ -4063,6 +4213,10 @@ impl TouchHandler for ShellClient {
                 self.volume_drag = None;
                 self.volume_icon_touch = None;
                 self.output_picker_touch = None;
+                if self.drawer_home_drag.take().is_some() {
+                    self.home.cancel_external_drag();
+                    self.home_mark_dirty();
+                }
                 self.nav.cancel();
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
@@ -4150,6 +4304,10 @@ impl TouchHandler for ShellClient {
                 // place.
                 self.dismiss_splash(qh);
             } else if self.route == Route::Drawer && self.input_ready {
+                if self.drawer_home_drag == Some(id) {
+                    self.end_drawer_home_drag(qh, point);
+                    return;
+                }
                 if self.renderer.set_drawer_pressed(None) {
                     self.dirty = true;
                 }
@@ -4209,7 +4367,6 @@ impl TouchHandler for ShellClient {
                         self.drawer_filtered_apps().len(),
                     ) {
                         Some(DrawerAction::Launch(index)) => self.launch_drawer_app(qh, index),
-                        Some(DrawerAction::LongPress(index)) => self.pin_drawer_app(index),
                         // `nav`'s own release-only "dy > 110 && scroll <=
                         // 0.5" check is now just a backstop for whatever
                         // reason the live drag above never engaged (see
@@ -4522,6 +4679,18 @@ impl TouchHandler for ShellClient {
                     self.volume_drag = Some(drag);
                 }
             } else if self.route == Route::Drawer && self.input_ready {
+                if self.drawer_home_drag == Some(id) {
+                    // Task 1's live drag: this touch is bound to
+                    // `self.home`'s external drag, not the drawer's own
+                    // scroll/close-drag/search handling -- skip all of that
+                    // entirely for as long as this touch is the armed drag.
+                    self.home.external_drag_motion(pos, self.home_surface.width);
+                    self.home_mark_dirty();
+                    self.dirty = true; // the drawer surface repaints the lifted icon/Cancel band too
+                    self.draw_home(qh);
+                    self.draw(qh);
+                    return;
+                }
                 // A close drag only ever *takes over* this touch once it
                 // actually engages (`close_drag_engaged`, downward for the
                 // Drawer); until then, every motion sample still reaches
@@ -5168,6 +5337,12 @@ fn serve() -> Result<(), String> {
         home_state_path,
         home_touch_id: None,
         home_last_point: (0.0, 0.0),
+        drawer_home_drag: None,
+        battery_polled_at: None,
+        weather_pending: None,
+        weather_checked_at: None,
+        clock_next_tick: None,
+        home_frame_log_at: None,
         theme_apply_tapped_at: None,
         theme_optimistic_shown_for: None,
         card_appearance_socket: card_appearance_socket_path(),
@@ -5681,9 +5856,20 @@ fn serve() -> Result<(), String> {
             .as_millis()
             .min(u128::from(u32::MAX)) as u32;
         state.nav_tick = now;
+        if state.route == Route::Drawer && state.drawer_home_drag.is_none() {
+            let filtered = state.drawer_filtered_apps().len();
+            if let Some((display_index, point)) =
+                state.nav.take_long_press_drag(elapsed, state.width, state.height, filtered)
+            {
+                if let Some(id) = state.touch.id {
+                    state.begin_drawer_home_drag(id, display_index, point);
+                }
+            }
+        }
         if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
             state.dirty = true;
         }
+        state.tick_home_widgets(now);
         if state.home.tick(elapsed) {
             state.home_surface.dirty = true;
         }

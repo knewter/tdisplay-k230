@@ -150,6 +150,23 @@ pub fn tile_rect(width: u32, height: u32, slot: usize) -> (f64, f64, f64, f64) {
     )
 }
 
+/// The bounding rect a multi-cell item (a widget, currently the only
+/// [`crate::home_state::HomeItem`] wider than one cell) paints into: from
+/// its anchor tile's own top-left corner through the bottom-right corner of
+/// the last tile its `span` (columns, rows) covers, inclusive of the
+/// internal tile gaps -- a widget's card is meant to read as one
+/// contiguous surface, not several glued-together tiles with visible seams.
+/// Callers must only pass a `top_left`/`span` combination that already fits
+/// on the page (`home_state::HomeLayout::place` is the one thing that
+/// decides that); this performs no bounds checking of its own.
+pub fn spanned_tile_rect(width: u32, height: u32, top_left: usize, span: (usize, usize)) -> (f64, f64, f64, f64) {
+    let (cols, rows) = span;
+    let (x0, y0, _, _) = tile_rect(width, height, top_left);
+    let last = top_left + (rows.max(1) - 1) * COLUMNS + (cols.max(1) - 1);
+    let (x1, y1, w1, h1) = tile_rect(width, height, last);
+    (x0, y0, (x1 + w1) - x0, (y1 + h1) - y0)
+}
+
 /// Where a grid icon's rounded plate and label actually paint within its
 /// tile cell: horizontally centered, and the icon+label block vertically
 /// centered in the cell's height rather than pinned to its top edge -- a
@@ -301,6 +318,84 @@ pub fn remove_target_rect(_width: u32) -> (f64, f64, f64, f64) {
     (SIDE_MARGIN, PILL_TOP, 128.0, PILL_HEIGHT)
 }
 
+/// A folder tile's 2x2 mini-icon preview rects, inside its own plate rect
+/// (`tile_content`'s or `dock_content`'s `plate_x/plate_y/plate_size`) --
+/// the first (up to) 4 member apps, in folder order, each drawn small
+/// enough that all 4 read as one rounded tile at a glance (task: "A folder
+/// icon is a rounded tile with 2x2 mini icons").
+pub fn folder_mini_icon_rects(plate_x: f64, plate_y: f64, plate_size: f64) -> [(f64, f64, f64, f64); 4] {
+    let pad = plate_size * 0.12;
+    let gap = plate_size * 0.06;
+    let cell = (plate_size - 2.0 * pad - gap) / 2.0;
+    let mut rects = [(0.0, 0.0, 0.0, 0.0); 4];
+    for (index, rect) in rects.iter_mut().enumerate() {
+        let column = index % 2;
+        let row = index / 2;
+        *rect = (
+            plate_x + pad + column as f64 * (cell + gap),
+            plate_y + pad + row as f64 * (cell + gap),
+            cell,
+            cell,
+        );
+    }
+    rects
+}
+
+/// The open-folder overlay's own card rect: a centered rounded sheet,
+/// leaving the same top inset every other overlay (Shade/Settings) respects
+/// and generous side margins so Home's wallpaper still reads behind it.
+pub fn folder_overlay_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    let x = SIDE_MARGIN * 1.5;
+    let y = GRID_TOP;
+    let w = f64::from(width) - 2.0 * x;
+    let h = f64::from(height) - y - DOCK_HEIGHT - DOTS_HEIGHT;
+    (x, y, w, h)
+}
+
+/// Height reserved at the top of the open-folder card for its editable
+/// name label (task: "an editable name (tap the name to rename)").
+pub const FOLDER_NAME_HEIGHT: f64 = 56.0;
+
+/// The folder name label's own tap rect, within the overlay card.
+pub fn folder_name_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    let (x, y, w, _) = folder_overlay_rect(width, height);
+    (x, y, w, FOLDER_NAME_HEIGHT)
+}
+
+/// One app tile's rect inside an open folder's own grid, below the name
+/// label -- same `COLUMNS` density as the Home grid, but scoped to the
+/// card's own width/height rather than the full panel.
+pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
+    let (card_x, card_y, card_w, _) = folder_overlay_rect(width, height);
+    let grid_top = card_y + FOLDER_NAME_HEIGHT + 12.0;
+    let column = index % COLUMNS;
+    let row = index / COLUMNS;
+    let w = ((card_w - 2.0 * TILE_GAP) / COLUMNS as f64 - TILE_GAP).max(0.0);
+    (
+        card_x + TILE_GAP + column as f64 * (w + TILE_GAP),
+        grid_top + row as f64 * ROW_HEIGHT,
+        w,
+        ROW_HEIGHT - TILE_GAP,
+    )
+}
+
+/// Which app tile, if any, inside an open folder's grid `point` lands on,
+/// bounded to `count` actual members (an open folder with more members
+/// than fit in the card is not supported yet -- see this function's own
+/// call sites' doc for the deferred-scrolling note).
+pub fn folder_app_at(point: (f64, f64), width: u32, height: u32, count: usize) -> Option<usize> {
+    if !point.0.is_finite() || !point.1.is_finite() {
+        return None;
+    }
+    for index in 0..count {
+        let (x, y, w, h) = folder_app_rect(width, height, index);
+        if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
+            return Some(index);
+        }
+    }
+    None
+}
+
 pub fn hits(point: (f64, f64), rect: (f64, f64, f64, f64)) -> bool {
     point.0.is_finite()
         && point.1.is_finite()
@@ -425,6 +520,49 @@ mod tests {
             + tile_rect(568, 1232, 0).3;
         assert!(dots_center_y(1232) >= grid_bottom_edge);
         assert!(dock_top(1232) > dots_center_y(1232));
+    }
+
+    #[test]
+    fn folder_mini_icons_stay_inside_the_plate_and_do_not_overlap() {
+        let rects = folder_mini_icon_rects(100.0, 200.0, 108.0);
+        for (x, y, w, h) in rects {
+            assert!(x >= 100.0 && y >= 200.0 && x + w <= 100.0 + 108.0 && y + h <= 200.0 + 108.0);
+        }
+        // top-left and top-right must not overlap horizontally
+        assert!(rects[0].0 + rects[0].2 <= rects[1].0);
+        // top-left and bottom-left must not overlap vertically
+        assert!(rects[0].1 + rects[0].3 <= rects[2].1);
+    }
+
+    #[test]
+    fn folder_app_at_hits_only_the_requested_count_of_tiles() {
+        assert_eq!(folder_app_at((0.0, 0.0), 568, 1232, 4), None, "above the card's own grid");
+        let (x, y, w, h) = folder_app_rect(568, 1232, 0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        assert_eq!(folder_app_at(point, 568, 1232, 4), Some(0));
+        assert_eq!(folder_app_at(point, 568, 1232, 0), None, "no members at all yet");
+    }
+
+    #[test]
+    fn folder_overlay_card_sits_within_the_panel_and_above_the_dock() {
+        let (x, y, w, h) = folder_overlay_rect(568, 1232);
+        assert!(x > 0.0 && y > 0.0);
+        assert!(x + w < 568.0);
+        assert!(y + h < dock_top(1232));
+    }
+
+    #[test]
+    fn spanned_tile_rect_covers_every_cell_the_span_names_with_no_seam() {
+        // A 4x2 Clock anchored at slot 0 should read as one card exactly as
+        // wide as all 4 columns and as tall as 2 rows, including the gaps
+        // between the tiles it spans -- not 8 separate tile rects glued
+        // together with visible gutters between them.
+        let spanned = spanned_tile_rect(568, 1232, 0, (4, 2));
+        let (last_x, last_y, last_w, last_h) = tile_rect(568, 1232, 4 + 3);
+        assert_eq!(spanned.0, tile_rect(568, 1232, 0).0);
+        assert_eq!(spanned.1, tile_rect(568, 1232, 0).1);
+        assert_eq!(spanned.2, (last_x + last_w) - spanned.0);
+        assert_eq!(spanned.3, (last_y + last_h) - spanned.1);
     }
 
     #[test]
