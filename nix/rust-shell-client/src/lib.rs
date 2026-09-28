@@ -70,6 +70,42 @@ pub fn configure_size(current: &mut (u32, u32), width: u32, height: u32) -> Opti
     Some(changed)
 }
 
+/// The 568x1232 design aspect ratio every full-panel layer surface
+/// (wallpaper, home, the drawer/shade/settings overlay -- all three
+/// `LayerShellHandler::configure` branches) is authored against, and every
+/// page painted onto them scales to fill via
+/// `cr.scale(width / 568.0, height / 1232.0)` (see `render::paint_wifi` and
+/// its siblings). That scale is only *uniform* -- the only kind that does
+/// not squash or stretch glyphs and buttons -- when a `configure`'s own
+/// aspect ratio stays close to this one.
+const DESIGN_ASPECT: f64 = 568.0 / 1232.0;
+
+/// Whether a proposed `(width, height)` keeps that uniform scale. Generous
+/// (10%) so a real, legitimate proportional resize (a different physical
+/// panel or a host/QEMU capture at a different resolution, same aspect --
+/// `render::hit_uses_rendered_output_scale`'s own 390x844 case, ratio
+/// 0.4621 against this constant's 0.4610) still passes, while a shrink
+/// confined to one axis does not.
+///
+/// This exists as an independent, defense-in-depth check alongside
+/// `set_exclusive_zone(-1)` on all three surfaces (`ensure_layer`'s own
+/// doc): that request is what stops the compositor from ever proposing a
+/// keyboard-exclusive-zone-driven single-axis shrink in the first place,
+/// but `LayerShellHandler::configure` calls this too, so a client bug that
+/// somehow reintroduced a `0` exclusive zone would still get caught here
+/// rather than silently squashing the page again the way `wvkbd` did on
+/// real glass, 2026-09-28 (`/tmp/coherent-settings.png`): the reported
+/// configured height (keyboard top) was about 775, giving a ratio of
+/// roughly 0.73 against this constant's 0.46 -- about 59% off, far outside
+/// the 10% band below.
+pub fn configure_preserves_aspect(width: u32, height: u32) -> bool {
+    if width == 0 || height == 0 {
+        return false;
+    }
+    let ratio = f64::from(width) / f64::from(height);
+    ((ratio / DESIGN_ASPECT) - 1.0).abs() <= 0.10
+}
+
 /// The renderer may repaint only a slot the compositor has released. With
 /// all three slots busy it defers the new frame instead of growing without
 /// bound or writing memory still owned by the compositor.
@@ -193,6 +229,28 @@ mod tests {
         assert_eq!(geometry, (600, 1200));
         assert_eq!(configure_size(&mut geometry, 600, 99_999), None);
         assert_eq!(geometry, (600, 1200));
+    }
+
+    #[test]
+    fn configure_preserves_aspect_accepts_uniform_resize_only() {
+        // The panel's own native size.
+        assert!(configure_preserves_aspect(568, 1232));
+        // A proportional host/QEMU capture at a different resolution --
+        // `render`'s own `hit_uses_rendered_output_scale` test case.
+        assert!(configure_preserves_aspect(390, 844));
+        // The real-board regression this guards (2026-09-28): wvkbd's
+        // exclusive zone shrinking only the height, width unchanged.
+        assert!(!configure_preserves_aspect(568, 775));
+        assert!(!configure_preserves_aspect(568, 832));
+        // Symmetric: a width-only shrink must be rejected too, not just a
+        // height-only one.
+        assert!(!configure_preserves_aspect(300, 1232));
+        // Bounds/degenerate input.
+        assert!(!configure_preserves_aspect(0, 1232));
+        assert!(!configure_preserves_aspect(568, 0));
+        // Just inside vs. clearly outside the 10% band.
+        assert!(configure_preserves_aspect(568, 1120));
+        assert!(!configure_preserves_aspect(568, 1100));
     }
 
     #[test]
