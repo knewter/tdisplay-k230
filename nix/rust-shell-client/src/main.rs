@@ -7,7 +7,7 @@ use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
-    configure_size, frame_bytes, runtime_trace,
+    configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
@@ -2533,7 +2533,10 @@ impl ShellClient {
         );
         layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
         layer.set_size(0, 0);
-        layer.set_exclusive_zone(0);
+        // -1, not 0: this is a fixed full-panel surface, never a panel that
+        // should yield space to another layer's exclusive zone. See
+        // `ensure_layer`'s own doc for the bug this fixes.
+        layer.set_exclusive_zone(-1);
         layer.set_keyboard_interactivity(KeyboardInteractivity::None);
         let Ok(empty) = Region::new(&self.compositor) else {
             return false;
@@ -2570,7 +2573,8 @@ impl ShellClient {
         );
         layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
         layer.set_size(0, 0);
-        layer.set_exclusive_zone(0);
+        // -1, not 0: see `ensure_layer`'s own doc for why.
+        layer.set_exclusive_zone(-1);
         layer.set_keyboard_interactivity(KeyboardInteractivity::None);
         layer.commit();
         self.home_surface.layer = Some(layer);
@@ -3014,6 +3018,37 @@ impl ShellClient {
         }
     }
 
+    /// Maps the drawer/shade/settings overlay's `Layer::Overlay` surface.
+    ///
+    /// `set_exclusive_zone(-1)` (not `0`): a `0` exclusive zone means, per
+    /// wlr-layer-shell-unstable-v1's own doc for `set_exclusive_zone`, "the
+    /// surface indicates that it would like to be moved to avoid occluding
+    /// surfaces with a positive exclusive zone" -- since this surface is
+    /// anchored to all four edges, wlroots' `arrange_layers` acted on that by
+    /// *shrinking* it (not moving it) whenever `wvkbd`'s own layer surface
+    /// raised a real positive exclusive zone for its height. This shell's
+    /// `configure` handler (`configure_size`) accepted that smaller size
+    /// like any legitimate resize, and every page painted onto this surface
+    /// (`render::paint_wifi` and its siblings) scales its fixed 568x1232
+    /// design-unit artwork to fill whatever it is given
+    /// (`cr.scale(width / 568.0, height / 1232.0)`) -- entirely reasonably
+    /// for a genuine output resize, but wrong here: the configure was never
+    /// really about this surface's own size, only about wvkbd wanting floor
+    /// space, and shrinking only the *height* stretched every glyph and
+    /// button vertically (real board capture, 2026-09-28: the Wi-Fi page
+    /// visibly squashed to about 0.66x height the instant wvkbd appeared).
+    /// `-1` tells the compositor this surface "would not like to be moved
+    /// [or resized] to accommodate for other surfaces... and \[should\]
+    /// extend it all the way to the edges it is anchored to" -- so it always
+    /// gets the full 568x1232 panel regardless of what wvkbd or any other
+    /// layer surface requests, and pages that need to react to the keyboard
+    /// (only the Wi-Fi password field does today) do it by reflowing their
+    /// own content against the keyboard's known height
+    /// (`wifi_ui::entry_buttons_rect`, driven by `sync_wifi_keyboard`), never
+    /// by asking the compositor to resize the surface itself. `ensure_home`
+    /// and `ensure_wallpaper` carry the identical fix for the identical
+    /// reason: neither is keyboard-aware, so either would otherwise squash
+    /// the same way the moment the keyboard shows while they are visible.
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
         if self.layer.is_none() {
             let surface = self.compositor.create_surface(qh);
@@ -3026,7 +3061,7 @@ impl ShellClient {
             );
             layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
             layer.set_size(0, 0);
-            layer.set_exclusive_zone(0);
+            layer.set_exclusive_zone(-1);
             layer.set_keyboard_interactivity(KeyboardInteractivity::None);
             let Ok(empty) = Region::new(&self.compositor) else {
                 self.log("input-region-unavailable");
@@ -3655,7 +3690,9 @@ impl LayerShellHandler for ShellClient {
             .is_some_and(|wallpaper| wallpaper.wl_surface() == layer.wl_surface())
         {
             let mut geometry = (self.wallpaper.width, self.wallpaper.height);
-            if configure_size(&mut geometry, width, height).is_none() {
+            if configure_size(&mut geometry, width, height).is_none()
+                || !configure_preserves_aspect(width, height)
+            {
                 self.log("wallpaper-configure-rejected");
                 return;
             }
@@ -3681,7 +3718,9 @@ impl LayerShellHandler for ShellClient {
             .is_some_and(|home| home.wl_surface() == layer.wl_surface())
         {
             let mut geometry = (self.home_surface.width, self.home_surface.height);
-            if configure_size(&mut geometry, width, height).is_none() {
+            if configure_size(&mut geometry, width, height).is_none()
+                || !configure_preserves_aspect(width, height)
+            {
                 self.log("home-configure-rejected");
                 return;
             }
@@ -3697,7 +3736,9 @@ impl LayerShellHandler for ShellClient {
             return;
         }
         let mut geometry = (self.width, self.height);
-        if configure_size(&mut geometry, width, height).is_none() {
+        if configure_size(&mut geometry, width, height).is_none()
+            || !configure_preserves_aspect(width, height)
+        {
             self.log("configure-rejected");
             return;
         }
