@@ -17,6 +17,7 @@ import sys
 import tempfile
 import time
 
+from theme_gtk import GtkAppearanceError, render as gtk_keyfile
 from theme_transaction import TransactionError, _pointer
 
 
@@ -66,6 +67,33 @@ def palette(generation: Path) -> dict[str, str]:
     return result
 
 
+def gtk_appearance(generation: Path) -> tuple[str, str | None]:
+    """Read the (mode, icon_theme) pair a GTK/libadwaita adapter needs.
+
+    Reads the same generation `report.json` `palette()` does, independently,
+    so a caller that only wants GTK appearance never has to trust an ANSI
+    palette dict for fields that were never colors.
+    """
+    if not IDENTITY.fullmatch(generation.name):
+        raise AppAppearanceError("invalid generation identity")
+    source = generation / "report.json"
+    if source.is_symlink() or not source.is_file() or source.stat().st_size > MAX_REPORT:
+        raise AppAppearanceError("missing or oversized generation report")
+    report = json.loads(source.read_bytes())
+    if not isinstance(report, dict) or report.get("generation") != generation.name:
+        raise AppAppearanceError("generation report identity mismatch")
+    colors = report.get("palette")
+    if not isinstance(colors, dict):
+        raise AppAppearanceError("generation has no resolved palette")
+    mode = colors.get("mode", "dark")
+    if mode not in ("dark", "light"):
+        raise AppAppearanceError(f"invalid resolved mode: {mode!r}")
+    icon_theme = report.get("icon_theme")
+    if icon_theme is not None and not isinstance(icon_theme, str):
+        raise AppAppearanceError("invalid icon theme in generation report")
+    return mode, icon_theme
+
+
 def foot_config(colors: dict[str, str], *, monitor: bool) -> str:
     """Emit only trusted Foot appearance keys plus the repo's portrait defaults."""
     lines = ["[main]", "font=DejaVu Sans Mono:size=15"]
@@ -99,7 +127,13 @@ def prepare(generation: Path, state_root: Path) -> Path:
     if not generation.is_relative_to(cache):
         raise AppAppearanceError("generation is outside theme cache")
     colors = palette(generation)
+    mode, icon_theme = gtk_appearance(generation)
+    try:
+        gtk_settings = gtk_keyfile(mode, icon_theme)
+    except GtkAppearanceError as error:
+        raise AppAppearanceError(str(error)) from error
     identity = hashlib.sha256((generation.name + "\n" + json.dumps(colors, sort_keys=True)
+                               + "\n" + gtk_settings
                                + Path(__file__).read_text()).encode()).hexdigest()[:24]
     parent = root / "app-appearance"
     if parent.is_symlink():
@@ -117,21 +151,33 @@ def prepare(generation: Path, state_root: Path) -> Path:
             file = target / name
             if file.is_symlink() or not file.is_file() or file.read_text() != foot_config(colors, monitor=monitor):
                 raise AppAppearanceError("cached app appearance changed")
+        keyfile = target / "gtk-settings.keyfile"
+        if keyfile.is_symlink() or not keyfile.is_file() or keyfile.read_text() != gtk_settings:
+            raise AppAppearanceError("cached app appearance changed")
         return target
     with tempfile.TemporaryDirectory(prefix=".prepare-", dir=target_root) as scratch:
         work = Path(scratch)
         for name, monitor in (("terminal-foot.ini", False), ("monitor-foot.ini", True)):
             (work / name).write_text(foot_config(colors, monitor=monitor))
+        (work / "gtk-settings.keyfile").write_text(gtk_settings)
         coverage = {
             "generation": generation.name,
             "applied": ["Foot: generated terminal/monitor configs for new windows",
-                        "Foot: opt-in OSC for caller's current terminal"],
+                        "Foot: opt-in OSC for caller's current terminal",
+                        "GTK4/libadwaita (Portfolio, Nautilus): generated GSettings "
+                        "keyfile-backend color-scheme + icon-theme, matching upstream "
+                        "omarchy-theme-set-gnome's own dark/light + icon-only scope "
+                        "(no accent-color recolor, same as Omarchy itself)"],
             "inherited": ["htop", "nano", "nnn"],
             "limited": ["mpv: video surface does not consume terminal colors",
                         "Help: shell client uses shared shell tokens, not a separate app adapter",
                         "wvkbd keyboard: colours applied by keyboard_appearance.py, "
                         "not this Foot/OSC adapter",
-                        "existing Foot windows: no automatic PTY broadcast"],
+                        "existing Foot windows: no automatic PTY broadcast",
+                        "GTK4/libadwaita apps already running: the keyfile backend "
+                        "watches its file for changes, but live pickup by an open "
+                        "Portfolio/Nautilus window is UNVERIFIED on hardware; a fresh "
+                        "launch always resolves the current generation"],
             "withheld": ["theme foot.ini executable settings"]}
         (work / "coverage.json").write_text(json.dumps(coverage, indent=2, sort_keys=True) + "\n")
         for entry in work.iterdir():

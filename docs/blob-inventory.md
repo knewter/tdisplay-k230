@@ -1478,6 +1478,10 @@ DATA 4697a2cfe9b753a6ff75ca019f3bb103b07eb85e10cefd7463b8d735b54380b9 docs/evide
 DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evidence/home-widgets-folders/home-dark-rearrange-done.png
 DATA fa078c53898c978cd6e1bb69b6ed4e625cf380c6450f2155c508f512d21b6255 docs/evidence/home-widgets-folders/home-dark-rearrange.png
 DATA 507e156719fa35cfee8b57042169200c8536506afd0f54e1bb929392a07a085c docs/evidence/home-widgets-folders/home-dark-removed.png
+DATA 1edb7ac0fc9bd85bb2853bfb4013bf082e7a52ed29c47fae473972971a7445ff docs/evidence/files-app/host/portfolio-dark.png
+DATA 373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f docs/evidence/files-app/host/portfolio-light.png
+DATA 6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68 docs/evidence/files-app/host/nautilus-dark.png
+DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evidence/files-app/host/nautilus-light.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2334,3 +2338,20 @@ a real cross-built Rust client and patched Sway under
 | `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
 | `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
 | `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |
+
+### Files app candidates: dark/light theming, host-native
+
+Host-native capture (NOT the riscv64 cross build, NOT QEMU, NOT the board):
+the real, unmodified `pkgs.portfolio-filemanager`/`pkgs.nautilus` for
+x86_64-linux, substituted from cache.nixos.org, run under Xvfb with
+`GSK_RENDERER=cairo` and `GSETTINGS_BACKEND=keyfile`, reading a keyfile
+produced by `tools/theme_gtk.py`. See `docs/evidence/files-app/README.md`
+for the exact harness and the schema-path bug this run caught and fixed
+(`nix/shell.nix`'s `filesAppSchemaDirs`).
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/files-app/host/portfolio-dark.png` | 20512 | DATA | `1edb7ac0fc9bd85bb2853bfb4013bf082e7a52ed29c47fae473972971a7445ff` |
+| `docs/evidence/files-app/host/portfolio-light.png` | 20130 | DATA | `373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f` |
+| `docs/evidence/files-app/host/nautilus-dark.png` | 21129 | DATA | `6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68` |
+| `docs/evidence/files-app/host/nautilus-light.png` | 20000 | DATA | `b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e` |

@@ -461,8 +461,72 @@ let
     # rounds floating sizes down to whole cells and exposes wallpaper edges.
     exec ${pkgs.foot}/bin/foot --config "$foot_config" ${lib.optionalString cfg.coherentShell "--override resize-by-cells=no"} "$@"
   '';
+  # Two off-the-shelf GTK4/libadwaita file managers, evaluated against nnn's
+  # existing terminal "Files" entry (nix/handheld-desktop-entries.nix) per
+  # openspec/changes/the-handheld-has-a-themed-files-app. Both cross-build
+  # like every other GUI package here; wrapGAppsHook4 already resolves their
+  # own runtime deps (icons, GI typelibs, own gschemas). What it does not
+  # resolve is: (1) a GL-capable GSK renderer -- this board's Mesa-less
+  # Pixman/wlroots stack has none (see AGENTS.md), so GSK_RENDERER=cairo
+  # forces GTK4's software renderer; (2) the org.gnome.desktop.interface
+  # schema (color-scheme/icon-theme) -- nautilus's own package.nix lists
+  # gsettings-desktop-schemas as a buildInput, but Portfolio's does not, and
+  # libadwaita itself only uses that package at build/check time
+  # (pkgs/by-name/li/libadwaita/package.nix: not propagatedBuildInputs), so
+  # it is added explicitly here for both; (3) the active theme's GSettings
+  # keyfile-backend symlink -- see tools/theme_gtk.py and
+  # tools/app_appearance.py's generated gtk-settings.keyfile. There is no
+  # xdg-desktop-portal running on this image, so libadwaita's own portal-based
+  # dark/light detection has nothing to talk to; the GSettings keyfile
+  # backend is read directly instead, independent of any portal or dconf/D-Bus
+  # service.
+  # GLib does not look for a package's compiled schema under its plain
+  # `/share` -- nixpkgs installs each package's own gschemas.compiled at
+  # `/share/gsettings-schemas/<name>/glib-2.0/schemas/` specifically so
+  # unrelated packages' schemas never collide (glib's own setup-hook.sh:
+  # `make_glib_find_gsettings_schemas`/`glibPostInstallHook`). Confirmed by
+  # a host-native repro: `gsettings get org.gnome.desktop.interface
+  # color-scheme` returned "No schemas installed" with plain `/share` on
+  # `XDG_DATA_DIRS`, and read back the keyfile's value correctly once
+  # pointed at `glib.getSchemaDataDirPath` instead -- see
+  # docs/evidence/files-app/. Using that passthru helper (rather than a
+  # hand-built path) keeps this correct across a `gsettings-desktop-schemas`
+  # version bump.
+  filesAppSchemaDirs = "${pkgs.glib.getSchemaDataDirPath pkgs.gsettings-desktop-schemas}:${themeIcons}/share";
+  themeDefaultGtkSettings = "${themeDefault}/generations/${themeDefaultId}/gtk-settings.keyfile";
+  mkFilesAppLauncher = { command, package, binary }:
+    pkgs.writeShellScriptBin command ''
+      export GSK_RENDERER=cairo
+      export GSETTINGS_BACKEND=keyfile
+      export XDG_DATA_DIRS="${filesAppSchemaDirs}:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      config_dir="$HOME/.config/glib-2.0/settings"
+      mkdir -p "$config_dir"
+      # `app-appearance/active` is the same acknowledged-theme symlink Foot's
+      # adapter already reads (tools/app_appearance.py); its generation now
+      # also carries gtk-settings.keyfile. Re-linked on every launch so a
+      # fresh process always resolves the theme active *now*, even if this
+      # symlink still pointed at nothing (fresh home, before any explicit
+      # theme activation) -- the pinned bundled default takes over then.
+      active_keyfile="$HOME/.local/state/omarchy/current/app-appearance/active/gtk-settings.keyfile"
+      if [ -e "$active_keyfile" ]; then
+        ln -sfn "$active_keyfile" "$config_dir/keyfile"
+      else
+        ln -sfn "${themeDefaultGtkSettings}" "$config_dir/keyfile"
+      fi
+      exec ${package}/bin/${binary} "$@"
+    '';
+  portfolioLauncher = mkFilesAppLauncher {
+    command = "k230-portfolio";
+    package = pkgs.portfolio-filemanager;
+    binary = "dev.tchx84.Portfolio";
+  };
+  nautilusLauncher = mkFilesAppLauncher {
+    command = "k230-nautilus";
+    package = pkgs.nautilus;
+    binary = "nautilus";
+  };
   handheldDesktopEntries = pkgs.callPackage ./handheld-desktop-entries.nix {
-    inherit themedFoot;
+    inherit themedFoot portfolioLauncher nautilusLauncher;
     foot = pkgs.foot;
     htop = pkgs.htop;
     nnn = pkgs.nnn;
@@ -503,7 +567,7 @@ let
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
     # Desktop overrides precede package entries; icon roots remain reachable
     # even when Nix has not merged them into the profile's share/icons tree.
-    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:${pkgs.portfolio-filemanager}/share:${pkgs.nautilus}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
@@ -1542,7 +1606,10 @@ in
       timerScript
       timerDesktop
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
-      ++ lib.optionals cfg.coherentShell [ rustShell themedFoot themeCommand settingsCommand notificationCommand ]
+      ++ lib.optionals cfg.coherentShell [
+        rustShell themedFoot themeCommand settingsCommand notificationCommand
+        portfolioLauncher nautilusLauncher pkgs.portfolio-filemanager pkgs.nautilus
+      ]
       ++ lib.optionals cfg.probes [
       cage
       cage-rgb565

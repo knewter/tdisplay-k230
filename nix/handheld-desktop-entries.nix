@@ -1,4 +1,4 @@
-{ runCommand, themedFoot, foot, htop, nnn }:
+{ runCommand, themedFoot, foot, htop, nnn, portfolioLauncher, nautilusLauncher }:
 
 # Desktop-entry overrides have the same IDs as upstream packages. Putting this
 # share tree first in XDG_DATA_DIRS lets GIO apply the normal freedesktop
@@ -41,6 +41,32 @@ Terminal=true
 MimeType=inode/directory;
 Categories=System;FileTools;FileManager;
 StartupWMClass=nnn
+EOF
+  cat > "$out/share/applications/dev.tchx84.Portfolio.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files (Portfolio)
+GenericName=File Manager
+Comment=Touch-first GTK4/libadwaita file manager (evaluation build)
+Exec=${portfolioLauncher}/bin/k230-portfolio %U
+Icon=dev.tchx84.Portfolio
+Terminal=false
+MimeType=inode/directory;
+Categories=System;FileTools;FileManager;
+StartupWMClass=dev.tchx84.Portfolio
+EOF
+  cat > "$out/share/applications/org.gnome.Nautilus.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files (Nautilus)
+GenericName=File Manager
+Comment=GNOME's file manager, Omarchy's own default (evaluation build)
+Exec=${nautilusLauncher}/bin/k230-nautilus %U
+Icon=org.gnome.Nautilus
+Terminal=false
+MimeType=inode/directory;
+Categories=System;FileTools;FileManager;
+StartupWMClass=org.gnome.Nautilus
 EOF
   cat > "$out/share/applications/footclient.desktop" <<'EOF'
 [Desktop Entry]
