@@ -67,16 +67,26 @@
 
 ## 5. Board verification
 
-- [ ] 5.1 <!-- UNVERIFIED: with a live video playing AND, separately, a
-  busy non-video app (e.g. `yes` in foot, or btop) in the deck: overview
-  entry completes in under about 400ms; a touch is acted on within about
-  100ms; the small preview is visibly live (never frozen); flick, switch
-  and close all work; closing the video card makes mpv exit with
-  `pgrep -x mpv` empty and no relaunch. Record commands, journal
-  excerpts, and a camera contact sheet under
-  `docs/evidence/card-shell/live-card-cost/` (or the existing
-  `docs/evidence/card-shell/video-card-gestures/`), with blob-inventory
-  rows; `python3 tools/blob-scan.py` must exit 0. -->
+- [ ] 5.1 Mostly done, board evidence already committed at
+  `docs/evidence/card-shell/live-card-cost/README.md` (captured
+  2026-09-26, injected touch via `evemu-device`/`tools/inject-tap.sh` plus
+  `swaymsg card_shell ...` IPC, not a real finger): with a live video
+  playing and, separately, a busy non-video app (`btop` in `foot`) in the
+  deck, flick/switch/close all worked, the small preview stayed visibly
+  live for both apps (contact sheet committed), and closing the video
+  card made mpv exit with `pgrep -x mpv` empty and no relaunch (verified
+  journal excerpt, zero `CS_MESSAGE_FAILED`/failure lines). `python3
+  tools/blob-scan.py` exits 0 with that evidence's rows present.
+  <!-- UNVERIFIED, per that same README's own "Not established" section:
+  the specific sub-400ms entry-animation and sub-100ms touch-ack timing
+  targets (the available injection tool's own per-step process-spawn
+  overhead dominated every timing measurement attempted, both before and
+  after this change), and a real-finger check on the glass. Narrowed
+  board task: measure entry/touch timing with a real finger or a
+  uinput-holding injector (not re-execing `evemu-event` per sample), and
+  record it under the same evidence directory. -->
+  See `docs/closeout/board-checklist-shell.md` for the exact remaining
+  steps.
 
 ## 6. Proposal validation
 
