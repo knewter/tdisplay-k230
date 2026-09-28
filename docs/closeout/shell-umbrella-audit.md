@@ -27,7 +27,21 @@ this scope until the user/coordinator explicitly authorizes each split, at
 which point the corresponding tasks and requirement text should be removed
 from the parent in the same commit that activates the successor.
 
-## the-handheld-presents-a-coherent-shell (30 open / 5 done -> 13 open / 22 done)
+## the-handheld-presents-a-coherent-shell (30 open / 5 done -> 17 open / 18 done)
+
+**Correction (2026-09-28, coordinator review):** tasks 4.1, 4.2, 4.3 and 4.8
+were briefly ticked citing evidence other than each task's own named test,
+and 4.8's citation was a stale evidence file from an earlier source revision.
+Rerunning each task's actual command found: `tests/test_shell_motion.py`
+genuinely does not exist (4.1-4.3 reopened, no way to run their command as
+written), and `tests/test_card_shell_two_axis_runtime.py` fails against a
+fresh `.#card-shell` build (4.8 reopened -- the cited two-axis-qemu evidence
+is from source `532115c2`, not this branch's current state). Task 1.6 also
+cited another change's stale test run rather than a fresh one; rerunning it
+here found a real (harness-only) compile bug in `nix/rust-shell-client`'s
+test crate, now fixed, with 301/301 tests passing -- kept ticked with the
+corrected citation. Net count corrected from the previously reported 22 done
+to 18 done.
 
 Most of this change's host-scope tasks turned out to already be implemented,
 just via a different path than the tasks' own cited commands assumed: the
@@ -47,7 +61,7 @@ checkpoint files under `docs/evidence/coherent-shell/`.
 | 1.3 | (a) | Same file: "a long press opens a cancellable context sheet." |
 | 1.4 | (a) | `nix/rust-shell-client/src/icon.rs` + `nix/card-shell/icon.c` (added by `the-shell-behaves-as-one-coherent-system` A.3); `tests/test_shell_icons.py` 8/8 passing; `docs/evidence/coherent-shell/icons/`. |
 | 1.5 | (e), partial | Gesture cues (`render.rs:1704`), Help (`render.rs:3751`), and the rollback bar (`coherentShell` defaults `false`) all confirmed present. The opt-in large-labeled-button accessibility aid does not exist anywhere in `nix/rust-shell-client` or `nix/card-shell` (grepped for "accessib", zero hits). Left open for that one remaining piece; distinct from the text-scale/contrast option in `the-shell-offers-quick-toggles-and-vision-options`. |
-| 1.6 | (a) | `flake.nix:191` (`handheld-shell-rust` package); cargo test 219/219 (per sibling change's evidence); `docs/evidence/coherent-shell/{prototype-launcher-build.md,image-wiring-host.md}`. |
+| 1.6 | (a) | `flake.nix:191` (`handheld-shell-rust` package); `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked` rerun fresh 2026-09-28: 301/301 passing, after fixing a test-crate compile bug (`tests/theme_catalog_module.rs` now also includes `runtime_trace.rs` by path); `docs/evidence/coherent-shell/{prototype-launcher-build.md,image-wiring-host.md}`. |
 | 2.1 | (a) | `docs/evidence/coherent-shell/{settings-backend.md,notification-backend.md}`; `Route::Shade`/`Route::Settings`. |
 | 2.2 | (e) -> successor | `openspec/changes/the-shell-behaves-as-one-coherent-system/proposal.md` names this task explicitly as still open; only the narrower, different bottom-edge overlay-escape fix landed. Staged in `the-shell-gets-side-edge-back-and-motion-trace`, **awaiting authorization**. |
 | 2.3 | (a) | `tools/device_settings.py` implements the exact capability-state contract (network/brightness/keyboard/motion, no battery key); `tests/test_device_settings.py` 9/9 passing. |
@@ -57,14 +71,14 @@ checkpoint files under `docs/evidence/coherent-shell/`.
 | 3.2 | (a) | Same test file; `notification_center.py`'s preview is non-focus-taking by construction (`"focus": False` on every emitted event), so the typing-focus case holds by design. |
 | 3.3 | done (pre-existing) | Unchanged. |
 | 3.4 | (a) | Ran `nix build .#handheld-notifications --no-link --print-out-paths` 2026-09-28: succeeded, `/nix/store/n9p1qlrflc463v3siyrhj49n5hdbh1fd-k230-notifications`. |
-| 4.1 | (a) | `nix/card-shell/adapter.c` privacy/eligibility handling, backed by `the-shell-manages-apps-as-cards`' own done tasks 2.1/3.1; `docs/evidence/card-shell/injected/README.md`. |
-| 4.2 | (a) | `docs/evidence/coherent-shell/{reveal-integrated-qemu,direct-reveal-drag-qemu,rust-shade-dismiss-qemu,two-axis-qemu}/README.md`. |
-| 4.3 | (a) | `card-shell-policy.c`'s explicit reverse/retarget state (`entry_reverse_from`, `expand_reversing`, etc.); exercised in `two-axis-qemu/README.md`'s reverse case. |
+| 4.1 | (e), reopened | `tests/test_shell_motion.py` (this task's own named fixture) does not exist. `nix/card-shell/adapter.c` privacy/eligibility handling and `docs/evidence/card-shell/injected/README.md` are real but do not substitute for the named test. |
+| 4.2 | (e), reopened | Same reason as 4.1. QEMU evidence exists (`docs/evidence/coherent-shell/{reveal-integrated-qemu,direct-reveal-drag-qemu,rust-shade-dismiss-qemu,two-axis-qemu}/README.md`) but is not this task's named fixture. |
+| 4.3 | (e), reopened | Same reason as 4.1. `card-shell-policy.c`'s reverse/retarget state (`entry_reverse_from`, `expand_reversing`) is real and exercised in `two-axis-qemu/README.md`'s reverse case, but again not the named fixture. |
 | 4.4 | (e) -> successor | Same citation as 2.2; staged in the same successor. |
 | 4.5 | (e) -> successor | `tools/shell-motion-trace.py` and `tests/test_shell_motion.py` confirmed absent from disk. Staged in the same successor. |
 | 4.6 | (a) | Task names the wrong attr (`k230` instead of `k230-coherent-shell`); task 4.9 (done) already built `sdImage-coherent`, which builds the `k230-coherent-shell` toplevel as a dependency. `docs/evidence/coherent-shell/boot-artifacts/README.md`. |
 | 4.7, 4.9 | done (pre-existing) | Unchanged. |
-| 4.8 | (a) | `tests/test_card_shell_two_axis_runtime.py` already exists (task text's "to be implemented" is stale) and passes: `docs/evidence/coherent-shell/two-axis-qemu/README.md`. |
+| 4.8 | (e), reopened | `tests/test_card_shell_two_axis_runtime.py` exists (task text's "to be implemented" is stale) but **fails** when rerun against a fresh `nix build .#card-shell`: `AssertionError: ((0, 0, 566, 1230), (16, 0, 552, 1128))` at `tests/card_shell_runtime.py:252`. The cited `docs/evidence/coherent-shell/two-axis-qemu/README.md` is from source `532115c2`, an earlier revision, not this branch's current build. |
 | 5.1-5.8 | (d) | All eight require a reserved board and/or real finger; none has committed evidence (`docs/evidence/coherent-{shell,cards,gestures,notifications,two-axis}/` do not exist yet). See `docs/closeout/board-checklist-umbrella.md`. |
 
 **Scope split staged, awaiting authorization:** `the-shell-gets-side-edge-back-and-motion-trace`
