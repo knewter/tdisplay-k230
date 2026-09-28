@@ -540,7 +540,7 @@ def main():
     def count_log(name, needle):
         return text(name).count(needle)
 
-    def wait_for_new_log_line(name, needle, baseline, seconds=5):
+    def wait_for_new_log_line(name, needle, baseline, seconds=15):
         """Several drag/drop actions in this script reuse the same
         `needle` (e.g. "home-layout-changed") against the same long-running
         process's log more than once -- a plain `needle in text(...)` would
@@ -843,18 +843,67 @@ def main():
         # extra/terminal entries. ---
         wl_socket = root / env["WAYLAND_DISPLAY"]
 
+        def open_drawer_and_settle(prefix, reopen=False):
+            """`route("drawer")` alone only *requests* the route change; the
+            very first drag scenario above reached a settled drawer by
+            following it with a `capture()` (which waits for visual
+            stability). This does the equivalent without a screenshot, for
+            spots that do not need one -- waiting for a fresh
+            `"commit"` line plus a short grace period, so a
+            long-press-drag's own `down` is never injected before the
+            drawer's input region is actually live (confirmed live:
+            without this, an immediate drag after `route("drawer")`
+            silently reached Home's own surface instead, the same bug
+            class `panel_input_rect`'s own fix just above addressed).
+
+            `reopen=True` additionally waits for the drawer's *previous*
+            instance to actually `unmap` first: after a successful
+            drag-and-drop, `end_drawer_home_drag` starts an animated close
+            (`begin_animated_close`) rather than unmapping synchronously,
+            and re-requesting the "drawer" route while `self.layer` still
+            exists is a no-op (`ensure_layer`'s own early return) -- it
+            produces no new frame at all for the plain check above to wait
+            on, so a caller re-opening the drawer after a prior drop must
+            wait for that close to actually finish first.
+
+            The settle signal itself is a fresh `"commit"` line, not
+            `K230_DRAWER_FRAME`: `main.rs`'s own `K230_DRAWER_FRAME` sample
+            is deliberately rate-limited to one line per
+            `DRAWER_FRAME_LOG_INTERVAL` (500ms) of *wall-clock* time, not
+            per route-enter -- a close-then-reopen cycle that lands inside
+            that window (routine here: the prior drag's own live-follow
+            redraws the drawer at up to 60Hz right up until the drop, so
+            `drawer_frame_log_at` is already recent when the very next
+            open's first frame renders) can suppress the reopen's
+            `K230_DRAWER_FRAME` line forever, since nothing else forces a
+            further redraw once the drawer is sitting idle. `"commit"` has
+            no such gate -- `ShellClient::draw()` logs it unconditionally
+            on every call, for every route -- and `show()` itself calls
+            `draw()` synchronously before the route request's `OK` reply
+            is even written, so a fresh `"commit"` line is guaranteed the
+            moment the request lands, independent of the frame-timing
+            sample's own throttling."""
+            if reopen:
+                unmap_baseline = count_log(prefix, "unmap")
+                wait_for_new_log_line(prefix, "unmap", unmap_baseline, seconds=15)
+            baseline = count_log(prefix, "commit")
+            route("drawer")
+            wait_for_new_log_line(prefix, "commit", baseline, seconds=15)
+            time.sleep(0.4)
+
         # "Fixture Badge" (drawer) onto an empty page-1 cell.
-        route("drawer")
+        open_drawer_and_settle("dark-restarted-rust")
         badge_target = tile_center(0)
         baseline = count_log("dark-restarted-rust", "home-drag-placed")
+        begin_baseline = count_log("dark-restarted-rust", "home-drag-begin")
         badge_drag = long_press_drag(drawer_tile_center(0), badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", 0)
+        wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", begin_baseline)
         settle_and_release(badge_drag, *badge_target)
         wait_for_new_log_line("dark-restarted-rust", "home-drag-placed", baseline)
 
         # "Fixture Extra" (drawer) dragged directly onto that same cell --
         # task: "Dropping on an existing app creates a folder."
-        route("drawer")
+        open_drawer_and_settle("dark-restarted-rust", reopen=True)
         baseline = count_log("dark-restarted-rust", "home-drag-begin")
         extra_drag = long_press_drag(drawer_tile_center(1), badge_target)
         wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", baseline)

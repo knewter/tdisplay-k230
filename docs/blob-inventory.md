@@ -1462,6 +1462,22 @@ DATA 862c1e59404b041f72425d885943e82ac0d4942f204b2a98566894b8822a66be docs/evide
 DATA 9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d docs/evidence/volume/shade-both-sliders.png
 DATA 6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a docs/evidence/volume/hud-collapsed.png
 DATA 1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401 docs/evidence/volume/hud-expanded.png
+DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evidence/home-widgets-folders/home-dark-after-restart.png
+DATA 6bc49a1c8f55b302c36e19fa8c3e6114d64435e45eac8c28f698bec86e985245 docs/evidence/home-widgets-folders/home-dark-back-to-page1.png
+DATA 99a601a1dded8325da3ce9d01a88f9e914ed40e527ca5ca6742d181abbb60b30 docs/evidence/home-widgets-folders/home-dark-badge-removed.png
+DATA a0dee5ffeabaaf70874ab28a8cc0c9b86e724cbe942f494e810c538e0ac54b4d docs/evidence/home-widgets-folders/home-dark-drawer.png
+DATA 21c2a5a523ec831a47c10fc3416aab22597abbffb2954e316fc637d587a0433d docs/evidence/home-widgets-folders/home-dark-drop-target.png
+DATA 46823848726efc3212d9a1c998aa747304bd1ee38cc52055f257f470318caeba docs/evidence/home-widgets-folders/home-dark-folder-created.png
+DATA 102592293e2878f74e145debbc064b303097207174a04036fd4158ae85b50b5f docs/evidence/home-widgets-folders/home-dark-folder-mid-drag.png
+DATA ca16460ae30929b4705133a496b75905e6182b9fdc1deb561ee5f7453e737fce docs/evidence/home-widgets-folders/home-dark-folder-open.png
+DATA b30265ae56ec5bd37df0073832546dd420327777ea254c0022c3fb822ee035df docs/evidence/home-widgets-folders/home-dark-mid-drag.png
+DATA 64b1bc4899bb7e4ee4dd5af7a4adace1a2344ef4dd85e7e6cb3b9756468ec77f docs/evidence/home-widgets-folders/home-dark-mid-swipe.png
+DATA 6bc49a1c8f55b302c36e19fa8c3e6114d64435e45eac8c28f698bec86e985245 docs/evidence/home-widgets-folders/home-dark-page1.png
+DATA 76241d47b4c6465a9e158ad7d1af1857f9a28b8672a6c3a9acb781a671f5194b docs/evidence/home-widgets-folders/home-dark-page2.png
+DATA 4697a2cfe9b753a6ff75ca019f3bb103b07eb85e10cefd7463b8d735b54380b9 docs/evidence/home-widgets-folders/home-dark-pin-flow.png
+DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evidence/home-widgets-folders/home-dark-rearrange-done.png
+DATA fa078c53898c978cd6e1bb69b6ed4e625cf380c6450f2155c508f512d21b6255 docs/evidence/home-widgets-folders/home-dark-rearrange.png
+DATA 507e156719fa35cfee8b57042169200c8536506afd0f54e1bb929392a07a085c docs/evidence/home-widgets-folders/home-dark-removed.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

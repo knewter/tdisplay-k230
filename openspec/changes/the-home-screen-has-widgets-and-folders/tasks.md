@@ -67,19 +67,43 @@
   `paint_item_plate` generalized for App/Folder (2x2 mini-icon preview),
   `paint_open_folder` (scrim, card, member grid, name label); verify with
   `cargo test --offline -p k230-shell-rust render`.
-- [ ] 5.2 Widget picker sheet (long-press empty Home space -> Widgets/
-  Wallpaper & style/Home settings, preview list, drag-to-place) and its own
-  QEMU/host coverage. Deferred -- see `design.md`'s Deferred section; not
-  started.
-- [ ] 5.3 Live system-keyboard grab for folder rename, matching the Wi-Fi
-  password field's keyboard-interactivity request. Deferred; the rename
-  data model (task 2.2) is ready for this to call into.
-- [ ] 5.4 Drag an app out of an *open* folder onto Home. Deferred; needs
-  the overlay's own touch dispatch to arm a drag mid-overlay, which does
-  not exist yet.
-- [ ] 5.5 Cached-layer/dirty-rect rendering and prebuilding the drawer's
-  grid cache at idle (task 7's "if you can" items). Deferred; both are
-  separable follow-on work with no data-model dependency on this change.
+- [x] 5.2 Widget picker sheet (long-press empty Home space -> Widgets/
+  Wallpaper & style/Home settings, preview list, drag-to-place). Done:
+  `WidgetPicker`/`WidgetPickerPage` in `home_screen.rs`,
+  `picker_row_rect`/`picker_row_at` in `home_grid.rs`, `paint_widget_picker`
+  in `render.rs`, all covered by unit tests (menu navigation, a Widgets-row
+  long-press-drag placing Clock via `place_first_fit`). "Wallpaper & style"
+  navigates to the existing theme/background chooser
+  (`OpenWallpaperAndStyle` -> `ThemeIntent::Open`) without touching any
+  theme-picker file. QEMU coverage: see task 6.4 -- attempted, not
+  obtained this pass.
+- [x] 5.3 Live system-keyboard grab for folder rename, matching the Wi-Fi
+  password field's keyboard-interactivity request. Done:
+  `sync_home_keyboard`/`forget_home_keyboard`/`handle_home_key` in
+  `main.rs` mirror `sync_wifi_keyboard` exactly against
+  `home_surface.layer` (`KeyboardInteractivity::Exclusive` while
+  `open_folder.editing_name`), Enter commits
+  (`apply_folder_rename`)/Escape cancels (`cancel_folder_rename`). QEMU
+  coverage: see task 6.4 -- attempted every way described there, not
+  obtained this pass; the code path is exercised only by `cargo test`
+  today.
+- [x] 5.4 Drag an app out of an *open* folder onto Home or the dock.
+  Done: `DragSource::FromFolder { folder, app_id }` unifies through the
+  same `drop_dragged_item` engine as every other drag source; releasing
+  back onto the folder's own icon cancels (distinct from releasing
+  anywhere else on the open card). Covered by
+  `dragging_a_member_out_of_an_open_folder_onto_home_removes_and_places_it`
+  and neighbouring unit tests. QEMU coverage: see task 6.4 -- not attempted
+  this pass (sequenced after the rename scenario that would not complete).
+- [x] 5.5 Cached-layer/dirty-rect rendering and prebuilding the drawer's
+  grid cache at idle. Done: `RendererCache::prebuild_drawer_grid` wired
+  after startup, after a catalog rescan, and after a theme
+  commit/rollback; `RendererCache::draw_drawer_reveal` (ease-out-cubic
+  slide+fade of a captured snapshot) replaces an instant vanish on
+  long-press hand-off, kept cheap (translate a cached image, not a
+  re-render). Board-measured baseline this fixes:
+  `K230_DRAWER_FRAME ms=549.89` on first open vs `1.04` afterward
+  (`docs/design/app-drawer-review.md`'s own performance section).
 
 ## 6. Build and evidence
 
@@ -100,7 +124,23 @@
   capture screenshots under `docs/evidence/home-widgets-folders/` with
   blob-inventory rows; verify with the harness invocation and
   `python3 tools/blob-scan.py` exiting 0. This is QEMU proof of wiring and
-  layout, not of real-glass feel or daylight readability.
+  layout, not of real-glass feel or daylight readability. **Partially
+  done**: 16 real captures obtained and blob-scanned (drag-to-place with a
+  mid-drag frame, folder creation by dragging one app onto another,
+  opening the created folder, rearrange-to-remove, and schema-2
+  persistence across a real process restart -- see
+  `docs/evidence/home-widgets-folders/README.md`). The folder-rename
+  (real keyboard), drag-out-of-folder, dock-folder-creation, and
+  widget-picker scenarios could not be captured: the test driver was
+  silently terminated at the same point in every attempt (immediately
+  after tapping an open folder's name to begin a rename), reproducing
+  identically across three different keyboard-interactivity
+  implementations and two sway builds, with the compositor and client
+  both confirmed still alive and genuinely idle afterwards (not a
+  deadlock) -- see the README's "What this run could not reach" section
+  for the full diagnostic trail. Left **UNVERIFIED** rather than guessed
+  at; a re-attempt on a less contended run of this same shared build
+  machine is the next step, not a code change.
 
 ## 7. Board acceptance (explicitly out of scope for this pass)
 
