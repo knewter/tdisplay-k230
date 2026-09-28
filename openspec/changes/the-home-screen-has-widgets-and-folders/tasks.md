@@ -86,10 +86,13 @@
 - [x] 6.1 `cargo test --offline` (full workspace) and
   `cargo clippy --offline --all-targets`; verify their exit codes directly.
   Done: all tests pass, no new clippy warnings.
-- [ ] 6.2 Build the updated Rust client; verify with
+- [x] 6.2 Build the updated Rust client; verify with
   `nix build .#handheld-shell-rust --max-jobs 1 --cores 6 --no-link --print-out-paths`.
-- [ ] 6.3 Confirm the coherent-shell system closure still builds; verify
+  Done: `/nix/store/xyh2paw8j216zda8ad8fqwpz58v2l59r-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
+- [x] 6.3 Confirm the coherent-shell system closure still builds; verify
   with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
+  Done: `/nix/store/z23fr90qkv8azcawzvi75kh143fp0ggg-nixos-system-nixos-26.11.20260919.20b1ddd`
+  (a host cross-build proof only -- not deployed to the board or booted).
 - [ ] 6.4 A paired Sway/Rust QEMU injected-touch trial (styled on
   `tests/rust_home_screen_qemu.py`) exercising: Home with each widget
   placed, an open folder, a dock folder, and a drag mid-flight (drawer ->
