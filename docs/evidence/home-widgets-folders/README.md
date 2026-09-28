@@ -145,3 +145,14 @@ multi-page swipe) on the actual board remains **UNVERIFIED** and needs the
 board reservation, which this change did not touch. The folder-rename real
 -keyboard, drag-out-of-folder, dock-folder, and widget-picker scenarios
 additionally remain unverified even under QEMU, per the section above.
+
+## Operator real-finger report, 2026-09-28
+
+System `l44jarwk…`, test-activated on the physical board. The operator
+said, verbatim: "it's pretty great. i can't drag widgets/icons between
+screens easily and the widgets all are designed like horseshit can they
+look way better we need a dope clock nice weather widget".
+
+Evidence class: an operator's real-finger report. The basic drag-to-place,
+folder and widget flows work on the glass. Two follow-ups are open:
+cross-page dragging is hard, and the widgets' visual design is poor.
