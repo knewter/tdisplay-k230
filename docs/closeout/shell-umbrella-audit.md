@@ -1,6 +1,7 @@
 # Shell umbrella closeout audit
 
-Branch `close/shell-umbrella`, base revision `38c264e4db67` (local `master`).
+Branch `close/shell-umbrella`, audited from `38c264e4db67` and rebased onto
+`master` `a1daf003`.
 Audited 2026-09-28 against `nix/rust-shell-client`, `nix/card-shell`,
 `nix/card-shell-policy`, `nix/touch-launcher`, `nix/shell.nix`, committed
 `docs/evidence/**`, `openspec/changes/archive/`, and `git log`.
@@ -39,7 +40,7 @@ fresh `.#card-shell` build (4.8 reopened -- the cited two-axis-qemu evidence
 is from source `532115c2`, not this branch's current state). Task 1.6 also
 cited another change's stale test run rather than a fresh one; rerunning it
 here found a real (harness-only) compile bug in `nix/rust-shell-client`'s
-test crate, now fixed, with 301/301 tests passing -- kept ticked with the
+test crate, since fixed on master by `close/themes` (`d622576a`), with 299/299 tests passing after rebase -- kept ticked with the
 corrected citation. Net count corrected from the previously reported 22 done
 to 18 done.
 
@@ -61,7 +62,7 @@ checkpoint files under `docs/evidence/coherent-shell/`.
 | 1.3 | (a) | Same file: "a long press opens a cancellable context sheet." |
 | 1.4 | (a) | `nix/rust-shell-client/src/icon.rs` + `nix/card-shell/icon.c` (added by `the-shell-behaves-as-one-coherent-system` A.3); `tests/test_shell_icons.py` 8/8 passing; `docs/evidence/coherent-shell/icons/`. |
 | 1.5 | (e), partial | Gesture cues (`render.rs:1704`), Help (`render.rs:3751`), and the rollback bar (`coherentShell` defaults `false`) all confirmed present. The opt-in large-labeled-button accessibility aid does not exist anywhere in `nix/rust-shell-client` or `nix/card-shell` (grepped for "accessib", zero hits). Left open for that one remaining piece; distinct from the text-scale/contrast option in `the-shell-offers-quick-toggles-and-vision-options`. |
-| 1.6 | (a) | `flake.nix:191` (`handheld-shell-rust` package); `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked` rerun fresh 2026-09-28: 301/301 passing, after fixing a test-crate compile bug (`tests/theme_catalog_module.rs` now also includes `runtime_trace.rs` by path); `docs/evidence/coherent-shell/{prototype-launcher-build.md,image-wiring-host.md}`. |
+| 1.6 | (a) | `flake.nix:191` (`handheld-shell-rust` package); `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked` rerun 2026-09-28 after rebasing onto `a1daf003`: 299/299 passing. The earlier test-crate compile bug (`tests/theme_catalog_module.rs`, unresolved `crate::runtime_trace`) is fixed on master by `close/themes` (`d622576a`); `docs/evidence/coherent-shell/{prototype-launcher-build.md,image-wiring-host.md}`. |
 | 2.1 | (a) | `docs/evidence/coherent-shell/{settings-backend.md,notification-backend.md}`; `Route::Shade`/`Route::Settings`. |
 | 2.2 | (e) -> successor | `openspec/changes/the-shell-behaves-as-one-coherent-system/proposal.md` names this task explicitly as still open; only the narrower, different bottom-edge overlay-escape fix landed. Staged in `the-shell-gets-side-edge-back-and-motion-trace`, **awaiting authorization**. |
 | 2.3 | (a) | `tools/device_settings.py` implements the exact capability-state contract (network/brightness/keyboard/motion, no battery key); `tests/test_device_settings.py` 9/9 passing. |
