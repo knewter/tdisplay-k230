@@ -34,11 +34,11 @@
 
 ## 2. Widget visual redesign
 
-- [x] 2.1 `home_state::WidgetKind` gains `ClockMinimal`/`ClockAnalog`
-  (additive to the schema-2 tag, no migration needed), `WidgetKind::ALL`
-  and the picker's row list/count are derived from it rather than hand-typed
-  literals; verify with
-  `cargo test --offline -p k230-shell-rust home_state::tests::the_three_clock_styles_have_their_documented_spans_and_are_all_pickable`.
+- [x] 2.1 `home_state::WidgetKind` gains `ClockMinimal`/`ClockAnalog`/
+  `ClockDotMatrix` (additive to the schema-2 tag, no migration needed),
+  `WidgetKind::ALL` and the picker's row list/count are derived from it
+  rather than hand-typed literals; verify with
+  `cargo test --offline -p k230-shell-rust home_state::tests::the_four_clock_styles_have_their_documented_spans_and_are_all_pickable`.
 - [x] 2.2 `home_widgets::weather` rewritten onto wttr.in's `j1` format:
   `WeatherSnapshot` carries location, current temperature/feels-like,
   today's high/low, and up to 5 forecast entries; `parse_wttr_j1` selects
@@ -46,34 +46,31 @@
   day; the 30-minute throttle, disk cache, and offline-keeps-last-reading
   behavior are unchanged; verify with
   `cargo test --offline -p k230-shell-rust home_widgets::weather`.
-- [x] 2.3 `render.rs::paint_widget_card` redesigned per kind: two hero clock
-  styles (`hero_line`/`caption_line`) plus a drawn analog face
-  (`draw_analog_clock`); a battery ring with a charging badge
-  (`draw_battery_ring`/`draw_bolt`/`ring_percent_label`) and a muted outline
-  glyph for the absent state (`draw_battery_outline`); a weather card with a
-  Cairo-drawn condition glyph per family (`draw_weather_glyph`/
-  `cloud_shape`), a condition-tinted wash derived from theme colors
-  (`paint_condition_tint`/`weather_tint`), and a 3-entry forecast strip.
-  Every widget shares one dedicated, borderless surface treatment
-  (`paint_widget_surface`, 16px radius matching `docs/design/
-  shell-polish-review-2026-09.md`'s "sheet" token, a theme-derived filled
-  surface, a cheap layered soft shadow, no border stroke) instead of the
-  bordered `service_card` every other panel still uses; verify with
-  `cargo build --offline -p k230-shell-rust` and the host evidence harness
-  (task 3).
-  **Board-review follow-up (same pass):** the coordinator deployed the
-  first pass to the board and flagged, from the host evidence alone: the
-  weather tint leaking past its rounded corners (now clipped -- see
-  `design.md` decision 8), a 1px border reading as "boxed-in" (replaced by
-  `paint_widget_surface` -- decision 9), an oversized battery ring with an
-  external percentage caption (scaled down ~30%, percentage now centered
-  inside the ring via `ring_percent_label`, charging moved to a small
-  accent badge), the "Big stacked" clock cramped with equal-weight lines
-  (more left inset, Normal-weight minute beneath a Bold accent hour, a
-  larger date caption), and a forecast strip too small at arm's length
-  (larger glyphs/temperature, more vertical room). All five re-verified via
-  `cargo test --offline`/`cargo clippy --offline --all-targets` and the
-  re-rendered host evidence (task 3).
+- [x] 2.3 `render.rs::paint_widget_card` redesigned per kind, in three
+  passes (each documented in `design.md`, each superseding the last where
+  they conflict):
+  - **Pass 1:** two hero clock styles, an analog face, a battery ring, a
+    weather card with a condition-tinted wash, all on a bordered
+    `service_card` surface.
+  - **Pass 2 (board review):** clipped the tint leak, replaced the border
+    with a borderless filled surface (`paint_widget_surface`), rescaled the
+    battery ring and centered its percentage, widened clock breathing room,
+    enlarged the forecast strip.
+  - **Pass 3 (board review, after `docs/design/clock-widget-research.md`):**
+    removed `paint_widget_surface` entirely -- no card, fill, or border of
+    any kind. Legibility comes from a luminance-derived halo (`glow_for`/
+    `draw_layout_halo`, for text) or soft backdrop (`draw_soft_backdrop`,
+    for small graphics) instead. Rebuilt all four clock styles: Bubble/Thin
+    centered in `CLOCK_FONT_FAMILY` ("Inter") at real Black/Thin weights,
+    Dot matrix added as a fully procedural 5x7 dot grid
+    (`draw_dot_matrix_time`/`draw_dot_matrix_glyph`, digit bitmaps in
+    `DOT_DIGITS`), Analog stripped of its dial fill/ring
+    (`draw_analog_clock` no longer paints either). `nix/shell.nix` gained
+    `clockDisplayFont` (one file, `Inter.ttc`, 13,172,948 bytes, extracted
+    from `pkgs.inter`).
+  Verify with `cargo build --offline -p k230-shell-rust`,
+  `cargo test --offline -p k230-shell-rust home_state`, and the host
+  evidence harness (task 3).
 - [x] 2.4 Widget-picker previews render each widget kind's actual live
   content inline in its own row (`paint_widget_picker`'s preview
   thumbnail), not a static icon; verify with the host evidence harness
@@ -84,20 +81,34 @@
 - [x] 3.1 `nix/rust-shell-client/examples/render_widget_evidence.rs`: calls
   the real, unmodified `render::paint_home` offscreen against two synthetic
   `AppearanceSnapshot` themes (Catppuccin Mocha-derived dark, Catppuccin
-  Latte-derived light) built from `appearance.rs`'s own public fields, plus
-  two drag-mechanic captures driven through `HomeScreen`'s real public
+  Latte-derived light) built from `appearance.rs`'s own public fields,
+  composited over a genuine Omarchy theme wallpaper image (decoded through
+  the production `background_decode::BackgroundCache`, round 3's own
+  addition -- passed as a command-line path, not embedded), plus two
+  drag-mechanic captures driven through `HomeScreen`'s real public
   down/motion/tick/external_drag_motion API; verify with
-  `cargo run --offline --example render_widget_evidence -- <dir>` and by
-  looking at every produced image.
-- [x] 3.2 18 screenshots committed under `docs/evidence/home-widget-design/`
-  (10 distinct captures: 3 clock styles, battery present/absent, weather,
+  `cargo run --offline --example render_widget_evidence -- <dir>
+  <dark-wallpaper> <light-wallpaper>` and by looking at every produced
+  image.
+- [x] 3.2 20 screenshots committed under `docs/evidence/home-widget-design/`
+  (10 distinct captures: 4 clock styles, battery present/absent, weather,
   overview, widget picker, and 2 drag-mechanic captures -- the drag
   mechanics captured once, in the dark theme only, since they are
-  theme-independent) with a README explaining the harness, what each image
-  shows, and what this evidence class does and does not prove; blob-inventory
-  rows added for all 18; verify with `python3 tools/blob-scan.py` exiting 0.
-  Done: exit 0, "every binary is accounted for".
-- [ ] 3.3 A paired Sway/Rust QEMU injected-touch trial of the redesigned
+  theme-independent) with a README explaining the harness, the revision
+  history across all three passes, what each image shows, and what this
+  evidence class does and does not prove; blob-inventory rows updated for
+  all 20 (replacing the 18 from the prior pass); verify with
+  `python3 tools/blob-scan.py` exiting 0. Done: exit 0, "every binary is
+  accounted for".
+- [x] 3.3 `docs/design/clock-widget-research.md`: twelve surveyed clock-
+  widget designs (Pixel bubble/thin/At-a-Glance, Nothing OS Ndot, iOS
+  StandBy, Samsung One UI/Adaptive Clock, Material You, KWGT/KLWP, Braun/
+  Dieter Rams, r/unixporn/Omarchy desktop rices), each with sourced links
+  and a stated design principle taken from it (never a copied asset), plus
+  a synthesis table mapping each of the four shipped styles to the
+  principles behind it and the font-decision section `design.md`
+  decision 6 cites.
+- [ ] 3.4 A paired Sway/Rust QEMU injected-touch trial of the redesigned
   widgets and the live cross-page drag (edge dwell, fling, new-page
   creation) against a real compositor frame. **Not attempted this pass**:
   the sibling change's own `docs/evidence/home-widgets-folders/README.md`
@@ -111,26 +122,39 @@
 ## 4. Build and checks
 
 - [x] 4.1 `cargo test --offline` (full workspace) and
-  `cargo clippy --offline --all-targets`; verify their exit codes directly.
-  Done: 382 lib tests + 60 integration tests pass, 1 pre-existing ignored
-  test unaffected; clippy exits 0 with no new warnings (checked by file/line
-  against the pre-existing warning set: `overlay_brush`/`text_weight`/
-  `service_card`/`paint_icon_plate`/`video_wallpaper.rs`'s existing
-  too-many-arguments warnings, `theme_ui.rs`/`wifi_ui.rs`'s existing
-  field-reassign-with-default warnings, and one pre-existing
-  assertions-on-constants warning in `home_grid.rs` -- none of these
-  originate from a line this change touched).
+  `cargo clippy --offline --all-targets`; verify their exit codes directly,
+  re-run after each of the three passes described in task 2.3. Done (round
+  3, final): 382 lib tests + 60 integration tests pass, 1 pre-existing
+  ignored test unaffected; clippy exits 0 -- the four new multi-argument
+  functions round 3 added (`draw_layout_halo`, `draw_dot_matrix_glyph`,
+  `draw_dot_matrix_time`, plus `hero_glow`/`caption_glow` carried forward
+  from round 2's own allow) all carry their own
+  `#[allow(clippy::too_many_arguments)]`, and the pre-existing warning set
+  (`overlay_brush`/`text_weight`/`service_card`/`paint_icon_plate`'s
+  too-many-arguments, `theme_ui.rs`/`wifi_ui.rs`'s field-reassign-with-
+  default, one pre-existing assertions-on-constants in `home_grid.rs`, one
+  pre-existing manual-implementation-of-`ok` and one useless-`vec!` deeper
+  in `render.rs`) is unchanged and does not originate from any line this
+  change touched.
 - [x] 4.2 Build the updated Rust client; verify with
   `nix build .#handheld-shell-rust --max-jobs 1 --cores 6 --no-link --print-out-paths`.
-  Done: `/nix/store/79l3ny61f523skmf06va1alpgxzcissq-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
-- [x] 4.3 Confirm the coherent-shell system closure still builds; verify
+  Done (round 1): `/nix/store/79l3ny61f523skmf06va1alpgxzcissq-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
+  Re-verified (round 3, final):
+  `/nix/store/yxnfzw58v1mqlc26mayn5c77y6rrrfmq-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`.
+- [x] 4.3 Confirm the coherent-shell system closure still builds, including
+  the new `clockDisplayFont`/fontconfig derivations round 3 adds; verify
   with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
-  Done (first pass): `/nix/store/65w36kvr1h8i0ym6i94x0nphgcryaar4-nixos-system-nixos-26.11.20260919.20b1ddd`,
+  Done (round 1): `/nix/store/65w36kvr1h8i0ym6i94x0nphgcryaar4-nixos-system-nixos-26.11.20260919.20b1ddd`,
   which the coordinator deployed to the board for the user's judgment.
-  Re-verified after the board-review visual-polish follow-up (task 2.3):
-  `/nix/store/7k1w73rjpb4b3s91d3h2sbdb5bg35cn0-nixos-system-nixos-26.11.20260919.20b1ddd`
-  (both host cross-build proofs only; the second has not itself been
-  deployed or booted).
+  Done (round 2): `/nix/store/7k1w73rjpb4b3s91d3h2sbdb5bg35cn0-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  Done (round 3, final, foreground): the build fetched and built
+  `inter-4.1`/`inter-static-ttc`/`font-dirs`/`fc-cache`/`fontconfig-conf`/
+  `fontconfig-etc` alongside the usual derivations, confirming the new font
+  actually integrates into the real cross-built closure, not just `cargo
+  build` on the host:
+  `/nix/store/fv2gvvq6q3s3q180qxwabin41lc76cdg-nixos-system-nixos-26.11.20260919.20b1ddd`
+  (a host cross-build proof only; not deployed to the board or booted this
+  round).
 - [x] 4.4 Validate this change; verify with
   `openspec validate the-home-screen-pages-fluidly-and-widgets-look-designed --strict`.
 

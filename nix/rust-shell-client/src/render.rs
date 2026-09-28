@@ -36,16 +36,31 @@ use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
 use pango::{Alignment, EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path};
 
-/// The one system font family used by every label this renderer draws.
-/// `nix/card-shell/render.h` names the same literal (`CARD_SHELL_FONT_FAMILY`)
-/// for the C card deck, so the two renderers that composite into one frame
-/// never drift onto different fallback faces (finding P1-1 of
-/// `docs/design/webos-polish-review.md`). This is deliberately "DejaVu Sans",
-/// not the design study's IBM Plex family: `nix/shell.nix` ships only
-/// `pkgs.dejavu_fonts` on the image ("One family is enough"), so DejaVu is
-/// the only face guaranteed present, and pulling in a new font package is a
-/// blob-inventory / image-size change out of scope for a rendering-only fix.
+/// The one system font family used by every ordinary label this renderer
+/// draws. `nix/card-shell/render.h` names the same literal
+/// (`CARD_SHELL_FONT_FAMILY`) for the C card deck, so the two renderers
+/// that composite into one frame never drift onto different fallback faces
+/// (finding P1-1 of `docs/design/webos-polish-review.md`). This is
+/// deliberately "DejaVu Sans", not the design study's IBM Plex family:
+/// `nix/shell.nix` ships `pkgs.dejavu_fonts` on the image for exactly this,
+/// so DejaVu is the one face every ordinary label can rely on. See
+/// [`CLOCK_FONT_FAMILY`] for the one deliberate exception.
 pub const FONT_FAMILY: &str = "DejaVu Sans";
+
+/// The Clock widget's own display face, for its Bubble/Thin styles only
+/// (`home-widget-design`, board review round 2: "browse the web find dope
+/// clock widgets" -- see `docs/design/clock-widget-research.md`). DejaVu
+/// Sans has only a Book/Bold pair; a hero numeral reads far better with a
+/// real Thin-to-Black weight range, which `nix/shell.nix`'s
+/// `clockDisplayFont` ships as one extracted file (`Inter.ttc`, the classic
+/// **static** collection, not the variable font -- `pango-sys` at this
+/// repo's pinned version has no binding for
+/// `pango_font_description_set_variations` at all, confirmed directly, so
+/// the variable weight axis is not reachable from this client). The Dot
+/// matrix style draws its own procedural dots and needs no font; Analog's
+/// only text is its date caption, which intentionally stays on
+/// [`FONT_FAMILY`] like every other caption in this shell.
+pub const CLOCK_FONT_FAMILY: &str = "Inter";
 
 /// The drawer grid's own icon geometry (`docs/design/app-drawer-review.md`):
 /// a 64px icon (no plate/box around it -- see `paint_drawer`), single-line
@@ -2799,40 +2814,96 @@ fn paint_item_plate(
 
 /// `rgb`'s three channels as `0.0..=1.0` floats -- the gradient stop helper
 /// every other themed gradient in this file (`brush_gradient`) already
-/// wants, factored out for the widget cards' own condition-tint wash.
+/// wants.
 fn rgb_floats(rgb: u32) -> (f64, f64, f64) {
     (f64::from((rgb >> 16) & 255) / 255.0, f64::from((rgb >> 8) & 255) / 255.0, f64::from(rgb & 255) / 255.0)
 }
 
-/// One left-aligned, huge, bold numeral/line with the same soft-shadow
-/// legibility pass `shadowed_label` gives every other Home label -- the
-/// hero treatment `home-widget-design` asks for ("very large... numerals"),
-/// factored out from `shadowed_label` because a hero line is left-aligned
-/// (a poster-style hierarchy, not a centered caption) and needs its weight
-/// chosen per clock style rather than always Bold.
-fn hero_line(cr: &Context, value: &str, x: f64, y: f64, size: f64, rgb: u32, weight: pango::Weight) {
+/// This color's approximate relative luminance (Rec. 709 coefficients), in
+/// `0.0..=1.0`.
+fn relative_luminance(rgb: u32) -> f64 {
+    let (r, g, b) = rgb_floats(rgb);
+    0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/// The halo color a glyph painted in `rgb` should use for legibility
+/// directly on the wallpaper, with no card behind it (board review, round
+/// 2: "the widgets don't have to have a background... use a soft text
+/// shadow or glow computed from the theme (dark text gets a light halo,
+/// light text gets a dark shadow)"). Computed from the glyph's own
+/// resolved color's luminance, never a hardcoded shadow color that ignores
+/// whether the active theme is dark or light.
+fn glow_for(rgb: u32) -> u32 {
+    if relative_luminance(rgb) > 0.5 {
+        0x000000
+    } else {
+        0xffffff
+    }
+}
+
+/// A cheap stand-in for a Gaussian blur (Cairo's toy API has none): draws
+/// `layout` again at `samples` points evenly spaced around a circle of
+/// `radius`, each at `alpha`, before the caller draws the real glyph on top
+/// at full opacity. This is this shell's only legibility mechanism for text
+/// painted directly on the wallpaper.
+#[allow(clippy::too_many_arguments)]
+fn draw_layout_halo(cr: &Context, layout: &pango::Layout, x: f64, y: f64, glow_rgb: u32, radius: f64, samples: u32, alpha: f64) {
+    let tau = std::f64::consts::TAU;
+    for i in 0..samples {
+        let angle = f64::from(i) * tau / f64::from(samples.max(1));
+        let dx = angle.cos() * radius;
+        let dy = angle.sin() * radius;
+        color(cr, glow_rgb, alpha);
+        cr.move_to(x + dx, y + dy);
+        pangocairo::functions::show_layout(cr, layout);
+    }
+}
+
+/// A soft, roughly circular ambient backdrop behind a small graphic element
+/// (a glyph, a ring, an outline icon) -- the non-text equivalent of
+/// [`draw_layout_halo`], for the same "no card, legibility comes from a
+/// halo/glow" reason (board review, round 2, also: "a very faint local
+/// scrim only behind small text if contrast demands it" -- applied here to
+/// small graphics rather than text).
+fn draw_soft_backdrop(cr: &Context, cx: f64, cy: f64, radius: f64, glow_rgb: u32, alpha: f64) {
+    cr.new_path();
+    cr.arc(cx, cy, radius, 0.0, std::f64::consts::TAU);
+    color(cr, glow_rgb, alpha);
+    let _ = cr.fill();
+}
+
+/// One hero numeral/line, drawn straight on the wallpaper: a theme-derived
+/// halo ([`glow_for`]/[`draw_layout_halo`]) for legibility, then the real
+/// glyph on top at full opacity. `centered`, when set, centers within
+/// `[x, x+width]` instead of left-aligning at `x` (`width` is read only
+/// when `centered`).
+#[allow(clippy::too_many_arguments)]
+fn hero_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, weight: pango::Weight, centered: bool, font_family: &str) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
-    font.set_family(FONT_FAMILY);
+    font.set_family(font_family);
     font.set_absolute_size(size * f64::from(pango::SCALE));
     font.set_weight(weight);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
-    color(cr, 0x000000, 0.4);
-    cr.move_to(x, y + 2.0);
-    pangocairo::functions::show_layout(cr, &layout);
+    if centered {
+        layout.set_width((width * f64::from(pango::SCALE)) as i32);
+        layout.set_alignment(pango::Alignment::Center);
+    }
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), (size * 0.05).max(2.0), 8, 0.30);
     color(cr, rgb, 1.0);
     cr.move_to(x, y);
     pangocairo::functions::show_layout(cr, &layout);
 }
 
 /// A small, letter-spaced, uppercase caption line (task: "the date beneath
-/// in a small caps/label style") -- DejaVu Sans has no true small-caps
-/// feature this toy Cairo/Pango setup can request, so this fakes the same
-/// "eyebrow label" read with `.to_uppercase()` plus a thin space
-/// (`\u{2009}`) inserted between every character for visible tracking.
+/// in a small caps/label style"), haloed the same way [`hero_glow`] is --
+/// DejaVu Sans has no true small-caps feature this toy Cairo/Pango setup
+/// can request, so this fakes the same "eyebrow label" read with
+/// `.to_uppercase()` plus a thin space (`\u{2009}`) inserted between every
+/// character for visible tracking.
 #[allow(clippy::too_many_arguments)]
-fn caption_line(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, centered: bool) {
+fn caption_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, centered: bool) {
     let tracked: String = value.to_uppercase().chars().flat_map(|ch| [ch, '\u{2009}']).collect();
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
@@ -2846,36 +2917,102 @@ fn caption_line(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64
     if centered {
         layout.set_alignment(pango::Alignment::Center);
     }
-    color(cr, rgb, 0.82);
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
+    color(cr, rgb, 1.0);
     cr.move_to(x, y);
     pangocairo::functions::show_layout(cr, &layout);
 }
 
-/// A soft, subtly condition-tinted wash across the top of a widget card,
-/// entirely theme-derived (`home-widget-design`: "a subtle gradient or tint
-/// by condition... derived from theme colours") -- never a fixed, non-theme
-/// hue, just which of the theme's own roles washes through and how strongly.
-fn paint_condition_tint(cr: &Context, x: f64, y: f64, w: f64, h: f64, rgb: u32, alpha: f64) {
-    let (r, g, b) = rgb_floats(rgb);
-    let gradient = LinearGradient::new(x, y, x, y + h * 0.7);
-    gradient.add_color_stop_rgba(0.0, r, g, b, alpha);
-    gradient.add_color_stop_rgba(1.0, r, g, b, 0.0);
-    if cr.set_source(&gradient).is_ok() {
-        cr.rectangle(x, y, w, h);
-        let _ = cr.fill();
+/// A small centered number/label (the battery ring's percentage, a
+/// forecast column's temperature), haloed the same way -- distinct from
+/// the top-level `centered_label` (used by panels that still have their
+/// own opaque backing, e.g. the folder overlay/picker sheet, where a halo
+/// would be redundant).
+fn centered_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Bold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(pango::Alignment::Center);
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// 5x7 dot-matrix digit bitmaps (row-major, `'1'` = a lit dot) -- the
+/// classic LED-scoreboard glyph shape, a generic and ubiquitous pattern
+/// (not any specific branded typeface), drawn with plain Cairo circles, no
+/// font file at all (task: "The dot-matrix style can be drawn
+/// procedurally").
+const DOT_DIGITS: [[&str; 7]; 10] = [
+    ["01110", "10001", "10011", "10101", "11001", "10001", "01110"], // 0
+    ["00100", "01100", "00100", "00100", "00100", "00100", "01110"], // 1
+    ["01110", "10001", "00001", "00010", "00100", "01000", "11111"], // 2
+    ["11111", "00010", "00100", "00010", "00001", "10001", "01110"], // 3
+    ["00010", "00110", "01010", "10010", "11111", "00010", "00010"], // 4
+    ["11111", "10000", "11110", "00001", "00001", "10001", "01110"], // 5
+    ["00110", "01000", "10000", "11110", "10001", "10001", "01110"], // 6
+    ["11111", "00001", "00010", "00100", "01000", "01000", "01000"], // 7
+    ["01110", "10001", "10001", "01110", "10001", "10001", "01110"], // 8
+    ["01110", "10001", "10001", "01111", "00001", "00010", "01100"], // 9
+];
+/// A 2-column colon glyph, in the same 7-row grid the digits use.
+const DOT_COLON: [&str; 7] = ["00", "00", "01", "00", "01", "00", "00"];
+
+/// One dot-matrix character's dots, `cols` wide, top-left at `(x0, y0)` in
+/// `pitch`-spaced dot centers, each a small soft-haloed filled circle.
+#[allow(clippy::too_many_arguments)]
+fn draw_dot_matrix_glyph(cr: &Context, rows: &[&str], cols: usize, x0: f64, y0: f64, pitch: f64, radius: f64, rgb: u32) {
+    let glow = glow_for(rgb);
+    for (row_index, row) in rows.iter().enumerate() {
+        for (col_index, ch) in row.chars().enumerate() {
+            if col_index >= cols || ch != '1' {
+                continue;
+            }
+            let cx = x0 + (col_index as f64 + 0.5) * pitch;
+            let cy = y0 + (row_index as f64 + 0.5) * pitch;
+            draw_soft_backdrop(cr, cx, cy, radius * 1.9, glow, 0.16);
+            cr.new_path();
+            cr.arc(cx, cy, radius, 0.0, std::f64::consts::TAU);
+            color(cr, rgb, 0.95);
+            let _ = cr.fill();
+        }
     }
 }
 
-/// A weather condition glyph's own theme role and wash strength -- warm/
-/// bright conditions lean on the theme's accent, a storm leans on its error
-/// role (still theme-derived, never a hardcoded hue), and everything else
-/// reads as a cool, muted wash of the theme's own text color.
-fn weather_tint(glyph: &str, style: &VisualStyle) -> (u32, f64) {
-    match glyph {
-        "sun" => (style.accent, 0.16),
-        "storm" => (style.error, 0.14),
-        "rain" | "snow" => (style.text, 0.10),
-        _ => (style.text, 0.08),
+/// Draws `"HH"`/`"MM"` as a Nothing-OS-style dot-matrix readout, centered
+/// within `(x, y, w, h)`: digits in `digit_rgb`, the colon in `accent_rgb`
+/// (task: "Use theme colours tastefully: an accent for one element and the
+/// foreground for the rest").
+#[allow(clippy::too_many_arguments)]
+fn draw_dot_matrix_time(cr: &Context, hour_text: &str, minute_text: &str, x: f64, y: f64, w: f64, h: f64, digit_rgb: u32, accent_rgb: u32) {
+    let chars: Vec<(char, usize, u32)> = hour_text
+        .chars()
+        .map(|ch| (ch, 5, digit_rgb))
+        .chain(std::iter::once((':', 2, accent_rgb)))
+        .chain(minute_text.chars().map(|ch| (ch, 5, digit_rgb)))
+        .collect();
+    let gap_cols = 1.0;
+    let total_cols: f64 =
+        chars.iter().map(|(_, cols, _)| *cols as f64).sum::<f64>() + gap_cols * (chars.len().saturating_sub(1)) as f64;
+    let pitch = (w / total_cols.max(1.0)).min(h / 7.0);
+    let radius = pitch * 0.34;
+    let block_w = total_cols * pitch;
+    let block_h = 7.0 * pitch;
+    let mut cursor_x = x + (w - block_w) / 2.0;
+    let block_y = y + (h - block_h) / 2.0;
+    for (ch, cols, rgb) in chars {
+        if ch == ':' {
+            draw_dot_matrix_glyph(cr, &DOT_COLON, cols, cursor_x, block_y, pitch, radius, rgb);
+        } else if let Some(digit) = ch.to_digit(10) {
+            draw_dot_matrix_glyph(cr, &DOT_DIGITS[digit as usize], cols, cursor_x, block_y, pitch, radius, rgb);
+        }
+        cursor_x += (cols as f64 + gap_cols) * pitch;
     }
 }
 
@@ -2896,12 +3033,14 @@ fn cloud_shape(cr: &Context, cx: f64, cy: f64, w: f64, h: f64) {
 }
 
 /// Draws one of `home_widgets::weather::condition_glyph`'s glyph keys as a
-/// small vector icon, centered at `(cx, cy)` within roughly `size` square --
+/// small vector icon, centered at `(cx, cy)` within roughly `size` square,
+/// over a soft ambient backdrop for contrast against the wallpaper --
 /// sun/cloud/rain/snow/fog/storm (task: "a condition icon drawn nicely...
 /// vector sun/cloud/rain/snow/fog/thunder glyphs drawn with Cairo").
 fn draw_weather_glyph(cr: &Context, glyph: &str, cx: f64, cy: f64, size: f64, style: &VisualStyle) {
     let tau = std::f64::consts::TAU;
     let _ = cr.save();
+    draw_soft_backdrop(cr, cx, cy, size * 0.62, glow_for(style.text), 0.16);
     match glyph {
         "sun" => {
             let r = size * 0.26;
@@ -3018,22 +3157,23 @@ fn draw_bolt(cr: &Context, cx: f64, cy: f64, size: f64, rgb: u32) {
     let _ = cr.fill();
 }
 
-/// The Battery widget's ring: a muted full-circle track plus an accent arc
-/// for the live percentage, matching every reference launcher's battery
-/// widget convention -- clockwise from the top (task: "a clean ring or
-/// bar, percentage, and a charging bolt"). The percentage label and the
-/// charging badge are painted by the caller ([`ring_percent_label`], and a
-/// small badge circle respectively), not this function, so this stays a
-/// pure "draw the ring itself" primitive.
+/// The Battery widget's ring: a soft ambient backdrop, a muted full-circle
+/// track, and an accent arc for the live percentage, matching every
+/// reference launcher's battery widget convention -- clockwise from the
+/// top (task: "a clean ring or bar, percentage, and a charging bolt"). The
+/// percentage label and the charging badge are painted by the caller
+/// ([`ring_percent_label`], and a small badge circle respectively), not
+/// this function, so this stays a pure "draw the ring itself" primitive.
 fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, style: &VisualStyle) {
     let tau = std::f64::consts::TAU;
+    draw_soft_backdrop(cr, cx, cy, radius * 1.18, glow_for(style.text), 0.14);
     let start = -std::f64::consts::FRAC_PI_2;
     let sweep = tau * (f64::from(percent.min(100)) / 100.0);
     let line_width = (radius * 0.20).max(4.0);
     cr.set_line_cap(cairo::LineCap::Round);
     cr.new_path();
     cr.arc(cx, cy, radius, 0.0, tau);
-    color(cr, style.text, 0.16);
+    color(cr, style.text, 0.22);
     cr.set_line_width(line_width);
     let _ = cr.stroke();
     if sweep > 0.001 {
@@ -3047,48 +3187,49 @@ fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, s
 
 /// The battery ring's own percentage label, large and vertically centered
 /// inside the ring (coordinator review: "put the percentage INSIDE the
-/// ring (large, centred)"). `centered_label`'s `y` is a top-left text
-/// origin, not a true vertical center, so this offsets by an empirical
-/// fraction of the chosen font size -- the same approximation every other
-/// hand-positioned label in this renderer already uses (see `shadowed_
-/// label`'s own call sites), rather than pulling in exact Pango ink-extent
+/// ring (large, centred)"), haloed like [`centered_glow`] (which this just
+/// wraps) since nothing but the wallpaper sits behind it. `y` is offset by
+/// an empirical fraction of the chosen font size for vertical centering --
+/// the same approximation every other hand-positioned label in this
+/// renderer already uses, rather than pulling in exact Pango ink-extent
 /// measurement for one label.
 fn ring_percent_label(cr: &Context, value: &str, cx: f64, cy: f64, radius: f64, rgb: u32) {
     let size = (radius * 0.68).max(13.0);
     let width = radius * 1.9;
-    centered_label(cr, value, cx - width / 2.0, cy - size * 0.42, width, size, rgb);
+    centered_glow(cr, value, cx - width / 2.0, cy - size * 0.42, width, size, rgb);
 }
 
 /// A muted outline battery glyph (rounded body plus a small terminal nub),
-/// for the "No battery info" absent state -- an outline reads as "nothing
-/// connected" rather than an error, matching the task's own "clean...
-/// tasteful" ask.
+/// over a soft ambient backdrop, for the "No battery info" absent state --
+/// an outline reads as "nothing connected" rather than an error, matching
+/// the task's own "clean... tasteful" ask.
 fn draw_battery_outline(cr: &Context, x: f64, y: f64, w: f64, h: f64, rgb: u32) {
     let _ = cr.save();
+    draw_soft_backdrop(cr, x + w / 2.0, y + h / 2.0, w.max(h) * 0.62, glow_for(rgb), 0.14);
     cr.set_line_width(3.0);
     rounded(cr, x, y, w, h, h * 0.28);
-    color(cr, rgb, 0.55);
+    color(cr, rgb, 0.7);
     let _ = cr.stroke();
     let nub_w = w * 0.12;
     let nub_h = h * 0.4;
     rounded(cr, x + w - 1.0, y + (h - nub_h) / 2.0, nub_w, nub_h, nub_h * 0.3);
-    color(cr, rgb, 0.55);
+    color(cr, rgb, 0.7);
     let _ = cr.fill();
     let _ = cr.restore();
 }
 
 /// Draws an analog clock face -- ticks, an hour hand, and an accent minute
-/// hand (task: "Analog... clean with an accent hand").
+/// hand, deliberately with **no dial fill or ring** (board review, round 2,
+/// after `docs/design/clock-widget-research.md`'s Braun/Dieter Rams survey:
+/// "a minimal, Braun-like face with no dial background, just markers and
+/// hands"). The two hands get the same halo treatment text gets
+/// ([`glow_for`]), since they are this widget's own thin strokes most
+/// likely to vanish against a busy wallpaper; the twelve tick marks stay
+/// plain (already short and given extra opacity of their own -- haloing
+/// all twelve would read as clutter, not polish).
 fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, minute: i32, style: &VisualStyle) {
     let tau = std::f64::consts::TAU;
     let _ = cr.save();
-    cr.new_path();
-    cr.arc(cx, cy, radius, 0.0, tau);
-    color(cr, style.text, 0.08);
-    let _ = cr.fill_preserve();
-    color(cr, style.text, 0.4);
-    cr.set_line_width(2.0);
-    let _ = cr.stroke();
     for i in 0..12 {
         let angle = f64::from(i) * tau / 12.0 - std::f64::consts::FRAC_PI_2;
         let major = i % 3 == 0;
@@ -3098,23 +3239,36 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
         cr.move_to(cx + angle.cos() * inner, cy + angle.sin() * inner);
         cr.line_to(cx + angle.cos() * outer, cy + angle.sin() * outer);
         cr.set_line_width(if major { 3.0 } else { 1.4 });
-        color(cr, style.text, if major { 0.7 } else { 0.4 });
+        color(cr, style.text, if major { 0.85 } else { 0.55 });
         let _ = cr.stroke();
     }
     let hour_angle = ((f64::from(hour % 12)) + f64::from(minute) / 60.0) * tau / 12.0 - std::f64::consts::FRAC_PI_2;
     let minute_angle = f64::from(minute) * tau / 60.0 - std::f64::consts::FRAC_PI_2;
     cr.set_line_cap(cairo::LineCap::Round);
+    let hour_tip = (cx + hour_angle.cos() * radius * 0.48, cy + hour_angle.sin() * radius * 0.48);
+    let minute_tip = (cx + minute_angle.cos() * radius * 0.74, cy + minute_angle.sin() * radius * 0.74);
+    for (halo_radius, tip, width, rgb) in [(3.0, hour_tip, 5.0, style.text), (3.0, minute_tip, 3.5, style.accent)] {
+        let glow = glow_for(rgb);
+        for (dx, dy) in [(-halo_radius, 0.0), (halo_radius, 0.0), (0.0, -halo_radius), (0.0, halo_radius)] {
+            cr.new_path();
+            cr.move_to(cx + dx, cy + dy);
+            cr.line_to(tip.0 + dx, tip.1 + dy);
+            color(cr, glow, 0.35);
+            cr.set_line_width(width);
+            let _ = cr.stroke();
+        }
+    }
     cr.new_path();
     cr.move_to(cx, cy);
-    cr.line_to(cx + hour_angle.cos() * radius * 0.48, cy + hour_angle.sin() * radius * 0.48);
+    cr.line_to(hour_tip.0, hour_tip.1);
     cr.set_line_width(5.0);
-    color(cr, style.text, 0.95);
+    color(cr, style.text, 1.0);
     let _ = cr.stroke();
     cr.new_path();
     cr.move_to(cx, cy);
-    cr.line_to(cx + minute_angle.cos() * radius * 0.74, cy + minute_angle.sin() * radius * 0.74);
+    cr.line_to(minute_tip.0, minute_tip.1);
     cr.set_line_width(3.5);
-    color(cr, style.accent, 0.95);
+    color(cr, style.accent, 1.0);
     let _ = cr.stroke();
     cr.new_path();
     cr.arc(cx, cy, 4.0, 0.0, tau);
@@ -3123,84 +3277,54 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
     let _ = cr.restore();
 }
 
-/// A widget card's own corner radius -- matches `service_card`'s "sheet"
-/// radius (`docs/design/shell-polish-review-2026-09.md`'s token table), so
-/// a widget still reads as the same family of floating panel as the dock,
-/// the folder overlay, and the picker sheet.
-const WIDGET_CARD_RADIUS: f64 = 16.0;
-
-/// A widget card's own background: a subtle filled surface plus a soft
-/// shadow, deliberately never a border stroke (coordinator review: "Drop
-/// the 1px light-grey card borders... The widgets look boxed-in"). Distinct
-/// from `service_card` (which every *other* floating panel in this shell
-/// still uses, border and all) because a widget sits directly over the
-/// wallpaper with nothing else framing it, so a hard outline reads as a
-/// literal box in a way it does not on a panel that already has other
-/// chrome around it. The shadow is a handful of offset, low-alpha filled
-/// passes -- not a true Gaussian blur (Cairo's toy API has none, and a real
-/// blur would mean rendering to an intermediate surface every dirty frame
-/// this widget repaints) -- cheap and soft enough at this small an offset
-/// to read as a shadow rather than a second outline.
-fn paint_widget_surface(cr: &Context, theme: Option<&AppearanceSnapshot>, x: f64, y: f64, w: f64, h: f64) {
-    let _ = cr.save();
-    for (dy, alpha) in [(4.0, 0.05), (2.0, 0.08)] {
-        cr.new_path();
-        rounded(cr, x, y + dy, w, h, WIDGET_CARD_RADIUS);
-        color(cr, 0x000000, alpha);
-        let _ = cr.fill();
-    }
-    let _ = cr.restore();
-
-    let _ = cr.save();
-    cr.new_path();
-    rounded(cr, x, y, w, h, WIDGET_CARD_RADIUS);
-    cr.clip();
-    overlay_brush(cr, theme_brush(theme, "launcher", "background"), x, y, w, h, 0.80, 0x263946);
-    let _ = cr.restore();
-}
-
-/// Paints a widget's whole card (`home-widget-design`): a themed plate
-/// spanning the widget's full cell footprint, with its own genuinely
-/// designed content -- a hero clock in one of three selectable styles, a
-/// battery ring, or a weather card with a condition glyph and short
-/// forecast strip. Cheap: no per-frame rasterization beyond ordinary Cairo
-/// paths and Pango text layout, and the content itself (`home.battery`/
-/// `home.weather`) is only ever refreshed by the caller's own poll/cache
-/// timers, never recomputed here -- `home_screen::HomeScreen`'s own docs on
-/// those fields cover the caching/throttling; this function only ever reads
-/// their current value.
-fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
+/// Paints a widget's whole content, straight on the wallpaper -- no card,
+/// no surface fill, no border (board review, round 2: "the widgets don't
+/// have to have a background like they do"); legibility instead comes from
+/// a theme-derived halo/glow behind each glyph ([`glow_for`]/
+/// [`draw_layout_halo`]/[`draw_soft_backdrop`]). Four selectable clock
+/// styles (`docs/design/clock-widget-research.md`: Bubble/Thin/Dot matrix/
+/// Analog), a battery ring, or a weather readout with a condition glyph and
+/// short forecast strip. Cheap: no per-frame rasterization beyond ordinary
+/// Cairo paths and Pango text layout, and the content itself
+/// (`home.battery`/`home.weather`) is only ever refreshed by the caller's
+/// own poll/cache timers, never recomputed here -- `home_screen::
+/// HomeScreen`'s own docs on those fields cover the caching/throttling;
+/// this function only ever reads their current value.
+fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
     let (x, y, w, h) = rect;
     cr.new_path();
-    paint_widget_surface(cr, theme, x, y, w, h);
     let pad = 22.0;
     match kind {
-        WidgetKind::Clock | WidgetKind::ClockMinimal => {
-            let (hour_text, minute_text, line_text, date_text) = match crate::home_widgets::clock::now_local() {
-                Some(now) => (
-                    format!("{:02}", now.hour),
-                    format!("{:02}", now.minute),
-                    crate::home_widgets::clock::format_time(now),
-                    crate::home_widgets::clock::format_date(now),
-                ),
-                None => ("--".to_string(), "--".to_string(), "--:--".to_string(), String::new()),
+        WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix => {
+            let (hour_text, minute_text, date_text) = match crate::home_widgets::clock::now_local() {
+                Some(now) => (format!("{:02}", now.hour), format!("{:02}", now.minute), crate::home_widgets::clock::format_date(now)),
+                None => ("--".to_string(), "--".to_string(), String::new()),
             };
-            if kind == WidgetKind::Clock {
-                // "Big stacked": hour (accent, bold) over minute (lighter
-                // Normal weight, so the pair reads as a hierarchy, not two
-                // equally-weighted numbers) -- left-aligned with generous
-                // breathing room from the card's own edges (coordinator
-                // review: "more breathing room").
-                let line_size = h * 0.29;
-                let left = x + pad * 1.7;
-                hero_line(cr, &hour_text, left, y + h * 0.10, line_size, style.accent, pango::Weight::Bold);
-                hero_line(cr, &minute_text, left, y + h * 0.44, line_size, style.text, pango::Weight::Normal);
-            } else {
-                // "Minimal line": one thinner, airier line.
-                let line_size = h * 0.30;
-                hero_line(cr, &line_text, x + pad, y + h * 0.28, line_size, style.text, pango::Weight::Normal);
+            match kind {
+                WidgetKind::Clock => {
+                    // "Bubble": Pixel's heavy two-line lock clock -- both
+                    // lines the same very heavy weight and the same color,
+                    // centered, so the pair reads as one mass
+                    // (`docs/design/clock-widget-research.md` #1/#7).
+                    let line_size = h * 0.30;
+                    hero_glow(cr, &hour_text, x, y + h * 0.05, w, line_size, style.text, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
+                    hero_glow(cr, &minute_text, x, y + h * 0.39, w, line_size, style.text, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
+                }
+                WidgetKind::ClockMinimal => {
+                    // "Thin": a real thin weight, not a shrunk bold
+                    // (research #2/#9/#12).
+                    let time_text = format!("{hour_text}:{minute_text}");
+                    let line_size = h * 0.32;
+                    hero_glow(cr, &time_text, x, y + h * 0.34, w, line_size, style.text, pango::Weight::Thin, true, CLOCK_FONT_FAMILY);
+                }
+                WidgetKind::ClockDotMatrix => {
+                    // "Dot matrix": Nothing OS's Ndot (research #4), drawn
+                    // procedurally -- no font at all.
+                    draw_dot_matrix_time(cr, &hour_text, &minute_text, x + pad * 0.5, y, w - pad, h * 0.72, style.text, style.accent);
+                }
+                _ => unreachable!("matched above"),
             }
-            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 17.0, style.muted, false);
+            caption_glow(cr, &date_text, x, y + h * 0.84, w, 17.0, style.accent, true);
         }
         WidgetKind::ClockAnalog => {
             let (hour, minute, date_text) = match crate::home_widgets::clock::now_local() {
@@ -3211,38 +3335,34 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
             let cy = y + h * 0.42;
             let radius = (w / 2.0 - pad).min(h * 0.34);
             draw_analog_clock(cr, cx, cy, radius, hour, minute, style);
-            caption_line(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 15.0, style.muted, true);
+            caption_glow(cr, &date_text, x + pad, y + h * 0.86, w - pad * 2.0, 15.0, style.accent, true);
         }
         WidgetKind::Battery => {
-            caption_line(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.muted, false);
+            caption_glow(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.text, false);
             match &home.battery {
                 crate::home_widgets::battery::BatteryState::Present { percent, .. } => {
                     let cx = x + w / 2.0;
                     let cy = y + h * 0.55;
-                    // Coordinator review: "oversized for a 2x2" -- scaled
-                    // down about 30% from the first pass's radius.
                     let radius = (w / 2.0 - pad * 1.3).min(h * 0.28) * 0.7;
                     draw_battery_ring(cr, cx, cy, radius, *percent, style);
-                    // The percentage lives inside the ring itself now,
-                    // large and centered, rather than as a caption beneath
-                    // it (coordinator review).
                     ring_percent_label(cr, &format!("{percent}%"), cx, cy, radius, style.text);
                     if home.battery.is_charging() {
                         let badge_r = radius * 0.40;
                         let bx = cx + radius * 0.68;
                         let by = cy - radius * 0.68;
+                        draw_soft_backdrop(cr, bx, by, badge_r * 1.5, glow_for(style.accent), 0.20);
                         cr.new_path();
                         cr.arc(bx, by, badge_r, 0.0, std::f64::consts::TAU);
                         color(cr, style.accent, 0.95);
                         let _ = cr.fill();
-                        draw_bolt(cr, bx, by, badge_r * 1.25, brush_rgb(theme, "launcher", "background", 0x263946));
+                        draw_bolt(cr, bx, by, badge_r * 1.25, glow_for(style.accent));
                     }
                 }
                 crate::home_widgets::battery::BatteryState::Absent => {
                     let glyph_w = w * 0.30;
                     let glyph_h = glyph_w * 0.52;
-                    draw_battery_outline(cr, x + (w - glyph_w) / 2.0, y + h * 0.36, glyph_w, glyph_h, style.muted);
-                    caption_line(cr, "No battery info", x + pad, y + h * 0.68, w - pad * 2.0, 13.0, style.muted, true);
+                    draw_battery_outline(cr, x + (w - glyph_w) / 2.0, y + h * 0.36, glyph_w, glyph_h, style.text);
+                    caption_glow(cr, "No battery info", x + pad, y + h * 0.68, w - pad * 2.0, 13.0, style.text, true);
                 }
             }
         }
@@ -3259,46 +3379,33 @@ fn paint_widget_card(cr: &Context, theme: Option<&AppearanceSnapshot>, style: &V
                     ),
                     WeatherDisplay::Unavailable => ("sun".to_string(), None, String::new(), None, None, Vec::new()),
                 };
-            let (tint_rgb, tint_alpha) = weather_tint(&glyph, style);
-            // Clipped to the card's own rounded rect -- painted unclipped,
-            // the wash's straight-edged rectangle leaked past the rounded
-            // corners (coordinator review: "corner leak").
-            let _ = cr.save();
-            cr.new_path();
-            rounded(cr, x, y, w, h, WIDGET_CARD_RADIUS);
-            cr.clip();
-            paint_condition_tint(cr, x, y, w, h, tint_rgb, tint_alpha);
-            let _ = cr.restore();
             if !location.is_empty() {
-                caption_line(cr, &location, x + pad, y + pad * 0.6, w - pad * 2.0, 12.0, style.muted, false);
+                caption_glow(cr, &location, x + pad, y + pad * 0.6, w - pad * 2.0, 12.0, style.text, false);
             }
             draw_weather_glyph(cr, &glyph, x + w - pad - 26.0, y + pad + 22.0, 56.0, style);
             match temp_c {
-                Some(value) => hero_line(cr, &format!("{value}°"), x + pad, y + h * 0.22, h * 0.24, style.text, pango::Weight::Bold),
-                None => hero_line(cr, "--", x + pad, y + h * 0.22, h * 0.24, style.muted, pango::Weight::Bold),
+                Some(value) => hero_glow(cr, &format!("{value}°"), x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
+                None => hero_glow(cr, "--", x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
             }
             match (high_c, low_c) {
                 (Some(high), Some(low)) => {
-                    caption_line(cr, &format!("H:{high}° L:{low}°"), x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.muted, false);
+                    caption_glow(cr, &format!("H:{high}° L:{low}°"), x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false);
                 }
-                _ => caption_line(cr, "No data", x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.muted, false),
+                _ => caption_glow(cr, "No data", x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false),
             }
             // A short forecast strip (task: "a small 3-5 hour... forecast
             // strip"); this card's own 2x2 width comfortably fits 3
-            // columns. Sized to stay legible at arm's length (coordinator
-            // review: the first pass's icons/temperatures were "tiny") --
-            // larger glyphs, a larger temperature, and more vertical room
-            // between the three rows of this block.
+            // columns at a legible size, with generous vertical room.
             let shown: Vec<_> = forecast.iter().take(3).collect();
             if !shown.is_empty() {
                 let strip_y = y + h - pad - 90.0;
                 let col_w = (w - pad * 2.0) / shown.len().max(1) as f64;
                 for (index, entry) in shown.iter().enumerate() {
                     let col_x = x + pad + col_w * index as f64;
-                    caption_line(cr, &entry.label, col_x, strip_y, col_w, 13.0, style.muted, true);
+                    caption_glow(cr, &entry.label, col_x, strip_y, col_w, 13.0, style.text, true);
                     let entry_glyph = crate::home_widgets::weather::condition_glyph(&entry.condition);
                     draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + 38.0, 32.0, style);
-                    centered_label(cr, &format!("{}°", entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
+                    centered_glow(cr, &format!("{}°", entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
                 }
             }
         }
@@ -3406,7 +3513,7 @@ fn paint_widget_picker(cr: &Context, width: u32, height: u32, theme: Option<&App
             let _ = cr.save();
             rounded(cr, preview_x, preview_y, side, side, 10.0);
             cr.clip();
-            paint_widget_card(cr, theme, &style, *kind, (preview_x, preview_y, side, side), home);
+            paint_widget_card(cr, &style, *kind, (preview_x, preview_y, side, side), home);
             let _ = cr.restore();
             (x + side + 24.0, w - side - 36.0)
         } else {
@@ -3524,7 +3631,7 @@ pub fn paint_home(
                 }
                 if let HomeItem::Widget { widget } = item {
                     let rect = home_grid::spanned_tile_rect(width, height, slot, widget.span());
-                    paint_widget_card(cr, theme, &style, *widget, rect, home);
+                    paint_widget_card(cr, &style, *widget, rect, home);
                     continue;
                 }
                 let content = home_grid::tile_content(width, height, slot);
@@ -3681,7 +3788,7 @@ pub fn paint_home(
             let plate_x = point.0 - plate_size / 2.0;
             let plate_y = point.1 - plate_size / 2.0;
             if let HomeItem::Widget { widget } = &item {
-                paint_widget_card(cr, theme, &style, *widget, (plate_x, plate_y, plate_size, plate_size), home);
+                paint_widget_card(cr, &style, *widget, (plate_x, plate_y, plate_size, plate_size), home);
             } else {
                 paint_item_plate(cr, theme, icons, apps, &item, plate_x, plate_y, plate_size, icon_size, true);
             }

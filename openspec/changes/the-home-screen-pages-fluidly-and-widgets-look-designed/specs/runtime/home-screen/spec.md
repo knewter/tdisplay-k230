@@ -72,14 +72,19 @@ ordinary accepting one.
 ### Requirement: Home's widgets are visually redesigned with distinct styles and richer content
 
 <!-- Grounding: implemented and host-tested (clock style formatting,
-`j1` forecast selection/parsing, battery ring percent/charging state).
-Rendered appearance is evidenced by a host Cairo render harness
-(`docs/evidence/home-widget-design/`), not a board or QEMU capture; daylight
-readability and on-device color reproduction are UNVERIFIED on hardware. -->
+`j1` forecast selection/parsing, battery ring percent/charging state, the
+procedural dot-matrix digit table). Rendered appearance is evidenced by a
+host Cairo render harness (`docs/evidence/home-widget-design/`) composited
+over real Omarchy theme wallpaper images, not a board or QEMU capture;
+daylight readability and on-device color/font reproduction are UNVERIFIED
+on hardware. -->
 
-The Clock widget SHALL offer at least three selectable visual styles -- a
-large stacked hour/minute pair, a single thinner time line, and a drawn
-analog face with an accent-colored minute hand -- each choosable from the
+The Clock widget SHALL offer at least four selectable visual styles,
+researched from current mobile-platform and community widget design
+(`docs/design/clock-widget-research.md`): a heavy centered stacked hour/
+minute pair, a thin centered single time line, a procedurally drawn
+dot-matrix readout, and a drawn analog face (ticks and hands only, no dial
+fill or ring) with an accent-colored minute hand -- each choosable from the
 widget picker, which SHALL render a live preview of each widget kind's
 actual content inline in its own row. The Battery widget SHALL show its
 charge as a themed ring with a distinct charging indicator when charging,
@@ -88,14 +93,12 @@ a muted outline battery glyph. The Weather widget SHALL show the current
 temperature as a large numeral, a drawn condition icon distinct per
 condition family (at minimum sun/cloud/rain/snow/fog/storm), the location
 name when available, today's high and low, and a short multi-entry forecast
-strip when forecast data is available. Every widget SHALL share one
-consistent card treatment with every other widget: the same corner radius,
-a subtly filled surface derived from the active theme, and no outline
-border -- distinct, by design, from the bordered chrome this shell's other
-floating panels (the dock, the folder overlay, the picker sheet) use, since
-a widget sits directly over the wallpaper with nothing else framing it. Any
-condition-derived tint or wash a widget paints SHALL stay clipped within
-that same rounded card shape, never visible past its corners.
+strip when forecast data is available. No widget of any kind SHALL paint a
+card background, surface fill, or border behind its content -- every widget
+sits directly on the wallpaper; legibility SHALL instead come from a halo
+or glow computed from the theme's own resolved color for that glyph (a
+light halo behind a dark glyph, a dark halo behind a light glyph), never a
+fixed shadow color that ignores which theme is active.
 
 #### Scenario: A person can choose a clock style from the picker
 
@@ -117,14 +120,16 @@ that same rounded card shape, never visible past its corners.
 - **THEN** the widget shows a short strip of upcoming entries, each with its
   own time label, temperature, and condition glyph
 
-#### Scenario: Every widget shares the same card chrome, with no outline
+#### Scenario: No widget paints anything behind its own content
 
-- **WHEN** any two widgets (of any kind) are shown on the same Home page
-- **THEN** both use the same corner radius and the same filled-surface
-  treatment as each other, and neither draws a border/outline stroke
+- **WHEN** any widget (of any kind) is shown on a Home page over any
+  wallpaper
+- **THEN** nothing is visible behind that widget's glyphs but the wallpaper
+  itself -- no card fill, no border, no corner radius
 
-#### Scenario: A condition tint never leaks past the card's rounded corners
+#### Scenario: A glyph's halo follows its own color, not a fixed shadow
 
-- **WHEN** the Weather widget paints its condition-derived tint wash
-- **THEN** the wash is visible only inside the card's own rounded shape, not
-  past its corners
+- **WHEN** a widget paints a light-colored glyph, and separately when it
+  paints a dark-colored glyph
+- **THEN** the light glyph is haloed in a dark color and the dark glyph is
+  haloed in a light color

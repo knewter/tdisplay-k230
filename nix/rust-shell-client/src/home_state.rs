@@ -24,56 +24,65 @@ pub const SCHEMA: u32 = 2;
 
 /// A themed, shell-drawn widget kind. Each has a fixed cell span (see
 /// [`Self::span`]) -- resizing is deliberately not supported (task: "skip it
-/// if it's costly"). Three of these are clock *styles* (`home-widget-design`:
-/// "2-3 distinct clock styles selectable from the widget picker") rather than
-/// three separate widget *concepts* -- modeling each style as its own
-/// `WidgetKind` variant, additive to the existing schema-2 tag, needs no
-/// migration at all: an old save file simply never contains the new tag
-/// strings, and a new save just starts using them.
+/// if it's costly"). Four of these are clock *styles* (`home-widget-design`,
+/// round 2, after `docs/design/clock-widget-research.md`: "Offer 3-4
+/// genuinely striking styles") rather than four separate widget *concepts*
+/// -- modeling each style as its own `WidgetKind` variant, additive to the
+/// existing schema-2 tag, needs no migration at all: an old save file
+/// simply never contains a new tag string, and a new save just starts using
+/// it. This also means the enum variant names below are *not* renamed to
+/// match round 2's own style names (Bubble/Thin/Dot matrix/Analog) --
+/// renaming an already-serialized tag would break a layout a board has
+/// already saved with the old names; only [`Self::label`]'s
+/// user-facing string changed.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum WidgetKind {
-    /// "Big stacked": hour and minute each on their own huge line, a small
-    /// caps-style date beneath. The hero style, and the fresh-install
-    /// default (unchanged tag from before this change, for save-file
-    /// compatibility).
+    /// "Bubble": hour and minute each on their own huge, heavy line, same
+    /// weight and color, centered -- the fresh-install default (unchanged
+    /// tag from before this change, for save-file compatibility).
     Clock,
-    /// "Minimal line": one line, `HH:MM`, the widest single-line numerals
-    /// this card's width allows, a small date beneath.
+    /// "Thin": one line, `HH:MM`, a real thin display weight, centered.
     ClockMinimal,
     /// "Analog": a drawn clock face (ticks, hour/minute hand in the theme
-    /// accent) plus a short date caption, at the same square footprint as
-    /// Battery/Weather.
+    /// accent, no dial background) plus a short date caption, at the same
+    /// square footprint as Battery/Weather.
     ClockAnalog,
+    /// "Dot matrix": a Nothing-OS-style procedural dot-matrix `HH:MM`
+    /// readout, no font file involved at all.
+    ClockDotMatrix,
     Battery,
     Weather,
 }
 
 impl WidgetKind {
-    /// `(columns, rows)` this widget occupies, top-left anchored. The two
-    /// full-width clock styles are a 4x2 band; the analog face and Battery/
-    /// Weather are half-width squares (2x2) -- the "obvious firsts" the task
-    /// names, each at one of its listed acceptable spans.
+    /// `(columns, rows)` this widget occupies, top-left anchored. The
+    /// full-width clock styles (including Dot matrix, which reads better as
+    /// a wide readout) are a 4x2 band; the analog face and Battery/Weather
+    /// are half-width squares (2x2) -- the "obvious firsts" the task names,
+    /// each at one of its listed acceptable spans.
     pub fn span(self) -> (usize, usize) {
         match self {
-            WidgetKind::Clock | WidgetKind::ClockMinimal => (4, 2),
+            WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix => (4, 2),
             WidgetKind::ClockAnalog | WidgetKind::Battery | WidgetKind::Weather => (2, 2),
         }
     }
 
-    pub const ALL: [WidgetKind; 5] = [
+    pub const ALL: [WidgetKind; 6] = [
         WidgetKind::Clock,
         WidgetKind::ClockMinimal,
         WidgetKind::ClockAnalog,
+        WidgetKind::ClockDotMatrix,
         WidgetKind::Battery,
         WidgetKind::Weather,
     ];
 
     pub fn label(self) -> &'static str {
         match self {
-            WidgetKind::Clock => "Clock - Big",
-            WidgetKind::ClockMinimal => "Clock - Line",
+            WidgetKind::Clock => "Clock - Bubble",
+            WidgetKind::ClockMinimal => "Clock - Thin",
             WidgetKind::ClockAnalog => "Clock - Analog",
+            WidgetKind::ClockDotMatrix => "Clock - Dot Matrix",
             WidgetKind::Battery => "Battery",
             WidgetKind::Weather => "Weather",
         }
@@ -84,9 +93,10 @@ impl WidgetKind {
     /// row list and this enum's own variants can never drift out of step.
     pub fn picker_subtitle(self) -> &'static str {
         match self {
-            WidgetKind::Clock => "4x2, stacked hour/minute - hold to drag onto Home",
+            WidgetKind::Clock => "4x2, heavy stacked hour/minute - hold to drag onto Home",
             WidgetKind::ClockMinimal => "4x2, one thin line - hold to drag onto Home",
             WidgetKind::ClockAnalog => "2x2, drawn clock face - hold to drag onto Home",
+            WidgetKind::ClockDotMatrix => "4x2, procedural dot-matrix readout - hold to drag onto Home",
             WidgetKind::Battery => "2x2 - hold to drag onto Home",
             WidgetKind::Weather => "2x2 - hold to drag onto Home",
         }
@@ -1000,13 +1010,15 @@ mod tests {
     }
 
     #[test]
-    fn the_three_clock_styles_have_their_documented_spans_and_are_all_pickable() {
+    fn the_four_clock_styles_have_their_documented_spans_and_are_all_pickable() {
         assert_eq!(WidgetKind::Clock.span(), (4, 2));
         assert_eq!(WidgetKind::ClockMinimal.span(), (4, 2));
         assert_eq!(WidgetKind::ClockAnalog.span(), (2, 2));
-        assert_eq!(WidgetKind::ALL.len(), 5);
+        assert_eq!(WidgetKind::ClockDotMatrix.span(), (4, 2));
+        assert_eq!(WidgetKind::ALL.len(), 6);
         assert!(WidgetKind::ALL.contains(&WidgetKind::ClockMinimal));
         assert!(WidgetKind::ALL.contains(&WidgetKind::ClockAnalog));
+        assert!(WidgetKind::ALL.contains(&WidgetKind::ClockDotMatrix));
         // Every entry has a distinct label -- the picker list would silently
         // conflate two rows otherwise.
         let mut labels: Vec<&str> = WidgetKind::ALL.iter().map(|kind| kind.label()).collect();

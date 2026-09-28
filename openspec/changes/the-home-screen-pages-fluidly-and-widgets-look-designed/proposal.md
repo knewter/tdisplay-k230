@@ -22,6 +22,20 @@ Two concrete problems this closes:
    deliberately designed hero clock, a battery gauge, or a weather card --
    it reads as debug output.
 
+A first pass at both landed, and the coordinator deployed it to the board
+for the user's judgment. Board review round 2 (from the deployed build's
+own evidence screenshots, before the user looked) fixed a corner-leaking
+tint, a boxed-in border, an oversized battery ring, a cramped clock, and a
+tiny forecast strip. The user then tried *that* build on the board and
+reported, verbatim: "the widgets don't have to have a background like they
+do and the clock looks like shit browse the web find dope clock widgets
+plz." Round 3 (this pass) responds to both halves of that: every widget's
+card background is gone entirely, replaced by a theme-derived halo/glow
+computed straight from each glyph's own color; and the Clock widget was
+rebuilt from a survey of real clock-widget design across current mobile
+platforms and community tools (`docs/design/clock-widget-research.md`),
+not another guess.
+
 ## What Changes
 
 - **Cross-page drag, tuned and made legible.** The edge zone narrows to
@@ -42,59 +56,67 @@ Two concrete problems this closes:
   multi-cell widget hovering somewhere its span cannot fit now shows a
   distinct dashed "no room here" highlight (the theme's error role)
   instead of the ordinary accepting one.
-- **Three selectable clock styles.** `WidgetKind` gains `ClockMinimal` and
-  `ClockAnalog` alongside the existing `Clock` ("Big stacked"): a full-width
-  hero pair of hour/minute lines, a single thinner `HH:MM` line, and a
-  Cairo-drawn analog face (ticks, a neutral hour hand, an accent minute
-  hand) -- all three additive to the schema-2 `WidgetKind` tag
-  (`clock`/`clock_minimal`/`clock_analog`), so an existing save file needs
-  no migration. All three are selectable from the widget picker, which now
-  also renders a live preview of each widget kind inline in its own row.
-  "Big stacked" is left-aligned with deliberate breathing room from the
-  card's own edges, the hour in accent Bold and the minute beneath it in a
-  lighter Normal weight (a board look at the first pass found it cramped
-  against the left edge with both lines reading at the same visual weight).
-  Every clock style shows a tracked-caps date caption, sized up a touch
-  from the first pass for legibility.
-  - **Font choice:** kept `DejaVu Sans` (the image's one shipped family,
-    `render.rs`'s own `FONT_FAMILY` doc already turned down adding a second
-    face for a prior rendering-only fix). No variable/light-weight family
-    was added this pass either: DejaVu Sans ships only Book/Bold, so the
-    "thinner" minimal-line style leans on Normal weight plus reduced
-    opacity and size rather than a genuine font-weight axis. Adding a small
-    variable sans remains an option for a future pass; it was not worth the
-    blob-inventory/image-size risk here, and this host environment cannot
-    prove a new nixpkgs fetch actually succeeds under the coordinator's
-    cross-build.
-- **Weather widget redesigned, switched to wttr.in's `j1` format.** Current
-  temperature (large), a Cairo-drawn condition glyph (sun/cloud/rain/snow/
-  fog/storm, replacing the old plain condition word), location name,
-  today's high/low, and a 3-entry forecast strip (this card's own 2x2 width
-  fits three columns legibly; wttr.in's `j1` response has enough hourly data
-  for up to 5, but three is what actually reads at this size). Each
-  forecast column's own glyph and temperature are sized for legibility at
-  arm's length (a board look at the first pass found them too small to
-  read). The 30-minute throttle, disk cache, and offline-keeps-last-reading
-  behavior are unchanged, now carrying the richer snapshot shape.
-- **Battery widget redesigned.** A themed ring, sized to actually suit a 2x2
-  card (about 30% smaller than the first pass, which read as oversized on
-  the board), with the live percentage large and centered *inside* the ring
-  rather than as a caption beneath it, plus a small accent charging-badge
-  circle (with the bolt glyph inside it) when charging, replacing the old
-  plain percentage text. The absent state keeps its "No battery info"
-  wording paired with a muted outline battery glyph.
-- **Consistent, borderless card chrome.** Every widget shares one dedicated
-  surface treatment (`render.rs::paint_widget_surface`): the same 16px
-  radius `docs/design/shell-polish-review-2026-09.md` already names as the
-  Rust-side "sheet" radius, a subtly filled surface derived from the theme
-  at ~80% alpha, and a cheap layered soft shadow -- deliberately no border
-  stroke, unlike `service_card` (which every *other* floating panel here
-  still uses). A first pass reused `service_card` outright; a board look at
-  the rendered result found its 1px border made every widget "look
-  boxed-in" over the wallpaper, where nothing else frames it the way a
-  bordered panel's own surroundings do. The Weather widget's condition tint
-  is now clipped to this same rounded shape (it previously leaked past the
-  corners as a plain unclipped rectangle).
+- **Research first.** `docs/design/clock-widget-research.md` surveys twelve
+  standout clock-widget designs -- Pixel's lock-screen bubble/thin presets
+  and At a Glance's own legibility fix, Nothing OS's Ndot dot-matrix,
+  iOS StandBy, Samsung One UI's Adaptive Clock, Material You's system clock
+  widget, KWGT/KLWP community packs, Braun/Dieter Rams's single-accent
+  analog convention, and r/unixporn/Omarchy desktop-rice clocks -- and
+  states, per design, what each borrows into this change.
+- **Four selectable clock styles**, matching that research: `WidgetKind`
+  gains `ClockMinimal`, `ClockAnalog`, and `ClockDotMatrix` alongside the
+  existing `Clock`, all additive to the schema-2 tag (`clock`/
+  `clock_minimal`/`clock_analog`/`clock_dot_matrix`), so an existing save
+  file needs no migration and the enum's *internal* variant names stay
+  unchanged even though every style's user-facing label changed. All four
+  are selectable from the widget picker, which renders a live preview of
+  each inline in its own row.
+  - **"Bubble"** (`Clock`): hour and minute each their own huge line, Inter
+    at its heaviest weight, the same color, centered -- Pixel's own
+    two-line lock clock.
+  - **"Thin"** (`ClockMinimal`): one line, Inter at its thinnest weight,
+    centered.
+  - **"Dot matrix"** (`ClockDotMatrix`, new): a procedural 5x7 dot-matrix
+    `HH:MM` readout drawn with plain Cairo circles, no font file at all --
+    digits in the theme's foreground, the colon in its accent.
+  - **"Analog"** (`ClockAnalog`): ticks and hands only, the dial fill/ring
+    from the first two passes removed entirely (Braun/Rams: "no dial
+    background, just markers and hands"), an accent minute hand.
+  - **Font:** `nix/shell.nix` gains `clockDisplayFont`, one file
+    (`Inter.ttc`, 13,172,948 bytes) extracted from nixpkgs's `pkgs.inter`
+    -- the classic *static* collection, not the variable font: `pango-sys`
+    at this repo's pinned version has no binding at all for
+    `pango_font_description_set_variations` (confirmed with a scratch
+    `cargo check`), so the variable weight axis is unreachable from this
+    client, but the static collection already carries Thin through Black
+    as ordinary named faces `pango::Weight` addresses the same way this
+    shell's existing DejaVu lookup already does. Used for the Bubble/Thin
+    styles only; Dot matrix needs no font, and Analog's only text (its
+    date caption) stays on the existing `FONT_FAMILY`.
+- **No card behind any widget, of any kind.** Board review, round 2 (a
+  first look at the *first* pass's own evidence): "the widgets don't have
+  to have a background like they do." `render.rs::paint_widget_surface`
+  (round 2's own card-without-a-border fix) is gone entirely -- no fill,
+  no border, no corner radius, nothing painted behind a widget's content
+  but the wallpaper itself. Legibility instead comes from a halo/glow
+  computed from each glyph's own resolved color (`glow_for`): a dark glyph
+  gets a light halo, a light glyph gets a dark one, via 8 offset copies of
+  the same Pango layout at a small radius and low alpha behind the real
+  glyph (`draw_layout_halo`) -- a cheap stand-in for a true blur, which
+  Cairo's toy API has none of. Small graphic elements (the weather glyph,
+  the battery ring/outline) get the equivalent non-text treatment, a soft
+  ambient circular backdrop (`draw_soft_backdrop`) rather than a halo.
+- **Weather widget kept its round-2 content, switched to wttr.in's `j1`
+  format.** Current temperature (large), a Cairo-drawn condition glyph
+  (sun/cloud/rain/snow/fog/storm), location name, today's high/low, and a
+  3-entry forecast strip, all now painted straight on the wallpaper with
+  the halo/backdrop treatment above instead of on a card. The 30-minute
+  throttle, disk cache, and offline-keeps-last-reading behavior are
+  unchanged.
+- **Battery widget kept its round-2 layout** (a themed ring sized for a 2x2
+  card, the live percentage centered inside it, a small accent
+  charging-badge circle when charging, a muted outline glyph when absent),
+  moved onto the same no-card/halo treatment.
 - **Performance is unchanged in shape.** Widgets already only repaint when
   Home repaints and the underlying value (`home.battery`/`home.weather`)
   changed, or once a minute for the clock (`clock::ms_until_next_minute`);
@@ -163,15 +185,21 @@ sibling change already added:
 
 ## Impact
 
-Userspace only, `nix/rust-shell-client/`: `home_state.rs` (`WidgetKind`
-gains two variants plus `add_blank_page`/`would_fit`), `home_pager.rs`
+Mostly userspace, `nix/rust-shell-client/`: `home_state.rs` (`WidgetKind`
+gains three variants plus `add_blank_page`/`would_fit`), `home_pager.rs`
 (`set_position`), `home_screen.rs` (edge-hold/fling/page-switch-animation
 state machine, `drag_edge_indicator`/`drop_target_fits` accessors),
 `home_widgets.rs` (the weather module's `j1` rewrite), `render.rs` (the
-widget-card redesign, the edge indicator, the "no room" drop-target style,
-enlarged page dots), `main.rs` (two call-site signature updates for the
-drawer-drag hand-off's now time/height-aware `external_drag_motion`), and a
-new `examples/render_widget_evidence.rs` host harness. No kernel, device
-tree, boot, radio, or second-core change; no new Nix package or font. The
-existing `.#handheld-shell-rust`/`.#card-shell` outputs and the
-`k230-coherent-shell` NixOS configuration absorb it.
+no-card/halo widget redesign, the four clock styles, the edge indicator,
+the "no room" drop-target style, enlarged page dots), `main.rs` (two
+call-site signature updates for the drawer-drag hand-off's now
+time/height-aware `external_drag_motion`), and a rewritten
+`examples/render_widget_evidence.rs` host harness (now composites over a
+real wallpaper image via `background_decode::BackgroundCache`). Plus one
+Nix-level change: `nix/shell.nix` gains `clockDisplayFont` (one font file,
+13,172,948 bytes, extracted from nixpkgs's `pkgs.inter`) in
+`fonts.packages`, alongside the existing `pkgs.dejavu_fonts` -- the one
+font addition this whole `home-widget-design` change makes, used only by
+the Clock widget's Bubble/Thin styles. No kernel, device tree, boot, radio,
+or second-core change. The existing `.#handheld-shell-rust`/`.#card-shell`
+outputs and the `k230-coherent-shell` NixOS configuration absorb it.

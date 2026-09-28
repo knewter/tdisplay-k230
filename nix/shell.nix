@@ -16,6 +16,34 @@ let
   cfg = config.k230.shell;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
 
+  # One additional display face for Home's Clock widget only
+  # (`home-widget-design`, board-review round 2: "find dope clock widgets" --
+  # a genuine weight range reads far better for a hero numeral than DejaVu
+  # Sans's Book/Bold pair). `pango-sys` at this pinned version (0.21.5) has
+  # no binding for `pango_font_description_set_variations` at all -- not
+  # just missing from the safe wrapper, absent from the raw FFI declarations
+  # too (confirmed by a scratch `cargo check` against it) -- so the Inter
+  # *variable* font's weight axis is unusable here; this instead keeps just
+  # `Inter.ttc`, the classic **static** collection nixpkgs' `pkgs.inter`
+  # ships alongside it, which already carries Thin/Light/Regular/Medium/
+  # SemiBold/Bold/ExtraBold/Black as ordinary named faces of one "Inter"
+  # family (verified with `fc-scan`) -- exactly what `pango::Weight`
+  # already knows how to address, the same mechanism `render.rs::
+  # FONT_FAMILY`'s existing Book/Bold DejaVu lookup already uses. Extracting
+  # only `Inter.ttc` (dropping the unused variable TTFs and their italics,
+  # `pkgs.inter`'s own "Inter Display" bonus family is bundled in the same
+  # file and not separately excisable) is `Inter.ttc` itself, measured at
+  # 13,172,948 bytes (`du -sb` on the file nixpkgs fetches) -- `pkgs.inter`
+  # as a whole is a 5.1 MiB compressed fetch, 14.3 MiB unpacked; extracting
+  # just this one file saves roughly the ~1.75 MiB the two unused
+  # `InterVariable(-Italic).ttf` files would otherwise add to the image.
+  # SIL Open Font License 1.1, same license family as the DejaVu fonts
+  # already shipped.
+  clockDisplayFont = pkgs.runCommand "inter-static-ttc" { } ''
+    mkdir -p "$out/share/fonts/truetype"
+    cp "${pkgs.inter}/share/fonts/truetype/Inter.ttc" "$out/share/fonts/truetype/"
+  '';
+
   # Xwayland off: 55 fewer riscv64 derivations and no GTK 3 / CUPS / Avahi
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
@@ -1504,9 +1532,11 @@ in
     };
 
     # foot and swaybar both go through fontconfig, and the minimal profile
-    # ships no fonts at all. One family is enough.
+    # ships no fonts at all. DejaVu Sans covers every other label this shell
+    # draws; `clockDisplayFont` (see its own doc above) is the one addition,
+    # for Home's Clock widget alone.
     fonts.fontconfig.enable = true;
-    fonts.packages = [ pkgs.dejavu_fonts ];
+    fonts.packages = [ pkgs.dejavu_fonts clockDisplayFont ];
 
     environment.systemPackages = [
       sway
