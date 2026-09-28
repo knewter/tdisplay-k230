@@ -1,0 +1,196 @@
+## 1. Read-only board probe (board-gated)
+
+No GPIO is driven differently from today's boot in this group; every step
+reads state only. This is the first work this change may run on hardware.
+
+- [ ] 1.1 Under the reserved board/serial lock, with the board booted
+      normally (panel DTB, touch running, nothing in this change installed
+      yet), confirm the LT9611 answers on `&i2c3` alongside touch:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "i2cdetect -y 3"`.
+      Record which adapter number Linux assigned to `&i2c3` from
+      `/sys/class/i2c-adapter/*/name` in the same session rather than
+      assuming `3`, since adapter numbering is not guaranteed to match the
+      DT alias. Expect `0x3b` (LT9611) and `0x5d` (GT9895, already known
+      working) both listed.
+- [ ] 1.2 Read-only LT9611 register probe, no write beyond the register
+      address byte `i2cget` itself sends:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "i2cget -y 3 0x3b 0x00"`
+      (or the adapter number from 1.1). Record the returned byte and
+      whether the chip acknowledges at all; do not yet attempt to decode it
+      against the LT9611 register map without a datasheet read (not yet
+      done in this change) — this step establishes "something answers,"
+      not "the chip is initialized correctly."
+- [ ] 1.3 Read current GPIO23/GPIO24 direction and level with touch
+      running and untouched:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "cat /sys/kernel/debug/gpio"`
+      (or `gpioinfo`/`gpioget` against the `gpio0_ports` chip if
+      `debugfs` is unmounted). Record both lines' direction, active state,
+      and whether GPIO23's consumer is already the touch driver (expected,
+      since no LT9611 node is loaded yet).
+- [ ] 1.4 Attempt to determine whether the LT9611's `INT_ATST_GPIO3`
+      output and the GT9895's interrupt output are open-drain (needed
+      before any shared-IRQ design in group 4): read the GPIO23 pull
+      configuration and any available driver/debugfs description of drive
+      type from the same session as 1.3. If this cannot be determined from
+      software alone, record that explicitly rather than guessing — this
+      remains an open question in `design.md` either way.
+- [ ] 1.5 Commit the sanitized console transcripts from 1.1–1.4 (no
+      addresses, no credentials — none expected in this output, but check)
+      under `docs/evidence/hdmi-hotplug/probe/`, and resolve the two
+      `<!-- UNVERIFIED -->` markers in `specs/display/hdmi/spec.md`'s
+      "The LT9611 is present and addressable" requirement against what was
+      actually observed.
+
+## 2. Driver and device-tree build (host build only, no board changes)
+
+- [ ] 2.1 Patch `drivers/gpu/drm/canaan/canaan_dsi.c`'s bridge-attach branch
+      in `canaan_dsi_bind()` to call `drm_bridge_connector_init()` and
+      attach the resulting connector to the encoder, mirroring the existing
+      panel branch's connector setup immediately above it in the same
+      function. Add the patch to `nix/kernel.nix` alongside the existing
+      documented patches (goodix-berlin backport, panel reset-timing fix,
+      etc.), with the same kind of comment explaining what upstream is
+      missing and why. Verify with `nix build .#kernel`.
+- [ ] 2.2 Add an LT9611 device-tree node to a new
+      `nix/dts/k230-tdisplay-hdmi.dts` (or equivalent alternate top-level
+      board file sharing `k230-tdisplay.dts`'s includes), wired to this
+      board's own `&i2c3`/GPIO23/GPIO24 facts from
+      `docs/research/hdmi-hotplug.md` §1–§2 — not a copy of LILYGO's
+      reference-tree fallback. Target 720p60 as the initial mode. Verify
+      the DTB compiles and the graph resolves with
+      `nix build .#deviceTree` pointed at the new `dtbName`
+      (`nix/device-tree.nix`'s existing `dtbName` parameter), and inspect
+      the compiled DTB with `dtc -I dtb -O dts` to confirm exactly one
+      `&dsi` `port@1` endpoint (the LT9611's) and no RM69A10 panel node —
+      this task does not attempt to make both coexist in one DTB (that is
+      group 4's problem, if it is solved at all).
+- [ ] 2.3 Confirm the full system closure still cross-builds with the
+      kernel patch from 2.1 present but no LT9611 node in the *default*
+      device tree (`nix/dts/k230-tdisplay.dts` unchanged): verify with
+      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`.
+      This proves the patch is inert on the panel boot path before any
+      board time is spent on it.
+
+## 3. Manual switch, reboot-based (board-gated)
+
+- [ ] 3.1 Extend `nix/sd-image.nix` to place the alternate HDMI DTB
+      (from task 2.2) on the boot partition alongside the default panel
+      DTB, and add a NixOS-side tool (or extend `tools/push-file.py`)
+      that: remounts `/boot` read-write, writes a one-shot restore marker
+      naming the panel DTB, copies the HDMI DTB over the file the
+      `hdmi_dtb`/`force_dtb` U-Boot selector currently names, `sync`s, and
+      reboots — mirroring LILYGO's `ui_hdmi_test.c` mechanism cited in
+      `docs/research/hdmi-hotplug.md` §3. Add the matching early-boot
+      restore step (systemd unit or initrd hook) that checks for the
+      marker and reverts the selector to the panel DTB before the next
+      boot completes, deleting the marker. Verify with
+      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
+      and a host-side test of the marker-write/restore logic that does not
+      require the board.
+- [ ] 3.2 Add a Settings row that triggers the switch tool from 3.1,
+      including the "next boot: HDMI / AMOLED" status readout LILYGO's own
+      UI provides (`hdmi_find_connector()` scanning `/sys/class/drm`,
+      cited in `docs/research/hdmi-hotplug.md` §3), and a confirm step
+      before rebooting. Verify with `cargo test` /
+      `cargo clippy --all-targets` for `nix/rust-shell-client` and
+      `nix build .#handheld-shell-rust`.
+- [ ] 3.3 On the physical board, under the reserved lock: install the
+      built kernel/DTBs, trigger the Settings switch, confirm over the
+      console that the board reboots into the HDMI DTB and an
+      `HDMI-A-1` connector with a live monitor attached reports
+      `connected` in `/sys/class/drm/*/status`
+      (`flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=15 "cat /sys/class/drm/card*-HDMI-A-1/status"`),
+      then reboot again (any means — this proves the self-revert, not just
+      the forward switch) and confirm the panel is active again and touch
+      still works
+      (`python3 tools/console.py /dev/ttyACM0 --wait=15 "cat /sys/class/drm/card*-DSI-1/status"`
+      plus an `evtest` touch check per the existing touch evidence
+      pattern). Capture a photograph of the external monitor actually
+      showing the shell, per the physical-proof distinction in AGENTS.md
+      (a console transcript alone does not prove pixels reached the
+      monitor). Commit console transcripts and the photograph under
+      `docs/evidence/hdmi-hotplug/manual-switch/`.
+
+## 4. Hot-plug automation without a reboot (board-gated, speculative)
+
+This group may end in "infeasible, recorded" rather than a working feature;
+`design.md` decision 4 accepts that outcome. Do not force an unproven
+design to completion under schedule pressure — record what was tried and
+why it did or did not work.
+
+- [ ] 4.1 Design and, if the group-1 probe (task 1.4) did not rule it out,
+      prototype a device tree where the LT9611 exists as a plain I2C
+      client (able to probe, read HPD status, and raise its shared-GPIO23
+      interrupt) without being the `&dsi` `port@1` endpoint, coexisting
+      with the active panel node. Verify the DTB compiles and the LT9611
+      driver probes (a kernel log line, not yet a working bridge) with the
+      panel still the active display:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 "dmesg | grep -i lt9611"`.
+      If this cannot be made to probe without contending with touch (per
+      the shared GPIO24 reset polarity mismatch in `docs/research/hdmi-hotplug.md`
+      §1), record that finding and stop this task group here.
+- [ ] 4.2 If 4.1 succeeds, design and implement the `canaan_dsi.c` (or a
+      new small coordinating driver) logic to tear down the panel
+      connector/encoder and bring up the LT9611 bridge connector/encoder
+      live, on an HPD-connect interrupt, and the reverse on disconnect —
+      including handing touch's ownership of GPIO23/24 to the LT9611 and
+      back. This is real kernel design work with no existing pattern to
+      copy; scope and re-plan it explicitly once 4.1's findings are in,
+      rather than estimating it blind here.
+- [ ] 4.3 If 4.2 produces something that boots, verify on the board that
+      plugging an HDMI cable while the panel is active switches the visible
+      output within a bounded time and without a reboot, and that
+      unplugging switches back with touch working again afterward. Capture
+      photographs of both transitions (panel→monitor, monitor→panel) per
+      AGENTS.md's evidence-class distinctions; a console transcript alone
+      does not prove either transition was seen on glass. Commit under
+      `docs/evidence/hdmi-hotplug/live-switch/`.
+- [ ] 4.4 Whether or not 4.1–4.3 succeed, record the outcome plainly in
+      `specs/display/hdmi/spec.md`'s no-reboot requirement: either resolve
+      its `<!-- UNVERIFIED -->` marker against working board evidence, or
+      restate it as a known-infeasible-with-current-architecture finding
+      with the specific blocker named, so a future change does not have to
+      rediscover it.
+
+## 5. Shell and card-shell landscape support
+
+- [ ] 5.1 Add an `HDMI-A-1` output stanza to `nix/shell.nix`'s Sway config
+      (mode matching task 2.2's target, e.g. `1280x720`, `transform
+      normal`), alongside the existing `DSI-1` stanza, and decide (record
+      in `design.md` if it changes) whether both outputs are ever active
+      in the same Sway session or whether the reboot-based switch means
+      only one is ever present at a time in the near term. Verify with
+      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`.
+- [ ] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
+      `DESIGN_ASPECT` and the direct `568.0`/`1232.0` literals it and
+      `render.rs`/`wifi_ui.rs` use for coordinate scaling, so they derive
+      from the actual configured output geometry instead of a compiled-in
+      constant, without changing the existing portrait behavior when the
+      output really is `DSI-1` at `568x1232` (existing tests must keep
+      passing unchanged). Verify with `cargo test` and
+      `cargo clippy --all-targets` for `nix/rust-shell-client`.
+- [ ] 5.3 Make the home grid/navigation chrome
+      (`nix/rust-shell-client/src/home_grid.rs`, `navigation.rs`) not
+      visually broken (overlapping, off-screen, or unreachable elements) at
+      a landscape aspect ratio, without necessarily redesigning the layout
+      for landscape — "usable," not "redesigned," is the bar for this
+      change. Verify with new unit tests exercising the same functions at
+      a landscape geometry (e.g. `1280x720`) alongside the existing
+      `568x1232` cases, `cargo test`.
+- [ ] 5.4 On the physical board with an HDMI monitor attached (requires
+      task group 3's manual switch working), capture a photograph of the
+      home screen and Settings actually rendering on the external monitor
+      without visibly broken layout. Commit under
+      `docs/evidence/hdmi-hotplug/landscape/`.
+
+## 6. Proposal validation
+
+- [ ] 6.1 Validate this change and preserve every unresolved hardware
+      requirement as `<!-- UNVERIFIED -->` until its named evidence exists;
+      verify with
+      `openspec validate plugging-in-hdmi-moves-the-display --strict`.
+- [ ] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
+      and hand off to the coordinator for an early merge to `master` per
+      AGENTS.md, independent of whether groups 3–5 have started — the
+      proposal and the research document are the reviewable deliverable at
+      this point, not a private preface to the board work.
