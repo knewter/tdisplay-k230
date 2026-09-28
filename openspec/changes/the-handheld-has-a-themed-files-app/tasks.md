@@ -138,10 +138,31 @@
   weight is intrinsic to GTK4 on this nixpkgs pin" note with an exact,
   itemized list rather than an estimate. See
   `docs/evidence/files-app/closure-delta.md`.
-- [ ] 5.1b Full system build, both candidates
-  (`k230-coherent-shell-both-files-apps`). Verify with the same command
-  against that configuration. In progress; will report store path and
-  closure delta the same way once it finishes.
+- [x] 5.1b Full system build, both candidates
+  (`k230-coherent-shell-both-files-apps`, `filesAppNautilus = true`).
+  Verify with the same command against that configuration. **PASS**:
+  `/nix/store/b2f6yqk428w599jcc7w6rcjawld85bp6-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  Same per-path `nix-store -q --size` sum method:
+  | | requisite paths | summed size |
+  | --- | ---: | ---: |
+  | master baseline | 1041 | 3.196 GiB |
+  | Portfolio-only | 1114 | 3.576 GiB |
+  | Both apps | 1154 | 3.704 GiB |
+  | **Nautilus's own marginal delta** (both vs. Portfolio-only) | **+40 net** (54 new, 14 superseded) | **+130.4 MiB (+0.127 GiB)** |
+  | **both apps vs. master** | **+113 net** | **+519.4 MiB (+0.507 GiB)** |
+  Nautilus's marginal *byte* cost is much smaller than its own 1015.3 MiB
+  standalone closure, because gtk4/libadwaita/GStreamer's bulk is already
+  shared with Portfolio; what Nautilus adds on top is real, itemized
+  dependency-surface growth rather than size: iOS/USB device sync
+  (`libimobiledevice`+`libusbmuxd`+`libplist`+`libtatsu`), network
+  directory sharing (`gnome-user-share`+`apache-httpd`+`mod_dnssd`),
+  `localsearch`+`tinysparql` full-text indexing, `polkit`, LDAP
+  (`openldap`+`cyrus-sasl`), PDF (`poppler-glib`/`poppler-data`,
+  `libgxps`), image metadata (`gexiv2`/`exempi`), `libnotify`,
+  `libcloudproviders`, `libosinfo`+`osinfo-db`, `gnome-autoar`,
+  `gnome-desktop`, `nautilus-riscv64-unknown-linux-gnu-50.2.2` and
+  `k230-nautilus` (this change's launcher) themselves. See
+  `docs/evidence/files-app/closure-delta-both-apps.md`.
 - [x] 5.2 Host screenshots of Portfolio and Nautilus under a dark and a
   light theme: real (unmodified) native x86_64 `portfolio-filemanager`/
   `nautilus` builds — substituted from cache.nixos.org, not the riscv64
