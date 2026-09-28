@@ -110,10 +110,38 @@
 
 ## 5. System build and evidence
 
-- [ ] 5.1 Full system build with both candidates included. Verify with:
-  `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`,
-  and record the closure-size delta against the pre-change toplevel
-  (`nix path-info -Sh` before/after). Blocked on 2.2/2.3 completing.
+- [x] 5.1 Full system build, Portfolio only (`filesAppNautilus` defaults
+  off; per coordinator direction, do not wait on Nautilus's own build for a
+  testable system). Verify with:
+  `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
+  **PASS**: `/nix/store/jv44pdh4al448zfl7h33l87pl3n4wmbq-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  Closure delta against `origin/master` (292ee81624fd, `builtins.getFlake
+  "git+file://<repo>?rev=..."`, same `k230-coherent-shell` configuration,
+  no source changes otherwise), measured as an independent per-path
+  `nix-store -q --size` sum over `nix-store -q --requisites` (not `nix
+  path-info -rS`, per coordinator's request that these be cross-checked
+  separately):
+  | | requisite paths | summed size |
+  | --- | ---: | ---: |
+  | master baseline | 1041 | 3.196 GiB |
+  | Portfolio-only system | 1114 | 3.576 GiB |
+  | **delta** | **+73 net** (97 new, 24 superseded same-named rebuilds) | **+389.0 MiB (+0.380 GiB)** |
+  The 24 superseded paths (`dbus-1`, `etc`, `foot`, this repo's own
+  `k230-*`/`unit-*.service`/`system-path`/`system-units` derivations) are
+  the same conceptual thing rebuilt with a new hash because the closure
+  around them changed, not new weight. The 73 genuinely new packages are
+  overwhelmingly GTK4's own default GStreamer media backend closure
+  (libdvdnav/libdvdread/libdvdcss, libdc1394+libraw1394 FireWire camera,
+  gupnp/gupnp-igd UPnP, webrtc-audio-processing, openh264, tinysparql,
+  chromaprint, …) plus gtk4-riscv64, libadwaita-riscv64 and
+  portfolio-1.0.3-riscv64 themselves -- confirming `design.md`'s "closure
+  weight is intrinsic to GTK4 on this nixpkgs pin" note with an exact,
+  itemized list rather than an estimate. See
+  `docs/evidence/files-app/closure-delta.md`.
+- [ ] 5.1b Full system build, both candidates
+  (`k230-coherent-shell-both-files-apps`). Verify with the same command
+  against that configuration. In progress; will report store path and
+  closure delta the same way once it finishes.
 - [x] 5.2 Host screenshots of Portfolio and Nautilus under a dark and a
   light theme: real (unmodified) native x86_64 `portfolio-filemanager`/
   `nautilus` builds — substituted from cache.nixos.org, not the riscv64
