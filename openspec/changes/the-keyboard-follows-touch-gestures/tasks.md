@@ -3,7 +3,7 @@ Commands naming new files below are planned interfaces, not existing proof. Pres
 ## 1. Input ownership and motion policy
 
 - [x] 1.1 Implement bounded two-contact edge recognition, separate grip dismissal, direct tracking and release settlement; verify hold/reverse, early/late second contacts, stale velocity and reduced motion with `python3 tests/test_keyboard_gestures.py`.
-- [ ] 1.2 Prove cancellation, keyboard loss/output change and ordinary key/app input isolation through the same host fixture; run `python3 tests/test_keyboard_gestures.py` before marking complete.
+- [x] 1.2 Prove cancellation, keyboard loss/output change and ordinary key/app input isolation through the same host fixture; run `python3 tests/test_keyboard_gestures.py` before marking complete. 2026-09-28: re-ran `python3 tests/test_keyboard_gestures.py -v`, 16/16 pass, including `test_contact_drain` (proves `kg_cancel`), `test_surface_loss` (proves `kg_surface(&p,false)` keyboard/output loss) and `test_overlay_isolation` (proves an overlay-owned contact is left `KG_NONE`, not consumed) -- host policy evidence only.
 
 Proof: `python3 tests/test_keyboard_gestures.py` is host policy evidence only.
 

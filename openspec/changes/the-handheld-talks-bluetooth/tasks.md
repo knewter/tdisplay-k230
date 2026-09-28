@@ -40,3 +40,15 @@
       on` for 10 s, and `btmgmt info`. Commit sanitized console output
       (no MAC addresses/SSIDs of nearby devices) under
       `docs/evidence/bluetooth/` (hardware proof only).
+
+      2026-09-28 system/hw closeout audit: this project does not currently
+      own a USB Bluetooth dongle (`docs/research/bluetooth-onboard.md`
+      confirms the board has no on-board Bluetooth radio of any kind, so a
+      dongle is the only path). Everything else in this change is build-
+      proven and complete. A successor change,
+      `openspec/changes/the-handheld-pairs-over-a-usb-bluetooth-dongle/`,
+      has been drafted and validates `--strict`, carrying this exact task
+      and the `radio/bluetooth` requirement it grounds, so this change can
+      archive its finished kernel/BlueZ scope once a coordinator authorizes
+      the split. Not yet authorized; this task and this change stay open
+      until then.
