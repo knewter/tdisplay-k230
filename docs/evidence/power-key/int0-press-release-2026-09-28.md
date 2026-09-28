@@ -21,3 +21,10 @@ This is the real press/release proof that the `powerKeyTrial` option
 requires, so the gesture service is enabled in the coherent-shell
 configuration. The gesture behaviour itself (tap for display, hold for the
 power menu) is not yet verified.
+
+## Gesture acceptance (operator report)
+
+After the gesture service was enabled (system `f3dh9yxg…`, `shell-power-key`
+active), the operator used the upper button and reported, verbatim: "power
+button works great". Evidence class: an operator's real-finger report. No
+camera recording was made.
