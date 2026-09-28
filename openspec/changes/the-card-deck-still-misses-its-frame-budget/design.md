@@ -24,6 +24,19 @@ whatever is chosen, it must preserve live visual cards, finger-following,
 deck selection, tap-to-expand, and recoverable throw-close; a reduced-refresh
 path that breaks any of those is rejected regardless of its budget numbers.
 
+Update, 2026-09-28 (authorized implementation): the board vblank capture
+(`docs/evidence/card-shell/frame-budget/board-result-2026-09-28.md`) and a
+follow-on host cost measurement
+(`docs/evidence/card-shell/frame-budget/host-cost-table.md`,
+`commit-pipelining-assessment.md`) together narrow this to a genuine
+two-way choice, not three: every CPU/damage-side lever this change's own
+task list named was already implemented or measured net-negative, and the
+one remaining code-level lever (kernel commit pipelining) already has a
+known, unresolved boot-panic risk from a prior attempt. The decision is
+still the coordinator's; this update states what is no longer open (further
+Pixman-path tuning without a new, currently-unknown target) rather than
+choosing for them.
+
 ## Suggested first step
 
 Before another `tools/card-shell-benchmark.py --board` round with a new

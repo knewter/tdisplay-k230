@@ -1,18 +1,57 @@
 This change was split from `the-shell-manages-apps-as-cards` (task 4.2, plus
-its dependent task 5.1). It is staged pending the user's/coordinator's
-authorization of that split; task IDs keep the parent's numbering.
+its dependent task 5.1). Task IDs keep the parent's numbering. Authorized by
+the user 2026-09-28 ("frame budget go").
 
 ## 4. Cost decision (board-gated throughout)
 
-- [ ] 4.2 Measure the panel's actual output/vblank cadence directly (not
-  inferred from the advertised mode), then either fix an addressable CPU cost,
-  or record an explicit reviewed decision to accept the measured cadence, or
-  continue Pixman-path optimization if the cadence measurement identifies a
-  real target. Verify with `python3 tools/card-shell-benchmark.py --board
-  --output docs/evidence/card-shell/pixman.json` (only once a new variable is
+- [x] 4.2a Measure the panel's actual output/vblank cadence directly (not
+  inferred from the advertised mode). Done 2026-09-28: hardware vblank is a
+  clean 19.16 ms grid even while the deck animates
+  (`docs/evidence/card-shell/frame-budget/board-result-2026-09-28.md`,
+  `analysis.md`). H1 confirmed (render/commit overrun quantized to the
+  vblank grid by `canaan_crtc_atomic_flush`'s synchronous commit); H4
+  (vblank IRQ at 1/3 rate) refuted.
+- [x] 4.2b Measure where the per-frame time goes on the host, with a ranked
+  cost table and a stated host-to-board multiplier. Done 2026-09-28
+  (`docs/evidence/card-shell/frame-budget/host-cost-table.md`): Build
+  (`wlr_scene_output_build_state`) is 94.9% of render CPU (host p50 28.1 ms,
+  p95 30.0 ms; board p95 14.0-19.8 ms depending on card count -- host runs
+  1.5-2.1x the board's own Build time on this workload, via QEMU user-mode
+  emulation, not a faster proxy for it). Damage-extent instrumentation added
+  (`card_bench_render_damage`, new `K230_CARD_SHELL frame-damage` rows) shows
+  76-99.6% of the 568x1232 output is damaged on essentially every animated
+  frame -- inherent to the webOS-fan deck moving several cards at once, not
+  a damage-tracking defect (confirmed by one clean 6.6%-damage counter-example
+  at 4.18 ms build). Every other code-level candidate in this task's list
+  (avoid re-clip/re-scale of unchanged cards, cache each card's scaled
+  result, skip scene sync when unchanged, reduce per-frame allocations) was
+  already implemented in prior rounds; verified by reading, not assumed.
+  The scaled-cache path (`SWAY_K230_CARD_SCALED_CACHE=1`, default-on in
+  `nix/shell.nix`) measured net *negative* on host (Build p50 +8.7%, p95
+  +12.1%) in two independent runs against two independent builds -- not
+  disabled here because it is also the sole mechanism providing the required
+  capped (~15fps) live-preview rate; flagged as a decoupling opportunity for
+  a future task, not fixed in this one.
+- [x] 4.2c Assess commit pipelining (optional). Done 2026-09-28
+  (`docs/evidence/card-shell/frame-budget/commit-pipelining-assessment.md`):
+  the mechanism is confirmed (kernel-side, `canaan_crtc_atomic_flush`'s
+  synchronous register write, per `analysis.md` H1) but the one known fix
+  (`canaan-drm-defer-reg-load-to-vblank.patch`) already caused an unrelated
+  boot panic and is deliberately not applied. Not attempted here: it is a
+  kernel change, board-gated, and this task was told not to touch the board;
+  reopening a change that already caused a boot panic is not "small and
+  safe" per this task's own bar for touching the kernel.
+- [ ] 4.2d Coordinator decision, informed by 4.2a-c: accept the measured,
+  understood overrun-rate cost as (b) (with the distinction from
+  `analysis.md`'s decision table stated explicitly -- an overrun rate, not a
+  panel limit), or authorize a separately-gated kernel change to attempt
+  commit pipelining as (c), pricing in the boot-panic risk above. Verify
+  with `python3 tools/card-shell-benchmark.py --board --output
+  docs/evidence/card-shell/pixman.json` plus
+  `docs/evidence/card-shell/frame-budget/board-commands.md`'s
+  `tools/measure-panel-refresh.sh` drag capture (only once a new variable is
   actually being tested -- ten-plus prior rounds already recorded the same
-  failing result; see the parent's tasks.md for the full list) plus whatever
-  direct cadence-measurement tool this investigation produces.
+  failing result; see the parent's tasks.md for the full list).
 
 ## 5. Integration (unblocked once 4.2 resolves)
 

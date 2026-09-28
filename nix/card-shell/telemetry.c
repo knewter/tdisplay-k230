@@ -294,6 +294,28 @@ void card_bench_render_end(struct sway_output *output, bool success) {
 	memset(bench.stage_cpu, 0, sizeof(bench.stage_cpu));
 	bench.render_attempts = bench.failed_attempts = 0;
 }
+/* Diagnostic subdivision, same "K230_CARD_SHELL <name> run=... frame_id=..."
+ * family as frame-cost/repaint-cost above -- deliberately NOT a
+ * "K230_CARD_BENCH v=1 event=..." row, since tools/card-shell-benchmark.py's
+ * parser (FIELDS in tools/card-shell-benchmark.py) rejects any event name it
+ * does not already know, and this diagnostic must not break that existing
+ * strict acceptance parse. frame_id anticipates wlr_output_commit_state's
+ * own post-commit commit_seq (this call happens just before it, on the
+ * success path only); a failed commit leaves this row's frame_id one ahead
+ * of any surrounding submit/frame-cost rows for that attempt, which is
+ * acceptable for a diagnostic that is never fed to the acceptance parser. */
+void card_bench_render_damage(struct sway_output *output, int rects, uint64_t damage_px,
+		int bbox_x1, int bbox_y1, int bbox_x2, int bbox_y2) {
+	if (!bench.armed || bench.output != output)
+		return;
+	uint64_t frame = output->wlr_output->commit_seq + 1;
+	sway_log(SWAY_INFO,
+			 "K230_CARD_SHELL frame-damage run=%" PRIu64 " frame_id=%" PRIu64
+			 " rects=%d damage_px=%" PRIu64
+			 " bbox_x1=%d bbox_y1=%d bbox_x2=%d bbox_y2=%d output_w=%d output_h=%d",
+			 bench.run, frame, rects, damage_px, bbox_x1, bbox_y1, bbox_x2, bbox_y2,
+			 output->width, output->height);
+}
 void card_bench_present(struct sway_output *output, struct wlr_output_event_present *event) {
 	if (!bench.armed || bench.output != output)
 		return;

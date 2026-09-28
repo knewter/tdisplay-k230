@@ -28,10 +28,22 @@ panel/vblank cadence directly, or continue optimizing the Pixman path) is a
 deliberate coordinator choice rather than an unresolved task sitting
 indefinitely in an otherwise-closeable change.
 
-**Status: staged, not authorized.** The parent (`the-shell-manages-apps-as-cards`)
-keeps task 4.2 (and the dependent task 5.1, which `docs/research/
-card-shell-qemu-smoke.md` explicitly blocks on 4.2's budget passing) until
-the coordinator authorizes this split.
+**Status: authorized.** The user approved this split and its implementation
+2026-09-28 ("frame budget go"). Board evidence committed the same day
+(`docs/evidence/card-shell/frame-budget/board-result-2026-09-28.md`,
+`analysis.md`) answered the "suggested first step" above directly: raw
+hardware vblank stays a clean 19.16ms grid even while the deck animates
+(idle p50/p95 19.161/19.162ms; drag-window p50/p95 19.161/19.163ms). The
+~57ms presentation intervals are therefore the compositor's own commit
+cadence missing vblank slots (H1: render or commit overrun, rounded up to
+the next whole vblank by `canaan_crtc_atomic_flush`'s synchronous commit),
+not a panel or VO refresh limit; H4 (vblank IRQ at 1/3 rate) is refuted.
+This authorizes option (c): reduce per-frame card-deck render/commit cost
+and/or pipeline commits so an overrun costs one slot instead of serializing
+the next. The parent (`the-shell-manages-apps-as-cards`) keeps task 4.2
+(and the dependent task 5.1, which `docs/research/card-shell-qemu-smoke.md`
+explicitly blocks on 4.2's budget passing) until this successor's own
+task 4.2 resolves.
 
 ## What Changes
 

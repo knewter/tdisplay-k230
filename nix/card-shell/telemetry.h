@@ -21,5 +21,13 @@ enum card_bench_render_stage { CARD_BENCH_PREPARE, CARD_BENCH_BUILD, CARD_BENCH_
 void card_bench_render_stage(struct sway_output *output, enum card_bench_render_stage stage);
 void card_bench_commit_begin(struct sway_output *output);
 void card_bench_render_end(struct sway_output *output, bool success);
+/* Diagnostic only: logs the exact damage region wlr_scene_output_build_state
+ * computed for this frame (output-buffer-local), so a host or board capture
+ * can measure whether card motion damages the whole output or just the
+ * moving cards' rects. Takes plain integers (already reduced from the
+ * pixman_region32_t at the call site) so this header and telemetry.c stay
+ * free of a pixman dependency, matching every other function here. */
+void card_bench_render_damage(struct sway_output *output, int rects, uint64_t damage_px,
+		int bbox_x1, int bbox_y1, int bbox_x2, int bbox_y2);
 void card_bench_present(struct sway_output *output, struct wlr_output_event_present *event);
 #endif
