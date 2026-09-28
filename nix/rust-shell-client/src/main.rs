@@ -4905,7 +4905,7 @@ impl TouchHandler for ShellClient {
                     // `self.home`'s external drag, not the drawer's own
                     // scroll/close-drag/search handling -- skip all of that
                     // entirely for as long as this touch is the armed drag.
-                    self.home.external_drag_motion(pos, self.home_surface.width);
+                    self.home.external_drag_motion(pos, time_ms, self.home_surface.width, self.home_surface.height);
                     self.home_mark_dirty();
                     self.dirty = true; // the drawer surface repaints the lifted icon/Cancel band too
                     self.draw_home(qh);

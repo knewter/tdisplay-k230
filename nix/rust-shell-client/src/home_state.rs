@@ -24,35 +24,71 @@ pub const SCHEMA: u32 = 2;
 
 /// A themed, shell-drawn widget kind. Each has a fixed cell span (see
 /// [`Self::span`]) -- resizing is deliberately not supported (task: "skip it
-/// if it's costly").
+/// if it's costly"). Three of these are clock *styles* (`home-widget-design`:
+/// "2-3 distinct clock styles selectable from the widget picker") rather than
+/// three separate widget *concepts* -- modeling each style as its own
+/// `WidgetKind` variant, additive to the existing schema-2 tag, needs no
+/// migration at all: an old save file simply never contains the new tag
+/// strings, and a new save just starts using them.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum WidgetKind {
+    /// "Big stacked": hour and minute each on their own huge line, a small
+    /// caps-style date beneath. The hero style, and the fresh-install
+    /// default (unchanged tag from before this change, for save-file
+    /// compatibility).
     Clock,
+    /// "Minimal line": one line, `HH:MM`, the widest single-line numerals
+    /// this card's width allows, a small date beneath.
+    ClockMinimal,
+    /// "Analog": a drawn clock face (ticks, hour/minute hand in the theme
+    /// accent) plus a short date caption, at the same square footprint as
+    /// Battery/Weather.
+    ClockAnalog,
     Battery,
     Weather,
 }
 
 impl WidgetKind {
-    /// `(columns, rows)` this widget occupies, top-left anchored. Clock is a
-    /// full-width band (4x2); Battery and Weather are half-width squares
-    /// (2x2) -- the "obvious firsts" the task names, each at one of its
-    /// listed acceptable spans.
+    /// `(columns, rows)` this widget occupies, top-left anchored. The two
+    /// full-width clock styles are a 4x2 band; the analog face and Battery/
+    /// Weather are half-width squares (2x2) -- the "obvious firsts" the task
+    /// names, each at one of its listed acceptable spans.
     pub fn span(self) -> (usize, usize) {
         match self {
-            WidgetKind::Clock => (4, 2),
-            WidgetKind::Battery => (2, 2),
-            WidgetKind::Weather => (2, 2),
+            WidgetKind::Clock | WidgetKind::ClockMinimal => (4, 2),
+            WidgetKind::ClockAnalog | WidgetKind::Battery | WidgetKind::Weather => (2, 2),
         }
     }
 
-    pub const ALL: [WidgetKind; 3] = [WidgetKind::Clock, WidgetKind::Battery, WidgetKind::Weather];
+    pub const ALL: [WidgetKind; 5] = [
+        WidgetKind::Clock,
+        WidgetKind::ClockMinimal,
+        WidgetKind::ClockAnalog,
+        WidgetKind::Battery,
+        WidgetKind::Weather,
+    ];
 
     pub fn label(self) -> &'static str {
         match self {
-            WidgetKind::Clock => "Clock",
+            WidgetKind::Clock => "Clock - Big",
+            WidgetKind::ClockMinimal => "Clock - Line",
+            WidgetKind::ClockAnalog => "Clock - Analog",
             WidgetKind::Battery => "Battery",
             WidgetKind::Weather => "Weather",
+        }
+    }
+
+    /// The widget-picker sheet's own one-line description of this entry,
+    /// factored here (not hand-duplicated in `render.rs`) so the picker's
+    /// row list and this enum's own variants can never drift out of step.
+    pub fn picker_subtitle(self) -> &'static str {
+        match self {
+            WidgetKind::Clock => "4x2, stacked hour/minute - hold to drag onto Home",
+            WidgetKind::ClockMinimal => "4x2, one thin line - hold to drag onto Home",
+            WidgetKind::ClockAnalog => "2x2, drawn clock face - hold to drag onto Home",
+            WidgetKind::Battery => "2x2 - hold to drag onto Home",
+            WidgetKind::Weather => "2x2 - hold to drag onto Home",
         }
     }
 }
@@ -309,6 +345,34 @@ impl HomeLayout {
                 fits(row, home_grid::COLUMNS, index, span, ignore)
             }
             HomeSlot::Dock { slot: index } => span == (1, 1) && index < self.dock.len(),
+        }
+    }
+
+    /// Appends one brand-new, entirely empty page and returns its index --
+    /// the cross-page drag's "dragging onto the last page's right edge
+    /// creates a new page" (`home-widget-design` task 1). Distinct from the
+    /// private `ensure_page` (which only grows far enough to reach an index
+    /// something else is about to write into): this unconditionally adds
+    /// one page, even when the current last page still has free cells,
+    /// because a person dragging all the way to the last page's edge is
+    /// asking for a fresh page to land on, not to be quietly redirected
+    /// back onto whatever room that page still has.
+    pub fn add_blank_page(&mut self, apps_per_page: usize) -> usize {
+        self.pages.push(vec![None; apps_per_page.max(1)]);
+        self.pages.len() - 1
+    }
+
+    /// Whether an item of `span` would fit at `slot` -- the live "no room
+    /// here" drop indicator (`home-widget-design` task 1) calls this so the
+    /// renderer can tell an ordinary accepting drop target from one a
+    /// multi-cell widget's drag cannot actually land on, without mutating
+    /// anything. A page index past the end of `pages` always answers `true`
+    /// for a grid slot: dropping there grows a fresh page first (see
+    /// `Self::place`/`Self::ensure_page`), so nothing is actually blocked.
+    pub fn would_fit(&self, slot: HomeSlot, span: (usize, usize)) -> bool {
+        match slot {
+            HomeSlot::Grid { page, .. } if page >= self.pages.len() => true,
+            _ => self.fits_at(slot, span, false),
         }
     }
 
@@ -933,6 +997,55 @@ mod tests {
         let mut layout = HomeLayout::empty(4);
         assert!(!layout.place(HomeSlot::Dock { slot: 0 }, HomeItem::Widget { widget: WidgetKind::Battery }, 4, false));
         assert_eq!(layout.get(HomeSlot::Dock { slot: 0 }), None);
+    }
+
+    #[test]
+    fn the_three_clock_styles_have_their_documented_spans_and_are_all_pickable() {
+        assert_eq!(WidgetKind::Clock.span(), (4, 2));
+        assert_eq!(WidgetKind::ClockMinimal.span(), (4, 2));
+        assert_eq!(WidgetKind::ClockAnalog.span(), (2, 2));
+        assert_eq!(WidgetKind::ALL.len(), 5);
+        assert!(WidgetKind::ALL.contains(&WidgetKind::ClockMinimal));
+        assert!(WidgetKind::ALL.contains(&WidgetKind::ClockAnalog));
+        // Every entry has a distinct label -- the picker list would silently
+        // conflate two rows otherwise.
+        let mut labels: Vec<&str> = WidgetKind::ALL.iter().map(|kind| kind.label()).collect();
+        labels.sort_unstable();
+        labels.dedup();
+        assert_eq!(labels.len(), WidgetKind::ALL.len());
+    }
+
+    #[test]
+    fn add_blank_page_always_appends_even_when_the_last_page_has_room() {
+        let mut layout = HomeLayout::empty(4);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("a.desktop"), 8, false);
+        assert_eq!(layout.page_count(), 1);
+        let new_index = layout.add_blank_page(8);
+        assert_eq!(new_index, 1);
+        assert_eq!(layout.page_count(), 2);
+        assert!(layout.pages[1].iter().all(Option::is_none));
+        // A second call always adds a third page too, even though page 1 is
+        // itself still empty -- dragging to the true last page's edge keeps
+        // producing a fresh page, not silently reusing the one just made.
+        let third = layout.add_blank_page(8);
+        assert_eq!(third, 2);
+        assert_eq!(layout.page_count(), 3);
+    }
+
+    #[test]
+    fn would_fit_matches_fits_at_for_an_existing_page_and_always_allows_a_future_one() {
+        let mut layout = HomeLayout::empty(4);
+        // 16 = 4 rows of 4 columns: the clock's own 4x2 span covers slots
+        // 0..8 (rows 0-1), leaving rows 2-3 (slots 8..16) free -- a 2x2 at
+        // slot 8 needs all of rows 2 and 3 to exist.
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, 16, false);
+        assert!(!layout.would_fit(HomeSlot::Grid { page: 0, slot: 0 }, (2, 2)), "already covered by the clock");
+        assert!(layout.would_fit(HomeSlot::Grid { page: 0, slot: 8 }, (2, 2)), "free cell on the existing page");
+        assert!(
+            layout.would_fit(HomeSlot::Grid { page: 5, slot: 0 }, (4, 2)),
+            "a not-yet-created page always fits -- dropping there grows a fresh one"
+        );
+        assert!(!layout.would_fit(HomeSlot::Dock { slot: 0 }, (2, 2)), "no dock cell ever fits a wider-than-1x1 span");
     }
 
     #[test]
