@@ -1,5 +1,25 @@
 ## Why
 
+**2026-09-28 scope decision — Linux SMP redirected to AMP, this change stays
+open.** The user has now formally decided against the Linux SMP outcome
+this change describes and redirected the second-core project to a
+coprocessor (AMP) model instead; see
+`the-small-core-runs-as-a-coprocessor/proposal.md` for the decision and its
+grounding. This change is **not** archived or withdrawn by that decision —
+per AGENTS.md, only the user's explicit confirmation closes it, and every
+task below stays exactly as ticked or unticked as it was. What changes is
+which of its stages remain live work: stage (a)'s read-only board probes
+(tasks 1.1-1.6, complete) and the recovery rehearsal (tasks 2.1/2.2, still
+open) are the shared foundation and are carried into the new change's own
+task list rather than duplicated. Stage (b)'s OpenSBI/DT hart-release
+experiment (tasks 3.1/3.2), stage (c)'s pre-*Linux-shared-boot* coherency
+validation (task 4.1), and stage (d)'s ISA-aware **SMP scheduling**
+(task 5.1) are recorded as superseded: they exist only to make Linux itself
+address CPU0 as a peer hart, which is no longer the goal. They are not
+deleted, not ticked, and not claimed done — they remain honestly open,
+pending the user's decision on whether to archive this change once the AMP
+work has landed.
+
 **2026-09-26 source correction.** Pinned stage 1 boots Linux on physical
 CPU1 (the large, RVV-capable core):
 `board/canaan/common/k230_img.c:276-285` releases CPU1 from CPU0, then

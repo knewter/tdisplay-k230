@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Paired Sway/Rust Wi-Fi Settings touch proof with a synthetic root broker.
+"""Paired Sway/Rust Wi-Fi Settings touch-and-keyboard proof with a synthetic
+root broker.
 
 Run under `unshare -Ur` so the fake socket is uid 0 inside the user namespace.
 The production client's root-peer check stays enabled. No host or board radio
-is opened, and the invented password is discarded without logging.
+is opened, and the invented password is discarded without logging. Password
+entry itself is typed through a real `zwp_virtual_keyboard_v1` connection
+(`PasswordKeyboard`, below) rather than tapped on an in-app keypad: the
+overlay surface only ever gets keyboard focus for that field
+(`ShellClient::sync_wifi_keyboard`), so this is the injection path that
+actually proves it, not a touch coordinate standing in for one.
 """
 
 import argparse
@@ -14,11 +20,57 @@ from pathlib import Path
 import socket
 import struct
 import subprocess
+import sys
 import tempfile
 import threading
 import time
 
 from PIL import Image, ImageChops
+
+sys.path.insert(0, os.path.dirname(__file__))
+from card_virtual_keyboard import Keyboard
+
+
+class PasswordKeyboard(Keyboard):
+    """A real `zwp_virtual_keyboard_v1` client, exactly like `wvkbd` (or a
+    physical keyboard) would be from the compositor's point of view --
+    proof that the Wi-Fi password field takes actual `wl_keyboard` input
+    once it holds keyboard focus, not a synthetic touch tap on an in-app
+    keypad. Modeled on `tests/omawrite_runtime.py`'s `WriterKeyboard`
+    (same technique, a different small fixed keymap): printable ASCII plus
+    Escape/Return/BackSpace, each on its own keycode."""
+
+    def __init__(self, path):
+        super().__init__(path)
+        self.codes = {chr(n): n for n in range(32, 127)}
+        self.codes.update(Escape=127, Return=128, BackSpace=129)
+        symbols = dict(self.codes)
+        symbols.update(Escape=0xff1b, Return=0xff0d, BackSpace=0xff08)
+        codes = ' '.join(f'<K{code}>={code + 8};' for code in self.codes.values())
+        keys = ' '.join(f'key <K{code}> {{ type="ONE_LEVEL", [ 0x{symbols[key]:x} ] }};'
+                        for key, code in self.codes.items())
+        keymap = ('xkb_keymap { xkb_keycodes "wifi-test" { minimum=8; maximum=255; '
+                  + codes + ' }; xkb_types "wifi-test" { type "ONE_LEVEL" { '
+                  'modifiers=None; map[None]=Level1; }; }; '
+                  'xkb_compatibility "wifi-test" {}; xkb_symbols "wifi-test" { '
+                  + keys + ' }; };\0').encode()
+        fd = os.memfd_create('wifi-test-keymap', os.MFD_CLOEXEC)
+        try:
+            os.write(fd, keymap)
+            self.send(6, 0, struct.pack('=II', 1, len(keymap)), fd)
+        finally:
+            os.close(fd)
+        self.roundtrip()
+
+    def key(self, name):
+        stamp = int(time.monotonic() * 1000) & 0xffffffff
+        self.send(6, 1, struct.pack('=III', stamp, self.codes[name], 1))
+        self.send(6, 1, struct.pack('=III', stamp, self.codes[name], 0))
+        self.roundtrip()
+
+    def text(self, value):
+        for char in value:
+            self.key(char)
 
 
 SETTINGS = '''#!/usr/bin/env python3
@@ -96,7 +148,7 @@ class Broker:
                         elif operation == "connect":
                             assert value["ssid"] in NAMES[1:3]
                             assert value["security"] == "wpa2-psk"
-                            assert len(value["password"]) == 8  # invented touch keys
+                            assert len(value["password"]) == 8  # "password", typed via a virtual keyboard
                             if value["ssid"] == NAMES[2]:
                                 answer = {"state": "failed", "error": "authentication-failed"}
                             else:
@@ -209,10 +261,17 @@ def main():
                                 env=env, stdout=sway_log, stderr=sway_log)
         rust = None
         rust_log = None
+        keyboard = None
         try:
             wait_for(lambda: "Running compositor on wayland display" in (root / "sway.log").read_text(), 60)
             env["WAYLAND_DISPLAY"] = wait_for(lambda: next(
                 (p.name for p in root.glob("wayland-*") if not p.name.endswith(".lock")), None))
+            # A real virtual-keyboard-unstable-v1 client -- what `wvkbd` (or a
+            # physical keyboard) looks like from the compositor's side -- so
+            # the password field's typing proof is genuine `wl_keyboard`
+            # input, not a touch tap on an in-app keypad that no longer
+            # exists (openspec/changes/the-handheld-configures-wifi-from-settings).
+            keyboard = PasswordKeyboard(root / env["WAYLAND_DISPLAY"])
 
             def ipc(command_text):
                 name = next(root.glob("sway-ipc.*.sock"))
@@ -302,22 +361,28 @@ def main():
             wait_for(lambda: broker.count("connect-saved") == 1 and broker.count("status") >= 1)
             wait_for(lambda: (root / "rust.log").read_text().count(" commit") >= commits_before + 2)
             tap(284, 464)  # New WPA2 row.
-            entry = capture_words("wifi-keyboard-dark.png", "Example New", "Tap keys to enter password")
-            for index in range(8):
-                tap(int(18 + (index + 0.5) * 53.2), 560)
+            entry = capture_words("wifi-keyboard-dark.png", "Example New", "Type the password")
+            # Selecting an unsaved WPA2 network grants the overlay layer
+            # `Exclusive` keyboard focus (`WifiView::wants_keyboard`,
+            # `ShellClient::sync_wifi_keyboard`); wait for the compositor's
+            # own confirmation of that (`wl_keyboard.enter`, logged as
+            # "wifi-keyboard-focus-granted") rather than assuming it landed
+            # before the commit that requested it was even processed.
+            wait_for(lambda: (root / "rust.log").read_text().count("wifi-keyboard-focus-granted") >= 1)
+            keyboard.text("password")
             masked = capture_words("wifi-masked-dark.png", "Example New", "Cancel", "Connect",
-                                   absent=("Tap keys to enter password",))
+                                   absent=("Type the password",))
             commits_before = (root / "rust.log").read_text().count(" commit")
-            tap(420, 1160)
+            keyboard.key("Return")  # Enter submits Connect, like tapping it.
             wait_for(lambda: broker.count("connect") == 1 and broker.count("status") >= 2)
             wait_for(lambda: (root / "rust.log").read_text().count(" commit") >= commits_before + 2)
             tap(284, 552)  # Synthetic authentication failure row.
-            for index in range(8):
-                tap(int(18 + (index + 0.5) * 53.2), 560)
-            tap(420, 1160)
+            wait_for(lambda: (root / "rust.log").read_text().count("wifi-keyboard-focus-granted") >= 2)
+            keyboard.text("password")
+            keyboard.key("Return")
             wait_for(lambda: broker.count("connect") == 2)
             failure = capture_words("wifi-auth-error-dark.png", "Password was not accepted")
-            tap(100, 1160)  # Cancel editor.
+            keyboard.key("Escape")  # Escape cancels the editor, like tapping Cancel.
             tap(284, 376)   # Saved profile.
             tap(420, 440)   # Explicit Forget menu.
             confirm = capture_words("wifi-forget-confirm-dark.png", "Forget saved network?", "Keep")
@@ -358,12 +423,16 @@ def main():
             assert changed(settings, disabled, (24, 515, 544, 562)), \
                 "capability-off Settings still showed the gesture hint"
             assert rust.poll() is None and sway.poll() is None
-            print(json.dumps({"evidence_class":"headless-qemu-injected-touch",
-                              "passed":["scan/list", "saved-selection-no-password", "masked-keyboard",
+            print(json.dumps({"evidence_class":"headless-qemu-injected-touch-and-keyboard",
+                              "passed":["scan/list", "saved-selection-no-password",
+                                        "system-keyboard-focus-and-typed-password",
                                         "synthetic-auth-error", "forget-keep-confirm", "dark-light-scenes",
                                         "private-touch-log", "keyboard-hint-capability-gate"],
-                              "limits":["invented Wi-Fi broker and settings", "no physical radio/panel"]}), flush=True)
+                              "limits":["invented Wi-Fi broker and settings", "no physical radio/panel",
+                                        "no real wvkbd process (a direct virtual-keyboard-v1 client stands in for it)"]}), flush=True)
         finally:
+            if keyboard:
+                keyboard.close()
             if rust:
                 rust.terminate()
                 try: rust.wait(timeout=5)

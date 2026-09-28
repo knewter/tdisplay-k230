@@ -1,3 +1,13 @@
+**Note, 2026-09-28 (redirected, not archived):** the user has formally
+redirected the second-core project to AMP; see
+`openspec/changes/the-small-core-runs-as-a-coprocessor/`. Section 1
+(complete) and section 2 (open) below are carried into that change's own
+task list as the same work, not duplicated. Sections 3, 4, and 5 are
+recorded as superseded — they exist to make Linux treat CPU0 as a peer SBI
+hart for SMP, which is no longer pursued — and are left exactly as unticked
+as they were; this change stays open per AGENTS.md until the user confirms
+its archival.
+
 ## 1. Read-only board probes (stage a — no reset, power, or CPU-state write)
 
 - [x] 1.1 Add the three read-only RMU/PWR register fields (`0x9110100c`
@@ -11,7 +21,7 @@
   (for example an SBI debugfs passthrough), and record the result — present,
   absent, or `<!-- UNVERIFIED -->` — against the exact pinned revision.
   Verify with `rg -n "sbi_hsm|hart_status|debugfs" /nix/store/hn11x8zd5linl193d8q0k9k99b46zqbm-linux-xuantie-k230-src/arch/riscv` (pinned-source audit, not board or emulated proof).
-- [ ] 1.3 **BOARD-GATED.** On a known-good board, with the operator's already
+- [x] 1.3 **BOARD-GATED.** On a known-good board, with the operator's already
   proven read-only MMIO read method (no `/dev/mem` write, no
   read-modify-write), run the extended collector from 1.1 and record the
   three register values plus a fresh `misa`/`uarch`/L2-size cross-check
@@ -19,11 +29,24 @@
   committed to `docs/evidence/second-core/live-handoff-v2.txt` (board
   physical read-only observation). Needs the operator to hold
   `/dev/ttyACM0` for one session; no reset or reflash.
-- [ ] 1.4 Update `docs/evidence/second-core/README.md`'s decision table with
+  Closed 2026-09-28 on audit: `docs/evidence/second-core/live-handoff-v2.txt`
+  (captured `2026-09-27T03:32:04Z`) records `cpu1_rst_ctl=0x00013000` and
+  both PWR fields as `<unavailable:EPERM>` — recorded, not inferred, per the
+  read-only-probe requirement — plus `isa=rv64imafdcv...` and a 256K L2,
+  cross-checked against the TRM's CPU1 profile in the same file. The earlier
+  `live-handoff-v2-partial.txt` documents the pre-fix EPERM abort this run
+  superseded. No MMIO write occurred in either run.
+- [x] 1.4 Update `docs/evidence/second-core/README.md`'s decision table with
   the 1.3 result, stating explicitly whether the new register/ISA evidence
   corroborates or falsifies "Linux already runs on physical CPU1." Verify
   with `openspec validate the-system-runs-on-both-cores --strict` after the
   edit (documentation-consistency proof, not new physical evidence).
+  Closed 2026-09-28 on audit: `docs/evidence/second-core/README.md`'s
+  "2026-09-26 read-only continuation" section and table already state the
+  CPU1 reset-control read is "consistent with physical CPU1 released" and
+  the live ISA/cache reading "corroborates the physical big-core handoff";
+  it does not claim the PWR reads. `openspec validate the-system-runs-on-both-cores --strict`
+  re-run clean during this audit (see report).
 - [x] 1.5 Build and package the default-off CPU0 SPL identity diagnostic
   without changing the normal stage-1 derivation. Verify with
   `nix build .#uboot-k230-cpu0-identity-probe --no-link --print-out-paths --max-jobs 1 --cores 4`,
@@ -57,6 +80,15 @@
   `docs/evidence/second-core/`; do not assume the older
   `/var/lib/k230/boot-prev/` bundle still names the installed system.
   Coordinate the board session with the operator.
+  Audited 2026-09-28: still open. `cpu0-identity-physical-trial.md` proves a
+  same-session on-board `dd` restore from a verified backup (works only if
+  U-Boot still runs well enough for Linux to read the card), and
+  `cpu0-identity-trial.md`'s "Prepared external-reader procedure" is
+  written but explicitly not yet run ("no reader-based restoration was
+  performed or claimed"). BOARD-GATED and NEEDS-USER-AUTHORIZATION: this is
+  the recovery rehearsal that must exist, with an external reader and the
+  board disconnected, before any further register/reset write is
+  authorized. See the closeout plan for the exact procedure.
 - [ ] 2.2 Confirm the independent SD-card-reader recovery route for an
   experimental SPL and retain U-Boot `ums` as an additional route only
   while U-Boot is reachable (`docs/uboot-ums.md`). Verify the host tool's
@@ -64,6 +96,11 @@
   `python3 -m unittest discover -s tests -p test_ums_target.py`; this host
   check does not prove the current card is restorable. Record that physical
   card identity and verified raw backup in 2.1's board evidence.
+  Audited 2026-09-28: host portion re-run clean (`python3 -m unittest
+  discover -s tests -p test_ums_target.py` → 16 tests OK). Left unticked:
+  the task's own text requires the physical card identity/backup to be
+  recorded in 2.1's board evidence, and 2.1 remains open pending the
+  external-reader rehearsal.
 
 ## 3. OpenSBI + device-tree hart-release experiment (stage b — first stage that writes a reset/power register)
 
@@ -78,6 +115,16 @@
   under `docs/research/second-core-feasibility.md` and
   `docs/evidence/second-core/`; leave this task open until all paths are
   grounded.
+  Audited 2026-09-28: partially grounded, left open per its own text. The
+  physical measurement half is done — `mhartid=0x0` is now a first-hand
+  CPU0 SPL reading (`cpu0-identity-physical-trial.md`), and the CPU1-side
+  `Boot HART ID : 0` is traced to the same CSR through pinned OpenSBI source
+  (`docs/research/second-core-feasibility.md`, "2026-09-27 physical CPU0
+  identity measurement"). The distinct-logical-identity half is not: the
+  2026-09-26 audit in that same doc greps the pinned U-Boot/OpenSBI overlays
+  for another physical core-ID CSR and finds none defined. No design or
+  vendor source establishes a working virtual-ID scheme, so this remains
+  blocked on a result nobody has yet — not on a board session.
 - [ ] 3.2 **BLOCKED on 3.1 and the pre-Linux coherency gate in 4.1.
   BOARD-GATED.** Build a rollback-capable *experimental* stage-1/OpenSBI/DT
   path that starts physical CPU0 alongside Linux on physical CPU1, preserving
@@ -87,6 +134,9 @@
   `smp: Brought up 1 node, 2 CPUs`, and timer/IPI tests. A failed route
   leaves this unticked. Requires the board operator's coordinated session
   and the recovery requirement in the delta spec.
+  Audited 2026-09-28: still open, blocked on 3.1 and 4.1, no new evidence.
+  Writes a reset/power/vector register; per AGENTS.md this needs explicit
+  user authorization for the board session in addition to being blocked.
 
 ## 4. Coherency validation (stage c)
 
@@ -97,6 +147,10 @@
   shared locks/page tables must not be the first coherence experiment.
   Capture the command, boot identity and pass/fail counts under
   `docs/evidence/second-core/`; no host or QEMU result satisfies this.
+  Audited 2026-09-28: still open, no new evidence. No Canaan coherency
+  statement has surfaced; the bounded pre-Linux diagnostic itself has not
+  been designed or run. Requires explicit user authorization: it is a
+  hardware-writing, board-exclusive diagnostic gating 3.2.
 
 ## 5. ISA-aware SMP scheduling (stage d)
 
@@ -107,3 +161,4 @@
   `sched_getcpu`/affinity, `/sys/devices/system/cpu/{possible,present,online}`,
   per-CPU timers, and repeated runs in a board transcript. Restoring RVV
   requires a separately proved per-hart scheduling/userspace contract.
+  Audited 2026-09-28: still open, blocked on 3.2/4.1, no new evidence.

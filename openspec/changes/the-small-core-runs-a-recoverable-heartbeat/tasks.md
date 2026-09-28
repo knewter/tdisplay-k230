@@ -1,9 +1,30 @@
+**Audited 2026-09-28.** This change is suspended per `proposal.md`'s
+2026-09-26 note: the requested outcome is Linux SMP
+(`the-system-runs-on-both-cores`), and a CPU0 heartbeat/AMP payload is not a
+substitute for it. Tasks 1.1/1.2/2.1/2.2 are ticked below because their host
+evidence exists and was independently reproduced during this audit
+(`impl/small-core-heartbeat-20260926` at `4e6be10d`, cherry-picked onto
+`close/second-core`). Tasks 3.1 onward are board-gated *and* suspended: do
+not run them without a new decision that un-suspends this proposal, even
+though the runbook and payload for 3.1/3.2 are otherwise ready.
+
+**Note, 2026-09-28 (resequenced, not archived or implemented):** the user
+has formally chosen AMP for the second-core project; see
+`openspec/changes/the-small-core-runs-as-a-coprocessor/`. Tasks 1.1/1.2/2.1/2.2
+(complete) and 3.1/3.2 (board-gated, ready) are carried into that change's
+own stage-1/stage-2/stage-3 tasks in the same order — recovery rehearsal,
+then the board release. Task family 4 (patch the CPU0 SPL parking loop for
+unconditional coexistence) is recorded as superseded by that change's
+Linux-driven runtime start/stop design instead. Nothing here is ticked,
+archived, or run by this note; the change stays open per AGENTS.md until the
+user confirms otherwise.
+
 ## 1. Ground the physical test layout
 
-- [ ] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the
+- [x] 1.1 Trace physical CPU0's reset/vector and the U-Boot command from the
   pinned overlay into the built stage 1; record source paths and build
   configuration. Verify with `rg -n 'CONFIG_LINUX_RUN_CORE_ID|boot_baremetal|cpu0_hart_rstvec' /nix/store/g58y0fnasf1gapxjnjmbdnmg6zs58yhs-source/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/{board/canaan/common,arch/riscv/cpu/k230}` (pinned-source proof).
-- [ ] 1.2 Establish nonoverlapping payload and output addresses from pinned
+- [x] 1.2 Establish nonoverlapping payload and output addresses from pinned
   stage-1 source and a known card's memory layout; document U-Boot cache
   invalidation/readback behavior and refuse to choose an address if this
   cannot be grounded. Verify with a cited map and `openspec validate
@@ -12,11 +33,11 @@
 
 ## 2. Build a standalone scalar heartbeat
 
-- [ ] 2.1 Add a tiny RV64I physical CPU0 payload and linker layout using
+- [x] 2.1 Add a tiny scalar RV64 physical CPU0 payload and linker layout using
   the addresses established in 1.2, plus a host check for entry, footprint,
   and absence of V instructions. Verify with
-  `sh tools/test-small-core-heartbeat.sh` (host binary proof, not board).
-- [ ] 2.2 Record the exact load, release, repeated readback and stop/normal
+  `bash tools/test-small-core-heartbeat.sh` (host binary proof, not board).
+- [x] 2.2 Record the exact load, release, repeated readback and stop/normal
   boot commands in a disposable-card runbook; verify with
   `openspec validate the-small-core-runs-a-recoverable-heartbeat --strict`
   (document proof, not board).

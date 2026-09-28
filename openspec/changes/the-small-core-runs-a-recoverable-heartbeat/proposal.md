@@ -1,5 +1,28 @@
 ## Why
 
+**2026-09-28 scope decision — the underlying goal changed, this change
+stays open, un-archived, and un-implemented.** The user has now formally
+decided the second-core project is a coprocessor (AMP), not Linux SMP; see
+`the-small-core-runs-as-a-coprocessor/proposal.md`. That decision makes the
+2026-09-26 suspension's *reason* moot — Linux SMP is no longer the target
+of any change, so "this proposal doesn't deliver Linux SMP" is no longer a
+reason to hold it — but it does **not** by itself un-suspend, implement, or
+archive this proposal: per AGENTS.md, only the user's explicit confirmation
+does that, and no task below is ticked or run by this note. What actually
+happens is that this proposal's ready, physically-proved foundation (its
+host-built payload, `tools/small-core-heartbeat.{S,ld}`, and its board-gated
+tasks 3.1 then 3.2) is resequenced as `the-small-core-runs-as-a-coprocessor`'s
+own stage-1 (recovery rehearsal) and stage-2/3 (echo/ping firmware) tasks,
+in that same order — recovery rehearsal first, then the board release. This
+proposal's coexistence stage (task family 4: patch the CPU0 SPL parking
+loop to run the heartbeat unconditionally after every boot) is **not**
+reused as designed: the new change's design.md explains why a
+remoteproc-shaped Linux driver that starts and stops CPU0 on demand, once
+booted, is simpler and lower-risk than making CPU0 run unconditionally on
+every boot via a stage-1/SPL patch. Task family 4 is recorded as superseded
+by that change's own reserved-memory/runtime-start-stop stages, not deleted
+and not ticked here.
+
 **Suspended 2026-09-26 after user scope correction.** The requested feature
 is Linux SMP with both physical cores addressable by one kernel and ordinary
 processes schedulable on either. A CPU0 heartbeat or AMP payload does not

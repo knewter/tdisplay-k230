@@ -2,7 +2,15 @@
 
 - [x] 1.1 Create `tools/audit-card-composition-sources.py` to resolve and report derivation/source inputs for `.#shell-compositor` and `.#touch-launcher`, then audit client protocol, Sway seat/container, and wlroots scene/frame/presentation hooks; verify `nix path-info --derivation .#shell-compositor .#touch-launcher`, `python3 tools/audit-card-composition-sources.py --flake . --output docs/research/card-composition-source-audit.md`, and `python3 tests/test_card_composition_source_audit.py`.
 - [x] 1.2 Compare whether an existing protocol-client route can provide live surfaces plus global touch/focus with whether a narrow Sway patch can, and publish the selected route or source-cited negative finding and interface contract; verify `python3 tests/test_card_composition_contract.py docs/research/card-composition-architecture.md` checks lifecycle/fallback fields and no dependency on `the-handheld-has-a-coherent-ux-plan`.
-- [ ] 1.3 On a negative finding, record product delivery as blocked and mark tasks 2–3 not pursued rather than successful; verify `openspec validate the-shell-has-a-card-composition-plan --strict` and handoff distinguish investigation completion from card-feature delivery.
+- [x] 1.3 Not applicable: this task's own precondition ("on a negative
+  finding") never obtained. Task 1.2 selected a viable positive route, so
+  there is no negative-result branch to record, and tasks 2-3 were pursued
+  (not marked "not pursued") -- confirmed by this file's own closing note:
+  "The negative branch in 1.3 is not applicable to the selected positive
+  route; no negative-result test is being claimed." Verify with `openspec
+  validate the-shell-has-a-card-composition-plan --strict` (passes) and by
+  reading tasks 2.1-4.2 below, all of which record positive-route delivery,
+  not a blocked/not-pursued status.
 
 ## 2. Conditional selected-route probe
 
