@@ -1,0 +1,638 @@
+
+[?2004l
+[1] 2657
+PANEL_REFRESH v=1 event=probe_start tool=measure-panel-refresh.sh
+PANEL_REFRESH v=1 event=captured_utc value=2026-09-28T15:20:40Z
+PANEL_REFRESH v=1 event=source_root value=/
+
+== modetest -c (informational only; not machine-parsed) ==
+PANEL_REFRESH_RAW modetest: trying to open device '/dev/dri/card0'... done
+PANEL_REFRESH_RAW modetest: opened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 20230501)
+PANEL_REFRESH_RAW modetest: Connectors:
+PANEL_REFRESH_RAW modetest: id	encoder	status		name		size (mm)	modes	encoders
+PANEL_REFRESH_RAW modetest: 48	47	connected	DSI-1          	44x95		1	47
+PANEL_REFRESH_RAW modetest:   modes:
+PANEL_REFRESH_RAW modetest: 	index name refresh (Hz) hdisp hss hse htot vdisp vss vse vtot
+PANEL_REFRESH_RAW modetest:   #0 568x1232 52.19 568 668 708 748 1232 1236 1252 1268 49500 flags: ; type: preferred, driver
+PANEL_REFRESH_RAW modetest:   props:
+PANEL_REFRESH_RAW modetest: 	1 EDID:
+PANEL_REFRESH_RAW modetest: 		flags: immutable blob
+PANEL_REFRESH_RAW modetest: 		blobs:
+PANEL_REFRESH_RAW modetest: 
+PANEL_REFRESH_RAW modetest: 		value:
+PANEL_REFRESH_RAW modetest: 	2 DPMS:
+PANEL_REFRESH_RAW modetest: 		flags: enum
+PANEL_REFRESH_RAW modetest: 		enums: On=0 Standby=1 Suspend=2 Off=3
+PANEL_REFRESH_RAW modetest: 		value: 0
+PANEL_REFRESH_RAW modetest: 	5 link-status:
+PANEL_REFRESH_RAW modetest: 		flags: enum
+PANEL_REFRESH_RAW modetest: 		enums: Good=0 Bad=1
+PANEL_REFRESH_RAW modetest: 		value: 0
+PANEL_REFRESH_RAW modetest: 	6 non-desktop:
+PANEL_REFRESH_RAW modetest: 		flags: immutable range
+PANEL_REFRESH_RAW modetest: 		values: 0 1
+PANEL_REFRESH_RAW modetest: 		value: 0
+PANEL_REFRESH_RAW modetest: 	4 TILE:
+PANEL_REFRESH_RAW modetest: 		flags: immutable blob
+PANEL_REFRESH_RAW modetest: 		blobs:
+PANEL_REFRESH_RAW modetest: 
+PANEL_REFRESH_RAW modetest: 		value:
+PANEL_REFRESH_RAW modetest: 
+
+== VO vblank IRQ rate ==
+PANEL_REFRESH v=1 event=irq_sample phase=before irq=81 count=5826 t_unix=1790608840
+PANEL_REFRESH v=1 event=irq_sample phase=after irq=81 count=6253 t_unix=1790608848 window_seconds=8
+
+== vblank samples (tools/panel-refresh-probe) ==
+PANEL_REFRESH v=1 event=header device=/dev/dri/card0 requested_count=400
+PANEL_REFRESH v=1 event=mode connector_id=48 name=568x1232 clock_khz=49500 hdisplay=568 htotal=748 vdisplay=1232 vtotal=1268 vrefresh_reported=52 vrefresh_computed_hz=52.1896
+PANEL_REFRESH v=1 event=vblank seq=6258 sec=4348 usec=792454
+PANEL_REFRESH v=1 event=vblank seq=6259 sec=4348 usec=811615
+PANEL_REFRESH v=1 event=vblank seq=6260 sec=4348 usec=830775
+PANEL_REFRESH v=1 event=vblank seq=6261 sec=4348 usec=849936
+PANEL_REFRESH v=1 event=vblank seq=6262 sec=4348 usec=869096
+PANEL_REFRESH v=1 event=vblank seq=6263 sec=4348 usec=888257
+PANEL_REFRESH v=1 event=vblank seq=6264 sec=4348 usec=907418
+PANEL_REFRESH v=1 event=vblank seq=6265 sec=4348 usec=926578
+PANEL_REFRESH v=1 event=vblank seq=6266 sec=4348 usec=945739
+PANEL_REFRESH v=1 event=vblank seq=6267 sec=4348 usec=964900
+PANEL_REFRESH v=1 event=vblank seq=6268 sec=4348 usec=984061
+PANEL_REFRESH v=1 event=vblank seq=6269 sec=4349 usec=3221
+PANEL_REFRESH v=1 event=vblank seq=6270 sec=4349 usec=22381
+PANEL_REFRESH v=1 event=vblank seq=6271 sec=4349 usec=41542
+PANEL_REFRESH v=1 event=vblank seq=6272 sec=4349 usec=60702
+PANEL_REFRESH v=1 event=vblank seq=6273 sec=4349 usec=79864
+PANEL_REFRESH v=1 event=vblank seq=6274 sec=4349 usec=99026
+PANEL_REFRESH v=1 event=vblank seq=6275 sec=4349 usec=118186
+PANEL_REFRESH v=1 event=vblank seq=6276 sec=4349 usec=137346
+PANEL_REFRESH v=1 event=vblank seq=6277 sec=4349 usec=156505
+PANEL_REFRESH v=1 event=vblank seq=6278 sec=4349 usec=175666
+PANEL_REFRESH v=1 event=vblank seq=6279 sec=4349 usec=194827
+PANEL_REFRESH v=1 event=vblank seq=6280 sec=4349 usec=213988
+PANEL_REFRESH v=1 event=vblank seq=6281 sec=4349 usec=233148
+PANEL_REFRESH v=1 event=vblank seq=6282 sec=4349 usec=252308
+PANEL_REFRESH v=1 event=vblank seq=6283 sec=4349 usec=271469
+PANEL_REFRESH v=1 event=vblank seq=6284 sec=4349 usec=290629
+PANEL_REFRESH v=1 event=vblank seq=6285 sec=4349 usec=309790
+PANEL_REFRESH v=1 event=vblank seq=6286 sec=4349 usec=328951
+PANEL_REFRESH v=1 event=vblank seq=6287 sec=4349 usec=348117
+PANEL_REFRESH v=1 event=vblank seq=6288 sec=4349 usec=367272
+PANEL_REFRESH v=1 event=vblank seq=6289 sec=4349 usec=386432
+PANEL_REFRESH v=1 event=vblank seq=6290 sec=4349 usec=405593
+PANEL_REFRESH v=1 event=vblank seq=6291 sec=4349 usec=424753
+PANEL_REFRESH v=1 event=vblank seq=6292 sec=4349 usec=443914
+PANEL_REFRESH v=1 event=vblank seq=6293 sec=4349 usec=463074
+PANEL_REFRESH v=1 event=vblank seq=6294 sec=4349 usec=482235
+PANEL_REFRESH v=1 event=vblank seq=6295 sec=4349 usec=501395
+PANEL_REFRESH v=1 event=vblank seq=6296 sec=4349 usec=520556
+PANEL_REFRESH v=1 event=vblank seq=6297 sec=4349 usec=539716
+PANEL_REFRESH v=1 event=vblank seq=6298 sec=4349 usec=558877
+PANEL_REFRESH v=1 event=vblank seq=6299 sec=4349 usec=578038
+PANEL_REFRESH v=1 event=vblank seq=6300 sec=4349 usec=597199
+PANEL_REFRESH v=1 event=vblank seq=6301 sec=4349 usec=616359
+PANEL_REFRESH v=1 event=vblank seq=6302 sec=4349 usec=635520
+PANEL_REFRESH v=1 event=vblank seq=6303 sec=4349 usec=654680
+PANEL_REFRESH v=1 event=vblank seq=6304 sec=4349 usec=673840
+PANEL_REFRESH v=1 event=vblank seq=6305 sec=4349 usec=693001
+PANEL_REFRESH v=1 event=vblank seq=6306 sec=4349 usec=712162
+PANEL_REFRESH v=1 event=vblank seq=6307 sec=4349 usec=731322
+PANEL_REFRESH v=1 event=vblank seq=6308 sec=4349 usec=750485
+PANEL_REFRESH v=1 event=vblank seq=6309 sec=4349 usec=769646
+PANEL_REFRESH v=1 event=vblank seq=6310 sec=4349 usec=788806
+PANEL_REFRESH v=1 event=vblank seq=6311 sec=4349 usec=807966
+PANEL_REFRESH v=1 event=vblank seq=6312 sec=4349 usec=827127
+PANEL_REFRESH v=1 event=vblank seq=6313 sec=4349 usec=846289
+PANEL_REFRESH v=1 event=vblank seq=6314 sec=4349 usec=865447
+PANEL_REFRESH v=1 event=vblank seq=6315 sec=4349 usec=884607
+PANEL_REFRESH v=1 event=vblank seq=6316 sec=4349 usec=903768
+PANEL_REFRESH v=1 event=vblank seq=6317 sec=4349 usec=922932
+PANEL_REFRESH v=1 event=vblank seq=6318 sec=4349 usec=942089
+PANEL_REFRESH v=1 event=vblank seq=6319 sec=4349 usec=961249
+PANEL_REFRESH v=1 event=vblank seq=6320 sec=4349 usec=980410
+PANEL_REFRESH v=1 event=vblank seq=6321 sec=4349 usec=999571
+PANEL_REFRESH v=1 event=vblank seq=6322 sec=4350 usec=18731
+PANEL_REFRESH v=1 event=vblank seq=6323 sec=4350 usec=37892
+PANEL_REFRESH v=1 event=vblank seq=6324 sec=4350 usec=57052
+PANEL_REFRESH v=1 event=vblank seq=6325 sec=4350 usec=76213
+PANEL_REFRESH v=1 event=vblank seq=6326 sec=4350 usec=95373
+PANEL_REFRESH v=1 event=vblank seq=6327 sec=4350 usec=114533
+PANEL_REFRESH v=1 event=vblank seq=6328 sec=4350 usec=133694
+PANEL_REFRESH v=1 event=vblank seq=6329 sec=4350 usec=152855
+PANEL_REFRESH v=1 event=vblank seq=6330 sec=4350 usec=172019
+PANEL_REFRESH v=1 event=vblank seq=6331 sec=4350 usec=191176
+PANEL_REFRESH v=1 event=vblank seq=6332 sec=4350 usec=210337
+PANEL_REFRESH v=1 event=vblank seq=6333 sec=4350 usec=229498
+PANEL_REFRESH v=1 event=vblank seq=6334 sec=4350 usec=248658
+PANEL_REFRESH v=1 event=vblank seq=6335 sec=4350 usec=267818
+PANEL_REFRESH v=1 event=vblank seq=6336 sec=4350 usec=286979
+PANEL_REFRESH v=1 event=vblank seq=6337 sec=4350 usec=306140
+PANEL_REFRESH v=1 event=vblank seq=6338 sec=4350 usec=325300
+PANEL_REFRESH v=1 event=vblank seq=6339 sec=4350 usec=344461
+PANEL_REFRESH v=1 event=vblank seq=6340 sec=4350 usec=363621
+PANEL_REFRESH v=1 event=vblank seq=6341 sec=4350 usec=382782
+PANEL_REFRESH v=1 event=vblank seq=6342 sec=4350 usec=401943
+PANEL_REFRESH v=1 event=vblank seq=6343 sec=4350 usec=421103
+PANEL_REFRESH v=1 event=vblank seq=6344 sec=4350 usec=440264
+PANEL_REFRESH v=1 event=vblank seq=6345 sec=4350 usec=459424
+PANEL_REFRESH v=1 event=vblank seq=6346 sec=4350 usec=478587
+PANEL_REFRESH v=1 event=vblank seq=6347 sec=4350 usec=497748
+PANEL_REFRESH v=1 event=vblank seq=6348 sec=4350 usec=516908
+PANEL_REFRESH v=1 event=vblank seq=6349 sec=4350 usec=536069
+PANEL_REFRESH v=1 event=vblank seq=6350 sec=4350 usec=555227
+PANEL_REFRESH v=1 event=vblank seq=6351 sec=4350 usec=574388
+PANEL_REFRESH v=1 event=vblank seq=6352 sec=4350 usec=593548
+PANEL_REFRESH v=1 event=vblank seq=6353 sec=4350 usec=612709
+PANEL_REFRESH v=1 event=vblank seq=6354 sec=4350 usec=631869
+PANEL_REFRESH v=1 event=vblank seq=6355 sec=4350 usec=651030
+PANEL_REFRESH v=1 event=vblank seq=6356 sec=4350 usec=670190
+PANEL_REFRESH v=1 event=vblank seq=6357 sec=4350 usec=689351
+PANEL_REFRESH v=1 event=vblank seq=6358 sec=4350 usec=708512
+PANEL_REFRESH v=1 event=vblank seq=6359 sec=4350 usec=727672
+PANEL_REFRESH v=1 event=vblank seq=6360 sec=4350 usec=746833
+PANEL_REFRESH v=1 event=vblank seq=6361 sec=4350 usec=765993
+PANEL_REFRESH v=1 event=vblank seq=6362 sec=4350 usec=785154
+PANEL_REFRESH v=1 event=vblank seq=6363 sec=4350 usec=804315
+PANEL_REFRESH v=1 event=vblank seq=6364 sec=4350 usec=823475
+PANEL_REFRESH v=1 event=vblank seq=6365 sec=4350 usec=842636
+PANEL_REFRESH v=1 event=vblank seq=6366 sec=4350 usec=861797
+PANEL_REFRESH v=1 event=vblank seq=6367 sec=4350 usec=880956
+PANEL_REFRESH v=1 event=vblank seq=6368 sec=4350 usec=900119
+PANEL_REFRESH v=1 event=vblank seq=6369 sec=4350 usec=919277
+PANEL_REFRESH v=1 event=vblank seq=6370 sec=4350 usec=938438
+PANEL_REFRESH v=1 event=vblank seq=6371 sec=4350 usec=957602
+PANEL_REFRESH v=1 event=vblank seq=6372 sec=4350 usec=976761
+PANEL_REFRESH v=1 event=vblank seq=6373 sec=4350 usec=995922
+PANEL_REFRESH v=1 event=vblank seq=6374 sec=4351 usec=15082
+PANEL_REFRESH v=1 event=vblank seq=6375 sec=4351 usec=34243
+PANEL_REFRESH v=1 event=vblank seq=6376 sec=4351 usec=53404
+PANEL_REFRESH v=1 event=vblank seq=6377 sec=4351 usec=72564
+PANEL_REFRESH v=1 event=vblank seq=6378 sec=4351 usec=91723
+PANEL_REFRESH v=1 event=vblank seq=6379 sec=4351 usec=110884
+PANEL_REFRESH v=1 event=vblank seq=6380 sec=4351 usec=130045
+PANEL_REFRESH v=1 event=vblank seq=6381 sec=4351 usec=149205
+PANEL_REFRESH v=1 event=vblank seq=6382 sec=4351 usec=168366
+PANEL_REFRESH v=1 event=vblank seq=6383 sec=4351 usec=187526
+PANEL_REFRESH v=1 event=vblank seq=6384 sec=4351 usec=206687
+PANEL_REFRESH v=1 event=vblank seq=6385 sec=4351 usec=225848
+PANEL_REFRESH v=1 event=vblank seq=6386 sec=4351 usec=245008
+PANEL_REFRESH v=1 event=vblank seq=6387 sec=4351 usec=264168
+PANEL_REFRESH v=1 event=vblank seq=6388 sec=4351 usec=283329
+PANEL_REFRESH v=1 event=vblank seq=6389 sec=4351 usec=302489
+PANEL_REFRESH v=1 event=vblank seq=6390 sec=4351 usec=321650
+PANEL_REFRESH v=1 event=vblank seq=6391 sec=4351 usec=340810
+PANEL_REFRESH v=1 event=vblank seq=6392 sec=4351 usec=359971
+PANEL_REFRESH v=1 event=vblank seq=6393 sec=4351 usec=379132
+PANEL_REFRESH v=1 event=vblank seq=6394 sec=4351 usec=398293
+PANEL_REFRESH v=1 event=vblank seq=6395 sec=4351 usec=417453
+PANEL_REFRESH v=1 event=vblank seq=6396 sec=4351 usec=436613
+PANEL_REFRESH v=1 event=vblank seq=6397 sec=4351 usec=455774
+PANEL_REFRESH v=1 event=vblank seq=6398 sec=4351 usec=474940
+PANEL_REFRESH v=1 event=vblank seq=6399 sec=4351 usec=494095
+PANEL_REFRESH v=1 event=vblank seq=6400 sec=4351 usec=513258
+PANEL_REFRESH v=1 event=vblank seq=6401 sec=4351 usec=532416
+PANEL_REFRESH v=1 event=vblank seq=6402 sec=4351 usec=551579
+PANEL_REFRESH v=1 event=vblank seq=6403 sec=4351 usec=570737
+PANEL_REFRESH v=1 event=vblank seq=6404 sec=4351 usec=589898
+PANEL_REFRESH v=1 event=vblank seq=6405 sec=4351 usec=609059
+PANEL_REFRESH v=1 event=vblank seq=6406 sec=4351 usec=628219
+PANEL_REFRESH v=1 event=vblank seq=6407 sec=4351 usec=647380
+PANEL_REFRESH v=1 event=vblank seq=6408 sec=4351 usec=666540
+PANEL_REFRESH v=1 event=vblank seq=6409 sec=4351 usec=685703
+PANEL_REFRESH v=1 event=vblank seq=6410 sec=4351 usec=704864
+PANEL_REFRESH v=1 event=vblank seq=6411 sec=4351 usec=724056
+PANEL_REFRESH v=1 event=vblank seq=6412 sec=4351 usec=743185
+PANEL_REFRESH v=1 event=vblank seq=6413 sec=4351 usec=762343
+PANEL_REFRESH v=1 event=vblank seq=6414 sec=4351 usec=781504
+PANEL_REFRESH v=1 event=vblank seq=6415 sec=4351 usec=800665
+PANEL_REFRESH v=1 event=vblank seq=6416 sec=4351 usec=819825
+PANEL_REFRESH v=1 event=vblank seq=6417 sec=4351 usec=838985
+PANEL_REFRESH v=1 event=vblank seq=6418 sec=4351 usec=858146
+PANEL_REFRESH v=1 event=vblank seq=6419 sec=4351 usec=877306
+PANEL_REFRESH v=1 event=vblank seq=6420 sec=4351 usec=896467
+PANEL_REFRESH v=1 event=vblank seq=6421 sec=4351 usec=915628
+PANEL_REFRESH v=1 event=vblank seq=6422 sec=4351 usec=934789
+PANEL_REFRESH v=1 event=vblank seq=6423 sec=4351 usec=953949
+PANEL_REFRESH v=1 event=vblank seq=6424 sec=4351 usec=973109
+PANEL_REFRESH v=1 event=vblank seq=6425 sec=4351 usec=992270
+PANEL_REFRESH v=1 event=vblank seq=6426 sec=4352 usec=11430
+PANEL_REFRESH v=1 event=vblank seq=6427 sec=4352 usec=30591
+PANEL_REFRESH v=1 event=vblank seq=6428 sec=4352 usec=49752
+PANEL_REFRESH v=1 event=vblank seq=6429 sec=4352 usec=68912
+PANEL_REFRESH v=1 event=vblank seq=6430 sec=4352 usec=88074
+PANEL_REFRESH v=1 event=vblank seq=6431 sec=4352 usec=107234
+PANEL_REFRESH v=1 event=vblank seq=6432 sec=4352 usec=126394
+PANEL_REFRESH v=1 event=vblank seq=6433 sec=4352 usec=145555
+PANEL_REFRESH v=1 event=vblank seq=6434 sec=4352 usec=164715
+PANEL_REFRESH v=1 event=vblank seq=6435 sec=4352 usec=183876
+PANEL_REFRESH v=1 event=vblank seq=6436 sec=4352 usec=203037
+PANEL_REFRESH v=1 event=vblank seq=6437 sec=4352 usec=222197
+PANEL_REFRESH v=1 event=vblank seq=6438 sec=4352 usec=241358
+PANEL_REFRESH v=1 event=vblank seq=6439 sec=4352 usec=260518
+PANEL_REFRESH v=1 event=vblank seq=6440 sec=4352 usec=279679
+PANEL_REFRESH v=1 event=vblank seq=6441 sec=4352 usec=298839
+PANEL_REFRESH v=1 event=vblank seq=6442 sec=4352 usec=318000
+PANEL_REFRESH v=1 event=vblank seq=6443 sec=4352 usec=337160
+PANEL_REFRESH v=1 event=vblank seq=6444 sec=4352 usec=356322
+PANEL_REFRESH v=1 event=vblank seq=6445 sec=4352 usec=375485
+PANEL_REFRESH v=1 event=vblank seq=6446 sec=4352 usec=394644
+PANEL_REFRESH v=1 event=vblank seq=6447 sec=4352 usec=413806
+PANEL_REFRESH v=1 event=vblank seq=6448 sec=4352 usec=432964
+PANEL_REFRESH v=1 event=vblank seq=6449 sec=4352 usec=452125
+PANEL_REFRESH v=1 event=vblank seq=6450 sec=4352 usec=471286
+PANEL_REFRESH v=1 event=vblank seq=6451 sec=4352 usec=490445
+PANEL_REFRESH v=1 event=vblank seq=6452 sec=4352 usec=509606
+PANEL_REFRESH v=1 event=vblank seq=6453 sec=4352 usec=528767
+PANEL_REFRESH v=1 event=vblank seq=6454 sec=4352 usec=547927
+PANEL_REFRESH v=1 event=vblank seq=6455 sec=4352 usec=567087
+PANEL_REFRESH v=1 event=vblank seq=6456 sec=4352 usec=586248
+PANEL_REFRESH v=1 event=vblank seq=6457 sec=4352 usec=605408
+PANEL_REFRESH v=1 event=vblank seq=6458 sec=4352 usec=624569
+PANEL_REFRESH v=1 event=vblank seq=6459 sec=4352 usec=643729
+PANEL_REFRESH v=1 event=vblank seq=6460 sec=4352 usec=662890
+PANEL_REFRESH v=1 event=vblank seq=6461 sec=4352 usec=682050
+PANEL_REFRESH v=1 event=vblank seq=6462 sec=4352 usec=701213
+PANEL_REFRESH v=1 event=vblank seq=6463 sec=4352 usec=720372
+PANEL_REFRESH v=1 event=vblank seq=6464 sec=4352 usec=739533
+PANEL_REFRESH v=1 event=vblank seq=6465 sec=4352 usec=758693
+PANEL_REFRESH v=1 event=vblank seq=6466 sec=4352 usec=777854
+PANEL_REFRESH v=1 event=vblank seq=6467 sec=4352 usec=797014
+PANEL_REFRESH v=1 event=vblank seq=6468 sec=4352 usec=816175
+PANEL_REFRESH v=1 event=vblank seq=6469 sec=4352 usec=835335
+PANEL_REFRESH v=1 event=vblank seq=6470 sec=4352 usec=854496
+PANEL_REFRESH v=1 event=vblank seq=6471 sec=4352 usec=873656
+PANEL_REFRESH v=1 event=vblank seq=6472 sec=4352 usec=892817
+PANEL_REFRESH v=1 event=vblank seq=6473 sec=4352 usec=911978
+PANEL_REFRESH v=1 event=vblank seq=6474 sec=4352 usec=931139
+PANEL_REFRESH v=1 event=vblank seq=6475 sec=4352 usec=950299
+PANEL_REFRESH v=1 event=vblank seq=6476 sec=4352 usec=969459
+PANEL_REFRESH v=1 event=vblank seq=6477 sec=4352 usec=988620
+PANEL_REFRESH v=1 event=vblank seq=6478 sec=4353 usec=7781
+PANEL_REFRESH v=1 event=vblank seq=6479 sec=4353 usec=26941
+PANEL_REFRESH v=1 event=vblank seq=6480 sec=4353 usec=46101
+PANEL_REFRESH v=1 event=vblank seq=6481 sec=4353 usec=65262
+PANEL_REFRESH v=1 event=vblank seq=6482 sec=4353 usec=84424
+PANEL_REFRESH v=1 event=vblank seq=6483 sec=4353 usec=103586
+PANEL_REFRESH v=1 event=vblank seq=6484 sec=4353 usec=122745
+PANEL_REFRESH v=1 event=vblank seq=6485 sec=4353 usec=141906
+PANEL_REFRESH v=1 event=vblank seq=6486 sec=4353 usec=161066
+PANEL_REFRESH v=1 event=vblank seq=6487 sec=4353 usec=180226
+PANEL_REFRESH v=1 event=vblank seq=6488 sec=4353 usec=199385
+PANEL_REFRESH v=1 event=vblank seq=6489 sec=4353 usec=218547
+PANEL_REFRESH v=1 event=vblank seq=6490 sec=4353 usec=237707
+PANEL_REFRESH v=1 event=vblank seq=6491 sec=4353 usec=256868
+PANEL_REFRESH v=1 event=vblank seq=6492 sec=4353 usec=276030
+PANEL_REFRESH v=1 event=vblank seq=6493 sec=4353 usec=295189
+PANEL_REFRESH v=1 event=vblank seq=6494 sec=4353 usec=314350
+PANEL_REFRESH v=1 event=vblank seq=6495 sec=4353 usec=333510
+PANEL_REFRESH v=1 event=vblank seq=6496 sec=4353 usec=352671
+PANEL_REFRESH v=1 event=vblank seq=6497 sec=4353 usec=371832
+PANEL_REFRESH v=1 event=vblank seq=6498 sec=4353 usec=390991
+PANEL_REFRESH v=1 event=vblank seq=6499 sec=4353 usec=410152
+PANEL_REFRESH v=1 event=vblank seq=6500 sec=4353 usec=429313
+PANEL_REFRESH v=1 event=vblank seq=6501 sec=4353 usec=448474
+PANEL_REFRESH v=1 event=vblank seq=6502 sec=4353 usec=467634
+PANEL_REFRESH v=1 event=vblank seq=6503 sec=4353 usec=486795
+PANEL_REFRESH v=1 event=vblank seq=6504 sec=4353 usec=505955
+PANEL_REFRESH v=1 event=vblank seq=6505 sec=4353 usec=525116
+PANEL_REFRESH v=1 event=vblank seq=6506 sec=4353 usec=544276
+PANEL_REFRESH v=1 event=vblank seq=6507 sec=4353 usec=563437
+PANEL_REFRESH v=1 event=vblank seq=6508 sec=4353 usec=582600
+PANEL_REFRESH v=1 event=vblank seq=6509 sec=4353 usec=601761
+PANEL_REFRESH v=1 event=vblank seq=6510 sec=4353 usec=620921
+PANEL_REFRESH v=1 event=vblank seq=6511 sec=4353 usec=640080
+PANEL_REFRESH v=1 event=vblank seq=6512 sec=4353 usec=659242
+PANEL_REFRESH v=1 event=vblank seq=6513 sec=4353 usec=678403
+PANEL_REFRESH v=1 event=vblank seq=6514 sec=4353 usec=697561
+PANEL_REFRESH v=1 event=vblank seq=6515 sec=4353 usec=716722
+PANEL_REFRESH v=1 event=vblank seq=6516 sec=4353 usec=735883
+PANEL_REFRESH v=1 event=vblank seq=6517 sec=4353 usec=755043
+PANEL_REFRESH v=1 event=vblank seq=6518 sec=4353 usec=774204
+PANEL_REFRESH v=1 event=vblank seq=6519 sec=4353 usec=793364
+PANEL_REFRESH v=1 event=vblank seq=6520 sec=4353 usec=812525
+PANEL_REFRESH v=1 event=vblank seq=6521 sec=4353 usec=831685
+PANEL_REFRESH v=1 event=vblank seq=6522 sec=4353 usec=850846
+PANEL_REFRESH v=1 event=vblank seq=6523 sec=4353 usec=870006
+PANEL_REFRESH v=1 event=vblank seq=6524 sec=4353 usec=889167
+PANEL_REFRESH v=1 event=vblank seq=6525 sec=4353 usec=908328
+PANEL_REFRESH v=1 event=vblank seq=6526 sec=4353 usec=927488
+PANEL_REFRESH v=1 event=vblank seq=6527 sec=4353 usec=946649
+PANEL_REFRESH v=1 event=vblank seq=6528 sec=4353 usec=965809
+PANEL_REFRESH v=1 event=vblank seq=6529 sec=4353 usec=984970
+PANEL_REFRESH v=1 event=vblank seq=6530 sec=4354 usec=4130
+PANEL_REFRESH v=1 event=vblank seq=6531 sec=4354 usec=23291
+PANEL_REFRESH v=1 event=vblank seq=6532 sec=4354 usec=42451
+PANEL_REFRESH v=1 event=vblank seq=6533 sec=4354 usec=61612
+PANEL_REFRESH v=1 event=vblank seq=6534 sec=4354 usec=80773
+PANEL_REFRESH v=1 event=vblank seq=6535 sec=4354 usec=99933
+PANEL_REFRESH v=1 event=vblank seq=6536 sec=4354 usec=119094
+PANEL_REFRESH v=1 event=vblank seq=6537 sec=4354 usec=138254
+PANEL_REFRESH v=1 event=vblank seq=6538 sec=4354 usec=157415
+PANEL_REFRESH v=1 event=vblank seq=6539 sec=4354 usec=176575
+PANEL_REFRESH v=1 event=vblank seq=6540 sec=4354 usec=195736
+PANEL_REFRESH v=1 event=vblank seq=6541 sec=4354 usec=214897
+PANEL_REFRESH v=1 event=vblank seq=6542 sec=4354 usec=234057
+PANEL_REFRESH v=1 event=vblank seq=6543 sec=4354 usec=253218
+PANEL_REFRESH v=1 event=vblank seq=6544 sec=4354 usec=272378
+PANEL_REFRESH v=1 event=vblank seq=6545 sec=4354 usec=291542
+PANEL_REFRESH v=1 event=vblank seq=6546 sec=4354 usec=310701
+PANEL_REFRESH v=1 event=vblank seq=6547 sec=4354 usec=329862
+PANEL_REFRESH v=1 event=vblank seq=6548 sec=4354 usec=349023
+PANEL_REFRESH v=1 event=vblank seq=6549 sec=4354 usec=368182
+PANEL_REFRESH v=1 event=vblank seq=6550 sec=4354 usec=387342
+PANEL_REFRESH v=1 event=vblank seq=6551 sec=4354 usec=406502
+PANEL_REFRESH v=1 event=vblank seq=6552 sec=4354 usec=425663
+PANEL_REFRESH v=1 event=vblank seq=6553 sec=4354 usec=444824
+PANEL_REFRESH v=1 event=vblank seq=6554 sec=4354 usec=463984
+PANEL_REFRESH v=1 event=vblank seq=6555 sec=4354 usec=483145
+PANEL_REFRESH v=1 event=vblank seq=6556 sec=4354 usec=502305
+PANEL_REFRESH v=1 event=vblank seq=6557 sec=4354 usec=521466
+PANEL_REFRESH v=1 event=vblank seq=6558 sec=4354 usec=540626
+PANEL_REFRESH v=1 event=vblank seq=6559 sec=4354 usec=559787
+PANEL_REFRESH v=1 event=vblank seq=6560 sec=4354 usec=578948
+PANEL_REFRESH v=1 event=vblank seq=6561 sec=4354 usec=598108
+PANEL_REFRESH v=1 event=vblank seq=6562 sec=4354 usec=617271
+PANEL_REFRESH v=1 event=vblank seq=6563 sec=4354 usec=636429
+PANEL_REFRESH v=1 event=vblank seq=6564 sec=4354 usec=655590
+PANEL_REFRESH v=1 event=vblank seq=6565 sec=4354 usec=674750
+PANEL_REFRESH v=1 event=vblank seq=6566 sec=4354 usec=693911
+PANEL_REFRESH v=1 event=vblank seq=6567 sec=4354 usec=713073
+PANEL_REFRESH v=1 event=vblank seq=6568 sec=4354 usec=732233
+PANEL_REFRESH v=1 event=vblank seq=6569 sec=4354 usec=751392
+PANEL_REFRESH v=1 event=vblank seq=6570 sec=4354 usec=770553
+PANEL_REFRESH v=1 event=vblank seq=6571 sec=4354 usec=789714
+PANEL_REFRESH v=1 event=vblank seq=6572 sec=4354 usec=808874
+PANEL_REFRESH v=1 event=vblank seq=6573 sec=4354 usec=828035
+PANEL_REFRESH v=1 event=vblank seq=6574 sec=4354 usec=847196
+PANEL_REFRESH v=1 event=vblank seq=6575 sec=4354 usec=866356
+PANEL_REFRESH v=1 event=vblank seq=6576 sec=4354 usec=885517
+PANEL_REFRESH v=1 event=vblank seq=6577 sec=4354 usec=904677
+PANEL_REFRESH v=1 event=vblank seq=6578 sec=4354 usec=923838
+PANEL_REFRESH v=1 event=vblank seq=6579 sec=4354 usec=943001
+PANEL_REFRESH v=1 event=vblank seq=6580 sec=4354 usec=962159
+PANEL_REFRESH v=1 event=vblank seq=6581 sec=4354 usec=981321
+PANEL_REFRESH v=1 event=vblank seq=6582 sec=4355 usec=483
+PANEL_REFRESH v=1 event=vblank seq=6583 sec=4355 usec=19644
+PANEL_REFRESH v=1 event=vblank seq=6584 sec=4355 usec=38803
+PANEL_REFRESH v=1 event=vblank seq=6585 sec=4355 usec=57963
+PANEL_REFRESH v=1 event=vblank seq=6586 sec=4355 usec=77125
+PANEL_REFRESH v=1 event=vblank seq=6587 sec=4355 usec=96283
+PANEL_REFRESH v=1 event=vblank seq=6588 sec=4355 usec=115444
+PANEL_REFRESH v=1 event=vblank seq=6589 sec=4355 usec=134604
+PANEL_REFRESH v=1 event=vblank seq=6590 sec=4355 usec=153765
+PANEL_REFRESH v=1 event=vblank seq=6591 sec=4355 usec=172925
+PANEL_REFRESH v=1 event=vblank seq=6592 sec=4355 usec=192087
+PANEL_REFRESH v=1 event=vblank seq=6593 sec=4355 usec=211247
+PANEL_REFRESH v=1 event=vblank seq=6594 sec=4355 usec=230407
+PANEL_REFRESH v=1 event=vblank seq=6595 sec=4355 usec=249567
+PANEL_REFRESH v=1 event=vblank seq=6596 sec=4355 usec=268728
+PANEL_REFRESH v=1 event=vblank seq=6597 sec=4355 usec=287889
+PANEL_REFRESH v=1 event=vblank seq=6598 sec=4355 usec=307049
+PANEL_REFRESH v=1 event=vblank seq=6599 sec=4355 usec=326210
+PANEL_REFRESH v=1 event=vblank seq=6600 sec=4355 usec=345370
+PANEL_REFRESH v=1 event=vblank seq=6601 sec=4355 usec=364533
+PANEL_REFRESH v=1 event=vblank seq=6602 sec=4355 usec=383691
+PANEL_REFRESH v=1 event=vblank seq=6603 sec=4355 usec=402852
+PANEL_REFRESH v=1 event=vblank seq=6604 sec=4355 usec=422013
+PANEL_REFRESH v=1 event=vblank seq=6605 sec=4355 usec=441175
+PANEL_REFRESH v=1 event=vblank seq=6606 sec=4355 usec=460336
+PANEL_REFRESH v=1 event=vblank seq=6607 sec=4355 usec=479497
+PANEL_REFRESH v=1 event=vblank seq=6608 sec=4355 usec=498657
+PANEL_REFRESH v=1 event=vblank seq=6609 sec=4355 usec=517817
+PANEL_REFRESH v=1 event=vblank seq=6610 sec=4355 usec=536978
+PANEL_REFRESH v=1 event=vblank seq=6611 sec=4355 usec=556137
+PANEL_REFRESH v=1 event=vblank seq=6612 sec=4355 usec=575297
+PANEL_REFRESH v=1 event=vblank seq=6613 sec=4355 usec=594457
+PANEL_REFRESH v=1 event=vblank seq=6614 sec=4355 usec=613618
+PANEL_REFRESH v=1 event=vblank seq=6615 sec=4355 usec=632779
+PANEL_REFRESH v=1 event=vblank seq=6616 sec=4355 usec=651939
+PANEL_REFRESH v=1 event=vblank seq=6617 sec=4355 usec=671100
+PANEL_REFRESH v=1 event=vblank seq=6618 sec=4355 usec=690265
+PANEL_REFRESH v=1 event=vblank seq=6619 sec=4355 usec=709423
+PANEL_REFRESH v=1 event=vblank seq=6620 sec=4355 usec=728585
+PANEL_REFRESH v=1 event=vblank seq=6621 sec=4355 usec=747744
+PANEL_REFRESH v=1 event=vblank seq=6622 sec=4355 usec=766904
+PANEL_REFRESH v=1 event=vblank seq=6623 sec=4355 usec=786065
+PANEL_REFRESH v=1 event=vblank seq=6624 sec=4355 usec=805224
+PANEL_REFRESH v=1 event=vblank seq=6625 sec=4355 usec=824385
+PANEL_REFRESH v=1 event=vblank seq=6626 sec=4355 usec=843545
+PANEL_REFRESH v=1 event=vblank seq=6627 sec=4355 usec=862706
+PANEL_REFRESH v=1 event=vblank seq=6628 sec=4355 usec=881867
+PANEL_REFRESH v=1 event=vblank seq=6629 sec=4355 usec=901027
+PANEL_REFRESH v=1 event=vblank seq=6630 sec=4355 usec=920188
+PANEL_REFRESH v=1 event=vblank seq=6631 sec=4355 usec=939348
+PANEL_REFRESH v=1 event=vblank seq=6632 sec=4355 usec=958509
+PANEL_REFRESH v=1 event=vblank seq=6633 sec=4355 usec=977669
+PANEL_REFRESH v=1 event=vblank seq=6634 sec=4355 usec=996830
+PANEL_REFRESH v=1 event=vblank seq=6635 sec=4356 usec=15991
+PANEL_REFRESH v=1 event=vblank seq=6636 sec=4356 usec=35151
+PANEL_REFRESH v=1 event=vblank seq=6637 sec=4356 usec=54312
+PANEL_REFRESH v=1 event=vblank seq=6638 sec=4356 usec=73472
+PANEL_REFRESH v=1 event=vblank seq=6639 sec=4356 usec=92633
+PANEL_REFRESH v=1 event=vblank seq=6640 sec=4356 usec=111794
+PANEL_REFRESH v=1 event=vblank seq=6641 sec=4356 usec=130954
+PANEL_REFRESH v=1 event=vblank seq=6642 sec=4356 usec=150115
+PANEL_REFRESH v=1 event=vblank seq=6643 sec=4356 usec=169275
+PANEL_REFRESH v=1 event=vblank seq=6644 sec=4356 usec=188439
+PANEL_REFRESH v=1 event=vblank seq=6645 sec=4356 usec=207598
+PANEL_REFRESH v=1 event=vblank seq=6646 sec=4356 usec=226759
+PANEL_REFRESH v=1 event=vblank seq=6647 sec=4356 usec=245919
+PANEL_REFRESH v=1 event=vblank seq=6648 sec=4356 usec=265079
+PANEL_REFRESH v=1 event=vblank seq=6649 sec=4356 usec=284240
+PANEL_REFRESH v=1 event=vblank seq=6650 sec=4356 usec=303400
+PANEL_REFRESH v=1 event=vblank seq=6651 sec=4356 usec=322560
+PANEL_REFRESH v=1 event=vblank seq=6652 sec=4356 usec=341720
+PANEL_REFRESH v=1 event=vblank seq=6653 sec=4356 usec=360881
+PANEL_REFRESH v=1 event=vblank seq=6654 sec=4356 usec=380046
+PANEL_REFRESH v=1 event=vblank seq=6655 sec=4356 usec=399202
+PANEL_REFRESH v=1 event=vblank seq=6656 sec=4356 usec=418362
+PANEL_REFRESH v=1 event=vblank seq=6657 sec=4356 usec=437524
+
+== DRM debugfs (best-effort; canaan-drm has none of its own) ==
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/bridge_chains
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/bridge_chains: encoder[47]
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/clients
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/clients:              command  tgid dev master a   uid      magic
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/clients:                seatd   544   0   y    y     0          0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/clients:                 sway  1797   0   y    y  1000          0
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/DSI-1/edid_override
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/DSI-1/force
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/DSI-1/force: unspecified
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/DSI-1/output_bpc
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/DSI-1/output_bpc: Maximum: 0
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/DSI-1/vrr_range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/DSI-1/vrr_range: Min: 0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/DSI-1/vrr_range: Max: 0
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/framebuffer
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: framebuffer[50]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	allocated by = sway
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	refcount=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	format=RG16 little-endian (0x36314752)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	modifier=0x0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	size=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	layers:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		size[0]=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		pitch[0]=1136
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		offset[0]=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		obj[0]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			name=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			refcount=4
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			start=001002ac
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			size=1400832
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			imported=no
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			dma_addr=0x000000001e600000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			vaddr=0000000099d1cc62
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: framebuffer[51]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	allocated by = sway
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	refcount=2
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	format=RG16 little-endian (0x36314752)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	modifier=0x0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	size=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	layers:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		size[0]=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		pitch[0]=1136
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		offset[0]=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		obj[0]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			name=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			refcount=4
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			start=00100156
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			size=1400832
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			imported=no
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			dma_addr=0x000000001e400000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			vaddr=000000004673a37b
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: framebuffer[49]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	allocated by = [fbcon]
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	refcount=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	format=RG16 little-endian (0x36314752)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	modifier=0x0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	size=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 	layers:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		size[0]=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		pitch[0]=1136
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		offset[0]=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 		obj[0]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			name=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			refcount=2
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			start=00100000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			size=1400832
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			imported=no
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			dma_addr=0x000000001e100000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/framebuffer: 			vaddr=00000000a5dc3ecb
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/gem_names
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/gem_names:   name     size handles refcount
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/internal_clients
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/internal_clients: fbdev
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/name
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/name: canaan-drm dev=soc:display-subsystem unique=soc:display-subsystem
+PANEL_REFRESH v=1 event=debugfs path=/sys/kernel/debug/dri/0/state
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[31]: plane-0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[33]: plane-1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=canaan_crtc
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=51
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		allocated by = sway
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		refcount=2
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		format=RG16 little-endian (0x36314752)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		modifier=0x0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		size=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 		layers:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 			size[0]=568x1232
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 			pitch[0]=1136
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 			offset[0]=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 			obj[0]:
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				name=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				refcount=4
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				start=00100156
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				size=1400832
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				imported=no
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				dma_addr=0x000000001e400000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 				vaddr=000000004673a37b
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=568x1232+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=568.000000x1232.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[35]: plane-2
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[37]: plane-3
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[39]: plane-4
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[41]: plane-5
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: plane[43]: plane-6
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=(null)
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	fb=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc-pos=0x0+0+0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	src-pos=0.000000x0.000000+0.000000+0.000000
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	rotation=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	normalized-zpos=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-encoding=ITU-R BT.601 YCbCr
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color-range=YCbCr limited range
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: crtc[46]: canaan_crtc
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	enable=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	active=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	self_refresh_active=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	planes_changed=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	mode_changed=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	active_changed=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	connectors_changed=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	color_mgmt_changed=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	plane_mask=2
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	connector_mask=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	encoder_mask=1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	mode: "568x1232": 52 49500 568 668 708 748 1232 1236 1252 1268 0x48 0x0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: connector[48]: DSI-1
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	crtc=canaan_crtc
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	self_refresh_aware=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	max_requested_bpc=0
+PANEL_REFRESH_RAW debugfs /sys/kernel/debug/dri/0/state: 	colorspace=Default
+
+PANEL_REFRESH v=1 event=probe_end
+[1]+  Done                       ( for i in $(seq 1 8);
+do
+    runuser -u shell -- $E swaymsg card_shell enter > /dev/null; sleep 0.6; runuser -u shell -- $E swaymsg card_shell next > /dev/null; sleep 0.6; runuser -u shell -- $E swaymsg card_shell previous > /dev/null; sleep 0.6; runuser -u shell -- $E swaymsg card_shell back > /dev/null 2>&1; sleep 0.4;
+done )
+IRQLINE  81:       6919  SiFive PLIC 133 Level     90840000.vo
+[?2004h
+
+[1;31m[]0;root@nixos: /root@nixos:/]#[0m 
+[?2004l
+[?2004h
+
+[1;31m[]0;root@nixos: /root@nixos:/]#[0m 
