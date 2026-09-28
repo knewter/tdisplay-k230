@@ -12,7 +12,7 @@
     "Bash and systemctl executables return Input/output error"
   ],
   "cause_of_storage_failure": "undetermined",
-  "recovery_status": "replacement demo backup and capacity probe verified; coherent NixOS image built, saved separately and flashed successfully; reader powered off; replacement-card boot and app launch verification pending",
+  "recovery_status": "replacement card flashed and booted expected system with read-write root; shell socket, desktop entry and icon present; user launcher activation and rendered icon still unverified",
   "operator": "root coordinator; board lock held",
   "full_card_readback": false
 }

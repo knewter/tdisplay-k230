@@ -84,9 +84,18 @@ record exit zero, the complete byte count and completion at
 completed. The reader was then powered off successfully with `udisksctl`.
 No routine full-image readback was performed, per the user's standing request.
 
-**UNVERIFIED on this replacement card:** boot, writable root filesystem,
-launcher icons and actual Omawrite launch. The operator must move the card into
-the powered-off board, reconnect power, then use the reserved serial console
-(`python3 tools/console.py /dev/ttyACM0 --wait=8 "readlink /run/current-system"`)
-to check the system identity before the remaining runtime checks. No new
-application or shell source change was made during this recovery.
+## First boot on the replacement card
+
+The operator reinstalled the card and reconnected power. The [first-boot
+result](boot-result.json) records a physical serial observation of the expected
+system at `/run/current-system`, `/dev/mmcblk1p2` mounted read-write as the
+root filesystem, the shell runtime socket, the installed desktop entry and the
+Omawrite SVG icon. The exact serial commands were `readlink
+/run/current-system`, `cat /proc/mounts | head -n 4`, `ls /run/shell`,
+`test -f /run/current-system/sw/share/applications/k230-editor.desktop`, and
+`ls /run/current-system/sw/share/icons/hicolor/*/apps/omawrite*`.
+
+**UNVERIFIED:** activating Omawrite from the on-screen launcher, the resulting
+window map and icon rendering on glass. Presence of the desktop and icon files
+does not establish that launcher behavior. No new application or shell source
+change was made during this recovery.

@@ -1,0 +1,13 @@
+{
+  "observed_at_utc": "2026-09-28T01:16:24.028256+00:00",
+  "evidence_class": "physical-board-serial-console-after-replacement-card-flash",
+  "device": "/dev/ttyACM0",
+  "system": "/nix/store/cmhsqwvzwp3bad15wv5znk4w35wx65d5-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "root_mount": "/dev/mmcblk1p2 / ext4 rw,relatime 0 0",
+  "shell_socket_present": true,
+  "desktop_entry_present": true,
+  "omawrite_icon": "/run/current-system/sw/share/icons/hicolor/scalable/apps/omawrite.svg",
+  "app_launch_verified": false,
+  "user_tap_verified": false,
+  "limitations": "The board booted the expected system and exposed the installed app files. Actual launcher activation and window mapping remain unverified."
+}

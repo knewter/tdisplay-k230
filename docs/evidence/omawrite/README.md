@@ -1,6 +1,6 @@
 # Omawrite as the graphical editor
 
-**Installation trial passed; a replacement card is flashed, with recovery boot verification pending.**
+**Installation trial passed; the replacement card booted, with actual launcher verification pending.**
 
 The user subsequently reported failed editor launches and missing application
 icons. The console confirmed SD read failures, a read-only root filesystem,
