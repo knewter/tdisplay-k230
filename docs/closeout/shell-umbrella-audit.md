@@ -12,10 +12,20 @@ open; **(e)** genuinely unimplemented, non-hardware scope (successor or
 future work).
 
 None of the five changes below is archived. Every one still has at least one
-open board task, and two (`the-handheld-presents-a-coherent-shell`,
-`the-shell-behaves-as-one-coherent-system`) also have open non-hardware scope
-staged into scope-split successors awaiting authorization, per `AGENTS.md`'s
-"close deliberately" rule.
+open board task, and three (`the-handheld-presents-a-coherent-shell`,
+`the-shell-behaves-as-one-coherent-system`, `the-shell-manages-apps-as-cards`)
+also have open non-hardware scope staged into scope-split successors awaiting
+authorization, per `AGENTS.md`'s "close deliberately" rule:
+
+- `the-shell-gets-side-edge-back-and-motion-trace` (from `the-handheld-presents-a-coherent-shell` tasks 2.2/4.4/4.5)
+- `the-shell-offers-quick-toggles-and-vision-options` (from `the-shell-behaves-as-one-coherent-system` slices B/C)
+- `the-card-deck-still-misses-its-frame-budget` (from `the-shell-manages-apps-as-cards` task 4.2, plus its dependent task 5.1)
+
+Each successor is fully staged (proposal, design, tasks, spec deltas, all
+validating) but **not authorized** -- the parent changes keep ownership of
+this scope until the user/coordinator explicitly authorizes each split, at
+which point the corresponding tasks and requirement text should be removed
+from the parent in the same commit that activates the successor.
 
 ## the-handheld-presents-a-coherent-shell (30 open / 5 done -> 13 open / 22 done)
 
@@ -96,8 +106,8 @@ board gates regardless of this split.
 
 | Task | Classification | Citation / next step |
 |---|---|---|
-| 4.2 | (e), longstanding perf gate | Ten-plus board rounds (`docs/evidence/card-shell/{board-cost/long-trace,touch-timestamps/board,throw-sampling,repaint-stages,throw-fixture-sync,scaled-cache-board}/README.md`, `kernel-rvv/card-cost/README.md`) have never passed the declared CPU/tracking budgets. Tracking-presentation p95 is ~57.47-57.49ms against a 33.334ms budget in every single run, invariant across cache/RVV/fixture-timing changes -- looks structural (output cadence), not a code-fixable CPU cost. `renderer-decision.md` already declines the GPU/VGLite path. Left open in the parent per the task's own text ("leave this change open or request explicit authorization for a successor"); a successor (e.g. `the-card-deck-still-misses-its-frame-budget`) is recommended but **not yet staged** -- flagging for the coordinator rather than unilaterally drafting it, since the right next step (further board investigation vs. accepting the miss vs. investigating panel/vblank cadence) is a product decision, not a spec-mechanics one. |
-| 5.1 | (c), blocked on 4.2 | `tools/qemu-k230.sh --card-shell-smoke` and its fixture already pass (`docs/evidence/card-shell/qemu-fixture/passing/result.json`). `docs/research/card-shell-qemu-smoke.md`'s own "Remaining integration gate" section says this task stays unchecked until 4.2's board budgets pass -- it is not independently host-doable. |
+| 4.2 | (e), longstanding perf gate -> successor | Ten-plus board rounds (`docs/evidence/card-shell/{board-cost/long-trace,touch-timestamps/board,throw-sampling,repaint-stages,throw-fixture-sync,scaled-cache-board}/README.md`, `kernel-rvv/card-cost/README.md`) have never passed the declared CPU/tracking budgets. Tracking-presentation p95 is ~57.47-57.49ms against a 33.334ms budget in every single run, invariant across cache/RVV/fixture-timing changes -- looks structural (output cadence), not a code-fixable CPU cost. `renderer-decision.md` already declines the GPU/VGLite path. Staged in `the-card-deck-still-misses-its-frame-budget`, **awaiting authorization**, per this task's own text ("leave this change open or request explicit authorization for a successor"). The successor's design.md suggests measuring actual panel vblank cadence directly before another CPU-side board round. The right next step (further investigation vs. explicitly accepting the miss) is left as a coordinator decision, not predetermined. |
+| 5.1 | (c), blocked on 4.2 -> successor | `tools/qemu-k230.sh --card-shell-smoke` and its fixture already pass (`docs/evidence/card-shell/qemu-fixture/passing/result.json`). `docs/research/card-shell-qemu-smoke.md`'s own "Remaining integration gate" section says this task stays unchecked until 4.2's board budgets pass -- it is not independently host-doable, so it is carried into the same successor as 4.2. |
 | 5.3 | (d) | `docs/evidence/card-shell/real-touch/` does not exist; `injected/README.md` (task 5.2, done) is explicit its provenance is injected, not a finger. Operator command in tasks.md. |
 | 6.1 | done 2026-09-28 | `openspec validate the-shell-manages-apps-as-cards --strict` passes; `specs/runtime/card-shell/spec.md`'s `UNVERIFIED` markers were rewritten to cite the real injected-touch/failing-board-cost evidence instead of stale "not observed" text. Does not close the change: 4.2, 5.1, 5.3 remain open. |
 
