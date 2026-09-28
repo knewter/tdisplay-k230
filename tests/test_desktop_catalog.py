@@ -64,6 +64,75 @@ class Catalog(unittest.TestCase):
                                     env=env, capture_output=True)
             self.assertNotEqual(failed.returncode, 0)
 
+    def describe(self, env):
+        rows = subprocess.check_output([self.binary, "describe"], env=env, text=True)
+        return [line.split("\t") for line in rows.splitlines()]
+
+    def test_curation_suppresses_endpoints_demotes_duplicates_and_retains_unknown(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            system = root / "system"
+            self.entry(system, "footclient", "Name=Foot Client\nExec=true\n")
+            self.entry(system, "foot-server", "Name=Foot Server\nExec=true\n")
+            self.entry(system, "foot", "Name=Foot\nExec=true\n")
+            self.entry(system, "htop", "Name=Htop\nExec=true\n")
+            self.entry(system, "zeta", "Name=Zeta Notes\nComment=Write short notes\nExec=true\n")
+            self.entry(system, "alpha", "Name=Alpha\nGenericName=Viewer\nExec=true\n")
+            self.entry(system, "bare", "Name=Bare\nExec=true\n")
+            env = self.env(root)
+            rows = self.describe(env)
+            ids = [row[0] for row in rows]
+            # Endpoints never appear as peer applications.
+            self.assertNotIn("footclient.desktop", ids)
+            self.assertNotIn("foot-server.desktop", ids)
+            # Unknown entries are retained ahead of demoted duplicates.
+            self.assertEqual(ids, ["alpha.desktop", "bare.desktop", "zeta.desktop",
+                                   "foot.desktop", "htop.desktop"])
+            by_id = {row[0]: row[1:] for row in rows}
+            self.assertEqual(by_id["zeta.desktop"], ["Zeta Notes", "Write short notes", "shown"])
+            self.assertEqual(by_id["alpha.desktop"], ["Alpha", "Viewer", "shown"])
+            self.assertEqual(by_id["bare.desktop"], ["Bare", "Installed application", "shown"])
+            self.assertEqual(by_id["foot.desktop"][2], "demoted")
+            self.assertEqual(by_id["htop.desktop"][2], "demoted")
+            # Every visible card has an action name and a non-empty description.
+            for row in rows:
+                self.assertTrue(row[1] and row[2])
+            # Only visible entries count towards the Apps page count.
+            self.assertEqual(len(self.listing(env).splitlines()), 5)
+
+    def test_curation_applies_after_refresh(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            env = self.env(root)
+            self.entry(root / "home", "plain", "Name=Plain\nExec=true\n")
+            self.assertEqual([r[0] for r in self.describe(env)], ["plain.desktop"])
+            added = self.entry(root / "home", "foot-server", "Name=Foot Server\nExec=true\n")
+            self.entry(root / "home", "later", "Name=Later\nExec=true\n")
+            self.assertEqual([r[0] for r in self.describe(env)], ["later.desktop", "plain.desktop"])
+            added.unlink()
+            self.assertEqual([r[0] for r in self.describe(env)], ["later.desktop", "plain.desktop"])
+
+    def test_failed_launch_reports_short_copy_without_raw_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            # A missing working directory makes GLib's spawn fail with a
+            # message naming the raw path.
+            missing = root / "deliberately-missing-directory"
+            self.entry(root / "home", "broken", f"Name=Broken\nExec=true\nPath={missing}\n")
+            env = self.env(root)
+            failed = subprocess.run([self.binary, "launch", "broken.desktop"],
+                                    env=env, capture_output=True, text=True)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertEqual(failed.stdout, "Could not open Broken · Back returns to Apps\n")
+            self.assertNotIn(str(root), failed.stdout)
+            self.assertNotIn("/", failed.stdout)
+            # The raw diagnostic remains available to logs.
+            self.assertIn("launch failed:", failed.stderr)
+            gone = subprocess.run([self.binary, "launch", "vanished.desktop"],
+                                  env=env, capture_output=True, text=True)
+            self.assertNotEqual(gone.returncode, 0)
+            self.assertEqual(gone.stdout, "Could not open the application · Back returns to Apps\n")
+
     def test_escaped_names_do_not_break_catalogue_records(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

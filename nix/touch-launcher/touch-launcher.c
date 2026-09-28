@@ -474,7 +474,7 @@ static void draw_shell_drawer(void) {
     else if (item==1) label="Monitor";
     else if (item==2) label="New terminal";
     else if (item==3) label="Help";
-    else label=g_app_info_get_display_name(g_ptr_array_index(apps,item-BUILTIN_COUNT));
+    else label=k230_app_label(g_ptr_array_index(apps,item-BUILTIN_COUNT));
     /* The first scrolled row is partly under the sheet header. Its hit box
      * must match only the portion that remains visible after clipping. */
     int hit_y=y<list_top ? list_top : y;
@@ -560,7 +560,7 @@ static void draw(void) {
     } else if(item==3) { add_button(ACT_HELP,"Help","How to use this shell",24,top+row*(bh+gap),width-48,bh,k230_appearance.selected);
     } else {
       GAppInfo *app=g_ptr_array_index(apps,item-BUILTIN_COUNT);
-      add_button(launcher_item_action(item),g_app_info_get_display_name(app),"Installed application",24,
+      add_button(launcher_item_action(item),k230_app_label(app),k230_app_hint(app),24,
         top+row*(bh+gap),width-48,bh,k230_appearance.tile);
     }
   }
@@ -611,10 +611,13 @@ static void focus_window_card(int item) {
 static void launch_selected(int action) {
   GError *error=NULL;
   gboolean ok=FALSE;
+  const char *label="the application";
   if(action>=0) {
     GAppInfo *app=g_ptr_array_index(apps,action);
+    label=k230_app_label(app);
     ok=k230_app_launch(g_app_info_get_id(app),&error);
   } else {
+    label=action==ACT_TERMINAL?"Terminal":action==ACT_MONITOR?"Monitor":"New terminal";
     const char *helper=getenv("K230_LAUNCHER_ACTION");
     const char *name=action==ACT_TERMINAL?"terminal":action==ACT_MONITOR?"monitor":"new-terminal";
     if(helper && *helper) {
@@ -623,8 +626,9 @@ static void launch_selected(int action) {
     } else g_set_error_literal(&error,G_IO_ERROR,G_IO_ERROR_NOT_FOUND,"Application action is unavailable");
   }
   if(ok) { if (shell_mode) shell_hide(); else running=false; return; }
-  g_free(launch_error); launch_error=g_strdup(error?error->message:"Could not launch application");
-  fprintf(stderr,"k230-touch-launcher: %s\n",launch_error);
+  /* The raw GLib message can carry a filesystem path; keep it in the log. */
+  fprintf(stderr,"k230-touch-launcher: launch failed: %s\n",error?error->message:"unknown error");
+  g_free(launch_error); launch_error=k230_app_failure_copy(label);
   g_clear_error(&error);
   if (shell_mode) (void)shell_show(SHELL_DRAWER);
   else redraw();

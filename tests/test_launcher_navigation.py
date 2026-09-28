@@ -69,6 +69,42 @@ int main(void) {
             subprocess.run([str(path / "test")], check=True)
 
 
+    def test_failed_launch_keeps_page_bounds_and_back_route(self):
+        """A failed curated launch leaves the page model intact and Back usable."""
+        source = r'''
+#include <assert.h>
+#include "navigation.h"
+int main(void) {
+  /* Five visible entries after curation (see test_desktop_catalog). */
+  const int apps=5;
+  for (int size=3; size<=4; size++) {
+    struct launcher_navigation nav={.page_size=size};
+    int pages=launcher_pages(&nav,apps);
+    assert(pages==(BUILTIN_COUNT+apps+size-1)/size);
+    for (int i=0;i<pages+2;i++) launcher_navigate(&nav,ACT_NEXT,apps);
+    assert(nav.page==pages-1);
+    int last=(pages-1)*size, item=BUILTIN_COUNT+apps-1;
+    assert(item>=last && launcher_item_action(item)==apps-1);
+    /* The launch request itself is not a navigation change... */
+    assert(launcher_navigate(&nav,launcher_item_action(item),apps)==0);
+    /* ...so after a failure the same page, Help and Back remain available. */
+    assert(nav.page==pages-1 && !nav.help && launcher_current_page(&nav)==pages-1);
+    assert(launcher_navigate(&nav,ACT_HELP,apps)==1 && nav.help);
+    assert(launcher_navigate(&nav,ACT_BACK,apps)==1 && !nav.help && nav.page==pages-1);
+    assert(launcher_navigate(&nav,ACT_BACK,apps)==2);
+  }
+  return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)
+            (path / "failure.c").write_text(source)
+            subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                            "-I", str(ROOT / "nix/touch-launcher"),
+                            str(path / "failure.c"), "-o", str(path / "test")], check=True)
+            subprocess.run([str(path / "test")], check=True)
+
+
 class GesturesAndOverview(unittest.TestCase):
     def test_threshold_dominance_cancellation_and_overview_bounds(self):
         source = r'''
