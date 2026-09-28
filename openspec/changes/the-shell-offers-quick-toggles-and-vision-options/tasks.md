@@ -66,8 +66,9 @@ B.5 is new: it tracks a parent requirement that had no task.
 
 ## D. Shared spec/evidence
 
-- [ ] D.1 Validate this change: `openspec validate
-  the-shell-offers-quick-toggles-and-vision-options --strict`.
+- [x] D.1 Validate this change: `openspec validate
+  the-shell-offers-quick-toggles-and-vision-options --strict`. Passed
+  2026-09-28 on `close/shell-umbrella`.
 - [ ] D.2 After B/C's host tasks land, evaluate the integrated closure:
   `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`
   (cross-build proof only, not board proof). The parent named the `k230`
