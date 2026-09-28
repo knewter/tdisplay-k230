@@ -34,12 +34,17 @@
 
 ## 4. Physical acceptance
 
-- [ ] 4.1 Install the built kernel to `/boot` and reboot. Under the
+- [x] 4.1 MOVED, NOT PERFORMED HERE: install the built kernel to `/boot` and reboot. Under the
       reserved board lock, plug in the USB Bluetooth dongle, confirm
       `lsusb` shows it, then run `bluetoothctl show`, `bluetoothctl scan
       on` for 10 s, and `btmgmt info`. Commit sanitized console output
       (no MAC addresses/SSIDs of nearby devices) under
       `docs/evidence/bluetooth/` (hardware proof only).
+      Scope split authorized by the operator on 2026-09-28: this board has
+      no onboard Bluetooth (`docs/research/bluetooth-onboard.md`), and no USB
+      dongle is available. The dongle test is preserved verbatim in the
+      successor change `the-handheld-pairs-over-a-usb-bluetooth-dongle`
+      (tasks 1.1-1.3 and 2.1). No Bluetooth pairing has been verified.
 
       2026-09-28 system/hw closeout audit: this project does not currently
       own a USB Bluetooth dongle (`docs/research/bluetooth-onboard.md`
