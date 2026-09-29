@@ -232,7 +232,11 @@ fn fits(
     !slots.is_empty() && slots.iter().all(|slot| *slot < row.len() && !blocked.contains(slot))
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+fn default_columns() -> usize {
+    home_grid::COLUMNS
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct HomeLayout {
     pub schema: u32,
     /// Pages of grid cells, row-major within each page. `None` is either a
@@ -245,6 +249,27 @@ pub struct HomeLayout {
     /// is 1x1 (`HomeItem::App` or `HomeItem::Folder`); see this module's
     /// `HomeItem` doc for why widgets are dock-ineligible.
     pub dock: Vec<Option<HomeItem>>,
+    /// The grid column count every `pages` entry is currently laid out
+    /// against -- every internal placement/fit/anchor computation reads
+    /// this instead of `home_grid::COLUMNS` directly, so a live reflow
+    /// (`reflow_to`, `feat/shell-responsive`) is the *only* thing that ever
+    /// changes what a stored slot index means. `#[serde(default)]` so a
+    /// schema-2 file saved before this field existed loads as `4` (this
+    /// field's own pre-existing, only-ever value until now), not a parse
+    /// failure.
+    #[serde(default = "default_columns")]
+    pub columns: usize,
+}
+
+impl Default for HomeLayout {
+    fn default() -> Self {
+        Self {
+            schema: SCHEMA,
+            pages: Vec::new(),
+            dock: Vec::new(),
+            columns: home_grid::COLUMNS,
+        }
+    }
 }
 
 impl HomeLayout {
@@ -253,6 +278,50 @@ impl HomeLayout {
             schema: SCHEMA,
             pages: vec![Vec::new()],
             dock: vec![None; dock_slots],
+            columns: home_grid::COLUMNS,
+        }
+    }
+
+    /// Re-lays out every page against a new column count, preserving every
+    /// item's reading-order sequence (top-left to bottom-right, across
+    /// pages) exactly -- never dropping, duplicating, or reordering a
+    /// stored item, whether `columns` is larger (an HDMI monitor: more
+    /// capacity, so nothing should need to move to a later page) or smaller
+    /// (back to the panel: some items may spill onto a later page, exactly
+    /// like an ordinary over-full page already does via `place_first_fit`).
+    /// A no-op when `columns` already matches `self.columns` -- cheap to
+    /// call defensively on every frame (`HomeScreen::sync_columns` does).
+    ///
+    /// Each stored item is extracted once, in row-major reading order
+    /// (skipping cells a multi-span widget merely covers, via the same
+    /// `covered_slots` its own placement used), then re-inserted through
+    /// `place_first_fit`'s own already-tested bin-packing at the new column
+    /// count -- so a multi-span widget still lands on a valid, non-
+    /// overlapping rectangular footprint rather than a naive re-chunk that
+    /// could split its span across two different-width rows.
+    pub fn reflow_to(&mut self, columns: usize, apps_per_page: usize) {
+        let columns = columns.max(1);
+        if columns == self.columns {
+            return;
+        }
+        let old_columns = self.columns.max(1);
+        let mut flattened: Vec<HomeItem> = Vec::new();
+        for page in &self.pages {
+            let mut covered: HashSet<usize> = HashSet::new();
+            for (index, cell) in page.iter().enumerate() {
+                if covered.contains(&index) {
+                    continue;
+                }
+                if let Some(item) = cell {
+                    covered.extend(covered_slots(index, item.span(), old_columns));
+                    flattened.push(item.clone());
+                }
+            }
+        }
+        self.pages = vec![Vec::new()];
+        self.columns = columns;
+        for item in flattened {
+            self.place_first_fit(item, apps_per_page);
         }
     }
 
@@ -315,7 +384,7 @@ impl HomeLayout {
         }
         if let HomeSlot::Grid { page, slot: index } = slot {
             let row = self.pages.get(page)?;
-            let columns = home_grid::COLUMNS;
+            let columns = self.columns.max(1);
             for (anchor, cell) in row.iter().enumerate() {
                 if let Some(item) = cell {
                     if covered_slots(anchor, item.span(), columns).contains(&index) {
@@ -360,7 +429,7 @@ impl HomeLayout {
             HomeSlot::Grid { page, slot: index } => {
                 let Some(row) = self.pages.get(page) else { return false };
                 let ignore = ignore_anchor.then_some(index);
-                fits(row, home_grid::COLUMNS, index, span, ignore)
+                fits(row, self.columns.max(1), index, span, ignore)
             }
             HomeSlot::Dock { slot: index } => span == (1, 1) && index < self.dock.len(),
         }
@@ -423,7 +492,7 @@ impl HomeLayout {
     pub(crate) fn first_fit(&self, page: usize, item: &HomeItem, apps_per_page: usize) -> Option<usize> {
         let row = self.pages.get(page)?;
         let len = row.len().max(apps_per_page);
-        (0..len).find(|&index| fits(row, home_grid::COLUMNS, index, item.span(), None))
+        (0..len).find(|&index| fits(row, self.columns.max(1), index, item.span(), None))
     }
 
     /// Places `item` in the first free-fitting cell across existing pages,
@@ -587,6 +656,9 @@ impl From<HomeLayoutV1> for HomeLayout {
                 .map(|row| row.into_iter().map(|cell| cell.map(HomeItem::app)).collect())
                 .collect(),
             dock: old.dock.into_iter().map(|cell| cell.map(HomeItem::app)).collect(),
+            // Schema 1 predates per-column reflow entirely; its cells were
+            // always laid out at the reference 4 columns.
+            columns: home_grid::COLUMNS,
         }
     }
 }
@@ -725,6 +797,106 @@ mod tests {
         }
     }
 
+    /// Every app anchor in `layout`'s pages, in reading order (page, then
+    /// row-major within it, skipping cells a multi-span item merely
+    /// covers) -- the same order `HomeLayout::reflow_to` itself flattens
+    /// in, used here to assert that order survives a reflow untouched.
+    fn flattened_order(layout: &HomeLayout) -> Vec<HomeItem> {
+        let mut out = Vec::new();
+        for page in &layout.pages {
+            let mut covered: HashSet<usize> = HashSet::new();
+            for (index, cell) in page.iter().enumerate() {
+                if covered.contains(&index) {
+                    continue;
+                }
+                if let Some(item) = cell {
+                    covered.extend(covered_slots(index, item.span(), layout.columns.max(1)));
+                    out.push(item.clone());
+                }
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn reflow_to_a_wider_column_count_never_loses_or_reorders_items() {
+        let mut layout = HomeLayout { dock: vec![None; 4], ..HomeLayout::default() };
+        assert_eq!(layout.columns, home_grid::COLUMNS);
+        let names = ["a", "b", "c", "d", "e", "f", "g", "h", "i"];
+        for name in names {
+            layout.place_first_fit(HomeItem::app(format!("{name}.desktop")), 20);
+        }
+        let before = flattened_order(&layout);
+        assert_eq!(before.len(), names.len(), "every placed item is present before reflow");
+
+        layout.reflow_to(8, 40);
+        assert_eq!(layout.columns, 8);
+        let after = flattened_order(&layout);
+        assert_eq!(after, before, "reading-order sequence is byte-for-byte unchanged by growing columns");
+        // A wider grid has strictly more per-page capacity, so nothing that
+        // fit on one page before should have spilled onto a second page.
+        assert_eq!(layout.pages.len(), 1);
+    }
+
+    #[test]
+    fn reflow_to_round_trips_4_then_8_then_back_to_4() {
+        let mut layout = HomeLayout { dock: vec![None; 4], ..HomeLayout::default() };
+        for name in ["a", "b", "c", "d", "e", "f"] {
+            layout.place_first_fit(HomeItem::app(format!("{name}.desktop")), 20);
+        }
+        let original = layout.clone();
+        let original_order = flattened_order(&original);
+
+        layout.reflow_to(8, 40);
+        assert_ne!(layout.pages, original.pages, "column count actually changed the stored shape");
+        layout.reflow_to(4, 20);
+
+        assert_eq!(layout.columns, 4);
+        assert_eq!(
+            flattened_order(&layout),
+            original_order,
+            "round-tripping 4 -> 8 -> 4 preserves the exact original reading order"
+        );
+        // With every item comfortably fitting on one page at 4 columns both
+        // before and after, the round trip reproduces the identical page
+        // shape, not just the same order -- a stronger check than order
+        // alone, since a naive reflow could preserve order while still
+        // scattering items across extra empty pages.
+        assert_eq!(layout.pages, original.pages);
+    }
+
+    #[test]
+    fn reflow_to_is_a_no_op_when_columns_already_match() {
+        let mut layout = HomeLayout { dock: vec![None; 4], ..HomeLayout::default() };
+        layout.place_first_fit(HomeItem::app("a.desktop"), 20);
+        let before = layout.clone();
+        layout.reflow_to(home_grid::COLUMNS, 20);
+        assert_eq!(layout, before, "reflowing to the already-current column count changes nothing");
+    }
+
+    #[test]
+    fn reflow_to_keeps_a_multi_span_widget_intact_as_one_item() {
+        let mut layout = HomeLayout { dock: vec![None; 4], ..HomeLayout::default() };
+        layout.place_first_fit(HomeItem::Widget { widget: WidgetKind::Clock }, 20);
+        layout.place_first_fit(HomeItem::app("a.desktop"), 20);
+        layout.place_first_fit(HomeItem::app("b.desktop"), 20);
+        let before = flattened_order(&layout);
+        assert_eq!(before[0], HomeItem::Widget { widget: WidgetKind::Clock });
+
+        layout.reflow_to(8, 40);
+        let after = flattened_order(&layout);
+        assert_eq!(after, before, "the widget stays exactly one item, in its original position");
+        // Its footprint at the new column count must still be a single,
+        // valid, non-overlapping rectangular span, not split across rows.
+        let (page, anchor) = layout
+            .pages
+            .iter()
+            .enumerate()
+            .find_map(|(page, row)| row.iter().position(|cell| matches!(cell, Some(HomeItem::Widget { .. }))).map(|slot| (page, slot)))
+            .expect("the widget is still anchored somewhere");
+        assert!(fits(&layout.pages[page], layout.columns, anchor, (4, 2), Some(anchor)));
+    }
+
     #[test]
     fn state_path_prefers_xdg_then_home_then_none() {
         assert_eq!(
@@ -808,6 +980,7 @@ mod tests {
             schema: SCHEMA,
             pages: vec![vec![Some(HomeItem::app("a.desktop")), None, Some(HomeItem::app("b.desktop"))]],
             dock: vec![Some(HomeItem::app("c.desktop")), None],
+            columns: home_grid::COLUMNS,
         };
         save(&path, &layout).unwrap();
         assert_eq!(load(&path), Some(layout));
@@ -867,6 +1040,7 @@ mod tests {
             schema: SCHEMA,
             pages: vec![vec![Some(HomeItem::app("gone.desktop")), None]],
             dock: vec![None; 4],
+            columns: home_grid::COLUMNS,
         };
         save(&path, &layout).unwrap();
         let loaded = load(&path).unwrap();

@@ -32,6 +32,9 @@ stdenvNoCC.mkDerivation {
     install -m 0644 ${../tools/theme_client.py} "$out/libexec/handheld-theme/theme_client.py"
     install -m 0644 ${../tools/theme_helperd.py} "$out/libexec/handheld-theme/theme_helperd.py"
     install -m 0644 ${../tools/app_appearance.py} "$out/libexec/handheld-theme/app_appearance.py"
+    # app_appearance imports theme_gtk (the Files apps' GTK keyfile); without
+    # it theme-helper.service died with ModuleNotFoundError on the board.
+    install -m 0644 ${../tools/theme_gtk.py} "$out/libexec/handheld-theme/theme_gtk.py"
     install -m 0644 ${../tools/keyboard_appearance.py} "$out/libexec/handheld-theme/keyboard_appearance.py"
     install -m 0644 ${../tools/foot_color_session.py} "$out/libexec/handheld-theme/foot_color_session.py"
     install -m 0644 ${../tools/omarchy-theme-set} "$out/libexec/handheld-theme/omarchy-theme-set"

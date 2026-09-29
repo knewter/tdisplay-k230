@@ -899,6 +899,18 @@ pub fn panel_intent(
             if end.1 < 108.0 && end.0 > w - 150.0 {
                 return Some(PanelIntent::Hide);
             }
+            // Everything below (the confirm dialog, the row/Power taps) is
+            // `render.rs`'s scaled, centered content column
+            // (`crate::settings_content_transform`, applied to the
+            // identical `(width, height)`) -- map the real touch point back
+            // into that column's own design-unit space before any of the
+            // row-rhythm checks below, so a tap and its paint can never
+            // drift apart. The "Done" check above stays in real coordinates
+            // on purpose: that text paints outside the scaled column, in
+            // the shared, unscaled header strip every other route uses too.
+            let (content_scale, content_x) = crate::settings_content_transform(width, height);
+            let end = ((end.0 - content_x) / content_scale, end.1 / content_scale);
+            let w = crate::DESIGN_WIDTH;
             if let Some(confirm) = &view.confirmation {
                 if Instant::now() >= confirm.expires_at {
                     return None;
@@ -1909,6 +1921,54 @@ mod tests {
         assert!(view.confirmation.is_some());
         assert!(view.request_queued(&request, true));
         assert!(view.confirmation.is_none());
+    }
+
+    #[test]
+    fn settings_row_taps_follow_the_scaled_centered_content_column_on_hdmi() {
+        // Same fixture/tap `power_needs_loaded_settings_and_token_
+        // confirmation` uses at the native 568x1232 (the reboot row after
+        // settings loads, at design-space (60.0, 856.0)) -- but the touch
+        // point is now real-pixel coordinates on a wide *and* a tall HDMI
+        // output, mapped through `crate::settings_content_transform` (the
+        // exact function `render.rs`'s `scene` uses to paint that same row)
+        // rather than hand-picked literals, so this stays correct if that
+        // transform's own formula ever changes.
+        let unavailable = Control {
+            state: ControlState::Unavailable,
+            value: None,
+            label: "Unavailable".into(),
+            detail: None,
+            action: None,
+        };
+        let view = ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: unavailable.clone(),
+                brightness: unavailable.clone(),
+                keyboard: unavailable.clone(),
+                motion: unavailable.clone(),
+                volume: unavailable,
+            }),
+            ..ServiceView::default()
+        };
+        let design_point = (60.0, 856.0);
+        for (width, height) in [(1920u32, 1080u32), (1080u32, 1920u32)] {
+            let (scale, x) = crate::settings_content_transform(width, height);
+            let real_point = (design_point.0 * scale + x, design_point.1 * scale);
+            assert_eq!(
+                panel_intent(Route::Settings, real_point, real_point, width, height, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot))),
+                "the reboot row's real on-screen position at {width}x{height} must still resolve"
+            );
+            // A point just past the row, in the same real coordinate space,
+            // must still miss -- confirms this isn't accidentally hitting
+            // on every tap regardless of position.
+            let miss_point = (real_point.0, real_point.1 + 400.0 * scale);
+            assert_eq!(
+                panel_intent(Route::Settings, miss_point, miss_point, width, height, &view),
+                None,
+                "well past the row, at {width}x{height}, must still miss"
+            );
+        }
     }
 
     #[test]

@@ -795,6 +795,19 @@ let
     output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6 max_render_time 8
     input type:touch map_to_output DSI-1
 
+    # HDMI boot (k230-tdisplay-hdmi.dtb): the panel is dark and HDMI-A-1 is
+    # the only output. Its EDID-preferred mode, rotated per
+    # k230.shell.hdmiTransform, on a black background. Touch follows
+    # whichever output exists: map_to_output DSI-1 above names an output
+    # that is absent in this boot, so the exec below remaps it.
+    output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color
+    exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
+      # swaymsg from the session's own PATH: the running sway's client.
+      if swaymsg -t get_outputs -r | ${pkgs.gnugrep}/bin/grep -q '"name": "HDMI-A-1"'; then
+        swaymsg input type:touch map_to_output HDMI-A-1
+      fi
+    ''}
+
     ${lib.optionalString cfg.coherentShell ''
       # Hardware/keyboard-base volume keys, wired to wpctl's own default-sink
       # step commands rather than to the Rust client directly: the client's
@@ -889,6 +902,16 @@ in
         variant), drm_info, libinput's debug tool, wayland-info and wlfps.
         They exist to verify runtime/shell on the board and should leave with
         the change that needed them.
+      '';
+    };
+
+    hdmiTransform = lib.mkOption {
+      type = lib.types.enum [ "normal" "90" "180" "270" ];
+      default = "90";
+      description = ''
+        Sway transform for HDMI-A-1 in the HDMI boot. "90" suits a monitor
+        rotated to portrait (the operator's), which also matches the shell's
+        portrait design; "normal" for a landscape monitor.
       '';
     };
 

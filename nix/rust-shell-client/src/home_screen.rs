@@ -302,6 +302,21 @@ impl HomeScreen {
         self.layout.page_count()
     }
 
+    /// Reflows the stored layout to the column count `width` supports now,
+    /// via `HomeLayout::reflow_to` (a no-op when it already matches). Cheap
+    /// to call on every repaint/interaction that has `width`/`height` in
+    /// hand -- `main.rs`'s `draw_home` does, before every render, which is
+    /// this shell's one guaranteed choke point: by the time any touch
+    /// handler below can run, at least one `draw_home` for the current
+    /// geometry has already reflowed the layout, so painting and hit-
+    /// testing never see a `self.layout.columns` that disagrees with
+    /// `home_grid::columns_for_width(width)`.
+    pub fn sync_columns(&mut self, width: u32, height: u32) {
+        let columns = home_grid::columns_for_width(width);
+        let apps_per_page = home_grid::apps_per_page(width, height);
+        self.layout.reflow_to(columns, apps_per_page);
+    }
+
     /// Clears every piece of cross-page-drag tracking state -- called at the
     /// moment a fresh drag begins (`down`, and every `tick`/
     /// `begin_external_drag` site that sets `self.drag = Some(..)`), so a
@@ -324,7 +339,7 @@ impl HomeScreen {
     /// (`motion`) and external drawer-origin (`external_drag_motion`) drag
     /// paths so the two behave identically.
     fn note_drag_point(&mut self, point: (f64, f64), time_ms: u32, width: u32, height: u32) {
-        self.apps_per_page_cache = home_grid::apps_per_page(height).max(1);
+        self.apps_per_page_cache = home_grid::apps_per_page(width, height).max(1);
         if let Some(last_ms) = self.drag_track_ms {
             let elapsed = time_ms.wrapping_sub(last_ms);
             if elapsed > 0 && elapsed < 1000 {
@@ -476,8 +491,14 @@ impl HomeScreen {
             return Some(HomeSlot::Dock { slot: dock_slot });
         }
         let page = self.pager.page(self.page_count());
-        home_grid::slot_at(point, width, height, home_grid::apps_per_page(height))
-            .map(|slot| HomeSlot::Grid { page, slot })
+        home_grid::slot_at(
+            point,
+            width,
+            height,
+            home_grid::apps_per_page(width, height),
+            self.layout.columns,
+        )
+        .map(|slot| HomeSlot::Grid { page, slot })
     }
 
     /// The item actually under `point`, resolved to its anchor slot -- a
@@ -495,14 +516,15 @@ impl HomeScreen {
     /// that icon's own tile-cell hit region.
     fn badge_at(&self, point: (f64, f64), width: u32, height: u32) -> Option<HomeSlot> {
         let page = self.pager.page(self.page_count());
-        let apps_per_page = home_grid::apps_per_page(height);
+        let apps_per_page = home_grid::apps_per_page(width, height);
         let candidates = (0..apps_per_page)
             .map(|slot| HomeSlot::Grid { page, slot })
             .chain((0..home_grid::DOCK_SLOTS).map(|slot| HomeSlot::Dock { slot }));
+        let columns = self.layout.columns;
         candidates
             .filter(|slot| self.layout.get(*slot).is_some())
             .find(|slot| {
-                let corner = home_grid::plate_top_left(width, height, *slot);
+                let corner = home_grid::plate_top_left(width, height, *slot, columns);
                 home_grid::hits_circle(point, corner, home_grid::REMOVE_BADGE_HIT_RADIUS)
             })
     }
@@ -959,7 +981,7 @@ impl HomeScreen {
         width: u32,
         height: u32,
     ) -> Option<HomeAction> {
-        let apps_per_page = home_grid::apps_per_page(height);
+        let apps_per_page = home_grid::apps_per_page(width, height);
         if let DragSource::Existing(slot) = &source {
             if home_grid::hits(point, home_grid::remove_target_rect(width)) {
                 self.layout.remove_slot(*slot);
@@ -1276,12 +1298,61 @@ mod tests {
             schema: crate::home_state::SCHEMA,
             dock: dock.iter().map(|entry| entry.map(HomeItem::app)).collect(),
             pages: vec![vec![Some(HomeItem::app("a.desktop")), Some(HomeItem::app("b.desktop")), None, None]],
+            columns: home_grid::COLUMNS,
         };
         HomeScreen::new(layout, WIDTH as f64)
     }
 
+    /// Every filled `(page, slot, item)` triple, in ascending `(page, slot)`
+    /// order -- used to compare two layouts' actual content/positions
+    /// without requiring their backing `Vec`s to share the exact same
+    /// length (`reflow_to` always rebuilds a page at the caller's real
+    /// `apps_per_page` capacity, which can differ from a hand-built test
+    /// fixture's own, deliberately shorter, `Vec`).
+    fn filled_cells(layout: &HomeLayout) -> Vec<(usize, usize, HomeItem)> {
+        layout
+            .pages
+            .iter()
+            .enumerate()
+            .flat_map(|(page, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter_map(move |(slot, cell)| cell.clone().map(|item| (page, slot, item)))
+            })
+            .collect()
+    }
+
+    #[test]
+    fn sync_columns_reflows_to_a_wide_output_and_back_without_losing_items() {
+        let mut home = screen_with(&[Some("dock-a")]);
+        assert_eq!(home.layout.columns, home_grid::COLUMNS);
+        let before = filled_cells(&home.layout);
+
+        home.sync_columns(1920, 1080);
+        assert_eq!(home.layout.columns, home_grid::columns_for_width(1920));
+        assert!(home.layout.columns > home_grid::COLUMNS);
+        // Both apps are still present somewhere after reflowing wider.
+        let still_present = |id: &str| {
+            home.layout
+                .pages
+                .iter()
+                .flatten()
+                .any(|cell| matches!(cell, Some(HomeItem::App { id: found }) if found == id))
+        };
+        assert!(still_present("a.desktop"));
+        assert!(still_present("b.desktop"));
+
+        home.sync_columns(WIDTH, HEIGHT);
+        assert_eq!(home.layout.columns, home_grid::COLUMNS);
+        assert_eq!(
+            filled_cells(&home.layout),
+            before,
+            "round-tripping back to the panel's own width restores every item to its original page/slot"
+        );
+    }
+
     fn tile_center_for_test(slot: usize) -> (f64, f64) {
-        let (x, y, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, slot);
+        let (x, y, w, h) = home_grid::tile_rect(WIDTH, HEIGHT, slot, home_grid::COLUMNS);
         (x + w / 2.0, y + h / 2.0)
     }
 
@@ -1327,7 +1398,7 @@ mod tests {
     #[test]
     fn dragging_before_long_press_fires_pages_instead() {
         let mut screen = screen_with(&[None; 4]);
-        let (x, y, _, _) = home_grid::tile_rect(WIDTH, HEIGHT, 0);
+        let (x, y, _, _) = home_grid::tile_rect(WIDTH, HEIGHT, 0, home_grid::COLUMNS);
         let point = (x + 10.0, y + 10.0);
         screen.down(1, point, 0, WIDTH, HEIGHT);
         screen.motion(1, (point.0 - 400.0, point.1), 30, WIDTH, HEIGHT);
@@ -1567,7 +1638,7 @@ mod tests {
     fn tapping_a_grid_icons_remove_badge_removes_it_without_dragging() {
         let mut screen = screen_with(&[None; 4]);
         screen.rearranging = true;
-        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 });
+        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 }, home_grid::COLUMNS);
         screen.down(1, badge, 0, WIDTH, HEIGHT);
         assert!(screen.drag.is_none(), "a badge press never arms a drag");
         assert_eq!(screen.up(1, badge, 20, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
@@ -1579,7 +1650,7 @@ mod tests {
     fn tapping_a_dock_icons_remove_badge_removes_it() {
         let mut screen = screen_with(&[Some("dock.desktop"), None, None, None]);
         screen.rearranging = true;
-        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Dock { slot: 0 });
+        let badge = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Dock { slot: 0 }, home_grid::COLUMNS);
         screen.down(1, badge, 0, WIDTH, HEIGHT);
         assert_eq!(screen.up(1, badge, 20, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
         assert_eq!(screen.layout.get(HomeSlot::Dock { slot: 0 }), None);
@@ -1588,7 +1659,7 @@ mod tests {
     #[test]
     fn a_remove_badge_only_fires_while_rearranging() {
         let mut screen = screen_with(&[None; 4]);
-        let point = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 });
+        let point = home_grid::plate_top_left(WIDTH, HEIGHT, HomeSlot::Grid { page: 0, slot: 0 }, home_grid::COLUMNS);
         screen.down(1, point, 0, WIDTH, HEIGHT);
         assert_eq!(
             screen.up(1, point, 20, WIDTH, HEIGHT),
@@ -1956,7 +2027,7 @@ mod tests {
         }
         assert_eq!(screen.pager.page(screen.page_count()), 1, "the page switched while still dragging");
         assert_eq!(
-            home_grid::slot_at(edge_point, WIDTH, HEIGHT, home_grid::apps_per_page(HEIGHT)),
+            home_grid::slot_at(edge_point, WIDTH, HEIGHT, home_grid::apps_per_page(WIDTH, HEIGHT), home_grid::COLUMNS),
             None,
             "sanity check: this release point must be outside every tile's own hit rect"
         );
@@ -1983,7 +2054,7 @@ mod tests {
     /// and not clobber the app already there.
     #[test]
     fn dragging_a_widget_across_the_edge_onto_an_incompatible_occupied_cell_lands_nearby_on_the_new_page() {
-        let per_page = home_grid::apps_per_page(HEIGHT);
+        let per_page = home_grid::apps_per_page(WIDTH, HEIGHT);
         let mut screen = screen_with(&[None; 4]);
         screen.layout.pages[0] = vec![None; per_page];
         screen.layout.pages[0][0] = Some(HomeItem::Widget { widget: WidgetKind::Clock }); // covers 0..8 (4x2)

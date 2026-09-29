@@ -2745,6 +2745,11 @@ impl ShellClient {
         if frame_bytes(width, height).is_none() {
             return false;
         }
+        // Reflow the persisted grid to whatever column count this geometry
+        // supports before anything paints or hit-tests against it -- see
+        // `HomeScreen::sync_columns`'s own doc for why this is the one
+        // choke point that guarantees the two never disagree.
+        self.home.sync_columns(width, height);
         let stride = (width * 4) as i32;
         self.home_surface
             .buffers
@@ -3393,6 +3398,32 @@ impl ShellClient {
     /// and `ensure_wallpaper` carry the identical fix for the identical
     /// reason: neither is keyboard-aware, so either would otherwise squash
     /// the same way the moment the keyboard shows while they are visible.
+    /// Whether a proposed `(width, height)` configure equals some currently
+    /// known output's own logical size -- the distinction `configure`'s own
+    /// three branches need between a legitimate whole-output resize (an
+    /// HDMI monitor, at any aspect: 1920x1080 landscape, 1080x1920 rotated
+    /// portrait) and a keyboard-exclusive-zone squish, which shrinks only
+    /// one axis and is therefore never a whole output. Both change the
+    /// surface's aspect ratio away from `configure_preserves_aspect`'s
+    /// design band, so that check alone cannot tell them apart; this one
+    /// can, because a squish's `(width, height)` is smaller than the output
+    /// it sits on while a real output resize's is exactly the output.
+    ///
+    /// Used to *accept* the configure at its own full size instead of
+    /// `feat/hdmi-pillarbox`'s (2026-09-29, commit 4c2eb57c) now-removed
+    /// `pillarbox` fallback, which asked the compositor for a centered
+    /// design-aspect column: the operator did not want an HDMI monitor
+    /// letterboxed, they wanted the shell to fill it. See
+    /// `openspec/changes/the-shell-adapts-to-output-resolution/design.md`.
+    fn is_whole_output(&self, width: u32, height: u32) -> bool {
+        self.output_state.outputs().any(|output| {
+            self.output_state
+                .info(&output)
+                .and_then(|info| info.logical_size)
+                .is_some_and(|(w, h)| (w, h) == (width as i32, height as i32))
+        })
+    }
+
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
         if self.layer.is_none() {
             let surface = self.compositor.create_surface(qh);
@@ -3433,6 +3464,7 @@ impl ShellClient {
     fn panel_travel(&self) -> f64 {
         panel_travel_height(
             self.route,
+            self.width,
             self.height,
             Some(&self.theme_view),
             Some(&self.service_view),
@@ -4061,7 +4093,7 @@ impl LayerShellHandler for ShellClient {
         {
             let mut geometry = (self.wallpaper.width, self.wallpaper.height);
             if configure_size(&mut geometry, width, height).is_none()
-                || !configure_preserves_aspect(width, height)
+                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
             {
                 self.log("wallpaper-configure-rejected");
                 return;
@@ -4089,7 +4121,7 @@ impl LayerShellHandler for ShellClient {
         {
             let mut geometry = (self.home_surface.width, self.home_surface.height);
             if configure_size(&mut geometry, width, height).is_none()
-                || !configure_preserves_aspect(width, height)
+                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
             {
                 self.log("home-configure-rejected");
                 return;
@@ -4107,7 +4139,7 @@ impl LayerShellHandler for ShellClient {
         }
         let mut geometry = (self.width, self.height);
         if configure_size(&mut geometry, width, height).is_none()
-            || !configure_preserves_aspect(width, height)
+            || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
         {
             self.log("configure-rejected");
             return;
@@ -4962,7 +4994,7 @@ impl TouchHandler for ShellClient {
                 }
                 if !engaged_this_sample {
                     let filtered_count = self.drawer_filtered_apps().len();
-                    if self.nav.motion(id, pos, time_ms, self.height, filtered_count) {
+                    if self.nav.motion(id, pos, time_ms, self.width, self.height, filtered_count) {
                         self.dirty = true;
                     }
                     // Once this sample's ordinary scroll has actually
@@ -5430,7 +5462,7 @@ fn serve() -> Result<(), String> {
         home_state_path.as_deref(),
         &apps,
         home_grid::DOCK_SLOTS,
-        home_grid::apps_per_page(1232),
+        home_grid::apps_per_page(568, 1232),
     );
     let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
@@ -6119,7 +6151,7 @@ fn serve() -> Result<(), String> {
                 }
             }
         }
-        if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
+        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.height, state.apps.len()) {
             state.dirty = true;
         }
         // Keeps the drawer-drag reveal animation (task 1) advancing every
@@ -6737,7 +6769,7 @@ mod route_tests {
         // dismiss band, or at/after the panel's own bottom edge -- never
         // from within the scrollable list itself), and only actually
         // engages once it clears `close_drag_engaged`'s slop.
-        let travel = panel_travel_height(Route::Shade, 1232, None, None);
+        let travel = panel_travel_height(Route::Shade, 568, 1232, None, None);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (282.0, 80.0)));
         assert!(touch.motion(3, (280.0, 40.0)));
@@ -6781,7 +6813,7 @@ mod route_tests {
         // grid itself (only once already scrolled to its own top) --
         // `drawer_close_drag_zone`, not `close_drag_zone`, since it needs
         // scroll state Shade/Settings never do.
-        let travel = panel_travel_height(Route::Drawer, 1232, None, None);
+        let travel = panel_travel_height(Route::Drawer, 568, 1232, None, None);
         let header_top = k230_shell_rust::navigation::panel_top(1232);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (280.0, header_top + 20.0)));
@@ -6855,7 +6887,7 @@ mod route_tests {
         let pos1 = (100.0, grid_y - 200.0);
         let (dx1, dy1) = (pos1.0 - start.0, pos1.1 - start.1);
         assert!(!close.tracking() && !close_drag_engaged(Route::Drawer, dx1, dy1));
-        assert!(nav.motion(1, pos1, 40, height, apps));
+        assert!(nav.motion(1, pos1, 40, 568, height, apps));
         candidate = drawer_close_candidate_after_scroll(candidate, nav.scroll);
         assert!(!candidate, "real scrolling away from the top disqualifies this gesture");
 
@@ -6873,7 +6905,7 @@ mod route_tests {
         // engage guard (`!close.tracking() && close_drag_engaged(..) &&
         // candidate`) never lets this call `close.begin`.
         assert!(!candidate);
-        assert!(nav.motion(1, pos2, 90, height, apps));
+        assert!(nav.motion(1, pos2, 90, 568, height, apps));
         assert!(!close.tracking(), "the close drag must never have engaged");
     }
 
