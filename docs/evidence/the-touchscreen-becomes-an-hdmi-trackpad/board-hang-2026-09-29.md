@@ -34,7 +34,7 @@ is fine: running `libinput debug-events` against `/dev/input/event0`
 *before* this program's grab showed 66 `TOUCH_DOWN` and ~1000
 `TOUCH_MOTION` events over 20 seconds of normal use.
 
-## Root cause identified (confirmed by host reproduction, see below)
+## Invalid pressure axis identified (confirmed by host reproduction)
 
 The real GT9895's `EVIOCGABS(ABS_MT_PRESSURE)` reports a **degenerate
 range** (`minimum == maximum`, specifically `0 == 0`) -- this driver

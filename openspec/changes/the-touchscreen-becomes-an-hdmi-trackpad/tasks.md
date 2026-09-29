@@ -100,13 +100,14 @@ than repeating the exact run that hung the board.
 - [ ] 3.0 **Safe re-test first.** Under the reserved board/serial lock, run
       the *new* build (task 2.7's store path, not the one from the
       original hang report) with both safety flags and a hard wall-clock
-      bound, so a repeat hang cannot need another hardware reset to
-      recover from:
-      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=30 "timeout 20 /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --dry-run --log-events"`.
+      bound for a process that remains schedulable:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=30 "timeout -k 2s 20s /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --dry-run --log-events"`.
       `--dry-run` means no `/dev/uinput` device is ever created, so
       whatever libinput/Sway did last time cannot recur even if the fix in
-      2.7 is incomplete; `timeout 20` guarantees the process cannot run
-      longer than 20 seconds regardless. Confirm over the console: the
+      2.7 is incomplete; `timeout -k 2s 20s` sends SIGTERM after 20 seconds
+      and SIGKILL two seconds later if needed. This cannot guarantee recovery
+      from a kernel hang or an uninterruptible task; hardware reset remains
+      the fallback if the console stops responding. Confirm over the console: the
       process grabs the touchscreen, `--log-events` shows real touch
       events being read and translated (touch the glass during the 20s
       window), and the process exits cleanly (its own "shutting down" line
