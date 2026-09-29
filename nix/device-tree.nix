@@ -45,9 +45,22 @@
 , dtc
 , kernelSrc      # nix/kernel-src.nix -- the pinned tree, for headers only
 , dtbName ? "k230-tdisplay.dtb"
+# The top-level board .dts to compile. Defaults to the shipped panel board
+# file; display/hdmi's alternate DTB (openspec/changes/
+# plugging-in-hdmi-moves-the-display) overrides this to
+# ./dts/k230-tdisplay-hdmi.dts alongside a matching dtbName, so the two
+# board files are two separate derivations rather than one output name
+# hiding which source actually built it.
+, dtsFile ? ./dts/k230-tdisplay.dts
 , bootSplashConfig ? import ./boot-splash.nix
 }:
 
+let
+  # The working filename inside the build dir tracks the source file's own
+  # name (not always "k230-tdisplay.dts"), so an alternate board file's own
+  # #include-relative errors, if any, point at its real name.
+  dtsBaseName = baseNameOf (toString dtsFile);
+in
 runCommandCC dtbName
 {
   nativeBuildInputs = [ dtc ];
@@ -62,11 +75,15 @@ runCommandCC dtbName
 
     # k230.dtsi and the files it pulls in (k230_clock_provider.dtsi) come
     # from the pinned tree; ours are laid alongside them so that the
-    # #include "k230.dtsi" in k230-tdisplay.dts resolves exactly as it did
+    # #include "k230.dtsi" in the board .dts resolves exactly as it did
     # when the file lived in that directory. Copied rather than -I'd at the
     # source so the two sets cannot shadow each other by accident.
     cp --no-preserve=mode "$dtsDir"/*.dtsi .
-    cp --no-preserve=mode ${./dts/k230-tdisplay.dts} k230-tdisplay.dts
+    cp --no-preserve=mode ${dtsFile} ${dtsBaseName}
+    # display-rm69a10-568x1232.dtsi is only #included by the default panel
+    # board file; copying it unconditionally is harmless (dtc/cpp never
+    # look at a file nothing #includes) and keeps this derivation from
+    # needing to know which board file wants it.
     cp --no-preserve=mode ${./dts/display-rm69a10-568x1232.dtsi} \
        display-rm69a10-568x1232.dtsi
 
@@ -80,12 +97,12 @@ runCommandCC dtbName
       -DK230_SPLASH_FRAMEBUFFER_SIZE=${bootSplashConfig.framebufferSize} \
       -DK230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS=${bootSplashConfig.framebufferUnitAddress} \
       -x assembler-with-cpp \
-      -o k230-tdisplay.dts.pre k230-tdisplay.dts
+      -o board.dts.pre ${dtsBaseName}
 
     mkdir -p $out
     dtc -I dts -O dtb -b 0 -@ \
       -i . -i ${kernelSrc}/scripts/dtc/include-prefixes \
-      -o $out/${dtbName} k230-tdisplay.dts.pre
+      -o $out/${dtbName} board.dts.pre
 
     # A DTB that does not round-trip is not a DTB. Cheap here, and the
     # alternative is finding out on the board.

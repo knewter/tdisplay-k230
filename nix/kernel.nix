@@ -81,6 +81,26 @@ buildLinux (args // {
       # evidence: day 26 read back as 10 (0b11010 & 0b01111 == 0b01010).
       # See docs/evidence/rtc/.
       ../nix/patches/k230-rtc-mday-mask.patch
+
+      # display/hdmi capability (openspec/changes/plugging-in-hdmi-moves-the-display):
+      # canaan_dsi_bind()'s bridge branch attaches the LT9611 (or any DSI
+      # bridge) to the encoder with DRM_BRIDGE_ATTACH_NO_CONNECTOR and never
+      # creates a drm_connector -- so no DTB, ours or the vendor's, ever
+      # produces a usable HDMI-A-1 under this kernel, independent of which
+      # device tree loads it. This adds the one missing call,
+      # drm_bridge_connector_init() + drm_connector_attach_encoder(),
+      # mirroring the existing panel branch's connector setup immediately
+      # above it. Inert on the panel boot path: it only executes when
+      # dsi->bridge is non-NULL, which requires a bridge node under &dsi's
+      # port@1 that no device tree we ship today provides (see task 2.3).
+      # See docs/research/hdmi-hotplug.md §4 and design.md decision 2.
+      ../nix/patches/canaan-dsi-bridge-connector.patch
+      # Backport of mainline "drm/bridge: lt9611: Add support for DSI port B
+      # input" (Hongyang Zhao, drm-misc-next 2026-02): accept a port@1-only
+      # graph and select Port B + its byte clock (0x8303 bit 6, 0x8250 bits
+      # 3:2). This board wires DSI to the LT9611's MLRXB pins only
+      # (schematic sheet "HDMI+ETH"); without it the chip sees no video.
+      ../nix/patches/lt9611-dsi-port-b.patch
     ];
 
     postPatch = ''

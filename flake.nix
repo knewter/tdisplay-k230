@@ -309,6 +309,18 @@
           cp ${self.packages.${buildSystem}.kernelMainline}/Image $out/Image-mainline
           cp ${self.packages.${buildSystem}.deviceTreeMainline}/k230-tdisplay-mainline.dtb $out/
         '';
+        # display/hdmi's alternate DTB (openspec/changes/
+        # plugging-in-hdmi-moves-the-display, task 2.2): the LT9611 bridge
+        # on this board's own &i2c3/GPIO23/GPIO24, no RM69A10 panel node,
+        # no touch node. A separate output name, not an override of
+        # deviceTree above, so the default panel boot path never depends
+        # on this file existing or building.
+        #   nix build --impure .#deviceTreeHdmi
+        deviceTreeHdmi = pkgs.callPackage ./nix/device-tree.nix {
+          inherit kernelSrc;
+          dtbName = "k230-tdisplay-hdmi.dtb";
+          dtsFile = ./nix/dts/k230-tdisplay-hdmi.dts;
+        };
 
         # Stage 1, piece by piece, so each can be built and inspected alone.
         #   nix build .#uboot-k230      u-boot.bin, spl/u-boot-spl.bin

@@ -1,0 +1,122 @@
+--- a/drivers/gpu/drm/canaan/canaan_dsi.c
++++ b/drivers/gpu/drm/canaan/canaan_dsi.c
+@@ -8,11 +8,13 @@
+ 
+ #include "drm/drm_bridge.h"
+ #include "drm/drm_of.h"
++#include <drm/drm_bridge_connector.h>
+ #include <linux/clk.h>
+ #include <linux/component.h>
+ #include <linux/crc-ccitt.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
++#include <linux/of_graph.h>
+ #include <linux/phy/phy-mipi-dphy.h>
+ #include <linux/phy/phy.h>
+ #include <linux/platform_device.h>
+@@ -495,6 +497,34 @@
+ 	.enable = canaan_dsi_encoder_enable,
+ };
+ 
++static const struct component_ops canaan_dsi_ops;
++
++/*
++ * True when port 1 leads to an external DSI bridge (the LT9611 on I2C)
++ * rather than a panel that is a child of this DSI node. A bridge can
++ * only finish its own probe once this host is registered, so for a
++ * bridge the component is added from the host's .attach -- by then the
++ * bridge has called drm_bridge_add() and bind can find it. Adding it
++ * from probe instead lets the DRM master bind before the bridge exists;
++ * bind returns -EPROBE_DEFER and the vendor error path in canaan_drm_bind
++ * then frees the already-unbound CRTC twice (observed as an Oops in
++ * drm_crtc_cleanup on the first HDMI boot). The panel path is unchanged.
++ */
++static bool canaan_dsi_output_is_bridge(struct device *dev)
++{
++	struct device_node *remote, *parent;
++	bool bridge;
++
++	remote = of_graph_get_remote_node(dev->of_node, 1, -1);
++	if (!remote)
++		return false;
++	parent = of_get_parent(remote);
++	bridge = parent != dev->of_node;
++	of_node_put(parent);
++	of_node_put(remote);
++	return bridge;
++}
++
+ static int canaan_dsi_attach(struct mipi_dsi_host *host,
+ 			     struct mipi_dsi_device *device)
+ {
+@@ -505,6 +535,9 @@
+ 
+ 	dev_info(host->dev, "Attached device %s\n", device->name);
+ 
++	if (canaan_dsi_output_is_bridge(host->dev))
++		return component_add(host->dev, &canaan_dsi_ops);
++
+ 	return 0;
+ }
+ 
+@@ -513,6 +546,9 @@
+ {
+ 	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+ 
++	if (canaan_dsi_output_is_bridge(host->dev))
++		component_del(host->dev, &canaan_dsi_ops);
++
+ 	dsi->panel = NULL;
+ 	dsi->device = NULL;
+ 	dsi->bridge = NULL;
+@@ -593,8 +629,38 @@
+ 		drm_connector_attach_encoder(&dsi->connector, &dsi->encoder);
+ 	}
+ 
+-	if (dsi->bridge)
+-		drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL, DRM_BRIDGE_ATTACH_NO_CONNECTOR);
++	if (dsi->bridge) {
++		struct drm_connector *bridge_connector;
++
++		ret = drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL,
++					DRM_BRIDGE_ATTACH_NO_CONNECTOR);
++		if (ret) {
++			dev_err(dsi->dev, "Couldn't attach the DSI bridge\n");
++			goto err_cleanup_connector;
++		}
++
++		/*
++		 * DRM_BRIDGE_ATTACH_NO_CONNECTOR above means exactly what it
++		 * says: the bridge chain attaches to the encoder but creates
++		 * no drm_connector, so nothing (modetest, Sway, KMS clients in
++		 * general) ever sees an HDMI-A-1. drm_bridge_connector_init()
++		 * is the generic helper for exactly this case -- it builds a
++		 * connector that walks the bridge chain for .detect/.get_modes
++		 * instead of a bridge-specific one.
++		 */
++		bridge_connector = drm_bridge_connector_init(dsi->drm, &dsi->encoder);
++		if (IS_ERR(bridge_connector)) {
++			ret = PTR_ERR(bridge_connector);
++			dev_err(dsi->dev, "Couldn't init the bridge connector\n");
++			goto err_cleanup_connector;
++		}
++
++		ret = drm_connector_attach_encoder(bridge_connector, &dsi->encoder);
++		if (ret) {
++			dev_err(dsi->dev, "Couldn't attach the bridge connector\n");
++			goto err_cleanup_connector;
++		}
++	}
+ 
+ 	return 0;
+ 
+@@ -646,6 +712,9 @@
+ 		goto err_unprotect_clk;
+ 	}
+ 
++	if (canaan_dsi_output_is_bridge(dev))
++		return 0;
++
+ 	ret = component_add(&pdev->dev, &canaan_dsi_ops);
+ 	if (ret) {
+ 		dev_err(dev, "Couldn't register our component\n");

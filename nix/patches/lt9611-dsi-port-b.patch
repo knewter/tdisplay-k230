@@ -1,0 +1,335 @@
+--- a/drivers/gpu/drm/bridge/lontium-lt9611.c
++++ b/drivers/gpu/drm/bridge/lontium-lt9611.c
+@@ -89,6 +89,13 @@
+ 	return container_of(bridge, struct lt9611, bridge);
+ }
+ 
++static const struct reg_sequence k230_port_b_analog_cfg[] = {
++	{ 0x8111, 0x60 }, /* port B rx current */
++	{ 0x8112, 0x3f }, /* port B lane0 and lane1 eq set */
++	{ 0x8113, 0x3f }, /* port B lane2 and lane3 eq set */
++	{ 0x8120, 0x03 }, /* PortB clk lane no-LP mode */
++};
++
+ static int lt9611_mipi_input_analog(struct lt9611 *lt9611)
+ {
+ 	const struct reg_sequence reg_cfg[] = {
+@@ -103,25 +110,71 @@
+ 		{ 0x8120, 0x03 }, /* PortB clk lane with-LP mode */
+ 	};
+ 
+-	return regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	int ret;
++
++	ret = regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	if (ret || lt9611->dsi0_node || !lt9611->dsi1_node)
++		return ret;
++
++	/* K230 single Port B receiver tuning, see k230_port_b_cfg */
++	return regmap_multi_reg_write(lt9611->regmap, k230_port_b_analog_cfg,
++				      ARRAY_SIZE(k230_port_b_analog_cfg));
+ }
+ 
++static const struct reg_sequence k230_port_b_cfg[] = {
++	{ 0x8300, 0x60 },
++	{ 0x8303, 0x4f },
++	{ 0x8304, 0x00 },
++	{ 0x8307, 0x40 },
++	{ 0x8302, 0x08 },
++	{ 0x8306, 0x08 },
++};
++
+ static int lt9611_mipi_input_digital(struct lt9611 *lt9611,
+ 				     const struct drm_display_mode *mode)
+ {
++	int ret;
++
+ 	struct reg_sequence reg_cfg[] = {
+ 		{ 0x8300, LT9611_4LANES },
+ 		{ 0x830a, 0x00 },
+ 		{ 0x824f, 0x80 },
+ 		{ 0x8250, 0x10 },
++		{ 0x8303, 0x00 },
+ 		{ 0x8302, 0x0a },
+ 		{ 0x8306, 0x0a },
+ 	};
+ 
+-	if (lt9611->dsi1_node)
+-		reg_cfg[1].def = 0x03;
++	if (lt9611->dsi1_node) {
++		if (lt9611->dsi0_node) {
++			/* Dual port (Port A + B) */
++			reg_cfg[1].def = 0x03;
++		} else {
++			/*
++			 * Single port B:
++			 * - 0x8303 bit 6: port swap (1=PortB as primary)
++			 * - 0x8250 bit 3:2: byte_clk source (01=PortB)
++			 */
++			reg_cfg[3].def = 0x14;
++			reg_cfg[4].def = 0x40;
++		}
++	}
++
++	ret = regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	if (ret || lt9611->dsi0_node || !lt9611->dsi1_node)
++		return ret;
+ 
+-	return regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	/*
++	 * K230 boards (Canaan CanMV reference design, LILYGO T-Display-K230)
++	 * route DSI into Port B with lanes reordered and two pairs P/N
++	 * swapped ("LT9611 swap" on the T-Display schematic). Canaan's own
++	 * RT-Smart LT9611 connector driver (k230_sdk
++	 * src/big/mpp/kernel/connector/src/lt9611.c, LT9611_PORTB) writes
++	 * these for that wiring; without them the video check reads zero.
++	 * Verified live on T-Display-K230: hactive=1024 vactive=768 decoded.
++	 */
++	return regmap_multi_reg_write(lt9611->regmap, k230_port_b_cfg,
++				      ARRAY_SIZE(k230_port_b_cfg));
+ }
+ 
+ static void lt9611_mipi_video_setup(struct lt9611 *lt9611,
+@@ -200,7 +253,8 @@
+ 	regmap_write(lt9611->regmap, 0x831d, pol);
+ 
+ 	regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
+-	if (lt9611->dsi1_node) {
++	/* dual port: configure hact for combining two DSI inputs */
++	if (lt9611->dsi0_node && lt9611->dsi1_node) {
+ 		unsigned int hact = mode->hdisplay;
+ 
+ 		hact >>= 2;
+@@ -680,6 +734,110 @@
+ 	return 0;
+ }
+ 
++/*
++ * Output side for K230 single-Port-B boards, mirroring Canaan's RT-Smart
++ * LT9611 connector driver (k230_sdk src/big/mpp/kernel/connector/src/
++ * lt9611.c: setup_pll, setup_pcr, setup_timing, hdmi_tx_digital,
++ * hdmi_tx_phy, enable_hdmi_out). The generic sequence leaves a
++ * T-Display-K230's monitor black even with the input decoded; applying
++ * this afterwards (by hand, 2026-09-29, CEA 1080p60) put the shell on
++ * the monitor.
++ */
++static void lt9611_k230_output_setup(struct lt9611 *lt9611,
++				     const struct drm_display_mode *mode)
++{
++	unsigned int pclk = mode->clock, postdiv, pcr_m, half;
++	unsigned int hfp = mode->hsync_start - mode->hdisplay;
++	unsigned int hs = mode->hsync_end - mode->hsync_start;
++	unsigned int hbp = mode->htotal - mode->hsync_end;
++	unsigned int vfp = mode->vsync_start - mode->vdisplay;
++	unsigned int vs = mode->vsync_end - mode->vsync_start;
++	unsigned int vbp = mode->vtotal - mode->vsync_end;
++	struct regmap *r = lt9611->regmap;
++	static const struct reg_sequence pll[] = {
++		{ 0x8123, 0x40 }, { 0x8124, 0x62 }, { 0x8125, 0x80 },
++		{ 0x8126, 0x55 }, { 0x812c, 0x37 }, { 0x812f, 0x01 },
++		{ 0x8127, 0x66 }, { 0x8128, 0x88 }, { 0x812a, 0x20 },
++	};
++	static const struct reg_sequence pcr[] = {
++		{ 0x830b, 0x01 }, { 0x830c, 0x10 }, { 0x8348, 0x00 },
++		{ 0x8349, 0x81 }, { 0x8321, 0x4a }, { 0x8324, 0x71 },
++		{ 0x8325, 0x30 }, { 0x832a, 0x01 }, { 0x834a, 0x40 },
++		{ 0x832d, 0x40 }, { 0x8331, 0x08 }, { 0x831d, 0x10 },
++	};
++	static const struct reg_sequence tx[] = {
++		{ 0x8443, 0x21 }, { 0x8445, 0x40 }, { 0x8447, 0x34 },
++		{ 0x843d, 0x0a }, { 0x82d6, 0x8e }, { 0x82d7, 0x04 },
++		{ 0x8130, 0x6a }, { 0x8131, 0x44 }, { 0x8132, 0x4a },
++		{ 0x8133, 0x0b }, { 0x8134, 0x00 }, { 0x8135, 0x00 },
++		{ 0x8136, 0x00 }, { 0x8137, 0x44 }, { 0x813f, 0x0f },
++		{ 0x8140, 0x98 }, { 0x8141, 0x98 }, { 0x8142, 0x98 },
++		{ 0x8143, 0x98 }, { 0x8144, 0x0a },
++	};
++	static const struct reg_sequence out[] = {
++		{ 0x8123, 0x40 }, { 0x82de, 0x20 }, { 0x82de, 0xe0 },
++		{ 0x8018, 0xdc }, { 0x8018, 0xfc }, { 0x8016, 0xf1 },
++		{ 0x8016, 0xf3 }, { 0x8011, 0x5a }, { 0x8011, 0xfa },
++	};
++
++	/* PLL */
++	regmap_multi_reg_write(r, pll, ARRAY_SIZE(pll));
++	if (pclk > 150000) {
++		regmap_write(r, 0x812d, 0x88);
++		postdiv = 1;
++	} else if (pclk > 80000) {
++		regmap_write(r, 0x812d, 0x99);
++		postdiv = 2;
++	} else {
++		regmap_write(r, 0x812d, 0xaa);
++		postdiv = 4;
++	}
++	pcr_m = (pclk * 5 * postdiv) / 27000 - 1;
++	regmap_write(r, 0x832d, 0x40);
++	regmap_write(r, 0x8331, 0x08);
++	regmap_write(r, 0x8326, 0x80 | pcr_m);
++	half = pclk / 2;
++	regmap_write(r, 0x82e3, half / 65536);
++	half %= 65536;
++	regmap_write(r, 0x82e4, half / 256);
++	regmap_write(r, 0x82e5, half % 256);
++	regmap_write(r, 0x82de, 0x20);
++	regmap_write(r, 0x82de, 0xe0);
++	regmap_write(r, 0x8011, 0x5a);
++	regmap_write(r, 0x8011, 0xfa);
++	regmap_write(r, 0x8016, 0xf2);
++	regmap_write(r, 0x8018, 0xdc);
++	regmap_write(r, 0x8018, 0xfc);
++	regmap_write(r, 0x8016, 0xf3);
++
++	/* PCR */
++	regmap_multi_reg_write(r, pcr, ARRAY_SIZE(pcr));
++	regmap_write(r, 0x8326, pcr_m);
++	regmap_write(r, 0x8011, 0x5a);
++	regmap_write(r, 0x8011, 0xfa);
++
++	/* Timing */
++	regmap_write(r, 0x830d, mode->vtotal / 256);
++	regmap_write(r, 0x830e, mode->vtotal % 256);
++	regmap_write(r, 0x830f, mode->vdisplay / 256);
++	regmap_write(r, 0x8310, mode->vdisplay % 256);
++	regmap_write(r, 0x8311, mode->htotal / 256);
++	regmap_write(r, 0x8312, mode->htotal % 256);
++	regmap_write(r, 0x8313, mode->hdisplay / 256);
++	regmap_write(r, 0x8314, mode->hdisplay % 256);
++	regmap_write(r, 0x8315, vs % 256);
++	regmap_write(r, 0x8316, hs % 256);
++	regmap_write(r, 0x8317, vfp % 256);
++	regmap_write(r, 0x8318, (vs + vbp) % 256);
++	regmap_write(r, 0x8319, hfp % 256);
++	regmap_write(r, 0x831a, ((hfp / 256) << 4) + (hs + hbp) / 256);
++	regmap_write(r, 0x831b, (hs + hbp) % 256);
++
++	/* TX digital + PHY, then enable */
++	regmap_multi_reg_write(r, tx, ARRAY_SIZE(tx));
++	regmap_multi_reg_write(r, out, ARRAY_SIZE(out));
++}
++
+ /* bridge funcs */
+ static void
+ lt9611_bridge_atomic_enable(struct drm_bridge *bridge,
+@@ -722,6 +880,9 @@
+ 	lt9611_hdmi_tx_digital(lt9611, connector->display_info.is_hdmi);
+ 	lt9611_hdmi_tx_phy(lt9611);
+ 
++	if (lt9611->dsi1_node && !lt9611->dsi0_node)
++		lt9611_k230_output_setup(lt9611, mode);
++
+ 	msleep(500);
+ 
+ 	lt9611_video_check(lt9611);
+@@ -809,7 +970,7 @@
+ 	    drm_mode_vrefresh(mode) > 30)
+ 		return MODE_CLOCK_HIGH;
+ 
+-	if (mode->hdisplay > 2000 && !lt9611->dsi1_node)
++	if (mode->hdisplay > 2000 && !(lt9611->dsi0_node && lt9611->dsi1_node))
+ 		return MODE_PANEL;
+ 	else
+ 		return MODE_OK;
+@@ -907,13 +1068,13 @@
+ 			   struct lt9611 *lt9611)
+ {
+ 	lt9611->dsi0_node = of_graph_get_remote_node(dev->of_node, 0, -1);
+-	if (!lt9611->dsi0_node) {
+-		dev_err(lt9611->dev, "failed to get remote node for primary dsi\n");
++	lt9611->dsi1_node = of_graph_get_remote_node(dev->of_node, 1, -1);
++
++	if (!lt9611->dsi0_node && !lt9611->dsi1_node) {
++		dev_err(lt9611->dev, "failed to get remote node for dsi\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	lt9611->dsi1_node = of_graph_get_remote_node(dev->of_node, 1, -1);
+-
+ 	lt9611->ac_mode = of_property_read_bool(dev->of_node, "lt,ac-mode");
+ 
+ 	return drm_of_find_panel_or_bridge(dev->of_node, 2, -1, NULL, &lt9611->next_bridge);
+@@ -923,7 +1084,15 @@
+ {
+ 	struct device *dev = lt9611->dev;
+ 
+-	lt9611->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
++	/*
++	 * Optional: on the T-Display-K230 the LT9611 RSTN and the GT9895
++	 * touch reset are one net (GPIO24). The touch driver owns it and its
++	 * probe-time reset also resets the LT9611; pulsing it from here as
++	 * well reset the touch controller after its driver had initialised
++	 * it, leaving touch interrupts with no events (board, 2026-09-29).
++	 * gpiod_set_value on a NULL descriptor is a no-op.
++	 */
++	lt9611->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+ 	if (IS_ERR(lt9611->reset_gpio)) {
+ 		dev_err(dev, "failed to acquire reset gpio\n");
+ 		return PTR_ERR(lt9611->reset_gpio);
+@@ -1102,12 +1271,20 @@
+ 		goto err_disable_regulators;
+ 	}
+ 
+-	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+-					lt9611_irq_thread_handler,
+-					IRQF_ONESHOT, "lt9611", lt9611);
+-	if (ret) {
+-		dev_err(dev, "failed to request irq\n");
+-		goto err_disable_regulators;
++	/*
++	 * The interrupt is optional: on the T-Display-K230 the LT9611 INT
++	 * and the GT9895 touch INT are one net (GPIO23), so the HDMI device
++	 * tree gives that line to touch and HPD falls back to connector
++	 * polling (no DRM_BRIDGE_OP_HPD below).
++	 */
++	if (client->irq > 0) {
++		ret = devm_request_threaded_irq(dev, client->irq, NULL,
++						lt9611_irq_thread_handler,
++						IRQF_ONESHOT, "lt9611", lt9611);
++		if (ret) {
++			dev_err(dev, "failed to request irq\n");
++			goto err_disable_regulators;
++		}
+ 	}
+ 
+ 	i2c_set_clientdata(client, lt9611);
+@@ -1115,19 +1292,23 @@
+ 	lt9611->bridge.funcs = &lt9611_bridge_funcs;
+ 	lt9611->bridge.of_node = client->dev.of_node;
+ 	lt9611->bridge.ops = DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
+-			     DRM_BRIDGE_OP_HPD | DRM_BRIDGE_OP_MODES;
++			     DRM_BRIDGE_OP_MODES;
++	if (client->irq > 0)
++		lt9611->bridge.ops |= DRM_BRIDGE_OP_HPD;
+ 	lt9611->bridge.type = DRM_MODE_CONNECTOR_HDMIA;
+ 
+ 	drm_bridge_add(&lt9611->bridge);
+ 
+-	/* Attach primary DSI */
+-	lt9611->dsi0 = lt9611_attach_dsi(lt9611, lt9611->dsi0_node);
+-	if (IS_ERR(lt9611->dsi0)) {
+-		ret = PTR_ERR(lt9611->dsi0);
+-		goto err_remove_bridge;
++	/* Attach Port A DSI, if specified */
++	if (lt9611->dsi0_node) {
++		lt9611->dsi0 = lt9611_attach_dsi(lt9611, lt9611->dsi0_node);
++		if (IS_ERR(lt9611->dsi0)) {
++			ret = PTR_ERR(lt9611->dsi0);
++			goto err_remove_bridge;
++		}
+ 	}
+ 
+-	/* Attach secondary DSI, if specified */
++	/* Attach secondary DSI (Port B in single or dual-port mode) */
+ 	if (lt9611->dsi1_node) {
+ 		lt9611->dsi1 = lt9611_attach_dsi(lt9611, lt9611->dsi1_node);
+ 		if (IS_ERR(lt9611->dsi1)) {
+@@ -1161,7 +1342,8 @@
+ {
+ 	struct lt9611 *lt9611 = i2c_get_clientdata(client);
+ 
+-	disable_irq(client->irq);
++	if (client->irq > 0)
++		disable_irq(client->irq);
+ 	lt9611_audio_exit(lt9611);
+ 	drm_bridge_remove(&lt9611->bridge);
+ 

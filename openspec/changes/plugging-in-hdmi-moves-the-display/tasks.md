@@ -47,7 +47,7 @@ reads state only. This is the first work this change may run on hardware.
 
 ## 2. Driver and device-tree build (host build only, no board changes)
 
-- [ ] 2.1 Patch `drivers/gpu/drm/canaan/canaan_dsi.c`'s bridge-attach branch
+- [x] 2.1 Patch `drivers/gpu/drm/canaan/canaan_dsi.c`'s bridge-attach branch
       in `canaan_dsi_bind()` to call `drm_bridge_connector_init()` and
       attach the resulting connector to the encoder, mirroring the existing
       panel branch's connector setup immediately above it in the same
@@ -55,7 +55,13 @@ reads state only. This is the first work this change may run on hardware.
       documented patches (goodix-berlin backport, panel reset-timing fix,
       etc.), with the same kind of comment explaining what upstream is
       missing and why. Verify with `nix build .#kernel`.
-- [ ] 2.2 Add an LT9611 device-tree node to a new
+      *Done 2026-09-28: `nix/patches/canaan-dsi-bridge-connector.patch`,
+      applied from `nix/kernel.nix`. `nix build .#kernel` succeeded
+      (`/nix/store/mvayir0f4aksyd4pnayiz2ipvxwy4b4k-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`),
+      and the patched line is present in the applied source
+      (`drivers/gpu/drm/canaan/canaan_dsi.c:733` in the resulting
+      `linux-xuantie-k230-src`). Host build only; not booted.*
+- [x] 2.2 Add an LT9611 device-tree node to a new
       `nix/dts/k230-tdisplay-hdmi.dts` (or equivalent alternate top-level
       board file sharing `k230-tdisplay.dts`'s includes), wired to this
       board's own `&i2c3`/GPIO23/GPIO24 facts from
@@ -68,12 +74,32 @@ reads state only. This is the first work this change may run on hardware.
       `&dsi` `port@1` endpoint (the LT9611's) and no RM69A10 panel node —
       this task does not attempt to make both coexist in one DTB (that is
       group 4's problem, if it is solved at all).
-- [ ] 2.3 Confirm the full system closure still cross-builds with the
+      *Done 2026-09-28: `nix/device-tree.nix` gained a `dtsFile` parameter
+      (default unchanged, `./dts/k230-tdisplay.dts`); `flake.nix` exposes
+      the alternate board as `deviceTreeHdmi`
+      (`dtbName = "k230-tdisplay-hdmi.dtb"`,
+      `dtsFile = nix/dts/k230-tdisplay-hdmi.dts`). `nix build
+      .#deviceTreeHdmi` produced
+      `/nix/store/048wxyx0pnmb6ydcr9j1q3w3hldnjl36-k230-tdisplay-hdmi.dtb`.
+      `dtc -I dtb -O dts` confirms exactly one `&dsi` `port@1` endpoint
+      (`dsi_out_lt9611`) and no `rm69a10`/`canaan,universal`/
+      `touchscreen` node anywhere in the decompiled tree. The LT9611 node
+      deliberately uses `port@0`/`port@2` (not the vendor
+      `k230-canmv-v3.dts`'s `port@1`/`port@2`) — see the node's own
+      comment and `docs/research/hdmi-hotplug.md` §4 for why, read
+      directly from this kernel's `lontium-lt9611.c`. Confirmed the
+      default `deviceTree` output is unaffected (`nix build .#deviceTree`
+      still builds the byte-identical `k230-tdisplay.dtb` path). Host
+      build only; not booted.*
+- [x] 2.3 Confirm the full system closure still cross-builds with the
       kernel patch from 2.1 present but no LT9611 node in the *default*
       device tree (`nix/dts/k230-tdisplay.dts` unchanged): verify with
       `nix build .#nixosConfigurations.k230.config.system.build.toplevel`.
       This proves the patch is inert on the panel boot path before any
       board time is spent on it.
+      *Done 2026-09-28: succeeded,
+      `/nix/store/2hjv5ksw5fbhazi94hxymc91kqzjdz9c-nixos-system-nixos-26.11.20260919.20b1ddd`.
+      Default DTB and boot path untouched.*
 
 ## 3. Manual switch, reboot-based (board-gated)
 
