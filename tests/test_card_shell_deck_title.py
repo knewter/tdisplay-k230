@@ -40,20 +40,21 @@ static const char *title(enum cs_content content, const char *raw_title,
 }
 int main(void) {
     /* No XDG_DATA_DIRS entry here actually ships a k230-terminal/
-     * k230-monitor/nnn StartupWMClass, so these fall through to the
+     * k230-monitor StartupWMClass, so these fall through to the
      * hardcoded safety-net names -- the same names desktop_identity_name()
      * resolves for real once XDG_DATA_DIRS points at the installed image's
-     * applications/ directories (see handheld-desktop-entries.nix). */
+     * applications/ directories (see handheld-desktop-entries.nix). nnn's
+     * former third hardcoded name ("Files") is gone along with nnn itself
+     * (openspec/changes/the-handheld-has-a-themed-files-app). */
     unsetenv("XDG_DATA_DIRS");
     assert(!strcmp(title(CS_LIVE, "shell@device", "k230-terminal", true), "Terminal"));
     assert(!strcmp(title(CS_LIVE, "htop", "k230-monitor", true), "Monitor"));
-    assert(!strcmp(title(CS_LIVE, "nnn", "nnn", true), "Files"));
     assert(!strcmp(title(CS_LIVE, "mail to a@b", "mail", true), "mail to a@b"));
     assert(!strcmp(title(CS_LIVE, "shell@device", "other-terminal", true), "shell@device"));
     assert(!strcmp(title(CS_LIVE, "shell@device", "k230-terminal", false), "shell@device"));
     assert(!strcmp(title(CS_LIVE, NULL, "unknown", true), "Application"));
     assert(!strcmp(title(CS_PRIVATE, "secret@device", "k230-terminal", true), "Private app"));
-    assert(!strcmp(title(CS_UNAVAILABLE, "hidden", "nnn", true), "Preview unavailable"));
+    assert(!strcmp(title(CS_UNAVAILABLE, "hidden", "dev.tchx84.Portfolio", true), "Preview unavailable"));
     /* The header badge glyph (finding P0-1): the resolved title's own first
      * letter, uppercased, matching the drawer's fallback-initial treatment. */
     assert(card_badge_letter("Terminal") == 'T');

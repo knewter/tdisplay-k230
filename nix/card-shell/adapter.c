@@ -705,8 +705,8 @@ static enum cs_content classify(struct card *c) {
  * instead of a 3-entry strcmp allowlist that silently regressed to the raw,
  * live-changing window title for anything else. StartupWMClass=<app_id> is
  * the standard field for exactly this window-to-entry mapping; falling back
- * to the file's own basename covers entries (like nnn.desktop) that already
- * happen to match. This is a dependency-free scan, not GDesktopAppInfo/gio:
+ * to the file's own basename covers entries whose file name already happens
+ * to match their StartupWMClass. This is a dependency-free scan, not GDesktopAppInfo/gio:
  * gio is not linked into this compositor today, and adding it is a bigger
  * build-surface change than a rendering/label fix warrants. */
 #define DESKTOP_IDENTITY_CACHE_MAX 16
@@ -886,14 +886,16 @@ static const char *card_display_title(enum cs_content content, const char *title
 			snprintf(name_buf, name_buf_len, "%s", name);
 			return name_buf;
 		}
-		/* Safety net for the three shipped apps if XDG_DATA_DIRS is not set
-		 * up as expected (a sandboxed test build, say): preserved from
-		 * before desktop-entry resolution existed, and only reachable in
-		 * the rollback (non-touch-first) chrome, which predates it. */
+		/* Safety net for the two shipped non-GTK apps if XDG_DATA_DIRS is
+		 * not set up as expected (a sandboxed test build, say): preserved
+		 * from before desktop-entry resolution existed, and only reachable
+		 * in the rollback (non-touch-first) chrome, which predates it. nnn's
+		 * former "Files" entry had a third entry here; nnn is removed
+		 * outright (openspec/changes/the-handheld-has-a-themed-files-app),
+		 * not just replaced, so there is no fallback name for it any more. */
 		if (compact) {
 			if (strcmp(app_id, "k230-terminal") == 0) return "Terminal";
 			if (strcmp(app_id, "k230-monitor") == 0) return "Monitor";
-			if (strcmp(app_id, "nnn") == 0) return "Files";
 		}
 	}
 	/* Arbitrary third-party titles, including document and mail names with

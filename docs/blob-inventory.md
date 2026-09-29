@@ -1498,6 +1498,10 @@ DATA 44315e00614738c83c9854879a5177ce8625e94f2aed87bf43e19a7e6f223679 docs/evide
 DATA 7480e53a2d166f6046ba735d5a47ee9fbbe9bf274054de367df87a8fd3abc747 docs/evidence/home-widget-design/light-overview.png
 DATA 78843e3a5835a341a2fb9801fc3c367b9e74ff8ff56be3b10c6757950a44f847 docs/evidence/home-widget-design/light-weather.png
 DATA 9b6f45195710d80e950dc8659a43e879cfe0b1ace4b0d579e0f5cb14a38caf03 docs/evidence/home-widget-design/light-widget-picker.png
+DATA 1edb7ac0fc9bd85bb2853bfb4013bf082e7a52ed29c47fae473972971a7445ff docs/evidence/files-app/host/portfolio-dark.png
+DATA 373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f docs/evidence/files-app/host/portfolio-light.png
+DATA 6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68 docs/evidence/files-app/host/nautilus-dark.png
+DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evidence/files-app/host/nautilus-light.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2397,3 +2401,19 @@ room.png`) drive `HomeScreen` through its real public `down`/`motion`/
 | `docs/evidence/home-widget-design/light-weather.png` | 86388 | DATA | `78843e3a5835a341a2fb9801fc3c367b9e74ff8ff56be3b10c6757950a44f847` |
 | `docs/evidence/home-widget-design/light-overview.png` | 118568 | DATA | `7480e53a2d166f6046ba735d5a47ee9fbbe9bf274054de367df87a8fd3abc747` |
 | `docs/evidence/home-widget-design/light-widget-picker.png` | 86518 | DATA | `9b6f45195710d80e950dc8659a43e879cfe0b1ace4b0d579e0f5cb14a38caf03` |
+### Files app candidates: dark/light theming, host-native
+
+Host-native capture (NOT the riscv64 cross build, NOT QEMU, NOT the board):
+the real, unmodified `pkgs.portfolio-filemanager`/`pkgs.nautilus` for
+x86_64-linux, substituted from cache.nixos.org, run under Xvfb with
+`GSK_RENDERER=cairo` and `GSETTINGS_BACKEND=keyfile`, reading a keyfile
+produced by `tools/theme_gtk.py`. See `docs/evidence/files-app/README.md`
+for the exact harness and the schema-path bug this run caught and fixed
+(`nix/shell.nix`'s `filesAppSchemaDirs`).
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/files-app/host/portfolio-dark.png` | 20512 | DATA | `1edb7ac0fc9bd85bb2853bfb4013bf082e7a52ed29c47fae473972971a7445ff` |
+| `docs/evidence/files-app/host/portfolio-light.png` | 20130 | DATA | `373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f` |
+| `docs/evidence/files-app/host/nautilus-dark.png` | 21129 | DATA | `6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68` |
+| `docs/evidence/files-app/host/nautilus-light.png` | 20000 | DATA | `b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e` |

@@ -6,17 +6,23 @@
 #include <string.h>
 
 int main(void) {
+    // nnn.desktop ("Files", unusable on a touch handheld) was removed
+    // outright, not replaced -- see
+    // openspec/changes/the-handheld-has-a-themed-files-app. The Files
+    // (Portfolio)/Files (Nautilus) GTK4 entries added alongside it are
+    // covered by their own host evidence
+    // (docs/evidence/files-app/), not this older non-GTK probe.
     const char *ids[] = {
-        "foot.desktop", "htop.desktop", "nnn.desktop",
+        "foot.desktop", "htop.desktop",
         "footclient.desktop", "foot-server.desktop",
     };
     const char *names[] = {
-        "Terminal", "Monitor", "Files", "Foot Client", "Foot Server",
+        "Terminal", "Monitor", "Foot Client", "Foot Server",
     };
-    const char *icons[] = {"foot", "htop", "folder", "foot", "foot"};
-    int visible[5] = {0};
+    const char *icons[] = {"foot", "htop", "foot", "foot"};
+    int visible[4] = {0};
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
         GDesktopAppInfo *app = g_desktop_app_info_new(ids[i]);
         if (app == NULL) {
             fprintf(stderr, "missing desktop ID: %s\n", ids[i]);
@@ -26,7 +32,7 @@ int main(void) {
         gboolean shown = g_app_info_should_show(G_APP_INFO(app));
         GIcon *icon = g_app_info_get_icon(G_APP_INFO(app));
         char *icon_name = icon != NULL ? g_icon_to_string(icon) : NULL;
-        if (strcmp(name, names[i]) != 0 || shown != (i < 3) ||
+        if (strcmp(name, names[i]) != 0 || shown != (i < 2) ||
             icon_name == NULL || strcmp(icon_name, icons[i]) != 0) {
             fprintf(stderr, "unexpected desktop entry %s: %s shown=%d icon=%s\n",
                     ids[i], name, shown, icon_name != NULL ? icon_name : "(none)");
@@ -41,7 +47,7 @@ int main(void) {
     for (GList *item = all; item != NULL; item = item->next) {
         GAppInfo *app = G_APP_INFO(item->data);
         const char *id = g_app_info_get_id(app);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             if (id != NULL && strcmp(id, ids[i]) == 0 &&
                 g_app_info_should_show(app)) {
                 visible[i]++;
@@ -49,8 +55,8 @@ int main(void) {
         }
     }
     g_list_free_full(all, g_object_unref);
-    for (int i = 0; i < 5; i++) {
-        if (visible[i] != (i < 3)) {
+    for (int i = 0; i < 4; i++) {
+        if (visible[i] != (i < 2)) {
             fprintf(stderr, "unexpected visible count for %s: %d\n", ids[i], visible[i]);
             return 3;
         }

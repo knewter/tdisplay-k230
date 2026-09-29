@@ -49,8 +49,28 @@ class AppAppearance(unittest.TestCase):
             self.assertIn("[colors-light]", terminal)
             self.assertEqual(app.prepare(generation, state), target)
             coverage = json.loads((target / "coverage.json").read_text())
-            self.assertEqual(coverage["inherited"], ["htop", "nano", "nnn"])
+            self.assertEqual(coverage["inherited"], ["htop", "nano"])
             self.assertTrue(any("mpv" in item for item in coverage["limited"]))
+            self.assertTrue(any("GTK4/libadwaita" in item for item in coverage["applied"]))
+            keyfile = (target / "gtk-settings.keyfile").read_text()
+            self.assertEqual(keyfile, "[org/gnome/desktop/interface]\n"
+                              "color-scheme='prefer-dark'\ngtk-theme='Adwaita-dark'\n"
+                              "icon-theme='Yaru-blue'\n")
+
+    def test_gtk_appearance_reads_mode_and_icon_theme(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, generation = prepared(Path(temporary))
+            mode, icon_theme = app.gtk_appearance(generation)
+            self.assertEqual(mode, "dark")
+            self.assertIsNone(icon_theme)
+
+    def test_cached_gtk_settings_tamper_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source, state, generation = prepared(Path(temporary))
+            target = app.prepare(generation, state)
+            (target / "gtk-settings.keyfile").write_text("tampered\n")
+            with self.assertRaisesRegex(app.AppAppearanceError, "cached app appearance changed"):
+                app.prepare(generation, state)
 
     def test_sync_tracks_only_acknowledged_pointer_and_fails_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
