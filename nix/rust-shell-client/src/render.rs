@@ -1483,27 +1483,37 @@ fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
 /// The effective panel height for whatever is currently showing under
 /// `Route::Settings` -- the plain controls screen, the Wi-Fi flow, or the
 /// theme chooser -- content-sized per finding P0-2 instead of the full
-/// screen height regardless of what is actually on it.
+/// screen height regardless of what is actually on it. `content_scale`
+/// (`crate::density_scale`'s own value) scales the *natural* content
+/// height too, not just the caps: on a tall/dense HDMI output, Settings'
+/// rows genuinely paint bigger (see `scene`'s content transform), so the
+/// panel that contains them must grow with them, or a real
+/// `feat/shell-responsive` regression -- a tall output showing a short,
+/// content-sized "stub" panel floating over empty space below it -- comes
+/// right back. Content-sized, not screen-filling, remains the deliberate
+/// choice (finding P0-2): this only makes "content-sized" track the
+/// content's own real on-screen size.
 fn settings_panel_h(
     available_h: f64,
     chooser: Option<&ThemeView>,
     services: Option<&ServiceView>,
+    content_scale: f64,
 ) -> f64 {
-    const MIN_PANEL_H: f64 = 420.0;
+    let min_panel_h = 420.0 * content_scale;
     if let Some(view) = services
         .and_then(|s| s.wifi.as_ref())
         .filter(|v| v.page != WifiPage::Closed)
     {
-        return content_sized_panel_h(wifi_content_bottom(view), available_h, MIN_PANEL_H);
+        return content_sized_panel_h(wifi_content_bottom(view) * content_scale, available_h, min_panel_h);
     }
     if let Some(view) = chooser.filter(|v| v.page != ThemePage::Controls) {
         return content_sized_panel_h(
-            theme_chooser_content_bottom(view),
+            theme_chooser_content_bottom(view) * content_scale,
             available_h,
-            MIN_PANEL_H,
+            min_panel_h,
         );
     }
-    content_sized_panel_h(settings_content_bottom(services), available_h, MIN_PANEL_H)
+    content_sized_panel_h(settings_content_bottom(services) * content_scale, available_h, min_panel_h)
 }
 
 /// The one distance a route's top-anchored sheet travels between fully
@@ -1518,6 +1528,7 @@ fn settings_panel_h(
 /// drag this doc references was added, so the mismatch never painted).
 pub fn panel_travel_height(
     route: Route,
+    width: u32,
     height: u32,
     chooser: Option<&ThemeView>,
     services: Option<&ServiceView>,
@@ -1530,7 +1541,7 @@ pub fn panel_travel_height(
         // `docs/design/app-drawer-review.md` §2: "filling the screen from
         // the top inset, with no black band above it."
         Route::Drawer => h - navigation::panel_top(height),
-        Route::Settings => settings_panel_h(h, chooser, services),
+        Route::Settings => settings_panel_h(h, chooser, services, crate::density_scale(width, height)),
         Route::Power => power_panel_h(h, services),
         Route::Hide => h,
     }
@@ -1972,7 +1983,7 @@ fn scene(
     // little is on them (finding P0-2).
     let panel_h = match route {
         Route::Shade => h * 0.65,
-        Route::Settings => settings_panel_h(h - panel_y, chooser, services),
+        Route::Settings => settings_panel_h(h - panel_y, chooser, services, crate::density_scale(width, height)),
         Route::Power => power_panel_h(h - panel_y, services),
         _ => h - panel_y,
     };
@@ -2376,6 +2387,25 @@ fn scene(
                 style.muted,
             );
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
+            // The row cards/sliders/Power section below are Settings' own
+            // scrollable body, not header chrome -- centered and scaled by
+            // `crate::settings_content_transform` (the same `(scale, x)`
+            // `service_ui::panel_intent`'s Settings arm uses to map a tap
+            // back before its own identical row-rhythm checks) so a wide
+            // HDMI output gets a comfortable, design-width-proportioned
+            // column instead of rows stretched edge to edge, and a tall one
+            // gets genuinely bigger rows/text (via `settings_panel_h`'s own
+            // matching `content_scale`) instead of a short stub panel over
+            // empty space. `w` is shadowed to the design width for exactly
+            // this block, so every existing `w`-relative literal below
+            // keeps its original, already-correct proportions -- only the
+            // surrounding transform decides their real on-screen size and
+            // position, not a rewrite of the literals themselves.
+            let (content_scale, content_x) = crate::settings_content_transform(width, height);
+            let _ = cr.save();
+            cr.translate(content_x, 0.0);
+            cr.scale(content_scale, content_scale);
+            let w = crate::DESIGN_WIDTH;
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 // Row numbers are explicit, not a plain `enumerate()`,
                 // because row 2 (Volume) is painted separately below --
@@ -2578,6 +2608,7 @@ fn scene(
                     });
                 text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
             }
+            let _ = cr.restore();
         }
         Route::Power => {
             text(
@@ -3494,7 +3525,7 @@ fn paint_widget_picker(cr: &Context, width: u32, height: u32, theme: Option<&App
                 ("< Back".to_string(), String::new()),
                 (
                     "Grid".to_string(),
-                    format!("{} columns x {rows_per_page} rows per page (read-only)", home_grid::COLUMNS),
+                    format!("{} columns x {rows_per_page} rows per page (read-only)", home.layout.columns),
                 ),
             ]
         }
@@ -3592,6 +3623,13 @@ pub fn paint_home(
     let page_count = home.page_count();
     let position = home.pager.position();
     let page_width = f64::from(width);
+    // The stored layout's own live column count -- kept equal to
+    // `home_grid::columns_for_width(width)` by `HomeScreen::sync_columns`,
+    // called before every `draw_home`. Painting reads it directly here
+    // rather than recomputing `columns_for_width` independently, so it can
+    // never disagree with what a slot index actually means in `home.layout
+    // .pages` (see `home_grid::tile_rect`'s own doc).
+    let columns = home.layout.columns;
     let pressed = home.pressed(width, height);
     let dragged_slot = home.drag.as_ref().and_then(|(source, _)| match source {
         DragSource::Existing(slot) => Some(*slot),
@@ -3618,7 +3656,7 @@ pub fn paint_home(
         if show_drop_target {
             if let Some(HomeSlot::Grid { page: target_page, slot }) = drop_target {
                 if target_page == page {
-                    paint_drop_target(cr, theme, home_grid::tile_rect(width, height, slot), drop_target_fits);
+                    paint_drop_target(cr, theme, home_grid::tile_rect(width, height, slot, columns), drop_target_fits);
                 }
             }
         }
@@ -3630,11 +3668,11 @@ pub fn paint_home(
                     continue; // painted last, floating at the finger instead
                 }
                 if let HomeItem::Widget { widget } = item {
-                    let rect = home_grid::spanned_tile_rect(width, height, slot, widget.span());
+                    let rect = home_grid::spanned_tile_rect(width, height, slot, widget.span(), columns);
                     paint_widget_card(cr, &style, *widget, rect, home);
                     continue;
                 }
-                let content = home_grid::tile_content(width, height, slot);
+                let content = home_grid::tile_content(width, height, slot, columns);
                 let label = match item {
                     HomeItem::App { id } => app_by_id(apps, id).map(|app| app.name.clone()),
                     HomeItem::Folder(folder) => Some(folder.name.clone()),
@@ -3775,7 +3813,7 @@ pub fn paint_home(
             let (plate_size, icon_size, label) = match &item {
                 HomeItem::Widget { widget } => {
                     let (cols, rows) = widget.span();
-                    let (_, _, w, h) = home_grid::spanned_tile_rect(width, height, 0, (cols, rows));
+                    let (_, _, w, h) = home_grid::spanned_tile_rect(width, height, 0, (cols, rows), columns);
                     (w.max(h), 0.0, None)
                 }
                 HomeItem::Folder(folder) => (home_grid::ICON_PLATE_SIZE * 1.08, home_grid::ICON_SIZE * 1.08, Some(folder.name.clone())),
@@ -4758,7 +4796,7 @@ impl RendererCache {
         let _profile_copy = crate::runtime_trace::Span::new("canvas_copy");
         canvas.fill(0);
         let panel_height =
-            panel_travel_height(route, height, self.chooser.as_ref(), self.services.as_ref());
+            panel_travel_height(route, width, height, self.chooser.as_ref(), self.services.as_ref());
         let hidden = 1.0 - progress.clamp(0.0, 1.0);
         let shift =
             (hidden * panel_height).round() as i32 * if route == Route::Drawer { 1 } else { -1 };
