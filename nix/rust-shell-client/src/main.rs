@@ -2745,6 +2745,11 @@ impl ShellClient {
         if frame_bytes(width, height).is_none() {
             return false;
         }
+        // Reflow the persisted grid to whatever column count this geometry
+        // supports before anything paints or hit-tests against it -- see
+        // `HomeScreen::sync_columns`'s own doc for why this is the one
+        // choke point that guarantees the two never disagree.
+        self.home.sync_columns(width, height);
         let stride = (width * 4) as i32;
         self.home_surface
             .buffers
@@ -3459,6 +3464,7 @@ impl ShellClient {
     fn panel_travel(&self) -> f64 {
         panel_travel_height(
             self.route,
+            self.width,
             self.height,
             Some(&self.theme_view),
             Some(&self.service_view),
@@ -5456,7 +5462,7 @@ fn serve() -> Result<(), String> {
         home_state_path.as_deref(),
         &apps,
         home_grid::DOCK_SLOTS,
-        home_grid::apps_per_page(1232),
+        home_grid::apps_per_page(568, 1232),
     );
     let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
@@ -6763,7 +6769,7 @@ mod route_tests {
         // dismiss band, or at/after the panel's own bottom edge -- never
         // from within the scrollable list itself), and only actually
         // engages once it clears `close_drag_engaged`'s slop.
-        let travel = panel_travel_height(Route::Shade, 1232, None, None);
+        let travel = panel_travel_height(Route::Shade, 568, 1232, None, None);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (282.0, 80.0)));
         assert!(touch.motion(3, (280.0, 40.0)));
@@ -6807,7 +6813,7 @@ mod route_tests {
         // grid itself (only once already scrolled to its own top) --
         // `drawer_close_drag_zone`, not `close_drag_zone`, since it needs
         // scroll state Shade/Settings never do.
-        let travel = panel_travel_height(Route::Drawer, 1232, None, None);
+        let travel = panel_travel_height(Route::Drawer, 568, 1232, None, None);
         let header_top = k230_shell_rust::navigation::panel_top(1232);
         let mut touch = TouchTrace::default();
         assert!(touch.down(3, (280.0, header_top + 20.0)));

@@ -188,7 +188,7 @@ fn layout_with_dock() -> HomeLayout {
 /// One widget, alone on an otherwise empty Home page plus a populated dock
 /// -- the composition every "widget style" screenshot shares.
 fn single_widget_layout(kind: WidgetKind, apps: &[AppEntry]) -> HomeLayout {
-    let apps_per_page = home_grid::apps_per_page(HEIGHT);
+    let apps_per_page = home_grid::apps_per_page(WIDTH, HEIGHT);
     let mut layout = layout_with_dock();
     layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: kind }, apps_per_page, false);
     for (index, app) in apps.iter().enumerate() {
@@ -216,7 +216,7 @@ fn edge_hold_partial_dwell(home: &mut HomeScreen) {
     // The finger sits well above the panel's vertical center so the lifted
     // icon does not visually cover the edge arrow, which is always drawn at
     // mid-height -- purely a demo-legibility choice, not a behavior change.
-    home.layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("org.k230.files"), home_grid::apps_per_page(HEIGHT), false);
+    home.layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::app("org.k230.files"), home_grid::apps_per_page(WIDTH, HEIGHT), false);
     home.begin_external_drag("org.k230.files".to_string(), (f64::from(WIDTH) - 10.0, 260.0));
     home.external_drag_motion((f64::from(WIDTH) - 10.0, 260.0), 0, WIDTH, HEIGHT);
     for _ in 0..8 {
@@ -227,7 +227,7 @@ fn edge_hold_partial_dwell(home: &mut HomeScreen) {
 fn no_room_drop_target(home: &mut HomeScreen) {
     // A Weather widget (2x2), already pinned, long-pressed and dragged over
     // the Clock's own 4x2 span -- nowhere in that span has room for it.
-    let apps_per_page = home_grid::apps_per_page(HEIGHT);
+    let apps_per_page = home_grid::apps_per_page(WIDTH, HEIGHT);
     home.layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, apps_per_page, false);
     home.layout.place(HomeSlot::Grid { page: 0, slot: 8 }, HomeItem::Widget { widget: WidgetKind::Weather }, apps_per_page, false);
     // `home_grid::slot_at` hit-tests each *single* cell's own `tile_rect`,
@@ -237,20 +237,20 @@ fn no_room_drop_target(home: &mut HomeScreen) {
     // a real touch anywhere on the widget's anchor cell would also resolve
     // to, since `HomeLayout::anchor_at` maps any covered cell back to slot
     // 8 identically either way.
-    let (wx, wy, ww, wh) = home_grid::tile_rect(WIDTH, HEIGHT, 8);
+    let (wx, wy, ww, wh) = home_grid::tile_rect(WIDTH, HEIGHT, 8, home_grid::COLUMNS);
     let weather_center = (wx + ww / 2.0, wy + wh / 2.0);
     home.down(1, weather_center, 0, WIDTH, HEIGHT);
     for _ in 0..40 {
         home.tick(20); // clears the 500ms long-press threshold
     }
-    let (cx, cy, cw, ch) = home_grid::tile_rect(WIDTH, HEIGHT, 0);
+    let (cx, cy, cw, ch) = home_grid::tile_rect(WIDTH, HEIGHT, 0, home_grid::COLUMNS);
     let clock_center = (cx + cw / 2.0, cy + ch / 2.0);
     home.motion(1, clock_center, 900, WIDTH, HEIGHT);
 }
 
 fn frames() -> Vec<Frame> {
     let apps = sample_apps();
-    let apps_per_page = home_grid::apps_per_page(HEIGHT);
+    let apps_per_page = home_grid::apps_per_page(WIDTH, HEIGHT);
     let mut overview = layout_with_dock();
     overview.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, apps_per_page, false);
     overview.place(HomeSlot::Grid { page: 0, slot: 8 }, HomeItem::Widget { widget: WidgetKind::Battery }, apps_per_page, false);

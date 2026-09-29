@@ -123,12 +123,28 @@ pub fn rows_per_page(height: u32) -> usize {
     ((available / ROW_HEIGHT).floor() as usize).max(1)
 }
 
-pub fn apps_per_page(height: u32) -> usize {
-    COLUMNS * rows_per_page(height)
+/// How many grid columns fit `width`: `crate::reflow_columns` at scale
+/// `1.0` -- the same "more columns, not bigger ones" reflow
+/// `navigation::columns_for_width` gives the Drawer (see that function's
+/// own doc for why scale is fixed here). Exactly [`COLUMNS`] (4) at this
+/// panel's own 568px width, pixel-identical to before this existed. This is
+/// the *reference* column count for a brand-new page/layout; an already-
+/// persisted [`crate::home_state::HomeLayout`] instead carries its own
+/// live `columns` field (safely migrated by `HomeLayout::reflow_to` when it
+/// no longer matches this), because unlike the Drawer, Home's grid has
+/// per-page data indexed by column count that must never silently
+/// reinterpret itself.
+pub fn columns_for_width(width: u32) -> usize {
+    crate::reflow_columns(width, 1.0, COLUMNS)
 }
 
-fn tile_width(width: u32) -> f64 {
-    ((f64::from(width) - 2.0 * SIDE_MARGIN - (COLUMNS - 1) as f64 * TILE_GAP) / COLUMNS as f64)
+pub fn apps_per_page(width: u32, height: u32) -> usize {
+    columns_for_width(width) * rows_per_page(height)
+}
+
+fn tile_width(width: u32, columns: usize) -> f64 {
+    let columns = columns.max(1);
+    ((f64::from(width) - 2.0 * SIDE_MARGIN - (columns - 1) as f64 * TILE_GAP) / columns as f64)
         .max(0.0)
 }
 
@@ -137,11 +153,17 @@ fn tile_width(width: u32) -> f64 {
 /// outer cell -- used for hit-testing and the rearrange-mode drop-target
 /// highlight -- not where its icon plate is actually painted; see
 /// [`tile_content`] for that (the plate and label sit centered within this
-/// cell, not pinned to its top edge).
-pub fn tile_rect(width: u32, height: u32, slot: usize) -> (f64, f64, f64, f64) {
-    let w = tile_width(width);
-    let column = slot % COLUMNS;
-    let row = slot / COLUMNS;
+/// cell, not pinned to its top edge). `columns` is the page's own live
+/// column count (`home_state::HomeLayout::columns`), not necessarily
+/// [`columns_for_width`]'s fresh value for `width` -- painting and hit-
+/// testing must always agree with what the *stored* layout was last
+/// reflowed to, which `HomeScreen::sync_columns` keeps equal to
+/// `columns_for_width(width)` before either ever runs.
+pub fn tile_rect(width: u32, height: u32, slot: usize, columns: usize) -> (f64, f64, f64, f64) {
+    let columns = columns.max(1);
+    let w = tile_width(width, columns);
+    let column = slot % columns;
+    let row = slot / columns;
     (
         SIDE_MARGIN + column as f64 * (w + TILE_GAP),
         grid_top(height) + row as f64 * ROW_HEIGHT,
@@ -159,11 +181,12 @@ pub fn tile_rect(width: u32, height: u32, slot: usize) -> (f64, f64, f64, f64) {
 /// Callers must only pass a `top_left`/`span` combination that already fits
 /// on the page (`home_state::HomeLayout::place` is the one thing that
 /// decides that); this performs no bounds checking of its own.
-pub fn spanned_tile_rect(width: u32, height: u32, top_left: usize, span: (usize, usize)) -> (f64, f64, f64, f64) {
+pub fn spanned_tile_rect(width: u32, height: u32, top_left: usize, span: (usize, usize), columns: usize) -> (f64, f64, f64, f64) {
     let (cols, rows) = span;
-    let (x0, y0, _, _) = tile_rect(width, height, top_left);
-    let last = top_left + (rows.max(1) - 1) * COLUMNS + (cols.max(1) - 1);
-    let (x1, y1, w1, h1) = tile_rect(width, height, last);
+    let columns = columns.max(1);
+    let (x0, y0, _, _) = tile_rect(width, height, top_left, columns);
+    let last = top_left + (rows.max(1) - 1) * columns + (cols.max(1) - 1);
+    let (x1, y1, w1, h1) = tile_rect(width, height, last, columns);
     (x0, y0, (x1 + w1) - x0, (y1 + h1) - y0)
 }
 
@@ -181,8 +204,8 @@ pub struct TileContent {
     pub label_y: f64,
 }
 
-pub fn tile_content(width: u32, height: u32, slot: usize) -> TileContent {
-    let (x, y, w, h) = tile_rect(width, height, slot);
+pub fn tile_content(width: u32, height: u32, slot: usize, columns: usize) -> TileContent {
+    let (x, y, w, h) = tile_rect(width, height, slot, columns);
     let content_h = ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT;
     let top = y + ((h - content_h) / 2.0).max(0.0);
     TileContent {
@@ -195,14 +218,16 @@ pub fn tile_content(width: u32, height: u32, slot: usize) -> TileContent {
 
 /// Which in-page slot, if any, a point lands on. `filled` bounds the search
 /// to slots that actually hold an icon on this page (a tap past the last
-/// filled slot, in an otherwise-valid grid cell, hits nothing).
-pub fn slot_at(point: (f64, f64), width: u32, height: u32, filled: usize) -> Option<usize> {
+/// filled slot, in an otherwise-valid grid cell, hits nothing). `columns`
+/// must be the same page's live column count `tile_rect` was painted with
+/// (see that function's own doc).
+pub fn slot_at(point: (f64, f64), width: u32, height: u32, filled: usize, columns: usize) -> Option<usize> {
     if !point.0.is_finite() || !point.1.is_finite() {
         return None;
     }
-    let per_page = COLUMNS * rows_per_page(height);
+    let per_page = columns.max(1) * rows_per_page(height);
     for slot in 0..filled.min(per_page) {
-        let (x, y, w, h) = tile_rect(width, height, slot);
+        let (x, y, w, h) = tile_rect(width, height, slot, columns);
         if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
             return Some(slot);
         }
@@ -276,10 +301,10 @@ pub enum HomeSlot {
 /// (and hit-tests) that icon's remove badge. Grid and dock plates have
 /// different sizes/positions ([`tile_content`] vs [`dock_content`]), but
 /// both anchor their badge at exactly this corner, matching iOS/webOS.
-pub fn plate_top_left(width: u32, height: u32, slot: HomeSlot) -> (f64, f64) {
+pub fn plate_top_left(width: u32, height: u32, slot: HomeSlot, columns: usize) -> (f64, f64) {
     match slot {
         HomeSlot::Grid { slot, .. } => {
-            let content = tile_content(width, height, slot);
+            let content = tile_content(width, height, slot, columns);
             (content.plate_x, content.plate_y)
         }
         HomeSlot::Dock { slot } => {
@@ -475,16 +500,41 @@ mod tests {
     use super::*;
 
     #[test]
+    fn columns_for_width_matches_the_reference_at_568_and_grows_for_hdmi() {
+        assert_eq!(columns_for_width(568), COLUMNS);
+        assert_eq!(columns_for_width(1080), 8);
+        assert_eq!(columns_for_width(1920), 14);
+    }
+
+    #[test]
+    fn wide_hdmi_grid_hits_every_reflowed_column_of_the_first_row() {
+        // Mirrors `navigation::wide_hdmi_output_hits_every_reflowed_column_
+        // of_the_first_row`: the Home grid's own `tile_rect`/`slot_at` must
+        // stay in lockstep at a column count the reference 4 was never
+        // authored for.
+        let width = 1920u32;
+        let height = 1080u32;
+        let columns = columns_for_width(width);
+        assert!(columns > COLUMNS);
+        for slot in 0..columns {
+            let (x, y, w, h) = tile_rect(width, height, slot, columns);
+            assert!(w > 0.0 && h > 0.0);
+            assert!(x + w <= f64::from(width), "tile {slot} must stay on-panel");
+            assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), width, height, columns, columns), Some(slot));
+        }
+    }
+
+    #[test]
     fn four_columns_hit_only_painted_tiles() {
         for slot in 0..7 {
-            let (x, y, w, h) = tile_rect(568, 1232, slot);
+            let (x, y, w, h) = tile_rect(568, 1232, slot, COLUMNS);
             assert!(w >= 56.0 && h >= 56.0, "tile must clear the 56px touch target");
-            assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 7), Some(slot));
+            assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 7, COLUMNS), Some(slot));
         }
-        assert_eq!(slot_at((0.0, 0.0), 568, 1232, 7), None, "above the grid");
-        let (x, y, w, _) = tile_rect(568, 1232, 6);
+        assert_eq!(slot_at((0.0, 0.0), 568, 1232, 7, COLUMNS), None, "above the grid");
+        let (x, y, w, _) = tile_rect(568, 1232, 6, COLUMNS);
         assert_eq!(
-            slot_at((x + w + 5.0, y + 5.0), 568, 1232, 7),
+            slot_at((x + w + 5.0, y + 5.0), 568, 1232, 7, COLUMNS),
             None,
             "column gap between rows"
         );
@@ -492,15 +542,15 @@ mod tests {
 
     #[test]
     fn slot_at_respects_filled_bound() {
-        let (x, y, w, h) = tile_rect(568, 1232, 3);
-        assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 3), None, "slot 3 is unfilled");
-        assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 4), Some(3));
+        let (x, y, w, h) = tile_rect(568, 1232, 3, COLUMNS);
+        assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 3, COLUMNS), None, "slot 3 is unfilled");
+        assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), 568, 1232, 4, COLUMNS), Some(3));
     }
 
     #[test]
     fn rows_per_page_is_bounded_and_targets_five_at_the_reference_height() {
         assert_eq!(rows_per_page(1232), 5, "one page + dock should total 24 icons, see top doc comment");
-        assert_eq!(apps_per_page(1232), COLUMNS * 5);
+        assert_eq!(apps_per_page(568, 1232), COLUMNS * 5);
         assert!(rows_per_page(50) >= 1, "a degenerate panel still has one row");
     }
 
@@ -509,7 +559,7 @@ mod tests {
         // icon.rs::CACHE_LIMIT is 24; a fully populated page (apps_per_page)
         // plus a full dock (DOCK_SLOTS) must never exceed it, or a full
         // Home page would evict and re-decode an icon every frame.
-        assert_eq!(apps_per_page(1232) + DOCK_SLOTS, 24);
+        assert_eq!(apps_per_page(568, 1232) + DOCK_SLOTS, 24);
     }
 
     #[test]
@@ -521,8 +571,8 @@ mod tests {
 
     #[test]
     fn tile_content_centers_the_plate_in_its_cell_not_at_the_top() {
-        let (_, cell_y, _, cell_h) = tile_rect(568, 1232, 0);
-        let content = tile_content(568, 1232, 0);
+        let (_, cell_y, _, cell_h) = tile_rect(568, 1232, 0, COLUMNS);
+        let content = tile_content(568, 1232, 0, COLUMNS);
         assert!(content.plate_x > 0.0);
         assert!(content.plate_y > cell_y, "the plate must not be pinned to the cell's top edge");
         assert!(content.label_y > content.plate_y + content.plate_size);
@@ -545,7 +595,7 @@ mod tests {
             assert!(w >= 56.0 && h >= 56.0);
             assert_eq!(dock_slot_at((x + w / 2.0, y + h / 2.0), 568, 1232), Some(slot));
         }
-        let (grid_x, grid_y, _, _) = tile_rect(568, 1232, 0);
+        let (grid_x, grid_y, _, _) = tile_rect(568, 1232, 0, COLUMNS);
         assert_eq!(
             dock_slot_at((grid_x, grid_y), 568, 1232),
             None,
@@ -581,8 +631,8 @@ mod tests {
 
     #[test]
     fn dock_sits_below_the_grid_and_dots() {
-        let grid_bottom_edge = tile_rect(568, 1232, (rows_per_page(1232) - 1) * COLUMNS).1
-            + tile_rect(568, 1232, 0).3;
+        let grid_bottom_edge = tile_rect(568, 1232, (rows_per_page(1232) - 1) * COLUMNS, COLUMNS).1
+            + tile_rect(568, 1232, 0, COLUMNS).3;
         assert!(dots_center_y(1232) >= grid_bottom_edge);
         assert!(dock_top(1232) > dots_center_y(1232));
     }
@@ -651,10 +701,10 @@ mod tests {
         // wide as all 4 columns and as tall as 2 rows, including the gaps
         // between the tiles it spans -- not 8 separate tile rects glued
         // together with visible gutters between them.
-        let spanned = spanned_tile_rect(568, 1232, 0, (4, 2));
-        let (last_x, last_y, last_w, last_h) = tile_rect(568, 1232, 4 + 3);
-        assert_eq!(spanned.0, tile_rect(568, 1232, 0).0);
-        assert_eq!(spanned.1, tile_rect(568, 1232, 0).1);
+        let spanned = spanned_tile_rect(568, 1232, 0, (4, 2), COLUMNS);
+        let (last_x, last_y, last_w, last_h) = tile_rect(568, 1232, 4 + 3, COLUMNS);
+        assert_eq!(spanned.0, tile_rect(568, 1232, 0, COLUMNS).0);
+        assert_eq!(spanned.1, tile_rect(568, 1232, 0, COLUMNS).1);
         assert_eq!(spanned.2, (last_x + last_w) - spanned.0);
         assert_eq!(spanned.3, (last_y + last_h) - spanned.1);
     }
@@ -663,8 +713,8 @@ mod tests {
     fn remove_badge_sits_at_the_plates_own_corner_and_hit_radius_exceeds_visual_radius() {
         assert!(REMOVE_BADGE_HIT_RADIUS > REMOVE_BADGE_RADIUS);
         let slot = HomeSlot::Grid { page: 0, slot: 0 };
-        let (bx, by) = plate_top_left(568, 1232, slot);
-        let content = tile_content(568, 1232, 0);
+        let (bx, by) = plate_top_left(568, 1232, slot, COLUMNS);
+        let content = tile_content(568, 1232, 0, COLUMNS);
         assert_eq!((bx, by), (content.plate_x, content.plate_y));
         assert!(hits_circle((bx + 5.0, by + 5.0), (bx, by), REMOVE_BADGE_HIT_RADIUS));
         assert!(!hits_circle((bx + 200.0, by), (bx, by), REMOVE_BADGE_HIT_RADIUS));
@@ -672,8 +722,8 @@ mod tests {
 
     #[test]
     fn adjacent_remove_badges_do_not_overlap_each_other() {
-        let (x0, y0) = plate_top_left(568, 1232, HomeSlot::Grid { page: 0, slot: 0 });
-        let (x1, y1) = plate_top_left(568, 1232, HomeSlot::Grid { page: 0, slot: 1 });
+        let (x0, y0) = plate_top_left(568, 1232, HomeSlot::Grid { page: 0, slot: 0 }, COLUMNS);
+        let (x1, y1) = plate_top_left(568, 1232, HomeSlot::Grid { page: 0, slot: 1 }, COLUMNS);
         let dx = x1 - x0;
         let dy = y1 - y0;
         let distance = (dx * dx + dy * dy).sqrt();
