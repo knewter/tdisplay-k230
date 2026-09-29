@@ -78,23 +78,21 @@ pub struct WidgetPicker {
 fn picker_row_count(page: WidgetPickerPage) -> usize {
     match page {
         WidgetPickerPage::Menu => 3,          // Widgets / Wallpaper & style / Home settings
-        WidgetPickerPage::Widgets => 4,       // Back, Clock, Battery, Weather
+        // Back, plus one row per `WidgetKind::ALL` entry (data-driven so a
+        // new clock style or widget never needs a second hand-counted
+        // constant to stay in step with it).
+        WidgetPickerPage::Widgets => WidgetKind::ALL.len() + 1,
         WidgetPickerPage::HomeSettings => 2,  // Back, the read-only grid-size stub row
     }
 }
 
 /// Which widget, if any, `row` names on the Widgets page (row 0 is always
-/// "Back", never a widget).
+/// "Back", never a widget) -- `WidgetKind::ALL`'s own order, one row each.
 fn widget_for_row(page: WidgetPickerPage, row: usize) -> Option<WidgetKind> {
-    if page != WidgetPickerPage::Widgets {
+    if page != WidgetPickerPage::Widgets || row == 0 {
         return None;
     }
-    match row {
-        1 => Some(WidgetKind::Clock),
-        2 => Some(WidgetKind::Battery),
-        3 => Some(WidgetKind::Weather),
-        _ => None,
-    }
+    WidgetKind::ALL.get(row - 1).copied()
 }
 
 /// State for Home's open-folder overlay (task 5). Rename is armed at the
@@ -137,14 +135,30 @@ struct Contact {
     picker_widget_at_down: Option<WidgetKind>,
 }
 
-/// How long an icon must be dragged against the pager's edge, while in
-/// rearrange mode, before the page turns underneath it. Also used for the
-/// drawer-drag's own edge-page-switch (task 1: "Holding near the left/right
-/// edge for about 500 ms switches page").
-pub const EDGE_HOLD_MS: u32 = 550;
-/// How close to the panel's left/right edge a rearrange drag must be to
-/// count as "at the edge" for the page-turn-while-dragging behavior.
-const EDGE_ZONE_PX: f64 = 32.0;
+/// How close to the panel's left/right edge a live drag must hold to count
+/// as "at the edge" for the page-turn-while-dragging behavior (`home-widget-
+/// design` task 1: "holding within about 40px of the left or right edge").
+pub const EDGE_ZONE_PX: f64 = 40.0;
+/// How long a drag must dwell in the edge zone before the *first* page turn
+/// (task 1: "pages over after about 350-400ms").
+pub const EDGE_HOLD_FIRST_MS: u32 = 380;
+/// How long a drag must keep dwelling before each *subsequent* page turn
+/// while still held at the edge -- shorter than the first, matching Pixel
+/// Launcher's own "keeps paging with a short repeat delay".
+pub const EDGE_HOLD_REPEAT_MS: u32 = 260;
+/// How long an eased page-switch (edge-hold or fling triggered) takes to
+/// settle, so the transition always reads as a smooth slide -- never an
+/// instant jump -- under the lifted item (task 1: "the page-switch
+/// animation stays smooth").
+const PAGE_SWITCH_ANIM_MS: u32 = 220;
+/// A horizontal drag-point velocity at or above this counts as a "quick,
+/// deliberate" mid-drag fling-to-page (task 1), independent of edge
+/// proximity or dwell time.
+const FLING_PAGE_VELOCITY_PX_PER_SEC: f64 = 900.0;
+/// After a fling triggers a page turn, a short lockout before another fling
+/// (or edge-hold) can trigger a second one -- without this, one continuous
+/// fast swipe would fire several page turns off a single gesture.
+const FLING_LOCKOUT_MS: u32 = 260;
 
 /// A short, human-editable default so a freshly merged folder is never
 /// blank; task 5 makes the name editable via a tap regardless.
@@ -182,6 +196,45 @@ pub struct HomeScreen {
     contact: Option<Contact>,
     edge_held_ms: u32,
     edge_side: i8, // -1 left, 1 right, 0 neither
+    /// Whether this edge-hold session has already turned a page once --
+    /// `tick` uses [`EDGE_HOLD_FIRST_MS`] before the first turn and the
+    /// shorter [`EDGE_HOLD_REPEAT_MS`] for every one after, while the drag
+    /// keeps dwelling at the same edge.
+    edge_hold_triggered_once: bool,
+    /// The drag point's own horizontal timestamp/position, for the mid-drag
+    /// fling check -- `None` right after a drag begins (or right after a
+    /// fling/edge-hold just fired), so the very next motion sample only
+    /// records a fresh baseline instead of computing a velocity against a
+    /// stale point from *before* this drag (or this lockout) started.
+    drag_track_ms: Option<u32>,
+    drag_track_x: f64,
+    /// The drag point's most recently computed horizontal velocity, in
+    /// panel px/sec (negative = moving left).
+    drag_velocity_px_s: f64,
+    /// Counts down to zero after a fling or edge-hold page turn, blocking a
+    /// second trigger from the same continuous gesture.
+    fling_lockout_ms: u32,
+    /// `home_grid::apps_per_page` for this drag's own panel height, cached
+    /// at the most recent drag-point update -- `tick`'s own edge-hold-
+    /// triggered new-page creation needs it but is not itself handed a
+    /// panel height (it mirrors every other tick-driven animation in this
+    /// shell, which take only an elapsed-ms accumulator).
+    apps_per_page_cache: usize,
+    /// A live eased transition from one page position to another, driven
+    /// every `tick` independently of any pager-owned drag/momentum/settle
+    /// state (`home_pager::HomePager::set_position` is the sink) -- the
+    /// edge-hold and fling page-switches both start one of these instead of
+    /// jumping the pager's position instantly.
+    page_switch: Option<PageSwitchAnim>,
+}
+
+/// See [`HomeScreen::page_switch`]'s own doc.
+#[derive(Clone, Copy, Debug)]
+struct PageSwitchAnim {
+    from: f64,
+    target: f64,
+    elapsed_ms: u32,
+    duration_ms: u32,
 }
 
 /// What dropping `dragged` onto an already-occupied cell should produce, if
@@ -235,11 +288,181 @@ impl HomeScreen {
             contact: None,
             edge_held_ms: 0,
             edge_side: 0,
+            edge_hold_triggered_once: false,
+            drag_track_ms: None,
+            drag_track_x: 0.0,
+            drag_velocity_px_s: 0.0,
+            fling_lockout_ms: 0,
+            apps_per_page_cache: 1,
+            page_switch: None,
         }
     }
 
     pub fn page_count(&self) -> usize {
         self.layout.page_count()
+    }
+
+    /// Clears every piece of cross-page-drag tracking state -- called at the
+    /// moment a fresh drag begins (`down`, and every `tick`/
+    /// `begin_external_drag` site that sets `self.drag = Some(..)`), so a
+    /// stale velocity/edge-dwell/lockout reading from a *previous*, already-
+    /// finished drag can never leak into the next one's very first motion
+    /// sample.
+    fn reset_drag_tracking(&mut self) {
+        self.drag_track_ms = None;
+        self.drag_velocity_px_s = 0.0;
+        self.edge_held_ms = 0;
+        self.edge_side = 0;
+        self.edge_hold_triggered_once = false;
+        self.fling_lockout_ms = 0;
+        self.page_switch = None;
+    }
+
+    /// Records a live drag's current finger position for both the edge-hold
+    /// page-switch (`edge_side`/`edge_held_ms`, advanced by `tick`) and the
+    /// mid-drag fling check (`maybe_fling`). Shared by the internal
+    /// (`motion`) and external drawer-origin (`external_drag_motion`) drag
+    /// paths so the two behave identically.
+    fn note_drag_point(&mut self, point: (f64, f64), time_ms: u32, width: u32, height: u32) {
+        self.apps_per_page_cache = home_grid::apps_per_page(height).max(1);
+        if let Some(last_ms) = self.drag_track_ms {
+            let elapsed = time_ms.wrapping_sub(last_ms);
+            if elapsed > 0 && elapsed < 1000 {
+                self.drag_velocity_px_s = ((point.0 - self.drag_track_x) * 1000.0 / f64::from(elapsed)).clamp(-4000.0, 4000.0);
+            }
+        }
+        self.drag_track_x = point.0;
+        self.drag_track_ms = Some(time_ms);
+        let new_edge_side = if point.0 < EDGE_ZONE_PX {
+            -1
+        } else if point.0 > f64::from(width) - EDGE_ZONE_PX {
+            1
+        } else {
+            0
+        };
+        if new_edge_side != self.edge_side {
+            self.edge_held_ms = 0;
+            self.edge_hold_triggered_once = false;
+        }
+        self.edge_side = new_edge_side;
+        self.maybe_fling();
+    }
+
+    /// A quick, deliberate horizontal fling mid-drag pages over immediately,
+    /// independent of edge proximity or any dwell (task 1: "allow a quick,
+    /// deliberate horizontal fling mid-drag to page"). Never creates a new
+    /// page itself -- reaching the true last page still requires the
+    /// edge-hold's own dwell, matching a fling's "quick nudge" character
+    /// rather than a page-creating commitment.
+    fn maybe_fling(&mut self) {
+        if self.page_switch.is_some() || self.fling_lockout_ms > 0 {
+            return;
+        }
+        if self.drag_velocity_px_s.abs() < FLING_PAGE_VELOCITY_PX_PER_SEC {
+            return;
+        }
+        let count = self.page_count();
+        let current = self.pager.page(count);
+        // Negative velocity == finger moving left, matching
+        // `HomePager::motion`'s own sign convention (dragging left reveals
+        // the next page to the right).
+        if self.drag_velocity_px_s < 0.0 {
+            if current + 1 < count {
+                self.start_page_switch(current + 1);
+                self.fling_lockout_ms = FLING_LOCKOUT_MS;
+            }
+        } else if current > 0 {
+            self.start_page_switch(current - 1);
+            self.fling_lockout_ms = FLING_LOCKOUT_MS;
+        }
+    }
+
+    /// Starts (or retargets) the eased page-switch animation toward `target`.
+    /// A no-op if already there.
+    fn start_page_switch(&mut self, target: usize) {
+        let from = self.pager.position();
+        let target = target as f64;
+        if (from - target).abs() < 0.001 {
+            return;
+        }
+        self.page_switch = Some(PageSwitchAnim { from, target, elapsed_ms: 0, duration_ms: PAGE_SWITCH_ANIM_MS });
+        self.edge_held_ms = 0;
+    }
+
+    /// Advances a live edge-hold dwell timer and triggers a page-switch (or,
+    /// at the true last page's right edge, a brand-new page -- task 1:
+    /// "dragging onto the last page's right edge creates a new page") once
+    /// it crosses [`EDGE_HOLD_FIRST_MS`] (or [`EDGE_HOLD_REPEAT_MS`] for a
+    /// repeat within the same edge-hold session). A no-op whenever a
+    /// page-switch animation is already live, so a fling and an edge-hold
+    /// can never both fire for the same moment.
+    fn advance_edge_hold(&mut self, elapsed_ms: u32) {
+        if self.edge_side == 0 || self.page_switch.is_some() {
+            return;
+        }
+        self.edge_held_ms = self.edge_held_ms.saturating_add(elapsed_ms);
+        let threshold = if self.edge_hold_triggered_once { EDGE_HOLD_REPEAT_MS } else { EDGE_HOLD_FIRST_MS };
+        if self.edge_held_ms < threshold {
+            return;
+        }
+        self.edge_held_ms = 0;
+        self.edge_hold_triggered_once = true;
+        let count = self.page_count();
+        let current = self.pager.page(count);
+        if self.edge_side > 0 && current + 1 >= count {
+            let new_page = self.layout.add_blank_page(self.apps_per_page_cache);
+            self.start_page_switch(new_page);
+        } else {
+            let next = if self.edge_side < 0 {
+                current.saturating_sub(1)
+            } else {
+                (current + 1).min(count.saturating_sub(1))
+            };
+            self.start_page_switch(next);
+        }
+    }
+
+    /// Advances any live page-switch animation. Always safe to call (a
+    /// no-op with none live), and deliberately not gated on a drag still
+    /// being held, so a switch that started right before release finishes
+    /// its smooth slide rather than snapping.
+    fn advance_page_switch(&mut self, elapsed_ms: u32) -> bool {
+        let Some(anim) = self.page_switch.as_mut() else { return false };
+        anim.elapsed_ms = anim.elapsed_ms.saturating_add(elapsed_ms.min(48));
+        let t = (f64::from(anim.elapsed_ms) / f64::from(anim.duration_ms)).min(1.0);
+        let eased = 1.0 - (1.0 - t).powi(3);
+        let position = anim.from + (anim.target - anim.from) * eased;
+        let done = t >= 1.0;
+        let target = anim.target;
+        self.pager.set_position(if done { target } else { position }, self.page_count());
+        if done {
+            self.page_switch = None;
+        }
+        true
+    }
+
+    /// `Some((side, progress))` while a live drag is dwelling in an edge
+    /// zone, `progress` in `0.0..=1.0` toward the next page turn -- the
+    /// renderer's own edge highlight/arrow (task 1: "a visible edge
+    /// highlight or arrow showing it's about to switch") fades/grows in with
+    /// this.
+    pub fn drag_edge_indicator(&self) -> Option<(i8, f64)> {
+        if self.drag.is_none() || self.edge_side == 0 || self.page_switch.is_some() {
+            return None;
+        }
+        let threshold = if self.edge_hold_triggered_once { EDGE_HOLD_REPEAT_MS } else { EDGE_HOLD_FIRST_MS };
+        let progress = (f64::from(self.edge_held_ms) / f64::from(threshold.max(1))).clamp(0.0, 1.0);
+        Some((self.edge_side, progress))
+    }
+
+    /// Whether the live drag's item would actually fit at its current drop
+    /// target -- the renderer's "no room here" indication (task 1) for a
+    /// multi-cell widget hovering somewhere its span cannot land. `true`
+    /// with no live drag or no resolvable target (nothing to contradict).
+    pub fn drop_target_fits(&self, width: u32, height: u32) -> bool {
+        let Some(item) = self.dragged_item() else { return true };
+        let Some(slot) = self.drop_target(width, height) else { return true };
+        self.layout.would_fit(slot, item.span())
     }
 
     /// Any grid cell within the current page's bounds resolves to a slot,
@@ -381,7 +604,9 @@ impl HomeScreen {
             // resolved at `up` instead.
             if badge_at_down.is_none() {
                 if let Some(slot) = slot_at_down {
+                    self.reset_drag_tracking();
                     self.drag = Some((DragSource::Existing(slot), point));
+                    self.note_drag_point(point, time_ms, width, height);
                 }
             }
         } else {
@@ -395,7 +620,7 @@ impl HomeScreen {
         point: (f64, f64),
         time_ms: u32,
         width: u32,
-        _height: u32,
+        height: u32,
     ) -> bool {
         let Some(contact) = self.contact.as_mut() else {
             return false;
@@ -403,18 +628,11 @@ impl HomeScreen {
         if contact.id != id {
             return false;
         }
-        if let Some(entry) = self.drag.as_mut() {
-            entry.1 = point;
-            self.edge_side = if point.0 < EDGE_ZONE_PX {
-                -1
-            } else if point.0 > f64::from(width) - EDGE_ZONE_PX {
-                1
-            } else {
-                0
-            };
-            if self.edge_side == 0 {
-                self.edge_held_ms = 0;
+        if self.drag.is_some() {
+            if let Some(entry) = self.drag.as_mut() {
+                entry.1 = point;
             }
+            self.note_drag_point(point, time_ms, width, height);
             return true;
         }
         if self.open_folder.is_some() || self.widget_picker.is_some() {
@@ -434,82 +652,84 @@ impl HomeScreen {
         self.pager.motion(point, time_ms, self.page_count())
     }
 
-    /// Advances the pager's momentum/settle animation and, while a finger
+    /// Advances the pager's momentum/settle animation, a live cross-page-
+    /// drag's edge-hold dwell and page-switch slide, and, while a finger
     /// rests without moving on a filled icon (or an open folder's member
-    /// tile, or a picker preview row), the long-press timer. Returns
-    /// whether a repaint is needed.
+    /// tile, or a picker preview row), the long-press timer. Returns whether
+    /// a repaint is needed.
+    ///
+    /// The three long-press-to-drag paths below (open-folder member, picker
+    /// widget, plain Home icon) only ever *arm* a drag while none is yet
+    /// live (`self.drag.is_none()`); once armed, every one of them falls
+    /// through to this function's own final section so the same edge-hold/
+    /// fling/page-switch machinery drives every drag source identically,
+    /// regardless of which overlay (if any) was showing when it started.
     pub fn tick(&mut self, elapsed_ms: u32) -> bool {
-        if self.open_folder.is_some() {
-            let Some(contact) = self.contact.as_mut() else { return false };
-            if contact.long_fired || self.drag.is_some() {
-                return false;
-            }
-            let Some(app_id) = contact.folder_app_at_down.clone() else { return false };
-            contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
-            if contact.held_ms < LONG_PRESS_MS {
-                return false;
-            }
-            contact.long_fired = true;
-            let start = contact.start;
-            if let Some(open) = self.open_folder.as_ref() {
-                self.drag = Some((DragSource::FromFolder { folder: open.slot, app_id }, start));
-                return true;
-            }
-            return false;
-        }
-        if self.widget_picker.is_some() {
-            let Some(contact) = self.contact.as_mut() else { return false };
-            if contact.long_fired || self.drag.is_some() {
-                return false;
-            }
-            let Some(kind) = contact.picker_widget_at_down else { return false };
-            contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
-            if contact.held_ms < LONG_PRESS_MS {
-                return false;
-            }
-            contact.long_fired = true;
-            let start = contact.start;
-            self.drag = Some((DragSource::Widget(kind), start));
-            self.widget_picker = None; // the sheet gets out of the way once a drag starts
-            return true;
-        }
         let mut redraw = false;
-        if !self.rearranging {
-            redraw |= self.pager.tick(elapsed_ms, self.page_count());
-        }
-        if self.drag.is_some() && self.edge_side != 0 {
-            self.edge_held_ms = self.edge_held_ms.saturating_add(elapsed_ms);
-            if self.edge_held_ms >= EDGE_HOLD_MS {
-                self.edge_held_ms = 0;
-                let count = self.page_count();
-                let current = self.pager.page(count);
-                let next = if self.edge_side < 0 {
-                    current.saturating_sub(1)
-                } else {
-                    (current + 1).min(count.saturating_sub(1))
-                };
-                if next != current {
-                    self.pager.set_page(next);
-                    redraw = true;
+        if self.open_folder.is_some() && self.drag.is_none() {
+            if let Some(contact) = self.contact.as_mut() {
+                if !contact.long_fired {
+                    if let Some(app_id) = contact.folder_app_at_down.clone() {
+                        contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+                        if contact.held_ms >= LONG_PRESS_MS {
+                            contact.long_fired = true;
+                            let start = contact.start;
+                            if let Some(folder_slot) = self.open_folder.as_ref().map(|open| open.slot) {
+                                self.reset_drag_tracking();
+                                self.drag = Some((DragSource::FromFolder { folder: folder_slot, app_id }, start));
+                                redraw = true;
+                            }
+                        }
+                    }
                 }
             }
-        }
-        if let Some(contact) = self.contact.as_mut() {
-            if !contact.long_fired && self.drag.is_none() && !self.pager.dragging() {
-                contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
-                if contact.held_ms >= LONG_PRESS_MS {
-                    contact.long_fired = true;
-                    if let Some(slot) = contact.slot_at_down {
-                        self.rearranging = true;
-                        self.drag = Some((DragSource::Existing(slot), contact.start));
-                        redraw = true;
-                    } else if contact.empty_slot_at_down {
-                        self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
-                        redraw = true;
+        } else if self.widget_picker.is_some() && self.drag.is_none() {
+            if let Some(contact) = self.contact.as_mut() {
+                if !contact.long_fired {
+                    if let Some(kind) = contact.picker_widget_at_down {
+                        contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+                        if contact.held_ms >= LONG_PRESS_MS {
+                            contact.long_fired = true;
+                            let start = contact.start;
+                            self.reset_drag_tracking();
+                            self.drag = Some((DragSource::Widget(kind), start));
+                            self.widget_picker = None; // the sheet gets out of the way once a drag starts
+                            redraw = true;
+                        }
+                    }
+                }
+            }
+        } else if self.drag.is_none() {
+            if !self.rearranging {
+                redraw |= self.pager.tick(elapsed_ms, self.page_count());
+            }
+            if let Some(contact) = self.contact.as_mut() {
+                if !contact.long_fired && !self.pager.dragging() {
+                    contact.held_ms = contact.held_ms.saturating_add(elapsed_ms);
+                    if contact.held_ms >= LONG_PRESS_MS {
+                        contact.long_fired = true;
+                        if let Some(slot) = contact.slot_at_down {
+                            let start = contact.start;
+                            self.rearranging = true;
+                            self.reset_drag_tracking();
+                            self.drag = Some((DragSource::Existing(slot), start));
+                            redraw = true;
+                        } else if contact.empty_slot_at_down {
+                            self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+                            redraw = true;
+                        }
                     }
                 }
             }
         }
+
+        if self.fling_lockout_ms > 0 {
+            self.fling_lockout_ms = self.fling_lockout_ms.saturating_sub(elapsed_ms.min(self.fling_lockout_ms));
+        }
+        if self.drag.is_some() {
+            self.advance_edge_hold(elapsed_ms);
+        }
+        redraw |= self.advance_page_switch(elapsed_ms);
         redraw
     }
 
@@ -696,30 +916,20 @@ impl HomeScreen {
     /// arms the drag/edge-page-switch state, exactly like a rearrange
     /// drag's own `self.drag`.
     pub fn begin_external_drag(&mut self, app_id: String, point: (f64, f64)) {
+        self.reset_drag_tracking();
         self.drag = Some((DragSource::FromDrawer(app_id), point));
-        self.edge_held_ms = 0;
-        self.edge_side = 0;
     }
 
-    /// Updates a live external (drawer-origin) drag's finger position and
-    /// edge-page-switch tracking. `width` is needed for the edge-zone
-    /// check; unlike the internal `motion` path, this has no `Contact` of
-    /// its own to gate on (the drawer's own touch owns the gesture -- see
-    /// `navigation.rs`'s own drag-arm doc).
-    pub fn external_drag_motion(&mut self, point: (f64, f64), width: u32) {
+    /// Updates a live external (drawer-origin) drag's finger position, edge-
+    /// page-switch dwell tracking, and mid-drag fling check (`note_drag_
+    /// point`, shared with the internal `motion` path). Unlike that path,
+    /// this has no `Contact` of its own to gate on (the drawer's own touch
+    /// owns the gesture -- see `navigation.rs`'s own drag-arm doc).
+    pub fn external_drag_motion(&mut self, point: (f64, f64), time_ms: u32, width: u32, height: u32) {
         if let Some(entry) = self.drag.as_mut() {
             entry.1 = point;
         }
-        self.edge_side = if point.0 < EDGE_ZONE_PX {
-            -1
-        } else if point.0 > f64::from(width) - EDGE_ZONE_PX {
-            1
-        } else {
-            0
-        };
-        if self.edge_side == 0 {
-            self.edge_held_ms = 0;
-        }
+        self.note_drag_point(point, time_ms, width, height);
     }
 
     /// Resolves a live drag's drop point (used both by an internal
@@ -735,8 +945,7 @@ impl HomeScreen {
     /// somewhere), but an external drawer-drag's Cancel target uses this.
     pub fn cancel_external_drag(&mut self) {
         self.drag = None;
-        self.edge_held_ms = 0;
-        self.edge_side = 0;
+        self.reset_drag_tracking();
     }
 
     /// `None` when the drop changed nothing (a plain tap-release on an
@@ -759,10 +968,22 @@ impl HomeScreen {
         }
         let target = self.slot_at(point, width, height);
         match source {
-            DragSource::Existing(from) => {
-                let target = target?;
-                self.move_existing(from, target, apps_per_page)
-            }
+            DragSource::Existing(from) => match target {
+                Some(target) => self.move_existing(from, target, apps_per_page),
+                None => {
+                    // The drop point resolved to no grid/dock cell at all --
+                    // e.g. released right in the edge margin just past the
+                    // last tile column, which sits *inside* the edge-hold
+                    // trigger zone (`EDGE_ZONE_PX`) but outside any tile's
+                    // own hit rect, a very natural place to lift off right
+                    // after watching a cross-page drag turn the page. Land
+                    // on the page currently on screen instead of silently
+                    // reverting the drag to its origin page (operator
+                    // report: "the item snaps back to its original page").
+                    let page = self.pager.page(self.page_count());
+                    self.move_existing_to_page(from, page, apps_per_page)
+                }
+            },
             DragSource::FromDrawer(id) => {
                 let item = HomeItem::app(id);
                 let placed = match target {
@@ -826,9 +1047,14 @@ impl HomeScreen {
 
     /// Moves an already-pinned item from `from` to `target`: a plain move
     /// into an empty cell, a merge (folder create/add) when `target` holds
-    /// something mergeable, or a same-span swap as the fallback -- matching
-    /// this screen's pre-existing rearrange behavior for anything that
-    /// cannot merge.
+    /// something mergeable, or a same-span swap as the fallback. When none
+    /// of those apply -- `target` itself cannot fit the item's span, or it
+    /// holds something that can neither merge nor swap with it -- this
+    /// falls back to the nearest free cell on `target`'s own page rather
+    /// than reverting: `target`'s page is wherever the drag *currently* is
+    /// (which, mid a cross-page drag, is no longer necessarily `from`'s own
+    /// page), so silently giving up here is exactly the "snaps back to its
+    /// original page" bug a real cross-page drag must not exhibit.
     fn move_existing(&mut self, from: HomeSlot, target: HomeSlot, apps_per_page: usize) -> Option<HomeAction> {
         if target == from {
             return None;
@@ -839,10 +1065,12 @@ impl HomeScreen {
                 self.layout.remove_slot(from);
                 if self.layout.place(target, dragged.clone(), apps_per_page, false) {
                     Some(HomeAction::LayoutChanged)
+                } else if let HomeSlot::Grid { page, .. } = target {
+                    self.place_on_page_or_restore(from, page, dragged, apps_per_page)
                 } else {
-                    // Did not fit (e.g. a widget would spill past the row's
-                    // edge at this target) -- put it back exactly where it
-                    // was rather than losing it.
+                    // A dock target that doesn't fit (e.g. a widget aimed at
+                    // the dock, which is never widget-eligible) -- put it
+                    // back exactly where it was.
                     self.layout.place(from, dragged, apps_per_page, false);
                     None
                 }
@@ -856,11 +1084,59 @@ impl HomeScreen {
                     self.layout.set(target, Some(dragged), apps_per_page);
                     self.layout.set(from, Some(existing), apps_per_page);
                     Some(HomeAction::LayoutChanged)
+                } else if let HomeSlot::Grid { page, .. } = target {
+                    self.layout.remove_slot(from);
+                    self.place_on_page_or_restore(from, page, dragged, apps_per_page)
                 } else {
                     None
                 }
             }
         }
+    }
+
+    /// Places `dragged` at the first free-fitting cell on `page`, or -- if
+    /// `page` truly has no room for it -- restores it to `from` instead of
+    /// losing it. `from` must already have been cleared by the caller.
+    /// Shared by both of [`Self::move_existing`]'s own fallback sites and
+    /// [`Self::move_existing_to_page`] (the "no resolvable target at all"
+    /// case), all three of which face the exact same choice between landing
+    /// on the page the drag is currently over versus reverting.
+    fn place_on_page_or_restore(
+        &mut self,
+        from: HomeSlot,
+        page: usize,
+        dragged: HomeItem,
+        apps_per_page: usize,
+    ) -> Option<HomeAction> {
+        // Recreates `page` if the drag's own origin-cell `remove_slot` just
+        // pruned it away for being (still) empty -- see `ensure_page`'s own
+        // doc for why this must run before `first_fit`.
+        self.layout.ensure_page(page, apps_per_page);
+        if let Some(slot) = self.layout.first_fit(page, &dragged, apps_per_page) {
+            self.layout.place(HomeSlot::Grid { page, slot }, dragged, apps_per_page, false);
+            Some(HomeAction::LayoutChanged)
+        } else {
+            self.layout.place(from, dragged, apps_per_page, false);
+            None
+        }
+    }
+
+    /// Moves an already-pinned item from `from` onto `page` at its nearest
+    /// free-fitting cell, used when a rearrange drag's release point
+    /// resolves to no slot at all (e.g. right in the edge margin, just past
+    /// the last tile column, which sits inside the edge-hold trigger zone
+    /// but outside every tile's own hit rect). `page` is whichever page is
+    /// actually on screen at release -- not necessarily `from`'s own page,
+    /// mid a cross-page drag.
+    fn move_existing_to_page(&mut self, from: HomeSlot, page: usize, apps_per_page: usize) -> Option<HomeAction> {
+        if let HomeSlot::Grid { page: from_page, .. } = from {
+            if from_page == page {
+                return None; // never left its own page; nothing to commit
+            }
+        }
+        let dragged = self.layout.get(from)?.clone();
+        self.layout.remove_slot(from);
+        self.place_on_page_or_restore(from, page, dragged, apps_per_page)
     }
 
     /// Places a brand-new item (the drawer's drag hand-off) at `target`: a
@@ -888,17 +1164,17 @@ impl HomeScreen {
     pub fn cancel(&mut self) {
         self.contact = None;
         self.drag = None;
-        self.edge_held_ms = 0;
-        self.edge_side = 0;
+        self.reset_drag_tracking();
         self.pager.cancel();
     }
 
-    /// True while the pager is coasting/settling, or a rearrange drag is
-    /// held near a page edge accumulating toward an auto-page-turn -- the
-    /// caller should poll at the fast tick rate in either case rather than
-    /// waiting for the next Wayland event.
+    /// True while the pager is coasting/settling, a rearrange drag is held
+    /// near a page edge accumulating toward an auto-page-turn, or an
+    /// edge-hold/fling page-switch is mid-slide -- the caller should poll at
+    /// the fast tick rate in any of these rather than waiting for the next
+    /// Wayland event.
     pub fn is_animating(&self) -> bool {
-        self.pager.is_animating() || (self.drag.is_some() && self.edge_side != 0)
+        self.pager.is_animating() || (self.drag.is_some() && self.edge_side != 0) || self.page_switch.is_some()
     }
 
     /// Which slot, if any, should show an immediate "pressed" highlight:
@@ -1233,6 +1509,33 @@ mod tests {
     }
 
     #[test]
+    fn dragging_a_widget_over_another_widgets_full_span_shows_no_room() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0] = vec![None; 16];
+        screen.layout.pages[0][0] = Some(HomeItem::Widget { widget: WidgetKind::Clock }); // covers 0..8
+        screen.layout.pages[0][8] = Some(HomeItem::Widget { widget: WidgetKind::Weather }); // covers 8,9,12,13
+        let start = tile_center_for_test(8);
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert!(screen.drag.is_some(), "the weather widget is picked up");
+        // Hover over one of the clock's own cells -- its 4x2 span leaves no
+        // room anywhere within it for another widget.
+        let over_the_clock = tile_center_for_test(1);
+        screen.motion(1, over_the_clock, 500, WIDTH, HEIGHT);
+        assert_eq!(screen.drop_target(WIDTH, HEIGHT), Some(HomeSlot::Grid { page: 0, slot: 1 }));
+        assert!(!screen.drop_target_fits(WIDTH, HEIGHT), "the clock already fully occupies its own span");
+        // A plain, unoccupied cell (slot 10, outside both widgets' spans)
+        // does have room.
+        let empty_cell = tile_center_for_test(10);
+        screen.motion(1, empty_cell, 520, WIDTH, HEIGHT);
+        assert!(screen.drop_target_fits(WIDTH, HEIGHT), "an empty cell has room for the dragged widget");
+    }
+
+    #[test]
     fn already_rearranging_a_fresh_drag_moves_an_icon_without_a_second_long_press() {
         let mut screen = screen_with(&[None; 4]);
         screen.rearranging = true;
@@ -1435,13 +1738,300 @@ mod tests {
         let mut screen = screen_with(&[None; 4]);
         screen.layout.pages.push(vec![None; 4]);
         screen.begin_external_drag("new.desktop".into(), (WIDTH as f64 - 5.0, 600.0));
-        screen.external_drag_motion((WIDTH as f64 - 5.0, 600.0), WIDTH);
+        screen.external_drag_motion((WIDTH as f64 - 5.0, 600.0), 0, WIDTH, HEIGHT);
         let mut ticks = 0;
         while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
             screen.tick(16);
             ticks += 1;
         }
         assert_eq!(screen.pager.page(screen.page_count()), 1);
+    }
+
+    #[test]
+    fn edge_hold_does_not_switch_before_the_first_dwell_threshold() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        screen.begin_external_drag("new.desktop".into(), (WIDTH as f64 - 5.0, 600.0));
+        screen.external_drag_motion((WIDTH as f64 - 5.0, 600.0), 0, WIDTH, HEIGHT);
+        // Just under the ~350-400ms first-dwell threshold (task 1).
+        screen.tick(EDGE_HOLD_FIRST_MS - 20);
+        assert_eq!(screen.pager.page(screen.page_count()), 0, "has not switched yet");
+        let (side, progress) = screen.drag_edge_indicator().expect("still dwelling at the right edge");
+        assert_eq!(side, 1);
+        assert!((0.9..1.0).contains(&progress), "close to triggering but not yet: {progress}");
+    }
+
+    #[test]
+    fn edge_hold_repeats_with_a_shorter_delay_than_the_first_turn() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        screen.begin_external_drag("new.desktop".into(), (WIDTH as f64 - 5.0, 600.0));
+        screen.external_drag_motion((WIDTH as f64 - 5.0, 600.0), 0, WIDTH, HEIGHT);
+        screen.tick(EDGE_HOLD_FIRST_MS);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 50 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "first turn, at the slower first-dwell delay");
+        // The repeat delay is shorter than the first: this alone is enough
+        // to trigger the second turn, without needing another full
+        // first-dwell wait.
+        screen.tick(EDGE_HOLD_REPEAT_MS);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 1 && ticks < 50 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 2, "second turn, at the faster repeat delay");
+    }
+
+    #[test]
+    fn edge_hold_at_the_last_page_creates_a_new_page_instead_of_stalling() {
+        let mut screen = screen_with(&[None; 4]);
+        assert_eq!(screen.page_count(), 1);
+        screen.begin_external_drag("new.desktop".into(), (WIDTH as f64 - 5.0, 600.0));
+        screen.external_drag_motion((WIDTH as f64 - 5.0, 600.0), 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.page_count() < 2 && ticks < 100 {
+            screen.tick(30);
+            ticks += 1;
+        }
+        assert_eq!(screen.page_count(), 2, "a brand-new page was created");
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "and the pager slides onto it");
+        assert!(screen.layout.pages[1].iter().all(Option::is_none), "the new page starts empty");
+    }
+
+    #[test]
+    fn a_quick_horizontal_fling_mid_drag_pages_immediately_without_an_edge_dwell() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        screen.begin_external_drag("new.desktop".into(), (300.0, 600.0));
+        screen.external_drag_motion((300.0, 600.0), 0, WIDTH, HEIGHT); // baseline, away from any edge
+        // A fast leftward motion (well above the fling threshold, and
+        // nowhere near an edge zone) should page over on its own.
+        screen.external_drag_motion((100.0, 600.0), 40, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 50 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "flung to the next page without dwelling at an edge");
+    }
+
+    // -- Cross-page rearrange drag: release must commit to the NEW page,
+    // not revert to the drag's origin page (operator report on real glass:
+    // dragging an icon/widget across the edge visibly switches Home to the
+    // next page, but lifting the finger snaps it back to where it started).
+
+    /// Drags an existing icon from page 0 to the right edge, ticking until
+    /// the edge-hold dwell threshold turns the page, then releases onto an
+    /// empty cell on page 1 -- the item must land there, not revert to its
+    /// origin slot on page 0.
+    #[test]
+    fn dragging_an_existing_icon_across_the_edge_lands_on_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]); // page 1, all empty
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert!(screen.rearranging);
+        // Drag to (and hold at) the right edge until the page turns.
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "the page switched while still dragging");
+        // Move onto an empty cell on the now-current page 1 and release.
+        let drop_point = tile_center_for_test(2);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, drop_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 2 }),
+            Some(&HomeItem::app("a.desktop")),
+            "dropped item must land on the new page, not revert to its origin"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared once the drop commits"
+        );
+    }
+
+    /// Same cross-page drag, but the new page's target cell is already
+    /// occupied -- the item must land on the nearest *free* cell on the new
+    /// page, not revert to its origin.
+    #[test]
+    fn dragging_an_existing_icon_across_the_edge_onto_an_occupied_cell_lands_nearby_on_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![
+            Some(HomeItem::app("existing.desktop")),
+            None,
+            None,
+            None,
+        ]); // page 1, slot 0 occupied
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1);
+        // Release directly onto page 1's already-occupied slot 0.
+        let drop_point = tile_center_for_test(0);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        let action = screen.up(1, drop_point, 920, WIDTH, HEIGHT);
+        assert_eq!(action, Some(HomeAction::LayoutChanged));
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- the drop did not revert"
+        );
+        assert!(
+            screen.layout.contains_app("a.desktop"),
+            "the dragged app must still exist somewhere"
+        );
+        // "existing.desktop" (or a merged folder with it) must still be at
+        // its own slot -- the drop must not have clobbered it.
+        let slot0 = screen.layout.get(HomeSlot::Grid { page: 1, slot: 0 }).cloned();
+        assert!(
+            matches!(slot0, Some(HomeItem::Folder(_))) || slot0 == Some(HomeItem::app("existing.desktop")),
+            "unexpected page-1 slot-0 contents: {slot0:?}"
+        );
+    }
+
+    /// Same cross-page drag, but the finger is released right where it has
+    /// been dwelling -- in the edge zone itself -- rather than moved back
+    /// toward the grid's center first, matching how a person actually lifts
+    /// off after watching the page turn under their finger. The release
+    /// point (`width - 5`) sits inside `EDGE_ZONE_PX`'s 40px trigger band
+    /// but outside every tile's own hit rect (the grid's `SIDE_MARGIN` is
+    /// only 22px), so `slot_at` resolves to no cell at all here -- this is
+    /// the exact root cause: `drop_dragged_item`'s `DragSource::Existing`
+    /// arm used to `return None` outright on an unresolvable target, with
+    /// no same-page fallback (every other drag source already had one),
+    /// silently discarding the drop and leaving the item exactly where it
+    /// started -- which then reads as "snapped back to its original page".
+    #[test]
+    fn releasing_right_at_the_edge_where_the_page_just_turned_still_commits_to_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "the page switched while still dragging");
+        assert_eq!(
+            home_grid::slot_at(edge_point, WIDTH, HEIGHT, home_grid::apps_per_page(HEIGHT)),
+            None,
+            "sanity check: this release point must be outside every tile's own hit rect"
+        );
+        // Release right here, at the edge -- no further motion inward.
+        assert_eq!(
+            screen.up(1, edge_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- must not have snapped back"
+        );
+        assert!(
+            screen.layout.pages[1].iter().any(|cell| cell.as_ref() == Some(&HomeItem::app("a.desktop"))),
+            "the item must have landed somewhere on the new (now-current) page"
+        );
+    }
+
+    /// A widget dragged across the edge and released onto the new page's
+    /// already-occupied cell (a plain app, spanning a different size, so
+    /// neither a merge nor a same-span swap applies) must land on the
+    /// nearest free cell on that *new* page -- not revert to its origin,
+    /// and not clobber the app already there.
+    #[test]
+    fn dragging_a_widget_across_the_edge_onto_an_incompatible_occupied_cell_lands_nearby_on_the_new_page() {
+        let per_page = home_grid::apps_per_page(HEIGHT);
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0] = vec![None; per_page];
+        screen.layout.pages[0][0] = Some(HomeItem::Widget { widget: WidgetKind::Clock }); // covers 0..8 (4x2)
+        let mut page1 = vec![None; per_page];
+        page1[0] = Some(HomeItem::app("existing.desktop"));
+        screen.layout.pages.push(page1);
+
+        let start = tile_center_for_test(0); // the widget's anchor cell
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(
+            screen.drag.as_ref().map(|(source, _)| source.clone()),
+            Some(DragSource::Existing(HomeSlot::Grid { page: 0, slot: 0 }))
+        );
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1);
+        // Release directly onto page 1's already-occupied slot 0.
+        let drop_point = tile_center_for_test(0);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, drop_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- the drop did not revert"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 0 }),
+            Some(&HomeItem::app("existing.desktop")),
+            "the app already on the new page must be untouched"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 4 }),
+            Some(&HomeItem::Widget { widget: WidgetKind::Clock }),
+            "the widget must land on the new page's nearest free cell (row 1, since row 0 has no 4-wide gap left)"
+        );
     }
 
     #[test]

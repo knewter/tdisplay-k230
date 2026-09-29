@@ -1478,6 +1478,26 @@ DATA 4697a2cfe9b753a6ff75ca019f3bb103b07eb85e10cefd7463b8d735b54380b9 docs/evide
 DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evidence/home-widgets-folders/home-dark-rearrange-done.png
 DATA fa078c53898c978cd6e1bb69b6ed4e625cf380c6450f2155c508f512d21b6255 docs/evidence/home-widgets-folders/home-dark-rearrange.png
 DATA 507e156719fa35cfee8b57042169200c8536506afd0f54e1bb929392a07a085c docs/evidence/home-widgets-folders/home-dark-removed.png
+DATA 693b0de82051da47e505b2cd987b16ee551265bc6171fb55a73e0826812e377f docs/evidence/home-widget-design/dark-battery-absent.png
+DATA be4bb9f3177e475782a1570d1978cbe59e5f9bc6ea68a6d7689eb78c130d4dd3 docs/evidence/home-widget-design/dark-battery-present.png
+DATA 1398af67e82fddbb1237622ceec17a1fad39e78ecee7594446d2cd9b05d0d152 docs/evidence/home-widget-design/dark-clock-analog.png
+DATA 2a827346e51964ed56484b701bd720287f3db5f10f773845bac25c0939faa5a8 docs/evidence/home-widget-design/dark-clock-bubble.png
+DATA 7b9aac0da67ffd94d4341c930ed26032fa882cb3be44065f0229bc8bc5d4c125 docs/evidence/home-widget-design/dark-clock-dotmatrix.png
+DATA 924a309fa318f37dd57d80beec57c09b4bb30568370c47b08fecf5adc97551c2 docs/evidence/home-widget-design/dark-clock-thin.png
+DATA 4981926068b22c68ee61c61b11e13be7589c243086b5c83b3830e0d05840d574 docs/evidence/home-widget-design/dark-drag-edge-indicator.png
+DATA b3b4a5cb991f4aeb1175625c52b7acff6df77c39a81a1d080baa33b1029910b3 docs/evidence/home-widget-design/dark-drag-no-room.png
+DATA e23ba26c6ea31d98907fa9777862d538630b69072a6c22dc7ce93c1f65d891fd docs/evidence/home-widget-design/dark-overview.png
+DATA 1e98894b8b078dcb74b6bbde47e0065c8389faf52f8be6e1a93ffe25e82773f3 docs/evidence/home-widget-design/dark-weather.png
+DATA 2d64b6efc8a868f958df8ef7adab930ecb5f6a6c8cf2bc4423985021b3ffa172 docs/evidence/home-widget-design/dark-widget-picker.png
+DATA 400f8cbcca06a5a2224205a5d071fbaa2d4c47277c6e838a34d84e910d84b008 docs/evidence/home-widget-design/light-battery-absent.png
+DATA c315804f242a56ba94b303010fffdba6ad44b27140d008725aad444414ed2107 docs/evidence/home-widget-design/light-battery-present.png
+DATA 03c49c1b67ab215b4ea175ff600c7598a52bda59f0b004a81e3d3c13d0cf909c docs/evidence/home-widget-design/light-clock-analog.png
+DATA 2f7f323fd3a809fe0db577b2d831d9a5d2c1099a8c743970967d880384f8fdb3 docs/evidence/home-widget-design/light-clock-bubble.png
+DATA 8eb5077bd38fe42a124a5f498a6a23ef689e4f5918f2148b851c046479ef4e30 docs/evidence/home-widget-design/light-clock-dotmatrix.png
+DATA 44315e00614738c83c9854879a5177ce8625e94f2aed87bf43e19a7e6f223679 docs/evidence/home-widget-design/light-clock-thin.png
+DATA 7480e53a2d166f6046ba735d5a47ee9fbbe9bf274054de367df87a8fd3abc747 docs/evidence/home-widget-design/light-overview.png
+DATA 78843e3a5835a341a2fb9801fc3c367b9e74ff8ff56be3b10c6757950a44f847 docs/evidence/home-widget-design/light-weather.png
+DATA 9b6f45195710d80e950dc8659a43e879cfe0b1ace4b0d579e0f5cb14a38caf03 docs/evidence/home-widget-design/light-widget-picker.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2334,3 +2354,46 @@ a real cross-built Rust client and patched Sway under
 | `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
 | `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
 | `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |
+
+## Widget visual redesign host captures, 2026-09-28 (revised twice: board
+review round 2 dropped every widget's card background and rebuilt the
+clock styles after design research; the filenames/hashes below are that
+final round)
+
+Host-rendered, not board or QEMU evidence: `cargo run --example
+render_widget_evidence` (`nix/rust-shell-client/examples/
+render_widget_evidence.rs`) calls the real, unmodified `render::paint_home`
+offscreen against two synthetic `AppearanceSnapshot` themes (a Catppuccin
+Mocha-derived dark palette and a Catppuccin Latte-derived light one, built
+directly from `appearance.rs`'s own public fields, not a live Omarchy IPC
+session this host has no compositor to run), composited over a genuine
+Omarchy theme background image (`catppuccin`'s `2-waves.webp` / `catppuccin-
+latte`'s `1-color-fade.webp`, decoded through the same `BackgroundCache`
+the production wallpaper layer uses) rather than a flat color. The two
+drag-mechanic captures (`dark-drag-edge-indicator.png`, `dark-drag-no-
+room.png`) drive `HomeScreen` through its real public `down`/`motion`/
+`tick`/`external_drag_motion` API, not faked state -- see
+`docs/evidence/home-widget-design/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-widget-design/dark-clock-bubble.png` | 202589 | DATA | `2a827346e51964ed56484b701bd720287f3db5f10f773845bac25c0939faa5a8` |
+| `docs/evidence/home-widget-design/dark-clock-thin.png` | 207521 | DATA | `924a309fa318f37dd57d80beec57c09b4bb30568370c47b08fecf5adc97551c2` |
+| `docs/evidence/home-widget-design/dark-clock-analog.png` | 191612 | DATA | `1398af67e82fddbb1237622ceec17a1fad39e78ecee7594446d2cd9b05d0d152` |
+| `docs/evidence/home-widget-design/dark-clock-dotmatrix.png` | 210538 | DATA | `7b9aac0da67ffd94d4341c930ed26032fa882cb3be44065f0229bc8bc5d4c125` |
+| `docs/evidence/home-widget-design/dark-battery-present.png` | 199925 | DATA | `be4bb9f3177e475782a1570d1978cbe59e5f9bc6ea68a6d7689eb78c130d4dd3` |
+| `docs/evidence/home-widget-design/dark-battery-absent.png` | 191743 | DATA | `693b0de82051da47e505b2cd987b16ee551265bc6171fb55a73e0826812e377f` |
+| `docs/evidence/home-widget-design/dark-weather.png` | 204140 | DATA | `1e98894b8b078dcb74b6bbde47e0065c8389faf52f8be6e1a93ffe25e82773f3` |
+| `docs/evidence/home-widget-design/dark-overview.png` | 225058 | DATA | `e23ba26c6ea31d98907fa9777862d538630b69072a6c22dc7ce93c1f65d891fd` |
+| `docs/evidence/home-widget-design/dark-widget-picker.png` | 128368 | DATA | `2d64b6efc8a868f958df8ef7adab930ecb5f6a6c8cf2bc4423985021b3ffa172` |
+| `docs/evidence/home-widget-design/dark-drag-edge-indicator.png` | 187800 | DATA | `4981926068b22c68ee61c61b11e13be7589c243086b5c83b3830e0d05840d574` |
+| `docs/evidence/home-widget-design/dark-drag-no-room.png` | 207810 | DATA | `b3b4a5cb991f4aeb1175625c52b7acff6df77c39a81a1d080baa33b1029910b3` |
+| `docs/evidence/home-widget-design/light-clock-bubble.png` | 83918 | DATA | `2f7f323fd3a809fe0db577b2d831d9a5d2c1099a8c743970967d880384f8fdb3` |
+| `docs/evidence/home-widget-design/light-clock-thin.png` | 89672 | DATA | `44315e00614738c83c9854879a5177ce8625e94f2aed87bf43e19a7e6f223679` |
+| `docs/evidence/home-widget-design/light-clock-analog.png` | 72964 | DATA | `03c49c1b67ab215b4ea175ff600c7598a52bda59f0b004a81e3d3c13d0cf909c` |
+| `docs/evidence/home-widget-design/light-clock-dotmatrix.png` | 96003 | DATA | `8eb5077bd38fe42a124a5f498a6a23ef689e4f5918f2148b851c046479ef4e30` |
+| `docs/evidence/home-widget-design/light-battery-present.png` | 81211 | DATA | `c315804f242a56ba94b303010fffdba6ad44b27140d008725aad444414ed2107` |
+| `docs/evidence/home-widget-design/light-battery-absent.png` | 74123 | DATA | `400f8cbcca06a5a2224205a5d071fbaa2d4c47277c6e838a34d84e910d84b008` |
+| `docs/evidence/home-widget-design/light-weather.png` | 86388 | DATA | `78843e3a5835a341a2fb9801fc3c367b9e74ff8ff56be3b10c6757950a44f847` |
+| `docs/evidence/home-widget-design/light-overview.png` | 118568 | DATA | `7480e53a2d166f6046ba735d5a47ee9fbbe9bf274054de367df87a8fd3abc747` |
+| `docs/evidence/home-widget-design/light-widget-picker.png` | 86518 | DATA | `9b6f45195710d80e950dc8659a43e879cfe0b1ace4b0d579e0f5cb14a38caf03` |

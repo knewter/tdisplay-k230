@@ -10,9 +10,10 @@
 //!   error state, and is rendered as a clean "No battery info" rather than
 //!   a spinner or a dash.
 //! - [`weather`]: a disk-cached, throttled wrapper around the same wttr.in
-//!   source `nix/shell.nix`'s `k230-weather` desktop entry already uses,
-//!   parsed into a condition glyph key and a temperature instead of that
-//!   entry's human-readable paragraph.
+//!   host `nix/shell.nix`'s `k230-weather` desktop entry already uses, at
+//!   its structured `j1` JSON format instead of that entry's human-readable
+//!   paragraph -- current conditions, today's high/low, a short forecast
+//!   strip, and a location name.
 //! - [`clock`]: no state at all -- `home_screen`/`render.rs` format the
 //!   current local time directly; see this module's `clock` submodule for
 //!   the once-a-minute-aligned redraw timer only.
@@ -294,17 +295,37 @@ pub mod weather {
 
     /// Task: "Fetch at most every 30 min".
     pub const REFRESH_INTERVAL: Duration = Duration::from_secs(30 * 60);
-    /// wttr.in's own compact one-line format (`%C|%t`, condition then a
-    /// literal `|` then temperature -- `%7C` is `|` URL-encoded):
-    /// deliberately not the human paragraph `nix/shell.nix`'s
-    /// `k230-weather` desktop entry prints, since this widget needs the two
-    /// fields split, not prose.
-    const WTTR_URL: &str = "https://wttr.in/?format=%C%7C%t";
+    /// wttr.in's structured JSON format (`home-widget-design`: "switch the
+    /// fetch to it"), replacing the old compact `%C|%t` one-liner --
+    /// `j1` is the only format that carries a high/low, an hourly forecast,
+    /// and a location name, all of which the redesigned Weather widget
+    /// shows.
+    const WTTR_URL: &str = "https://wttr.in/?format=j1";
+
+    /// One entry in the widget's short forecast strip: a short clock-style
+    /// label (`3pm`) and enough to draw the same condition glyph the
+    /// current-conditions card uses ([`condition_glyph`]).
+    #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+    pub struct ForecastEntry {
+        pub label: String,
+        pub temp_c: i32,
+        pub condition: String,
+    }
 
     #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
     pub struct WeatherSnapshot {
+        /// `nearest_area[0].areaName[0].value`, e.g. "Boston" -- empty when
+        /// wttr.in's response omits it (never expected, but not load-
+        /// bearing: the renderer just leaves the location line out).
+        pub location: String,
         pub condition: String,
-        pub temperature: String,
+        pub temperature_c: i32,
+        pub feels_like_c: i32,
+        pub high_c: i32,
+        pub low_c: i32,
+        /// Up to 5 entries, nearest hour first (task: "a small 3-5 hour or
+        /// day forecast strip").
+        pub forecast: Vec<ForecastEntry>,
         pub fetched_unix_secs: u64,
     }
 
@@ -377,20 +398,136 @@ pub mod weather {
         }
     }
 
-    /// Parses wttr.in's `%C|%t` one-line response, e.g. `Partly cloudy|+21°C`,
-    /// into `(condition, temperature)`. `None` for anything that does not
-    /// contain exactly the one separator this format always produces (a
-    /// network error page, an empty body, or a rate-limit message all fail
-    /// this the same way "offline" does -- see [`fetch_now`]'s own doc).
-    pub fn parse_wttr_line(raw: &str) -> Option<(String, String)> {
-        let trimmed = raw.trim();
-        let (condition, temperature) = trimmed.split_once('|')?;
-        let condition = condition.trim();
-        let temperature = temperature.trim();
-        if condition.is_empty() || temperature.is_empty() {
-            return None;
+    // -- wttr.in's own j1 JSON shape, just the fields this widget uses.
+    // Field names mirror wttr.in's exactly (via `#[serde(rename)]`) rather
+    // than being guessed at; unrecognized fields are simply never
+    // deserialized (`serde_json` ignores unknown keys by default), so this
+    // stays forward-compatible with anything else wttr.in's response adds.
+
+    #[derive(Deserialize)]
+    struct WttrValue {
+        value: String,
+    }
+
+    #[derive(Deserialize)]
+    struct WttrCurrent {
+        #[serde(rename = "temp_C")]
+        temp_c: String,
+        #[serde(rename = "FeelsLikeC")]
+        feels_like_c: String,
+        #[serde(rename = "weatherDesc")]
+        weather_desc: Vec<WttrValue>,
+    }
+
+    #[derive(Deserialize)]
+    struct WttrHourly {
+        time: String,
+        #[serde(rename = "tempC")]
+        temp_c: String,
+        #[serde(rename = "weatherDesc")]
+        weather_desc: Vec<WttrValue>,
+    }
+
+    #[derive(Deserialize)]
+    struct WttrDay {
+        #[serde(rename = "maxtempC")]
+        maxtemp_c: String,
+        #[serde(rename = "mintempC")]
+        mintemp_c: String,
+        hourly: Vec<WttrHourly>,
+    }
+
+    #[derive(Deserialize)]
+    struct WttrArea {
+        #[serde(rename = "areaName")]
+        area_name: Vec<WttrValue>,
+    }
+
+    #[derive(Deserialize)]
+    struct WttrResponse {
+        current_condition: Vec<WttrCurrent>,
+        weather: Vec<WttrDay>,
+        #[serde(default)]
+        nearest_area: Vec<WttrArea>,
+    }
+
+    /// wttr.in's hourly `time` field is `"0"`, `"300"`, ... `"2100"` (the
+    /// hour times 100, no leading zeros) -- this recovers just the hour.
+    fn hour_from_wttr_time(time: &str) -> i32 {
+        time.trim().parse::<i32>().unwrap_or(0) / 100
+    }
+
+    /// `15` -> `"3pm"`, `0`/`24` -> `"12am"` -- a short clock-style label for
+    /// the forecast strip, matching how a person reads a analog/12-hour
+    /// clock rather than wttr.in's own 24-hour hour-times-100 encoding.
+    fn hour_label(hour_abs: i32) -> String {
+        let hour = hour_abs.rem_euclid(24);
+        let period = if hour < 12 { "am" } else { "pm" };
+        let display = match hour % 12 {
+            0 => 12,
+            other => other,
+        };
+        format!("{display}{period}")
+    }
+
+    fn parse_c(value: &str) -> i32 {
+        value.trim().parse().unwrap_or(0)
+    }
+
+    /// Parses wttr.in's `j1` JSON body into a [`WeatherSnapshot`], selecting
+    /// up to 5 upcoming hourly forecast entries starting at-or-after
+    /// `current_hour` (today's remaining hours, then tomorrow's, in order --
+    /// wttr.in's default `j1` response covers 3 days, more than enough to
+    /// always find 5). `current_hour` is a plain parameter (not read from
+    /// the clock inside this function) so this stays host-testable with a
+    /// fixed time. `None` for a body that does not parse as `j1` at all (a
+    /// network error page, empty body, or rate-limit message) or is missing
+    /// `current_condition`/`weather` -- [`fetch_now`]'s caller treats that
+    /// uniformly as "offline".
+    pub fn parse_wttr_j1(raw: &str, current_hour: i32) -> Option<WeatherSnapshot> {
+        let parsed: WttrResponse = serde_json::from_str(raw).ok()?;
+        let current = parsed.current_condition.first()?;
+        let today = parsed.weather.first()?;
+        let condition = current.weather_desc.first().map(|value| value.value.clone()).unwrap_or_default();
+        let location = parsed
+            .nearest_area
+            .first()
+            .and_then(|area| area.area_name.first())
+            .map(|value| value.value.clone())
+            .unwrap_or_default();
+
+        let mut forecast = Vec::new();
+        for (day_index, day) in parsed.weather.iter().take(2).enumerate() {
+            let day_offset_hours = (day_index as i32) * 24;
+            for hour in &day.hourly {
+                let hour_abs = day_offset_hours + hour_from_wttr_time(&hour.time);
+                if hour_abs < current_hour {
+                    continue;
+                }
+                forecast.push(ForecastEntry {
+                    label: hour_label(hour_abs),
+                    temp_c: parse_c(&hour.temp_c),
+                    condition: hour.weather_desc.first().map(|value| value.value.clone()).unwrap_or_default(),
+                });
+                if forecast.len() >= 5 {
+                    break;
+                }
+            }
+            if forecast.len() >= 5 {
+                break;
+            }
         }
-        Some((condition.to_string(), temperature.to_string()))
+
+        Some(WeatherSnapshot {
+            location,
+            condition,
+            temperature_c: parse_c(&current.temp_c),
+            feels_like_c: parse_c(&current.feels_like_c),
+            high_c: parse_c(&today.maxtemp_c),
+            low_c: parse_c(&today.mintemp_c),
+            forecast,
+            fetched_unix_secs: 0, // filled in by the caller (refresh) with the real fetch time
+        })
     }
 
     /// A short, cheap-to-draw glyph key for `condition`'s free text --
@@ -419,17 +556,16 @@ pub mod weather {
         }
     }
 
-    /// Shells out to `curl` for a fresh reading, exactly the same source
+    /// Shells out to `curl` for a fresh `j1` reading, the same source
     /// (`https://wttr.in`) `nix/shell.nix`'s `k230-weather` desktop entry
-    /// already uses, just in the compact `%C|%t` format this widget can
-    /// parse instead of that entry's human paragraph. Any network failure,
-    /// timeout, or unparseable body returns `Err` uniformly -- the caller
-    /// (`should_fetch`/`display_for`) already treats "no fresh reading"
-    /// and "offline" the same way, by keeping whatever cache it has.
-    /// `curl_bin` is injectable so a test can point this at a fake binary
-    /// instead of touching the real network; production callers pass
-    /// `"curl"`.
-    pub fn fetch_now(curl_bin: &str) -> Result<(String, String), String> {
+    /// already uses, just the structured format this widget needs instead
+    /// of that entry's human paragraph. Any network failure, timeout, or
+    /// unparseable body returns `Err` uniformly -- the caller
+    /// (`should_fetch`/`display_for`) already treats "no fresh reading" and
+    /// "offline" the same way, by keeping whatever cache it has. `curl_bin`
+    /// is injectable so a test can point this at a fake binary instead of
+    /// touching the real network; production callers pass `"curl"`.
+    pub fn fetch_now(curl_bin: &str) -> Result<WeatherSnapshot, String> {
         let output = Command::new(curl_bin)
             .args([
                 "--silent",
@@ -446,7 +582,8 @@ pub mod weather {
             return Err(format!("curl exited with {:?}", output.status.code()));
         }
         let body = String::from_utf8_lossy(&output.stdout);
-        parse_wttr_line(&body).ok_or_else(|| "unparseable wttr.in response (likely offline)".to_string())
+        let current_hour = crate::home_widgets::clock::now_local().map(|local| local.hour).unwrap_or(0);
+        parse_wttr_j1(&body, current_hour).ok_or_else(|| "unparseable wttr.in response (likely offline)".to_string())
     }
 
     /// Fetches (if due) and folds the result into an updated on-disk cache
@@ -460,12 +597,9 @@ pub mod weather {
             return display_for(existing, now);
         }
         match fetch_now(curl_bin) {
-            Ok((condition, temperature)) => {
-                let snapshot = WeatherSnapshot {
-                    condition,
-                    temperature,
-                    fetched_unix_secs: now.duration_since(SystemTime::UNIX_EPOCH).map(|duration| duration.as_secs()).unwrap_or(0),
-                };
+            Ok(mut snapshot) => {
+                snapshot.fetched_unix_secs =
+                    now.duration_since(SystemTime::UNIX_EPOCH).map(|duration| duration.as_secs()).unwrap_or(0);
                 let _ = save_cache(cache_file, &snapshot);
                 WeatherDisplay::Fresh(snapshot)
             }
@@ -490,20 +624,77 @@ pub mod weather {
             assert_eq!(cache_path_from(None, None), None);
         }
 
-        #[test]
-        fn parse_wttr_line_splits_condition_and_temperature() {
-            assert_eq!(
-                parse_wttr_line("Partly cloudy|+21°C"),
-                Some(("Partly cloudy".to_string(), "+21°C".to_string()))
-            );
-            assert_eq!(parse_wttr_line("\nSunny|+9°C \n"), Some(("Sunny".to_string(), "+9°C".to_string())));
+        /// A minimal but shape-accurate `j1` body -- 2 days, 3 hourly
+        /// entries per day (wttr.in's default gives 8 per day; 3 is plenty
+        /// to exercise "today's remaining hours, then tomorrow's").
+        fn sample_j1(current_temp_c: &str) -> String {
+            format!(
+                r#"{{
+                    "current_condition": [{{
+                        "temp_C": "{current_temp_c}",
+                        "FeelsLikeC": "19",
+                        "weatherDesc": [{{"value": "Partly cloudy"}}]
+                    }}],
+                    "weather": [
+                        {{
+                            "maxtempC": "23",
+                            "mintempC": "14",
+                            "hourly": [
+                                {{"time": "0", "tempC": "15", "weatherDesc": [{{"value": "Clear"}}]}},
+                                {{"time": "1200", "tempC": "22", "weatherDesc": [{{"value": "Sunny"}}]}},
+                                {{"time": "1500", "tempC": "23", "weatherDesc": [{{"value": "Partly cloudy"}}]}}
+                            ]
+                        }},
+                        {{
+                            "maxtempC": "20",
+                            "mintempC": "12",
+                            "hourly": [
+                                {{"time": "0", "tempC": "13", "weatherDesc": [{{"value": "Clear"}}]}},
+                                {{"time": "900", "tempC": "17", "weatherDesc": [{{"value": "Light rain"}}]}},
+                                {{"time": "1800", "tempC": "16", "weatherDesc": [{{"value": "Overcast"}}]}}
+                            ]
+                        }}
+                    ],
+                    "nearest_area": [{{"areaName": [{{"value": "Boston"}}]}}]
+                }}"#
+            )
         }
 
         #[test]
-        fn parse_wttr_line_rejects_anything_without_the_separator() {
-            assert_eq!(parse_wttr_line(""), None);
-            assert_eq!(parse_wttr_line("Unknown location"), None);
-            assert_eq!(parse_wttr_line("<html>rate limited</html>"), None);
+        fn parse_wttr_j1_reads_current_conditions_high_low_and_location() {
+            let snapshot = parse_wttr_j1(&sample_j1("21"), 10).expect("valid j1 body");
+            assert_eq!(snapshot.location, "Boston");
+            assert_eq!(snapshot.condition, "Partly cloudy");
+            assert_eq!(snapshot.temperature_c, 21);
+            assert_eq!(snapshot.feels_like_c, 19);
+            assert_eq!(snapshot.high_c, 23);
+            assert_eq!(snapshot.low_c, 14);
+        }
+
+        #[test]
+        fn parse_wttr_j1_forecast_starts_at_the_current_hour_and_spills_into_tomorrow() {
+            // current_hour = 13 (1pm): today's 0h and 12h entries are in the
+            // past, so the strip starts at today's 3pm, then continues into
+            // tomorrow's hours in order.
+            let snapshot = parse_wttr_j1(&sample_j1("21"), 13).expect("valid j1 body");
+            let labels: Vec<&str> = snapshot.forecast.iter().map(|entry| entry.label.as_str()).collect();
+            assert_eq!(labels, vec!["3pm", "12am", "9am", "6pm"]);
+            assert_eq!(snapshot.forecast[0].temp_c, 23);
+            assert_eq!(snapshot.forecast[0].condition, "Partly cloudy");
+        }
+
+        #[test]
+        fn parse_wttr_j1_caps_the_forecast_at_five_entries() {
+            let snapshot = parse_wttr_j1(&sample_j1("21"), 0).expect("valid j1 body");
+            assert!(snapshot.forecast.len() <= 5);
+        }
+
+        #[test]
+        fn parse_wttr_j1_rejects_anything_that_is_not_a_j1_body() {
+            assert_eq!(parse_wttr_j1("", 12), None);
+            assert_eq!(parse_wttr_j1("Unknown location", 12), None);
+            assert_eq!(parse_wttr_j1("<html>rate limited</html>", 12), None);
+            assert_eq!(parse_wttr_j1("{}", 12), None, "missing current_condition/weather");
         }
 
         #[test]
@@ -517,26 +708,31 @@ pub mod weather {
             assert_eq!(condition_glyph("something wttr.in has never printed before"), "sun");
         }
 
+        fn sample_snapshot(fetched_unix_secs: u64) -> WeatherSnapshot {
+            WeatherSnapshot {
+                location: "Boston".into(),
+                condition: "Clear".into(),
+                temperature_c: 20,
+                feels_like_c: 19,
+                high_c: 23,
+                low_c: 14,
+                forecast: vec![ForecastEntry { label: "3pm".into(), temp_c: 21, condition: "Sunny".into() }],
+                fetched_unix_secs,
+            }
+        }
+
         #[test]
         fn should_fetch_is_true_with_no_cache_and_false_just_after_a_fetch() {
             let now = SystemTime::UNIX_EPOCH + Duration::from_secs(1_000_000);
             assert!(should_fetch(None, now));
-            let fresh = WeatherSnapshot {
-                condition: "Clear".into(),
-                temperature: "+20°C".into(),
-                fetched_unix_secs: 1_000_000 - 60,
-            };
+            let fresh = sample_snapshot(1_000_000 - 60);
             assert!(!should_fetch(Some(&fresh), now));
         }
 
         #[test]
         fn should_fetch_is_true_once_the_refresh_interval_has_passed() {
             let now = SystemTime::UNIX_EPOCH + Duration::from_secs(1_000_000);
-            let old = WeatherSnapshot {
-                condition: "Clear".into(),
-                temperature: "+20°C".into(),
-                fetched_unix_secs: 1_000_000 - REFRESH_INTERVAL.as_secs() - 1,
-            };
+            let old = sample_snapshot(1_000_000 - REFRESH_INTERVAL.as_secs() - 1);
             assert!(should_fetch(Some(&old), now));
         }
 
@@ -544,9 +740,9 @@ pub mod weather {
         fn display_for_distinguishes_fresh_stale_and_unavailable() {
             let now = SystemTime::UNIX_EPOCH + Duration::from_secs(1_000_000);
             assert_eq!(display_for(None, now), WeatherDisplay::Unavailable);
-            let fresh = WeatherSnapshot { condition: "Clear".into(), temperature: "+20°C".into(), fetched_unix_secs: 1_000_000 - 60 };
+            let fresh = sample_snapshot(1_000_000 - 60);
             assert_eq!(display_for(Some(fresh.clone()), now), WeatherDisplay::Fresh(fresh));
-            let old = WeatherSnapshot { condition: "Clear".into(), temperature: "+20°C".into(), fetched_unix_secs: 0 };
+            let old = sample_snapshot(0);
             assert_eq!(display_for(Some(old.clone()), now), WeatherDisplay::Stale(old));
         }
 
@@ -558,7 +754,7 @@ pub mod weather {
                 std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
             ));
             let path = dir.join("weather.json");
-            let snapshot = WeatherSnapshot { condition: "Overcast".into(), temperature: "+14°C".into(), fetched_unix_secs: 42 };
+            let snapshot = sample_snapshot(42);
             save_cache(&path, &snapshot).unwrap();
             assert_eq!(load_cache(&path), Some(snapshot));
             std::fs::remove_dir_all(&dir).unwrap();
@@ -573,11 +769,7 @@ pub mod weather {
             ));
             std::fs::create_dir_all(&dir).unwrap();
             let path = dir.join("weather.json");
-            let stale = WeatherSnapshot {
-                condition: "Clear".into(),
-                temperature: "+11°C".into(),
-                fetched_unix_secs: 0,
-            };
+            let stale = sample_snapshot(0);
             save_cache(&path, &stale).unwrap();
             let now = SystemTime::UNIX_EPOCH + Duration::from_secs(10_000_000);
             // "/nonexistent-curl-binary" always fails to spawn -- stands in

@@ -101,6 +101,22 @@ impl HomePager {
         self.page_width = page_width.max(1.0);
     }
 
+    /// Directly sets the pager's exact (possibly fractional) position, with
+    /// no animation of its own and no change to velocity/settle -- the sink
+    /// `home_screen`'s own edge-hold/fling cross-page-drag animation driver
+    /// calls every tick (task 1: "the page-switch animation stays smooth").
+    /// That driver owns its own easing curve entirely externally; this is
+    /// just where the eased value lands, distinct from `set_page`'s instant
+    /// *integer*-page jump (which also happens to reset velocity/settle,
+    /// exactly as this does, so touching a pager mid-external-drive never
+    /// leaves stale momentum behind).
+    pub fn set_position(&mut self, position: f64, count: usize) {
+        let max_page = count.saturating_sub(1).max(0) as f64;
+        self.position = position.clamp(0.0, max_page.max(0.0));
+        self.velocity = 0.0;
+        self.settle = None;
+    }
+
     /// True while a momentum coast or a post-release settle is running with
     /// no touch to generate further Wayland events -- the caller keeps
     /// polling frames at the fast tick rate while this holds, and can fall
@@ -321,6 +337,23 @@ mod tests {
         assert!(pager.is_animating());
         pager.down((120.0, 600.0), 50);
         assert!(!pager.is_animating(), "a new touch cancels any coast/settle");
+    }
+
+    #[test]
+    fn set_position_clamps_and_clears_velocity_and_settle() {
+        let mut pager = HomePager::new(PAGE_WIDTH);
+        pager.set_page(0);
+        pager.down((300.0, 600.0), 0);
+        pager.motion((300.0 - PAGE_WIDTH * 3.0, 600.0), 20, 5);
+        pager.up(5);
+        assert!(pager.is_animating(), "coasting before the external drive takes over");
+        pager.set_position(1.5, 5);
+        assert!((pager.position() - 1.5).abs() < 1e-9);
+        assert!(!pager.is_animating(), "no leftover velocity/settle once driven externally");
+        pager.set_position(99.0, 5);
+        assert_eq!(pager.position(), 4.0, "clamped to the last page");
+        pager.set_position(-3.0, 5);
+        assert_eq!(pager.position(), 0.0, "clamped to the first page");
     }
 
     #[test]
