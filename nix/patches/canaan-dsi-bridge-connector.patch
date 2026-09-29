@@ -1,0 +1,51 @@
+--- a/drivers/gpu/drm/canaan/canaan_dsi.c	2026-09-28 22:35:37.403943393 -0500
++++ b/drivers/gpu/drm/canaan/canaan_dsi.c	2026-09-28 22:35:37.405275611 -0500
+@@ -8,6 +8,7 @@
+ 
+ #include "drm/drm_bridge.h"
+ #include "drm/drm_of.h"
++#include <drm/drm_bridge_connector.h>
+ #include <linux/clk.h>
+ #include <linux/component.h>
+ #include <linux/crc-ccitt.h>
+@@ -710,8 +711,38 @@
+ 		drm_connector_attach_encoder(&dsi->connector, &dsi->encoder);
+ 	}
+ 
+-	if (dsi->bridge)
+-		drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL, DRM_BRIDGE_ATTACH_NO_CONNECTOR);
++	if (dsi->bridge) {
++		struct drm_connector *bridge_connector;
++
++		ret = drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL,
++					DRM_BRIDGE_ATTACH_NO_CONNECTOR);
++		if (ret) {
++			dev_err(dsi->dev, "Couldn't attach the DSI bridge\n");
++			goto err_cleanup_connector;
++		}
++
++		/*
++		 * DRM_BRIDGE_ATTACH_NO_CONNECTOR above means exactly what it
++		 * says: the bridge chain attaches to the encoder but creates
++		 * no drm_connector, so nothing (modetest, Sway, KMS clients in
++		 * general) ever sees an HDMI-A-1. drm_bridge_connector_init()
++		 * is the generic helper for exactly this case -- it builds a
++		 * connector that walks the bridge chain for .detect/.get_modes
++		 * instead of a bridge-specific one.
++		 */
++		bridge_connector = drm_bridge_connector_init(dsi->drm, &dsi->encoder);
++		if (IS_ERR(bridge_connector)) {
++			ret = PTR_ERR(bridge_connector);
++			dev_err(dsi->dev, "Couldn't init the bridge connector\n");
++			goto err_cleanup_connector;
++		}
++
++		ret = drm_connector_attach_encoder(bridge_connector, &dsi->encoder);
++		if (ret) {
++			dev_err(dsi->dev, "Couldn't attach the bridge connector\n");
++			goto err_cleanup_connector;
++		}
++	}
+ 
+ 	return 0;
+ 

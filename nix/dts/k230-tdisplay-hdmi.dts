@@ -1,0 +1,265 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// LILYGO T-Display-K230, HDMI variant.
+//
+// This is a SEPARATE top-level board file, not a modification of
+// k230-tdisplay.dts -- the two are never booted at once (see
+// docs/research/hdmi-hotplug.md §4: canaan_dsi_bind() resolves &dsi's
+// single port@1 exactly once, at boot, so a DT graph port has one endpoint
+// and the panel and the LT9611 bridge cannot both occupy it). This file
+// therefore carries NO RM69A10 panel node and NO GT9895 touch node --
+// only this board's LT9611 HDMI bridge on &i2c3, wired to this board's own
+// GPIO23/24 facts. openspec/changes/plugging-in-hdmi-moves-the-display,
+// tasks.md task 2.2.
+//
+// Everything outside the &i2c3 and &dsi sections below is copied from
+// k230-tdisplay.dts unchanged (memory, boot-splash reserved-memory, PMU
+// power key, audio, uart/mmc/usb) -- this is the same board, only the
+// display output differs. Diverge that file and this one together if a
+// shared-node edit is needed; do not let them drift silently.
+//
+// Not this board's own device tree copied from LILYGO's or Canaan's
+// reference tree: see design.md decision 1. In particular this node's
+// LT9611 port numbering deliberately does NOT match
+// arch/riscv/boot/dts/canaan/k230-canmv-v3.dts (reg 1/2) in this same
+// pinned kernel source -- see the &i2c3 comment below for why that vendor
+// file's own port numbering does not satisfy this kernel's own
+// drivers/gpu/drm/bridge/lontium-lt9611.c as written.
+//
+// UNVERIFIED: this DTB has not been booted. Task 2.2 verifies only that it
+// compiles and that the DSI graph resolves to exactly one endpoint; tasks.md
+// group 3 is the first board time this file gets.
+
+/dts-v1/;
+
+#include "k230.dtsi"
+
+/ {
+	model = "LILYGO T-Display-K230 (HDMI)";
+	compatible = "lilygo,t-display-k230-hdmi", "canaan,canmv-k230", "canaan,kendryte-k230";
+
+	aliases {
+		serial3 = &uart3;
+		mmc0 = &mmc_sd0;
+		mmc1 = &mmc_sd1;
+		i2c0 = &i2c4;
+		i2c1 = &i2c3;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	ddr: memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x40000000>;
+	};
+
+	// DIVERGENCE: stage 1 scans this XRGB buffer until Linux owns the
+	// panel -- carried here unchanged even though this DTB has no panel,
+	// so a boot that lands here by mistake (wrong selector file) still
+	// reserves the same memory stage 1 already wrote into, rather than
+	// letting Linux allocate over it. See k230-tdisplay.dts's identical
+	// comment.
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		splash_framebuffer: framebuffer@K230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS {
+			reg = <0x0 K230_SPLASH_FRAMEBUFFER_ADDRESS
+			       0x0 K230_SPLASH_FRAMEBUFFER_SIZE>;
+			no-map;
+		};
+	};
+
+	// PMU INT0 power key, same as the panel DTB.
+	soc {
+		pmu_pwrkey: pmu-pwrkey@91000000 {
+			compatible = "canaan,k230-pmu-pwrkey";
+			reg = <0x0 0x91000000 0x0 0xc00>,
+			      <0x0 0x91103000 0x0 0x1000>;
+			reg-names = "pmu", "pwr";
+			interrupts = <175 IRQ_TYPE_LEVEL_HIGH>;
+			wakeup-source;
+		};
+	};
+
+	sound {
+		status                      = "okay";
+		compatible                  = "canaan,k230-audio-inno";
+		canaan,model                = "K230_I2S_INNO";
+		canaan,k230-i2s-controller  = <&i2s>;
+		canaan,k230-audio-codec     = <&inno_codec>;
+	};
+
+	// hdmi-connector, port 2 of the LT9611 node below. Matches the
+	// binding drivers/gpu/drm/bridge/display-connector.c registers for
+	// "hdmi-connector" (CONFIG_DRM_DISPLAY_CONNECTOR=y in
+	// k230_defconfig, untouched by nix/kernel.nix). No ddc-i2c-bus: the
+	// LT9611 bridge itself already implements DRM_BRIDGE_OP_EDID
+	// (lt9611_get_edid_block(), lontium-lt9611.c:656), so this connector
+	// does not need its own DDC path.
+	hdmi: connector {
+		compatible = "hdmi-connector";
+		label = "hdmi";
+		type = "a";
+
+		port {
+			hdmi_connector_in: endpoint {
+				remote-endpoint = <&lt9611_out>;
+			};
+		};
+	};
+};
+
+&gpio1_ports {
+	gpio-line-names =
+		"MAX98357A_I2S_BCLK",
+		"MAX98357A_I2S_LRCK",
+		"MAX98357A_SDMODE",
+		"MAX98357A_I2S_DOUT";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&mmc_sd1 {
+	status = "okay";
+	no-1-8-v;
+	cap-sd-highspeed;
+	mshc_ctrl_r = <0x00>;
+};
+
+&mmc_sd0 {
+	status = "okay";
+	no-1-8-v;
+	rx_delay_line = <0x0d>;
+	tx_delay_line = <0xc0>;
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+
+	// The LT9611 DSI-to-HDMI bridge. &i2c3 is this board's own bus
+	// (schematic sheet "HDMI+ETH" ties HDMI_CSCL/HDMI_CSDA to
+	// I2C3_SCL/I2C3_SDA, sheet "Video"'s net-label table) -- the same
+	// bus GT9895 touch uses at 0x5d in k230-tdisplay.dts, no address
+	// collision. See docs/research/hdmi-hotplug.md §1-§2 and
+	// docs/evidence/hdmi-hotplug/probe/lt9611-probe-2026-09-29.md
+	// (0x3b acknowledges, chip ID 0x17 0x02 rev 0xe2, observed on
+	// hardware with the panel DTB still booted and no LT9611 node
+	// loaded).
+	//
+	// reset-gpios / interrupts: GPIO24 and GPIO23 are the same physical
+	// nets as touch's reset/interrupt in k230-tdisplay.dts (schematic
+	// sheet "Video", HDMI_RSTN->TP_RST and HDMI_INT->TP_INT single
+	// unbroken wires) -- but THIS device tree carries no touch node, so
+	// there is no live polarity/trigger-type conflict to resolve here;
+	// that conflict only exists if a future change tries to put both
+	// nodes in one DTB (specs/display/touch/spec.md). GPIO_ACTIVE_HIGH
+	// reset and IRQ_TYPE_EDGE_FALLING match this driver's own
+	// expectations (lt9611_gpio_init() requests GPIOD_OUT_HIGH for
+	// "reset", i.e. the DT flag decides the sense; the HPD/status
+	// interrupt is edge-driven by design, not level-held like touch's
+	// GT9895).
+	//
+	// Port numbering DELIBERATELY differs from
+	// arch/riscv/boot/dts/canaan/k230-canmv-v3.dts in this same pinned
+	// kernel source, which wires ports reg=1 (DSI in) and reg=2 (HDMI
+	// out) and NO reg=0. Read directly from this kernel's own
+	// drivers/gpu/drm/bridge/lontium-lt9611.c, lt9611_parse_dt()
+	// (lines 906-919):
+	//
+	//   dsi0_node = of_graph_get_remote_node(dev->of_node, 0, -1);
+	//   if (!dsi0_node) { ...; return -ENODEV; }   // port 0 is REQUIRED
+	//   dsi1_node = of_graph_get_remote_node(dev->of_node, 1, -1); // optional
+	//   return drm_of_find_panel_or_bridge(dev->of_node, 2, -1, NULL,
+	//                                      &next_bridge);           // port 2 REQUIRED
+	//
+	// of_graph_get_remote_node() matches a port node's `reg` property,
+	// not its position in the file (drivers/of/property.c,
+	// of_graph_get_endpoint_by_regs()). A node with only reg=1 and reg=2
+	// has no port whose reg is 0, so of_graph_get_remote_node(dev, 0, -1)
+	// returns NULL and lt9611_probe() fails at "failed to parse device
+	// tree" before ever touching hardware. Whether Canaan's or LILYGO's
+	// own kernel fork's lontium-lt9611.c tolerates that numbering is not
+	// established here (different source tree, not read for this
+	// change) -- what is established is that THIS kernel's driver, the
+	// one nix/kernel.nix actually builds, needs reg=0 for the primary
+	// DSI input and reg=2 for the downstream connector/bridge. This node
+	// is written against that reading, not against the vendor file's
+	// numbers. Board proof that it actually binds is tasks.md group 3/4,
+	// not this task.
+	lt9611: hdmi-bridge@3b {
+		compatible = "lontium,lt9611";
+		reg = <0x3b>;
+		reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&gpio0_ports>;
+		interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				lt9611_in: endpoint {
+					remote-endpoint = <&dsi_out_lt9611>;
+				};
+			};
+
+			port@2 {
+				reg = <2>;
+				lt9611_out: endpoint {
+					remote-endpoint = <&hdmi_connector_in>;
+				};
+			};
+		};
+	};
+};
+
+&i2c4 {
+	status = "okay";
+};
+
+&mipi0 {
+	// set to csi2
+	id = <2>;
+	reg = <0x0 0x9000a800 0x0 0x800>;
+	interrupts = <121 IRQ_TYPE_LEVEL_HIGH>;
+	resets = <&sysctl_reset K230_RESET_CSI2_REG_OFFSET K230_RESET_CSI2_TYPE
+			  K230_RESET_CSI2_DONE_BIT K230_RESET_CSI2_ASSERT_BIT>,
+	<&sysctl_reset K230_RESET_M2_REG_OFFSET K230_RESET_M2_TYPE
+		 K230_RESET_M2_DONE_BIT K230_RESET_M2_ASSERT_BIT>;
+};
+
+// &dsi's single port@1 -- the same port index k230-tdisplay.dts's panel
+// endpoint (dsi_out_rm69a10) occupies -- now resolves to the LT9611
+// instead. canaan_dsi_bind() finds whichever single endpoint is here via
+// drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, -1, ...); with the
+// kernel patch in nix/patches/canaan-dsi-bridge-connector.patch, a bridge
+// found here now gets a real drm_bridge_connector, where before it did
+// not. See docs/research/hdmi-hotplug.md §4 and design.md decision 2.
+&dsi {
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi_out_lt9611: endpoint {
+				remote-endpoint = <&lt9611_in>;
+			};
+		};
+	};
+};

@@ -91,8 +91,15 @@ DRM_BRIDGE_ATTACH_NO_CONNECTOR)` and nothing in `canaan_dsi.c` or
 of both files in the pinned kernel tree) — so an LT9611 node in any DTB we
 build produces an attached bridge with no connector until this is patched.*
 
-<!-- UNVERIFIED: the kernel patch and board-specific DTB described here
-have not yet been written (tasks.md group 2) or booted (group 3). -->
+<!-- UNVERIFIED: the kernel patch (nix/patches/canaan-dsi-bridge-connector.patch)
+and board-specific DTB (nix/dts/k230-tdisplay-hdmi.dts) described here are
+now written and host-build-verified (tasks.md group 2: `nix build .#kernel`,
+`nix build .#deviceTreeHdmi`, and `nix build
+.#nixosConfigurations.k230.config.system.build.toplevel` with the default
+panel DTB unchanged all succeeded 2026-09-28) but have not been booted on
+the board (group 3). Host build confirms the patch applies and compiles and
+the DTB compiles with exactly one `&dsi` port@1 endpoint; it does not confirm
+the LT9611 driver actually probes or that a connector actually appears live. -->
 
 #### Scenario: The HDMI DTB boots with a monitor attached
 

@@ -290,7 +290,34 @@ place to do boot-time selection than anything in Linux.
   kernel patch (add `drm_bridge_connector_init(dsi->drm, &dsi->encoder)` +
   `drm_connector_attach_encoder()` in the bridge branch), but it is a real
   gap, not merely a missing DT node, and is a prerequisite for *any* HDMI
-  output under our kernel, reboot-based or not.
+  output under our kernel, reboot-based or not. Task 2.1 of
+  `openspec/changes/plugging-in-hdmi-moves-the-display` implements exactly
+  this call as `nix/patches/canaan-dsi-bridge-connector.patch`, applied
+  unconditionally in `nix/kernel.nix`; it is inert on the panel boot path
+  because it only runs when `dsi->bridge` is non-NULL.
+- **The vendor `k230-canmv-v3.dts` LT9611 port numbering does not satisfy
+  this kernel's own `lontium-lt9611.c` as written.** That file's node (§1,
+  §3) wires the LT9611's DSI-input endpoint at `port@1` (`reg = <1>`) and
+  its downstream-connector endpoint at `port@2`, with no `port@0` at all.
+  But `lt9611_parse_dt()` (`lontium-lt9611.c:906-919`, this same pinned
+  tree) reads the primary DSI node from **port 0**
+  (`of_graph_get_remote_node(dev->of_node, 0, -1)`, fatal to probe if
+  absent — `"failed to get remote node for primary dsi"`), an *optional*
+  dual-link DSI node from port 1, and the downstream bridge/connector from
+  **port 2**. `of_graph_get_remote_node()` matches a port node's `reg`
+  property, not its position in the file
+  (`drivers/of/property.c:837-855`), so a node with only `reg=1`/`reg=2`
+  has no `reg=0` port and `lt9611_probe()` would fail
+  `lt9611_parse_dt()` before ever touching hardware. Whether Canaan's or
+  LILYGO's own kernel fork's `lontium-lt9611.c` tolerates the vendor
+  file's own 1/2 numbering was not checked — that is a different source
+  tree, not read for this document. What is established is that *this*
+  pinned tree's driver needs `port@0`/`port@2`, and task 2.2's
+  `nix/dts/k230-tdisplay-hdmi.dts` is written against that reading rather
+  than copied from `k230-canmv-v3.dts`'s numbers. This is unverified on
+  hardware either way — it changes the DTB compile-time facts only; the
+  probe that would confirm or refute it is tasks.md group 3/4's board
+  time.
 - **DSI lane rate is not a blocker.** `canaan_dsi_clk_cfg()`
   (`canaan_dsi.c:330-405`) derives the pixel clock as an integer division of
   a fixed 594 MHz reference (`div = DIV64_U64_ROUND_CLOSEST(594000, clk)`),
