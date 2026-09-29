@@ -179,6 +179,69 @@ documents between touch and the LT9611 bridge. `tasks.md` group 3 names
 the exact board commands for each of these once an HDMI session exists to
 try them against.
 
+### 5. Response to the first board run: validate axes, bound the loop, handle signals
+
+The first board run (`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md`)
+hit a real bug and hung the board badly enough to need a hardware reset.
+Three changes came out of it, none of them claiming to be *the* single
+proven cause (board access was not available to isolate that) but each
+closing off a real, identified failure mode:
+
+- **`uinput::axis_plan`**: the real GT9895 reports `ABS_MT_PRESSURE` with
+  `minimum == maximum` (`0 == 0`) -- confirmed the direct cause of the
+  logged libinput error ("kernel bug: device has min == max on
+  ABS_MT_PRESSURE"), and this crate's own `read_ranges()` fallback for a
+  *failed* pressure ioctl was equally degenerate, so the bug could not
+  have been avoided by "just handle the ioctl failure case." `axis_plan`
+  now validates every axis before it reaches `/dev/uinput`: a degenerate
+  *load-bearing* axis (`slot`/`tracking_id`/`position_x`/`position_y`,
+  none of which a touchpad can function without) refuses device creation
+  outright; a degenerate *optional* one (`pressure`, which `relay.rs`
+  never reads -- slot occupancy, not pressure, drives `BTN_TOOL_*`) is
+  silently omitted, matching how real pressure-less touchpads report
+  themselves. Position-axis `resolution` is also sanitized (a fallback
+  applied only when the source reports `<= 0`), addressing the
+  "sane resolution values" half of the same request even though it was
+  not implicated in the logged error. Host-verified end to end, including
+  a live `/dev/uinput` creation using the board's exact degenerate-pressure
+  fixture, re-confirmed still `ID_INPUT_TOUCHPAD=1` via `udevadm`:
+  `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md`.
+- **Bounded, signal-aware, non-busy-looping main loop**: `wait_readable`
+  previously returned "readable" for *any* `poll()`-reported event,
+  including `POLLERR`/`POLLHUP`/`POLLNVAL` with no `POLLIN` -- a device
+  that reached a state where the kernel reports one of those on every
+  `poll()` call without ever legitimately blocking again would turn this
+  into an unbounded tight loop (`poll()` returns instantly forever). It
+  now checks `revents` explicitly and treats those three as a hard error,
+  tearing the session down (which does sleep before retrying) instead of
+  looping. The event-drain loop in `main.rs` also gained a hard cap
+  (`MAX_EVENTS_PER_DRAIN`) so *any* bug that made `pump_one` never report
+  idle degrades to "drains up to 2048 events, then yields back to the
+  mode/shutdown check" rather than never yielding at all. `SIGINT`/`SIGTERM`
+  handlers (setting an atomic flag only, per async-signal-safety rules)
+  let an operator interrupt a run cleanly from the console instead of
+  needing `kill -9` or a reset. Host-verified: a FIFO-based test proves
+  `wait_readable` genuinely blocks for its timeout on idle data and
+  returns promptly once data exists (a real `/dev/input/event*` node
+  cannot be opened unprivileged in this sandbox, unlike `/dev/uinput`, so
+  the FIFO exercises the same underlying `poll(2)` code path instead).
+- **`--dry-run` / `--log-events`**: `--dry-run` runs the real grab and
+  read/relay logic but never opens `/dev/uinput` at all, so a re-test on
+  the board cannot repeat the libinput/Sway interaction that preceded the
+  hang, no matter what it turns out to have been. `--log-events` traces
+  every raw and translated event to stderr. `tasks.md` group 3's revised
+  re-test procedure leads with `--dry-run --log-events` under a `timeout`
+  wrapper before ever creating a real uinput device again.
+
+What this explicitly does *not* claim: that the degenerate-pressure axis
+was *the* mechanism that hung the board (as opposed to, say, a busy loop
+independently triggered around the same moment) -- `board-hang-2026-09-29.md`
+records that as unestablished. The fix set is deliberately broader than
+"patch the one confirmed bug" because board time to iterate is scarce and
+precious (AGENTS.md's single shared board/serial reservation), and each
+addition here is independently justified and host-tested on its own
+terms, not speculative padding.
+
 ## Risks / Trade-offs
 
 - [libinput's default acceleration/tap/scroll tuning is designed around

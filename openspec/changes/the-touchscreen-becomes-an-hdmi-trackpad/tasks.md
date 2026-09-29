@@ -17,8 +17,9 @@
 - [x] 2.1 `nix/touch-trackpad/src/relay.rs`: the touchscreen-to-touchpad
       protocol translator (contact-count-derived `BTN_TOUCH`/`BTN_TOOL_*`
       synthesis; `ABS_MT_*` passthrough). Verify:
-      `cd nix/touch-trackpad && cargo test` (20/20 passing, including
-      1/2/3-finger tap/drag/lift and a 2-to-1-finger transition case).
+      `cd nix/touch-trackpad && cargo test` (28/28 passing as of task 2.7,
+      including 1/2/3-finger tap/drag/lift and a 2-to-1-finger transition
+      case).
 - [x] 2.2 `nix/touch-trackpad/src/mode.rs`: DRM-sysfs-based automatic mode
       detection (`HDMI* connected` -> trackpad, else direct-touch),
       fixture-tested for panel-only, HDMI-connected,
@@ -49,7 +50,10 @@
       `nix build .#handheld-touch-trackpad --out-link .build-out/handheld-touch-trackpad --max-jobs 2 --cores 8`
       — produced a riscv64 ELF binary at
       `.build-out/handheld-touch-trackpad/bin/k230-touch-trackpad`
-      (store path `/nix/store/sklwlg9ncxa128qs58jjxnyqj5q4930l-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0`).
+      (store path, after task 2.7's fixes,
+      `/nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0`;
+      the coordinator's board-hang report was against an earlier build at
+      `/nix/store/sklwlg9n...-k230-touch-trackpad`).
 - [x] 2.6 `nix/touch-trackpad-service.nix`: a standalone, importable NixOS
       module (`k230.touchTrackpad.enable`) defining the systemd unit,
       deliberately not imported by `nix/shell.nix`/`nix/k230.nix` in this
@@ -60,20 +64,66 @@
       the built system yet); a real service-enabled build is board task
       3.1 below, once the coordinator has an HDMI DTB to boot it under.
 
+- [x] 2.7 Fix in response to the coordinator's first board run, which hung
+      the board and needed a hardware reset
+      (`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md`):
+      `uinput::axis_plan` now validates every axis (rejects a degenerate
+      load-bearing range outright; silently omits a degenerate optional
+      one -- exactly the real GT9895's `min=0,max=0 ABS_MT_PRESSURE`, the
+      confirmed direct cause of the logged libinput error) and sanitizes
+      position-axis resolution; `touchdev::wait_readable` now checks
+      `revents` instead of trusting any `poll()`-reported event, closing
+      off one concrete unbounded-tight-loop mechanism; `main.rs` gained a
+      bounded per-wakeup event-drain cap, `SIGINT`/`SIGTERM` handling, and
+      `--dry-run`/`--log-events` flags. None of this claims to have proven
+      the exact hang mechanism (board access was not available to isolate
+      it) -- see `design.md` decision 5 and the evidence doc for what is
+      and is not established. Verify: `cargo test` (28/28 passing,
+      including a live `/dev/uinput` creation with the board's exact
+      degenerate-pressure fixture, re-confirmed `ID_INPUT_TOUCHPAD=1` via
+      `udevadm`, and a FIFO-based proof that `wait_readable` genuinely
+      blocks rather than busy-spinning) and `cargo clippy --all-targets`
+      (0 warnings); repackaged with
+      `nix build .#handheld-touch-trackpad --out-link .build-out/handheld-touch-trackpad --max-jobs 2 --cores 8`
+      (new store path in task 2.5).
+
 ## 3. Board verification (board-gated; not run by this change)
 
 This change had no `/dev/ttyACM0`/board access (the coordinator owns the
 board) and `plugging-in-hdmi-moves-the-display`'s manual HDMI switch is
 itself not yet proven on hardware — these tasks cannot start before that
 one does. Left open per AGENTS.md ("keep hardware-only tasks open until
-their named physical proof exists").
+their named physical proof exists"). Task 2.7's fixes are unverified on
+hardware; the sequence below leads with the safest possible re-test rather
+than repeating the exact run that hung the board.
 
-- [ ] 3.1 Once `plugging-in-hdmi-moves-the-display` task 3.3 has a working
-      board boot into the HDMI DTB: import `nix/touch-trackpad-service.nix`
-      into the booted configuration and set
-      `k230.touchTrackpad.enable = true;`, flash, and confirm under the
-      reserved board/serial lock that the service starts and logs
-      `mode -> Trackpad` once the HDMI connector reads `connected`:
+- [ ] 3.0 **Safe re-test first.** Under the reserved board/serial lock, run
+      the *new* build (task 2.7's store path, not the one from the
+      original hang report) with both safety flags and a hard wall-clock
+      bound, so a repeat hang cannot need another hardware reset to
+      recover from:
+      `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=30 "timeout 20 /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --dry-run --log-events"`.
+      `--dry-run` means no `/dev/uinput` device is ever created, so
+      whatever libinput/Sway did last time cannot recur even if the fix in
+      2.7 is incomplete; `timeout 20` guarantees the process cannot run
+      longer than 20 seconds regardless. Confirm over the console: the
+      process grabs the touchscreen, `--log-events` shows real touch
+      events being read and translated (touch the glass during the 20s
+      window), and the process exits cleanly (its own "shutting down" line
+      or `timeout`'s SIGTERM) with the touchscreen ungrabbed afterward
+      (`evtest`/direct-touch check per 3.3 below). If this step itself
+      shows any sign of the earlier hang (console stops responding before
+      the 20s `timeout` should have fired), stop here, do not proceed to
+      3.1, and record what was observed instead.
+- [ ] 3.1 Only after 3.0 passes clean: run the same build *without*
+      `--dry-run` (still `timeout`-wrapped) and confirm the service starts
+      and logs `mode -> Trackpad` once the HDMI connector reads
+      `connected`, this time with a real virtual touchpad device created;
+      check `dmesg`/`journalctl` for the same libinput error the original
+      report showed and confirm it is gone (pressure axis omitted). Once
+      confirmed safe standalone, import `nix/touch-trackpad-service.nix`
+      into the booted configuration, set `k230.touchTrackpad.enable = true;`,
+      and flash for the persistent-service form:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10 "journalctl -u k230-touch-trackpad -n 20 --no-pager"`.
 - [ ] 3.2 With an HDMI monitor and the panel dark, drag one finger across
       the touchscreen glass and confirm the pointer moves on the monitor;
@@ -92,11 +142,11 @@ their named physical proof exists").
       `display/touch` evidence pattern). This is the proof that trackpad
       mode never regresses panel-mode touch.
 - [ ] 3.4 Resolve this change's `specs/display/touch/spec.md`
-      `<!-- UNVERIFIED -->` marker against the outcome of 3.1–3.3: either
+      `<!-- UNVERIFIED -->` marker against the outcome of 3.0–3.3: either
       remove it with the board evidence committed, or restate the
       requirement against whatever was actually observed (including a
       documented shared-GPIO23/24 interaction with the LT9611 bridge, if
-      one is found).
+      one is found, or a still-unresolved hang if 3.0 does not pass clean).
 
 ## 4. Proposal validation
 
