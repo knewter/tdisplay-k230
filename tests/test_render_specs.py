@@ -229,6 +229,25 @@ class TestEvidenceCitations(unittest.TestCase):
 
 
 class TestData(unittest.TestCase):
+    def test_work_reports_get_pages_without_becoming_ledger_notes(self) -> None:
+        with TempRepo() as root:
+            report = root / "docs/evidence/in-flight/report.md"
+            report.parent.mkdir(parents=True)
+            report.write_text("# Host trial\n\nPhysical proof remains pending.\n")
+            write_spec(root, "system/console", "### Requirement: A\n" + UNVERIFIED_BODY)
+            work = root / "site/src/data/work.json"
+            work.parent.mkdir(parents=True)
+            work.write_text(json.dumps({
+                "sourceRevision": "test-revision",
+                "items": [{"evidence": ["docs/evidence/in-flight/report.md"]}],
+            }))
+            data, _ = render_specs.build_data(root, source_revision_value="test-revision")
+            self.assertEqual(data["total"], 1)
+            self.assertEqual(len(data["evidence"]), 1)
+            entry = data["evidence"][0]
+            self.assertEqual(entry["citedBy"], "work")
+            self.assertIn("Physical proof remains pending", entry["text"])
+
     def test_every_capability_and_requirement_reaches_the_json(self) -> None:
         with TempRepo() as root:
             (root / "docs").mkdir()
