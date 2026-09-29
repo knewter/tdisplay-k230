@@ -119,3 +119,13 @@ the normal image still boots the panel.
 **UNVERIFIED:** This combined candidate has not been installed or booted on
 the board. The removed resize handshake is a proposed HDMI touch fix, not
 physical touch acceptance. Trackpad and mainline-kernel work are separate.
+
+After merging master at `67985088`, `nix eval --raw
+.#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel.outPath`
+still resolves to the system pinned in `integration-host.json`.
+`cargo test --manifest-path nix/rust-shell-client/Cargo.toml --test
+responsive_pixel_identity` passes all four exact native-panel comparisons.
+`cargo clippy --manifest-path nix/rust-shell-client/Cargo.toml --all-targets`
+exits successfully but reports style warnings (37 in the library-test target,
+including duplicates); this is not a warning-free check. The site build passes
+at that revision: 395 pages, 12,787,729 bytes, 46.57 seconds.
