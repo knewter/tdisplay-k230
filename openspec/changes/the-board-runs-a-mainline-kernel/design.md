@@ -155,6 +155,31 @@ built here, to keep this change's own build scope to "does it compile").
     silently fought the `root=fstab` token NixOS's own `kernelParams`
     already contributes.
 
+11. **RTC ported as a small, real proof the methodology generalizes; the
+    full DRM display stack scoped but NOT ported, and NOT left half-done
+    in the committed tree.** After milestone 1, the same "copy the vendor
+    file, build, fix what the compiler names" methodology was applied to
+    the smallest, most self-contained item in the coordinator's milestone
+    3 (RTC) as a genuine additional deliverable, and to the coordinator's
+    milestone 2 (display) as scoping only. RTC built cleanly after one
+    trivial fix; the display stack's very first file hit a structural DRM
+    allocation-model change (`drm_panel_init()` → `devm_drm_panel_alloc()`)
+    after two Kconfig fixes, and porting all ~3,900 lines plus re-applying
+    this project's own ~10 existing panel/DSI/VO patches on top is a
+    materially larger, multi-file, actively-churned-subsystem task than
+    anything attempted so far. Rejected: continuing to force a
+    build-error-driven port of the whole display stack within this same
+    pass, which risked either running out of budget mid-port (leaving
+    `.#kernelMainline` broken, violating this change's own spec
+    requirement that it stays buildable) or producing a large amount of
+    code no one could verify compiles cleanly, let alone runs correctly,
+    within this session. The scratch trial was reverted
+    (`git checkout -- nix/kernel-mainline.nix`, the trial's
+    `nix/patches/mainline/drm/` directory deleted) rather than committed
+    as WIP, matching the project's own convention that a task group ends
+    with the command that proves it — an unbuildable derivation proves
+    nothing.
+
 ## Risks / Trade-offs
 
 - **An `-rc` pin, not a stable release.** Accepted: the alternative is no

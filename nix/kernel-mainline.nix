@@ -182,6 +182,25 @@ config MMC_SDHCI_OF_DWCMSHC_KENDRYTE\
 \t}
       }' drivers/usb/dwc2/core.c
       grep -q 'hsotg->params.usb_ctl' drivers/usb/dwc2/core.c
+
+      # --- RTC: drivers/rtc/rtc-k230.c ---------------------------------
+      cp ${./patches/mainline/rtc-k230.c} drivers/rtc/rtc-k230.c
+      grep -q '^config RTC_DRV_SUN6I$' drivers/rtc/Kconfig
+      sed -i '/^config RTC_DRV_SUN6I$/i\
+config RTC_DRV_K230\
+\ttristate "Canaan K230 RTC driver"\
+\tdefault n\
+\tdepends on ARCH_CANAAN\
+\thelp\
+\t  If you say yes here you will get support for the built-in RTC\
+\t  on Canaan K230 SoC.\
+\
+\t  This driver can also be built as a module, if so, the module\
+\t  will be called "rtc-k230".\
+' drivers/rtc/Kconfig
+      grep -q '^config RTC_DRV_K230$' drivers/rtc/Kconfig
+      echo 'obj-$(CONFIG_RTC_DRV_K230)	+= rtc-k230.o' >> drivers/rtc/Makefile
+      grep -q 'CONFIG_RTC_DRV_K230.*rtc-k230.o' drivers/rtc/Makefile
     '';
   };
 
@@ -210,6 +229,7 @@ config MMC_SDHCI_OF_DWCMSHC_KENDRYTE\
 
     # This change's own forward-ports.
     GPIO_K230 = yes;
+    RTC_DRV_K230 = yes;
     MMC = yes;
     MMC_BLOCK = yes;
     MMC_SDHCI = yes;

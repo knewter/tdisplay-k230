@@ -77,7 +77,7 @@ tree can drive.
 | USB (DWC2 ×2, host/gadget) | `CONFIG_USB_DWC2=y`, vendor tree | **PORTED** (2026-09-29, milestone 1), via the vendor's own `dwc2_set_k230_params()`/`ctl-reg` mechanism — deliberately NOT the separately-accepted `phy-k230-usb.c`/`canaan,k230-usb-phy` generic-PHY-framework driver already present upstream (design.md decision 7: the two are non-interoperating ways of driving the same HiSysConfig registers, and only the vendor's mechanism has ever run on this board). Three small hunks ported into `drivers/usb/dwc2/{params.c,core.h,core.c}` via `nix/kernel-mainline.nix`'s postPatch (a `usb_ctl` field on `struct dwc2_core_params`, its HiSysConfig-register init in `dwc2_phy_init()`, and the `"canaan,k230-otg"` `of_match_table` entry that lets `platform.c`'s driver actually bind). No API migration needed here — confirmed by a clean build on the first attempt. `usb0`/`usb1` are `status = "okay"` in the board DTS. | Ported; board-unverified. |
 | I2C (5×, `snps,designware-i2c`) | fully mainline generic driver already, vendor tree | **Driver is fully mainline** (`drivers/i2c/busses/i2c-designware-platform.c` is generic upstream code, unrelated to this SoC), but **no I2C controller DT node exists in `k230.dtsi`** at all. Not attempted in milestone 1 (scoped to boot-critical SD/GPIO/USB only). | **DT node porting needed**, driver itself needs none. Blocks touch, and every I2C-bus sensor/PMIC row in `board-capability-inventory.md`. |
 | SPI (3×, `canaan,k230-spi`) | `spi-dw-mmio.c` + vendor init hook, vendor tree | **Generic `spi-dw-mmio.c` is mainline**, but no SPI controller node in `k230.dtsi`, and the vendor's small `dw_spi_canaan_k230_init()` hook has no upstream equivalent found. | DT node + a small init-hook port needed; not attempted here. |
-| RTC | `drivers/rtc/rtc-k230.c`, patched (mday mask fix) | **Missing-driver.** `gh api .../drivers/rtc/rtc-k230.c` → 404. Nothing to patch; our mday-mask fix has no upstream file to apply to. | Cannot port yet. Would need the driver itself upstreamed or forward-ported first — bigger lift than patching an existing file. |
+| RTC | `drivers/rtc/rtc-k230.c`, patched (mday mask fix) | **PORTED** (2026-09-29, after milestone 1). `gh api .../drivers/rtc/rtc-k230.c` → 404 upstream; forward-ported whole file to `nix/patches/mainline/rtc-k230.c`, carrying our own already-board-proven mday-mask fix forward (0xf → 0x1f) rather than reintroducing the bug freshly. One trivial fix needed: `.remove_new` (a transitional platform_driver field from the file's 6.6-era origin) doesn't exist at `v7.3-rc5` — renamed to `.remove` (the function's signature already matched). Built cleanly on the first attempt otherwise. `rtc@91000c00` added to `nix/dts/k230-tdisplay-mainline.dts` (`status = "okay"`, no clocks/resets — the driver calls neither `devm_clk_get()` nor `devm_reset_control_get()`). | Ported; board-unverified. |
 | Thermal sensor | `drivers/thermal/canaan_thermal.c`, patched (bounded read loop) | **Missing-driver.** `gh api .../drivers/thermal/canaan_thermal.c` → 404. | Cannot port yet, same reasoning as RTC. |
 | Power key (PMU INT0) | `drivers/input/misc/k230-pmu-pwrkey.c`, vendored from LILYGO | **Missing-driver, no upstream PMU node/binding of any kind found.** `gh api .../drivers/input/misc/k230-pmu-pwrkey.c` → 404. | Cannot port yet. |
 | Audio (I2S / MAX98357A route) | `sound/soc/canaan/canaan_k230_inno.c`, patched (external I2S switch) | **Missing-driver.** `gh api .../sound/soc/canaan/canaan_k230_inno.c` → 404; no `sound/soc/canaan/` directory at all. `sound/soc/codecs/max98357a.c` (the external amp's own codec driver) IS mainline, generic code — but it needs a machine/DAI driver and I2S controller DT node neither of which exist upstream for this SoC. | Cannot port the switch patch (nothing to patch); the codec driver itself needs no porting, but everything around it does. |
@@ -105,8 +105,15 @@ against the table above:
 4. `canaan-audio-external-i2s-switch.patch` — targets
    `sound/soc/canaan/canaan_k230_inno.c`. **Cannot port**: no such file or
    directory upstream.
-5. `k230-rtc-mday-mask.patch` — targets `drivers/rtc/rtc-k230.c`. **Cannot
-   port**: file does not exist upstream.
+5. `k230-rtc-mday-mask.patch` — targets `drivers/rtc/rtc-k230.c`. **Update,
+   2026-09-29**: no longer "cannot port" — `drivers/rtc/rtc-k230.c` itself
+   was forward-ported whole onto the mainline pin (see the RTC row above),
+   carrying this exact fix forward directly in the copied file rather than
+   as a separate patch against it (there being no separate upstream file
+   this patch could apply to in the usual sense — the whole file is ours
+   to place). Superseded, not stale: the original "cannot port" finding was
+   correct at the time it was written (nothing existed to port a patch
+   against); porting the driver itself is what changed.
 6. `k230-pmu-pwrkey.c` (a whole vendored driver, not a patch against an
    existing file) — **cannot be ported as a patch** since there is no
    upstream PMU infrastructure to patch; porting it would mean submitting
@@ -127,14 +134,24 @@ against the table above:
 10. `fbdev bpp` sed (`drm_fbdev_generic_setup(drm_dev, 32)` → `16`) — targets
     `canaan_drv.c`. **Cannot port**, same reason.
 
-**Net result: zero of our eleven vendor-kernel patches port to mainline as
-patches**, because ten of them target a file that plainly does not exist
-upstream, and the eleventh (the toolchain probe) turns out to already be
-fixed upstream by a different, independent change. This is not a failure of
-porting effort; it is the direct, mechanical consequence of mainline having
-no display/audio/RTC/power-key/thermal driver for this SoC at all yet — the
-same conclusion the proposal states going in, now confirmed patch by patch
-rather than asserted.
+**Net result at the time this section was first written: zero of our eleven
+vendor-kernel patches port to mainline as patches**, because ten of them
+target a file that plainly does not exist upstream, and the eleventh (the
+toolchain probe) turns out to already be fixed upstream by a different,
+independent change. This was not a failure of porting effort; it was the
+direct, mechanical consequence of mainline having no display/audio/RTC/
+power-key/thermal driver for this SoC at all yet.
+
+**Updated, 2026-09-29, after milestone 1**: one of the ten — the RTC
+mday-mask fix — has since been ported, not as a patch against an upstream
+file (none existed), but by forward-porting `drivers/rtc/rtc-k230.c` itself
+onto the mainline pin and carrying the fix forward in the copied file (see
+the RTC row above and item 5's updated entry). The other nine (display,
+audio, power-key, thermal) are unaffected — no upstream driver exists for
+any of them to patch or forward-port a fix against yet. This is exactly the
+pattern milestone 1's GPIO/SD-MMC/USB forward-ports also followed: porting
+the whole driver, not just a patch, is what "porting" means once nothing
+upstream exists to patch.
 
 ## Phased plan
 
@@ -183,13 +200,36 @@ support is itself still incomplete upstream).
 6. **I2C/SPI DT plumbing**: unblocks touch (driver already present, per the
    inventory row) and any future PMIC/sensor work, independent of display.
    Not attempted in milestone 1 (scoped to boot-critical SD/GPIO/USB only).
-7. **Display, audio, RTC, power key, thermal, crypto, ADC, PWM**: each
-   blocked on a missing upstream driver with no in-progress public series
-   found. Each would need either a real upstream submission (this project's
-   own vendor-driver forward-ports are a plausible starting point for a
-   future submission, but are not drop-in patches against anything that
-   exists yet) or continuing to run these functions from the vendor kernel
-   indefinitely. Not scheduled; revisit if upstream activity appears.
+7. **RTC — PORTED** (2026-09-29, first item of what was originally
+   milestone 7): `drivers/rtc/rtc-k230.c` forward-ported whole, one trivial
+   `.remove_new`→`.remove` fix, `rtc@91000c00` added to the board DTS. Built
+   cleanly on the first attempt — no API migration needed, unlike GPIO/
+   SD-MMC. Board-unverified, same as every row in this document.
+8. **Display, audio, power key, thermal, crypto, ADC, PWM**: each blocked
+   on a missing upstream driver with no in-progress public series found.
+   Display alone was concretely scoped (not attempted to completion): a
+   scratch trial forward-porting the vendor's `canaan_drv.c`/`canaan_vo.c`/
+   `canaan_dsi.c`/`canaan_phy.c`/`canaan_plane.c` + `panel-canaan-universal.c`
+   (~3,900 lines total, before re-applying this project's own ~10 existing
+   patches against the panel/DSI/VO files) hit a real, structural API
+   change on the very first file checked — `drm_panel_init()` was replaced
+   by a refcounted `devm_drm_panel_alloc()` allocation model
+   (`include/drm/drm_panel.h`), which changes the panel struct's allocation
+   pattern, not just a symbol name — after a Kconfig `select DRM` circular-
+   dependency fix (drivers below `if DRM` cannot themselves `select DRM`;
+   `depends on DRM` instead) and one already-removed Kconfig symbol
+   (`DRM_KMS_DMA_HELPER`, dropped upstream). Discarded uncommitted rather
+   than left half-working (`nix build .#kernelMainline` must stay green,
+   per this document's own spec requirement) — this is a genuinely larger
+   class of task than GPIO/SD-MMC/USB/RTC (DRM atomic modeset, bridge,
+   connector and component-framework churn across five interconnected
+   files, not a single self-contained driver), and deserves its own
+   dedicated effort rather than a rushed continuation here. The other six
+   (audio, power key, thermal, crypto, ADC, PWM) are individually much
+   closer in size/shape to RTC (single small self-contained files) and are
+   plausible next candidates for the same methodology. Not scheduled
+   further in this pass; revisit with a dedicated session for display, or
+   continue the RTC-style pattern for the smaller remaining drivers.
 
 ## Sources
 

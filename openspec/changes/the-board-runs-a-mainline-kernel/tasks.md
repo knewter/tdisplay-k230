@@ -175,9 +175,65 @@ place this system's own closure/profile symlink onto the physical card's
 root partition (an explicit non-goal, since a re-flash is out of scope
 here per the task's hard rules). No board boot has been attempted or
 claimed. `&mmc_sd0` (Wi-Fi SDIO) stays disabled — no driver forward-ported
-for it in this task group. Display, touch, audio, RTC, PMU/power-key,
-thermal, ADC, and crypto remain exactly as inventoried (no mainline
-driver to port from).
+for it in this task group. Display, touch, audio, PMU/power-key, thermal,
+ADC, and crypto remain exactly as inventoried (no mainline driver to port
+from); RTC is picked up in task group 5a below.
+
+## 5a. Milestone 3 (partial): RTC forward-port
+
+Coordinator's milestone 3 named touch/RTC/PMU/thermal/ADC/audio "each
+forward-ported from the vendor tree with our patches applied." RTC is the
+one attempted in this pass — smallest, most self-contained, most
+API-stable (RTC-class subsystem) of the group, and a genuine, small proof
+that milestone 1's methodology extends.
+
+- [x] 5a.1 Forward-port `drivers/rtc/rtc-k230.c` from the pinned vendor
+      tree to `nix/patches/mainline/rtc-k230.c`, carrying this project's
+      own already-board-proven `k230-rtc-mday-mask.patch` fix forward
+      directly in the copied file (0xf → 0x1f day-of-month mask) rather
+      than reintroducing a bug already found and fixed once. One trivial
+      fix needed beyond that: `.remove_new` (a transitional
+      `struct platform_driver` field from this file's 6.6-era origin)
+      does not exist at `v7.3-rc5` — renamed to `.remove` (the function
+      already had the matching `void(*)(struct platform_device *)`
+      signature). Built cleanly otherwise, on the first attempt. Added
+      `rtc@91000c00` to `nix/dts/k230-tdisplay-mainline.dts`
+      (`compatible = "canaan,k230-rtc"`, `status = "okay"`, no
+      clocks/resets property — the driver calls neither `devm_clk_get()`
+      nor `devm_reset_control_get()` anywhere) and `RTC_DRV_K230 = yes;`
+      in `nix/kernel-mainline.nix`.
+      Proven: `nix build .#kernelMainline --out-link result-kernelMainline
+      --max-jobs 2 --cores 8 --print-out-paths` exited 0, `.config`
+      confirmed to carry `CONFIG_RTC_DRV_K230=y` by direct `grep`;
+      `nix build .#deviceTreeMainline` still exits 0 and round-trips with
+      `rtc@91000c00` present (`dtc -I dtb -O dts`, checked by hand); `nix
+      build .#toplevel-mainline-console` and
+      `.#kernelMainlineConsoleBootFiles` both still exit 0 with RTC
+      included; `nix flake check --no-build` passes. Build proof only.
+- [x] 5a.2 Scope (not complete) milestone 2 (display): a scratch trial
+      forward-porting the vendor's full `canaan_drv.c`/`canaan_vo.c`/
+      `canaan_dsi.c`/`canaan_phy.c`/`canaan_plane.c` + `panel-canaan-
+      universal.c` (~3,900 lines, before re-applying this project's own
+      ~10 existing patches against the panel/DSI/VO files) was attempted
+      as scoping, not as a claimed forward-port. Findings: one Kconfig fix
+      (a driver below `if DRM` cannot itself `select DRM` — circular
+      dependency; `depends on DRM` instead), one already-removed Kconfig
+      symbol (`DRM_KMS_DMA_HELPER`), and then a real, structural DRM API
+      change on the very first file checked: `drm_panel_init()` was
+      replaced upstream by a refcounted `devm_drm_panel_alloc()`
+      allocation model (`include/drm/drm_panel.h`), changing how the
+      panel struct itself is allocated, not just a symbol name. This is a
+      materially larger class of problem than GPIO/SD-MMC/USB/RTC (DRM
+      atomic-modeset/bridge/connector/component-framework churn across
+      five interconnected files, plus re-applying this project's own
+      panel/DSI/VO patches on top of whatever the ported base ends up
+      looking like) and was **not carried to completion** — the trial was
+      reverted (`git checkout -- nix/kernel-mainline.nix`, the scratch
+      `nix/patches/mainline/drm/` directory deleted) rather than committed
+      half-working, since `.#kernelMainline` must stay buildable per this
+      change's own spec requirement. `git status`/`git diff` confirm the
+      revert is complete and the tree matches the previous commit exactly
+      for `nix/kernel-mainline.nix`.
 
 ## 6. Confirm no existing output changed
 
