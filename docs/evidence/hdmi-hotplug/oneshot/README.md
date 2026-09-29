@@ -50,3 +50,30 @@ operator reported.
   output, since its enable path was written for a panel.
 - There was no HPD and no EDID. Either the connector's +5V or the DDC is not
   reaching the monitor, or the monitor was off or on another input.
+
+## Boot 3: monitor on (`boot3-monitor-on.txt`)
+
+The operator reported the monitor had been off during boot 2. I repeated
+the same one-shot boot with the monitor on and got the same result:
+`card0-HDMI-A-1` read `disconnected`, the EDID was 0 bytes, `0x825e` read
+`0x78` (bit 2 clear), and the lt9611 IRQ count was 0.
+
+What the schematic `T-Display K230_V1.0_NEW.pdf` shows:
+
+- Page 7: connector pin 18 (+5V) is fed from `VDD_5V` through D13. The DDC
+  SDA/SCL pull-ups (R71/R72 10k) go to `VDD_5V`. HPD has a 100k pull-down
+  (R70) and goes to LT9611 pin 13.
+- Page 6: `VDD_5V` is the board's main rail. It comes from `PRE_VDD_5V`
+  through a PMU-enabled MT9700 switch (U10), so it should be live whenever
+  the board runs.
+- Page 7 also notes "LT9611 swap". DSI reaches port B with the lanes
+  reordered and two pairs P/N-swapped:
+  - `MLRXB_D0` <- DSI D3
+  - `MLRXB_D1` <- DSI D2, P/N swapped
+  - `MLRXB_DC` <- DSI CLK
+  - `MLRXB_D2` <- DSI D0, P/N swapped
+  - `MLRXB_D3` <- DSI D1
+
+LILYGO reports that their SDK kernel reads EDID on this hardware. That points
+to a driver difference (port B, lane swap, and HPD/DDC setup) rather than a
+board fault, but this is not proven.
