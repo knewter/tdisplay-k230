@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// LILYGO T-Display-K230, against MAINLINE Linux.
+//
+// openspec/changes/the-board-runs-a-mainline-kernel. This is a SEPARATE
+// board file from nix/dts/k230-tdisplay.dts, which targets the pinned
+// vendor Xuantie tree via nix/kernel-src.nix/nix/device-tree.nix and is
+// unaffected by this file. This one #includes MAINLINE's own
+// arch/riscv/boot/dts/canaan/k230.dtsi (nix/kernel-mainline-src.nix), which
+// is a materially different file from the vendor tree's k230.dtsi -- no
+// pmu/pwrkey/rtc/tsensor/security/gpio/i2c/spi/pwm/adc nodes exist in it at
+// all yet (see nix/kernel-mainline.nix's header for the full accounting).
+//
+// Modeled directly on mainline's own arch/riscv/boot/dts/canaan/
+// k230-evb.dts (Yangyu Chen, GPL-2.0 OR MIT), which is the closest existing
+// upstream board file: same pattern (aliases.serial0 = &uart0; chosen
+// stdout-path; a `ddr: memory@0` node; &uart0 enabled; &sysclk given its
+// two input clocks). Two things changed from that template, both grounded
+// against this project's OWN existing vendor board file
+// (nix/dts/k230-tdisplay.dts), not guessed:
+//
+//   1. Memory size: 0x40000000 (1 GiB), matching
+//      nix/dts/k230-tdisplay.dts's own `ddr: memory@0` node exactly. The
+//      k230-evb reference board has only 512 MiB (0x20000000); ours does
+//      not.
+//   2. model/compatible strings renamed to this board, following the same
+//      "lilygo,t-display-k230" first-compatible pattern
+//      nix/dts/k230-tdisplay.dts already uses, with a "canaan,kendryte-k230"
+//      fallback (mainline has no "canaan,canmv-k230" compatible string to
+//      fall back to the way the vendor board file does, since that string
+//      is a vendor-tree invention, not upstream).
+//
+// UNVERIFIED: this has never been compiled against a booted board, and the
+// console-pin-muxing assumption below has never been checked on real
+// hardware against a mainline kernel.
+//
+// Grounding for "UART0 is safe to reuse as-is, unlike the vendor tree's own
+// pinctrl history might suggest": neither mainline's k230.dtsi/k230-evb.dts
+// NOR our own vendor-tree k230.dtsi/k230-tdisplay.dts reference any pinctrl
+// consumer group for UART0 (`docs/dts-evidence.md`: "no pinctrl in the
+// Linux device tree at all" on our build) -- physical IOMUX is entirely
+// U-Boot's FPIOA table in both cases, not something either device tree
+// programs. Our board's stdout-path is already "serial0:115200n8" in
+// nix/dts/k230-tdisplay.dts (docs/research/board-capability-inventory.md:
+// "uart0 is the Linux console (serial0)"), so this file asks U-Boot for
+// exactly the physical pin configuration it already provides today, not a
+// new one. What is genuinely unverified is whether mainline's UART0 8250
+// driver + this SoC's actual baud/clock wiring produces readable bytes on
+// the CH342 -- that is exactly the first hardware milestone this change
+// does not perform.
+
+/dts-v1/;
+
+#include "k230.dtsi"
+
+/ {
+	model = "LILYGO T-Display-K230 (mainline, console-only)";
+	compatible = "lilygo,t-display-k230", "canaan,kendryte-k230";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	ddr: memory@0 {
+		device_type = "memory";
+		// 1 GiB, matching nix/dts/k230-tdisplay.dts's own memory
+		// node -- NOT the 512 MiB k230-evb.dts reference default.
+		reg = <0x0 0x0 0x0 0x40000000>;
+	};
+
+	timerx_pulse_in: clock-50000000 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&sysclk {
+	clocks = <&osc24m>, <&timerx_pulse_in>;
+	clock-names = "osc24m", "timer-pulse-in";
+};

@@ -44,6 +44,13 @@
       # tree build. Native rather than cross because it is a source fetch --
       # a fixed-output derivation lands on the same store path either way.
       kernelSrc = import ./nix/kernel-src.nix { inherit (pkgs) fetchFromGitHub; };
+
+      # openspec/changes/the-board-runs-a-mainline-kernel: a SEPARATE pin for
+      # a parallel, opt-in mainline kernel build. Does not feed kernelSrc,
+      # nix/kernel.nix, nix/device-tree.nix, or any nixosConfigurations
+      # output above. See nix/kernel-mainline.nix for what mainline actually
+      # supports on this SoC today.
+      kernelMainlineSrc = import ./nix/kernel-mainline-src.nix { inherit (pkgs) fetchFromGitHub; };
       bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
       mkBoardImage = cfg: kernel:
         let
@@ -278,6 +285,30 @@
         # of a 20 minute cross-compile. See nix/device-tree.nix.
         #   nix build --impure .#deviceTree
         deviceTree = pkgs.callPackage ./nix/device-tree.nix { inherit kernelSrc; };
+
+        # openspec/changes/the-board-runs-a-mainline-kernel: a parallel,
+        # opt-in mainline kernel/DTB/boot-files set. NOT referenced by
+        # `kernel`, `deviceTree`, `sdImage`, or any nixosConfigurations
+        # output above -- the shipped image is unaffected by these existing.
+        #   nix build .#kernelMainline
+        #   nix build --impure .#deviceTreeMainline
+        #   nix build .#kernelMainlineBootFiles
+        kernelMainline = (pkgsCross.linuxPackagesFor (pkgsCross.callPackage ./nix/kernel-mainline.nix {
+          inherit (pkgsCross) buildLinux;
+        })).kernel;
+        deviceTreeMainline = pkgs.callPackage ./nix/device-tree-mainline.nix {
+          inherit kernelMainlineSrc;
+        };
+        # A plain directory of the two files a one-shot U-Boot `ext4load`
+        # test needs, named clearly (not the vendor blinux flow's fixed
+        # `/Image` + `/force.dtb` names, since this is not that flow -- see
+        # design.md). Building this performs no board action; it only
+        # collects what a board action would need.
+        kernelMainlineBootFiles = pkgs.runCommand "k230-mainline-boot-files" { } ''
+          mkdir -p $out
+          cp ${self.packages.${buildSystem}.kernelMainline}/Image $out/Image-mainline
+          cp ${self.packages.${buildSystem}.deviceTreeMainline}/k230-tdisplay-mainline.dtb $out/
+        '';
 
         # Stage 1, piece by piece, so each can be built and inspected alone.
         #   nix build .#uboot-k230      u-boot.bin, spl/u-boot-spl.bin
