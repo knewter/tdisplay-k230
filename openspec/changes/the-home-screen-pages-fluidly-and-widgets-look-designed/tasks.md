@@ -31,6 +31,42 @@
   (the sibling change's own QEMU driver was silently terminated on this
   same shared machine across three prior attempts); UNVERIFIED on real
   touch/panel.
+- [x] 1.6 **Bug fix (operator report on real glass):** a cross-page
+  rearrange drag (an existing icon *or* widget, long-pressed and dragged
+  across the edge so Home pages over) landed correctly, but releasing the
+  finger snapped the item back to its origin page/slot instead of dropping
+  it on the new page. Root cause:
+  `HomeScreen::drop_dragged_item`'s `DragSource::Existing` arm was the only
+  drag source with no same-page fallback when the release point resolved
+  to no slot at all -- every other source (`FromDrawer`/`Widget`/
+  `FromFolder`) already fell back to `place_first_fit`. A release right in
+  the edge margin (inside `EDGE_ZONE_PX`'s 40px trigger band but outside
+  any tile's own hit rect, since `SIDE_MARGIN` is only 22px) is exactly
+  where a person naturally lifts off after watching the page turn under
+  their finger, and `move_existing`'s own "target occupied, can't merge or
+  swap" branch had the same silent-revert gap. Fixed with a new
+  `HomeScreen::move_existing_to_page`/`place_on_page_or_restore` same-page
+  fallback (lands on the nearest free cell of whichever page is *currently
+  on screen*, not `from`'s own page), plus a since-empty-and-pruned target
+  page recreated via `HomeLayout::ensure_page` before searching it (a
+  cross-page drag's own `remove_slot` on the origin cell unconditionally
+  prunes a still-empty trailing page, which is exactly what a
+  freshly-edge-hold-created target page is until something lands on it).
+  Covered by four new regression tests reproducing the exact release
+  geometry (an existing icon onto an empty new-page cell, onto an
+  already-occupied new-page cell, released right in the edge margin, and a
+  widget released onto an incompatible occupied cell); verify with
+  `cargo test --offline -p k230-shell-rust home_screen::tests::dragging_an_existing_icon_across_the_edge_lands_on_the_new_page home_screen::tests::dragging_an_existing_icon_across_the_edge_onto_an_occupied_cell_lands_nearby_on_the_new_page home_screen::tests::releasing_right_at_the_edge_where_the_page_just_turned_still_commits_to_the_new_page home_screen::tests::dragging_a_widget_across_the_edge_onto_an_incompatible_occupied_cell_lands_nearby_on_the_new_page`.
+  Full-suite re-run: `cargo test --offline -p k230-shell-rust` (386 lib +
+  60 integration tests, all passing, 1 pre-existing ignored) and
+  `cargo clippy --offline --all-targets` (exit 0, only the same
+  pre-existing warning set this change's task 4.1 already documents).
+  Evidence class: host unit test only (`cargo test`, native x86 host) plus
+  a plain `cargo build`/`cargo clippy` pass -- **not** QEMU-injected touch
+  and **not** real glass; the dedicated fix commit's own drag/drop logic
+  was not otherwise touched by rendering or Wayland-input-path changes, so
+  this is believed to close the reported behavior, but real-finger
+  confirmation remains open per task 5.1 below.
 
 ## 2. Widget visual redesign
 

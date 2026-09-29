@@ -262,7 +262,15 @@ impl HomeLayout {
         self.pages.len().max(1)
     }
 
-    fn ensure_page(&mut self, page: usize, apps_per_page: usize) {
+    /// Also `pub(crate)` for `home_screen::HomeScreen::place_on_page_or_
+    /// restore`'s own same-page-fallback: it must call this *before*
+    /// `Self::first_fit`, because `Self::remove_slot` (already called on the
+    /// drag's origin cell by the time this fallback runs) unconditionally
+    /// prunes a trailing page that is still empty -- including the very
+    /// (still-empty, e.g. freshly edge-hold-created) target page a
+    /// cross-page drag is about to land on -- and `first_fit` itself, unlike
+    /// `Self::place`, does not grow/recreate a missing page on its own.
+    pub(crate) fn ensure_page(&mut self, page: usize, apps_per_page: usize) {
         while self.pages.len() <= page {
             self.pages.push(vec![None; apps_per_page.max(1)]);
         }
@@ -405,8 +413,14 @@ impl HomeLayout {
 
     /// The first free anchor cell on `page` that fits `item`'s span, if any
     /// -- used by [`Self::pin`]/[`Self::place_first_fit`] to fill a page
-    /// left-to-right, top-to-bottom.
-    fn first_fit(&self, page: usize, item: &HomeItem, apps_per_page: usize) -> Option<usize> {
+    /// left-to-right, top-to-bottom. Also `pub(crate)` for
+    /// `home_screen::HomeScreen::move_existing`/`drop_dragged_item`'s own
+    /// same-page fallback: a rearrange drag that resolves to no slot at all
+    /// (released right in the edge margin past the last tile column) or to
+    /// an occupied, non-mergeable, differently-sized target must still land
+    /// somewhere on the page it's *currently over*, not silently revert to
+    /// its origin (home-widget-design cross-page-drop-reverts fix).
+    pub(crate) fn first_fit(&self, page: usize, item: &HomeItem, apps_per_page: usize) -> Option<usize> {
         let row = self.pages.get(page)?;
         let len = row.len().max(apps_per_page);
         (0..len).find(|&index| fits(row, home_grid::COLUMNS, index, item.span(), None))

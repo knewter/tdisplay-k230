@@ -968,10 +968,22 @@ impl HomeScreen {
         }
         let target = self.slot_at(point, width, height);
         match source {
-            DragSource::Existing(from) => {
-                let target = target?;
-                self.move_existing(from, target, apps_per_page)
-            }
+            DragSource::Existing(from) => match target {
+                Some(target) => self.move_existing(from, target, apps_per_page),
+                None => {
+                    // The drop point resolved to no grid/dock cell at all --
+                    // e.g. released right in the edge margin just past the
+                    // last tile column, which sits *inside* the edge-hold
+                    // trigger zone (`EDGE_ZONE_PX`) but outside any tile's
+                    // own hit rect, a very natural place to lift off right
+                    // after watching a cross-page drag turn the page. Land
+                    // on the page currently on screen instead of silently
+                    // reverting the drag to its origin page (operator
+                    // report: "the item snaps back to its original page").
+                    let page = self.pager.page(self.page_count());
+                    self.move_existing_to_page(from, page, apps_per_page)
+                }
+            },
             DragSource::FromDrawer(id) => {
                 let item = HomeItem::app(id);
                 let placed = match target {
@@ -1035,9 +1047,14 @@ impl HomeScreen {
 
     /// Moves an already-pinned item from `from` to `target`: a plain move
     /// into an empty cell, a merge (folder create/add) when `target` holds
-    /// something mergeable, or a same-span swap as the fallback -- matching
-    /// this screen's pre-existing rearrange behavior for anything that
-    /// cannot merge.
+    /// something mergeable, or a same-span swap as the fallback. When none
+    /// of those apply -- `target` itself cannot fit the item's span, or it
+    /// holds something that can neither merge nor swap with it -- this
+    /// falls back to the nearest free cell on `target`'s own page rather
+    /// than reverting: `target`'s page is wherever the drag *currently* is
+    /// (which, mid a cross-page drag, is no longer necessarily `from`'s own
+    /// page), so silently giving up here is exactly the "snaps back to its
+    /// original page" bug a real cross-page drag must not exhibit.
     fn move_existing(&mut self, from: HomeSlot, target: HomeSlot, apps_per_page: usize) -> Option<HomeAction> {
         if target == from {
             return None;
@@ -1048,10 +1065,12 @@ impl HomeScreen {
                 self.layout.remove_slot(from);
                 if self.layout.place(target, dragged.clone(), apps_per_page, false) {
                     Some(HomeAction::LayoutChanged)
+                } else if let HomeSlot::Grid { page, .. } = target {
+                    self.place_on_page_or_restore(from, page, dragged, apps_per_page)
                 } else {
-                    // Did not fit (e.g. a widget would spill past the row's
-                    // edge at this target) -- put it back exactly where it
-                    // was rather than losing it.
+                    // A dock target that doesn't fit (e.g. a widget aimed at
+                    // the dock, which is never widget-eligible) -- put it
+                    // back exactly where it was.
                     self.layout.place(from, dragged, apps_per_page, false);
                     None
                 }
@@ -1065,11 +1084,59 @@ impl HomeScreen {
                     self.layout.set(target, Some(dragged), apps_per_page);
                     self.layout.set(from, Some(existing), apps_per_page);
                     Some(HomeAction::LayoutChanged)
+                } else if let HomeSlot::Grid { page, .. } = target {
+                    self.layout.remove_slot(from);
+                    self.place_on_page_or_restore(from, page, dragged, apps_per_page)
                 } else {
                     None
                 }
             }
         }
+    }
+
+    /// Places `dragged` at the first free-fitting cell on `page`, or -- if
+    /// `page` truly has no room for it -- restores it to `from` instead of
+    /// losing it. `from` must already have been cleared by the caller.
+    /// Shared by both of [`Self::move_existing`]'s own fallback sites and
+    /// [`Self::move_existing_to_page`] (the "no resolvable target at all"
+    /// case), all three of which face the exact same choice between landing
+    /// on the page the drag is currently over versus reverting.
+    fn place_on_page_or_restore(
+        &mut self,
+        from: HomeSlot,
+        page: usize,
+        dragged: HomeItem,
+        apps_per_page: usize,
+    ) -> Option<HomeAction> {
+        // Recreates `page` if the drag's own origin-cell `remove_slot` just
+        // pruned it away for being (still) empty -- see `ensure_page`'s own
+        // doc for why this must run before `first_fit`.
+        self.layout.ensure_page(page, apps_per_page);
+        if let Some(slot) = self.layout.first_fit(page, &dragged, apps_per_page) {
+            self.layout.place(HomeSlot::Grid { page, slot }, dragged, apps_per_page, false);
+            Some(HomeAction::LayoutChanged)
+        } else {
+            self.layout.place(from, dragged, apps_per_page, false);
+            None
+        }
+    }
+
+    /// Moves an already-pinned item from `from` onto `page` at its nearest
+    /// free-fitting cell, used when a rearrange drag's release point
+    /// resolves to no slot at all (e.g. right in the edge margin, just past
+    /// the last tile column, which sits inside the edge-hold trigger zone
+    /// but outside every tile's own hit rect). `page` is whichever page is
+    /// actually on screen at release -- not necessarily `from`'s own page,
+    /// mid a cross-page drag.
+    fn move_existing_to_page(&mut self, from: HomeSlot, page: usize, apps_per_page: usize) -> Option<HomeAction> {
+        if let HomeSlot::Grid { page: from_page, .. } = from {
+            if from_page == page {
+                return None; // never left its own page; nothing to commit
+            }
+        }
+        let dragged = self.layout.get(from)?.clone();
+        self.layout.remove_slot(from);
+        self.place_on_page_or_restore(from, page, dragged, apps_per_page)
     }
 
     /// Places a brand-new item (the drawer's drag hand-off) at `target`: a
@@ -1756,6 +1823,215 @@ mod tests {
             ticks += 1;
         }
         assert_eq!(screen.pager.page(screen.page_count()), 1, "flung to the next page without dwelling at an edge");
+    }
+
+    // -- Cross-page rearrange drag: release must commit to the NEW page,
+    // not revert to the drag's origin page (operator report on real glass:
+    // dragging an icon/widget across the edge visibly switches Home to the
+    // next page, but lifting the finger snaps it back to where it started).
+
+    /// Drags an existing icon from page 0 to the right edge, ticking until
+    /// the edge-hold dwell threshold turns the page, then releases onto an
+    /// empty cell on page 1 -- the item must land there, not revert to its
+    /// origin slot on page 0.
+    #[test]
+    fn dragging_an_existing_icon_across_the_edge_lands_on_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]); // page 1, all empty
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert!(screen.rearranging);
+        // Drag to (and hold at) the right edge until the page turns.
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "the page switched while still dragging");
+        // Move onto an empty cell on the now-current page 1 and release.
+        let drop_point = tile_center_for_test(2);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, drop_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 2 }),
+            Some(&HomeItem::app("a.desktop")),
+            "dropped item must land on the new page, not revert to its origin"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared once the drop commits"
+        );
+    }
+
+    /// Same cross-page drag, but the new page's target cell is already
+    /// occupied -- the item must land on the nearest *free* cell on the new
+    /// page, not revert to its origin.
+    #[test]
+    fn dragging_an_existing_icon_across_the_edge_onto_an_occupied_cell_lands_nearby_on_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![
+            Some(HomeItem::app("existing.desktop")),
+            None,
+            None,
+            None,
+        ]); // page 1, slot 0 occupied
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1);
+        // Release directly onto page 1's already-occupied slot 0.
+        let drop_point = tile_center_for_test(0);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        let action = screen.up(1, drop_point, 920, WIDTH, HEIGHT);
+        assert_eq!(action, Some(HomeAction::LayoutChanged));
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- the drop did not revert"
+        );
+        assert!(
+            screen.layout.contains_app("a.desktop"),
+            "the dragged app must still exist somewhere"
+        );
+        // "existing.desktop" (or a merged folder with it) must still be at
+        // its own slot -- the drop must not have clobbered it.
+        let slot0 = screen.layout.get(HomeSlot::Grid { page: 1, slot: 0 }).cloned();
+        assert!(
+            matches!(slot0, Some(HomeItem::Folder(_))) || slot0 == Some(HomeItem::app("existing.desktop")),
+            "unexpected page-1 slot-0 contents: {slot0:?}"
+        );
+    }
+
+    /// Same cross-page drag, but the finger is released right where it has
+    /// been dwelling -- in the edge zone itself -- rather than moved back
+    /// toward the grid's center first, matching how a person actually lifts
+    /// off after watching the page turn under their finger. The release
+    /// point (`width - 5`) sits inside `EDGE_ZONE_PX`'s 40px trigger band
+    /// but outside every tile's own hit rect (the grid's `SIDE_MARGIN` is
+    /// only 22px), so `slot_at` resolves to no cell at all here -- this is
+    /// the exact root cause: `drop_dragged_item`'s `DragSource::Existing`
+    /// arm used to `return None` outright on an unresolvable target, with
+    /// no same-page fallback (every other drag source already had one),
+    /// silently discarding the drop and leaving the item exactly where it
+    /// started -- which then reads as "snapped back to its original page".
+    #[test]
+    fn releasing_right_at_the_edge_where_the_page_just_turned_still_commits_to_the_new_page() {
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages.push(vec![None; 4]);
+        let start = tile_center_for_test(0); // holds "a.desktop"
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1, "the page switched while still dragging");
+        assert_eq!(
+            home_grid::slot_at(edge_point, WIDTH, HEIGHT, home_grid::apps_per_page(HEIGHT)),
+            None,
+            "sanity check: this release point must be outside every tile's own hit rect"
+        );
+        // Release right here, at the edge -- no further motion inward.
+        assert_eq!(
+            screen.up(1, edge_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- must not have snapped back"
+        );
+        assert!(
+            screen.layout.pages[1].iter().any(|cell| cell.as_ref() == Some(&HomeItem::app("a.desktop"))),
+            "the item must have landed somewhere on the new (now-current) page"
+        );
+    }
+
+    /// A widget dragged across the edge and released onto the new page's
+    /// already-occupied cell (a plain app, spanning a different size, so
+    /// neither a merge nor a same-span swap applies) must land on the
+    /// nearest free cell on that *new* page -- not revert to its origin,
+    /// and not clobber the app already there.
+    #[test]
+    fn dragging_a_widget_across_the_edge_onto_an_incompatible_occupied_cell_lands_nearby_on_the_new_page() {
+        let per_page = home_grid::apps_per_page(HEIGHT);
+        let mut screen = screen_with(&[None; 4]);
+        screen.layout.pages[0] = vec![None; per_page];
+        screen.layout.pages[0][0] = Some(HomeItem::Widget { widget: WidgetKind::Clock }); // covers 0..8 (4x2)
+        let mut page1 = vec![None; per_page];
+        page1[0] = Some(HomeItem::app("existing.desktop"));
+        screen.layout.pages.push(page1);
+
+        let start = tile_center_for_test(0); // the widget's anchor cell
+        screen.down(1, start, 0, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while !screen.rearranging && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(
+            screen.drag.as_ref().map(|(source, _)| source.clone()),
+            Some(DragSource::Existing(HomeSlot::Grid { page: 0, slot: 0 }))
+        );
+        let edge_point = (WIDTH as f64 - 5.0, 600.0);
+        screen.motion(1, edge_point, 500, WIDTH, HEIGHT);
+        let mut ticks = 0;
+        while screen.pager.page(screen.page_count()) == 0 && ticks < 100 {
+            screen.tick(16);
+            ticks += 1;
+        }
+        assert_eq!(screen.pager.page(screen.page_count()), 1);
+        // Release directly onto page 1's already-occupied slot 0.
+        let drop_point = tile_center_for_test(0);
+        screen.motion(1, drop_point, 900, WIDTH, HEIGHT);
+        assert_eq!(
+            screen.up(1, drop_point, 920, WIDTH, HEIGHT),
+            Some(HomeAction::LayoutChanged)
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 0, slot: 0 }),
+            None,
+            "origin cell must be cleared -- the drop did not revert"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 0 }),
+            Some(&HomeItem::app("existing.desktop")),
+            "the app already on the new page must be untouched"
+        );
+        assert_eq!(
+            screen.layout.get(HomeSlot::Grid { page: 1, slot: 4 }),
+            Some(&HomeItem::Widget { widget: WidgetKind::Clock }),
+            "the widget must land on the new page's nearest free cell (row 1, since row 0 has no 4-wide gap left)"
+        );
     }
 
     #[test]
