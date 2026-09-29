@@ -1502,6 +1502,7 @@ DATA 1edb7ac0fc9bd85bb2853bfb4013bf082e7a52ed29c47fae473972971a7445ff docs/evide
 DATA 373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f docs/evidence/files-app/host/portfolio-light.png
 DATA 6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68 docs/evidence/files-app/host/nautilus-dark.png
 DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evidence/files-app/host/nautilus-light.png
+DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_responsive_evidence example) of Home/Drawer/Settings/wallpaper at 568x1232, 768x1024, 1080x1920 and 1920x1080 for the-shell-adapts-to-output-resolution
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
