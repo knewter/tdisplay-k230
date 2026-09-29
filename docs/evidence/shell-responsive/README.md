@@ -96,3 +96,26 @@ Confirmed by inspection (`drawer-568x1232.png` vs `drawer-1920x1080.png`,
   and are unaffected by (and excluded from) this follow-up's content
   transform -- see `render.rs::scene`'s Settings arm, which returns before
   reaching the transformed block whenever either sub-page is open.
+
+## Integrated HDMI candidate, 2026-09-29
+
+Branch `integrate/hdmi-touch-responsive`, based on master `c5158fa8`, combines
+HDMI driver `848d24c0` and responsive-shell `fdd26105`. The build at
+`e0e3b04a` passed:
+
+```sh
+cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib --bin k230-shell-rust
+nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 4 --out-link result-hdmi-touch-responsive
+nix build .#deviceTreeHdmi --max-jobs 1 --cores 4 --out-link result-hdmi-dtb
+nix build .#sdImage-coherent --max-jobs 1 --cores 4 --out-link result-hdmi-touch-responsive-image
+```
+
+The 401 library and 22 binary tests pass. Both OpenSpec changes validate
+strictly. [Artifact inspection](integration-host.json) pins the system,
+image and HDMI DTB and verifies the SD layout, kernel, ramdisk and init
+selection against that system. The HDMI tree retains the Goodix touchscreen;
+the normal image still boots the panel.
+
+**UNVERIFIED:** This combined candidate has not been installed or booted on
+the board. The removed resize handshake is a proposed HDMI touch fix, not
+physical touch acceptance. Trackpad and mainline-kernel work are separate.

@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "evidence_class": "host-build-and-artifact-inspection",
+  "recorded_at_utc": "2026-09-29T21:45:41.654221+00:00",
+  "source_revision": "e0e3b04a",
+  "integration_branch": "integrate/hdmi-touch-responsive",
+  "base_revision": "c5158fa8",
+  "driver_revision": "848d24c0",
+  "responsive_revision": "fdd26105",
+  "system": "/nix/store/3nnwv20xcagrpds4spba47g5wcfjycdg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "image": "/nix/store/hag4z88wwp9a8p7jzrvjfjsg14j6ddvr-k230-sd-image.img",
+  "image_bytes": 5437988864,
+  "image_sha256": "256ecb455e9bd039f18efbe2d9803d4bed302751cd747be3d859f0b8dd430664",
+  "hdmi_dtb": "/nix/store/padx2k175300bx4ihvg7mbrbyq6nk9ap-k230-tdisplay-hdmi.dtb/k230-tdisplay-hdmi.dtb",
+  "hdmi_dtb_sha256": "72e15e8452675afe19a14e94f0e30df5f49b454b19cc077f8eb3ba186bef8bee",
+  "boot_files": {
+    "Image": {
+      "bytes": 60428800,
+      "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2"
+    },
+    "initrd.uimg": {
+      "bytes": 27295055,
+      "sha256": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 71994,
+      "sha256": "8f7574a27f125a8c23c0b3900b10181f68006ee1cfe6daa037db34ad534a4a35"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "33bbf405a0d8b551a19b3e40526352f98a3c7151561eb5fda6d32f58fc5db76c"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    }
+  },
+  "checks": {
+    "kernel_matches_system": true,
+    "ramdisk_matches_system": true,
+    "boot_init_matches_system": true,
+    "sd_layout_matches": true,
+    "hdmi_tree_retains_touch": true,
+    "rust_library_tests": 401,
+    "rust_binary_tests": 22,
+    "openspec_strict_validation": true
+  },
+  "installed_on_board": false,
+  "limitations": [
+    "No physical HDMI touch proof for this combined candidate.",
+    "No trackpad prototype or mainline-kernel work is included.",
+    "The image retains the normal panel boot; HDMI DTB is a separate one-shot artifact."
+  ]
+}
