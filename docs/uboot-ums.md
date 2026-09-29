@@ -24,7 +24,8 @@ Short answers:
 - **There is a third route nobody asked about and it may be the best recovery
   story:** the K230 BootROM's USB boot mode, driven by Canaan's MIT-licensed
   `k230_flash`, writes the SD card over USB *with no working bootloader on the
-  card at all*. The board has a button wired to `BOOT0` that should force it.
+  card at all*. BootROM USB recovery is a possible route, but its entry method
+  is unverified for this board revision.
 
 ---
 
@@ -352,14 +353,14 @@ BOOT0 = 1, BOOT1 = 0  SPI Nand
 BOOT0 = 1, BOOT1 = 1  SD Card
 ```
 
-`SW3` is a pushbutton between `BOOT0` and `GND`. `BOOT0` also appears on a
-header. Holding `SW3` at power-on therefore selects `0,1` = **eMMC**, which is
-not populated on this board, so the BootROM should fall through to USB boot —
-Canaan's hardware guide says USB/UART boot is the fallback when the selected
-medium fails.
+`SW3` and a user-accessible `BOOT0` control are **not documented** in the
+published T-Display K230 V1.0 schematic. The strap table alone does not show
+how to select another boot mode on the assembled board. Do not assume that
+pressing a board button changes `BOOT0`.
 
-<!-- UNVERIFIED: the fall-through has not been observed on this board. The
-test is free and is in §7. -->
+<!-- UNVERIFIED: BootROM USB-mode entry and fallback after an SD boot failure
+have not been observed on this board. The previous SW3 procedure was
+unsupported by the published schematic and has been removed. -->
 
 ## 6. If the new U-Boot does not boot, how do we recover?
 
@@ -387,8 +388,9 @@ So there are **two independent nets**:
    the only boot medium. This is the floor, and it is the same loop we have
    today — the failure mode of Route A is "we are back where we started",
    not "the board is a brick".
-2. **`k230_flash` over J3 with `SW3` held.** Needs no working bootloader on
-   the card at all. Unverified, free to test.
+2. **BootROM USB recovery with `k230_flash` over J3.** This would need no
+   working bootloader on the card, but the entry method and device enumeration
+   are unverified for this board revision.
 
 ## 7. Commands to run on the board (and on the host)
 
@@ -444,27 +446,29 @@ CDC-ACM ports on it) while the board sits at the U-Boot prompt. Expect
 nothing — no gadget is configured. This is the baseline to compare against
 after Route A.
 
+No safe entry sequence can be given from the published schematic. If
+revision-specific documentation identifies the correct BootROM strap, this
+host-side observation can be run during that documented sequence:
+
 ```
-# Route C test, no risk, nothing is written:
-#   1. power off
-#   2. take the TF card OUT
-#   3. hold SW3 (the button wired to BOOT0) and apply power via J3
-#   4. on the host:
 watch -n1 'lsusb | grep -i 29f1'
 ```
 
-If `29f1:0230` appears, Route C is live and we have an
-unbrickable recovery path plus a second flashing route. Try it with the card
-out first, since that removes the SD boot path without needing the strap to
-work.
+`29f1:0230` on J3 would be consistent with BootROM USB mode, but the
+published V1.0 schematic does not document a button or other user-accessible
+control for selecting that mode. Do not follow the former SW3/card-removal
+procedure unless hardware documentation for the specific board revision
+identifies the correct strap control. The current board has not enumerated as
+a BootROM USB device.
 
 ## 8. Recommendation
 
 1. **Do Route A**, as variant A1 first, stacked on
    `every-blob-is-built-from-source-or-named`. Half a day. Proposed as
    `openspec/changes/the-card-is-flashed-over-usb-from-u-boot/`.
-2. **Test Route C tonight** — it costs one power cycle and, if it works, it
-   is the thing that makes Route A safe to iterate on.
+2. **Resolve Route C's entry method from revision-specific hardware
+   documentation** before attempting USB recovery. The published V1.0
+   schematic does not document the previously claimed SW3 control.
 3. **Once `ums` works, change what we write.** Writing 2.21 GB per iteration
    is the real cost; a mounted boot partition and a 60 MB copy is the
    order-of-magnitude win, and `ums` is what makes it available.
