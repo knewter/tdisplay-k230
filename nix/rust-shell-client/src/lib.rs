@@ -53,7 +53,14 @@ impl Route {
 }
 
 pub fn frame_bytes(width: u32, height: u32) -> Option<usize> {
-    if !(300..=1024).contains(&width) || !(600..=2048).contains(&height) {
+    // Upper bounds widened from the original panel-only 300..=1024 (width)
+    // to 300..=2048 on both axes for `feat/shell-responsive`: a whole HDMI
+    // output is now accepted at its own full size (1920x1080 landscape,
+    // 1080x1920 rotated portrait) instead of being pillarboxed down to a
+    // design-aspect column (see `configure_preserves_aspect`'s doc and
+    // `main.rs`'s `is_whole_output`). 2048 stays a real, if generous,
+    // sanity bound -- nothing this shell targets exceeds it.
+    if !(300..=2048).contains(&width) || !(600..=2048).contains(&height) {
         return None;
     }
     usize::try_from(width)
@@ -99,25 +106,22 @@ const DESIGN_ASPECT: f64 = 568.0 / 1232.0;
 /// configured height (keyboard top) was about 775, giving a ratio of
 /// roughly 0.73 against this constant's 0.46 -- about 59% off, far outside
 /// the 10% band below.
-/// The width of a centered, design-aspect column filling `height`, when a
-/// `(width, height)` configure is a whole output that is too wide for the
-/// portrait design (an HDMI monitor rather than the 568x1232 panel). The
-/// caller then asks the compositor for that narrower size, anchored top and
-/// bottom only, so the shell draws pillarboxed at a uniform scale instead of
-/// rejecting the output and leaving it black. `None` when the configure
-/// already keeps the design aspect or is taller than it.
-pub fn pillarbox_width(width: u32, height: u32) -> Option<u32> {
-    if width == 0 || height == 0 || configure_preserves_aspect(width, height) {
-        return None;
-    }
-    let ratio = f64::from(width) / f64::from(height);
-    if ratio <= DESIGN_ASPECT {
-        return None;
-    }
-    let column = (f64::from(height) * DESIGN_ASPECT).round() as u32;
-    (column > 0 && column < width).then_some(column)
-}
-
+///
+/// A configure failing this check is no longer automatically rejected --
+/// `main.rs`'s three `LayerShellHandler::configure` branches also accept it
+/// when `is_whole_output` reports the compositor handed the surface its
+/// entire output (an HDMI monitor's own size, at any aspect: 1920x1080
+/// landscape, 1080x1920 rotated portrait). That is the *other* legitimate
+/// case this constant alone cannot distinguish from a keyboard-exclusive-
+/// zone squish: both change the aspect ratio, but only a squish leaves the
+/// surface smaller than the output it sits on. `feat/hdmi-pillarbox`
+/// (2026-09-29, commit 4c2eb57c) used to route the whole-output case
+/// through `pillarbox_width` (removed by `feat/shell-responsive`, same
+/// day) into a centered design-aspect column instead -- the operator did
+/// not want that: a wide monitor should fill, not letterbox. See
+/// `openspec/changes/the-shell-adapts-to-output-resolution/design.md` for
+/// the fuller rationale and what still does not reflow (Settings' fixed
+/// pixel offsets, `paint_wifi`'s own uniform-ish `cr.scale`).
 pub fn configure_preserves_aspect(width: u32, height: u32) -> bool {
     if width == 0 || height == 0 {
         return false;
@@ -237,19 +241,20 @@ mod tests {
     }
 
     #[test]
-    fn pillarbox_width_fits_landscape_outputs() {
-        assert_eq!(pillarbox_width(568, 1232), None);
-        assert_eq!(pillarbox_width(1024, 768), Some(354));
-        assert_eq!(pillarbox_width(1920, 1080), Some(498));
-        assert!(configure_preserves_aspect(354, 768));
-        assert!(configure_preserves_aspect(498, 1080));
-        assert_eq!(pillarbox_width(300, 1232), None);
+    fn frame_bytes_accepts_hdmi_whole_output_sizes() {
+        // The four resolutions this change's own capture evidence covers
+        // (docs/evidence/shell-responsive/): the native panel, plus
+        // rotated-portrait and landscape HDMI outputs at two sizes each.
+        assert_eq!(frame_bytes(568, 1232), Some(2_799_104));
+        assert_eq!(frame_bytes(768, 1024), Some(3_145_728));
+        assert_eq!(frame_bytes(1080, 1920), Some(8_294_400));
+        assert_eq!(frame_bytes(1920, 1080), Some(8_294_400));
     }
 
     #[test]
     fn configure_size_is_bounded() {
         assert_eq!(frame_bytes(568, 1232), Some(2_799_104));
-        assert_eq!(frame_bytes(1025, 1232), None);
+        assert_eq!(frame_bytes(2049, 1232), None);
         assert_eq!(frame_bytes(568, 2049), None);
         assert_eq!(frame_bytes(0, 1232), None);
         assert_eq!(frame_bytes(568, 99_999), None);

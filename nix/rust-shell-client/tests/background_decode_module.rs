@@ -93,8 +93,12 @@ fn source_output_format_and_symlink_bounds_fail_closed() {
     let path = fixture.path("still.png");
     save(&path, RgbaImage::from_pixel(2, 2, Rgba([0, 0, 0, 255])));
     let mut cache = BackgroundCache::new();
-    assert!(cache.render(&path, None, 1025, 2, FitMode::Crop).is_err());
-    assert!(cache.render(&path, None, 1024, 2049, FitMode::Crop).is_err());
+    // Bounds widened for `feat/shell-responsive` (a still wallpaper now
+    // decodes at a whole HDMI output's own size, up to 2048 on either
+    // axis -- see `background_decode.rs`'s `MAX_OUTPUT_WIDTH` doc); probe
+    // just past the new bound rather than the old panel-only one.
+    assert!(cache.render(&path, None, 2049, 2, FitMode::Crop).is_err());
+    assert!(cache.render(&path, None, 2048, 2049, FitMode::Crop).is_err());
     let disguised = fixture.path("still.jpg");
     fs::copy(&path, &disguised).unwrap();
     assert!(cache.render(&disguised, None, 2, 2, FitMode::Crop).is_err());

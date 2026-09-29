@@ -10,6 +10,25 @@
 /// `2*24 + 3*24 + 4*112 = 568`, so the grid is centered with no remainder
 /// and no separate centering offset to compute.
 pub const COLUMNS: usize = 4;
+/// This panel's own design width -- `columns_for_width`'s reference point.
+const DESIGN_WIDTH: f64 = 568.0;
+
+/// How many drawer grid columns fit `width`: proportional to `COLUMNS` at
+/// `DESIGN_WIDTH` so a wider (HDMI) output gets more columns at roughly
+/// this module's own 112px reference tile width, instead of `COLUMNS`
+/// staying fixed at 4 and each cell stretching into a wide, sparse tile
+/// (`feat/shell-responsive`: the operator did not want an HDMI output's
+/// drawer to just have four huge tiles). Never fewer than `COLUMNS`,
+/// so a configure this shell would already reject as too narrow (see
+/// `configure_size`/`configure_preserves_aspect` in `lib.rs`) cannot drive
+/// this to zero. Pure and stateless -- unlike `home_grid`'s per-page
+/// layout, the drawer has no persisted per-column data to keep in sync,
+/// only this live tile geometry and the matching `tile_at` hit-test, both
+/// of which call this on every use.
+pub fn columns_for_width(width: u32) -> usize {
+    let scaled = (f64::from(width) * COLUMNS as f64 / DESIGN_WIDTH).round();
+    (scaled as usize).max(COLUMNS)
+}
 /// The cell's full vertical pitch: an icon, a small gap, a single-line
 /// label, and the row's own share of vertical breathing room -- see
 /// `render.rs`'s Drawer paint block for the exact split. Also `tile_at`'s
@@ -195,11 +214,12 @@ pub fn search_keyboard_key_at(point: (f64, f64), width: u32, height: u32) -> Opt
 }
 
 pub fn tile_rect(width: u32, height: u32, index: usize, scroll: f64) -> (f64, f64, f64, f64) {
-    let tile_width = ((f64::from(width) - 2.0 * SIDE_MARGIN - (COLUMNS - 1) as f64 * TILE_GAP)
-        / COLUMNS as f64)
+    let columns = columns_for_width(width);
+    let tile_width = ((f64::from(width) - 2.0 * SIDE_MARGIN - (columns - 1) as f64 * TILE_GAP)
+        / columns as f64)
         .max(0.0);
-    let column = index % COLUMNS;
-    let row = index / COLUMNS;
+    let column = index % columns;
+    let row = index / columns;
     (
         SIDE_MARGIN + column as f64 * (tile_width + TILE_GAP),
         list_top(height) + row as f64 * ROW_HEIGHT - scroll,
@@ -226,9 +246,10 @@ pub fn tile_at(
     if content_y < 0.0 {
         return None;
     }
+    let columns = columns_for_width(width);
     let row = (content_y / ROW_HEIGHT).floor() as usize;
-    let first = row.saturating_mul(COLUMNS);
-    for index in first..first.saturating_add(COLUMNS).min(apps) {
+    let first = row.saturating_mul(columns);
+    for index in first..first.saturating_add(columns).min(apps) {
         let (x, y, w, h) = tile_rect(width, height, index, scroll);
         if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
             return Some(index);
@@ -237,9 +258,9 @@ pub fn tile_at(
     None
 }
 
-fn max_scroll(height: u32, apps: usize) -> f64 {
+fn max_scroll(width: u32, height: u32, apps: usize) -> f64 {
     let viewport = (f64::from(height) - GRID_BOTTOM_INSET - list_top(height)).max(0.0);
-    let grid_rows = apps.div_ceil(COLUMNS);
+    let grid_rows = apps.div_ceil(columns_for_width(width));
     (grid_rows as f64 * ROW_HEIGHT - TILE_GAP - viewport).max(0.0)
 }
 
@@ -331,6 +352,7 @@ impl DrawerNavigation {
         id: i32,
         point: (f64, f64),
         time_ms: u32,
+        width: u32,
         height: u32,
         rows: usize,
     ) -> bool {
@@ -349,7 +371,7 @@ impl DrawerNavigation {
         contact.last_ms = time_ms;
         let old = self.scroll;
         self.scroll = (contact.start_scroll - (point.1 - contact.start.1))
-            .clamp(0.0, max_scroll(height, rows));
+            .clamp(0.0, max_scroll(width, height, rows));
         if self.scroll > 0.5 {
             contact.scrolled_away = true;
         }
@@ -403,14 +425,14 @@ impl DrawerNavigation {
         None
     }
 
-    pub fn tick(&mut self, elapsed_ms: u32, height: u32, rows: usize) -> bool {
+    pub fn tick(&mut self, elapsed_ms: u32, width: u32, height: u32, rows: usize) -> bool {
         if self.contact.is_some() || self.velocity.abs() < 20.0 || elapsed_ms == 0 {
             return false;
         }
         let elapsed = elapsed_ms.min(50);
         let old = self.scroll;
         self.scroll = (self.scroll + self.velocity * f64::from(elapsed) / 1000.0)
-            .clamp(0.0, max_scroll(height, rows));
+            .clamp(0.0, max_scroll(width, height, rows));
         self.velocity *= 0.88_f64.powf(f64::from(elapsed) / 16.0);
         if self.scroll == old || self.velocity.abs() < 20.0 {
             self.velocity = 0.0;
@@ -558,6 +580,48 @@ mod tests {
     }
 
     #[test]
+    fn columns_for_width_reflows_wider_hdmi_outputs_but_never_shrinks() {
+        // Exactly 4 at this panel's own design width -- pixel-identical to
+        // today (`configure_preserves_aspect`'s own design band).
+        assert_eq!(columns_for_width(568), COLUMNS);
+        // Never fewer than the design's own 4, even below 568 (a configure
+        // this narrow is already rejected before reaching here -- see
+        // `lib.rs`'s `configure_size`/`configure_preserves_aspect` -- but
+        // this stays a safe floor regardless).
+        assert_eq!(columns_for_width(300), COLUMNS);
+        // Wider (HDMI) outputs: this change's own capture evidence sizes,
+        // `feat/shell-responsive`'s reflow instead of `feat/hdmi-pillarbox`'s
+        // now-removed centered column.
+        assert_eq!(columns_for_width(768), 5);
+        assert_eq!(columns_for_width(1080), 8);
+        assert_eq!(columns_for_width(1920), 14);
+        // Monotonic: strictly wider never yields fewer columns.
+        assert!(columns_for_width(1920) >= columns_for_width(1080));
+        assert!(columns_for_width(1080) >= columns_for_width(768));
+    }
+
+    #[test]
+    fn wide_hdmi_output_hits_every_reflowed_column_of_the_first_row() {
+        // 1920x1080 landscape HDMI: `columns_for_width(1920)` columns
+        // reflow into the same first row instead of 4 wide, sparse tiles.
+        let width = 1920u32;
+        let height = 1080u32;
+        let columns = columns_for_width(width);
+        assert!(columns > COLUMNS, "a wide output must gain columns, not just wider tiles");
+        let mut nav = DrawerNavigation::default();
+        for index in 0..columns {
+            let (x, y, w, h) = tile_rect(width, height, index, 0.0);
+            assert!(w > 0.0 && h > 0.0);
+            assert!(x + w <= f64::from(width), "tile {index} must stay on-panel");
+            assert!(nav.down(1, (x + w / 2.0, y + h / 2.0), 10));
+            assert_eq!(
+                nav.up(1, (x + w / 2.0, y + h / 2.0), 30, width, height, columns),
+                Some(DrawerAction::Launch(index))
+            );
+        }
+    }
+
+    #[test]
     fn scrolled_grid_maps_row_and_clips_bottom() {
         let mut nav = DrawerNavigation {
             scroll: 160.0,
@@ -577,10 +641,10 @@ mod tests {
             None,
             "footer is outside the grid"
         );
-        assert_eq!(max_scroll(1232, 7), 0.0);
+        assert_eq!(max_scroll(568, 1232, 7), 0.0);
         // 60 apps (15 rows) actually overflows this panel's viewport at the
         // new, shorter 110px row pitch -- 30 no longer does.
-        assert!(max_scroll(1232, 60) > 0.0);
+        assert!(max_scroll(568, 1232, 60) > 0.0);
     }
 
     #[test]
@@ -590,7 +654,7 @@ mod tests {
         let p = (x + w / 2.0, y + h / 2.0);
         nav.down(1, p, 0);
         assert_eq!(nav.pressed(568, 1232, 7), Some(1));
-        nav.motion(1, (p.0, p.1 - 40.0), 20, 1232, 30);
+        nav.motion(1, (p.0, p.1 - 40.0), 20, 568, 1232, 30);
         assert_eq!(nav.pressed(568, 1232, 30), None);
         nav.cancel();
         nav.down(2, p, 30);
@@ -608,9 +672,9 @@ mod tests {
         let apps = 60;
         let top = list_top(1232);
         nav.down(1, (120.0, top + 180.0), 0);
-        assert!(nav.motion(1, (120.0, top + 80.0), 25, 1232, apps));
+        assert!(nav.motion(1, (120.0, top + 80.0), 25, 568, 1232, apps));
         assert_eq!(nav.scroll, 100.0);
-        assert!(nav.motion(1, (120.0, top + 100.0), 40, 1232, apps));
+        assert!(nav.motion(1, (120.0, top + 100.0), 40, 568, 1232, apps));
         assert_eq!(nav.scroll, 80.0);
         assert_eq!(nav.up(1, (120.0, top + 100.0), 41, 568, 1232, apps), None);
         assert!(nav.coasting());
@@ -618,7 +682,7 @@ mod tests {
         assert!(!nav.coasting());
         nav.cancel();
         nav.down(3, (120.0, top + 180.0), 100);
-        nav.motion(3, (120.0, top + 80.0), 125, 1232, apps);
+        nav.motion(3, (120.0, top + 80.0), 125, 568, 1232, apps);
         nav.up(3, (120.0, top + 80.0), 400, 568, 1232, apps);
         assert!(
             !nav.coasting(),
@@ -658,7 +722,7 @@ mod tests {
         let (x, y, w, h) = tile_rect(568, 1232, 2, 0.0);
         let point = (x + w / 2.0, y + h / 2.0);
         nav.down(1, point, 0);
-        nav.motion(1, (point.0 + 20.0, point.1), 16, 1232, 7);
+        nav.motion(1, (point.0 + 20.0, point.1), 16, 568, 1232, 7);
         assert_eq!(
             nav.take_long_press_drag(LONG_PRESS_MS, 568, 1232, 7),
             None,
@@ -703,7 +767,7 @@ mod tests {
         let mut nav = DrawerNavigation::default();
         let top = list_top(1232);
         nav.down(1, (100.0, top - 30.0), 30);
-        nav.motion(1, (100.0, top + 110.0), 80, 1232, 7);
+        nav.motion(1, (100.0, top + 110.0), 80, 568, 1232, 7);
         assert_eq!(
             nav.up(1, (100.0, top + 110.0), 85, 568, 1232, 7),
             Some(DrawerAction::Close)
@@ -731,13 +795,13 @@ mod tests {
         assert!(nav.down(1, start, 0));
 
         // Scroll down through the list: drag up 200px.
-        assert!(nav.motion(1, (100.0, top + 10.0 - 200.0), 40, 1232, apps));
+        assert!(nav.motion(1, (100.0, top + 10.0 - 200.0), 40, 568, 1232, apps));
         assert!(nav.scroll > 100.0, "actually scrolled away from the top");
 
         // Now reverse, without lifting, and drag back down past the
         // original start point -- the exact "swipe down to scroll back
         // up" gesture from the bug report.
-        assert!(nav.motion(1, (100.0, top + 10.0 + 150.0), 90, 1232, apps));
+        assert!(nav.motion(1, (100.0, top + 10.0 + 150.0), 90, 568, 1232, apps));
         // The grid has scrolled back to (or past, and clamped at) its own
         // top by now...
         assert!(nav.scroll <= 0.5, "back at the top after reversing");
@@ -762,7 +826,7 @@ mod tests {
         let top = list_top(1232);
         let start = (100.0, top + 10.0);
         assert!(nav.down(1, start, 0));
-        nav.motion(1, (100.0, top + 10.0 + 150.0), 40, 1232, 7);
+        nav.motion(1, (100.0, top + 10.0 + 150.0), 40, 568, 1232, 7);
         assert_eq!(
             nav.up(1, (100.0, top + 10.0 + 150.0), 45, 568, 1232, 7),
             Some(DrawerAction::Close)

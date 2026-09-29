@@ -19,9 +19,17 @@ const MAX_SOURCE_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_SOURCE_EDGE: u32 = 8192;
 const MAX_SOURCE_PIXELS: u64 = 16 * 1024 * 1024;
 const MAX_DECODE_ALLOC: u64 = 128 * 1024 * 1024;
-const MAX_OUTPUT_WIDTH: u32 = 1024;
+// Widened from the original panel-only 1024 (width) / 1024*2048 (pixels)
+// for `feat/shell-responsive`: `render()` is called with the still-mapped
+// surface's own real width/height, and that surface can now be a whole
+// HDMI output at its own full size instead of a pillarboxed design-aspect
+// column (see `lib.rs`'s `configure_preserves_aspect` doc and `main.rs`'s
+// `is_whole_output`). 1920x1080/1080x1920 (this change's own widest
+// capture evidence) is 2,073,600 pixels; 2048x2048 leaves headroom above
+// that without approaching `MAX_DECODE_ALLOC`.
+const MAX_OUTPUT_WIDTH: u32 = 2048;
 const MAX_OUTPUT_HEIGHT: u32 = 2048;
-const MAX_OUTPUT_PIXELS: u64 = 1024 * 2048;
+const MAX_OUTPUT_PIXELS: u64 = 2048 * 2048;
 
 /// On-disk cache of an already-decoded, already-cropped-to-panel-size still
 /// wallpaper, written once per prepared theme generation (either by

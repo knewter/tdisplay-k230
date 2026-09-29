@@ -7,7 +7,7 @@ use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
-    configure_preserves_aspect, configure_size, frame_bytes, pillarbox_width, runtime_trace,
+    configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     home_widgets,
@@ -3393,27 +3393,30 @@ impl ShellClient {
     /// and `ensure_wallpaper` carry the identical fix for the identical
     /// reason: neither is keyboard-aware, so either would otherwise squash
     /// the same way the moment the keyboard shows while they are visible.
-    /// When a layer surface is configured to a whole output that is wider
-    /// than the portrait design (an HDMI monitor), ask for a centered
-    /// design-aspect column instead: anchored top and bottom only, sized by
-    /// `pillarbox_width`. The follow-up configure then passes
-    /// `configure_preserves_aspect`. A keyboard-style shrink is never a whole
-    /// output, so it is still rejected as before.
-    fn pillarbox(&mut self, layer: &LayerSurface, width: u32, height: u32) -> bool {
-        let whole_output = self.output_state.outputs().any(|output| {
+    /// Whether a proposed `(width, height)` configure equals some currently
+    /// known output's own logical size -- the distinction `configure`'s own
+    /// three branches need between a legitimate whole-output resize (an
+    /// HDMI monitor, at any aspect: 1920x1080 landscape, 1080x1920 rotated
+    /// portrait) and a keyboard-exclusive-zone squish, which shrinks only
+    /// one axis and is therefore never a whole output. Both change the
+    /// surface's aspect ratio away from `configure_preserves_aspect`'s
+    /// design band, so that check alone cannot tell them apart; this one
+    /// can, because a squish's `(width, height)` is smaller than the output
+    /// it sits on while a real output resize's is exactly the output.
+    ///
+    /// Used to *accept* the configure at its own full size instead of
+    /// `feat/hdmi-pillarbox`'s (2026-09-29, commit 4c2eb57c) now-removed
+    /// `pillarbox` fallback, which asked the compositor for a centered
+    /// design-aspect column: the operator did not want an HDMI monitor
+    /// letterboxed, they wanted the shell to fill it. See
+    /// `openspec/changes/the-shell-adapts-to-output-resolution/design.md`.
+    fn is_whole_output(&self, width: u32, height: u32) -> bool {
+        self.output_state.outputs().any(|output| {
             self.output_state
                 .info(&output)
                 .and_then(|info| info.logical_size)
                 .is_some_and(|(w, h)| (w, h) == (width as i32, height as i32))
-        });
-        let Some(column) = whole_output.then(|| pillarbox_width(width, height)).flatten() else {
-            return false;
-        };
-        layer.set_anchor(Anchor::TOP | Anchor::BOTTOM);
-        layer.set_size(column, 0);
-        layer.commit();
-        self.log(&format!("pillarbox {width}x{height} -> {column}x{height}"));
-        true
+        })
     }
 
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -4084,11 +4087,8 @@ impl LayerShellHandler for ShellClient {
         {
             let mut geometry = (self.wallpaper.width, self.wallpaper.height);
             if configure_size(&mut geometry, width, height).is_none()
-                || !configure_preserves_aspect(width, height)
+                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
             {
-                if self.pillarbox(layer, width, height) {
-                    return;
-                }
                 self.log("wallpaper-configure-rejected");
                 return;
             }
@@ -4115,11 +4115,8 @@ impl LayerShellHandler for ShellClient {
         {
             let mut geometry = (self.home_surface.width, self.home_surface.height);
             if configure_size(&mut geometry, width, height).is_none()
-                || !configure_preserves_aspect(width, height)
+                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
             {
-                if self.pillarbox(layer, width, height) {
-                    return;
-                }
                 self.log("home-configure-rejected");
                 return;
             }
@@ -4136,11 +4133,8 @@ impl LayerShellHandler for ShellClient {
         }
         let mut geometry = (self.width, self.height);
         if configure_size(&mut geometry, width, height).is_none()
-            || !configure_preserves_aspect(width, height)
+            || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
         {
-            if self.pillarbox(layer, width, height) {
-                return;
-            }
             self.log("configure-rejected");
             return;
         }
@@ -4994,7 +4988,7 @@ impl TouchHandler for ShellClient {
                 }
                 if !engaged_this_sample {
                     let filtered_count = self.drawer_filtered_apps().len();
-                    if self.nav.motion(id, pos, time_ms, self.height, filtered_count) {
+                    if self.nav.motion(id, pos, time_ms, self.width, self.height, filtered_count) {
                         self.dirty = true;
                     }
                     // Once this sample's ordinary scroll has actually
@@ -6151,7 +6145,7 @@ fn serve() -> Result<(), String> {
                 }
             }
         }
-        if state.route == Route::Drawer && state.nav.tick(elapsed, state.height, state.apps.len()) {
+        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.height, state.apps.len()) {
             state.dirty = true;
         }
         // Keeps the drawer-drag reveal animation (task 1) advancing every
@@ -6887,7 +6881,7 @@ mod route_tests {
         let pos1 = (100.0, grid_y - 200.0);
         let (dx1, dy1) = (pos1.0 - start.0, pos1.1 - start.1);
         assert!(!close.tracking() && !close_drag_engaged(Route::Drawer, dx1, dy1));
-        assert!(nav.motion(1, pos1, 40, height, apps));
+        assert!(nav.motion(1, pos1, 40, 568, height, apps));
         candidate = drawer_close_candidate_after_scroll(candidate, nav.scroll);
         assert!(!candidate, "real scrolling away from the top disqualifies this gesture");
 
@@ -6905,7 +6899,7 @@ mod route_tests {
         // engage guard (`!close.tracking() && close_drag_engaged(..) &&
         // candidate`) never lets this call `close.begin`.
         assert!(!candidate);
-        assert!(nav.motion(1, pos2, 90, height, apps));
+        assert!(nav.motion(1, pos2, 90, 568, height, apps));
         assert!(!close.tracking(), "the close drag must never have engaged");
     }
 
