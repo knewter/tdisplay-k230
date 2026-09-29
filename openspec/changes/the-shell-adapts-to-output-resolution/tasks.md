@@ -42,27 +42,31 @@
 
 ## 4. Host-render evidence (host-only)
 
-- [x] 4.1 Add `nix/rust-shell-client/examples/render_responsive_evidence.rs`,
-      rendering Home, the Drawer, Settings, and the wallpaper background
-      through the real production paint path (`render::paint_home`,
-      `render::export_png`, `render::RendererCache::draw_wallpaper`) at
-      568x1232, 768x1024, 1080x1920, and 1920x1080. Verify: `cargo run
-      --example render_responsive_evidence -- <out-dir>` produces 16 PNGs
-      with no panic.
+- [x] 4.1 Add `nix/rust-shell-client/src/evidence_render.rs` (rendering
+      helpers shared by the example below and by task 7.3's pixel-identity
+      test) and `examples/render_responsive_evidence.rs`, rendering Home,
+      the Drawer, Settings, and the wallpaper background through the real
+      production paint path (`render::paint_home`, `render::export_png`,
+      `render::RendererCache::draw_wallpaper`) at 568x1232, 768x1024,
+      1080x1920, and 1920x1080. Verify: `cargo run --example
+      render_responsive_evidence -- <out-dir>` produces 16 PNGs with no
+      panic.
 - [x] 4.2 Commit the 16 PNGs under `docs/evidence/shell-responsive/` with
       that directory's own `README.md` recording the exact command, what
       each capture proves, and what it explicitly does not (no Wayland
-      connection, no board, no QEMU; Home's grid column count intentionally
-      unchanged). Add the `group:16-files` row to `docs/blob-inventory.md`.
-      Verify: `python3 tools/blob-scan.py --no-vendor` reports
-      `blob-scan: ok`.
+      connection, no board, no QEMU). Add the `group:16-files` row to
+      `docs/blob-inventory.md`. Verify: `python3 tools/blob-scan.py
+      --no-vendor` reports `blob-scan: ok`. Re-rendered and re-committed
+      once more after task group 7 landed (`home-*`/`settings-*` at the
+      three HDMI sizes changed; all four `*-568x1232.png` did not, per
+      task 7.3's own test).
 
 ## 5. Validate and hand off
 
-- [x] 5.1 `cargo test` and `cargo clippy --message-format=short` for
-      `nix/rust-shell-client` — 389 tests pass, no new clippy warnings (the
-      13 pre-existing warnings are all in files this change does not
-      touch).
+- [x] 5.1 `cargo test` and `cargo clippy --all-targets --message-format=
+      short` for `nix/rust-shell-client` — 406 tests pass after task group
+      7 (389 at the end of task group 4), no new clippy warnings (the
+      pre-existing warnings are all in files this change does not touch).
 - [x] 5.2 `openspec validate the-shell-adapts-to-output-resolution --strict`
       exits 0.
 - [ ] 5.3 Cross-reference this change from
@@ -84,15 +88,98 @@
       the monitor showing a filled (not pillarboxed) Home screen. Commit
       under `docs/evidence/shell-responsive/board/`.
 - [ ] 6.2 On the same board session, confirm a real finger/stylus tap on a
-      reflowed Drawer tile at the monitor's actual column count launches
-      the correct app (this change's host tests prove the geometry math;
-      only the board proves a real touch controller and compositor agree
-      with it end to end).
-- [ ] 6.3 Design and implement Home's own grid-column reflow
-      (`design.md`'s "Rejected/deferred" section) as its own follow-up
-      change, once 6.1/6.2 give a real device to verify drag/rearrange
-      behavior against — not implementable-and-verifiable from this
-      change's own host-only worktree.
-- [ ] 6.4 Design and implement Settings' row-content max-width/centering
-      and, separately, replace `paint_wifi`'s non-uniform `cr.scale` with a
-      uniform, centered scale or a real reflow, as its own follow-up.
+      reflowed Drawer tile *and* a reflowed Home grid tile (task group 7)
+      at the monitor's actual column count each launches the correct app,
+      and that a Settings row tap lands correctly inside the new centered/
+      scaled content column (this change's host tests prove the geometry
+      math; only the board proves a real touch controller and compositor
+      agree with it end to end).
+- [ ] 6.3 Design and implement a real icon/text density scale for the Home
+      grid and the Drawer (`design.md`'s "Non-goal, both passes" section):
+      today only their column counts reflow with `crate::reflow_columns`;
+      `ICON_SIZE`/`ROW_HEIGHT`/tile margins stay the panel's own native
+      pixel size at every surface size, unlike Settings' content column.
+- [ ] 6.4 Design and implement a real reflow (or a uniform, centered scale)
+      for `paint_wifi`'s and the theme chooser's existing non-uniform
+      `cr.scale(width/568.0, height/1232.0)`, which this change's Settings
+      content transform deliberately excludes and leaves as-is.
+- [ ] 6.5 Design whether/how Home's dock should reflow its own slot count
+      (`DOCK_SLOTS`, deliberately left fixed at 4 by task group 7 --
+      `design.md`'s audit table) once real board/touch evidence from 6.1/
+      6.2 is in hand to verify against.
+
+## 7. Density scale, Home grid reflow, and a Settings content column (coordinator follow-up, host-only)
+
+Landed on the same branch immediately after task groups 1–6 above; see
+`design.md`'s two new "Decision (follow-up)" sections and its "Non-goal,
+both passes" section for the full reasoning, including what was
+reconsidered and rejected here.
+
+- [x] 7.1 Rebase `feat/shell-responsive` onto `feat/hdmi-pillarbox`'s
+      then-current head (`46a8e37e`, HDMI Sway output config +
+      `theme_gtk.py` fix) before starting; no conflicts (disjoint files).
+      Verify: `cargo test` still 389/389 immediately after the rebase, no
+      code changes yet.
+- [x] 7.2 Add `lib.rs`'s `density_scale`, `reflow_columns`, and
+      `settings_content_transform`, each with its own unit tests
+      (`density_scale_is_pixel_identical_at_native_and_bounded_above`,
+      `reflow_columns_matches_base_at_design_width_and_only_grows`,
+      `settings_content_transform_fills_the_panel_at_native_size`).
+      Refactor `navigation::columns_for_width` to delegate to
+      `reflow_columns` (behavior-preserving: every pre-existing Drawer test
+      passes unchanged). Verify: `cargo test`.
+- [x] 7.3 Home grid reflow: add `HomeLayout.columns` (`#[serde(default)]`),
+      `HomeLayout::reflow_to`, `home_grid::columns_for_width`; give
+      `home_grid::tile_rect`/`tile_content`/`spanned_tile_rect`/`slot_at`/
+      `plate_top_left` an explicit `columns` parameter (sourced from
+      `home.layout.columns` at every call site, never independently
+      recomputed) in place of the `COLUMNS` constant; add `home_grid::
+      apps_per_page`'s `width` parameter; add `HomeScreen::sync_columns`,
+      called from `main.rs`'s `draw_home`. Verify: `cargo test`, including
+      new tests `home_state.rs`'s `reflow_to_a_wider_column_count_never_
+      loses_or_reorders_items`, `reflow_to_round_trips_4_then_8_then_back_
+      to_4`, `reflow_to_is_a_no_op_when_columns_already_match`,
+      `reflow_to_keeps_a_multi_span_widget_intact_as_one_item`;
+      `home_grid.rs`'s `columns_for_width_matches_the_reference_at_568_and_
+      grows_for_hdmi`, `wide_hdmi_grid_hits_every_reflowed_column_of_the_
+      first_row`; `home_screen.rs`'s `sync_columns_reflows_to_a_wide_
+      output_and_back_without_losing_items` — plus every pre-existing
+      drag/rearrange/folder/widget test in `home_state.rs`/`home_screen.rs`
+      passing unchanged, proving the field/parameter-shape refactor did
+      not change behavior at the reference column count.
+- [x] 7.4 Settings content column: add the `cr.save/translate/scale`
+      transform to `render.rs::scene`'s `Route::Settings` arm (after its
+      "Done" check, excluding the Wi-Fi/theme-chooser early returns and the
+      unscaled header strip); make `settings_panel_h`/`panel_travel_height`
+      take a `content_scale`; add the matching remap to `service_ui::
+      panel_intent`'s Settings arm. Verify: `cargo test`, including new
+      test `service_ui.rs`'s `settings_row_taps_follow_the_scaled_centered_
+      content_column_on_hdmi` (taps the reboot row's real on-screen
+      position at both a wide and a tall HDMI size, computed through the
+      same shared transform function `scene` paints with, and confirms a
+      miss well past the row).
+- [x] 7.5 Add `nix/rust-shell-client/tests/responsive_pixel_identity.rs`:
+      decodes each committed `docs/evidence/shell-responsive/*-568x1232.
+      png` and asserts it is byte-for-byte identical to a fresh render
+      through the (now-shared) `evidence_render` module, so "568x1232 stays
+      pixel-identical" is an automated `cargo test` assertion, not a one-
+      time visual check. Verify: `cargo test --test
+      responsive_pixel_identity` — 4/4 pass against the evidence committed
+      by task group 4, confirming the follow-up changed nothing at
+      568x1232 before task 7.6 even re-rendered anything.
+- [x] 7.6 Re-render all 16 evidence PNGs with `cargo run --example
+      render_responsive_evidence -- <out-dir>`; confirm by direct `cmp`
+      that all four `*-568x1232.png` are byte-identical to the previous
+      commit and the other 12 changed (`home-*`/`settings-*` at the three
+      HDMI sizes; `drawer-*`/`wallpaper-*` unchanged, as expected since
+      neither's own logic changed this round). Re-commit under `docs/
+      evidence/shell-responsive/` (same `group:16-files` count, no
+      `docs/blob-inventory.md` row change needed) with the directory's own
+      `README.md` updated to describe what changed and why.
+- [x] 7.7 `cargo test` and `cargo clippy --all-targets` for
+      `nix/rust-shell-client` — 406 tests pass, no new clippy warnings.
+      Update this change's `proposal.md`, `design.md`, and
+      `specs/runtime/shell/spec.md` to describe the follow-up (two new
+      ADDED requirements: Home's grid reflow, Settings' content column).
+      Verify: `openspec validate the-shell-adapts-to-output-resolution
+      --strict` exits 0.

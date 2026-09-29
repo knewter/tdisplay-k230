@@ -55,25 +55,45 @@ should ever be accepted at its own size; the other must still be rejected.
   `home_pager.rs`, `home_state.rs`, `wifi_ui.rs`) and record, in
   `design.md`, what already reflows for free, what this change makes
   reflow, and what stays a deliberately deferred follow-up.
+- **Follow-up, same branch (coordinator-requested after the above landed):**
+  add a shared `crate::density_scale`/`crate::reflow_columns` pair (`lib.rs`)
+  and use them for two further reflows, each guarded by new host tests:
+  - Home's grid/dock now reflow their column count too, exactly like the
+    Drawer's, via a new `columns` field on the persisted `HomeLayout` and
+    `HomeLayout::reflow_to` -- a safe migration (flatten the stored items in
+    reading order, re-place them through the existing, already-tested
+    `place_first_fit` bin-packing at the new column count) that never
+    drops, duplicates, or reorders a pinned item, and round-trips
+    4→8→4 back to the exact original page shape. `HomeScreen::sync_columns`
+    keeps it in lockstep with the live surface width, called once per
+    `draw_home`.
+  - Settings' body content (everything below its unscaled header strip) now
+    paints in a centered column, scaled by `crate::density_scale`, instead
+    of stretching row cards edge to edge on a wide output or leaving a
+    short, content-sized "stub" panel over empty space on a tall one.
+    `service_ui::panel_intent`'s Settings arm maps a touch point through
+    the identical transform before its row-rhythm checks, so paint and
+    hit-test can never drift apart.
+  - `tests/responsive_pixel_identity.rs` (new) decodes each committed
+    `docs/evidence/shell-responsive/*-568x1232.png` and asserts it is
+    byte-for-byte identical to a fresh render through the same
+    `evidence_render` module on every `cargo test` -- an automated,
+    durable form of "568x1232 stays pixel-identical," not just a one-time
+    visual check at capture time.
 
-**Non-goals:** Home's own grid column count does not reflow in this change
-— it stays exactly 4 columns at every width, filling extra width with wider
-tiles/gaps rather than more columns. `home_state.rs`'s per-page layout is
-persisted (`$XDG_STATE_HOME/k230-shell/home.json`) and every placement/
-drag/merge/rearrange/folder operation keys off a fixed column count read
-from `home_grid::COLUMNS`; making that width-dependent means threading a
-`columns` argument through roughly a dozen call sites in `home_screen.rs`
-that currently have no way to get it wrong, with no way to verify the
-result against real touch/drag behavior without the board. That is real,
-separately-scoped work, not a follow-on typo fix — see `design.md`'s
-"Rejected/deferred" section. Settings' inner content (row x-position,
-"Themes" link, the Wi-Fi sub-page's own `cr.scale(width/568.0,
-height/1232.0)`) is also not reflowed or width-capped in this change; only
-its background/border chrome now fills the whole surface instead of being
-pillarboxed. No kernel, device-tree, or board-flashing change of any kind;
-this change touches only `nix/rust-shell-client`. No board or QEMU access
-is used or required to implement or test it — see `tasks.md` for what
-remains genuinely board-gated.
+**Non-goals:** Home's and the Drawer's own icon/text *pixel sizes* do not
+scale with `density_scale` -- only their column counts reflow. A tall,
+dense HDMI output gets more same-sized (80px-icon) tiles, not visibly
+larger ones the way Settings' text/rows now do; a literal icon/text density
+scale for the grid surfaces remains a named follow-up (see `design.md`).
+Settings' Wi-Fi sub-page (its own pre-existing, independent, non-uniform
+`cr.scale(width/568.0, height/1232.0)`) and the theme chooser are untouched
+by and excluded from the new content transform -- `scene`'s Settings arm
+returns before reaching it whenever either sub-page is open. No kernel,
+device-tree, or board-flashing change of any kind; this change touches only
+`nix/rust-shell-client`. No board or QEMU access is used or required to
+implement or test it — see `tasks.md` for what remains genuinely
+board-gated.
 
 ## Capabilities
 
