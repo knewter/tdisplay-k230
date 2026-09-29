@@ -207,8 +207,9 @@
 		compatible = "lontium,lt9611";
 		reg = <0x3b>;
 		reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_HIGH>;
-		interrupt-parent = <&gpio0_ports>;
-		interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+		// No interrupt: GPIO23 is one net with the GT9895 touch INT and
+		// goes to touch below; HDMI hotplug is polled instead
+		// (nix/patches/lt9611-dsi-port-b.patch makes the IRQ optional).
 
 		ports {
 			#address-cells = <1>;
@@ -229,6 +230,20 @@
 				};
 			};
 		};
+	};
+
+	// GT9895 touch, same as k230-tdisplay.dts, minus reset-gpios: GPIO24
+	// is one net with the LT9611 reset above, which the LT9611 driver owns
+	// and pulses at probe (resetting touch with it). reset-gpios is
+	// optional in goodix_berlin (devm_gpiod_get_optional). The panel is
+	// dark in this boot, so the touchscreen drives the HDMI output.
+	touchscreen@5d {
+		compatible = "goodix,gt9895", "goodix,gt9916";
+		reg = <0x5d>;
+		interrupt-parent = <&gpio0_ports>;
+		interrupts = <23 IRQ_TYPE_LEVEL_LOW>;
+		touchscreen-size-x = <1024>;
+		touchscreen-size-y = <2400>;
 	};
 };
 
