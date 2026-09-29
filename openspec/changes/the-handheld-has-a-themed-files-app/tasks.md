@@ -105,8 +105,10 @@
   (so this repo's override precedes each package's own installed entry in
   `XDG_DATA_DIRS` order, same pattern the file's own header comment already
   documents) with distinguishing `Name=` values ("Files (Nautilus)" /
-  "Files (Portfolio)"); nnn's `nnn.desktop` "Files" entry unchanged. Verify
-  with: `nix-instantiate --parse nix/handheld-desktop-entries.nix`.
+  "Files (Portfolio)"); nnn's `nnn.desktop` "Files" entry unchanged at the
+  time. Verify with: `nix-instantiate --parse nix/handheld-desktop-entries.nix`.
+  **Superseded by task 6.1**: nnn's entry is since removed outright, not
+  left unchanged.
 
 ## 5. System build and evidence
 
@@ -173,11 +175,64 @@
   screenshots (riscv64 binary, patched Sway, `qemu-riscv64-static`, this
   repo's existing brightness/volume-slider QEMU harness pattern) not done in
   this change — blocked on 2.2/2.3's riscv64 builds finishing.
-- [ ] 5.3 Board evidence (owner: coordinator, not this change): real
-  launch time, RSS and scroll behavior for both candidates and nnn, and the
-  decision of which entry(ies) to keep. Operator command once a flashed
-  image exists: launch each "Files (…)" drawer entry and observe; no
+- [ ] 5.3 Board evidence: real launch time, RSS and scroll behavior for both
+  candidates on the physical panel, plus confirmation that icons resolve
+  correctly with the `GDK_BACKEND=wayland`/`adwaita-icon-theme`/
+  `hicolor-icon-theme` fix (task 6.2) applied. **Which entry(ies) to keep
+  is no longer blocked on this**: the operator has already decided (task
+  6.1) to keep both by default; this task now covers only the physical
+  performance/appearance observation itself. Operator command once a
+  flashed image exists: launch each "Files (…)" drawer entry and observe; no
   narrow `tools/msh.py`/`console.py` invocation is prescribed here because
-  the observation itself (does it come up, how fast, how smooth) is the
-  point, not a scripted check. UNVERIFIED until performed; this change does
-  not claim board behavior.
+  the observation itself (does it come up, how fast, how smooth, do icons
+  render) is the point, not a scripted check. UNVERIFIED until performed;
+  this change does not claim board behavior.
+
+## 6. Default both candidates, remove nnn's entry outright
+
+- [x] 6.1 Operator decision recorded: keep both Portfolio and Nautilus
+  installed and visible in the app drawer by default
+  (`k230.shell.filesAppNautilus` default flipped from `false` to `true` in
+  `nix/shell.nix`; `k230-coherent-shell-both-files-apps` in `flake.nix` is
+  now identical to `k230-coherent-shell`, kept only so anything naming it by
+  attribute still resolves), and remove nnn's old terminal "Files" entry
+  outright rather than leave it as a fallback. Verify with:
+  `grep -rn nnn nix/shell.nix nix/handheld-desktop-entries.nix` finding only
+  historical/explanatory comments, no live wiring.
+- [x] 6.2 Remove nnn's package/binary and desktop-entry wiring: `pkgs.nnn`
+  dropped from `environment.systemPackages` and from
+  `handheld-desktop-entries.nix`'s inputs, the `nnn.desktop` override
+  deleted from `handheld-desktop-entries.nix`, and the compositor's
+  hardcoded `"nnn" -> "Files"` card-title fallback removed from
+  `nix/card-shell/adapter.c`. Add `GDK_BACKEND=wayland` and
+  `adwaita-icon-theme`/`hicolor-icon-theme`/the app's own `share` to
+  `mkFilesAppLauncher`'s `XDG_DATA_DIRS` in `nix/shell.nix` (operator-
+  reported board fix for missing icons), in the Nix wrapper rather than
+  hand-made files under `/home/shell`. Verify with:
+  `nix-instantiate --parse nix/shell.nix nix/handheld-desktop-entries.nix
+  flake.nix` and `nix flake check --no-build`.
+- [x] 6.3 Update tests/specs that referenced nnn as the shipped "Files" app:
+  `tests/test_card_shell_deck_title.py` (drop the `"nnn" -> "Files"` card
+  title case), `tests/handheld_desktop_entries_probe.c` (drop `nnn.desktop`
+  from the probed IDs), `tools/app_appearance.py` and
+  `tests/test_handheld_app_themes.py` (drop `"nnn"` from the `"inherited"`
+  theme-coverage list). Verify with:
+  `python3 -m pytest tests/test_handheld_app_themes.py tests/test_theme_gtk.py tests/test_handheld_theme_default.py -q`
+  and `gcc -Wall -Wextra -Werror tests/handheld_desktop_entries_probe.c -o /tmp/probe $(pkg-config --cflags --libs gio-unix-2.0)`.
+  `tests/test_card_shell_deck_title.py` itself fails to compile on this
+  host's GCC independent of this change (`desktop_identity_icon`: unused-
+  function under `-Werror`, reproduced identically on the pre-edit
+  commit) — not fixed here, out of this change's scope.
+- [x] 6.4 Full system build proving the new default evaluates and builds.
+  Verify with:
+  `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
+  **PASS**: `/nix/store/6m8avy8didrmf6c0znlhqw40l82dq5sz-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  Only 31 derivations needed building (the wrapper/desktop-entry/adapter.c
+  and their dependents); the riscv64 `portfolio-filemanager`/`nautilus`
+  packages themselves were unaffected by this task group's changes and did
+  not need rebuilding. This is a host evaluation/build proof only, not
+  board evidence — see 5.3.
+- [x] 6.5 `openspec validate --all --strict` exits 0 after this task
+  group's proposal/spec edits (owner: this change, checked directly, not
+  through a pipe to `tail`). **PASS**: `Totals: 60 passed, 0 failed (60 items)`,
+  exit code 0.

@@ -168,7 +168,7 @@ def prepare(generation: Path, state_root: Path) -> Path:
                         "keyfile-backend color-scheme + icon-theme, matching upstream "
                         "omarchy-theme-set-gnome's own dark/light + icon-only scope "
                         "(no accent-color recolor, same as Omarchy itself)"],
-            "inherited": ["htop", "nano", "nnn"],
+            "inherited": ["htop", "nano"],
             "limited": ["mpv: video surface does not consume terminal colors",
                         "Help: shell client uses shared shell tokens, not a separate app adapter",
                         "wvkbd keyboard: colours applied by keyboard_appearance.py, "

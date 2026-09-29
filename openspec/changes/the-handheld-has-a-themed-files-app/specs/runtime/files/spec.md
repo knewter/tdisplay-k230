@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-### Requirement: Two off-the-shelf touch-capable file managers are drawer-launchable candidates
+### Requirement: Two off-the-shelf touch-capable file managers are the handheld's only "Files" entries, installed by default
 
 *Grounding: `docs/research/omarchy-quattro-theme-compatibility.md`'s pinned
 Omarchy revision and this change's `install/omarchy-base.packages` read
@@ -8,17 +8,23 @@ confirm Nautilus is Omarchy's own shipped file manager. Portfolio
 (`portfolio-filemanager`) is read directly from this flake's locked
 nixpkgs `package.nix`. Cross-build feasibility is grounded in
 `nix build --file nix/files-app-probe.nix ... --dry-run` output recorded
-under `docs/evidence/files-app/`, not assumed.*
+under `docs/evidence/files-app/`, not assumed. The decision to keep both by
+default and remove nnn's old entry outright is an operator decision
+recorded in this change's `design.md`/`tasks.md`, not a board measurement.*
 
 The system SHALL make Nautilus and Portfolio available as distinct
 installed-application drawer entries, each cross-built for the board's
-riscv64 target, without removing the existing nnn "Files" entry.
+riscv64 target, installed and visible by default
+(`k230.shell.filesAppNautilus` defaults to `true`), and SHALL NOT ship
+nnn's previous terminal "Files" entry, its package, or any launcher/
+card-title wiring for it.
 
-#### Scenario: Both candidates appear in the drawer
+#### Scenario: Both candidates appear in the drawer, nnn's old entry does not
 
-- **WHEN** the installed-application drawer is opened
-- **THEN** "Files (Nautilus)", "Files (Portfolio)" and the existing "Files"
-  (nnn) entries are all present and distinct
+- **WHEN** the installed-application drawer is opened on a default
+  `coherentShell` build
+- **THEN** "Files (Nautilus)" and "Files (Portfolio)" are both present and
+  distinct, and no "Files" entry backed by nnn is present
 
 ### Requirement: Neither GTK4 candidate attempts a GL scene renderer
 
@@ -35,6 +41,35 @@ Each candidate's drawer entry SHALL launch through a wrapper that sets
 - **WHEN** either "Files (Nautilus)" or "Files (Portfolio)" is launched
 - **THEN** the process that execs the application binary has
   `GSK_RENDERER=cairo` set in its environment
+
+### Requirement: Each candidate's launcher wrapper is self-contained for Wayland and icon resolution
+
+*Grounding: operator report of board behavior (not reproduced by this
+worktree; a repository board re-check remains open, `tasks.md` 5.3): both
+apps were missing icons on the board without `GDK_BACKEND=wayland` and
+without `adwaita-icon-theme`/`hicolor-icon-theme` on `XDG_DATA_DIRS`. The
+fix is recorded in `nix/shell.nix`'s `mkFilesAppLauncher`, not as hand-made
+files under `/home/shell`, so a fresh home reproduces it without manual
+board setup.*
+
+Each candidate's launcher wrapper SHALL set `GDK_BACKEND=wayland` and SHALL
+include the launched application's own `share` directory,
+`adwaita-icon-theme`'s `share` directory, and `hicolor-icon-theme`'s
+`share` directory on `XDG_DATA_DIRS`, entirely from the Nix configuration.
+
+#### Scenario: Launcher wrapper environment is fully self-contained
+
+- **WHEN** either "Files (Nautilus)" or "Files (Portfolio)" is launched
+- **THEN** the process that execs the application binary has
+  `GDK_BACKEND=wayland` set, and `XDG_DATA_DIRS` includes that
+  application's own `share`, `adwaita-icon-theme`'s `share`, and
+  `hicolor-icon-theme`'s `share`, without relying on any file outside the
+  Nix store under the launching user's home directory
+
+<!-- UNVERIFIED: this requirement encodes an operator-reported board
+observation into the Nix configuration; no host, QEMU or board check in
+this change independently reproduces "icons were missing without these
+variables" or confirms the fix resolves it on the physical panel. -->
 
 ### Requirement: Both candidates render the active Omarchy theme's dark/light mode and icon variant
 

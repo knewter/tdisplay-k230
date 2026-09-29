@@ -21,26 +21,43 @@ mechanism.
 ## Goals / Non-Goals
 
 Goals: get real cross-build and closure evidence for both candidate file
-managers; make both launch from the drawer without attempting GL; give both
-the same dark/light + icon-theme fidelity Omarchy itself gives Nautilus;
-leave the board decision and any entry removal to the coordinator.
+managers; make both launch from the drawer without attempting GL, and with
+their icons actually resolving; give both the same dark/light + icon-theme
+fidelity Omarchy itself gives Nautilus; ship both installed and visible by
+default, per the operator's decision, with nnn's old unusable "Files" entry
+removed outright rather than left as a fallback.
 
 Non-goals: recoloring GTK/libadwaita's accent color from the resolved
 palette (Omarchy doesn't do this either); wiring gvfs/tracker/localsearch
-services; a native Files app; removing nnn's entry.
+services; a native Files app; narrowing to a single GTK4 candidate (both
+stay installed — the board-measured launch-time/RSS/scroll comparison in
+`tasks.md` 5.3 is still open, but it no longer gates keeping both or
+removing nnn, which the operator has already decided).
 
 ## Decisions
 
-### 1. Two candidates, not one, shipped side by side
+### 1. Two candidates, not one, shipped side by side, nnn removed outright
 
 The course correction was explicit: try existing touch-aware file managers
 before building anything new, and let the board decide between Omarchy's
 own choice (Nautilus) and a phone-first alternative already packaged in
 nixpkgs (Portfolio). Both get a drawer entry with a distinguishing name
-("Files (Nautilus)" / "Files (Portfolio)"); nnn's plain "Files" entry is
-untouched so there is always a known-working fallback while the other two
-are evaluated. Removing entries is left to a follow-up once the coordinator
-has real launch-time/RSS/scroll numbers from the board.
+("Files (Nautilus)" / "Files (Portfolio)").
+
+Originally nnn's plain "Files" entry was left untouched as a known-working
+fallback while the other two were evaluated, with any entry removal deferred
+to a follow-up once the coordinator had real launch-time/RSS/scroll numbers
+from the board. The operator has since made that call directly: keep both
+GTK4 candidates installed and visible by default
+(`k230.shell.filesAppNautilus` now defaults to `true`), and remove nnn's
+entry outright rather than keep it as a fallback — it launched inside a
+terminal and was unusable on a touch handheld, so it was never a real
+long-term candidate. Removed with it: `pkgs.nnn` from `environment.systemPackages`, its
+`nnn.desktop` override, its `handheld-desktop-entries.nix` wiring, and the
+compositor's hardcoded `"nnn" -> "Files"` card-title fallback
+(`nix/card-shell/adapter.c`). The board-measured
+launch-time/RSS/scroll comparison between Nautilus and Portfolio (`tasks.md`
+5.3) remains open and unaffected by this decision.
 
 ### 2. `GSK_RENDERER=cairo` in a launcher wrapper, not a patched package
 
@@ -128,6 +145,26 @@ regenerated and diff-checked by a small `tools/generate_default_*.py
 derivation free of a native-vs-cross Python invocation, and keeps the
 committed value auditable in a diff instead of opaque inside a build log.
 
+### 7. `GDK_BACKEND=wayland` and the Adwaita/hicolor icon fallback chain, in the same wrapper
+
+Board testing (performed by the operator, not reproduced by this worktree)
+found icons missing from both apps unless two more things were set
+explicitly: `GDK_BACKEND=wayland` (rather than letting GDK auto-detect,
+which is otherwise fine under Sway but was the difference observed on the
+board) and `XDG_DATA_DIRS` including `adwaita-icon-theme`'s and
+`hicolor-icon-theme`'s own `share` directories alongside the launched app's
+own `share`. Both symbolic-icon lookups (GTK4/libadwaita's own chrome:
+toolbar buttons, "list-add", etc.) and the bundled Yaru theme's own
+inheritance chain (`Inherits=...hicolor`/`Adwaita`) resolve through this
+fallback, and none of the handheld's existing packages had previously
+needed `adwaita-icon-theme`/`hicolor-icon-theme` on `XDG_DATA_DIRS` at all.
+Fixed directly in `mkFilesAppLauncher` (`nix/shell.nix`) rather than as
+hand-made files under `/home/shell`, per the operator's explicit direction,
+so a fresh home never depends on anything not reproduced by the Nix build.
+This repository's own board re-check of this specific fix is still
+outstanding (`tasks.md` 5.3); it is recorded here as the operator's report,
+not as evidence this worktree gathered itself.
+
 ## Risks / Trade-offs
 
 - **Closure weight.** GTK4/libadwaita's own dependency graph pulls in
@@ -140,10 +177,9 @@ committed value auditable in a diff instead of opaque inside a build log.
   running falls back to synchronous directory reads; large directories may
   be slower to populate than on a full GNOME desktop. Untested on this
   board; flagged for the coordinator's scroll/large-directory check.
-- **Two full candidates inflate the shipped image** if both remain
-  installed after evaluation. This is deliberate for this pass (the whole
-  point is a side-by-side board comparison) and expected to be narrowed by
-  a follow-up change once the coordinator picks.
+- **Two full candidates inflate the shipped image.** Both remain installed
+  by default now, per the operator's decision — this is deliberate, not a
+  placeholder pending narrowing.
 
 ## Deferred
 
@@ -152,7 +188,8 @@ committed value auditable in a diff instead of opaque inside a build log.
   without a portal.
 - gvfs/tracker/localsearch service wiring, if board evidence shows it is
   actually needed for acceptable directory-listing latency.
-- Removing whichever candidate(s) the coordinator does not keep, and nnn's
-  entry if a GTK candidate wins outright.
+- Narrowing to a single GTK4 candidate, if the still-open board comparison
+  (`tasks.md` 5.3) surfaces a decisive reason to drop one. Not expected by
+  default now that both are the operator's chosen shipped state.
 - The native Rust/Cairo Files app explored before the course correction:
   parked, not started, nothing to unwind.

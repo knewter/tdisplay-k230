@@ -123,11 +123,14 @@
         k230-coherent-shell = self.nixosConfigurations.k230.extendModules {
           modules = [ { k230.shell.coherentShell = true; k230.shell.powerKeyTrial = true; } ];
         };
-        # Same as k230-coherent-shell, plus Nautilus's own drawer entry next
-        # to Portfolio's. A separate configuration rather than the default so
-        # an ordinary k230-coherent-shell build never forces Nautilus's own
-        # (larger, tracker/localsearch-adjacent) riscv64 cross-build; see
-        # openspec/changes/the-handheld-has-a-themed-files-app.
+        # Historically "same as k230-coherent-shell, plus Nautilus's own
+        # drawer entry next to Portfolio's" while filesAppNautilus defaulted
+        # off. The operator has since decided to keep both candidates
+        # installed and visible by default (nnn's old unusable "Files" entry
+        # is removed outright, not superseded), so filesAppNautilus now
+        # defaults on and this alias is identical to k230-coherent-shell;
+        # kept only so evidence/tooling that names it by this attribute still
+        # resolves. See openspec/changes/the-handheld-has-a-themed-files-app.
         k230-coherent-shell-both-files-apps = self.nixosConfigurations.k230-coherent-shell.extendModules {
           modules = [ { k230.shell.filesAppNautilus = true; } ];
         };

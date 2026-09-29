@@ -461,25 +461,36 @@ let
     # rounds floating sizes down to whole cells and exposes wallpaper edges.
     exec ${pkgs.foot}/bin/foot --config "$foot_config" ${lib.optionalString cfg.coherentShell "--override resize-by-cells=no"} "$@"
   '';
-  # Two off-the-shelf GTK4/libadwaita file managers, evaluated against nnn's
-  # existing terminal "Files" entry (nix/handheld-desktop-entries.nix) per
-  # openspec/changes/the-handheld-has-a-themed-files-app. Both cross-build
-  # like every other GUI package here; wrapGAppsHook4 already resolves their
-  # own runtime deps (icons, GI typelibs, own gschemas). What it does not
-  # resolve is: (1) a GL-capable GSK renderer -- this board's Mesa-less
-  # Pixman/wlroots stack has none (see AGENTS.md), so GSK_RENDERER=cairo
-  # forces GTK4's software renderer; (2) the org.gnome.desktop.interface
-  # schema (color-scheme/icon-theme) -- nautilus's own package.nix lists
-  # gsettings-desktop-schemas as a buildInput, but Portfolio's does not, and
-  # libadwaita itself only uses that package at build/check time
-  # (pkgs/by-name/li/libadwaita/package.nix: not propagatedBuildInputs), so
-  # it is added explicitly here for both; (3) the active theme's GSettings
-  # keyfile-backend symlink -- see tools/theme_gtk.py and
-  # tools/app_appearance.py's generated gtk-settings.keyfile. There is no
-  # xdg-desktop-portal running on this image, so libadwaita's own portal-based
-  # dark/light detection has nothing to talk to; the GSettings keyfile
-  # backend is read directly instead, independent of any portal or dconf/D-Bus
-  # service.
+  # Two off-the-shelf GTK4/libadwaita file managers are now the handheld's
+  # only "Files" entries, per openspec/changes/the-handheld-has-a-themed-
+  # files-app. nnn's old terminal "Files" entry (former
+  # nix/handheld-desktop-entries.nix nnn.desktop, launching nnn(1) inside
+  # Foot) was unusable on a touch handheld and has been removed outright --
+  # its package, launcher wiring and card-title fallback are gone, not just
+  # superseded. Both remaining apps cross-build like every other GUI package
+  # here; wrapGAppsHook4 already resolves their own runtime deps (icons, GI
+  # typelibs, own gschemas). What it does not resolve is: (1) a GL-capable
+  # GSK renderer -- this board's Mesa-less Pixman/wlroots stack has none (see
+  # AGENTS.md), so GSK_RENDERER=cairo forces GTK4's software renderer; (2)
+  # the org.gnome.desktop.interface schema (color-scheme/icon-theme) --
+  # nautilus's own package.nix lists gsettings-desktop-schemas as a
+  # buildInput, but Portfolio's does not, and libadwaita itself only uses
+  # that package at build/check time (pkgs/by-name/li/libadwaita/package.nix:
+  # not propagatedBuildInputs), so it is added explicitly here for both; (3)
+  # the active theme's GSettings keyfile-backend symlink -- see
+  # tools/theme_gtk.py and tools/app_appearance.py's generated
+  # gtk-settings.keyfile. There is no xdg-desktop-portal running on this
+  # image, so libadwaita's own portal-based dark/light detection has nothing
+  # to talk to; the GSettings keyfile backend is read directly instead,
+  # independent of any portal or dconf/D-Bus service; (4) a Wayland GDK
+  # backend and the Adwaita/hicolor icon-theme fallback chain -- board
+  # testing (not reproduced by this worktree; recorded here per operator
+  # report, still pending this repo's own board re-check) found icons
+  # missing without GDK_BACKEND=wayland and without adwaita-icon-theme/
+  # hicolor-icon-theme on XDG_DATA_DIRS alongside the app's own share, so the
+  # launcher wrapper below sets all of these explicitly in the Nix
+  # configuration rather than depending on hand-made files under
+  # /home/shell.
   # GLib does not look for a package's compiled schema under its plain
   # `/share` -- nixpkgs installs each package's own gschemas.compiled at
   # `/share/gsettings-schemas/<name>/glib-2.0/schemas/` specifically so
@@ -494,11 +505,19 @@ let
   # version bump.
   filesAppSchemaDirs = "${pkgs.glib.getSchemaDataDirPath pkgs.gsettings-desktop-schemas}:${themeIcons}/share";
   themeDefaultGtkSettings = "${themeDefault}/generations/${themeDefaultId}/gtk-settings.keyfile";
+  # Self-contained: every environment variable a GTK4 candidate needs to
+  # launch correctly is set right here, rather than relying on whatever
+  # XDG_DATA_DIRS/GDK_BACKEND its parent process (the drawer/card shell)
+  # happens to already export. GDK_BACKEND=wayland and the
+  # adwaita-icon-theme/hicolor-icon-theme + the app's own share on
+  # XDG_DATA_DIRS match what operator board testing found necessary for
+  # icons to resolve at all (see the block comment above).
   mkFilesAppLauncher = { command, package, binary }:
     pkgs.writeShellScriptBin command ''
       export GSK_RENDERER=cairo
+      export GDK_BACKEND=wayland
       export GSETTINGS_BACKEND=keyfile
-      export XDG_DATA_DIRS="${filesAppSchemaDirs}:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      export XDG_DATA_DIRS="${filesAppSchemaDirs}:${package}/share:${pkgs.adwaita-icon-theme}/share:${pkgs.hicolor-icon-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
       config_dir="$HOME/.config/glib-2.0/settings"
       mkdir -p "$config_dir"
       # `app-appearance/active` is the same acknowledged-theme symlink Foot's
@@ -535,7 +554,6 @@ let
     nautilusLauncher = if cfg.filesAppNautilus then nautilusLauncher else null;
     foot = pkgs.foot;
     htop = pkgs.htop;
-    nnn = pkgs.nnn;
   };
   touchLauncherAction = pkgs.writeShellScriptBin "k230-launcher-action" ''
     case "$1" in
@@ -878,15 +896,18 @@ in
 
     filesAppNautilus = lib.mkOption {
       type = lib.types.bool;
-      default = false;
+      default = true;
       description = ''
         Also cross-build and ship Nautilus's own drawer entry
         ("Files (Nautilus)") alongside Portfolio's, which coherentShell
-        always includes. Default off so an ordinary coherentShell build
-        never forces Nautilus's own (larger, tracker/localsearch-adjacent)
-        cross-build closure; see openspec/changes/the-handheld-has-a-themed-
-        files-app and the k230-coherent-shell-both-files-apps
-        nixosConfiguration in flake.nix.
+        always includes. Default on: the operator's decision is to keep both
+        touch-capable candidates installed and visible by default, now that
+        nnn's old unusable terminal "Files" entry has been removed outright
+        (see openspec/changes/the-handheld-has-a-themed-files-app). Set to
+        false for a leaner build that skips Nautilus's own (larger,
+        tracker/localsearch-adjacent) cross-build closure; see also the
+        k230-coherent-shell-both-files-apps nixosConfiguration in flake.nix,
+        now identical to the default.
       '';
     };
 
@@ -1600,7 +1621,6 @@ in
       pkgs.seatd
       pkgs.htop
       pkgs.nano
-      pkgs.nnn
       editorDesktop
       omawrite
       pkgs.xdg-utils

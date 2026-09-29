@@ -49,7 +49,7 @@ class AppAppearance(unittest.TestCase):
             self.assertIn("[colors-light]", terminal)
             self.assertEqual(app.prepare(generation, state), target)
             coverage = json.loads((target / "coverage.json").read_text())
-            self.assertEqual(coverage["inherited"], ["htop", "nano", "nnn"])
+            self.assertEqual(coverage["inherited"], ["htop", "nano"])
             self.assertTrue(any("mpv" in item for item in coverage["limited"]))
             self.assertTrue(any("GTK4/libadwaita" in item for item in coverage["applied"]))
             keyfile = (target / "gtk-settings.keyfile").read_text()

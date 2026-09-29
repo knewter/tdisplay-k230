@@ -40,11 +40,23 @@ distinct evidence classes").
   `pkgs.portfolio-filemanager` (a phone-first alternative already in
   nixpkgs) for riscv64 and add both to the handheld's package set, each
   reachable from the drawer as a distinct "Files (Nautilus)" / "Files
-  (Portfolio)" entry, alongside — not replacing — the existing nnn "Files"
-  entry, so the coordinator can compare all three on the board before any
-  entry is removed.
-- Launch both through a thin wrapper (`GSK_RENDERER=cairo`) so GTK4 never
-  attempts the GL scene renderer this Mesa-less board cannot provide.
+  (Portfolio)" entry.
+- **Operator decision (this pass):** keep both candidates installed and
+  visible by default (`k230.shell.filesAppNautilus` now defaults to `true`,
+  no longer gated), and remove nnn's old terminal "Files" entry outright —
+  its package (`pkgs.nnn`), desktop entry (former `nnn.desktop`), launcher
+  wiring, and the compositor's `"nnn" -> "Files"` card-title fallback are all
+  deleted, not just superseded. This was previously deferred to the
+  coordinator (see the superseded non-goal below); board launch-time/RSS/
+  scroll comparison is unaffected and remains a separate, still-open
+  hardware task (`tasks.md` 5.3).
+- Launch both through a thin wrapper that sets `GSK_RENDERER=cairo` (so GTK4
+  never attempts the GL scene renderer this Mesa-less board cannot provide),
+  `GDK_BACKEND=wayland`, and an `XDG_DATA_DIRS` that includes the launched
+  app's own `share`, `adwaita-icon-theme` and `hicolor-icon-theme` — matching
+  operator-reported board behavior that icons were missing without the
+  latter two, and keeping the fix in the Nix wrapper rather than hand-made
+  files under `/home/shell`.
 - **New:** a GTK/libadwaita appearance adapter
   (`tools/theme_gtk.py`, wired into the existing `tools/app_appearance.py`
   "app appearance" generation alongside its Foot adapter) that renders a
@@ -76,10 +88,13 @@ distinct evidence classes").
 
 ## Non-goals for this pass
 
-- **No board decision.** This change makes both candidates buildable,
+- ~~**No board decision.** This change makes both candidates buildable,
   themed and drawer-launchable; it does not remove nnn's entry or declare a
-  winner. The coordinator picks after measuring real launch time, RSS and
-  scroll behavior on the board (see `tasks.md`'s open hardware task).
+  winner.~~ **Superseded:** the operator has since decided to keep both
+  candidates by default and remove nnn's entry outright (see "What Changes"
+  above); real launch-time/RSS/scroll numbers from the board remain a
+  separate, still-open hardware task (`tasks.md` 5.3) and are not required
+  to justify this removal.
 - **No native Rust/Cairo Files app.** The course correction paused that
   work before any code was written for it; nothing here depends on it, and
   nothing needs undoing if it is never picked up.
