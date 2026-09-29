@@ -78,6 +78,20 @@ functions even before the display works.
   exists, that the default system is unaffected by it, and what its current
   hardware ceiling is — the same pattern already used for the optional RVV
   trial kernel in this same capability.
+- **Milestone 1, coordinator-directed continuation of this same change**:
+  forward-port GPIO (`gpio-k230.c`), SD/MMC (`sdhci-of-kendryte.c`) and USB
+  (`dwc2` parameter/register hunks) from the pinned vendor tree onto the
+  mainline pin, with matching device-tree nodes; add a full NixOS system
+  variant (`nixosConfigurations.k230-mainline-console`) that boots this
+  kernel, with the out-of-tree Wi-Fi kernel module excluded (no expectation
+  it compiles against a kernel seven major versions newer than its origin);
+  and produce matching boot files (Image, a DTB with this system's real
+  bootargs baked in, and its initrd wrapped for U-Boot) so a future
+  one-shot boot attempt has everything staged. Two real vendor-to-mainline
+  API migrations were found (by a failed build, not by inspection) and
+  fixed against mainline's own already-migrated reference drivers — see
+  `docs/research/mainline-kernel-inventory.md` and design.md decisions 7–10
+  for the full account. Still entirely host-only; no board action taken.
 
 ## Capabilities
 
@@ -98,14 +112,20 @@ handheld does changes.
 ## Impact
 
 `nix/kernel-mainline-src.nix`, `nix/kernel-mainline.nix`,
-`nix/dts/k230-tdisplay-mainline.dts` (or equivalent), `nix/device-tree-mainline.nix`,
-`flake.nix` (new package outputs only, no changes to existing ones),
-`docs/research/mainline-kernel-inventory.md`,
+`nix/dts/k230-tdisplay-mainline.dts`, `nix/device-tree-mainline.nix`,
+`nix/kernel-mainline-boot-files.nix`, `nix/patches/mainline/{gpio-k230.c,
+sdhci-of-kendryte.c}`, `flake.nix` (new package/nixosConfigurations outputs
+only, no changes to existing ones), `docs/research/mainline-kernel-inventory.md`,
 `openspec/specs/system/kernel/spec.md`. No change to `nix/kernel.nix`,
-`nix/device-tree.nix`, `nix/k230.nix`, `nix/hardware.nix`,
-`nix/sd-image.nix`, or any `nixosConfigurations` output. This whole change's
-functional proof is host-only (cross-builds); the first hardware milestone
-(does U-Boot actually load and run this Image+DTB and print anything on the
-CH342 console) is explicitly **not** performed by this change and is left as
-a named, unclaimed evidence gate for the coordinator to schedule a board
-boot.
+`nix/kernel-src.nix`, `nix/device-tree.nix`, `nix/k230.nix`,
+`nix/hardware.nix`, `nix/sd-image.nix`, `nix/shell.nix`, or any existing
+`nixosConfigurations` output — confirmed by `git diff --stat` against each
+after every task group, including the milestone-1 continuation. This whole
+change's functional proof is host-only (cross-builds, including a full
+NixOS system-closure build); the first hardware milestone (does U-Boot
+actually load and run an Image+DTB(+now, optionally, initrd) and print
+anything on the CH342 console, and separately, does the milestone-1
+candidate reach a login prompt over SD) is explicitly **not** performed by
+this change and is left as two named, unclaimed evidence gates — see
+tasks.md's "Remaining evidence gate" section — for the coordinator to
+schedule a board boot.

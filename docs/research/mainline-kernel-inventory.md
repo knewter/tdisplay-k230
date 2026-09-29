@@ -73,16 +73,16 @@ tree can drive.
 | GC2093 camera | Missing-driver (vendor tree too) | **Missing-driver, same as vendor.** No CSI/ISP driver of any kind for this SoC anywhere; not investigated further here since the vendor-tree gap is already the binding constraint. | Out of scope for both trees today. |
 | HDMI (Lontium LT9611) | `CONFIG_DRM_LONTIUM_LT9611=y` already, vendor tree | **Bridge driver itself is generic upstream code** (not Canaan-specific), but it is DSI-fed, so it inherits the same "no mainline DSI host" blocker as the panel row above. | Blocked on the same DSI/VO gap as the panel. |
 | Wi-Fi (RTL8189FTV, SDIO) | `8189fs.ko`, vendor firmware blob | **Needs SDIO before it can even probe** — see the SD/MMC row. The RTL8189 driver itself is a separate out-of-tree module in both trees (not part of this inventory's mainline-file-presence check), so its own portability is a `radio/wifi` question, not answered here. | Blocked on SD/MMC (below), then a separate driver question. |
-| SD card / SDIO (SDHCI) | Vendor board `mmc_sd0`/`mmc_sd1` nodes, generic `dw_mmc`-adjacent path | **In review, not merged into this pin.** The generic controller driver this series reuses, `drivers/mmc/host/sdhci-of-dwcmshc.c`, is already present upstream (`gh api` → 200) — what is missing is the K230-specific DT binding + compatible string + `k230.dtsi` node. Five revisions found (v1 Feb 2026 through v5 March 2026); v5's own cover letter states it was "tested successfully on the CanMV-K230-V1.1 with AP6212 SDIO WiFi module on MMC0 and MicroSD card on MMC1" — a real, working, out-of-tree patch, just not merged as of `v7.3-rc5`. | **Forward-port the v5 series as a local patch** onto `nix/kernel-mainline-src.nix`, the same pattern this project already uses for vendor-tree gaps — not attempted in this change; named as the next concrete task in tasks.md. |
-| USB (DWC2 ×2, host/gadget) | `CONFIG_USB_DWC2=y`, vendor tree | **Split state: driver accepted, DT wiring not yet landed in this pin.** The K230 USB-PHY driver and its device-tree *binding* were accepted upstream (`lkml.org/lkml/2026/2/27/1255`, Vinod Koul: "applied", commits `50357e7d79...` for the binding and `8787fa1da6...` for the driver) — but `k230.dtsi`/`k230-canmv.dts` at `v7.3-rc5` still has **no usb/usb-phy/dwc2 node at all** (checked directly, same fetch that found no mmc/i2c/spi/pwm nodes). Driver-ready, DT-not-wired — the same shape as several rows in `board-capability-inventory.md` (e.g. this board's own RTC), just one layer further upstream. | **Forward-port the DT node** once the accepted binding's exact property names are read from the merged commit; the driver code itself needs no porting. Not attempted in this change. |
-| I2C (5×, `snps,designware-i2c`) | fully mainline generic driver already, vendor tree | **Driver is fully mainline** (`drivers/i2c/busses/i2c-designware-platform.c` is generic upstream code, unrelated to this SoC), but **no I2C controller DT node exists in `k230.dtsi`** at all. | **DT node porting needed**, driver itself needs none. Blocks touch, and every I2C-bus sensor/PMIC row in `board-capability-inventory.md`. |
+| SD card / SDIO (SDHCI) | Vendor board `mmc_sd0`/`mmc_sd1` nodes, generic `dw_mmc`-adjacent path | **PORTED** (2026-09-29, milestone 1). Not the in-review v5 upstream series (still unmerged at `v7.3-rc5`) — the coordinator explicitly allowed either path, and the vendor's own `drivers/mmc/host/sdhci-of-kendryte.c` (already a real, self-contained, `sdhci-pltfm.c`-layered driver matching our exact DT compatible string) was the lower-risk choice: one file, no new DT binding shape to invent. Forward-ported to `nix/patches/mainline/sdhci-of-kendryte.c`; needed one real API fix, `sdhci_pltfm_free()` (removed upstream entirely after this file's 6.6-era origin — confirmed against mainline's own `sdhci-of-dwcmshc.c`, whose probe/`.remove` call no equivalent). `nix build .#kernelMainline` confirms `CONFIG_MMC_SDHCI_OF_DWCMSHC_KENDRYTE=y`; `&mmc_sd1` (the physical TF/SD card) is `status = "okay"` in `nix/dts/k230-tdisplay-mainline.dts` with real `&sysclk`/`&rst` phandles (UNVERIFIED clock-gate/reset-ID choice — see design.md). `&mmc_sd0` (Wi-Fi SDIO) stays disabled; no Wi-Fi driver forward-ported in this pass. | Ported; board-unverified. |
+| USB (DWC2 ×2, host/gadget) | `CONFIG_USB_DWC2=y`, vendor tree | **PORTED** (2026-09-29, milestone 1), via the vendor's own `dwc2_set_k230_params()`/`ctl-reg` mechanism — deliberately NOT the separately-accepted `phy-k230-usb.c`/`canaan,k230-usb-phy` generic-PHY-framework driver already present upstream (design.md decision 7: the two are non-interoperating ways of driving the same HiSysConfig registers, and only the vendor's mechanism has ever run on this board). Three small hunks ported into `drivers/usb/dwc2/{params.c,core.h,core.c}` via `nix/kernel-mainline.nix`'s postPatch (a `usb_ctl` field on `struct dwc2_core_params`, its HiSysConfig-register init in `dwc2_phy_init()`, and the `"canaan,k230-otg"` `of_match_table` entry that lets `platform.c`'s driver actually bind). No API migration needed here — confirmed by a clean build on the first attempt. `usb0`/`usb1` are `status = "okay"` in the board DTS. | Ported; board-unverified. |
+| I2C (5×, `snps,designware-i2c`) | fully mainline generic driver already, vendor tree | **Driver is fully mainline** (`drivers/i2c/busses/i2c-designware-platform.c` is generic upstream code, unrelated to this SoC), but **no I2C controller DT node exists in `k230.dtsi`** at all. Not attempted in milestone 1 (scoped to boot-critical SD/GPIO/USB only). | **DT node porting needed**, driver itself needs none. Blocks touch, and every I2C-bus sensor/PMIC row in `board-capability-inventory.md`. |
 | SPI (3×, `canaan,k230-spi`) | `spi-dw-mmio.c` + vendor init hook, vendor tree | **Generic `spi-dw-mmio.c` is mainline**, but no SPI controller node in `k230.dtsi`, and the vendor's small `dw_spi_canaan_k230_init()` hook has no upstream equivalent found. | DT node + a small init-hook port needed; not attempted here. |
 | RTC | `drivers/rtc/rtc-k230.c`, patched (mday mask fix) | **Missing-driver.** `gh api .../drivers/rtc/rtc-k230.c` → 404. Nothing to patch; our mday-mask fix has no upstream file to apply to. | Cannot port yet. Would need the driver itself upstreamed or forward-ported first — bigger lift than patching an existing file. |
 | Thermal sensor | `drivers/thermal/canaan_thermal.c`, patched (bounded read loop) | **Missing-driver.** `gh api .../drivers/thermal/canaan_thermal.c` → 404. | Cannot port yet, same reasoning as RTC. |
 | Power key (PMU INT0) | `drivers/input/misc/k230-pmu-pwrkey.c`, vendored from LILYGO | **Missing-driver, no upstream PMU node/binding of any kind found.** `gh api .../drivers/input/misc/k230-pmu-pwrkey.c` → 404. | Cannot port yet. |
 | Audio (I2S / MAX98357A route) | `sound/soc/canaan/canaan_k230_inno.c`, patched (external I2S switch) | **Missing-driver.** `gh api .../sound/soc/canaan/canaan_k230_inno.c` → 404; no `sound/soc/canaan/` directory at all. `sound/soc/codecs/max98357a.c` (the external amp's own codec driver) IS mainline, generic code — but it needs a machine/DAI driver and I2S controller DT node neither of which exist upstream for this SoC. | Cannot port the switch patch (nothing to patch); the codec driver itself needs no porting, but everything around it does. |
 | Crypto (AES/hash/RSA/RNG/OTP) | `drivers/crypto/canaan/*`, vendor tree, unpatched | **Missing-driver.** `gh api .../drivers/crypto/canaan/kendryte-aes.c` → 404; no `drivers/crypto/canaan/` directory. | Not attempted; low value per `board-capability-inventory.md`, same conclusion holds here. |
-| GPIO | `drivers/gpio/gpio-k230.c`, vendor tree, unpatched | **Missing-driver.** `gh api .../drivers/gpio/gpio-k230.c` → 404. Blocks GPIO-gated peripherals generally (panel reset, touch reset/IRQ, Wi-Fi enable line) even once their own controller/bus support lands. | Not attempted. |
+| GPIO | `drivers/gpio/gpio-k230.c`, vendor tree, unpatched | **PORTED** (2026-09-29, milestone 1). `gh api .../drivers/gpio/gpio-k230.c` → 404 upstream; forward-ported to `nix/patches/mainline/gpio-k230.c`. Needed a real, substantial API migration, found by a failed build (`error: 'struct gpio_chip' has no member named 'bgpio_lock'`): `bgpio_init()`/`.read_reg`/`.write_reg`/`.bgpio_lock` were replaced upstream by `struct gpio_generic_chip` (`include/linux/gpio/generic.h`) sometime after this file's 6.6-era origin. Fixed against mainline's own already-migrated `gpio-dwapb.c` (this file's own stated template, "based on gpio-dwapb.c") as the reference pattern — the port struct's embedded `struct gpio_chip gc` became `struct gpio_generic_chip chip`, direct `gc->bgpio_lock`/`.read_reg`/`.write_reg` became `to_gpio_generic_chip(gc)->lock`/`.read_reg`/`.write_reg`, and `bgpio_init()` became `gpio_generic_chip_init()` against the same four MMIO addresses. `gpio0`/`gpio1` are `status = "okay"` in `nix/dts/k230-tdisplay-mainline.dts`, still gating panel reset/touch reset-IRQ/Wi-Fi-enable functionally on their own controller/bus support landing first (unaffected by this row). | Ported; board-unverified. |
 | ADC / PWM | `k230-adc.c` / (PWM controller, unnamed vendor file) | **Missing-driver**, both `gh api` 404. | Not attempted; low value per `board-capability-inventory.md`. |
 | NPU/KPU | Closed nncase runtime; thin kernel shim only | **Not investigated for mainline** — the blocking constraint is the closed userspace runtime either way (`docs/blob-inventory.md` B1/B2), so mainline kernel-shim status does not change the conclusion. | Out of scope. |
 
@@ -147,30 +147,43 @@ upstream QEMU K230 machine model was confirmed working in this research
 (a QEMU-side "add SDHCI support for K230" series was found, implying machine
 support is itself still incomplete upstream).
 
-1. **Cross-builds exist** (this change): `.#kernelMainline` compiles,
+1. **Cross-builds exist** (DONE, this change): `.#kernelMainline` compiles,
    `.#deviceTreeMainline` compiles and round-trips, `.#kernelMainlineBootFiles`
    collects both under clear names. Host-only, proven by `nix build`.
-2. **Reaches the serial console** (next change, hardware-gated): U-Boot
+2. **Reaches the serial console** (hardware-gated, not performed): U-Boot
    loads this `Image` + DTB; the CH342 console shows the OpenSBI banner and
    Linux's own early boot log over UART0, whether or not it then panics for
    lack of a root filesystem. This is the first milestone that needs the
    board, and is explicitly NOT performed by this change.
-3. **Reaches an interactive shell**: requires either a built-in initramfs
-   (no SD/USB dependency, buildable today) or the forward-ported SDHCI v5
-   series for a real SD rootfs. Not attempted in this change; the initramfs
-   route is the cheaper of the two and does not wait on any upstream
-   patch landing.
-4. **SD rootfs**: forward-port the SDHCI v5 series onto
-   `nix/kernel-mainline-src.nix` as a local patch (the same pattern
-   `nix/kernel.nix` already uses for the vendor tree), add the K230-specific
-   MMC DT nodes, and prove an SD-backed root mounts.
-5. **USB + network**: forward-port the accepted USB-PHY binding's DT node
-   (driver itself needs no porting — already accepted upstream) plus a DWC2
-   controller node; prove host-mode USB, then a USB-Ethernet or Wi-Fi (SDIO,
-   downstream of milestone 4) link.
+3. **Boot-critical GPIO/SD-MMC/USB forward-ported, and a matching full
+   NixOS system variant** (DONE, this change's milestone-1 continuation):
+   `drivers/gpio/gpio-k230.c` and `drivers/mmc/host/sdhci-of-kendryte.c`
+   forward-ported from the vendor tree (one real API migration each found
+   and fixed, see the GPIO and SD card/SDIO rows above); `drivers/usb/
+   dwc2/{params.c,core.h,core.c}` hunks ported cleanly (no migration
+   needed). `nixosConfigurations.k230-mainline-console` boots this kernel;
+   `.#kernelMainlineConsoleBootFiles` bakes its real bootargs and wraps its
+   initrd. Still entirely host-proven (`nix build`); the actual SD-backed
+   boot to a login prompt remains milestone 4's hardware gate, not this
+   one's.
+4. **Reaches an interactive shell over SD** (hardware-gated, not
+   performed): the milestone-3 candidate's own pass condition — does
+   `k230-mainline-console`'s boot files actually reach a login prompt over
+   the physical card's `NIXOS_SD`-labeled root partition. Genuinely open:
+   whether `&mmc_sd1` probes at all with this change's best-effort
+   clock/reset IDs, whether by-label root resolution works the same way
+   under mainline as it does under the vendor kernel, and whether this
+   system's own closure/profile is even staged on that card (this change
+   does not stage it). See tasks.md's "Remaining evidence gate".
+5. **Wi-Fi (SDIO) + wider USB (network)**: `&mmc_sd0` stays disabled and no
+   RTL8189FTV driver was forward-ported in this pass (out-of-tree, and not
+   expected to compile against this kernel unmodified — see design.md
+   decision 9); a USB-Ethernet dongle or a forward-ported Wi-Fi driver
+   would follow milestone 4, not before it.
 6. **I2C/SPI DT plumbing**: unblocks touch (driver already present, per the
    inventory row) and any future PMIC/sensor work, independent of display.
-7. **Display, audio, RTC, power key, thermal, crypto, GPIO, ADC, PWM**: each
+   Not attempted in milestone 1 (scoped to boot-critical SD/GPIO/USB only).
+7. **Display, audio, RTC, power key, thermal, crypto, ADC, PWM**: each
    blocked on a missing upstream driver with no in-progress public series
    found. Each would need either a real upstream submission (this project's
    own vendor-driver forward-ports are a plausible starting point for a

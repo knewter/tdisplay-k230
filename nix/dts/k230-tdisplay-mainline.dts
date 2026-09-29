@@ -6,17 +6,38 @@
 // vendor Xuantie tree via nix/kernel-src.nix/nix/device-tree.nix and is
 // unaffected by this file. This one #includes MAINLINE's own
 // arch/riscv/boot/dts/canaan/k230.dtsi (nix/kernel-mainline-src.nix), which
-// is a materially different file from the vendor tree's k230.dtsi -- no
-// pmu/pwrkey/rtc/tsensor/security/gpio/i2c/spi/pwm/adc nodes exist in it at
-// all yet (see nix/kernel-mainline.nix's header for the full accounting).
+// ships console + SoC-platform nodes only -- no gpio/mmc/usb/i2c/spi/pwm/
+// adc/rtc/crypto/thermal node at all (see nix/kernel-mainline.nix's header
+// for the full accounting). GPIO, SD/MMC and USB nodes below are added by
+// THIS file, forward-ported from the pinned VENDOR tree's own
+// arch/riscv/boot/dts/canaan/k230.dtsi (ruyisdk/linux-xuantie-kernel @
+// 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529) -- same compatible strings,
+// register addresses, and interrupt numbers (grounding tier 2: vendor
+// source read directly, cited by path). Only the clocks/resets phandles
+// differ, because the vendor tree wires these three nodes to unimplemented
+// stub clocks (`&dummy_sd`, `&clk_dummy`) that do not exist in mainline's
+// device tree at all -- mainline's own COMMON_CLK_K230/RESET_K230 drivers
+// are real, so real phandle+ID pairs are used instead, taken directly from
+// mainline's own <dt-bindings/clock/canaan,k230-clk.h> and
+// <dt-bindings/reset/canaan,k230-rst.h> (both already pulled in
+// transitively by k230.dtsi's own top-of-file #includes).
+//
+// UNVERIFIED: none of this has been compiled against a booted board. The
+// exact clock-gate/reset IDs chosen for GPIO/MMC/USB are a best-effort
+// mapping from the ID names alone (e.g. "AHB_GATE" for the register-bus
+// clock, "BASE_GATE" for the SDHCI functional clock) -- correct enough to
+// be syntactically valid u32 phandle args and to let each driver's
+// mandatory clk_get calls succeed, but NOT independently confirmed against
+// a working configuration the way nix/dts/k230-tdisplay.dts's vendor-tree
+// clocks are. A board boot is what settles whether these gate the right
+// signal.
 //
 // Modeled directly on mainline's own arch/riscv/boot/dts/canaan/
-// k230-evb.dts (Yangyu Chen, GPL-2.0 OR MIT), which is the closest existing
-// upstream board file: same pattern (aliases.serial0 = &uart0; chosen
-// stdout-path; a `ddr: memory@0` node; &uart0 enabled; &sysclk given its
-// two input clocks). Two things changed from that template, both grounded
-// against this project's OWN existing vendor board file
-// (nix/dts/k230-tdisplay.dts), not guessed:
+// k230-evb.dts (Yangyu Chen, GPL-2.0 OR MIT) for the console/memory/sysclk
+// shape: aliases.serial0 = &uart0; chosen stdout-path; a `ddr: memory@0`
+// node; &uart0 enabled; &sysclk given its two input clocks. Two things
+// changed from that template, both grounded against this project's OWN
+// existing vendor board file (nix/dts/k230-tdisplay.dts), not guessed:
 //
 //   1. Memory size: 0x40000000 (1 GiB), matching
 //      nix/dts/k230-tdisplay.dts's own `ddr: memory@0` node exactly. The
@@ -29,35 +50,35 @@
 //      fall back to the way the vendor board file does, since that string
 //      is a vendor-tree invention, not upstream).
 //
-// UNVERIFIED: this has never been compiled against a booted board, and the
-// console-pin-muxing assumption below has never been checked on real
-// hardware against a mainline kernel.
-//
-// Grounding for "UART0 is safe to reuse as-is, unlike the vendor tree's own
-// pinctrl history might suggest": neither mainline's k230.dtsi/k230-evb.dts
-// NOR our own vendor-tree k230.dtsi/k230-tdisplay.dts reference any pinctrl
-// consumer group for UART0 (`docs/dts-evidence.md`: "no pinctrl in the
-// Linux device tree at all" on our build) -- physical IOMUX is entirely
-// U-Boot's FPIOA table in both cases, not something either device tree
-// programs. Our board's stdout-path is already "serial0:115200n8" in
-// nix/dts/k230-tdisplay.dts (docs/research/board-capability-inventory.md:
-// "uart0 is the Linux console (serial0)"), so this file asks U-Boot for
-// exactly the physical pin configuration it already provides today, not a
-// new one. What is genuinely unverified is whether mainline's UART0 8250
-// driver + this SoC's actual baud/clock wiring produces readable bytes on
-// the CH342 -- that is exactly the first hardware milestone this change
-// does not perform.
+// Grounding for "UART0 is safe to reuse as-is": neither mainline's
+// k230.dtsi/k230-evb.dts NOR our own vendor-tree k230.dtsi/k230-tdisplay.dts
+// reference any pinctrl consumer group for UART0 (`docs/dts-evidence.md`:
+// "no pinctrl in the Linux device tree at all" on our build) -- physical
+// IOMUX is entirely U-Boot's FPIOA table in both cases, not something
+// either device tree programs. Our board's stdout-path is already
+// "serial0:115200n8" in nix/dts/k230-tdisplay.dts
+// (docs/research/board-capability-inventory.md: "uart0 is the Linux
+// console (serial0)"), so this file asks U-Boot for exactly the physical
+// pin configuration it already provides today, not a new one. The same
+// reasoning applies to GPIO/SD/USB below: their physical pin muxing is
+// also entirely U-Boot's FPIOA table's job in the vendor image, and this
+// file changes none of that -- only the Linux-side controller nodes.
 
 /dts-v1/;
 
 #include "k230.dtsi"
 
 / {
-	model = "LILYGO T-Display-K230 (mainline, console-only)";
+	model = "LILYGO T-Display-K230 (mainline)";
 	compatible = "lilygo,t-display-k230", "canaan,kendryte-k230";
 
 	aliases {
 		serial0 = &uart0;
+		// Matches nix/dts/k230-tdisplay.dts's own naming: mmc1 is the
+		// physical TF/SD card, mmc0 the RTL8189FTV SDIO Wi-Fi (not
+		// enabled by this file -- see &mmc_sd0 below).
+		mmc0 = &mmc_sd0;
+		mmc1 = &mmc_sd1;
 	};
 
 	chosen {
@@ -76,6 +97,183 @@
 		#clock-cells = <0>;
 		clock-frequency = <50000000>;
 	};
+
+	// GPIO/USB/SD-MMC controller nodes mainline's own k230.dtsi does not
+	// carry yet. Reopening `soc` by name (it has no label upstream to
+	// attach to via `&soc`) merges these as siblings of plic/clint/rst/
+	// pinctrl/sysclk/uart0-4, exactly where the vendor tree's own k230.dtsi
+	// places the equivalent nodes.
+	soc {
+		gpio0: gpio@9140b000 {
+			compatible = "canaan,k230-apb-gpio";
+			reg = <0x0 0x9140b000 0x0 0x1000>;
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			resets = <&rst RST_GPIO_APB>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			gpio0_ports: gpio-port@0 {
+				compatible = "canaan,k230-apb-gpio-port";
+				reg = <0>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				snps,nr-gpios = <32>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				interrupts =
+					<32 IRQ_TYPE_EDGE_RISING>,
+					<33 IRQ_TYPE_EDGE_RISING>,
+					<34 IRQ_TYPE_EDGE_RISING>,
+					<35 IRQ_TYPE_EDGE_RISING>,
+					<36 IRQ_TYPE_EDGE_RISING>,
+					<37 IRQ_TYPE_EDGE_RISING>,
+					<38 IRQ_TYPE_EDGE_RISING>,
+					<39 IRQ_TYPE_EDGE_RISING>,
+					<40 IRQ_TYPE_EDGE_RISING>,
+					<41 IRQ_TYPE_EDGE_RISING>,
+					<42 IRQ_TYPE_EDGE_RISING>,
+					<43 IRQ_TYPE_EDGE_RISING>,
+					<44 IRQ_TYPE_EDGE_RISING>,
+					<45 IRQ_TYPE_EDGE_RISING>,
+					<46 IRQ_TYPE_EDGE_RISING>,
+					<47 IRQ_TYPE_EDGE_RISING>,
+					<48 IRQ_TYPE_EDGE_RISING>,
+					<49 IRQ_TYPE_EDGE_RISING>,
+					<50 IRQ_TYPE_EDGE_RISING>,
+					<51 IRQ_TYPE_EDGE_RISING>,
+					<52 IRQ_TYPE_EDGE_RISING>,
+					<53 IRQ_TYPE_EDGE_RISING>,
+					<54 IRQ_TYPE_EDGE_RISING>,
+					<55 IRQ_TYPE_EDGE_RISING>,
+					<56 IRQ_TYPE_EDGE_RISING>,
+					<57 IRQ_TYPE_EDGE_RISING>,
+					<58 IRQ_TYPE_EDGE_RISING>,
+					<59 IRQ_TYPE_EDGE_RISING>,
+					<60 IRQ_TYPE_EDGE_RISING>,
+					<61 IRQ_TYPE_EDGE_RISING>,
+					<62 IRQ_TYPE_EDGE_RISING>,
+					<63 IRQ_TYPE_EDGE_RISING>;
+			};
+		};
+
+		gpio1: gpio@9140c000 {
+			compatible = "canaan,k230-apb-gpio";
+			reg = <0x0 0x9140c000 0x0 0x1000>;
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			resets = <&rst RST_GPIO_APB>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			gpio1_ports: gpio-port@0 {
+				compatible = "canaan,k230-apb-gpio-port";
+				reg = <0>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				snps,nr-gpios = <32>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				interrupts =
+					<64 IRQ_TYPE_EDGE_RISING>,
+					<65 IRQ_TYPE_EDGE_RISING>,
+					<66 IRQ_TYPE_EDGE_RISING>,
+					<67 IRQ_TYPE_EDGE_RISING>,
+					<68 IRQ_TYPE_EDGE_RISING>,
+					<69 IRQ_TYPE_EDGE_RISING>,
+					<70 IRQ_TYPE_EDGE_RISING>,
+					<71 IRQ_TYPE_EDGE_RISING>,
+					<72 IRQ_TYPE_EDGE_RISING>,
+					<73 IRQ_TYPE_EDGE_RISING>,
+					<74 IRQ_TYPE_EDGE_RISING>,
+					<75 IRQ_TYPE_EDGE_RISING>,
+					<76 IRQ_TYPE_EDGE_RISING>,
+					<77 IRQ_TYPE_EDGE_RISING>,
+					<78 IRQ_TYPE_EDGE_RISING>,
+					<79 IRQ_TYPE_EDGE_RISING>,
+					<80 IRQ_TYPE_EDGE_RISING>,
+					<81 IRQ_TYPE_EDGE_RISING>,
+					<82 IRQ_TYPE_EDGE_RISING>,
+					<83 IRQ_TYPE_EDGE_RISING>,
+					<84 IRQ_TYPE_EDGE_RISING>,
+					<85 IRQ_TYPE_EDGE_RISING>,
+					<86 IRQ_TYPE_EDGE_RISING>,
+					<87 IRQ_TYPE_EDGE_RISING>,
+					<88 IRQ_TYPE_EDGE_RISING>,
+					<89 IRQ_TYPE_EDGE_RISING>,
+					<90 IRQ_TYPE_EDGE_RISING>,
+					<91 IRQ_TYPE_EDGE_RISING>,
+					<92 IRQ_TYPE_EDGE_RISING>,
+					<93 IRQ_TYPE_EDGE_RISING>,
+					<94 IRQ_TYPE_EDGE_RISING>,
+					<95 IRQ_TYPE_EDGE_RISING>;
+			};
+		};
+
+		usb0: usb@91500000 {
+			compatible = "canaan,k230-otg";
+			reg = <0x0 0x91500000 0x0 0x40000>;
+			ctl-reg = <0x0 0x9158507c>;
+			interrupts = <173 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&sysclk K230_HS_USB0_AHB_GATE>;
+			clock-names = "otg";
+			resets = <&rst RST_USB0>;
+			g-rx-fifo-size = <512>;
+			g-np-tx-fifo-size = <64>;
+			g-tx-fifo-size = <512 1024 64 64 64 64>;
+			status = "disabled";
+		};
+
+		usb1: usb@91540000 {
+			compatible = "canaan,k230-otg";
+			reg = <0x0 0x91540000 0x0 0x40000>;
+			ctl-reg = <0x0 0x9158509c>;
+			interrupts = <174 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&sysclk K230_HS_USB1_AHB_GATE>;
+			clock-names = "otg";
+			resets = <&rst RST_USB1>;
+			g-rx-fifo-size = <512>;
+			g-np-tx-fifo-size = <64>;
+			g-tx-fifo-size = <512 1024 64 64 64 64>;
+			status = "disabled";
+		};
+
+		mmc_sd0: sdhci0@91580000 {
+			compatible = "canaan,k230-dw-mshc";
+			reg = <0x0 0x91580000 0x0 0x1000>;
+			interrupts = <142 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "sdhci0irq";
+			clocks = <&sysclk K230_HS_SD0_BASE_GATE>, <&sysclk K230_HS_SD0_AHB_GATE>;
+			clock-names = "core", "bus";
+			resets = <&rst RST_SDIO0>;
+			max-frequency = <200000000>;
+			bus-width = <8>;
+			sdhci,auto-cmd12;
+			dma-noncoherent;
+			// Not enabled below: the RTL8189FTV Wi-Fi driver has no
+			// mainline forward-port in this change (see
+			// docs/research/mainline-kernel-inventory.md). The
+			// controller node exists so a later change need only
+			// flip status.
+			status = "disabled";
+		};
+
+		mmc_sd1: sdhci1@91581000 {
+			compatible = "canaan,k230-dw-mshc";
+			reg = <0x0 0x91581000 0x0 0x1000>;
+			interrupts = <144 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "sdhci1irq";
+			clocks = <&sysclk K230_HS_SD1_BASE_GATE>, <&sysclk K230_HS_SD1_AHB_GATE>;
+			clock-names = "core", "bus";
+			resets = <&rst RST_SDIO1>;
+			max-frequency = <50000000>;
+			bus-width = <4>;
+			sdhci,auto-cmd12;
+			dma-noncoherent;
+			mshc_ctrl_r = <0x00>;
+			status = "disabled";
+		};
+	};
 };
 
 &uart0 {
@@ -85,4 +283,29 @@
 &sysclk {
 	clocks = <&osc24m>, <&timerx_pulse_in>;
 	clock-names = "osc24m", "timer-pulse-in";
+};
+
+// The TF/SD card: this milestone's rootfs device. Matches
+// nix/dts/k230-tdisplay.dts's own &mmc_sd1 overrides exactly
+// (no-1-8-v, cap-sd-highspeed, mshc_ctrl_r already set above).
+&mmc_sd1 {
+	status = "okay";
+	no-1-8-v;
+	cap-sd-highspeed;
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
 };

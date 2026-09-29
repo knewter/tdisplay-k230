@@ -32,6 +32,36 @@ by direct tag diff. `nix/kernel-mainline.nix` and
   `nix/device-tree-mainline.nix`, and this change's other new files did not
   exist
 
+### Requirement: A parallel full system variant boots the mainline kernel without changing the default system
+
+The project SHALL provide a full NixOS system variant
+(`nixosConfigurations.k230-mainline-console`) that substitutes the
+mainline kernel for the vendor kernel via the same `k230Kernel` specialArg
+substitution mechanism the existing `k230-rvv-trial` variant already uses,
+built from the shell-off `k230-console` base rather than the graphical
+`k230-coherent-shell` base, and SHALL exclude any out-of-tree kernel module
+that is not expected to compile against the mainline pin. No existing
+`nixosConfigurations` output SHALL be changed by this variant existing.
+
+*Grounding: `flake.nix`'s `k230-mainline-console` extends `k230-console`
+with `specialArgs.k230Kernel = self.k230MainlineKernel` and force-clears
+`boot.extraModulePackages`/`boot.kernelModules` (the out-of-tree RTL8189FTV
+module `nix/hardware.nix` builds against `config.boot.kernelPackages.kernel`
+dynamically, with no reason to expect it compiles against a v7.3-rc5 API
+seven major versions newer than its 6.6-era vendor origin, and no SDIO DT
+node enabled for it to bind to regardless). Proven:
+`nix build .#toplevel-mainline-console` exits 0, producing
+`/nix/store/d488a1cibw8r7ip7hbbb9j52hy0kzb0h-nixos-system-nixos-26.11.20260919.20b1ddd`.
+Deviates from the coordinator's suggested "-shell-" name for the reason
+above; flagged rather than silently decided.*
+
+#### Scenario: Someone builds the mainline system variant
+
+- **WHEN** someone runs `nix build .#toplevel-mainline-console`
+- **THEN** it exits 0 and produces a NixOS system closure built against
+  `kernelMainline`, independent of whether any other `nixosConfigurations`
+  output has ever been built
+
 ### Requirement: The mainline build's hardware ceiling is recorded, not assumed
 
 The project SHALL record, per hardware function, whether mainline Linux at
@@ -62,6 +92,37 @@ upstream independently, none require porting as a patch today).*
   to the mainline build
 - **THEN** the inventory names that exact patch, the file it targets, and
   whether that file exists upstream today
+
+### Requirement: Forward-ported drivers are grounded in the vendor tree and checked against the pinned mainline API
+
+Where this project forward-ports a vendor-tree driver onto the mainline
+pin so a boot-critical function (GPIO, SD/MMC, USB) is available, the
+ported file or hunk SHALL be traceable to its exact vendor-tree origin by
+path, and any API difference between the vendor tree's kernel version and
+the pinned mainline revision that required a code change (not just a
+Kconfig/Makefile wiring change) SHALL be recorded with what changed and
+how it was confirmed, rather than silently patched around.
+
+*Grounding: `nix/patches/mainline/gpio-k230.c` and
+`nix/patches/mainline/sdhci-of-kendryte.c` are forward-ported from
+`ruyisdk/linux-xuantie-kernel` @ `7d4e1f444f461dbe3833bd99a4640e7b6c2cd529`;
+`nix/kernel-mainline.nix`'s postPatch carries the `drivers/usb/dwc2/
+{params.c,core.h,core.c}` hunks from the same tree. Two real API
+migrations were found and fixed this way, each only after a failed build
+named the exact missing symbol: `struct gpio_chip`'s `.read_reg`/
+`.write_reg`/`.bgpio_lock` and `bgpio_init()` were replaced upstream by
+`struct gpio_generic_chip`/`gpio_generic_chip_init()`
+(`include/linux/gpio/generic.h`), confirmed against mainline's own
+already-migrated `gpio-dwapb.c`; `sdhci_pltfm_free()` was removed upstream
+entirely, confirmed against mainline's own `sdhci-of-dwcmshc.c`, whose
+probe error paths and `.remove` call no equivalent function.*
+
+#### Scenario: A forward-ported driver fails to compile against the pinned mainline API
+
+- **WHEN** `nix build .#kernelMainline` fails with an unknown-symbol or
+  missing-member compiler error in a forward-ported file
+- **THEN** the fix is recorded against the exact API change found, citing a
+  mainline reference file that already uses the new API, not a guess
 
 ### Requirement: A mainline hardware boot is a named, unclaimed evidence gate
 
