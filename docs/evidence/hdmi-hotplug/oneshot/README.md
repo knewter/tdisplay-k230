@@ -77,3 +77,33 @@ What the schematic `T-Display K230_V1.0_NEW.pdf` shows:
 LILYGO reports that their SDK kernel reads EDID on this hardware. That points
 to a driver difference (port B, lane swap, and HPD/DDC setup) rather than a
 board fault, but this is not proven.
+
+## Boot 4: live Port B registers (kernel `bg4n4spn`, registers set by hand)
+
+I wrote Canaan's RT-Smart Port B sequence (k230_sdk
+`src/big/mpp/kernel/connector/src/lt9611.c`, `LT9611_PORTB`) over I2C while
+the 1024x768 fbcon mode was active:
+
+- analog: `0x8111=0x60`, `0x8112=0x3f`, `0x8113=0x3f`, `0x8115=0xfe`,
+  `0x8116=0xbf`, `0x8120=0x03`;
+- digital: `0x8250=0x14`, `0x8300=0x60`, `0x8303=0x4f`, `0x8304=0x00`,
+  `0x8307=0x40`, `0x824f=0x80`, `0x8302=0x08`, `0x8306=0x08`,
+  `0x830a=0x00`.
+
+The video check went from all zeros to `vactive=768 hactive_a=1024
+v_total=1574 h_total_sysclk~550`, stable across reads. The mainline Port B
+values alone (`0x8250=0x14`, `0x8303=0x40`) left it at zero.
+
+## Boot 5: Port B in the kernel (commit 1dabf761, `boot5-port-b.txt`)
+
+- Kernel `kwdkvrk5` and the `port@1` HDMI DTB, with no hand writes.
+- After `echo on > .../status`, the driver itself logged
+  `video check: hactive_a=1024, hactive_b=0, vactive=768, v_total=1574,
+  h_total_sysclk=550`. The K230 -> LT9611 DSI path is working.
+- HPD was still `0x825e=0x78` (bit 2 clear).
+- A manual DDC EDID read, following Canaan's sequence and ignoring HPD, gave
+  status `0x8540=0x92` and 16 bytes of `0x00`. The no-ack bit is set, so the
+  sink did not answer on DDC.
+- HPD low plus no DDC ack points at the physical link (cable, adapter or
+  connector, +5V reaching the sink, or the sink's input), not at the video
+  path. The monitor image was not observed.
