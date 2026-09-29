@@ -99,6 +99,25 @@ const DESIGN_ASPECT: f64 = 568.0 / 1232.0;
 /// configured height (keyboard top) was about 775, giving a ratio of
 /// roughly 0.73 against this constant's 0.46 -- about 59% off, far outside
 /// the 10% band below.
+/// The width of a centered, design-aspect column filling `height`, when a
+/// `(width, height)` configure is a whole output that is too wide for the
+/// portrait design (an HDMI monitor rather than the 568x1232 panel). The
+/// caller then asks the compositor for that narrower size, anchored top and
+/// bottom only, so the shell draws pillarboxed at a uniform scale instead of
+/// rejecting the output and leaving it black. `None` when the configure
+/// already keeps the design aspect or is taller than it.
+pub fn pillarbox_width(width: u32, height: u32) -> Option<u32> {
+    if width == 0 || height == 0 || configure_preserves_aspect(width, height) {
+        return None;
+    }
+    let ratio = f64::from(width) / f64::from(height);
+    if ratio <= DESIGN_ASPECT {
+        return None;
+    }
+    let column = (f64::from(height) * DESIGN_ASPECT).round() as u32;
+    (column > 0 && column < width).then_some(column)
+}
+
 pub fn configure_preserves_aspect(width: u32, height: u32) -> bool {
     if width == 0 || height == 0 {
         return false;
@@ -215,6 +234,16 @@ mod tests {
         assert_eq!(Route::parse(b"power\n"), Some(Route::Power));
         assert_eq!(Route::parse(b"drawer extra\n"), None);
         assert_eq!(Route::parse(b"drawer"), None);
+    }
+
+    #[test]
+    fn pillarbox_width_fits_landscape_outputs() {
+        assert_eq!(pillarbox_width(568, 1232), None);
+        assert_eq!(pillarbox_width(1024, 768), Some(354));
+        assert_eq!(pillarbox_width(1920, 1080), Some(498));
+        assert!(configure_preserves_aspect(354, 768));
+        assert!(configure_preserves_aspect(498, 1080));
+        assert_eq!(pillarbox_width(300, 1232), None);
     }
 
     #[test]

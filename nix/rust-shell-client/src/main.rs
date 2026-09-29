@@ -7,7 +7,7 @@ use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
-    configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
+    configure_preserves_aspect, configure_size, frame_bytes, pillarbox_width, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     home_widgets,
@@ -3393,6 +3393,29 @@ impl ShellClient {
     /// and `ensure_wallpaper` carry the identical fix for the identical
     /// reason: neither is keyboard-aware, so either would otherwise squash
     /// the same way the moment the keyboard shows while they are visible.
+    /// When a layer surface is configured to a whole output that is wider
+    /// than the portrait design (an HDMI monitor), ask for a centered
+    /// design-aspect column instead: anchored top and bottom only, sized by
+    /// `pillarbox_width`. The follow-up configure then passes
+    /// `configure_preserves_aspect`. A keyboard-style shrink is never a whole
+    /// output, so it is still rejected as before.
+    fn pillarbox(&mut self, layer: &LayerSurface, width: u32, height: u32) -> bool {
+        let whole_output = self.output_state.outputs().any(|output| {
+            self.output_state
+                .info(&output)
+                .and_then(|info| info.logical_size)
+                .is_some_and(|(w, h)| (w, h) == (width as i32, height as i32))
+        });
+        let Some(column) = whole_output.then(|| pillarbox_width(width, height)).flatten() else {
+            return false;
+        };
+        layer.set_anchor(Anchor::TOP | Anchor::BOTTOM);
+        layer.set_size(column, 0);
+        layer.commit();
+        self.log(&format!("pillarbox {width}x{height} -> {column}x{height}"));
+        true
+    }
+
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
         if self.layer.is_none() {
             let surface = self.compositor.create_surface(qh);
@@ -4063,6 +4086,9 @@ impl LayerShellHandler for ShellClient {
             if configure_size(&mut geometry, width, height).is_none()
                 || !configure_preserves_aspect(width, height)
             {
+                if self.pillarbox(layer, width, height) {
+                    return;
+                }
                 self.log("wallpaper-configure-rejected");
                 return;
             }
@@ -4091,6 +4117,9 @@ impl LayerShellHandler for ShellClient {
             if configure_size(&mut geometry, width, height).is_none()
                 || !configure_preserves_aspect(width, height)
             {
+                if self.pillarbox(layer, width, height) {
+                    return;
+                }
                 self.log("home-configure-rejected");
                 return;
             }
@@ -4109,6 +4138,9 @@ impl LayerShellHandler for ShellClient {
         if configure_size(&mut geometry, width, height).is_none()
             || !configure_preserves_aspect(width, height)
         {
+            if self.pillarbox(layer, width, height) {
+                return;
+            }
             self.log("configure-rejected");
             return;
         }
