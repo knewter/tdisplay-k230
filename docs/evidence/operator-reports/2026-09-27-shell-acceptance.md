@@ -19,3 +19,12 @@ slider".
 
 Not covered by this report: the video-card overview flow, the timeout and
 failure splash states, and line-out audio.
+
+## Brightness slider physical acceptance, 2026-09-28
+
+The operator, verbatim: "confirming physical acceptance of
+the-brightness-control-is-a-slider". This covers the Settings slider
+(drag, tap-to-jump, 3% floor), the Shade slider (horizontal drag doesn't
+close the shade; a drag elsewhere still does), and the current value
+showing when either sheet opens. Evidence class: an operator's real-finger
+acceptance on the physical board.

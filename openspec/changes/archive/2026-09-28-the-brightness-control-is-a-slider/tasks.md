@@ -121,16 +121,20 @@
 
 ## 6. Physical acceptance (board, open)
 
-- [ ] 6.1 Real-finger drag and tap-to-jump on the Settings slider,
+- [x] 6.1 Real-finger drag and tap-to-jump on the Settings slider,
       confirming the panel's actual brightness follows the finger live
       and clamps at 3%, not 0%, at the low end. **Not done in this
       worktree** — AGENTS.md and this task's own instructions keep board
       access and real-finger acceptance out of scope here.
-- [ ] 6.2 Real-finger drag on the Shade's slider, confirming the shade
+- [x] 6.2 Real-finger drag on the Shade's slider, confirming the shade
       does not begin closing on a horizontal drag there, and that a drag
       starting elsewhere on the sheet still closes it. **Not done in this
       worktree.**
-- [ ] 6.3 Confirm on hardware that opening Settings or the Shade after an
+- [x] 6.3 Confirm on hardware that opening Settings or the Shade after an
       external brightness change (e.g. the other sheet's own drag) shows
       the real current value, not a stale one. **Not done in this
       worktree.**
+
+  Operator physical acceptance, 2026-09-28 ("confirming physical acceptance of
+  the-brightness-control-is-a-slider"), covering 6.1-6.3:
+  `docs/evidence/operator-reports/2026-09-27-shell-acceptance.md`.
