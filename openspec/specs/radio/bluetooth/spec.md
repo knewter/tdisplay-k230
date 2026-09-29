@@ -4,8 +4,8 @@
 The handheld supports Bluetooth only through a USB Bluetooth controller on its
 USB host port. The main board has no onboard Bluetooth: its RTL8189FS SDIO
 Wi-Fi part is Wi-Fi-only (`docs/research/bluetooth-onboard.md`). This
-capability covers the kernel HCI USB driver and BlueZ; pairing proof is
-tracked in `the-handheld-pairs-over-a-usb-bluetooth-dongle`.
+capability covers the kernel HCI USB driver and BlueZ; physical dongle pairing
+proof remains pending and is tracked in the work dashboard.
 
 ## Requirements
 
