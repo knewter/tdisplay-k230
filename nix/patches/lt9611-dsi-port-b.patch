@@ -1,0 +1,152 @@
+--- a/drivers/gpu/drm/bridge/lontium-lt9611.c
++++ b/drivers/gpu/drm/bridge/lontium-lt9611.c
+@@ -89,6 +89,13 @@
+ 	return container_of(bridge, struct lt9611, bridge);
+ }
+ 
++static const struct reg_sequence k230_port_b_analog_cfg[] = {
++	{ 0x8111, 0x60 }, /* port B rx current */
++	{ 0x8112, 0x3f }, /* port B lane0 and lane1 eq set */
++	{ 0x8113, 0x3f }, /* port B lane2 and lane3 eq set */
++	{ 0x8120, 0x03 }, /* PortB clk lane no-LP mode */
++};
++
+ static int lt9611_mipi_input_analog(struct lt9611 *lt9611)
+ {
+ 	const struct reg_sequence reg_cfg[] = {
+@@ -103,25 +110,71 @@
+ 		{ 0x8120, 0x03 }, /* PortB clk lane with-LP mode */
+ 	};
+ 
+-	return regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	int ret;
++
++	ret = regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	if (ret || lt9611->dsi0_node || !lt9611->dsi1_node)
++		return ret;
++
++	/* K230 single Port B receiver tuning, see k230_port_b_cfg */
++	return regmap_multi_reg_write(lt9611->regmap, k230_port_b_analog_cfg,
++				      ARRAY_SIZE(k230_port_b_analog_cfg));
+ }
+ 
++static const struct reg_sequence k230_port_b_cfg[] = {
++	{ 0x8300, 0x60 },
++	{ 0x8303, 0x4f },
++	{ 0x8304, 0x00 },
++	{ 0x8307, 0x40 },
++	{ 0x8302, 0x08 },
++	{ 0x8306, 0x08 },
++};
++
+ static int lt9611_mipi_input_digital(struct lt9611 *lt9611,
+ 				     const struct drm_display_mode *mode)
+ {
++	int ret;
++
+ 	struct reg_sequence reg_cfg[] = {
+ 		{ 0x8300, LT9611_4LANES },
+ 		{ 0x830a, 0x00 },
+ 		{ 0x824f, 0x80 },
+ 		{ 0x8250, 0x10 },
++		{ 0x8303, 0x00 },
+ 		{ 0x8302, 0x0a },
+ 		{ 0x8306, 0x0a },
+ 	};
+ 
+-	if (lt9611->dsi1_node)
+-		reg_cfg[1].def = 0x03;
++	if (lt9611->dsi1_node) {
++		if (lt9611->dsi0_node) {
++			/* Dual port (Port A + B) */
++			reg_cfg[1].def = 0x03;
++		} else {
++			/*
++			 * Single port B:
++			 * - 0x8303 bit 6: port swap (1=PortB as primary)
++			 * - 0x8250 bit 3:2: byte_clk source (01=PortB)
++			 */
++			reg_cfg[3].def = 0x14;
++			reg_cfg[4].def = 0x40;
++		}
++	}
++
++	ret = regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	if (ret || lt9611->dsi0_node || !lt9611->dsi1_node)
++		return ret;
+ 
+-	return regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
++	/*
++	 * K230 boards (Canaan CanMV reference design, LILYGO T-Display-K230)
++	 * route DSI into Port B with lanes reordered and two pairs P/N
++	 * swapped ("LT9611 swap" on the T-Display schematic). Canaan's own
++	 * RT-Smart LT9611 connector driver (k230_sdk
++	 * src/big/mpp/kernel/connector/src/lt9611.c, LT9611_PORTB) writes
++	 * these for that wiring; without them the video check reads zero.
++	 * Verified live on T-Display-K230: hactive=1024 vactive=768 decoded.
++	 */
++	return regmap_multi_reg_write(lt9611->regmap, k230_port_b_cfg,
++				      ARRAY_SIZE(k230_port_b_cfg));
+ }
+ 
+ static void lt9611_mipi_video_setup(struct lt9611 *lt9611,
+@@ -200,7 +253,8 @@
+ 	regmap_write(lt9611->regmap, 0x831d, pol);
+ 
+ 	regmap_multi_reg_write(lt9611->regmap, reg_cfg, ARRAY_SIZE(reg_cfg));
+-	if (lt9611->dsi1_node) {
++	/* dual port: configure hact for combining two DSI inputs */
++	if (lt9611->dsi0_node && lt9611->dsi1_node) {
+ 		unsigned int hact = mode->hdisplay;
+ 
+ 		hact >>= 2;
+@@ -809,7 +863,7 @@
+ 	    drm_mode_vrefresh(mode) > 30)
+ 		return MODE_CLOCK_HIGH;
+ 
+-	if (mode->hdisplay > 2000 && !lt9611->dsi1_node)
++	if (mode->hdisplay > 2000 && !(lt9611->dsi0_node && lt9611->dsi1_node))
+ 		return MODE_PANEL;
+ 	else
+ 		return MODE_OK;
+@@ -907,13 +961,13 @@
+ 			   struct lt9611 *lt9611)
+ {
+ 	lt9611->dsi0_node = of_graph_get_remote_node(dev->of_node, 0, -1);
+-	if (!lt9611->dsi0_node) {
+-		dev_err(lt9611->dev, "failed to get remote node for primary dsi\n");
++	lt9611->dsi1_node = of_graph_get_remote_node(dev->of_node, 1, -1);
++
++	if (!lt9611->dsi0_node && !lt9611->dsi1_node) {
++		dev_err(lt9611->dev, "failed to get remote node for dsi\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	lt9611->dsi1_node = of_graph_get_remote_node(dev->of_node, 1, -1);
+-
+ 	lt9611->ac_mode = of_property_read_bool(dev->of_node, "lt,ac-mode");
+ 
+ 	return drm_of_find_panel_or_bridge(dev->of_node, 2, -1, NULL, &lt9611->next_bridge);
+@@ -1120,14 +1174,16 @@
+ 
+ 	drm_bridge_add(&lt9611->bridge);
+ 
+-	/* Attach primary DSI */
+-	lt9611->dsi0 = lt9611_attach_dsi(lt9611, lt9611->dsi0_node);
+-	if (IS_ERR(lt9611->dsi0)) {
+-		ret = PTR_ERR(lt9611->dsi0);
+-		goto err_remove_bridge;
++	/* Attach Port A DSI, if specified */
++	if (lt9611->dsi0_node) {
++		lt9611->dsi0 = lt9611_attach_dsi(lt9611, lt9611->dsi0_node);
++		if (IS_ERR(lt9611->dsi0)) {
++			ret = PTR_ERR(lt9611->dsi0);
++			goto err_remove_bridge;
++		}
+ 	}
+ 
+-	/* Attach secondary DSI, if specified */
++	/* Attach secondary DSI (Port B in single or dual-port mode) */
+ 	if (lt9611->dsi1_node) {
+ 		lt9611->dsi1 = lt9611_attach_dsi(lt9611, lt9611->dsi1_node);
+ 		if (IS_ERR(lt9611->dsi1)) {

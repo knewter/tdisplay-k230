@@ -95,6 +95,12 @@ buildLinux (args // {
       # port@1 that no device tree we ship today provides (see task 2.3).
       # See docs/research/hdmi-hotplug.md §4 and design.md decision 2.
       ../nix/patches/canaan-dsi-bridge-connector.patch
+      # Backport of mainline "drm/bridge: lt9611: Add support for DSI port B
+      # input" (Hongyang Zhao, drm-misc-next 2026-02): accept a port@1-only
+      # graph and select Port B + its byte clock (0x8303 bit 6, 0x8250 bits
+      # 3:2). This board wires DSI to the LT9611's MLRXB pins only
+      # (schematic sheet "HDMI+ETH"); without it the chip sees no video.
+      ../nix/patches/lt9611-dsi-port-b.patch
     ];
 
     postPatch = ''
