@@ -719,7 +719,10 @@ def build_data(
             # Which kind of claim rests on this file. A requirement's evidence
             # is counted in the tally above; a note's is not, and the landing
             # page says so rather than letting the two look alike.
-            "citedBy": "requirement" if path in from_requirements else "note",
+            "citedBy": (
+                "requirement" if path in from_requirements
+                else "work" if path in work_only else "note"
+            ),
         }
         if source.suffix.lower() in IMAGE_SUFFIXES:
             asset = f"evidence/{slug}{source.suffix.lower()}"
