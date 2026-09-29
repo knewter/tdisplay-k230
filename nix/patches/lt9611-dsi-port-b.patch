@@ -248,7 +248,24 @@
  	lt9611->ac_mode = of_property_read_bool(dev->of_node, "lt,ac-mode");
  
  	return drm_of_find_panel_or_bridge(dev->of_node, 2, -1, NULL, &lt9611->next_bridge);
-@@ -1102,12 +1263,20 @@
+@@ -923,7 +1084,15 @@
+ {
+ 	struct device *dev = lt9611->dev;
+ 
+-	lt9611->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
++	/*
++	 * Optional: on the T-Display-K230 the LT9611 RSTN and the GT9895
++	 * touch reset are one net (GPIO24). The touch driver owns it and its
++	 * probe-time reset also resets the LT9611; pulsing it from here as
++	 * well reset the touch controller after its driver had initialised
++	 * it, leaving touch interrupts with no events (board, 2026-09-29).
++	 * gpiod_set_value on a NULL descriptor is a no-op.
++	 */
++	lt9611->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+ 	if (IS_ERR(lt9611->reset_gpio)) {
+ 		dev_err(dev, "failed to acquire reset gpio\n");
+ 		return PTR_ERR(lt9611->reset_gpio);
+@@ -1102,12 +1271,20 @@
  		goto err_disable_regulators;
  	}
  
@@ -275,7 +292,7 @@
  	}
  
  	i2c_set_clientdata(client, lt9611);
-@@ -1115,19 +1284,23 @@
+@@ -1115,19 +1292,23 @@
  	lt9611->bridge.funcs = &lt9611_bridge_funcs;
  	lt9611->bridge.of_node = client->dev.of_node;
  	lt9611->bridge.ops = DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
@@ -306,7 +323,7 @@
  	if (lt9611->dsi1_node) {
  		lt9611->dsi1 = lt9611_attach_dsi(lt9611, lt9611->dsi1_node);
  		if (IS_ERR(lt9611->dsi1)) {
-@@ -1161,7 +1334,8 @@
+@@ -1161,7 +1342,8 @@
  {
  	struct lt9611 *lt9611 = i2c_get_clientdata(client);
  
