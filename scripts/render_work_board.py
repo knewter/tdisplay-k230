@@ -24,6 +24,7 @@ PHYSICAL = ("not-applicable", "not-recorded", "pending", "verified")
 SAFE_TEXT = re.compile(r"^[^\x00-\x1f]*$")
 SECRET_TEXT = re.compile(r"(?:/home/|/mnt/|/tmp/|/dev/tty|(?:password|token|secret|ssid)\s*[:=]|(?:\d{1,3}\.){3}\d{1,3})", re.I)
 PRIVATE_DOC = re.compile(r"/(?:home|mnt)/|(?:password|token|secret|ssid)\s*[:=]\s*\S+|(?:\d{1,3}\.){3}\d{1,3}")
+PUBLIC_DEVICE_HOME = re.compile(r"/home/shell(?=/|\s|`|$)")
 MAX_DOCUMENT_BYTES = 128 * 1024
 IMAGE_TYPES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
 VIDEO_TYPES = {".mp4", ".webm", ".mov", ".m4v"}
@@ -76,7 +77,9 @@ def document(tree: "SourceTree", path: str, label: str) -> dict:
     value = tree.read(path)
     if len(value.encode("utf-8")) > MAX_DOCUMENT_BYTES:
         raise WorkError(f"work document exceeds {MAX_DOCUMENT_BYTES} bytes: {path}")
-    if PRIVATE_DOC.search(value):
+    # This is the image's documented user home, not an operator's host path.
+    # Check the rest of the document normally, including secrets under it.
+    if PRIVATE_DOC.search(PUBLIC_DEVICE_HOME.sub("DEVICE_HOME", value)):
         raise WorkError(f"work document contains a private path/address/credential: {path}")
     return {"path": path, "label": label, "markdown": value}
 
