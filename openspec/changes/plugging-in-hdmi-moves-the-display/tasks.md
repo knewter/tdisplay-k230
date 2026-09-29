@@ -3,7 +3,7 @@
 No GPIO is driven differently from today's boot in this group; every step
 reads state only. This is the first work this change may run on hardware.
 
-- [ ] 1.1 Under the reserved board/serial lock, with the board booted
+- [x] 1.1 Under the reserved board/serial lock, with the board booted
       normally (panel DTB, touch running, nothing in this change installed
       yet), confirm the LT9611 answers on `&i2c3` alongside touch:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "i2cdetect -y 3"`.
@@ -12,7 +12,7 @@ reads state only. This is the first work this change may run on hardware.
       assuming `3`, since adapter numbering is not guaranteed to match the
       DT alias. Expect `0x3b` (LT9611) and `0x5d` (GT9895, already known
       working) both listed.
-- [ ] 1.2 Read-only LT9611 register probe, no write beyond the register
+- [x] 1.2 Read-only LT9611 register probe, no write beyond the register
       address byte `i2cget` itself sends:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "i2cget -y 3 0x3b 0x00"`
       (or the adapter number from 1.1). Record the returned byte and
@@ -20,21 +20,25 @@ reads state only. This is the first work this change may run on hardware.
       against the LT9611 register map without a datasheet read (not yet
       done in this change) — this step establishes "something answers,"
       not "the chip is initialized correctly."
-- [ ] 1.3 Read current GPIO23/GPIO24 direction and level with touch
+      *Done 2026-09-29 on adapter 1: `0x00` read back. The same session
+      also made the mainline driver's page-select writes to read chip ID
+      `0x17 0x02`. That deviation is recorded in
+      `docs/evidence/hdmi-hotplug/probe/lt9611-probe-2026-09-29.md`.*
+- [x] 1.3 Read current GPIO23/GPIO24 direction and level with touch
       running and untouched:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 "cat /sys/kernel/debug/gpio"`
       (or `gpioinfo`/`gpioget` against the `gpio0_ports` chip if
       `debugfs` is unmounted). Record both lines' direction, active state,
       and whether GPIO23's consumer is already the touch driver (expected,
       since no LT9611 node is loaded yet).
-- [ ] 1.4 Attempt to determine whether the LT9611's `INT_ATST_GPIO3`
+- [x] 1.4 Attempt to determine whether the LT9611's `INT_ATST_GPIO3`
       output and the GT9895's interrupt output are open-drain (needed
       before any shared-IRQ design in group 4): read the GPIO23 pull
       configuration and any available driver/debugfs description of drive
       type from the same session as 1.3. If this cannot be determined from
       software alone, record that explicitly rather than guessing — this
       remains an open question in `design.md` either way.
-- [ ] 1.5 Commit the sanitized console transcripts from 1.1–1.4 (no
+- [x] 1.5 Commit the sanitized console transcripts from 1.1–1.4 (no
       addresses, no credentials — none expected in this output, but check)
       under `docs/evidence/hdmi-hotplug/probe/`, and resolve the two
       `<!-- UNVERIFIED -->` markers in `specs/display/hdmi/spec.md`'s

@@ -13,8 +13,12 @@ the LT9611 (`U18`) on the net pair `HDMI_CSCL`/`HDMI_CSDA`, which sheet
 touch (`docs/dts-evidence.md`, `docs/research/board-capability-inventory.md`).
 No address collision (`0x3b` vs `0x5d`).*
 
-<!-- UNVERIFIED: no board probe has been run yet. Resolve against
-docs/evidence/hdmi-hotplug/probe/ once tasks.md group 1 runs. -->
+*Observed 2026-09-29 (docs/evidence/hdmi-hotplug/probe/lt9611-probe-2026-09-29.md):
+`&i2c3` is Linux adapter `i2c-1`. `0x3b` acknowledges and returns chip ID
+`0x17 0x02` (rev `0xe2`), and `0x5d` is bound to `gt9895`. The ID read used the
+mainline driver's page-select writes. Touch input was not re-exercised in that
+session.*
+<!-- UNVERIFIED: touch continuing to report input after the probe was not exercised. -->
 
 #### Scenario: The bus is probed with touch running
 
