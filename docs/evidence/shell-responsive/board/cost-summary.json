@@ -1,0 +1,14 @@
+{
+  "build_cpu_ms": {
+    "samples": 17,
+    "min": 339.204482,
+    "median": 441.839022,
+    "max": 558.285363
+  },
+  "input_cpu_ms": {
+    "samples": 17,
+    "median": 1.943961,
+    "max": 2.05252
+  },
+  "evidence_class": "physical-board-injected-input"
+}

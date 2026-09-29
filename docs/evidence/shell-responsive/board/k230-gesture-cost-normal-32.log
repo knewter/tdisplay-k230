@@ -1,0 +1,150 @@
+00:32:15.336 [INFO] [sway/card_shell_telemetry.c:54] K230_CARD_BENCH v=1 run=2015906134310 event=resource phase=baseline t_ns=2015906140939 cpu_ns=57425108147 memory_bytes=85434368 scope=compositor
+00:32:15.349 [INFO] [sway/card_shell_telemetry.c:153] K230_CARD_BENCH v=1 run=2015906134310 event=session t_ns=2015919520446 clock=monotonic backend=drm renderer=pixman width=1920 height=1080 output_format=34325241 input=injected cards=2
+00:32:15.380 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=209 rects=1 damage_px=2073600 bbox_x1=0 bbox_y1=0 bbox_x2=1920 bbox_y2=1080 output_w=1920 output_h=1080
+00:32:15.395 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=1 cpu_ns=2111665 policy_cpu_ns=4556 scene_cpu_ns=1925590 chrome_cpu_ns=3852
+00:32:15.396 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=1 gesture_id=5 kind=motion t_ns=2015963311413 source=injected
+00:32:15.399 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=209 t_ns=2015966462000 presented=1 clock=monotonic
+00:32:15.423 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=210 rects=1 damage_px=2073600 bbox_x1=0 bbox_y1=0 bbox_x2=1920 bbox_y2=1080 output_w=1920 output_h=1080
+00:32:15.424 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=1 frame_id=210 t_ns=2015993932892 update_cpu_ns=23743770 final=0
+00:32:15.424 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=210 render_cpu_ns=21105918 prepare_cpu_ns=219555 build_cpu_ns=20637622 commit_cpu_ns=248741 attempts=1 failed_attempts=0
+00:32:15.435 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=210 t_ns=2015999792000 presented=1 clock=monotonic
+00:32:15.476 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=211 rects=2 damage_px=2010133 bbox_x1=0 bbox_y1=4 bbox_x2=1906 bbox_y2=1067 output_w=1920 output_h=1080
+00:32:15.490 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=2 cpu_ns=2485371 policy_cpu_ns=4814 scene_cpu_ns=2229073 chrome_cpu_ns=3555
+00:32:15.490 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=2 gesture_id=5 kind=motion t_ns=2016053915433 source=injected
+00:32:15.496 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=211 t_ns=2016066455000 presented=1 clock=monotonic
+00:32:15.535 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=212 rects=5 damage_px=2032543 bbox_x1=0 bbox_y1=4 bbox_x2=1920 bbox_y2=1071 output_w=1920 output_h=1080
+00:32:15.537 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=2 frame_id=212 t_ns=2016107250658 update_cpu_ns=22155688 final=0
+00:32:15.539 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=212 render_cpu_ns=19375391 prepare_cpu_ns=185704 build_cpu_ns=18958539 commit_cpu_ns=231148 attempts=1 failed_attempts=0
+00:32:15.543 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=3 cpu_ns=1742889 policy_cpu_ns=4222 scene_cpu_ns=1555778 chrome_cpu_ns=4999
+00:32:15.543 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=3 gesture_id=5 kind=motion t_ns=2016111737738 source=injected
+00:32:15.548 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=212 t_ns=2016116450000 presented=1 clock=monotonic
+00:32:15.569 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=213 rects=4 damage_px=1963988 bbox_x1=24 bbox_y1=8 bbox_x2=1904 bbox_y2=1057 output_w=1920 output_h=1080
+00:32:15.570 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=3 frame_id=213 t_ns=2016139931301 update_cpu_ns=21037216 final=0
+00:32:15.570 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=213 render_cpu_ns=18999106 prepare_cpu_ns=182074 build_cpu_ns=18592957 commit_cpu_ns=224075 attempts=1 failed_attempts=0
+00:32:15.579 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=213 t_ns=2016149781000 presented=1 clock=monotonic
+00:32:15.603 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=214 rects=1 damage_px=1876329 bbox_x1=47 bbox_y1=12 bbox_x2=1874 bbox_y2=1039 output_w=1920 output_h=1080
+00:32:15.610 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=4 cpu_ns=1772406 policy_cpu_ns=4185 scene_cpu_ns=1455482 chrome_cpu_ns=10444
+00:32:15.610 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=4 gesture_id=5 kind=motion t_ns=2016177591317 source=injected
+00:32:15.614 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=214 t_ns=2016183120000 presented=1 clock=monotonic
+00:32:15.634 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=215 rects=4 damage_px=1900697 bbox_x1=32 bbox_y1=12 bbox_x2=1890 bbox_y2=1043 output_w=1920 output_h=1080
+00:32:15.636 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=4 frame_id=215 t_ns=2016205958940 update_cpu_ns=20580250 final=0
+00:32:15.637 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=215 render_cpu_ns=18194397 prepare_cpu_ns=183111 build_cpu_ns=17786397 commit_cpu_ns=224889 attempts=1 failed_attempts=0
+00:32:15.646 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=215 t_ns=2016216443000 presented=1 clock=monotonic
+00:32:15.667 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=216 rects=1 damage_px=1810146 bbox_x1=63 bbox_y1=16 bbox_x2=1857 bbox_y2=1025 output_w=1920 output_h=1080
+00:32:15.673 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=5 cpu_ns=1842293 policy_cpu_ns=5371 scene_cpu_ns=1463516 chrome_cpu_ns=10111
+00:32:15.674 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=5 gesture_id=5 kind=motion t_ns=2016240868365 source=injected
+00:32:15.679 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=216 t_ns=2016249772000 presented=1 clock=monotonic
+00:32:15.698 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=217 rects=4 damage_px=1831698 bbox_x1=39 bbox_y1=16 bbox_x2=1872 bbox_y2=1028 output_w=1920 output_h=1080
+00:32:15.700 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=5 frame_id=217 t_ns=2016270187133 update_cpu_ns=20039696 final=0
+00:32:15.701 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=217 render_cpu_ns=17897032 prepare_cpu_ns=182295 build_cpu_ns=17486256 commit_cpu_ns=228481 attempts=1 failed_attempts=0
+00:32:15.715 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=6 cpu_ns=1957225 policy_cpu_ns=4593 scene_cpu_ns=1632742 chrome_cpu_ns=3297
+00:32:15.715 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=6 gesture_id=5 kind=motion t_ns=2016282355552 source=injected
+00:32:15.716 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=217 t_ns=2016283105000 presented=1 clock=monotonic
+00:32:15.735 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=218 rects=4 damage_px=1775092 bbox_x1=48 bbox_y1=19 bbox_x2=1859 bbox_y2=1015 output_w=1920 output_h=1080
+00:32:15.736 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=6 frame_id=218 t_ns=2016306232095 update_cpu_ns=19840203 final=0
+00:32:15.736 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=218 render_cpu_ns=17578906 prepare_cpu_ns=176631 build_cpu_ns=17184460 commit_cpu_ns=217815 attempts=1 failed_attempts=0
+00:32:15.746 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=218 t_ns=2016316434000 presented=1 clock=monotonic
+00:32:15.765 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=219 rects=1 damage_px=1685994 bbox_x1=95 bbox_y1=23 bbox_x2=1826 bbox_y2=997 output_w=1920 output_h=1080
+00:32:15.779 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=7 cpu_ns=1807965 policy_cpu_ns=5037 scene_cpu_ns=1497039 chrome_cpu_ns=3482
+00:32:15.779 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=7 gesture_id=5 kind=motion t_ns=2016346649850 source=injected
+00:32:15.780 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=219 t_ns=2016349773000 presented=1 clock=monotonic
+00:32:15.798 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=220 rects=4 damage_px=1708286 bbox_x1=55 bbox_y1=23 bbox_x2=1840 bbox_y2=1001 output_w=1920 output_h=1080
+00:32:15.799 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=7 frame_id=220 t_ns=2016369056994 update_cpu_ns=18837098 final=0
+00:32:15.799 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=220 render_cpu_ns=16695024 prepare_cpu_ns=192593 build_cpu_ns=16288245 commit_cpu_ns=214186 attempts=1 failed_attempts=0
+00:32:15.813 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=220 t_ns=2016383096000 presented=1 clock=monotonic
+00:32:15.835 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=221 rects=1 damage_px=1627857 bbox_x1=109 bbox_y1=27 bbox_x2=1810 bbox_y2=984 output_w=1920 output_h=1080
+00:32:15.844 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=8 cpu_ns=1772448 policy_cpu_ns=6667 scene_cpu_ns=1551040 chrome_cpu_ns=3296
+00:32:15.844 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=8 gesture_id=5 kind=motion t_ns=2016411107210 source=injected
+00:32:15.847 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=221 t_ns=2016416427000 presented=1 clock=monotonic
+00:32:15.867 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=222 rects=4 damage_px=1652874 bbox_x1=64 bbox_y1=27 bbox_x2=1827 bbox_y2=988 output_w=1920 output_h=1080
+00:32:15.869 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=8 frame_id=222 t_ns=2016439001575 update_cpu_ns=19270894 final=0
+00:32:15.869 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=222 render_cpu_ns=17154850 prepare_cpu_ns=195109 build_cpu_ns=16732927 commit_cpu_ns=226814 attempts=1 failed_attempts=0
+00:32:15.879 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=222 t_ns=2016449758000 presented=1 clock=monotonic
+00:32:15.898 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=223 rects=1 damage_px=1564584 bbox_x1=126 bbox_y1=31 bbox_x2=1794 bbox_y2=969 output_w=1920 output_h=1080
+00:32:15.903 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=9 cpu_ns=1770667 policy_cpu_ns=5704 scene_cpu_ns=1580852 chrome_cpu_ns=3408
+00:32:15.903 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=9 gesture_id=5 kind=motion t_ns=2016471307211 source=injected
+00:32:15.913 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=223 t_ns=2016483088000 presented=1 clock=monotonic
+00:32:15.930 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=224 rects=4 damage_px=1587718 bbox_x1=71 bbox_y1=31 bbox_x2=1809 bbox_y2=973 output_w=1920 output_h=1080
+00:32:15.930 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=9 frame_id=224 t_ns=2016500932769 update_cpu_ns=17765460 final=0
+00:32:15.931 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=224 render_cpu_ns=15691348 prepare_cpu_ns=186741 build_cpu_ns=15285570 commit_cpu_ns=219037 attempts=1 failed_attempts=0
+00:32:15.944 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=10 cpu_ns=1902184 policy_cpu_ns=5481 scene_cpu_ns=1572443 chrome_cpu_ns=6222
+00:32:15.944 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=10 gesture_id=5 kind=motion t_ns=2016511387401 source=injected
+00:32:15.948 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=224 t_ns=2016516421000 presented=1 clock=monotonic
+00:32:15.966 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=225 rects=4 damage_px=1533455 bbox_x1=80 bbox_y1=35 bbox_x2=1796 bbox_y2=960 output_w=1920 output_h=1080
+00:32:15.967 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=10 frame_id=225 t_ns=2016536792524 update_cpu_ns=17768621 final=0
+00:32:15.967 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=225 render_cpu_ns=15513178 prepare_cpu_ns=185370 build_cpu_ns=15075512 commit_cpu_ns=252296 attempts=1 failed_attempts=0
+00:32:15.979 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=225 t_ns=2016549751000 presented=1 clock=monotonic
+00:32:15.999 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=226 rects=1 damage_px=1449315 bbox_x1=158 bbox_y1=39 bbox_x2=1763 bbox_y2=942 output_w=1920 output_h=1080
+00:32:16.005 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=11 cpu_ns=1805595 policy_cpu_ns=5371 scene_cpu_ns=1467706 chrome_cpu_ns=8556
+00:32:16.006 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=11 gesture_id=5 kind=motion t_ns=2016572824783 source=injected
+00:32:16.012 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=226 t_ns=2016583081000 presented=1 clock=monotonic
+00:32:16.029 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=227 rects=4 damage_px=1471473 bbox_x1=87 bbox_y1=39 bbox_x2=1777 bbox_y2=946 output_w=1920 output_h=1080
+00:32:16.031 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=11 frame_id=227 t_ns=2016600407951 update_cpu_ns=17292882 final=0
+00:32:16.031 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=227 render_cpu_ns=15202805 prepare_cpu_ns=185113 build_cpu_ns=14764397 commit_cpu_ns=253295 attempts=1 failed_attempts=0
+00:32:16.046 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=12 cpu_ns=1816964 policy_cpu_ns=5963 scene_cpu_ns=1613780 chrome_cpu_ns=3518
+00:32:16.046 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=12 gesture_id=5 kind=motion t_ns=2016613619768 source=injected
+00:32:16.046 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=227 t_ns=2016616413000 presented=1 clock=monotonic
+00:32:16.064 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=228 rects=4 damage_px=1420168 bbox_x1=95 bbox_y1=43 bbox_x2=1764 bbox_y2=933 output_w=1920 output_h=1080
+00:32:16.066 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=12 frame_id=228 t_ns=2016636240524 update_cpu_ns=17064181 final=0
+00:32:16.066 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=228 render_cpu_ns=14960067 prepare_cpu_ns=175297 build_cpu_ns=14560919 commit_cpu_ns=223851 attempts=1 failed_attempts=0
+00:32:16.079 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=228 t_ns=2016649742000 presented=1 clock=monotonic
+00:32:16.095 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=229 rects=1 damage_px=1336914 bbox_x1=189 bbox_y1=47 bbox_x2=1731 bbox_y2=914 output_w=1920 output_h=1080
+00:32:16.109 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=13 cpu_ns=1794813 policy_cpu_ns=6185 scene_cpu_ns=1453739 chrome_cpu_ns=10037
+00:32:16.110 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=13 gesture_id=5 kind=motion t_ns=2016676179540 source=injected
+00:32:16.115 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=229 t_ns=2016683076000 presented=1 clock=monotonic
+00:32:16.131 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=230 rects=4 damage_px=1358305 bbox_x1=103 bbox_y1=47 bbox_x2=1746 bbox_y2=917 output_w=1920 output_h=1080
+00:32:16.132 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=13 frame_id=230 t_ns=2016702449000 update_cpu_ns=17114076 final=0
+00:32:16.134 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=230 render_cpu_ns=14448189 prepare_cpu_ns=180408 build_cpu_ns=14041854 commit_cpu_ns=225927 attempts=1 failed_attempts=0
+00:32:16.146 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=230 t_ns=2016716406000 presented=1 clock=monotonic
+00:32:16.162 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=231 rects=1 damage_px=1285200 bbox_x1=204 bbox_y1=50 bbox_x2=1716 bbox_y2=900 output_w=1920 output_h=1080
+00:32:16.169 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=14 cpu_ns=1770629 policy_cpu_ns=6185 scene_cpu_ns=1438554 chrome_cpu_ns=3704
+00:32:16.169 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=14 gesture_id=5 kind=motion t_ns=2016737057412 source=injected
+00:32:16.179 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=231 t_ns=2016749735000 presented=1 clock=monotonic
+00:32:16.194 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=232 rects=4 damage_px=1310412 bbox_x1=111 bbox_y1=50 bbox_x2=1732 bbox_y2=905 output_w=1920 output_h=1080
+00:32:16.195 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=14 frame_id=232 t_ns=2016765393815 update_cpu_ns=15449047 final=0
+00:32:16.196 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=232 render_cpu_ns=13395528 prepare_cpu_ns=183592 build_cpu_ns=12988973 commit_cpu_ns=222963 attempts=1 failed_attempts=0
+00:32:16.200 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=232 t_ns=2016766402000 presented=1 clock=monotonic
+00:32:16.220 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=233 rects=1 damage_px=1230528 bbox_x1=220 bbox_y1=55 bbox_x2=1699 bbox_y2=887 output_w=1920 output_h=1080
+00:32:16.226 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=15 cpu_ns=1833411 policy_cpu_ns=5888 scene_cpu_ns=1433039 chrome_cpu_ns=9593
+00:32:16.226 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=15 gesture_id=5 kind=motion t_ns=2016793507422 source=injected
+00:32:16.231 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=233 t_ns=2016799732000 presented=1 clock=monotonic
+00:32:16.244 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=234 rects=4 damage_px=1252697 bbox_x1=119 bbox_y1=55 bbox_x2=1715 bbox_y2=890 output_w=1920 output_h=1080
+00:32:16.246 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=15 frame_id=234 t_ns=2016816379453 update_cpu_ns=14369262 final=0
+00:32:16.246 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=234 render_cpu_ns=12249481 prepare_cpu_ns=188593 build_cpu_ns=11834814 commit_cpu_ns=226074 attempts=1 failed_attempts=0
+00:32:16.263 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=234 t_ns=2016833064000 presented=1 clock=monotonic
+00:32:16.278 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=235 rects=1 damage_px=1180935 bbox_x1=236 bbox_y1=58 bbox_x2=1685 bbox_y2=873 output_w=1920 output_h=1080
+00:32:16.283 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=16 cpu_ns=1624743 policy_cpu_ns=6037 scene_cpu_ns=1440113 chrome_cpu_ns=3741
+00:32:16.284 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=16 gesture_id=5 kind=motion t_ns=2016852416676 source=injected
+00:32:16.296 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=235 t_ns=2016866400000 presented=1 clock=monotonic
+00:32:16.309 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=236 rects=4 damage_px=1204535 bbox_x1=127 bbox_y1=58 bbox_x2=1701 bbox_y2=877 output_w=1920 output_h=1080
+00:32:16.310 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=16 frame_id=236 t_ns=2016880800890 update_cpu_ns=14038146 final=0
+00:32:16.311 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=236 render_cpu_ns=11926144 prepare_cpu_ns=156704 build_cpu_ns=11560182 commit_cpu_ns=209258 attempts=1 failed_attempts=0
+00:32:16.312 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=236 t_ns=2016883061000 presented=1 clock=monotonic
+00:32:16.337 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=237 rects=1 damage_px=1127136 bbox_x1=252 bbox_y1=62 bbox_x2=1668 bbox_y2=858 output_w=1920 output_h=1080
+00:32:16.339 [INFO] [sway/card_shell_telemetry.c:54] K230_CARD_BENCH v=1 run=2015906134310 event=resource phase=active t_ns=2016909085371 cpu_ns=57973615998 memory_bytes=94478336 scope=compositor
+00:32:16.339 [INFO] [sway/card_shell_telemetry.c:194] K230_CARD_SHELL input-cost run=2015906134310 input_id=17 cpu_ns=166593 policy_cpu_ns=0 scene_cpu_ns=59741 chrome_cpu_ns=3148
+00:32:16.340 [INFO] [sway/card_shell_telemetry.c:201] K230_CARD_BENCH v=1 run=2015906134310 event=input input_id=17 gesture_id=5 kind=release t_ns=2016909975780 source=injected
+00:32:16.346 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=237 t_ns=2016916389000 presented=1 clock=monotonic
+00:32:16.358 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=238 rects=1 damage_px=1127136 bbox_x1=252 bbox_y1=62 bbox_x2=1668 bbox_y2=858 output_w=1920 output_h=1080
+00:32:16.360 [INFO] [sway/card_shell_telemetry.c:266] K230_CARD_BENCH v=1 run=2015906134310 event=submit input_id=17 frame_id=238 t_ns=2016930178584 update_cpu_ns=12258700 final=1
+00:32:16.362 [INFO] [sway/card_shell_telemetry.c:282] K230_CARD_SHELL repaint-cost run=2015906134310 frame_id=238 render_cpu_ns=11492959 prepare_cpu_ns=183889 build_cpu_ns=11085145 commit_cpu_ns=223925 attempts=1 failed_attempts=0
+00:32:16.366 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=238 t_ns=2016933057000 presented=1 clock=monotonic
+00:32:16.382 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=239 rects=10 damage_px=1198697 bbox_x1=0 bbox_y1=62 bbox_x2=1686 bbox_y2=877 output_w=1920 output_h=1080
+00:32:16.396 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=239 t_ns=2016966385000 presented=1 clock=monotonic
+00:32:16.412 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=240 rects=15 damage_px=1315500 bbox_x1=0 bbox_y1=70 bbox_x2=1687 bbox_y2=916 output_w=1920 output_h=1080
+00:32:16.429 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=240 t_ns=2016999716000 presented=1 clock=monotonic
+00:32:16.447 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=241 rects=21 damage_px=1461315 bbox_x1=0 bbox_y1=70 bbox_x2=1706 bbox_y2=963 output_w=1920 output_h=1080
+00:32:16.462 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=241 t_ns=2017033047000 presented=1 clock=monotonic
+00:32:16.481 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=242 rects=22 damage_px=1546028 bbox_x1=0 bbox_y1=71 bbox_x2=1720 bbox_y2=993 output_w=1920 output_h=1080
+00:32:16.496 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=242 t_ns=2017066378000 presented=1 clock=monotonic
+00:32:16.514 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=243 rects=19 damage_px=1558796 bbox_x1=0 bbox_y1=84 bbox_x2=1726 bbox_y2=1003 output_w=1920 output_h=1080
+00:32:16.529 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=243 t_ns=2017099709000 presented=1 clock=monotonic
+00:32:16.547 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=244 rects=19 damage_px=1557390 bbox_x1=0 bbox_y1=88 bbox_x2=1727 bbox_y2=1006 output_w=1920 output_h=1080
+00:32:16.562 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=244 t_ns=2017133040000 presented=1 clock=monotonic
+00:32:16.581 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=245 rects=17 damage_px=1560853 bbox_x1=0 bbox_y1=89 bbox_x2=1727 bbox_y2=1008 output_w=1920 output_h=1080
+00:32:16.596 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=245 t_ns=2017166370000 presented=1 clock=monotonic
+00:32:16.681 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=246 rects=10 damage_px=1611184 bbox_x1=0 bbox_y1=16 bbox_x2=1896 bbox_y2=1064 output_w=1920 output_h=1080
+00:32:16.696 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=246 t_ns=2017266363000 presented=1 clock=monotonic
+00:32:17.359 [INFO] [sway/card_shell_telemetry.c:312] K230_CARD_SHELL frame-damage run=2015906134310 frame_id=247 rects=1 damage_px=2073600 bbox_x1=0 bbox_y1=0 bbox_x2=1920 bbox_y2=1080 output_w=1920 output_h=1080
+00:32:17.361 [INFO] [sway/card_shell_telemetry.c:54] K230_CARD_BENCH v=1 run=2015906134310 event=resource phase=restored t_ns=2017931584136 cpu_ns=58222330696 memory_bytes=101810176 scope=compositor
+00:32:17.364 [INFO] [sway/card_shell_telemetry.c:323] K230_CARD_BENCH v=1 run=2015906134310 event=present frame_id=247 t_ns=2017932983000 presented=1 clock=monotonic

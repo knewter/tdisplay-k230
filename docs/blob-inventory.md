@@ -651,6 +651,7 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA group:4-files docs/evidence/shell-responsive/board/*.png
 DATA 0fbb9697614b2e271a7982f02c3296fa4febf4333363d8b656e601f2f6f3ca18 docs/evidence/omawrite/board/home.png
 DATA afe1289aee3bde0c258340918783f0d77f1b437f6dd0be135bc722ec5daaf03b docs/evidence/omawrite/board/keyboard.png
 DATA c96077d2ab5b3a018023c40470092f0a7b776477a44b10df80bc72e0efd0ec67 docs/evidence/omawrite/board/open-dialog.png

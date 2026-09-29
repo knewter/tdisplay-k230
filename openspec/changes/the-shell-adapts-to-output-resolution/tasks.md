@@ -78,6 +78,13 @@
 
 ## 6. Board-gated follow-up (explicitly open, out of scope for this change)
 
+2026-09-29 checkpoint: [physical HDMI trial](../../../docs/evidence/shell-responsive/board/README.md)
+records accepted 1080×1920 configures, native drawer captures and operator-confirmed
+dragging. The monitor photograph and tap-to-launch proof remain missing; the
+operator reports failed gestures with an app open and slow interaction. Injected
+board traces identify 90° software composition as a major cost (442 ms median
+frame build versus 15 ms unrotated). Tasks below remain open.
+
 - [ ] 6.1 On the physical board with an HDMI monitor attached (requires
       `plugging-in-hdmi-moves-the-display` task group 3's manual switch, or
       whatever HDMI-enable path lands first), confirm the compositor

@@ -1,0 +1,35 @@
+{
+  "status": "BOOTED",
+  "source_revision": "27066809",
+  "system": "/nix/store/3nnwv20xcagrpds4spba47g5wcfjycdg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "loads": [
+    {
+      "file": "bootargs.txt",
+      "bytes": 211,
+      "sha256": "33bbf405a0d8b551a19b3e40526352f98a3c7151561eb5fda6d32f58fc5db76c",
+      "crc32": "8fcc7eb1"
+    },
+    {
+      "file": "Image",
+      "bytes": 60428800,
+      "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "crc32": "3ca351cb"
+    },
+    {
+      "file": "k230-tdisplay-hdmi.dtb",
+      "bytes": 71764,
+      "sha256": "a1cfdb0cee3f8217377b61a48d9d1b7a46a2fa760dd4bb4389dd4f3bd43be404",
+      "crc32": "bbbb0484"
+    },
+    {
+      "file": "initrd.uimg",
+      "bytes": 27295055,
+      "sha256": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "crc32": "f54b8fe8"
+    }
+  ],
+  "persistent_boot_selection_changed": false,
+  "physical_touch_acceptance": false,
+  "controller_sha256": "ea824b47d73c7c272a432cf317ac53e95fc484f4e7aef1cdaa78c6a782b0ea4b",
+  "linux_preflight_passed": true
+}

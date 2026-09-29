@@ -1,0 +1,32 @@
+{
+  "source_revision": "27066809",
+  "system": "/nix/store/3nnwv20xcagrpds4spba47g5wcfjycdg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "trackpad": "/nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+  "files": {
+    "Image": {
+      "bytes": 60428800,
+      "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "crc32": "3ca351cb"
+    },
+    "initrd.uimg": {
+      "bytes": 27295055,
+      "sha256": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "crc32": "f54b8fe8"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "33bbf405a0d8b551a19b3e40526352f98a3c7151561eb5fda6d32f58fc5db76c",
+      "crc32": "8fcc7eb1"
+    },
+    "k230-tdisplay-hdmi.dtb": {
+      "bytes": 71764,
+      "sha256": "a1cfdb0cee3f8217377b61a48d9d1b7a46a2fa760dd4bb4389dd4f3bd43be404",
+      "crc32": "bbbb0484"
+    },
+    "closure.nar": {
+      "bytes": 230698520,
+      "sha256": "c953169b391cfa938a6a7f73341dd6a3a8e61e6f8b1fb06c4359977efeaf065c",
+      "crc32": "7485c2b9"
+    }
+  }
+}

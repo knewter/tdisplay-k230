@@ -1,0 +1,83 @@
+{
+  "source_revision": "27066809",
+  "evidence_class": "physical-board-injected-input",
+  "logical_output": [
+    1080,
+    1920
+  ],
+  "started_at": "2026-09-29T23:19:15.544471+00:00",
+  "events": [
+    {
+      "command": "card_shell down 94 540 1900",
+      "ipc_wall_ms": 667.42
+    },
+    {
+      "command": "card_shell motion 94 540 1876",
+      "ipc_wall_ms": 664.32
+    },
+    {
+      "command": "card_shell motion 94 540 1852",
+      "ipc_wall_ms": 1264.27
+    },
+    {
+      "command": "card_shell motion 94 540 1828",
+      "ipc_wall_ms": 604.64
+    },
+    {
+      "command": "card_shell motion 94 540 1804",
+      "ipc_wall_ms": 1180.24
+    },
+    {
+      "command": "card_shell motion 94 540 1780",
+      "ipc_wall_ms": 582.73
+    },
+    {
+      "command": "card_shell motion 94 540 1756",
+      "ipc_wall_ms": 1107.49
+    },
+    {
+      "command": "card_shell motion 94 540 1732",
+      "ipc_wall_ms": 551.62
+    },
+    {
+      "command": "card_shell motion 94 540 1708",
+      "ipc_wall_ms": 516.48
+    },
+    {
+      "command": "card_shell motion 94 540 1684",
+      "ipc_wall_ms": 1018.63
+    },
+    {
+      "command": "card_shell motion 94 540 1660",
+      "ipc_wall_ms": 498.56
+    },
+    {
+      "command": "card_shell motion 94 540 1636",
+      "ipc_wall_ms": 468.82
+    },
+    {
+      "command": "card_shell motion 94 540 1612",
+      "ipc_wall_ms": 920.92
+    },
+    {
+      "command": "card_shell motion 94 540 1588",
+      "ipc_wall_ms": 444.66
+    },
+    {
+      "command": "card_shell motion 94 540 1564",
+      "ipc_wall_ms": 854.8
+    },
+    {
+      "command": "card_shell motion 94 540 1540",
+      "ipc_wall_ms": 406.4
+    },
+    {
+      "command": "card_shell motion 94 540 1516",
+      "ipc_wall_ms": 786.99
+    },
+    {
+      "command": "card_shell up 94",
+      "ipc_wall_ms": 380.91
+    }
+  ]
+}

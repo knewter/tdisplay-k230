@@ -1,0 +1,10 @@
+Observed 2026-09-29 UTC after output comparisons.
+{"name": "HDMI-A-1", "rect": {"x": 0, "y": 0, "width": 1080, "height": 1920}, "transform": "90", "current_mode": {"width": 1920, "height": 1080, "refresh": 60000, "picture_aspect_ratio": "none"}}
+/boot/Image: OK
+/boot/initrd.uimg: OK
+/boot/k230-tdisplay.dtb: OK
+/boot/bootargs.txt: OK
+/boot/fw_jump_add_uboot_head.bin: OK
+Both shell services were reported active in the preceding serial check.
+Transform 90 restored; ordinary app mode restored; telemetry stopped.
+Normal panel reboot remains unverified.
