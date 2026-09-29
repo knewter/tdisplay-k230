@@ -212,17 +212,18 @@
     },
     "the-shell-adapts-to-output-resolution": {
       "lane": "verification",
-      "source": "in-progress",
+      "source": "source-landed",
       "physical": "pending",
       "next": "Test the combined HDMI driver and responsive shell with real touch; keep physical acceptance open until the monitor and panel interaction are observed.",
       "dependencies": [
         "plugging-in-hdmi-moves-the-display"
       ],
       "evidence": [
-        "docs/evidence/shell-responsive/README.md"
+        "docs/evidence/shell-responsive/README.md",
+        "docs/evidence/shell-responsive/integration-host.json"
       ],
-      "rationale": "The proposal and host renders are on master. Implementation is preserved on integrate/hdmi-touch-responsive with a built system, HDMI device tree and inspected image; the combined candidate has not been tested on the device.",
-      "reviewRevision": "b90903e37a10d3c2edf8887e06597534115b7cd8",
+      "rationale": "The proposal, host renders and implementation are landed together. The combined system, HDMI device tree and inspected image build successfully; the combined candidate has not been tested on the device. Native-panel pixel comparisons pass, while dock reflow and device acceptance remain open.",
+      "reviewRevision": "67985088",
       "cover": {
         "path": "docs/evidence/shell-responsive/home-1080x1920.png",
         "caption": "Host render with synthetic app entries at portrait HDMI size",
