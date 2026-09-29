@@ -4,6 +4,7 @@ pub mod app_watch;
 pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
+pub mod evidence_render;
 pub mod home_grid;
 pub mod home_pager;
 pub mod home_screen;
@@ -130,6 +131,70 @@ pub fn configure_preserves_aspect(width: u32, height: u32) -> bool {
     ((ratio / DESIGN_ASPECT) - 1.0).abs() <= 0.10
 }
 
+/// The design's own reference size: every fixed-pixel constant in
+/// `home_grid.rs`, `navigation.rs`, and `render.rs`'s Settings row rhythm
+/// was authored against a panel exactly this size, at `density_scale`'s own
+/// `1.0`.
+pub const DESIGN_WIDTH: f64 = 568.0;
+pub const DESIGN_HEIGHT: f64 = 1232.0;
+
+/// How much bigger content should paint on a surface denser/taller than the
+/// 568x1232 design, so a large HDMI output's text/controls don't read as
+/// tiny just because they're drawn at the same pixel size as this panel's
+/// own physical DPI. `min(w, h)` against each axis's own design length (not
+/// physical DPI, which this client has no reliable way to read from the
+/// compositor) so a surface that is wide but *not* tall (1920x1080
+/// landscape, shorter than the 1232-design height) does not get scaled up
+/// on the strength of its width alone -- see `reflow_columns`'s own doc for
+/// why width alone already gives that case more columns instead. Clamped
+/// to `[1.0, 2.0]`: never *shrinks* content below the panel's own native
+/// size (this must stay `1.0` there, for pixel-identical output), and never
+/// grows it past 2x, past which point a Settings row would be larger than
+/// this design was ever laid out to comfortably hold.
+pub fn density_scale(width: u32, height: u32) -> f64 {
+    if width == 0 || height == 0 {
+        return 1.0;
+    }
+    let scale = (f64::from(width) / DESIGN_WIDTH).min(f64::from(height) / DESIGN_HEIGHT);
+    scale.clamp(1.0, 2.0)
+}
+
+/// How many `base_columns`-pitch columns (as authored at `DESIGN_WIDTH`,
+/// `scale` `1.0`) fit `width` at a given `scale`, rounded to the nearest
+/// whole column and never fewer than `base_columns` -- a configure this
+/// narrow is already rejected before any caller reaches this (`configure_
+/// size`/`configure_preserves_aspect`), but this stays a safe floor
+/// regardless. Shared by `navigation::columns_for_width` (the Drawer) and
+/// `home_grid::columns_for_width` (Home's grid), both called with `scale`
+/// fixed at `1.0`: reflow there is deliberately just "more columns of the
+/// same pixel size," not "fewer, bigger columns," because unlike Settings'
+/// single centered content column, a grid's whole point is to use width as
+/// more cells, not as bigger cells with wasted gaps between them.
+pub fn reflow_columns(width: u32, scale: f64, base_columns: usize) -> usize {
+    if base_columns == 0 {
+        return 0;
+    }
+    let safe_scale = if scale > 0.0 { scale } else { 1.0 };
+    let scaled = (f64::from(width) / (safe_scale * DESIGN_WIDTH) * base_columns as f64).round();
+    (scaled as usize).max(base_columns)
+}
+
+/// Settings' own centered content column: `(scale, x_offset)`, both design
+/// units against the surface's real `(width, height)`. `scale` is `density_
+/// scale`'s own value (so Settings' rows/text genuinely get bigger on a
+/// dense/tall output, not just re-centered); the column's own width is the
+/// design's `568` at that scale, capped to the real surface width so an
+/// unexpectedly narrow surface never gets a column wider than itself.
+/// `main.rs`'s `panel_intent` and `render.rs`'s `scene` both call this --
+/// never recompute the transform independently in one without the other,
+/// or a tap and its paint drift apart.
+pub fn settings_content_transform(width: u32, height: u32) -> (f64, f64) {
+    let scale = density_scale(width, height);
+    let content_w = (DESIGN_WIDTH * scale).min(f64::from(width));
+    let x = (f64::from(width) - content_w) / 2.0;
+    (scale, x)
+}
+
 /// The renderer may repaint only a slot the compositor has released. With
 /// all three slots busy it defers the new frame instead of growing without
 /// bound or writing memory still owned by the compositor.
@@ -249,6 +314,64 @@ mod tests {
         assert_eq!(frame_bytes(768, 1024), Some(3_145_728));
         assert_eq!(frame_bytes(1080, 1920), Some(8_294_400));
         assert_eq!(frame_bytes(1920, 1080), Some(8_294_400));
+    }
+
+    #[test]
+    fn density_scale_is_pixel_identical_at_native_and_bounded_above() {
+        // The panel itself, and any surface no denser than it on either
+        // axis, must stay at exactly 1.0 -- this is the "568x1232 stays
+        // pixel-identical" guarantee every scaled-content caller relies on.
+        assert_eq!(density_scale(568, 1232), 1.0);
+        assert_eq!(density_scale(768, 1024), 1.0, "shorter than design height clamps up to 1.0");
+        // Landscape HDMI: shorter than the design height, so the *height*
+        // ratio (which is what wins the `min`) pulls this to exactly 1.0
+        // even though the surface is far wider than the panel.
+        assert_eq!(density_scale(1920, 1080), 1.0);
+        // Rotated-portrait HDMI: taller and narrower than landscape, so the
+        // height ratio (1920/1232) wins and is genuinely > 1.0.
+        assert!((density_scale(1080, 1920) - 1920.0 / 1232.0).abs() < 1e-9);
+        // Upper bound: an extremely tall/dense surface never scales past 2x.
+        assert_eq!(density_scale(4000, 4000), 2.0);
+        // Degenerate input never panics or divides by zero.
+        assert_eq!(density_scale(0, 1232), 1.0);
+        assert_eq!(density_scale(568, 0), 1.0);
+    }
+
+    #[test]
+    fn reflow_columns_matches_base_at_design_width_and_only_grows() {
+        assert_eq!(reflow_columns(568, 1.0, 4), 4);
+        assert_eq!(reflow_columns(300, 1.0, 4), 4, "never fewer than the base");
+        assert_eq!(reflow_columns(768, 1.0, 4), 5);
+        assert_eq!(reflow_columns(1080, 1.0, 4), 8);
+        assert_eq!(reflow_columns(1920, 1.0, 4), 14);
+        // A larger scale (bigger tiles) needs more real width per column,
+        // so it yields fewer columns than the same width at scale 1.0.
+        assert!(reflow_columns(1080, 1.6, 4) < reflow_columns(1080, 1.0, 4));
+    }
+
+    #[test]
+    fn settings_content_transform_fills_the_panel_at_native_size() {
+        // 568x1232: scale 1.0, no horizontal offset -- the content column
+        // is exactly the panel, unchanged from before this transform
+        // existed.
+        assert_eq!(settings_content_transform(568, 1232), (1.0, 0.0));
+        // A wide landscape output gets a centered, still-568-wide column
+        // rather than stretching edge to edge.
+        let (scale, x) = settings_content_transform(1920, 1080);
+        assert_eq!(scale, 1.0);
+        assert!((x - (1920.0 - 568.0) / 2.0).abs() < 1e-9);
+        // A tall, denser output scales the column up (bigger content) and
+        // still centers whatever width that scaled column occupies.
+        let (scale, x) = settings_content_transform(1080, 1920);
+        assert!(scale > 1.0);
+        let content_w = 568.0 * scale;
+        assert!(content_w <= 1080.0);
+        assert!((x - (1080.0 - content_w) / 2.0).abs() < 1e-9);
+        // Pathologically narrow: the column is capped to the real width
+        // (never wider than the surface itself), with no offset left over.
+        let (scale, x) = settings_content_transform(300, 1232);
+        assert_eq!(scale, 1.0);
+        assert_eq!(x, 0.0);
     }
 
     #[test]

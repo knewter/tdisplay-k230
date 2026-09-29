@@ -10,24 +10,21 @@
 /// `2*24 + 3*24 + 4*112 = 568`, so the grid is centered with no remainder
 /// and no separate centering offset to compute.
 pub const COLUMNS: usize = 4;
-/// This panel's own design width -- `columns_for_width`'s reference point.
-const DESIGN_WIDTH: f64 = 568.0;
 
-/// How many drawer grid columns fit `width`: proportional to `COLUMNS` at
-/// `DESIGN_WIDTH` so a wider (HDMI) output gets more columns at roughly
-/// this module's own 112px reference tile width, instead of `COLUMNS`
-/// staying fixed at 4 and each cell stretching into a wide, sparse tile
-/// (`feat/shell-responsive`: the operator did not want an HDMI output's
-/// drawer to just have four huge tiles). Never fewer than `COLUMNS`,
-/// so a configure this shell would already reject as too narrow (see
-/// `configure_size`/`configure_preserves_aspect` in `lib.rs`) cannot drive
-/// this to zero. Pure and stateless -- unlike `home_grid`'s per-page
-/// layout, the drawer has no persisted per-column data to keep in sync,
-/// only this live tile geometry and the matching `tile_at` hit-test, both
-/// of which call this on every use.
+/// How many drawer grid columns fit `width`: `crate::reflow_columns` at
+/// scale `1.0` -- more columns of this module's own 112px reference tile
+/// width on a wider (HDMI) output, instead of `COLUMNS` staying fixed at 4
+/// and each cell stretching into a wide, sparse tile (`feat/shell-
+/// responsive`: the operator did not want an HDMI output's drawer to just
+/// have four huge tiles). Scale is fixed at `1.0` here rather than `crate::
+/// density_scale`'s own value on purpose: a grid's extra width should
+/// become more cells, not bigger ones -- see `reflow_columns`'s own doc.
+/// Pure and stateless -- unlike `home_grid`'s per-page layout, the drawer
+/// has no persisted per-column data to keep in sync, only this live tile
+/// geometry and the matching `tile_at` hit-test, both of which call this on
+/// every use.
 pub fn columns_for_width(width: u32) -> usize {
-    let scaled = (f64::from(width) * COLUMNS as f64 / DESIGN_WIDTH).round();
-    (scaled as usize).max(COLUMNS)
+    crate::reflow_columns(width, 1.0, COLUMNS)
 }
 /// The cell's full vertical pitch: an icon, a small gap, a single-line
 /// label, and the row's own share of vertical breathing room -- see
