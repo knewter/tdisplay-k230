@@ -125,6 +125,20 @@ class Fixture(unittest.TestCase):
         with self.assertRaisesRegex(work.WorkError, "private path.*design.md"):
             self.data(working=True)
 
+    def test_documented_device_home_is_public_but_other_private_content_is_rejected(self) -> None:
+        path = "openspec/changes/the-first-thing/design.md"
+        body = "The device saves files under `/home/shell` and `/home/shell/Documents`."
+        put(self.repo, path, body)
+        tree = work.SourceTree(self.repo, working_tree=True)
+        self.assertEqual(work.document(tree, path, "Design")["markdown"], body)
+        for private in ("/home/shell-private/file", "/home/shell2/file",
+                        "/home/operator/file", "/mnt/storage/file",
+                        "token=private-value", "192.168.1.2"):
+            with self.subTest(private=private):
+                put(self.repo, path, body + "\n" + private)
+                with self.assertRaisesRegex(work.WorkError, "private path.*design.md"):
+                    work.document(tree, path, "Design")
+
     def test_large_committed_blob_is_rejected_before_read(self) -> None:
         path = "openspec/changes/the-first-thing/design.md"
         with (self.repo / path).open("wb") as out:

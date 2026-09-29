@@ -194,6 +194,40 @@
         "caption": "Native board capture during a temporary compositor trial; wallpaper shows through rounded corners",
         "provenance": "Board capture"
       }
+    },
+    "the-touchscreen-becomes-an-hdmi-trackpad": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Run the bounded dry-run input trial first; then test a real virtual touchpad and verify direct-touch restoration.",
+      "dependencies": [
+        "plugging-in-hdmi-moves-the-display"
+      ],
+      "evidence": [
+        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md",
+        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md"
+      ],
+      "rationale": "The default-off prototype and recovery safeguards pass 28 host tests, strict Clippy and a RISC-V package build. The first device run hung; the fixed build has not been retested on the board.",
+      "reviewRevision": "7ea0abf9c4e0724791c2367a4ddb8b408ccfa511"
+    },
+    "the-shell-adapts-to-output-resolution": {
+      "lane": "verification",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Test the combined HDMI driver and responsive shell with real touch; keep physical acceptance open until the monitor and panel interaction are observed.",
+      "dependencies": [
+        "plugging-in-hdmi-moves-the-display"
+      ],
+      "evidence": [
+        "docs/evidence/shell-responsive/README.md"
+      ],
+      "rationale": "The proposal and host renders are on master. Implementation is preserved on integrate/hdmi-touch-responsive with a built system, HDMI device tree and inspected image; the combined candidate has not been tested on the device.",
+      "reviewRevision": "b90903e37a10d3c2edf8887e06597534115b7cd8",
+      "cover": {
+        "path": "docs/evidence/shell-responsive/home-1080x1920.png",
+        "caption": "Host render with synthetic app entries at portrait HDMI size",
+        "provenance": "Host capture"
+      }
     }
   }
 }

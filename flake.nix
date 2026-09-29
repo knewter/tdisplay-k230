@@ -207,6 +207,11 @@
         handheld-shell-rust-probe = pkgsCross.callPackage ./nix/rust-shell-probe { };
         # Opt-in Rust software shell; the probe remains a separate artifact.
         handheld-shell-rust = pkgsCross.callPackage ./nix/rust-shell-client { };
+        # Prototype: re-emits the touchscreen as a virtual touchpad while
+        # HDMI is the active output (openspec/changes/
+        # the-touchscreen-becomes-an-hdmi-trackpad/). Not wired into any
+        # NixOS configuration by default; see nix/touch-trackpad-service.nix.
+        handheld-touch-trackpad = pkgsCross.callPackage ./nix/touch-trackpad { };
         power-keyd = pkgsCross.callPackage ./nix/power-keyd.nix { };
         # Bounded diagnostic sampler, outside the normal image closure.
         runtime-perf = pkgsCross.callPackage ./nix/runtime-perf.nix { };

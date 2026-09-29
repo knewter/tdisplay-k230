@@ -1,0 +1,18 @@
+[package]
+name = "k230-touch-trackpad"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Re-emits the GT9895 touchscreen's multitouch contacts through uinput as a virtual touchpad, so libinput classifies it as a touchpad (tap-to-click, two-finger scroll, pinch/swipe) instead of a touchscreen, while the panel is dark and HDMI is the active output."
+
+[[bin]]
+name = "k230-touch-trackpad"
+path = "src/main.rs"
+
+[dependencies]
+# Same pinned version nix/rust-shell-client already cross-builds for
+# riscv64-linux (nix/rust-shell-client/Cargo.toml) -- reusing the pin means
+# this crate adds no new proven-or-not cross-compilation risk. Only `libc`
+# is needed: the uinput/evdev ioctl surface is small enough to bind by hand
+# (see src/uinput.rs), so no `evdev`/`input-linux` crate is pulled in.
+libc = "=0.2.175"

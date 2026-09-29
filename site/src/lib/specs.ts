@@ -52,7 +52,7 @@ export interface EvidenceFile {
    * never collapsed: a note's evidence is real, and it is still not a
    * requirement anyone has archived.
    */
-  citedBy: "requirement" | "note";
+  citedBy: "requirement" | "note" | "work";
 }
 
 export interface Specs {
