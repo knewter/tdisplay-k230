@@ -127,6 +127,21 @@ informal UX critiques exist. These are backlog/research, not ready archives.
 | `the-settings-and-notifications-surfaces-are-themed` | 0/8 | Cross-surface theme consumer/control/icon mapping and notification motion, host captures and physical/reboot proof. Existing palette colors alone do not satisfy the full scope. |
 | `the-shell-makes-recovery-routes-legible` | 0/4 | Implement/test visible recovery explanations and failed-launch presentation before physical readability check. |
 
+## Results landed during this campaign
+
+[Wi-Fi host closeout](../wifi-settings/closeout-host-2026-09-30/README.md)
+records successful broker/configuration and integrated Rust/system builds.
+Tasks 1.4 and 2.5 are now complete: Wi-Fi advances from 8/12 to **10/12**.
+Only physical tasks 3.1 and 3.2 remain. This does not install the newly built
+system or prove connection/reboot behavior.
+
+The dashboard now puts the five physical-only candidates in verification
+and corrects stale HDMI-trackpad, card, Omarchy and CPU-extension next steps.
+Responsive-output and CPU-extension proposals move out of verification
+because their remaining source/emulation work is substantive. No completed
+capability is claimed from these status edits, and no change is archived
+without its required physical proof.
+
 ## Reconciliation and archive rules
 
 - Correct stale dashboard “next” steps against the installed checkpoint.
