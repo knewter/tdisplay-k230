@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T14:55:45.026710+00:00",
+  "dashboard": "https://knewter.github.io/tdisplay-k230/work/",
+  "evidence_page": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-the-shell-is-navigable-with-a-mouse-readme-md/",
+  "revision": "3f53d246712c893a9d23974c2fd2990e7a21536c",
+  "pages_run": 36731973194,
+  "pages_result": "success",
+  "images": [
+    {
+      "url": "https://raw.githubusercontent.com/knewter/tdisplay-k230/3f53d246712c893a9d23974c2fd2990e7a21536c/docs/evidence/the-shell-is-navigable-with-a-mouse/after-overview.jpg",
+      "source_file": "docs/evidence/the-shell-is-navigable-with-a-mouse/after-overview.jpg",
+      "sha256": "2c27ebb72c882065eb21e2c79e3a3d9b844bb29f00b319d81459f70094380f17",
+      "dashboard_artifact_discovery": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/knewter/tdisplay-k230/3f53d246712c893a9d23974c2fd2990e7a21536c/docs/evidence/the-shell-is-navigable-with-a-mouse/after-drawer.jpg",
+      "source_file": "docs/evidence/the-shell-is-navigable-with-a-mouse/after-drawer.jpg",
+      "sha256": "29ec4e126cd46e052ebf1247d248fc795b135299e3912116e3d2535588dcc00a",
+      "dashboard_artifact_discovery": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/knewter/tdisplay-k230/3f53d246712c893a9d23974c2fd2990e7a21536c/docs/evidence/the-shell-is-navigable-with-a-mouse/after-themes.jpg",
+      "source_file": "docs/evidence/the-shell-is-navigable-with-a-mouse/after-themes.jpg",
+      "sha256": "1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797",
+      "dashboard_artifact_discovery": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/knewter/tdisplay-k230/3f53d246712c893a9d23974c2fd2990e7a21536c/docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg",
+      "source_file": "docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg",
+      "sha256": "b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18",
+      "dashboard_artifact_discovery": true
+    }
+  ],
+  "limits": [
+    "Dashboard discovery, rendered README and pinned public image bytes are verified.",
+    "This does not add physical gesture acceptance."
+  ]
+}

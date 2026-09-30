@@ -38,3 +38,5 @@ Reviewed native captures: [overview with Home footer](after-overview.jpg), [app 
 Physical acceptance remains **UNVERIFIED**: on the active panel, tap Home from overview; in HDMI trackpad mode, click Home, drag from the active display edges, pinch four fingers inward to overview, then spread four fingers to expand the centered card. Existing apps should remain open. Task 3.3 stays unchecked and the change stays open.
 
 An additional [ordinary application click](ordinary-app-click.json) changed Calculator from `0` to `7`, verified in the [native app capture](after-calculator-click.jpg). This establishes that shell pointer handling also passes ordinary app clicks through, rather than only handling its own overlays.
+
+[Publication verification](publication.json) records the exact dashboard revision, successful Pages run, rendered evidence page, image discovery and matching public image hashes. Source, installed proof and reviewed captures are landed on master; only the named physical acceptance gate remains open.

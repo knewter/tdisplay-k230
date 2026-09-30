@@ -30,7 +30,7 @@
   ],
   "installed_system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
   "remaining_gate": "Task 3.3 physical tap/click/edge drag and four-finger inward/outward pinch remains UNVERIFIED. Observe on physical board and commit photograph and observation before archive.",
-  "remaining_review_merge_push_deployment": "Final evidence/publication commit and exact Pages verification recorded separately. Device installation complete.",
+  "remaining_review_merge_push_deployment": "Source, board evidence and media publication complete on master. Only physical verification/task 3.3 and subsequent archive remain.",
   "board_reservation": "Root /tmp/k230-board.lock; released at handoff",
   "build_reservation": "Root /tmp/k230-nix-build.lock; builds complete"
 }
