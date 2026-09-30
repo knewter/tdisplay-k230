@@ -9,4 +9,4 @@
 
 ## 3. Land evidence
 
-- [ ] 3.1 Validate with `openspec validate the-clock-uses-chicago-time --strict`, commit the evidence and source, merge and push, and inspect the matching Pages result.
+- [x] 3.1 Validate with `openspec validate the-clock-uses-chicago-time --strict`, commit the evidence and source, merge and push, and inspect the matching Pages result.
