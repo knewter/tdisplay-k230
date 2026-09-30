@@ -19,6 +19,9 @@
 {
   imports = [ "${modulesPath}/profiles/minimal.nix" ];
 
+  # Operator timezone, shared by the shell clock and ordinary applications.
+  time.timeZone = "America/Chicago";
+
   # Built on x86_64, runs on the board. Cross-compilation is the default path;
   # see openspec/specs/image/cross-build.
   nixpkgs.buildPlatform = "x86_64-linux";
