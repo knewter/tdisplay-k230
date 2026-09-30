@@ -25,7 +25,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Integrate the continuous drawer/shade stream with the actual Rust renderer; then repeat reserved-board presentation, CPU/frame and physical touch acceptance.",
+      "next": "Resolve the measured card budget and integrated non-fixture QEMU smoke; collect real-finger card entry, drag, expand, close and recovery proof.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/card-shell/tracked-motion-host.md",
@@ -35,20 +35,20 @@
         "docs/evidence/card-shell/tracked-motion-qemu/README.md",
         "docs/evidence/coherent-shell/reveal-stream-host.md"
       ],
-      "rationale": "Finger-tracked app entry, reversal and card expansion now have exact cross-build and headless QEMU pixel evidence. Continuous drawer/shade progress has QEMU sender and overlay-stacking proof; actual Rust receiver pixels and physical acceptance remain open. Existing board CPU/frame budgets are still unmet.",
-      "reviewRevision": "d9b24140"
+      "rationale": "The staged card-budget successor remains unapproved. Current injected navigation results are reusable dispatch evidence, not budget or real-finger acceptance.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     },
     "the-system-enables-proven-c908-extensions": {
-      "lane": "verification",
-      "source": "source-landed",
+      "lane": "in-progress",
+      "source": "in-progress",
       "physical": "pending",
-      "next": "Run the remaining exact-image RVV/QEMU and reserved-board checks; keep the normal image unchanged until evidence passes.",
+      "next": "Complete additional-extension targeting and matching candidate emulation, then exact-image vector, pixel, card, recovery and persistent-boot proof.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/cpu-extensions/normal-image-build/README.md"
       ],
-      "rationale": "The committed source and build evidence covers the first five tasks, while later target and physical gates remain unchecked.",
-      "reviewRevision": "fd8fcf326f3b7c42d5e07715999426695cad5a24"
+      "rationale": "Additional-extension and emulation gates remain before the physical candidate sequence. Prior RVV evidence cannot certify all extensions.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     },
     "the-handheld-presents-a-coherent-shell": {
       "lane": "in-progress",
@@ -119,7 +119,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete notification motion and bounded video wallpapers, then measure theme/card cost and verify real chooser interaction and reboot persistence.",
+      "next": "Finish token/control/font coverage, drawer/card icon captures, tap-to-apply plan reconciliation and reboot workload; then run remaining physical theme/background checks.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -143,8 +143,8 @@
         "docs/evidence/omarchy-themes/community-board/README.md",
         "docs/evidence/omarchy-themes/community-board-fixed/README.md"
       ],
-      "rationale": "Installed source 3c502a37 passes dark, light and unchanged community-clone activation, app appearance acknowledgement and byte-identical restoration. The Rust rgba border parser rejection is fixed and repeated on the board. Full corresponding-role coverage, real-touch, video/performance and reboot proof remain open.",
-      "reviewRevision": "3c502a37540375a74685f70b21d73eaee28c40bc",
+      "rationale": "Fill/video backgrounds and Settings/notification source scope moved to named successors. This parent still has distinct host coverage and trial work.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799",
       "cover": {
         "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
         "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
@@ -199,7 +199,7 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Run the bounded dry-run input trial first; then test a real virtual touchpad and verify direct-touch restoration.",
+      "next": "On the installed HDMI shell, verify real click, right-click, scroll, zoom and four-finger overview; collect media/logs, then verify panel direct-touch restoration.",
       "dependencies": [
         "plugging-in-hdmi-moves-the-display"
       ],
@@ -207,14 +207,14 @@
         "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md",
         "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md"
       ],
-      "rationale": "The default-off prototype and recovery safeguards pass 28 host tests, strict Clippy and a RISC-V package build. The first device run hung; the fixed build has not been retested on the board.",
-      "reviewRevision": "7ea0abf9c4e0724791c2367a4ddb8b408ccfa511"
+      "rationale": "The relay and pointer dispatch are installed. Earlier dry-run instructions are stale; injected click proof does not replace real glass or restoration.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     },
     "the-shell-adapts-to-output-resolution": {
-      "lane": "verification",
-      "source": "source-landed",
+      "lane": "in-progress",
+      "source": "in-progress",
       "physical": "pending",
-      "next": "Test the combined HDMI driver and responsive shell with real touch; keep physical acceptance open until the monitor and panel interaction are observed.",
+      "next": "Complete Home/drawer density scale, Wi-Fi/theme layout and dock design; then photograph real HDMI geometry and verify hit targets and panel restoration.",
       "dependencies": [
         "plugging-in-hdmi-moves-the-display"
       ],
@@ -222,13 +222,73 @@
         "docs/evidence/shell-responsive/README.md",
         "docs/evidence/shell-responsive/integration-host.json"
       ],
-      "rationale": "The proposal, host renders and implementation are landed together. The combined system, HDMI device tree and inspected image build successfully; the combined candidate has not been tested on the device. Native-panel pixel comparisons pass, while dock reflow and device acceptance remain open.",
-      "reviewRevision": "67985088",
+      "rationale": "Task 6 still includes source/design work. Existing HDMI installation and pointer checks do not complete the remaining responsive layout.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799",
       "cover": {
         "path": "docs/evidence/shell-responsive/home-1080x1920.png",
         "caption": "Host render with synthetic app entries at portrait HDMI size",
         "provenance": "Host capture"
       }
+    },
+    "the-compositor-renders-ahead-of-scanout": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "On the built-in panel, perform continuous real-finger app switching and overview; report bottom-band flicker with the installed patch-free system identity.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md"
+      ],
+      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+    },
+    "the-overview-hides-the-home-screen": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "With a real theme and focused app on the board, enter and drag overview; collect native capture and photograph showing no Home bleed-through.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md"
+      ],
+      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+    },
+    "the-shell-is-navigable-with-a-mouse": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Try Home click and real four-finger inward/outward pinch on HDMI; also verify display-edge drags and panel Home tap, with a physical photograph.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md"
+      ],
+      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+    },
+    "the-shell-presents-a-pinned-home-screen": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "On the panel in dark and light themes, verify page swipe, pin/remove/rearrange, dock taps and launch versus focus; record physical media.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md"
+      ],
+      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+    },
+    "the-shell-has-a-card-composition-plan": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Reserve a separate probe session for continuous real-finger two-app card tracking, collection and verified restoration of the normal shell.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md"
+      ],
+      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
+      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     }
   }
 }
