@@ -1,0 +1,421 @@
+diff --git a/include/render/pixman.h b/include/render/pixman.h
+index ef21da3..2c4c6b6 100644
+--- a/include/render/pixman.h
++++ b/include/render/pixman.h
+@@ -25,8 +25,9 @@ struct wlr_pixman_renderer {
+ 	struct wlr_drm_format_set drm_formats;
+ 	struct k230_round_cache rounded_cache;
+ 	struct k230_turn_scratch turn_scratch;
+-	bool quarter_turn, trace_draw;
++	bool quarter_turn, output_turn, trace_draw;
+ 	unsigned trace_rows;
++	unsigned output_turn_rows;
+ };
+ 
+ struct wlr_pixman_buffer {
+@@ -56,6 +57,10 @@ struct wlr_pixman_render_pass {
+ 	struct wlr_render_pass base;
+ 	bool failed;
+ 	struct wlr_pixman_buffer *buffer;
++	pixman_image_t *image;
++	void *scratch_data;
++	size_t scratch_bytes;
++	enum wl_output_transform output_transform;
+ };
+ 
+ pixman_format_code_t get_pixman_format_from_drm(uint32_t fmt);
+@@ -66,6 +71,6 @@ bool begin_pixman_data_ptr_access(struct wlr_buffer *buffer, pixman_image_t **im
+ 	uint32_t flags);
+ 
+ struct wlr_pixman_render_pass *begin_pixman_render_pass(
+-	struct wlr_pixman_buffer *buffer);
++	struct wlr_pixman_buffer *buffer, enum wl_output_transform output_transform);
+ 
+ #endif
+diff --git a/include/wlr/render/pass.h b/include/wlr/render/pass.h
+index 9fc843d..1c6a880 100644
+--- a/include/wlr/render/pass.h
++++ b/include/wlr/render/pass.h
+@@ -29,6 +29,9 @@ struct wlr_render_pass;
+ struct wlr_render_timer;
+ 
+ struct wlr_buffer_pass_options {
++	/* Optional final transform applied when the completed image is copied to
++	 * the destination buffer. Render operations still use buffer coordinates. */
++	enum wl_output_transform output_transform;
+ 	/* Timer to measure the duration of the render pass */
+ 	struct wlr_render_timer *timer;
+ 	/* Color transform to apply to the output of the render pass.
+diff --git a/include/wlr/render/wlr_renderer.h b/include/wlr/render/wlr_renderer.h
+index 902d756..7c6b0a2 100644
+--- a/include/wlr/render/wlr_renderer.h
++++ b/include/wlr/render/wlr_renderer.h
+@@ -51,6 +51,8 @@ struct wlr_renderer {
+ 		 * Does the renderer support color transforms on its output?
+ 		 */
+ 		bool output_color_transform;
++		/** Whether the renderer supports final output transforms on buffer passes. */
++		bool output_transform;
+ 		/**
+ 		 * Whether wait/signal timelines are supported.
+ 		 *
+diff --git a/render/pixman/pass.c b/render/pixman/pass.c
+index 93fe82a..a83e1e2 100644
+--- a/render/pixman/pass.c
++++ b/render/pixman/pass.c
+@@ -19,12 +19,33 @@ static struct wlr_pixman_texture *get_texture(struct wlr_texture *wlr_texture) {
+ 	return texture;
+ }
+ 
++static uint64_t draw_cpu(void);
++
+ static bool render_pass_submit(struct wlr_render_pass *wlr_pass) {
+ 	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
++	struct wlr_pixman_renderer *renderer = pass->buffer->renderer;
++	bool okay = !pass->failed;
++	if (pass->output_transform != WL_OUTPUT_TRANSFORM_NORMAL) {
++		uint64_t start = draw_cpu();
++		if (okay && !k230_turn_into(pass->buffer->image, pass->image, pass->output_transform)) {
++			okay = false;
++		}
++		if (renderer->output_turn_rows < 128) {
++			renderer->output_turn_rows++;
++			wlr_log(WLR_INFO, "K230_PIXMAN_OUTPUT_TURN src=%dx%d dst=%dx%d format=0x%08x "
++				"rotation=%d rotation_cpu_ns=%" PRIu64 " scratch_bytes=%zu",
++				pixman_image_get_width(pass->image), pixman_image_get_height(pass->image),
++				pixman_image_get_width(pass->buffer->image),
++				pixman_image_get_height(pass->buffer->image),
++				pixman_image_get_format(pass->image), pass->output_transform,
++				draw_cpu() - start, pass->scratch_bytes);
++		}
++	}
+ 
+ 	wlr_buffer_end_data_ptr_access(pass->buffer->buffer);
+ 	wlr_buffer_unlock(pass->buffer->buffer);
+-	bool okay = !pass->failed;
++	if (pass->image != NULL) pixman_image_unref(pass->image);
++	free(pass->scratch_data);
+ 	free(pass);
+ 
+ 	return okay;
+@@ -50,6 +71,10 @@ static uint64_t draw_cpu(void) {
+ 	return (uint64_t)value.tv_sec * 1000000000 + value.tv_nsec;
+ }
+ 
++static pixman_image_t *pass_image(struct wlr_pixman_render_pass *pass) {
++	return pass->image != NULL ? pass->image : pass->buffer->image;
++}
++
+ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 		const struct wlr_render_texture_options *options) {
+ 	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
+@@ -70,7 +95,7 @@ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 	struct wlr_pixman_texture turned;
+ 	struct wlr_render_texture_options ordinary;
+ 	pixman_op_t op = get_pixman_blending(options->blend_mode);
+-	pixman_image_set_clip_region32(buffer->image, options->clip);
++	pixman_image_set_clip_region32(pass_image(pass), options->clip);
+ 
+ 	struct wlr_fbox src_fbox;
+ 	wlr_render_texture_options_get_src_box(options, &src_fbox);
+@@ -235,7 +260,7 @@ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 		// because of the scaling, cropping at the end by dst_box.{width,height} is
+ 		// equivalent to if we cropped at the start by src_box.{width,height}.
+ 		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
+-				texture->image, mask, buffer->image, 0, 0, round_box(dst_box),
++				texture->image, mask, pass_image(pass), 0, 0, round_box(dst_box),
+ 				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
+ 			pass->failed = true;
+ 
+@@ -244,12 +269,12 @@ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 		// No transforms or crop needed, just a straight blit from the source
+ 		pixman_image_set_transform(texture->image, NULL);
+ 		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
+-				texture->image, mask, buffer->image, src_box.x, src_box.y, round_box(dst_box),
++				texture->image, mask, pass_image(pass), src_box.x, src_box.y, round_box(dst_box),
+ 				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
+ 			pass->failed = true;
+ 	}
+ 
+-	pixman_image_set_clip_region32(buffer->image, NULL);
++	pixman_image_set_clip_region32(pass_image(pass), NULL);
+ 
+ 	if (client_buffer != NULL) {
+ 		wlr_buffer_end_data_ptr_access(client_buffer);
+@@ -288,13 +313,13 @@ static void render_pass_add_rect(struct wlr_render_pass *wlr_pass,
+ 
+ 	pixman_image_t *fill = pixman_image_create_solid_fill(&color);
+ 
+-	pixman_image_set_clip_region32(buffer->image, options->clip);
++	pixman_image_set_clip_region32(pass_image(pass), options->clip);
+ 	/* The solid source already carries color alpha; the corner mask only
+ 	 * adds geometric coverage. */
+-	if (!k230_round_composite(&buffer->renderer->rounded_cache, op, fill, NULL, buffer->image,
++	if (!k230_round_composite(&buffer->renderer->rounded_cache, op, fill, NULL, pass_image(pass),
+ 			0, 0, round_box(box), round_box(options->rounded_clip), options->rounded_radius, 65535))
+ 		pass->failed = true;
+-	pixman_image_set_clip_region32(buffer->image, NULL);
++	pixman_image_set_clip_region32(pass_image(pass), NULL);
+ 
+ 	pixman_image_unref(fill);
+ }
+@@ -306,7 +331,7 @@ static const struct wlr_render_pass_impl render_pass_impl = {
+ };
+ 
+ struct wlr_pixman_render_pass *begin_pixman_render_pass(
+-		struct wlr_pixman_buffer *buffer) {
++		struct wlr_pixman_buffer *buffer, enum wl_output_transform output_transform) {
+ 	struct wlr_pixman_render_pass *pass = calloc(1, sizeof(*pass));
+ 	if (pass == NULL) {
+ 		return NULL;
+@@ -320,6 +345,46 @@ struct wlr_pixman_render_pass *begin_pixman_render_pass(
+ 		return NULL;
+ 	}
+ 
++	if (output_transform != WL_OUTPUT_TRANSFORM_NORMAL) {
++		int transform = output_transform;
++		int width = pixman_image_get_width(buffer->image);
++		int height = pixman_image_get_height(buffer->image);
++		pixman_format_code_t format = pixman_image_get_format(buffer->image);
++		int cpp = k230_turn_cpp(format);
++		if (!buffer->renderer->output_turn || (transform != WL_OUTPUT_TRANSFORM_90 &&
++				transform != WL_OUTPUT_TRANSFORM_270) || !cpp || width <= 0 || height <= 0 ||
++			width > 16384 || height > 16384) {
++			wlr_buffer_end_data_ptr_access(buffer->buffer);
++			free(pass);
++			return NULL;
++		}
++		int scratch_width = height;
++		int scratch_height = width;
++		int stride = (scratch_width * cpp + 3) & ~3;
++		size_t bytes = (size_t)stride * scratch_height;
++		if (bytes == 0 || bytes > 64u * 1024u * 1024u) {
++			wlr_buffer_end_data_ptr_access(buffer->buffer);
++			free(pass);
++			return NULL;
++		}
++		pass->scratch_data = malloc(bytes);
++		if (pass->scratch_data == NULL) {
++			wlr_buffer_end_data_ptr_access(buffer->buffer);
++			free(pass);
++			return NULL;
++		}
++		pass->image = pixman_image_create_bits(format, scratch_width, scratch_height,
++			pass->scratch_data, stride);
++		if (pass->image == NULL) {
++			free(pass->scratch_data);
++			wlr_buffer_end_data_ptr_access(buffer->buffer);
++			free(pass);
++			return NULL;
++		}
++		pass->scratch_bytes = bytes;
++		pass->output_transform = output_transform;
++	}
++
+ 	wlr_buffer_lock(buffer->buffer);
+ 	pass->buffer = buffer;
+ 
+diff --git a/render/pixman/renderer.c b/render/pixman/renderer.c
+index 47b93b9..0b68f5a 100644
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -306,7 +306,9 @@ static struct wlr_render_pass *pixman_begin_buffer_pass(struct wlr_renderer *wlr
+ 		return NULL;
+ 	}
+ 
+-	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer);
++	enum wl_output_transform output_transform = options != NULL ?
++		options->output_transform : WL_OUTPUT_TRANSFORM_NORMAL;
++	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer, output_transform);
+ 	if (pass == NULL) {
+ 		return NULL;
+ 	}
+@@ -329,11 +331,14 @@ struct wlr_renderer *wlr_pixman_renderer_create(void) {
+ 
+ 	const char *quarter_turn = getenv("WLR_PIXMAN_QUARTER_TURN");
+ 	renderer->quarter_turn = quarter_turn && strcmp(quarter_turn, "1") == 0;
++	const char *output_turn = getenv("WLR_PIXMAN_OUTPUT_TURN");
++	renderer->output_turn = output_turn && strcmp(output_turn, "1") == 0;
+ 	const char *trace_draw = getenv("WLR_PIXMAN_DRAW_TRACE");
+ 	renderer->trace_draw = trace_draw && strcmp(trace_draw, "1") == 0;
+ 	wlr_log(WLR_INFO, "Creating pixman renderer");
+ 	wlr_renderer_init(&renderer->wlr_renderer, &renderer_impl, WLR_BUFFER_CAP_DATA_PTR);
+ 	renderer->wlr_renderer.features.output_color_transform = false;
++	renderer->wlr_renderer.features.output_transform = renderer->output_turn;
+ 	wl_list_init(&renderer->buffers);
+ 	wl_list_init(&renderer->textures);
+ 
+diff --git a/types/scene/wlr_scene.c b/types/scene/wlr_scene.c
+index 451246b..d03b578 100644
+--- a/types/scene/wlr_scene.c
++++ b/types/scene/wlr_scene.c
+@@ -1,4 +1,5 @@
+ #include <assert.h>
++#include <drm_fourcc.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <wlr/backend.h>
+@@ -344,9 +345,11 @@ static void scale_region(pixman_region32_t *region, float scale, bool round_up)
+ 
+ struct render_data {
+ 	enum wl_output_transform transform;
++	enum wl_output_transform buffer_transform;
+ 	float scale;
+ 	struct wlr_box logical;
+ 	int trans_width, trans_height;
++	bool output_turn;
+ 
+ 	struct wlr_scene_output *output;
+ 
+@@ -356,7 +359,7 @@ struct render_data {
+ 
+ static void logical_to_buffer_coords(pixman_region32_t *region, const struct render_data *data,
+ 		bool round_up) {
+-	enum wl_output_transform transform = wlr_output_transform_invert(data->transform);
++	enum wl_output_transform transform = wlr_output_transform_invert(data->buffer_transform);
+ 	scale_region(region, data->scale, round_up);
+ 	wlr_region_transform(region, region, transform, data->trans_width, data->trans_height);
+ }
+@@ -381,11 +384,41 @@ static void scale_box(struct wlr_box *box, float scale) {
+ }
+ 
+ static void transform_output_box(struct wlr_box *box, const struct render_data *data) {
+-	enum wl_output_transform transform = wlr_output_transform_invert(data->transform);
++	enum wl_output_transform transform = wlr_output_transform_invert(data->buffer_transform);
+ 	scale_box(box, data->scale);
+ 	wlr_box_transform(box, box, transform, data->trans_width, data->trans_height);
+ }
+ 
++static bool output_turn_format_supported(uint32_t format) {
++#if WLR_LITTLE_ENDIAN
++	switch (format) {
++	case DRM_FORMAT_ARGB8888:
++	case DRM_FORMAT_XRGB8888:
++	case DRM_FORMAT_ABGR8888:
++	case DRM_FORMAT_XBGR8888:
++	case DRM_FORMAT_RGB565:
++	case DRM_FORMAT_BGR565:
++		return true;
++	default:
++		return false;
++	}
++#else
++	(void)format;
++	return false;
++#endif
++}
++
++static bool output_turn_has_software_cursor(struct wlr_output *output) {
++	struct wlr_output_cursor *cursor;
++	wl_list_for_each(cursor, &output->cursors, link) {
++		if (cursor->enabled && cursor->visible && output->hardware_cursor != cursor &&
++				cursor->texture != NULL) {
++			return true;
++		}
++	}
++	return false;
++}
++
+ static void scene_output_damage(struct wlr_scene_output *scene_output,
+ 		const pixman_region32_t *damage) {
+ 	struct wlr_output *output = scene_output->output;
+@@ -1569,7 +1602,7 @@ static void scene_entry_render(struct render_list_entry *entry, const struct ren
+ 
+ 		enum wl_output_transform transform =
+ 			wlr_output_transform_invert(scene_buffer->transform);
+-		transform = wlr_output_transform_compose(transform, data->transform);
++		transform = wlr_output_transform_compose(transform, data->buffer_transform);
+ 
+ 		struct wlr_color_primaries primaries = {0};
+ 		if (scene_buffer->primaries != 0) {
+@@ -2393,6 +2426,7 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 
+ 	struct render_data render_data = {
+ 		.transform = output->transform,
++		.buffer_transform = output->transform,
+ 		.scale = output->scale,
+ 		.logical = { .x = scene_output->x, .y = scene_output->y },
+ 		.output = scene_output,
+@@ -2408,6 +2442,7 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 		}
+ 
+ 		render_data.transform = state->transform;
++		render_data.buffer_transform = state->transform;
+ 	}
+ 
+ 	if (state->committed & WLR_OUTPUT_STATE_SCALE) {
+@@ -2422,6 +2457,20 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 	render_data.trans_height = resolution_height;
+ 	wlr_output_transform_coords(render_data.transform,
+ 		&render_data.trans_width, &render_data.trans_height);
++	uint32_t render_format = state->committed & WLR_OUTPUT_STATE_RENDER_FORMAT ?
++		state->render_format : output->render_format;
++	/* Software cursors and damage highlighting still use physical output
++	 * coordinates. Keep those frames on the stock transform path. */
++	render_data.output_turn = output->renderer->features.output_transform &&
++		(render_data.transform == WL_OUTPUT_TRANSFORM_90 ||
++		 render_data.transform == WL_OUTPUT_TRANSFORM_270) &&
++		output_turn_format_supported(render_format) &&
++		!output_turn_has_software_cursor(output) &&
++		debug_damage != WLR_SCENE_DEBUG_DAMAGE_HIGHLIGHT;
++	if (render_data.output_turn) {
++		/* Keep scene geometry logical; rotate the completed image at submit. */
++		render_data.buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
++	}
+ 
+ 	render_data.logical.width = render_data.trans_width / render_data.scale;
+ 	render_data.logical.height = render_data.trans_height / render_data.scale;
+@@ -2485,13 +2534,20 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 	}
+ 
+ 	wlr_output_state_set_damage(state, &scene_output->pending_commit_damage);
++	if (render_data.output_turn) {
++		/* The scratch target is fully redrawn and rotated on every pass. */
++		pixman_region32_t full_damage;
++		pixman_region32_init_rect(&full_damage, 0, 0, resolution_width, resolution_height);
++		wlr_output_state_set_damage(state, &full_damage);
++		pixman_region32_fini(&full_damage);
++	}
+ 
+ 	// We only want to try direct scanout if:
+ 	// - There is only one entry in the render list
+ 	// - There are no color transforms that need to be applied
+ 	// - Damage highlight debugging is not enabled
+ 	enum scene_direct_scanout_result scanout_result = SCANOUT_INELIGIBLE;
+-	if (options->color_transform == NULL && !render_gamma_lut && list_len == 1
++	if (!render_data.output_turn && options->color_transform == NULL && !render_gamma_lut && list_len == 1
+ 			&& debug_damage != WLR_SCENE_DEBUG_DAMAGE_HIGHLIGHT) {
+ 		scanout_result = scene_entry_try_direct_scanout(&list_data[0], state, &render_data);
+ 	}
+@@ -2569,6 +2625,8 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 			&(struct wlr_buffer_pass_options){
+ 		.timer = timer ? timer->render_timer : NULL,
+ 		.color_transform = scene_output->combined_color_transform,
++		.output_transform = render_data.output_turn ? render_data.transform :
++			WL_OUTPUT_TRANSFORM_NORMAL,
+ 		.signal_timeline = scene_output->in_timeline,
+ 		.signal_point = scene_output->in_point,
+ 	});
+@@ -2582,6 +2640,12 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 	pixman_region32_init(&render_data.damage);
+ 	wlr_damage_ring_rotate_buffer(&scene_output->damage_ring, buffer,
+ 		&render_data.damage);
++	if (render_data.output_turn) {
++		/* A transient scratch image has no valid prior-frame damage. */
++		pixman_region32_clear(&render_data.damage);
++		pixman_region32_union_rect(&render_data.damage, &render_data.damage, 0, 0,
++			render_data.trans_width, render_data.trans_height);
++	}
+ 
+ 	pixman_region32_t background;
+ 	pixman_region32_init(&background);
+@@ -2620,7 +2684,8 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 	}
+ 
+ 	wlr_render_pass_add_rect(render_pass, &(struct wlr_render_rect_options){
+-		.box = { .width = buffer->width, .height = buffer->height },
++		.box = { .width = render_data.output_turn ? render_data.trans_width : buffer->width,
++			.height = render_data.output_turn ? render_data.trans_height : buffer->height },
+ 		.color = { .r = 0, .g = 0, .b = 0, .a = 1 },
+ 		.clip = &background,
+ 	});
