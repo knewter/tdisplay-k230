@@ -1,0 +1,28 @@
+{
+  "branch": "impl/chicago-clock",
+  "base_revision": "e3c95c180145dcfd9547961d1216c85a47d9de26",
+  "implementation_commit": "23efbfc1fb7d5b018fed74b849bbca1ec6258988",
+  "worktree": ".scratch/coordinated-work/chicago-clock",
+  "owned_paths": [
+    "nix/k230.nix",
+    "openspec/changes/the-clock-uses-chicago-time",
+    "docs/evidence/chicago-clock"
+  ],
+  "checks": [
+    "Nix timezone evaluation PASS",
+    "Configured system cross-build PASS",
+    "Physical serial activation: America/Chicago, NTP synchronized, CDT-0500; both shell services active PASS",
+    "openspec validate the-clock-uses-chicago-time --strict PASS"
+  ],
+  "deployment": "/nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "board_reservation": "released",
+  "build_slot": "configuration-only build complete; separate mainline kernel build remains root-owned",
+  "remaining_gate": "No remaining physical gate in this timezone change. Metadata-only closure still needs its own Pages rebuild.",
+  "pages": {
+    "implementation_commit": "23efbfc1fb7d5b018fed74b849bbca1ec6258988",
+    "run": "https://github.com/knewter/tdisplay-k230/actions/runs/36662500242",
+    "result": "success",
+    "published_url": "https://knewter.github.io/tdisplay-k230/work/",
+    "observation": "Fetched dashboard contains the Chicago proposal and exact 23efbfc1 source revision."
+  }
+}

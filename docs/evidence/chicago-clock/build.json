@@ -1,0 +1,18 @@
+{
+  "recorded_at_utc": "2026-09-30T02:59:04.381437+00:00",
+  "evidence_class": "host Nix evaluation and cross-build",
+  "source_branch": "impl/chicago-clock",
+  "base_revision": "e3c95c180145dcfd9547961d1216c85a47d9de26",
+  "commands": [
+    "nix eval --raw .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.time.timeZone",
+    "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 1 --cores 2 --print-out-paths",
+    "readlink /nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd/etc/localtime"
+  ],
+  "timezone": "America/Chicago",
+  "built_system": "/nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "generated_localtime_target": "/etc/zoneinfo/America/Chicago",
+  "result": "PASS",
+  "limits": [
+    "Cross-build is not physical activation or reboot proof."
+  ]
+}

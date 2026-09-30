@@ -1,0 +1,17 @@
+$ timedatectl show -p Timezone -p NTPSynchronized
+Timezone=America/Chicago
+NTPSynchronized=yes
+$ date +%Z%z
+CDT-0500
+$ readlink -f /run/current-system
+/nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd
+$ readlink -f /nix/var/nix/profiles/system
+/nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd
+$ systemctl is-active shell shell-ui
+active
+active
+$ systemctl show k230-chicago-activate -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0
+$ readlink /etc/localtime
+/etc/zoneinfo/America/Chicago

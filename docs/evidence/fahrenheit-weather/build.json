@@ -1,0 +1,13 @@
+{
+  "recorded_at_utc": "2026-09-30T03:25:02.393090+00:00",
+  "evidence_class": "host Nix cross-build",
+  "command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 1 --cores 2 --print-out-paths",
+  "result": "PASS",
+  "system_path": "/nix/store/damsvxyr689vrxwr5hkbq7jzv85ff805-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "riscv_shell": "/nix/store/4l6zkyfhsl4zpdmf6v7hm6wvsj6hgrbr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+  "base_revision": "a549bf24cec137361da9ff45b99f0f0fd4e99ded",
+  "cache_schema": "unchanged Celsius fields",
+  "limits": [
+    "Cross-build does not prove physical rendering."
+  ]
+}

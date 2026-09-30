@@ -1,0 +1,20 @@
+{
+  "recorded_at_utc": "2026-09-30T03:00:51.183563+00:00",
+  "evidence_class": "physical board serial console, activated profile",
+  "command": "python3 tools/console.py /dev/ttyACM0 --wait=3",
+  "timezone": "America/Chicago",
+  "ntp_synchronized": true,
+  "local_zone_and_offset": "CDT-0500",
+  "installed_system": "/nix/store/478a0li7ii1qy10v7jpib13qk1kvafsh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "shell": "active",
+  "shell_ui": "active",
+  "activation_result": "success",
+  "activation_status": 0,
+  "result": "PASS",
+  "transcript": "runtime.log",
+  "limits": [
+    "Transcript keeps only named commands and observations; serial prompts, transport details and unrelated output are omitted.",
+    "This proves profile activation, not a reboot or RTC-retention test.",
+    "CDT offset is the observed daylight-saving offset; America/Chicago automatically selects CST in standard time."
+  ]
+}

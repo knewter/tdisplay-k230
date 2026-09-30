@@ -1,0 +1,35 @@
+{
+  "recorded_at_utc": "2026-09-30T03:29:20.484643+00:00",
+  "evidence_class": "board-native rendered screen capture with injected Home navigation",
+  "capture_command": "XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=<live socket name> grim -t jpeg -q 60 /root/tmp/k230-deployment/weather.jpg",
+  "navigation": [
+    "swaymsg \"card_shell enter\"",
+    "swaymsg \"card_shell down 91 540 1918\"",
+    "swaymsg \"card_shell motion 91 540 1450\"",
+    "swaymsg \"card_shell up 91\""
+  ],
+  "private_source_sha256": "fddc3c91e4acacb52e2abddaee3e385c666710d102e1f3f4c568894941553969",
+  "source_dimensions": [
+    1080,
+    1920
+  ],
+  "crop_command": "ffmpeg -i PRIVATE_CAPTURE.jpg -vf crop=250:265:295:370 -frames:v 1 weather-fahrenheit.png",
+  "public_capture": "weather-fahrenheit.png",
+  "public_capture_sha256": "570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233",
+  "observed": {
+    "current": "70\u00b0F",
+    "high": "82\u00b0F",
+    "low": "57\u00b0F",
+    "forecast": [
+      "59\u00b0F",
+      "57\u00b0F",
+      "66\u00b0F"
+    ]
+  },
+  "result": "PASS",
+  "limits": [
+    "Source full frame retained privately; public crop omits the location and unrelated screen content.",
+    "This is the real board compositor output, not a camera photograph, finger test, new forecast-accuracy check, or reboot proof.",
+    "Celsius cache schema and refresh policy remain unchanged."
+  ]
+}

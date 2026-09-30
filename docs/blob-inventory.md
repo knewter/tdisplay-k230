@@ -1417,6 +1417,8 @@ DATA 254f10b379df10bc966aeab93e5e307f67c8030d0024cfe041bfaaf687ed27dd docs/evide
 DATA e48de1f101b121ada8008b5cd592d01e71d2bad46d7e8cba930543b3fc0f76c2 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-b.png
 DATA fcb7183acd5da12e3be0d60d0d02a22f14406135f2657aad652e509785d7aed9 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-a.png
 DATA 5c3fe4dce16a82b17356398f7b070ec26c5dd17cb305ddd21ede874aa6058715 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-b.png
+
+DATA 570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233 docs/evidence/fahrenheit-weather/weather-fahrenheit.png
 DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
 DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
 DATA e23a93dd46e8e71e426fe69a64ff62f5b25b6f21d6775569aaaf70d8416eb14b docs/evidence/card-shell/webos-fan-switcher/dark-01-overview.png
@@ -2447,3 +2449,11 @@ These are test fixtures, not physical HDMI or touch photographs.
 | `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-b.png` | 10554 | DATA | `e48de1f101b121ada8008b5cd592d01e71d2bad46d7e8cba930543b3fc0f76c2` |
 | `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-a.png` | 20714 | DATA | `fcb7183acd5da12e3be0d60d0d02a22f14406135f2657aad652e509785d7aed9` |
 | `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-b.png` | 20672 | DATA | `5c3fe4dce16a82b17356398f7b070ec26c5dd17cb305ddd21ede874aa6058715` |
+
+### Fahrenheit weather display evidence
+
+Board-native capture cropped to temperature content; not executable code. Source and crop provenance are in `docs/evidence/fahrenheit-weather/capture.json`.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/fahrenheit-weather/weather-fahrenheit.png` | 70227 | DATA | `570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233` |
