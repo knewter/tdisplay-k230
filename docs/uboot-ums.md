@@ -364,6 +364,16 @@ unsupported by the published schematic and has been removed. -->
 
 ## 6. If the new U-Boot does not boot, how do we recover?
 
+**Observed BootROM failure:** the K230 UART capture recorded
+`boot failed with exit code 19`. Canaan's [SDK FAQ](https://github.com/kendryte/k230_docs/blob/main/en/03_other/K230_SDK_FAQ_C.md#bootrom-startup-error-codes)
+defines code 19 as boot-medium initialization failure, for example when no SD
+card is detected. This is evidence the failure occurs before stage 1; it does
+not show that Linux started or that BootROM USB recovery was entered. The
+board's TF card is not exposed to the host, so its contact and contents cannot
+be checked remotely. The captured line and its limits are recorded in
+[evidence/bootrom-code19.md](evidence/bootrom-code19.md).
+
+
 **The premise checks out: this board has no boot medium other than the TF
 card.**
 
