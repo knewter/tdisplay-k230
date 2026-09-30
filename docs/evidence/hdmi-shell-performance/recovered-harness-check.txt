@@ -27,6 +27,6 @@ test_schema_exact (__main__.Fixtures.test_schema_exact) ... ok
 test_stop_or_restore_failure_overrides_complete_trace (__main__.Fixtures.test_stop_or_restore_failure_overrides_complete_trace) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 0.482s
+Ran 9 tests in 0.473s
 
 OK
