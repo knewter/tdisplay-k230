@@ -4,10 +4,13 @@ reservation. Public traces must omit network/device secrets.
 
 ## 1. Repeatable trace and precise attribution
 
-- [ ] 1.1 Add `tools/hdmi-shell-performance.py` with strict trace parsing,
+- [x] 1.1 Add `tools/hdmi-shell-performance.py` with strict trace parsing,
   explicit injected/physical labels, output-state restoration and bounded board
   capture. Verify fixtures reject missing frames and mixed identities with
   `python3 tools/hdmi-shell-performance.py --self-test` (host-only).
+  Eleven parser/dispatch fixtures and nine mocked capture fixtures pass; see
+  `docs/evidence/hdmi-shell-performance/recovered-harness-check.txt`. Physical
+  execution remains in the unchecked board tasks below.
 - [ ] 1.2 Reproduce rotated/unrotated, ARGB8888/RGB565 baselines, then capture
   renderer stacks or subdivision timings, frequency and temperature. Commit a
   precise offending-stage analysis with limits. Verify on the physical board:
