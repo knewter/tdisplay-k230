@@ -200,7 +200,7 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "On the installed HDMI shell, verify real click, right-click, scroll, zoom and four-finger overview; collect media/logs, then verify panel direct-touch restoration.",
+      "next": "Unify HDMI two-finger gestures with direct-touch one-finger behavior, including native drawer close/scroll and three-finger keyboard entry; install and collect real-glass feedback, retaining panel restoration proof.",
       "dependencies": [
         "plugging-in-hdmi-moves-the-display"
       ],

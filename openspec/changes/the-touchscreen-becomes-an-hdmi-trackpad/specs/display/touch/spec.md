@@ -13,9 +13,10 @@ properties (`INPUT_PROP_POINTER` + `INPUT_PROP_BUTTONPAD`, `BTN_TOOL_FINGER`/
 `_DOUBLETAP`/`_TRIPLETAP`, no `INPUT_PROP_DIRECT`), so that libinput
 classifies it as a touchpad and provides pointer motion, tap-to-click,
 two-finger scroll, and pinch/swipe gestures for the HDMI session, in place
-of the panel-mode absolute touch-to-output mapping. Explicitly qualified two-finger shell-edge gestures may instead be owned by
-the bounded shell gesture path; center scrolling/pinch and ordinary pointer
-input remain on the touchpad path. While the panel (not
+of the panel-mode absolute touch-to-output mapping. Qualified two-contact shell gestures and three-contact bottom keyboard gestures
+may instead translate to the existing logical touch policies through the bounded
+shell gesture path; ordinary application center scrolling/pinch and pointer input
+remain on the touchpad path. While the panel (not
 HDMI) is the active output, the touchscreen SHALL be left ungrabbed and
 unmodified, continuing to report absolute coordinates as
 `display/touch`'s existing digitizer-range requirement already states.

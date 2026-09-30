@@ -27,14 +27,15 @@ their existing configuration.
 <!-- UNVERIFIED: operator requested the gesture UX pass on 2026-09-30; source,
 compositor and physical acceptance for the new edge/motion policy are tasks 5.1-5.7. -->
 
-In HDMI trackpad mode, the shell SHALL offer two-finger vertical swipes from
-the built-in glass's top and bottom edges for shell navigation, independent
-of cursor position. It SHALL move overview cards continuously under a
-horizontal two-finger swipe and settle with the release momentum. It SHALL
-preserve center application scroll/pinch and one-finger pointer/tap input.
-Drawer/shade dismissal SHALL follow current visible geometry and support
-reversal, cancellation and transport-loss recovery. This policy SHALL not
-change direct-touch panel input.
+In HDMI trackpad mode, two-contact shell gestures SHALL use the same navigation,
+card manipulation, sheet scrolling/dismissal and release policies as one-contact
+direct touch gestures. Three-contact upward bottom gestures SHALL use the existing
+two-contact direct touch keyboard policy. Motion SHALL follow the contact centroid,
+reverse while held, and settle with the shared release physics. The shell SHALL
+preserve ordinary application center scroll/pinch and one-contact pointer/tap.
+Transport loss and cancellation SHALL restore recoverable state without a stale
+contact, and translated pan release SHALL NOT activate an app as a tap.
+Direct-touch behavior SHALL retain its existing gesture configuration.
 
 #### Scenario: Open shell surfaces without positioning the cursor
 
@@ -48,10 +49,22 @@ change direct-touch panel input.
 
 #### Scenario: Ordinary input retains its owner
 
-- **WHEN** a center two-finger scroll/pinch, one-finger pointer/tap, incompatible edge movement or additional-contact sequence occurs
+- **WHEN** a center two-finger scroll/pinch, one-finger pointer/tap, incompatible movement or an unqualified additional-contact sequence occurs
 - **THEN** the compatible ordinary sequence remains libinput-owned; a canceled owned shell gesture cannot generate a stray app click
 
 #### Scenario: Dismiss, reverse or lose a controller
 
 - **WHEN** an owned sheet gesture reverses, cancels or loses its transport
 - **THEN** the current sheet settles to a recoverable state without a stale owned contact, half-visible sheet or unrelated route
+
+#### Scenario: Dismiss a drawer using its native content rules
+
+- **WHEN** a two-finger downward drag begins in an open app drawer at the top of its scrollable content
+- **THEN** it closes with the same tracking, reversal and release as a one-finger direct-touch drag
+- **AND** a gesture that began while the list was scrolled retains scrolling ownership
+
+#### Scenario: Keyboard uses the next contact count
+
+- **WHEN** three fingers swipe upward from the bottom in HDMI trackpad mode
+- **THEN** the existing keyboard show/drag/settle policy handles the gesture as the corresponding direct-touch two-finger chord
+- **AND** a two-finger navigation gesture does not accidentally show the keyboard

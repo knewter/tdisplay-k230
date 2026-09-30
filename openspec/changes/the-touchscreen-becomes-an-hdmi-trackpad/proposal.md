@@ -110,3 +110,13 @@ shade dismissal must be reversible and must not strand a half-visible sheet.
 The coordinator owns relay gesture arbitration, bounded local IPC, compositor
 policy, shared Rust reveal/dismiss and named-device natural scroll defaults.
 No HDMI kernel/DT change, new graphics engine or whole-device flash is needed.
+
+## Uniform gesture correction (2026-09-30)
+
+The operator confirmed upward two-finger navigation but reported that downward
+drawer dismissal failed. They clarified the interaction model: two fingers in
+HDMI trackpad mode must perform the shell gestures already available to one
+finger in direct touch mode, rather than accumulating independent shortcuts.
+Three fingers from the bottom replace the touch mode's two-contact keyboard
+chord. Both modes share tracking, reversal, scrolling boundaries and release
+physics. Preserve ordinary one-finger pointer input and application scroll/zoom.

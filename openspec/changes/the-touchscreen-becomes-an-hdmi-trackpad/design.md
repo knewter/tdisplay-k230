@@ -376,3 +376,31 @@ controller recovery. Paired real compositor tests cover live geometry, focus,
 normal-app input and reversible sheets. Cross-build and installed-board injected
 proof are separate from real glass feel and camera evidence. Keep every old
 physical restoration/click/pinch gate open until its own proof exists.
+
+## Uniform contact translation supersedes the edge-only shortcut path
+
+The initial group 5 implementation required a fresh outward gesture to start
+at the same physical edge; this does not reproduce native drawer gestures.
+Keep its committed evidence as a historical installed checkpoint. Group 6
+replaces its separate close thresholds and edge/dismiss stream with translation
+into the existing touch interactions: two physical contacts become one logical
+contact at their normalized centroid, with original displacement and timestamps;
+three contacts qualify the existing two-contact keyboard policy from the bottom.
+Qualification is bounded and fail-open before ownership. A short initial contact
+window allows the third finger to arrive before two-contact navigation commits.
+
+The compositor chooses the existing owner at Begin. App edge navigation and
+card manipulation use the shared input_down/motion/up policy. A shell overlay
+receives standard Wayland touch on its own surface so the Rust client's native
+scroll-at-top, close-drag, reversal and settle logic remains authoritative.
+The relay never sends synthetic touch to an ordinary app: declined application
+center input falls through, with original events, to libinput scroll/pinch.
+One-finger pointer movement must retain prompt fall-through. Four-contact
+pinches remain libinput-owned. Synthetic pan release cannot activate an icon
+or a control after a tiny or reversed gesture. Watchdog, output change, seat
+loss and client destruction cancel the translated contact without stale grabs.
+
+Reject adding a wider edge-only close zone or additional drawer-specific
+thresholds: the operator explicitly requests common gesture semantics. Preserve
+native logical touch geometry; comfortable physical edge qualification is an
+input adaptation, not a separate navigation state machine. No kernel/DT change.

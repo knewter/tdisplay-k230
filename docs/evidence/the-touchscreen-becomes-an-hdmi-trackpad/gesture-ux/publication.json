@@ -1,0 +1,28 @@
+{
+  "timestamp_utc": "2026-09-30T20:58:52.509249+00:00",
+  "revision": "5d2349785d72071f2bf9abcdd51823bfbc38ad49",
+  "run": 36775320813,
+  "pages": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "status": 200,
+      "bytes": 5507881,
+      "sha256": "4a04ee740a8254420ec374f52cae706e676200d87d4e70885795752de41f25df"
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-the-touchscreen-becomes-an-hdmi-trackpad-gesture-ux-readme-md/",
+      "status": 200,
+      "bytes": 12637,
+      "sha256": "e3a60d4b3f747f8e9495e8af30c74bad3c822331df65a1c5f6808754d34fc20d"
+    }
+  ],
+  "source_commit": "7cd22432381e508dabd77ce1163864af8eae8004",
+  "branch": "fix/hdmi-gestures",
+  "base_revision": "2faa383c8d0de5555fbc448a0f72eb48ab2e761c",
+  "review": "owned source, native captures and failure/acceptance logs reviewed before landing",
+  "ci_conclusion": "success",
+  "deployment_conclusion": "success",
+  "remaining": "physical acceptance; group 6 uniform semantics correction",
+  "reservation": "board and build locks released after group 5 installation",
+  "inventory_check": "python3 tools/blob-scan.py --no-vendor: pass"
+}
