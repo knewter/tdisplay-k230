@@ -109,6 +109,7 @@ def run_variant(args, output, name, transform, quarter_turn):
         WLR_HEADLESS_OUTPUTS="1",
         WLR_RENDERER="pixman",
         WLR_PIXMAN_QUARTER_TURN="1" if quarter_turn else "0",
+        WLR_PIXMAN_OUTPUT_TURN="0",
         WLR_PIXMAN_DRAW_TRACE="1",
         SWAY_K230_CARD_SHELL="1",
         SWAY_K230_CARD_TOUCH_FIRST="1",

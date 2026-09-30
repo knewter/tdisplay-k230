@@ -4,8 +4,8 @@ This change is experimental and open. No performance winner or default image
 has been selected. The physical acceptance tasks remain unchecked.
 
 The HDMI trial uses Sway output transform 90 at physical 1920×1080 and logical
-1080×1920. Pixman performs software rotation. This changes neither the panel
-driver nor touch calibration. The committed DRM dump advertises rotation only
+1080×1920. Pixman performs software rotation. The renderer candidate does not change the panel driver. The HDMI mapping
+now compensates absolute touch calibration independently, as described below. The committed DRM dump advertises rotation only
 on a YUV video overlay, not the RGB desktop plane.
 
 The opt-in `card-shell-hdmi-trial` package contains two alternatives:
@@ -63,7 +63,8 @@ the proposal's controlled 24-drag budgets for the final-frame candidate.
 The operator reported that app-edge gestures worked after recognizing the
 touchscreen's 90-degree orientation. This does not complete the named physical
 capture, keyboard/shade checks or latency gate; no recognition threshold or
-calibration change is justified by that observation alone.
+recognition change is justified by that earlier observation alone. The later
+operator correction below proves a separate orientation mismatch.
 
 Next gates are reconstructed scene/pixel proof, exact cross-build identity,
 reserved one-/two-card physical trials, and normal-panel recovery. Mainline
@@ -110,3 +111,52 @@ It requires QEMU user emulation, Grim and permission to bind Wayland sockets.
 It is not proof for the final-frame candidate. The current runner cannot bind
 those sockets or reach the Nix daemon, and has no serial device, so runtime,
 cross-build and physical tasks remain open.
+
+## HDMI touch axes correction
+
+On 2026-09-29, the operator clarified that touch was still rotated: a physical
+left-to-right swipe triggered the drawer's bottom-to-top gesture. This supersedes
+the earlier inference that recognizing the screen orientation had resolved touch
+mapping. No successful physical acceptance is claimed here.
+
+Pinned wlroots `types/wlr_cursor.c` applies the mapped output's transform to
+both touch-down and touch-motion coordinates. Sway
+`sway/commands/output/transform.c` inverts clockwise CLI degrees into Wayland
+anti-clockwise enums. At CLI transform 90, the resulting enum270 maps raw
+`(x,y)` to `(y,1-x)`: left-to-right motion becomes upward motion.
+
+The board's glass retains its native portrait axes while controlling the
+external monitor. `nix/hdmi-touch-calibration.nix` supplies the compensating
+affine matrix for each supported HDMI transform. For the current 90-degree
+profile it is `0 -1 1 1 0 0`; wlroots subsequently maps the calibrated point
+back to `(x,y)`. `nix/shell.nix` applies it after mapping touch to HDMI and
+explicitly restores identity calibration in the panel configuration on reload.
+This uses Sway/libinput configuration and does not change the touch driver or
+gesture thresholds.
+
+A socket-free native test evaluates the Nix matrices and feeds synthetic
+calibrated contacts through the compiled pinned wlroots cursor/touch APIs:
+
+```sh
+python3 tests/test_hdmi_touch_mapping.py \
+  --wlroots-source PATH_TO_BUILT_PINNED_WLROOTS \
+  --output docs/evidence/hdmi-shell-performance/touch-mapping-native.json
+```
+
+All four rotations passed nine points each for both down and motion, including
+corners, horizontal and vertical swipes, and output-layout coordinates. The
+uncalibrated control failed the expected coordinate assertion for every rotated
+output. [Results](touch-mapping-native.json) record the actual library/source
+hashes and limits. The affine libinput step is simulated; installation, device
+calibration support and real glass remain unverified.
+
+For a reversible live trial on the current transform-90 board session:
+
+```sh
+SWAYSOCK=/run/shell/sway-ipc.sock swaymsg 'input type:touch calibration_matrix 0 -1 1 1 0 0'
+```
+
+The operator must confirm that upward glass swipes open overview and horizontal
+glass swipes remain horizontal. The prepared Nix source has not been built or
+installed by this constrained runner. The normal panel remains a separate
+identity-calibration case requiring its named regression check.

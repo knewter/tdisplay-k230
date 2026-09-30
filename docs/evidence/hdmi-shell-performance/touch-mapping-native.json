@@ -1,0 +1,48 @@
+{
+  "result": "PASS",
+  "evidence_class": "native-wlroots-simulated-contact-mapping",
+  "library_sha256": "a446ee8c0e752676cc9a1cf5bdfd761c2813cf539372024303a2b2e1bdb2684a",
+  "cursor_source_sha256": "7f223577de38de2f481d47383e13c3516b695667b2f046c720a877a82b0a462b",
+  "runs": [
+    {
+      "sway_transform": "normal",
+      "wlroots_enum": 0,
+      "matrix": "1 0 0 0 1 0",
+      "points": 9,
+      "down_and_motion_events": 18,
+      "result": "PASS",
+      "old_mapping_control": null
+    },
+    {
+      "sway_transform": "90",
+      "wlroots_enum": 3,
+      "matrix": "0 -1 1 1 0 0",
+      "points": 9,
+      "down_and_motion_events": 18,
+      "result": "PASS",
+      "old_mapping_control": "uncalibrated mapping rejected by coordinate assertion"
+    },
+    {
+      "sway_transform": "180",
+      "wlroots_enum": 2,
+      "matrix": "-1 0 1 0 -1 1",
+      "points": 9,
+      "down_and_motion_events": 18,
+      "result": "PASS",
+      "old_mapping_control": "uncalibrated mapping rejected by coordinate assertion"
+    },
+    {
+      "sway_transform": "270",
+      "wlroots_enum": 1,
+      "matrix": "0 1 0 -1 0 1",
+      "points": 9,
+      "down_and_motion_events": 18,
+      "result": "PASS",
+      "old_mapping_control": "uncalibrated mapping rejected by coordinate assertion"
+    }
+  ],
+  "limits": [
+    "Libinput affine calibration is simulated before the real wlroots cursor signals.",
+    "No physical touch, panel, HDMI scanout or installed NixOS profile was exercised."
+  ]
+}

@@ -14,6 +14,7 @@
 
 let
   cfg = config.k230.shell;
+  hdmiTouchCalibration = import ./hdmi-touch-calibration.nix cfg.hdmiTransform;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
 
   # One additional display face for Home's Clock widget only
@@ -794,17 +795,21 @@ let
   swayConfig = pkgs.writeText "k230-sway.conf" ''
     output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6 max_render_time 8
     input type:touch map_to_output DSI-1
+    input type:touch calibration_matrix 1 0 0 0 1 0
 
     # HDMI boot (k230-tdisplay-hdmi.dtb): the panel is dark and HDMI-A-1 is
     # the only output. Its EDID-preferred mode, rotated per
     # k230.shell.hdmiTransform, on a black background. Touch follows
     # whichever output exists: map_to_output DSI-1 above names an output
-    # that is absent in this boot, so the exec below remaps it.
+    # that is absent in this boot, so the exec below remaps it. The physical
+    # glass stays in its native orientation; compensate for wlroots applying
+    # the mapped monitor transform to absolute touch coordinates.
     output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
       if swaymsg -t get_outputs -r | ${pkgs.gnugrep}/bin/grep -q '"name": "HDMI-A-1"'; then
         swaymsg input type:touch map_to_output HDMI-A-1
+        swaymsg input type:touch calibration_matrix ${hdmiTouchCalibration}
       fi
     ''}
 
