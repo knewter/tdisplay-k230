@@ -235,31 +235,16 @@ that milestone 1's methodology extends.
       revert is complete and the tree matches the previous commit exactly
       for `nix/kernel-mainline.nix`.
 
-## 5b. Milestone 2 continuation: an isolated mainline DRM port
+## 5b. Milestone 2 continuation: isolated mainline DRM display
 
-- [x] 5b.1 Keep the forward-ported Canaan DRM/DSI, RM69A10 panel, and
-      LT9611 code in the separate `kernelMainlineDrm` derivation. Adapt
-      the removed generic fbdev API to the pinned tree's DMA fbdev/client
-      setup, update platform remove callback return types and DRM atomic
-      callback arguments, remove the deleted `drm_driver.date` field, and
-      enable the required client/fbdev config symbols. Proof is limited to
-      the prepared-header external-module command and output in
-      `docs/evidence/mainline-display-api-compile.md`; unresolved symbols
-      are expected at external-module modpost and do not count as an
-      in-tree kernel build.
-- [ ] 5b.2 Run `nix build .#kernelMainlineDrm --print-out-paths` to prove
-      the complete separately configured kernel derivation builds. Keep
-      this unchecked until that command succeeds.
-- [ ] 5b.3 Add and build a separate `deviceTreeMainlineDrm` with the
-      mainline VO/DSI, RM69A10 panel, and GT9895/GT9916-compatible touch
-      path, using only pinned mainline clock/reset IDs and supported
-      providers. Build/round-trip proof does not prove board wiring.
-- [ ] 5b.4 Add a separately named DRM boot-files bundle pairing that
-      kernel and DTB; do not redirect the console-only mainline profile or
-      any vendor/default output.
-- [ ] 5b.5 On a reserved physical board, capture serial probe logs and a
-      panel photograph, then verify touch interaction. Host compilation
-      and DTB round-tripping cannot satisfy this hardware gate.
+- [x] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log.
+- [ ] 5b.2 Build the complete candidate kernel derivation with `nix build .#kernelMainlineDrm --print-out-paths`.
+- [x] 5b.3a Add a separately named, opt-in mainline DRM display/touch DT source and verify preprocessing, dtc compilation, and round-trip decompilation; record the host-only result and warning in `docs/evidence/mainline-display-dtb.md` and its log.
+- [ ] 5b.3b Build the complete candidate device-tree derivation with `nix build .#deviceTreeMainlineDrm --print-out-paths`.
+- [x] 5b.4a Add a separately named boot-files output pairing only the candidate kernel image and DTB; it does not change any normal boot/default output.
+- [ ] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`.
+- [ ] 5b.5 Verify a candidate boot on the physical board using a serial transcript, display photograph, and touch interaction record. No physical result is claimed by host checks.
+- [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the candidate omits that unsupported phandle and display power behavior remains UNVERIFIED (see `docs/evidence/mainline-display-dtb.md`).
 
 ## 6. Confirm no existing output changed
 

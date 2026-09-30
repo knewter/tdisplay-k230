@@ -12,30 +12,28 @@ full `kernelMainlineDrm` derivation builds, that the drivers are linked
 in-tree, that the DTB is valid for the board, or that any device probes or
 drives the panel/touch hardware.
 
-## Command
+## Reproducible check
 
-The compile used the existing prepared kernel dev output and cross compiler;
-the build directory was copied to `/tmp` so Kbuild could write generated
-objects without changing the store. `flock /tmp/k230-nix-build.lock` held the
-shared build slot while running this loop:
+`tools/mainline-display-object-check.sh` stages the DRM sources and
+external-module Makefiles from `nix/patches/mainline/drm/`, copies the
+prepared kernel build output into this checkout's ignored `.scratch/`
+directory, and invokes Kbuild. The check held the shared build slot with
+`flock`:
 
 ```sh
-DEV=/nix/store/0148bw9nb2cb9prgj6505kywvy2096bw-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5
-SRC="$DEV/source"
-BUILD=/tmp/k230-mainline-dev-build
-MOD=/tmp/k230-mainline-drm-objects
-CC=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-
-for part in canaan panel bridge; do
-  make -s -C "$SRC" O="$BUILD" M="$MOD/$part" ARCH=riscv \
-    CROSS_COMPILE="$CC" KBUILD_MODPOST_WARN=1 modules
-done
+flock /tmp/k230-nix-build.lock bash -c \
+  'MAINLINE_KERNEL_SRC=/nix/store/302cz10wl1g77aspr3gc2hm999rr5701-linux-mainline-k230-drm-src \
+   tools/mainline-display-object-check.sh'
 ```
 
-`BUILD` was copied from `$DEV/build`. The three `M=` directories held the
-changed files from `nix/patches/mainline/drm/`; the Canaan directory's Kbuild
-combined the DRM core objects and built the DSI host object, while panel and
-LT9611 were each built separately. Prepared `.config` had
-`CONFIG_DRM_CLIENT_SETUP=y` and `CONFIG_DRM_FBDEV_EMULATION=y`.
+The script applies the DRM symbols from `nix/kernel-mainline-drm.nix` to a
+copy of the prepared `.config`, then runs `olddefconfig` against the patched
+mainline source output. Effective config retained `DRM=y`,
+`DRM_CANAAN=y`, `DRM_CANAAN_DSI=y`, `DRM_PANEL_CANAAN_UNIVERSAL=y`,
+`DRM_LONTIUM_LT9611=y`, `DRM_CLIENT_SETUP=y`,
+`DRM_FBDEV_EMULATION=y`, and `DRM_MIPI_DSI=y`. The complete sanitized
+stdout/stderr log is committed beside this report as
+`docs/evidence/mainline-display-api-compile.log`.
 
 ## Output and limits
 

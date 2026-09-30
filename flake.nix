@@ -362,6 +362,17 @@
             inherit (pkgsCross) buildLinux;
           };
         };
+        # Matching opt-in DTB/boot bundle for the display candidate. This
+        # bundle only collects Image + DTB for manual U-Boot testing; it has
+        # no initrd/rootfs and is not part of any configured system/image.
+        deviceTreeMainlineDrm = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
+          inherit kernelMainlineSrc;
+        };
+        kernelMainlineDrmBootFiles = pkgs.runCommand "k230-mainline-drm-boot-files" { } ''
+          mkdir -p $out
+          cp ${self.packages.${buildSystem}.kernelMainlineDrm}/Image $out/Image-mainline-drm
+          cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/
+        '';
 
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1: the
         # full NixOS system variant, cross-built against kernelMainline, and

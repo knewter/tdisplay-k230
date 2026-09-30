@@ -221,8 +221,11 @@ support is itself still incomplete upstream).
    recorded compiler result so far is an external-module build against
    prepared headers; it emitted expected modpost unresolved-symbol warnings
    and is not a complete kernel build (`docs/evidence/mainline-display-api-compile.md`).
-   Complete derivation, matching display DTB/boot files, and physical probe
-   remain open. The other six
+   The separate opt-in DRM display/touch DT source and Image+DTB bundle now
+   exist; the host DTS check is recorded in
+   `docs/evidence/mainline-display-dtb.md`. Their complete Nix builds and
+   physical probe remain open. The candidate omits the vendor display power
+   domain because the pinned mainline tree has no provider for it. The other six
    (audio, power key, thermal, crypto, ADC, PWM) are individually much
    closer in size/shape to RTC (single small self-contained files) and are
    plausible next candidates for the same methodology. Not scheduled

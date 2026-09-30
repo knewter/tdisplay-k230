@@ -92,6 +92,10 @@ EOK
       DRM_PANEL_CANAAN_UNIVERSAL = yes;
       DRM_FBDEV_EMULATION = yes;
       DRM_CLIENT_SETUP = yes;
+      # The display DTB carries the board's GT9895/GT9916-compatible
+      # controller on mainline's DesignWare I2C driver.
+      INPUT_TOUCHSCREEN = yes;
+      TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
       # For the LT9611 HDMI bridge path (canaan-dsi-bridge-connector.patch):
       # already-mainline, generic, I2C-attached bridge driver.
       DRM_LONTIUM_LT9611 = yes;

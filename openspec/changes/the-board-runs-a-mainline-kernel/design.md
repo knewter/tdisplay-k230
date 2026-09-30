@@ -236,5 +236,9 @@ and platform remove signatures, and removes `drm_driver.date`. The exact
 prepared-header external-module result is in
 `docs/evidence/mainline-display-api-compile.md`. This is useful compiler
 feedback, but the unresolved modpost symbols mean it is not a complete
-in-tree kernel build. The full DRM derivation, display DTB/boot bundle, and
-all hardware probe, panel, and touch behavior remain open tasks.
+in-tree kernel build. The opt-in `deviceTreeMainlineDrm` source and matching
+`kernelMainlineDrmBootFiles` collector now exist. Host cpp/dtc/round-trip
+proof is recorded in `docs/evidence/mainline-display-dtb.md`, but their Nix
+derivation builds remain open. The candidate omits the vendor display power
+domain because the pinned mainline tree has no `sysctl_power` provider.
+Physical probe, panel, and touch behavior remain open tasks.

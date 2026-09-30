@@ -156,11 +156,15 @@ distinct evidence; one class SHALL NOT be described as proof of another.
 
 *Grounding: `nix/kernel-mainline-drm.nix` builds the copied Canaan DRM/DSI,
 RM69A10 panel, and LT9611 code as a separate override of
-`kernelMainline`. `docs/evidence/mainline-display-api-compile.md` records
-the prepared-header external-module check, its expected unresolved modpost
-warnings, and the absent complete-build and hardware results. The DRM
-driver sources in the pinned upstream source output are absent; this
-candidate forward-ports them from the vendor-derived implementation.*
+`kernelMainline`. `nix/device-tree-mainline-drm.nix` and the separate
+`kernelMainlineDrmBootFiles` output pair the candidate DTB/Image without
+changing default outputs. `docs/evidence/mainline-display-api-compile.md`
+and `docs/evidence/mainline-display-dtb.md` record the prepared-header
+external-module and host DTS checks, their limits, and the absent complete
+Nix builds and hardware results. The DRM driver sources in the pinned
+upstream source output are absent; this candidate forward-ports them from
+the vendor-derived implementation. Display power-domain wiring is omitted
+because the pinned source has no provider; see the DT evidence.*
 
 #### Scenario: Someone builds the console-only mainline kernel
 
@@ -172,5 +176,5 @@ candidate forward-ports them from the vendor-derived implementation.*
 
 - **WHEN** only external-module compilation or DTB round-trip evidence is
   available
-- **THEN** the answer describes only those checks and leaves kernel build,
-  board probe, panel illumination, and touch behavior unverified
+- **THEN** the answer describes only those checks and leaves full derivation
+  builds, board probe, panel illumination, and touch behavior unverified
