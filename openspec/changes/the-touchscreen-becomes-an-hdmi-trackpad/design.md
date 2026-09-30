@@ -294,3 +294,17 @@ future rebuilt relay packages replace the running binary. The persistent unit
 replaces the transient trial so only one process grabs the glass. Installation
 and enabled-unit observations establish the deployed profile, not an actual
 reboot or panel-mode acceptance; those remaining gates stay explicit.
+
+## Pointer input must reach shell actions
+
+The operator reports that pointer movement works but clicking shell icons
+opens nothing. Source inspection finds that the Rust client subscribes only
+to touch and keyboard capabilities: it never obtains a `wl_pointer`.
+The relay/libinput path cannot deliver mouse actions to a client that never
+requests them. Subscribe to normal SCTK pointer frames and share the existing
+contact down/motion/up/cancel actions between touch and primary pointer drag.
+Keep a pointer contact owned by its initial surface, ignore hover/secondary
+buttons for activation, and cancel on leave or capability loss. This uses
+normal Wayland client paths and does not change the compositor or touch mapping.
+Physical launcher activation remains a separate evidence gate from injected
+mouse delivery or host model tests.

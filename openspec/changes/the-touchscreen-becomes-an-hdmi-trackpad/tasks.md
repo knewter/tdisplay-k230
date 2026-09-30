@@ -100,6 +100,14 @@
       Configuration build: `/nix/store/gcm3azrpvcm8vr24wps6wrdiqif6mmbd-nixos-system-nixos-26.11.20260919.20b1ddd`.
       These host results do not establish physical clicking or gestures.
 
+- [ ] 2.9 Handle standard Wayland pointer events in the Rust shell. Subscribe
+      to pointer capability and route primary press/drag/release through the
+      same Home, launcher and settings actions as touch. Hover and secondary
+      clicks must not activate icons; loss of focus/capability must cancel a
+      pending press. Verify the event ownership model and actual client build:
+      `cd nix/rust-shell-client && cargo test pointer_input && cargo check --bin k230-shell-rust`;
+      cross-build `nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link`.
+
 ## 3. Board verification (remaining contact and virtual-device gates open)
 
 Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json` records real one- and two-finger input during the bounded dry run, with clean shutdown and release. A subsequent live trial created a Sway-classified touchpad; the operator confirmed cursor movement but no tap click. That trial exposed incorrect hand-bound multi-finger key codes and default-disabled tapping. The coordinator owns the board and serial lock for the corrected trial. The corrected relay is now installed as an enabled service in the explicit HDMI profile; `board/persistent-service.json` records its actual store path, active unit, single relay process and Sway configuration. Full click/scroll/pinch and panel-mode proof remain open. The prototype was already merged through `6534585eb00a`, satisfying 4.2 independently.
@@ -155,6 +163,12 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
       requirement against whatever was actually observed (including a
       documented shared-GPIO23/24 interaction with the LT9611 bridge, if
       one is found, or a still-unresolved hang if 3.0 does not pass clean).
+
+- [ ] 3.5 On the installed HDMI shell, use the real glass trackpad to click
+      a Home/launcher icon and confirm its app opens. Commit a photograph or
+      recording plus the launcher/Wayland log under this change's board
+      evidence. Injected pointer input can independently test dispatch and
+      app presentation, but does not satisfy this physical input gate.
 
 ## 4. Proposal validation
 

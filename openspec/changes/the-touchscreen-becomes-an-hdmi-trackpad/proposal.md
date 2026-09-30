@@ -46,6 +46,11 @@ mode switch, whenever HDMI is actually the active output.
   touchpad-re-emission design won on latency, permissions, and getting
   pinch/swipe "for free" from libinput's already-shipped gesture engine.
 
+- The Rust shell subscribes to `wl_pointer` and shares its existing
+  touch actions with primary mouse clicks/drags, so the virtual trackpad can
+  activate Home/launcher icons and settings controls. Pointer hover and
+  secondary buttons do not accidentally activate apps.
+
 ## Capabilities
 
 ### New Capabilities
