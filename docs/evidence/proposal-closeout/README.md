@@ -127,6 +127,19 @@ informal UX critiques exist. These are backlog/research, not ready archives.
 | `the-settings-and-notifications-surfaces-are-themed` | 0/8 | Cross-surface theme consumer/control/icon mapping and notification motion, host captures and physical/reboot proof. Existing palette colors alone do not satisfy the full scope. |
 | `the-shell-makes-recovery-routes-legible` | 0/4 | Implement/test visible recovery explanations and failed-launch presentation before physical readability check. |
 
+## Three older proposal IDs outside master
+
+The final cached work-status scan also finds these IDs in old branches or
+worktrees. They are not included in the 45 current-change count, and are not
+new archive candidates. Preserve their history and resolve ownership before
+reviving source or deleting a worktree.
+
+| Older ID | Recorded location or disposition | Closeout treatment |
+| --- | --- | --- |
+| `the-shell-has-a-pinned-home-screen` | `feat/home-screen-v2` at `2ab910e6667fb52727431412151a231ac39a91c8`; its proposal explicitly describes the independently dispatched duplicate. | Compare any unique behavior with the current `the-shell-presents-a-pinned-home-screen`; do not count both as two independent Home features or blindly merge the old compositor. |
+| `the-vo-commits-registers-at-vblank` | Explicitly withdrawn, with operator approval, in the current render-deadline proposal; history includes `261de30b` and `50363747`. | A rejected experimental route, not shipped work awaiting acceptance. Existing bottom-band evidence preserves its failure and boot panic. Do not reintroduce it to close a task. |
+| `the-shell-doubles-foreign-app-density` | `feat/app-safe-area-and-scale` at `8196ac7ab5f4ac179f59be41a4fcf33eb7faa2ae`; tasks still include physical app appearance/input and corner calibration. | Genuine unlanded scope. Current master lacks its `appScale`/ordinary-scale implementation. Review the isolated proposal/source and preserve outstanding requirements before choosing whether to revive it; no source or archive action was performed here. |
+
 ## Results landed during this campaign
 
 [Wi-Fi host closeout](../wifi-settings/closeout-host-2026-09-30/README.md)
