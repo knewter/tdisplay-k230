@@ -174,13 +174,12 @@
         };
 
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1.
-        # Extends k230-console (shell OFF), not k230-coherent-shell: the
-        # graphical shell's own dependencies (Sway/wlroots wanting a DRM/KMS
-        # device that does not exist under mainline yet) would either fail
-        # to build meaningfully or build into a system that cannot start
-        # them, misrepresenting what this milestone actually reaches. This
-        # deviates from the coordinator's suggested "-shell-" name for that
-        # reason -- flagged, not silently decided.
+        # Extends k230-console (shell OFF), not k230-coherent-shell: the plain
+        # kernelMainline console profile has no K230 DRM/KMS driver. A separate
+        # kernelMainlineDrm candidate now carries the forward-ported display
+        # stack, but no physical boot/display proof exists. Keep this system
+        # variant scoped to the console milestone; the DRM candidate does not
+        # make the graphical shell a verified mainline system.
         #
         # boot.extraModulePackages/boot.kernelModules are force-cleared:
         # nix/hardware.nix's k230WifiDriver (the out-of-tree RTL8189FTV

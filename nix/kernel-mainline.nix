@@ -250,7 +250,7 @@ config RTC_DRV_K230\
   };
 
   extraMeta = {
-    description = "Mainline Linux with Canaan K230 SoC support, plus this project's own forward-ported GPIO/SD-MMC/USB (no display, touch, audio, RTC, power-key, thermal, ADC, PWM or crypto driver)";
+    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC drivers (no DRM/display, touch, audio, power-key, thermal, ADC, PWM or crypto driver)";
     platforms = [ "riscv64-linux" ];
   };
 } // (args.argsOverride or { }))
