@@ -2,7 +2,10 @@
 let
   roundedWlroots = wlroots_0_20.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ]
-      ++ lib.optionals quarterTurnTrial [ ./patches/wlroots-k230-quarter-turn.patch ];
+      ++ lib.optionals quarterTurnTrial [
+        ./patches/wlroots-k230-quarter-turn.patch
+        ./patches/wlroots-k230-output-turn.patch
+      ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
     '' + lib.optionalString quarterTurnTrial ''
