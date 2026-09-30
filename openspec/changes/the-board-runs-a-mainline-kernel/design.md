@@ -76,17 +76,23 @@ built here, to keep this change's own build scope to "does it compile").
    this base at all. `autoModules = false` still applies (`nix/kernel.nix`'s
    own reasoning: build what is asked for, not everything nixpkgs' module
    auto-detection can find against a tree this unfamiliar).
-5. **No initramfs, no rootfs, in this change.** Getting `.#kernelMainline`
-   and `.#deviceTreeMainline` to compile is this change's actual, provable
-   deliverable. Building a busybox-based initramfs is a legitimate cheap
-   next step (does not wait on any upstream patch, unlike SD/USB) but is
-   additional build surface this change does not need to claim its stated
-   scope, and is better sized as the first task of the milestone-2 change
-   once a board slot is scheduled — it can be built and inspected fully
-   under host proof before that board slot is needed, but doing so here
-   would blur this change's "does it compile" claim with a second claim
-   ("does this rootfs work") that still cannot be checked without a board
-   either way.
+5. **No initramfs, no rootfs, in this change's ORIGINAL scope.** Getting
+   `.#kernelMainline` and `.#deviceTreeMainline` to compile was that
+   scope's actual, provable deliverable, and building a busybox initramfs
+   was deliberately deferred as a separate, later task.
+
+   **Superseded, task group 5**: the coordinator directed continuing this
+   same change into the actual boot-critical porting ("do the actual
+   porting ... so it can mount our SD rootfs", after merging `c5158fa8` to
+   master) rather than opening a fresh change for it. Rather than a
+   from-scratch busybox initramfs, task group 5 forward-ports real
+   GPIO/SD-MMC/USB drivers so the system's OWN NixOS-generated initrd (the
+   same mechanism `nix/sd-image.nix` already uses for the vendor image)
+   can do the real work — switch-root onto the SD card's existing,
+   already-populated ext4 root partition — rather than substituting a
+   toy ramdisk rootfs that would prove less and still need replacing
+   later. This is a strictly larger, more capable deliverable than the
+   minimal initramfs originally sketched, not a smaller one.
 6. **Every one of the eleven vendor patches gets an individual disposition
    in the inventory, not a summary "none port".** `.skills/k230-spec-change/
    SKILL.md`'s evidence rule applies as much to a negative finding as a
@@ -95,6 +101,84 @@ built here, to keep this change's own build scope to "does it compile").
    covering all eleven. Rejected: writing only the aggregate conclusion,
    which would make a future re-check (once mainline gains, say, an RTC
    driver) have to redo this whole inventory instead of updating one row.
+
+7. **Forward-port the vendor's exact `ctl-reg`/`dwc2_set_k230_params()` USB
+   mechanism, not mainline's own separately-accepted
+   `phy-k230-usb.c`/`canaan,k230-usb-phy` generic-PHY-framework driver.**
+   Both exist for the same HiSysConfig USB control registers at
+   `0x91585000`+; they are not interoperable (different init sequences,
+   different DT binding shape — `phys`/`#phy-cells` vs. a bare `ctl-reg`
+   property). The vendor's mechanism is what this board's own working
+   image already runs; the upstream PHY driver has never been exercised
+   against this board by anyone, as far as this research found. Rejected:
+   wiring the "more upstream-correct" phy-framework driver instead, which
+   would mean debugging TWO unproven things at once (a new PHY driver AND
+   a new DT binding) on the very first hardware attempt, rather than one.
+8. **`k230-mainline-console`, not the coordinator's suggested
+   `k230-coherent-shell-mainline`.** The coordinator's own instruction
+   named this as an example ("e.g."), not a requirement. Extending
+   `k230-coherent-shell` would pull in Sway/wlroots wanting a DRM/KMS
+   device (`/dev/dri/card0`) that does not exist under mainline at all
+   (no `canaan-drm` — see the inventory), so the build would either fail
+   outright on a missing dependency or succeed into a system whose shell
+   service cannot ever start, silently misrepresenting what this milestone
+   reaches. `k230-console` (shell off, already the deliberately minimal
+   variant `system/nixos-config` requires) is the honest base. Flagged
+   explicitly rather than silently substituted.
+9. **`boot.extraModulePackages`/`boot.kernelModules` force-cleared, not
+   left alone.** `nix/hardware.nix`'s `k230WifiDriver` builds the
+   out-of-tree RTL8189FTV module against `config.boot.kernelPackages.kernel`
+   dynamically and unconditionally (not gated by `k230.shell.enable`), so
+   swapping the kernel without addressing this would have tried to compile
+   a driver written against 6.6-era vendor headers against a v7.3-rc5
+   kernel seven major versions newer, most likely failing the entire
+   system build. There is also no SDIO DT node enabled for it to bind to
+   in this milestone regardless (`&mmc_sd0` stays disabled — see the
+   inventory table's Wi-Fi row). `lib.mkForce [ ]` on both options, plus
+   forcing the always-instantiated `k230-wifi` systemd service off, is the
+   narrowest fix that keeps the toplevel buildable; the module itself is
+   simply never evaluated as a build target once `mkForce` wins the
+   option merge (`k230WifiDriver`'s `let`-bound derivation is never
+   forced).
+10. **Boot files carry no hardcoded `root=` device path.** The system's
+    `fileSystems."/"` (inherited unchanged from `nix/hardware.nix`) is
+    `{ device = "/dev/disk/by-label/NIXOS_SD"; fsType = "ext4"; }`, and
+    `nix/sd-image.nix`'s own `rootfsImage` is built with exactly that
+    volume label — so the vendor image's own proven boot flow already
+    resolves root by ext4 label through the initrd's generated fstab, not
+    a raw device node, and its own `bootargs` construction carries no
+    `root=` override either. `nix/kernel-mainline-boot-files.nix` copies
+    that same construction. Rejected (and actually shipped once, then
+    corrected before this change's evidence was recorded): hardcoding
+    `root=/dev/mmcblk0p2` — a guess about MMC enumeration order that the
+    label mechanism makes entirely unnecessary, and that would have
+    silently fought the `root=fstab` token NixOS's own `kernelParams`
+    already contributes.
+
+11. **RTC ported as a small, real proof the methodology generalizes; the
+    full DRM display stack scoped but NOT ported, and NOT left half-done
+    in the committed tree.** After milestone 1, the same "copy the vendor
+    file, build, fix what the compiler names" methodology was applied to
+    the smallest, most self-contained item in the coordinator's milestone
+    3 (RTC) as a genuine additional deliverable, and to the coordinator's
+    milestone 2 (display) as scoping only. RTC built cleanly after one
+    trivial fix; the display stack's very first file hit a structural DRM
+    allocation-model change (`drm_panel_init()` → `devm_drm_panel_alloc()`)
+    after two Kconfig fixes, and porting all ~3,900 lines plus re-applying
+    this project's own ~10 existing panel/DSI/VO patches on top is a
+    materially larger, multi-file, actively-churned-subsystem task than
+    anything attempted so far. Rejected: continuing to force a
+    build-error-driven port of the whole display stack within this same
+    pass, which risked either running out of budget mid-port (leaving
+    `.#kernelMainline` broken, violating this change's own spec
+    requirement that it stays buildable) or producing a large amount of
+    code no one could verify compiles cleanly, let alone runs correctly,
+    within this session. The scratch trial was reverted
+    (`git checkout -- nix/kernel-mainline.nix`, the trial's
+    `nix/patches/mainline/drm/` directory deleted) rather than committed
+    as WIP, matching the project's own convention that a task group ends
+    with the command that proves it — an unbuildable derivation proves
+    nothing.
 
 ## Risks / Trade-offs
 
@@ -110,3 +194,53 @@ built here, to keep this change's own build scope to "does it compile").
   configures the pins mainline's UART0 driver expects", and only a board
   boot settles that. Named explicitly as this change's first open hardware
   gate, not asserted as working.
+- **Two real vendor-tree-to-mainline API migrations were needed for
+  GPIO/SD-MMC, found only by a failed build, not by inspection.**
+  `struct gpio_chip`'s generic-chip fields (`bgpio_init()`/`.read_reg`/
+  `.write_reg`/`.bgpio_lock`) were replaced by `struct gpio_generic_chip`
+  sometime after this file's 6.6-era vendor origin, and
+  `sdhci_pltfm_free()` was removed outright. Both were fixed against
+  mainline's own already-migrated reference drivers
+  (`gpio-dwapb.c`/`sdhci-of-dwcmshc.c`), not guessed — but this is a real
+  signal that forward-porting a 6.6-era file onto a v7.3 tree is not a
+  mechanical copy in general, only in the specific cases checked here.
+  USB's `dwc2/{params.c,core.h,core.c}` hunks happened to need no such
+  migration (confirmed by a clean build), but that is a fact about this
+  one function/struct pair, not a general property of the USB subsystem;
+  a future forward-port (touch's I2C plumbing, say) should expect to hit
+  the same class of problem and budget for it.
+- **The clock-gate and reset IDs chosen for GPIO/SD-MMC/USB in
+  `nix/dts/k230-tdisplay-mainline.dts` are a best-effort mapping from ID
+  names alone** (e.g. `K230_HS_SD0_BASE_GATE` for the SDHCI functional
+  clock, `K230_HS_SD0_AHB_GATE` for the register-bus clock), not confirmed
+  against any vendor clock-tree documentation or working configuration.
+  They are syntactically valid and let each driver's mandatory `clk_get`
+  calls succeed at probe time, which is as far as a host build can check.
+  Wrong gate/reset selection would surface as a probe failure or a
+  hung/misbehaving peripheral on the board, not a build failure — squarely
+  the first hardware milestone's job to find, not this one's.
+
+## Follow-up: isolated DRM display continuation
+
+The original task 5a.2 records why the first milestone-3 display trial was
+reverted. The coordinator later authorized continuing that port as a
+separate, opt-in `kernelMainlineDrm` derivation. Its DRM, DSI, universal
+panel, and LT9611 sources live under `nix/patches/mainline/drm/`, copied
+from the vendor-derived working port and kept out of `kernelMainline` and
+all default outputs. The pin is still Linux v7.3-rc5; this does not change
+the kernel source pin or claim that pin is the latest kernel.org release.
+
+The first source/API increment replaces removed generic fbdev setup with
+the pinned tree's DMA fbdev/client API, updates the changed atomic helper
+and platform remove signatures, and removes `drm_driver.date`. The exact
+prepared-header external-module result is in
+`docs/evidence/mainline-display-api-compile.md`. This is useful compiler
+feedback, but the unresolved modpost symbols mean it is not a complete
+in-tree kernel build. The opt-in `deviceTreeMainlineDrm` source and matching
+`kernelMainlineDrmBootFiles` collector now exist. Host cpp/dtc/round-trip
+proof is recorded in `docs/evidence/mainline-display-dtb.md`. The full kernel,
+DTB, and boot-files derivations now build successfully; their paths and the
+first link failure/correction are recorded in
+`docs/evidence/mainline-display-nix-build.md`. The candidate omits the vendor
+display power domain because the pinned mainline tree has no `sysctl_power`
+provider. Physical probe, panel, and touch behavior remain open tasks.

@@ -1,0 +1,10 @@
+287:			compatible = "snps,designware-i2c";
+299:				compatible = "goodix,gt9895", "goodix,gt9916";
+310:			compatible = "canaan,k230-vo";
+332:			compatible = "canaan,k230-mipi-dsi";
+364:				compatible = "canaan,universal";
+432:	display: display-subsystem {
+433:		compatible = "canaan,display-subsystem";
+473:		display = "/display-subsystem";
+/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display/.scratch/mainline-display-dtb-check/run.mq0YRR/k230-tdisplay-mainline-drm.dtb: Device Tree Blob version 17, size=10553, boot CPU=0, string block size=1413, DT structure block size=9084
+DTB=/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display/.scratch/mainline-display-dtb-check/run.mq0YRR/k230-tdisplay-mainline-drm.dtb

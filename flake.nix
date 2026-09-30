@@ -98,9 +98,18 @@
       # Two systems on one base, because the boot paths genuinely differ.
       # k230      the board: vendored U-Boot reads extlinux, root on SD
       # k230-qemu QEMU: kernel loaded directly, whole system in an initrd
-      # The Xuantie kernel, built from source. Mainline cannot boot this SoC;
-      # see nix/kernel.nix.
+      # The Xuantie kernel, built from source. Mainline cannot boot this SoC
+      # to its full shell yet; see nix/kernel.nix.
       k230Kernel = pkgsCross.linuxPackagesFor (pkgsCross.callPackage ./nix/kernel.nix {
+        inherit (pkgsCross) buildLinux;
+      });
+
+      # openspec/changes/the-board-runs-a-mainline-kernel: the parallel,
+      # opt-in mainline kernel, as a full linuxPackagesFor set (not just
+      # `.kernel`) so it can be substituted into a nixosConfiguration's
+      # `boot.kernelPackages` the same way k230-rvv-trial already
+      # substitutes an alternate k230Kernel below. See nix/kernel-mainline.nix.
+      k230MainlineKernel = pkgsCross.linuxPackagesFor (pkgsCross.callPackage ./nix/kernel-mainline.nix {
         inherit (pkgsCross) buildLinux;
       });
 
@@ -167,6 +176,38 @@
         };
         k230-qemu = nixpkgs.lib.nixosSystem {
           modules = [ ./nix/k230.nix ./nix/qemu.nix ];
+        };
+
+        # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1.
+        # Extends k230-console (shell OFF), not k230-coherent-shell: the plain
+        # kernelMainline console profile has no K230 DRM/KMS driver. A separate
+        # kernelMainlineDrm candidate now carries the forward-ported display
+        # stack, but no physical boot/display proof exists. Keep this system
+        # variant scoped to the console milestone; the DRM candidate does not
+        # make the graphical shell a verified mainline system.
+        #
+        # boot.extraModulePackages/boot.kernelModules are force-cleared:
+        # nix/hardware.nix's k230WifiDriver (the out-of-tree RTL8189FTV
+        # module) is built against `config.boot.kernelPackages.kernel`
+        # dynamically, and there is no reason to expect a driver written
+        # against the 6.6-era vendor tree to compile against a v7.3-rc5
+        # kernel's changed internal APIs -- and there is no SDIO/mmc_sd0 DT
+        # node enabled for it to bind to anyway (nix/dts/
+        # k230-tdisplay-mainline.dts leaves &mmc_sd0 disabled). Forcing
+        # these empty is what keeps `nixosConfigurations.k230-mainline-console.
+        # config.system.build.toplevel` buildable at all with the kernel
+        # swapped -- untested, this derivation would otherwise try to
+        # compile that module against mainline headers and most likely fail
+        # the whole system build.
+        k230-mainline-console = self.nixosConfigurations.k230-console.extendModules {
+          specialArgs.k230Kernel = self.k230MainlineKernel;
+          modules = [
+            {
+              boot.extraModulePackages = nixpkgs.lib.mkForce [ ];
+              boot.kernelModules = nixpkgs.lib.mkForce [ ];
+              systemd.services.k230-wifi.enable = nixpkgs.lib.mkForce false;
+            }
+          ];
         };
       };
 
@@ -311,9 +352,7 @@
         #   nix build .#kernelMainline
         #   nix build --impure .#deviceTreeMainline
         #   nix build .#kernelMainlineBootFiles
-        kernelMainline = (pkgsCross.linuxPackagesFor (pkgsCross.callPackage ./nix/kernel-mainline.nix {
-          inherit (pkgsCross) buildLinux;
-        })).kernel;
+        kernelMainline = self.k230MainlineKernel.kernel;
         deviceTreeMainline = pkgs.callPackage ./nix/device-tree-mainline.nix {
           inherit kernelMainlineSrc;
         };
@@ -339,6 +378,43 @@
           inherit kernelSrc;
           dtbName = "k230-tdisplay-hdmi.dtb";
           dtsFile = ./nix/dts/k230-tdisplay-hdmi.dts;
+        };
+
+        # openspec/changes/the-board-runs-a-mainline-kernel, milestone 2
+        # (display), IN PROGRESS: the Canaan DRM stack + RM69A10 panel,
+        # forward-ported onto the mainline pin. A SEPARATE derivation from
+        # kernelMainline (per the coordinator's instruction), overriding a
+        # freshly-built, UNWRAPPED kernel-mainline.nix result the same way
+        # nix/kernel-rvv-trial.nix overrides nix/kernel.nix's.
+        #   nix build .#kernelMainlineDrm
+        kernelMainlineDrm = pkgsCross.callPackage ./nix/kernel-mainline-drm.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        # Matching opt-in DTB/boot bundle for the display candidate. This
+        # bundle only collects Image + DTB for manual U-Boot testing; it has
+        # no initrd/rootfs and is not part of any configured system/image.
+        deviceTreeMainlineDrm = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
+          inherit kernelMainlineSrc;
+        };
+        kernelMainlineDrmBootFiles = pkgs.runCommand "k230-mainline-drm-boot-files" { } ''
+          mkdir -p $out
+          cp ${self.packages.${buildSystem}.kernelMainlineDrm}/Image $out/Image-mainline-drm
+          cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/
+        '';
+
+        # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1: the
+        # full NixOS system variant, cross-built against kernelMainline, and
+        # its matching boot files (Image, DTB-with-bootargs, initrd.uimg).
+        # NOT referenced by `toplevel`, `sdImage`, or any default output.
+        #   nix build .#toplevel-mainline-console
+        #   nix build .#kernelMainlineConsoleBootFiles
+        toplevel-mainline-console = self.nixosConfigurations.k230-mainline-console.config.system.build.toplevel;
+        kernelMainlineConsoleBootFiles = pkgs.callPackage ./nix/kernel-mainline-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-console.config;
+          kernel = self.packages.${buildSystem}.kernelMainline;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainline;
         };
 
         # Stage 1, piece by piece, so each can be built and inspected alone.

@@ -1,0 +1,30 @@
+{
+  "recorded_at_utc": "2026-09-30T04:03:17.621917+00:00",
+  "evidence_class": "coordinator integration evaluation; host only",
+  "branch": "land/mainline-display",
+  "base_revision": "dfe59eddf41ccbd3cedbae7767fd9b250cab6f8c",
+  "reviewed_branch": "feat/mainline-display",
+  "reviewed_commit": "60df69a063e477bc97e0f10dc882d1e74b7fd2fe",
+  "owned_paths": "Reviewed mainline kernel/DTB/driver, isolated profile, OpenSpec, research/evidence and helper-script changes (46 source paths), plus this integration record.",
+  "commands": [
+    "nix-instantiate --parse flake.nix",
+    "openspec validate the-board-runs-a-mainline-kernel --strict",
+    "nix eval --raw .#packages.x86_64-linux.kernelMainlineDrm.outPath",
+    "nix eval --raw .#packages.x86_64-linux.deviceTreeMainlineDrm.outPath",
+    "nix eval --raw .#packages.x86_64-linux.kernelMainlineDrmBootFiles.outPath",
+    "nix eval --raw .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel.outPath",
+    "nix eval --raw .#nixosConfigurations.k230-mainline-console.config.system.build.toplevel.drvPath"
+  ],
+  "results": {
+    "kernel": "/nix/store/qa041skh6iy7rmx86c5zfn2xyq036f0g-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "dtb": "/nix/store/8v2v53z2qpxapsq507nvxsmld4y24d13-k230-tdisplay-mainline-drm.dtb",
+    "boot_files": "/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files",
+    "existing_hdmi_system": "/nix/store/damsvxyr689vrxwr5hkbq7jzv85ff805-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "console_system_derivation": "/nix/store/mvg93dfxrhd4qp6s81p2xsm0g40mp1ky-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  },
+  "assertions": "Merged candidate outputs exactly match the successful full-build artifacts; existing HDMI system exactly matches the installed system. All evaluations and strict validation PASS.",
+  "review": "Independent read-only review recommended merge as an opt-in host-build checkpoint after correcting stale descriptions; those corrections are in 60df69a0.",
+  "physical_status": "UNVERIFIED: no candidate boot, illumination or touch proof. Not deployed.",
+  "remaining_gate": "Task 5b.5 requires a staged usable root/initrd path, recoverable manual boot, serial log, display photograph and touch record. Display power-domain behavior remains UNVERIFIED. Image+DTB bundle alone has no initrd/rootfs.",
+  "archive": "Change remains open; this is not physical functionality acceptance."
+}

@@ -1,0 +1,874 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2022, Canaan Bright Sight Co., Ltd
+ *
+ * All enquiries to https://www.canaan-creative.com/
+ *
+ */
+
+#include "drm/drm_bridge.h"
+#include "drm/drm_of.h"
+#include <drm/drm_bridge_connector.h>
+#include <linux/clk.h>
+#include <linux/component.h>
+#include <linux/crc-ccitt.h>
+#include <linux/module.h>
+#include <linux/iopoll.h>
+#include <linux/of_address.h>
+#include <linux/of_graph.h>
+#include <linux/of.h>
+#include <linux/phy/phy-mipi-dphy.h>
+#include <linux/phy/phy.h>
+#include <linux/platform_device.h>
+#include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
+#include <linux/reset.h>
+#include <linux/slab.h>
+
+#include <drm/drm_atomic_helper.h>
+#include <drm/drm_mipi_dsi.h>
+#include <drm/drm_panel.h>
+#include <drm/drm_print.h>
+#include <drm/drm_probe_helper.h>
+#include <drm/drm_simple_kms_helper.h>
+#include "canaan_dsi.h"
+#include <video/mipi_display.h>
+
+#define DSI_GEN_HDR 0x6c
+#define DSI_GEN_PLD_DATA 0x70
+#define DSI_CMD_PKT_STATUS 0x74
+#define GEN_RD_CMD_BUSY BIT(6)
+#define GEN_PLD_R_FULL BIT(5)
+#define GEN_PLD_R_EMPTY BIT(4)
+#define GEN_PLD_W_FULL BIT(3)
+#define GEN_PLD_W_EMPTY BIT(2)
+#define GEN_CMD_FULL BIT(1)
+#define GEN_CMD_EMPTY BIT(0)
+#define PHY_IF_CFG (0xa4)
+#define CLKMGR_CFG (0x08)
+#define GEN_VCID (0x30)
+#define VID_PKT_SIZE (0x3c)
+#define VID_NUM_CHUNKS (0x40)
+#define VID_NULL_SIZE (0x44)
+#define VID_HSA_TIME (0x48)
+#define VID_HBP_TIME (0x4c)
+#define VID_HLINE_TIME (0x50)
+#define VID_VSA_LINES (0x54)
+#define VID_VBP_LINES (0x58)
+#define VID_VFP_LINES (0x5c)
+#define VID_VACTIVE_LINES (0x60)
+#define DSI_TO_CNT_CFG 0x78
+#define HSTX_TO_CNT(p) (((p)&0xffff) << 16)
+#define LPRX_TO_CNT(p) ((p)&0xffff)
+#define DSI_BTA_TO_CNT 0x8c
+#define MODE_CFG (0x34)
+#define VID_MODE_CFG (0x38)
+#define CMD_MODE_CFG (0x68)
+#define DPI_COLOR_CODING (0x10)
+#define LPCLK_CTRL (0x94)
+#define PCKHDL_CFG (0x2c)
+
+#define DPI_LP_CMD_TIM 0x18
+#define ENABLE_LOW_POWER_CMD BIT(15)
+#define ACK_RQST_EN BIT(1)
+/* DW-MIPI-DSI: short/long generic and DCS packets, reads, max-read-size. */
+#define CMD_MODE_ALL_LP (BIT(24) | GENMASK(19, 16) | GENMASK(14, 8))
+#define OUTVACT_LPCMD_TIME(p) (((p) & 0xff) << 16)
+#define INVACT_LPCMD_TIME(p) ((p) & 0xff)
+
+#define CMD_PKT_STATUS_TIMEOUT_US 20000
+
+#define TXPHY_445_5_M (295)
+#define TXPHY_445_5_N (15)
+#define TXPHY_445_5_VOC (0x19)
+#define TXPHY_445_5_HS_FREQ (0x96)
+
+#define TXPHY_891_M (295)
+#define TXPHY_891_N (15)
+#define TXPHY_891_VOC (0x09)
+#define TXPHY_891_HS_FREQ (0x96)
+
+#define TXPHY_475_M (196)
+#define TXPHY_475_N (9)
+#define TXPHY_475_VOC (0x17)
+#define TXPHY_475_HS_FREQ (0xa3)
+
+static inline void dsi_write(struct canaan_dsi *dsi, u32 reg, u32 val)
+{
+	writel(val, dsi->base + reg);
+}
+
+static inline u32 dsi_read(struct canaan_dsi *dsi, u32 reg)
+{
+	return readl(dsi->base + reg);
+}
+
+/* Packet framing and LP-command configuration follow dw-mipi-dsi.c in
+ * this kernel tree. Keep video running; do not switch MODE_CFG around a
+ * command or reinitialize the PHY from a backlight update.
+ */
+static void canaan_dsi_message_config(struct canaan_dsi *dsi,
+				      const struct mipi_dsi_msg *msg)
+{
+	u32 val;
+
+	/* Same fixed LP windows as the upstream DW host driver. */
+	dsi_write(dsi, DPI_LP_CMD_TIM,
+		  OUTVACT_LPCMD_TIME(16) | INVACT_LPCMD_TIME(4));
+	val = dsi_read(dsi, CMD_MODE_CFG) & ~(CMD_MODE_ALL_LP | ACK_RQST_EN);
+	if (msg->flags & MIPI_DSI_MSG_USE_LPM)
+		val |= CMD_MODE_ALL_LP;
+	if (msg->flags & MIPI_DSI_MSG_REQ_ACK)
+		val |= ACK_RQST_EN;
+	dsi_write(dsi, CMD_MODE_CFG, val);
+
+	val = dsi_read(dsi, VID_MODE_CFG);
+	if (msg->flags & MIPI_DSI_MSG_USE_LPM)
+		val |= ENABLE_LOW_POWER_CMD;
+	else
+		val &= ~ENABLE_LOW_POWER_CMD;
+	dsi_write(dsi, VID_MODE_CFG, val);
+}
+
+static int canaan_dsi_write_packet(struct canaan_dsi *dsi,
+				   const struct mipi_dsi_packet *packet)
+{
+	const u8 *payload = packet->payload;
+	size_t len = packet->payload_length;
+	u32 val;
+	__le32 word;
+	int ret;
+
+	while (len) {
+		size_t count = min_t(size_t, len, sizeof(word));
+
+		/* Check space before writing, including the first payload word. */
+		ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+					 !(val & GEN_PLD_W_FULL), 1000,
+					 CMD_PKT_STATUS_TIMEOUT_US);
+		if (ret)
+			return ret;
+		word = 0;
+		memcpy(&word, payload, count);
+		dsi_write(dsi, DSI_GEN_PLD_DATA, le32_to_cpu(word));
+		payload += count;
+		len -= count;
+	}
+
+	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+				 !(val & GEN_CMD_FULL), 1000,
+				 CMD_PKT_STATUS_TIMEOUT_US);
+	if (ret)
+		return ret;
+	memcpy(&word, packet->header, sizeof(word));
+	dsi_write(dsi, DSI_GEN_HDR, le32_to_cpu(word));
+
+	/* Queueing is not completion: wait for both FIFOs to drain. */
+	return readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+		(val & (GEN_CMD_EMPTY | GEN_PLD_W_EMPTY)) ==
+		(GEN_CMD_EMPTY | GEN_PLD_W_EMPTY), 1000,
+		CMD_PKT_STATUS_TIMEOUT_US);
+}
+
+static int canaan_dsi_read_response(struct canaan_dsi *dsi,
+				    const struct mipi_dsi_msg *msg)
+{
+	u8 *rx_buf = msg->rx_buf;
+	u32 val;
+	int ret;
+	size_t i;
+
+	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+				 !(val & GEN_RD_CMD_BUSY), 1000,
+				 CMD_PKT_STATUS_TIMEOUT_US);
+	if (ret)
+		return ret;
+	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+				 !(val & GEN_PLD_R_EMPTY), 1000,
+				 CMD_PKT_STATUS_TIMEOUT_US);
+	if (ret)
+		return ret;
+
+	/* Keep the existing one-byte DCS response contract. */
+	val = dsi_read(dsi, DSI_GEN_PLD_DATA);
+	for (i = 0; i < msg->rx_len; i++)
+		rx_buf[i] = (val >> (8 * i)) & 0xff;
+	return msg->rx_len;
+}
+
+static void canaan_dsi_set_lan_num(struct canaan_dsi *dsi, int lan_num)
+{
+	switch (lan_num) {
+	case 1:
+		dsi_write(dsi, PHY_IF_CFG, 0x2800);
+		break;
+	case 2:
+		dsi_write(dsi, PHY_IF_CFG, 0x2801);
+		break;
+	case 4:
+		dsi_write(dsi, PHY_IF_CFG, 0x2803);
+		break;
+	default:
+		dev_err(dsi->dev, "dsi lane num only support 1 , 2, 4 lane\n");
+		break;
+	}
+}
+
+static u32 canaan_dsi_get_hcomponent_lbcc(struct canaan_dsi *dsi,
+					  const struct drm_display_mode *mode,
+					  u32 hcomponent)
+{
+	u32 frac, lbcc;
+
+	lbcc = hcomponent * dsi->phy_freq / 8;
+
+	frac = lbcc % dsi->clk_freq;
+	lbcc = lbcc / dsi->clk_freq;
+	if (frac)
+		lbcc++;
+
+	return lbcc;
+}
+
+static void canaan_dsi_set_dpi_timing(struct canaan_dsi *dsi,
+				      struct drm_display_mode *mode)
+{
+	u32 htotal, hsa, hbp, hact, lbcc, vsa, vbp, vfp, vact;
+
+	htotal = mode->htotal;
+	hsa = mode->hsync_end - mode->hsync_start;
+	hbp = mode->htotal - mode->hsync_end;
+	hact = mode->hdisplay;
+
+	vsa = mode->vsync_end - mode->vsync_start;
+	vbp = mode->vtotal - mode->vsync_end;
+	vact = mode->vdisplay;
+	vfp = mode->vtotal - vsa - vbp - vact;
+
+	dsi_write(dsi, VID_PKT_SIZE, hact);
+	dsi_write(dsi, VID_NUM_CHUNKS, 0);
+	dsi_write(dsi, VID_NULL_SIZE, 0);
+
+	// set hsa
+	lbcc = canaan_dsi_get_hcomponent_lbcc(dsi, mode, hsa);
+	dsi_write(dsi, VID_HSA_TIME, lbcc);
+
+	// set hbp
+	lbcc = canaan_dsi_get_hcomponent_lbcc(dsi, mode, hbp);
+	dsi_write(dsi, VID_HBP_TIME, lbcc);
+
+	// set hline
+	lbcc = canaan_dsi_get_hcomponent_lbcc(dsi, mode, htotal);
+	dsi_write(dsi, VID_HLINE_TIME, lbcc);
+
+	// set vsa
+	dsi_write(dsi, VID_VSA_LINES, vsa);
+	// set vbp
+	dsi_write(dsi, VID_VBP_LINES, vbp);
+	// set vfp
+	dsi_write(dsi, VID_VFP_LINES, vfp);
+	// set vline
+	dsi_write(dsi, VID_VACTIVE_LINES, vact);
+}
+
+void canaan_dsi_lpdt_init(struct canaan_dsi *dsi, struct drm_display_mode *mode)
+{
+	// set lpdt div
+	dsi_write(dsi, CLKMGR_CFG, 0x108);
+	// set vcid
+	dsi_write(dsi, GEN_VCID, 0x303);
+	// stt dpi tinging
+	canaan_dsi_set_dpi_timing(dsi, mode);
+	/*
+	 * TODO dw drv improvements
+	 * compute high speed transmission counter timeout according
+	 * to the timeout clock division (TO_CLK_DIVISION) and byte lane...
+	 */
+	// dsi_write(dsi, DSI_TO_CNT_CFG, HSTX_TO_CNT(1000) | LPRX_TO_CNT(1000));
+	/*
+	 * TODO dw drv improvements
+	 * the Bus-Turn-Around Timeout Counter should be computed
+	 * according to byte lane...
+	 */
+	// dsi_write(dsi, DSI_BTA_TO_CNT, 0xd00);
+
+	dsi_write(dsi, MODE_CFG, 0x1);
+	dsi_write(dsi, VID_MODE_CFG, 0xbf02);
+	dsi_write(dsi, CMD_MODE_CFG, 0x10f7f01);
+	dsi_write(dsi, PCKHDL_CFG, 0x1c);
+	dsi_write(dsi, 0x4, 0x1);
+}
+
+static void canaan_mipi_dsi_set_dsi_enable(struct canaan_dsi *dsi)
+{
+	dsi_write(dsi, DPI_COLOR_CODING, 0x105);
+	dsi_write(dsi, 0x9c, 0x320068);
+	dsi_write(dsi, 0x98, 0x2e0080);
+	dsi_write(dsi, 0xc4, 0xffffffff);
+	dsi_write(dsi, 0xc8, 0xffffffff);
+	dsi_write(dsi, MODE_CFG, 0x0);
+	dsi_write(dsi, CMD_MODE_CFG, 0x0);
+	dsi_write(dsi, LPCLK_CTRL, 0x3);
+	dsi_write(dsi, LPCLK_CTRL, 0x1);
+}
+
+static void canaan_mipi_dsi_set_test_mode(struct canaan_dsi *dsi)
+{
+	uint32_t reg = 0;
+	//1. set MODE_CFG register to enable Video mode
+
+	//2. Configure the DPI_COLOR_CODING register.
+
+	//3. Configure the frame using the registers
+
+	//4. Configure the pattern generation mode
+	reg = dsi_read(dsi, VID_MODE_CFG);
+	reg = (reg & ~(BIT_MASK(20))) | (1 << 20);
+	reg = (reg & ~(BIT_MASK(24))) | (1 << 24);
+	reg = (reg & ~(BIT_MASK(16))) | (1 << 16);
+	dsi_write(dsi, VID_MODE_CFG, reg);
+}
+
+static int canaan_dsi_clk_cfg(struct canaan_dsi *dsi, u32 clk)
+{
+	struct mipi_dsi_device *device = dsi->device;
+	u32 val, div, phy_clk_freq, voc_freq, i, m, n = 0, voc;
+	u64 cmp, tmp, diff, closest = 100000000;
+	void *dis_clk;
+
+	div = DIV64_U64_ROUND_CLOSEST(594000, clk);
+	dsi->clk_freq = 594000 / div;
+	phy_clk_freq = dsi->clk_freq * 3 * 8 / device->lanes / 2;
+	if (phy_clk_freq > 1250000 || phy_clk_freq < 40000)
+		return -1;
+	else if (phy_clk_freq < 55000)
+		voc = 0x3f;
+	else if (phy_clk_freq < 82500)
+		voc = 0x37;
+	else if (phy_clk_freq < 110000)
+		voc = 0x2f;
+	else if (phy_clk_freq < 165000)
+		voc = 0x27;
+	else if (phy_clk_freq < 220000)
+		voc = 0x1f;
+	else if (phy_clk_freq < 330000)
+		voc = 0x17;
+	else if (phy_clk_freq < 440000)
+		voc = 0x0f;
+	else if (phy_clk_freq < 660000)
+		voc = 0x07;
+	else if (phy_clk_freq < 1149000)
+		voc = 0x03;
+	else
+		voc = 0x01;
+
+	voc_freq = phy_clk_freq * (1 << (voc >> 4));
+	cmp = voc_freq;
+	cmp = cmp * 1000;
+	cmp = div64_u64(cmp, 24);
+	for (i = 1; i <= 16; i++) {
+		tmp = cmp * i + 500000;
+		val = div64_u64(tmp, 1000000);
+		if (val > 625)
+			continue;
+		tmp = val * 1000000 / i;
+		diff = abs(cmp - tmp);
+		if (closest > diff) {
+			closest = diff;
+			n = i;
+			m = val;
+			if (diff == 0)
+				break;
+		}
+	}
+	if (!n)
+		return -1;
+	voc_freq = 24000;
+	voc_freq = voc_freq * 2 * m;
+	voc_freq = div64_u64(voc_freq, n);
+	voc_freq = div64_u64(voc_freq, (1 << (voc >> 4)));
+	dsi->phy_freq = voc_freq;
+
+	dis_clk = ioremap(0x91100000, 0x1000);
+	val = readl(dis_clk + 0x78);
+	val = (val & ~(GENMASK(10, 3))) | ((div - 1) << 3);
+	val = val | (1 << 31);
+	writel(val, dis_clk + 0x78);
+	iounmap(dis_clk);
+
+	{
+		u32 hsfr = 0x96;
+		of_property_read_u32(dsi->dev->of_node, "canaan,hsfreqrange", &hsfr);
+		dev_info(dsi->dev, "DSI PHY: lane %u kbps, voc 0x%x, hsfreqrange 0x%x\n", phy_clk_freq * 2, voc, hsfr);
+		k230_dsi_config_4lan_phy(dsi, m - 2, n - 1, voc, (uint8_t)hsfr);
+	}
+
+	return 0;
+}
+
+static bool canaan_dsi_stage1_mode_matches(const struct drm_display_mode *mode)
+{
+	return mode->clock == 49500 &&
+		mode->hdisplay == 568 && mode->hsync_start == 668 &&
+		mode->hsync_end == 708 && mode->htotal == 748 &&
+		mode->vdisplay == 1232 && mode->vsync_start == 1236 &&
+		mode->vsync_end == 1252 && mode->vtotal == 1268;
+}
+
+static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
+{
+	struct canaan_dsi *dsi = encoder_to_canaan_dsi(encoder);
+	struct drm_display_mode *adjusted_mode =
+		&encoder->crtc->state->adjusted_mode;
+	struct mipi_dsi_device *device = dsi->device;
+	int dsi_test_en = 0;
+
+	DRM_DEBUG_DRIVER("Enabling DSI output\n");
+
+	dev_vdbg(dsi->dev, "DSI encoder enable %u\n", adjusted_mode->clock);
+	if (dsi->stage1_handoff_pending) {
+		dsi->stage1_handoff_pending = false;
+		dsi->stage1_handoff_active = canaan_dsi_stage1_mode_matches(adjusted_mode);
+		if (dsi->stage1_handoff_active) {
+			mutex_lock(&dsi->transfer_lock);
+			dsi->transfer_ready = true;
+			mutex_unlock(&dsi->transfer_lock);
+			if (dsi->panel)
+				drm_panel_prepare(dsi->panel);
+			if (dsi->panel)
+				drm_panel_enable(dsi->panel);
+			dev_info(dsi->dev, "stage 1 splash: preserving DSI to first plane update\n");
+			return;
+		}
+		dev_warn(dsi->dev, "stage 1 splash: DSI mode differs; reinitializing\n");
+	}
+
+	mutex_lock(&dsi->transfer_lock);
+	dsi->transfer_ready = false;
+	if (canaan_dsi_clk_cfg(dsi, adjusted_mode->clock))
+		dev_err(dsi->dev, "MIPI clock not support\n");
+
+	// set dsi lan num
+	canaan_dsi_set_lan_num(dsi, device->lanes);
+	// set lpdt
+	canaan_dsi_lpdt_init(dsi, adjusted_mode);
+	dsi->transfer_ready = true;
+	mutex_unlock(&dsi->transfer_lock);
+
+	/*
+	 * Enable the DSI block.
+	 */
+
+	if (dsi->panel)
+		drm_panel_prepare(dsi->panel);
+
+	/* Panel callbacks may send messages; never hold transfer_lock here. */
+	if (dsi->panel)
+		drm_panel_enable(dsi->panel);
+
+	mutex_lock(&dsi->transfer_lock);
+	canaan_mipi_dsi_set_dsi_enable(dsi);
+	if (dsi_test_en == 1)
+		canaan_mipi_dsi_set_test_mode(dsi);
+	mutex_unlock(&dsi->transfer_lock);
+}
+
+static void canaan_dsi_encoder_disable(struct drm_encoder *encoder)
+{
+	struct canaan_dsi *dsi = encoder_to_canaan_dsi(encoder);
+
+	if (dsi->stage1_handoff_pending) {
+		dev_info(dsi->dev, "stage 1 splash: DSI disabled before handoff; reinitializing later\n");
+		dsi->stage1_handoff_pending = false;
+	}
+	dsi->stage1_handoff_active = false;
+
+	DRM_DEBUG_DRIVER("Disabling DSI output\n");
+
+	/* Allow the backlight's final blanking command before closing the host. */
+	if (dsi->panel)
+		drm_panel_disable(dsi->panel);
+	mutex_lock(&dsi->transfer_lock);
+	dsi->transfer_ready = false;
+	mutex_unlock(&dsi->transfer_lock);
+	/* A racing brightness request now gets -EPIPE before touching MMIO. */
+	if (dsi->panel)
+		drm_panel_unprepare(dsi->panel);
+}
+
+bool canaan_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
+				   const struct drm_display_mode *mode,
+				   struct drm_display_mode *adjusted_mode)
+{
+	u32 div;
+
+	div = DIV64_U64_ROUND_CLOSEST(594000, mode->clock);
+	adjusted_mode->clock = 594000 / div;
+
+	return true;
+}
+
+static int canaan_dsi_get_modes(struct drm_connector *connector)
+{
+	struct canaan_dsi *dsi = connector_to_canaan_dsi(connector);
+	if (dsi->panel)
+		return drm_panel_get_modes(dsi->panel, connector);
+	else
+		return drm_bridge_get_modes(dsi->bridge, connector);
+}
+
+static const struct drm_connector_helper_funcs
+	canaan_dsi_connector_helper_funcs = {
+		.get_modes = canaan_dsi_get_modes,
+	};
+
+static enum drm_connector_status
+canaan_dsi_connector_detect(struct drm_connector *connector, bool force)
+{
+	struct canaan_dsi *dsi = connector_to_canaan_dsi(connector);
+
+	return (dsi->panel || dsi->bridge) ? connector_status_connected :
+			    connector_status_disconnected;
+}
+
+static const struct drm_connector_funcs canaan_dsi_connector_funcs = {
+	.detect = canaan_dsi_connector_detect,
+	.fill_modes = drm_helper_probe_single_connector_modes,
+	.destroy = drm_connector_cleanup,
+	.reset = drm_atomic_helper_connector_reset,
+	.atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,
+	.atomic_destroy_state = drm_atomic_helper_connector_destroy_state,
+};
+
+static const struct drm_encoder_helper_funcs canaan_dsi_enc_helper_funcs = {
+	.mode_fixup = canaan_dsi_encoder_mode_fixup,
+	.disable = canaan_dsi_encoder_disable,
+	.enable = canaan_dsi_encoder_enable,
+};
+
+static const struct component_ops canaan_dsi_ops;
+
+/*
+ * True when port 1 leads to an external DSI bridge (the LT9611 on I2C)
+ * rather than a panel that is a child of this DSI node. A bridge can
+ * only finish its own probe once this host is registered, so for a
+ * bridge the component is added from the host's .attach -- by then the
+ * bridge has called drm_bridge_add() and bind can find it. Adding it
+ * from probe instead lets the DRM master bind before the bridge exists;
+ * bind returns -EPROBE_DEFER and the vendor error path in canaan_drm_bind
+ * then frees the already-unbound CRTC twice (observed as an Oops in
+ * drm_crtc_cleanup on the first HDMI boot). The panel path is unchanged.
+ */
+static bool canaan_dsi_output_is_bridge(struct device *dev)
+{
+	struct device_node *remote, *parent;
+	bool bridge;
+
+	remote = of_graph_get_remote_node(dev->of_node, 1, -1);
+	if (!remote)
+		return false;
+	parent = of_get_parent(remote);
+	bridge = parent != dev->of_node;
+	of_node_put(parent);
+	of_node_put(remote);
+	return bridge;
+}
+
+static int canaan_dsi_attach(struct mipi_dsi_host *host,
+			     struct mipi_dsi_device *device)
+{
+	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+
+	dsi->connector.status = connector_status_connected;
+	dsi->device = device;
+
+	dev_info(host->dev, "Attached device %s\n", device->name);
+
+	if (canaan_dsi_output_is_bridge(host->dev))
+		return component_add(host->dev, &canaan_dsi_ops);
+
+	return 0;
+}
+
+static int canaan_dsi_detach(struct mipi_dsi_host *host,
+			     struct mipi_dsi_device *device)
+{
+	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+
+	if (canaan_dsi_output_is_bridge(host->dev))
+		component_del(host->dev, &canaan_dsi_ops);
+
+	dsi->panel = NULL;
+	dsi->device = NULL;
+	dsi->bridge = NULL;
+
+	return 0;
+}
+
+static ssize_t canaan_dsi_transfer(struct mipi_dsi_host *host,
+				   const struct mipi_dsi_msg *msg)
+{
+	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+	struct mipi_dsi_packet packet;
+	struct mipi_dsi_msg video_msg;
+	int ret, drain;
+	u32 val;
+
+	if (!msg->tx_buf || !msg->tx_len || msg->tx_len > 0xffff)
+		return -EINVAL;
+	if (msg->type != MIPI_DSI_DCS_READ && msg->rx_len)
+		return -EINVAL;
+	switch (msg->type) {
+	case MIPI_DSI_DCS_SHORT_WRITE:
+		if (msg->tx_len != 1)
+			return -EINVAL;
+		break;
+	case MIPI_DSI_GENERIC_SHORT_WRITE_2_PARAM:
+	case MIPI_DSI_DCS_SHORT_WRITE_PARAM:
+		if (msg->tx_len != 2)
+			return -EINVAL;
+		break;
+	case MIPI_DSI_DCS_LONG_WRITE:
+		break;
+	case MIPI_DSI_DCS_READ:
+		if (msg->tx_len != 1 || !msg->rx_buf ||
+		    msg->rx_len != 1)
+			return -EINVAL;
+		break;
+	default:
+		return -EOPNOTSUPP;
+	}
+
+	ret = mipi_dsi_create_packet(&packet, msg);
+	if (ret)
+		return ret;
+
+	mutex_lock(&dsi->transfer_lock);
+	if (!dsi->transfer_ready) {
+		ret = -EPIPE;
+		goto out;
+	}
+
+	/* A previous timeout can leave queued payload behind. Do not append a
+	 * new command or change LP policy until both transmit FIFOs are empty.
+	 */
+	ret = readl_poll_timeout(dsi->base + DSI_CMD_PKT_STATUS, val,
+		(val & (GEN_CMD_EMPTY | GEN_PLD_W_EMPTY)) ==
+		(GEN_CMD_EMPTY | GEN_PLD_W_EMPTY), 1000,
+		CMD_PKT_STATUS_TIMEOUT_US);
+	if (ret)
+		goto out;
+
+	/* Do not mistake a stale read FIFO word for this command's reply. */
+	if (msg->rx_len) {
+		for (drain = 0; drain < 16; drain++) {
+			if (dsi_read(dsi, DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)
+				break;
+			dsi_read(dsi, DSI_GEN_PLD_DATA);
+		}
+		if (!(dsi_read(dsi, DSI_CMD_PKT_STATUS) & GEN_PLD_R_EMPTY)) {
+			ret = -EIO;
+			goto out;
+		}
+	}
+
+	/* Trial: other Raydium/JDI panels send live brightness in HS. Keep
+	 * command-mode init and every other message's policy unchanged.
+	 * RM69A10 acceptance still requires the physical brightness trial.
+	 */
+	if (msg->type == MIPI_DSI_DCS_SHORT_WRITE_PARAM &&
+	    msg->tx_len == 2 &&
+	    ((const u8 *)msg->tx_buf)[0] == MIPI_DCS_SET_DISPLAY_BRIGHTNESS &&
+	    dsi_read(dsi, MODE_CFG) == 0) {
+		video_msg = *msg;
+		video_msg.flags &= ~MIPI_DSI_MSG_USE_LPM;
+		msg = &video_msg;
+	}
+
+	canaan_dsi_message_config(dsi, msg);
+	ret = canaan_dsi_write_packet(dsi, &packet);
+	if (!ret) {
+		if (msg->rx_len)
+			ret = canaan_dsi_read_response(dsi, msg);
+		else
+			ret = packet.size;
+	}
+	if (ret < 0)
+		dev_err(dsi->dev, "DSI transfer type 0x%02x failed: %d (status 0x%x)\n",
+			msg->type, ret, dsi_read(dsi, DSI_CMD_PKT_STATUS));
+	/* Like dw-mipi-dsi, retain the message configuration until the next
+	 * serialized transfer. In particular, do not flip a pending timed-out
+	 * LP command into HS mode while restoring registers.
+	 */
+out:
+	mutex_unlock(&dsi->transfer_lock);
+	return ret;
+}
+
+static const struct mipi_dsi_host_ops canaan_dsi_host_ops = {
+	.attach = canaan_dsi_attach,
+	.detach = canaan_dsi_detach,
+	.transfer = canaan_dsi_transfer,
+};
+
+static int canaan_dsi_bind(struct device *dev, struct device *master,
+			   void *data)
+{
+	struct drm_device *drm = data;
+	struct canaan_dsi *dsi = dev_get_drvdata(dev);
+	int ret;
+
+	drm_encoder_helper_add(&dsi->encoder, &canaan_dsi_enc_helper_funcs);
+	ret = drm_simple_encoder_init(drm, &dsi->encoder, DRM_MODE_ENCODER_DSI);
+	if (ret) {
+		dev_err(dsi->dev, "Couldn't initialise the DSI encoder\n");
+		return ret;
+	}
+	dsi->encoder.possible_crtcs = BIT(0);
+
+	dsi->drm = drm;
+
+	ret = drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, -1, &dsi->panel, &dsi->bridge);
+	if (!dsi->panel && !dsi->bridge)
+		return ret;
+
+	if (dsi->panel) {
+		drm_connector_helper_add(&dsi->connector,
+					&canaan_dsi_connector_helper_funcs);
+		ret = drm_connector_init(dsi->drm, &dsi->connector,
+					&canaan_dsi_connector_funcs,
+					DRM_MODE_CONNECTOR_DSI);
+		if (ret) {
+			dev_err(dsi->dev, "Couldn't initialise the DSI connector\n");
+			goto err_cleanup_connector;
+		}
+
+		drm_connector_attach_encoder(&dsi->connector, &dsi->encoder);
+	}
+
+	if (dsi->bridge) {
+		struct drm_connector *bridge_connector;
+
+		ret = drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL,
+					DRM_BRIDGE_ATTACH_NO_CONNECTOR);
+		if (ret) {
+			dev_err(dsi->dev, "Couldn't attach the DSI bridge\n");
+			goto err_cleanup_connector;
+		}
+
+		/*
+		 * DRM_BRIDGE_ATTACH_NO_CONNECTOR above means exactly what it
+		 * says: the bridge chain attaches to the encoder but creates
+		 * no drm_connector, so nothing (modetest, Sway, KMS clients in
+		 * general) ever sees an HDMI-A-1. drm_bridge_connector_init()
+		 * is the generic helper for exactly this case -- it builds a
+		 * connector that walks the bridge chain for .detect/.get_modes
+		 * instead of a bridge-specific one.
+		 */
+		bridge_connector = drm_bridge_connector_init(dsi->drm, &dsi->encoder);
+		if (IS_ERR(bridge_connector)) {
+			ret = PTR_ERR(bridge_connector);
+			dev_err(dsi->dev, "Couldn't init the bridge connector\n");
+			goto err_cleanup_connector;
+		}
+
+		ret = drm_connector_attach_encoder(bridge_connector, &dsi->encoder);
+		if (ret) {
+			dev_err(dsi->dev, "Couldn't attach the bridge connector\n");
+			goto err_cleanup_connector;
+		}
+	}
+
+	return 0;
+
+err_cleanup_connector:
+	drm_encoder_cleanup(&dsi->encoder);
+	return ret;
+}
+
+static void canaan_dsi_unbind(struct device *dev, struct device *master,
+			      void *data)
+{
+	struct canaan_dsi *dsi = dev_get_drvdata(dev);
+
+	dsi->drm = NULL;
+}
+
+static const struct component_ops canaan_dsi_ops = {
+	.bind = canaan_dsi_bind,
+	.unbind = canaan_dsi_unbind,
+};
+
+static int canaan_dsi_probe(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct canaan_dsi *dsi;
+	struct resource *res;
+	int ret;
+
+	dsi = devm_kzalloc(dev, sizeof(*dsi), GFP_KERNEL);
+	if (!dsi)
+		return -ENOMEM;
+	dev_set_drvdata(dev, dsi);
+	dsi->dev = dev;
+	dsi->host.ops = &canaan_dsi_host_ops;
+	dsi->host.dev = dev;
+	mutex_init(&dsi->transfer_lock);
+	dsi->stage1_handoff_pending =
+		of_property_read_bool(of_chosen, "canaan,stage1-splash");
+
+	// DSI Device Tree Read..
+	// get dsi base addr
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	dsi->base = devm_ioremap_resource(dev, res);
+	if (IS_ERR(dsi->base)) {
+		dev_err(dev, "Couldn't map the DSI encoder registers\n");
+		return PTR_ERR(dsi->base);
+	}
+
+	ret = mipi_dsi_host_register(&dsi->host);
+	if (ret) {
+		dev_err(dev, "Couldn't register MIPI-DSI host\n");
+		goto err_unprotect_clk;
+	}
+
+	if (canaan_dsi_output_is_bridge(dev))
+		return 0;
+
+	ret = component_add(&pdev->dev, &canaan_dsi_ops);
+	if (ret) {
+		dev_err(dev, "Couldn't register our component\n");
+		goto err_remove_dsi_host;
+	}
+
+	return 0;
+
+err_remove_dsi_host:
+	mipi_dsi_host_unregister(&dsi->host);
+err_unprotect_clk:
+	clk_rate_exclusive_put(dsi->mod_clk);
+	return ret;
+}
+
+static void canaan_dsi_remove(struct platform_device *pdev)
+{
+}
+
+static const struct of_device_id canaan_dsi_of_table[] = {
+	{ .compatible = "canaan,k230-mipi-dsi" },
+	{}
+};
+MODULE_DEVICE_TABLE(of, canaan_dsi_of_table);
+
+struct platform_driver canaan_dsi_driver = {
+	.probe		= canaan_dsi_probe,
+	.remove		= canaan_dsi_remove,
+	.driver		= {
+		.name		= "canaan-mipi-dsi",
+		.of_match_table	= canaan_dsi_of_table,
+	},
+};
+
+MODULE_AUTHOR("");
+MODULE_DESCRIPTION("Canaan K230 DSI Driver");
+MODULE_LICENSE("GPL");

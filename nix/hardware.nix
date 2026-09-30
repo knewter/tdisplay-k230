@@ -55,9 +55,11 @@ in
     })
   ];
   k230.rootGrowth.enable = lib.mkDefault true;
-  # Mainline cannot boot this SoC -- no K230 device tree, no
-  # SOC_CANAAN_K230 -- so the board runs the Xuantie kernel, built from
-  # source. See nix/kernel.nix.
+  # Keep the default system on the vendor Xuantie kernel. The separate
+  # mainline console profile now has K230 DT and GPIO/SD-MMC/USB/RTC support;
+  # its DRM/display candidate is another opt-in output. Neither mainline
+  # profile has physical boot proof. See nix/kernel.nix and the mainline
+  # OpenSpec change.
   boot.kernelPackages = lib.mkForce k230Kernel;
 
   # NixOS's default initrd module list is PC hardware -- ahci, ata_piix,

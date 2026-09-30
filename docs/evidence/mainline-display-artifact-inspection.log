@@ -1,0 +1,19 @@
+artifact inspection UTC: 2026-09-30T03:27:25+00:00
+
+== file types and sizes ==
+/nix/store/qa041skh6iy7rmx86c5zfn2xyq036f0g-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image: Linux kernel RISC-V boot executable Image, little-endian
+/nix/store/8v2v53z2qpxapsq507nvxsmld4y24d13-k230-tdisplay-mainline-drm.dtb/k230-tdisplay-mainline-drm.dtb: Device Tree Blob version 17, size=10553, boot CPU=0, string block size=1413, DT structure block size=9084
+Image-mainline-drm 38530048 bytes
+k230-tdisplay-mainline-drm.dtb 10553 bytes
+
+== byte-for-byte bundle comparisons ==
+PASS Image equals Image-mainline-drm
+PASS DTB equals bundled DTB
+
+== DTB round-trip compatible nodes ==
+287:			compatible = "snps,designware-i2c";
+299:				compatible = "goodix,gt9895", "goodix,gt9916";
+310:			compatible = "canaan,k230-vo";
+332:			compatible = "canaan,k230-mipi-dsi";
+364:				compatible = "canaan,universal";
+433:		compatible = "canaan,display-subsystem";

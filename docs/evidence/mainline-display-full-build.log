@@ -1,0 +1,13 @@
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display' is dirty
+these 4 derivations will be built:
+  /nix/store/wfcai0i0n1sgm4d6r2dndslzdycd5wg9-linux-mainline-k230-drm-src.drv
+  /nix/store/svqx07sin0xcfk0msbxllk61qgrsr28s-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/v8g3hg65hmpy9irdvrrqn52mpwpldkvz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/r8zwz2skxcgr4n1qysbz1g1vyfcbgapx-k230-mainline-drm-boot-files.drv
+building '/nix/store/wfcai0i0n1sgm4d6r2dndslzdycd5wg9-linux-mainline-k230-drm-src.drv'...
+building '/nix/store/svqx07sin0xcfk0msbxllk61qgrsr28s-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/v8g3hg65hmpy9irdvrrqn52mpwpldkvz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/r8zwz2skxcgr4n1qysbz1g1vyfcbgapx-k230-mainline-drm-boot-files.drv'...
+/nix/store/qa041skh6iy7rmx86c5zfn2xyq036f0g-linux-riscv64-unknown-linux-gnu-7.3.0-rc5
+/nix/store/8v2v53z2qpxapsq507nvxsmld4y24d13-k230-tdisplay-mainline-drm.dtb
+/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files

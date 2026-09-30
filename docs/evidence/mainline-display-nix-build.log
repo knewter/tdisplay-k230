@@ -1,0 +1,11 @@
+== Attempt 1: default cache ==
+$ flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm .#deviceTreeMainlineDrm .#kernelMainlineDrmBootFiles --print-out-paths --max-jobs 2 --cores 4
+error:
+       … while fetching the input 'git+file:///mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display'
+
+       error: opening lock file "/home/jadams/.cache/nix/fetcher-locks/f4cece1a6a993f79985e2505a28940d138b062cfe1bff733c9d466021dbd1252.lock": Read-only file system
+
+== Attempt 2: checkout-local XDG cache ==
+$ flock /tmp/k230-nix-build.lock bash -c 'XDG_CACHE_HOME="$PWD/.scratch/nix-cache" nix build .#kernelMainlineDrm .#deviceTreeMainlineDrm .#kernelMainlineDrmBootFiles --print-out-paths --max-jobs 2 --cores 4'
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display' is dirty
+error: cannot connect to socket at '/nix/var/nix/daemon-socket/socket': Operation not permitted

@@ -83,9 +83,172 @@
       containing exactly `Image-mainline` (38 504 448 bytes) and
       `k230-tdisplay-mainline.dtb` (4660 bytes). Build proof only.
 
-## 5. Confirm no existing output changed
+## 5. Milestone 1: boot-critical SD/GPIO/USB forward-port and a full system variant
 
-- [x] 5.1 Confirm `.#kernel`, `.#deviceTree`, and
+Coordinator-directed continuation, after the coordinator merged `c5158fa8`
+to `master`: "do the actual porting ... so it can mount our SD rootfs."
+
+- [x] 5.1 Forward-port GPIO (`drivers/gpio/gpio-k230.c`), SD/MMC
+      (`drivers/mmc/host/sdhci-of-kendryte.c`) and USB
+      (`drivers/usb/dwc2/{params.c,core.h,core.c}` hunks) from the pinned
+      vendor tree, plus the matching DT nodes in
+      `nix/dts/k230-tdisplay-mainline.dts` (real `&sysclk`/`&rst` phandles
+      from mainline's own `<dt-bindings/clock/canaan,k230-clk.h>`/
+      `<dt-bindings/reset/canaan,k230-rst.h>`, replacing the vendor tree's
+      unimplemented `&dummy_sd`/`&clk_dummy` stub clocks). Two real
+      vendor-to-mainline API migrations found via failed builds and fixed
+      against mainline's own already-migrated reference drivers
+      (`gpio-dwapb.c`, `sdhci-of-dwcmshc.c`) — see the new spec requirement
+      "Forward-ported drivers are grounded in the vendor tree and checked
+      against the pinned mainline API" for the exact citations.
+      Proven: `nix build .#kernelMainline --out-link result-kernelMainline
+      --max-jobs 2 --cores 8 --print-out-paths` exited 0, producing
+      `/nix/store/appd6jgmwfr6rg4k18zjv155xc5841lm-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`
+      (38 522 368-byte Image). The generated `.config` carries
+      `CONFIG_GPIO_K230=y CONFIG_MMC=y CONFIG_MMC_SDHCI=y
+      CONFIG_MMC_SDHCI_PLTFM=y CONFIG_MMC_SDHCI_OF_DWCMSHC_KENDRYTE=y
+      CONFIG_USB=y CONFIG_USB_DWC2=y`, confirmed by direct `grep`. Also
+      confirmed: `nix build .#deviceTreeMainline` still exits 0 and its
+      DTB's `gpio0`/`gpio1`/`usb0`/`usb1`/`mmc_sd0`/`mmc_sd1` nodes
+      round-trip with resolved `&sysclk`/`&rst` phandles (`dtc -I dtb -O
+      dts`, checked by hand). Build proof only — none of this has probed
+      real hardware; the clock-gate/reset-ID choices for these three
+      peripherals are UNVERIFIED best-effort mappings, named as such in
+      `nix/dts/k230-tdisplay-mainline.dts`'s own header.
+- [x] 5.2 Add a full NixOS system variant,
+      `nixosConfigurations.k230-mainline-console`, substituting
+      `kernelMainline` for the vendor kernel via the same specialArg
+      mechanism `k230-rvv-trial` already uses, based on the shell-off
+      `k230-console` (not the coordinator's suggested
+      `k230-coherent-shell-mainline` name — deviation flagged in
+      `flake.nix`'s own comment and in this change's report: the graphical
+      shell's Sway/wlroots stack wants a DRM/KMS device mainline does not
+      provide yet, and its build would either fail or produce services
+      that cannot start). `boot.extraModulePackages`/`boot.kernelModules`
+      force-cleared to drop the out-of-tree RTL8189FTV module, which
+      `nix/hardware.nix` builds against `config.boot.kernelPackages.kernel`
+      dynamically and has no expectation of compiling against a kernel
+      seven major versions newer than its 6.6-era origin.
+      Proven: `nix build .#toplevel-mainline-console --out-link
+      result-toplevel-mainline-console --max-jobs 2 --cores 8
+      --print-out-paths` exited 0, producing
+      `/nix/store/d488a1cibw8r7ip7hbbb9j52hy0kzb0h-nixos-system-nixos-26.11.20260919.20b1ddd`.
+      The build log confirms no `k230-wifi-driver` derivation was built at
+      all (the `mkForce [ ]` overrides took effect) and that
+      `unit-k230-wifi.service-disabled.drv` was built instead of the
+      enabled unit. Build proof only.
+- [x] 5.3 Add `nix/kernel-mainline-boot-files.nix` and wire
+      `packages.kernelMainlineConsoleBootFiles`: Image, a DTB with this
+      system's real bootargs baked into `/chosen` (`fdtput`, same mechanism
+      `nix/sd-image.nix` already uses — `cfg.boot.kernelParams` +
+      `init=${toplevel}/init`, deliberately with **no** hardcoded `root=`
+      device path, since this system's inherited `fileSystems."/" =
+      { device = "/dev/disk/by-label/NIXOS_SD"; }` already resolves root by
+      ext4 label through the initrd's own fstab — matching the vendor
+      image's own proven mechanism instead of guessing an `mmc_sd1` device
+      node path), and the system's initrd wrapped as a U-Boot ramdisk image
+      (`mkimage`, same invocation shape as `nix/sd-image.nix`'s
+      `initrd.uimg`).
+      Proven: `nix build .#kernelMainlineConsoleBootFiles --out-link
+      result-kernelMainlineConsoleBootFiles --max-jobs 2 --cores 8
+      --print-out-paths` exited 0, producing
+      `/nix/store/d0idhc2j28n3nn4q1cwq2lin69rnx76r-k230-mainline-console-boot-files`
+      containing `Image-mainline` (38 522 368 bytes), `k230-tdisplay-mainline.dtb`
+      (7974 bytes, `/chosen/bootargs` confirmed by `dtc -I dtb -O dts`:
+      `"console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab
+      loglevel=4 lsm=landlock,yama,bpf loglevel=7
+      init=/nix/store/d488a1cibw8r7ip7hbbb9j52hy0kzb0h-.../init"`), and
+      `initrd.uimg` (`file`-confirmed "u-boot legacy uImage, initrd,
+      Linux/RISC-V, RAMDisk Image", 27 313 961 bytes uncompressed, CRCs
+      present). Build proof only.
+- [x] 5.4 Confirm `nix flake check --no-build` still passes with all new
+      outputs (it does: `nixosConfigurations.k230-mainline-console` and
+      every new package evaluate cleanly) and that no existing output's
+      derivation changed:
+      `git diff --stat 4ffe809a1b448f98379ea1165d7bca067d01cfdb -- nix/kernel.nix
+      nix/kernel-src.nix nix/device-tree.nix nix/k230.nix nix/hardware.nix
+      nix/sd-image.nix nix/shell.nix` returns empty.
+
+What remains stubbed after this task group: no rootfs population step —
+this milestone produces the boot files, not a card image, and does not
+place this system's own closure/profile symlink onto the physical card's
+root partition (an explicit non-goal, since a re-flash is out of scope
+here per the task's hard rules). No board boot has been attempted or
+claimed. `&mmc_sd0` (Wi-Fi SDIO) stays disabled — no driver forward-ported
+for it in this task group. Display, touch, audio, PMU/power-key, thermal,
+ADC, and crypto remain exactly as inventoried (no mainline driver to port
+from); RTC is picked up in task group 5a below.
+
+## 5a. Milestone 3 (partial): RTC forward-port
+
+Coordinator's milestone 3 named touch/RTC/PMU/thermal/ADC/audio "each
+forward-ported from the vendor tree with our patches applied." RTC is the
+one attempted in this pass — smallest, most self-contained, most
+API-stable (RTC-class subsystem) of the group, and a genuine, small proof
+that milestone 1's methodology extends.
+
+- [x] 5a.1 Forward-port `drivers/rtc/rtc-k230.c` from the pinned vendor
+      tree to `nix/patches/mainline/rtc-k230.c`, carrying this project's
+      own already-board-proven `k230-rtc-mday-mask.patch` fix forward
+      directly in the copied file (0xf → 0x1f day-of-month mask) rather
+      than reintroducing a bug already found and fixed once. One trivial
+      fix needed beyond that: `.remove_new` (a transitional
+      `struct platform_driver` field from this file's 6.6-era origin)
+      does not exist at `v7.3-rc5` — renamed to `.remove` (the function
+      already had the matching `void(*)(struct platform_device *)`
+      signature). Built cleanly otherwise, on the first attempt. Added
+      `rtc@91000c00` to `nix/dts/k230-tdisplay-mainline.dts`
+      (`compatible = "canaan,k230-rtc"`, `status = "okay"`, no
+      clocks/resets property — the driver calls neither `devm_clk_get()`
+      nor `devm_reset_control_get()` anywhere) and `RTC_DRV_K230 = yes;`
+      in `nix/kernel-mainline.nix`.
+      Proven: `nix build .#kernelMainline --out-link result-kernelMainline
+      --max-jobs 2 --cores 8 --print-out-paths` exited 0, `.config`
+      confirmed to carry `CONFIG_RTC_DRV_K230=y` by direct `grep`;
+      `nix build .#deviceTreeMainline` still exits 0 and round-trips with
+      `rtc@91000c00` present (`dtc -I dtb -O dts`, checked by hand); `nix
+      build .#toplevel-mainline-console` and
+      `.#kernelMainlineConsoleBootFiles` both still exit 0 with RTC
+      included; `nix flake check --no-build` passes. Build proof only.
+- [x] 5a.2 Scope (not complete) milestone 2 (display): a scratch trial
+      forward-porting the vendor's full `canaan_drv.c`/`canaan_vo.c`/
+      `canaan_dsi.c`/`canaan_phy.c`/`canaan_plane.c` + `panel-canaan-
+      universal.c` (~3,900 lines, before re-applying this project's own
+      ~10 existing patches against the panel/DSI/VO files) was attempted
+      as scoping, not as a claimed forward-port. Findings: one Kconfig fix
+      (a driver below `if DRM` cannot itself `select DRM` — circular
+      dependency; `depends on DRM` instead), one already-removed Kconfig
+      symbol (`DRM_KMS_DMA_HELPER`), and then a real, structural DRM API
+      change on the very first file checked: `drm_panel_init()` was
+      replaced upstream by a refcounted `devm_drm_panel_alloc()`
+      allocation model (`include/drm/drm_panel.h`), changing how the
+      panel struct itself is allocated, not just a symbol name. This is a
+      materially larger class of problem than GPIO/SD-MMC/USB/RTC (DRM
+      atomic-modeset/bridge/connector/component-framework churn across
+      five interconnected files, plus re-applying this project's own
+      panel/DSI/VO patches on top of whatever the ported base ends up
+      looking like) and was **not carried to completion** — the trial was
+      reverted (`git checkout -- nix/kernel-mainline.nix`, the scratch
+      `nix/patches/mainline/drm/` directory deleted) rather than committed
+      half-working, since `.#kernelMainline` must stay buildable per this
+      change's own spec requirement. `git status`/`git diff` confirm the
+      revert is complete and the tree matches the previous commit exactly
+      for `nix/kernel-mainline.nix`.
+
+## 5b. Milestone 2 continuation: isolated mainline DRM display
+
+- [x] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log. After the full-build link exposed missing bridge-helper selections, Canaan Kconfig selects `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR`; the rerun resolved both symbols and compiled the modules. See `docs/evidence/mainline-display-api-compile.log` and `docs/evidence/mainline-display-full-build.log`.
+- [x] 5b.2 Build the complete candidate kernel derivation with `nix build .#kernelMainlineDrm --print-out-paths`; the combined build completed successfully and produced `/nix/store/qa041skh6iy7rmx86c5zfn2xyq036f0g-linux-riscv64-unknown-linux-gnu-7.3.0-rc5` (`docs/evidence/mainline-display-full-build.log`).
+- [x] 5b.3a Add a separately named, opt-in mainline DRM display/touch DT source and verify preprocessing, dtc compilation, and round-trip decompilation; record the host-only result and any compiler warnings in `docs/evidence/mainline-display-dtb.md` and its log.
+- [x] 5b.3b Build the complete candidate device-tree derivation with `nix build .#deviceTreeMainlineDrm --print-out-paths`; the combined build produced `/nix/store/8v2v53z2qpxapsq507nvxsmld4y24d13-k230-tdisplay-mainline-drm.dtb` (`docs/evidence/mainline-display-full-build.log`).
+- [x] 5b.4a Add a separately named boot-files output pairing only the candidate kernel image and DTB; it does not change any normal boot/default output.
+- [x] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`; `/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files` contains only the candidate Image and DTB, byte-identical to the derivation outputs (`docs/evidence/mainline-display-artifact-inspection.log`).
+- [ ] 5b.5 After staging a compatible usable root path (the built `kernelMainlineDrmBootFiles` contains only the Image and DTB, with no initrd or root filesystem), reserve the board and perform a recoverable manual U-Boot trial. Capture the serial log with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10`, plus a panel photograph and deliberate touch interaction. The candidate's display power-domain behavior remains UNVERIFIED because pinned mainline has no `sysctl_power` provider; a successful host build does not satisfy this gate.
+- [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the candidate omits that unsupported phandle and display power behavior remains UNVERIFIED (see `docs/evidence/mainline-display-dtb.md`).
+
+## 6. Confirm no existing output changed
+
+- [x] 6.1 Confirm `.#kernel`, `.#deviceTree`, and
       `.#nixosConfigurations.k230.config.system.build.toplevel` are
       unaffected: `git diff --stat 4ffe809a1b448f98379ea1165d7bca067d01cfdb`
       against this change's base revision shows exactly 11 files changed,
@@ -101,12 +264,12 @@
       covers them; a change that touches none of their inputs cannot
       invalidate it).
 
-## 6. Publish
+## 7. Publish
 
-- [x] 6.1 Validate with `openspec validate the-board-runs-a-mainline-kernel
+- [x] 7.1 Validate with `openspec validate the-board-runs-a-mainline-kernel
       --strict`, checking the exit code directly (never via a pipe), per
       AGENTS.md.
-- [x] 6.2 Commit the proposal, design, tasks, spec delta, research
+- [x] 7.2 Commit the proposal, design, tasks, spec delta, research
       document, and the new `nix/`/`flake.nix` files together on
       `feat/mainline-kernel`, and report the branch/base/commit hash to the
       coordinator for an early merge to `master`, per AGENTS.md's "keep
@@ -114,23 +277,41 @@
 
 ## Remaining evidence gate (explicitly not performed by this change)
 
-Reaching a serial console on real hardware is a **hardware milestone**, not
-a host build, per `.skills/k230-spec-change/SKILL.md`'s QEMU-vs-hardware
-distinction. This change does not touch `/dev/ttyACM0`, does not request a
-board slot, and does not claim this gate. The operator command a future
-change (or the coordinator, directly) would run once a board slot is free:
+Reaching a serial console — and now, potentially, a full NixOS login prompt
+over SD — on real hardware is a **hardware milestone**, not a host build,
+per `.skills/k230-spec-change/SKILL.md`'s QEMU-vs-hardware distinction.
+This change does not touch `/dev/ttyACM0`, does not request a board slot,
+and does not claim either gate. The operator command a future change (or
+the coordinator, directly) would run once a board slot is free:
 
 ```
 flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10
 ```
 
-— after manually interrupting U-Boot and `ext4load`-ing
-`result-kernelMainlineBootFiles/Image-mainline` and
-`result-kernelMainlineBootFiles/k230-tdisplay-mainline.dtb` from wherever the
-coordinator stages them on the card, then `bootm`/`booti` at the loaded
-addresses with a `console=ttyS0,115200` (or matching mainline-console-name)
-bootarg baked into the DTB's `/chosen/bootargs` the same way
-`nix/sd-image.nix` already does for the vendor image. No rootfs is staged;
-a kernel panic for lack of one, with legible OpenSBI + Linux boot output
-first, is this gate's actual pass condition (see
-`docs/research/mainline-kernel-inventory.md`'s phased plan, milestone 2).
+Two staged artifacts now exist, testing two different claims — do not
+conflate them:
+
+1. **`result-kernelMainlineBootFiles`** (task group 4): console-only,
+   no drivers beyond UART0. `ext4load` its `Image-mainline` and
+   `k230-tdisplay-mainline.dtb`, `bootm`/`booti`, expect OpenSBI + Linux
+   boot output and then a panic for lack of a root filesystem (no rootfs
+   staged; this is a legible-boot-output test, not a login test).
+2. **`result-kernelMainlineConsoleBootFiles`** (task group 5): the
+   milestone-1 candidate, with GPIO/SD-MMC/USB forward-ported and this
+   system's bootargs+initrd baked in. `ext4load` its `Image-mainline`,
+   `k230-tdisplay-mainline.dtb`, and `initrd.uimg`, `bootm`/`booti` all
+   three. Its pass condition is a real login prompt over the SD card's
+   existing `NIXOS_SD`-labeled root partition — genuinely unverified
+   whether the by-label root resolves, whether `&mmc_sd1` actually probes
+   with the clock/reset IDs `nix/dts/k230-tdisplay-mainline.dts` guessed,
+   and whether this system's own toplevel closure/profile even exists on
+   that partition (see `nix/kernel-mainline-boot-files.nix`'s own header:
+   this derivation does not populate the card, only produces what a
+   separate staging step would load). A failure here is expected to be
+   informative (which stage failed) rather than a clean pass on the first
+   try, and should be recorded as such rather than retried silently.
+
+No rootfs is staged by test 1; a kernel panic for lack of one, with
+legible OpenSBI + Linux boot output first, is that test's actual pass
+condition (see `docs/research/mainline-kernel-inventory.md`'s phased plan,
+milestone 2).
