@@ -93,7 +93,9 @@ both rotation opt-ins off; candidate requires an opt-in in the actual process
 environment. Run one- and two-card workloads in separate new directories. The
 helper never launches/closes apps or changes output settings; it stops the
 benchmark, returns from overview and checks output/window counts after capture.
-Failed cleanup and incomplete traces are not accepted measurements.
+Failed cleanup and incomplete traces are not accepted measurements. Their
+allowlisted `capture.log` is retained for routing diagnosis, while
+`metadata.json` has no accepted runs.
 
 The host scene entry point currently exercises the **per-texture** candidate,
 stock 90-degree sampling, and 180-degree fallback with a changing native client:
