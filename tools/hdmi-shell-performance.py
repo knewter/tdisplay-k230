@@ -3,7 +3,9 @@
 
 Comparison input is a directory containing ``metadata.json`` and the log
 files named by its run records. See ``--self-test`` for the accepted grammar.
-This host-only tool does not capture from, identify, or control a board.
+Comparison is host-only. Capture delegates to the bounded board-local helper;
+scene checking delegates to the headless compositor harness. Neither injected
+input nor a headless run establishes physical acceptance.
 """
 import argparse
 from collections import defaultdict
@@ -12,6 +14,7 @@ import json
 import math
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -364,27 +367,70 @@ def compare(baseline_dir, candidate_dir):
             'comparisons': comparisons}
 
 
+def run_harness(command, timeout):
+    try:
+        return subprocess.run(command, timeout=timeout, check=False).returncode
+    except subprocess.TimeoutExpired:
+        print('hdmi-shell-performance: bounded harness deadline exceeded; no passing result', file=sys.stderr)
+        return 2
+    except OSError as error:
+        print(f'hdmi-shell-performance: harness unavailable: {error}', file=sys.stderr)
+        return 2
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--compare', action='store_true')
     parser.add_argument('--baseline', type=Path)
     parser.add_argument('--candidate', type=Path)
-    # Root will implement these modes in the owning integration branch.
     parser.add_argument('--capture', action='store_true')
     parser.add_argument('--check-scene', action='store_true')
     parser.add_argument('--variant', choices=('baseline', 'candidate'))
     parser.add_argument('--input', choices=('injected', 'physical'))
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--source-revision', help='exact 40-character source revision of the installed compositor')
+    parser.add_argument('--seconds', type=int, default=60, help='bounded capture duration, 1..300 seconds')
+    parser.add_argument('--drags', type=int, default=24, help='requested complete capture drags, 1..48')
+    parser.add_argument('--operator-confirmed-contacts', action='store_true')
+    parser.add_argument('--sway', type=Path, help='unwrapped RISC-V Sway executable for headless scene checking')
+    parser.add_argument('--client', type=Path, help='native animated Wayland client for headless scene checking')
+    parser.add_argument('--qemu', type=Path, default=Path('/usr/bin/qemu-riscv64-static'))
     args = parser.parse_args(argv)
     if args.self_test:
         if any((args.compare, args.capture, args.check_scene, args.baseline, args.candidate, args.output)):
             parser.error('--self-test cannot be combined with other modes or output')
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(TraceTests)
         return 0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() else 1
-    if args.capture or args.check_scene:
-        print('hdmi-shell-performance: this mode is not implemented in the host trace-parser change', file=sys.stderr)
-        return 2
+    if sum((args.compare, args.capture, args.check_scene)) != 1:
+        parser.error('select exactly one of --compare, --capture or --check-scene')
+    if args.capture:
+        if not args.variant or not args.output or not args.source_revision:
+            print('hdmi-shell-performance: --capture requires --variant, --output and --source-revision', file=sys.stderr)
+            return 2
+        if not re.fullmatch('[0-9a-fA-F]{40}', args.source_revision):
+            parser.error('--source-revision must be a full 40-character Git revision')
+        if not 1 <= args.seconds <= 300 or not 1 <= args.drags <= 48:
+            parser.error('--seconds must be 1..300 and --drags 1..48')
+        input_class = args.input or 'injected'
+        if args.operator_confirmed_contacts != (input_class == 'physical'):
+            parser.error('physical capture requires --operator-confirmed-contacts; injected capture cannot use it')
+        command = [sys.executable, str(Path(__file__).with_name('hdmi-shell-capture-board.py')),
+                   '--variant', args.variant, '--input', input_class,
+                   '--output', str(args.output), '--source-revision', args.source_revision,
+                   '--seconds', str(args.seconds), '--drags', str(args.drags)]
+        if args.operator_confirmed_contacts:
+            command.append('--operator-confirmed-contacts')
+        print('Board-local capture: requires the live Sway IPC socket and sole board reservation.', flush=True)
+        return run_harness(command, args.seconds + 45)
+    if args.check_scene:
+        if args.variant != 'candidate' or not args.output or not args.sway or not args.client:
+            print('hdmi-shell-performance: --check-scene requires --variant candidate, --output, --sway and --client', file=sys.stderr)
+            return 2
+        command = [sys.executable, str(Path(__file__).resolve().parent.parent / 'tests' / 'test_hdmi_quarter_turn_scene.py'),
+                   '--sway', str(args.sway), '--client', str(args.client), '--qemu', str(args.qemu),
+                   '--output', str(args.output)]
+        return run_harness(command, 480)
     if not args.compare or not args.baseline or not args.candidate:
         parser.error('--compare requires --baseline and --candidate directories')
     try:
@@ -546,8 +592,29 @@ class TraceTests(unittest.TestCase):
             with self.assertRaisesRegex(InvalidTrace, 'operator-confirmed'):
                 load_side(directory, 'candidate')
 
-    def test_unsupported_capture_modes_fail_explicitly(self):
-        self.assertEqual(main(['--capture', '--variant', 'baseline', '--output', '/tmp/unused']), 2)
+    def test_capture_requires_explicit_runtime_revision(self):
+        self.assertEqual(main(['--capture', '--variant', 'baseline', '--output', 'unused']), 2)
+
+    def test_capture_dispatch_preserves_input_class_and_failure(self):
+        from unittest.mock import patch
+        with patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 1)) as run:
+            status = main(['--capture', '--variant', 'candidate', '--input', 'physical',
+                           '--operator-confirmed-contacts', '--output', 'fixture output',
+                           '--source-revision', 'a' * 40, '--seconds', '3', '--drags', '1'])
+        self.assertEqual(status, 1)
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index('--input') + 1], 'physical')
+        self.assertIn('--operator-confirmed-contacts', command)
+        self.assertEqual(command[command.index('--output') + 1], 'fixture output')
+        self.assertFalse(run.call_args.kwargs.get('shell', False))
+
+    def test_scene_dispatch_preserves_nonzero_result(self):
+        from unittest.mock import patch
+        with patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 2)) as run:
+            status = main(['--check-scene', '--variant', 'candidate', '--sway', 'fixture sway',
+                           '--client', 'fixture client', '--output', 'fixture scene'])
+        self.assertEqual(status, 2)
+        self.assertIn('fixture sway', run.call_args.args[0])
 
 
 if __name__ == '__main__':

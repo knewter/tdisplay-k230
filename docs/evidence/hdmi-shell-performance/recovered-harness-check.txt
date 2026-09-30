@@ -1,0 +1,31 @@
+test_candidate_frame_budget_is_a_hard_failure (__main__.TraceTests.test_candidate_frame_budget_is_a_hard_failure) ... ok
+test_capture_dispatch_preserves_input_class_and_failure (__main__.TraceTests.test_capture_dispatch_preserves_input_class_and_failure) ... Board-local capture: requires the live Sway IPC socket and sole board reservation.
+ok
+test_capture_requires_explicit_runtime_revision (__main__.TraceTests.test_capture_requires_explicit_runtime_revision) ... hdmi-shell-performance: --capture requires --variant, --output and --source-revision
+ok
+test_compare_reports_metrics_and_injected_cannot_pass_physical_gate (__main__.TraceTests.test_compare_reports_metrics_and_injected_cannot_pass_physical_gate) ... ok
+test_missing_frame_build_coverage_rejected (__main__.TraceTests.test_missing_frame_build_coverage_rejected) ... ok
+test_missing_present_coverage_rejected (__main__.TraceTests.test_missing_present_coverage_rejected) ... ok
+test_mixed_run_identity_rejected (__main__.TraceTests.test_mixed_run_identity_rejected) ... ok
+test_mixed_runtime_identity_and_input_labels_rejected (__main__.TraceTests.test_mixed_runtime_identity_and_input_labels_rejected) ... ok
+test_physical_label_requires_origin_and_operator_confirmation (__main__.TraceTests.test_physical_label_requires_origin_and_operator_confirmation) ... ok
+test_physical_origin_measurement_does_not_claim_real_finger (__main__.TraceTests.test_physical_origin_measurement_does_not_claim_real_finger) ... ok
+test_scene_dispatch_preserves_nonzero_result (__main__.TraceTests.test_scene_dispatch_preserves_nonzero_result) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.083s
+
+OK
+test_complete_gesture_count (__main__.Fixtures.test_complete_gesture_count) ... ok
+test_fake_capture_and_cleanup_failure (__main__.Fixtures.test_fake_capture_and_cleanup_failure) ... ok
+test_output_whitelist_and_foot_count (__main__.Fixtures.test_output_whitelist_and_foot_count) ... ok
+test_run_selection_and_allowlist (__main__.Fixtures.test_run_selection_and_allowlist) ... ok
+test_runtime_optin_contract (__main__.Fixtures.test_runtime_optin_contract) ... ok
+test_sanitizer_ignores_arbitrary_text_and_pixman_unscoped (__main__.Fixtures.test_sanitizer_ignores_arbitrary_text_and_pixman_unscoped) ... ok
+test_schema_exact (__main__.Fixtures.test_schema_exact) ... ok
+test_stop_or_restore_failure_overrides_complete_trace (__main__.Fixtures.test_stop_or_restore_failure_overrides_complete_trace) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.307s
+
+OK

@@ -35,9 +35,10 @@ python3 tools/hdmi-shell-performance.py --self-test
 
 The pixel test passed 1,152 exact comparisons against stock Pixman, including
 crop/scale, opacity, rounded clips, damage and source updates. See
-[recovered output](recovered-pixel-check.txt). The telemetry test and nine strict
-parser fixtures also passed. The capture and scene entry points are still pending
-integration; parser tests deliberately reject those unavailable modes.
+[recovered output](recovered-pixel-check.txt). The telemetry test and eleven strict parser/dispatch fixtures also passed.
+The capture and scene entry points now delegate to their bounded helpers.
+The board helper has separate mocked capture/cleanup fixtures; these are host
+proof, not observations from the board.
 
 The reconstructed final-frame patch passed source/application checks. It has
 not yet been rebuilt or exercised as a scene after recovery. Its predecessor
@@ -67,3 +68,43 @@ calibration change is justified by that observation alone.
 Next gates are reconstructed scene/pixel proof, exact cross-build identity,
 reserved one-/two-card physical trials, and normal-panel recovery. Mainline
 kernel porting proceeds separately. No archive is justified at this checkpoint.
+
+## Reproducible capture entry points
+
+The capture helper runs **on the board**, where the live Sway IPC socket and
+compositor journal are available. Reserve the board before invoking it. Stage
+`tools/hdmi-shell-performance.py` and `tools/hdmi-shell-capture-board.py` together.
+Supply the exact source revision used to build the installed compositor; the
+helper also records hashes of the actual executable and mapped Pixman library.
+A supplied revision alone does not authenticate binary/source correspondence.
+
+For injected profiling with exactly one or two already-open Foot windows:
+
+```sh
+python3 tools/hdmi-shell-performance.py --capture --variant candidate \
+  --input injected --source-revision DEPLOYED_COMPOSITOR_REVISION \
+  --seconds 120 --drags 24 --output NEW_CAPTURE_DIRECTORY
+```
+
+For physical contact, use `--input physical --operator-confirmed-contacts`.
+After READY, swipe up from the ordinary app into overview, then make 24 center
+horizontal drags. Record the operator observation separately. Baseline requires
+both rotation opt-ins off; candidate requires an opt-in in the actual process
+environment. Run one- and two-card workloads in separate new directories. The
+helper never launches/closes apps or changes output settings; it stops the
+benchmark, returns from overview and checks output/window counts after capture.
+Failed cleanup and incomplete traces are not accepted measurements.
+
+The host scene entry point currently exercises the **per-texture** candidate,
+stock 90-degree sampling, and 180-degree fallback with a changing native client:
+
+```sh
+python3 tools/hdmi-shell-performance.py --check-scene --variant candidate \
+  --sway UNWRAPPED_RISCV_SWAY --client NATIVE_ANIMATED_CLIENT \
+  --output NEW_SCENE_DIRECTORY
+```
+
+It requires QEMU user emulation, Grim and permission to bind Wayland sockets.
+It is not proof for the final-frame candidate. The current runner cannot bind
+those sockets or reach the Nix daemon, and has no serial device, so runtime,
+cross-build and physical tasks remain open.

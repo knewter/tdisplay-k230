@@ -227,7 +227,8 @@ def run_variant(args, output, name, transform, quarter_turn):
             trace,
         )
         assert draw_rows, f"{name}: no candidate draw trace rows found"
-        # wlroots enum values are NORMAL=0, 90=3, 180=2, 270=1.
+        # Sway interprets CLI degrees clockwise and inverts them before
+        # storing the Wayland anti-clockwise enum (90=1, 180=2, 270=3).
         expected_transform = {"90": "3", "180": "2", "270": "1"}[transform]
         matching = [(path, int(copy), int(total), int(pixels), int(scratch))
                     for turn, path, copy, total, pixels, scratch in draw_rows
