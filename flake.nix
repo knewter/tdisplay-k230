@@ -130,6 +130,11 @@
         k230-coherent-shell = self.nixosConfigurations.k230.extendModules {
           modules = [ { k230.shell.coherentShell = true; k230.shell.powerKeyTrial = true; } ];
         };
+        # Explicit experimental HDMI profile: preserve the faster trial across
+        # activation/reboot without silently changing the daily panel renderer.
+        k230-coherent-shell-hdmi-trial = self.nixosConfigurations.k230-coherent-shell.extendModules {
+          modules = [ { k230.shell.hdmiQuarterTurnTrial = true; } ];
+        };
         # Historically "same as k230-coherent-shell, plus Nautilus's own
         # drawer entry next to Portfolio's" while filesAppNautilus defaulted
         # off. The operator has since decided to keep both candidates

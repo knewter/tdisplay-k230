@@ -49,7 +49,10 @@ let
   # tail, at the cost that no X11 application can ever run on this board.
   # Deliberate; see the runtime/shell build-cost requirement.
   swayBase = pkgs.sway.override { enableXWayland = false; };
-  cardShell = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
+  cardShell = pkgs.callPackage ./card-shell.nix {
+    swayUnwrapped = pkgs.sway-unwrapped;
+    quarterTurnTrial = cfg.hdmiQuarterTurnTrial;
+  };
   # nixpkgs' stock `pipewire` builds every optional backend on by default:
   # Bluetooth (bluez plus the LC3/LDAC/aptX codec libraries), Vulkan,
   # X11 (which also drags in libcanberra/libmysofa), RAOP/AirPlay,
@@ -808,8 +811,8 @@ let
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
       if swaymsg -t get_outputs -r | ${pkgs.jq}/bin/jq -e 'any(.[]; .name == "HDMI-A-1" and .active)' >/dev/null; then
-        swaymsg input type:touch map_to_output HDMI-A-1
-        swaymsg input type:touch calibration_matrix ${hdmiTouchCalibration}
+        swaymsg "input type:touch map_to_output HDMI-A-1"
+        swaymsg "input type:touch calibration_matrix ${hdmiTouchCalibration}"
       fi
     ''}
 
@@ -908,6 +911,12 @@ in
         They exist to verify runtime/shell on the board and should leave with
         the change that needed them.
       '';
+    };
+
+    hdmiQuarterTurnTrial = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Opt-in per-texture Pixman quarter-turn experiment for the coherent HDMI shell; physical performance acceptance remains open.";
     };
 
     hdmiTransform = lib.mkOption {
@@ -1554,6 +1563,9 @@ in
         # A fixed IPC socket so `swaymsg` from the serial console needs no
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
+      } // lib.optionalAttrs (cfg.coherentShell && cfg.hdmiQuarterTurnTrial) {
+        WLR_PIXMAN_QUARTER_TURN = "1";
+        WLR_PIXMAN_OUTPUT_TURN = "0";
       } // lib.optionalAttrs cfg.vgliteAccessTrial {
         K230_VGLITE_BROKER = "/run/k230-vglite-broker.sock";
         K230_VGLITE_ALLOW_UNPROVEN_CACHE = "1";

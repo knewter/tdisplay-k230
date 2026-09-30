@@ -173,3 +173,24 @@ calibration was applied over the reserved physical serial console and
 [live board configuration](touch-calibration-board.json). This is configured
 state observed on the board, not real-finger acceptance. Coherent-profile
 deployment and the operator's direction check remain separate gates.
+
+
+### Activation regression and correction
+
+The first coherent-profile activation returned touch calibration to identity.
+The generated follow-output script passed the matrix as separate `swaymsg`
+arguments; its negative coefficient was parsed as an option (`invalid option
+-- '1'`). The interactive command had quoted the complete IPC message and
+therefore worked. Both generated input commands now quote the whole message.
+The operator reported the pre-activation direction fix working, then reported
+rotation and performance regressing after the profile switch. The faster
+per-texture trial was restored and the quoted calibration reapplied.
+
+`k230-coherent-shell-hdmi-trial` explicitly retains the opt-in per-texture
+renderer in a reproducible system profile (`WLR_PIXMAN_QUARTER_TURN=1`,
+`WLR_PIXMAN_OUTPUT_TURN=0`), rather than depending on a runtime service override.
+The ordinary coherent profile remains the performance comparison baseline.
+Neither this profile nor the operator's qualitative speed report meets the
+unchecked frame budgets, full scene correctness, or normal-panel regression
+requirements. Physical trial results and deployment identity are recorded
+separately when observed.
