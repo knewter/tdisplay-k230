@@ -2706,8 +2706,8 @@ static int hit_button(double x, double y) {
 static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms) {
 	if (!enabled() || !shell.output || server.session_lock.lock)
 		return false;
-	x -= shell.output->lx;
-	y -= shell.output->ly;
+	x = card_shell_touch_output_coordinate(x - shell.output->lx, shell.output->width);
+	y = card_shell_touch_output_coordinate(y - shell.output->ly, shell.output->height);
 	if (shell.home_gesture.contacts) {
 		card_shell_drawer_down(&shell.home_gesture, id, x, y);
 		return true;
@@ -2872,8 +2872,8 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms) {
 	if (!shell.initialized || !shell.output)
 		return false;
-	x -= shell.output->lx;
-	y -= shell.output->ly;
+	x = card_shell_touch_output_coordinate(x - shell.output->lx, shell.output->width);
+	y = card_shell_touch_output_coordinate(y - shell.output->ly, shell.output->height);
 	if (shell.home_gesture.contacts) {
 		card_shell_drawer_motion(&shell.home_gesture, id, x, y, shell.policy.config.entry_distance);
 		if (id == shell.home_gesture.owner && !shell.home_gesture.cancelled)

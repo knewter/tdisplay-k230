@@ -16,6 +16,10 @@
 
 extern char **environ;
 
+double card_shell_touch_output_coordinate(double coordinate, double extent) {
+	return extent > 0 && coordinate == extent ? nextafter(extent, 0) : coordinate;
+}
+
 void card_shell_drawer_down(struct card_shell_drawer_gesture *gesture,
 		int32_t id, double x, double y) {
 	if (gesture->contacts) {

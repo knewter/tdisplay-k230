@@ -11,6 +11,61 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CardDrawerRoute(unittest.TestCase):
+    def test_exact_output_endpoint_enters_real_card_policy(self):
+        with tempfile.TemporaryDirectory(prefix="card-route-endpoint-") as directory:
+            path = Path(directory)
+            (path / "sway").mkdir()
+            (path / "sway/card_shell_route.h").write_bytes(
+                (ROOT / "nix/card-shell/route.h").read_bytes())
+            source = path / "endpoint.c"
+            source.write_text(r'''
+#include <assert.h>
+#include <math.h>
+#include "sway/card_shell_route.h"
+#include "card-shell-policy.h"
+int main(void) {
+    const double sizes[][2] = {{568,1232},{1080,1920}};
+    for (unsigned i=0; i<2; i++) {
+        double w=sizes[i][0], h=sizes[i][1];
+        struct cs_config cfg=cs_default_config(w,h);
+        cfg.touch_first_motion=true;
+        struct cs_policy p;
+        assert(cs_init(&p,&cfg));
+        struct cs_card cards[]={{7,CS_LIVE,true,true}};
+        cs_set_cards(&p,cards,1);
+        /* Replay the physical HDMI failure: y == height is outside. */
+        assert(!cs_begin_entry(&p,1,w/2,h,1,7).consumed);
+        double bottom=card_shell_touch_output_coordinate(h,h);
+        assert(bottom<h && bottom>h-0.000001);
+        assert(cs_begin_entry(&p,1,w/2,bottom,2,7).consumed);
+        assert(p.mode==CS_ENTERING && p.edge.tracking);
+        cs_stream_cancel(&p);
+        cs_leave(&p);
+        double right=card_shell_touch_output_coordinate(w,w);
+        assert(cs_begin_entry(&p,2,right,bottom,3,7).consumed);
+        cs_stream_cancel(&p);
+        cs_leave(&p);
+        p.config.bottom_reserved=120;
+        assert(!cs_begin_entry(&p,3,w/2,bottom,4,7).consumed);
+        cs_finish(&p);
+        /* Preserve real interior, off-output and nonfinite coordinates. */
+        assert(card_shell_touch_output_coordinate(h/2,h)==h/2);
+        assert(card_shell_touch_output_coordinate(h+1,h)==h+1);
+        assert(card_shell_touch_output_coordinate(-1,h)==-1);
+        assert(isnan(card_shell_touch_output_coordinate(NAN,h)));
+    }
+    return 0;
+}
+''')
+            binary = path / "endpoint"
+            subprocess.run([os.environ.get("CC", "cc"), "-std=gnu11", "-Wall",
+                            "-Wextra", "-Werror", "-I" + str(path),
+                            "-I" + str(ROOT / "nix/card-shell-policy"), str(source),
+                            str(ROOT / "nix/card-shell/route.c"),
+                            str(ROOT / "nix/card-shell-policy/card-shell-policy.c"),
+                            "-lm", "-o", str(binary)], check=True)
+            subprocess.run([str(binary)], check=True)
+
     def test_gesture_and_trusted_helper(self):
         with tempfile.TemporaryDirectory(prefix="card-route-") as directory:
             path = Path(directory)

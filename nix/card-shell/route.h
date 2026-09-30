@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+/* Normalized absolute touch includes 1.0; output rectangles are half-open.
+ * Admit exactly that endpoint without pulling off-output coordinates inside. */
+double card_shell_touch_output_coordinate(double coordinate, double extent);
 struct card_shell_drawer_gesture {
 	unsigned contacts;
 	int32_t owner;

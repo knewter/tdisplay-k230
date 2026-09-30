@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-09-30T02:33:02.301629+00:00",
+  "evidence_class": "physical-board-actual-touch-route-journal",
+  "source_revision": "5284d758f2c854be2bf03cb0c66943359b7851fc",
+  "running_system": "/nix/store/f2dfnsqv591fmxmkwbhgdjgdz5jh59h7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "command": "journalctl -u shell --since \"2026-09-30 02:25:00\" --no-pager | sed -n \"/K230_CARD_SHELL touch-route/p\"",
+  "trace_environment": "SWAY_K230_TOUCH_ROUTE_TRACE=1",
+  "observed": {
+    "output_width": 1080,
+    "output_height": 1920,
+    "edge_band": 48,
+    "bottom_reserved": 0,
+    "bottom_contacts_at_y": 1920,
+    "bottom_down_consumed": false,
+    "top_contacts_consumed": true
+  },
+  "interpretation": "The adapter rejects y >= height - bottom_reserved even when bottom_reserved is zero; real bottom endpoint contacts also fail the policy half-open content rectangle. Normalize exactly the output endpoint to the largest representable coordinate inside it before routing, preserving true out-of-output/interior coordinates.",
+  "limits": [
+    "Console contact routing is not optical presentation or latency proof.",
+    "Operator reported top drawer functioning and bottom gestures failing.",
+    "Post-fix physical behavior and full workload budgets remain open."
+  ]
+}
