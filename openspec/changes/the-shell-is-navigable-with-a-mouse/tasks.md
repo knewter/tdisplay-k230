@@ -4,8 +4,8 @@
 
 ## 2. Complete the input routes
 
-- [ ] 2.1 Implement compositor pointer streams, clickable/tappable Home footer, screen-edge drags and centered-window expansion. Proof: `python3 -m unittest discover -s tests -p 'test_card_shell_pointer_navigation.py'` against the built compositor (headless injected input).
-- [ ] 2.2 Add bounded Rust shell axis handling and normal Sway four-finger outward binding. Proof: `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib` and `cargo check --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust` (host only).
+- [x] 2.1 Implement compositor pointer streams, clickable/tappable Home footer, screen-edge drags and centered-window expansion. Proof: `python3 -m unittest discover -s tests -p 'test_card_shell_pointer_navigation.py'` against the built compositor (headless injected input).
+- [x] 2.2 Add bounded Rust shell axis handling and normal Sway four-finger outward binding. Proof: `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib` and `cargo check --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust` (host only).
 - [ ] 2.3 Cross-build the actual HDMI system closure. Proof: `nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 2 --cores 8`.
 
 ## 3. Navigation audit and deployment

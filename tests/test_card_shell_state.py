@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ('enter-expand horizontal overview-geometry '
+CASES = ('activate-selected enter-expand horizontal overview-geometry '
          'scroll-fling-multi-card scroll-slow-release-snaps-nearest scroll-catch-mid-coast scroll-end-clamp-soft '
          'adjacent-tap adjacent-throw privacy privacy-transition '
          'close-recovery slow-drag repeated-timestamp-throw repeated-timestamp-rejection source-loss restore-gesture multi-contact edge '

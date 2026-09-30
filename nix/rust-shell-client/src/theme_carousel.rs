@@ -443,6 +443,18 @@ impl Carousel {
         self.contact.is_some() || self.velocity != 0.0 || self.settle.is_some()
     }
 
+    /// Wheel movement browses candidates only, never applies one. Continuous
+    /// deltas track directly; axis-stop (or a discrete wheel tick) settles.
+    pub fn scroll_by(&mut self, delta: f64, count: usize, settle: bool) -> bool {
+        if self.contact.is_some() || count == 0 || !delta.is_finite() { return false; }
+        let old = self.position;
+        self.velocity = 0.0;
+        self.settle = None;
+        self.position = (old + delta / self.geometry.item_step()).clamp(0.0, (count - 1) as f64);
+        if settle { self.start_settle(self.position.round()); }
+        self.position != old || self.settle.is_some()
+    }
+
     /// Which slice, if any, should show an immediate "pressed" highlight
     /// this frame: the finger is down inside the carousel band and hasn't
     /// moved past `TAP_SLOP` into a real drag yet. Goal is a highlight
@@ -929,5 +941,25 @@ mod tests {
         assert!((g.slice_w / g.expanded_w - 108.0 / 768.0).abs() < 0.01);
         assert!((g.slice_h / g.expanded_h - 432.0 / 475.0).abs() < 0.01);
         assert!((g.skew / g.expanded_w - 28.0 / 768.0).abs() < 0.01);
+    }
+}
+
+#[cfg(test)]
+mod pointer_scroll_tests {
+    use super::*;
+    #[test]
+    fn wheel_browses_and_settles_without_a_touch_activation() {
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        assert!(carousel.scroll_by(THEME_GEOMETRY.item_step() * 1.6, 5, false));
+        assert!((carousel.position() - 1.6).abs() < 0.001);
+        assert!(carousel.scroll_by(0.0, 5, true));
+        for _ in 0..100 { carousel.tick(16, 5); }
+        assert_eq!(carousel.position(), 2.0);
+        carousel.down(1, (200.0, 200.0), 100);
+        assert!(!carousel.scroll_by(200.0, 5, true));
+        carousel.cancel();
+        carousel.scroll_by(10000.0, 5, true);
+        assert_eq!(carousel.position(), 4.0);
+        assert!(!carousel.scroll_by(f64::INFINITY, 5, true));
     }
 }

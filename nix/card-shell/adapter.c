@@ -29,6 +29,9 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <linux/input-event-codes.h>
+#include <wlr/types/wlr_pointer.h>
+#include <wlr/types/wlr_cursor.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,6 +122,10 @@ static struct {
 	struct wl_list cards;
 	struct cs_policy policy;
 	bool initialized, active, preparing, injecting;
+	bool pointer_owned, pointer_cancelled, pointer_dispatch;
+	struct sway_seat *pointer_seat;
+	double pointer_scroll, pointer_x, pointer_y;
+	bool home_tap_candidate;
 	uint64_t gesture_seq;
 	/* Last time handle_result actually ran a synchronous sync_scene()+
 	 * chrome() pass for a plain (non-structural) redraw -- see
@@ -1645,12 +1652,10 @@ static bool rebuild_chrome(void) {
 			}
 			wlr_scene_node_set_position(&shell.status->node, x + 24, status_y);
 		}
-		/* One gesture-hint typography across the deck footer and the Rust
-		 * drawer/shade hints (finding P1-2): sentence case (already was),
-		 * muted rather than full-strength text color, and size 14 to match
-		 * `render.rs`'s own converged hint size. */
+		/* This footer is now a tap/click target as well as a swipe origin.
+		 * Keep the existing muted treatment, with a readable action label. */
 		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
-			"Swipe up for Home", cfg->width - 48, 24, 14, appearance_text_muted(false));
+			"Home · tap or swipe up", cfg->width - 48, 28, 18, appearance_text_muted(false));
 		if (!cue) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=cue-failed");
 			return false;
@@ -1875,6 +1880,7 @@ static void home_position(double offset) {
 static void home_begin(int32_t id, double x, double y) {
 	shell.home_settling = false;
 	shell.home_drag_origin = shell.home_offset;
+	shell.home_tap_candidate = true;
 	card_shell_drawer_down(&shell.home_gesture, id, x, y);
 	home_position(shell.home_offset);
 }
@@ -2009,11 +2015,13 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	if (keyboard_end & KG_DIRTY) keyboard_refresh();
 	wl_list_remove(&shell.seat_destroy.link);
 	shell.seat = NULL;
+	shell.pointer_owned = false; shell.pointer_seat = NULL;
 	cs_stream_cancel(&shell.policy);
 	shell.button_down = false;
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	if (shell.pointer_owned) shell.pointer_cancelled = true;
 	home_visibility(false);
 	kg_end_stream(&shell.keyboard, false);
 	card_appearance_stop();
@@ -2672,6 +2680,7 @@ static bool select_seat(struct sway_seat *seat) {
 	return true;
 }
 static bool enter(struct sway_seat *seat) {
+	shell.pointer_scroll = 0;
 	if (!enabled() || !shell.output || server.session_lock.lock || launcher_mapped() ||
 		drawer_mapped() ||
 		popup_mapped() || wlr_seat_touch_num_points(seat->wlr_seat) > 0 ||
@@ -2716,7 +2725,7 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		home_begin(id, x, y);
 		return true;
 	}
-	if (keyboard_gestures_enabled()) {
+	if (keyboard_gestures_enabled() && !shell.pointer_dispatch) {
 		unsigned action = kg_down(&shell.keyboard, id, x, y, event_ms,
 			shell.output->height, keyboard_layer(shell.output) != NULL,
 			shell.policy.mode == CS_DRAGGING,
@@ -2876,6 +2885,9 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 	y = card_shell_touch_output_coordinate(y - shell.output->ly, shell.output->height);
 	if (shell.home_gesture.contacts) {
 		card_shell_drawer_motion(&shell.home_gesture, id, x, y, shell.policy.config.entry_distance);
+		if (id == shell.home_gesture.owner &&
+			hypot(x - shell.home_gesture.x, y - shell.home_gesture.y) > shell.policy.config.tap_slop)
+			shell.home_tap_candidate = false;
 		if (id == shell.home_gesture.owner && !shell.home_gesture.cancelled)
 			home_position(shell.home_drag_origin + shell.home_gesture.y - y);
 		return true;
@@ -2925,7 +2937,9 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
 	if (shell.home_gesture.contacts) {
-		bool open = card_shell_drawer_up(&shell.home_gesture, id);
+		bool tap = shell.home_tap_candidate && !shell.home_gesture.cancelled &&
+			shell.home_gesture.contacts == 1 && id == shell.home_gesture.owner;
+		bool open = card_shell_drawer_up(&shell.home_gesture, id) || tap;
 		if (!shell.home_gesture.contacts) home_settle(open);
 		return true;
 	}
@@ -2981,7 +2995,98 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	}
 	return r.consumed;
 }
+/* Mouse streams are compositor-owned only in overview or at shell edges.
+ * Remember ownership through cancellation so an unmatched release cannot reach
+ * an application. INT32_MAX is separate from injected/test and real touch IDs. */
+#define CARD_POINTER_ID INT32_MAX
+bool card_shell_pointer_button(struct sway_seat *seat, uint32_t button,
+        enum wl_pointer_button_state state, uint32_t time_ms) {
+    if (button != BTN_LEFT) return shell.pointer_owned;
+    if (state == WL_POINTER_BUTTON_STATE_RELEASED && shell.pointer_owned) {
+        if (seat != shell.pointer_seat) return true;
+        shell.pointer_dispatch = true;
+        if (!shell.pointer_cancelled) input_up(seat, CARD_POINTER_ID, event_time_ms(time_ms));
+        shell.pointer_dispatch = false;
+        shell.pointer_owned = false;
+        shell.pointer_cancelled = false;
+        shell.pointer_seat = NULL;
+        return true;
+    }
+    if (state != WL_POINTER_BUTTON_STATE_PRESSED || shell.pointer_owned)
+        return shell.pointer_owned;
+    if (!enabled() || !shell.output || server.session_lock.lock ||
+        wlr_seat_touch_num_points(seat->wlr_seat) ||
+        seat->cursor->simulating_pointer_from_touch || shell.policy.contact ||
+        shell.policy.edge.tracking || shell.home_gesture.contacts) return false;
+    double x = seat->cursor->cursor->x, y = seat->cursor->cursor->y;
+    shell.pointer_dispatch = true;
+    bool owned = input_down(seat, CARD_POINTER_ID, x, y, event_time_ms(time_ms));
+    shell.pointer_dispatch = false;
+    if (owned) {
+        shell.pointer_owned = true;
+        shell.pointer_cancelled = false;
+        shell.pointer_seat = seat;
+        shell.pointer_x = x; shell.pointer_y = y;
+        wlr_seat_pointer_clear_focus(seat->wlr_seat);
+        cursor_set_image(seat->cursor, "default", NULL);
+    }
+    return owned;
+}
+bool card_shell_pointer_motion(struct sway_seat *seat, uint32_t time_ms) {
+    if (shell.pointer_owned && seat == shell.pointer_seat) {
+        shell.pointer_dispatch = true;
+        double x = seat->cursor->cursor->x, y = seat->cursor->cursor->y;
+        // A scene rebase at the same position is not a new velocity sample.
+        if (!shell.pointer_cancelled && (x != shell.pointer_x || y != shell.pointer_y)) {
+            shell.pointer_x = x; shell.pointer_y = y;
+            input_motion(seat, CARD_POINTER_ID, x, y, event_time_ms(time_ms));
+        }
+        shell.pointer_dispatch = false;
+        return true;
+    }
+    /* Only deck content owns hover. Mapped overlays and reserved keyboard
+     * regions still need normal pointer focus and client dispatch. */
+    if (shell.active && shell.output && !drawer_mapped() && !server.session_lock.lock) {
+        double y = seat->cursor->cursor->y - shell.output->ly;
+        if (y >= shell.policy.config.top_reserved &&
+            y < shell.policy.config.height - shell.policy.config.bottom_reserved) {
+            wlr_seat_pointer_clear_focus(seat->wlr_seat);
+            cursor_set_image(seat->cursor, "default", NULL);
+            return true;
+        }
+    }
+    return false;
+}
+bool card_shell_pointer_axis(struct sway_seat *seat, struct wlr_pointer_axis_event *event) {
+    if (!shell.active || !shell.output || drawer_mapped() || server.session_lock.lock)
+        return false;
+    double y = seat->cursor->cursor->y - shell.output->ly;
+    if (y < shell.policy.config.top_reserved ||
+        y >= shell.policy.config.height - shell.policy.config.bottom_reserved) return false;
+    if (shell.pointer_owned || shell.policy.contact || shell.home_gesture.contacts ||
+        shell.policy.mode != CS_DECK) return true;
+    /* Both wheel axes browse the deck, with a fractional accumulator for
+     * high-resolution wheels and continuous two-finger scroll. */
+    double amount = event->delta_discrete ? event->delta_discrete /
+        (double)WLR_POINTER_AXIS_DISCRETE_STEP : event->delta / 60.0;
+    if (!isfinite(amount)) return true;
+    shell.pointer_scroll += fmax(-32, fmin(32, amount));
+    while (fabs(shell.pointer_scroll) >= 1) {
+        int direction = shell.pointer_scroll > 0 ? 1 : -1;
+        handle_result(cs_step(&shell.policy, direction));
+        shell.pointer_scroll -= direction;
+    }
+    return true;
+}
+void card_shell_pointer_reset(struct sway_seat *seat) {
+    if (shell.pointer_seat != seat) return;
+    shell.pointer_owned = false;
+    shell.pointer_cancelled = false;
+    shell.pointer_seat = NULL;
+    card_shell_cancel(seat);
+}
 bool card_shell_cancel(struct sway_seat *seat) {
+	if (shell.pointer_owned && shell.pointer_seat == seat) shell.pointer_cancelled = true;
 	if (!shell.initialized)
 		return false;
 	if (shell.home_gesture.contacts || shell.home_settling) {
@@ -3213,7 +3318,19 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 		accepted = true;
 	} else if (argc == 1 && strcmp(argv[0], "enter") == 0)
 		accepted = enter(seat);
-	else if (argc == 1 && strcmp(argv[0], "back") == 0) {
+	else if (argc == 1 && strcmp(argv[0], "home") == 0) {
+        if (!server.session_lock.lock && !shell.pointer_owned && !shell.policy.contact &&
+            !shell.home_gesture.contacts && select_seat(seat)) {
+            card_shell_launch_surface("hide");
+            if (shell.active) home_settle(true);
+            else { home_visibility(true); struct cs_result r = cs_leave(&shell.policy);
+                r.focus_id = 0; restore(r); }
+            accepted = true;
+        }
+    } else if (argc == 1 && strcmp(argv[0], "activate") == 0) {
+        struct cs_result r = cs_activate_selected(&shell.policy);
+        handle_result(r); accepted = r.consumed;
+    } else if (argc == 1 && strcmp(argv[0], "back") == 0) {
 		handle_result(cs_leave(&shell.policy));
 		accepted = true;
 	} else if (argc == 1 && strcmp(argv[0], "cancel") == 0)
@@ -3251,7 +3368,7 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
 	} else
 		return cmd_results_new(
 			CMD_INVALID,
-			"expected enter|back|previous|next|close|cancel|down ID X Y|motion ID X Y|up ID");
+			"expected enter|home|activate|back|previous|next|close|cancel|down ID X Y|motion ID X Y|up ID");
 	sway_log(SWAY_INFO, "K230_CARD_SHELL input=injected operation=%s accepted=%d", argv[0],
 			 accepted);
 	return cmd_results_new(accepted ? CMD_SUCCESS : CMD_FAILURE,

@@ -1,4 +1,4 @@
-//! Touch-only drawer navigation. The compositor reveals the panel; these
+//! Touch and pointer drawer navigation. The compositor reveals the panel; these
 //! gestures begin only after the drawer owns a settled input region.
 
 /// `docs/design/app-drawer-review.md`'s redesign: a 4-column grid, closer
@@ -435,6 +435,15 @@ impl DrawerNavigation {
             self.velocity = 0.0;
         }
         (self.scroll - old).abs() >= 0.5
+    }
+
+    /// Wheel streams own their momentum; never keep an old touch fling running.
+    pub fn scroll_by(&mut self, delta: f64, width: u32, height: u32, apps: usize) -> bool {
+        if self.contact.is_some() || !delta.is_finite() { return false; }
+        self.velocity = 0.0;
+        let old = self.scroll;
+        self.scroll = (old + delta).clamp(0.0, max_scroll(width, height, apps));
+        self.scroll != old
     }
 
     pub fn coasting(&self) -> bool {
@@ -898,5 +907,25 @@ mod tests {
         assert!(!search_keyboard_hit((100.0, top - 1.0), height));
         assert!(search_keyboard_hit((100.0, top), height));
         assert!(search_keyboard_hit((100.0, f64::from(height) - 1.0), height));
+    }
+}
+
+#[cfg(test)]
+mod pointer_scroll_tests {
+    use super::*;
+    #[test]
+    fn wheel_bounds_and_touch_ownership() {
+        let mut nav = DrawerNavigation::default();
+        assert!(nav.scroll_by(100.0, 568, 1232, 100));
+        assert_eq!(nav.scroll, 100.0);
+        assert!(!nav.scroll_by(f64::NAN, 568, 1232, 100));
+        nav.down(1, (200.0, 200.0), 0);
+        assert!(!nav.scroll_by(200.0, 568, 1232, 100));
+        nav.cancel();
+        nav.scroll_by(-10000.0, 568, 1232, 100);
+        assert_eq!(nav.scroll, 0.0);
+        nav.scroll_by(10000.0, 568, 1232, 100);
+        assert_eq!(nav.scroll, max_scroll(568, 1232, 100));
+        assert!(!nav.tick(16, 568, 1232, 100));
     }
 }

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "evidence_class": "host-unit-and-headless-cross-compositor",
+  "source_sha256": {
+    "nix/card-shell/adapter.c": "4720ba9df2d24f6644056851515eb2c8427e806c49892000cb7f30aafc645a46",
+    "nix/card-shell-policy/card-shell-policy.c": "7cdfe012769b96308b2cf0e49fc2e3f8e397080c6f40b226cc368d07a2914415",
+    "nix/card-shell-policy/card-shell-policy.h": "bcef86bca0b0a7b9b1f79e2d8222e345c0d66c078dbe91729b6e8cd21c21fe49",
+    "nix/patches/sway-k230-card-shell.patch": "eccd8b758faece9f734d2e6f9b7155c6e7893ae5cc9b5e6633d8891dc75d3f55",
+    "nix/rust-shell-client/src/main.rs": "9de575c716e49b4466f2d4e46fb3ae23bc9a6aa19361031b858b2bedb06946ed",
+    "nix/rust-shell-client/src/navigation.rs": "f5c639d242d68f3110277e1225337b2ba9152892b391eeb899457fe52c96c493",
+    "nix/rust-shell-client/src/pointer_input.rs": "0fe100178683302dbcffec84edec0083f42513631a7486d4c3fee8d608743fb6",
+    "nix/rust-shell-client/src/theme_carousel.rs": "3b0f0eb5647281abca16ff608521943f54d9a44e58c004bfe330b0dd797b4daa",
+    "nix/shell.nix": "bd66c91991e6871e19fd895243f0e6a66f1408df43e49a8a2373b08aa917b6d7",
+    "tests/test_card_shell_pointer_navigation.py": "9f87c449e60f9d3c6d654e505f6d9066320b6f9a49f401067c6e828dcd3e556b"
+  },
+  "headless_sway": "/nix/store/79la7mgp4dg2p0nxkiw0lqwvfmz7ygp2-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+  "runtime_command": "CARD_SHELL_SWAY=<above>/bin/sway CARD_SHELL_CLIENT=<built probe> python3 -m unittest discover -s tests -p test_card_shell_pointer_navigation.py",
+  "runtime_result": "1 integration test passed; real Sway with QEMU user-mode, headless output and injected pointer/touch.",
+  "rust_tests": {
+    "passed": 407,
+    "failed": 0,
+    "ignored": 1
+  },
+  "policy_tests": {
+    "passed": 37,
+    "failed": 0
+  },
+  "commands": [
+    "cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib",
+    "cargo check --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust",
+    "python3 tests/test_card_shell_state.py"
+  ],
+  "limits": [
+    "Physical input recognition and perceived animation quality are not proven by injection.",
+    "Real installed board and profile proof recorded separately."
+  ],
+  "resolved_iteration_failures": [
+    "Rust app count initially referenced a nonexistent catalog field; corrected to filtered drawer apps.",
+    "Cross compositor initially missed wlr_cursor.h; included the cursor type.",
+    "First runtime run passed Home/wheel/activation then failed bottom mouse drag; added ownership dispatch at Sway seatop_rebase and corrected IPC cursor event timestamps/axis units."
+  ]
+}

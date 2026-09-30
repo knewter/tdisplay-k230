@@ -827,6 +827,7 @@ let
       # and HDMI is active. Reserve four-finger inward pinch for overview;
       # ordinary two-finger app scrolling and zooming retain their bindings.
       bindgesture --input-device=1:1:K230_Virtual_Touchpad_(HDMI_mode) pinch:4:inward card_shell enter
+      bindgesture --input-device=1:1:K230_Virtual_Touchpad_(HDMI_mode) pinch:4:outward card_shell activate
 
       # Hardware/keyboard-base volume keys, wired to wpctl's own default-sink
       # step commands rather than to the Rust client directly: the client's

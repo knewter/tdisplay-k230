@@ -192,6 +192,7 @@ struct cs_result cs_set_config(struct cs_policy *policy,
     const struct cs_config *config);
 struct cs_result cs_enter(struct cs_policy *policy, uint64_t focused_id);
 struct cs_result cs_leave(struct cs_policy *policy);
+struct cs_result cs_activate_selected(struct cs_policy *policy);
 /* Persistent button equivalents; direction must be -1 or +1. */
 struct cs_result cs_step(struct cs_policy *policy, int direction);
 struct cs_result cs_request_close(struct cs_policy *policy, uint64_t id,

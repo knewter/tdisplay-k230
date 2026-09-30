@@ -2,7 +2,7 @@
 
 The installed board reproduced the reported navigation gap: a standard mouse click on the overview's “Swipe up for Home” footer left `mode=1 home_selected=0`. [Before capture](before-overview.jpg) is a visually reviewed native capture of that physical board, driven through Sway's standard cursor/button path. It contains only an empty terminal prompt and the shell wallpaper.
 
-[Host tests and before observation](host-and-before.json) record the exact source hashes, installed system, commands and limitations. The host library and policy checks pass; cross-build, headless integration, board after matrix and physical glass acceptance remain separate gates until recorded below.
+[Host tests and before observation](host-and-before.json) record the exact source hashes, installed system, commands and limitations. The host library and policy checks pass. [Final host and headless results](host-final.json) record the rebuilt compositor passing Home, card wheel/activation, bottom mouse drag, tap and cancellation checks. Full system cross-build, installed-board after matrix and physical glass acceptance remain separate gates until recorded below.
 
 The intended routes are:
 

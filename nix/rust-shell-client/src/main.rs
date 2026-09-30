@@ -4618,6 +4618,16 @@ impl ShellClient {
                         self.apply_search_key(key);
                     }
                 } else if start.is_some_and(|(_, start_pos)| {
+                    // The visible handle also works as a tap/click dismiss
+                    // target; search immediately below keeps its own action.
+                    let (_, handle_y, _, _) = navigation::handle_rect(self.width, self.height);
+                    (handle_y - 10.0..handle_y + 10.0).contains(&start_pos.1)
+                        && (point.0 - start_pos.0).abs() <= 12.0
+                        && (point.1 - start_pos.1).abs() <= 12.0
+                }) {
+                    self.nav.cancel();
+                    self.begin_animated_close();
+                } else if start.is_some_and(|(_, start_pos)| {
                     !self.drawer_search.focused
                         && navigation::search_field_hit(start_pos, self.width, self.height)
                         && (point.0 - start_pos.0).abs() <= 12.0
@@ -5270,10 +5280,68 @@ impl TouchHandler for ShellClient {
     }
 }
 
+impl ShellClient {
+    fn log_pointer_state(&self) {
+        self.log(&format!("pointer-state route={:?} wifi={:?} themes={:?} drawer_scroll={:.1} notification_scroll={:.1} wifi_scroll={:.1} theme_position={:.3} background_position={:.3}",
+            self.route, self.wifi_view.page, self.theme_view.page, self.nav.scroll,
+            self.service_view.notification_scroll, self.wifi_view.scroll,
+            self.theme_carousel.position(), self.background_carousel.position()));
+    }
+    fn pointer_scroll(&mut self, qh: &QueueHandle<Self>, event: &PointerEvent,
+                      horizontal: smithay_client_toolkit::seat::pointer::AxisScroll,
+                      vertical: smithay_client_toolkit::seat::pointer::AxisScroll) {
+        if self.touch.id.is_some() || self.home_touch_id.is_some() { return; }
+        let dx = pointer_input::axis_delta(horizontal.absolute, horizontal.discrete, horizontal.value120);
+        let dy = pointer_input::axis_delta(vertical.absolute, vertical.discrete, vertical.value120);
+        if !self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == &event.surface) { return; }
+        let mut changed = false;
+        match self.route {
+            Route::Drawer => {
+                let count = self.drawer_filtered_apps().len();
+                changed = self.nav.scroll_by(dy, self.width, self.height, count);
+            }
+            Route::Shade => {
+                self.notification_coast.stop();
+                let max = self.service_view.notifications.as_ref().map_or(0.0,
+                    |snapshot| notification_max_scroll(snapshot.events.len(), self.height));
+                let old = self.service_view.notification_scroll;
+                self.service_view.notification_scroll = (old + dy).clamp(0.0, max);
+                changed = old != self.service_view.notification_scroll;
+                if changed { self.renderer.set_services(self.service_view.clone()); }
+            }
+            Route::Settings if self.wifi_view.page != WifiPage::Closed => {
+                self.wifi_view.scroll(dy * 1232.0 / f64::from(self.height.max(1)));
+                self.wifi_dirty(); changed = dy != 0.0;
+            }
+            Route::Settings if self.theme_view.page == ThemePage::List => {
+                let delta = if dx != 0.0 { dx } else { dy };
+                let settle = horizontal.stop || vertical.stop || horizontal.value120 != 0 ||
+                    vertical.value120 != 0 || horizontal.discrete != 0 || vertical.discrete != 0;
+                if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h).contains(&event.position.1) {
+                    let count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
+                    changed = self.theme_carousel.scroll_by(delta, count, settle);
+                    self.theme_view.theme_position = self.theme_carousel.position();
+                } else if (BACKGROUND_CAROUSEL_TOP..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h).contains(&event.position.1) {
+                    let count = self.theme_view.preview.as_ref().map_or(0, |p| p.backgrounds.len());
+                    changed = self.background_carousel.scroll_by(delta, count, settle);
+                    self.theme_view.background_position = self.background_carousel.position();
+                }
+                if changed { self.theme_dirty(); }
+            }
+            _ => {}
+        }
+        if changed { self.log("pointer-scroll"); self.log_pointer_state(); self.dirty = true; self.draw(qh); }
+    }
+}
+
 impl PointerHandler for ShellClient {
     fn pointer_frame(&mut self, _: &Connection, qh: &QueueHandle<Self>,
                      _: &wl_pointer::WlPointer, events: &[PointerEvent]) {
         for event in events {
+            if let PointerEventKind::Axis { horizontal, vertical, .. } = event.kind {
+                self.pointer_scroll(qh, event, horizontal, vertical);
+                continue;
+            }
             let (update, time_ms) = match event.kind {
                 PointerEventKind::Press { button, time, .. } => {
                     // Do not steal a contact already owned by the real touchscreen.
@@ -5304,6 +5372,7 @@ impl PointerHandler for ShellClient {
                     }
                     self.log("pointer-up");
                     self.contact_up(qh, time_ms, POINTER_CONTACT_ID);
+                    self.log_pointer_state();
                 }
                 Some(pointer_input::Action::Cancel) => self.contact_cancel(qh),
                 None => {},

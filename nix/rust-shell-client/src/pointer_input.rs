@@ -93,3 +93,25 @@ mod tests {
         assert_eq!(contact.update(1, Update::Release(PRIMARY_BUTTON)), None);
     }
 }
+
+/// Convert Wayland wheel metadata once; a frame often carries absolute and
+/// value120 together, so adding them would double the movement. Smooth pad
+/// deltas retain their pixel magnitude and high-resolution wheel fractions.
+pub fn axis_delta(absolute: f64, discrete: i32, value120: i32) -> f64 {
+    if !absolute.is_finite() { return 0.0; }
+    if value120 != 0 { f64::from(value120) / 120.0 * 48.0 }
+    else if discrete != 0 { f64::from(discrete) * 48.0 }
+    else { absolute }
+}
+
+#[cfg(test)]
+mod axis_tests {
+    use super::*;
+    #[test]
+    fn smooth_and_wheel_units_are_not_added_twice() {
+        assert_eq!(axis_delta(15.0, 1, 120), 48.0);
+        assert_eq!(axis_delta(15.0, 0, 30), 12.0);
+        assert_eq!(axis_delta(-2.5, 0, 0), -2.5);
+        assert_eq!(axis_delta(f64::NAN, 0, 120), 0.0);
+    }
+}

@@ -153,14 +153,22 @@
  #include <assert.h>
  #include <linux/input-event-codes.h>
  #include <string.h>
-@@ -956,6 +957,7 @@
+@@ -956,6 +957,8 @@
  
  void seat_remove_device(struct sway_seat *seat,
  		struct sway_input_device *input_device) {
++	card_shell_pointer_reset(seat);
 +	card_shell_cancel(seat);
  	struct sway_seat_device *seat_device = seat_get_device(seat, input_device);
  
  	if (!seat_device) {
+@@ -1558,0 +1561,1 @@
++	if (card_shell_pointer_button(seat, button, state, time_msec)) return;
+@@ -1564,1 +1567,2 @@
+ void seatop_pointer_motion(struct sway_seat *seat, uint32_t time_msec) {
++	if (card_shell_pointer_motion(seat, time_msec)) return;
+@@ -1571,0 +1576,1 @@
++	if (card_shell_pointer_axis(seat, event)) return;
 @@ -1576,12 +1578,14 @@
  
  void seatop_touch_motion(struct sway_seat *seat, struct wlr_touch_motion_event *event,
@@ -191,6 +199,10 @@
  	if (seat->seatop_impl->touch_cancel) {
  		seat->seatop_impl->touch_cancel(seat, event);
  	}
+@@ -1676,1 +1686,2 @@
+-void seatop_rebase(struct sway_seat *seat, uint32_t time_msec) {
++void seatop_rebase(struct sway_seat *seat, uint32_t time_msec) {
++	if (card_shell_pointer_motion(seat, time_msec)) return;
 --- a/meson.build
 +++ b/meson.build
 @@ -70,6 +70,8 @@
@@ -273,3 +285,19 @@
 +++ b/sway/input/seat.c
 @@ -1272,0 +1273 @@
 +	card_shell_focus_changed(seat);
+--- a/sway/commands/seat/cursor.c
++++ b/sway/commands/seat/cursor.c
+@@ -120,1 +120,1 @@
+-			.delta_discrete = delta
++			.delta_discrete = delta * WLR_POINTER_AXIS_DISCRETE_STEP
+--- a/sway/commands/seat/cursor.c
++++ b/sway/commands/seat/cursor.c
+@@ -1,1 +1,2 @@
++#include "util.h"
+ #include <linux/input-event-codes.h>
+@@ -116,1 +117,1 @@
+-			.time_msec = 0,
++			.time_msec = get_current_time_in_msec(),
+@@ -137,1 +138,1 @@
+-	dispatch_cursor_button(cursor, NULL, 0, button, state);
++	dispatch_cursor_button(cursor, NULL, get_current_time_in_msec(), button, state);

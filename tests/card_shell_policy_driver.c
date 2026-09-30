@@ -1179,6 +1179,27 @@ static void stream_cancel_multitouch(void) {
     assert(cs_up(&p,1,501).actions&CS_EXPAND);
     cs_finish(&p);
 }
+static void activate_selected(void) {
+    struct cs_policy p=setup();
+    assert(!cs_activate_selected(&p).consumed); /* ordinary app */
+    p.config.touch_first_motion=true;
+    cs_enter(&p,101); cs_step(&p,1);
+    assert(p.cards[p.selected].id==202);
+    struct cs_result r=cs_activate_selected(&p);
+    assert(r.consumed && p.mode==CS_EXPANDING && p.expand_id==202);
+    assert(!(r.actions&CS_CLOSE));
+    assert(!cs_activate_selected(&p).consumed); /* no duplicate expansion */
+    cs_tick(&p,100); r=cs_tick(&p,1000);
+    if (!(r.actions&CS_RESTORE)) r=cs_tick(&p,1100);
+    assert((r.actions&CS_RESTORE) && r.focus_id==202);
+    cs_enter(&p,101);cs_step(&p,1);cs_step(&p,1); /* private */
+    assert(!cs_activate_selected(&p).consumed && p.mode==CS_DECK);
+    cs_step(&p,-1);down(&p,1200);
+    assert(!cs_activate_selected(&p).consumed); /* active pointer/touch */
+    cs_stream_cancel(&p);cs_set_cards(&p,NULL,0);
+    assert(!cs_activate_selected(&p).consumed);
+    cs_finish(&p);
+}
 static void randomized(void) {
     struct cs_policy p=setup();unsigned seed=230;
     for (uint64_t i=1;i<10000;i++) {
@@ -1205,7 +1226,7 @@ static void randomized(void) {
 }
 int main(int argc,char **argv) {
     struct {const char *name;void (*run)(void);} cases[]={
-        {"enter-expand",enter_expand},{"horizontal",horizontal},
+        {"activate-selected",activate_selected},{"enter-expand",enter_expand},{"horizontal",horizontal},
         {"overview-geometry",overview_geometry},
         {"scroll-fling-multi-card",scroll_fling_multi_card},
         {"scroll-slow-release-snaps-nearest",scroll_slow_release_snaps_nearest},

@@ -157,6 +157,22 @@ struct cs_result cs_leave(struct cs_policy *p) {
     r.focus_id=focus;
     return r;
 }
+struct cs_result cs_activate_selected(struct cs_policy *p) {
+    if (p->mode != CS_DECK || p->contact || p->blocked_until_up ||
+        p->selected >= p->count) return result(p, 0, false);
+    struct cs_card card = p->cards[p->selected];
+    if (card.content != CS_LIVE || !card.focusable) return result(p, 0, false);
+    if (p->config.touch_first_motion) {
+        reset_drag(p); p->mode = CS_EXPANDING;
+        p->expand_id = card.id; p->expand_progress = 0;
+        p->expand_started_ms = 0; p->expand_reversing = false;
+        p->expand_full_dwell = false;
+        return result(p, CS_REDRAW, true);
+    }
+    struct cs_result r = cs_leave(p);
+    r.actions |= CS_EXPAND; r.focus_id = card.id;
+    return r;
+}
 static struct cs_result fail(struct cs_policy *p) {
     struct cs_result r=cs_leave(p);
     p->message=CS_MESSAGE_FAILED;r.message=p->message;
