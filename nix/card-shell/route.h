@@ -24,7 +24,7 @@ void card_shell_drawer_cancel(struct card_shell_drawer_gesture *gesture);
  * bounded; compositor input remains the sole owner of this touch sequence. */
 struct card_shell_reveal_stream {
 	int fd;
-	bool active, connecting, terminal, shade;
+	bool active, connecting, terminal, shade, dismiss;
 	uint64_t seq, deadline_ms;
 	char current[128], update[128], end[128];
 	size_t current_len, current_pos, update_len, end_len;

@@ -19,6 +19,7 @@ pub struct RevealMessage {
     pub phase: Phase,
     pub seq: u64,
     pub progress: u16,
+    pub dismiss: bool,
 }
 
 #[derive(Deserialize)]
@@ -42,8 +43,8 @@ impl RevealMessage {
             return None;
         }
         let surface = match wire.surface.as_str() {
-            "drawer" => Route::Drawer,
-            "shade" => Route::Shade,
+            "drawer" | "dismiss-bottom" => Route::Drawer,
+            "shade" | "dismiss-top" => Route::Shade,
             _ => return None,
         };
         let phase = match wire.phase.as_str() {
@@ -53,8 +54,9 @@ impl RevealMessage {
             "cancel" => Phase::Cancel,
             _ => return None,
         };
+        let dismiss = wire.surface.starts_with("dismiss-");
         if (matches!(phase, Phase::Finish) && wire.progress != 0 && wire.progress != 1000)
-            || (matches!(phase, Phase::Begin | Phase::Cancel) && wire.progress != 0)
+            || (matches!(phase, Phase::Begin | Phase::Cancel) && wire.progress != if dismiss { 1000 } else { 0 })
         {
             return None;
         }
@@ -63,6 +65,7 @@ impl RevealMessage {
             phase,
             seq: wire.seq,
             progress: wire.progress,
+            dismiss,
         })
     }
 }
@@ -83,6 +86,7 @@ pub struct RevealState {
     settle: Option<Settle>,
     complete: bool,
     open_target: bool,
+    origin: f64,
 }
 
 impl RevealState {
@@ -114,6 +118,7 @@ impl RevealState {
                 self.surface = Some(message.surface);
                 self.seq = message.seq;
                 self.progress = f64::from(message.progress) / 1000.0;
+                self.origin = self.progress;
                 self.complete = false;
                 self.open_target = false;
                 self.settle = None;
@@ -129,7 +134,7 @@ impl RevealState {
                     return false;
                 }
                 let target = if matches!(message.phase, Phase::Cancel) {
-                    0.0
+                    self.origin
                 } else {
                     f64::from(message.progress) / 1000.0
                 };
@@ -158,7 +163,7 @@ impl RevealState {
     /// reverses instead of leaving an unowned partial overlay.
     pub fn eof(&mut self, now_ms: u64, reduced_motion: bool) {
         if self.tracking() {
-            self.settle_to(0.0, now_ms, reduced_motion);
+            self.settle_to(self.origin, now_ms, reduced_motion);
         }
     }
 
@@ -169,7 +174,7 @@ impl RevealState {
         let fraction = (now_ms.saturating_sub(settle.started_ms) as f64
             / settle.duration_ms as f64)
             .clamp(0.0, 1.0);
-        self.progress = settle.from + (settle.target - settle.from) * fraction;
+        self.progress = settle.from + (settle.target - settle.from) * (1.0 - (1.0 - fraction).powi(3));
         if fraction >= 1.0 {
             self.settle = None;
             if !self.open_target {
@@ -186,6 +191,23 @@ mod tests {
 
     fn line(phase: &str, progress: u16, seq: u64) -> Vec<u8> {
         format!("{{\"v\":1,\"kind\":\"reveal\",\"surface\":\"drawer\",\"phase\":\"{phase}\",\"seq\":{seq},\"progress\":{progress}}}\n").into_bytes()
+    }
+
+    #[test]
+    fn dismiss_tracks_reversal_and_restores_visible_panel_on_eof() {
+        let closing = |phase, progress| RevealMessage::parse(&String::from_utf8(line(phase, progress, 9)).unwrap().replace("drawer", "dismiss-bottom").into_bytes()).unwrap();
+        let mut state = RevealState::default();
+        assert!(state.apply(closing("begin",1000),0,false));
+        assert!(state.apply(closing("update",600),10,false));
+        assert_eq!(state.progress(),0.6);
+        assert!(state.apply(closing("update",800),20,false));
+        assert_eq!(state.progress(),0.8);
+        state.eof(30,false); state.tick(190);
+        assert_eq!(state.progress(),1.0); assert!(state.input_ready());
+        state.clear(); state.apply(closing("begin",1000),200,false);
+        state.apply(closing("update",400),210,false);
+        state.apply(closing("finish",0),220,false);state.tick(380);
+        assert_eq!(state.surface(),None);
     }
 
     #[test]

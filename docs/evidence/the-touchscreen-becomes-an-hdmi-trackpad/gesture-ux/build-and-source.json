@@ -1,0 +1,88 @@
+{
+  "branch": "fix/hdmi-gestures",
+  "base_revision": "2faa383c8d0de5555fbc448a0f72eb48ab2e761c",
+  "planning_commit": "c5802b946c1ad9b4548a9a2041321765330e86f6",
+  "owned_paths": [
+    "nix/card-shell.nix",
+    "nix/card-shell/adapter.c",
+    "nix/card-shell/route.c",
+    "nix/card-shell/route.h",
+    "nix/patches/sway-k230-trackpad-ipc.patch",
+    "nix/rust-shell-client/src/main.rs",
+    "nix/rust-shell-client/src/protocol.rs",
+    "nix/shell.nix",
+    "nix/touch-trackpad-service.nix",
+    "nix/touch-trackpad/src/gestures.rs",
+    "nix/touch-trackpad/src/main.rs",
+    "nix/touch-trackpad/src/shell_ipc.rs",
+    "nix/touch-trackpad/src/touchdev.rs",
+    "tests/test_card_shell_pointer_navigation.py",
+    "tests/test_card_shell_trackpad_gestures.py",
+    "tools/hdmi-trackpad-gesture-trial.py",
+    "openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/",
+    "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/"
+  ],
+  "timestamp_utc": "2026-09-30T20:33:01.954305+00:00",
+  "build_command": "flock -n /tmp/k230-nix-build.lock nix build .#handheld-touch-trackpad .#card-shell .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 8",
+  "outputs": {
+    "relay": "/nix/store/70ckbwl1dx29jc05g0x0iv7lk48bi05i-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+    "compositor": "/nix/store/xjk8wi6hg77a1kf7wvmmc1ckni2zyf1k-k230-card-shell",
+    "rust_shell": "/nix/store/v3qjprh5i76i4x1vlx2vavhxy9nxxnkf-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "system": "/nix/store/zrzvf9m3gqr1w6a9yk28yldx0h8dg7lq-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "source_sha256": {
+    "nix/card-shell.nix": "38f6d0f60f9e6294daf2a19efb39b4131f5273b0dfecb7303283ea25ca8c7fd4",
+    "nix/card-shell/adapter.c": "cdacce343b913ace42a06318ce541392671485dc5a4b61efe1531f44464f60fe",
+    "nix/card-shell/route.c": "33d82e088fa93254c7fcfc504bfb3bd4fa64d4c426d30adf81f0cb26db3d1585",
+    "nix/card-shell/route.h": "031c81432e0b052c89b57a6923aacc3f51146d7a86565ab820d2636504e4fdd7",
+    "nix/patches/sway-k230-trackpad-ipc.patch": "5c0f03709e52c555fccb6a31724ad3ade112589e2c7905965e563baa64678ec7",
+    "nix/rust-shell-client/src/main.rs": "c867c80c13fd52214bd25ba04f6a23110d3a1c5494432717da63335bce972372",
+    "nix/rust-shell-client/src/protocol.rs": "ff55c0e997893944d617ea46006a687e3681dc0e61a30666e78a817e11261bc5",
+    "nix/shell.nix": "30280b5cf7b9700242f3000a4143cde063a86173a2e5c3a51dcfed3ed6e77a6c",
+    "nix/touch-trackpad-service.nix": "da9591fbaa486d42f84412bf894d64d03276130e24a0d5bc150f042a09206596",
+    "nix/touch-trackpad/src/gestures.rs": "584d17ff23be33324c591b349530b91de8af5d9acf4f804563305c2bdf3a8727",
+    "nix/touch-trackpad/src/main.rs": "42e4694bee60ebb80a7fc0886373289ae8cc41ee5a652a2c52c42076977e495c",
+    "nix/touch-trackpad/src/shell_ipc.rs": "51c17eb4bbe1db9f43bee7783d8063d3f1618401047963b4f8e2c35b00ec7260",
+    "nix/touch-trackpad/src/touchdev.rs": "32ca39f9bf2ad9c69b70ed9dcfd749fc6ac3a62181f15e918f777a43e8f61ded",
+    "tests/test_card_shell_pointer_navigation.py": "71e8b2b281ab26ec3bd54e3f2af6e86719c86ed34e028a06bf0c4f5bc0e21e5a",
+    "tests/test_card_shell_trackpad_gestures.py": "499aaa671545fcb9e674b254098dfebd2c706d0aa04a63d5fdadb2af975b80a7",
+    "tools/hdmi-trackpad-gesture-trial.py": "4d24dbf46091a23da3af2be28fee048fcd92875edfeed32c236fb837f8b2d14f"
+  },
+  "remaining_gate": "real-glass feel and named previous physical gates; no archive",
+  "installed_component_source_verification": {
+    "compositor": {
+      "output": "/nix/store/rwj1c3a61cg9zk0c11rdvq13wsb1d4lc-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+      "derivation": "/nix/store/swpvgz3s9jg44ighmd2g32bsjg83p36l-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+      "src": "/nix/store/2j7grygxd5da5r214vzz3y8b54rr739k-source",
+      "adapter_source": "/nix/store/584i3spcra5gd7prji39amhg69778j9f-adapter.c",
+      "verified_adapter_sha256": "cdacce343b913ace42a06318ce541392671485dc5a4b61efe1531f44464f60fe",
+      "verified_owned_sources": {
+        "adapter.c": {
+          "source": "/nix/store/584i3spcra5gd7prji39amhg69778j9f-adapter.c",
+          "sha256": "cdacce343b913ace42a06318ce541392671485dc5a4b61efe1531f44464f60fe"
+        },
+        "route.c": {
+          "source": "/nix/store/li9g5ybgd12dafpndp5i501gngnnnsjc-route.c",
+          "sha256": "33d82e088fa93254c7fcfc504bfb3bd4fa64d4c426d30adf81f0cb26db3d1585"
+        },
+        "route.h": {
+          "source": "/nix/store/0p0nkya1cisyb2yr21x4fbpknljr2479-route.h",
+          "sha256": "031c81432e0b052c89b57a6923aacc3f51146d7a86565ab820d2636504e4fdd7"
+        },
+        "ipc_patch": {
+          "source": "/nix/store/dmmw2ig5q5aldphk2drh93z59scrqhph-sway-k230-trackpad-ipc.patch",
+          "sha256": "5c0f03709e52c555fccb6a31724ad3ade112589e2c7905965e563baa64678ec7"
+        }
+      }
+    },
+    "rust_shell": {
+      "output": "/nix/store/qyfj3yd848c0ynab4dh4c2bw2blw2krx-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+      "derivation": "/nix/store/rxzlvb22rv3v2ags47pb8skv8lc10ha5-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+      "src": "/nix/store/8rp7cf9smw9awa79241kpdfadpx5dfpl-rust-shell-client",
+      "verified_source_sha256": {
+        "src/main.rs": "c867c80c13fd52214bd25ba04f6a23110d3a1c5494432717da63335bce972372",
+        "src/protocol.rs": "ff55c0e997893944d617ea46006a687e3681dc0e61a30666e78a817e11261bc5"
+      }
+    }
+  }
+}

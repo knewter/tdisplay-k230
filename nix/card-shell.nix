@@ -16,7 +16,7 @@ let
     enableXWayland = false;
     wlroots_0_20 = roundedWlroots;
   }).overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-card-shell.patch ];
+    patches = (old.patches or [ ]) ++ [ ./patches/sway-k230-card-shell.patch ./patches/sway-k230-trackpad-ipc.patch ];
     # Card-header icon resolution (nix/card-shell/icon.c) decodes SVG icons
     # via librsvg directly, the same real-icon path the Rust drawer already
     # uses (nix/rust-shell-client/default.nix's own librsvg buildInput) --

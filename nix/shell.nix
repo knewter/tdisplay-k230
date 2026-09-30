@@ -802,6 +802,7 @@ let
 
     # The HDMI relay is a touchpad: let libinput turn taps into clicks.
     input "1:1:K230_Virtual_Touchpad_(HDMI_mode)" {
+      natural_scroll enabled
       tap enabled
       scroll_method two_finger
     }

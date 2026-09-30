@@ -1,0 +1,86 @@
+{
+  "evidence_class": "physical-board-injected-raw-uinput-and-native-screencopy",
+  "real_glass": false,
+  "system": "/nix/store/zrzvf9m3gqr1w6a9yk28yldx0h8dg7lq-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "relay": "/nix/store/70ckbwl1dx29jc05g0x0iv7lk48bi05i-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad",
+  "timestamp_utc": "2026-09-30T20:33:22Z",
+  "checks": [
+    {
+      "name": "raw bottom edge opens overview",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=1 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "center contacts become continuous card axis",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=2 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=1 card_dx=63.099 card_velocity=0.376"
+    },
+    {
+      "name": "held card axis",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=2 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=1 card_dx=63.099 card_velocity=0.376",
+      "previous": "K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=2 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=1 card_dx=63.099 card_velocity=0.376"
+    },
+    {
+      "name": "axis lift releases ownership",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=1 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=63.099 card_velocity=0.000"
+    },
+    {
+      "name": "overview to Home",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "Home to app drawer",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=1 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=1 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "bottom outward swipe closes drawer",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "top inward swipe opens shade",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=1 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "top outward swipe closes shade",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "board IPC activation restores selected app",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000",
+      "input_class": "board-compositor-IPC"
+    },
+    {
+      "name": "board IPC lost stream watchdog releases ownership",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000",
+      "input_class": "board-compositor-IPC"
+    },
+    {
+      "name": "raw edge still opens shade after watchdog recovery",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=1 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=1 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    },
+    {
+      "name": "raw edge closes recovered shade",
+      "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1080x1920 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=1080x1920 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000"
+    }
+  ],
+  "captures": [
+    {
+      "file": "overview.png",
+      "sha256": "6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5",
+      "provenance": "native board screencopy after injected raw input"
+    },
+    {
+      "file": "home.png",
+      "sha256": "682dbe3d1e4008082e9ab3340bf95ea2eebb91693cad1156027eb4f68bd5255e",
+      "provenance": "native board screencopy after injected raw input"
+    },
+    {
+      "file": "drawer.png",
+      "sha256": "0830a5175acc07f25e894a3a461787325056e3fabecc07c76cd9d514a54eb6c5",
+      "provenance": "native board screencopy after injected raw input"
+    },
+    {
+      "file": "shade.png",
+      "sha256": "925f658f63ea96fd47bf25d8c851058d363b41cb4d769d91dd45d39cf234df10",
+      "provenance": "native board screencopy after injected raw input"
+    }
+  ]
+}

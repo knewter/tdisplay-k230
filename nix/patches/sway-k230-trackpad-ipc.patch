@@ -1,0 +1,28 @@
+--- a/sway/ipc-server.c
++++ b/sway/ipc-server.c
+@@ -657,7 +657,24 @@
+ 		transaction_commit_dirty();
+ 		char *json = cmd_results_to_json(res_list);
+ 		int length = strlen(json);
+-		ipc_send_reply(client, payload_type, json, (uint32_t)length);
++        bool reply_queued = ipc_send_reply(client, payload_type, json, (uint32_t)length);
++        /* Gesture ownership must not wait behind another expensive output
++         * frame. Try the small reply now, without blocking or disconnecting
++         * here; partial/EAGAIN/error writes retain the normal writable hook. */
++        if (reply_queued && strncmp(buf, "card_shell trackpad ", 20) == 0 &&
++                client->write_buffer_len <= 4096) {
++            ssize_t written = send(client->fd, client->write_buffer,
++                    client->write_buffer_len, MSG_DONTWAIT | MSG_NOSIGNAL);
++            if (written > 0) {
++                memmove(client->write_buffer, client->write_buffer + written,
++                        client->write_buffer_len - written);
++                client->write_buffer_len -= written;
++                if (!client->write_buffer_len && client->writable_event_source) {
++                    wl_event_source_remove(client->writable_event_source);
++                    client->writable_event_source = NULL;
++                }
++            }
++        }
+ 		free(json);
+ 		while (res_list->length) {
+ 			struct cmd_results *results = res_list->items[0];

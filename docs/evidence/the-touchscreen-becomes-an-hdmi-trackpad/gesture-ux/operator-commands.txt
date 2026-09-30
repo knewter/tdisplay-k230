@@ -1,0 +1,15 @@
+Physical board reservation: /tmp/k230-board.lock held by coordinator, no overlapping console operators.
+Installed userspace switch, not kernel/DT/flash.
+
+System: /nix/store/zrzvf9m3gqr1w6a9yk28yldx0h8dg7lq-nixos-system-nixos-26.11.20260919.20b1ddd
+Activation: nix-env -p /nix/var/nix/profiles/system --set SYSTEM; SYSTEM/bin/switch-to-configuration switch
+Independent activation rollback: systemd-run --unit=hdmi-gesture-rollback-release --on-active=8min /root/tmp/k230-deployment/hdmi-gesture-rollback.sh
+Timer stopped only after inspecting current system and three active services.
+
+Board trial (staged committed tools/hdmi-trackpad-gesture-trial.py):
+systemd-run --unit=hdmi-gesture-relay-restore-twelve --on-active=90s /run/current-system/sw/bin/systemctl start k230-touch-trackpad
+timeout -k 2s 50s /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /root/tmp/k230-deployment/hdmi-trackpad-gesture-trial.py --relay /nix/store/70ckbwl1dx29jc05g0x0iv7lk48bi05i-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --output /root/tmp/k230-deployment/hdmi-gesture-trial
+
+Invocation carried over serial with python3 tools/console.py /dev/ttyACM0 --wait=30.
+Native captures use runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=observed-display grim -t png staged-output.
+Transfer endpoint omitted: temporary private network address, not repository configuration.

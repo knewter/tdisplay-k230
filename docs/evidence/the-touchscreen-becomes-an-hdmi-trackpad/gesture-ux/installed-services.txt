@@ -1,0 +1,14 @@
+Physical board console, 2026-09-30. Current system, system profile, service states, process executables, relay process count, UTC timestamp, in that order.
+
+/nix/store/zrzvf9m3gqr1w6a9yk28yldx0h8dg7lq-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/zrzvf9m3gqr1w6a9yk28yldx0h8dg7lq-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+/nix/store/rwj1c3a61cg9zk0c11rdvq13wsb1d4lc-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+/nix/store/qyfj3yd848c0ynab4dh4c2bw2blw2krx-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+/nix/store/70ckbwl1dx29jc05g0x0iv7lk48bi05i-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad
+1
+2026-09-30T20:34:55Z
+
+The three active services are shell, shell-ui, k230-touch-trackpad. The process executables were obtained with systemctl show -p MainPID and readlink /proc/PID/exe. The already-expired independent relay restoration timer was absent when cleanup tried to stop it.

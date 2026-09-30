@@ -73,6 +73,22 @@ impl TouchDevice {
         })
     }
 
+    /// Read persistent protocol-B positions before receiving a fresh contact.
+    /// Unchanged axes need not be resent with a new tracking ID.
+    pub fn slot_positions(&self) -> io::Result<Vec<(i32, i32)>> {
+        const COUNT: usize = 16;
+        fn request_size() -> libc::c_ulong { (2 << 30) | (68 << 16) | ((b'E' as libc::c_ulong) << 8) | 0x0a }
+        let mut xs = [0i32; COUNT + 1]; xs[0] = ABS_MT_POSITION_X as i32;
+        let mut ys = [0i32; COUNT + 1]; ys[0] = ABS_MT_POSITION_Y as i32;
+        for values in [&mut xs, &mut ys] {
+            if unsafe { libc::ioctl(self.file.as_raw_fd(), request_size(), values.as_mut_ptr()) } < 0 {
+                return Err(io::Error::last_os_error());
+            }
+        }
+        let count = (self.get_abs(ABS_MT_SLOT)?.maximum + 1).clamp(0, COUNT as i32) as usize;
+        Ok((1..=count).map(|i| (xs[i], ys[i])).collect())
+    }
+
     /// `EVIOCGRAB(1)`: takes exclusive delivery of this device's events --
     /// libinput/Sway stop seeing them the instant this succeeds.
     pub fn grab(&self) -> io::Result<()> {

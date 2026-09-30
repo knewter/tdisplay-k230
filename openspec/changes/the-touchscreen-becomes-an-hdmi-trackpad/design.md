@@ -343,7 +343,12 @@ of the earlier non-goal after real operator feedback.
   lift rather than manufacture a click in another surface.
 - Transport uses a persistent, deadline-bound Sway IPC connection on a worker,
   coalesces pending motion but retains begin/end/cancel, and sends a stationary
-  heartbeat. No per-frame subprocess, unbounded queue, or synchronous render
+  heartbeat. Gesture command replies get a small nonblocking immediate flush
+  in Sway: on the physical board, the deferred writable callback waited behind
+  rendering and exceeded the original response deadline. Partial writes keep
+  Sway's ordinary writable hook. Persistent protocol-B slot coordinates are
+  primed with `EVIOCGMTSLOTS` and retained across tracking IDs, because Linux
+  filters unchanged position values. No per-frame subprocess, unbounded queue, or synchronous render
   work in the input-reading loop. The compositor owns a distinct gesture ID,
   validates sequence/finiteness/ranges and restores ownership on lost transport.
 - Reuse existing card/Home/reveal policy for normalized movement. Add explicit
@@ -354,6 +359,16 @@ of the earlier non-goal after real operator feedback.
   physics; discrete mouse wheels keep their step policy. Finger lift supplies
   release velocity; stopping/holding does not keep accumulating movement.
   Named-device natural scrolling makes content travel with the fingers.
+- Keep the existing nearest filter while Home drags/settles the overview.
+  Board tracing found that this movement lived outside the card policy contact
+  state, so the rotated scaled card incorrectly used the much slower bilinear
+  sampler every frame. Settled cards retain the existing quality policy.
+  Refresh the IPC sequence epoch at each begin, so recovery by another
+  controller cannot strand a long-lived relay below the accepted epoch.
+
+Source, exact installed outputs, raw-input board observations, reviewed native
+captures and the remaining real-glass gate are recorded in
+`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/README.md`.
 
 Host gates cover edge/center arbitration, staggered contacts, pinch/horizontal
 fall-through, timing/buffer bounds, transport failure, cancellation and dropped

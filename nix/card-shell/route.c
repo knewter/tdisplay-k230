@@ -85,7 +85,7 @@ static bool frame(char *out, size_t capacity, const struct card_shell_reveal_str
 	int n = snprintf(out, capacity,
 		"{\"v\":1,\"kind\":\"reveal\",\"surface\":\"%s\",\"phase\":\"%s\","
 		"\"seq\":%llu,\"progress\":%u}\n",
-		stream->shade ? "shade" : "drawer", phase,
+		stream->dismiss ? (stream->shade ? "dismiss-top" : "dismiss-bottom") : (stream->shade ? "shade" : "drawer"), phase,
 		(unsigned long long)stream->seq, progress);
 	if (n < 0 || (size_t)n >= capacity)
 		return false;
@@ -158,7 +158,8 @@ bool card_shell_reveal_pump(struct card_shell_reveal_stream *stream) {
 
 bool card_shell_reveal_begin(struct card_shell_reveal_stream *stream, const char *surface) {
 	if (!card_shell_reveal_enabled() || !surface ||
-		(strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0))
+		(strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0 &&
+         strcmp(surface, "dismiss-top") != 0 && strcmp(surface, "dismiss-bottom") != 0))
 		return false;
 	card_shell_reveal_abort(stream);
 	const char *runtime = getenv("XDG_RUNTIME_DIR");
@@ -196,10 +197,11 @@ bool card_shell_reveal_begin(struct card_shell_reveal_stream *stream, const char
 	stream->fd = fd;
 	stream->active = true;
 	stream->connecting = result < 0;
-	stream->shade = strcmp(surface, "shade") == 0;
+	stream->shade = strcmp(surface, "shade") == 0 || strcmp(surface, "dismiss-top") == 0;
+    stream->dismiss = strncmp(surface, "dismiss-", 8) == 0;
 	stream->seq = ++next_seq;
 	stream->deadline_ms = route_ms() + 500;
-	if (!frame(stream->current, sizeof(stream->current), stream, "begin", 0,
+	if (!frame(stream->current, sizeof(stream->current), stream, "begin", stream->dismiss ? 1000 : 0,
 			&stream->current_len)) {
 		card_shell_reveal_abort(stream);
 		return false;
@@ -238,7 +240,7 @@ bool card_shell_reveal_finish(struct card_shell_reveal_stream *stream, bool open
 }
 
 void card_shell_reveal_cancel(struct card_shell_reveal_stream *stream) {
-	(void)end_reveal(stream, "cancel", 0);
+	(void)end_reveal(stream, "cancel", stream->dismiss ? 1000 : 0);
 }
 
 uint16_t card_shell_reveal_progress(const struct card_shell_drawer_gesture *gesture,

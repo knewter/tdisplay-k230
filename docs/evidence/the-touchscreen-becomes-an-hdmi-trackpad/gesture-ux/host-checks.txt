@@ -1,0 +1,119 @@
+Evidence class: host unit/integration and headless compositor injection; not real glass.
+
+$ cargo test --offline --manifest-path nix/touch-trackpad/Cargo.toml; cargo clippy --offline --manifest-path nix/touch-trackpad/Cargo.toml --all-targets -- -D warnings
+   Compiling k230-touch-trackpad v0.1.0 (/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/hdmi-gestures/nix/touch-trackpad)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.87s
+     Running unittests src/main.rs (nix/touch-trackpad/target/debug/deps/k230_touch_trackpad-61340970afbd2602)
+
+running 39 tests
+test devsearch::tests::does_not_match_a_substring_of_another_name ... ok
+test devsearch::tests::finds_the_touchscreen_among_other_stanzas ... ok
+test event::tests::input_event_is_24_bytes_on_this_target ... ok
+test devsearch::tests::returns_none_when_name_is_absent ... ok
+test gestures::tests::candidate_timeout_has_no_missing_down_or_reordered_time ... ok
+test gestures::tests::center_and_one_finger_motion_keep_original_input ... ok
+test gestures::tests::pinch_horizontal_and_extra_contacts_are_not_shell_edges ... ok
+test gestures::tests::staggered_lift_finishes_without_a_stray_click ... ok
+test gestures::tests::top_bottom_pairs_reversal_and_refusal ... ok
+test gestures::tests::unchanged_slot_axes_survive_lift_and_restart ... ok
+test mode::tests::missing_drm_root_defaults_to_direct_touch ... ok
+test mode::tests::no_connectors_at_all_defaults_to_direct_touch ... ok
+test mode::tests::hdmi_connected_boot_is_trackpad ... ok
+test mode::tests::hdmi_present_but_unplugged_stays_direct_touch ... ok
+test relay::tests::one_finger_down_then_up_emits_touch_and_finger_tool ... ok
+test relay::tests::syn_report_is_always_the_last_event_of_a_frame ... ok
+test relay::tests::three_finger_drag_reports_tripletap_tool_and_keeps_tracking_positions ... ok
+test mode::tests::panel_only_boot_is_direct_touch ... ok
+test relay::tests::two_finger_tap_reports_doubletap_tool ... ok
+test relay::tests::two_to_one_finger_transition_swaps_tool_bit_without_dropping_touch ... ok
+test shell_ipc::tests::missing_shell_falls_back_without_leaking_a_worker ... ok
+test uinput::tests::axis_plan_includes_a_genuinely_valid_pressure_axis ... ok
+test uinput::tests::axis_plan_falls_back_to_a_sane_resolution_when_the_source_reports_zero ... ok
+test uinput::tests::axis_plan_omits_degenerate_pressure_matching_the_observed_board_bug ... ok
+test uinput::tests::axis_plan_preserves_a_real_reported_resolution ... ok
+test shell_ipc::tests::fragmented_reply_is_bounded_and_success_is_explicit ... ok
+test uinput::tests::axis_plan_rejects_a_degenerate_load_bearing_axis ... ok
+test uinput::tests::create_rejects_degenerate_position_range_without_touching_dev_uinput ... ok
+test uinput::tests::eviocgabs_matches_kernel_uapi_input_h_for_position_x ... ok
+test uinput::tests::eviocgrab_matches_kernel_uapi_input_h ... ok
+test uinput::tests::ioctl_numbers_match_kernel_uapi_uinput_h ... ok
+test uinput::tests::uinput_abs_setup_struct_size_is_28_bytes ... ok
+test uinput::tests::uinput_setup_struct_size_is_92_bytes ... ok
+test uinput::tests::creates_a_real_virtual_touchpad_with_the_boards_exact_degenerate_pressure_range ... ok
+test uinput::tests::creates_and_destroys_a_real_virtual_touchpad_if_permitted ... ok
+test shell_ipc::tests::protected_runtime_socket_keeps_final_motion_before_lift ... ok
+test touchdev::tests::wait_readable_blocks_for_the_timeout_then_returns_promptly_once_data_arrives ... ok
+test shell_ipc::tests::asynchronous_release_survives_a_slow_frame ... ok
+test shell_ipc::tests::nonresponsive_controller_does_not_block_forever ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+
+     Running tests/linux_event_codes.rs (nix/touch-trackpad/target/debug/deps/linux_event_codes-782289588090635c)
+
+running 2 tests
+test event::tests::input_event_is_24_bytes_on_this_target ... ok
+test touchpad_button_codes_match_linux_headers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+    Checking k230-touch-trackpad v0.1.0 (/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/hdmi-gestures/nix/touch-trackpad)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.19s
+
+
+$ cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib protocol
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.17s
+     Running unittests src/lib.rs (nix/rust-shell-client/target/debug/deps/k230_shell_rust-1ffb034c166b92ba)
+
+running 4 tests
+test protocol::tests::reverse_mid_drag_and_eof_after_finish ... ok
+test protocol::tests::early_eof_and_cancel_settle_closed ... ok
+test protocol::tests::dismiss_tracks_reversal_and_restores_visible_panel_on_eof ... ok
+test protocol::tests::strict_bounded_wire_and_stale_sequence ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 405 filtered out; finished in 0.00s
+
+
+
+$ python3 -m unittest discover -s tests -p test_card_shell_route.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.471s
+
+OK
+
+
+$ python3 tests/test_card_shell_reveal.py
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.741s
+
+OK
+
+
+
+$ CARD_SHELL_SWAY=/nix/store/rwj1c3a61cg9zk0c11rdvq13wsb1d4lc-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway CARD_SHELL_CLIENT=reviewed-native-fixture TMPDIR=$HOME/tmp python3 -m unittest discover -s tests -p test_card_shell_trackpad_gestures.py
+.
+----------------------------------------------------------------------
+Ran 1 test in 7.665s
+
+OK
+PASS: actual compositor finger-axis, edge navigation, reversible sheets and lost-stream recovery; headless injection only
+
+$ CARD_SHELL_SWAY=/nix/store/rwj1c3a61cg9zk0c11rdvq13wsb1d4lc-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway CARD_SHELL_CLIENT=reviewed-native-fixture TMPDIR=$HOME/tmp python3 -m unittest discover -s tests -p test_card_shell_pointer_navigation.py
+.
+----------------------------------------------------------------------
+Ran 1 test in 3.127s
+
+OK
+
+$ python3 -m unittest discover -s tests -p test_render_specs.py
+..............
+error: openspec/specs/image/boot-chain/spec.md: requirement 'Paths differ' declares no verification status: it carries neither an `<!-- UNVERIFIED -->` marker nor a `*Grounding: ...*` citation
+error: 1 requirement defect(s); the data was written so the site can show them, but the build failed
+........
+----------------------------------------------------------------------
+Ran 22 tests in 0.013s
+
+OK
+0 of 1 requirements unverified, 1 undeclared
+wrote /tmp/spec-site-test-dep6xvfl/specs.json

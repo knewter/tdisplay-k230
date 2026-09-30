@@ -1,0 +1,36 @@
+Physical board draw trace, 2026-09-30 UTC.
+Before: p2njc023kwlbslzycpjj9c6iqf17gyy4 system; persistent IPC probe, Home movement.
+00:00:14.337 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=369757976 dst_pixels=1327104 scratch_bytes=8294400
+00:00:14.862 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=371276279 dst_pixels=1327104 scratch_bytes=8294400
+00:00:15.460 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=369709014 dst_pixels=1327104 scratch_bytes=8294400
+00:00:15.985 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=355753151 dst_pixels=1327104 scratch_bytes=8294400
+00:00:16.427 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=285167457 dst_pixels=1327104 scratch_bytes=8294400
+00:00:16.874 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=sampler copy_cpu_ns=0 total_cpu_ns=285470361 dst_pixels=1327104 scratch_bytes=8294400
+
+After: ld2q399k3gnj0hy7zsjw6x323qq27k37 system; raw-input trial, same compositor as final candidate.
+00:01:16.891 [INFO] [sway/commands.c:262] Handling command 'card_shell trackpad begin 5003035322190 bottom 0'
+00:01:16.946 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=36713148 total_cpu_ns=46374835 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.003 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=40547198 total_cpu_ns=50192604 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.049 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=35542475 total_cpu_ns=41225256 dst_pixels=1327104 scratch_bytes=8294400
+00:01:17.050 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=19370 total_cpu_ns=73963 dst_pixels=1296 scratch_bytes=8294400
+00:01:17.052 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=495704 total_cpu_ns=1036111 dst_pixels=35992 scratch_bytes=8294400
+00:01:17.053 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=66260 total_cpu_ns=199445 dst_pixels=7040 scratch_bytes=8294400
+00:01:17.055 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=386593 total_cpu_ns=1097484 dst_pixels=28896 scratch_bytes=8294400
+00:01:17.061 [INFO] [sway/commands.c:262] Handling command 'card_shell trackpad move 5003035322190 0.000000 -0.039600 76344880'
+00:01:17.062 [INFO] [sway/commands.c:262] Handling command 'card_shell trackpad move 5003035322190 0.000000 -0.277199 76345030'
+00:01:17.172 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=37181357 total_cpu_ns=46946916 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.258 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=36969356 total_cpu_ns=46582432 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.303 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=35608321 total_cpu_ns=40263286 dst_pixels=1327104 scratch_bytes=8294400
+00:01:17.305 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=362667 total_cpu_ns=904925 dst_pixels=28896 scratch_bytes=8294400
+00:01:17.307 [INFO] [sway/commands.c:262] Handling command 'card_shell trackpad move 5003035322190 0.000000 -0.316799 76345055'
+00:01:17.313 [INFO] [sway/commands.c:262] Handling command 'card_shell trackpad end 5003035322190 76345084'
+00:01:17.375 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=41835559 total_cpu_ns=51539893 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.429 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=39535185 total_cpu_ns=49136884 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.472 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=35427912 total_cpu_ns=40007249 dst_pixels=1327104 scratch_bytes=8294400
+00:01:17.475 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=377407 total_cpu_ns=1053927 dst_pixels=28896 scratch_bytes=8294400
+00:01:17.535 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=36706181 total_cpu_ns=46388364 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.585 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=36436436 total_cpu_ns=46036592 dst_pixels=2073600 scratch_bytes=8294400
+00:01:17.589 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=3 path=tiled copy_cpu_ns=376815 total_cpu_ns=712187 dst_pixels=28896 scratch_bytes=8294400
+00:01:17.591 [INFO] [sway/card_shell.c:1921] K230_CARD_SHELL home selected cards=1
+
+Limits: process CPU draw time and relative Sway timestamps, not glass latency or refresh-rate proof.

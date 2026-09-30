@@ -27,7 +27,7 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = lib.getExe package;
+        ExecStart = "${lib.getExe package} --shell-socket=/run/shell/sway-ipc.sock";
         Restart = "always";
         RestartSec = 2;
         TimeoutStopSec = 2;

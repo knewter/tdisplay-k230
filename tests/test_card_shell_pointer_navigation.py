@@ -79,6 +79,10 @@ class PointerNavigation(unittest.TestCase):
                 for name in ('k230.card.one', 'k230.card.two'):
                     procs.append(subprocess.Popen([client, '--app-id', name], env=env,
                                                  stdout=log, stderr=log))
+                    # The wheel assertion below depends on card order. Let
+                    # each client map before launching the next; parallel
+                    # startup can put "one" last, leaving no next card.
+                    wait(lambda: name in apps())
                 wait(lambda: len(apps()) == 2)
                 ipc('[app_id="k230.card.one"] focus')
                 wait(lambda: focused() == 'k230.card.one')

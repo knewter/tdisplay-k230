@@ -3537,8 +3537,26 @@ impl ShellClient {
         true
     }
 
-    fn reveal_message(&mut self, qh: &QueueHandle<Self>, message: RevealMessage) {
+    fn reveal_message(&mut self, qh: &QueueHandle<Self>, mut message: RevealMessage) {
         let now = self.started.elapsed().as_millis() as u64;
+        if message.dismiss {
+            let valid = self.layer.is_some() && match message.surface {
+                Route::Shade => matches!(self.route, Route::Shade | Route::Settings),
+                Route::Drawer => self.route == Route::Drawer,
+                _ => false,
+            };
+            if !valid { return; }
+            message.surface = self.route;
+            if message.phase == Phase::Begin {
+                self.reveal.clear(); self.panel_close.cancel();
+                self.panel_start = None; self.panel_swipe_owned = false;
+            } else if message.phase == Phase::Update {
+                // The compositor sends displacement / output height. Match
+                // actual content-sized sheet travel without amplification.
+                message.progress = ((1.0 - (1.0 - f64::from(message.progress) / 1000.0)
+                    * self.height as f64 / self.panel_travel().max(1.0)).clamp(0.0,1.0) * 1000.0).round() as u16;
+            }
+        }
         if !self.reveal.apply(message, now, self.reduced_motion) {
             self.log("reveal-rejected");
             return;
@@ -3563,7 +3581,7 @@ impl ShellClient {
             self.renderer.set_services(self.service_view.clone());
         }
         self.route = message.surface;
-        if message.phase == Phase::Begin {
+        if message.phase == Phase::Begin && !message.dismiss {
             self.refresh_route(message.surface);
         }
         if !self.ensure_layer(qh) {
