@@ -2457,3 +2457,12 @@ Board-native capture cropped to temperature content; not executable code. Source
 | File | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/fahrenheit-weather/weather-fahrenheit.png` | 70227 | DATA | `570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233` |
+
+### Board pointer launcher evidence
+
+Native HDMI screenshots from an injected Wayland mouse click; source, commands and limits are in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-launch.json`. These are non-executable image data.
+
+```text
+DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
+DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
+```

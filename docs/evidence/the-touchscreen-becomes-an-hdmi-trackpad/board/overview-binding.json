@@ -1,0 +1,33 @@
+{
+  "evidence_class": "physical board service/configuration observation; actual four-finger pinch acceptance pending",
+  "captured_utc": "2026-09-30T05:44:34.317406+00:00",
+  "installed_system": "/nix/store/zv7nv18ixm39siskk9m3pp0pd5ymdzqf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway_configuration": "/nix/store/rmssqybzbxz5qw0b9jwcwxmls7g7sabv-k230-sway.conf",
+  "binding": "bindgesture --input-device=1:1:K230_Virtual_Touchpad_(HDMI_mode) pinch:4:inward card_shell enter",
+  "shell_services_active": true,
+  "relay_service_active": true,
+  "pointer_capability_observed": true,
+  "hdmi_transform": "90",
+  "source_artifact": "overview-query.private.log (protected capture)",
+  "source_sha256": "3d2e56658018793c1b0b02a4e7eae5c5b9c16020876a1ba00fbbebb20d67cd64",
+  "probe_commands": [
+    "readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system",
+    "systemctl is-active shell shell-ui k230-touch-trackpad",
+    "grep -F \"pinch:4:inward\" /nix/store/rmssqybzbxz5qw0b9jwcwxmls7g7sabv-k230-sway.conf",
+    "journalctl -u shell-ui --since \"3 minutes ago\" --no-pager -o cat | sed -n \"/pointer-capability/p\""
+  ],
+  "build_command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 2 --cores 8",
+  "corrected_host_build_result": "PASS",
+  "resolved_build_failure": {
+    "owner": "root",
+    "log_artifact": "trackpad-overview-build.log (protected host log)",
+    "cause": "A first edit placed the Sway binding in the Foot shell wrapper; Bash syntax checking rejected it",
+    "resolution": "Moved the directive into the generated Sway configuration; corrected build passed",
+    "failed_system_installed": false
+  },
+  "limits": [
+    "No reboot was performed",
+    "Configuration/IPC acceptance does not prove real four-finger recognition or overview pixels",
+    "Panel-mode restoration and complete physical tap/scroll/pinch acceptance remain open"
+  ]
+}

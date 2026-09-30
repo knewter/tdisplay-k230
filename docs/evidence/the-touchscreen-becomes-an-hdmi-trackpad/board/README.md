@@ -38,3 +38,30 @@ scrolling. The bounded transient trial was replaced by this persistent unit.
 The filtered shell journal shows none of the original invalid-absinfo/libinput
 errors during this observation. No reboot or panel-mode test was performed.
 Physical click/scroll/pinch acceptance and pixel evidence remain open.
+
+## Shell pointer dispatch and launcher proof
+
+The Rust shell previously subscribed only to touch and keyboard, so the
+virtual touchpad's clicks could not reach its UI. It now subscribes to
+`wl_pointer` and shares contact actions with touch. Host checks and exact
+source hashes are in `pointer-host-checks.json`.
+
+On the physical board, the injected standard Wayland pointer click recorded
+in `pointer-launch.json` produced pointer-down/up and opened a focused
+`galculator` window. The native before/after captures were visually reviewed:
+[launcher](pointer-drawer.jpg), [opened Calculator](pointer-calculator.jpg).
+This proves client dispatch and on-board app presentation, while leaving the
+real-finger launcher acceptance gate open.
+
+A device-scoped four-finger inward pinch binding is accepted by live Sway IPC.
+The persistent configuration uses Sway's normal `bindgesture` path; it does
+not change the compositor's touch mapping. Real four-finger recognition and
+overview presentation remain a separate physical gate.
+
+`overview-binding.json` records the final installed system, generated Sway
+configuration, running services and pointer capability. The configuration
+places `pinch:4:inward card_shell enter` inside Sway, scoped to the virtual
+touchpad derived from the board's touchscreen. The initial misplaced binding
+was rejected by host Bash checking and corrected before installation.
+This checkpoint establishes deployment and parsing, not a real four-finger
+pinch or reboot acceptance.

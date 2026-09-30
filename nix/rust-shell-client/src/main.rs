@@ -13,6 +13,7 @@ use k230_shell_rust::{
     home_widgets,
     navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
     pipewire_ipc,
+    pointer_input::{self, PointerContact, POINTER_CONTACT_ID},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
     released_slot,
     render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
@@ -49,7 +50,7 @@ use k230_shell_rust::{
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState, Region},
     delegate_compositor, delegate_keyboard, delegate_layer, delegate_output, delegate_registry,
-    delegate_seat, delegate_shm, delegate_touch, delegate_presentation_time,
+    delegate_seat, delegate_shm, delegate_touch, delegate_pointer, delegate_presentation_time,
     presentation_time::{PresentationTimeState, PresentationTimeHandler, PresentTime},
     reexports::protocols::wp::presentation_time::client::wp_presentation_feedback,
     output::{OutputHandler, OutputState},
@@ -58,6 +59,7 @@ use smithay_client_toolkit::{
     seat::{
         keyboard::{KeyEvent, KeyboardHandler, Modifiers, RawModifiers},
         touch::TouchHandler,
+        pointer::{PointerEvent, PointerEventKind, PointerHandler},
         Capability, SeatHandler, SeatState,
     },
     shell::{
@@ -95,7 +97,7 @@ use std::{
 };
 use wayland_client::{
     globals::registry_queue_init,
-    protocol::{wl_keyboard, wl_output, wl_seat, wl_shm, wl_surface, wl_touch},
+    protocol::{wl_keyboard, wl_output, wl_seat, wl_shm, wl_surface, wl_touch, wl_pointer},
     Connection, QueueHandle, WEnum,
 };
 
@@ -1075,6 +1077,8 @@ struct ShellClient {
     video_cover_last: Instant,
     video_covered: bool,
     touch_device: Option<wl_touch::WlTouch>,
+    pointer_device: Option<wl_pointer::WlPointer>,
+    pointer_contact: PointerContact<wl_surface::WlSurface>,
     keyboard_device: Option<wl_keyboard::WlKeyboard>,
     /// Mirrors `WifiView::wants_keyboard()` as of the last `sync_wifi_
     /// keyboard` call -- lets that function tell "already showing" from
@@ -4168,6 +4172,10 @@ impl SeatHandler for ShellClient {
             self.touch_device = self.seat_state.get_touch(qh, &seat).ok();
             self.log("touch-capability");
         }
+        if cap == Capability::Pointer && self.pointer_device.is_none() {
+            self.pointer_device = self.seat_state.get_pointer(qh, &seat).ok();
+            self.log("pointer-capability");
+        }
         if cap == Capability::Keyboard && self.keyboard_device.is_none() {
             self.keyboard_device = self.seat_state.get_keyboard(qh, &seat, None).ok();
             self.log("keyboard-capability");
@@ -4176,11 +4184,14 @@ impl SeatHandler for ShellClient {
     fn remove_capability(
         &mut self,
         _: &Connection,
-        _: &QueueHandle<Self>,
+        qh: &QueueHandle<Self>,
         _: wl_seat::WlSeat,
         cap: Capability,
     ) {
         if cap == Capability::Touch {
+            if self.pointer_contact.cancel().is_some() {
+                self.contact_cancel(qh);
+            }
             self.touch_device.take();
             self.touch.cancel();
             self.panel_start = None;
@@ -4198,6 +4209,15 @@ impl SeatHandler for ShellClient {
             self.dirty = true;
             self.log("touch-capability-lost");
         }
+        if cap == Capability::Pointer {
+            if self.pointer_contact.cancel().is_some() {
+                self.contact_cancel(qh);
+            }
+            if let Some(pointer) = self.pointer_device.take() {
+                pointer.release();
+            }
+            self.log("pointer-capability-lost");
+        }
         if cap == Capability::Keyboard {
             if let Some(keyboard) = self.keyboard_device.take() {
                 keyboard.release();
@@ -4207,7 +4227,13 @@ impl SeatHandler for ShellClient {
             self.log("keyboard-capability-lost");
         }
     }
-    fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {
+    fn remove_seat(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: wl_seat::WlSeat) {
+        if self.pointer_contact.cancel().is_some() {
+            self.contact_cancel(qh);
+        }
+        if let Some(pointer) = self.pointer_device.take() {
+            pointer.release();
+        }
         self.touch_device.take();
         self.touch.cancel();
         self.panel_start = None;
@@ -4231,13 +4257,10 @@ impl SeatHandler for ShellClient {
     }
 }
 
-impl TouchHandler for ShellClient {
-    fn down(
+impl ShellClient {
+    fn contact_down(
         &mut self,
-        _: &Connection,
         qh: &QueueHandle<Self>,
-        _: &wl_touch::WlTouch,
-        _: u32,
         time_ms: u32,
         surface: wl_surface::WlSurface,
         id: i32,
@@ -4517,12 +4540,9 @@ impl TouchHandler for ShellClient {
             self.draw_home(qh);
         }
     }
-    fn up(
+    fn contact_up(
         &mut self,
-        _: &Connection,
         qh: &QueueHandle<Self>,
-        _: &wl_touch::WlTouch,
-        _: u32,
         time_ms: u32,
         id: i32,
     ) {
@@ -4865,11 +4885,9 @@ impl TouchHandler for ShellClient {
             }
         }
     }
-    fn motion(
+    fn contact_motion(
         &mut self,
-        _: &Connection,
         qh: &QueueHandle<Self>,
-        _: &wl_touch::WlTouch,
         time_ms: u32,
         id: i32,
         pos: (f64, f64),
@@ -5190,26 +5208,8 @@ impl TouchHandler for ShellClient {
             }
         }
     }
-    fn shape(
-        &mut self,
-        _: &Connection,
-        _: &QueueHandle<Self>,
-        _: &wl_touch::WlTouch,
-        _: i32,
-        _: f64,
-        _: f64,
-    ) {
-    }
-    fn orientation(
-        &mut self,
-        _: &Connection,
-        _: &QueueHandle<Self>,
-        _: &wl_touch::WlTouch,
-        _: i32,
-        _: f64,
-    ) {
-    }
-    fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
+    fn contact_cancel(&mut self, qh: &QueueHandle<Self>) {
+        self.pointer_contact.cancel();
         self.touch.cancel();
         self.nav.cancel();
         self.renderer.set_drawer_pressed(None);
@@ -5241,6 +5241,73 @@ impl TouchHandler for ShellClient {
             self.home.cancel();
             self.home_mark_dirty();
             self.draw_home(qh);
+        }
+    }
+}
+
+impl TouchHandler for ShellClient {
+    fn down(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch,
+            _: u32, time_ms: u32, surface: wl_surface::WlSurface, id: i32, pos: (f64, f64)) {
+        if self.pointer_contact.cancel().is_some() {
+            self.contact_cancel(qh);
+        }
+        self.contact_down(qh, time_ms, surface, id, pos);
+    }
+    fn up(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch,
+          _: u32, time_ms: u32, id: i32) {
+        self.contact_up(qh, time_ms, id);
+    }
+    fn motion(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch,
+              time_ms: u32, id: i32, pos: (f64, f64)) {
+        self.contact_motion(qh, time_ms, id, pos);
+    }
+    fn shape(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_touch::WlTouch,
+             _: i32, _: f64, _: f64) {}
+    fn orientation(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_touch::WlTouch,
+                   _: i32, _: f64) {}
+    fn cancel(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch) {
+        self.contact_cancel(qh);
+    }
+}
+
+impl PointerHandler for ShellClient {
+    fn pointer_frame(&mut self, _: &Connection, qh: &QueueHandle<Self>,
+                     _: &wl_pointer::WlPointer, events: &[PointerEvent]) {
+        for event in events {
+            let (update, time_ms) = match event.kind {
+                PointerEventKind::Press { button, time, .. } => {
+                    // Do not steal a contact already owned by the real touchscreen.
+                    if self.touch.id.is_some() || self.home_touch_id.is_some() { continue; }
+                    (pointer_input::Update::Press(button), time)
+                }
+                PointerEventKind::Motion { time } => (pointer_input::Update::Motion, time),
+                PointerEventKind::Release { button, time, .. } =>
+                    (pointer_input::Update::Release(button), time),
+                PointerEventKind::Leave { .. } => (pointer_input::Update::Leave, 0),
+                _ => continue,
+            };
+            match self.pointer_contact.update(event.surface.clone(), update) {
+                Some(pointer_input::Action::Down) => {
+                    self.log("pointer-down");
+                    self.contact_down(qh, time_ms, event.surface.clone(), POINTER_CONTACT_ID, event.position);
+                }
+                Some(pointer_input::Action::Motion) =>
+                    self.contact_motion(qh, time_ms, POINTER_CONTACT_ID, event.position),
+                Some(pointer_input::Action::Up) => {
+                    // Use the release position, without adding a zero-distance sample
+                    // that would erase a drag's measured release velocity.
+                    let last = if self.home_touch_id == Some(POINTER_CONTACT_ID) {
+                        self.home_last_point
+                    } else { self.touch.position };
+                    if last != event.position {
+                        self.contact_motion(qh, time_ms, POINTER_CONTACT_ID, event.position);
+                    }
+                    self.log("pointer-up");
+                    self.contact_up(qh, time_ms, POINTER_CONTACT_ID);
+                }
+                Some(pointer_input::Action::Cancel) => self.contact_cancel(qh),
+                None => {},
+            }
         }
     }
 }
@@ -5345,6 +5412,7 @@ delegate_output!(ShellClient);
 delegate_shm!(ShellClient);
 delegate_seat!(ShellClient);
 delegate_touch!(ShellClient);
+delegate_pointer!(ShellClient);
 delegate_keyboard!(ShellClient);
 delegate_layer!(ShellClient);
 delegate_registry!(ShellClient);
@@ -5511,6 +5579,8 @@ fn serve() -> Result<(), String> {
         video_cover_last: Instant::now() - Duration::from_secs(2),
         video_covered: false,
         touch_device: None,
+        pointer_device: None,
+        pointer_contact: PointerContact::default(),
         keyboard_device: None,
         wifi_keyboard_active: false,
         home_keyboard_active: false,

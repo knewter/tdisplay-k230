@@ -111,11 +111,14 @@
       and RISC-V system build. `board/pointer-host-checks.json` identifies
       the exact source hashes and `/nix/store/173csl1mfjw2jf3069f1cgm310nxvrl1-nixos-system-nixos-26.11.20260919.20b1ddd`.
 
-- [ ] 2.10 Bind four-finger inward pinch on the virtual touchscreen-derived
+- [x] 2.10 Bind four-finger inward pinch on the virtual touchscreen-derived
       touchpad to `card_shell enter` using normal Sway `bindgesture`, scoped
       to that device so two-finger app scrolling/zooming remains available.
       Verify the system cross-build and live Sway IPC acceptance; generated
       configuration must put the binding inside Sway, not a shell script.
+      Corrected build and installed-board checks pass; `board/overview-binding.json`
+      records the actual profile/configuration and resolved initial build error.
+      Physical four-finger recognition remains task 3.6.
 
 ## 3. Board verification (remaining contact and virtual-device gates open)
 

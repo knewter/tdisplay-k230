@@ -1,0 +1,43 @@
+{
+  "evidence_class": "physical board, injected Wayland pointer action; native compositor screenshot (not real finger acceptance)",
+  "captured_utc": "2026-09-30T05:39:38.848836+00:00",
+  "source_artifact": "pointer-calculator.private.log (protected capture)",
+  "source_sha256": "e60e1d0b97220e1612907d0f8778da9eb55c20d929a8cd7f0c54d8dfade0ff78",
+  "installed_system": "/nix/store/173csl1mfjw2jf3069f1cgm310nxvrl1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "setup_command": "k230-shell-rust --surface drawer",
+  "activation_command": "XDG_RUNTIME_DIR=/run/shell SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r \"seat seat0 cursor set 870 160; seat seat0 cursor press button1; seat seat0 cursor release button1\"",
+  "probe_command": "swaymsg -r -t get_tree; journalctl -u shell-ui --since \"3 minutes ago\" --no-pager -o cat",
+  "observed_client_events": [
+    "pointer-down",
+    "pointer-up"
+  ],
+  "app_result": {
+    "app_id": "galculator",
+    "focused": true,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "screenshots": [
+    {
+      "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg",
+      "sha256": "3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4",
+      "capture_command": "grim -t jpeg -q 60 (native HDMI logical output)",
+      "reviewed_for_publication": true
+    },
+    {
+      "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg",
+      "sha256": "94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322",
+      "capture_command": "grim -t jpeg -q 60 (native HDMI logical output)",
+      "reviewed_for_publication": true
+    }
+  ],
+  "limits": [
+    "Sway IPC bypasses physical touchpad/libinput recognition",
+    "No physical four-finger pinch, click or panel-mode acceptance is inferred",
+    "These screenshots show on-board compositor pixels, not a camera photograph of the HDMI monitor"
+  ]
+}

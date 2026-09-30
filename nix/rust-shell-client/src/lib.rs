@@ -13,6 +13,7 @@ pub mod home_widgets;
 pub mod icon;
 pub mod navigation;
 pub mod pipewire_ipc;
+pub mod pointer_input;
 pub mod protocol;
 pub mod render;
 pub mod service_data;

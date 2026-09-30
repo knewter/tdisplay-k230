@@ -1,0 +1,19 @@
+{
+  "source_base_revision": "9415dd9d",
+  "source_hashes": {
+    "nix/rust-shell-client/src/main.rs": "cab97b214598528bdaf834acdccd0a19bb1c819903f265a391353a16344d3bf8",
+    "nix/rust-shell-client/src/lib.rs": "bc5a938b66f3fd312f03294650fe35eb3105fad9abb794ac7c4ab904672940b3",
+    "nix/rust-shell-client/src/pointer_input.rs": "8c93873757b8f203c68012dfd1c45f71b422ccfc5e22db301299e155f92ad007"
+  },
+  "checks": [
+    "cargo test --lib (404 passed, 1 ignored)",
+    "cargo check --bin k230-shell-rust",
+    "cargo build --bin k230-shell-rust",
+    "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 2 --cores 8"
+  ],
+  "system_build": "/nix/store/173csl1mfjw2jf3069f1cgm310nxvrl1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": [
+    "Host checks/build do not prove real finger clicks or on-board app presentation"
+  ],
+  "evidence_class": "host tests and RISC-V cross build"
+}
