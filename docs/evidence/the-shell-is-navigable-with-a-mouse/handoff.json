@@ -1,0 +1,36 @@
+{
+  "branch": "impl/navigation-ux",
+  "base": "c39da7737172d0b10999570a58d64953d543a45f",
+  "implementation_commits": [
+    "813a87d97338620566d7098584f51c94cdefe360",
+    "ee913cad31ac2f3ee6c60f5257d28bad8785328a"
+  ],
+  "owned_paths": [
+    "nix/card-shell/",
+    "nix/card-shell-policy/",
+    "nix/patches/sway-k230-card-shell.patch",
+    "nix/rust-shell-client/src/{main,navigation,pointer_input,theme_carousel}.rs",
+    "nix/shell.nix",
+    "tests/card_shell_policy_driver.c",
+    "tests/test_card_shell_state.py",
+    "tests/test_card_shell_pointer_navigation.py",
+    "tests/shell_pointer_navigation.py",
+    "openspec/changes/the-shell-is-navigable-with-a-mouse/",
+    "docs/evidence/the-shell-is-navigable-with-a-mouse/",
+    "docs/blob-inventory.md (four reviewed capture inventory entries)"
+  ],
+  "commands_and_results": [
+    "cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib: 407 passed, 1 existing ignored",
+    "cargo check --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust: passed",
+    "python3 tests/test_card_shell_state.py: 37 passed",
+    "python3 -m unittest discover -s tests -p test_card_shell_pointer_navigation.py with built compositor: passed",
+    "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 2 --cores 8: passed",
+    "python3 tests/shell_pointer_navigation.py --output <protected new directory> --capture on reserved board: 18 passed",
+    "ordinary Calculator click: value changed 0 to 7, native capture visually reviewed"
+  ],
+  "installed_system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "remaining_gate": "Task 3.3 physical tap/click/edge drag and four-finger inward/outward pinch remains UNVERIFIED. Observe on physical board and commit photograph and observation before archive.",
+  "remaining_review_merge_push_deployment": "Final evidence/publication commit and exact Pages verification recorded separately. Device installation complete.",
+  "board_reservation": "Root /tmp/k230-board.lock; released at handoff",
+  "build_reservation": "Root /tmp/k230-nix-build.lock; builds complete"
+}

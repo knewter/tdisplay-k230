@@ -3,7 +3,7 @@
   "exported_paths": 21,
   "gzip_bytes": 6224495,
   "gzip_sha256": "d135c7a6e3b1d41d39ea7c3d7187c5a76959d1419a6562cc9f51c0f633e757d7",
-  "source_revision": "813a87d9 + committed focus correction (see focus-regression-after.json for exact patch hash)",
+  "source_revision": "ee913cad31ac2f3ee6c60f5257d28bad8785328a",
   "build_command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 2 --cores 8",
   "build_result": "success",
   "sway": "/nix/store/m6g1ilyvkwa750i33gzx6z3ysi90cbbr-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T14:37:25.792381+00:00",
+  "evidence_class": "installed-physical-board-profile-and-injected-command",
+  "run_current_system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "system_profile": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services": {
+    "shell": "active",
+    "shell-ui": "active",
+    "k230-touch-trackpad": "active"
+  },
+  "trackpad_enabled": true,
+  "trackpad_processes": 1,
+  "home_command_success": true,
+  "rollback_timer": "cancelled after profile and services verification",
+  "verification_command": "./tools/console.py /dev/ttyACM0 --wait=10 \"readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system; systemctl is-active shell shell-ui k230-touch-trackpad; systemctl is-enabled k230-touch-trackpad\"",
+  "limits": [
+    "No reboot or flash was performed.",
+    "Native screenshots and pointer route matrix are recorded separately.",
+    "Real physical pinch/tap/edge interaction remains UNVERIFIED."
+  ],
+  "source_revision": "ee913cad31ac2f3ee6c60f5257d28bad8785328a"
+}

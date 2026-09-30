@@ -1520,6 +1520,10 @@ DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_re
 DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
 DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
 DATA 3296929bf7f69cd70bc404d8b881486928b4bad42dc59546875d5c40c1c35e4a docs/evidence/the-shell-is-navigable-with-a-mouse/before-overview.jpg
+DATA 2c27ebb72c882065eb21e2c79e3a3d9b844bb29f00b319d81459f70094380f17 docs/evidence/the-shell-is-navigable-with-a-mouse/after-overview.jpg
+DATA 29ec4e126cd46e052ebf1247d248fc795b135299e3912116e3d2535588dcc00a docs/evidence/the-shell-is-navigable-with-a-mouse/after-drawer.jpg
+DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evidence/the-shell-is-navigable-with-a-mouse/after-themes.jpg
+DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

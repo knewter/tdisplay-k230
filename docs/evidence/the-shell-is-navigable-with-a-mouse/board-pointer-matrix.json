@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "evidence_class": "physical-board-injected-standard-pointer",
+  "timestamp": "2026-09-30T14:43:51.616103+00:00",
+  "installed_system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "checks": [
+    {
+      "check": "home setup",
+      "passed": true
+    },
+    {
+      "check": "Home bottom edge opens drawer",
+      "passed": true,
+      "capture": {
+        "sha256": "29ec4e126cd46e052ebf1247d248fc795b135299e3912116e3d2535588dcc00a",
+        "bytes": 80294,
+        "public": false
+      }
+    },
+    {
+      "check": "drawer icon opens visible Calculator",
+      "passed": true
+    },
+    {
+      "check": "existing apps retained by launch",
+      "passed": true
+    },
+    {
+      "check": "app bottom mouse drag opens overview",
+      "passed": true,
+      "capture": {
+        "sha256": "2c27ebb72c882065eb21e2c79e3a3d9b844bb29f00b319d81459f70094380f17",
+        "bytes": 106423,
+        "public": false
+      }
+    },
+    {
+      "check": "overview footer click reaches Home without closing apps",
+      "passed": true,
+      "capture": {
+        "sha256": "7dc8462565a9ffe1b1ef1531ea9f5fd605724f7b2209825cacd781bafb619b2e",
+        "bytes": 152005,
+        "public": false
+      }
+    },
+    {
+      "check": "spread command expands centered live window",
+      "passed": true
+    },
+    {
+      "check": "drawer handle click dismisses",
+      "passed": true
+    },
+    {
+      "check": "top edge mouse drag opens shade",
+      "passed": true,
+      "capture": {
+        "sha256": "2f8ce0ba2b273feabf5a928d57141afe801c431ac425d1e8eaa8199edc59da3f",
+        "bytes": 95007,
+        "public": false
+      }
+    },
+    {
+      "check": "shade Settings click opens Settings",
+      "passed": true,
+      "capture": {
+        "sha256": "2b8690d6f2346fb6bd9e032599ea2a03f24a2b7ae7a2bc2c190688df0b3ad93a",
+        "bytes": 105597,
+        "public": false
+      }
+    },
+    {
+      "check": "Settings Wi-Fi row opens list",
+      "passed": true,
+      "capture": {
+        "sha256": "918ac0a212ef23cc0656de5bd5279becd30b3f2831efe2dc3ed698922a229334",
+        "bytes": 111905,
+        "public": false
+      }
+    },
+    {
+      "check": "Wi-Fi Back returns to Settings",
+      "passed": true
+    },
+    {
+      "check": "Settings Themes click opens chooser",
+      "passed": true,
+      "capture": {
+        "sha256": "1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797",
+        "bytes": 136515,
+        "public": false
+      }
+    },
+    {
+      "check": "theme wheel browses candidates",
+      "passed": true,
+      "before_position": 0.0,
+      "after_position": 19.98
+    },
+    {
+      "check": "theme Back returns to Settings",
+      "passed": true
+    },
+    {
+      "check": "Settings Done dismisses",
+      "passed": true
+    },
+    {
+      "check": "overview card click opens centered app",
+      "passed": true
+    },
+    {
+      "check": "navigation audit keeps app windows open",
+      "passed": true
+    }
+  ],
+  "limits": [
+    "Physical finger recognition and perceived motion are not proven.",
+    "No credentials, SSIDs or private addresses are retained in this public result.",
+    "Wheel events over short lists establish bounded navigation, not overflowing-list movement.",
+    "Wi-Fi connect, theme apply, audio/power actions and destructive controls are not exercised."
+  ]
+}

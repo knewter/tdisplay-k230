@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T14:48:04.329666+00:00",
+  "evidence_class": "installed-board-standard-pointer-injection-with-visual-review",
+  "system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "command": "XDG_RUNTIME_DIR=/run/shell SWAYSOCK=/run/shell/sway-ipc.sock swaymsg \"[app_id=galculator] focus; seat seat0 cursor set 110 675; seat seat0 cursor press button1; seat seat0 cursor release button1\"",
+  "capture_command": "grim -t jpeg -q 60 /root/tmp/k230-deployment/navigation-calculator.jpg",
+  "before_value": "0 in reviewed overview capture",
+  "after_value": "7 visually observed in native app capture",
+  "capture": "after-calculator-click.jpg",
+  "sha256": "b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18",
+  "passed": true,
+  "limits": [
+    "Injected mouse click, not physical hand input.",
+    "One ordinary application button is tested; this does not claim a complete audit of every installed app."
+  ]
+}
