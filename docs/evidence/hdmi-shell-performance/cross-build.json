@@ -6,7 +6,10 @@
   "trial_package": "/nix/store/fpvmkf27viprfphjnzs5sfwvyzyk3adp-k230-card-shell-hdmi-trial",
   "normal_system": "/nix/store/57rnn0z3mnxm24jniqwmgx5ys22dj4mh-nixos-system-nixos-26.11.20260919.20b1ddd",
   "limits": [
-    "Cross-build evidence; no trial-package performance selection or physical budget acceptance.",
-    "This is the ordinary system; coherent-profile build and deployment are separate."
-  ]
+    "Cross-build evidence only; trial-package pixel/performance selection and physical budgets remain open.",
+    "Both ordinary and coherent system closures built; coherent deployment is separate."
+  ],
+  "coherent_system": "/nix/store/fg6d4wy31xam18rpg865p7fs9lsjrcw9-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "coherent_command": "nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --no-link --max-jobs 2 --cores 4 --print-out-paths",
+  "coherent_completed_at": "2026-09-30T01:58:23.702327+00:00"
 }
