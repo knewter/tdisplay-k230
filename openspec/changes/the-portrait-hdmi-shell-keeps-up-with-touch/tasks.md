@@ -23,9 +23,10 @@ reservation. Public traces must omit network/device secrets.
   damage, format and texture updates. If considering hardware rotation, include
   transfer/synchronization/failure cost in the comparison and record the selection.
   Verify `python3 tests/test_pixman_quarter_turn.py` (new host test deliverable).
-- [ ] 2.2 Expose `card-shell-hdmi-trial` through the pinned board package graph,
+- [x] 2.2 Expose `card-shell-hdmi-trial` through the pinned board package graph,
   leaving the existing default available. Verify `nix build .#card-shell-hdmi-trial`
-  (cross-build proof only).
+  (cross-build proof only). Result and exact store paths:
+  `docs/evidence/hdmi-shell-performance/cross-build.json`.
 - [ ] 2.3 Exercise the real candidate scene with changing clients and confirm
   pixels, callbacks, buffer release and fallback. Verify
   `python3 tools/hdmi-shell-performance.py --check-scene --variant candidate --output docs/evidence/hdmi-shell-performance/scene`

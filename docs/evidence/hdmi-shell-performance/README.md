@@ -162,3 +162,14 @@ The operator must confirm that upward glass swipes open overview and horizontal
 glass swipes remain horizontal. The prepared Nix source has not been built or
 installed by this constrained runner. The normal panel remains a separate
 identity-calibration case requiring its named regression check.
+
+## Access-restored board and cross-build checkpoint
+
+Tool permissions were subsequently restored. Both the trial package and
+ordinary system cross-build succeeded; [build identities](cross-build.json)
+record the exact source revision, command and store outputs. The runtime
+calibration was applied over the reserved physical serial console and
+`get_inputs` reports the expected six values; see
+[live board configuration](touch-calibration-board.json). This is configured
+state observed on the board, not real-finger acceptance. Coherent-profile
+deployment and the operator's direction check remain separate gates.

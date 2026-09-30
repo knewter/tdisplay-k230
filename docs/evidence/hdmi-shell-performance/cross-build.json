@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-09-30T01:54:10.717927+00:00",
+  "source_revision": "9d1d73d36025eb834396905ea2aa7feacc3160c2",
+  "command": "nix build .#card-shell-hdmi-trial .#nixosConfigurations.k230.config.system.build.toplevel --no-link --max-jobs 2 --cores 4 --print-out-paths",
+  "result": "PASS",
+  "trial_package": "/nix/store/fpvmkf27viprfphjnzs5sfwvyzyk3adp-k230-card-shell-hdmi-trial",
+  "normal_system": "/nix/store/57rnn0z3mnxm24jniqwmgx5ys22dj4mh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": [
+    "Cross-build evidence; no trial-package performance selection or physical budget acceptance.",
+    "This is the ordinary system; coherent-profile build and deployment are separate."
+  ]
+}

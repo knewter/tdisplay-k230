@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-09-30T01:54:50.049254+00:00",
+  "evidence_class": "physical-board-live-IPC-configuration",
+  "source_revision": "9d1d73d36025eb834396905ea2aa7feacc3160c2",
+  "command": "XDG_RUNTIME_DIR=/run/shell SWAYSOCK=/run/shell/sway-ipc.sock swaymsg 'input type:touch calibration_matrix 0 -1 1 1 0 0'",
+  "output": {
+    "name": "HDMI-A-1",
+    "transform": "90",
+    "scale": 1,
+    "logical_width": 1080,
+    "logical_height": 1920
+  },
+  "observed_calibration_matrix": [
+    0,
+    -1,
+    1,
+    1,
+    0,
+    0
+  ],
+  "rollback_command": "SWAYSOCK=/run/shell/sway-ipc.sock swaymsg 'input type:touch calibration_matrix 1 0 0 0 1 0'",
+  "limits": [
+    "Real Sway input configuration observed; not real-finger gesture or optical acceptance.",
+    "Runtime setting applied before installing the persistent Nix system configuration."
+  ]
+}
