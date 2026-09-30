@@ -18,16 +18,15 @@ HDMI) is the active output, the touchscreen SHALL be left ungrabbed and
 unmodified, continuing to report absolute coordinates as
 `display/touch`'s existing digitizer-range requirement already states.
 
-*Grounding: `nix/touch-trackpad/src/relay.rs`'s host-tested protocol
-translator (20/20 `cargo test` passing,
-`nix/touch-trackpad/src/{relay,mode,devsearch,uinput}.rs`) and
-`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md`'s
-`udevadm` capture showing `ID_INPUT_TOUCHPAD=1` on a device created with
-these exact bits. This is host evidence (a real Linux kernel's own udev
-classifier, not a claim about the K230's kernel or the real GT9895) — the
-requirement is marked `<!-- UNVERIFIED -->` pending the board task group in
-this change's `tasks.md`, per `.skills/k230-spec-change/SKILL.md`'s rule
-that a host-only check does not ground a hardware requirement.*
+*Grounding: host relay/mode/ioctl tests and the independent Linux-header
+comparison (`cargo test`); the earlier host udev classification in
+`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md`;
+and the real contact/operator checkpoint plus installed-board service probes
+in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/`.
+The operator confirmed cursor motion, and Sway classifies the actual virtual
+device as a touchpad with tapping enabled. These partial observations do not
+establish clicking, scrolling, pinch, panel restoration or the required pixel
+evidence. The requirement retains its `UNVERIFIED` marker for those gates.*
 
 #### Scenario: HDMI is the active output and a finger moves across the glass
 

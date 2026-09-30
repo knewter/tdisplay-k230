@@ -56,13 +56,12 @@
       `/nix/store/sklwlg9n...-k230-touch-trackpad`).
 - [x] 2.6 `nix/touch-trackpad-service.nix`: a standalone, importable NixOS
       module (`k230.touchTrackpad.enable`) defining the systemd unit,
-      deliberately not imported by `nix/shell.nix`/`nix/k230.nix` in this
-      change (both are under active edit by the coordinator's
-      `plugging-in-hdmi-moves-the-display` work). Verify: evaluates —
+      initially kept out of `nix/shell.nix`/`nix/k230.nix`. Task 3.1
+      subsequently imports it in the explicit HDMI trial profile. Verify: evaluates —
       `nix eval .#nixosConfigurations.k230.config.system.build.toplevel.drvPath`
-      still succeeds unchanged (module not imported, so it cannot affect
-      the built system yet); a real service-enabled build is board task
-      3.1 below, once the coordinator has an HDMI DTB to boot it under.
+      still succeeds for the base panel configuration. The service-enabled
+      HDMI system was subsequently built and installed for task 3.1:
+      `/nix/store/0gdzw6l64c99wh0f0lydb9ghdld85cff-nixos-system-nixos-26.11.20260919.20b1ddd`.
 
 - [x] 2.7 Fix in response to the coordinator's first board run, which hung
       the board and needed a hardware reset
@@ -103,7 +102,7 @@
 
 ## 3. Board verification (remaining contact and virtual-device gates open)
 
-Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json` records real one- and two-finger input during the bounded dry run, with clean shutdown and release. A subsequent live trial created a Sway-classified touchpad; the operator confirmed cursor movement but no tap click. That trial exposed incorrect hand-bound multi-finger key codes and default-disabled tapping. The coordinator owns the board and serial lock for the corrected trial. Full click/scroll/pinch and panel-mode proof remain open. The prototype was already merged through `6534585eb00a`, satisfying 4.2 independently.
+Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json` records real one- and two-finger input during the bounded dry run, with clean shutdown and release. A subsequent live trial created a Sway-classified touchpad; the operator confirmed cursor movement but no tap click. That trial exposed incorrect hand-bound multi-finger key codes and default-disabled tapping. The coordinator owns the board and serial lock for the corrected trial. The corrected relay is now installed as an enabled service in the explicit HDMI profile; `board/persistent-service.json` records its actual store path, active unit, single relay process and Sway configuration. Full click/scroll/pinch and panel-mode proof remain open. The prototype was already merged through `6534585eb00a`, satisfying 4.2 independently.
 
 - [x] 3.0 **Safe re-test first.** Under the reserved board/serial lock, run
       the *new* build (task 2.7's store path, not the one from the
@@ -124,7 +123,7 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
       shows any sign of the earlier hang (console stops responding before
       the 20s `timeout` should have fired), stop here, do not proceed to
       3.1, and record what was observed instead.
-- [ ] 3.1 Only after 3.0 passes clean: run the same build *without*
+- [x] 3.1 Only after 3.0 passes clean: run the same build *without*
       `--dry-run` (still `timeout`-wrapped) and confirm the service starts
       and logs `mode -> Trackpad` once the HDMI connector reads
       `connected`, this time with a real virtual touchpad device created;

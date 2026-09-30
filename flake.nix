@@ -142,7 +142,13 @@
         # Explicit experimental HDMI profile: preserve the faster trial across
         # activation/reboot without silently changing the daily panel renderer.
         k230-coherent-shell-hdmi-trial = self.nixosConfigurations.k230-coherent-shell.extendModules {
-          modules = [ { k230.shell.hdmiQuarterTurnTrial = true; } ];
+          modules = [
+            ./nix/touch-trackpad-service.nix
+            {
+              k230.shell.hdmiQuarterTurnTrial = true;
+              k230.touchTrackpad.enable = true;
+            }
+          ];
         };
         # Historically "same as k230-coherent-shell, plus Nautilus's own
         # drawer entry next to Portfolio's" while filesAppNautilus defaulted

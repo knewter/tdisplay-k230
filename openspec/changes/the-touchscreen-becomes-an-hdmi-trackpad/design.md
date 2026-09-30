@@ -262,8 +262,8 @@ terms, not speculative padding.
   here.
 - [Root service is a real, if narrow, escalation] → accepted explicitly
   for this prototype (decision 4); `DeviceAllow`/`DevicePolicy` bound the
-  blast radius even so, and the module is not wired into any booted
-  configuration by this change.
+  blast radius even so, and the module is enabled only in the explicit coherent-shell HDMI
+  profile after its standalone safety trial.
 - [`plugging-in-hdmi-moves-the-display`'s shared GPIO23/24 net between
   touch and the LT9611 could mean touch's interrupt behaves differently or
   less reliably while the HDMI DTB is the one booted] → this change cannot
@@ -283,3 +283,14 @@ image explicitly enables tapping and two-finger scrolling for
 `1:1:K230_Virtual_Touchpad_(HDMI_mode)`. Direct-touch input keeps its existing
 configuration. See the committed board contact checkpoint for provenance and
 limits; physical click/scroll/pinch and panel restoration are still required.
+
+## Persistent HDMI profile integration
+
+After the corrected standalone relay remained active without the original
+libinput pressure error, the explicit `k230-coherent-shell-hdmi-trial` profile
+imports this service and enables it. Other configurations do not import it.
+Systemd bounds shutdown to two seconds, and normal unit-change restarts ensure
+future rebuilt relay packages replace the running binary. The persistent unit
+replaces the transient trial so only one process grabs the glass. Installation
+and enabled-unit observations establish the deployed profile, not an actual
+reboot or panel-mode acceptance; those remaining gates stay explicit.

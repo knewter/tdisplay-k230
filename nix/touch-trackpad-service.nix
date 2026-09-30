@@ -1,11 +1,7 @@
-# Standalone, importable NixOS module for the `k230-touch-trackpad`
-# prototype (nix/touch-trackpad/), deliberately kept out of nix/shell.nix
-# and nix/k230.nix's own imports: both are being actively edited by the
-# coordinator's parallel plugging-in-hdmi-moves-the-display work in a
-# different worktree, and this file's whole point is to be wireable in
-# with a single "imports = [ ./touch-trackpad-service.nix ];" plus
-# "k230.touchTrackpad.enable = true;" once that work picks a physical HDMI
-# session to try it against. See
+# Importable NixOS module for the touchscreen-to-touchpad relay. Enabled
+# by the explicit coherent-shell HDMI trial configuration after its
+# standalone board safety trial; other configurations retain direct touch.
+# See
 # openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/ for the
 # capability and tasks.md's physical trial steps for the
 # operator-facing instructions this module implements.
@@ -29,12 +25,12 @@ in
       # never be mistaken for the shell session itself failing.
       after = [ "shell.service" ];
       wantedBy = [ "multi-user.target" ];
-      restartIfChanged = false;
       serviceConfig = {
         Type = "simple";
         ExecStart = lib.getExe package;
         Restart = "always";
         RestartSec = 2;
+        TimeoutStopSec = 2;
         # Root: EVIOCGRAB on the touchscreen node and creating a uinput
         # device both need it on this image (no udev "uaccess"-style seat
         # ACL is configured for /dev/uinput or /dev/input/event* here,

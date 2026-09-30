@@ -1,0 +1,13 @@
+/nix/store/0gdzw6l64c99wh0f0lydb9ghdld85cff-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/0gdzw6l64c99wh0f0lydb9ghdld85cff-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+enabled
+k230-touch-trackpad: mode -> Trackpad (panel connected: false)
+k230-touch-trackpad: entered trackpad mode, grabbed /dev/input/event0 (x 0..1023 y 0..2399), axes: 47,57,53,54
+TRACKPAD_PROCESS_COUNT:1
+active
+active
+active
+inactive

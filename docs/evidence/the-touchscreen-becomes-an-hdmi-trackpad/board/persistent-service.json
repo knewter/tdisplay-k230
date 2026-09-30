@@ -1,0 +1,59 @@
+{
+  "evidence_class": "live board serial configuration and service observation; physical click acceptance pending",
+  "captured_utc": "2026-09-30T04:51:35.085166+00:00",
+  "installed_system": "/nix/store/0gdzw6l64c99wh0f0lydb9ghdld85cff-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile_configuration": "k230-coherent-shell-hdmi-trial",
+  "relay_store_path": "/nix/store/j53iiav8xbz0kqrval861z6lky63kbgy-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+  "source_artifacts": [
+    {
+      "name": "trackpad-service-query.private.log (protected capture)",
+      "sha256": "fa43fa18ff1858accd8bf4a78334dd1482b88bb0e7c04d86534687d64f879aa0"
+    },
+    {
+      "name": "trackpad-service-postflight.private.log (protected capture)",
+      "sha256": "32723b5f6f5d7095245cd04a9265a2cfd21d6eca7c32db584a190892ec87a943"
+    }
+  ],
+  "commands": [
+    "readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system",
+    "systemctl is-active k230-touch-trackpad shell shell-ui; systemctl is-enabled k230-touch-trackpad",
+    "journalctl -u k230-touch-trackpad -n 12 --no-pager -o cat",
+    "XDG_RUNTIME_DIR=/run/shell SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r -t get_inputs",
+    "journalctl -u shell --since \"5 minutes ago\" --no-pager -o cat | sed -n \"/invalid absinfo\\|libinput.*error/p\""
+  ],
+  "service_active": true,
+  "service_enabled": true,
+  "relay_process_count": 1,
+  "virtual_input": {
+    "identifier": "1:1:K230_Virtual_Touchpad_(HDMI_mode)",
+    "name": "K230 Virtual Touchpad (HDMI mode)",
+    "type": "touchpad",
+    "scroll_factor": 1.0,
+    "libinput": {
+      "send_events": "enabled",
+      "tap": "enabled",
+      "tap_button_map": "lrm",
+      "tap_drag": "enabled",
+      "tap_drag_lock": "disabled",
+      "accel_speed": 0.0,
+      "accel_profile": "adaptive",
+      "natural_scroll": "disabled",
+      "left_handed": "disabled",
+      "click_method": "button_areas",
+      "clickfinger_button_map": "lrm",
+      "middle_emulation": "disabled",
+      "scroll_method": "two_finger",
+      "dwt": "enabled",
+      "dwtp": "enabled"
+    },
+    "vendor": 1,
+    "product": 1
+  },
+  "shell_services_active": true,
+  "original_libinput_error_in_filtered_observation": false,
+  "limits": [
+    "No reboot was performed for this installation",
+    "Panel-mode restoration is unverified",
+    "Tap/right-click/scroll/pinch and photographic pixel proof are pending the operator"
+  ]
+}

@@ -35,12 +35,11 @@ mode switch, whenever HDMI is actually the active output.
   otherwise the touchscreen is left ungrabbed for the coordinator's direct
   touch mapping. A `--force-mode=trackpad|direct` flag is kept as a manual
   override for bring-up, but is not the normal path.
-- `nix/touch-trackpad-service.nix`: a standalone, importable NixOS module
-  (`k230.touchTrackpad.enable`) defining the systemd unit — not wired into
-  `nix/shell.nix`/`nix/k230.nix` by this change, since both are under
-  active edit by the coordinator's HDMI work in a separate worktree; the
-  coordinator imports it explicitly once there is a live HDMI session to
-  try it against.
+- `nix/touch-trackpad-service.nix`: an importable NixOS module
+  (`k230.touchTrackpad.enable`) defining the systemd unit. The explicit
+  `k230-coherent-shell-hdmi-trial` profile imports and enables it after
+  the bounded standalone board safety trial. Other profiles retain their
+  existing direct-touch configuration.
 - `design.md` records the rejected alternatives (a hand-synthesized
   relative-pointer uinput daemon; the wlroots `zwlr_virtual_pointer_v1`
   Wayland-client route; a compositor-side patch) and why the
@@ -68,7 +67,7 @@ situation (HDMI active), not a new piece of hardware.
   device-tree change (`CONFIG_INPUT_UINPUT=y` is already built into this
   kernel per `nix/kernel.nix`'s existing `evemu`/touch-injection rationale,
   and `TOUCHSCREEN_GOODIX_BERLIN_*` is already on).
-- A new, currently-unwired NixOS module
+- A new NixOS module
   (`nix/touch-trackpad-service.nix`), plus a named virtual-touchpad input
   stanza in `nix/shell.nix` enabling normal libinput tap and scroll behavior.
   The coordinator owns that configuration change after the HDMI checkpoint landed.
@@ -77,7 +76,7 @@ situation (HDMI active), not a new piece of hardware.
   The capture exposed incorrect multi-finger UAPI bindings; these are fixed
   and independently checked against Linux headers. Tap-to-click is explicitly
   enabled for the named virtual device in the image's Sway configuration.
-  Physical click/scroll/pinch, persistent service and panel restoration remain
+  Physical click/scroll/pinch and panel restoration remain
   open board-verification gates; see `board/contact-checkpoint.json` under
   this change's evidence directory. The coordinator reserves the board and
   serial port for those trials.
