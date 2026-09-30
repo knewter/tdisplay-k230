@@ -1,0 +1,12 @@
+{
+  "owner": "root",
+  "failed_run": "https://github.com/knewter/tdisplay-k230/actions/runs/36675059319",
+  "revision": "81594a7c",
+  "failure": "Two JPEG DATA entries were outside the canonical fenced MANIFEST section",
+  "resolution": "Move both DATA entries into the section consumed by tools/blob-scan.py",
+  "failure_log_artifact": "pointer-launch-site-failed.log (protected host capture)",
+  "failure_log_sha256": "d607ac4b68dc4d4c6b85b1c04b071147a729502897e2a87eaa723f0f2d2b3ffc",
+  "local_original_check": "FAILED; a subsequent shell command initially masked its exit status",
+  "corrected_check_command": "python3 tools/blob-scan.py --no-vendor",
+  "board_deployment_affected": false
+}

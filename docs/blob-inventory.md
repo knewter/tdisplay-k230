@@ -1516,6 +1516,9 @@ DATA 373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f docs/evide
 DATA 6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68 docs/evidence/files-app/host/nautilus-dark.png
 DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evidence/files-app/host/nautilus-light.png
 DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_responsive_evidence example) of Home/Drawer/Settings/wallpaper at 568x1232, 768x1024, 1080x1920 and 1920x1080 for the-shell-adapts-to-output-resolution
+
+DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
+DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2461,8 +2464,3 @@ Board-native capture cropped to temperature content; not executable code. Source
 ### Board pointer launcher evidence
 
 Native HDMI screenshots from an injected Wayland mouse click; source, commands and limits are in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-launch.json`. These are non-executable image data.
-
-```text
-DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
-DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
-```
