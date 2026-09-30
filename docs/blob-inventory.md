@@ -1519,6 +1519,7 @@ DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_re
 
 DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
 DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
+DATA 3296929bf7f69cd70bc404d8b881486928b4bad42dc59546875d5c40c1c35e4a docs/evidence/the-shell-is-navigable-with-a-mouse/before-overview.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

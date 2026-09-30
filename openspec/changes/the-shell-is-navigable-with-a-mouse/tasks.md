@@ -1,6 +1,6 @@
 ## 1. Publish the navigation scope
 
-- [ ] 1.1 Validate and land the proposal early on master. Proof: `openspec validate the-shell-is-navigable-with-a-mouse --strict`.
+- [x] 1.1 Validate and land the proposal early on master. Proof: `openspec validate the-shell-is-navigable-with-a-mouse --strict`.
 
 ## 2. Complete the input routes
 

@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T13:16:41.372559+00:00",
+  "base_revision": "c39da7737172d0b10999570a58d64953d543a45f",
+  "evidence_class": "host-tests-and-physical-board-injected-pointer-before-fix",
+  "host_checks": [
+    {
+      "command": "cargo test --manifest-path nix/rust-shell-client/Cargo.toml --lib",
+      "passed": 407,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "command": "cargo check --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust",
+      "result": "pass"
+    },
+    {
+      "command": "python3 tests/test_card_shell_state.py",
+      "passed": 37,
+      "failed": 0
+    }
+  ],
+  "before": {
+    "installed_system": "/nix/store/zv7nv18ixm39siskk9m3pp0pd5ymdzqf-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "commands": [
+      "k230-shell-rust --surface hide",
+      "swaymsg card_shell enter",
+      "swaymsg \"seat seat0 cursor set 540 1890; seat seat0 cursor press button1; seat seat0 cursor release button1\"",
+      "swaymsg card_shell debug-scene",
+      "grim -t jpeg -q 60 /root/tmp/k230-deployment/nav-before-overview.jpg"
+    ],
+    "observed": {
+      "mode": 1,
+      "home_selected": 0
+    },
+    "capture": "before-overview.jpg",
+    "capture_sha256": "3296929bf7f69cd70bc404d8b881486928b4bad42dc59546875d5c40c1c35e4a",
+    "visual_review": "overview remains visible after click; safe empty terminal prompt, no private content"
+  },
+  "source_sha256": {
+    "nix/card-shell/adapter.c": "1771b2e658f355b94bc9cdb72ad9e10d9997f2a6c26c569ff98e09f527e5398b",
+    "nix/card-shell-policy/card-shell-policy.c": "7cdfe012769b96308b2cf0e49fc2e3f8e397080c6f40b226cc368d07a2914415",
+    "nix/patches/sway-k230-card-shell.patch": "56a1499aa48d5044703f81819ac4dced4081aa2352605a962574b2803d75d9f8",
+    "nix/rust-shell-client/src/main.rs": "b5520dc92f68e40b3fa8f0289a4d9ba1b179cd991fbf1d19577f8c72413547ce",
+    "nix/rust-shell-client/src/navigation.rs": "f5c639d242d68f3110277e1225337b2ba9152892b391eeb899457fe52c96c493",
+    "nix/rust-shell-client/src/theme_carousel.rs": "3b0f0eb5647281abca16ff608521943f54d9a44e58c004bfe330b0dd797b4daa",
+    "nix/rust-shell-client/src/pointer_input.rs": "0fe100178683302dbcffec84edec0083f42513631a7486d4c3fee8d608743fb6",
+    "nix/shell.nix": "bd66c91991e6871e19fd895243f0e6a66f1408df43e49a8a2373b08aa917b6d7"
+  },
+  "limits": [
+    "Host tests do not establish Wayland integration, board deployment, glass or physical gesture acceptance.",
+    "Before capture is native screencopy of the physical board, with injected standard pointer input; no finger claim."
+  ]
+}
