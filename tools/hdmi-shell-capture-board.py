@@ -409,14 +409,17 @@ def capture(args):
     count = complete_gestures(lines)
     status, reason = outcome(reason, stop_failed, restore_failed, session, count,
                              args.drags + (1 if args.input == 'physical' else 0), benchmark_error)
+    log_name = 'capture.log'
+    safe_log = '\n'.join(lines) + ('\n' if lines else '')
+    log_path = args.output / log_name
+    log_path.write_text(safe_log)
+    log_path.chmod(0o600)
     logs = []
     # Never emit a run without a full parser-valid session; preserve honest zero-contact evidence.
     if status == 'CAPTURED' and session and session.get('event') == 'session':
         inputs = [dict(pair.split('=',1) for pair in line.split()[2:]) for line in lines
                   if line.startswith('K230_CARD_BENCH ') and 'event=input' in line]
         fmt = session['output_format']
-        log_name = 'run-1.log'
-        (args.output/log_name).write_text('\n'.join(lines)+'\n')
         metadata = {'run':run_id,'source_revision':args.source_revision,
             'compositor_executable':identity['compositor_executable'], 'pixman_identity':identity['pixman_identity'],
             'kernel':kernel, 'logical_width':rect['width'],'logical_height':rect['height'],
@@ -552,6 +555,8 @@ class Fixtures(unittest.TestCase):
                         f'K230_CARD_BENCH v=1 run={run} event=submit input_id={input_id} frame_id={frame} t_ns={stamp+1} update_cpu_ns=1 final={int(kind=="release")}',
                         f'K230_CARD_BENCH v=1 run={run} event=present frame_id={frame} t_ns={stamp+2} presented=1 clock=monotonic',
                         f'K230_CARD_SHELL repaint-cost run={run} frame_id={frame} render_cpu_ns=1 prepare_cpu_ns=1 build_cpu_ns=1 commit_cpu_ns=1 attempts=1 failed_attempts=0'])
+                rows.append('K230_CARD_SHELL touch-route phase=before id=9 source_ms=1 dispatch_ms=2 x=500.000 y=1900.000 width=1080 height=1920 edge=24 bottom_reserved=120 consumed=0 active=0 mode=0 ui=0 lock=0 launcher=0 drawer=0 popup=0 points=1 pointer=0 contact=0 edge_tracking=0 blocked=0 home=0')
+                rows.append('Foot title=private secret')
                 if overflow:
                     rows.append(f'K230_CARD_BENCH v=1 run={run} event=incomplete reason=input-overflow')
                 return '\n'.join(rows if len(calls)>1 else rows[:1])
@@ -571,6 +576,7 @@ class Fixtures(unittest.TestCase):
             self.assertEqual(code,0,context)
             self.assertEqual(set(meta['runs'][0]),RUN_FIELDS)
             self.assertEqual(meta['runs'][0]['drag_count'],1)
+            self.assertEqual(meta['runs'][0]['log'],'capture.log')
             self.assertTrue(any('down 1 440 960' in cmd for cmd in instances[0].commands))
             self.assertTrue(instances[0].closed)
             import importlib.util
@@ -592,6 +598,10 @@ class Fixtures(unittest.TestCase):
             self.assertEqual(meta['runs'],[])
             self.assertEqual(context['status'],'INCOMPLETE')
             self.assertIn('fixture stop failure',context['reason'])
+            safe_log=(directory/'capture.log').read_text()
+            self.assertIn('K230_CARD_SHELL touch-route',safe_log)
+            self.assertNotIn('secret',safe_log)
+            self.assertNotIn('private',safe_log)
         with tempfile.TemporaryDirectory() as tmp:
             directory=Path(tmp)/'overflow'
             code,meta,context,instances=run_fixture(directory,False,overflow=True)
@@ -599,6 +609,10 @@ class Fixtures(unittest.TestCase):
             self.assertEqual(meta['runs'],[])
             self.assertEqual(context['status'],'INCOMPLETE')
             self.assertEqual(context['reason'],'input-overflow')
+            safe_log=(directory/'capture.log').read_text()
+            self.assertIn('K230_CARD_BENCH v=1',safe_log)
+            self.assertIn('K230_CARD_SHELL touch-route',safe_log)
+            self.assertNotIn('secret',safe_log)
 
 
 def parser():
