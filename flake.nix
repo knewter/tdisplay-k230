@@ -247,6 +247,13 @@
         # Historical diagnostic output name retained for trial scripts. The
         # actual candidate now uses the fully rebuilt normal board graph.
         card-shell-rvv = self.packages.${buildSystem}.card-shell;
+        # Opt-in software quarter-turn candidate. Runtime enablement requires
+        # WLR_PIXMAN_QUARTER_TURN=1; the normal image stays on the baseline.
+        card-shell-hdmi-trial = self.nixosConfigurations.k230.pkgs.callPackage ./nix/card-shell.nix {
+          swayUnwrapped = self.nixosConfigurations.k230.pkgs.sway-unwrapped;
+          quarterTurnTrial = true;
+        };
+        pixman-quarter-turn-probe = self.nixosConfigurations.k230.pkgs.callPackage ./nix/pixman-quarter-turn-probe.nix { };
         card-composition-probe = pkgsCross.callPackage ./nix/card-composition-probe.nix {
           sway = pkgsCross.sway;
           swayUnwrapped = pkgsCross.sway-unwrapped;

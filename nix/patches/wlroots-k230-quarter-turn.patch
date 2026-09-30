@@ -1,0 +1,147 @@
+--- a/include/render/pixman.h
++++ b/include/render/pixman.h
+@@ -7,6 +7,7 @@
+ #include <wlr/render/wlr_renderer.h>
+ #include "render/pixel_format.h"
+ #include "render/k230_rounded_clip.h"
++#include "render/k230_quarter_turn.h"
+ 
+ struct wlr_pixman_pixel_format {
+ 	uint32_t drm_format;
+@@ -23,6 +24,9 @@
+ 
+ 	struct wlr_drm_format_set drm_formats;
+ 	struct k230_round_cache rounded_cache;
++	struct k230_turn_scratch turn_scratch;
++	bool quarter_turn, trace_draw;
++	unsigned trace_rows;
+ };
+ 
+ struct wlr_pixman_buffer {
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -290,6 +290,7 @@
+ 	wlr_drm_format_set_finish(&renderer->drm_formats);
+ 
+ 	k230_round_cache_finish(&renderer->rounded_cache);
++	k230_turn_finish(&renderer->turn_scratch);
+ 	free(renderer);
+ }
+ 
+@@ -326,6 +327,10 @@
+ 		return NULL;
+ 	}
+ 
++	const char *quarter_turn = getenv("WLR_PIXMAN_QUARTER_TURN");
++	renderer->quarter_turn = quarter_turn && strcmp(quarter_turn, "1") == 0;
++	const char *trace_draw = getenv("WLR_PIXMAN_DRAW_TRACE");
++	renderer->trace_draw = trace_draw && strcmp(trace_draw, "1") == 0;
+ 	wlr_log(WLR_INFO, "Creating pixman renderer");
+ 	wlr_renderer_init(&renderer->wlr_renderer, &renderer_impl, WLR_BUFFER_CAP_DATA_PTR);
+ 	renderer->wlr_renderer.features.output_color_transform = false;
+--- a/render/pixman/pass.c
++++ b/render/pixman/pass.c
+@@ -1,5 +1,8 @@
+ #include <assert.h>
+ #include <stdlib.h>
++#include <inttypes.h>
++#include <time.h>
++#include <wlr/util/log.h>
+ #include "render/pixman.h"
+ 
+ static const struct wlr_render_pass_impl render_pass_impl;
+@@ -41,6 +44,12 @@
+ 	return (struct k230_round_box){box.x, box.y, box.width, box.height};
+ }
+ 
++static uint64_t draw_cpu(void) {
++	struct timespec value;
++	if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &value) != 0) return 0;
++	return (uint64_t)value.tv_sec * 1000000000 + value.tv_nsec;
++}
++
+ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
+ 		const struct wlr_render_texture_options *options) {
+ 	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
+@@ -52,6 +61,14 @@
+ 		return;
+ 	}
+ 
++	struct wlr_buffer *client_buffer = texture->buffer;
++	struct wlr_pixman_renderer *renderer = buffer->renderer;
++	bool trace = renderer->trace_draw && renderer->trace_rows < 512;
++	uint64_t start_cpu = trace ? draw_cpu() : 0, copy_cpu = 0;
++	int original_transform = options->transform;
++	pixman_image_t *turned_image = NULL;
++	struct wlr_pixman_texture turned;
++	struct wlr_render_texture_options ordinary;
+ 	pixman_op_t op = get_pixman_blending(options->blend_mode);
+ 	pixman_image_set_clip_region32(buffer->image, options->clip);
+ 
+@@ -67,6 +84,46 @@
+ 	struct wlr_box dst_box;
+ 	wlr_render_texture_options_get_dst_box(options, &dst_box);
+ 
++	/* Convert the quarter turn into a fresh tiled copy, then let Pixman's
++	 * ordinary scaler/blender handle crop, damage and rounded clipping.
++	 * The stack texture owns no client buffer and cannot escape this draw.
++	 * Unsupported formats/allocation failures retain the stock sampler. */
++	if (buffer->renderer->quarter_turn &&
++			(options->transform == WL_OUTPUT_TRANSFORM_90 ||
++			 options->transform == WL_OUTPUT_TRANSFORM_270) &&
++			src_box.x >= 0 && src_box.y >= 0 && src_box.width > 0 && src_box.height > 0 &&
++			src_box.x + src_box.width <= (int)texture->wlr_texture.width &&
++			src_box.y + src_box.height <= (int)texture->wlr_texture.height &&
++			(options->filter_mode == WLR_SCALE_FILTER_NEAREST ||
++			 (src_box.height == dst_box.width && src_box.width == dst_box.height))) {
++		uint64_t copy_start = trace ? draw_cpu() : 0;
++		pixman_image_t *image = k230_turn_image(&buffer->renderer->turn_scratch,
++				texture->image, options->transform);
++		copy_cpu = trace ? draw_cpu() - copy_start : 0;
++		if (image) {
++			turned_image = image;
++			turned = *texture;
++			turned.image = image;
++			turned.buffer = NULL;
++			turned.wlr_texture.width = texture->wlr_texture.height;
++			turned.wlr_texture.height = texture->wlr_texture.width;
++			ordinary = *options;
++			ordinary.texture = &turned.wlr_texture;
++			ordinary.transform = WL_OUTPUT_TRANSFORM_NORMAL;
++			ordinary.src_box = (struct wlr_fbox){
++				.x = options->transform == WL_OUTPUT_TRANSFORM_90 ? src_box.y :
++					(int)texture->wlr_texture.height - src_box.y - src_box.height,
++				.y = options->transform == WL_OUTPUT_TRANSFORM_90 ?
++					(int)texture->wlr_texture.width - src_box.x - src_box.width : src_box.x,
++				.width = src_box.height, .height = src_box.width,
++			};
++			texture = &turned;
++			options = &ordinary;
++			src_box = (struct wlr_box){ordinary.src_box.x, ordinary.src_box.y,
++				ordinary.src_box.width, ordinary.src_box.height};
++		}
++	}
++
+ 	pixman_image_t *mask = NULL;
+ 	float alpha = wlr_render_texture_options_get_alpha(options);
+ 	if (alpha != 1) {
+@@ -194,8 +251,17 @@
+ 
+ 	pixman_image_set_clip_region32(buffer->image, NULL);
+ 
+-	if (texture->buffer != NULL) {
+-		wlr_buffer_end_data_ptr_access(texture->buffer);
++	if (client_buffer != NULL) {
++		wlr_buffer_end_data_ptr_access(client_buffer);
++	}
++	if (turned_image) pixman_image_unref(turned_image);
++	if (trace) {
++		renderer->trace_rows++;
++		wlr_log(WLR_INFO, "K230_PIXMAN_DRAW transform=%d path=%s copy_cpu_ns=%" PRIu64
++			" total_cpu_ns=%" PRIu64 " dst_pixels=%" PRIu64 " scratch_bytes=%zu",
++			original_transform, turned_image ? "tiled" : "sampler", copy_cpu,
++			draw_cpu() - start_cpu, (uint64_t)dst_box.width * dst_box.height,
++			renderer->turn_scratch.bytes);
+ 	}
+ 
+ 	if (mask != NULL) {

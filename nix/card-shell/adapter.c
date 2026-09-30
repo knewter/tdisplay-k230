@@ -3010,8 +3010,40 @@ bool card_shell_cancel(struct sway_seat *seat) {
 		chrome();
 	return consumed;
 }
+/* Opt-in, bounded diagnosis of real app-edge routing. Coordinates and state
+ * only: no device names, network settings or application text enter this log.
+ * Capture both sides of input_down because it may synchronously change UI. */
+static void touch_route_trace(struct sway_seat *seat, int32_t id, double x,
+		double y, uint64_t source_ms, bool before, bool consumed) {
+	static int enabled_trace = -1;
+	static unsigned rows;
+	if (enabled_trace < 0) {
+		const char *value = getenv("SWAY_K230_TOUCH_ROUTE_TRACE");
+		enabled_trace = value && strcmp(value, "1") == 0;
+	}
+	if (!enabled_trace || rows >= 512 || !shell.output) return;
+	rows++;
+	sway_log(SWAY_INFO, "K230_CARD_SHELL touch-route phase=%s id=%" PRId32
+		" source_ms=%" PRIu64 " dispatch_ms=%" PRIu64
+		" x=%.3f y=%.3f width=%.0f height=%.0f edge=%.0f bottom_reserved=%.0f"
+		" consumed=%d active=%d mode=%d ui=%d lock=%d launcher=%d drawer=%d popup=%d"
+		" points=%u pointer=%d contact=%d edge_tracking=%d blocked=%d home=%d",
+		before ? "before" : "after", id, source_ms, now_ms(),
+		x - shell.output->lx, y - shell.output->ly,
+		shell.policy.config.width, shell.policy.config.height,
+		shell.policy.config.edge_band, shell.policy.config.bottom_reserved,
+		consumed, shell.active, shell.policy.mode,
+		shell.ui && shell.ui->node.enabled, server.session_lock.lock != NULL,
+		launcher_mapped(), drawer_mapped(), popup_mapped(),
+		(unsigned)wlr_seat_touch_num_points(seat->wlr_seat),
+		seat->cursor->simulating_pointer_from_touch, shell.policy.contact,
+		shell.policy.edge.tracking, shell.policy.blocked_until_up, shell.home_selected);
+}
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
-	bool consumed = input_down(seat, id, x, y, event_time_ms(time_msec));
+	uint64_t source_ms = event_time_ms(time_msec);
+	touch_route_trace(seat, id, x, y, source_ms, true, false);
+	bool consumed = input_down(seat, id, x, y, source_ms);
+	touch_route_trace(seat, id, x, y, source_ms, false, consumed);
 	/* An edge contact forwarded to an app cannot later be recaptured by the
 	 * keyboard chord. Only card/drawer-owned first contacts are eligible. */
 	if (!consumed && shell.keyboard.mode == KG_CHORD && shell.keyboard.first == id)
@@ -3032,6 +3064,7 @@ static bool injected_touch(const struct wlr_touch *touch) {
 bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "motion", injected_touch(touch));
+	card_bench_input_origin(event_time_ms(time_msec) * UINT64_C(1000000));
 	bool consumed = input_motion(seat, id, x, y, event_time_ms(time_msec));
 	card_bench_input_end(consumed && (active || shell.active), false);
 	return consumed;
@@ -3039,6 +3072,7 @@ bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t 
 bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, uint32_t time_msec) {
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "release", injected_touch(touch));
+	card_bench_input_origin(event_time_ms(time_msec) * UINT64_C(1000000));
 	bool consumed = input_up(seat, id, event_time_ms(time_msec));
 	card_bench_input_end(consumed && (active || shell.active), shell.policy.mode != CS_DRAGGING);
 	return consumed;

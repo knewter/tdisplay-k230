@@ -10,6 +10,8 @@ void card_bench_stop(void);
 void card_bench_phase(bool active, size_t cards);
 void card_bench_resource(bool active);
 void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected);
+/* Device monotonic origin, separate from dispatch-time input rows. */
+void card_bench_input_origin(uint64_t source_ns);
 void card_bench_input_end(bool consumed, bool final);
 enum card_bench_input_stage { CARD_BENCH_POLICY, CARD_BENCH_SCENE, CARD_BENCH_CHROME };
 uint64_t card_bench_input_stage_begin(void);

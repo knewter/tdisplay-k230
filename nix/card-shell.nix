@@ -1,9 +1,12 @@
-{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20 }:
+{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20, quarterTurnTrial ? false }:
 let
   roundedWlroots = wlroots_0_20.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ];
+    patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ]
+      ++ lib.optionals quarterTurnTrial [ ./patches/wlroots-k230-quarter-turn.patch ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
+    '' + lib.optionalString quarterTurnTrial ''
+      cp ${./card-shell/quarter-turn.h} include/render/k230_quarter_turn.h
     '';
   });
   unwrapped = (swayUnwrapped.override {
@@ -69,7 +72,7 @@ DESCRIPTION
     esac
   '';
 in symlinkJoin {
-  name = "k230-card-shell";
+  name = if quarterTurnTrial then "k230-card-shell-hdmi-trial" else "k230-card-shell";
   paths = [ compositor wrapper ];
   meta = { description = "Opt-in Sway adapter for live application cards";
     platforms = [ "riscv64-linux" ]; license = lib.licenses.mit; };

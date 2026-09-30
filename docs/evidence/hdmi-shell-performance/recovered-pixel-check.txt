@@ -1,0 +1,6 @@
+PASS quarter-turn: 1152 exact pixel comparisons; scaled bilinear sampler fallback
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.059s
+
+OK

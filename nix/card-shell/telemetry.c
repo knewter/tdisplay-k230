@@ -28,7 +28,7 @@ static struct {
 	enum card_bench_render_stage render_stage;
 	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
 	uint64_t submit_time;
-	uint64_t run, next_input, input_time, input_gesture, charged_cpu,
+	uint64_t run, next_input, input_time, input_origin, input_gesture, charged_cpu,
 		last_resource;
 	const char *kind, *source;
 	struct input pending[1024];
@@ -171,12 +171,17 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 		return;
 	card_bench_work_begin();
 	bench.input_time = stamp(CLOCK_MONOTONIC);
+	bench.input_origin = 0;
 	bench.input_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
 	memset(bench.input_stage_cpu, 0, sizeof(bench.input_stage_cpu));
 	bench.in_input = true;
 	bench.input_gesture = gesture;
 	bench.kind = kind;
 	bench.source = injected ? "injected" : "physical";
+}
+void card_bench_input_origin(uint64_t source_ns) {
+	if (bench.armed && bench.in_input && source_ns && source_ns <= bench.input_time)
+		bench.input_origin = source_ns;
 }
 void card_bench_input_end(bool consumed, bool final) {
 	uint64_t event_cpu = 0;
@@ -189,6 +194,9 @@ void card_bench_input_end(bool consumed, bool final) {
 	if (!bench.armed || !consumed)
 		return;
 	uint64_t id = ++bench.next_input;
+	if (bench.input_origin)
+		sway_log(SWAY_INFO, "K230_CARD_SHELL input-origin run=%" PRIu64
+			" input_id=%" PRIu64 " source_ns=%" PRIu64, bench.run, id, bench.input_origin);
 	/* One row per accepted event. The existing frame and input totals still
 	 * include every stage clock and all other handler work. */
 	sway_log(SWAY_INFO,
