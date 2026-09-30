@@ -1,0 +1,15 @@
+{
+  "source_commit": "d29cf869009ad3c3f772b9cca6cd586597399bd7",
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/36783163625",
+  "ci_build": "success",
+  "ci_deploy": "success",
+  "checked_utc": "2026-09-30T22:05:30.168004+00:00",
+  "published_work_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "published_evidence_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-the-touchscreen-becomes-an-hdmi-trackpad-uniform-gestures-readme-md/",
+  "work_snapshot_matches_source": true,
+  "evidence_page_read": true,
+  "published_cover_url": "https://raw.githubusercontent.com/knewter/tdisplay-k230/d29cf869009ad3c3f772b9cca6cd586597399bd7/docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png",
+  "published_cover_sha256": "6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5",
+  "local_build": "407 pages, 13161883 bytes, 19.97 seconds; budgets pass",
+  "remaining": "real-glass acceptance and named prior physical gates; no archive"
+}

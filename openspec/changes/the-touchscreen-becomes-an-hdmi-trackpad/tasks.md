@@ -218,7 +218,7 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
 - [x] 6.3 Cross-build the relay, compositor, Rust client and HDMI system with `nix build .#handheld-touch-trackpad .#card-shell .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 8`; record matching sources/outputs. Build proof only.
 - [x] 6.4 Reserve board/serial, install the recoverable matching candidate and run `tools/hdmi-trackpad-gesture-trial.py` under its named timeout and independent restore timer. Record native captures and source/service identities with injected-board provenance.
 - [ ] 6.5 Capture real two-finger opening/content close/scroll/reversal/card browsing and three-finger keyboard gestures with `python3 tools/capture-feature.py hdmi-trackpad-gestures --provenance real-touch --duration 30 --description 'Uniform HDMI shell gestures' --output-dir docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures`; retain physical gates without that observation.
-- [ ] 6.6 Review, merge/push and inspect exact-revision CI/Pages using `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict`; keep the original incomplete physical tasks open and do not archive.
+- [x] 6.6 Review, merge/push and inspect exact-revision CI/Pages using `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict`; keep the original incomplete physical tasks open and do not archive.
 
 Group 5 landed at `7cd22432381e508dabd77ce1163864af8eae8004`; the screenshot
 inventory correction `5d2349785d72071f2bf9abcdd51823bfbc38ad49` passed build and
@@ -228,3 +228,5 @@ read successfully and the work snapshot matched `5d2349785d72`. See
 This is the historical edge-based checkpoint, not proof of group 6 semantics.
 
 Group 6 tasks 6.1–6.4 are grounded by `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md`: matching cross-build, native-client actual-compositor checks and 15 strict injected-board checks passed. Real-glass task 6.5 remains open.
+
+Uniform implementation `d29cf869009ad3c3f772b9cca6cd586597399bd7` passed build and Pages deployment in run `36783163625`. The published work snapshot, rendered evidence page and exact cover bytes were read successfully. See `uniform-gestures/publication.json`; physical task 6.5 remains open.

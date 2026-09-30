@@ -210,7 +210,7 @@
         "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md"
       ],
       "rationale": "Uniform contact translation is implemented and installed. Matching actual-compositor tests and 15 strict injected-board checks pass; real-glass feel and panel restoration remain open.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799",
+      "reviewRevision": "d29cf869009ad3c3f772b9cca6cd586597399bd7",
       "cover": {
         "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png",
         "caption": "Native HDMI board capture after injected two-finger overview input; real-glass feel pending",

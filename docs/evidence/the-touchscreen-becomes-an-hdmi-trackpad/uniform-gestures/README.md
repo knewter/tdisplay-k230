@@ -94,3 +94,6 @@ app scrolling/pinch, then HDMI-to-panel restoration. The capture command is:
 ```sh
 python3 tools/capture-feature.py hdmi-trackpad-gestures --provenance real-touch --duration 30 --description 'Uniform HDMI shell gestures' --output-dir docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures
 ```
+
+[Publication proof](publication.json) records the successful implementation CI
+and Pages deployment, read work/evidence pages and matching published cover hash.
