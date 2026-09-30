@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T14:30:32.986280+00:00",
+  "evidence_class": "physical-board-injected-pointer-and-headless-regression",
+  "installed_system": "/nix/store/j3k94fniqb132hazsrw9d3mnvs4drkjd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "first_board_checks": [
+    "Home setup passed",
+    "Home bottom edge opens drawer passed",
+    "Calculator focused, but initial focus-only assertion did not prove visibility",
+    "Following app bottom drag failed: mode=0 drawer_mapped=1 home_selected=1; native frame showed app drawer"
+  ],
+  "host_regression": {
+    "sway": "/nix/store/xmpswxkh44rfy84rm1ip9blk3ydm2p7g-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+    "command": "CARD_SHELL_SWAY=<above>/bin/sway CARD_SHELL_CLIENT=<probe> python3 -m unittest discover -s tests -p test_card_shell_pointer_navigation.py",
+    "result": "Failed waiting for home_selected=0 after focusing ordinary app from Home."
+  },
+  "cause": "Existing card_shell_focus_changed call was patched inside the session-lock conditional, so ordinary focus changes never exposed apps.",
+  "correction": "Move callback outside the conditional with contextual anchors; strengthen installed launch assertion to require both focused app and dismissed Home/drawer.",
+  "limits": [
+    "Injected input is not physical finger evidence.",
+    "The failed matrix is preserved as a failure, not promoted to passed product acceptance."
+  ]
+}

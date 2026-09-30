@@ -91,6 +91,10 @@ class PointerNavigation(unittest.TestCase):
                 wait(lambda: 'home_selected=1 ' in scene())
                 self.assertEqual(apps(), original)
                 self.assertIsNone(focused())
+                # Launching/focusing an ordinary app from Home must expose it,
+                # rather than leave a focused window covered by Home.
+                ipc('[app_id="k230.card.one"] focus')
+                wait(lambda: 'home_selected=0 ' in scene())
                 ipc('card_shell enter')
                 ipc('seat seat0 cursor set 284 600; seat seat0 cursor press button5')
                 self.assertIn('selected_app_id=k230.card.two', scene())

@@ -1,0 +1,21 @@
+{
+  "system": "/nix/store/j3k94fniqb132hazsrw9d3mnvs4drkjd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "exported_paths": 36,
+  "gzip_bytes": 55024197,
+  "gzip_sha256": "060bffa3e4e1b51fc6e75dbb882e79fded8442c60dfe015a17cb2d44aafa874a",
+  "source_revision": "813a87d97338620566d7098584f51c94cdefe360",
+  "build_command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 2 --cores 8",
+  "build_result": "success",
+  "sway": "/nix/store/xmpswxkh44rfy84rm1ip9blk3ydm2p7g-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+  "rust": "/nix/store/jrd7qdkwbnsalfqhgy2kdaxizagrd844-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+  "sway_config": "/nix/store/rd9bbca94n51kkj40pppwk2rcj97ngiv-k230-sway.conf",
+  "source_match": [
+    "adapter.c",
+    "card-shell.h",
+    "card-shell-policy.c",
+    "card-shell-policy.h",
+    "sway-k230-card-shell.patch",
+    "Rust main.rs"
+  ],
+  "timestamp": "2026-09-30T14:17:14.778171+00:00"
+}

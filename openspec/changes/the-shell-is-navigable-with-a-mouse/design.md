@@ -21,3 +21,7 @@ Persistent Back/Home button bars were rejected in the prior touchscreen design. 
 ## Risks
 
 Pointer ownership must survive dragging across a card or layer boundary and cancel safely on output/device/seat loss. Wheel deltas from discrete mice and smooth touchpads must both work without fighting momentum or changing theme selection on scroll. Native captures and injected input do not establish physical gesture recognition.
+
+## Installed-board audit correction
+
+The first installed matrix exposed an existing focus hook placed inside Sway's session-lock conditional. A launched application could be focused while Home still hid its scene, causing a following bottom gesture to reopen the drawer. Move the callback after that conditional, using contextual patch anchors. The regression must focus an ordinary app from Home and observe `home_selected=0`; the board launcher assertion requires both app focus and dismissed Home/drawer, not app focus alone.

@@ -110,7 +110,9 @@ def main():
     drag(w // 2, h - 2, w // 2, h - 420)
     record('Home bottom edge opens drawer', scene().get('drawer_mapped') == 1, capture=capture('drawer'))
     click(args.calculator_x, args.calculator_y)
-    record('drawer icon opens Calculator', focus_is('galculator'))
+    launch_scene = scene()
+    record('drawer icon opens visible Calculator', focus_is('galculator') and
+           launch_scene.get('home_selected') == 0 and launch_scene.get('drawer_mapped') == 0)
     windows = app_ids()
     record('existing apps retained by launch', baseline <= windows)
     drag(w // 2, h - 2, w // 2, h - 420)

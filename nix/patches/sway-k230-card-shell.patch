@@ -283,8 +283,14 @@
 +	card_shell_test_input_finish();
 --- a/sway/input/seat.c
 +++ b/sway/input/seat.c
-@@ -1272,0 +1273 @@
+@@ -1270,5 +1270,6 @@
+ 	if (server.session_lock.lock) {
+ 		seat_set_focus_surface(seat, server.session_lock.lock->focused, false);
+ 	}
 +	card_shell_focus_changed(seat);
+ }
+ 
+
 --- a/sway/commands/seat/cursor.c
 +++ b/sway/commands/seat/cursor.c
 @@ -120,1 +120,1 @@

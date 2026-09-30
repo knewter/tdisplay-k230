@@ -1,0 +1,23 @@
+{
+  "evidence_class": "headless-cross-compositor-native-rust-shell-injected-pointer",
+  "checks": [
+    "drawer handle dismiss",
+    "shade Settings click",
+    "Themes click",
+    "Themes Back",
+    "Settings Done"
+  ],
+  "limits": [
+    "No physical device proof.",
+    "Settings services unavailable deliberately; checks concern routing and dismissal.",
+    "Theme candidate wheel and actual Wi-Fi helpers require board matrix."
+  ],
+  "source_artifact": "headless-rust-navigation.py",
+  "command": "python3 /home/jadams/tmp/k230-coordination/navigation-host-shell.py",
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "virtual_device": "zwlr_virtual_pointer_manager_v1; real pointer capability advertised before Rust shell connects",
+  "timestamp": "2026-09-30T14:17:11.002118+00:00"
+}

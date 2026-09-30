@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "timestamp": "2026-09-30T14:33:26.094043+00:00",
+  "evidence_class": "headless-cross-compositor-injected-pointer-and-touch",
+  "sway": "/nix/store/m6g1ilyvkwa750i33gzx6z3ysi90cbbr-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+  "system": "/nix/store/w9i5772w5bjs0j8di0ay82fi496d11ix-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "command": "CARD_SHELL_SWAY=<above>/bin/sway CARD_SHELL_CLIENT=<probe> python3 -m unittest discover -s tests -p test_card_shell_pointer_navigation.py",
+  "result": "1 integration test passed, including ordinary app focus clearing Home.",
+  "patch_sha256": "674c3cb8eec1b138baa1766548db08746776bbb2296ee1c0ae65a944d757d336",
+  "test_sha256": "fbe635fe9710ccf2f39dbf333b0382347482936a91921a449ada6583ca4d157c",
+  "limits": [
+    "Headless injection does not prove physical finger recognition.",
+    "Installed-board correction matrix remains a separate gate."
+  ]
+}
