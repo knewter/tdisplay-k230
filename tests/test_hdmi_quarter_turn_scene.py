@@ -195,6 +195,18 @@ def run_variant(args, output, name, transform, quarter_turn):
                 "ipc_response": response,
             }
         else:
+            # Replay the exact y==height contact observed on physical HDMI.
+            # This is injected headless proof of the real adapter/policy path.
+            width, height = expected_rect["width"], expected_rect["height"]
+            down = ipc(runtime, f"card_shell down 91 {width / 2} {height}")
+            ipc(runtime, f"card_shell motion 91 {width / 2} {height - 300}")
+            ipc(runtime, "card_shell up 91")
+            time.sleep(0.5)
+            ipc(runtime, "card_shell back")
+            result["exact_bottom_endpoint"] = {
+                "evidence_class": "headless-qemu-injected-input",
+                "x": width / 2, "y": height, "down_response": down,
+            }
             response = ipc(runtime, "card_shell enter")
             result["overview"] = {"status": "entered", "ipc_response": response}
         if transform != "180":
