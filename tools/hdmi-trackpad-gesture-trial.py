@@ -71,9 +71,9 @@ class Source:
             os.close(self.fd)
             raise
 
-    def frame(self, y, x=0, lift=None):
+    def frame(self, y, x=0, lift=None, fingers=2):
         events = []
-        for slot, px in [(0, 400+x), (1, 600+x)]:
+        for slot, px in ([(0, 400+x), (1, 600+x)] if fingers == 2 else [(0, 300+x), (1, 500+x), (2, 700+x)]):
             events.append((3, 0x2f, slot))
             if lift is not None and slot in lift:
                 if slot in self.ids: events.append((3, 0x39, -1)); self.ids.remove(slot)
@@ -86,11 +86,11 @@ class Source:
             stamp//1000 % 1_000_000, *event) for event in events))
         time.sleep(.025)
 
-    def swipe(self, start, finish):
-        self.frame(start)
-        for i in range(1, 9): self.frame(round(start+(finish-start)*i/8))
+    def swipe(self, start, finish, fingers=2):
+        self.frame(start, fingers=fingers)
+        for i in range(1, 9): self.frame(round(start+(finish-start)*i/8), fingers=fingers)
         # Real finger lifts are normally staggered; ownership must finish once.
-        self.frame(finish, lift={1}); self.frame(finish, lift={0})
+        self.frame(finish, lift={fingers-1}, fingers=fingers); self.frame(finish, lift=set(range(fingers-1)), fingers=fingers)
 
     def close(self):
         fcntl.ioctl(self.fd, 0x5502)
@@ -101,6 +101,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--relay', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--keyboard-height', required=True, type=int)
     args = parser.parse_args()
     if os.geteuid() or os.uname().machine != 'riscv64':
         raise SystemExit('This injected trial runs only as root on the reserved RISC-V board')
@@ -148,14 +149,14 @@ def main():
         # Standard libinput horizontal finger scroll, not a compositor test hook.
         source.frame(1200)
         for x in range(0, 161, 20): source.frame(1200, x)
-        remember('center contacts become continuous card axis', lambda: matching('axis_owned=1 '))
+        remember('center contacts become native card touch drag', lambda: matching('trackpad_owned=1 ', 'mode=2 '))
         held = scene(); time.sleep(.25)
         position = lambda state: float(re.search(r'card_dx=(-?[\d.]+)', state)[1])
         assert abs(position(held)) > .1, 'Card axis did not move'
         assert abs(position(scene()) - position(held)) < .5, 'Held cards drifted'
         checks.append({'name':'held card axis', 'scene':scene(), 'previous':held})
         source.frame(1200, 160, lift={1}); source.frame(1200, 160, lift={0})
-        remember('axis lift releases ownership', lambda: matching('axis_owned=0 '))
+        remember('native card lift releases ownership', lambda: matching('trackpad_owned=0 '))
         # Native screenshot of injected board pixels; review before publication.
         capture('overview')
         source.swipe(2360, 1600)
@@ -166,16 +167,16 @@ def main():
         remember('Home to app drawer', lambda: matching('drawer_mapped=1 '))
         time.sleep(.5)
         capture('drawer')
-        source.swipe(2140, 2380)
-        remember('bottom outward swipe closes drawer', lambda: matching('drawer_mapped=0 '))
+        source.swipe(1200, 2350)
+        remember('native drawer content swipe closes drawer', lambda: matching('drawer_mapped=0 '))
         source.swipe(30, 720)
         remember('top inward swipe opens shade', lambda: matching('drawer_mapped=1 '))
         time.sleep(1.2)
         # Shade can contain private network information; inspect this capture
         # locally and omit it from public evidence if it does.
         capture('shade')
-        source.swipe(240, 20)
-        remember('top outward swipe closes shade', lambda: matching('drawer_mapped=0 '))
+        source.swipe(1200, 20)
+        remember('native shade content swipe closes shade', lambda: matching('drawer_mapped=0 '))
         # These are board IPC injections, distinct from the raw relay checks.
         def nodes(tree):
             yield tree
@@ -187,8 +188,19 @@ def main():
         focused = next((n.get('app_id') for n in nodes(ipc(kind=4)) if n.get('focused')), None)
         assert focused == selected, 'Activation focused a different app'
         checks[-1]['input_class'] = 'board-compositor-IPC'
+        source.swipe(2360, 800, fingers=3)
+        remember('raw three-finger keyboard chord shows native keyboard',
+            lambda: matching('keyboard_mapped=1 ', 'keyboard_progress=1.0000'))
+        capture('keyboard')
+        active = next(o for o in ipc(kind=3) if o.get('active'))
+        height = active['rect']['height']
+        # Use the matched image configuration plus the existing 56px grip.
+        # Coordinates refer to the physical glass, not cursor position.
+        grip = round((height-args.keyboard_height-56+20)/height * 2399)
+        source.swipe(grip, min(2390, grip+1000))
+        remember('raw two-finger grip drag hides native keyboard', lambda: matching('keyboard_mapped=0 '))
         seq = (int(time.monotonic()*1000) << 16) + os.getpid()
-        ipc(f'card_shell trackpad begin {seq} top 0')
+        ipc(f'card_shell trackpad begin {seq} 2 0.5 0.02 0 0.02 {int(time.monotonic()*1000)&0xffffffff}')
         bad = ipc(f'card_shell trackpad move {seq} nan 0 {int(time.monotonic()*1000)&0xffffffff}', check=False)
         assert not bad[0]['success'], 'Malformed movement was accepted'
         remember('board IPC lost stream watchdog releases ownership',
@@ -196,13 +208,13 @@ def main():
         checks[-1]['input_class'] = 'board-compositor-IPC'
         source.swipe(30, 720)
         remember('raw edge still opens shade after watchdog recovery', lambda: matching('drawer_mapped=1 '))
-        time.sleep(.3); source.swipe(240, 20)
+        time.sleep(.3); source.swipe(1200, 20)
         remember('raw edge closes recovered shade', lambda: matching('drawer_mapped=0 '))
         ipc('card_shell home')
         transport = (output/'relay.log').read_text()
         assert 'shell IPC phase=' not in transport, 'An IPC rejection/timeout invalidates this trial'
         assert 'accepted=false' not in transport, 'An intended shell edge was refused'
-        assert transport.count('accepted=true') == 8, 'A qualified edge was lost'
+        assert transport.count('accepted=true') == 11, 'A qualified translated shell gesture was lost'
         record = {'evidence_class':'physical-board-injected-raw-uinput-and-native-screencopy',
             'real_glass':False,'system':os.path.realpath('/run/current-system'), 'relay':args.relay,
             'timestamp_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'checks':checks,'captures':captures}

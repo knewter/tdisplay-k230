@@ -1,0 +1,14 @@
+Read /run/current-system; activation Result/ExecMainStatus; is-active shell shell-ui k230-touch-trackpad; /proc/MainPID/exe for each.
+Activation succeeded; services required an explicit systemctl start after the userspace switch.
+/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd
+ActiveState=inactive
+Result=success
+ExecMainStatus=0
+active
+active
+active
+/nix/store/g2yxx2jxas1nhivqcpxwrhsxpdi8367q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+/nix/store/lc0ll4ckkm2vif0s82w2phlwn398g0w1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+/nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad
+
+After strict trial: exact current system and three active services; activation rollback and relay restoration timers inactive.

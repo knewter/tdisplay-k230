@@ -1,5 +1,5 @@
-//! Frame-level shell-edge arbitration. The ordinary libinput relay stays
-//! unchanged; an owned edge sequence never emits a synthetic app click.
+//! Translate qualified shell pans into existing touch interactions. Declined
+//! streams retain their original events for libinput, including timestamps.
 use crate::event::*;
 use crate::uinput::AbsRanges;
 
@@ -7,39 +7,25 @@ const SLOTS: usize = 16;
 const MAX_BUFFER: usize = 1024;
 const PAIR_MS: u64 = 45;
 const DECIDE_MS: u64 = 250;
-const EDGE: f64 = 0.12;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Edge {
-    Top,
-    Bottom,
+#[derive(Clone, Copy, Debug)]
+pub struct Begin {
+    pub fingers: u8,
+    pub start_ms: u32,
+    pub time_ms: u32,
+    pub x: f64,
+    pub y: f64,
+    pub dx: f64,
+    pub dy: f64,
 }
-impl Edge {
-    pub fn name(self) -> &'static str {
-        match self {
-            Self::Top => "top",
-            Self::Bottom => "bottom",
-        }
-    }
-}
-
 #[derive(Debug)]
 pub enum Action {
     Pass(Vec<InputEvent>),
-    Begin {
-        edge: Edge,
-        outward: bool,
-        dx: f64,
-        dy: f64,
-    },
-    Move {
-        dx: f64,
-        dy: f64,
-    },
-    End,
-    Cancel,
+    Begin(Begin),
+    Move { dx: f64, dy: f64, time_ms: u32 },
+    End(u32),
+    Cancel(u32),
 }
-
 #[derive(Clone, Copy, Default)]
 struct Contact {
     id: Option<i32>,
@@ -53,14 +39,13 @@ enum State {
     Suppress,
     Owned,
     Candidate {
-        edge: Edge,
         since: u64,
         origin: (f64, f64),
-        pair: bool,
-        distance: f64,
+        fingers: usize,
+        spread: f64,
+        source_ms: u32,
     },
 }
-
 pub struct Gate {
     slots: [Contact; SLOTS],
     slot: usize,
@@ -111,7 +96,6 @@ impl Gate {
         self.buffer.append(&mut self.frame);
         Action::Pass(std::mem::take(&mut self.buffer))
     }
-    /// A refused begin preserves the original events, including timestamps.
     pub fn acknowledge(&mut self, accepted: bool) -> Option<Action> {
         if accepted {
             self.buffer.clear();
@@ -121,22 +105,22 @@ impl Gate {
         }
     }
     pub fn expire(&mut self, now: u64) -> Option<Action> {
-        if let State::Candidate { since, pair, .. } = self.state {
-            if now.saturating_sub(since) >= if pair { DECIDE_MS } else { PAIR_MS } {
+        if let State::Candidate { since, fingers, .. } = self.state {
+            if now.saturating_sub(since) >= if fingers == 1 { PAIR_MS } else { DECIDE_MS } {
                 return Some(self.flush());
             }
         }
         None
     }
     pub fn push(&mut self, ev: InputEvent, now: u64) -> Option<Action> {
+        let time_ms = (ev.tv_sec as u64 * 1000 + ev.tv_usec as u64 / 1000) as u32;
         match (ev.type_, ev.code) {
             (EV_ABS, ABS_MT_SLOT) => self.slot = (ev.value as usize).min(SLOTS - 1),
             (EV_ABS, ABS_MT_TRACKING_ID) => {
-                self.slots[self.slot].id = (ev.value >= 0).then_some(ev.value);
-                // Protocol B slot axes persist across tracking IDs. Linux
-                // filters unchanged positions even on a fresh contact; do not
-                // require a driver to resend an unchanged X or Y.
+                self.slots[self.slot].id = (ev.value >= 0).then_some(ev.value)
             }
+            // Protocol B axes survive tracking-ID changes; Linux filters
+            // unchanged coordinates even for a new contact.
             (EV_ABS, ABS_MT_POSITION_X) => self.slots[self.slot].x = Some(ev.value),
             (EV_ABS, ABS_MT_POSITION_Y) => self.slots[self.slot].y = Some(ev.value),
             _ => {}
@@ -147,7 +131,7 @@ impl Gate {
                 self.frame.clear();
                 self.buffer.clear();
                 self.state = State::Suppress;
-                return Some(Action::Cancel);
+                return Some(Action::Cancel(time_ms));
             }
             return Some(self.flush());
         }
@@ -164,33 +148,27 @@ impl Gate {
         }
         if matches!(self.state, State::Owned) {
             self.frame.clear();
-            // Real fingers usually lift in separate hardware frames. The
-            // first lift ends the gesture; remaining fingers stay suppressed.
-            if count < 2 {
+            if count < self.owned_ids.len() {
                 self.state = if count == 0 {
                     State::Idle
                 } else {
                     State::Suppress
                 };
-                return Some(Action::End);
+                return Some(Action::End(time_ms));
             }
-            if count > 2
-                || self.slots.iter().filter_map(|s| s.id).collect::<Vec<_>>() != self.owned_ids
-            {
+            if self.slots.iter().filter_map(|s| s.id).collect::<Vec<_>>() != self.owned_ids {
                 self.state = State::Suppress;
-                return Some(Action::Cancel);
+                return Some(Action::Cancel(time_ms));
             }
             let Some(points) = self.points() else {
                 self.state = State::Suppress;
-                return Some(Action::Cancel);
+                return Some(Action::Cancel(time_ms));
             };
-            let center = (
-                (points[0].0 + points[1].0) / 2.0,
-                (points[0].1 + points[1].1) / 2.0,
-            );
+            let center = centroid(&points);
             return Some(Action::Move {
                 dx: center.0 - self.origin.0,
                 dy: center.1 - self.origin.1,
+                time_ms,
             });
         }
         if count == 0 {
@@ -204,98 +182,87 @@ impl Gate {
         let Some(points) = self.points() else {
             return Some(self.flush());
         };
-        let center = (
-            points.iter().map(|p| p.0).sum::<f64>() / count as f64,
-            points.iter().map(|p| p.1).sum::<f64>() / count as f64,
-        );
-        let distance = if count == 2 {
-            ((points[1].0 - points[0].0).powi(2) + ((points[1].1 - points[0].1) * 2.17).powi(2))
-                .sqrt()
-        } else {
-            0.0
-        };
+        let center = centroid(&points);
+        let spread = points
+            .iter()
+            .map(|p| (p.0 - center.0).hypot((p.1 - center.1) * 2.17))
+            .sum::<f64>()
+            / count as f64;
+        if count > 3 {
+            return Some(self.flush());
+        }
         if matches!(self.state, State::Idle) {
-            let edge = if points.iter().all(|p| p.1 <= EDGE) {
-                Edge::Top
-            } else if points.iter().all(|p| p.1 >= 1.0 - EDGE) {
-                Edge::Bottom
-            } else {
-                return Some(self.flush());
-            };
-            if count > 2 {
-                return Some(self.flush());
-            }
             self.state = State::Candidate {
-                edge,
                 since: now,
                 origin: center,
-                pair: count == 2,
-                distance,
+                fingers: count,
+                spread,
+                source_ms: time_ms,
             };
         }
         let State::Candidate {
-            edge,
             since,
             origin,
-            pair,
-            distance: initial_distance,
+            fingers,
+            spread: initial_spread,
+            source_ms,
         } = self.state
         else {
             unreachable!()
         };
-        if count > 2
-            || !points.iter().all(|p| match edge {
-                Edge::Top => p.1 <= EDGE * 1.5,
-                Edge::Bottom => p.1 >= 1.0 - EDGE * 1.5,
-            }) && !pair
-        {
+        if count < fingers {
             return Some(self.flush());
         }
-        if count == 2 && !pair {
+        if count > fingers {
+            // A third contact may arrive before ownership. Reset only on a
+            // contact-count change, never every motion frame.
             self.state = State::Candidate {
-                edge,
                 since: now,
                 origin: center,
-                pair: true,
-                distance,
+                fingers: count,
+                spread,
+                source_ms: time_ms,
             };
         } else {
             let dx = center.0 - origin.0;
             let dy = center.1 - origin.1;
-            if !pair && (dx.abs() * 568.0 > 4.0 || dy.abs() * 1232.0 > 4.0) {
+            let movement = (dx * 568.0).hypot(dy * 1232.0);
+            if fingers == 1 && movement > 4.0 {
                 return Some(self.flush());
             }
-            if pair && count != 2 {
+            if fingers > 1 && (spread - initial_spread).abs() > 0.015 {
                 return Some(self.flush());
             }
-            if pair && (distance - initial_distance).abs() > 0.03 {
-                return Some(self.flush());
-            }
-            if pair && dx.abs() * 568.0 > 8.0 && dx.abs() * 568.0 > dy.abs() * 1232.0 * 1.25 {
-                return Some(self.flush());
-            }
-            if pair && dy.abs() * 1232.0 >= 8.0 && dy.abs() * 1232.0 > dx.abs() * 568.0 * 1.25 {
+            // Give a chord a short assembly window. Otherwise its first two
+            // contacts can steal a three-finger keyboard gesture.
+            if fingers > 1 && movement >= 8.0 && now.saturating_sub(since) >= PAIR_MS {
                 self.buffer.append(&mut self.frame);
                 self.origin = origin;
                 self.state = State::Owned;
                 self.owned_ids = self.slots.iter().filter_map(|s| s.id).collect();
-                return Some(Action::Begin {
-                    edge,
-                    outward: match edge {
-                        Edge::Top => dy < 0.0,
-                        Edge::Bottom => dy > 0.0,
-                    },
+                return Some(Action::Begin(Begin {
+                    fingers: fingers as u8,
+                    start_ms: source_ms,
+                    time_ms,
+                    x: origin.0,
+                    y: origin.1,
                     dx,
                     dy,
-                });
+                }));
             }
-            if now.saturating_sub(since) >= if pair { DECIDE_MS } else { PAIR_MS } {
+            if now.saturating_sub(since) >= if fingers == 1 { PAIR_MS } else { DECIDE_MS } {
                 return Some(self.flush());
             }
         }
         self.buffer.append(&mut self.frame);
         None
     }
+}
+fn centroid(points: &[(f64, f64)]) -> (f64, f64) {
+    (
+        points.iter().map(|p| p.0).sum::<f64>() / points.len() as f64,
+        points.iter().map(|p| p.1).sum::<f64>() / points.len() as f64,
+    )
 }
 
 #[cfg(test)]
@@ -333,110 +300,155 @@ mod tests {
         )
     }
     #[test]
-    fn unchanged_slot_axes_survive_lift_and_restart() {
+    fn center_pan_tracks_reversal_and_refusal_preserves_timestamps() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        assert!(frame(&mut g, 20, &[(0, 1, 400, 1040), (1, 2, 600, 1040)]).is_none());
+        let Some(Action::Begin(begin)) = frame(&mut g, 50, &[(0, 1, 400, 1100), (1, 2, 600, 1100)])
+        else {
+            panic!()
+        };
+        assert_eq!(begin.fingers, 2);
+        assert_eq!(begin.start_ms, 0);
+        assert_eq!(begin.time_ms, 50);
+        assert_eq!(begin.y, 0.5);
+        assert!((begin.dy - 0.05).abs() < 1e-6);
+        let Some(Action::Pass(events)) = g.acknowledge(false) else {
+            panic!()
+        };
+        assert_eq!(events.iter().filter(|e| e.is_syn_report()).count(), 3);
+        assert_eq!(
+            events
+                .iter()
+                .filter(|e| e.is_syn_report())
+                .map(|e| e.tv_usec)
+                .collect::<Vec<_>>(),
+            vec![0, 20000, 50000]
+        );
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        frame(&mut g, 50, &[(0, 1, 400, 1100), (1, 2, 600, 1100)]);
+        g.acknowledge(true);
+        assert!(
+            matches!(frame(&mut g,60,&[(0,1,400,1000),(1,2,600,1000)]),Some(Action::Move {dy,..}) if dy==0.0)
+        );
+    }
+    #[test]
+    fn buffered_motion_retains_source_time_instead_of_reader_time() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        frame(&mut g, 50, &[(0, 1, 400, 1100), (1, 2, 600, 1100)]);
+        g.acknowledge(true);
+        g.push(InputEvent::new(0, 60000, EV_ABS, ABS_MT_POSITION_Y, 1200), 200);
+        let Some(Action::Move { time_ms, .. }) =
+            g.push(InputEvent::new(0, 60000, EV_SYN, SYN_REPORT, 0), 200)
+        else { panic!() };
+        assert_eq!(time_ms, 60);
+    }
+    #[test]
+    fn third_contact_before_ownership_is_keyboard_count_not_navigation() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 300, 1980), (1, 2, 700, 1980)]);
+        assert!(frame(&mut g, 10, &[(0, 1, 300, 1950), (1, 2, 700, 1950)]).is_none());
+        frame(&mut g, 20, &[(2, 3, 500, 1950)]);
+        let Some(Action::Begin(begin)) = frame(
+            &mut g,
+            70,
+            &[(0, 1, 300, 1800), (1, 2, 700, 1800), (2, 3, 500, 1800)],
+        ) else {
+            panic!()
+        };
+        assert_eq!(begin.fingers, 3);
+        assert!(begin.dy < 0.0);
+        g.acknowledge(true);
+        assert!(matches!(
+            frame(&mut g, 80, &[(1, -1, 0, 0)]),
+            Some(Action::End(_))
+        ));
+        assert!(frame(&mut g, 90, &[(0, -1, 0, 0), (2, -1, 0, 0)]).is_none());
+    }
+    #[test]
+    fn pinch_and_four_contact_streams_remain_libinput_owned() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        assert!(matches!(
+            frame(&mut g, 50, &[(0, 1, 350, 1000), (1, 2, 650, 1000)]),
+            Some(Action::Pass(_))
+        ));
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        assert!(matches!(
+            frame(&mut g, 10, &[(2, 3, 400, 1500), (3, 4, 600, 1500)]),
+            Some(Action::Pass(_))
+        ));
+    }
+    #[test]
+    fn single_pointer_motion_has_prompt_fallthrough_and_idle_taps_expire() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 500, 1000)]);
+        assert!(matches!(
+            frame(&mut g, 10, &[(0, 1, 520, 1000)]),
+            Some(Action::Pass(_))
+        ));
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 500, 1000)]);
+        assert!(matches!(g.expire(45), Some(Action::Pass(_))));
+    }
+    #[test]
+    fn pair_timeout_and_staggered_lift_never_leave_a_click() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        assert!(matches!(g.expire(250), Some(Action::Pass(_))));
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        frame(&mut g, 50, &[(0, 1, 500, 1000), (1, 2, 700, 1000)]);
+        g.acknowledge(true);
+        assert!(matches!(
+            frame(&mut g, 60, &[(1, -1, 0, 0)]),
+            Some(Action::End(_))
+        ));
+        assert!(frame(&mut g, 70, &[(0, -1, 0, 0)]).is_none());
+        frame(&mut g, 80, &[(0, 3, 500, 1000)]);
+        assert!(matches!(
+            frame(&mut g, 90, &[(0, 3, 520, 1000)]),
+            Some(Action::Pass(_))
+        ));
+    }
+    #[test]
+    fn unchanged_axes_survive_restart_and_new_contact() {
         let mut g = gate();
         g.prime(&[(400, 20), (600, 20)]);
-        for time in [0, 30] {
+        for t in [0, 100] {
             for (slot, id) in [(0, 1), (1, 2)] {
-                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_SLOT, slot), time);
-                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_TRACKING_ID, id), time);
+                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_SLOT, slot), t);
+                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_TRACKING_ID, id), t);
             }
-            assert!(g
-                .push(InputEvent::new(0, 0, EV_SYN, SYN_REPORT, 0), time)
-                .is_none());
+            g.push(InputEvent::new(0, 0, EV_SYN, SYN_REPORT, 0), t);
             for slot in [0, 1] {
-                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_SLOT, slot), time + 10);
+                g.push(InputEvent::new(0, 0, EV_ABS, ABS_MT_SLOT, slot), t + 50);
                 g.push(
-                    InputEvent::new(0, 0, EV_ABS, ABS_MT_POSITION_Y, 60),
-                    time + 10,
+                    InputEvent::new(0, 0, EV_ABS, ABS_MT_POSITION_Y, 100),
+                    t + 50,
                 );
             }
             assert!(matches!(
-                g.push(InputEvent::new(0, 0, EV_SYN, SYN_REPORT, 0), time + 10),
-                Some(Action::Begin { .. })
+                g.push(InputEvent::new(0, 0, EV_SYN, SYN_REPORT, 0), t + 50),
+                Some(Action::Begin(_))
             ));
             g.acknowledge(true);
-            frame(&mut g, time + 20, &[(0, -1, 400, 20), (1, -1, 600, 20)]);
+            frame(&mut g, t + 60, &[(0, -1, 400, 20), (1, -1, 600, 20)]);
         }
     }
     #[test]
-    fn center_and_one_finger_motion_keep_original_input() {
+    fn additional_contact_during_owned_pan_cancels_without_fallthrough() {
         let mut g = gate();
-        assert!(matches!(
-            frame(&mut g, 0, &[(0, 1, 500, 1000)]),
-            Some(Action::Pass(_))
-        ));
-        let mut g = gate();
-        assert!(frame(&mut g, 0, &[(0, 1, 500, 20)]).is_none());
-        assert!(matches!(
-            frame(&mut g, 10, &[(0, 1, 520, 20)]),
-            Some(Action::Pass(_))
-        ));
-    }
-    #[test]
-    fn candidate_timeout_has_no_missing_down_or_reordered_time() {
-        let mut g = gate();
-        frame(&mut g, 0, &[(0, 1, 500, 20)]);
-        let Some(Action::Pass(events)) = g.expire(45) else {
-            panic!()
-        };
-        assert!(events
-            .iter()
-            .any(|e| e.code == ABS_MT_TRACKING_ID && e.value == 1));
-        assert!(events.last().unwrap().is_syn_report());
-        assert!(events.iter().all(|e| e.tv_usec == 0));
-    }
-    #[test]
-    fn top_bottom_pairs_reversal_and_refusal() {
-        for (start, end, edge) in [(20, 60, Edge::Top), (1980, 1940, Edge::Bottom)] {
-            let mut g = gate();
-            frame(&mut g, 0, &[(0, 1, 400, start), (1, 2, 600, start)]);
-            assert!(
-                matches!(frame(&mut g,10,&[(0,1,400,end),(1,2,600,end)]),Some(Action::Begin { edge:e,.. }) if e==edge)
-            );
-            let Some(Action::Pass(events)) = g.acknowledge(false) else {
-                panic!()
-            };
-            assert_eq!(events.iter().filter(|e| e.is_syn_report()).count(), 2);
-            let mut g = gate();
-            frame(&mut g, 0, &[(0, 1, 400, start), (1, 2, 600, start)]);
-            frame(&mut g, 10, &[(0, 1, 400, end), (1, 2, 600, end)]);
-            g.acknowledge(true);
-            assert!(
-                matches!(frame(&mut g,20,&[(0,1,400,start),(1,2,600,start)]),Some(Action::Move { dy,.. }) if dy==0.0)
-            );
-            assert!(matches!(
-                frame(&mut g, 30, &[(0, -1, 0, 0), (1, -1, 0, 0)]),
-                Some(Action::End)
-            ));
-        }
-    }
-    #[test]
-    fn pinch_horizontal_and_extra_contacts_are_not_shell_edges() {
-        for next in [
-            vec![(0, 1, 350, 20), (1, 2, 650, 20)],
-            vec![(0, 1, 450, 20), (1, 2, 650, 20)],
-            vec![(2, 3, 500, 20)],
-        ] {
-            let mut g = gate();
-            frame(&mut g, 0, &[(0, 1, 400, 20), (1, 2, 600, 20)]);
-            assert!(matches!(frame(&mut g, 10, &next), Some(Action::Pass(_))));
-        }
-    }
-    #[test]
-    fn staggered_lift_finishes_without_a_stray_click() {
-        let mut g = gate();
-        frame(&mut g, 0, &[(0, 1, 400, 20), (1, 2, 600, 20)]);
-        frame(&mut g, 10, &[(0, 1, 400, 60), (1, 2, 600, 60)]);
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        frame(&mut g, 50, &[(0, 1, 400, 1100), (1, 2, 600, 1100)]);
         g.acknowledge(true);
         assert!(matches!(
-            frame(&mut g, 20, &[(1, -1, 0, 0)]),
-            Some(Action::End)
+            frame(&mut g, 60, &[(2, 3, 500, 1100)]),
+            Some(Action::Cancel(_))
         ));
-        assert!(frame(&mut g, 30, &[(0, -1, 0, 0)]).is_none());
-        assert!(matches!(
-            frame(&mut g, 40, &[(0, 3, 500, 1000)]),
-            Some(Action::Pass(_))
-        ));
+        assert!(frame(&mut g, 70, &[(0, -1, 0, 0), (1, -1, 0, 0), (2, -1, 0, 0)]).is_none());
     }
 }

@@ -34,6 +34,15 @@ impl TouchDevice {
         Ok(TouchDevice { file })
     }
 
+    /// Select the event clock on this fd only; other input consumers keep
+    /// their own clock. Buffered frames retain physical release timing.
+    pub fn monotonic_clock(&self) -> io::Result<()> {
+        let clock: libc::c_int = libc::CLOCK_MONOTONIC;
+        let rc = unsafe { libc::ioctl(self.file.as_raw_fd(), 0x400445a0u64, &clock) };
+        if rc < 0 { return Err(io::Error::last_os_error()); }
+        Ok(())
+    }
+
     fn get_abs(&self, code: u16) -> io::Result<InputAbsInfo> {
         let mut info = InputAbsInfo::default();
         let rc = unsafe { libc::ioctl(self.file.as_raw_fd(), eviocgabs(code), &mut info as *mut InputAbsInfo) };

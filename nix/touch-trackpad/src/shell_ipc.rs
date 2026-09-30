@@ -1,5 +1,5 @@
 //! One bounded worker and persistent Sway IPC stream, never per-frame forks.
-use crate::gestures::Edge;
+use crate::gestures::Begin;
 use std::collections::VecDeque;
 use std::io::{self, Read, Write};
 use std::os::unix::{
@@ -18,7 +18,7 @@ const HEARTBEAT: Duration = Duration::from_millis(200);
 const MAX_REPLY: usize = 4096;
 type Point = (f64, f64, u32);
 enum Control {
-    Begin(u64, Edge, bool, mpsc::SyncSender<bool>),
+    Begin(u64, Begin, mpsc::SyncSender<bool>),
     End(u64, bool, u32),
 }
 #[derive(Default)]
@@ -55,7 +55,7 @@ impl Shell {
             seq: (monotonic_ms() << 16) ^ (std::process::id() as u64),
         }
     }
-    pub fn begin(&mut self, edge: Edge, outward: bool) -> bool {
+    pub fn begin(&mut self, begin: Begin) -> bool {
         // Refresh the epoch on every begin, including after an idle interval
         // or a separate controller's recovery probe. A long-lived worker
         // must not remain below the compositor's last accepted sequence.
@@ -68,25 +68,25 @@ impl Shell {
             }
             pending
                 .controls
-                .push_back(Control::Begin(self.seq, edge, outward, tx));
+                .push_back(Control::Begin(self.seq, begin, tx));
         }
         self.box_.1.notify_one();
         rx.recv_timeout(TIMEOUT + Duration::from_millis(20))
             .unwrap_or(false)
     }
-    pub fn motion(&self, dx: f64, dy: f64) {
+    pub fn motion(&self, dx: f64, dy: f64, time_ms: u32) {
         let mut pending = self.box_.0.lock().unwrap();
-        pending.latest = Some((self.seq, (dx, dy, monotonic_ms() as u32)));
+        pending.latest = Some((self.seq, (dx, dy, time_ms)));
         self.box_.1.notify_one();
     }
-    pub fn end(&self, cancel: bool) {
+    pub fn end(&self, cancel: bool, time_ms: u32) {
         let mut pending = self.box_.0.lock().unwrap();
         if pending.controls.len() >= 4 {
             pending.stop = true;
         } else {
             pending
                 .controls
-                .push_back(Control::End(self.seq, cancel, monotonic_ms() as u32));
+                .push_back(Control::End(self.seq, cancel, time_ms));
         }
         self.box_.1.notify_one();
     }
@@ -227,7 +227,7 @@ fn move_command(seq: u64, point: Point) -> String {
 }
 fn checked_command(stream: &mut UnixStream, text: &str) -> io::Result<bool> {
     let result = command(stream, text);
-    if matches!(result, Ok(false)) {
+    if matches!(result, Ok(false)) && !text.starts_with("card_shell trackpad begin ") {
         eprintln!(
             "k230-touch-trackpad: shell IPC phase={} error=Rejected",
             text.split_whitespace().nth(2).unwrap_or("unknown")
@@ -292,7 +292,7 @@ fn run(path: PathBuf, box_: Mailbox) {
             }
         }
         match control {
-            Some(Control::Begin(seq, edge, outward, ack)) => {
+            Some(Control::Begin(seq, begin, ack)) => {
                 if socket.is_none() {
                     socket = connect(&path).ok();
                 }
@@ -300,9 +300,8 @@ fn run(path: PathBuf, box_: Mailbox) {
                     checked_command(
                         s,
                         &format!(
-                            "card_shell trackpad begin {seq} {} {}",
-                            edge.name(),
-                            u8::from(outward)
+                            "card_shell trackpad begin {seq} {} {:.6} {:.6} {:.6} {:.6} {}",
+                            begin.fingers, begin.x, begin.y, begin.dx, begin.dy, begin.start_ms
                         ),
                     )
                     .unwrap_or(false)
@@ -391,18 +390,34 @@ mod tests {
             }
         });
         let mut shell = Shell::new(socket);
-        assert!(shell.begin(Edge::Bottom, false));
+        assert!(shell.begin(Begin {
+            fingers: 2,
+            start_ms: monotonic_ms() as u32,
+            time_ms: monotonic_ms() as u32,
+            x: 0.5,
+            y: 0.98,
+            dx: 0.,
+            dy: -0.02
+        }));
         for i in 0..100 {
-            shell.motion(i as f64 / 200.0, -i as f64 / 200.0);
+            shell.motion(i as f64 / 200.0, -i as f64 / 200.0, monotonic_ms() as u32);
         }
-        shell.end(false);
+        shell.end(false, monotonic_ms() as u32);
         std::thread::sleep(Duration::from_millis(30));
         // Simulate an old epoch after recovery by a separate controller.
         // The next on-wire begin must still be newer than the first.
         shell.seq = 1;
-        assert!(shell.begin(Edge::Bottom, false));
-        shell.motion(0.495, -0.495);
-        shell.end(false);
+        assert!(shell.begin(Begin {
+            fingers: 2,
+            start_ms: monotonic_ms() as u32,
+            time_ms: monotonic_ms() as u32,
+            x: 0.5,
+            y: 0.98,
+            dx: 0.,
+            dy: -0.02
+        }));
+        shell.motion(0.495, -0.495, monotonic_ms() as u32);
+        shell.end(false, monotonic_ms() as u32);
         let commands = rx.recv_timeout(Duration::from_secs(2)).unwrap();
         assert!(commands[0].contains(" begin "));
         let begins: Vec<u64> = commands
@@ -442,7 +457,7 @@ mod tests {
                 }
             });
             assert_eq!(
-                command(&mut a, "card_shell trackpad begin 1 top 0").unwrap(),
+                command(&mut a, "card_shell trackpad begin 1 2 0.5 0.02 0 0.02").unwrap(),
                 good
             );
             thread.join().unwrap();
@@ -452,7 +467,7 @@ mod tests {
     fn nonresponsive_controller_does_not_block_forever() {
         let (mut a, _b) = UnixStream::pair().unwrap();
         let start = Instant::now();
-        assert!(command(&mut a, "card_shell trackpad begin 1 top 0").is_err());
+        assert!(command(&mut a, "card_shell trackpad begin 1 2 0.5 0.02 0 0.02").is_err());
         assert!(start.elapsed() < Duration::from_millis(350));
         let (mut a, _b) = UnixStream::pair().unwrap();
         let start = Instant::now();
@@ -482,8 +497,16 @@ mod tests {
     #[test]
     fn missing_shell_falls_back_without_leaking_a_worker() {
         let mut shell = Shell::new(PathBuf::from("/nonexistent/k230-sway.sock"));
-        assert!(!shell.begin(Edge::Top, false));
-        shell.motion(0.0, 0.5);
-        shell.end(false);
+        assert!(!shell.begin(Begin {
+            fingers: 2,
+            start_ms: monotonic_ms() as u32,
+            time_ms: monotonic_ms() as u32,
+            x: 0.5,
+            y: 0.02,
+            dx: 0.,
+            dy: 0.02
+        }));
+        shell.motion(0.0, 0.5, monotonic_ms() as u32);
+        shell.end(false, monotonic_ms() as u32);
     }
 }

@@ -651,6 +651,11 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png
+DATA 3dae42c7878555b912b7996fbcd88937a24934699a1a151be12a07df4a7bab76 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/home.png
+DATA 0830a5175acc07f25e894a3a461787325056e3fabecc07c76cd9d514a54eb6c5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/drawer.png
+DATA f9fafcd198456b9f9e52a1d395643f9690e19191316bec7b81c78682f8c570e8 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/shade.png
+DATA fb40be1f2fe804f8def6a4740576c22f0d151714f7c74b86c25680c9534c241f docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/keyboard.png
 DATA 0830a5175acc07f25e894a3a461787325056e3fabecc07c76cd9d514a54eb6c5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/drawer.png
 DATA 682dbe3d1e4008082e9ab3340bf95ea2eebb91693cad1156027eb4f68bd5255e docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/home.png
 DATA 6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/overview.png

@@ -1,0 +1,44 @@
+{
+  "branch": "fix/hdmi-gestures",
+  "base_revision": "2faa383c8d0de5555fbc448a0f72eb48ab2e761c",
+  "correction_checkpoint": "5d2349785d72071f2bf9abcdd51823bfbc38ad49",
+  "planning_commit": "7262da939f5fe2a8fac8167acfdc3c062cb482ab",
+  "worktree": ".scratch/coordinated-work/hdmi-gestures",
+  "owned_source_paths": [
+    "nix/card-shell/adapter.c",
+    "nix/rust-shell-client/src/main.rs",
+    "nix/rust-shell-client/src/navigation.rs",
+    "nix/touch-trackpad/src/gestures.rs",
+    "nix/touch-trackpad/src/main.rs",
+    "nix/touch-trackpad/src/shell_ipc.rs",
+    "nix/touch-trackpad/src/touchdev.rs",
+    "tests/test_card_shell_trackpad_gestures.py",
+    "tools/hdmi-trackpad-gesture-trial.py"
+  ],
+  "owned_documentation_paths": [
+    "openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/",
+    "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/",
+    "docs/blob-inventory.md",
+    "docs/work-board-status.json"
+  ],
+  "timestamp_utc": "2026-09-30T21:59:49.809864+00:00",
+  "build_command": "flock -n /tmp/k230-nix-build.lock nix build .#handheld-touch-trackpad .#card-shell .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 8",
+  "outputs": {
+    "relay": "/nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+    "compositor": "/nix/store/fqdfjzplwzccgnrv6spsf6rfvyz7im0j-k230-card-shell",
+    "rust_shell": "/nix/store/bi28b31qzk2y7d193g24h4k2p1q1iq8n-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "system": "/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "source_sha256": {
+    "nix/card-shell/adapter.c": "11b80c3a6f91810d2a4ef43c033994025185faa69d7735fb5cd8665630b72f12",
+    "nix/rust-shell-client/src/main.rs": "deabe458a8c64640c4773654f175720ae5374892654aabfab95d278d367907a1",
+    "nix/rust-shell-client/src/navigation.rs": "bc43bec5f1ef70a0f2b258b485a5fb8126f8d9c9fa477937fbd8745451f6a276",
+    "nix/touch-trackpad/src/gestures.rs": "cef8e3a448b5b095dd9767fafa1befb28c7b9b615315f75ed6f90d1befff06b7",
+    "nix/touch-trackpad/src/main.rs": "2a980a0a1a4a185b63ff4d264207ea4f62442accaccb614c7f29e1188ef12176",
+    "nix/touch-trackpad/src/shell_ipc.rs": "cba453cd03e233de30172322cc6decd00e0b999625e8bad75faa3bd807c97a15",
+    "nix/touch-trackpad/src/touchdev.rs": "408da86c3bc627cd7b64e7f0b8853546de51b07f7bf48a62c0d2d1fe56376a62",
+    "tests/test_card_shell_trackpad_gestures.py": "20d9d480c013296af6b2ec6f421c0925d4449aa66563bc6511aa53cb28ca619c",
+    "tools/hdmi-trackpad-gesture-trial.py": "c20d19c8f832c24f1db177325708819595bef5683bd9799543777a8905a8ccdf"
+  },
+  "remaining_gate": "real-glass feel, named previous physical gates; no archive"
+}

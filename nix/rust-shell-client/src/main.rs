@@ -1037,6 +1037,11 @@ fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
     }
 }
 
+// Reserved logical contact emitted by Sway's trackpad-to-touch adapter.
+// Multi-finger pans retain native motion/settle, but never become a tap or
+// long press when the fingers return to their starting position.
+const TRACKPAD_PAN_ID: i32 = i32::MAX - 2;
+
 struct ShellClient {
     compositor: CompositorState,
     presentation: Option<PresentationTimeState>,
@@ -1159,6 +1164,7 @@ struct ShellClient {
     theme_carousel: Carousel,
     background_carousel: Carousel,
     panel_start: Option<(i32, (f64, f64))>,
+    trackpad_pan_start: Option<(f64, f64)>,
     panel_origin_scroll: f64,
     panel_scrolled: bool,
     panel_scroll_dragged: bool,
@@ -4285,6 +4291,7 @@ impl ShellClient {
         pos: (f64, f64),
     ) {
         self.trace_picker_input("input_down", time_ms, id);
+        if id == TRACKPAD_PAN_ID { self.trackpad_pan_start = Some(pos); }
         if self
             .layer
             .as_ref()
@@ -4565,6 +4572,15 @@ impl ShellClient {
         id: i32,
     ) {
         self.trace_picker_input("input_up", time_ms, id);
+        if id == TRACKPAD_PAN_ID {
+            if let Some(start) = self.trackpad_pan_start.take() {
+                let point = if self.home_touch_id == Some(id) { self.home_last_point } else { self.touch.position };
+                if (point.0 - start.0).hypot(point.1 - start.1) <= 22.0 {
+                    self.contact_cancel(qh);
+                    return;
+                }
+            }
+        }
         self.hud.end_drag(id);
         if self.home_touch_id == Some(id) {
             self.home_touch_id = None;
@@ -5237,6 +5253,7 @@ impl ShellClient {
         }
     }
     fn contact_cancel(&mut self, qh: &QueueHandle<Self>) {
+        self.trackpad_pan_start = None;
         self.pointer_contact.cancel();
         self.touch.cancel();
         self.nav.cancel();
@@ -5712,6 +5729,7 @@ fn serve() -> Result<(), String> {
         theme_carousel: Carousel::new(THEME_GEOMETRY),
         background_carousel: Carousel::new(BACKGROUND_GEOMETRY),
         panel_start: None,
+        trackpad_pan_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
         panel_scroll_dragged: false,
@@ -6298,7 +6316,7 @@ fn serve() -> Result<(), String> {
             .as_millis()
             .min(u128::from(u32::MAX)) as u32;
         state.nav_tick = now;
-        if state.route == Route::Drawer && state.drawer_home_drag.is_none() {
+        if state.route == Route::Drawer && state.drawer_home_drag.is_none() && state.touch.id != Some(TRACKPAD_PAN_ID) {
             let filtered = state.drawer_filtered_apps().len();
             if let Some((display_index, point)) =
                 state.nav.take_long_press_drag(elapsed, state.width, state.height, filtered)
@@ -6319,7 +6337,7 @@ fn serve() -> Result<(), String> {
             state.dirty = true;
         }
         state.tick_home_widgets(now);
-        if state.home.tick(elapsed) {
+        if state.home_touch_id != Some(TRACKPAD_PAN_ID) && state.home.tick(elapsed) {
             state.home_surface.dirty = true;
         }
         if state.home_surface.dirty {

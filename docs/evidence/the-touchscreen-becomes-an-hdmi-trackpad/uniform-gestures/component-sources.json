@@ -1,0 +1,63 @@
+{
+  "sway": {
+    "output": "/nix/store/g2yxx2jxas1nhivqcpxwrhsxpdi8367q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+    "derivation": "/nix/store/h6wv9yglshn3hy43hx07w0xyjdi5h280-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+    "source": "/nix/store/2j7grygxd5da5r214vzz3y8b54rr739k-source",
+    "matches": {
+      "nix/card-shell/adapter.c": {
+        "sha256": "11b80c3a6f91810d2a4ef43c033994025185faa69d7735fb5cd8665630b72f12",
+        "source": "/nix/store/yc2h02xq9k5d3fg14szml5s3h32ma5vb-adapter.c"
+      },
+      "nix/card-shell/route.c": {
+        "sha256": "33d82e088fa93254c7fcfc504bfb3bd4fa64d4c426d30adf81f0cb26db3d1585",
+        "source": "/nix/store/li9g5ybgd12dafpndp5i501gngnnnsjc-route.c"
+      },
+      "nix/card-shell/route.h": {
+        "sha256": "031c81432e0b052c89b57a6923aacc3f51146d7a86565ab820d2636504e4fdd7",
+        "source": "/nix/store/0p0nkya1cisyb2yr21x4fbpknljr2479-route.h"
+      }
+    }
+  },
+  "rust": {
+    "output": "/nix/store/lc0ll4ckkm2vif0s82w2phlwn398g0w1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "derivation": "/nix/store/x3r5aqvzpbcvqrm6d69d3lksly5cnn4y-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+    "source": "/nix/store/3n7m130srg5nq13ada9cfsxc4can6kbg-rust-shell-client",
+    "matches": {
+      "nix/rust-shell-client/src/main.rs": {
+        "sha256": "deabe458a8c64640c4773654f175720ae5374892654aabfab95d278d367907a1",
+        "source": "/nix/store/3n7m130srg5nq13ada9cfsxc4can6kbg-rust-shell-client/src/main.rs"
+      },
+      "nix/rust-shell-client/src/navigation.rs": {
+        "sha256": "bc43bec5f1ef70a0f2b258b485a5fb8126f8d9c9fa477937fbd8745451f6a276",
+        "source": "/nix/store/3n7m130srg5nq13ada9cfsxc4can6kbg-rust-shell-client/src/navigation.rs"
+      },
+      "nix/rust-shell-client/src/protocol.rs": {
+        "sha256": "ff55c0e997893944d617ea46006a687e3681dc0e61a30666e78a817e11261bc5",
+        "source": "/nix/store/3n7m130srg5nq13ada9cfsxc4can6kbg-rust-shell-client/src/protocol.rs"
+      }
+    }
+  },
+  "relay": {
+    "output": "/nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+    "derivation": "/nix/store/mp6hrc6a4y7f73y7g2z1s2f707509hqs-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0.drv",
+    "source": "/nix/store/k98jqi61rancfhkmji768fa90bz1hzb4-touch-trackpad",
+    "matches": {
+      "nix/touch-trackpad/src/gestures.rs": {
+        "sha256": "cef8e3a448b5b095dd9767fafa1befb28c7b9b615315f75ed6f90d1befff06b7",
+        "source": "/nix/store/k98jqi61rancfhkmji768fa90bz1hzb4-touch-trackpad/src/gestures.rs"
+      },
+      "nix/touch-trackpad/src/main.rs": {
+        "sha256": "2a980a0a1a4a185b63ff4d264207ea4f62442accaccb614c7f29e1188ef12176",
+        "source": "/nix/store/k98jqi61rancfhkmji768fa90bz1hzb4-touch-trackpad/src/main.rs"
+      },
+      "nix/touch-trackpad/src/shell_ipc.rs": {
+        "sha256": "cba453cd03e233de30172322cc6decd00e0b999625e8bad75faa3bd807c97a15",
+        "source": "/nix/store/k98jqi61rancfhkmji768fa90bz1hzb4-touch-trackpad/src/shell_ipc.rs"
+      },
+      "nix/touch-trackpad/src/touchdev.rs": {
+        "sha256": "408da86c3bc627cd7b64e7f0b8853546de51b07f7bf48a62c0d2d1fe56376a62",
+        "source": "/nix/store/k98jqi61rancfhkmji768fa90bz1hzb4-touch-trackpad/src/touchdev.rs"
+      }
+    }
+  }
+}

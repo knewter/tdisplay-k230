@@ -337,7 +337,7 @@ impl DrawerNavigation {
             down_ms: time_ms,
             finger_velocity: 0.0,
             cancelled: false,
-            scrolled_away: false,
+            scrolled_away: self.scroll > 0.5,
             held_ms: 0,
             long_fired: false,
         });

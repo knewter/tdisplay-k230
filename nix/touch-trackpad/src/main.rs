@@ -183,9 +183,12 @@ impl TrackpadSession {
                 .join(",")
         );
         let socket = socket.filter(|_| !dry_run);
+        if socket.is_some() { touch.monotonic_clock()?; }
         let gate = socket.map(|_| {
             let mut gate = gestures::Gate::new(ranges);
-            if let Ok(positions) = touch.slot_positions() { gate.prime(&positions); }
+            if let Ok(positions) = touch.slot_positions() {
+                gate.prime(&positions);
+            }
             gate
         });
         Ok(TrackpadSession {
@@ -249,20 +252,16 @@ impl TrackpadSession {
         use gestures::Action;
         match action {
             Action::Pass(events) => self.emit(events)?,
-            Action::Begin {
-                edge,
-                outward,
-                dx,
-                dy,
-            } => {
+            Action::Begin(begin) => {
                 let started = shell_ipc::monotonic_ms();
-                let accepted = self
-                    .shell
-                    .as_mut()
-                    .is_some_and(|shell| shell.begin(edge, outward));
+                let accepted = self.shell.as_mut().is_some_and(|shell| shell.begin(begin));
                 if self.log_events {
-                    eprintln!("k230-touch-trackpad: shell edge={} outward={} accepted={} ack_ms={}",
-                        edge.name(), outward, accepted, shell_ipc::monotonic_ms() - started);
+                    eprintln!(
+                        "k230-touch-trackpad: shell fingers={} accepted={} ack_ms={}",
+                        begin.fingers,
+                        accepted,
+                        shell_ipc::monotonic_ms() - started
+                    );
                 }
                 if let Some(action) = self
                     .gate
@@ -272,19 +271,23 @@ impl TrackpadSession {
                     self.action(action)?;
                 }
                 if accepted {
-                    self.shell.as_ref().unwrap().motion(dx, dy);
+                    self.shell.as_ref().unwrap().motion(begin.dx, begin.dy, begin.time_ms);
                 }
             }
-            Action::Move { dx, dy } => {
-                if self.log_events { eprintln!("k230-touch-trackpad: shell move dx={dx:.6} dy={dy:.6}"); }
+            Action::Move { dx, dy, time_ms } => {
+                if self.log_events {
+                    eprintln!("k230-touch-trackpad: shell move dx={dx:.6} dy={dy:.6}");
+                }
                 if let Some(shell) = &self.shell {
-                    shell.motion(dx, dy);
+                    shell.motion(dx, dy, time_ms);
                 }
             }
-            Action::End | Action::Cancel => {
-                if self.log_events { eprintln!("k230-touch-trackpad: shell terminal={action:?}"); }
+            Action::End(time_ms) | Action::Cancel(time_ms) => {
+                if self.log_events {
+                    eprintln!("k230-touch-trackpad: shell terminal={action:?}");
+                }
                 if let Some(shell) = &self.shell {
-                    shell.end(matches!(action, Action::Cancel));
+                    shell.end(matches!(action, Action::Cancel(_)), time_ms);
                 }
             }
         }
@@ -307,7 +310,7 @@ impl Drop for TrackpadSession {
         // Ungrab before the virtual device's own Drop destroys it, so
         // there is no window where neither device is delivering events.
         if let Some(shell) = &self.shell {
-            shell.end(true);
+            shell.end(true, shell_ipc::monotonic_ms() as u32);
         }
         let _ = self.touch.ungrab();
         eprintln!("k230-touch-trackpad: left trackpad mode, ungrabbed touchscreen");

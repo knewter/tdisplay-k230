@@ -126,10 +126,11 @@ static struct {
 	bool pointer_owned, pointer_cancelled, pointer_dispatch;
 	struct sway_seat *pointer_seat;
 	double pointer_scroll, pointer_x, pointer_y;
-    bool axis_owned, trackpad_owned, trackpad_dismiss, trackpad_top;
+    bool axis_owned, trackpad_owned, trackpad_client, trackpad_keyboard;
     struct sway_seat *axis_seat, *trackpad_seat;
     uint64_t trackpad_seq, trackpad_deadline, trackpad_sample;
-    double axis_x, axis_y, trackpad_dx, trackpad_dy, trackpad_velocity;
+    double axis_x, axis_y, trackpad_dx, trackpad_dy;
+    double trackpad_x, trackpad_y, trackpad_client_x, trackpad_client_y;
     int trackpad_width, trackpad_height;
 	bool home_tap_candidate;
 	uint64_t gesture_seq;
@@ -1006,7 +1007,8 @@ static bool card_shown_large(const struct card *c) {
  * tick_impl's own frame-scheduling gate and scaled_mirror's choice of a
  * cheap filter over the default bilinear one while genuinely moving. */
 static bool scene_in_motion(void) {
-	return (shell.policy.mode == CS_ENTERING &&
+    static uint64_t motion_filter_until;
+    bool moving = (shell.policy.mode == CS_ENTERING &&
 			(shell.policy.entry_reversing || shell.policy.entry_settling)) ||
 		shell.policy.mode == CS_EXPANDING || shell.policy.mode == CS_CLOSING ||
 		shell.policy.contact || shell.policy.edge.tracking ||
@@ -1015,6 +1017,13 @@ static bool scene_in_motion(void) {
 		 * otherwise HDMI's rotated, scaled card falls back to the expensive
 		 * bilinear sampler for every frame of the Home transition. */
 		shell.home_gesture.contacts || shell.home_settling;
+    // Keep rapid successive gestures on the motion sampler. A single
+    // settled bilinear HDMI redraw can otherwise occupy the event loop
+    // longer than the next bounded ownership handshake. Quality returns
+    // after a short quiet interval; both touch sources share this policy.
+    uint64_t now = now_ms();
+    if (moving) motion_filter_until = now + 300;
+    return moving || (shell.active && now < motion_filter_until);
 }
 static struct wlr_box card_clip_box(struct card *c) {
 	/* c->full_clip mirrors the entry_id special case for every card sharing
@@ -2034,6 +2043,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+    if (shell.trackpad_owned) card_shell_cancel(shell.trackpad_seat);
     shell.axis_owned = false; shell.axis_seat = NULL;
     shell.trackpad_owned = false; shell.trackpad_seat = NULL;
 	if (shell.pointer_owned) shell.pointer_cancelled = true;
@@ -3020,6 +3030,7 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 #define CARD_POINTER_ID INT32_MAX
 #define CARD_AXIS_ID (INT32_MAX - 1)
 #define CARD_TRACKPAD_ID (INT32_MAX - 2)
+#define CARD_TRACKPAD_SECOND_ID (INT32_MAX - 3)
 bool card_shell_pointer_button(struct sway_seat *seat, uint32_t button,
         enum wl_pointer_button_state state, uint32_t time_ms) {
     if (button != BTN_LEFT) return shell.pointer_owned;
@@ -3135,6 +3146,15 @@ void card_shell_pointer_reset(struct sway_seat *seat) {
     card_shell_cancel(seat);
 }
 bool card_shell_cancel(struct sway_seat *seat) {
+    if (shell.trackpad_client && shell.trackpad_seat == seat && seat) {
+        struct wlr_touch_point *point = wlr_seat_touch_get_point(seat->wlr_seat, CARD_TRACKPAD_ID);
+        if (point && point->client) wlr_seat_touch_notify_cancel(seat->wlr_seat, point->client);
+        // Cancel removes the client's interpretation; always release our
+        // server-side contact even if its surface disappeared meanwhile.
+        wlr_seat_touch_notify_up(seat->wlr_seat, (uint32_t)now_ms(), CARD_TRACKPAD_ID);
+        wlr_seat_touch_notify_frame(seat->wlr_seat);
+    }
+    shell.trackpad_client = shell.trackpad_keyboard = false;
     shell.trackpad_owned = false; shell.trackpad_seat = NULL;
     shell.axis_owned = false; shell.axis_seat = NULL;
 	if (shell.pointer_owned && shell.pointer_seat == seat) shell.pointer_cancelled = true;
@@ -3305,7 +3325,7 @@ static char *debug_scene_text(void) {
 		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
 		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
 		"appearance_canvas_authored=%d home_enabled=%d mode=%d entry_progress=%.4f "
-		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s home_selected=%d home_offset=%.1f home_settling=%d trackpad_owned=%d axis_owned=%d card_dx=%.3f card_velocity=%.3f",
+		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s home_selected=%d home_offset=%.1f home_settling=%d trackpad_owned=%d axis_owned=%d card_dx=%.3f card_velocity=%.3f trackpad_client=%d trackpad_keyboard=%d keyboard_progress=%.4f",
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
@@ -3313,7 +3333,7 @@ static char *debug_scene_text(void) {
 		shell.appearance_enabled ? shell.appearance.canvas_authored : -1,
 		home_enabled, (int)shell.policy.mode, shell.policy.entry_progress,
 		chrome_enabled, drawer_mapped_now, keyboard_mapped_now, selected_app_id,
-		shell.home_selected, shell.home_offset, shell.home_settling, shell.trackpad_owned, shell.axis_owned, shell.policy.dx, shell.policy.velocity_x);
+		shell.home_selected, shell.home_offset, shell.home_settling, shell.trackpad_owned, shell.axis_owned, shell.policy.dx, shell.policy.velocity_x, shell.trackpad_client, shell.trackpad_keyboard, shell.keyboard.progress);
 	if (written < 0) {
 		free(text);
 		return NULL;
@@ -3326,34 +3346,90 @@ static bool trackpad_number(const char *text, uint64_t *value) {
     if (errno || *end || !n) return false;
     *value = n; return true;
 }
+/* Input translation only: native touch policy and native layer-client touch
+ * handlers remain the owners of navigation, scroll boundaries and physics. */
+static bool trackpad_real(const char *text, double *value, bool position) {
+    if (!text || !*text) return false;
+    char *end; errno = 0; double n = strtod(text, &end);
+    if (errno || *end || !isfinite(n) || (position ? n < 0 || n > 1 : fabs(n) > 1)) return false;
+    *value = n; return true;
+}
+static bool trackpad_layer(struct sway_seat *seat, double x, double y, uint32_t time) {
+    struct wlr_surface *surface = NULL; double sx = 0, sy = 0;
+    node_at_coords(seat, x, y, &surface, &sx, &sy);
+    if (!surface) return false;
+    struct sway_layer_surface *layer;
+    wl_list_for_each(layer, &shell.output->layer_surfaces, link) {
+        const char *name = layer->layer_surface->namespace;
+        if (!layer->mapped || layer->layer_surface->surface != surface || !name ||
+            (strcmp(name, "k230-shell-drawer") && strcmp(name, "k230-shell-home"))) continue;
+        uint32_t serial = wlr_seat_touch_notify_down(seat->wlr_seat, surface,
+            time, CARD_TRACKPAD_ID, sx, sy);
+        if (!serial) return false;
+        wlr_seat_touch_notify_frame(seat->wlr_seat);
+        shell.trackpad_client_x = sx; shell.trackpad_client_y = sy;
+        shell.trackpad_client = true;
+        return true;
+    }
+    return false;
+}
 static bool trackpad_command(struct sway_seat *seat, int argc, char **argv) {
     if (argc < 3 || !seat || !shell.output || server.session_lock.lock) return false;
     uint64_t seq;
     if (!trackpad_number(argv[2], &seq)) return false;
     if (!strcmp(argv[1], "begin")) {
-        if (argc != 5 || (strcmp(argv[3], "top") && strcmp(argv[3], "bottom")) ||
-            (strcmp(argv[4], "0") && strcmp(argv[4], "1")) || seq <= shell.trackpad_seq ||
-            shell.trackpad_owned || shell.axis_owned || shell.pointer_owned || shell.policy.contact ||
+        double x, y, dx, dy;
+        uint64_t stamp;
+        if (argc != 9 || (strcmp(argv[3], "2") && strcmp(argv[3], "3")) ||
+            !trackpad_real(argv[4], &x, true) || !trackpad_real(argv[5], &y, true) ||
+            !trackpad_real(argv[6], &dx, false) || !trackpad_real(argv[7], &dy, false) ||
+            !trackpad_number(argv[8], &stamp) || stamp > UINT32_MAX ||
+            seq <= shell.trackpad_seq || shell.trackpad_owned || shell.axis_owned ||
+            shell.pointer_owned || shell.policy.contact || shell.policy.edge.tracking ||
             shell.home_gesture.contacts || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
             wlr_seat_touch_num_points(seat->wlr_seat)) return false;
-        bool top = !strcmp(argv[3], "top"), outward = !strcmp(argv[4], "1");
-        bool accepted;
-        if (outward) {
-            accepted = drawer_mapped() && card_shell_reveal_begin(&shell.reveal,
-                top ? "dismiss-top" : "dismiss-bottom");
+        uint64_t source_ms = event_time_ms((uint32_t)stamp);
+        if (source_ms + 1000 < now_ms() || source_ms > now_ms() + 1000) return false;
+        bool keyboard = !strcmp(argv[3], "3");
+        double px = shell.output->lx + x * shell.output->width;
+        double py = shell.output->ly + y * shell.output->height;
+        bool accepted = false;
+        shell.trackpad_client = false; shell.trackpad_keyboard = false;
+        if (keyboard) {
+            // Three physical fingers are the same chord as two direct-touch
+            // fingers, never a competing keyboard implementation.
+            if (!keyboard_gestures_enabled() || y < .88 || dy >= 0 ||
+                fabs(dx) * shell.output->width > -dy * shell.output->height ||
+                drawer_mapped() || launcher_mapped() || popup_mapped() ||
+                keyboard_layer(shell.output)) return false;
+            double ky = shell.policy.config.height - 2;
+            double kx = x * shell.policy.config.width;
+            kg_down(&shell.keyboard, CARD_TRACKPAD_ID, kx - 24, ky, source_ms,
+                shell.policy.config.height, false, false, false);
+            unsigned action = kg_down(&shell.keyboard, CARD_TRACKPAD_SECOND_ID,
+                kx + 24, ky, source_ms, shell.policy.config.height, false, false, false);
+            accepted = keyboard_apply_action(action);
+            if (!accepted) { kg_cancel(&shell.keyboard); return false; }
+            shell.trackpad_keyboard = true;
+            py = shell.output->ly + ky;
         } else {
-            shell.pointer_dispatch = true;
-            accepted = input_down(seat, CARD_TRACKPAD_ID,
-                shell.output->lx + shell.output->width / 2.0,
-                shell.output->ly + (top ? 1 : shell.output->height - 2), now_ms());
-            shell.pointer_dispatch = false;
+            // Comfortable glass-edge qualification adapts input coordinates;
+            // the touch policy still decides what those gestures do.
+            if (y >= .88 && dy < 0) py = shell.output->ly + shell.output->height - 2;
+            else if (y <= .12 && dy > 0) py = shell.output->ly + 1;
+            accepted = input_down(seat, CARD_TRACKPAD_ID, px, py, source_ms);
+            if (!accepted) {
+                if (shell.keyboard.mode == KG_CHORD) kg_cancel(&shell.keyboard);
+                accepted = trackpad_layer(seat, px, py, (uint32_t)source_ms);
+            }
         }
         if (!accepted) return false;
         shell.trackpad_owned = true; shell.trackpad_seat = seat;
-        shell.trackpad_seq = seq; shell.trackpad_dismiss = outward; shell.trackpad_top = top;
+        shell.trackpad_seq = seq;
         shell.trackpad_width = shell.output->width; shell.trackpad_height = shell.output->height;
-        shell.trackpad_dx = shell.trackpad_dy = shell.trackpad_velocity = 0;
-        shell.trackpad_sample = now_ms(); shell.trackpad_deadline = now_ms() + 1000;
+        shell.trackpad_x = px; shell.trackpad_y = py;
+        shell.trackpad_dx = shell.trackpad_dy = 0;
+        shell.trackpad_sample = source_ms; shell.trackpad_deadline = now_ms() + 1000;
         return true;
     }
     if (!shell.trackpad_owned || seq != shell.trackpad_seq || seat != shell.trackpad_seat) return false;
@@ -3367,42 +3443,52 @@ static bool trackpad_command(struct sway_seat *seat, int argc, char **argv) {
     if (time + 1000 < now_ms() || time > now_ms() + 1000) return false;
     shell.trackpad_deadline = now_ms() + 1000;
     if (!strcmp(argv[1], "move")) {
-        if (argc != 6) return false;
-        if (!*argv[3] || !*argv[4]) return false;
-        char *end; double dx = strtod(argv[3], &end);
-        if (*end || !isfinite(dx) || fabs(dx) > 1) return false;
-        double dy = strtod(argv[4], &end);
-        if (*end || !isfinite(dy) || fabs(dy) > 1) return false;
+        double dx, dy;
+        if (argc != 6 || !trackpad_real(argv[3], &dx, false) || !trackpad_real(argv[4], &dy, false)) return false;
         if (dx == shell.trackpad_dx && dy == shell.trackpad_dy) return true;
-        if (time > shell.trackpad_sample)
-            shell.trackpad_velocity = (dy - shell.trackpad_dy) * 1000 / (time - shell.trackpad_sample);
         shell.trackpad_dx = dx; shell.trackpad_dy = dy; shell.trackpad_sample = time;
-        if (shell.trackpad_dismiss) {
-            double travel = shell.trackpad_top ? -dy : dy;
-            return card_shell_reveal_update(&shell.reveal, (uint16_t)lround(fmax(0, fmin(1000, (1-travel)*1000))));
+        double x = shell.trackpad_x + dx * shell.output->width;
+        double y = shell.trackpad_y + dy * shell.output->height;
+        if (shell.trackpad_client) {
+            struct wlr_touch_point *point = wlr_seat_touch_get_point(seat->wlr_seat, CARD_TRACKPAD_ID);
+            if (!point || !point->surface) { card_shell_cancel(seat); return false; }
+            wlr_seat_touch_notify_motion(seat->wlr_seat, (uint32_t)time, CARD_TRACKPAD_ID,
+                shell.trackpad_client_x + dx * shell.output->width,
+                shell.trackpad_client_y + dy * shell.output->height);
+            wlr_seat_touch_notify_frame(seat->wlr_seat);
+            return true;
         }
-        shell.pointer_dispatch = true;
-        bool accepted = input_motion(seat, CARD_TRACKPAD_ID,
-            shell.output->lx + shell.output->width * (.5 + dx),
-            shell.output->ly + (shell.trackpad_top ? 1 : shell.output->height - 2) + dy * shell.output->height, time);
-        shell.pointer_dispatch = false;
-        return accepted;
+        if (shell.trackpad_keyboard) {
+            unsigned action = kg_motion(&shell.keyboard, CARD_TRACKPAD_ID,
+                x - shell.output->lx - 24, y - shell.output->ly, time);
+            action |= kg_motion(&shell.keyboard, CARD_TRACKPAD_SECOND_ID,
+                x - shell.output->lx + 24, y - shell.output->ly, time);
+            return keyboard_apply_action(action);
+        }
+        return input_motion(seat, CARD_TRACKPAD_ID, x, y, time);
     }
     if (argc != 4) return false;
     if (!strcmp(argv[1], "cancel")) { card_shell_cancel(seat); return true; }
     if (strcmp(argv[1], "end")) return false;
-    double travel = shell.trackpad_top ? -shell.trackpad_dy : shell.trackpad_dy;
-    if (shell.trackpad_dismiss) {
-        double speed = shell.trackpad_top ? -shell.trackpad_velocity : shell.trackpad_velocity;
-        bool close = travel >= .06 || (travel > .012 && time - shell.trackpad_sample < 100 && speed > .35);
-        card_shell_reveal_finish(&shell.reveal, !close);
+    if (shell.trackpad_client) {
+        wlr_seat_touch_notify_up(seat->wlr_seat, (uint32_t)time, CARD_TRACKPAD_ID);
+        wlr_seat_touch_notify_frame(seat->wlr_seat);
+    } else if (shell.trackpad_keyboard) {
+        unsigned action = kg_up(&shell.keyboard, CARD_TRACKPAD_ID, time);
+        action |= kg_up(&shell.keyboard, CARD_TRACKPAD_SECOND_ID, time);
+        keyboard_apply_action(action);
     } else {
-        // Release thresholds are separate from direct pixel displacement.
-        if (shell.drawer_gesture.contacts) shell.drawer_gesture.armed = -shell.trackpad_dy >= .06;
-        if (shell.shade_gesture.contacts) shell.shade_gesture.armed = shell.trackpad_dy >= .06;
-        shell.pointer_dispatch = true; input_up(seat, CARD_TRACKPAD_ID, time); shell.pointer_dispatch = false;
+        // A qualified multi-finger pan is not a tap, even if it never
+        // crosses the native card slop or returns exactly to its origin.
+        shell.home_tap_candidate = false;
+        shell.pressed_button = 0;
+        if (shell.policy.contact && shell.policy.mode == CS_DRAGGING && shell.policy.axis == CS_AXIS_NONE)
+            card_shell_cancel(seat);
+        else
+            input_up(seat, CARD_TRACKPAD_ID, time);
     }
-    shell.trackpad_owned = false; shell.trackpad_seat = NULL;
+    shell.trackpad_owned = shell.trackpad_client = shell.trackpad_keyboard = false;
+    shell.trackpad_seat = NULL;
     return true;
 }
 struct cmd_results *cmd_card_shell(int argc, char **argv) {

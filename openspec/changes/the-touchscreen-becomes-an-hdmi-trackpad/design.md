@@ -404,3 +404,8 @@ Reject adding a wider edge-only close zone or additional drawer-specific
 thresholds: the operator explicitly requests common gesture semantics. Preserve
 native logical touch geometry; comfortable physical edge qualification is an
 input adaptation, not a separate navigation state machine. No kernel/DT change.
+
+The implemented uniform checkpoint, exact sources/outputs, timing failure,
+strict injected-board result and reviewed native captures are recorded in
+`docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md`.
+Physical recognition/feel remains UNVERIFIED.
